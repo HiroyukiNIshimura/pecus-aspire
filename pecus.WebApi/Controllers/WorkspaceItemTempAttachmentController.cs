@@ -43,15 +43,12 @@ public class WorkspaceItemTempAttachmentController : ControllerBase
         [FromRoute] string sessionId,
         IFormFile file)
     {
-        // ワークスペースへのアクセス権確認
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
+        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new Pecus.Exceptions.NotFoundException("ワークスペースが見つかりません。");
         }
-
-        // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(

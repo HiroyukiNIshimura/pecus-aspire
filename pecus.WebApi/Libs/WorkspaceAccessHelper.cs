@@ -87,6 +87,8 @@ public class OrganizationAccessHelper
 
     /// <summary>
     /// ユーザーがワークスペースのアクティブなメンバーかチェック
+    /// ログインユーザーのチェックには利用してはいけない（CheckWorkspaceAccessAndMembershipAsyncを使用すること）
+    /// 担当者やコミッターなど、第三者のメンバーシップ確認に使用する
     /// </summary>
     /// <param name="userId">ユーザーID</param>
     /// <param name="workspaceId">ワークスペースID</param>
@@ -99,6 +101,45 @@ public class OrganizationAccessHelper
             && wu.User != null
             && wu.User.IsActive
         );
+    }
+
+    /// <summary>
+    /// ユーザーがワークスペースにアクセス可能かつメンバーであるかをチェック
+    /// 1回のクエリでアクセスチェックとメンバーチェックを行い、重複検索を防ぐ
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <returns>アクセス可能フラグ、メンバーフラグ、ワークスペース情報</returns>
+    public async Task<(bool hasAccess, bool isMember, Workspace? workspace)> CheckWorkspaceAccessAndMembershipAsync(
+        int userId,
+        int workspaceId
+    )
+    {
+        var organizationId = await GetUserOrganizationIdAsync(userId);
+        if (!organizationId.HasValue)
+        {
+            return (false, false, null);
+        }
+
+        var workspace = await _context.Workspaces
+            .Include(w => w.Organization)
+            .Include(w => w.Genre)
+            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+
+        if (workspace == null || workspace.OrganizationId != organizationId.Value)
+        {
+            return (false, false, null);
+        }
+
+        // メンバーチェック
+        var isMember = await _context.WorkspaceUsers.AnyAsync(wu =>
+            wu.WorkspaceId == workspaceId
+            && wu.UserId == userId
+            && wu.User != null
+            && wu.User.IsActive
+        );
+
+        return (true, isMember, workspace);
     }
 
     /// <summary>

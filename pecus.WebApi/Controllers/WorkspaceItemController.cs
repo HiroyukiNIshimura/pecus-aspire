@@ -56,15 +56,12 @@ public class WorkspaceItemController : BaseSecureController
         [FromBody] CreateWorkspaceItemRequest request
     )
     {
-        // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
+        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
-
-        // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -220,15 +217,12 @@ public class WorkspaceItemController : BaseSecureController
         [FromBody] UpdateWorkspaceItemRequest request
     )
     {
-        // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
+        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
-
-        // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -268,15 +262,12 @@ public class WorkspaceItemController : BaseSecureController
         [FromBody] UpdateWorkspaceItemStatusRequest request
     )
     {
-        // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
+        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
-
-        // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -316,15 +307,12 @@ public class WorkspaceItemController : BaseSecureController
         [FromBody] UpdateWorkspaceItemAssigneeRequest request
     )
     {
-        // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
+        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
-
-        // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -359,15 +347,12 @@ public class WorkspaceItemController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeleteWorkspaceItem(int workspaceId, int itemId)
     {
-        // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
+        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
-
-        // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -416,15 +401,12 @@ public class WorkspaceItemController : BaseSecureController
             throw new InvalidOperationException($"無効な属性です: {attr}。使用可能な属性: assignee, committer, priority, duedate, archive");
         }
 
-        // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
+        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
-
-        // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -459,15 +441,12 @@ public class WorkspaceItemController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<DocumentSuggestionResponse>> GetDocumentSuggestion(int workspaceId, [FromBody] DocumentSuggestionRequest request)
     {
-        // ワークスペースへのアクセス権限をチェック
-        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, workspaceId);
+        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
+        var (hasAccess, isMember, workspace) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
-
-        // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
