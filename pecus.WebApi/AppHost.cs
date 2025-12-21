@@ -133,7 +133,7 @@ builder.Services.AddScoped<DashboardStatisticsService>();
 builder.Services.AddScoped<FocusRecommendationService>();
 builder.Services.AddScoped<ChatRoomService>();
 builder.Services.AddScoped<ChatMessageService>();
-builder.Services.AddScoped<SystemNotificationService>();
+builder.Services.AddScoped<BotMessageService>();
 builder.Services.AddScoped<DocumentSuggestionService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
