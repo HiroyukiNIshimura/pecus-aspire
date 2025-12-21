@@ -179,6 +179,19 @@ public class EntranceAuthController : ControllerBase
             );
         }
 
+        // テスト用: ChatBotからログインウェルカムメッセージを送信
+        if (user.OrganizationId.HasValue)
+        {
+            var orgId = user.OrganizationId.Value;
+            _backgroundJobClient.Enqueue<ChatBotTasks>(x =>
+                x.SendLoginWelcomeMessageAsync(
+                    orgId,
+                    user.Id,
+                    user.Username
+                )
+            );
+        }
+
         return TypedResults.Ok(response);
     }
 }

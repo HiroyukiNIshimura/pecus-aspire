@@ -24,6 +24,7 @@
 
 - [activity-requirements.md](./spec/activity-requirements.md) — 活動要件と仕様のまとめ。
 - [auth-architecture-redesign.md](./spec/auth-architecture-redesign.md) — 認証／セッション設計の再設計案。
+- [backfire-signalr-notification.md](./spec/backfire-signalr-notification.md) — BackFire (Hangfire) から SignalR 通知を送信する仕組み（Redis Pub/Sub 経由）。
 - [chat-feature-design.md](./spec/chat-feature-design.md) — チャット機能の設計仕様。
 - [dashboard-statistics.md](./spec/dashboard-statistics.md) — ダッシュボード向け集計・統計設計。
 - [item-edit-status.md](./spec/item-edit-status.md) — アイテム編集ステータス管理の仕様。

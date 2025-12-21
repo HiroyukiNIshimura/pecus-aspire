@@ -5,8 +5,8 @@
 
 * [x] Websocket（SignalR+redis）
 * チャット機能
-  * [ ] Bot
-    * [ ] Bot利用の有無（組織設定）により機能切り替え対応
+  * [x] Bot（AIによるコメント生成はのぞく）
+    * [x] Bot利用の有無（組織設定）により機能切り替え対応
 
 * Tooltip対応 title\s*=\s*(?:"[^"]*"|'[^']*'|\{[\s\S]*?\}) docs/ui-hint-components.md
 

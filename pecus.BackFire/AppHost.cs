@@ -60,6 +60,7 @@ builder.Services.AddScoped<ImageTasks>();
 builder.Services.AddScoped<CleanupTasks>();
 builder.Services.AddScoped<UploadsCleanupTasks>();
 builder.Services.AddScoped<WorkspaceItemTasks>();
+builder.Services.AddScoped<ChatBotTasks>();
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
 builder.Services.AddHangfire(
