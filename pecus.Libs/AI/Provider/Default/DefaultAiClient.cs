@@ -97,16 +97,24 @@ public class DefaultAiClient : IDefaultAiClient
     public async Task<string> GenerateTextAsync(
         string systemPrompt,
         string userPrompt,
+        string? persona = null,
         CancellationToken cancellationToken = default)
     {
+        var messages = new List<ChatMessage>();
+
+        // ペルソナが指定されている場合は最初に追加
+        if (!string.IsNullOrEmpty(persona))
+        {
+            messages.Add(ChatMessage.System(persona));
+        }
+
+        messages.Add(ChatMessage.System(systemPrompt));
+        messages.Add(ChatMessage.User(userPrompt));
+
         var request = new ChatCompletionRequest
         {
             Model = _settings.DefaultModel,
-            Messages =
-            [
-                ChatMessage.System(systemPrompt),
-                ChatMessage.User(userPrompt)
-            ],
+            Messages = messages,
             Temperature = _settings.DefaultTemperature,
             MaxTokens = _settings.DefaultMaxTokens
         };
@@ -118,9 +126,18 @@ public class DefaultAiClient : IDefaultAiClient
     /// <inheritdoc />
     public async Task<string> GenerateTextWithMessagesAsync(
         IEnumerable<(MessageRole Role, string Content)> messages,
+        string? persona = null,
         CancellationToken cancellationToken = default)
     {
-        var chatMessages = messages.Select(m => new ChatMessage
+        var chatMessages = new List<ChatMessage>();
+
+        // ペルソナが指定されている場合は最初に追加
+        if (!string.IsNullOrEmpty(persona))
+        {
+            chatMessages.Add(ChatMessage.System(persona));
+        }
+
+        chatMessages.AddRange(messages.Select(m => new ChatMessage
         {
             Role = m.Role switch
             {
@@ -130,7 +147,7 @@ public class DefaultAiClient : IDefaultAiClient
                 _ => "user"
             },
             Content = m.Content
-        }).ToList();
+        }));
 
         var request = new ChatCompletionRequest
         {
@@ -148,6 +165,7 @@ public class DefaultAiClient : IDefaultAiClient
     public async Task<string> GenerateMarkdownFromTitleAsync(
         string title,
         string? additionalContext = null,
+        string? persona = null,
         CancellationToken cancellationToken = default)
     {
         var systemPrompt = """
@@ -167,13 +185,14 @@ public class DefaultAiClient : IDefaultAiClient
             ? $"タイトル: {title}"
             : $"タイトル: {title}\n\n補足情報: {additionalContext}";
 
-        return await GenerateTextAsync(systemPrompt, userPrompt, cancellationToken);
+        return await GenerateTextAsync(systemPrompt, userPrompt, persona, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<T> GenerateJsonAsync<T>(
         string systemPrompt,
         string userPrompt,
+        string? persona = null,
         CancellationToken cancellationToken = default) where T : class
     {
         // システムプロンプトにJSON指示を追加
@@ -184,14 +203,21 @@ public class DefaultAiClient : IDefaultAiClient
             純粋なJSONのみを返してください。
             """;
 
+        var requestMessages = new List<ChatMessage>();
+
+        // ペルソナが指定されている場合は最初に追加
+        if (!string.IsNullOrEmpty(persona))
+        {
+            requestMessages.Add(ChatMessage.System(persona));
+        }
+
+        requestMessages.Add(ChatMessage.System(jsonSystemPrompt));
+        requestMessages.Add(ChatMessage.User(userPrompt));
+
         var request = new ChatCompletionRequest
         {
             Model = _settings.DefaultModel,
-            Messages =
-            [
-                ChatMessage.System(jsonSystemPrompt),
-                ChatMessage.User(userPrompt)
-            ],
+            Messages = requestMessages,
             Temperature = _settings.DefaultTemperature,
             MaxTokens = _settings.DefaultMaxTokens,
             ResponseFormat = ResponseFormat.Json

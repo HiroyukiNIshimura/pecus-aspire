@@ -32,11 +32,13 @@ public interface IAiClient
     /// </summary>
     /// <param name="systemPrompt">システムプロンプト</param>
     /// <param name="userPrompt">ユーザープロンプト</param>
+    /// <param name="persona">ペルソナ（オプション）。指定時は最初のsystemプロンプトとして送信</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>生成されたテキスト</returns>
     Task<string> GenerateTextAsync(
         string systemPrompt,
         string userPrompt,
+        string? persona = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -44,10 +46,12 @@ public interface IAiClient
     /// system/user/assistantメッセージを任意の順番で指定可能
     /// </summary>
     /// <param name="messages">メッセージの配列（Role: 役割, Content: 内容）</param>
+    /// <param name="persona">ペルソナ（オプション）。指定時は最初のsystemプロンプトとして送信</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>生成されたテキスト</returns>
     Task<string> GenerateTextWithMessagesAsync(
         IEnumerable<(MessageRole Role, string Content)> messages,
+        string? persona = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -56,11 +60,13 @@ public interface IAiClient
     /// <typeparam name="T">デシリアライズする型</typeparam>
     /// <param name="systemPrompt">システムプロンプト（JSON形式の指示は自動付与）</param>
     /// <param name="userPrompt">ユーザープロンプト</param>
+    /// <param name="persona">ペルソナ（オプション）。指定時は最初のsystemプロンプトとして送信</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>デシリアライズされたオブジェクト</returns>
     Task<T> GenerateJsonAsync<T>(
         string systemPrompt,
         string userPrompt,
+        string? persona = null,
         CancellationToken cancellationToken = default) where T : class;
 
     /// <summary>
@@ -68,10 +74,12 @@ public interface IAiClient
     /// </summary>
     /// <param name="title">タイトル</param>
     /// <param name="additionalContext">追加のコンテキスト情報（オプション）</param>
+    /// <param name="persona">ペルソナ（オプション）。指定時は最初のsystemプロンプトとして送信</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>生成されたMarkdownテキスト</returns>
     Task<string> GenerateMarkdownFromTitleAsync(
         string title,
         string? additionalContext = null,
+        string? persona = null,
         CancellationToken cancellationToken = default);
 }

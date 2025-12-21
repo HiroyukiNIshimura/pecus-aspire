@@ -121,13 +121,19 @@ public class GeminiClient : IGeminiClient, IAiClient
     public async Task<string> GenerateTextAsync(
         string systemPrompt,
         string userPrompt,
+        string? persona = null,
         CancellationToken cancellationToken = default)
     {
+        // ペルソナとsystemPromptを結合
+        var combinedSystemPrompt = string.IsNullOrEmpty(persona)
+            ? systemPrompt
+            : $"{persona}\n\n{systemPrompt}";
+
         var request = new GeminiRequest
         {
             SystemInstruction = new GeminiContent
             {
-                Parts = [new GeminiPart { Text = systemPrompt }]
+                Parts = [new GeminiPart { Text = combinedSystemPrompt }]
             },
             Contents =
             [
@@ -151,6 +157,7 @@ public class GeminiClient : IGeminiClient, IAiClient
     /// <inheritdoc />
     public async Task<string> GenerateTextWithMessagesAsync(
         IEnumerable<(MessageRole Role, string Content)> messages,
+        string? persona = null,
         CancellationToken cancellationToken = default)
     {
         // GeminiはsystemメッセージをSystemInstructionとして分離する必要がある
@@ -175,13 +182,21 @@ public class GeminiClient : IGeminiClient, IAiClient
             }
         };
 
-        // systemメッセージがあればSystemInstructionに設定（複数ある場合は結合）
+        // ペルソナとsystemメッセージを結合してSystemInstructionに設定
+        var systemParts = new List<string>();
+        if (!string.IsNullOrEmpty(persona))
+        {
+            systemParts.Add(persona);
+        }
         if (systemMessages.Count > 0)
         {
-            var combinedSystemPrompt = string.Join("\n\n", systemMessages.Select(m => m.Content));
+            systemParts.AddRange(systemMessages.Select(m => m.Content));
+        }
+        if (systemParts.Count > 0)
+        {
             request.SystemInstruction = new GeminiContent
             {
-                Parts = [new GeminiPart { Text = combinedSystemPrompt }]
+                Parts = [new GeminiPart { Text = string.Join("\n\n", systemParts) }]
             };
         }
 
@@ -193,6 +208,7 @@ public class GeminiClient : IGeminiClient, IAiClient
     public async Task<string> GenerateMarkdownFromTitleAsync(
         string title,
         string? additionalContext = null,
+        string? persona = null,
         CancellationToken cancellationToken = default)
     {
         var systemPrompt = """
@@ -212,13 +228,14 @@ public class GeminiClient : IGeminiClient, IAiClient
             ? $"タイトル: {title}"
             : $"タイトル: {title}\n\n補足情報: {additionalContext}";
 
-        return await GenerateTextAsync(systemPrompt, userPrompt, cancellationToken);
+        return await GenerateTextAsync(systemPrompt, userPrompt, persona, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<T> GenerateJsonAsync<T>(
         string systemPrompt,
         string userPrompt,
+        string? persona = null,
         CancellationToken cancellationToken = default) where T : class
     {
         // システムプロンプトにJSON指示を追加
@@ -229,11 +246,16 @@ public class GeminiClient : IGeminiClient, IAiClient
             純粋なJSONのみを返してください。
             """;
 
+        // ペルソナとjsonSystemPromptを結合
+        var combinedSystemPrompt = string.IsNullOrEmpty(persona)
+            ? jsonSystemPrompt
+            : $"{persona}\n\n{jsonSystemPrompt}";
+
         var request = new GeminiRequest
         {
             SystemInstruction = new GeminiContent
             {
-                Parts = [new GeminiPart { Text = jsonSystemPrompt }]
+                Parts = [new GeminiPart { Text = combinedSystemPrompt }]
             },
             Contents =
             [

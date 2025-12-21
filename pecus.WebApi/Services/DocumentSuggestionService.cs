@@ -91,7 +91,7 @@ public class DocumentSuggestionService
         CancellationToken cancellationToken)
     {
         var additionalContext = $"{workspace.Genre?.Name}: {workspace.Name}: {workspace.Description}";
-        return await aiClient.GenerateMarkdownFromTitleAsync(title, additionalContext, cancellationToken);
+        return await aiClient.GenerateMarkdownFromTitleAsync(title, additionalContext, persona: null, cancellationToken);
     }
 }
 

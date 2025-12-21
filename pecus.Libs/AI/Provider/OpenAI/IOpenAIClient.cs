@@ -22,11 +22,13 @@ public interface IOpenAIClient
     /// </summary>
     /// <param name="systemPrompt">システムプロンプト</param>
     /// <param name="userPrompt">ユーザープロンプト</param>
+    /// <param name="persona">ペルソナ（オプション）。指定時は最初のsystemプロンプトとして送信</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>生成されたテキスト</returns>
     Task<string> GenerateTextAsync(
         string systemPrompt,
         string userPrompt,
+        string? persona = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -34,10 +36,12 @@ public interface IOpenAIClient
     /// </summary>
     /// <param name="title">タイトル</param>
     /// <param name="additionalContext">追加のコンテキスト情報（オプション）</param>
+    /// <param name="persona">ペルソナ（オプション）。指定時は最初のsystemプロンプトとして送信</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>生成されたMarkdownテキスト</returns>
     Task<string> GenerateMarkdownFromTitleAsync(
         string title,
         string? additionalContext = null,
+        string? persona = null,
         CancellationToken cancellationToken = default);
 }
