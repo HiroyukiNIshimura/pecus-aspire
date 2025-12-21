@@ -29,6 +29,7 @@ const normalizeVendor = (value: unknown): OrganizationSettingResponse['generativ
       case 'AzureOpenAi':
       case 'Anthropic':
       case 'GoogleGemini':
+      case 'DeepSeek':
         return value;
       default:
         return 'None';
@@ -47,6 +48,8 @@ const normalizeVendor = (value: unknown): OrganizationSettingResponse['generativ
         return 'Anthropic';
       case 4:
         return 'GoogleGemini';
+      case 5:
+        return 'DeepSeek';
       default:
         return 'None';
     }
@@ -102,6 +105,7 @@ const generativeOptions: { value: OrganizationSettingResponse['generativeApiVend
   { value: 'AzureOpenAi', label: 'Azure OpenAI' },
   { value: 'Anthropic', label: 'Anthropic' },
   { value: 'GoogleGemini', label: 'Google Gemini' },
+  { value: 'DeepSeek', label: 'DeepSeek' },
 ];
 
 const planOptions: { value: OrganizationSettingResponse['plan']; label: string }[] = [
@@ -387,7 +391,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                     <input
                       id="input-generative-api-key"
                       name="generativeApiKey"
-                      type="password"
+                      type="text"
                       className={`input input-bordered ${shouldShowError('generativeApiKey') ? 'input-error' : ''}`}
                       value={formData.generativeApiKey ?? ''}
                       onChange={(e) => handleFieldChange('generativeApiKey', e.target.value)}

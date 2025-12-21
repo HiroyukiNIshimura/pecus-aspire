@@ -5,4 +5,4 @@
 /**
  * 利用する生成APIベンダーの種類
  */
-export type GenerativeApiVendor = 'None' | 'OpenAi' | 'AzureOpenAi' | 'Anthropic' | 'GoogleGemini';
+export type GenerativeApiVendor = 'None' | 'OpenAi' | 'AzureOpenAi' | 'Anthropic' | 'GoogleGemini' | 'DeepSeek';

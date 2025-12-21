@@ -13431,7 +13431,8 @@
           "OpenAi",
           "AzureOpenAi",
           "Anthropic",
-          "GoogleGemini"
+          "GoogleGemini",
+          "DeepSeek"
         ],
         "type": "string",
         "description": "利用する生成APIベンダーの種類"
