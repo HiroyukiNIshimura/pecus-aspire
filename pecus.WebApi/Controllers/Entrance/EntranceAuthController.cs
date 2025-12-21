@@ -181,7 +181,7 @@ public class EntranceAuthController : ControllerBase
         }
 
         // ChatBotからログインウェルカムメッセージを送信
-        if (user.OrganizationId.HasValue && user.LastLoginAt.HasValue == false)
+        if (user.OrganizationId.HasValue)
         {
             var orgId = user.OrganizationId.Value;
             _backgroundJobClient.Enqueue<FirstTouchdownTask>(x =>

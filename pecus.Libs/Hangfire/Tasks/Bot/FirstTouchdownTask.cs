@@ -43,6 +43,12 @@ public class FirstTouchdownTask
             userId
         );
 
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null || !user.IsActive || user.LastLoginAt.HasValue)
+        {
+            return;
+        }
+
         // 10秒待機
         await Task.Delay(TimeSpan.FromSeconds(10));
 
@@ -107,7 +113,7 @@ public class FirstTouchdownTask
             }
 
             // 3. メッセージを作成
-            var content = $"👋 {username}さん、初めまして！\n\n Coati Botです！\n\n 何かお手伝いできることはありますか？タスクの確認や質問など、お気軽にどうぞ。";
+            var content = $"👋 {username}さん、初めまして！\n\n {chatBot.Name}です！\n\n 何かお手伝いできることはありますか？タスクの確認や質問など、お気軽にどうぞ。";
 
             var message = new ChatMessage
             {
