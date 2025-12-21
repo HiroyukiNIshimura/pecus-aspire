@@ -54,4 +54,7 @@
     "dotnet add package": true,
     //"npm run build":true
   },
+  "files.associations": {
+    "appsettings*.json": "jsonc"
+  }
 }
