@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.AI.Configuration;
@@ -7,7 +5,6 @@ using Pecus.Libs.AI.Provider.DeepSeek;
 using Pecus.Libs.AI.Provider.Default;
 using Pecus.Libs.AI.Provider.Gemini;
 using Pecus.Libs.AI.Provider.OpenAI;
-using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.AI;
@@ -17,76 +14,61 @@ namespace Pecus.Libs.AI;
 /// </summary>
 public class AiClientFactory : IAiClientFactory
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IOptions<OpenAISettings> _openAiSettings;
+    private readonly IOptions<GeminiSettings> _geminiSettings;
+    private readonly IOptions<DeepSeekSettings> _deepSeekSettings;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly DefaultAiClient _defaultClient;
 
     /// <summary>
     /// コンストラクタ
     /// </summary>
-    /// <param name="serviceProvider">DIサービスプロバイダー</param>
-    public AiClientFactory(IServiceProvider serviceProvider)
+    public AiClientFactory(
+        IHttpClientFactory httpClientFactory,
+        IOptions<OpenAISettings> openAiSettings,
+        IOptions<GeminiSettings> geminiSettings,
+        IOptions<DeepSeekSettings> deepSeekSettings,
+        ILoggerFactory loggerFactory,
+        DefaultAiClient defaultClient)
     {
-        _serviceProvider = serviceProvider;
+        _httpClientFactory = httpClientFactory;
+        _openAiSettings = openAiSettings;
+        _geminiSettings = geminiSettings;
+        _deepSeekSettings = deepSeekSettings;
+        _loggerFactory = loggerFactory;
+        _defaultClient = defaultClient;
     }
 
     /// <inheritdoc />
-    public IAiClient GetDefaultClient()
-    {
-        var client = _serviceProvider.GetService<DefaultAiClient>();
-        if (client == null)
-        {
-            throw new InvalidOperationException(
-                "Default AI provider is not configured. Check API key settings.");
-        }
-
-        return client;
-    }
+    public IAiClient GetDefaultClient() => _defaultClient;
 
     /// <inheritdoc />
-    public async Task<IAiClient?> GetClientForOrganizationAsync(int organizationId, CancellationToken cancellationToken = default)
+    public IAiClient? CreateClient(GenerativeApiVendor vendor, string? apiKey)
     {
-        var context = _serviceProvider.GetRequiredService<ApplicationDbContext>();
-
-        var setting = await context.OrganizationSettings
-            .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId, cancellationToken);
-
-        // 組織設定が見つからない、またはベンダーがNone、またはAPIキーが未設定の場合はnull
-        if (setting == null ||
-            setting.GenerativeApiVendor == GenerativeApiVendor.None ||
-            string.IsNullOrEmpty(setting.GenerativeApiKey))
+        if (string.IsNullOrEmpty(apiKey) || vendor == GenerativeApiVendor.None)
         {
             return null;
         }
 
-        // 組織設定のAPIキーを使用してクライアントを生成
-        return CreateClientWithApiKey(setting.GenerativeApiVendor, setting.GenerativeApiKey);
-    }
-
-    /// <summary>
-    /// 指定されたAPIキーを使用してクライアントを生成
-    /// </summary>
-    private IAiClient? CreateClientWithApiKey(GenerativeApiVendor vendor, string apiKey)
-    {
-        var httpClientFactory = _serviceProvider.GetRequiredService<IHttpClientFactory>();
-
         return vendor switch
         {
             GenerativeApiVendor.OpenAi => new OpenAIClient(
-                httpClientFactory,
-                _serviceProvider.GetRequiredService<IOptions<OpenAISettings>>(),
-                _serviceProvider.GetRequiredService<ILogger<OpenAIClient>>(),
+                _httpClientFactory,
+                _openAiSettings,
+                _loggerFactory.CreateLogger<OpenAIClient>(),
                 apiKey),
 
             GenerativeApiVendor.GoogleGemini => new GeminiClient(
-                httpClientFactory,
-                _serviceProvider.GetRequiredService<IOptions<GeminiSettings>>(),
-                _serviceProvider.GetRequiredService<ILogger<GeminiClient>>(),
+                _httpClientFactory,
+                _geminiSettings,
+                _loggerFactory.CreateLogger<GeminiClient>(),
                 apiKey),
 
             GenerativeApiVendor.DeepSeek => new DeepSeekClient(
-                httpClientFactory,
-                _serviceProvider.GetRequiredService<IOptions<DeepSeekSettings>>(),
-                _serviceProvider.GetRequiredService<ILogger<DeepSeekClient>>(),
+                _httpClientFactory,
+                _deepSeekSettings,
+                _loggerFactory.CreateLogger<DeepSeekClient>(),
                 apiKey),
 
             _ => null
