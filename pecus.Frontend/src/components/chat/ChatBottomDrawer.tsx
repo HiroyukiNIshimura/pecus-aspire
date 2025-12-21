@@ -25,9 +25,13 @@ export default function ChatBottomDrawer({
 }: ChatBottomDrawerProps) {
   const { isDrawerOpen, closeDrawer, selectedRoomId } = useChatStore();
 
-  // Escape キーでドロワーを閉じる
+  // Escape キーでドロワーを閉じる（IME 変換中は無視）
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // IME 変換中（日本語変換中など）は Escape を無視
+      // 変換キャンセルの意図であり、ドロワーを閉じる意図ではない
+      if (e.isComposing) return;
+
       if (e.key === 'Escape' && isDrawerOpen) {
         closeDrawer();
       }
