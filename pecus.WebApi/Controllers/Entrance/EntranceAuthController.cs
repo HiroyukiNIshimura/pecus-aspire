@@ -22,7 +22,6 @@ public class EntranceAuthController : ControllerBase
     private readonly UserService _userService;
     private readonly RefreshTokenService _refreshService;
     private readonly TokenBlacklistService _blacklistService;
-    private readonly BotMessageService _botMessageService;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<EntranceAuthController> _logger;
 
@@ -30,14 +29,12 @@ public class EntranceAuthController : ControllerBase
         UserService userService,
         RefreshTokenService refreshService,
         TokenBlacklistService blacklistService,
-        BotMessageService botMessageService,
         IBackgroundJobClient backgroundJobClient,
         ILogger<EntranceAuthController> logger)
     {
         _userService = userService;
         _refreshService = refreshService;
         _blacklistService = blacklistService;
-        _botMessageService = botMessageService;
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
     }
@@ -180,37 +177,6 @@ public class EntranceAuthController : ControllerBase
                 user.Id,
                 user.Email
             );
-        }
-
-        // ChatBot からウェルカムメッセージを送信（GenerativeApiVendor が設定されている場合のみ）
-        if (user.OrganizationId.HasValue)
-        {
-            try
-            {
-                var welcomeMessage = await _botMessageService.SendLoginWelcomeMessageAsync(
-                    user.OrganizationId.Value,
-                    user.Id,
-                    user.Username
-                );
-
-                if (welcomeMessage != null)
-                {
-                    _logger.LogInformation(
-                        "ログインウェルカムメッセージを送信しました。UserId: {UserId}, MessageId: {MessageId}",
-                        user.Id,
-                        welcomeMessage.Id
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                // ウェルカムメッセージの送信失敗はログイン処理に影響させない
-                _logger.LogWarning(
-                    ex,
-                    "ログインウェルカムメッセージの送信に失敗しました。UserId: {UserId}",
-                    user.Id
-                );
-            }
         }
 
         return TypedResults.Ok(response);
