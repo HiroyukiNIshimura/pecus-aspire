@@ -2,6 +2,7 @@ using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Pecus.BackFire;
 using Pecus.BackFire.Services;
+using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Hangfire.Tasks.Bot;
@@ -53,6 +54,14 @@ builder.Services.AddSingleton<ILexicalConverterService>(sp =>
 // SignalR 通知パブリッシャー（Redis Pub/Sub 経由で WebApi に通知を送信）
 builder.Services.AddSingleton<SignalRNotificationPublisher>();
 
+// AI クライアントの登録（AiChatReplyTask で使用、APIキーが設定されているプロバイダーのみ有効化）
+builder.Services.AddOpenAIClient(builder.Configuration);
+builder.Services.AddAnthropicClient(builder.Configuration);
+builder.Services.AddDeepSeekClient(builder.Configuration);
+builder.Services.AddGeminiClient(builder.Configuration);
+builder.Services.AddDefaultAiClient(builder.Configuration);
+builder.Services.AddAiClientFactory();
+
 // Hangfireタスクの登録
 builder.Services.AddScoped<ActivityTasks>();
 builder.Services.AddScoped<HangfireTasks>();
@@ -62,6 +71,7 @@ builder.Services.AddScoped<CleanupTasks>();
 builder.Services.AddScoped<UploadsCleanupTasks>();
 builder.Services.AddScoped<WorkspaceItemTasks>();
 builder.Services.AddScoped<FirstTouchdownTask>();
+builder.Services.AddScoped<AiChatReplyTask>();
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
 builder.Services.AddHangfire(

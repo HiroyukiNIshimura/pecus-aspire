@@ -71,6 +71,29 @@ public class OpenAIClient : IOpenAIClient, IAiClient
     private string GetModel() => _overrideModel ?? _settings.DefaultModel;
 
     /// <summary>
+    /// 推論モデル（o1, o3, gpt-5 シリーズなど）かどうかを判定
+    /// 推論モデルは temperature パラメータをサポートしない
+    /// </summary>
+    private bool IsReasoningModel(string model)
+    {
+        var lowerModel = model.ToLowerInvariant();
+        // o1, o3 シリーズ、または gpt-5 シリーズは推論モデル
+        return lowerModel.StartsWith("o1") ||
+               lowerModel.StartsWith("o3") ||
+               lowerModel.StartsWith("gpt-5") ||
+               lowerModel.Contains("-o1") ||
+               lowerModel.Contains("-o3");
+    }
+
+    /// <summary>
+    /// モデルに応じた Temperature を取得（推論モデルの場合は null）
+    /// </summary>
+    private double? GetTemperatureForModel(string model)
+    {
+        return IsReasoningModel(model) ? null : _settings.DefaultTemperature;
+    }
+
+    /// <summary>
     /// 設定済みのHttpClientを作成
     /// </summary>
     private HttpClient CreateClient()
@@ -144,12 +167,13 @@ public class OpenAIClient : IOpenAIClient, IAiClient
         messages.Add(ChatMessage.Developer(systemPrompt));
         messages.Add(ChatMessage.User(userPrompt));
 
+        var model = GetModel();
         var request = new ChatCompletionRequest
         {
-            Model = GetModel(),
+            Model = model,
             Messages = messages,
-            Temperature = _settings.DefaultTemperature,
-            MaxTokens = _settings.DefaultMaxTokens
+            Temperature = GetTemperatureForModel(model),
+            MaxCompletionTokens = _settings.DefaultMaxTokens
         };
 
         var response = await ChatCompletionAsync(request, cancellationToken);
@@ -182,12 +206,13 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             Content = m.Content
         }));
 
+        var model = GetModel();
         var request = new ChatCompletionRequest
         {
-            Model = GetModel(),
+            Model = model,
             Messages = chatMessages,
-            Temperature = _settings.DefaultTemperature,
-            MaxTokens = _settings.DefaultMaxTokens
+            Temperature = GetTemperatureForModel(model),
+            MaxCompletionTokens = _settings.DefaultMaxTokens
         };
 
         var response = await ChatCompletionAsync(request, cancellationToken);
@@ -247,12 +272,13 @@ public class OpenAIClient : IOpenAIClient, IAiClient
         requestMessages.Add(ChatMessage.Developer(jsonSystemPrompt));
         requestMessages.Add(ChatMessage.User(userPrompt));
 
+        var model = GetModel();
         var request = new ChatCompletionRequest
         {
-            Model = GetModel(),
+            Model = model,
             Messages = requestMessages,
-            Temperature = _settings.DefaultTemperature,
-            MaxTokens = _settings.DefaultMaxTokens,
+            Temperature = GetTemperatureForModel(model),
+            MaxCompletionTokens = _settings.DefaultMaxTokens,
             ResponseFormat = ResponseFormat.Json
         };
 
@@ -327,7 +353,8 @@ public class OpenAIClient : IOpenAIClient, IAiClient
                 && m.Created >= cutoffDate
                 && !m.Id.Contains("-realtime", StringComparison.OrdinalIgnoreCase)
                 && !m.Id.Contains("-image", StringComparison.OrdinalIgnoreCase)
-                && !m.Id.Contains("-audio", StringComparison.OrdinalIgnoreCase))
+                && !m.Id.Contains("-audio", StringComparison.OrdinalIgnoreCase)
+                && !m.Id.Contains("-search", StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(m => m.Id)
             .Select(m => new AvailableModel
             {

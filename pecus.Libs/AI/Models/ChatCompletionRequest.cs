@@ -22,15 +22,27 @@ public class ChatCompletionRequest
     /// <summary>
     /// Temperature（0.0-2.0）
     /// 高いほどランダム性が増す
+    /// 注: OpenAI の推論モデル（o1, o3 シリーズなど）は temperature をサポートしない
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; } = 0.7;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? Temperature { get; set; }
 
     /// <summary>
-    /// 生成する最大トークン数
+    /// 生成する最大トークン数（レガシー: DeepSeek など max_tokens をサポートするAPI用）
+    /// OpenAI の新しいモデル（gpt-4o, o1 など）では max_completion_tokens を使用すること
     /// </summary>
     [JsonPropertyName("max_tokens")]
-    public int MaxTokens { get; set; } = 2048;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? MaxTokens { get; set; }
+
+    /// <summary>
+    /// 生成する最大トークン数（新しいモデル用: gpt-4o, o1 など）
+    /// OpenAI の新しいモデルでは max_tokens ではなく max_completion_tokens を使用する必要がある
+    /// </summary>
+    [JsonPropertyName("max_completion_tokens")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? MaxCompletionTokens { get; set; }
 
     /// <summary>
     /// ストリーミングモードを有効にするか

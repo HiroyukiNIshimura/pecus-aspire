@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
@@ -56,13 +57,15 @@ public class AiChatReplyTask
     /// <param name="organizationId">組織ID</param>
     /// <param name="roomId">チャットルームID</param>
     /// <param name="triggerMessageId">トリガーとなったユーザーメッセージID</param>
-    public async Task GenerateAndSendReplyAsync(int organizationId, int roomId, int triggerMessageId)
+    /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
+    public async Task GenerateAndSendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
-        _logger.LogInformation(
-            "AiChatReplyTask started: OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}",
+        _logger.LogDebug(
+            "AiChatReplyTask started: OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}, SenderUserId={SenderUserId}",
             organizationId,
             roomId,
-            triggerMessageId
+            triggerMessageId,
+            senderUserId
         );
 
         DB.Models.Bot? chatBot = null;
@@ -70,28 +73,41 @@ public class AiChatReplyTask
         try
         {
             // 1. ChatBot を取得
+            _logger.LogDebug("Fetching ChatBot for OrganizationId={OrganizationId}", organizationId);
             chatBot = await GetChatBotAsync(organizationId);
             if (chatBot?.ChatActor == null)
             {
                 _logger.LogWarning(
-                    "ChatBot not found for OrganizationId={OrganizationId}",
-                    organizationId
+                    "ChatBot not found for OrganizationId={OrganizationId}. ChatBot={ChatBot}, ChatActor={ChatActor}",
+                    organizationId,
+                    chatBot != null ? "exists" : "null",
+                    chatBot?.ChatActor != null ? "exists" : "null"
                 );
                 return;
             }
+            _logger.LogDebug("ChatBot found: Id={BotId}, Name={BotName}", chatBot.Id, chatBot.Name);
 
             // 2. 組織設定を取得
+            _logger.LogDebug("Fetching OrganizationSetting for OrganizationId={OrganizationId}", organizationId);
             var setting = await GetOrganizationSettingAsync(organizationId);
             if (setting == null || setting.GenerativeApiVendor == GenerativeApiVendor.None)
             {
-                _logger.LogDebug(
-                    "GenerativeApiVendor is None for OrganizationId={OrganizationId}, skipping AI reply",
-                    organizationId
+                _logger.LogWarning(
+                    "GenerativeApiVendor is not configured or None: OrganizationId={OrganizationId}, Setting={Setting}, Vendor={Vendor}",
+                    organizationId,
+                    setting != null ? "exists" : "null",
+                    setting?.GenerativeApiVendor
                 );
                 return;
             }
+            _logger.LogDebug(
+                "OrganizationSetting found: Vendor={Vendor}, Model={Model}",
+                setting.GenerativeApiVendor,
+                setting.GenerativeApiModel
+            );
 
             // 3. AI クライアントを作成
+            _logger.LogDebug("Creating AI client for Vendor={Vendor}", setting.GenerativeApiVendor);
             var aiClient = _aiClientFactory.CreateClient(
                 setting.GenerativeApiVendor,
                 setting.GenerativeApiKey,
@@ -101,14 +117,17 @@ public class AiChatReplyTask
             if (aiClient == null)
             {
                 _logger.LogWarning(
-                    "Failed to create AI client: Vendor={Vendor}, OrganizationId={OrganizationId}",
+                    "Failed to create AI client: Vendor={Vendor}, OrganizationId={OrganizationId}, HasApiKey={HasApiKey}",
                     setting.GenerativeApiVendor,
-                    organizationId
+                    organizationId,
+                    !string.IsNullOrEmpty(setting.GenerativeApiKey)
                 );
                 return;
             }
+            _logger.LogDebug("AI client created successfully");
 
             // 4. 入力開始を通知
+            _logger.LogDebug("Publishing bot typing start notification");
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
                 roomId,
@@ -118,15 +137,32 @@ public class AiChatReplyTask
             );
 
             // 5. 会話履歴を取得してメッセージ配列を構築
+            _logger.LogDebug("Building conversation messages");
             var messages = await BuildConversationMessagesAsync(roomId, chatBot.ChatActor.Id);
+            _logger.LogDebug("Conversation messages built: Count={Count}", messages.Count);
 
-            // 6. AI API を呼び出して返信を生成
+            // 6. 送信者のユーザー名を取得してシステムメッセージに追加
+            var senderUserName = await GetUserNameAsync(senderUserId);
+            if (string.IsNullOrEmpty(senderUserName))
+            {
+                _logger.LogWarning(
+                    "User not found for SenderUserId={SenderUserId}, skipping AI reply",
+                    senderUserId
+                );
+                return;
+            }
+            messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、{senderUserName}さんです。"));
+            _logger.LogDebug("Added system message with user name: {UserName}", senderUserName);
+
+            // 7. AI API を呼び出して返信を生成
+            _logger.LogDebug("Calling AI API to generate response");
             var responseText = await aiClient.GenerateTextWithMessagesAsync(
                 messages,
                 chatBot.Persona
             );
+            _logger.LogDebug("AI response received: Length={Length}", responseText?.Length ?? 0);
 
-            // 7. 入力終了を通知
+            // 8. 入力終了を通知
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
                 roomId,
@@ -135,8 +171,8 @@ public class AiChatReplyTask
                 isTyping: false
             );
 
-            // 8. メッセージを保存して通知
-            await SendBotMessageAsync(organizationId, roomId, chatBot, responseText);
+            // 9. メッセージを保存して通知
+            await SendBotMessageAsync(organizationId, roomId, chatBot, responseText ?? "...");
 
             _logger.LogInformation(
                 "AiChatReplyTask completed: OrganizationId={OrganizationId}, RoomId={RoomId}",
@@ -209,6 +245,17 @@ public class AiChatReplyTask
     {
         return await _context.OrganizationSettings
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+    }
+
+    /// <summary>
+    /// ユーザーの表示名を取得する
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>ユーザーの表示名（見つからない場合は null）</returns>
+    private async Task<string?> GetUserNameAsync(int userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        return user?.Username;
     }
 
     /// <summary>

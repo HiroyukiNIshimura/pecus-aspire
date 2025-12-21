@@ -999,4 +999,23 @@ public class ChatRoomService
     }
 
     #endregion
+
+    #region ChatActor
+
+    /// <summary>
+    /// ユーザーID から ChatActor ID を取得
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>ChatActor ID（存在しない場合は null）</returns>
+    public async Task<int?> GetUserActorIdAsync(int userId)
+    {
+        var actor = await _context.ChatActors
+            .Where(a => a.UserId == userId)
+            .Select(a => new { a.Id })
+            .FirstOrDefaultAsync();
+
+        return actor?.Id;
+    }
+
+    #endregion
 }

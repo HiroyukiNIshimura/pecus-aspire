@@ -20,16 +20,19 @@ interface ChatMessageReceivedPayload {
   roomType: string;
   message: {
     id: number;
-    senderUserId: number;
+    senderActorId: number;
     messageType: string;
     content: string;
     replyToMessageId?: number;
     createdAt: string;
     sender?: {
       id: number;
-      username: string;
-      email: string;
+      actorType: string;
+      userId?: number | null;
+      botId?: number | null;
+      displayName: string;
       avatarType?: string;
+      avatarUrl?: string;
       identityIconUrl?: string;
       isActive: boolean;
     };
@@ -230,14 +233,24 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         return;
       }
       // 自分が送信したメッセージは既にローカルで追加済みなのでスキップ
-      if (payload.message.senderUserId === currentUserId) {
+      // バックエンドは sender.userId を送信するので、それと比較
+      if (payload.message.sender?.userId === currentUserId) {
         return;
       }
       // 新しいメッセージを追加
       const newMessage: ChatMessageItem = {
         id: payload.message.id,
-        senderUserId: payload.message.senderUserId,
-        sender: payload.message.sender,
+        senderUserId: payload.message.sender?.userId,
+        sender: payload.message.sender
+          ? {
+              id: payload.message.sender.id,
+              username: payload.message.sender.displayName,
+              email: '',
+              avatarType: payload.message.sender.avatarType,
+              identityIconUrl: payload.message.sender.identityIconUrl,
+              isActive: payload.message.sender.isActive,
+            }
+          : undefined,
         messageType: payload.message.messageType as ChatMessageItem['messageType'],
         content: payload.message.content,
         replyToMessageId: payload.message.replyToMessageId,
@@ -248,11 +261,13 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
       updateReadPosition(roomId, undefined, payload.message.id);
 
       // メッセージを受信したら、その送信者の入力中表示を消す
-      const existingUser = typingUsersRef.current.get(payload.message.senderUserId);
-      if (existingUser) {
-        clearTimeout(existingUser.timeoutId);
-        typingUsersRef.current.delete(payload.message.senderUserId);
-        setTypingUsers(Array.from(typingUsersRef.current.values()));
+      if (payload.message.sender?.userId) {
+        const existingUser = typingUsersRef.current.get(payload.message.sender.userId);
+        if (existingUser) {
+          clearTimeout(existingUser.timeoutId);
+          typingUsersRef.current.delete(payload.message.sender.userId);
+          setTypingUsers(Array.from(typingUsersRef.current.values()));
+        }
       }
     },
     [roomId, currentUserId],

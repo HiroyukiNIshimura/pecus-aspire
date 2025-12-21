@@ -61,6 +61,22 @@ export async function createOrGetDmRoom(targetUserId: number): Promise<ApiRespon
 }
 
 /**
+ * Server Action: AI ルームを作成または取得
+ * 既存の AI ルームがあればそれを返し、なければ新規作成
+ */
+export async function createOrGetAiRoom(): Promise<ApiResponse<ChatRoomDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.chat.postApiChatRoomsAi();
+    return { success: true, data: response };
+  } catch (error) {
+    const errorDetail = parseErrorResponse(error);
+    console.error('createOrGetAiRoom error:', errorDetail);
+    return serverError(errorDetail.message || 'AIルームの作成に失敗しました');
+  }
+}
+
+/**
  * Server Action: カテゴリ別未読数を取得
  */
 export async function getChatUnreadCounts(): Promise<ApiResponse<ChatUnreadCountByCategoryResponse>> {

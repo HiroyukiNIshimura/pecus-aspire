@@ -514,9 +514,16 @@ public class ChatController : BaseSecureController
             throw new NotFoundException("このルームのメンバーではありません。");
         }
 
+        // ユーザーの ChatActor ID を取得
+        var senderActorId = await _chatRoomService.GetUserActorIdAsync(CurrentUserId);
+        if (senderActorId == null)
+        {
+            throw new NotFoundException("チャットアクターが見つかりません。");
+        }
+
         var message = await _chatMessageService.SendMessageAsync(
             roomId,
-            CurrentUserId,
+            senderActorId.Value,
             request.Content,
             request.MessageType ?? ChatMessageType.Text,
             request.ReplyToMessageId
@@ -530,7 +537,8 @@ public class ChatController : BaseSecureController
                 x.GenerateAndSendReplyAsync(
                     CurrentUser.OrganizationId.Value,
                     roomId,
-                    message.Id
+                    message.Id,
+                    CurrentUserId
                 )
             );
 

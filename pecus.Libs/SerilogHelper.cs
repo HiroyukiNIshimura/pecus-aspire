@@ -15,7 +15,7 @@ public static class SerilogHelper
     public static void CreateLogger(string applicationName)
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
+            .MinimumLevel.Debug()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             //.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
             //.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Debug)

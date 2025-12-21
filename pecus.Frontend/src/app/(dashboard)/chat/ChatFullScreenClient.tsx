@@ -2,7 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createOrGetDmRoom, getChatRooms, getChatUnreadCounts, getDmCandidateUsers, searchUsers } from '@/actions/chat';
+import {
+  createOrGetAiRoom,
+  createOrGetDmRoom,
+  getChatRooms,
+  getChatUnreadCounts,
+  getDmCandidateUsers,
+  searchUsers,
+} from '@/actions/chat';
 import type { ChatRoomItem, DmCandidateUserItem, UserSearchResultResponse } from '@/connectors/api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSignalREvent } from '@/hooks/useSignalR';
@@ -162,6 +169,7 @@ function ChatRoomListMobile({
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [startingDm, setStartingDm] = useState<number | null>(null);
+  const [startingAi, setStartingAi] = useState(false);
 
   // DM候補ユーザーを取得
   const fetchDmCandidates = useCallback(async () => {
@@ -205,6 +213,21 @@ function ChatRoomListMobile({
   const handleSearchDmStart = async (userId: number) => {
     setIsSearchModalOpen(false);
     await handleStartDm(userId);
+  };
+
+  // AIアシスタントとのチャットを開始
+  const handleStartAiChat = async () => {
+    setStartingAi(true);
+    try {
+      const result = await createOrGetAiRoom();
+      if (result.success) {
+        selectRoom(result.data.id);
+        onRoomCreated?.();
+        router.push(`/chat/rooms/${result.data.id}`);
+      }
+    } finally {
+      setStartingAi(false);
+    }
   };
 
   // タブに応じたルームをフィルタリング
@@ -273,8 +296,30 @@ function ChatRoomListMobile({
         {/* DMタブ: 他のメンバーセクション */}
         {activeTab === 'dm' && (
           <>
-            {filteredRooms.length === 0 && dmCandidates.length === 0 && !candidatesLoading && (
-              <div className="flex items-center justify-center h-32 text-base-content/50">DMはありません</div>
+            {filteredRooms.length === 0 &&
+              dmCandidates.length === 0 &&
+              !candidatesLoading &&
+              !rooms.some((r) => r.type === 'Ai') && (
+                <div className="flex items-center justify-center h-32 text-base-content/50">DMはありません</div>
+              )}
+
+            {/* AI アシスタントボタン（AI ルームが無い場合のみ表示） */}
+            {!rooms.some((r) => r.type === 'Ai') && (
+              <div className="p-3 border-b border-base-300">
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm w-full"
+                  onClick={handleStartAiChat}
+                  disabled={startingAi}
+                >
+                  {startingAi ? (
+                    <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                    <span className="icon-[tabler--robot] size-4" aria-hidden="true" />
+                  )}
+                  AI アシスタントと話す
+                </button>
+              </div>
             )}
 
             {/* セパレーター */}
