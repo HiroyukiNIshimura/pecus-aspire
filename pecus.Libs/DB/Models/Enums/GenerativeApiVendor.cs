@@ -16,22 +16,17 @@ public enum GenerativeApiVendor
     OpenAi = 1,
 
     /// <summary>
-    /// Azure OpenAI Service
-    /// </summary>
-    AzureOpenAi = 2,
-
-    /// <summary>
     /// Anthropic Claude
     /// </summary>
-    Anthropic = 3,
+    Anthropic = 2,
 
     /// <summary>
     /// Google Gemini API
     /// </summary>
-    GoogleGemini = 4,
+    GoogleGemini = 3,
 
     /// <summary>
     /// DeepSeek API
     /// </summary>
-    DeepSeek = 5
+    DeepSeek = 4
 }

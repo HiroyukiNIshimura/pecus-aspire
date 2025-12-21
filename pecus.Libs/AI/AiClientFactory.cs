@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.AI.Configuration;
+using Pecus.Libs.AI.Provider.Anthropic;
 using Pecus.Libs.AI.Provider.DeepSeek;
 using Pecus.Libs.AI.Provider.Default;
 using Pecus.Libs.AI.Provider.Gemini;
@@ -16,6 +17,7 @@ public class AiClientFactory : IAiClientFactory
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IOptions<OpenAISettings> _openAiSettings;
+    private readonly IOptions<AnthropicSettings> _anthropicSettings;
     private readonly IOptions<GeminiSettings> _geminiSettings;
     private readonly IOptions<DeepSeekSettings> _deepSeekSettings;
     private readonly ILoggerFactory _loggerFactory;
@@ -27,6 +29,7 @@ public class AiClientFactory : IAiClientFactory
     public AiClientFactory(
         IHttpClientFactory httpClientFactory,
         IOptions<OpenAISettings> openAiSettings,
+        IOptions<AnthropicSettings> anthropicSettings,
         IOptions<GeminiSettings> geminiSettings,
         IOptions<DeepSeekSettings> deepSeekSettings,
         ILoggerFactory loggerFactory,
@@ -34,6 +37,7 @@ public class AiClientFactory : IAiClientFactory
     {
         _httpClientFactory = httpClientFactory;
         _openAiSettings = openAiSettings;
+        _anthropicSettings = anthropicSettings;
         _geminiSettings = geminiSettings;
         _deepSeekSettings = deepSeekSettings;
         _loggerFactory = loggerFactory;
@@ -57,6 +61,13 @@ public class AiClientFactory : IAiClientFactory
                 _httpClientFactory,
                 _openAiSettings,
                 _loggerFactory.CreateLogger<OpenAIClient>(),
+                apiKey,
+                model),
+
+            GenerativeApiVendor.Anthropic => new AnthropicClient(
+                _httpClientFactory,
+                _anthropicSettings,
+                _loggerFactory.CreateLogger<AnthropicClient>(),
                 apiKey,
                 model),
 

@@ -371,6 +371,7 @@ builder.Services.AddHttpLogging(logging =>
 
 // AI クライアントの登録（APIキーが設定されているプロバイダーのみ有効化）
 builder.Services.AddOpenAIClient(builder.Configuration);
+builder.Services.AddAnthropicClient(builder.Configuration);
 builder.Services.AddDeepSeekClient(builder.Configuration);
 builder.Services.AddGeminiClient(builder.Configuration);
 builder.Services.AddDefaultAiClient(builder.Configuration);
