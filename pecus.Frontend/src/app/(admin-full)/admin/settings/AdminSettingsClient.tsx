@@ -31,7 +31,6 @@ const normalizeVendor = (value: unknown): OrganizationSettingResponse['generativ
     switch (value) {
       case 'None':
       case 'OpenAi':
-      case 'AzureOpenAi':
       case 'Anthropic':
       case 'GoogleGemini':
       case 'DeepSeek':
@@ -48,12 +47,10 @@ const normalizeVendor = (value: unknown): OrganizationSettingResponse['generativ
       case 1:
         return 'OpenAi';
       case 2:
-        return 'AzureOpenAi';
-      case 3:
         return 'Anthropic';
-      case 4:
+      case 3:
         return 'GoogleGemini';
-      case 5:
+      case 4:
         return 'DeepSeek';
       default:
         return 'None';
@@ -107,7 +104,6 @@ const weekdayOptions: { value: number; label: string }[] = [
 const generativeOptions: { value: OrganizationSettingResponse['generativeApiVendor']; label: string }[] = [
   { value: 'None', label: '未設定' },
   { value: 'OpenAi', label: 'OpenAI' },
-  { value: 'AzureOpenAi', label: 'Azure OpenAI' },
   { value: 'Anthropic', label: 'Anthropic' },
   { value: 'GoogleGemini', label: 'Google Gemini' },
   { value: 'DeepSeek', label: 'DeepSeek' },

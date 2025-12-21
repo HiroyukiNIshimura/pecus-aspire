@@ -13520,7 +13520,6 @@
         "enum": [
           "None",
           "OpenAi",
-          "AzureOpenAi",
           "Anthropic",
           "GoogleGemini",
           "DeepSeek"
