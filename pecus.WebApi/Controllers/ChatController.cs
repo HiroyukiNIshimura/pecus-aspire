@@ -1,8 +1,10 @@
+using Hangfire;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -18,12 +20,14 @@ public class ChatController : BaseSecureController
     private readonly ChatRoomService _chatRoomService;
     private readonly ChatMessageService _chatMessageService;
     private readonly OrganizationService _organizationService;
+    private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<ChatController> _logger;
 
     public ChatController(
         ChatRoomService chatRoomService,
         ChatMessageService chatMessageService,
         OrganizationService organizationService,
+        IBackgroundJobClient backgroundJobClient,
         ProfileService profileService,
         ILogger<ChatController> logger
     )
@@ -32,6 +36,7 @@ public class ChatController : BaseSecureController
         _chatRoomService = chatRoomService;
         _chatMessageService = chatMessageService;
         _organizationService = organizationService;
+        _backgroundJobClient = backgroundJobClient;
         _logger = logger;
     }
 
@@ -516,6 +521,25 @@ public class ChatController : BaseSecureController
             request.MessageType ?? ChatMessageType.Text,
             request.ReplyToMessageId
         );
+
+        // AI ルームへのメッセージの場合、AI 返信タスクをキュー
+        var room = await _chatRoomService.GetRoomByIdAsync(roomId);
+        if (room?.Type == ChatRoomType.Ai && CurrentUser?.OrganizationId != null)
+        {
+            _backgroundJobClient.Enqueue<AiChatReplyTask>(x =>
+                x.GenerateAndSendReplyAsync(
+                    CurrentUser.OrganizationId.Value,
+                    roomId,
+                    message.Id
+                )
+            );
+
+            _logger.LogDebug(
+                "Enqueued AI chat reply task: RoomId={RoomId}, MessageId={MessageId}",
+                roomId,
+                message.Id
+            );
+        }
 
         var response = MapToMessageItem(message);
 

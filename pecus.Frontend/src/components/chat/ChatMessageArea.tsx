@@ -52,10 +52,33 @@ interface ChatMessageReadPayload {
   readMessageId?: number | null;
 }
 
+/** SignalR chat:bot_typing イベントのペイロード型 */
+interface ChatBotTypingPayload {
+  roomId: number;
+  botActorId: number;
+  botName: string;
+  isTyping: boolean;
+}
+
+/** SignalR chat:bot_error イベントのペイロード型 */
+interface ChatBotErrorPayload {
+  roomId: number;
+  botActorId: number;
+  botName: string;
+  errorMessage: string;
+}
+
 /** 入力中ユーザー情報 */
 interface TypingUser {
   userId: number;
   userName: string;
+  timeoutId: NodeJS.Timeout;
+}
+
+/** Bot の入力中情報 */
+interface BotTypingState {
+  botActorId: number;
+  botName: string;
   timeoutId: NodeJS.Timeout;
 }
 
@@ -79,6 +102,13 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const typingUsersRef = useRef<Map<number, TypingUser>>(new Map());
 
+  // Bot 入力中状態管理
+  const [botTyping, setBotTyping] = useState<{ botName: string } | null>(null);
+  const botTypingRef = useRef<BotTypingState | null>(null);
+
+  // Bot エラー状態管理
+  const [botError, setBotError] = useState<string | null>(null);
+
   // 既読状態管理（DM用）: 相手が読んだ最新のメッセージID
   const [lastReadMessageId, setLastReadMessageId] = useState<number | null>(null);
 
@@ -92,6 +122,11 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         clearTimeout(user.timeoutId);
       }
       typingUsersRef.current.clear();
+      // Bot 入力中タイムアウトもクリア
+      if (botTypingRef.current) {
+        clearTimeout(botTypingRef.current.timeoutId);
+        botTypingRef.current = null;
+      }
     };
   }, [roomId, joinChat, leaveChat]);
 
@@ -176,6 +211,13 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
     }
     typingUsersRef.current.clear();
     setLastReadMessageId(null);
+    // Bot 入力中状態をリセット
+    if (botTypingRef.current) {
+      clearTimeout(botTypingRef.current.timeoutId);
+      botTypingRef.current = null;
+    }
+    setBotTyping(null);
+    setBotError(null);
 
     fetchRoomAndMessages();
   }, [fetchRoomAndMessages]);
@@ -292,6 +334,78 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
 
   useSignalREvent<ChatMessageReadPayload>('chat:message_read', handleMessageRead);
 
+  // SignalR: Bot 入力中通知
+  const handleBotTyping = useCallback(
+    (payload: ChatBotTypingPayload) => {
+      // 現在開いているルームのみ処理
+      if (payload.roomId !== roomId) {
+        return;
+      }
+
+      // エラー状態をクリア（新しい入力が始まった場合）
+      if (payload.isTyping) {
+        setBotError(null);
+      }
+
+      if (payload.isTyping) {
+        // 入力開始
+        if (botTypingRef.current) {
+          // 既存のタイムアウトをクリア
+          clearTimeout(botTypingRef.current.timeoutId);
+        }
+
+        // 60秒後に自動的に入力終了とみなす（タイムアウト対策）
+        const timeoutId = setTimeout(() => {
+          botTypingRef.current = null;
+          setBotTyping(null);
+        }, 60000);
+
+        botTypingRef.current = {
+          botActorId: payload.botActorId,
+          botName: payload.botName,
+          timeoutId,
+        };
+        setBotTyping({ botName: payload.botName });
+      } else {
+        // 入力終了
+        if (botTypingRef.current) {
+          clearTimeout(botTypingRef.current.timeoutId);
+          botTypingRef.current = null;
+        }
+        setBotTyping(null);
+      }
+    },
+    [roomId],
+  );
+
+  useSignalREvent<ChatBotTypingPayload>('chat:bot_typing', handleBotTyping);
+
+  // SignalR: Bot エラー通知
+  const handleBotError = useCallback(
+    (payload: ChatBotErrorPayload) => {
+      // 現在開いているルームのみ処理
+      if (payload.roomId !== roomId) {
+        return;
+      }
+
+      // 入力中状態をクリア
+      if (botTypingRef.current) {
+        clearTimeout(botTypingRef.current.timeoutId);
+        botTypingRef.current = null;
+      }
+      setBotTyping(null);
+
+      // エラーメッセージを設定（数秒後に自動クリア）
+      setBotError(payload.errorMessage);
+      setTimeout(() => {
+        setBotError(null);
+      }, 5000);
+    },
+    [roomId],
+  );
+
+  useSignalREvent<ChatBotErrorPayload>('chat:bot_error', handleBotError);
+
   // ルーム名を取得
   const getRoomName = () => {
     if (!room) return 'ルーム';
@@ -330,7 +444,15 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
       />
 
       {/* 入力中インジケーター */}
-      <ChatTypingIndicator typingUsers={typingUsers} />
+      <ChatTypingIndicator typingUsers={typingUsers} botTyping={botTyping} />
+
+      {/* Bot エラー表示 */}
+      {botError && (
+        <div className="flex items-center gap-2 px-4 py-2 text-sm text-error bg-error/10">
+          <span className="icon-[tabler--alert-circle] size-4" />
+          <span>{botError}</span>
+        </div>
+      )}
 
       {/* 入力欄 */}
       <ChatMessageInput onSend={handleSend} onTyping={handleTyping} disabled={sending} />

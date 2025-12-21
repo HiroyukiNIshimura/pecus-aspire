@@ -147,4 +147,66 @@ public class SignalRNotificationPublisher
 
         return await PublishAsync(notification);
     }
+
+    /// <summary>
+    /// ChatBot の入力中通知を送信する。
+    /// AI が応答を生成中であることをクライアントに通知。
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="roomId">チャットルームID</param>
+    /// <param name="botActorId">Bot のアクターID</param>
+    /// <param name="botName">Bot 名</param>
+    /// <param name="isTyping">入力中かどうか</param>
+    public async Task<long> PublishChatBotTypingAsync(
+        int organizationId,
+        int roomId,
+        int botActorId,
+        string botName,
+        bool isTyping)
+    {
+        var payload = new
+        {
+            RoomId = roomId,
+            BotActorId = botActorId,
+            BotName = botName,
+            IsTyping = isTyping,
+        };
+
+        return await PublishChatBotNotificationAsync(
+            organizationId,
+            roomId,
+            "chat:bot_typing",
+            payload);
+    }
+
+    /// <summary>
+    /// ChatBot のエラー通知を送信する。
+    /// AI 応答生成に失敗した場合にクライアントに通知。
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="roomId">チャットルームID</param>
+    /// <param name="botActorId">Bot のアクターID</param>
+    /// <param name="botName">Bot 名</param>
+    /// <param name="errorMessage">エラーメッセージ</param>
+    public async Task<long> PublishChatBotErrorAsync(
+        int organizationId,
+        int roomId,
+        int botActorId,
+        string botName,
+        string errorMessage)
+    {
+        var payload = new
+        {
+            RoomId = roomId,
+            BotActorId = botActorId,
+            BotName = botName,
+            ErrorMessage = errorMessage,
+        };
+
+        return await PublishChatBotNotificationAsync(
+            organizationId,
+            roomId,
+            "chat:bot_error",
+            payload);
+    }
 }
