@@ -534,7 +534,7 @@ public class ChatController : BaseSecureController
         if (room?.Type == ChatRoomType.Ai && CurrentUser?.OrganizationId != null)
         {
             _backgroundJobClient.Enqueue<AiChatReplyTask>(x =>
-                x.GenerateAndSendReplyAsync(
+                x.SendReplyAsync(
                     CurrentUser.OrganizationId.Value,
                     roomId,
                     message.Id,

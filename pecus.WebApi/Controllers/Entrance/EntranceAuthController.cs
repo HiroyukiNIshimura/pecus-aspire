@@ -185,7 +185,7 @@ public class EntranceAuthController : ControllerBase
         {
             var orgId = user.OrganizationId.Value;
             _backgroundJobClient.Enqueue<FirstTouchdownTask>(x =>
-                x.SendLoginWelcomeMessageAsync(
+                x.WelcomeMessageAsync(
                     orgId,
                     user.Id,
                     user.Username

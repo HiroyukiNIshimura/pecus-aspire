@@ -35,7 +35,7 @@ public class FirstTouchdownTask
     /// <param name="organizationId">組織ID</param>
     /// <param name="userId">ユーザーID</param>
     /// <param name="username">ユーザー名</param>
-    public async Task SendLoginWelcomeMessageAsync(int organizationId, int userId, string username)
+    public async Task WelcomeMessageAsync(int organizationId, int userId, string username)
     {
         _logger.LogInformation(
             "ChatBotTasks.SendLoginWelcomeMessageAsync started: OrganizationId={OrganizationId}, UserId={UserId}",

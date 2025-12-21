@@ -57,7 +57,7 @@ public class AiChatReplyTask
     /// <param name="roomId">チャットルームID</param>
     /// <param name="triggerMessageId">トリガーとなったユーザーメッセージID</param>
     /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
-    public async Task GenerateAndSendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
+    public async Task SendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
         _logger.LogDebug(
             "AiChatReplyTask started: OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}, SenderUserId={SenderUserId}",
