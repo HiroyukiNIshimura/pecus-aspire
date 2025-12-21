@@ -82,6 +82,7 @@ public class AdminOrganizationController : BaseAdminController
                 MailFromName = organization.Setting?.MailFromName,
                 GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
                 GenerativeApiKey = organization.Setting?.GenerativeApiKey,
+                GenerativeApiModel = organization.Setting?.GenerativeApiModel,
                 Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
                 HelpNotificationTarget = organization.Setting?.HelpNotificationTarget,
                 RequireEstimateOnTaskCreation = organization.Setting?.RequireEstimateOnTaskCreation ?? false,
@@ -145,6 +146,7 @@ public class AdminOrganizationController : BaseAdminController
                 MailFromName = organization.Setting?.MailFromName,
                 GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
                 GenerativeApiKey = organization.Setting?.GenerativeApiKey,
+                GenerativeApiModel = organization.Setting?.GenerativeApiModel,
                 Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
                 HelpNotificationTarget = organization.Setting?.HelpNotificationTarget,
                 RequireEstimateOnTaskCreation = organization.Setting?.RequireEstimateOnTaskCreation ?? false,
@@ -194,12 +196,13 @@ public class AdminOrganizationController : BaseAdminController
     /// <remarks>
     /// APIキーとベンダーを指定して、そのベンダーで利用可能なモデル一覧を取得します。
     /// モデル選択UIで使用します。
+    /// 外部API呼び出し時のエラー（認証エラー等）はレスポンスのSuccess=falseとErrorMessageで返します。
     /// </remarks>
     [HttpPost("available-models")]
-    [ProducesResponseType(typeof(IReadOnlyList<AvailableModelResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetAvailableModelsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<IReadOnlyList<AvailableModelResponse>>> GetAvailableModels(
+    public async Task<Ok<GetAvailableModelsResponse>> GetAvailableModels(
         [FromBody] GetAvailableModelsRequest request,
         CancellationToken cancellationToken
     )
@@ -215,15 +218,53 @@ public class AdminOrganizationController : BaseAdminController
             throw new BadRequestException("指定されたベンダーのクライアントを作成できませんでした。");
         }
 
-        var models = await client.GetAvailableModelsAsync(request.ApiKey, cancellationToken);
-
-        var response = models.Select(m => new AvailableModelResponse
+        try
         {
-            Id = m.Id,
-            Name = m.Name,
-            Description = m.Description
-        }).ToList();
+            var models = await client.GetAvailableModelsAsync(request.ApiKey, cancellationToken);
 
-        return TypedResults.Ok<IReadOnlyList<AvailableModelResponse>>(response);
+            var modelResponses = models.Select(m => new AvailableModelResponse
+            {
+                Id = m.Id,
+                Name = m.Name,
+                Description = m.Description
+            }).ToList();
+
+            return TypedResults.Ok(new GetAvailableModelsResponse
+            {
+                Success = true,
+                Models = modelResponses
+            });
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "外部AI API呼び出しエラー: Vendor={Vendor}", request.Vendor);
+
+            var errorMessage = ex.StatusCode switch
+            {
+                System.Net.HttpStatusCode.Unauthorized => "APIキーが無効です。正しいAPIキーを入力してください。",
+                System.Net.HttpStatusCode.Forbidden => "APIキーに必要な権限がありません。",
+                System.Net.HttpStatusCode.TooManyRequests => "リクエスト制限に達しました。しばらく待ってから再試行してください。",
+                System.Net.HttpStatusCode.ServiceUnavailable => "AIサービスが一時的に利用できません。",
+                _ => "AIサービスへの接続に失敗しました。"
+            };
+
+            return TypedResults.Ok(new GetAvailableModelsResponse
+            {
+                Success = false,
+                ErrorMessage = errorMessage,
+                ErrorDetail = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "予期しないエラー: Vendor={Vendor}", request.Vendor);
+
+            return TypedResults.Ok(new GetAvailableModelsResponse
+            {
+                Success = false,
+                ErrorMessage = "モデル一覧の取得中にエラーが発生しました。",
+                ErrorDetail = ex.Message
+            });
+        }
     }
 }

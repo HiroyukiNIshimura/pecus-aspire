@@ -381,6 +381,9 @@ public class OrganizationService
         setting.MailFromName = request.MailFromName;
         setting.GenerativeApiVendor = request.GenerativeApiVendor;
         setting.GenerativeApiKey = normalizedApiKey;
+        setting.GenerativeApiModel = request.GenerativeApiVendor == GenerativeApiVendor.None
+            ? null
+            : request.GenerativeApiModel;
         setting.Plan = request.Plan;
         setting.HelpNotificationTarget = request.HelpNotificationTarget;
         setting.RequireEstimateOnTaskCreation = request.RequireEstimateOnTaskCreation;
@@ -407,6 +410,7 @@ public class OrganizationService
             MailFromName = setting.MailFromName,
             GenerativeApiVendor = setting.GenerativeApiVendor,
             GenerativeApiKey = setting.GenerativeApiKey,
+            GenerativeApiModel = setting.GenerativeApiModel,
             Plan = setting.Plan,
             HelpNotificationTarget = setting.HelpNotificationTarget,
             RequireEstimateOnTaskCreation = setting.RequireEstimateOnTaskCreation,

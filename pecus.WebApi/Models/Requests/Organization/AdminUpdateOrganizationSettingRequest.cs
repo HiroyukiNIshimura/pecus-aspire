@@ -48,6 +48,12 @@ public class AdminUpdateOrganizationSettingRequest
     public string? GenerativeApiKey { get; set; }
 
     /// <summary>
+    /// 利用する生成AIモデル（例: gpt-4o, gemini-1.5-pro）
+    /// </summary>
+    [MaxLength(100, ErrorMessage = "生成AIモデルは100文字以内で入力してください。")]
+    public string? GenerativeApiModel { get; set; }
+
+    /// <summary>
     /// 利用プラン
     /// </summary>
     [Required(ErrorMessage = "プランは必須です。")]

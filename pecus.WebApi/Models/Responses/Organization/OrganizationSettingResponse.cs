@@ -46,6 +46,11 @@ public class OrganizationSettingResponse : IConflictModel
     public string? GenerativeApiKey { get; set; }
 
     /// <summary>
+    /// 利用する生成AIモデル（例: gpt-4o, gemini-1.5-pro）
+    /// </summary>
+    public string? GenerativeApiModel { get; set; }
+
+    /// <summary>
     /// 利用プラン
     /// </summary>
     [Required]
