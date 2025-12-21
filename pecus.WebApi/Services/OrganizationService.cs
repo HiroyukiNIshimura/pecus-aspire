@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
+using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -131,7 +132,54 @@ public class OrganizationService
             _context.ChatActors.Add(adminChatActor);
             await _context.SaveChangesAsync();
 
-            // グループチャットルームを作成
+            // Chat ボットを作成
+            var chatBot = new Bot
+            {
+                OrganizationId = organization.Id,
+                Type = BotType.ChatBot,
+                Name = "Coati Bot",
+                IconUrl = "/icons/bot/chat.webp",
+                Persona = BotPersonaHelper.GetChatBotPersona(),
+            };
+            _context.Bots.Add(chatBot);
+            await _context.SaveChangesAsync();
+
+            // Chat ボット用 ChatActor を作成
+            var chatBotActor = new ChatActor
+            {
+                OrganizationId = organization.Id,
+                ActorType = ChatActorType.Bot,
+                BotId = chatBot.Id,
+                DisplayName = chatBot.Name,
+                AvatarUrl = chatBot.IconUrl,
+            };
+            _context.ChatActors.Add(chatBotActor);
+
+            // System ボットを作成
+            var systemBot = new Bot
+            {
+                OrganizationId = organization.Id,
+                Type = BotType.SystemBot,
+                Name = "System Bot",
+                IconUrl = "/icons/bot/system.webp",
+                Persona = BotPersonaHelper.GetSystemBotPersona(),
+            };
+            _context.Bots.Add(systemBot);
+            await _context.SaveChangesAsync();
+
+            // System ボット用 ChatActor を作成
+            var systemBotActor = new ChatActor
+            {
+                OrganizationId = organization.Id,
+                ActorType = ChatActorType.Bot,
+                BotId = systemBot.Id,
+                DisplayName = systemBot.Name,
+                AvatarUrl = systemBot.IconUrl,
+            };
+            _context.ChatActors.Add(systemBotActor);
+            await _context.SaveChangesAsync();
+
+            // グループチャットルームを作成（管理者 + Coati Bot）
             var groupRoom = new ChatRoom
             {
                 Type = ChatRoomType.Group,
@@ -141,11 +189,12 @@ public class OrganizationService
                 Members = new List<ChatRoomMember>
                 {
                     new() { ChatActorId = adminChatActor.Id, Role = ChatRoomRole.Owner },
+                    new() { ChatActorId = chatBotActor.Id, Role = ChatRoomRole.Member },
                 },
             };
             _context.ChatRooms.Add(groupRoom);
 
-            // システム通知ルームを作成
+            // システム通知ルームを作成（管理者 + System Bot）
             var systemRoom = new ChatRoom
             {
                 Type = ChatRoomType.System,
@@ -155,6 +204,7 @@ public class OrganizationService
                 Members = new List<ChatRoomMember>
                 {
                     new() { ChatActorId = adminChatActor.Id, Role = ChatRoomRole.Owner },
+                    new() { ChatActorId = systemBotActor.Id, Role = ChatRoomRole.Member },
                 },
             };
             _context.ChatRooms.Add(systemRoom);

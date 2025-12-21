@@ -195,10 +195,38 @@ public class ChatRoomService
         // ワークスペースのメンバーを取得
         var workspaceUserIds = workspace.WorkspaceUsers.Select(wu => wu.UserId).ToList();
 
-        // ChatActor を取得
-        var actors = await _context
+        // ユーザーの ChatActor を取得
+        var userActors = await _context
             .ChatActors.Where(a => a.UserId != null && workspaceUserIds.Contains(a.UserId.Value))
             .ToListAsync();
+
+        // Coati Bot の ChatActor を取得
+        var chatBotActor = await _context
+            .ChatActors.Include(a => a.Bot)
+            .FirstOrDefaultAsync(a =>
+                a.OrganizationId == workspace.OrganizationId
+                && a.BotId != null
+                && a.Bot!.Type == BotType.ChatBot
+            );
+
+        // メンバーリストを作成
+        var members = userActors
+            .Select(actor => new ChatRoomMember
+            {
+                ChatActorId = actor.Id,
+                Role = actor.UserId == createdByUserId ? ChatRoomRole.Owner : ChatRoomRole.Member,
+            })
+            .ToList();
+
+        // Coati Bot を追加
+        if (chatBotActor != null)
+        {
+            members.Add(new ChatRoomMember
+            {
+                ChatActorId = chatBotActor.Id,
+                Role = ChatRoomRole.Member,
+            });
+        }
 
         // 新規作成
         var room = new ChatRoom
@@ -208,13 +236,7 @@ public class ChatRoomService
             OrganizationId = workspace.OrganizationId,
             WorkspaceId = workspaceId,
             CreatedByUserId = createdByUserId,
-            Members = actors
-                .Select(actor => new ChatRoomMember
-                {
-                    ChatActorId = actor.Id,
-                    Role = actor.UserId == createdByUserId ? ChatRoomRole.Owner : ChatRoomRole.Member,
-                })
-                .ToList(),
+            Members = members,
         };
 
         _context.ChatRooms.Add(room);
@@ -353,6 +375,31 @@ public class ChatRoomService
             return existingRoom;
         }
 
+        // Coati Bot の ChatActor を取得
+        var chatBotActor = await _context
+            .ChatActors.Include(a => a.Bot)
+            .FirstOrDefaultAsync(a =>
+                a.OrganizationId == organizationId
+                && a.BotId != null
+                && a.Bot!.Type == BotType.ChatBot
+            );
+
+        // メンバーリストを作成
+        var members = new List<ChatRoomMember>
+        {
+            new() { ChatActorId = userActor.Id, Role = ChatRoomRole.Owner },
+        };
+
+        // Coati Bot を追加
+        if (chatBotActor != null)
+        {
+            members.Add(new ChatRoomMember
+            {
+                ChatActorId = chatBotActor.Id,
+                Role = ChatRoomRole.Member,
+            });
+        }
+
         // 新規作成
         var room = new ChatRoom
         {
@@ -360,10 +407,7 @@ public class ChatRoomService
             Name = "AI アシスタント",
             OrganizationId = organizationId,
             CreatedByUserId = userId,
-            Members = new List<ChatRoomMember>
-            {
-                new() { ChatActorId = userActor.Id, Role = ChatRoomRole.Owner },
-            },
+            Members = members,
         };
 
         _context.ChatRooms.Add(room);

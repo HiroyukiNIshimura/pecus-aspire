@@ -643,7 +643,7 @@ public class ChatController : BaseSecureController
                 member.ChatActor.AvatarType,
                 member.ChatActor.UserId ?? 0,
                 member.ChatActor.DisplayName,
-                member.ChatActor.User?.Email,
+                member.ChatActor.User?.Email ?? "",
                 member.ChatActor.AvatarUrl
             ),
             Role = member.Role,
@@ -663,7 +663,7 @@ public class ChatController : BaseSecureController
                 actor.AvatarType,
                 actor.UserId ?? 0,
                 actor.DisplayName,
-                actor.User?.Email,
+                actor.User?.Email ?? "",
                 actor.AvatarUrl
             ),
             IsActive = actor.User?.IsActive ?? true,

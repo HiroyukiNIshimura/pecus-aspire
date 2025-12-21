@@ -230,6 +230,7 @@ public class DatabaseSeeder
 
         await SeedOrganizationsAsync();
         await SeedOrganizationSettingsAsync();
+        await SeedBotsAsync();
         await SeedSkillsAsync();
         await SeedTagsAsync();
         await SeedUsersAsync();
@@ -764,6 +765,70 @@ public class DatabaseSeeder
     }
 
     /// <summary>
+    /// ボットのシードデータを投入
+    /// 各組織に ChatBot と SystemBot を作成
+    /// </summary>
+    public async Task SeedBotsAsync()
+    {
+        var organizations = await _context.Organizations.ToListAsync();
+        if (!organizations.Any())
+        {
+            _logger.LogInformation("No organizations found, skipping bot seeding");
+            return;
+        }
+
+        // 既存の Bot を取得して組織ごとに存在チェック
+        var existingBots = await _context.Bots.ToListAsync();
+        var existingBotsByOrg = existingBots
+            .GroupBy(b => b.OrganizationId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var botsToAdd = new List<Bot>();
+
+        foreach (var org in organizations)
+        {
+            var orgBots = existingBotsByOrg.GetValueOrDefault(org.Id, []);
+
+            // ChatBot が存在しなければ作成
+            if (!orgBots.Any(b => b.Type == BotType.ChatBot))
+            {
+                botsToAdd.Add(new Bot
+                {
+                    OrganizationId = org.Id,
+                    Type = BotType.ChatBot,
+                    Name = "Coati Bot",
+                    Persona = null,
+                    IconUrl = null,
+                });
+            }
+
+            // SystemBot が存在しなければ作成
+            if (!orgBots.Any(b => b.Type == BotType.SystemBot))
+            {
+                botsToAdd.Add(new Bot
+                {
+                    OrganizationId = org.Id,
+                    Type = BotType.SystemBot,
+                    Name = "System Bot",
+                    Persona = null,
+                    IconUrl = null,
+                });
+            }
+        }
+
+        if (botsToAdd.Count > 0)
+        {
+            _context.Bots.AddRange(botsToAdd);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} bots", botsToAdd.Count);
+        }
+        else
+        {
+            _logger.LogInformation("All organizations already have bots, skipping");
+        }
+    }
+
+    /// <summary>
     /// 組織設定のシードデータを投入（欠損分を補完）
     /// </summary>
     public async Task SeedOrganizationSettingsAsync()
@@ -950,22 +1015,16 @@ public class DatabaseSeeder
 
     /// <summary>
     /// ChatActor のシードデータを投入
-    /// User に対応する ChatActor を作成（Bot は後で追加可能）
+    /// User と Bot に対応する ChatActor を作成
     /// </summary>
     private async Task SeedChatActorsAsync()
     {
-        // ChatActor が未作成のユーザーを取得
+        var chatActorsToAdd = new List<ChatActor>();
+
+        // 1. ChatActor が未作成のユーザーを取得して作成
         var usersWithoutActor = await _context.Users
             .Where(u => u.OrganizationId != null && !_context.ChatActors.Any(a => a.UserId == u.Id))
             .ToListAsync();
-
-        if (!usersWithoutActor.Any())
-        {
-            _logger.LogInformation("All users already have ChatActors, skipping");
-            return;
-        }
-
-        var chatActorsToAdd = new List<ChatActor>();
 
         foreach (var user in usersWithoutActor)
         {
@@ -980,6 +1039,30 @@ public class DatabaseSeeder
             });
         }
 
+        // 2. ChatActor が未作成のボットを取得して作成
+        var botsWithoutActor = await _context.Bots
+            .Where(b => !_context.ChatActors.Any(a => a.BotId == b.Id))
+            .ToListAsync();
+
+        foreach (var bot in botsWithoutActor)
+        {
+            chatActorsToAdd.Add(new ChatActor
+            {
+                OrganizationId = bot.OrganizationId,
+                ActorType = ChatActorType.Bot,
+                BotId = bot.Id,
+                DisplayName = bot.Name,
+                AvatarType = null,
+                AvatarUrl = bot.IconUrl,
+            });
+        }
+
+        if (!chatActorsToAdd.Any())
+        {
+            _logger.LogInformation("All users and bots already have ChatActors, skipping");
+            return;
+        }
+
         // バッチ保存
         const int batchSize = 500;
         for (int i = 0; i < chatActorsToAdd.Count; i += batchSize)
@@ -989,7 +1072,11 @@ public class DatabaseSeeder
             await _context.SaveChangesAsync();
         }
 
-        _logger.LogInformation("Added {Count} ChatActors for users", chatActorsToAdd.Count);
+        _logger.LogInformation(
+            "Added {UserCount} ChatActors for users, {BotCount} ChatActors for bots",
+            usersWithoutActor.Count,
+            botsWithoutActor.Count
+        );
     }
 
     /// <summary>
@@ -1364,6 +1451,16 @@ public class DatabaseSeeder
             .Where(a => a.UserId != null)
             .ToDictionaryAsync(a => a.UserId!.Value, a => a.Id);
 
+        // BotId → ChatActorId のマッピングを取得
+        var botIdToActorId = await _context.ChatActors
+            .Where(a => a.BotId != null)
+            .ToDictionaryAsync(a => a.BotId!.Value, a => a.Id);
+
+        // 組織ごとの Bot を取得
+        var botsByOrganization = await _context.Bots
+            .GroupBy(b => b.OrganizationId)
+            .ToDictionaryAsync(g => g.Key, g => g.ToList());
+
         var chatRoomsToAdd = new List<ChatRoom>();
         var chatRoomMembersToAdd = new List<ChatRoomMember>();
 
@@ -1430,6 +1527,21 @@ public class DatabaseSeeder
                 });
                 isFirst = false;
             }
+
+            // 組織グループチャットに ChatBot を追加
+            if (botsByOrganization.TryGetValue(org.Id, out var orgBots))
+            {
+                var chatBot = orgBots.FirstOrDefault(b => b.Type == BotType.ChatBot);
+                if (chatBot != null && botIdToActorId.TryGetValue(chatBot.Id, out var chatBotActorId))
+                {
+                    chatRoomMembersToAdd.Add(new ChatRoomMember
+                    {
+                        ChatRoomId = room.Id,
+                        ChatActorId = chatBotActorId,
+                        Role = ChatRoomRole.Member,
+                    });
+                }
+            }
         }
 
         // 2. ワークスペースグループチャットを作成
@@ -1492,6 +1604,21 @@ public class DatabaseSeeder
                     ChatActorId = actorId,
                     Role = role,
                 });
+            }
+
+            // ワークスペースグループチャットに ChatBot を追加
+            if (botsByOrganization.TryGetValue(workspace.OrganizationId, out var orgBots))
+            {
+                var chatBot = orgBots.FirstOrDefault(b => b.Type == BotType.ChatBot);
+                if (chatBot != null && botIdToActorId.TryGetValue(chatBot.Id, out var chatBotActorId))
+                {
+                    chatRoomMembersToAdd.Add(new ChatRoomMember
+                    {
+                        ChatRoomId = room.Id,
+                        ChatActorId = chatBotActorId,
+                        Role = ChatRoomRole.Member,
+                    });
+                }
             }
         }
 
