@@ -175,11 +175,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
 
   // モデル一覧を取得する関数
   const fetchAvailableModels = useCallback(
-    async (
-      vendor: OrganizationSettingResponse['generativeApiVendor'],
-      apiKey: string,
-      currentModel?: string,
-    ) => {
+    async (vendor: OrganizationSettingResponse['generativeApiVendor'], apiKey: string, currentModel?: string) => {
       if (vendor === 'None' || !apiKey) {
         setAvailableModels([]);
         setModelError(null);
