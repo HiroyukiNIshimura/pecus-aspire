@@ -39,4 +39,9 @@ public class OpenAISettings
     /// デフォルトのTemperature（0.0-2.0）
     /// </summary>
     public double DefaultTemperature { get; set; } = 0.7;
+
+    /// <summary>
+    /// モデル一覧取得時のフィルタ：この日付以降に作成されたモデルのみ取得（ISO 8601形式: yyyy-MM-dd）
+    /// </summary>
+    public string ModelCreatedAfter { get; set; } = "2024-01-01";
 }

@@ -311,9 +311,11 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             return [];
         }
 
-        // GPT系モデルのみをフィルタリング
+        // GPT系モデルのみをフィルタリング（設定日付以降に作成されたモデル）
+        var cutoffDate = DateTimeOffset.Parse(_settings.ModelCreatedAfter).ToUnixTimeSeconds();
         var gptModels = result.Data
-            .Where(m => m.Id.StartsWith("gpt-", StringComparison.OrdinalIgnoreCase))
+            .Where(m => m.Id.StartsWith("gpt-", StringComparison.OrdinalIgnoreCase)
+                && m.Created >= cutoffDate)
             .OrderByDescending(m => m.Id)
             .Select(m => new AvailableModel
             {
@@ -348,4 +350,7 @@ internal sealed class ModelData
 
     [System.Text.Json.Serialization.JsonPropertyName("owned_by")]
     public string? OwnedBy { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("created")]
+    public long Created { get; set; }
 }
