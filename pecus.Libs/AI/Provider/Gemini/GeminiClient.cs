@@ -303,4 +303,82 @@ public class GeminiClient : IGeminiClient, IAiClient
             throw new InvalidOperationException($"Failed to parse JSON response: {ex.Message}", ex);
         }
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<AI.Models.AvailableModel>> GetAvailableModelsAsync(
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        using var client = _httpClientFactory.CreateClient(HttpClientName);
+        var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
+        client.BaseAddress = new Uri(baseUrl);
+
+        _logger.LogDebug("Gemini API: Fetching available models");
+
+        // Gemini APIはURLにAPIキーを含める
+        var url = $"models?key={apiKey}";
+
+        var response = await client.GetAsync(url, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError(
+                "Gemini API error fetching models: Status={StatusCode}, Content={Content}",
+                response.StatusCode,
+                errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<GeminiModelsListResponse>(cancellationToken);
+
+        if (result?.Models == null)
+        {
+            _logger.LogWarning("Gemini API returned null or empty models list");
+            return [];
+        }
+
+        // generateContentをサポートするモデルのみをフィルタリング
+        var models = result.Models
+            .Where(m => m.SupportedGenerationMethods?.Contains("generateContent") == true)
+            .OrderByDescending(m => m.Name)
+            .Select(m => new AI.Models.AvailableModel
+            {
+                Id = m.Name.Replace("models/", ""),
+                Name = m.DisplayName ?? m.Name,
+                Description = m.Description ?? $"Google Gemini {m.DisplayName ?? m.Name}"
+            })
+            .ToList();
+
+        _logger.LogDebug("Gemini API: Found {Count} models with generateContent support", models.Count);
+
+        return models;
+    }
+}
+
+/// <summary>
+/// Gemini /models API レスポンス
+/// </summary>
+internal sealed class GeminiModelsListResponse
+{
+    [System.Text.Json.Serialization.JsonPropertyName("models")]
+    public List<GeminiModelData>? Models { get; set; }
+}
+
+/// <summary>
+/// モデルデータ
+/// </summary>
+internal sealed class GeminiModelData
+{
+    [System.Text.Json.Serialization.JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonPropertyName("displayName")]
+    public string? DisplayName { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("supportedGenerationMethods")]
+    public List<string>? SupportedGenerationMethods { get; set; }
 }

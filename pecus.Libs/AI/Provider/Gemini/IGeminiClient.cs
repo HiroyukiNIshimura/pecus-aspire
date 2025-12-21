@@ -1,3 +1,4 @@
+using Pecus.Libs.AI.Models;
 using Pecus.Libs.AI.Models.Gemini;
 
 namespace Pecus.Libs.AI.Provider.Gemini;
@@ -43,5 +44,15 @@ public interface IGeminiClient
         string title,
         string? additionalContext = null,
         string? persona = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 利用可能なモデル一覧を取得
+    /// </summary>
+    /// <param name="apiKey">APIキー</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>利用可能なモデルのリスト</returns>
+    Task<IReadOnlyList<AvailableModel>> GetAvailableModelsAsync(
+        string apiKey,
         CancellationToken cancellationToken = default);
 }

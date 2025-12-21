@@ -82,4 +82,14 @@ public interface IAiClient
         string? additionalContext = null,
         string? persona = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 利用可能なモデル一覧を取得
+    /// </summary>
+    /// <param name="apiKey">APIキー</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>利用可能なモデルのリスト</returns>
+    Task<IReadOnlyList<Models.AvailableModel>> GetAvailableModelsAsync(
+        string apiKey,
+        CancellationToken cancellationToken = default);
 }

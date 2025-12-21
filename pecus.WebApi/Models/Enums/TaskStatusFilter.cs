@@ -25,4 +25,3 @@ public enum TaskStatusFilter
     /// </summary>
     Discarded,
 }
-

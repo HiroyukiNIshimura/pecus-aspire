@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Libs.AI;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Services;
 
@@ -16,17 +17,20 @@ public class AdminOrganizationController : BaseAdminController
 {
     private readonly OrganizationService _organizationService;
     private readonly UserService _userService;
+    private readonly IAiClientFactory _aiClientFactory;
     private readonly ILogger<AdminOrganizationController> _logger;
 
     public AdminOrganizationController(
         OrganizationService organizationService,
         UserService userService,
         ProfileService profileService,
+        IAiClientFactory aiClientFactory,
         ILogger<AdminOrganizationController> logger
     ) : base(profileService, logger)
     {
         _organizationService = organizationService;
         _userService = userService;
+        _aiClientFactory = aiClientFactory;
         _logger = logger;
     }
 
@@ -182,5 +186,44 @@ public class AdminOrganizationController : BaseAdminController
         );
 
         return TypedResults.Ok(setting);
+    }
+
+    /// <summary>
+    /// 指定したAPIキーとベンダーで利用可能なAIモデル一覧を取得
+    /// </summary>
+    /// <remarks>
+    /// APIキーとベンダーを指定して、そのベンダーで利用可能なモデル一覧を取得します。
+    /// モデル選択UIで使用します。
+    /// </remarks>
+    [HttpPost("available-models")]
+    [ProducesResponseType(typeof(IReadOnlyList<AvailableModelResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<IReadOnlyList<AvailableModelResponse>>> GetAvailableModels(
+        [FromBody] GetAvailableModelsRequest request,
+        CancellationToken cancellationToken
+    )
+    {
+        if (request.Vendor == GenerativeApiVendor.None)
+        {
+            throw new BadRequestException("ベンダーを指定してください。");
+        }
+
+        var client = _aiClientFactory.CreateClient(request.Vendor, request.ApiKey);
+        if (client == null)
+        {
+            throw new BadRequestException("指定されたベンダーのクライアントを作成できませんでした。");
+        }
+
+        var models = await client.GetAvailableModelsAsync(request.ApiKey, cancellationToken);
+
+        var response = models.Select(m => new AvailableModelResponse
+        {
+            Id = m.Id,
+            Name = m.Name,
+            Description = m.Description
+        }).ToList();
+
+        return TypedResults.Ok<IReadOnlyList<AvailableModelResponse>>(response);
     }
 }

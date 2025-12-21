@@ -94,4 +94,3 @@ public class DocumentSuggestionService
         return await aiClient.GenerateMarkdownFromTitleAsync(title, additionalContext, persona: null, cancellationToken);
     }
 }
-

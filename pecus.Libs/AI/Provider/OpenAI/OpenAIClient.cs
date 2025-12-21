@@ -277,4 +277,75 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             throw new InvalidOperationException($"Failed to parse JSON response: {ex.Message}", ex);
         }
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<AvailableModel>> GetAvailableModelsAsync(
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        using var client = _httpClientFactory.CreateClient(HttpClientName);
+        var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
+        client.BaseAddress = new Uri(baseUrl);
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+
+        _logger.LogDebug("OpenAI API: Fetching available models");
+
+        var response = await client.GetAsync("models", cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError(
+                "OpenAI API error fetching models: Status={StatusCode}, Content={Content}",
+                response.StatusCode,
+                errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<ModelsListResponse>(cancellationToken);
+
+        if (result?.Data == null)
+        {
+            _logger.LogWarning("OpenAI API returned null or empty models list");
+            return [];
+        }
+
+        // GPT系モデルのみをフィルタリング
+        var gptModels = result.Data
+            .Where(m => m.Id.StartsWith("gpt-", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(m => m.Id)
+            .Select(m => new AvailableModel
+            {
+                Id = m.Id,
+                Name = m.Id,
+                Description = $"OpenAI {m.Id}"
+            })
+            .ToList();
+
+        _logger.LogDebug("OpenAI API: Found {Count} GPT models", gptModels.Count);
+
+        return gptModels;
+    }
+}
+
+/// <summary>
+/// OpenAI /models API レスポンス
+/// </summary>
+internal sealed class ModelsListResponse
+{
+    [System.Text.Json.Serialization.JsonPropertyName("data")]
+    public List<ModelData>? Data { get; set; }
+}
+
+/// <summary>
+/// モデルデータ
+/// </summary>
+internal sealed class ModelData
+{
+    [System.Text.Json.Serialization.JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonPropertyName("owned_by")]
+    public string? OwnedBy { get; set; }
 }

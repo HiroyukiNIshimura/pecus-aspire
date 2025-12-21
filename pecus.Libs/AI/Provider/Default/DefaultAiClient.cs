@@ -253,4 +253,79 @@ public class DefaultAiClient : IDefaultAiClient
             throw new InvalidOperationException($"Failed to parse JSON response: {ex.Message}", ex);
         }
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<AvailableModel>> GetAvailableModelsAsync(
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        // DefaultAiClientではシステム設定のAPIキーを使用するため、
+        // 外部から指定されたapiKeyは使用しない
+        // システムデフォルトで利用可能なモデルを返す
+
+        using var client = _httpClientFactory.CreateClient(HttpClientName);
+        var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
+        client.BaseAddress = new Uri(baseUrl);
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _settings.ApiKey);
+
+        _logger.LogDebug("Default AI (DeepSeek) API: Fetching available models");
+
+        var response = await client.GetAsync("models", cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError(
+                "Default AI (DeepSeek) API error fetching models: Status={StatusCode}, Content={Content}",
+                response.StatusCode,
+                errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<DefaultModelsListResponse>(cancellationToken);
+
+        if (result?.Data == null)
+        {
+            _logger.LogWarning("Default AI (DeepSeek) API returned null or empty models list");
+            return [];
+        }
+
+        // deepseek系モデルのみをフィルタリング
+        var models = result.Data
+            .Where(m => m.Id.StartsWith("deepseek-", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(m => m.Id)
+            .Select(m => new AvailableModel
+            {
+                Id = m.Id,
+                Name = m.Id,
+                Description = $"DeepSeek {m.Id}"
+            })
+            .ToList();
+
+        _logger.LogDebug("Default AI (DeepSeek) API: Found {Count} models", models.Count);
+
+        return models;
+    }
+}
+
+/// <summary>
+/// /models API レスポンス
+/// </summary>
+internal sealed class DefaultModelsListResponse
+{
+    [System.Text.Json.Serialization.JsonPropertyName("data")]
+    public List<DefaultModelData>? Data { get; set; }
+}
+
+/// <summary>
+/// モデルデータ
+/// </summary>
+internal sealed class DefaultModelData
+{
+    [System.Text.Json.Serialization.JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonPropertyName("owned_by")]
+    public string? OwnedBy { get; set; }
 }

@@ -277,4 +277,75 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
             throw new InvalidOperationException($"Failed to parse JSON response: {ex.Message}", ex);
         }
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<AvailableModel>> GetAvailableModelsAsync(
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        using var client = _httpClientFactory.CreateClient(HttpClientName);
+        var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
+        client.BaseAddress = new Uri(baseUrl);
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+
+        _logger.LogDebug("DeepSeek API: Fetching available models");
+
+        var response = await client.GetAsync("models", cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError(
+                "DeepSeek API error fetching models: Status={StatusCode}, Content={Content}",
+                response.StatusCode,
+                errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<DeepSeekModelsListResponse>(cancellationToken);
+
+        if (result?.Data == null)
+        {
+            _logger.LogWarning("DeepSeek API returned null or empty models list");
+            return [];
+        }
+
+        // deepseek系モデルのみをフィルタリング
+        var models = result.Data
+            .Where(m => m.Id.StartsWith("deepseek-", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(m => m.Id)
+            .Select(m => new AvailableModel
+            {
+                Id = m.Id,
+                Name = m.Id,
+                Description = $"DeepSeek {m.Id}"
+            })
+            .ToList();
+
+        _logger.LogDebug("DeepSeek API: Found {Count} models", models.Count);
+
+        return models;
+    }
+}
+
+/// <summary>
+/// DeepSeek /models API レスポンス
+/// </summary>
+internal sealed class DeepSeekModelsListResponse
+{
+    [System.Text.Json.Serialization.JsonPropertyName("data")]
+    public List<DeepSeekModelData>? Data { get; set; }
+}
+
+/// <summary>
+/// モデルデータ
+/// </summary>
+internal sealed class DeepSeekModelData
+{
+    [System.Text.Json.Serialization.JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonPropertyName("owned_by")]
+    public string? OwnedBy { get; set; }
 }
