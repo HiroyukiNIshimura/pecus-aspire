@@ -63,7 +63,8 @@ public class ChatRoomService
         // 既存のDMルームを検索
         var existingRoom = await _context
             .ChatRooms.Include(r => r.Members)
-            .ThenInclude(m => m.User)
+            .ThenInclude(m => m.ChatActor)
+            .ThenInclude(a => a.User)
             .FirstOrDefaultAsync(r =>
                 r.OrganizationId == organizationId
                 && r.Type == ChatRoomType.Dm
@@ -82,6 +83,20 @@ public class ChatRoomService
             throw new NotFoundException("指定されたユーザーが見つかりません。");
         }
 
+        // ChatActor を取得
+        var actors = await _context
+            .ChatActors.Where(a =>
+                a.UserId != null && new[] { currentUserId, targetUserId }.Contains(a.UserId.Value)
+            )
+            .ToListAsync();
+        var currentUserActor = actors.FirstOrDefault(a => a.UserId == currentUserId);
+        var targetUserActor = actors.FirstOrDefault(a => a.UserId == targetUserId);
+
+        if (currentUserActor == null || targetUserActor == null)
+        {
+            throw new NotFoundException("ユーザーのチャットアクターが見つかりません。");
+        }
+
         // 新規作成
         var room = new ChatRoom
         {
@@ -91,8 +106,8 @@ public class ChatRoomService
             CreatedByUserId = currentUserId,
             Members = new List<ChatRoomMember>
             {
-                new() { UserId = currentUserId, Role = ChatRoomRole.Member },
-                new() { UserId = targetUserId, Role = ChatRoomRole.Member },
+                new() { ChatActorId = currentUserActor.Id, Role = ChatRoomRole.Member },
+                new() { ChatActorId = targetUserActor.Id, Role = ChatRoomRole.Member },
             },
         };
 
@@ -103,7 +118,11 @@ public class ChatRoomService
         await _context.Entry(room).Collection(r => r.Members).LoadAsync();
         foreach (var member in room.Members)
         {
-            await _context.Entry(member).Reference(m => m.User).LoadAsync();
+            await _context.Entry(member).Reference(m => m.ChatActor).LoadAsync();
+            if (member.ChatActor != null)
+            {
+                await _context.Entry(member.ChatActor).Reference(a => a.User).LoadAsync();
+            }
         }
 
         _logger.LogInformation(
@@ -160,7 +179,8 @@ public class ChatRoomService
         // 既存のワークスペースグループルームを検索
         var existingRoom = await _context
             .ChatRooms.Include(r => r.Members)
-            .ThenInclude(m => m.User)
+            .ThenInclude(m => m.ChatActor)
+            .ThenInclude(a => a.User)
             .FirstOrDefaultAsync(r =>
                 r.OrganizationId == workspace.OrganizationId
                 && r.WorkspaceId == workspaceId
@@ -175,6 +195,11 @@ public class ChatRoomService
         // ワークスペースのメンバーを取得
         var workspaceUserIds = workspace.WorkspaceUsers.Select(wu => wu.UserId).ToList();
 
+        // ChatActor を取得
+        var actors = await _context
+            .ChatActors.Where(a => a.UserId != null && workspaceUserIds.Contains(a.UserId.Value))
+            .ToListAsync();
+
         // 新規作成
         var room = new ChatRoom
         {
@@ -183,11 +208,11 @@ public class ChatRoomService
             OrganizationId = workspace.OrganizationId,
             WorkspaceId = workspaceId,
             CreatedByUserId = createdByUserId,
-            Members = workspaceUserIds
-                .Select(userId => new ChatRoomMember
+            Members = actors
+                .Select(actor => new ChatRoomMember
                 {
-                    UserId = userId,
-                    Role = userId == createdByUserId ? ChatRoomRole.Owner : ChatRoomRole.Member,
+                    ChatActorId = actor.Id,
+                    Role = actor.UserId == createdByUserId ? ChatRoomRole.Owner : ChatRoomRole.Member,
                 })
                 .ToList(),
         };
@@ -199,7 +224,11 @@ public class ChatRoomService
         await _context.Entry(room).Collection(r => r.Members).LoadAsync();
         foreach (var member in room.Members)
         {
-            await _context.Entry(member).Reference(m => m.User).LoadAsync();
+            await _context.Entry(member).Reference(m => m.ChatActor).LoadAsync();
+            if (member.ChatActor != null)
+            {
+                await _context.Entry(member.ChatActor).Reference(a => a.User).LoadAsync();
+            }
         }
 
         _logger.LogInformation(
@@ -252,9 +281,14 @@ public class ChatRoomService
         }
 
         // 組織の全ユーザーを取得
-        var organizationUsers = await _context
+        var organizationUserIds = await _context
             .Users.Where(u => u.OrganizationId == organizationId && u.IsActive)
             .Select(u => u.Id)
+            .ToListAsync();
+
+        // ChatActor を取得
+        var actors = await _context
+            .ChatActors.Where(a => a.UserId != null && organizationUserIds.Contains(a.UserId.Value))
             .ToListAsync();
 
         // 新規作成
@@ -264,11 +298,11 @@ public class ChatRoomService
             Name = defaultName,
             OrganizationId = organizationId,
             CreatedByUserId = createdByUserId,
-            Members = organizationUsers
-                .Select(userId => new ChatRoomMember
+            Members = actors
+                .Select(actor => new ChatRoomMember
                 {
-                    UserId = userId,
-                    Role = userId == createdByUserId ? ChatRoomRole.Owner : ChatRoomRole.Member,
+                    ChatActorId = actor.Id,
+                    Role = actor.UserId == createdByUserId ? ChatRoomRole.Owner : ChatRoomRole.Member,
                 })
                 .ToList(),
         };
@@ -298,13 +332,20 @@ public class ChatRoomService
     /// <returns>AI チャットルーム</returns>
     public async Task<ChatRoom> GetOrCreateAiRoomAsync(int userId, int organizationId)
     {
+        // ユーザーの ChatActor を取得
+        var userActor = await _context.ChatActors.FirstOrDefaultAsync(a => a.UserId == userId);
+        if (userActor == null)
+        {
+            throw new NotFoundException("ユーザーのチャットアクターが見つかりません。");
+        }
+
         // 既存の AI ルームを検索
         var existingRoom = await _context
             .ChatRooms.Include(r => r.Members)
             .FirstOrDefaultAsync(r =>
                 r.OrganizationId == organizationId
                 && r.Type == ChatRoomType.Ai
-                && r.Members.Any(m => m.UserId == userId)
+                && r.Members.Any(m => m.ChatActor.UserId == userId)
             );
 
         if (existingRoom != null)
@@ -321,7 +362,7 @@ public class ChatRoomService
             CreatedByUserId = userId,
             Members = new List<ChatRoomMember>
             {
-                new() { UserId = userId, Role = ChatRoomRole.Owner },
+                new() { ChatActorId = userActor.Id, Role = ChatRoomRole.Owner },
             },
         };
 
@@ -350,7 +391,8 @@ public class ChatRoomService
     {
         return await _context
             .ChatRooms.Include(r => r.Members)
-            .ThenInclude(m => m.User)
+            .ThenInclude(m => m.ChatActor)
+            .ThenInclude(a => a.User)
             .FirstOrDefaultAsync(r => r.Id == roomId);
     }
 
@@ -369,9 +411,11 @@ public class ChatRoomService
     {
         var query = _context
             .ChatRooms.Include(r => r.Members)
-            .ThenInclude(m => m.User)
+            .ThenInclude(m => m.ChatActor)
+            .ThenInclude(a => a.User)
             .Where(r =>
-                r.OrganizationId == organizationId && r.Members.Any(m => m.UserId == userId)
+                r.OrganizationId == organizationId
+                && r.Members.Any(m => m.ChatActor.UserId == userId)
             );
 
         if (type.HasValue)
@@ -390,9 +434,9 @@ public class ChatRoomService
     /// <returns>メンバーの場合 true</returns>
     public async Task<bool> IsRoomMemberAsync(int roomId, int userId)
     {
-        return await _context.ChatRoomMembers.AnyAsync(m =>
-            m.ChatRoomId == roomId && m.UserId == userId
-        );
+        return await _context
+            .ChatRoomMembers.Include(m => m.ChatActor)
+            .AnyAsync(m => m.ChatRoomId == roomId && m.ChatActor.UserId == userId);
     }
 
     /// <summary>
@@ -403,9 +447,9 @@ public class ChatRoomService
     /// <returns>ルームメンバー情報</returns>
     public async Task<ChatRoomMember?> GetRoomMemberAsync(int roomId, int userId)
     {
-        return await _context.ChatRoomMembers.FirstOrDefaultAsync(m =>
-            m.ChatRoomId == roomId && m.UserId == userId
-        );
+        return await _context
+            .ChatRoomMembers.Include(m => m.ChatActor)
+            .FirstOrDefaultAsync(m => m.ChatRoomId == roomId && m.ChatActor.UserId == userId);
     }
 
     #endregion
@@ -421,9 +465,9 @@ public class ChatRoomService
     /// <param name="readMessageId">既読したメッセージID（省略可能）</param>
     public async Task UpdateLastReadAtAsync(int roomId, int userId, DateTimeOffset readAt, int? readMessageId = null)
     {
-        var member = await _context.ChatRoomMembers.FirstOrDefaultAsync(m =>
-            m.ChatRoomId == roomId && m.UserId == userId
-        );
+        var member = await _context
+            .ChatRoomMembers.Include(m => m.ChatActor)
+            .FirstOrDefaultAsync(m => m.ChatRoomId == roomId && m.ChatActor.UserId == userId);
 
         if (member == null)
         {
@@ -449,17 +493,18 @@ public class ChatRoomService
     /// <returns>未読メッセージ数</returns>
     public async Task<int> GetUnreadCountAsync(int roomId, int userId)
     {
-        var member = await _context.ChatRoomMembers.FirstOrDefaultAsync(m =>
-            m.ChatRoomId == roomId && m.UserId == userId
-        );
+        var member = await _context
+            .ChatRoomMembers.Include(m => m.ChatActor)
+            .FirstOrDefaultAsync(m => m.ChatRoomId == roomId && m.ChatActor.UserId == userId);
 
         if (member == null)
         {
             return 0;
         }
 
+        // 自分以外のメッセージをカウント（SenderActor の UserId で比較）
         var query = _context.ChatMessages.Where(m =>
-            m.ChatRoomId == roomId && m.SenderUserId != userId
+            m.ChatRoomId == roomId && (m.SenderActorId == null || m.SenderActor!.UserId != userId)
         );
 
         if (member.LastReadAt.HasValue)
@@ -480,8 +525,9 @@ public class ChatRoomService
     {
         var members = await _context
             .ChatRoomMembers.Include(m => m.ChatRoom)
+            .Include(m => m.ChatActor)
             .Where(m =>
-                m.UserId == userId
+                m.ChatActor.UserId == userId
                 && m.ChatRoom.OrganizationId == organizationId
                 && m.NotificationSetting != ChatNotificationSetting.Muted
             )
@@ -491,7 +537,7 @@ public class ChatRoomService
         foreach (var member in members)
         {
             var query = _context.ChatMessages.Where(m =>
-                m.ChatRoomId == member.ChatRoomId && m.SenderUserId != userId
+                m.ChatRoomId == member.ChatRoomId && m.SenderActorId != member.ChatActorId
             );
 
             if (member.LastReadAt.HasValue)
@@ -526,8 +572,9 @@ public class ChatRoomService
 
         var members = await _context
             .ChatRoomMembers.Include(m => m.ChatRoom)
+            .Include(m => m.ChatActor)
             .Where(m =>
-                m.UserId == userId
+                m.ChatActor.UserId == userId
                 && m.ChatRoom.OrganizationId == organizationId
                 && m.NotificationSetting != ChatNotificationSetting.Muted
             )
@@ -536,7 +583,7 @@ public class ChatRoomService
         foreach (var member in members)
         {
             var query = _context.ChatMessages.Where(m =>
-                m.ChatRoomId == member.ChatRoomId && m.SenderUserId != userId
+                m.ChatRoomId == member.ChatRoomId && m.SenderActorId != member.ChatActorId
             );
 
             if (member.LastReadAt.HasValue)
@@ -567,9 +614,9 @@ public class ChatRoomService
         ChatNotificationSetting setting
     )
     {
-        var member = await _context.ChatRoomMembers.FirstOrDefaultAsync(m =>
-            m.ChatRoomId == roomId && m.UserId == userId
-        );
+        var member = await _context
+            .ChatRoomMembers.Include(m => m.ChatActor)
+            .FirstOrDefaultAsync(m => m.ChatRoomId == roomId && m.ChatActor.UserId == userId);
 
         if (member == null)
         {
@@ -592,6 +639,18 @@ public class ChatRoomService
     /// <param name="organizationId">組織ID</param>
     public async Task AddUserToOrganizationRoomsAsync(int userId, int organizationId)
     {
+        // ユーザーの ChatActor を取得
+        var userActor = await _context.ChatActors.FirstOrDefaultAsync(a => a.UserId == userId);
+        if (userActor == null)
+        {
+            _logger.LogWarning(
+                "ChatActor not found for user: UserId={UserId}, OrganizationId={OrganizationId}",
+                userId,
+                organizationId
+            );
+            return;
+        }
+
         // 組織全体のルーム（WorkspaceId == null）のみ対象
         var rooms = await _context
             .ChatRooms.Where(r =>
@@ -604,7 +663,7 @@ public class ChatRoomService
         foreach (var room in rooms)
         {
             var existingMember = await _context.ChatRoomMembers.AnyAsync(m =>
-                m.ChatRoomId == room.Id && m.UserId == userId
+                m.ChatRoomId == room.Id && m.ChatActorId == userActor.Id
             );
 
             if (!existingMember)
@@ -613,7 +672,7 @@ public class ChatRoomService
                     new ChatRoomMember
                     {
                         ChatRoomId = room.Id,
-                        UserId = userId,
+                        ChatActorId = userActor.Id,
                         Role = ChatRoomRole.Member,
                     }
                 );
@@ -630,6 +689,18 @@ public class ChatRoomService
     /// <param name="workspaceId">ワークスペースID</param>
     public async Task AddUserToWorkspaceRoomAsync(int userId, int workspaceId)
     {
+        // ユーザーの ChatActor を取得
+        var userActor = await _context.ChatActors.FirstOrDefaultAsync(a => a.UserId == userId);
+        if (userActor == null)
+        {
+            _logger.LogWarning(
+                "ChatActor not found for user: UserId={UserId}, WorkspaceId={WorkspaceId}",
+                userId,
+                workspaceId
+            );
+            return;
+        }
+
         // ワークスペースのグループルームを検索
         var room = await _context.ChatRooms.FirstOrDefaultAsync(r =>
             r.WorkspaceId == workspaceId && r.Type == ChatRoomType.Group
@@ -642,7 +713,7 @@ public class ChatRoomService
         }
 
         var existingMember = await _context.ChatRoomMembers.AnyAsync(m =>
-            m.ChatRoomId == room.Id && m.UserId == userId
+            m.ChatRoomId == room.Id && m.ChatActorId == userActor.Id
         );
 
         if (!existingMember)
@@ -651,7 +722,7 @@ public class ChatRoomService
                 new ChatRoomMember
                 {
                     ChatRoomId = room.Id,
-                    UserId = userId,
+                    ChatActorId = userActor.Id,
                     Role = ChatRoomRole.Member,
                 }
             );
@@ -673,6 +744,13 @@ public class ChatRoomService
     /// <param name="workspaceId">ワークスペースID</param>
     public async Task RemoveUserFromWorkspaceRoomAsync(int userId, int workspaceId)
     {
+        // ユーザーの ChatActor を取得
+        var userActor = await _context.ChatActors.FirstOrDefaultAsync(a => a.UserId == userId);
+        if (userActor == null)
+        {
+            return;
+        }
+
         // ワークスペースのグループルームを検索
         var room = await _context.ChatRooms.FirstOrDefaultAsync(r =>
             r.WorkspaceId == workspaceId && r.Type == ChatRoomType.Group
@@ -684,7 +762,7 @@ public class ChatRoomService
         }
 
         var member = await _context.ChatRoomMembers.FirstOrDefaultAsync(m =>
-            m.ChatRoomId == room.Id && m.UserId == userId
+            m.ChatRoomId == room.Id && m.ChatActorId == userActor.Id
         );
 
         if (member != null)
@@ -708,9 +786,16 @@ public class ChatRoomService
     /// <param name="organizationId">組織ID</param>
     public async Task RemoveUserFromOrganizationRoomsAsync(int userId, int organizationId)
     {
+        // ユーザーの ChatActor を取得
+        var userActor = await _context.ChatActors.FirstOrDefaultAsync(a => a.UserId == userId);
+        if (userActor == null)
+        {
+            return;
+        }
+
         var members = await _context
             .ChatRoomMembers.Include(m => m.ChatRoom)
-            .Where(m => m.UserId == userId && m.ChatRoom.OrganizationId == organizationId)
+            .Where(m => m.ChatActorId == userActor.Id && m.ChatRoom.OrganizationId == organizationId)
             .ToListAsync();
 
         _context.ChatRoomMembers.RemoveRange(members);
@@ -844,11 +929,11 @@ public class ChatRoomService
             .ChatRooms.Where(r =>
                 r.OrganizationId == organizationId
                 && r.Type == ChatRoomType.Dm
-                && r.Members.Any(m => m.UserId == currentUserId)
+                && r.Members.Any(m => m.ChatActor.UserId == currentUserId)
             )
             .SelectMany(r => r.Members)
-            .Where(m => m.UserId != currentUserId)
-            .Select(m => m.UserId)
+            .Where(m => m.ChatActor.UserId != currentUserId && m.ChatActor.UserId != null)
+            .Select(m => m.ChatActor.UserId!.Value)
             .Distinct()
             .ToListAsync();
 

@@ -85,7 +85,7 @@ public class ChatController : BaseSecureController
 
         foreach (var room in filteredRooms)
         {
-            var member = room.Members.FirstOrDefault(m => m.UserId == CurrentUserId);
+            var member = room.Members.FirstOrDefault(m => m.ChatActor.UserId == CurrentUserId);
             var unreadCount = await _chatRoomService.GetUnreadCountAsync(room.Id, CurrentUserId);
             var latestMessage = await _chatMessageService.GetLatestMessageAsync(room.Id);
 
@@ -104,11 +104,11 @@ public class ChatController : BaseSecureController
             // DM の場合は相手ユーザー情報を設定
             if (room.Type == ChatRoomType.Dm)
             {
-                var otherMember = room.Members.FirstOrDefault(m => m.UserId != CurrentUserId);
-                if (otherMember?.User != null)
+                var otherMember = room.Members.FirstOrDefault(m => m.ChatActor.UserId != CurrentUserId);
+                if (otherMember?.ChatActor != null)
                 {
-                    item.OtherUser = MapToUserItem(otherMember.User);
-                    item.Name = otherMember.User.Username;
+                    item.OtherUser = MapToChatUserItemFromActor(otherMember.ChatActor);
+                    item.Name = otherMember.ChatActor.DisplayName;
                 }
             }
 
@@ -141,7 +141,7 @@ public class ChatController : BaseSecureController
         }
 
         // メンバーチェック
-        var member = room.Members.FirstOrDefault(m => m.UserId == CurrentUserId)
+        var member = room.Members.FirstOrDefault(m => m.ChatActor.UserId == CurrentUserId)
             ?? throw new NotFoundException("このルームのメンバーではありません。");
 
         var response = new ChatRoomDetailResponse
@@ -149,15 +149,7 @@ public class ChatController : BaseSecureController
             Id = room.Id,
             Type = room.Type,
             Name = room.Name,
-            Members = room.Members.Select(m => new ChatRoomMemberItem
-            {
-                UserId = m.UserId,
-                Username = m.User?.Username ?? "",
-                Email = m.User?.Email ?? "",
-                AvatarType = m.User?.AvatarType?.ToString()?.ToLowerInvariant(),
-                Role = m.Role,
-                JoinedAt = m.JoinedAt,
-            }).ToList(),
+            Members = room.Members.Select(m => MapToChatRoomMemberItem(m)).ToList(),
             NotificationSetting = member.NotificationSetting,
             LastReadAt = member.LastReadAt,
             RowVersion = room.RowVersion,
@@ -192,22 +184,14 @@ public class ChatController : BaseSecureController
             CurrentUser.OrganizationId.Value
         );
 
-        var member = room.Members.FirstOrDefault(m => m.UserId == CurrentUserId);
+        var member = room.Members.FirstOrDefault(m => m.ChatActor.UserId == CurrentUserId);
 
         var response = new ChatRoomDetailResponse
         {
             Id = room.Id,
             Type = room.Type,
             Name = room.Name,
-            Members = room.Members.Select(m => new ChatRoomMemberItem
-            {
-                UserId = m.UserId,
-                Username = m.User?.Username ?? "",
-                Email = m.User?.Email ?? "",
-                AvatarType = m.User?.AvatarType?.ToString()?.ToLowerInvariant(),
-                Role = m.Role,
-                JoinedAt = m.JoinedAt,
-            }).ToList(),
+            Members = room.Members.Select(m => MapToChatRoomMemberItem(m)).ToList(),
             NotificationSetting = member?.NotificationSetting ?? ChatNotificationSetting.All,
             LastReadAt = member?.LastReadAt,
             RowVersion = room.RowVersion,
@@ -283,22 +267,14 @@ public class ChatController : BaseSecureController
             CurrentUser.OrganizationId.Value
         );
 
-        var member = room.Members.FirstOrDefault(m => m.UserId == CurrentUserId);
+        var member = room.Members.FirstOrDefault(m => m.ChatActor.UserId == CurrentUserId);
 
         var response = new ChatRoomDetailResponse
         {
             Id = room.Id,
             Type = room.Type,
             Name = room.Name,
-            Members = room.Members.Select(m => new ChatRoomMemberItem
-            {
-                UserId = m.UserId,
-                Username = m.User?.Username ?? "",
-                Email = m.User?.Email ?? "",
-                AvatarType = m.User?.AvatarType?.ToString()?.ToLowerInvariant(),
-                Role = m.Role,
-                JoinedAt = m.JoinedAt,
-            }).ToList(),
+            Members = room.Members.Select(m => MapToChatRoomMemberItem(m)).ToList(),
             NotificationSetting = member?.NotificationSetting ?? ChatNotificationSetting.All,
             LastReadAt = member?.LastReadAt,
             RowVersion = room.RowVersion,
@@ -339,22 +315,14 @@ public class ChatController : BaseSecureController
             CurrentUserId
         );
 
-        var member = room.Members.FirstOrDefault(m => m.UserId == CurrentUserId);
+        var member = room.Members.FirstOrDefault(m => m.ChatActor.UserId == CurrentUserId);
 
         var response = new ChatRoomDetailResponse
         {
             Id = room.Id,
             Type = room.Type,
             Name = room.Name,
-            Members = room.Members.Select(m => new ChatRoomMemberItem
-            {
-                UserId = m.UserId,
-                Username = m.User?.Username ?? "",
-                Email = m.User?.Email ?? "",
-                AvatarType = m.User?.AvatarType?.ToString()?.ToLowerInvariant(),
-                Role = m.Role,
-                JoinedAt = m.JoinedAt,
-            }).ToList(),
+            Members = room.Members.Select(m => MapToChatRoomMemberItem(m)).ToList(),
             NotificationSetting = member?.NotificationSetting ?? ChatNotificationSetting.All,
             LastReadAt = member?.LastReadAt,
             RowVersion = room.RowVersion,
@@ -384,22 +352,14 @@ public class ChatController : BaseSecureController
             CurrentUserId
         );
 
-        var member = room.Members.FirstOrDefault(m => m.UserId == CurrentUserId);
+        var member = room.Members.FirstOrDefault(m => m.ChatActor.UserId == CurrentUserId);
 
         var response = new ChatRoomDetailResponse
         {
             Id = room.Id,
             Type = room.Type,
             Name = room.Name,
-            Members = room.Members.Select(m => new ChatRoomMemberItem
-            {
-                UserId = m.UserId,
-                Username = m.User?.Username ?? "",
-                Email = m.User?.Email ?? "",
-                AvatarType = m.User?.AvatarType?.ToString()?.ToLowerInvariant(),
-                Role = m.Role,
-                JoinedAt = m.JoinedAt,
-            }).ToList(),
+            Members = room.Members.Select(m => MapToChatRoomMemberItem(m)).ToList(),
             NotificationSetting = member?.NotificationSetting ?? ChatNotificationSetting.All,
             LastReadAt = member?.LastReadAt,
             RowVersion = room.RowVersion,
@@ -441,7 +401,7 @@ public class ChatController : BaseSecureController
             CurrentUserId
         );
 
-        var member = room.Members.FirstOrDefault(m => m.UserId == CurrentUserId);
+        var member = room.Members.FirstOrDefault(m => m.ChatActor.UserId == CurrentUserId);
         if (member == null)
         {
             throw new NotFoundException("このワークスペースのグループチャットメンバーではありません。");
@@ -453,15 +413,7 @@ public class ChatController : BaseSecureController
             Type = room.Type,
             Name = room.Name,
             WorkspaceId = room.WorkspaceId,
-            Members = room.Members.Select(m => new ChatRoomMemberItem
-            {
-                UserId = m.UserId,
-                Username = m.User?.Username ?? "",
-                Email = m.User?.Email ?? "",
-                AvatarType = m.User?.AvatarType?.ToString()?.ToLowerInvariant(),
-                Role = m.Role,
-                JoinedAt = m.JoinedAt,
-            }).ToList(),
+            Members = room.Members.Select(m => MapToChatRoomMemberItem(m)).ToList(),
             NotificationSetting = member.NotificationSetting,
             LastReadAt = member.LastReadAt,
             RowVersion = room.RowVersion,
@@ -679,6 +631,45 @@ public class ChatController : BaseSecureController
 
     #region マッピングヘルパー
 
+    private static ChatRoomMemberItem MapToChatRoomMemberItem(Pecus.Libs.DB.Models.ChatRoomMember member)
+    {
+        return new ChatRoomMemberItem
+        {
+            UserId = member.ChatActor.UserId ?? 0,  // Bot の場合は 0
+            Username = member.ChatActor.DisplayName,
+            Email = member.ChatActor.User?.Email ?? "",
+            AvatarType = member.ChatActor.AvatarType?.ToString()?.ToLowerInvariant(),
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                member.ChatActor.AvatarType,
+                member.ChatActor.UserId ?? 0,
+                member.ChatActor.DisplayName,
+                member.ChatActor.User?.Email,
+                member.ChatActor.AvatarUrl
+            ),
+            Role = member.Role,
+            JoinedAt = member.JoinedAt,
+        };
+    }
+
+    private static ChatUserItem MapToChatUserItemFromActor(Pecus.Libs.DB.Models.ChatActor actor)
+    {
+        return new ChatUserItem
+        {
+            Id = actor.UserId ?? 0,  // Bot の場合は 0
+            Username = actor.DisplayName,
+            Email = actor.User?.Email ?? "",
+            AvatarType = actor.AvatarType?.ToString()?.ToLowerInvariant(),
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                actor.AvatarType,
+                actor.UserId ?? 0,
+                actor.DisplayName,
+                actor.User?.Email,
+                actor.AvatarUrl
+            ),
+            IsActive = actor.User?.IsActive ?? true,
+        };
+    }
+
     private static ChatUserItem MapToUserItem(Pecus.Libs.DB.Models.User user)
     {
         return new ChatUserItem
@@ -703,16 +694,16 @@ public class ChatController : BaseSecureController
         var item = new ChatMessageItem
         {
             Id = message.Id,
-            SenderUserId = message.SenderUserId,
+            SenderUserId = message.SenderActor?.UserId,
             MessageType = message.MessageType,
             Content = message.Content,
             ReplyToMessageId = message.ReplyToMessageId,
             CreatedAt = message.CreatedAt,
         };
 
-        if (message.SenderUser != null)
+        if (message.SenderActor != null)
         {
-            item.Sender = MapToUserItem(message.SenderUser);
+            item.Sender = MapToChatUserItemFromActor(message.SenderActor);
         }
 
         if (message.ReplyToMessage != null)
@@ -720,8 +711,8 @@ public class ChatController : BaseSecureController
             item.ReplyTo = new ChatMessageReplyItem
             {
                 Id = message.ReplyToMessage.Id,
-                SenderUserId = message.ReplyToMessage.SenderUserId,
-                SenderUsername = message.ReplyToMessage.SenderUser?.Username,
+                SenderUserId = message.ReplyToMessage.SenderActor?.UserId,
+                SenderUsername = message.ReplyToMessage.SenderActor?.DisplayName,
                 MessageType = message.ReplyToMessage.MessageType,
                 ContentPreview = TruncateContent(message.ReplyToMessage.Content, 100),
             };

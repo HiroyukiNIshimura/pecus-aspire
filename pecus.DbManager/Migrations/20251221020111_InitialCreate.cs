@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using System;
 
 #nullable disable
 
@@ -121,6 +121,31 @@ namespace pecus.DbManager.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Bots",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OrganizationId = table.Column<int>(type: "integer", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Persona = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    IconUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bots", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Bots_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OrganizationSettings",
                 columns: table => new
                 {
@@ -137,6 +162,8 @@ namespace pecus.DbManager.Migrations
                     HelpNotificationTarget = table.Column<int>(type: "integer", nullable: true),
                     RequireEstimateOnTaskCreation = table.Column<bool>(type: "boolean", nullable: false),
                     EnforcePredecessorCompletion = table.Column<bool>(type: "boolean", nullable: false),
+                    DashboardHelpCommentMaxCount = table.Column<int>(type: "integer", nullable: false),
+                    GroupChatScope = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -206,6 +233,46 @@ namespace pecus.DbManager.Migrations
                         name: "FK_RolePermissions_Roles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChatActors",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OrganizationId = table.Column<int>(type: "integer", nullable: false),
+                    ActorType = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: true),
+                    BotId = table.Column<int>(type: "integer", nullable: true),
+                    DisplayName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    AvatarType = table.Column<int>(type: "integer", nullable: true),
+                    AvatarUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatActors", x => x.Id);
+                    table.CheckConstraint("CK_ChatActor_UserOrBot", "(\"UserId\" IS NOT NULL AND \"BotId\" IS NULL) OR (\"UserId\" IS NULL AND \"BotId\" IS NOT NULL)");
+                    table.ForeignKey(
+                        name: "FK_ChatActors_Bots_BotId",
+                        column: x => x.BotId,
+                        principalTable: "Bots",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChatActors_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChatActors_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -380,6 +447,9 @@ namespace pecus.DbManager.Migrations
                     TimeZone = table.Column<string>(type: "text", nullable: false),
                     Language = table.Column<string>(type: "text", nullable: false),
                     LandingPage = table.Column<int>(type: "integer", nullable: true),
+                    FocusScorePriority = table.Column<int>(type: "integer", nullable: true),
+                    FocusTasksLimit = table.Column<int>(type: "integer", nullable: false),
+                    WaitingTasksLimit = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -502,6 +572,45 @@ namespace pecus.DbManager.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ChatRooms",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    OrganizationId = table.Column<int>(type: "integer", nullable: false),
+                    WorkspaceId = table.Column<int>(type: "integer", nullable: true),
+                    DmUserPair = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    CreatedByUserId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatRooms", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChatRooms_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChatRooms_Users_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ChatRooms_Workspaces_WorkspaceId",
+                        column: x => x.WorkspaceId,
+                        principalTable: "Workspaces",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WorkspaceItems",
                 columns: table => new
                 {
@@ -616,6 +725,72 @@ namespace pecus.DbManager.Migrations
                         name: "FK_WorkspaceUsers_Workspaces_WorkspaceId",
                         column: x => x.WorkspaceId,
                         principalTable: "Workspaces",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChatMessages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ChatRoomId = table.Column<int>(type: "integer", nullable: false),
+                    SenderActorId = table.Column<int>(type: "integer", nullable: true),
+                    MessageType = table.Column<int>(type: "integer", nullable: false),
+                    Content = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReplyToMessageId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatMessages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChatMessages_ChatActors_SenderActorId",
+                        column: x => x.SenderActorId,
+                        principalTable: "ChatActors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_ChatMessages_ChatMessages_ReplyToMessageId",
+                        column: x => x.ReplyToMessageId,
+                        principalTable: "ChatMessages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_ChatMessages_ChatRooms_ChatRoomId",
+                        column: x => x.ChatRoomId,
+                        principalTable: "ChatRooms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChatRoomMembers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ChatRoomId = table.Column<int>(type: "integer", nullable: false),
+                    ChatActorId = table.Column<int>(type: "integer", nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false),
+                    JoinedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    LastReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    NotificationSetting = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatRoomMembers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChatRoomMembers_ChatActors_ChatActorId",
+                        column: x => x.ChatActorId,
+                        principalTable: "ChatActors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChatRoomMembers_ChatRooms_ChatRoomId",
+                        column: x => x.ChatRoomId,
+                        principalTable: "ChatRooms",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -793,6 +968,7 @@ namespace pecus.DbManager.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     WorkspaceItemId = table.Column<int>(type: "integer", nullable: false),
+                    Sequence = table.Column<int>(type: "integer", nullable: false),
                     WorkspaceId = table.Column<int>(type: "integer", nullable: false),
                     OrganizationId = table.Column<int>(type: "integer", nullable: false),
                     AssignedUserId = table.Column<int>(type: "integer", nullable: false),
@@ -935,6 +1111,90 @@ namespace pecus.DbManager.Migrations
                 name: "IX_Activities_WorkspaceId_CreatedAt",
                 table: "Activities",
                 columns: new[] { "WorkspaceId", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bots_OrganizationId",
+                table: "Bots",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatActors_BotId",
+                table: "ChatActors",
+                column: "BotId",
+                unique: true,
+                filter: "\"BotId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatActors_OrganizationId",
+                table: "ChatActors",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatActors_UserId",
+                table: "ChatActors",
+                column: "UserId",
+                unique: true,
+                filter: "\"UserId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatMessages_ChatRoomId_CreatedAt",
+                table: "ChatMessages",
+                columns: new[] { "ChatRoomId", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatMessages_ReplyToMessageId",
+                table: "ChatMessages",
+                column: "ReplyToMessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatMessages_SenderActorId",
+                table: "ChatMessages",
+                column: "SenderActorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatRoomMembers_ChatActorId",
+                table: "ChatRoomMembers",
+                column: "ChatActorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatRoomMembers_ChatRoomId",
+                table: "ChatRoomMembers",
+                column: "ChatRoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatRoomMembers_ChatRoomId_ChatActorId",
+                table: "ChatRoomMembers",
+                columns: new[] { "ChatRoomId", "ChatActorId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatRooms_CreatedByUserId",
+                table: "ChatRooms",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatRooms_OrganizationId",
+                table: "ChatRooms",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatRooms_OrganizationId_DmUserPair",
+                table: "ChatRooms",
+                columns: new[] { "OrganizationId", "DmUserPair" },
+                unique: true,
+                filter: "\"Type\" = 0");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatRooms_OrganizationId_WorkspaceId",
+                table: "ChatRooms",
+                columns: new[] { "OrganizationId", "WorkspaceId" },
+                unique: true,
+                filter: "\"Type\" = 1 AND \"WorkspaceId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatRooms_WorkspaceId",
+                table: "ChatRooms",
+                column: "WorkspaceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Devices_HashedIdentifier",
@@ -1394,6 +1654,12 @@ namespace pecus.DbManager.Migrations
                 columns: new[] { "WorkspaceItemId", "IsCompleted" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceTasks_WorkspaceItemId_Sequence_Unique",
+                table: "WorkspaceTasks",
+                columns: new[] { "WorkspaceItemId", "Sequence" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkspaceUsers_UserId",
                 table: "WorkspaceUsers",
                 column: "UserId");
@@ -1409,6 +1675,12 @@ namespace pecus.DbManager.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Activities");
+
+            migrationBuilder.DropTable(
+                name: "ChatMessages");
+
+            migrationBuilder.DropTable(
+                name: "ChatRoomMembers");
 
             migrationBuilder.DropTable(
                 name: "EmailChangeTokens");
@@ -1453,6 +1725,12 @@ namespace pecus.DbManager.Migrations
                 name: "WorkspaceUsers");
 
             migrationBuilder.DropTable(
+                name: "ChatActors");
+
+            migrationBuilder.DropTable(
+                name: "ChatRooms");
+
+            migrationBuilder.DropTable(
                 name: "Devices");
 
             migrationBuilder.DropTable(
@@ -1469,6 +1747,9 @@ namespace pecus.DbManager.Migrations
 
             migrationBuilder.DropTable(
                 name: "Skills");
+
+            migrationBuilder.DropTable(
+                name: "Bots");
 
             migrationBuilder.DropTable(
                 name: "TaskTypes");

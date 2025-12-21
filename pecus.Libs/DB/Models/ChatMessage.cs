@@ -23,15 +23,15 @@ public class ChatMessage
     public ChatRoom ChatRoom { get; set; } = null!;
 
     /// <summary>
-    /// 送信者ユーザーID
-    /// AI からのメッセージの場合は null（MessageType = Ai と併用）
+    /// 送信者アクターID（ユーザーまたはボット）
+    /// システムメッセージの場合は null
     /// </summary>
-    public int? SenderUserId { get; set; }
+    public int? SenderActorId { get; set; }
 
     /// <summary>
-    /// 送信者ユーザー
+    /// 送信者アクター
     /// </summary>
-    public User? SenderUser { get; set; }
+    public ChatActor? SenderActor { get; set; }
 
     /// <summary>
     /// メッセージタイプ

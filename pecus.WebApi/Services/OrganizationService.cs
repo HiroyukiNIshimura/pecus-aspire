@@ -118,6 +118,19 @@ public class OrganizationService
 
             await _context.SaveChangesAsync();
 
+            // 管理者ユーザーに対応する ChatActor を作成
+            var adminChatActor = new ChatActor
+            {
+                OrganizationId = organization.Id,
+                ActorType = ChatActorType.User,
+                UserId = adminUser.Id,
+                DisplayName = adminUser.Username,
+                AvatarType = adminUser.AvatarType,
+                AvatarUrl = adminUser.UserAvatarPath,
+            };
+            _context.ChatActors.Add(adminChatActor);
+            await _context.SaveChangesAsync();
+
             // グループチャットルームを作成
             var groupRoom = new ChatRoom
             {
@@ -127,7 +140,7 @@ public class OrganizationService
                 CreatedByUserId = adminUser.Id,
                 Members = new List<ChatRoomMember>
                 {
-                    new() { UserId = adminUser.Id, Role = ChatRoomRole.Owner },
+                    new() { ChatActorId = adminChatActor.Id, Role = ChatRoomRole.Owner },
                 },
             };
             _context.ChatRooms.Add(groupRoom);
@@ -141,7 +154,7 @@ public class OrganizationService
                 CreatedByUserId = adminUser.Id,
                 Members = new List<ChatRoomMember>
                 {
-                    new() { UserId = adminUser.Id, Role = ChatRoomRole.Owner },
+                    new() { ChatActorId = adminChatActor.Id, Role = ChatRoomRole.Owner },
                 },
             };
             _context.ChatRooms.Add(systemRoom);

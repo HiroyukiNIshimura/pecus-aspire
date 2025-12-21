@@ -126,6 +126,12 @@ public class User
     public List<Device> Devices { get; set; } = new();
 
     /// <summary>
+    /// チャットアクター（ナビゲーションプロパティ）
+    /// ユーザー作成時に自動生成される
+    /// </summary>
+    public ChatActor? ChatActor { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用バージョン番号（PostgreSQL の xmin システムカラム）
     /// </summary>
     public uint RowVersion { get; set; }

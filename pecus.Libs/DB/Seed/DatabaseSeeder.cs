@@ -233,6 +233,7 @@ public class DatabaseSeeder
         await SeedSkillsAsync();
         await SeedTagsAsync();
         await SeedUsersAsync();
+        await SeedChatActorsAsync();
         await SeedUserSettingsAsync();
         await SeedUserSkillsAsync();
         await SeedWorkspacesAsync();
@@ -948,6 +949,50 @@ public class DatabaseSeeder
     }
 
     /// <summary>
+    /// ChatActor のシードデータを投入
+    /// User に対応する ChatActor を作成（Bot は後で追加可能）
+    /// </summary>
+    private async Task SeedChatActorsAsync()
+    {
+        // ChatActor が未作成のユーザーを取得
+        var usersWithoutActor = await _context.Users
+            .Where(u => u.OrganizationId != null && !_context.ChatActors.Any(a => a.UserId == u.Id))
+            .ToListAsync();
+
+        if (!usersWithoutActor.Any())
+        {
+            _logger.LogInformation("All users already have ChatActors, skipping");
+            return;
+        }
+
+        var chatActorsToAdd = new List<ChatActor>();
+
+        foreach (var user in usersWithoutActor)
+        {
+            chatActorsToAdd.Add(new ChatActor
+            {
+                OrganizationId = user.OrganizationId!.Value,
+                ActorType = ChatActorType.User,
+                UserId = user.Id,
+                DisplayName = user.Username,
+                AvatarType = user.AvatarType,
+                AvatarUrl = user.UserAvatarPath,
+            });
+        }
+
+        // バッチ保存
+        const int batchSize = 500;
+        for (int i = 0; i < chatActorsToAdd.Count; i += batchSize)
+        {
+            var batch = chatActorsToAdd.Skip(i).Take(batchSize).ToList();
+            _context.ChatActors.AddRange(batch);
+            await _context.SaveChangesAsync();
+        }
+
+        _logger.LogInformation("Added {Count} ChatActors for users", chatActorsToAdd.Count);
+    }
+
+    /// <summary>
     /// ユーザー設定のシードデータを投入（欠損分を補完）
     /// </summary>
     public async Task SeedUserSettingsAsync()
@@ -1314,6 +1359,11 @@ public class DatabaseSeeder
             .GroupBy(u => u.OrganizationId!.Value)
             .ToDictionaryAsync(g => g.Key, g => g.ToList());
 
+        // UserId → ChatActorId のマッピングを取得
+        var userIdToActorId = await _context.ChatActors
+            .Where(a => a.UserId != null)
+            .ToDictionaryAsync(a => a.UserId!.Value, a => a.Id);
+
         var chatRoomsToAdd = new List<ChatRoom>();
         var chatRoomMembersToAdd = new List<ChatRoomMember>();
 
@@ -1367,10 +1417,15 @@ public class DatabaseSeeder
             var isFirst = true;
             foreach (var user in orgUsers)
             {
+                if (!userIdToActorId.TryGetValue(user.Id, out var actorId))
+                {
+                    continue;
+                }
+
                 chatRoomMembersToAdd.Add(new ChatRoomMember
                 {
                     ChatRoomId = room.Id,
-                    UserId = user.Id,
+                    ChatActorId = actorId,
                     Role = isFirst ? ChatRoomRole.Owner : ChatRoomRole.Member,
                 });
                 isFirst = false;
@@ -1422,6 +1477,11 @@ public class DatabaseSeeder
             // ワークスペースメンバーをチャットルームメンバーとして追加
             foreach (var wsUser in workspace.WorkspaceUsers)
             {
+                if (!userIdToActorId.TryGetValue(wsUser.UserId, out var actorId))
+                {
+                    continue;
+                }
+
                 var role = wsUser.UserId == workspace.OwnerId
                     ? ChatRoomRole.Owner
                     : ChatRoomRole.Member;
@@ -1429,7 +1489,7 @@ public class DatabaseSeeder
                 chatRoomMembersToAdd.Add(new ChatRoomMember
                 {
                     ChatRoomId = room.Id,
-                    UserId = wsUser.UserId,
+                    ChatActorId = actorId,
                     Role = role,
                 });
             }

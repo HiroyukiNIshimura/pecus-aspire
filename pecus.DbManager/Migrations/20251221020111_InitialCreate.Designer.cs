@@ -12,8 +12,8 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251219053500_AddGroupChatScopeToOrganizationSetting")]
-    partial class AddGroupChatScopeToOrganizationSetting
+    [Migration("20251221020111_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -78,6 +78,102 @@ namespace pecus.DbManager.Migrations
                     b.ToTable("Activities");
                 });
 
+            modelBuilder.Entity("Pecus.Libs.DB.Models.Bot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IconUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Persona")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("Bots");
+                });
+
+            modelBuilder.Entity("Pecus.Libs.DB.Models.ChatActor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActorType")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AvatarType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int?>("BotId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BotId")
+                        .IsUnique()
+                        .HasFilter("\"BotId\" IS NOT NULL");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("\"UserId\" IS NOT NULL");
+
+                    b.ToTable("ChatActors", t =>
+                        {
+                            t.HasCheckConstraint("CK_ChatActor_UserOrBot", "(\"UserId\" IS NOT NULL AND \"BotId\" IS NULL) OR (\"UserId\" IS NULL AND \"BotId\" IS NOT NULL)");
+                        });
+                });
+
             modelBuilder.Entity("Pecus.Libs.DB.Models.ChatMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -102,14 +198,14 @@ namespace pecus.DbManager.Migrations
                     b.Property<int?>("ReplyToMessageId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("SenderUserId")
+                    b.Property<int?>("SenderActorId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ReplyToMessageId");
 
-                    b.HasIndex("SenderUserId");
+                    b.HasIndex("SenderActorId");
 
                     b.HasIndex("ChatRoomId", "CreatedAt");
 
@@ -183,6 +279,9 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ChatActorId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ChatRoomId")
                         .HasColumnType("integer");
 
@@ -198,16 +297,13 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("ChatActorId");
 
                     b.HasIndex("ChatRoomId");
 
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("ChatRoomId", "UserId")
+                    b.HasIndex("ChatRoomId", "ChatActorId")
                         .IsUnique();
 
                     b.ToTable("ChatRoomMembers");
@@ -1632,6 +1728,42 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("Workspace");
                 });
 
+            modelBuilder.Entity("Pecus.Libs.DB.Models.Bot", b =>
+                {
+                    b.HasOne("Pecus.Libs.DB.Models.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("Pecus.Libs.DB.Models.ChatActor", b =>
+                {
+                    b.HasOne("Pecus.Libs.DB.Models.Bot", "Bot")
+                        .WithOne("ChatActor")
+                        .HasForeignKey("Pecus.Libs.DB.Models.ChatActor", "BotId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Pecus.Libs.DB.Models.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Pecus.Libs.DB.Models.User", "User")
+                        .WithOne("ChatActor")
+                        .HasForeignKey("Pecus.Libs.DB.Models.ChatActor", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Bot");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Pecus.Libs.DB.Models.ChatMessage", b =>
                 {
                     b.HasOne("Pecus.Libs.DB.Models.ChatRoom", "ChatRoom")
@@ -1645,16 +1777,16 @@ namespace pecus.DbManager.Migrations
                         .HasForeignKey("ReplyToMessageId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Pecus.Libs.DB.Models.User", "SenderUser")
+                    b.HasOne("Pecus.Libs.DB.Models.ChatActor", "SenderActor")
                         .WithMany()
-                        .HasForeignKey("SenderUserId")
+                        .HasForeignKey("SenderActorId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("ChatRoom");
 
                     b.Navigation("ReplyToMessage");
 
-                    b.Navigation("SenderUser");
+                    b.Navigation("SenderActor");
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.ChatRoom", b =>
@@ -1685,21 +1817,21 @@ namespace pecus.DbManager.Migrations
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.ChatRoomMember", b =>
                 {
+                    b.HasOne("Pecus.Libs.DB.Models.ChatActor", "ChatActor")
+                        .WithMany()
+                        .HasForeignKey("ChatActorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Pecus.Libs.DB.Models.ChatRoom", "ChatRoom")
                         .WithMany("Members")
                         .HasForeignKey("ChatRoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Pecus.Libs.DB.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("ChatActor");
 
                     b.Navigation("ChatRoom");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Device", b =>
@@ -2159,6 +2291,11 @@ namespace pecus.DbManager.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Pecus.Libs.DB.Models.Bot", b =>
+                {
+                    b.Navigation("ChatActor");
+                });
+
             modelBuilder.Entity("Pecus.Libs.DB.Models.ChatRoom", b =>
                 {
                     b.Navigation("Members");
@@ -2208,6 +2345,8 @@ namespace pecus.DbManager.Migrations
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.User", b =>
                 {
+                    b.Navigation("ChatActor");
+
                     b.Navigation("Devices");
 
                     b.Navigation("Setting");

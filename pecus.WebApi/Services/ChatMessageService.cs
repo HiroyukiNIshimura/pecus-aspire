@@ -35,14 +35,14 @@ public class ChatMessageService
     /// メッセージを送信
     /// </summary>
     /// <param name="roomId">ルームID</param>
-    /// <param name="senderUserId">送信者ユーザーID（AI メッセージの場合は null）</param>
+    /// <param name="senderActorId">送信者アクターID（システムメッセージの場合は null）</param>
     /// <param name="content">メッセージ内容</param>
     /// <param name="messageType">メッセージタイプ</param>
     /// <param name="replyToMessageId">返信先メッセージID</param>
     /// <returns>作成されたメッセージ</returns>
     public async Task<ChatMessage> SendMessageAsync(
         int roomId,
-        int? senderUserId,
+        int? senderActorId,
         string content,
         ChatMessageType messageType = ChatMessageType.Text,
         int? replyToMessageId = null
@@ -55,11 +55,11 @@ public class ChatMessageService
             throw new NotFoundException("チャットルームが見つかりません。");
         }
 
-        // ユーザーの場合、メンバー確認
-        if (senderUserId.HasValue)
+        // アクターの場合、メンバー確認
+        if (senderActorId.HasValue)
         {
             var isMember = await _context.ChatRoomMembers.AnyAsync(m =>
-                m.ChatRoomId == roomId && m.UserId == senderUserId.Value
+                m.ChatRoomId == roomId && m.ChatActorId == senderActorId.Value
             );
 
             if (!isMember)
@@ -82,7 +82,7 @@ public class ChatMessageService
         var message = new ChatMessage
         {
             ChatRoomId = roomId,
-            SenderUserId = senderUserId,
+            SenderActorId = senderActorId,
             MessageType = messageType,
             Content = content,
             ReplyToMessageId = replyToMessageId,
@@ -96,9 +96,20 @@ public class ChatMessageService
         await _context.SaveChangesAsync();
 
         // Navigation Property を読み込み
-        if (senderUserId.HasValue)
+        if (senderActorId.HasValue)
         {
-            await _context.Entry(message).Reference(m => m.SenderUser).LoadAsync();
+            await _context.Entry(message).Reference(m => m.SenderActor).LoadAsync();
+            if (message.SenderActor != null)
+            {
+                if (message.SenderActor.UserId.HasValue)
+                {
+                    await _context.Entry(message.SenderActor).Reference(a => a.User).LoadAsync();
+                }
+                if (message.SenderActor.BotId.HasValue)
+                {
+                    await _context.Entry(message.SenderActor).Reference(a => a.Bot).LoadAsync();
+                }
+            }
         }
         if (replyToMessageId.HasValue)
         {
@@ -109,10 +120,10 @@ public class ChatMessageService
         await SendMessageNotificationAsync(room, message);
 
         _logger.LogDebug(
-            "Message sent: MessageId={MessageId}, RoomId={RoomId}, SenderUserId={SenderUserId}",
+            "Message sent: MessageId={MessageId}, RoomId={RoomId}, SenderActorId={SenderActorId}",
             message.Id,
             roomId,
-            senderUserId
+            senderActorId
         );
 
         return message;
@@ -163,7 +174,10 @@ public class ChatMessageService
     )
     {
         var query = _context
-            .ChatMessages.Include(m => m.SenderUser)
+            .ChatMessages.Include(m => m.SenderActor)
+                .ThenInclude(a => a!.User)
+            .Include(m => m.SenderActor)
+                .ThenInclude(a => a!.Bot)
             .Include(m => m.ReplyToMessage)
             .Where(m => m.ChatRoomId == roomId);
 
@@ -201,7 +215,10 @@ public class ChatMessageService
     )
     {
         return await _context
-            .ChatMessages.Include(m => m.SenderUser)
+            .ChatMessages.Include(m => m.SenderActor)
+                .ThenInclude(a => a!.User)
+            .Include(m => m.SenderActor)
+                .ThenInclude(a => a!.Bot)
             .Include(m => m.ReplyToMessage)
             .Where(m => m.ChatRoomId == roomId && m.Id > afterMessageId)
             .OrderBy(m => m.Id)
@@ -217,7 +234,10 @@ public class ChatMessageService
     public async Task<ChatMessage?> GetMessageByIdAsync(int messageId)
     {
         return await _context
-            .ChatMessages.Include(m => m.SenderUser)
+            .ChatMessages.Include(m => m.SenderActor)
+                .ThenInclude(a => a!.User)
+            .Include(m => m.SenderActor)
+                .ThenInclude(a => a!.Bot)
             .Include(m => m.ReplyToMessage)
             .FirstOrDefaultAsync(m => m.Id == messageId);
     }
@@ -234,7 +254,10 @@ public class ChatMessageService
     public async Task<ChatMessage?> GetLatestMessageAsync(int roomId)
     {
         return await _context
-            .ChatMessages.Include(m => m.SenderUser)
+            .ChatMessages.Include(m => m.SenderActor)
+                .ThenInclude(a => a!.User)
+            .Include(m => m.SenderActor)
+                .ThenInclude(a => a!.Bot)
             .Where(m => m.ChatRoomId == roomId)
             .OrderByDescending(m => m.Id)
             .FirstOrDefaultAsync();
@@ -281,27 +304,32 @@ public class ChatMessageService
             Message = new
             {
                 message.Id,
-                message.SenderUserId,
+                message.SenderActorId,
                 message.MessageType,
                 message.Content,
                 message.ReplyToMessageId,
                 message.CreatedAt,
                 // 送信者情報（アバター表示用）
-                Sender = message.SenderUser != null
+                Sender = message.SenderActor != null
                     ? new
                     {
-                        Id = message.SenderUser.Id,
-                        Username = message.SenderUser.Username,
-                        Email = message.SenderUser.Email,
-                        AvatarType = message.SenderUser.AvatarType?.ToString()?.ToLowerInvariant(),
-                        IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
-                            message.SenderUser.AvatarType,
-                            message.SenderUser.Id,
-                            message.SenderUser.Username,
-                            message.SenderUser.Email,
-                            message.SenderUser.UserAvatarPath
-                        ),
-                        IsActive = message.SenderUser.IsActive,
+                        Id = message.SenderActor.Id,
+                        ActorType = message.SenderActor.ActorType.ToString(),
+                        UserId = message.SenderActor.UserId,
+                        BotId = message.SenderActor.BotId,
+                        DisplayName = message.SenderActor.DisplayName,
+                        AvatarType = message.SenderActor.AvatarType?.ToString()?.ToLowerInvariant(),
+                        AvatarUrl = message.SenderActor.AvatarUrl,
+                        IdentityIconUrl = message.SenderActor.User != null
+                            ? IdentityIconHelper.GetIdentityIconUrl(
+                                message.SenderActor.User.AvatarType,
+                                message.SenderActor.User.Id,
+                                message.SenderActor.User.Username,
+                                message.SenderActor.User.Email,
+                                message.SenderActor.User.UserAvatarPath
+                            )
+                            : message.SenderActor.AvatarUrl,
+                        IsActive = message.SenderActor.User?.IsActive ?? true,
                     }
                     : null,
             },
@@ -342,7 +370,7 @@ public class ChatMessageService
                         {
                             RoomId = room.Id,
                             RoomType = room.Type.ToString(),
-                            SenderUserId = message.SenderUserId,
+                            SenderActorId = message.SenderActorId,
                         },
                         Timestamp = DateTimeOffset.UtcNow,
                     }

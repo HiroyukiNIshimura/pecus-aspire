@@ -1680,9 +1680,9 @@ public class NotificationHub : Hub
             "SignalR JoinChat: userId={UserId}, chatRoomId={ChatRoomId}, connectionId={ConnectionId}",
             userId, chatRoomId, Context.ConnectionId);
 
-        // メンバーチェック
+        // メンバーチェック（ChatActor 経由で UserId を確認）
         var isMember = await _context.ChatRoomMembers
-            .AnyAsync(m => m.ChatRoomId == chatRoomId && m.UserId == userId);
+            .AnyAsync(m => m.ChatRoomId == chatRoomId && m.ChatActor.UserId == userId);
 
         if (!isMember)
         {

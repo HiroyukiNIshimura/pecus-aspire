@@ -157,6 +157,16 @@ public class ApplicationDbContext : DbContext
     public DbSet<ChatMessage> ChatMessages { get; set; }
 
     /// <summary>
+    /// チャットアクター（ユーザー/ボット統一参照）テーブル
+    /// </summary>
+    public DbSet<ChatActor> ChatActors { get; set; }
+
+    /// <summary>
+    /// ボットテーブル
+    /// </summary>
+    public DbSet<Bot> Bots { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -984,21 +994,21 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(m => m.ChatRoomId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ChatRoomMember と User の多対一リレーションシップ
+            // ChatRoomMember と ChatActor の多対一リレーションシップ
             entity
-                .HasOne(m => m.User)
+                .HasOne(m => m.ChatActor)
                 .WithMany()
-                .HasForeignKey(m => m.UserId)
+                .HasForeignKey(m => m.ChatActorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ユーザーの参加ルーム一覧取得用
-            entity.HasIndex(e => e.UserId);
+            // アクターの参加ルーム一覧取得用
+            entity.HasIndex(e => e.ChatActorId);
 
             // ルームのメンバー一覧取得用
             entity.HasIndex(e => e.ChatRoomId);
 
-            // ユーザー × ルームの重複防止
-            entity.HasIndex(e => new { e.ChatRoomId, e.UserId }).IsUnique();
+            // アクター × ルームの重複防止
+            entity.HasIndex(e => new { e.ChatRoomId, e.ChatActorId }).IsUnique();
         });
 
         // ChatMessage エンティティの設定
@@ -1013,11 +1023,11 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(m => m.ChatRoomId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ChatMessage と User (Sender) の多対一リレーションシップ（nullable）
+            // ChatMessage と ChatActor (Sender) の多対一リレーションシップ（nullable）
             entity
-                .HasOne(m => m.SenderUser)
+                .HasOne(m => m.SenderActor)
                 .WithMany()
-                .HasForeignKey(m => m.SenderUserId)
+                .HasForeignKey(m => m.SenderActorId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             // ChatMessage と ChatMessage (ReplyTo) の自己参照リレーションシップ
@@ -1029,6 +1039,77 @@ public class ApplicationDbContext : DbContext
 
             // ルーム内のメッセージ一覧取得用（日時降順）
             entity.HasIndex(e => new { e.ChatRoomId, e.CreatedAt });
+        });
+
+        // ChatActor エンティティの設定
+        modelBuilder.Entity<ChatActor>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.AvatarUrl).HasMaxLength(500);
+
+            // ChatActor と Organization の多対一リレーションシップ
+            entity
+                .HasOne(a => a.Organization)
+                .WithMany()
+                .HasForeignKey(a => a.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ChatActor と User の一対一リレーションシップ（オプショナル）
+            entity
+                .HasOne(a => a.User)
+                .WithOne(u => u.ChatActor)
+                .HasForeignKey<ChatActor>(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ChatActor と Bot の一対一リレーションシップ（オプショナル）
+            entity
+                .HasOne(a => a.Bot)
+                .WithOne(b => b.ChatActor)
+                .HasForeignKey<ChatActor>(a => a.BotId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 組織内のアクター一覧取得用
+            entity.HasIndex(e => e.OrganizationId);
+
+            // ユーザー検索用（ユニーク）
+            entity
+                .HasIndex(e => e.UserId)
+                .IsUnique()
+                .HasFilter("\"UserId\" IS NOT NULL");
+
+            // ボット検索用（ユニーク）
+            entity
+                .HasIndex(e => e.BotId)
+                .IsUnique()
+                .HasFilter("\"BotId\" IS NOT NULL");
+
+            // UserId と BotId の排他制約（CHECK 制約）
+            entity.ToTable(t =>
+                t.HasCheckConstraint(
+                    "CK_ChatActor_UserOrBot",
+                    "(\"UserId\" IS NOT NULL AND \"BotId\" IS NULL) OR (\"UserId\" IS NULL AND \"BotId\" IS NOT NULL)"
+                )
+            );
+        });
+
+        // Bot エンティティの設定
+        modelBuilder.Entity<Bot>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Persona).HasMaxLength(2000);
+            entity.Property(e => e.IconUrl).HasMaxLength(500);
+
+            // Bot と Organization の多対一リレーションシップ
+            entity
+                .HasOne(b => b.Organization)
+                .WithMany()
+                .HasForeignKey(b => b.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 組織内のボット一覧取得用
+            entity.HasIndex(e => e.OrganizationId);
         });
 
         // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）
