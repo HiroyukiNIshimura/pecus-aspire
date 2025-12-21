@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +7,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Notifications;
 using StackExchange.Redis;
+using System.Text.Json;
 
 namespace Pecus.Services;
 
