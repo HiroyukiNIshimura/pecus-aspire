@@ -311,11 +311,14 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             return [];
         }
 
-        // GPT系モデルのみをフィルタリング（設定日付以降に作成されたモデル）
+        // GPT系モデルのみをフィルタリング（設定日付以降に作成されたモデル、特殊用途モデルを除外）
         var cutoffDate = DateTimeOffset.Parse(_settings.ModelCreatedAfter).ToUnixTimeSeconds();
         var gptModels = result.Data
             .Where(m => m.Id.StartsWith("gpt-", StringComparison.OrdinalIgnoreCase)
-                && m.Created >= cutoffDate)
+                && m.Created >= cutoffDate
+                && !m.Id.Contains("-realtime", StringComparison.OrdinalIgnoreCase)
+                && !m.Id.Contains("-image", StringComparison.OrdinalIgnoreCase)
+                && !m.Id.Contains("-audio", StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(m => m.Id)
             .Select(m => new AvailableModel
             {

@@ -10,6 +10,8 @@ interface FieldError {
 interface UseFormValidationOptions<T extends z.ZodRawShape> {
   schema: z.ZodObject<T>;
   onSubmit: (data: z.infer<z.ZodObject<T>>) => Promise<void>;
+  /** バリデーションエラー時のコールバック */
+  onValidationError?: (errors: FieldError) => void;
 }
 
 /**
@@ -35,7 +37,11 @@ function isBooleanSchema(schema: unknown): boolean {
  * - 属性管理: data-pristine-*不要
  * - Zod v4 では refine() も ZodObject を返すためそのまま使用可能
  */
-export function useFormValidation<T extends z.ZodRawShape>({ schema, onSubmit }: UseFormValidationOptions<T>) {
+export function useFormValidation<T extends z.ZodRawShape>({
+  schema,
+  onSubmit,
+  onValidationError,
+}: UseFormValidationOptions<T>) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldError>({});
@@ -138,6 +144,8 @@ export function useFormValidation<T extends z.ZodRawShape>({ schema, onSubmit }:
             errors[path].push(issue.message);
           });
           setFieldErrors(errors);
+          // コールバックがあれば呼び出す
+          onValidationError?.(errors);
           return;
         }
 
@@ -149,7 +157,7 @@ export function useFormValidation<T extends z.ZodRawShape>({ schema, onSubmit }:
         setIsSubmitting(false);
       }
     },
-    [schema, onSubmit, isSubmitting],
+    [schema, onSubmit, onValidationError, isSubmitting],
   );
 
   /**

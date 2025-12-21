@@ -237,6 +237,10 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
       schema: organizationSettingSchemaWithRules,
+      onValidationError: (errors) => {
+        const errorCount = Object.keys(errors).length;
+        notify.error(`入力内容に${errorCount}件のエラーがあります。各フィールドを確認してください。`);
+      },
       onSubmit: async (data) => {
         try {
           const result = await updateOrganizationSetting({
