@@ -33,6 +33,7 @@ public class BotMessageService
     /// <summary>
     /// 指定した Bot からルームにメッセージを送信する。
     /// Bot は事前にルームのメンバーである必要がある。
+    /// ChatBot の場合、組織設定の GenerativeApiVendor が None の場合はメッセージを送信しない。
     /// </summary>
     /// <param name="organizationId">組織ID</param>
     /// <param name="roomId">ルームID</param>
@@ -40,8 +41,8 @@ public class BotMessageService
     /// <param name="content">メッセージ内容</param>
     /// <param name="messageType">メッセージタイプ（デフォルト: Text）</param>
     /// <param name="replyToMessageId">返信先メッセージID（オプション）</param>
-    /// <returns>作成されたメッセージ</returns>
-    public async Task<ChatMessage> SendMessageAsync(
+    /// <returns>作成されたメッセージ。ChatBot で GenerativeApiVendor が None の場合は null</returns>
+    public async Task<ChatMessage?> SendMessageAsync(
         int organizationId,
         int roomId,
         BotType botType,
@@ -50,6 +51,22 @@ public class BotMessageService
         int? replyToMessageId = null
     )
     {
+        // ChatBot の場合、GenerativeApiVendor が None なら送信しない
+        if (botType == BotType.ChatBot)
+        {
+            var setting = await _context.OrganizationSettings
+                .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+
+            if (setting == null || setting.GenerativeApiVendor == GenerativeApiVendor.None)
+            {
+                _logger.LogInformation(
+                    "ChatBot message skipped: OrganizationId={OrganizationId}, GenerativeApiVendor is None or setting not found",
+                    organizationId
+                );
+                return null;
+            }
+        }
+
         // Bot と ChatActor を取得
         var bot = await _context.Bots
             .Include(b => b.ChatActor)
@@ -98,13 +115,14 @@ public class BotMessageService
     /// <summary>
     /// ChatBot（Coati Bot）からメッセージを送信する。
     /// 主にグループチャットや AI ルームでの応答に使用。
+    /// 組織設定の GenerativeApiVendor が None の場合はメッセージを送信しない。
     /// </summary>
     /// <param name="organizationId">組織ID</param>
     /// <param name="roomId">ルームID</param>
     /// <param name="content">メッセージ内容</param>
     /// <param name="replyToMessageId">返信先メッセージID（オプション）</param>
-    /// <returns>作成されたメッセージ</returns>
-    public async Task<ChatMessage> SendChatBotMessageAsync(
+    /// <returns>作成されたメッセージ。GenerativeApiVendor が None の場合は null</returns>
+    public async Task<ChatMessage?> SendChatBotMessageAsync(
         int organizationId,
         int roomId,
         string content,
@@ -193,13 +211,14 @@ public class BotMessageService
         string content
     )
     {
-        return await SendMessageAsync(
+        // SystemBot は GenerativeApiVendor チェックをスキップするため、常に非 null が返る
+        return (await SendMessageAsync(
             organizationId,
             roomId,
             BotType.SystemBot,
             content,
             ChatMessageType.System
-        );
+        ))!;
     }
 
     /// <summary>
