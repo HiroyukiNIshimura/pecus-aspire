@@ -57,6 +57,11 @@ export const organizationSettingSchema = z.object({
     if (typeof val === 'string') return val.trim();
     return val;
   }, z.string().max(512, '生成APIキーは512文字以内で入力してください。').optional()),
+  generativeApiModel: z.preprocess((val) => {
+    if (val === '' || val === null || val === undefined) return undefined;
+    if (typeof val === 'string') return val.trim();
+    return val;
+  }, z.string().max(100, '生成AIモデルは100文字以内で入力してください。').optional()),
   requireEstimateOnTaskCreation: z.boolean().default(false),
   enforcePredecessorCompletion: z.boolean().default(false),
   dashboardHelpCommentMaxCount: z.preprocess(
@@ -81,6 +86,13 @@ export const organizationSettingSchemaWithRules = organizationSettingSchema.supe
       code: z.ZodIssueCode.custom,
       path: ['generativeApiKey'],
       message: '選択した生成APIベンダーを利用する場合、APIキーは必須です。',
+    });
+  }
+  if (data.generativeApiVendor !== 'None' && (!data.generativeApiModel || data.generativeApiModel.length === 0)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['generativeApiModel'],
+      message: '選択した生成APIベンダーを利用する場合、モデルは必須です。',
     });
   }
 });

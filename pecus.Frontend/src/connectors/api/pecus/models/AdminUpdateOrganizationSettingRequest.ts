@@ -31,6 +31,10 @@ export type AdminUpdateOrganizationSettingRequest = {
      * 生成APIキー
      */
     generativeApiKey?: string | null;
+    /**
+     * 利用する生成AIモデル（例: gpt-4o, gemini-1.5-pro）
+     */
+    generativeApiModel?: string | null;
     plan: OrganizationPlan;
     helpNotificationTarget?: HelpNotificationTarget;
     /**

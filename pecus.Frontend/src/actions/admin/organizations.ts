@@ -3,6 +3,8 @@
 import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
   AdminUpdateOrganizationSettingRequest,
+  GetAvailableModelsRequest,
+  GetAvailableModelsResponse,
   OrganizationResponse,
   OrganizationSettingResponse,
 } from '@/connectors/api/pecus';
@@ -75,6 +77,7 @@ export async function updateOrganizationSetting(request: {
   plan: OrganizationSettingResponse['plan'];
   helpNotificationTarget?: OrganizationSettingResponse['helpNotificationTarget'];
   generativeApiKey?: string | null;
+  generativeApiModel?: string | null;
   requireEstimateOnTaskCreation?: boolean;
   enforcePredecessorCompletion?: boolean;
   dashboardHelpCommentMaxCount?: number;
@@ -146,5 +149,27 @@ export async function getTaskOrganizationSettings(): Promise<ApiResponse<TaskOrg
   } catch (error) {
     console.error('Failed to fetch task organization settings:', error);
     return parseErrorResponse(error, 'タスク設定の取得に失敗しました');
+  }
+}
+
+/**
+ * Server Action: 利用可能なAIモデル一覧を取得
+ * @param vendor - 生成APIベンダー
+ * @param apiKey - APIキー
+ */
+export async function getAvailableModels(
+  vendor: GetAvailableModelsRequest['vendor'],
+  apiKey: string,
+): Promise<ApiResponse<GetAvailableModelsResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminOrganization.postApiAdminOrganizationAvailableModels({
+      vendor,
+      apiKey,
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch available models:', error);
+    return parseErrorResponse(error, 'モデル一覧の取得に失敗しました');
   }
 }

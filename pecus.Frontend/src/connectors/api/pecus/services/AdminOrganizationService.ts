@@ -4,6 +4,8 @@
 /* eslint-disable */
 import type { AdminUpdateOrganizationRequest } from '../models/AdminUpdateOrganizationRequest';
 import type { AdminUpdateOrganizationSettingRequest } from '../models/AdminUpdateOrganizationSettingRequest';
+import type { GetAvailableModelsRequest } from '../models/GetAvailableModelsRequest';
+import type { GetAvailableModelsResponse } from '../models/GetAvailableModelsResponse';
 import type { OrganizationResponse } from '../models/OrganizationResponse';
 import type { OrganizationSettingResponse } from '../models/OrganizationSettingResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -68,6 +70,29 @@ export class AdminOrganizationService {
                 400: `Bad Request`,
                 404: `Not Found`,
                 409: `Conflict`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 指定したAPIキーとベンダーで利用可能なAIモデル一覧を取得
+     * APIキーとベンダーを指定して、そのベンダーで利用可能なモデル一覧を取得します。
+     * モデル選択UIで使用します。
+     * 外部API呼び出し時のエラー（認証エラー等）はレスポンスのSuccess=falseとErrorMessageで返します。
+     * @param requestBody
+     * @returns GetAvailableModelsResponse OK
+     * @throws ApiError
+     */
+    public static postApiAdminOrganizationAvailableModels(
+        requestBody: GetAvailableModelsRequest,
+    ): CancelablePromise<GetAvailableModelsResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/admin/organization/available-models',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
                 500: `Internal Server Error`,
             },
         });

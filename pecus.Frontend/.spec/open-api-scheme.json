@@ -8752,6 +8752,68 @@
         ]
       }
     },
+    "/api/admin/organization/available-models": {
+      "post": {
+        "tags": [
+          "Admin - Organization"
+        ],
+        "summary": "指定したAPIキーとベンダーで利用可能なAIモデル一覧を取得",
+        "description": "APIキーとベンダーを指定して、そのベンダーで利用可能なモデル一覧を取得します。\nモデル選択UIで使用します。\n外部API呼び出し時のエラー（認証エラー等）はレスポンスのSuccess=falseとErrorMessageで返します。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetAvailableModelsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetAvailableModelsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetAvailableModelsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAvailableModelsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/admin/skills": {
       "post": {
         "tags": [
@@ -11346,6 +11408,12 @@
             "description": "生成APIキー",
             "nullable": true
           },
+          "generativeApiModel": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "利用する生成AIモデル（例: gpt-4o, gemini-1.5-pro）",
+            "nullable": true
+          },
           "plan": {
             "$ref": "#/components/schemas/OrganizationPlan"
           },
@@ -11426,6 +11494,29 @@
           }
         },
         "description": "担当者の期限日別タスク負荷レスポンス"
+      },
+      "AvailableModelResponse": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "モデルID（API呼び出し時に使用）"
+          },
+          "name": {
+            "type": "string",
+            "description": "表示名"
+          },
+          "description": {
+            "type": "string",
+            "description": "説明",
+            "nullable": true
+          }
+        },
+        "description": "利用可能なAIモデルレスポンス"
       },
       "AvatarType": {
         "enum": [
@@ -13462,6 +13553,54 @@
         },
         "description": "ジャンルごとのワークスペース数"
       },
+      "GetAvailableModelsRequest": {
+        "required": [
+          "apiKey",
+          "vendor"
+        ],
+        "type": "object",
+        "properties": {
+          "apiKey": {
+            "type": "string",
+            "description": "APIキー"
+          },
+          "vendor": {
+            "$ref": "#/components/schemas/GenerativeApiVendor"
+          }
+        },
+        "description": "利用可能なAIモデル一覧取得リクエスト"
+      },
+      "GetAvailableModelsResponse": {
+        "required": [
+          "success"
+        ],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "成功したかどうか"
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailableModelResponse"
+            },
+            "description": "利用可能なモデルのリスト（成功時のみ）",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "エラーメッセージ（失敗時のみ）",
+            "nullable": true
+          },
+          "errorDetail": {
+            "type": "string",
+            "description": "エラー詳細（開発用、失敗時のみ）",
+            "nullable": true
+          }
+        },
+        "description": "利用可能なAIモデル一覧取得レスポンス"
+      },
       "GroupChatScope": {
         "enum": [
           "Workspace",
@@ -14669,6 +14808,11 @@
           "generativeApiKey": {
             "type": "string",
             "description": "生成APIキー",
+            "nullable": true
+          },
+          "generativeApiModel": {
+            "type": "string",
+            "description": "利用する生成AIモデル（例: gpt-4o, gemini-1.5-pro）",
             "nullable": true
           },
           "plan": {

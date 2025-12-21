@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { updateOrganizationSetting } from '@/actions/admin/organizations';
+import { useCallback, useEffect, useState } from 'react';
+import { getAvailableModels, updateOrganizationSetting } from '@/actions/admin/organizations';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { Slider } from '@/components/common/filters/Slider';
-import type { HelpNotificationTarget, OrganizationResponse, OrganizationSettingResponse } from '@/connectors/api/pecus';
+import type {
+  AvailableModelResponse,
+  HelpNotificationTarget,
+  OrganizationResponse,
+  OrganizationSettingResponse,
+} from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import {
@@ -130,6 +135,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
 
   const initialSetting = (organization.setting as OrganizationSettingResponse & {
     generativeApiKey?: string | null;
+    generativeApiModel?: string | null;
   }) ?? {
     taskOverdueThreshold: 0,
     weeklyReportDeliveryDay: 0,
@@ -139,6 +145,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     plan: 'Free' as OrganizationSettingResponse['plan'],
     helpNotificationTarget: undefined as OrganizationSettingResponse['helpNotificationTarget'],
     generativeApiKey: '',
+    generativeApiModel: '',
     requireEstimateOnTaskCreation: false,
     enforcePredecessorCompletion: false,
     dashboardHelpCommentMaxCount: 6,
@@ -147,6 +154,9 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
   };
 
   const [rowVersion, setRowVersion] = useState<number>(initialSetting.rowVersion ?? 0);
+  const [availableModels, setAvailableModels] = useState<AvailableModelResponse[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [modelError, setModelError] = useState<string | null>(null);
   const [formData, setFormData] = useState<OrganizationSettingInput>({
     taskOverdueThreshold: initialSetting.taskOverdueThreshold ?? 0,
     weeklyReportDeliveryDay: initialSetting.weeklyReportDeliveryDay ?? 0,
@@ -156,11 +166,77 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     plan: normalizePlan(initialSetting.plan),
     helpNotificationTarget: initialSetting.helpNotificationTarget ?? null,
     generativeApiKey: initialSetting.generativeApiKey ?? '',
+    generativeApiModel: initialSetting.generativeApiModel ?? '',
     requireEstimateOnTaskCreation: initialSetting.requireEstimateOnTaskCreation ?? false,
     enforcePredecessorCompletion: initialSetting.enforcePredecessorCompletion ?? false,
     dashboardHelpCommentMaxCount: initialSetting.dashboardHelpCommentMaxCount ?? 6,
     groupChatScope: initialSetting.groupChatScope ?? null,
   });
+
+  // モデル一覧を取得する関数
+  const fetchAvailableModels = useCallback(
+    async (
+      vendor: OrganizationSettingResponse['generativeApiVendor'],
+      apiKey: string,
+      currentModel?: string,
+    ) => {
+      if (vendor === 'None' || !apiKey) {
+        setAvailableModels([]);
+        setModelError(null);
+        return;
+      }
+
+      setIsLoadingModels(true);
+      setModelError(null);
+
+      try {
+        const result = await getAvailableModels(vendor, apiKey);
+        if (result.success && result.data) {
+          if (result.data.success && result.data.models) {
+            setAvailableModels(result.data.models);
+            // 現在設定されているモデルが取得結果に含まれているかチェック
+            if (currentModel && result.data.models.length > 0) {
+              const modelExists = result.data.models.some((m) => m.id === currentModel);
+              if (!modelExists) {
+                setModelError(
+                  `現在設定されているモデル「${currentModel}」は利用できません。別のモデルを選択してください。`,
+                );
+              } else {
+                setModelError(null);
+              }
+            } else {
+              setModelError(null);
+            }
+          } else {
+            setAvailableModels([]);
+            setModelError(result.data.errorMessage || 'モデル一覧の取得に失敗しました。');
+          }
+        } else if (!result.success) {
+          setAvailableModels([]);
+          setModelError(result.message || 'モデル一覧の取得に失敗しました。');
+        }
+      } catch (error) {
+        console.error('Failed to fetch available models:', error);
+        setAvailableModels([]);
+        setModelError('モデル一覧の取得中にエラーが発生しました。');
+      } finally {
+        setIsLoadingModels(false);
+      }
+    },
+    [],
+  );
+
+  // 初期ロード時にモデル一覧を取得
+  useEffect(() => {
+    if (initialSetting.generativeApiVendor !== 'None' && initialSetting.generativeApiKey) {
+      fetchAvailableModels(
+        normalizeVendor(initialSetting.generativeApiVendor),
+        initialSetting.generativeApiKey,
+        initialSetting.generativeApiModel ?? undefined,
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
@@ -176,6 +252,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
             plan: data.plan,
             helpNotificationTarget: data.helpNotificationTarget ?? undefined,
             generativeApiKey: data.generativeApiVendor === 'None' ? null : (data.generativeApiKey ?? null),
+            generativeApiModel: data.generativeApiVendor === 'None' ? null : (data.generativeApiModel ?? null),
             requireEstimateOnTaskCreation: data.requireEstimateOnTaskCreation ?? false,
             enforcePredecessorCompletion: data.enforcePredecessorCompletion ?? false,
             dashboardHelpCommentMaxCount: data.dashboardHelpCommentMaxCount ?? 6,
@@ -206,6 +283,10 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
 
   const syncWithResponse = (setting: OrganizationSettingResponse) => {
     setRowVersion(setting.rowVersion ?? 0);
+    const extendedSetting = setting as OrganizationSettingResponse & {
+      generativeApiKey?: string | null;
+      generativeApiModel?: string | null;
+    };
     setFormData({
       taskOverdueThreshold: setting.taskOverdueThreshold ?? 0,
       weeklyReportDeliveryDay: setting.weeklyReportDeliveryDay ?? 0,
@@ -214,8 +295,8 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
       generativeApiVendor: normalizeVendor(setting.generativeApiVendor),
       plan: normalizePlan(setting.plan),
       helpNotificationTarget: setting.helpNotificationTarget ?? null,
-      generativeApiKey:
-        (setting as OrganizationSettingResponse & { generativeApiKey?: string | null }).generativeApiKey ?? '',
+      generativeApiKey: extendedSetting.generativeApiKey ?? '',
+      generativeApiModel: extendedSetting.generativeApiModel ?? '',
       requireEstimateOnTaskCreation: setting.requireEstimateOnTaskCreation ?? false,
       enforcePredecessorCompletion: setting.enforcePredecessorCompletion ?? false,
       dashboardHelpCommentMaxCount: setting.dashboardHelpCommentMaxCount ?? 6,
@@ -232,12 +313,32 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
 
       if (fieldName === 'generativeApiVendor' && value === 'None') {
         next.generativeApiKey = '' as never;
+        next.generativeApiModel = '' as never;
       }
 
       return next;
     });
 
+    // ベンダーまたはAPIキーが変更されたらモデル一覧をクリア
+    if (fieldName === 'generativeApiVendor') {
+      setAvailableModels([]);
+      setModelError(null);
+      // モデルもクリア
+      setFormData((prev) => ({ ...prev, generativeApiModel: '' }));
+    }
+
     await validateField(fieldName, value);
+  };
+
+  // APIキーの入力が完了したらモデル一覧を取得
+  const handleApiKeyBlur = () => {
+    if (formData.generativeApiVendor !== 'None' && formData.generativeApiKey) {
+      fetchAvailableModels(
+        formData.generativeApiVendor,
+        formData.generativeApiKey,
+        formData.generativeApiModel || undefined,
+      );
+    }
   };
 
   const vendorRequiresKey = formData.generativeApiVendor !== 'None';
@@ -395,6 +496,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                       className={`input input-bordered ${shouldShowError('generativeApiKey') ? 'input-error' : ''}`}
                       value={formData.generativeApiKey ?? ''}
                       onChange={(e) => handleFieldChange('generativeApiKey', e.target.value)}
+                      onBlur={handleApiKeyBlur}
                       placeholder=""
                       disabled={!vendorRequiresKey}
                     />
@@ -406,6 +508,70 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                         ベンダーが未設定の場合、APIキーは保存されません。
                       </span>
                     )}
+                  </div>
+
+                  <div className="form-control">
+                    <label className="label" htmlFor="select-generative-model">
+                      <span className="label-text font-semibold">生成AIモデル</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <select
+                        id="select-generative-model"
+                        name="generativeApiModel"
+                        className={`select select-bordered flex-1 ${shouldShowError('generativeApiModel') ? 'select-error' : ''}`}
+                        value={formData.generativeApiModel ?? ''}
+                        onChange={(e) => handleFieldChange('generativeApiModel', e.target.value)}
+                        disabled={!vendorRequiresKey || isLoadingModels}
+                      >
+                        <option value="">{isLoadingModels ? '読み込み中...' : 'モデルを選択してください'}</option>
+                        {availableModels.map((model) => (
+                          <option key={model.id} value={model.id}>
+                            {model.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className="btn btn-square btn-outline"
+                        onClick={() => {
+                          if (formData.generativeApiVendor !== 'None' && formData.generativeApiKey) {
+                            fetchAvailableModels(
+                              formData.generativeApiVendor,
+                              formData.generativeApiKey,
+                              formData.generativeApiModel || undefined,
+                            );
+                          }
+                        }}
+                        disabled={!vendorRequiresKey || !formData.generativeApiKey || isLoadingModels}
+                        title="モデル一覧を再取得"
+                      >
+                        <span
+                          className={`icon-[mdi--refresh] size-5 ${isLoadingModels ? 'animate-spin' : ''}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </div>
+                    {shouldShowError('generativeApiModel') && (
+                      <span className="label-text-alt text-error">{getFieldError('generativeApiModel')}</span>
+                    )}
+                    {modelError && <span className="label-text-alt text-error">{modelError}</span>}
+                    {!vendorRequiresKey && (
+                      <span className="label-text-alt text-xs text-base-content/60">
+                        ベンダーを選択しAPIキーを入力後、モデルを選択できます。
+                      </span>
+                    )}
+                    {vendorRequiresKey && !formData.generativeApiKey && (
+                      <span className="label-text-alt text-xs text-base-content/60">APIキーを入力してください。</span>
+                    )}
+                    {vendorRequiresKey &&
+                      formData.generativeApiKey &&
+                      availableModels.length === 0 &&
+                      !isLoadingModels &&
+                      !modelError && (
+                        <span className="label-text-alt text-xs text-base-content/60">
+                          APIキー入力後、フォーカスを外すとモデル一覧を取得します。
+                        </span>
+                      )}
                   </div>
 
                   <div className="form-control">

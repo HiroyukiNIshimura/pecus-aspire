@@ -16,6 +16,7 @@ export type { AddWorkspaceItemRelationResponse } from './models/AddWorkspaceItem
 export type { AdminUpdateOrganizationRequest } from './models/AdminUpdateOrganizationRequest';
 export type { AdminUpdateOrganizationSettingRequest } from './models/AdminUpdateOrganizationSettingRequest';
 export type { AssigneeTaskLoadResponse } from './models/AssigneeTaskLoadResponse';
+export type { AvailableModelResponse } from './models/AvailableModelResponse';
 export type { AvatarType } from './models/AvatarType';
 export type { ChatMessageItem } from './models/ChatMessageItem';
 export type { ChatMessageReplyItem } from './models/ChatMessageReplyItem';
@@ -81,6 +82,8 @@ export type { FocusScorePriority } from './models/FocusScorePriority';
 export type { FocusTaskResponse } from './models/FocusTaskResponse';
 export type { GenerativeApiVendor } from './models/GenerativeApiVendor';
 export type { GenreCount } from './models/GenreCount';
+export type { GetAvailableModelsRequest } from './models/GetAvailableModelsRequest';
+export type { GetAvailableModelsResponse } from './models/GetAvailableModelsResponse';
 export type { GroupChatScope } from './models/GroupChatScope';
 export type { HelpCommentItem } from './models/HelpCommentItem';
 export type { HelpNotificationTarget } from './models/HelpNotificationTarget';
