@@ -346,33 +346,6 @@ export default function CreateWorkspaceTaskModal({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {/* フォーム */}
           <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
-            {/* タスク内容 */}
-            <div className="form-control">
-              <label htmlFor="content" className="label">
-                <span className="label-text font-semibold">
-                  タスク内容 <span className="text-error">*</span>
-                </span>
-              </label>
-              <textarea
-                id="content"
-                name="content"
-                placeholder="タスクの内容を入力してください..."
-                className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
-                onChange={(e) => {
-                  if (shouldShowError('content')) {
-                    validateField('content', e.target.value);
-                  }
-                }}
-                onBlur={(e) => validateField('content', e.target.value)}
-                disabled={isSubmitting}
-              />
-              {shouldShowError('content') && (
-                <div className="label">
-                  <span className="label-text-alt text-error">{getFieldError('content')}</span>
-                </div>
-              )}
-            </div>
-
             {/* タスクタイプと優先度を横並び */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* タスクタイプ */}
@@ -504,6 +477,33 @@ export default function CreateWorkspaceTaskModal({
               {shouldShowError('assignedUserId') && (
                 <div className="label">
                   <span className="label-text-alt text-error">{getFieldError('assignedUserId')}</span>
+                </div>
+              )}
+            </div>
+
+            {/* タスク内容 */}
+            <div className="form-control">
+              <label htmlFor="content" className="label">
+                <span className="label-text font-semibold">
+                  タスク内容 <span className="text-error">*</span>
+                </span>
+              </label>
+              <textarea
+                id="content"
+                name="content"
+                placeholder="タスクは、単純かつ具体的で達成可能な内容を入力にします..."
+                className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
+                onChange={(e) => {
+                  if (shouldShowError('content')) {
+                    validateField('content', e.target.value);
+                  }
+                }}
+                onBlur={(e) => validateField('content', e.target.value)}
+                disabled={isSubmitting}
+              />
+              {shouldShowError('content') && (
+                <div className="label">
+                  <span className="label-text-alt text-error">{getFieldError('content')}</span>
                 </div>
               )}
             </div>

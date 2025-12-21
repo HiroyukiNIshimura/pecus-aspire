@@ -1129,7 +1129,7 @@ export default function WorkspaceTaskDetailPage({
                     <textarea
                       id="content"
                       name="content"
-                      placeholder="タスクの内容を入力してください..."
+                      placeholder="タスクは、単純かつ具体的で達成可能な内容を入力にします..."
                       className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
                       value={content}
                       onChange={(e) => {
