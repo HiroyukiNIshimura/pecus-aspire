@@ -143,6 +143,9 @@ builder.Services.AddSingleton<TokenBlacklistService>();
 // SignalR プレゼンスサービス（Redis ベース、スケールアウト対応）
 builder.Services.AddSingleton<SignalRPresenceService>();
 
+// SignalR 通知サブスクライバー（Redis Pub/Sub → SignalR 転送）
+builder.Services.AddHostedService<SignalRNotificationSubscriber>();
+
 // Lexical Converter gRPC サービスの登録
 var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";
 builder.Services.AddSingleton<ILexicalConverterService>(sp =>

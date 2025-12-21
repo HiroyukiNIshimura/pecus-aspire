@@ -7,6 +7,7 @@ using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
+using Pecus.Libs.Notifications;
 using Pecus.Libs.Security;
 
 #if DEBUG
@@ -47,6 +48,9 @@ builder.Services.AddSingleton<ILexicalConverterService>(sp =>
     var logger = sp.GetRequiredService<ILogger<LexicalConverterService>>();
     return new LexicalConverterService(lexicalConverterEndpoint, logger);
 });
+
+// SignalR 通知パブリッシャー（Redis Pub/Sub 経由で WebApi に通知を送信）
+builder.Services.AddSingleton<SignalRNotificationPublisher>();
 
 // Hangfireタスクの登録
 builder.Services.AddScoped<ActivityTasks>();

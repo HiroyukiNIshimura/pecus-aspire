@@ -120,6 +120,15 @@ var frontend = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")
 | SignalR プレゼンス | Backend Redis に接続 → `SELECT 2` → `FLUSHDB` |
 | セッション | Frontend Redis に接続 → `SELECT 0` → `FLUSHDB` |
 
+### Pub/Sub チャンネル一覧
+
+| チャンネル | 用途 | Publisher | Subscriber |
+|-----------|------|-----------|------------|
+| `coati-signalr:*` | SignalR Backplane | pecus.WebApi | pecus.WebApi |
+| `coati:signalr:notifications` | BackFire → WebApi 通知転送 | pecus.BackFire | pecus.WebApi |
+
+> **注意**: Redis Pub/Sub は DB 番号を区別しません。チャンネル名で用途を分離しています。
+
 ### 確認コマンド
 
 ```bash
