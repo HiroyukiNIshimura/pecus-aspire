@@ -350,35 +350,4 @@ public class BotMessageService
                 b.OrganizationId == organizationId &&
                 b.Type == BotType.SystemBot);
     }
-
-    /// <summary>
-    /// ユーザーの AI ルームに ChatBot からウェルカムメッセージを送信する。
-    /// AI ルームが存在しない場合は作成する。
-    /// 組織設定の GenerativeApiVendor が None の場合はメッセージを送信しない。
-    /// </summary>
-    /// <param name="organizationId">組織ID</param>
-    /// <param name="userId">ユーザーID</param>
-    /// <param name="username">ユーザー名（メッセージに含める）</param>
-    /// <returns>作成されたメッセージ。GenerativeApiVendor が None の場合は null</returns>
-    public async Task<ChatMessage?> SendLoginWelcomeMessageAsync(
-        int organizationId,
-        int userId,
-        string username
-    )
-    {
-        // AI ルームを取得または作成
-        var aiRoom = await _chatRoomService.GetOrCreateAiRoomAsync(userId, organizationId);
-
-        // ChatBot をルームに参加させる（まだ参加していない場合）
-        await JoinRoomAsync(organizationId, aiRoom.Id, BotType.ChatBot);
-
-        // ウェルカムメッセージを送信
-        var content = $"👋 {username}さん、おかえりなさい！\n\n何かお手伝いできることはありますか？タスクの確認や質問など、お気軽にどうぞ。";
-
-        return await SendChatBotMessageAsync(
-            organizationId,
-            aiRoom.Id,
-            content
-        );
-    }
 }
