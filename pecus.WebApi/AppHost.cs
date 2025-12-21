@@ -26,8 +26,15 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Aspire Service Defaults (Serilog含む)
-builder.AddServiceDefaults();
+if (builder.Environment.IsProduction())
+{
+    // Aspire Service Defaults (Serilog含む)
+    builder.AddServiceDefaults(SerilogHelper.LogEnvironment.Production);
+}
+else
+{
+    builder.AddServiceDefaults(SerilogHelper.LogEnvironment.Development);
+}
 
 // Pecus設定の読み込みと登録
 var pecusConfig = builder.Configuration.GetSection("Pecus").Get<PecusConfig>() ?? new PecusConfig();

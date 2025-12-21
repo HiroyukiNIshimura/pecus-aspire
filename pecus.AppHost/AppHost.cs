@@ -2,7 +2,13 @@ using Pecus.Libs;
 using Serilog;
 
 // Serilogの初期化（pecus.Libsの共通設定を使用）
-SerilogHelper.CreateLogger("pecus-apphost");
+
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+    SerilogHelper.CreateLogger("pecus-apphost", SerilogHelper.LogEnvironment.Production);
+else
+{
+    SerilogHelper.CreateLogger("pecus-apphost", SerilogHelper.LogEnvironment.Development);
+}
 
 try
 {

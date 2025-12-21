@@ -12,14 +12,10 @@ public static class SerilogHelper
     /// Serilog Loggerを作成（共通設定）
     /// </summary>
     /// <param name="applicationName">アプリケーション名（ログファイル名とプロパティに使用）</param>
-    public static void CreateLogger(string applicationName)
+    /// <param name="environment"></param>
+    public static void CreateLogger(string applicationName, LogEnvironment environment)
     {
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            //.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
-            //.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Debug)
-            .MinimumLevel.Override("Aspire.Hosting.Dcp", LogEventLevel.Warning)
+        var logConfig = new LoggerConfiguration()
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
             .Enrich.WithEnvironmentName()
@@ -32,7 +28,40 @@ public static class SerilogHelper
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 7,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
-            )
-            .CreateLogger();
+            );
+
+        if (environment == LogEnvironment.Development)
+        {
+            logConfig = logConfig
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("Aspire.Hosting.Dcp", LogEventLevel.Warning)
+                //.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Debug);
+        }
+        else if (environment == LogEnvironment.Production)
+        {
+            logConfig = logConfig
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("Aspire.Hosting.Dcp", LogEventLevel.Warning);
+        }
+
+        Log.Logger = logConfig.CreateLogger();
+    }
+
+    /// <summary>
+    /// ログ出力環境の列挙型
+    /// </summary>
+    public enum LogEnvironment
+    {
+        /// <summary>
+        /// 開発環境
+        /// </summary>
+        Development,
+        /// <summary>
+        /// 本番環境
+        /// </summary>
+        Production
     }
 }

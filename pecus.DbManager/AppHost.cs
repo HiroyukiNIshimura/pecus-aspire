@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.DbManager;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Seed;
 using Pecus.Libs.Lexical;
@@ -14,8 +15,15 @@ AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Aspire Service Defaultsの追加
-builder.AddServiceDefaults();
+if (builder.Environment.IsProduction())
+{
+    // Aspire Service Defaults (Serilog含む)
+    builder.AddServiceDefaults(SerilogHelper.LogEnvironment.Production);
+}
+else
+{
+    builder.AddServiceDefaults(SerilogHelper.LogEnvironment.Development);
+}
 
 // DbContextの登録 - Aspireの接続文字列を使用
 builder.AddNpgsqlDbContext<ApplicationDbContext>(

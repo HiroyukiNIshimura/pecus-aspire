@@ -2,6 +2,7 @@ using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Pecus.BackFire;
 using Pecus.BackFire.Services;
+using Pecus.Libs;
 using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
@@ -19,7 +20,17 @@ AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddServiceDefaults();
+
+if (builder.Environment.IsProduction())
+{
+    // Aspire Service Defaults (Serilog含む)
+    builder.AddServiceDefaults(SerilogHelper.LogEnvironment.Production);
+}
+else
+{
+    builder.AddServiceDefaults(SerilogHelper.LogEnvironment.Development);
+}
+
 builder.AddRedisClient("redis");
 
 // DbContextの登録

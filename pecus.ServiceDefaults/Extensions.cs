@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using Pecus.Libs;
 using Serilog;
 
 namespace Microsoft.Extensions.Hosting;
@@ -18,10 +19,10 @@ public static class Extensions
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
 
-    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder)
+    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder, SerilogHelper.LogEnvironment environment = SerilogHelper.LogEnvironment.Development)
         where TBuilder : IHostApplicationBuilder
     {
-        builder.AddSerilogLogging();
+        builder.AddSerilogLogging(environment);
 
         builder.ConfigureOpenTelemetry();
 
@@ -138,10 +139,10 @@ public static class Extensions
     /// <summary>
     /// Serilogロギングを設定
     /// </summary>
-    public static TBuilder AddSerilogLogging<TBuilder>(this TBuilder builder)
+    public static TBuilder AddSerilogLogging<TBuilder>(this TBuilder builder, SerilogHelper.LogEnvironment environment = SerilogHelper.LogEnvironment.Development)
         where TBuilder : IHostApplicationBuilder
     {
-        Pecus.Libs.SerilogHelper.CreateLogger(builder.Environment.ApplicationName);
+        Pecus.Libs.SerilogHelper.CreateLogger(builder.Environment.ApplicationName, environment);
         builder.Services.AddSerilog(dispose: true);
 
         return builder;
