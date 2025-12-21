@@ -2,33 +2,34 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Pecus.Libs.AI.Configuration;
-using Pecus.Libs.AI.Provider.OpenAI;
+using Pecus.Libs.AI.Provider.Default;
 
 namespace Pecus.Libs.AI.Extensions;
 
 /// <summary>
-/// OpenAI サービス登録拡張メソッド
+/// Default AIクライアント サービス登録拡張メソッド
 /// </summary>
-public static class OpenAIServiceExtensions
+public static class DefaultAiServiceExtensions
 {
     /// <summary>
-    /// OpenAIクライアントをDIコンテナに登録
+    /// DefaultAiClientをDIコンテナに登録
+    /// DeepSeekの設定を使用してシステムデフォルトのAIクライアントを提供
     /// </summary>
     /// <param name="services">サービスコレクション</param>
     /// <param name="configuration">設定</param>
     /// <returns>サービスコレクション</returns>
-    public static IServiceCollection AddOpenAIClient(
+    public static IServiceCollection AddDefaultAiClient(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // 設定をバインド
-        services.Configure<OpenAISettings>(
-            configuration.GetSection(OpenAISettings.SectionName));
+        // DeepSeekの設定を使用（既に登録されている場合はスキップ）
+        services.Configure<DeepSeekSettings>(
+            configuration.GetSection(DeepSeekSettings.SectionName));
 
         // 設定値を取得してバリデーション
         var settings = configuration
-            .GetSection(OpenAISettings.SectionName)
-            .Get<OpenAISettings>();
+            .GetSection(DeepSeekSettings.SectionName)
+            .Get<DeepSeekSettings>();
 
         if (settings == null || string.IsNullOrEmpty(settings.ApiKey))
         {
@@ -38,8 +39,8 @@ public static class OpenAIServiceExtensions
 
         var timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
 
-        // Named HttpClient を登録
-        services.AddHttpClient(OpenAIClient.HttpClientName, (sp, client) =>
+        // Named HttpClient を登録（DefaultAiClient専用）
+        services.AddHttpClient(DefaultAiClient.HttpClientName, (sp, client) =>
         {
             client.Timeout = timeout;
         }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
@@ -57,9 +58,9 @@ public static class OpenAIServiceExtensions
             options.CircuitBreaker.SamplingDuration = timeout * 2;
         });
 
-        // OpenAIClient を登録
-        services.AddScoped<OpenAIClient>();
-        services.AddScoped<IOpenAIClient>(sp => sp.GetRequiredService<OpenAIClient>());
+        // DefaultAiClient を登録
+        services.AddScoped<DefaultAiClient>();
+        services.AddScoped<IDefaultAiClient>(sp => sp.GetRequiredService<DefaultAiClient>());
 
         return services;
     }

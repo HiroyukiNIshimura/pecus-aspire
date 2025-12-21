@@ -57,10 +57,9 @@ public static class GeminiServiceExtensions
             options.CircuitBreaker.SamplingDuration = timeout * 2;
         });
 
-        // GeminiClient を登録（IGeminiClient と IAiClient の両方に対応）
+        // GeminiClient を登録
         services.AddScoped<GeminiClient>();
         services.AddScoped<IGeminiClient>(sp => sp.GetRequiredService<GeminiClient>());
-        services.AddScoped<IAiClient>(sp => sp.GetRequiredService<GeminiClient>());
 
         return services;
     }

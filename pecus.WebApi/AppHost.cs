@@ -369,10 +369,12 @@ builder.Services.AddHttpLogging(logging =>
     logging.ResponseBodyLogLimit = 4096;
 });
 
-// AI クライアントの登録
-//builder.Services.AddOpenAIClient(builder.Configuration);
+// AI クライアントの登録（APIキーが設定されているプロバイダーのみ有効化）
+builder.Services.AddOpenAIClient(builder.Configuration);
 builder.Services.AddDeepSeekClient(builder.Configuration);
-//builder.Services.AddGeminiClient(builder.Configuration);
+builder.Services.AddGeminiClient(builder.Configuration);
+builder.Services.AddDefaultAiClient(builder.Configuration);
+builder.Services.AddAiClientFactory();
 //-------------
 var app = builder.Build();
 

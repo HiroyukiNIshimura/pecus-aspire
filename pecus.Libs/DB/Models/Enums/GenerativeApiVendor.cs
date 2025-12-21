@@ -29,4 +29,9 @@ public enum GenerativeApiVendor
     /// Google Gemini API
     /// </summary>
     GoogleGemini = 4,
+
+    /// <summary>
+    /// DeepSeek API
+    /// </summary>
+    DeepSeek = 5
 }

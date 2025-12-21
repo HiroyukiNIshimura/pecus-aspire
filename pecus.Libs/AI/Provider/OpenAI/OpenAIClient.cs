@@ -16,6 +16,7 @@ public class OpenAIClient : IOpenAIClient, IAiClient
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly OpenAISettings _settings;
     private readonly ILogger<OpenAIClient> _logger;
+    private readonly string? _overrideApiKey;
 
     /// <summary>
     /// HttpClient名
@@ -23,7 +24,7 @@ public class OpenAIClient : IOpenAIClient, IAiClient
     public const string HttpClientName = nameof(OpenAIClient);
 
     /// <summary>
-    /// コンストラクタ
+    /// コンストラクタ（DI用）
     /// </summary>
     public OpenAIClient(
         IHttpClientFactory httpClientFactory,
@@ -33,7 +34,32 @@ public class OpenAIClient : IOpenAIClient, IAiClient
         _httpClientFactory = httpClientFactory;
         _settings = settings.Value;
         _logger = logger;
+        _overrideApiKey = null;
     }
+
+    /// <summary>
+    /// コンストラクタ（組織設定APIキー用）
+    /// </summary>
+    /// <param name="httpClientFactory">HttpClientファクトリー</param>
+    /// <param name="settings">設定</param>
+    /// <param name="logger">ロガー</param>
+    /// <param name="apiKey">組織設定のAPIキー</param>
+    public OpenAIClient(
+        IHttpClientFactory httpClientFactory,
+        IOptions<OpenAISettings> settings,
+        ILogger<OpenAIClient> logger,
+        string apiKey)
+    {
+        _httpClientFactory = httpClientFactory;
+        _settings = settings.Value;
+        _logger = logger;
+        _overrideApiKey = apiKey;
+    }
+
+    /// <summary>
+    /// 使用するAPIキーを取得
+    /// </summary>
+    private string GetApiKey() => _overrideApiKey ?? _settings.ApiKey;
 
     /// <summary>
     /// 設定済みのHttpClientを作成
@@ -45,7 +71,7 @@ public class OpenAIClient : IOpenAIClient, IAiClient
         var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
         client.BaseAddress = new Uri(baseUrl);
         client.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _settings.ApiKey);
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", GetApiKey());
         return client;
     }
 

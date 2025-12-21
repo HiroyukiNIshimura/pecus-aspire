@@ -16,6 +16,7 @@ public class GeminiClient : IGeminiClient, IAiClient
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly GeminiSettings _settings;
     private readonly ILogger<GeminiClient> _logger;
+    private readonly string? _overrideApiKey;
 
     /// <summary>
     /// HttpClient名
@@ -23,7 +24,7 @@ public class GeminiClient : IGeminiClient, IAiClient
     public const string HttpClientName = nameof(GeminiClient);
 
     /// <summary>
-    /// コンストラクタ
+    /// コンストラクタ（DI用）
     /// </summary>
     public GeminiClient(
         IHttpClientFactory httpClientFactory,
@@ -33,7 +34,32 @@ public class GeminiClient : IGeminiClient, IAiClient
         _httpClientFactory = httpClientFactory;
         _settings = settings.Value;
         _logger = logger;
+        _overrideApiKey = null;
     }
+
+    /// <summary>
+    /// コンストラクタ（組織設定APIキー用）
+    /// </summary>
+    /// <param name="httpClientFactory">HttpClientファクトリー</param>
+    /// <param name="settings">設定</param>
+    /// <param name="logger">ロガー</param>
+    /// <param name="apiKey">組織設定のAPIキー</param>
+    public GeminiClient(
+        IHttpClientFactory httpClientFactory,
+        IOptions<GeminiSettings> settings,
+        ILogger<GeminiClient> logger,
+        string apiKey)
+    {
+        _httpClientFactory = httpClientFactory;
+        _settings = settings.Value;
+        _logger = logger;
+        _overrideApiKey = apiKey;
+    }
+
+    /// <summary>
+    /// 使用するAPIキーを取得
+    /// </summary>
+    private string GetApiKey() => _overrideApiKey ?? _settings.ApiKey;
 
     /// <summary>
     /// 設定済みのHttpClientを作成
@@ -60,7 +86,7 @@ public class GeminiClient : IGeminiClient, IAiClient
             request.Contents.Count);
 
         // Gemini APIはURLにモデル名とAPIキーを含める
-        var url = $"models/{_settings.DefaultModel}:generateContent?key={_settings.ApiKey}";
+        var url = $"models/{_settings.DefaultModel}:generateContent?key={GetApiKey()}";
 
         var response = await client.PostAsJsonAsync(
             url,

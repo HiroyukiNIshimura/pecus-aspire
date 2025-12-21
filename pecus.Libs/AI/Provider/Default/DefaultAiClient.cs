@@ -5,61 +5,35 @@ using Pecus.Libs.AI.Models;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace Pecus.Libs.AI.Provider.DeepSeek;
+namespace Pecus.Libs.AI.Provider.Default;
 
 /// <summary>
-/// DeepSeek APIクライアント
-/// IAiClientを実装し、バックエンド内部でプロバイダー非依存で使用可能
+/// システムデフォルトAIクライアント
+/// 現在はDeepSeek APIを使用（将来的に変更可能）
 /// </summary>
-public class DeepSeekClient : IDeepSeekClient, IAiClient
+public class DefaultAiClient : IDefaultAiClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly DeepSeekSettings _settings;
-    private readonly ILogger<DeepSeekClient> _logger;
-    private readonly string? _overrideApiKey;
+    private readonly ILogger<DefaultAiClient> _logger;
 
     /// <summary>
     /// HttpClient名
     /// </summary>
-    public const string HttpClientName = nameof(DeepSeekClient);
+    public const string HttpClientName = nameof(DefaultAiClient);
 
     /// <summary>
-    /// コンストラクタ（DI用）
+    /// コンストラクタ
     /// </summary>
-    public DeepSeekClient(
+    public DefaultAiClient(
         IHttpClientFactory httpClientFactory,
         IOptions<DeepSeekSettings> settings,
-        ILogger<DeepSeekClient> logger)
+        ILogger<DefaultAiClient> logger)
     {
         _httpClientFactory = httpClientFactory;
         _settings = settings.Value;
         _logger = logger;
-        _overrideApiKey = null;
     }
-
-    /// <summary>
-    /// コンストラクタ（組織設定APIキー用）
-    /// </summary>
-    /// <param name="httpClientFactory">HttpClientファクトリー</param>
-    /// <param name="settings">設定</param>
-    /// <param name="logger">ロガー</param>
-    /// <param name="apiKey">組織設定のAPIキー</param>
-    public DeepSeekClient(
-        IHttpClientFactory httpClientFactory,
-        IOptions<DeepSeekSettings> settings,
-        ILogger<DeepSeekClient> logger,
-        string apiKey)
-    {
-        _httpClientFactory = httpClientFactory;
-        _settings = settings.Value;
-        _logger = logger;
-        _overrideApiKey = apiKey;
-    }
-
-    /// <summary>
-    /// 使用するAPIキーを取得
-    /// </summary>
-    private string GetApiKey() => _overrideApiKey ?? _settings.ApiKey;
 
     /// <summary>
     /// 設定済みのHttpClientを作成
@@ -71,11 +45,13 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
         var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
         client.BaseAddress = new Uri(baseUrl);
         client.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", GetApiKey());
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _settings.ApiKey);
         return client;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Chat Completionを実行
+    /// </summary>
     public async Task<ChatCompletionResponse> ChatCompletionAsync(
         ChatCompletionRequest request,
         CancellationToken cancellationToken = default)
@@ -83,7 +59,7 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
         using var client = CreateClient();
 
         _logger.LogDebug(
-            "DeepSeek API request: Model={Model}, Messages={MessageCount}",
+            "Default AI (DeepSeek) API request: Model={Model}, Messages={MessageCount}",
             request.Model,
             request.Messages.Count);
 
@@ -96,7 +72,7 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
         {
             var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
             _logger.LogError(
-                "DeepSeek API error: Status={StatusCode}, Content={Content}",
+                "Default AI (DeepSeek) API error: Status={StatusCode}, Content={Content}",
                 response.StatusCode,
                 errorContent);
             response.EnsureSuccessStatusCode();
@@ -106,11 +82,11 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
 
         if (result == null)
         {
-            throw new InvalidOperationException("DeepSeek API returned null response");
+            throw new InvalidOperationException("Default AI (DeepSeek) API returned null response");
         }
 
         _logger.LogDebug(
-            "DeepSeek API response: Id={Id}, TotalTokens={TotalTokens}",
+            "Default AI (DeepSeek) API response: Id={Id}, TotalTokens={TotalTokens}",
             result.Id,
             result.Usage?.TotalTokens);
 
@@ -197,10 +173,10 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
 
         if (string.IsNullOrEmpty(content))
         {
-            throw new InvalidOperationException("DeepSeek API returned empty content for JSON request");
+            throw new InvalidOperationException("Default AI (DeepSeek) API returned empty content for JSON request");
         }
 
-        _logger.LogDebug("DeepSeek JSON response content: {Content}", content);
+        _logger.LogDebug("Default AI (DeepSeek) JSON response content: {Content}", content);
 
         try
         {

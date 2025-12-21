@@ -57,10 +57,9 @@ public static class DeepSeekServiceExtensions
             options.CircuitBreaker.SamplingDuration = timeout * 2;
         });
 
-        // DeepSeekClient を登録（IDeepSeekClient と IAiClient の両方に対応）
+        // DeepSeekClient を登録
         services.AddScoped<DeepSeekClient>();
         services.AddScoped<IDeepSeekClient>(sp => sp.GetRequiredService<DeepSeekClient>());
-        services.AddScoped<IAiClient>(sp => sp.GetRequiredService<DeepSeekClient>());
 
         return services;
     }
