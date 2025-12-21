@@ -211,24 +211,25 @@ function ChatRoomListMobile({
   const filteredRooms = rooms.filter((room) => {
     switch (activeTab) {
       case 'dm':
-        return room.type === 'Dm';
+        // DM と AI ルーム（個人向けアシスタント）を表示
+        return room.type === 'Dm' || room.type === 'Ai';
       case 'group':
         return room.type === 'Group';
       case 'system':
-        return room.type === 'System' || room.type === 'Ai';
+        return room.type === 'System';
       default:
         return true;
     }
   });
 
   const tabs = [
-    { key: 'dm' as const, label: 'DM', icon: 'icon-[tabler--user]', count: unreadCounts.dm },
+    { key: 'dm' as const, label: 'DM', icon: 'icon-[tabler--user]', count: unreadCounts.dm + unreadCounts.ai },
     { key: 'group' as const, label: 'グループ', icon: 'icon-[tabler--users]', count: unreadCounts.group },
     {
       key: 'system' as const,
       label: '通知',
       icon: 'icon-[tabler--bell]',
-      count: unreadCounts.system + unreadCounts.ai,
+      count: unreadCounts.system,
     },
   ];
 

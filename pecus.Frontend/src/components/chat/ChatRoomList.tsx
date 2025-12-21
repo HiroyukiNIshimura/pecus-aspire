@@ -80,11 +80,12 @@ export default function ChatRoomList({ rooms, loading = false, onRoomCreated }: 
   const filteredRooms = rooms.filter((room) => {
     switch (activeTab) {
       case 'dm':
-        return room.type === 'Dm';
+        // DM と AI ルーム（個人向けアシスタント）を表示
+        return room.type === 'Dm' || room.type === 'Ai';
       case 'group':
         return room.type === 'Group';
       case 'system':
-        return room.type === 'System' || room.type === 'Ai';
+        return room.type === 'System';
       default:
         return true;
     }
@@ -94,11 +95,12 @@ export default function ChatRoomList({ rooms, loading = false, onRoomCreated }: 
   const getTabUnreadCount = (tab: ChatTab): number => {
     switch (tab) {
       case 'dm':
-        return unreadCounts.dm;
+        // DM と AI の未読数を合算
+        return unreadCounts.dm + unreadCounts.ai;
       case 'group':
         return unreadCounts.group;
       case 'system':
-        return unreadCounts.system + unreadCounts.ai;
+        return unreadCounts.system;
       default:
         return 0;
     }

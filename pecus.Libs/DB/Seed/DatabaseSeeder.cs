@@ -1,6 +1,7 @@
 ﻿using Bogus.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Pecus.Libs.AI;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Lexical;
@@ -797,8 +798,8 @@ public class DatabaseSeeder
                     OrganizationId = org.Id,
                     Type = BotType.ChatBot,
                     Name = "Coati Bot",
-                    Persona = null,
-                    IconUrl = null,
+                    Persona = BotPersonaHelper.GetChatBotPersona(),
+                    IconUrl = "/icons/bot/chat.webp",
                 });
             }
 
@@ -810,8 +811,8 @@ public class DatabaseSeeder
                     OrganizationId = org.Id,
                     Type = BotType.SystemBot,
                     Name = "System Bot",
-                    Persona = null,
-                    IconUrl = null,
+                    Persona = BotPersonaHelper.GetSystemBotPersona(),
+                    IconUrl = "/icons/bot/system.webp",
                 });
             }
         }

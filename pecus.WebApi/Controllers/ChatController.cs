@@ -653,19 +653,25 @@ public class ChatController : BaseSecureController
 
     private static ChatUserItem MapToChatUserItemFromActor(Pecus.Libs.DB.Models.ChatActor actor)
     {
+        // Bot の場合は AvatarUrl を直接使用（IconUrl が格納されている）
+        // User の場合は IdentityIconHelper を使用
+        var identityIconUrl = actor.ActorType == ChatActorType.Bot
+            ? actor.AvatarUrl ?? ""
+            : IdentityIconHelper.GetIdentityIconUrl(
+                actor.AvatarType,
+                actor.UserId ?? 0,
+                actor.DisplayName,
+                actor.User?.Email ?? "",
+                actor.AvatarUrl
+            );
+
         return new ChatUserItem
         {
             Id = actor.UserId ?? 0,  // Bot の場合は 0
             Username = actor.DisplayName,
             Email = actor.User?.Email ?? "",
             AvatarType = actor.AvatarType?.ToString()?.ToLowerInvariant(),
-            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
-                actor.AvatarType,
-                actor.UserId ?? 0,
-                actor.DisplayName,
-                actor.User?.Email ?? "",
-                actor.AvatarUrl
-            ),
+            IdentityIconUrl = identityIconUrl,
             IsActive = actor.User?.IsActive ?? true,
         };
     }
