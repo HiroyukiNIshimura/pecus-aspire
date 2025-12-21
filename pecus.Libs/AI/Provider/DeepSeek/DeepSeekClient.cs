@@ -17,6 +17,7 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
     private readonly DeepSeekSettings _settings;
     private readonly ILogger<DeepSeekClient> _logger;
     private readonly string? _overrideApiKey;
+    private readonly string? _overrideModel;
 
     /// <summary>
     /// HttpClient名
@@ -44,22 +45,30 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
     /// <param name="settings">設定</param>
     /// <param name="logger">ロガー</param>
     /// <param name="apiKey">組織設定のAPIキー</param>
+    /// <param name="model">使用するモデル名（省略時は設定のデフォルトモデル）</param>
     public DeepSeekClient(
         IHttpClientFactory httpClientFactory,
         IOptions<DeepSeekSettings> settings,
         ILogger<DeepSeekClient> logger,
-        string apiKey)
+        string apiKey,
+        string? model = null)
     {
         _httpClientFactory = httpClientFactory;
         _settings = settings.Value;
         _logger = logger;
         _overrideApiKey = apiKey;
+        _overrideModel = model;
     }
 
     /// <summary>
     /// 使用するAPIキーを取得
     /// </summary>
     private string GetApiKey() => _overrideApiKey ?? _settings.ApiKey;
+
+    /// <summary>
+    /// 使用するモデルを取得
+    /// </summary>
+    private string GetModel() => _overrideModel ?? _settings.DefaultModel;
 
     /// <summary>
     /// 設定済みのHttpClientを作成
@@ -137,7 +146,7 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
 
         var request = new ChatCompletionRequest
         {
-            Model = _settings.DefaultModel,
+            Model = GetModel(),
             Messages = messages,
             Temperature = _settings.DefaultTemperature,
             MaxTokens = _settings.DefaultMaxTokens
@@ -175,7 +184,7 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
 
         var request = new ChatCompletionRequest
         {
-            Model = _settings.DefaultModel,
+            Model = GetModel(),
             Messages = chatMessages,
             Temperature = _settings.DefaultTemperature,
             MaxTokens = _settings.DefaultMaxTokens
@@ -240,7 +249,7 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
 
         var request = new ChatCompletionRequest
         {
-            Model = _settings.DefaultModel,
+            Model = GetModel(),
             Messages = requestMessages,
             Temperature = _settings.DefaultTemperature,
             MaxTokens = _settings.DefaultMaxTokens,

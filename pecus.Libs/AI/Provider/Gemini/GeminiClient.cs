@@ -17,6 +17,7 @@ public class GeminiClient : IGeminiClient, IAiClient
     private readonly GeminiSettings _settings;
     private readonly ILogger<GeminiClient> _logger;
     private readonly string? _overrideApiKey;
+    private readonly string? _overrideModel;
 
     /// <summary>
     /// HttpClient名
@@ -44,22 +45,30 @@ public class GeminiClient : IGeminiClient, IAiClient
     /// <param name="settings">設定</param>
     /// <param name="logger">ロガー</param>
     /// <param name="apiKey">組織設定のAPIキー</param>
+    /// <param name="model">使用するモデル名（省略時は設定のデフォルトモデル）</param>
     public GeminiClient(
         IHttpClientFactory httpClientFactory,
         IOptions<GeminiSettings> settings,
         ILogger<GeminiClient> logger,
-        string apiKey)
+        string apiKey,
+        string? model = null)
     {
         _httpClientFactory = httpClientFactory;
         _settings = settings.Value;
         _logger = logger;
         _overrideApiKey = apiKey;
+        _overrideModel = model;
     }
 
     /// <summary>
     /// 使用するAPIキーを取得
     /// </summary>
     private string GetApiKey() => _overrideApiKey ?? _settings.ApiKey;
+
+    /// <summary>
+    /// 使用するモデルを取得
+    /// </summary>
+    private string GetModel() => _overrideModel ?? _settings.DefaultModel;
 
     /// <summary>
     /// 設定済みのHttpClientを作成
@@ -82,11 +91,11 @@ public class GeminiClient : IGeminiClient, IAiClient
 
         _logger.LogDebug(
             "Gemini API request: Model={Model}, Contents={ContentCount}",
-            _settings.DefaultModel,
+            GetModel(),
             request.Contents.Count);
 
         // Gemini APIはURLにモデル名とAPIキーを含める
-        var url = $"models/{_settings.DefaultModel}:generateContent?key={GetApiKey()}";
+        var url = $"models/{GetModel()}:generateContent?key={GetApiKey()}";
 
         var response = await client.PostAsJsonAsync(
             url,

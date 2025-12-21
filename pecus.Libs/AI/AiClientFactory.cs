@@ -44,7 +44,7 @@ public class AiClientFactory : IAiClientFactory
     public IAiClient GetDefaultClient() => _defaultClient;
 
     /// <inheritdoc />
-    public IAiClient? CreateClient(GenerativeApiVendor vendor, string? apiKey)
+    public IAiClient? CreateClient(GenerativeApiVendor vendor, string? apiKey, string? model = null)
     {
         if (string.IsNullOrEmpty(apiKey) || vendor == GenerativeApiVendor.None)
         {
@@ -57,19 +57,22 @@ public class AiClientFactory : IAiClientFactory
                 _httpClientFactory,
                 _openAiSettings,
                 _loggerFactory.CreateLogger<OpenAIClient>(),
-                apiKey),
+                apiKey,
+                model),
 
             GenerativeApiVendor.GoogleGemini => new GeminiClient(
                 _httpClientFactory,
                 _geminiSettings,
                 _loggerFactory.CreateLogger<GeminiClient>(),
-                apiKey),
+                apiKey,
+                model),
 
             GenerativeApiVendor.DeepSeek => new DeepSeekClient(
                 _httpClientFactory,
                 _deepSeekSettings,
                 _loggerFactory.CreateLogger<DeepSeekClient>(),
-                apiKey),
+                apiKey,
+                model),
 
             _ => null
         };
