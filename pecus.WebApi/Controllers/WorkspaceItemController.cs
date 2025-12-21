@@ -454,10 +454,10 @@ public class WorkspaceItemController : BaseSecureController
             );
         }
 
-        var suggestion = await _documentSuggestionService.SuggestDocumentContentAsync(workspace!, request.Title);
+        var suggestion = await _documentSuggestionService.SuggestDocumentContentForOrganizationAsync(workspace!.OrganizationId, workspace, request.Title);
         var response = new DocumentSuggestionResponse
         {
-            SuggestedContent = suggestion
+            SuggestedContent = suggestion ?? string.Empty
         };
         return TypedResults.Ok(response);
     }

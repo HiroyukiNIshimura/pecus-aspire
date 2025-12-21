@@ -3,6 +3,7 @@ using Hangfire.Redis.StackExchange;
 using Pecus.BackFire;
 using Pecus.BackFire.Services;
 using Pecus.Libs;
+using Pecus.Libs.AI;
 using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
@@ -72,6 +73,9 @@ builder.Services.AddDeepSeekClient(builder.Configuration);
 builder.Services.AddGeminiClient(builder.Configuration);
 builder.Services.AddDefaultAiClient(builder.Configuration);
 builder.Services.AddAiClientFactory();
+
+// メッセージ感情分析
+builder.Services.AddScoped<MessageAnalyzer>();
 
 // Hangfireタスクの登録
 builder.Services.AddScoped<ActivityTasks>();

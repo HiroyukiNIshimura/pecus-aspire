@@ -26,6 +26,7 @@ public class DocumentSuggestionService
 
     /// <summary>
     /// ドキュメント内容を提案（システムデフォルトのAIプロバイダーを使用）
+    /// 未使用
     /// </summary>
     /// <param name="workspace">ワークスペース</param>
     /// <param name="title">ドキュメントタイトル</param>
