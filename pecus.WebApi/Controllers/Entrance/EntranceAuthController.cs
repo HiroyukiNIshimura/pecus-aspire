@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Services;
 
@@ -179,11 +180,11 @@ public class EntranceAuthController : ControllerBase
             );
         }
 
-        // テスト用: ChatBotからログインウェルカムメッセージを送信
-        if (user.OrganizationId.HasValue)
+        // ChatBotからログインウェルカムメッセージを送信
+        if (user.OrganizationId.HasValue && user.LastLoginAt.HasValue == false)
         {
             var orgId = user.OrganizationId.Value;
-            _backgroundJobClient.Enqueue<ChatBotTasks>(x =>
+            _backgroundJobClient.Enqueue<FirstTouchdownTask>(x =>
                 x.SendLoginWelcomeMessageAsync(
                     orgId,
                     user.Id,

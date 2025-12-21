@@ -5,24 +5,24 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Notifications;
 
-namespace Pecus.Libs.Hangfire.Tasks;
+namespace Pecus.Libs.Hangfire.Tasks.Bot;
 
 /// <summary>
 /// ChatBot 関連の Hangfire タスク
 /// </summary>
-public class ChatBotTasks
+public class FirstTouchdownTask
 {
     private readonly ApplicationDbContext _context;
     private readonly SignalRNotificationPublisher _publisher;
-    private readonly ILogger<ChatBotTasks> _logger;
+    private readonly ILogger<FirstTouchdownTask> _logger;
 
     /// <summary>
-    /// ChatBotTasks のコンストラクタ
+    /// FirstTouchdownTask のコンストラクタ
     /// </summary>
-    public ChatBotTasks(
+    public FirstTouchdownTask(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
-        ILogger<ChatBotTasks> logger)
+        ILogger<FirstTouchdownTask> logger)
     {
         _context = context;
         _publisher = publisher;
@@ -30,7 +30,7 @@ public class ChatBotTasks
     }
 
     /// <summary>
-    /// ログイン時のウェルカムメッセージを送信する（テスト用）
+    /// ログイン時のウェルカムメッセージを送信する
     /// </summary>
     /// <param name="organizationId">組織ID</param>
     /// <param name="userId">ユーザーID</param>
@@ -43,7 +43,7 @@ public class ChatBotTasks
             userId
         );
 
-        // 10秒待機（テスト用：ログイン完了後に通知が届くことを確認するため）
+        // 10秒待機
         await Task.Delay(TimeSpan.FromSeconds(10));
 
         try
@@ -107,7 +107,7 @@ public class ChatBotTasks
             }
 
             // 3. メッセージを作成
-            var content = $"👋 {username}さん、おかえりなさい！\n\n何かお手伝いできることはありますか？タスクの確認や質問など、お気軽にどうぞ。";
+            var content = $"👋 {username}さん、初めまして！\n\n Coati Botです！\n\n 何かお手伝いできることはありますか？タスクの確認や質問など、お気軽にどうぞ。";
 
             var message = new ChatMessage
             {
@@ -118,12 +118,6 @@ public class ChatBotTasks
             };
             _context.ChatMessages.Add(message);
             await _context.SaveChangesAsync();
-
-            _logger.LogInformation(
-                "Created ChatBot message: MessageId={MessageId}, RoomId={RoomId}",
-                message.Id,
-                aiRoom.Id
-            );
 
             // 4. SignalR 通知を送信（Redis Pub/Sub 経由）
             // 注: チャットルームグループ (chat:{roomId}) ではなく組織グループ (organization:{orgId}) に送信
@@ -160,7 +154,7 @@ public class ChatBotTasks
                 OrganizationId = organizationId,
             });
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Published ChatBot notification: RoomId={RoomId}, MessageId={MessageId}, Receivers={ReceiverCount}",
                 aiRoom.Id,
                 message.Id,
