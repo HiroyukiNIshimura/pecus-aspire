@@ -69,9 +69,9 @@ export default function ChatMessageItemComponent({
     <div className="flex justify-start my-2">
       <div className="flex items-start gap-2 max-w-[80%]">
         {/* アバター */}
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-base-300 flex items-center justify-center">
+        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-base-300 flex items-center justify-center">
           {sender?.identityIconUrl ? (
-            <img src={sender.identityIconUrl} alt={sender.username} className="w-8 h-8 rounded-full" />
+            <img src={sender.identityIconUrl} alt={sender.username} className="w-12 h-12 rounded-full" />
           ) : (
             <span className="icon-[tabler--user] size-5 text-base-content/70" aria-hidden="true" />
           )}

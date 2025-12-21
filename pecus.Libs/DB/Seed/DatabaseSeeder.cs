@@ -798,7 +798,6 @@ public class DatabaseSeeder
                     OrganizationId = org.Id,
                     Type = BotType.ChatBot,
                     Name = "Coati Bot",
-                    Persona = BotPersonaHelper.GetChatBotPersona(),
                     IconUrl = "/icons/bot/chat.webp",
                 });
             }
@@ -811,7 +810,6 @@ public class DatabaseSeeder
                     OrganizationId = org.Id,
                     Type = BotType.SystemBot,
                     Name = "System Bot",
-                    Persona = BotPersonaHelper.GetSystemBotPersona(),
                     IconUrl = "/icons/bot/system.webp",
                 });
             }
@@ -825,7 +823,24 @@ public class DatabaseSeeder
         }
         else
         {
-            _logger.LogInformation("All organizations already have bots, skipping");
+            _logger.LogInformation("All organizations already have bots, skipping creation");
+        }
+
+        // 全ての Bot の Persona を Type ごとに一括更新（2回のSQL発行）
+        var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
+        var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
+
+        var chatBotUpdated = await _context.Bots
+            .Where(b => b.Type == BotType.ChatBot)
+            .ExecuteUpdateAsync(s => s.SetProperty(b => b.Persona, chatBotPersona));
+
+        var systemBotUpdated = await _context.Bots
+            .Where(b => b.Type == BotType.SystemBot)
+            .ExecuteUpdateAsync(s => s.SetProperty(b => b.Persona, systemBotPersona));
+
+        if (chatBotUpdated > 0 || systemBotUpdated > 0)
+        {
+            _logger.LogInformation("Updated persona for {ChatBotCount} ChatBots and {SystemBotCount} SystemBots", chatBotUpdated, systemBotUpdated);
         }
     }
 
