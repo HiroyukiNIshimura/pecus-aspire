@@ -53,6 +53,12 @@ public class OrganizationSetting
     public string? GenerativeApiKey { get; set; }
 
     /// <summary>
+    /// 利用する生成AIのモデル名（例: gpt-4o, gemini-1.5-pro など）
+    /// nullの場合はベンダーのデフォルトモデルを使用
+    /// </summary>
+    public string? GenerativeApiModel { get; set; }
+
+    /// <summary>
     /// 利用プラン
     /// </summary>
     public OrganizationPlan Plan { get; set; } = OrganizationPlan.Free;
