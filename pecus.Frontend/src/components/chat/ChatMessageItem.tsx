@@ -1,6 +1,7 @@
 'use client';
 
 import type { ChatMessageItem } from '@/connectors/api/pecus';
+import { convertToLinks } from '@/libs/utils/autoLink';
 import { formatRelativeTime } from '@/libs/utils/date';
 
 interface ChatMessageItemComponentProps {
@@ -27,7 +28,10 @@ export default function ChatMessageItemComponent({
   if (messageType === 'System') {
     return (
       <div className="flex justify-center my-2">
-        <div className="bg-base-300 text-base-content/70 text-xs px-3 py-1 rounded-full">{content}</div>
+        <div
+          className="bg-base-300 text-base-content/70 text-xs px-3 py-1 rounded-full"
+          dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }}
+        />
       </div>
     );
   }
@@ -41,7 +45,10 @@ export default function ChatMessageItemComponent({
             <span className="icon-[tabler--robot] size-5 text-secondary-content" aria-hidden="true" />
           </div>
           <div>
-            <div className="bg-secondary/20 text-base-content px-3 py-2 rounded-lg rounded-tl-none">{content}</div>
+            <div
+              className="bg-secondary/20 text-base-content px-3 py-2 rounded-lg rounded-tl-none"
+              dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }}
+            />
             <div className="text-xs text-base-content/50 mt-1">{createdAt && formatRelativeTime(createdAt)}</div>
           </div>
         </div>
@@ -54,7 +61,10 @@ export default function ChatMessageItemComponent({
     return (
       <div className="flex justify-end my-2">
         <div className="max-w-[80%]">
-          <div className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none">{content}</div>
+          <div
+            className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none"
+            dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }}
+          />
           <div className="flex items-center justify-end gap-2 mt-1">
             <span className="text-xs text-base-content/50">{createdAt && formatRelativeTime(createdAt)}</span>
             {showReadStatus && <span className="text-xs text-primary">既読</span>}
@@ -79,7 +89,10 @@ export default function ChatMessageItemComponent({
         <div>
           {/* 送信者名 */}
           <div className="text-xs text-base-content/70 mb-1">{sender?.username || '不明'}</div>
-          <div className="bg-base-300 text-base-content px-3 py-2 rounded-lg rounded-tl-none">{content}</div>
+          <div
+            className="bg-base-300 text-base-content px-3 py-2 rounded-lg rounded-tl-none"
+            dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }}
+          />
           <div className="text-xs text-base-content/50 mt-1">{createdAt && formatRelativeTime(createdAt)}</div>
         </div>
       </div>

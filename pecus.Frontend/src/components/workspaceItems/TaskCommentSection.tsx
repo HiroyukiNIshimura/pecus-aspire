@@ -10,6 +10,7 @@ import {
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { convertToLinks } from '@/libs/utils/autoLink';
 import { formatDateTime } from '@/libs/utils/date';
 
 /** コメントタイプのラベルと色 */
@@ -411,7 +412,10 @@ export default function TaskCommentSection({
                         {comment.isDeleted ? (
                           <span className="italic text-base-content/50 text-sm">このコメントは削除されました</span>
                         ) : (
-                          <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                          <p
+                            className="text-sm whitespace-pre-wrap"
+                            dangerouslySetInnerHTML={{ __html: convertToLinks(comment.content ?? '') }}
+                          />
                         )}
                       </div>
                     )}
