@@ -4,6 +4,7 @@ using Pecus.BackFire;
 using Pecus.BackFire.Services;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
@@ -60,7 +61,7 @@ builder.Services.AddScoped<ImageTasks>();
 builder.Services.AddScoped<CleanupTasks>();
 builder.Services.AddScoped<UploadsCleanupTasks>();
 builder.Services.AddScoped<WorkspaceItemTasks>();
-builder.Services.AddScoped<ChatBotTasks>();
+builder.Services.AddScoped<FirstTouchdownTask>();
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
 builder.Services.AddHangfire(
