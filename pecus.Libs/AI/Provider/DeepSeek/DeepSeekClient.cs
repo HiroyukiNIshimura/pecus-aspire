@@ -140,6 +140,35 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
     }
 
     /// <inheritdoc />
+    public async Task<string> GenerateTextWithMessagesAsync(
+        IEnumerable<(MessageRole Role, string Content)> messages,
+        CancellationToken cancellationToken = default)
+    {
+        var chatMessages = messages.Select(m => new ChatMessage
+        {
+            Role = m.Role switch
+            {
+                MessageRole.System => "system",
+                MessageRole.User => "user",
+                MessageRole.Assistant => "assistant",
+                _ => "user"
+            },
+            Content = m.Content
+        }).ToList();
+
+        var request = new ChatCompletionRequest
+        {
+            Model = _settings.DefaultModel,
+            Messages = chatMessages,
+            Temperature = _settings.DefaultTemperature,
+            MaxTokens = _settings.DefaultMaxTokens
+        };
+
+        var response = await ChatCompletionAsync(request, cancellationToken);
+        return response.Choices.FirstOrDefault()?.Message.Content ?? string.Empty;
+    }
+
+    /// <inheritdoc />
     public async Task<string> GenerateMarkdownFromTitleAsync(
         string title,
         string? additionalContext = null,

@@ -149,6 +149,47 @@ public class GeminiClient : IGeminiClient, IAiClient
     }
 
     /// <inheritdoc />
+    public async Task<string> GenerateTextWithMessagesAsync(
+        IEnumerable<(MessageRole Role, string Content)> messages,
+        CancellationToken cancellationToken = default)
+    {
+        // GeminiはsystemメッセージをSystemInstructionとして分離する必要がある
+        var messageList = messages.ToList();
+        var systemMessages = messageList.Where(m => m.Role == MessageRole.System).ToList();
+        var conversationMessages = messageList.Where(m => m.Role != MessageRole.System).ToList();
+
+        // user/assistantメッセージをContentsに変換
+        var contents = conversationMessages.Select(m => new GeminiContent
+        {
+            Role = m.Role == MessageRole.Assistant ? "model" : "user", // Geminiはassistantをmodelと呼ぶ
+            Parts = [new GeminiPart { Text = m.Content }]
+        }).ToList();
+
+        var request = new GeminiRequest
+        {
+            Contents = contents,
+            GenerationConfig = new GeminiGenerationConfig
+            {
+                Temperature = _settings.DefaultTemperature,
+                MaxOutputTokens = _settings.DefaultMaxTokens
+            }
+        };
+
+        // systemメッセージがあればSystemInstructionに設定（複数ある場合は結合）
+        if (systemMessages.Count > 0)
+        {
+            var combinedSystemPrompt = string.Join("\n\n", systemMessages.Select(m => m.Content));
+            request.SystemInstruction = new GeminiContent
+            {
+                Parts = [new GeminiPart { Text = combinedSystemPrompt }]
+            };
+        }
+
+        var response = await GenerateContentAsync(request, cancellationToken);
+        return response.Candidates.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text ?? string.Empty;
+    }
+
+    /// <inheritdoc />
     public async Task<string> GenerateMarkdownFromTitleAsync(
         string title,
         string? additionalContext = null,

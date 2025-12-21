@@ -1,6 +1,27 @@
 namespace Pecus.Libs.AI;
 
 /// <summary>
+/// AIメッセージの役割
+/// </summary>
+public enum MessageRole
+{
+    /// <summary>
+    /// システム指示（AIの振る舞いを定義）
+    /// </summary>
+    System,
+
+    /// <summary>
+    /// ユーザーからの入力
+    /// </summary>
+    User,
+
+    /// <summary>
+    /// AIアシスタントの応答
+    /// </summary>
+    Assistant
+}
+
+/// <summary>
 /// AIクライアントの共通インターフェース
 /// バックエンド内部で使用するAI機能の抽象化層
 /// </summary>
@@ -16,6 +37,17 @@ public interface IAiClient
     Task<string> GenerateTextAsync(
         string systemPrompt,
         string userPrompt,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// メッセージ配列を指定してテキストを生成
+    /// system/user/assistantメッセージを任意の順番で指定可能
+    /// </summary>
+    /// <param name="messages">メッセージの配列（Role: 役割, Content: 内容）</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>生成されたテキスト</returns>
+    Task<string> GenerateTextWithMessagesAsync(
+        IEnumerable<(MessageRole Role, string Content)> messages,
         CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -128,9 +128,38 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             Model = _settings.DefaultModel,
             Messages =
             [
-                ChatMessage.System(systemPrompt),
+                ChatMessage.Developer(systemPrompt),
                 ChatMessage.User(userPrompt)
             ],
+            Temperature = _settings.DefaultTemperature,
+            MaxTokens = _settings.DefaultMaxTokens
+        };
+
+        var response = await ChatCompletionAsync(request, cancellationToken);
+        return response.Choices.FirstOrDefault()?.Message.Content ?? string.Empty;
+    }
+
+    /// <inheritdoc />
+    public async Task<string> GenerateTextWithMessagesAsync(
+        IEnumerable<(MessageRole Role, string Content)> messages,
+        CancellationToken cancellationToken = default)
+    {
+        var chatMessages = messages.Select(m => new ChatMessage
+        {
+            Role = m.Role switch
+            {
+                MessageRole.System => "developer",
+                MessageRole.User => "user",
+                MessageRole.Assistant => "assistant",
+                _ => "user"
+            },
+            Content = m.Content
+        }).ToList();
+
+        var request = new ChatCompletionRequest
+        {
+            Model = _settings.DefaultModel,
+            Messages = chatMessages,
             Temperature = _settings.DefaultTemperature,
             MaxTokens = _settings.DefaultMaxTokens
         };
@@ -184,7 +213,7 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             Model = _settings.DefaultModel,
             Messages =
             [
-                ChatMessage.System(jsonSystemPrompt),
+                ChatMessage.Developer(jsonSystemPrompt),
                 ChatMessage.User(userPrompt)
             ],
             Temperature = _settings.DefaultTemperature,
