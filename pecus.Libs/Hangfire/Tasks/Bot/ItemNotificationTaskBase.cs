@@ -173,6 +173,7 @@ public abstract class ItemNotificationTaskBase
     /// <param name="item">アイテム</param>
     /// <param name="updatedByUserName">更新者名</param>
     /// <param name="workspaceCode">ワークスペースコード</param>
+    /// <param name="details"></param>
     /// <returns>メッセージ内容</returns>
     protected abstract string BuildNotificationMessage(
         int organizationId,
@@ -190,6 +191,7 @@ public abstract class ItemNotificationTaskBase
     /// アイテム通知の共通処理を実行する
     /// </summary>
     /// <param name="itemId">アイテムID</param>
+    /// <param name="details"></param>
     protected async Task ExecuteNotificationAsync(int itemId, string? details)
     {
         DB.Models.Bot? systemBot = null;
