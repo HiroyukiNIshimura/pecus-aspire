@@ -41,15 +41,7 @@ function Avatar({
 
 /** メッセージ本文コンポーネント */
 function MessageContent({ content, className }: { content: string | null | undefined; className: string }) {
-  return (
-    <div>
-      <pre>
-        <code>
-          <p className={className} dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }} />
-        </code>
-      </pre>
-    </div>
-  );
+  return <div className={className} dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }} />;
 }
 
 /** タイムスタンプコンポーネント */

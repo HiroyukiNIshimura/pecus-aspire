@@ -25,7 +25,6 @@ public class CreateItemTask : ItemNotificationTaskBase
         要件:
         - 100文字以内で簡潔にまとめる
         - アイテムの要点を伝える
-        - フレンドリーで読みやすいトーン
         - 絵文字は使わない
         - 挨拶は不要
 
