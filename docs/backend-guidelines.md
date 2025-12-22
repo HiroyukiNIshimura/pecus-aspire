@@ -3,6 +3,8 @@
 ## AI エージェント向け要約（必読）
 
 - **コンテキスト**: .NET 10 / EF Core 10 / .NET Aspire ベースのマイクロサービスバックエンド。
+- **最優先事項**:
+  - **DTO は API 仕様書そのもの**: DTO はフロントエンド（または外部公開時）の API 仕様書と同等です。DTO を設計する際は「このエンドポイントを使うクライアント開発者が何を期待するか」を常に意識してください。一般ユーザー向けと管理者向けで異なる項目が必要な場合は、DTO を分離してください（例: `GetWorkspacesRequest` と `AdminGetWorkspacesRequest`）。
 - **重要ルール**:
   - **コントローラー**: MVC コントローラー + `HttpResults`（`Ok<T>`, `Created<T>`）。`IActionResult` は禁止。
   - **競合制御**: `DbUpdateConcurrencyException` を catch → `FindAsync` で最新取得 → `ConcurrencyException<T>` をスロー。
@@ -107,7 +109,17 @@ dotnet ef migrations add <MigrationName> --project pecus.DbManager --startup-pro
 - マイグレーションファイルは `pecus.DbManager/Migrations/` に配置
 - マイグレーション名は `YYYYMMDDHHMMSS_DescriptiveAction` の形式で命名
 
-#### 4. **DTO の確認・更新（`pecus.WebApi/Models/Requests/`） ← 重要**
+#### 4. **DTO の確認・更新（`pecus.WebApi/Models/Requests/`） ← 最重要**
+
+> **DTO は API 仕様書そのものです。**
+>
+> DTO を設計する際は「このエンドポイントを使うフロントエンド開発者（または外部クライアント）が何を期待するか」を常に意識してください。DTO の構造がそのまま OpenAPI 仕様書に反映され、自動生成されるクライアントコードの型定義になります。
+
+**DTO 分離の原則**:
+- 一般ユーザー向けと管理者向けで異なる項目が必要な場合は、**必ず DTO を分離**してください
+- 例: `GetWorkspacesRequest`（一般用）と `AdminGetWorkspacesRequest`（管理者用：`IsActive` フィルタを含む）
+- 一般ユーザーに不要な項目を含めると、API 仕様書として誤解を招き、セキュリティリスクにもなります
+
 **DB スキーマ変更時は、対応するリクエスト DTO をすべて確認・更新する必要があります：**
 
 - **作成リクエスト** (`CreateXxxRequest`):
@@ -131,6 +143,8 @@ dotnet ef migrations add <MigrationName> --project pecus.DbManager --startup-pro
   - エラーメッセージは日本語で具体的に記述
 
 **DTO チェックリスト**:
+- [ ] **API 仕様書として適切か**: フロントエンド開発者がこの DTO を見て、何を送るべきか明確に理解できるか
+- [ ] **ユーザー種別ごとの分離**: 一般ユーザー向けと管理者向けで異なる項目がある場合、DTO を分離したか
 - [ ] DB モデルの全必須項目が作成リクエストに含まれているか
 - [ ] 更新リクエストに新しい項目が追加されたか
 - [ ] すべてのプロパティに検証属性が付与されているか
