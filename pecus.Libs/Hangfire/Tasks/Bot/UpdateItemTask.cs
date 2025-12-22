@@ -29,18 +29,20 @@ public class UpdateItemTask : ItemNotificationTaskBase
     protected override string BuildNotificationMessage(
         int organizationId,
         WorkspaceItem item,
-        string ownerName,
-        string workspaceCode)
+        string updatedByUserName,
+        string workspaceCode,
+        string? details)
     {
-        return $"{ownerName}さんがアイテムを更新しました。\n[{workspaceCode}#{item.Code}]";
+        return $"{updatedByUserName}さんがアイテムの内容を更新しました。\n[{workspaceCode}#{item.Code}]";
     }
 
     /// <summary>
     /// アイテム更新時のメッセージ通知を実行する
     /// </summary>
     /// <param name="itemId">更新されたアイテムのID</param>
-    public async Task NotifyItemUpdatedAsync(int itemId)
+    /// <param name="details">変更内容</param>
+    public async Task NotifyItemUpdatedAsync(int itemId, string? details)
     {
-        await ExecuteNotificationAsync(itemId);
+        await ExecuteNotificationAsync(itemId, details);
     }
 }

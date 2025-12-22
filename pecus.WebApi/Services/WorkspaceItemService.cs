@@ -6,6 +6,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
 using Pecus.Models.Enums;
@@ -1788,6 +1789,16 @@ public class WorkspaceItemService
         _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
         );
+
+        if (actionType == ActivityActionType.BodyUpdated || actionType == ActivityActionType.SubjectUpdated)
+        {
+            _backgroundJobClient.Enqueue<UpdateItemTask>(x =>
+                x.NotifyItemUpdatedAsync(
+                    itemId,
+                    details
+                )
+            );
+        }
     }
 
     /// <summary>

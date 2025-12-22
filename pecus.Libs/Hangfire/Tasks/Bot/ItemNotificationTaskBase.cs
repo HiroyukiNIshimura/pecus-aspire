@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -42,7 +43,7 @@ public abstract class ItemNotificationTaskBase
     }
 
     /// <summary>
-    /// アイテムを取得する（Workspace と Owner を含む）
+    /// アイテムを取得する（Workspace と UpdatedByUser を含む）
     /// </summary>
     /// <param name="itemId">アイテムID</param>
     /// <returns>取得したアイテム、見つからない場合は null</returns>
@@ -50,7 +51,7 @@ public abstract class ItemNotificationTaskBase
     {
         return await Context.WorkspaceItems
             .Include(i => i.Workspace)
-            .Include(i => i.Owner)
+            .Include(i => i.UpdatedByUser)
             .FirstOrDefaultAsync(i => i.Id == itemId);
     }
 
@@ -170,14 +171,15 @@ public abstract class ItemNotificationTaskBase
     /// </summary>
     /// <param name="organizationId">組織ID</param>
     /// <param name="item">アイテム</param>
-    /// <param name="ownerName">オーナー名</param>
+    /// <param name="updatedByUserName">更新者名</param>
     /// <param name="workspaceCode">ワークスペースコード</param>
     /// <returns>メッセージ内容</returns>
     protected abstract string BuildNotificationMessage(
         int organizationId,
         WorkspaceItem item,
-        string ownerName,
-        string workspaceCode);
+        string updatedByUserName,
+        string workspaceCode,
+        string? details);
 
     /// <summary>
     /// タスク名を取得する（ログ出力用、継承クラスで実装）
@@ -188,7 +190,7 @@ public abstract class ItemNotificationTaskBase
     /// アイテム通知の共通処理を実行する
     /// </summary>
     /// <param name="itemId">アイテムID</param>
-    protected async Task ExecuteNotificationAsync(int itemId)
+    protected async Task ExecuteNotificationAsync(int itemId, string? details)
     {
         DB.Models.Bot? systemBot = null;
         ChatRoom? room = null;
@@ -196,7 +198,7 @@ public abstract class ItemNotificationTaskBase
 
         try
         {
-            // アイテムを取得（Workspace と Owner を含む）
+            // アイテムを取得（Workspace と UpdatedByUser を含む）
             var item = await GetItemWithDetailsAsync(itemId);
 
             if (item == null)
@@ -219,7 +221,7 @@ public abstract class ItemNotificationTaskBase
 
             organizationId = item.Workspace.OrganizationId;
             var workspaceCode = item.Workspace.Code ?? item.Workspace.Name;
-            var ownerName = item.Owner?.Username ?? "不明なユーザー";
+            var updatedByUser = item.UpdatedByUser?.Username ?? "不明なユーザー";
 
             // ワークスペースのグループチャットルームを取得
             room = await GetWorkspaceGroupChatRoomAsync(item.WorkspaceId);
@@ -253,7 +255,7 @@ public abstract class ItemNotificationTaskBase
             );
 
             // メッセージを作成してグループチャットに送信
-            var messageContent = BuildNotificationMessage(organizationId, item, ownerName, workspaceCode);
+            var messageContent = BuildNotificationMessage(organizationId, item, updatedByUser, workspaceCode, details);
             await SendBotMessageAsync(organizationId, room, systemBot, messageContent);
 
             // 入力終了を通知

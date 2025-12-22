@@ -29,10 +29,12 @@ public class CreateItemTask : ItemNotificationTaskBase
     protected override string BuildNotificationMessage(
         int organizationId,
         WorkspaceItem item,
-        string ownerName,
-        string workspaceCode)
+        string updatedByUserName,
+        string workspaceCode,
+        //detailsはNULLで使用しないため無視
+        string? details)
     {
-        return $"{ownerName}さんがアイテムを作成しました。\n[{workspaceCode}#{item.Code}]";
+        return $"{updatedByUserName}さんがアイテムを作成しました。\n[{workspaceCode}#{item.Code}]";
     }
 
     /// <summary>
@@ -41,6 +43,6 @@ public class CreateItemTask : ItemNotificationTaskBase
     /// <param name="itemId">作成されたアイテムのID</param>
     public async Task NotifyItemCreatedAsync(int itemId)
     {
-        await ExecuteNotificationAsync(itemId);
+        await ExecuteNotificationAsync(itemId, null);
     }
 }

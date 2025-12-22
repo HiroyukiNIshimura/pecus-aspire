@@ -245,13 +245,6 @@ public class WorkspaceItemController : BaseSecureController
             CurrentUserId
         );
 
-        // ワークスペースアイテム更新通知をバックグラウンドジョブで実行
-        _backgroundJobClient.Enqueue<UpdateItemTask>(x =>
-                x.NotifyItemUpdatedAsync(
-                   item.Id
-                )
-            );
-
         var response = new WorkspaceItemResponse
         {
             Success = true,
