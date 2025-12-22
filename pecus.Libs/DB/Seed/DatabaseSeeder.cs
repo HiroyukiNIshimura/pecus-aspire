@@ -901,7 +901,7 @@ public class DatabaseSeeder
         if (!await _context.Users.AnyAsync(u => u.Email == "admin@sample.com"))
         {
             var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
-            var organization = await _context.Organizations.FirstOrDefaultAsync();
+            var organization = await _context.Organizations.OrderBy(o => o.Id).FirstOrDefaultAsync();
 
             var adminUser = new User
             {

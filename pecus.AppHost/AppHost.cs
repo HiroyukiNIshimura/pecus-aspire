@@ -52,6 +52,7 @@ try
     var dbManager = builder
         .AddProject<Projects.pecus_DbManager>("dbmanager")
         .WithReference(pecusDb)
+        .WithReference(lexicalConverter)
         .WaitFor(lexicalConverter)
         .WaitFor(pecusDb);
 
