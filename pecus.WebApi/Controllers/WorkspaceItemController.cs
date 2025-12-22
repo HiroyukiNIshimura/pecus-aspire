@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
@@ -74,6 +75,13 @@ public class WorkspaceItemController : BaseSecureController
             request,
             CurrentUserId
         );
+
+        // ワークスペースアイテム作成通知をバックグラウンドジョブで実行
+        _backgroundJobClient.Enqueue<CreateItemTask>(x =>
+                 x.NotifyItemCreatedAsync(
+                    item.Id
+                 )
+             );
 
         var response = new WorkspaceItemResponse
         {

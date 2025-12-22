@@ -95,6 +95,12 @@ builder.Services.AddScoped<UploadsCleanupTasks>();
 builder.Services.AddScoped<WorkspaceItemTasks>();
 builder.Services.AddScoped<FirstTouchdownTask>();
 builder.Services.AddScoped<AiChatReplyTask>();
+builder.Services.AddScoped<CreateItemTask>();
+builder.Services.AddScoped<UpdateItemTask>();
+builder.Services.AddScoped<CreateTaskTask>();
+builder.Services.AddScoped<UpdateTaskTask>();
+builder.Services.AddScoped<GroupChatReplyTask>();
+
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
 builder.Services.AddHangfire(
