@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.Notifications;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
@@ -8,12 +9,8 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 /// タスク作成時にワークスペースグループチャットへメッセージを通知する Hangfire タスク
 /// 必要に応じてメッセージを作成し、関連するワークスペースのグループチャットに通知する
 /// </summary>
-public class CreateTaskTask
+public class CreateTaskTask : TaskNotificationTaskBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly SignalRNotificationPublisher _publisher;
-    private readonly ILogger<CreateTaskTask> _logger;
-
     /// <summary>
     /// CreateTaskTask のコンストラクタ
     /// </summary>
@@ -21,10 +18,22 @@ public class CreateTaskTask
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
         ILogger<CreateTaskTask> logger)
+        : base(context, publisher, logger)
     {
-        _context = context;
-        _publisher = publisher;
-        _logger = logger;
+    }
+
+    /// <inheritdoc />
+    protected override string TaskName => "CreateTaskTask";
+
+    /// <inheritdoc />
+    protected override string BuildNotificationMessage(
+        WorkspaceTask task,
+        string userName,
+        string workspaceCode)
+    {
+        var itemCode = task.WorkspaceItem.Code;
+        var taskSequence = task.Sequence;
+        return $"{userName}さんがタスクを作成しました。\n[{workspaceCode}#{itemCode}T{taskSequence}]";
     }
 
     /// <summary>
@@ -33,33 +42,6 @@ public class CreateTaskTask
     /// <param name="taskId">作成されたタスクのID</param>
     public async Task NotifyTaskCreatedAsync(int taskId)
     {
-        _logger.LogDebug(
-            "CreateTaskTask started: TaskId={TaskId}",
-            taskId
-        );
-
-        try
-        {
-            // TODO: 1. タスクを取得
-            // TODO: 2. タスクに関連するワークスペースを取得
-            // TODO: 3. ワークスペースのグループチャットルームを取得
-            // TODO: 4. メッセージ作成が必要か判定
-            // TODO: 5. 必要であればメッセージを作成してグループチャットに送信
-            // TODO: 6. SignalR でリアルタイム通知
-
-            _logger.LogDebug(
-                "CreateTaskTask completed: TaskId={TaskId}",
-                taskId
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "CreateTaskTask failed: TaskId={TaskId}",
-                taskId
-            );
-            throw;
-        }
+        await ExecuteNotificationAsync(taskId);
     }
 }
