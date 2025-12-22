@@ -19,15 +19,17 @@ public class UpdateTaskTask : TaskNotificationTaskBase
     /// </summary>
     private const string MessageGenerationPrompt = """
         あなたはチームのチャットルームに投稿するアシスタントです。
-        更新されたタスクの内容を確認し、チームメンバーに対して簡潔に紹介するメッセージを生成してください。
+        【重要】これは既存タスクの「更新」通知です。新規作成ではありません。
+        更新後のタスク内容を確認し、チームメンバーに対して簡潔に紹介するメッセージを生成してください。
 
         要件:
         - 100文字以内で簡潔にまとめる
-        - タスクの要点（種類、優先度、期限など）を伝える
+        - 「更新」「変更」などの表現を使う（「作成」「新規」は使わない）
+        - タスクの現在の状態（種類、優先度、期限、進捗など）を伝える
         - 絵文字は使わない
         - 挨拶は不要
 
-        例: 「バグ修正タスクの優先度が高に変更されました。期限は12/25（残り3日）です。」
+        例: 「バグ修正タスクの優先度が高に更新されました。期限は12/25（残り3日）、進捗50%です。」
         """;
 
     private readonly IAiClientFactory? _aiClientFactory;
@@ -105,6 +107,9 @@ public class UpdateTaskTask : TaskNotificationTaskBase
                 タスク種類: {taskTypeName}
                 優先度: {priorityText}
                 期限: {dueDateText}
+                進捗率: {task.ProgressPercentage}%
+                完了: {(task.IsCompleted ? "はい" : "いいえ")}
+                破棄: {(task.IsDiscarded ? "はい" : "いいえ")}
                 内容: {task.Content}
                 """;
 

@@ -105,6 +105,9 @@ public class CreateTaskTask : TaskNotificationTaskBase
                 タスク種類: {taskTypeName}
                 優先度: {priorityText}
                 期限: {dueDateText}
+                進捗率: {task.ProgressPercentage}%
+                完了: {(task.IsCompleted ? "はい" : "いいえ")}
+                破棄: {(task.IsDiscarded ? "はい" : "いいえ")}
                 内容: {task.Content}
                 """;
 
