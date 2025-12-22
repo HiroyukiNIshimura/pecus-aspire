@@ -21,7 +21,7 @@ public class AiClientFactory : IAiClientFactory
     private readonly IOptions<GeminiSettings> _geminiSettings;
     private readonly IOptions<DeepSeekSettings> _deepSeekSettings;
     private readonly ILoggerFactory _loggerFactory;
-    private readonly DefaultAiClient _defaultClient;
+    private readonly DefaultAiClient? _defaultClient;
 
     /// <summary>
     /// コンストラクタ
@@ -33,7 +33,7 @@ public class AiClientFactory : IAiClientFactory
         IOptions<GeminiSettings> geminiSettings,
         IOptions<DeepSeekSettings> deepSeekSettings,
         ILoggerFactory loggerFactory,
-        DefaultAiClient defaultClient)
+        DefaultAiClient? defaultClient = null)
     {
         _httpClientFactory = httpClientFactory;
         _openAiSettings = openAiSettings;
@@ -45,7 +45,9 @@ public class AiClientFactory : IAiClientFactory
     }
 
     /// <inheritdoc />
-    public IAiClient GetDefaultClient() => _defaultClient;
+    public IAiClient GetDefaultClient() =>
+        _defaultClient ?? throw new InvalidOperationException(
+            "デフォルトAIクライアントが設定されていません。appsettings.json で DeepSeek:ApiKey を設定してください。");
 
     /// <inheritdoc />
     public IAiClient? CreateClient(GenerativeApiVendor vendor, string? apiKey, string? model = null)
