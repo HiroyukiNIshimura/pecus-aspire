@@ -549,6 +549,26 @@ public class ChatController : BaseSecureController
             );
         }
 
+        //グループチャットの場合は
+        if (room?.Type == ChatRoomType.Group && room.WorkspaceId != null)
+        {
+            // ワークスペースのメンバーに対して通知を送信するバックグラウンドジョブをキュー
+            _backgroundJobClient.Enqueue<GroupChatReplyTask>(x =>
+                x.SendReplyAsync(
+                    CurrentUser!.OrganizationId!.Value,
+                    roomId,
+                    message.Id,
+                    CurrentUserId
+                )
+            );
+
+            _logger.LogDebug(
+                "Enqueued Group chat reply task: RoomId={RoomId}, MessageId={MessageId}",
+                roomId,
+                message.Id
+            );
+        }
+
         var response = MapToMessageItem(message);
 
         return TypedResults.Created($"/api/chat/rooms/{roomId}/messages/{message.Id}", response);

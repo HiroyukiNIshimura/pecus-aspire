@@ -203,6 +203,10 @@ public abstract class ItemNotificationTaskBase
             itemId
         );
 
+        DB.Models.Bot? systemBot = null;
+        ChatRoom? room = null;
+        int organizationId = 0;
+
         try
         {
             // 1. アイテムを取得（Workspace と Owner を含む）
@@ -226,12 +230,12 @@ public abstract class ItemNotificationTaskBase
                 return;
             }
 
-            var organizationId = item.Workspace.OrganizationId;
+            organizationId = item.Workspace.OrganizationId;
             var workspaceCode = item.Workspace.Code ?? item.Workspace.Name;
             var ownerName = item.Owner?.Username ?? "不明なユーザー";
 
             // 2. ワークスペースのグループチャットルームを取得
-            var room = await GetWorkspaceGroupChatRoomAsync(item.WorkspaceId);
+            room = await GetWorkspaceGroupChatRoomAsync(item.WorkspaceId);
 
             if (room == null)
             {
@@ -243,7 +247,7 @@ public abstract class ItemNotificationTaskBase
             }
 
             // 3. SystemBot を取得
-            var systemBot = await GetSystemBotAsync(organizationId);
+            systemBot = await GetSystemBotAsync(organizationId);
             if (systemBot?.ChatActor == null)
             {
                 Logger.LogWarning(
@@ -256,11 +260,29 @@ public abstract class ItemNotificationTaskBase
             // 4. SystemBot がルームのメンバーか確認し、メンバーでなければ追加
             await EnsureBotIsMemberAsync(room.Id, systemBot.ChatActor.Id);
 
-            // 5. TODO: メッセージ作成が必要か判定（現在は常に作成）
+            // 5. 入力開始を通知
+            await Publisher.PublishChatBotTypingAsync(
+                organizationId,
+                room.Id,
+                systemBot.ChatActor.Id,
+                systemBot.Name,
+                isTyping: true
+            );
 
-            // 6. メッセージを作成してグループチャットに送信
+            // 6. TODO: メッセージ作成が必要か判定（現在は常に作成）
+
+            // 7. メッセージを作成してグループチャットに送信
             var messageContent = BuildNotificationMessage(organizationId, item, ownerName, workspaceCode);
             await SendBotMessageAsync(organizationId, room, systemBot, messageContent);
+
+            // 8. 入力終了を通知
+            await Publisher.PublishChatBotTypingAsync(
+                organizationId,
+                room.Id,
+                systemBot.ChatActor.Id,
+                systemBot.Name,
+                isTyping: false
+            );
 
             Logger.LogDebug(
                 "{TaskName} completed: ItemId={ItemId}, RoomId={RoomId}",
@@ -277,6 +299,30 @@ public abstract class ItemNotificationTaskBase
                 TaskName,
                 itemId
             );
+
+            // エラー時も入力終了を通知
+            if (systemBot?.ChatActor != null && room != null)
+            {
+                try
+                {
+                    await Publisher.PublishChatBotTypingAsync(
+                        organizationId,
+                        room.Id,
+                        systemBot.ChatActor.Id,
+                        systemBot.Name,
+                        isTyping: false
+                    );
+                }
+                catch (Exception notifyEx)
+                {
+                    Logger.LogError(
+                        notifyEx,
+                        "Failed to send typing end notification: RoomId={RoomId}",
+                        room.Id
+                    );
+                }
+            }
+
             throw;
         }
     }

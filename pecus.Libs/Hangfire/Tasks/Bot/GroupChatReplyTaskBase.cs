@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -24,6 +25,11 @@ public abstract class GroupChatReplyTaskBase
     protected readonly SignalRNotificationPublisher Publisher;
 
     /// <summary>
+    /// AI クライアントファクトリー
+    /// </summary>
+    protected readonly IAiClientFactory AiClientFactory;
+
+    /// <summary>
     /// ロガー
     /// </summary>
     protected readonly ILogger Logger;
@@ -34,10 +40,12 @@ public abstract class GroupChatReplyTaskBase
     protected GroupChatReplyTaskBase(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
+        IAiClientFactory aiClientFactory,
         ILogger logger)
     {
         Context = context;
         Publisher = publisher;
+        AiClientFactory = aiClientFactory;
         Logger = logger;
     }
 
@@ -111,6 +119,17 @@ public abstract class GroupChatReplyTaskBase
     {
         return await Context.Users
             .FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
+    /// <summary>
+    /// 組織設定を取得する
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>組織設定、見つからない場合は null</returns>
+    protected async Task<OrganizationSetting?> GetOrganizationSettingAsync(int organizationId)
+    {
+        return await Context.OrganizationSettings
+            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
     }
 
     /// <summary>
@@ -269,10 +288,13 @@ public abstract class GroupChatReplyTaskBase
             senderUserId
         );
 
+        DB.Models.Bot? bot = null;
+        ChatRoom? room = null;
+
         try
         {
             // 1. チャットルームを取得
-            var room = await GetChatRoomWithDetailsAsync(roomId);
+            room = await GetChatRoomWithDetailsAsync(roomId);
 
             if (room == null)
             {
@@ -318,7 +340,7 @@ public abstract class GroupChatReplyTaskBase
             }
 
             // 4. Bot を取得
-            var bot = await GetBotAsync(organizationId);
+            bot = await GetBotAsync(organizationId);
             if (bot?.ChatActor == null)
             {
                 Logger.LogWarning(
@@ -332,11 +354,27 @@ public abstract class GroupChatReplyTaskBase
             // 5. Bot がルームのメンバーか確認し、メンバーでなければ追加
             await EnsureBotIsMemberAsync(room.Id, bot.ChatActor.Id);
 
-            // 6. TODO: メッセージ作成が必要か判定（現在は常に作成）
+            // 6. 入力開始を通知
+            await Publisher.PublishChatBotTypingAsync(
+                organizationId,
+                room.Id,
+                bot.ChatActor.Id,
+                bot.Name,
+                isTyping: true
+            );
 
             // 7. 返信メッセージを作成してグループチャットに送信
             var messageContent = await BuildReplyMessage(organizationId, room, triggerMessage, senderUser);
             await SendBotMessageAsync(organizationId, room, bot, messageContent, triggerMessageId);
+
+            // 8. 入力終了を通知
+            await Publisher.PublishChatBotTypingAsync(
+                organizationId,
+                room.Id,
+                bot.ChatActor.Id,
+                bot.Name,
+                isTyping: false
+            );
 
             Logger.LogDebug(
                 "{TaskName} completed: OrganizationId={OrganizationId}, RoomId={RoomId}",
@@ -355,6 +393,30 @@ public abstract class GroupChatReplyTaskBase
                 roomId,
                 triggerMessageId
             );
+
+            // エラー時も入力終了を通知
+            if (bot?.ChatActor != null && room != null)
+            {
+                try
+                {
+                    await Publisher.PublishChatBotTypingAsync(
+                        organizationId,
+                        room.Id,
+                        bot.ChatActor.Id,
+                        bot.Name,
+                        isTyping: false
+                    );
+                }
+                catch (Exception notifyEx)
+                {
+                    Logger.LogError(
+                        notifyEx,
+                        "Failed to send typing end notification: RoomId={RoomId}",
+                        room.Id
+                    );
+                }
+            }
+
             throw;
         }
     }

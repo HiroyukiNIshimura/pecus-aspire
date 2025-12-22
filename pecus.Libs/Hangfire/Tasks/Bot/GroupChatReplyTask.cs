@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -13,13 +14,19 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 public class GroupChatReplyTask : GroupChatReplyTaskBase
 {
     /// <summary>
+    /// 会話履歴の最大ターン数
+    /// </summary>
+    private const int MaxConversationTurns = 5;
+
+    /// <summary>
     /// GroupChatReplyTask のコンストラクタ
     /// </summary>
     public GroupChatReplyTask(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
+        IAiClientFactory aiClientFactory,
         ILogger<GroupChatReplyTask> logger)
-        : base(context, publisher, logger)
+        : base(context, publisher, aiClientFactory, logger)
     {
     }
 
@@ -36,9 +43,78 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         ChatMessage triggerMessage,
         User senderUser)
     {
-        var recents = await GetRecentMessagesAsync(room.Id, 3, triggerMessage.Id);
-        // TODO: 実際の返信メッセージ生成ロジックを実装
-        return "工事中";
+        // 1. 組織設定を取得
+        var setting = await GetOrganizationSettingAsync(organizationId);
+        if (setting == null ||
+            setting.GenerativeApiVendor == GenerativeApiVendor.None ||
+            string.IsNullOrEmpty(setting.GenerativeApiKey) ||
+            string.IsNullOrEmpty(setting.GenerativeApiModel))
+        {
+            Logger.LogWarning(
+                "AI settings not configured for organization: OrganizationId={OrganizationId}",
+                organizationId
+            );
+            return "AI設定が構成されていないため、返信できません。";
+        }
+
+        // 2. AI クライアントを作成
+        var aiClient = AiClientFactory.CreateClient(
+            setting.GenerativeApiVendor,
+            setting.GenerativeApiKey,
+            setting.GenerativeApiModel
+        );
+
+        if (aiClient == null)
+        {
+            Logger.LogWarning(
+                "Failed to create AI client: Vendor={Vendor}, OrganizationId={OrganizationId}",
+                setting.GenerativeApiVendor,
+                organizationId
+            );
+            return "AIクライアントの作成に失敗しました。";
+        }
+
+        // 3. 過去メッセージを取得
+        var recents = await GetRecentMessagesAsync(room.Id, MaxConversationTurns, triggerMessage.Id);
+
+        // 4. メッセージを AI ロール形式に変換
+        var messages = new List<(MessageRole Role, string Content)>();
+
+        // 過去メッセージをロール形式に変換（Bot は assistant、その他は user）
+        foreach (var msg in recents)
+        {
+            var role = msg.IsBot ? MessageRole.Assistant : MessageRole.User;
+            var content = msg.IsBot ? msg.Content : $"{msg.UserName}さん: {msg.Content}";
+            messages.Add((role, content ?? string.Empty));
+        }
+
+        // トリガーメッセージを追加
+        messages.Add((MessageRole.User, $"{senderUser.Username}さん: {triggerMessage.Content}"));
+
+        // 5. Bot を取得してペルソナを取得
+        var bot = await GetBotAsync(organizationId);
+        var persona = bot?.Persona;
+
+        // 6. AI API を呼び出して返信を生成
+        try
+        {
+            var responseText = await aiClient.GenerateTextWithMessagesAsync(
+                messages,
+                persona
+            );
+
+            return responseText ?? "...";
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(
+                ex,
+                "AI generation failed: OrganizationId={OrganizationId}, RoomId={RoomId}",
+                organizationId,
+                room.Id
+            );
+            return "申し訳ありませんが、一時的なエラーが発生しました。";
+        }
     }
 
     /// <summary>
@@ -50,7 +126,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
     public async Task SendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
-        if (!BotTaskUtils.ShouldActivateBot(30))
+        if (!BotTaskUtils.ShouldActivateBot(130))
         {
             Logger.LogDebug("Bot発動の抽選に外れました。処理をスキップします。");
             return;
