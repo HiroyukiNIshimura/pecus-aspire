@@ -41,7 +41,15 @@ function Avatar({
 
 /** メッセージ本文コンポーネント */
 function MessageContent({ content, className }: { content: string | null | undefined; className: string }) {
-  return <div className={className} dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }} />;
+  return (
+    <div>
+      <pre>
+        <code>
+          <p className={className} dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }} />
+        </code>
+      </pre>
+    </div>
+  );
 }
 
 /** タイムスタンプコンポーネント */
@@ -70,7 +78,7 @@ function LeftAlignedMessage({
           <div className="text-xs text-base-content/70 mb-1">{displayName}</div>
           <MessageContent
             content={content}
-            className="bg-base-300 text-base-content px-3 py-2 rounded-lg rounded-tl-none"
+            className="bg-base-300 text-base-content px-3 py-2 rounded-lg rounded-tl-none wrap-break-word whitespace-pre-wrap"
           />
           <Timestamp createdAt={createdAt} />
         </div>
@@ -142,7 +150,7 @@ export default function ChatMessageItemComponent({
         <div className="max-w-4/5">
           <MessageContent
             content={content}
-            className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none"
+            className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none wrap-break-word whitespace-pre-wrap"
           />
           <div className="flex items-center justify-end gap-2 mt-1">
             <span className="text-xs text-base-content/50">{createdAt && formatRelativeTime(createdAt)}</span>

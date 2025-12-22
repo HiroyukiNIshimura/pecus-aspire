@@ -412,10 +412,14 @@ export default function TaskCommentSection({
                         {comment.isDeleted ? (
                           <span className="italic text-base-content/50 text-sm">このコメントは削除されました</span>
                         ) : (
-                          <p
-                            className="text-sm whitespace-pre-wrap"
-                            dangerouslySetInnerHTML={{ __html: convertToLinks(comment.content ?? '') }}
-                          />
+                          <pre>
+                            <code>
+                              <p
+                                className="text-sm whitespace-pre-wrap"
+                                dangerouslySetInnerHTML={{ __html: convertToLinks(comment.content ?? '') }}
+                              />
+                            </code>
+                          </pre>
                         )}
                       </div>
                     )}
