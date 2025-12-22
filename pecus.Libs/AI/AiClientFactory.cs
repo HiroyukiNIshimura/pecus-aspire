@@ -47,7 +47,7 @@ public class AiClientFactory : IAiClientFactory
     /// <inheritdoc />
     public IAiClient GetDefaultClient() =>
         _defaultClient ?? throw new InvalidOperationException(
-            "デフォルトAIクライアントが設定されていません。appsettings.json で DeepSeek:ApiKey を設定してください。");
+            "デフォルトAIクライアントが設定されていません。appsettings.json で DefaultAi:Provider と APIキーを設定してください。");
 
     /// <inheritdoc />
     public IAiClient? CreateClient(GenerativeApiVendor vendor, string? apiKey, string? model = null)
