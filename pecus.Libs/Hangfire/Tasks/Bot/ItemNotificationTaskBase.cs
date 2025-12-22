@@ -196,7 +196,7 @@ public abstract class ItemNotificationTaskBase
 
         try
         {
-            // 1. アイテムを取得（Workspace と Owner を含む）
+            // アイテムを取得（Workspace と Owner を含む）
             var item = await GetItemWithDetailsAsync(itemId);
 
             if (item == null)
@@ -221,7 +221,7 @@ public abstract class ItemNotificationTaskBase
             var workspaceCode = item.Workspace.Code ?? item.Workspace.Name;
             var ownerName = item.Owner?.Username ?? "不明なユーザー";
 
-            // 2. ワークスペースのグループチャットルームを取得
+            // ワークスペースのグループチャットルームを取得
             room = await GetWorkspaceGroupChatRoomAsync(item.WorkspaceId);
 
             if (room == null)
@@ -229,7 +229,7 @@ public abstract class ItemNotificationTaskBase
                 return;
             }
 
-            // 3. SystemBot を取得
+            // SystemBot を取得
             systemBot = await GetSystemBotAsync(organizationId);
             if (systemBot?.ChatActor == null)
             {
@@ -240,10 +240,10 @@ public abstract class ItemNotificationTaskBase
                 return;
             }
 
-            // 4. SystemBot がルームのメンバーか確認し、メンバーでなければ追加
+            // SystemBot がルームのメンバーか確認し、メンバーでなければ追加
             await EnsureBotIsMemberAsync(room.Id, systemBot.ChatActor.Id);
 
-            // 5. 入力開始を通知
+            // 入力開始を通知
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,
@@ -252,11 +252,11 @@ public abstract class ItemNotificationTaskBase
                 isTyping: true
             );
 
-            // 6. メッセージを作成してグループチャットに送信
+            // メッセージを作成してグループチャットに送信
             var messageContent = BuildNotificationMessage(organizationId, item, ownerName, workspaceCode);
             await SendBotMessageAsync(organizationId, room, systemBot, messageContent);
 
-            // 7. 入力終了を通知
+            // 入力終了を通知
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,

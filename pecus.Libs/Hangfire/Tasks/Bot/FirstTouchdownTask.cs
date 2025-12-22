@@ -48,7 +48,7 @@ public class FirstTouchdownTask
 
         try
         {
-            // 1. ChatBot を取得
+            // ChatBot を取得
             var chatBot = await _context.Bots
                 .Include(b => b.ChatActor)
                 .FirstOrDefaultAsync(b =>
@@ -64,7 +64,7 @@ public class FirstTouchdownTask
                 return;
             }
 
-            // 2. ユーザーの AI ルームを取得または作成
+            // ユーザーの AI ルームを取得または作成
             var userActor = await _context.ChatActors
                 .FirstOrDefaultAsync(a => a.UserId == userId);
 
@@ -100,7 +100,7 @@ public class FirstTouchdownTask
                 await _context.SaveChangesAsync();
             }
 
-            // 3. メッセージを作成
+            // メッセージを作成
             var content = $"👋 {username}さん、初めまして！\n\n {chatBot.Name}です！\n\n 何かお手伝いできることはありますか？タスクの確認や質問など、お気軽にどうぞ。";
 
             var message = new ChatMessage
@@ -113,7 +113,7 @@ public class FirstTouchdownTask
             _context.ChatMessages.Add(message);
             await _context.SaveChangesAsync();
 
-            // 4. SignalR 通知を送信（Redis Pub/Sub 経由）
+            // SignalR 通知を送信（Redis Pub/Sub 経由）
             // 注: チャットルームグループ (chat:{roomId}) ではなく組織グループ (organization:{orgId}) に送信
             // ユーザーはログイン直後にチャットルームグループに未参加のため
             var payload = new

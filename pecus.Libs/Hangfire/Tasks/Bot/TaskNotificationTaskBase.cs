@@ -197,7 +197,7 @@ public abstract class TaskNotificationTaskBase
 
         try
         {
-            // 1. タスクを取得（WorkspaceItem, Workspace, CreatedByUser を含む）
+            // タスクを取得（WorkspaceItem, Workspace, CreatedByUser を含む）
             var task = await GetTaskWithDetailsAsync(taskId);
 
             if (task == null)
@@ -231,7 +231,7 @@ public abstract class TaskNotificationTaskBase
             var workspaceCode = task.Workspace.Code ?? task.Workspace.Name;
             var userName = task.CreatedByUser?.Username ?? "不明なユーザー";
 
-            // 2. ワークスペースのグループチャットルームを取得
+            // ワークスペースのグループチャットルームを取得
             room = await GetWorkspaceGroupChatRoomAsync(task.WorkspaceId);
 
             if (room == null)
@@ -239,7 +239,7 @@ public abstract class TaskNotificationTaskBase
                 return;
             }
 
-            // 3. SystemBot を取得
+            // SystemBot を取得
             systemBot = await GetSystemBotAsync(organizationId);
             if (systemBot?.ChatActor == null)
             {
@@ -250,10 +250,10 @@ public abstract class TaskNotificationTaskBase
                 return;
             }
 
-            // 4. SystemBot がルームのメンバーか確認し、メンバーでなければ追加
+            // SystemBot がルームのメンバーか確認し、メンバーでなければ追加
             await EnsureBotIsMemberAsync(room.Id, systemBot.ChatActor.Id);
 
-            // 5. 入力開始を通知
+            // 入力開始を通知
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,
@@ -262,11 +262,11 @@ public abstract class TaskNotificationTaskBase
                 isTyping: true
             );
 
-            // 6. メッセージを作成してグループチャットに送信
+            // メッセージを作成してグループチャットに送信
             var messageContent = BuildNotificationMessage(organizationId, task, userName, workspaceCode);
             await SendBotMessageAsync(organizationId, room, systemBot, messageContent);
 
-            // 7. 入力終了を通知
+            // 入力終了を通知
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,

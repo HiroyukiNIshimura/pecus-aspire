@@ -63,7 +63,7 @@ public class AiChatReplyTask
 
         try
         {
-            // 1. ChatBot を取得
+            // ChatBot を取得
             chatBot = await GetChatBotAsync(organizationId);
             if (chatBot?.ChatActor == null)
             {
@@ -76,7 +76,7 @@ public class AiChatReplyTask
                 return;
             }
 
-            // 2. 組織設定を取得
+            // 組織設定を取得
             var setting = await GetOrganizationSettingAsync(organizationId);
             if (setting == null ||
                 setting.GenerativeApiVendor == GenerativeApiVendor.None ||
@@ -92,7 +92,7 @@ public class AiChatReplyTask
                 return;
             }
 
-            // 3. AI クライアントを作成
+            // AI クライアントを作成
             var aiClient = _aiClientFactory.CreateClient(
                 setting.GenerativeApiVendor,
                 setting.GenerativeApiKey,
@@ -110,7 +110,7 @@ public class AiChatReplyTask
                 return;
             }
 
-            // 4. 入力開始を通知
+            // 入力開始を通知
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
                 roomId,
@@ -119,10 +119,10 @@ public class AiChatReplyTask
                 isTyping: true
             );
 
-            // 5. 会話履歴を取得してメッセージ配列を構築
+            // 会話履歴を取得してメッセージ配列を構築
             var messages = await BuildConversationMessagesAsync(roomId, chatBot.ChatActor.Id);
 
-            // 6. 送信者のユーザー名を取得してシステムメッセージに追加
+            // 送信者のユーザー名を取得してシステムメッセージに追加
             var senderUserName = await GetUserNameAsync(senderUserId);
             if (string.IsNullOrEmpty(senderUserName))
             {
@@ -134,13 +134,13 @@ public class AiChatReplyTask
             }
             messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、{senderUserName}さんです。"));
 
-            // 7. AI API を呼び出して返信を生成
+            // AI API を呼び出して返信を生成
             var responseText = await aiClient.GenerateTextWithMessagesAsync(
                 messages,
                 chatBot.Persona
             );
 
-            // 8. 入力終了を通知
+            // 入力終了を通知
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
                 roomId,
@@ -149,7 +149,7 @@ public class AiChatReplyTask
                 isTyping: false
             );
 
-            // 9. メッセージを保存して通知
+            // メッセージを保存して通知
             await SendBotMessageAsync(organizationId, roomId, chatBot, responseText ?? "...");
 
             _logger.LogInformation(

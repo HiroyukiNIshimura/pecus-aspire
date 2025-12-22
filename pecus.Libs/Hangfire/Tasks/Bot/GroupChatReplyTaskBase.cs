@@ -139,11 +139,22 @@ public abstract class GroupChatReplyTaskBase
     /// <returns>Bot、見つからない場合は null</returns>
     protected async Task<DB.Models.Bot?> GetBotAsync(int organizationId)
     {
+        return await GetBotByTypeAsync(organizationId, BotType);
+    }
+
+    /// <summary>
+    /// 指定した BotType の Bot を取得する
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="botType">取得する Bot の種類</param>
+    /// <returns>Bot、見つからない場合は null</returns>
+    protected async Task<DB.Models.Bot?> GetBotByTypeAsync(int organizationId, BotType botType)
+    {
         return await Context.Bots
             .Include(b => b.ChatActor)
             .FirstOrDefaultAsync(b =>
                 b.OrganizationId == organizationId &&
-                b.Type == BotType);
+                b.Type == botType);
     }
 
     /// <summary>
@@ -242,8 +253,8 @@ public abstract class GroupChatReplyTaskBase
     /// <param name="room">チャットルーム</param>
     /// <param name="triggerMessage">トリガーメッセージ</param>
     /// <param name="senderUser">送信者ユーザー</param>
-    /// <returns>メッセージ内容</returns>
-    protected abstract Task<string> BuildReplyMessage(
+    /// <returns>メッセージ内容と使用する BotType のタプル</returns>
+    protected abstract Task<(string Message, BotType BotType)> BuildReplyMessage(
         int organizationId,
         ChatRoom room,
         ChatMessage triggerMessage,
@@ -277,7 +288,7 @@ public abstract class GroupChatReplyTaskBase
 
         try
         {
-            // 1. チャットルームを取得
+            // チャットルームを取得
             room = await GetChatRoomWithDetailsAsync(roomId);
 
             if (room == null)
@@ -299,7 +310,7 @@ public abstract class GroupChatReplyTaskBase
                 return;
             }
 
-            // 2. トリガーメッセージを取得
+            // トリガーメッセージを取得
             var triggerMessage = await GetTriggerMessageAsync(triggerMessageId);
 
             if (triggerMessage == null)
@@ -311,7 +322,7 @@ public abstract class GroupChatReplyTaskBase
                 return;
             }
 
-            // 3. 送信者ユーザーを取得
+            // 送信者ユーザーを取得
             var senderUser = await GetSenderUserAsync(senderUserId);
 
             if (senderUser == null)
@@ -323,22 +334,25 @@ public abstract class GroupChatReplyTaskBase
                 return;
             }
 
-            // 4. Bot を取得
-            bot = await GetBotAsync(organizationId);
+            // 返信メッセージと使用する BotType を決定
+            var (messageContent, selectedBotType) = await BuildReplyMessage(organizationId, room, triggerMessage, senderUser);
+
+            // 選択された BotType で Bot を取得
+            bot = await GetBotByTypeAsync(organizationId, selectedBotType);
             if (bot?.ChatActor == null)
             {
                 Logger.LogWarning(
                     "Bot not found for organization: OrganizationId={OrganizationId}, BotType={BotType}",
                     organizationId,
-                    BotType
+                    selectedBotType
                 );
                 return;
             }
 
-            // 5. Bot がルームのメンバーか確認し、メンバーでなければ追加
+            // Bot がルームのメンバーか確認し、メンバーでなければ追加
             await EnsureBotIsMemberAsync(room.Id, bot.ChatActor.Id);
 
-            // 6. 入力開始を通知
+            // 入力開始を通知
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,
@@ -347,11 +361,10 @@ public abstract class GroupChatReplyTaskBase
                 isTyping: true
             );
 
-            // 7. 返信メッセージを作成してグループチャットに送信
-            var messageContent = await BuildReplyMessage(organizationId, room, triggerMessage, senderUser);
+            // 返信メッセージをグループチャットに送信
             await SendBotMessageAsync(organizationId, room, bot, messageContent, triggerMessageId);
 
-            // 8. 入力終了を通知
+            // 入力終了を通知
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,

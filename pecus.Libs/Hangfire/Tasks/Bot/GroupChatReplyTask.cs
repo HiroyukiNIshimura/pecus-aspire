@@ -37,13 +37,13 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     protected override BotType BotType => BotType.ChatBot;
 
     /// <inheritdoc />
-    protected override async Task<string> BuildReplyMessage(
+    protected override async Task<(string Message, BotType BotType)> BuildReplyMessage(
         int organizationId,
         ChatRoom room,
         ChatMessage triggerMessage,
         User senderUser)
     {
-        // 1. 組織設定を取得
+        // 組織設定を取得
         var setting = await GetOrganizationSettingAsync(organizationId);
         if (setting == null ||
             setting.GenerativeApiVendor == GenerativeApiVendor.None ||
@@ -54,10 +54,10 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 "AI settings not configured for organization: OrganizationId={OrganizationId}",
                 organizationId
             );
-            return "AI設定が構成されていないため、返信できません。";
+            return ("AI設定が構成されていないため、返信できません。", BotType.ChatBot);
         }
 
-        // 2. AI クライアントを作成
+        // AI クライアントを作成
         var aiClient = AiClientFactory.CreateClient(
             setting.GenerativeApiVendor,
             setting.GenerativeApiKey,
@@ -71,13 +71,30 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 setting.GenerativeApiVendor,
                 organizationId
             );
-            return "AIクライアントの作成に失敗しました。";
+            return ("AIクライアントの作成に失敗しました。", BotType.ChatBot);
         }
 
-        // 3. 過去メッセージを取得
+        // メッセージが注意を必要とするか判定（困っている or ネガティブ or 緊急）
+        var needsAttention = await MessageAnalyzer.NeedsAttentionAsync(
+            aiClient,
+            triggerMessage.Content ?? string.Empty,
+            Logger
+        );
+
+        // 注意が必要な場合は SystemBot、それ以外は ChatBot を使用
+        var selectedBotType = needsAttention ? BotType.SystemBot : BotType.ChatBot;
+
+        Logger.LogDebug(
+            "Bot type selected: NeedsAttention={NeedsAttention}, BotType={BotType}, RoomId={RoomId}",
+            needsAttention,
+            selectedBotType,
+            room.Id
+        );
+
+        // 過去メッセージを取得
         var recent = await GetRecentMessagesAsync(room.Id, MaxConversationTurns, triggerMessage.Id);
 
-        // 4. メッセージを AI ロール形式に変換
+        // メッセージを AI ロール形式に変換
         var messages = new List<(MessageRole Role, string Content)>();
 
         // 過去メッセージをロール形式に変換（Bot は assistant、その他は user）
@@ -91,11 +108,11 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         // トリガーメッセージを追加
         messages.Add((MessageRole.User, $"{senderUser.Username}さん: {triggerMessage.Content}"));
 
-        // 5. Bot を取得してペルソナを取得
-        var bot = await GetBotAsync(organizationId);
+        // 選択された BotType で Bot を取得してペルソナを取得
+        var bot = await GetBotByTypeAsync(organizationId, selectedBotType);
         var persona = bot?.Persona;
 
-        // 6. AI API を呼び出して返信を生成
+        // AI API を呼び出して返信を生成
         try
         {
             var responseText = await aiClient.GenerateTextWithMessagesAsync(
@@ -103,7 +120,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 persona
             );
 
-            return responseText ?? "...";
+            return (responseText ?? "...", selectedBotType);
         }
         catch (Exception ex)
         {
@@ -113,7 +130,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 organizationId,
                 room.Id
             );
-            return "申し訳ありませんが、一時的なエラーが発生しました。";
+            return ("申し訳ありませんが、一時的なエラーが発生しました。", selectedBotType);
         }
     }
 
