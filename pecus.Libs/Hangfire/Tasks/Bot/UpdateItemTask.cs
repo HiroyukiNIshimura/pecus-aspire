@@ -1,3 +1,6 @@
+using DiffPlex;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
@@ -9,13 +12,6 @@ using Pecus.Libs.Notifications;
 using System.Text.Json;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
-
-// TODO: [重要] 本文が大きい場合の AI 送信ガード実装
-// - 新規作成（CreateItemTask）: 文字数切り詰め（2000〜3000文字）でOK
-// - 変更（UpdateItemTask）: 単純切り詰めだと差分が不明確になる
-//   → 新旧の差分抽出（追加行・削除行のみ送信）を実装すべき
-//   → DiffPlex ライブラリの導入も検討
-// - トークン制限超過、コスト増大、レスポンス遅延のリスク回避が目的
 
 /// <summary>
 /// アイテム更新時にワークスペースグループチャットへメッセージを通知する Hangfire タスク
@@ -32,13 +28,19 @@ public class UpdateItemTask : ItemNotificationTaskBase
 
         要件:
         - 100文字以内で簡潔にまとめる
-        - 変更の要点を伝える
+        - 差分情報（追加・削除）から変更の要点を伝える
         - 絵文字は使わない
         - 挨拶は不要
 
         例: 「件名が『初期設計』から『詳細設計』に変更されました。フェーズが進んだようです。」
         例: 「本文が更新され、実装方針の詳細が追記されました。」
+        例: 「期限と担当者に関する記述が追加されました。」
         """;
+
+    /// <summary>
+    /// 差分抽出時の最大行数
+    /// </summary>
+    private const int MaxDiffLines = 50;
 
     /// <summary>
     /// details JSON のデシリアライズ用レコード
@@ -244,20 +246,159 @@ public class UpdateItemTask : ItemNotificationTaskBase
     }
 
     /// <summary>
-    /// AI へのユーザープロンプトを生成する
+    /// AI へのユーザープロンプトを生成する（差分ベース）
     /// </summary>
     private static string BuildUserPrompt(string newContent, string? oldContent, bool isSubjectChange)
     {
         var changeType = isSubjectChange ? "件名" : "本文";
-        var prompt = $"以下のアイテムの{changeType}が変更されました。変更内容を紹介するメッセージを生成してください:\n\n";
-        prompt += $"【変更後】\n{newContent}\n\n";
 
-        if (!string.IsNullOrWhiteSpace(oldContent))
+        if (string.IsNullOrWhiteSpace(oldContent))
         {
-            prompt += $"【変更前】\n{oldContent}";
+            return $"以下のアイテムの{changeType}が変更されました。変更内容を紹介するメッセージを生成してください:\n\n【変更後】\n{newContent}";
         }
 
-        return prompt;
+        if (isSubjectChange)
+        {
+            return $"以下のアイテムの件名が変更されました。変更内容を紹介するメッセージを生成してください:\n\n【変更前】\n{oldContent}\n\n【変更後】\n{newContent}";
+        }
+
+        var diffText = ExtractDiff(oldContent, newContent);
+
+        if (string.IsNullOrWhiteSpace(diffText))
+        {
+            return $"以下のアイテムの{changeType}が変更されましたが、実質的なテキスト変更はありませんでした。フォーマットや軽微な調整が行われた可能性があります。";
+        }
+
+        return $"以下のアイテムの本文が変更されました。差分を元にチームに変更内容を紹介するメッセージを生成してください:\n\n{diffText}";
+    }
+
+    /// <summary>
+    /// 新旧テキストの差分を抽出する（コンテキスト行を含む）
+    /// </summary>
+    private static string ExtractDiff(string oldText, string newText, int contextLines = 2)
+    {
+        var diffBuilder = new InlineDiffBuilder(new Differ());
+        var diff = diffBuilder.BuildDiffModel(oldText, newText);
+        var lines = diff.Lines.ToList();
+
+        var result = new List<string>();
+        var includedIndices = new HashSet<int>();
+
+        for (var i = 0; i < lines.Count; i++)
+        {
+            if (lines[i].Type is ChangeType.Inserted or ChangeType.Deleted)
+            {
+                for (var j = Math.Max(0, i - contextLines); j <= Math.Min(lines.Count - 1, i + contextLines); j++)
+                {
+                    includedIndices.Add(j);
+                }
+            }
+        }
+
+        if (includedIndices.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var sortedIndices = includedIndices.OrderBy(i => i).ToList();
+        var prevIndex = -2;
+
+        foreach (var i in sortedIndices)
+        {
+            if (i > prevIndex + 1 && prevIndex >= 0)
+            {
+                result.Add("...");
+            }
+
+            var line = lines[i];
+            var prefix = line.Type switch
+            {
+                ChangeType.Inserted => "+",
+                ChangeType.Deleted => "-",
+                _ => " "
+            };
+
+            if (!string.IsNullOrEmpty(line.Text))
+            {
+                result.Add($"{prefix} {line.Text}");
+            }
+
+            prevIndex = i;
+        }
+
+        if (result.Count > MaxDiffLines)
+        {
+            var truncated = result.Take(MaxDiffLines).ToList();
+            truncated.Add($"... 他 {result.Count - MaxDiffLines} 行省略");
+            return string.Join("\n", truncated);
+        }
+
+        return string.Join("\n", result);
+    }
+
+    /// <summary>
+    /// 新旧テキストの差分を抽出する（追加・削除行のみ、コンテキストなし）
+    /// 現在未使用
+    /// </summary>
+    private static string ExtractDiffWithoutContext(string oldText, string newText)
+    {
+        var diffBuilder = new InlineDiffBuilder(new Differ());
+        var diff = diffBuilder.BuildDiffModel(oldText, newText);
+
+        var additions = new List<string>();
+        var deletions = new List<string>();
+
+        foreach (var line in diff.Lines)
+        {
+            if (string.IsNullOrWhiteSpace(line.Text))
+            {
+                continue;
+            }
+
+            switch (line.Type)
+            {
+                case ChangeType.Inserted:
+                    additions.Add($"+ {line.Text}");
+                    break;
+                case ChangeType.Deleted:
+                    deletions.Add($"- {line.Text}");
+                    break;
+            }
+        }
+
+        if (additions.Count == 0 && deletions.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var result = new List<string>();
+        var halfMaxLines = MaxDiffLines / 2;
+
+        if (deletions.Count > 0)
+        {
+            result.Add("【削除された内容】");
+            result.AddRange(deletions.Take(halfMaxLines));
+            if (deletions.Count > halfMaxLines)
+            {
+                result.Add($"...他 {deletions.Count - halfMaxLines} 行省略");
+            }
+        }
+
+        if (additions.Count > 0)
+        {
+            if (result.Count > 0)
+            {
+                result.Add(string.Empty);
+            }
+            result.Add("【追加された内容】");
+            result.AddRange(additions.Take(halfMaxLines));
+            if (additions.Count > halfMaxLines)
+            {
+                result.Add($"...他 {additions.Count - halfMaxLines} 行省略");
+            }
+        }
+
+        return string.Join("\n", result);
     }
 
     /// <summary>
