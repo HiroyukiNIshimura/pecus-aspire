@@ -41,3 +41,25 @@
 * [x] チャット並びコメント表示部のAutoLink機能
 * [] Aspire 13.1.0へのアプデ→まだEFがついてきてない
 * [x] ログレベルの切り替え方式変更。※いまいちなので後で見直す
+
+
+現状の結論
+項目	方針
+gRPC サイズ上限	将来的に引き上げ設定を追加（保険）
+バイナリ除外	LexicalConverter のオプションとして追加予定
+AI 用の切り詰め/差分	AI 処理側で対応（別レイヤー）
+TODO として残す内容
+LexicalConverter
+
+strip_binary オプション追加（proto 修正）
+gRPC サイズ上限設定（AppHost / Node.js 両方）
+AI 処理（UpdateItemTask 等）
+
+新規作成: 文字数切り詰め
+変更: 差分抽出（DiffPlex 等検討）
+今後の進め方
+Phase 1: バイナリ除外オプション（proto + Node.js 実装）
+         ↓
+Phase 2: gRPC サイズ上限設定（必要になったら）
+         ↓
+Phase 3: AI 用の切り詰め/差分抽出（負荷が見えてから）
