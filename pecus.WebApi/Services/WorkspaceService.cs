@@ -650,7 +650,7 @@ public class WorkspaceService
             query = query.Where(w => w.Name.StartsWith(name));
         }
 
-        query = query.OrderBy(w => w.Id);
+        query = query.OrderByDescending(w => w.Id);
 
         var totalCount = await query.CountAsync();
         var workspaces = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();

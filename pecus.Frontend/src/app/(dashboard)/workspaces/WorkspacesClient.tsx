@@ -340,13 +340,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                         {/* コード、ステータス、メニュー */}
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <code className="text-xs badge badge-soft badge-accent badge-sm">{workspace.code}</code>
-                          <div className="flex items-center gap-2">
-                            {workspace.isActive ? (
-                              <span className="icon-[mdi--power] w-4 h-4 text-success" aria-hidden="true" />
-                            ) : (
-                              <span className="icon-[mdi--power-off] w-4 h-4 text-base-content/50" aria-hidden="true" />
-                            )}
-                          </div>
                         </div>
 
                         {/* ワークスペース名 */}
