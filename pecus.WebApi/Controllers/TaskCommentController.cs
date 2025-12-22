@@ -6,6 +6,7 @@ using Pecus.Libs;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
@@ -184,6 +185,15 @@ public class TaskCommentController : BaseSecureController
         if (request.CommentType == TaskCommentType.HelpWanted)
         {
             await SendHelpEmailAsync(workspaceId, itemId, taskId, comment);
+
+            _backgroundJobClient.Enqueue<TaskCommentHelpWantedTask>(x =>
+                x.SendHelpWantedNotificationAsync(comment.Id)
+            );
+
+            _logger.LogDebug(
+                "Enqueued TaskCommentHelpWantedTask: CommentId={CommentId}",
+                comment.Id
+            );
         }
 
         var response = new TaskCommentResponse
