@@ -48,6 +48,12 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
     public async Task SendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
+        if (!BotTaskUtils.ShouldActivateBot(30))
+        {
+            Logger.LogDebug("Bot発動の抽選に外れました。処理をスキップします。");
+            return;
+        }
+
         await ExecuteReplyAsync(organizationId, roomId, triggerMessageId, senderUserId);
     }
 }
