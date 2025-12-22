@@ -252,13 +252,11 @@ public abstract class ItemNotificationTaskBase
                 isTyping: true
             );
 
-            // 6. TODO: メッセージ作成が必要か判定（現在は常に作成）
-
-            // 7. メッセージを作成してグループチャットに送信
+            // 6. メッセージを作成してグループチャットに送信
             var messageContent = BuildNotificationMessage(organizationId, item, ownerName, workspaceCode);
             await SendBotMessageAsync(organizationId, room, systemBot, messageContent);
 
-            // 8. 入力終了を通知
+            // 7. 入力終了を通知
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,

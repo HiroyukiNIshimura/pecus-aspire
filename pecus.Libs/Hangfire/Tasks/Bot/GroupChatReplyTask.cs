@@ -75,13 +75,13 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         }
 
         // 3. 過去メッセージを取得
-        var recents = await GetRecentMessagesAsync(room.Id, MaxConversationTurns, triggerMessage.Id);
+        var recent = await GetRecentMessagesAsync(room.Id, MaxConversationTurns, triggerMessage.Id);
 
         // 4. メッセージを AI ロール形式に変換
         var messages = new List<(MessageRole Role, string Content)>();
 
         // 過去メッセージをロール形式に変換（Bot は assistant、その他は user）
-        foreach (var msg in recents)
+        foreach (var msg in recent)
         {
             var role = msg.IsBot ? MessageRole.Assistant : MessageRole.User;
             var content = msg.IsBot ? msg.Content : $"{msg.UserName}さん: {msg.Content}";
