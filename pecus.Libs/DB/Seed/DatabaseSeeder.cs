@@ -809,7 +809,7 @@ public class DatabaseSeeder
                 {
                     OrganizationId = org.Id,
                     Type = BotType.SystemBot,
-                    Name = "System Bot",
+                    Name = "Butler Bot",
                     IconUrl = "/icons/bot/system.webp",
                 });
             }

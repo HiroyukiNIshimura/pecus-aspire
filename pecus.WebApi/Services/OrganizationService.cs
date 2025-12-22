@@ -161,7 +161,7 @@ public class OrganizationService
             {
                 OrganizationId = organization.Id,
                 Type = BotType.SystemBot,
-                Name = "System Bot",
+                Name = "Butler Bot",
                 IconUrl = "/icons/bot/system.webp",
                 Persona = BotPersonaHelper.GetSystemBotPersona(),
             };
