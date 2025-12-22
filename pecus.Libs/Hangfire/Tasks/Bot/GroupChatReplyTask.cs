@@ -128,7 +128,6 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     {
         if (!BotTaskUtils.ShouldActivateBot(130))
         {
-            Logger.LogDebug("Bot発動の抽選に外れました。処理をスキップします。");
             return;
         }
 

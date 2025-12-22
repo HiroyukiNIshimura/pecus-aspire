@@ -209,18 +209,11 @@ public abstract class GroupChatReplyTaskBase
         var payload = BotTaskUtils.BuildMessagePayload(room, message, bot);
 
         // チャットルームグループに通知
-        var receiverCount = await Publisher.PublishChatBotNotificationAsync(
+        await Publisher.PublishChatBotNotificationAsync(
             organizationId,
             room.Id,
             "chat:message_received",
             payload
-        );
-
-        Logger.LogDebug(
-            "Bot message sent: RoomId={RoomId}, MessageId={MessageId}, Receivers={ReceiverCount}",
-            room.Id,
-            message.Id,
-            receiverCount
         );
 
         // organization グループに未読バッジ更新を通知
@@ -279,15 +272,6 @@ public abstract class GroupChatReplyTaskBase
         int triggerMessageId,
         int senderUserId)
     {
-        Logger.LogDebug(
-            "{TaskName} started: OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}, SenderUserId={SenderUserId}",
-            TaskName,
-            organizationId,
-            roomId,
-            triggerMessageId,
-            senderUserId
-        );
-
         DB.Models.Bot? bot = null;
         ChatRoom? room = null;
 
@@ -374,13 +358,6 @@ public abstract class GroupChatReplyTaskBase
                 bot.ChatActor.Id,
                 bot.Name,
                 isTyping: false
-            );
-
-            Logger.LogDebug(
-                "{TaskName} completed: OrganizationId={OrganizationId}, RoomId={RoomId}",
-                TaskName,
-                organizationId,
-                roomId
             );
         }
         catch (Exception ex)

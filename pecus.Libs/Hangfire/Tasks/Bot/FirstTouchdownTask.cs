@@ -37,12 +37,6 @@ public class FirstTouchdownTask
     /// <param name="username">ユーザー名</param>
     public async Task WelcomeMessageAsync(int organizationId, int userId, string username)
     {
-        _logger.LogInformation(
-            "ChatBotTasks.SendLoginWelcomeMessageAsync started: OrganizationId={OrganizationId}, UserId={UserId}",
-            organizationId,
-            userId
-        );
-
         var user = await _context.Users.FindAsync(userId);
         if (user == null || !user.IsActive || user.LastLoginAt.HasValue)
         {
@@ -104,12 +98,6 @@ public class FirstTouchdownTask
                 };
                 _context.ChatRooms.Add(aiRoom);
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation(
-                    "Created AI room: RoomId={RoomId}, UserId={UserId}",
-                    aiRoom.Id,
-                    userId
-                );
             }
 
             // 3. メッセージを作成
@@ -151,7 +139,7 @@ public class FirstTouchdownTask
             };
 
             // 組織グループに通知（ログイン直後のユーザーにも届くように）
-            var receiverCount = await _publisher.PublishAsync(new SignalRNotification
+            await _publisher.PublishAsync(new SignalRNotification
             {
                 GroupName = $"organization:{organizationId}",
                 EventType = "chat:message_received",
@@ -159,13 +147,6 @@ public class FirstTouchdownTask
                 SourceType = NotificationSourceType.ChatBot,
                 OrganizationId = organizationId,
             });
-
-            _logger.LogDebug(
-                "Published ChatBot notification: RoomId={RoomId}, MessageId={MessageId}, Receivers={ReceiverCount}",
-                aiRoom.Id,
-                message.Id,
-                receiverCount
-            );
         }
         catch (Exception ex)
         {

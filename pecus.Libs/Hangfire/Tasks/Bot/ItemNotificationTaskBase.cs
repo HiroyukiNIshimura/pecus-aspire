@@ -139,18 +139,11 @@ public abstract class ItemNotificationTaskBase
         var payload = BotTaskUtils.BuildMessagePayload(room, message, systemBot);
 
         // チャットルームグループに通知
-        var receiverCount = await Publisher.PublishChatBotNotificationAsync(
+        await Publisher.PublishChatBotNotificationAsync(
             organizationId,
             room.Id,
             "chat:message_received",
             payload
-        );
-
-        Logger.LogDebug(
-            "SystemBot message sent: RoomId={RoomId}, MessageId={MessageId}, Receivers={ReceiverCount}",
-            room.Id,
-            message.Id,
-            receiverCount
         );
 
         // organization グループに未読バッジ更新を通知
@@ -197,12 +190,6 @@ public abstract class ItemNotificationTaskBase
     /// <param name="itemId">アイテムID</param>
     protected async Task ExecuteNotificationAsync(int itemId)
     {
-        Logger.LogDebug(
-            "{TaskName} started: ItemId={ItemId}",
-            TaskName,
-            itemId
-        );
-
         DB.Models.Bot? systemBot = null;
         ChatRoom? room = null;
         int organizationId = 0;
@@ -239,10 +226,6 @@ public abstract class ItemNotificationTaskBase
 
             if (room == null)
             {
-                Logger.LogDebug(
-                    "Workspace group chat room not found: WorkspaceId={WorkspaceId}",
-                    item.WorkspaceId
-                );
                 return;
             }
 
@@ -282,13 +265,6 @@ public abstract class ItemNotificationTaskBase
                 systemBot.ChatActor.Id,
                 systemBot.Name,
                 isTyping: false
-            );
-
-            Logger.LogDebug(
-                "{TaskName} completed: ItemId={ItemId}, RoomId={RoomId}",
-                TaskName,
-                itemId,
-                room.Id
             );
         }
         catch (Exception ex)

@@ -59,20 +59,11 @@ public class AiChatReplyTask
     /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
     public async Task SendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
-        _logger.LogDebug(
-            "AiChatReplyTask started: OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}, SenderUserId={SenderUserId}",
-            organizationId,
-            roomId,
-            triggerMessageId,
-            senderUserId
-        );
-
         DB.Models.Bot? chatBot = null;
 
         try
         {
             // 1. ChatBot を取得
-            _logger.LogDebug("Fetching ChatBot for OrganizationId={OrganizationId}", organizationId);
             chatBot = await GetChatBotAsync(organizationId);
             if (chatBot?.ChatActor == null)
             {
@@ -84,10 +75,8 @@ public class AiChatReplyTask
                 );
                 return;
             }
-            _logger.LogDebug("ChatBot found: Id={BotId}, Name={BotName}", chatBot.Id, chatBot.Name);
 
             // 2. 組織設定を取得
-            _logger.LogDebug("Fetching OrganizationSetting for OrganizationId={OrganizationId}", organizationId);
             var setting = await GetOrganizationSettingAsync(organizationId);
             if (setting == null ||
                 setting.GenerativeApiVendor == GenerativeApiVendor.None ||
@@ -102,14 +91,8 @@ public class AiChatReplyTask
                 );
                 return;
             }
-            _logger.LogDebug(
-                "OrganizationSetting found: Vendor={Vendor}, Model={Model}",
-                setting.GenerativeApiVendor,
-                setting.GenerativeApiModel
-            );
 
             // 3. AI クライアントを作成
-            _logger.LogDebug("Creating AI client for Vendor={Vendor}", setting.GenerativeApiVendor);
             var aiClient = _aiClientFactory.CreateClient(
                 setting.GenerativeApiVendor,
                 setting.GenerativeApiKey,
@@ -126,10 +109,8 @@ public class AiChatReplyTask
                 );
                 return;
             }
-            _logger.LogDebug("AI client created successfully");
 
             // 4. 入力開始を通知
-            _logger.LogDebug("Publishing bot typing start notification");
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
                 roomId,
@@ -139,9 +120,7 @@ public class AiChatReplyTask
             );
 
             // 5. 会話履歴を取得してメッセージ配列を構築
-            _logger.LogDebug("Building conversation messages");
             var messages = await BuildConversationMessagesAsync(roomId, chatBot.ChatActor.Id);
-            _logger.LogDebug("Conversation messages built: Count={Count}", messages.Count);
 
             // 6. 送信者のユーザー名を取得してシステムメッセージに追加
             var senderUserName = await GetUserNameAsync(senderUserId);
@@ -154,15 +133,12 @@ public class AiChatReplyTask
                 return;
             }
             messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、{senderUserName}さんです。"));
-            _logger.LogDebug("Added system message with user name: {UserName}", senderUserName);
 
             // 7. AI API を呼び出して返信を生成
-            _logger.LogDebug("Calling AI API to generate response");
             var responseText = await aiClient.GenerateTextWithMessagesAsync(
                 messages,
                 chatBot.Persona
             );
-            _logger.LogDebug("AI response received: Length={Length}", responseText?.Length ?? 0);
 
             // 8. 入力終了を通知
             await _publisher.PublishChatBotTypingAsync(
@@ -295,12 +271,6 @@ public class AiChatReplyTask
             messages.Add((role, msg.Content));
         }
 
-        _logger.LogDebug(
-            "Built conversation messages: RoomId={RoomId}, MessageCount={MessageCount}",
-            roomId,
-            messages.Count
-        );
-
         return messages;
     }
 
@@ -365,18 +335,11 @@ public class AiChatReplyTask
         };
 
         // チャットルームグループに通知
-        var receiverCount = await _publisher.PublishChatBotNotificationAsync(
+        await _publisher.PublishChatBotNotificationAsync(
             organizationId,
             roomId,
             "chat:message_received",
             payload
-        );
-
-        _logger.LogDebug(
-            "Bot message sent: RoomId={RoomId}, MessageId={MessageId}, Receivers={ReceiverCount}",
-            roomId,
-            message.Id,
-            receiverCount
         );
 
         // organization グループに未読バッジ更新を通知
