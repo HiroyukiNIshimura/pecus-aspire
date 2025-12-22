@@ -195,9 +195,13 @@ public class TaskCommentHelpWantedTask
         Workspace workspace)
     {
         var userName = comment.User?.Username ?? "不明なユーザー";
+        var workspaceCode = workspace.Code ?? workspace.Name;
+        var itemCode = item.Code;
+        var taskSequence = task.Sequence;
         var taskContent = task.Content ?? "無題のタスク";
-        var itemSubject = item.Subject ?? "無題のアイテム";
         var commentContent = comment.Content ?? "";
+
+        var defaultMessage = BuildDefaultMessage(userName, workspaceCode, itemCode, taskSequence);
 
         var setting = await _context.OrganizationSettings
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
@@ -207,7 +211,7 @@ public class TaskCommentHelpWantedTask
             string.IsNullOrEmpty(setting.GenerativeApiKey) ||
             string.IsNullOrEmpty(setting.GenerativeApiModel))
         {
-            return BuildDefaultMessage(userName, taskContent, itemSubject);
+            return defaultMessage;
         }
 
         var aiClient = _aiClientFactory.CreateClient(
@@ -223,17 +227,21 @@ public class TaskCommentHelpWantedTask
                 setting.GenerativeApiVendor,
                 organizationId
             );
-            return BuildDefaultMessage(userName, taskContent, itemSubject);
+            return defaultMessage;
         }
 
         try
         {
-            var (systemPrompt, userPrompt) = BuildAiPrompt(userName, taskContent, itemSubject, commentContent);
+            var (systemPrompt, userPrompt) = BuildAiPrompt(userName, taskContent, commentContent);
             var response = await aiClient.GenerateTextAsync(systemPrompt, userPrompt);
 
             if (!string.IsNullOrWhiteSpace(response))
             {
-                return response;
+                if (response.Length > 100)
+                {
+                    response = response[..97] + "...";
+                }
+                return $"{defaultMessage}\n\n{response}";
             }
         }
         catch (Exception ex)
@@ -245,7 +253,7 @@ public class TaskCommentHelpWantedTask
             );
         }
 
-        return BuildDefaultMessage(userName, taskContent, itemSubject);
+        return defaultMessage;
     }
 
     /// <summary>
@@ -254,22 +262,21 @@ public class TaskCommentHelpWantedTask
     private static (string SystemPrompt, string UserPrompt) BuildAiPrompt(
         string userName,
         string taskContent,
-        string itemSubject,
         string commentContent)
     {
-        var systemPrompt = """
+        var systemPrompt = $"""
             あなたはチームのサポートBotです。
+            Userの一人称は「{userName}」さんです。
             チームメンバーに助けを求めるメッセージを作成してください。
             メッセージは親しみやすく、協力を促すトーンで作成してください。
-            絵文字を適度に使用してください。
+            絵文字は使わない。
             100文字以内で簡潔に作成してください。
+            挨拶は不要。
             """;
 
         var userPrompt = $"""
-            ユーザー名: {userName}
-            アイテム: {itemSubject}
             タスク: {taskContent}
-            コメント内容: {commentContent}
+            ヘルプコメント内容: {commentContent}
             """;
 
         return (systemPrompt, userPrompt);
@@ -280,13 +287,11 @@ public class TaskCommentHelpWantedTask
     /// </summary>
     private static string BuildDefaultMessage(
         string userName,
-        string taskContent,
-        string itemSubject)
+        string workspaceCode,
+        string itemCode,
+        int taskSequence)
     {
-        var truncatedTaskContent = taskContent.Length > 30
-            ? taskContent[..30] + "..."
-            : taskContent;
-        return $"🆘 {userName}さんがタスク『{truncatedTaskContent}』（{itemSubject}）でヘルプを求めています";
+        return $"{userName}さんがヘルプコメントを投稿しました。\n[{workspaceCode}#{itemCode}T{taskSequence}]";
     }
 
     /// <summary>
