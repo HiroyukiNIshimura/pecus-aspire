@@ -162,7 +162,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
     public async Task SendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
-        if (!BotTaskUtils.ShouldActivateBot(130))
+        if (!BotTaskUtils.ShouldActivateBot(33))
         {
             return;
         }
