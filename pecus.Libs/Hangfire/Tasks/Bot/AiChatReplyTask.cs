@@ -89,10 +89,13 @@ public class AiChatReplyTask
             // 2. 組織設定を取得
             _logger.LogDebug("Fetching OrganizationSetting for OrganizationId={OrganizationId}", organizationId);
             var setting = await GetOrganizationSettingAsync(organizationId);
-            if (setting == null || setting.GenerativeApiVendor == GenerativeApiVendor.None)
+            if (setting == null ||
+                setting.GenerativeApiVendor == GenerativeApiVendor.None ||
+                string.IsNullOrEmpty(setting.GenerativeApiKey) ||
+                string.IsNullOrEmpty(setting.GenerativeApiModel))
             {
                 _logger.LogWarning(
-                    "GenerativeApiVendor is not configured or None: OrganizationId={OrganizationId}, Setting={Setting}, Vendor={Vendor}",
+                    "GenerativeApiVendor is not configured or required fields are missing: OrganizationId={OrganizationId}, Setting={Setting}, Vendor={Vendor}",
                     organizationId,
                     setting != null ? "exists" : "null",
                     setting?.GenerativeApiVendor

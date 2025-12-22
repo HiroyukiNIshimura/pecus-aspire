@@ -11,19 +11,9 @@ public class DeepSeekSettings
     public const string SectionName = "DeepSeek";
 
     /// <summary>
-    /// DeepSeek APIキー
-    /// </summary>
-    public string ApiKey { get; set; } = string.Empty;
-
-    /// <summary>
     /// DeepSeek APIのベースURL
     /// </summary>
     public string BaseUrl { get; set; } = "https://api.deepseek.com";
-
-    /// <summary>
-    /// デフォルトのモデル名
-    /// </summary>
-    public string DefaultModel { get; set; } = "deepseek-chat";
 
     /// <summary>
     /// リクエストタイムアウト（秒）

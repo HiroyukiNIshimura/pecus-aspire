@@ -11,19 +11,9 @@ public class GeminiSettings
     public const string SectionName = "Gemini";
 
     /// <summary>
-    /// Gemini APIキー
-    /// </summary>
-    public string ApiKey { get; set; } = string.Empty;
-
-    /// <summary>
     /// Gemini APIのベースURL
     /// </summary>
     public string BaseUrl { get; set; } = "https://generativelanguage.googleapis.com/v1beta";
-
-    /// <summary>
-    /// デフォルトのモデル名
-    /// </summary>
-    public string DefaultModel { get; set; } = "gemini-1.5-flash";
 
     /// <summary>
     /// リクエストタイムアウト（秒）

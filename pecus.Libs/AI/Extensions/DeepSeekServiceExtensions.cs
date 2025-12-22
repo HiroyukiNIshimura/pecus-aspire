@@ -12,7 +12,7 @@ namespace Pecus.Libs.AI.Extensions;
 public static class DeepSeekServiceExtensions
 {
     /// <summary>
-    /// DeepSeekクライアントをDIコンテナに登録
+    /// DeepSeek用の設定とHttpClientをDIコンテナに登録
     /// </summary>
     /// <param name="services">サービスコレクション</param>
     /// <param name="configuration">設定</param>
@@ -25,18 +25,12 @@ public static class DeepSeekServiceExtensions
         services.Configure<DeepSeekSettings>(
             configuration.GetSection(DeepSeekSettings.SectionName));
 
-        // 設定値を取得してバリデーション
+        // 設定値を取得
         var settings = configuration
             .GetSection(DeepSeekSettings.SectionName)
             .Get<DeepSeekSettings>();
 
-        if (settings == null || string.IsNullOrEmpty(settings.ApiKey))
-        {
-            // APIキーが設定されていない場合はスキップ（オプショナル機能として扱う）
-            return services;
-        }
-
-        var timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
+        var timeout = TimeSpan.FromSeconds(settings?.TimeoutSeconds ?? 60);
 
         // Named HttpClient を登録
         services.AddHttpClient(DeepSeekClient.HttpClientName, (sp, client) =>
@@ -56,10 +50,6 @@ public static class DeepSeekServiceExtensions
             // サーキットブレーカーのサンプリング期間も延長
             options.CircuitBreaker.SamplingDuration = timeout * 2;
         });
-
-        // DeepSeekClient を登録
-        services.AddScoped<DeepSeekClient>();
-        services.AddScoped<IDeepSeekClient>(sp => sp.GetRequiredService<DeepSeekClient>());
 
         return services;
     }

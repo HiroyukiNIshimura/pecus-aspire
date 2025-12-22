@@ -11,19 +11,9 @@ public class OpenAISettings
     public const string SectionName = "OpenAI";
 
     /// <summary>
-    /// OpenAI APIキー
-    /// </summary>
-    public string ApiKey { get; set; } = string.Empty;
-
-    /// <summary>
     /// OpenAI APIのベースURL
     /// </summary>
     public string BaseUrl { get; set; } = "https://api.openai.com/v1";
-
-    /// <summary>
-    /// デフォルトのモデル名
-    /// </summary>
-    public string DefaultModel { get; set; } = "gpt-4o-mini";
 
     /// <summary>
     /// リクエストタイムアウト（秒）

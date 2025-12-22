@@ -212,7 +212,8 @@ public class AdminOrganizationController : BaseAdminController
             throw new BadRequestException("ベンダーを指定してください。");
         }
 
-        var client = _aiClientFactory.CreateClient(request.Vendor, request.ApiKey);
+        // GetAvailableModelsAsync はモデル名を使用しないため、ダミー値を渡す
+        var client = _aiClientFactory.CreateClient(request.Vendor, request.ApiKey, "_");
         if (client == null)
         {
             throw new BadRequestException("指定されたベンダーのクライアントを作成できませんでした。");

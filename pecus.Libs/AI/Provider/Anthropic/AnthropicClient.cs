@@ -16,8 +16,8 @@ public class AnthropicClient : IAnthropicClient, IAiClient
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AnthropicSettings _settings;
     private readonly ILogger<AnthropicClient> _logger;
-    private readonly string? _overrideApiKey;
-    private readonly string? _overrideModel;
+    private readonly string _apiKey;
+    private readonly string _model;
 
     /// <summary>
     /// HttpClient名
@@ -25,50 +25,36 @@ public class AnthropicClient : IAnthropicClient, IAiClient
     public const string HttpClientName = nameof(AnthropicClient);
 
     /// <summary>
-    /// コンストラクタ（DI用）
-    /// </summary>
-    public AnthropicClient(
-        IHttpClientFactory httpClientFactory,
-        IOptions<AnthropicSettings> settings,
-        ILogger<AnthropicClient> logger)
-    {
-        _httpClientFactory = httpClientFactory;
-        _settings = settings.Value;
-        _logger = logger;
-        _overrideApiKey = null;
-    }
-
-    /// <summary>
-    /// コンストラクタ（組織設定APIキー用）
+    /// コンストラクタ
     /// </summary>
     /// <param name="httpClientFactory">HttpClientファクトリー</param>
     /// <param name="settings">設定</param>
     /// <param name="logger">ロガー</param>
-    /// <param name="apiKey">組織設定のAPIキー</param>
-    /// <param name="model">使用するモデル名（省略時は設定のデフォルトモデル）</param>
+    /// <param name="apiKey">APIキー（必須）</param>
+    /// <param name="model">使用するモデル名（必須）</param>
     public AnthropicClient(
         IHttpClientFactory httpClientFactory,
         IOptions<AnthropicSettings> settings,
         ILogger<AnthropicClient> logger,
         string apiKey,
-        string? model = null)
+        string model)
     {
         _httpClientFactory = httpClientFactory;
         _settings = settings.Value;
         _logger = logger;
-        _overrideApiKey = apiKey;
-        _overrideModel = model;
+        _apiKey = apiKey;
+        _model = model;
     }
 
     /// <summary>
     /// 使用するAPIキーを取得
     /// </summary>
-    private string GetApiKey() => _overrideApiKey ?? _settings.ApiKey;
+    private string GetApiKey() => _apiKey;
 
     /// <summary>
     /// 使用するモデルを取得
     /// </summary>
-    private string GetModel() => _overrideModel ?? _settings.DefaultModel;
+    private string GetModel() => _model;
 
     /// <summary>
     /// 設定済みのHttpClientを作成

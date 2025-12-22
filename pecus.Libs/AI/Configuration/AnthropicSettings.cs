@@ -11,19 +11,9 @@ public class AnthropicSettings
     public const string SectionName = "Anthropic";
 
     /// <summary>
-    /// Anthropic APIキー
-    /// </summary>
-    public string ApiKey { get; set; } = string.Empty;
-
-    /// <summary>
     /// Anthropic APIのベースURL
     /// </summary>
     public string BaseUrl { get; set; } = "https://api.anthropic.com/v1";
-
-    /// <summary>
-    /// デフォルトのモデル名
-    /// </summary>
-    public string DefaultModel { get; set; } = "claude-sonnet-4-20250514";
 
     /// <summary>
     /// APIバージョン（Anthropic-Version ヘッダー用）

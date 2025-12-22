@@ -16,15 +16,15 @@ public class DefaultAiSettings
     /// <summary>
     /// 使用するプロバイダー
     /// </summary>
-    public GenerativeApiVendor Provider { get; set; } = GenerativeApiVendor.DeepSeek;
+    public GenerativeApiVendor Provider { get; set; } = GenerativeApiVendor.None;
 
     /// <summary>
-    /// 使用するモデル名（省略時は各プロバイダーのデフォルトモデルを使用）
+    /// 使用するモデル名（必須）
     /// </summary>
-    public string? Model { get; set; }
+    public string Model { get; set; } = string.Empty;
 
     /// <summary>
-    /// APIキー（省略時は各プロバイダーの設定を使用）
+    /// APIキー（必須）
     /// </summary>
-    public string? ApiKey { get; set; }
+    public string ApiKey { get; set; } = string.Empty;
 }

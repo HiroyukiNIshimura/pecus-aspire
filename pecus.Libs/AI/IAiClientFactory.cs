@@ -16,16 +16,14 @@ public interface IAiClientFactory
     IAiClient GetDefaultClient();
 
     /// <summary>
-    /// 指定されたベンダーとAPIキーでAIクライアントを生成
+    /// 指定されたベンダー、APIキー、モデルでAIクライアントを生成
     /// （組織設定の APIキーを使用）
     /// </summary>
     /// <param name="vendor">生成APIベンダー種別</param>
-    /// <param name="apiKey">APIキー</param>
-    /// <param name="model">使用するモデル名（省略時は設定のデフォルトモデルを使用）</param>
+    /// <param name="apiKey">APIキー（必須）</param>
+    /// <param name="model">使用するモデル名（必須）</param>
     /// <returns>
-    /// AIクライアント。以下の場合はnullを返す:
-    /// - vendor が None または未サポート
-    /// - apiKey が未設定または空
+    /// AIクライアント。vendor が None または未サポートの場合はnullを返す
     /// </returns>
-    IAiClient? CreateClient(GenerativeApiVendor vendor, string? apiKey, string? model = null);
+    IAiClient? CreateClient(GenerativeApiVendor vendor, string apiKey, string model);
 }

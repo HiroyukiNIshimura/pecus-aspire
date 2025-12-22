@@ -12,7 +12,7 @@ namespace Pecus.Libs.AI.Extensions;
 public static class OpenAIServiceExtensions
 {
     /// <summary>
-    /// OpenAIクライアントをDIコンテナに登録
+    /// OpenAI用の設定とHttpClientをDIコンテナに登録
     /// </summary>
     /// <param name="services">サービスコレクション</param>
     /// <param name="configuration">設定</param>
@@ -25,18 +25,12 @@ public static class OpenAIServiceExtensions
         services.Configure<OpenAISettings>(
             configuration.GetSection(OpenAISettings.SectionName));
 
-        // 設定値を取得してバリデーション
+        // 設定値を取得
         var settings = configuration
             .GetSection(OpenAISettings.SectionName)
             .Get<OpenAISettings>();
 
-        if (settings == null || string.IsNullOrEmpty(settings.ApiKey))
-        {
-            // APIキーが設定されていない場合はスキップ（オプショナル機能として扱う）
-            return services;
-        }
-
-        var timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
+        var timeout = TimeSpan.FromSeconds(settings?.TimeoutSeconds ?? 60);
 
         // Named HttpClient を登録
         services.AddHttpClient(OpenAIClient.HttpClientName, (sp, client) =>
@@ -56,10 +50,6 @@ public static class OpenAIServiceExtensions
             // サーキットブレーカーのサンプリング期間も延長
             options.CircuitBreaker.SamplingDuration = timeout * 2;
         });
-
-        // OpenAIClient を登録
-        services.AddScoped<OpenAIClient>();
-        services.AddScoped<IOpenAIClient>(sp => sp.GetRequiredService<OpenAIClient>());
 
         return services;
     }

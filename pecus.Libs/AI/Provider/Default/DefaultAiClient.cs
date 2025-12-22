@@ -65,117 +65,54 @@ public class DefaultAiClient : IDefaultAiClient
         IOptions<DeepSeekSettings> deepSeekSettings,
         ILoggerFactory loggerFactory)
     {
-        // APIキーの決定：DefaultAi設定 > 各プロバイダー設定
-        var apiKey = settings.ApiKey;
+        // バリデーション
+        if (string.IsNullOrEmpty(settings.ApiKey))
+        {
+            throw new InvalidOperationException(
+                "DefaultAi:ApiKey が設定されていません。appsettings.json で設定してください。");
+        }
+        if (string.IsNullOrEmpty(settings.Model))
+        {
+            throw new InvalidOperationException(
+                "DefaultAi:Model が設定されていません。appsettings.json で設定してください。");
+        }
 
         return settings.Provider switch
         {
-            GenerativeApiVendor.OpenAi => CreateOpenAiClient(
-                httpClientFactory, openAiSettings, loggerFactory, apiKey, settings.Model),
+            GenerativeApiVendor.OpenAi => new OpenAIClient(
+                httpClientFactory,
+                openAiSettings,
+                loggerFactory.CreateLogger<OpenAIClient>(),
+                settings.ApiKey,
+                settings.Model),
 
-            GenerativeApiVendor.Anthropic => CreateAnthropicClient(
-                httpClientFactory, anthropicSettings, loggerFactory, apiKey, settings.Model),
+            GenerativeApiVendor.Anthropic => new AnthropicClient(
+                httpClientFactory,
+                anthropicSettings,
+                loggerFactory.CreateLogger<AnthropicClient>(),
+                settings.ApiKey,
+                settings.Model),
 
-            GenerativeApiVendor.GoogleGemini => CreateGeminiClient(
-                httpClientFactory, geminiSettings, loggerFactory, apiKey, settings.Model),
+            GenerativeApiVendor.GoogleGemini => new GeminiClient(
+                httpClientFactory,
+                geminiSettings,
+                loggerFactory.CreateLogger<GeminiClient>(),
+                settings.ApiKey,
+                settings.Model),
 
-            GenerativeApiVendor.DeepSeek => CreateDeepSeekClient(
-                httpClientFactory, deepSeekSettings, loggerFactory, apiKey, settings.Model),
+            GenerativeApiVendor.DeepSeek => new DeepSeekClient(
+                httpClientFactory,
+                deepSeekSettings,
+                loggerFactory.CreateLogger<DeepSeekClient>(),
+                settings.ApiKey,
+                settings.Model),
 
             GenerativeApiVendor.None => throw new InvalidOperationException(
-                "DefaultAi:Provider が設定されていません。appsettings.json で DefaultAi:Provider を設定してください。"),
+                "DefaultAi:Provider が設定されていません。appsettings.json で設定してください。"),
 
             _ => throw new InvalidOperationException(
                 $"サポートされていないプロバイダー: {settings.Provider}")
         };
-    }
-
-    private static OpenAIClient CreateOpenAiClient(
-        IHttpClientFactory httpClientFactory,
-        IOptions<OpenAISettings> settings,
-        ILoggerFactory loggerFactory,
-        string? apiKey,
-        string? model)
-    {
-        var effectiveApiKey = apiKey ?? settings.Value.ApiKey;
-        if (string.IsNullOrEmpty(effectiveApiKey))
-        {
-            throw new InvalidOperationException(
-                "OpenAI APIキーが設定されていません。DefaultAi:ApiKey または OpenAI:ApiKey を設定してください。");
-        }
-
-        return new OpenAIClient(
-            httpClientFactory,
-            settings,
-            loggerFactory.CreateLogger<OpenAIClient>(),
-            effectiveApiKey,
-            model);
-    }
-
-    private static AnthropicClient CreateAnthropicClient(
-        IHttpClientFactory httpClientFactory,
-        IOptions<AnthropicSettings> settings,
-        ILoggerFactory loggerFactory,
-        string? apiKey,
-        string? model)
-    {
-        var effectiveApiKey = apiKey ?? settings.Value.ApiKey;
-        if (string.IsNullOrEmpty(effectiveApiKey))
-        {
-            throw new InvalidOperationException(
-                "Anthropic APIキーが設定されていません。DefaultAi:ApiKey または Anthropic:ApiKey を設定してください。");
-        }
-
-        return new AnthropicClient(
-            httpClientFactory,
-            settings,
-            loggerFactory.CreateLogger<AnthropicClient>(),
-            effectiveApiKey,
-            model);
-    }
-
-    private static GeminiClient CreateGeminiClient(
-        IHttpClientFactory httpClientFactory,
-        IOptions<GeminiSettings> settings,
-        ILoggerFactory loggerFactory,
-        string? apiKey,
-        string? model)
-    {
-        var effectiveApiKey = apiKey ?? settings.Value.ApiKey;
-        if (string.IsNullOrEmpty(effectiveApiKey))
-        {
-            throw new InvalidOperationException(
-                "Gemini APIキーが設定されていません。DefaultAi:ApiKey または Gemini:ApiKey を設定してください。");
-        }
-
-        return new GeminiClient(
-            httpClientFactory,
-            settings,
-            loggerFactory.CreateLogger<GeminiClient>(),
-            effectiveApiKey,
-            model);
-    }
-
-    private static DeepSeekClient CreateDeepSeekClient(
-        IHttpClientFactory httpClientFactory,
-        IOptions<DeepSeekSettings> settings,
-        ILoggerFactory loggerFactory,
-        string? apiKey,
-        string? model)
-    {
-        var effectiveApiKey = apiKey ?? settings.Value.ApiKey;
-        if (string.IsNullOrEmpty(effectiveApiKey))
-        {
-            throw new InvalidOperationException(
-                "DeepSeek APIキーが設定されていません。DefaultAi:ApiKey または DeepSeek:ApiKey を設定してください。");
-        }
-
-        return new DeepSeekClient(
-            httpClientFactory,
-            settings,
-            loggerFactory.CreateLogger<DeepSeekClient>(),
-            effectiveApiKey,
-            model);
     }
 
     /// <inheritdoc />

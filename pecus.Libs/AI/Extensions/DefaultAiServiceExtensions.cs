@@ -42,9 +42,12 @@ public static class DefaultAiServiceExtensions
             .GetSection(DefaultAiSettings.SectionName)
             .Get<DefaultAiSettings>();
 
-        if (defaultAiSettings == null || defaultAiSettings.Provider == GenerativeApiVendor.None)
+        if (defaultAiSettings == null ||
+            defaultAiSettings.Provider == GenerativeApiVendor.None ||
+            string.IsNullOrEmpty(defaultAiSettings.ApiKey) ||
+            string.IsNullOrEmpty(defaultAiSettings.Model))
         {
-            // プロバイダーが設定されていない場合はスキップ（オプショナル機能として扱う）
+            // 必須設定が揃っていない場合はスキップ（オプショナル機能として扱う）
             return services;
         }
 

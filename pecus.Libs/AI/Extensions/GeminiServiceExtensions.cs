@@ -12,7 +12,7 @@ namespace Pecus.Libs.AI.Extensions;
 public static class GeminiServiceExtensions
 {
     /// <summary>
-    /// GeminiクライアントをDIコンテナに登録
+    /// Gemini用の設定とHttpClientをDIコンテナに登録
     /// </summary>
     /// <param name="services">サービスコレクション</param>
     /// <param name="configuration">設定</param>
@@ -25,18 +25,12 @@ public static class GeminiServiceExtensions
         services.Configure<GeminiSettings>(
             configuration.GetSection(GeminiSettings.SectionName));
 
-        // 設定値を取得してバリデーション
+        // 設定値を取得
         var settings = configuration
             .GetSection(GeminiSettings.SectionName)
             .Get<GeminiSettings>();
 
-        if (settings == null || string.IsNullOrEmpty(settings.ApiKey))
-        {
-            // APIキーが設定されていない場合はスキップ（オプショナル機能として扱う）
-            return services;
-        }
-
-        var timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
+        var timeout = TimeSpan.FromSeconds(settings?.TimeoutSeconds ?? 60);
 
         // Named HttpClient を登録
         services.AddHttpClient(GeminiClient.HttpClientName, (sp, client) =>
@@ -56,10 +50,6 @@ public static class GeminiServiceExtensions
             // サーキットブレーカーのサンプリング期間も延長
             options.CircuitBreaker.SamplingDuration = timeout * 2;
         });
-
-        // GeminiClient を登録
-        services.AddScoped<GeminiClient>();
-        services.AddScoped<IGeminiClient>(sp => sp.GetRequiredService<GeminiClient>());
 
         return services;
     }

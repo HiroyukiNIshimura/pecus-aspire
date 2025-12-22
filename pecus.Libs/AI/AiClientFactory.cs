@@ -50,9 +50,9 @@ public class AiClientFactory : IAiClientFactory
             "デフォルトAIクライアントが設定されていません。appsettings.json で DefaultAi:Provider と APIキーを設定してください。");
 
     /// <inheritdoc />
-    public IAiClient? CreateClient(GenerativeApiVendor vendor, string? apiKey, string? model = null)
+    public IAiClient? CreateClient(GenerativeApiVendor vendor, string apiKey, string model)
     {
-        if (string.IsNullOrEmpty(apiKey) || vendor == GenerativeApiVendor.None)
+        if (vendor == GenerativeApiVendor.None)
         {
             return null;
         }

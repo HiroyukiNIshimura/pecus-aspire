@@ -12,7 +12,7 @@ namespace Pecus.Libs.AI.Extensions;
 public static class AnthropicServiceExtensions
 {
     /// <summary>
-    /// AnthropicクライアントをDIコンテナに登録
+    /// Anthropic用の設定とHttpClientをDIコンテナに登録
     /// </summary>
     /// <param name="services">サービスコレクション</param>
     /// <param name="configuration">設定</param>
@@ -25,18 +25,12 @@ public static class AnthropicServiceExtensions
         services.Configure<AnthropicSettings>(
             configuration.GetSection(AnthropicSettings.SectionName));
 
-        // 設定値を取得してバリデーション
+        // 設定値を取得
         var settings = configuration
             .GetSection(AnthropicSettings.SectionName)
             .Get<AnthropicSettings>();
 
-        if (settings == null || string.IsNullOrEmpty(settings.ApiKey))
-        {
-            // APIキーが設定されていない場合はスキップ（オプショナル機能として扱う）
-            return services;
-        }
-
-        var timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
+        var timeout = TimeSpan.FromSeconds(settings?.TimeoutSeconds ?? 60);
 
         // Named HttpClient を登録
         services.AddHttpClient(AnthropicClient.HttpClientName, (sp, client) =>
@@ -56,10 +50,6 @@ public static class AnthropicServiceExtensions
             // サーキットブレーカーのサンプリング期間も延長
             options.CircuitBreaker.SamplingDuration = timeout * 2;
         });
-
-        // AnthropicClient を登録
-        services.AddScoped<AnthropicClient>();
-        services.AddScoped<IAnthropicClient>(sp => sp.GetRequiredService<AnthropicClient>());
 
         return services;
     }

@@ -74,12 +74,17 @@ public class DocumentSuggestionService
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId, cancellationToken);
 
-        if (setting == null)
+        if (setting == null ||
+            string.IsNullOrEmpty(setting.GenerativeApiKey) ||
+            string.IsNullOrEmpty(setting.GenerativeApiModel))
         {
             return null;
         }
 
-        return _aiClientFactory.CreateClient(setting.GenerativeApiVendor, setting.GenerativeApiKey);
+        return _aiClientFactory.CreateClient(
+            setting.GenerativeApiVendor,
+            setting.GenerativeApiKey,
+            setting.GenerativeApiModel);
     }
 
     /// <summary>
