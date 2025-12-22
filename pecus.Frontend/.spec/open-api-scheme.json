@@ -2088,7 +2088,7 @@
           "My"
         ],
         "summary": "ログインユーザーの所属組織情報を取得",
-        "description": "組織設定（TaskOverdueThreshold など）を含んだ組織情報を返します。",
+        "description": "組織の基本情報を返します。\r\n組織設定は GET /api/profile/app-settings で取得してください。",
         "responses": {
           "200": {
             "description": "組織情報を返します",
@@ -14810,8 +14810,7 @@
           "id",
           "name",
           "phoneNumber",
-          "rowVersion",
-          "setting"
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -14874,7 +14873,14 @@
             "format": "uint32"
           },
           "setting": {
-            "$ref": "#/components/schemas/OrganizationSettingResponse"
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/OrganizationSettingResponse"
+              }
+            ]
           }
         },
         "description": "組織情報レスポンス"
@@ -18156,8 +18162,7 @@
           "identityIconUrl",
           "roles",
           "isAdmin",
-          "rowVersion",
-          "setting"
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -18242,7 +18247,14 @@
             "format": "uint32"
           },
           "setting": {
-            "$ref": "#/components/schemas/UserSettingResponse"
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserSettingResponse"
+              }
+            ]
           }
         },
         "description": "ユーザー詳細レスポンス"

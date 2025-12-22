@@ -150,7 +150,8 @@ export class MyService {
     }
     /**
      * ログインユーザーの所属組織情報を取得
-     * 組織設定（TaskOverdueThreshold など）を含んだ組織情報を返します。
+     * 組織の基本情報を返します。
+     * 組織設定は GET /api/profile/app-settings で取得してください。
      * @returns OrganizationResponse 組織情報を返します
      * @throws ApiError
      */

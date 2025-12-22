@@ -72,8 +72,7 @@ public class OrganizationResponse : IConflictModel
     public required uint RowVersion { get; set; }
 
     /// <summary>
-    /// 組織設定
+    /// 組織設定（管理画面でのみ返却）
     /// </summary>
-    [Required]
-    public required OrganizationSettingResponse Setting { get; set; } = new();
+    public OrganizationSettingResponse? Setting { get; set; }
 }

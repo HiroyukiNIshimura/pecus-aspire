@@ -95,8 +95,7 @@ public class UserDetailResponse : IConflictModel
     public required uint RowVersion { get; set; }
 
     /// <summary>
-    /// ユーザー設定
+    /// ユーザー設定（プロフィール設定画面でのみ返却）
     /// </summary>
-    [Required]
-    public required UserSettingResponse Setting { get; set; } = new();
+    public UserSettingResponse? Setting { get; set; }
 }

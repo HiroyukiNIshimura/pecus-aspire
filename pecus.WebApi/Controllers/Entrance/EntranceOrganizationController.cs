@@ -116,21 +116,7 @@ public class EntranceOrganizationController : ControllerBase
                 Email = organization.Email,
                 CreatedAt = organization.CreatedAt,
                 RowVersion = organization.RowVersion!,
-                Setting = new OrganizationSettingResponse
-                {
-                    TaskOverdueThreshold = organization.Setting?.TaskOverdueThreshold ?? 0,
-                    WeeklyReportDeliveryDay = organization.Setting?.WeeklyReportDeliveryDay ?? 0,
-                    MailFromAddress = organization.Setting?.MailFromAddress,
-                    MailFromName = organization.Setting?.MailFromName,
-                    GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
-                    Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
-                    HelpNotificationTarget = organization.Setting?.HelpNotificationTarget,
-                    RequireEstimateOnTaskCreation = organization.Setting?.RequireEstimateOnTaskCreation ?? false,
-                    EnforcePredecessorCompletion = organization.Setting?.EnforcePredecessorCompletion ?? false,
-                    DashboardHelpCommentMaxCount = organization.Setting?.DashboardHelpCommentMaxCount ?? 6,
-                    GroupChatScope = organization.Setting?.GroupChatScope,
-                    RowVersion = organization.Setting?.RowVersion ?? 0,
-                },
+                // Setting は含めない（登録完了画面では不要）
             },
             AdminUser = new UserDetailResponse
             {
@@ -158,18 +144,7 @@ public class EntranceOrganizationController : ControllerBase
                 LastLoginAt = adminUser.LastLoginAt,
                 RowVersion = adminUser.RowVersion!,
                 IsAdmin = true,
-                Setting = new UserSettingResponse
-                {
-                    CanReceiveEmail = adminUser.Setting?.CanReceiveEmail ?? true,
-                    CanReceiveRealtimeNotification = adminUser.Setting?.CanReceiveRealtimeNotification ?? true,
-                    TimeZone = adminUser.Setting?.TimeZone ?? "Asia/Tokyo",
-                    Language = adminUser.Setting?.Language ?? "ja-JP",
-                    LandingPage = adminUser.Setting?.LandingPage,
-                    FocusScorePriority = adminUser.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
-                    FocusTasksLimit = adminUser.Setting?.FocusTasksLimit ?? 5,
-                    WaitingTasksLimit = adminUser.Setting?.WaitingTasksLimit ?? 5,
-                    RowVersion = adminUser.Setting?.RowVersion ?? 0,
-                },
+                // Setting は含めない（登録完了画面では不要）
             },
         };
         return TypedResults.Ok(response);

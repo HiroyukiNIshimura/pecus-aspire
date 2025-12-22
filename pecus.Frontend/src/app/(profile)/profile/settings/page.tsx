@@ -17,7 +17,7 @@ export default async function UserSettingsPage() {
 
     // ユーザー設定を取得
     const userResponse = await api.profile.getApiProfile();
-    userSettings = userResponse.setting;
+    userSettings = userResponse.setting ?? null;
   } catch (error) {
     console.error('Failed to fetch user settings data:', error);
     fetchError = parseErrorResponse(error, 'ユーザー設定情報の取得に失敗しました').message;

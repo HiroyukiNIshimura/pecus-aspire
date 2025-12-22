@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
-using Pecus.Libs.DB.Models.Enums;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -31,7 +30,8 @@ public class MyOrganizationController : BaseSecureController
     /// ログインユーザーの所属組織情報を取得
     /// </summary>
     /// <remarks>
-    /// 組織設定（TaskOverdueThreshold など）を含んだ組織情報を返します。
+    /// 組織の基本情報を返します。
+    /// 組織設定は GET /api/profile/app-settings で取得してください。
     /// </remarks>
     /// <response code="200">組織情報を返します</response>
     /// <response code="404">組織に所属していない、または組織が見つかりません</response>
@@ -68,21 +68,7 @@ public class MyOrganizationController : BaseSecureController
             IsActive = organization.IsActive,
             UserCount = organization.Users.Count,
             RowVersion = organization.RowVersion!,
-            Setting = new OrganizationSettingResponse
-            {
-                TaskOverdueThreshold = organization.Setting?.TaskOverdueThreshold ?? 0,
-                WeeklyReportDeliveryDay = organization.Setting?.WeeklyReportDeliveryDay ?? 0,
-                MailFromAddress = organization.Setting?.MailFromAddress,
-                MailFromName = organization.Setting?.MailFromName,
-                GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
-                Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
-                HelpNotificationTarget = organization.Setting?.HelpNotificationTarget,
-                RequireEstimateOnTaskCreation = organization.Setting?.RequireEstimateOnTaskCreation ?? false,
-                EnforcePredecessorCompletion = organization.Setting?.EnforcePredecessorCompletion ?? false,
-                DashboardHelpCommentMaxCount = organization.Setting?.DashboardHelpCommentMaxCount ?? 6,
-                GroupChatScope = organization.Setting?.GroupChatScope,
-                RowVersion = organization.Setting?.RowVersion ?? 0,
-            },
+            // Setting は含めない（AppSettingsProviderで取得）
         };
 
         return TypedResults.Ok(response);

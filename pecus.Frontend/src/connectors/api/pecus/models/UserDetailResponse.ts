@@ -70,6 +70,6 @@ export type UserDetailResponse = {
      * ユーザーの楽観的ロック用RowVersion
      */
     rowVersion: number;
-    setting: UserSettingResponse;
+    setting?: UserSettingResponse;
 };
 
