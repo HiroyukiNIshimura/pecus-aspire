@@ -181,6 +181,24 @@ public abstract class TaskNotificationTaskBase
         string workspaceCode);
 
     /// <summary>
+    /// 通知メッセージの内容を非同期で生成する（継承クラスでオーバーライド可能）
+    /// デフォルトでは BuildNotificationMessage を呼び出す
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="task">タスク</param>
+    /// <param name="userName">ユーザー名</param>
+    /// <param name="workspaceCode">ワークスペースコード</param>
+    /// <returns>メッセージ内容</returns>
+    protected virtual Task<string> BuildNotificationMessageAsync(
+        int organizationId,
+        WorkspaceTask task,
+        string userName,
+        string workspaceCode)
+    {
+        return Task.FromResult(BuildNotificationMessage(organizationId, task, userName, workspaceCode));
+    }
+
+    /// <summary>
     /// タスク名を取得する（ログ出力用、継承クラスで実装）
     /// </summary>
     protected abstract string TaskName { get; }
@@ -263,7 +281,7 @@ public abstract class TaskNotificationTaskBase
             );
 
             // メッセージを作成してグループチャットに送信
-            var messageContent = BuildNotificationMessage(organizationId, task, userName, workspaceCode);
+            var messageContent = await BuildNotificationMessageAsync(organizationId, task, userName, workspaceCode);
             await SendBotMessageAsync(organizationId, room, systemBot, messageContent);
 
             // 入力終了を通知
