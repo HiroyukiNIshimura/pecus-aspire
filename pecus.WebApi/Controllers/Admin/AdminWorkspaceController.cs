@@ -205,7 +205,7 @@ public class AdminWorkspaceController : BaseAdminController
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<PagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>>> GetWorkspaces(
-        [FromQuery] GetWorkspacesRequest request
+        [FromQuery] AdminGetWorkspacesRequest request
     )
     {
         var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);

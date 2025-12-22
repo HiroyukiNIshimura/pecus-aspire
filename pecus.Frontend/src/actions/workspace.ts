@@ -34,7 +34,7 @@ export async function getMyWorkspaces(): Promise<ApiResponse<WorkspaceListItemRe
 
     // 全ページを取得
     while (hasMore) {
-      const response = await api.workspace.getApiWorkspaces(page, true, undefined, undefined);
+      const response = await api.workspace.getApiWorkspaces(page, undefined, undefined);
 
       if (response.data && response.data.length > 0) {
         allWorkspaces.push(...response.data);
@@ -72,7 +72,7 @@ export interface PagedWorkspacesResponse {
 export async function getMyWorkspacesPaged(page: number = 1): Promise<ApiResponse<PagedWorkspacesResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(page, true, undefined, undefined);
+    const response = await api.workspace.getApiWorkspaces(page, undefined, undefined);
 
     return {
       success: true,

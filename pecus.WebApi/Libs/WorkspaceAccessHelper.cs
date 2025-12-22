@@ -38,11 +38,13 @@ public class OrganizationAccessHelper
     /// <param name="userId">ユーザーID</param>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="includeMembers">メンバー情報を含めるかどうか（デフォルト: false）</param>
+    /// <param name="includeInactive">非アクティブなワークスペースも含めるか（デフォルト: false、Admin用にtrue）</param>
     /// <returns>アクセス可能な場合はtrueとワークスペース、不可能な場合はfalseとnull</returns>
     public async Task<(bool hasAccess, Workspace? workspace)> CheckWorkspaceAccessAsync(
         int userId,
         int workspaceId,
-        bool includeMembers = false
+        bool includeMembers = false,
+        bool includeInactive = false
     )
     {
         var organizationId = await GetUserOrganizationIdAsync(userId);
@@ -70,6 +72,12 @@ public class OrganizationAccessHelper
             return (false, null);
         }
 
+        // 非アクティブチェック（includeInactive = false の場合のみ）
+        if (!includeInactive && !workspace.IsActive)
+        {
+            return (false, null);
+        }
+
         return (true, workspace);
     }
 
@@ -78,10 +86,11 @@ public class OrganizationAccessHelper
     /// </summary>
     /// <param name="userId">ユーザーID</param>
     /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="includeInactive">非アクティブなワークスペースも含めるか（デフォルト: false、Admin用にtrue）</param>
     /// <returns>アクセス可能な場合はtrue、不可能な場合はfalse</returns>
-    public async Task<bool> CanAccessWorkspaceAsync(int userId, int workspaceId)
+    public async Task<bool> CanAccessWorkspaceAsync(int userId, int workspaceId, bool includeInactive = false)
     {
-        var (hasAccess, _) = await CheckWorkspaceAccessAsync(userId, workspaceId);
+        var (hasAccess, _) = await CheckWorkspaceAccessAsync(userId, workspaceId, includeInactive: includeInactive);
         return hasAccess;
     }
 
@@ -92,9 +101,22 @@ public class OrganizationAccessHelper
     /// </summary>
     /// <param name="userId">ユーザーID</param>
     /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="includeInactive">非アクティブなワークスペースも含めるか（デフォルト: false、Admin用にtrue）</param>
     /// <returns>アクティブなメンバーの場合はtrue、それ以外はfalse</returns>
-    public async Task<bool> IsActiveWorkspaceMemberAsync(int userId, int workspaceId)
+    public async Task<bool> IsActiveWorkspaceMemberAsync(int userId, int workspaceId, bool includeInactive = false)
     {
+        // まずワークスペースのアクティブ状態をチェック
+        if (!includeInactive)
+        {
+            var workspace = await _context.Workspaces
+                .AsNoTracking()
+                .FirstOrDefaultAsync(w => w.Id == workspaceId);
+            if (workspace == null || !workspace.IsActive)
+            {
+                return false;
+            }
+        }
+
         return await _context.WorkspaceUsers.AnyAsync(wu =>
             wu.WorkspaceId == workspaceId
             && wu.UserId == userId
@@ -109,10 +131,12 @@ public class OrganizationAccessHelper
     /// </summary>
     /// <param name="userId">ユーザーID</param>
     /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="includeInactive">非アクティブなワークスペースも含めるか（デフォルト: false、Admin用にtrue）</param>
     /// <returns>アクセス可能フラグ、メンバーフラグ、ワークスペース情報</returns>
     public async Task<(bool hasAccess, bool isMember, Workspace? workspace)> CheckWorkspaceAccessAndMembershipAsync(
         int userId,
-        int workspaceId
+        int workspaceId,
+        bool includeInactive = false
     )
     {
         var organizationId = await GetUserOrganizationIdAsync(userId);
@@ -127,6 +151,12 @@ public class OrganizationAccessHelper
             .FirstOrDefaultAsync(w => w.Id == workspaceId);
 
         if (workspace == null || workspace.OrganizationId != organizationId.Value)
+        {
+            return (false, false, null);
+        }
+
+        // 非アクティブチェック（includeInactive = false の場合のみ）
+        if (!includeInactive && !workspace.IsActive)
         {
             return (false, false, null);
         }
@@ -211,10 +241,11 @@ public class OrganizationAccessHelper
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="userId">ユーザーID</param>
+    /// <param name="includeInactive">非アクティブなワークスペースも含めるか（デフォルト: false、Admin用にtrue）</param>
     /// <exception cref="Exceptions.NotFoundException">アクセス権がない場合</exception>
-    public async Task EnsureWorkspaceAccessAsync(int workspaceId, int userId)
+    public async Task EnsureWorkspaceAccessAsync(int workspaceId, int userId, bool includeInactive = false)
     {
-        var hasAccess = await CanAccessWorkspaceAsync(userId, workspaceId);
+        var hasAccess = await CanAccessWorkspaceAsync(userId, workspaceId, includeInactive);
         if (!hasAccess)
         {
             throw new Exceptions.NotFoundException("ワークスペースが見つかりません。");

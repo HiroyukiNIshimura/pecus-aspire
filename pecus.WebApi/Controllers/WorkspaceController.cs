@@ -143,7 +143,6 @@ public class WorkspaceController : BaseSecureController
                 userId: CurrentUserId,
                 page: validatedPage,
                 pageSize: pageSize,
-                isActive: request.IsActive,
                 genreId: request.GenreId,
                 name: request.Name
             );

@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { Tooltip } from '@/components/common/feedback/Tooltip';
-import ActiveStatusFilter from '@/components/common/filters/ActiveStatusFilter';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
@@ -32,7 +31,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(null);
-  const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterName, setFilterName] = useState<string>('');
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -51,7 +49,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
       try {
         const params = new URLSearchParams();
         params.append('page', '1');
-        params.append('IsActive', 'true');
 
         const response = await fetch(`/api/workspaces?${params.toString()}`);
         if (response.ok && isMounted) {
@@ -100,9 +97,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
       const nextPage = currentPage + 1;
       const params = new URLSearchParams();
       params.append('page', nextPage.toString());
-      if (filterIsActive !== null) {
-        params.append('IsActive', filterIsActive.toString());
-      }
       if (filterName) {
         params.append('Name', filterName);
       }
@@ -132,9 +126,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
     try {
       const params = new URLSearchParams();
       params.append('page', '1');
-      if (filterIsActive !== null) {
-        params.append('IsActive', filterIsActive.toString());
-      }
       if (filterName) {
         params.append('Name', filterName);
       }
@@ -171,7 +162,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
   const handleReset = async () => {
     setFilterName('');
-    setFilterIsActive(true);
     setFilterGenreId(null);
     nameValidation.clearErrors();
     resetInfiniteScroll();
@@ -181,7 +171,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
       try {
         const params = new URLSearchParams();
         params.append('page', '1');
-        params.append('IsActive', 'true'); // リセット後のデフォルト値
 
         const response = await fetch(`/api/workspaces?${params.toString()}`);
         if (response.ok) {
@@ -239,7 +228,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
             <h2 className="card-title text-lg flex items-center gap-2">
               <span className="icon-[mdi--filter-outline] w-5 h-5" aria-hidden="true" />
               <span
-                className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName || filterGenreId !== null ? 'text-success' : ''}`}
+                className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterName || filterGenreId !== null ? 'text-success' : ''}`}
               >
                 フィルター
               </span>
@@ -260,7 +249,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
           {filterOpen && (
             <div className="pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 {/* ジャンルフィルター */}
                 <div className="form-control">
                   <label htmlFor="filterGenreId" className="label">
@@ -299,14 +288,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                     </div>
                   )}
                 </div>
-
-                {/* ステータスフィルター */}
-                <ActiveStatusFilter
-                  name="workspace-status"
-                  value={filterIsActive}
-                  onChange={setFilterIsActive}
-                  size="xs"
-                />
               </div>
 
               {/* ボタングループ */}

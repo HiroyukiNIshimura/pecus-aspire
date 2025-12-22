@@ -608,6 +608,7 @@ public class WorkspaceService
 
     /// <summary>
     /// ユーザーがアクセス可能なワークスペースをページネーション付きで取得
+    /// 一般ユーザー向け：常にアクティブなワークスペースのみを返す
     /// </summary>
     public async Task<(
         List<Workspace> workspaces,
@@ -616,7 +617,6 @@ public class WorkspaceService
         int userId,
         int page,
         int pageSize,
-        bool? isActive = null,
         int? genreId = null,
         string? name = null
     )
@@ -636,14 +636,9 @@ public class WorkspaceService
             .Include(w => w.WorkspaceUsers.Where(wu => wu.User != null && wu.User.IsActive))
                 .ThenInclude(wu => wu.User)
             .Include(w => w.WorkspaceItems)
-            .Where(w => accessibleWorkspaceIds.Contains(w.Id))
+            .Where(w => accessibleWorkspaceIds.Contains(w.Id) && w.IsActive)
             .AsSplitQuery() // デカルト爆発防止
             .AsQueryable();
-
-        if (isActive.HasValue)
-        {
-            query = query.Where(w => w.IsActive == isActive.Value);
-        }
 
         if (genreId.HasValue)
         {

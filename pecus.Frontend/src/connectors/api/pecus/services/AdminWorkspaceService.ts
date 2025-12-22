@@ -39,7 +39,7 @@ export class AdminWorkspaceService {
     /**
      * ワークスペース一覧取得（ページネーション）
      * @param page
-     * @param isActive
+     * @param isActive アクティブ状態でフィルタ（null: 全て、true: アクティブのみ、false: 非アクティブのみ）
      * @param genreId
      * @param name
      * @returns PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics OK

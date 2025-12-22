@@ -64,7 +64,6 @@ export class WorkspaceService {
     /**
      * ログインユーザーがアクセス可能なワークスペース一覧を取得する（ページネーション）
      * @param page
-     * @param isActive
      * @param genreId
      * @param name
      * @returns PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics OK
@@ -72,7 +71,6 @@ export class WorkspaceService {
      */
     public static getApiWorkspaces(
         page?: number,
-        isActive?: boolean,
         genreId?: number,
         name?: string,
     ): CancelablePromise<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics> {
@@ -81,7 +79,6 @@ export class WorkspaceService {
             url: '/api/workspaces',
             query: {
                 'Page': page,
-                'IsActive': isActive,
                 'GenreId': genreId,
                 'Name': name,
             },
