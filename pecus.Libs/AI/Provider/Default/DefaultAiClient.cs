@@ -2,10 +2,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Models;
-using Pecus.Libs.AI.Provider.Anthropic;
-using Pecus.Libs.AI.Provider.DeepSeek;
-using Pecus.Libs.AI.Provider.Gemini;
-using Pecus.Libs.AI.Provider.OpenAI;
 using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.AI.Provider.Default;
@@ -13,6 +9,7 @@ namespace Pecus.Libs.AI.Provider.Default;
 /// <summary>
 /// システムデフォルトAIクライアント
 /// 設定により Anthropic / DeepSeek / Gemini / OpenAI から選択可能
+/// IAiClientFactory に委譲することで、新規プロバイダー追加時の変更を不要にする
 /// </summary>
 public class DefaultAiClient : IDefaultAiClient
 {
@@ -22,15 +19,11 @@ public class DefaultAiClient : IDefaultAiClient
 
     /// <summary>
     /// コンストラクタ
+    /// IAiClientFactory に委譲してクライアントを生成
     /// </summary>
     public DefaultAiClient(
-        IHttpClientFactory httpClientFactory,
+        IAiClientFactory aiClientFactory,
         IOptions<DefaultAiSettings> defaultAiSettings,
-        IOptions<OpenAISettings> openAiSettings,
-        IOptions<AnthropicSettings> anthropicSettings,
-        IOptions<GeminiSettings> geminiSettings,
-        IOptions<DeepSeekSettings> deepSeekSettings,
-        ILoggerFactory loggerFactory,
         ILogger<DefaultAiClient> logger)
     {
         _logger = logger;
@@ -38,34 +31,12 @@ public class DefaultAiClient : IDefaultAiClient
         var settings = defaultAiSettings.Value;
         _provider = settings.Provider;
 
-        _innerClient = CreateInnerClient(
-            settings,
-            httpClientFactory,
-            openAiSettings,
-            anthropicSettings,
-            geminiSettings,
-            deepSeekSettings,
-            loggerFactory);
-
-        _logger.LogInformation(
-            "DefaultAiClient initialized with provider: {Provider}, model: {Model}",
-            _provider,
-            settings.Model ?? "(default)");
-    }
-
-    /// <summary>
-    /// 設定に基づいて内部クライアントを生成
-    /// </summary>
-    private static IAiClient CreateInnerClient(
-        DefaultAiSettings settings,
-        IHttpClientFactory httpClientFactory,
-        IOptions<OpenAISettings> openAiSettings,
-        IOptions<AnthropicSettings> anthropicSettings,
-        IOptions<GeminiSettings> geminiSettings,
-        IOptions<DeepSeekSettings> deepSeekSettings,
-        ILoggerFactory loggerFactory)
-    {
         // バリデーション
+        if (settings.Provider == GenerativeApiVendor.None)
+        {
+            throw new InvalidOperationException(
+                "DefaultAi:Provider が設定されていません。appsettings.json で設定してください。");
+        }
         if (string.IsNullOrEmpty(settings.ApiKey))
         {
             throw new InvalidOperationException(
@@ -77,42 +48,16 @@ public class DefaultAiClient : IDefaultAiClient
                 "DefaultAi:Model が設定されていません。appsettings.json で設定してください。");
         }
 
-        return settings.Provider switch
-        {
-            GenerativeApiVendor.OpenAi => new OpenAIClient(
-                httpClientFactory,
-                openAiSettings,
-                loggerFactory.CreateLogger<OpenAIClient>(),
-                settings.ApiKey,
-                settings.Model),
+        // IAiClientFactory に委譲してクライアントを生成
+        // これにより新規プロバイダー追加時に DefaultAiClient の変更が不要
+        _innerClient = aiClientFactory.CreateClient(settings.Provider, settings.ApiKey, settings.Model)
+            ?? throw new InvalidOperationException(
+                $"サポートされていないプロバイダー: {settings.Provider}");
 
-            GenerativeApiVendor.Anthropic => new AnthropicClient(
-                httpClientFactory,
-                anthropicSettings,
-                loggerFactory.CreateLogger<AnthropicClient>(),
-                settings.ApiKey,
-                settings.Model),
-
-            GenerativeApiVendor.GoogleGemini => new GeminiClient(
-                httpClientFactory,
-                geminiSettings,
-                loggerFactory.CreateLogger<GeminiClient>(),
-                settings.ApiKey,
-                settings.Model),
-
-            GenerativeApiVendor.DeepSeek => new DeepSeekClient(
-                httpClientFactory,
-                deepSeekSettings,
-                loggerFactory.CreateLogger<DeepSeekClient>(),
-                settings.ApiKey,
-                settings.Model),
-
-            GenerativeApiVendor.None => throw new InvalidOperationException(
-                "DefaultAi:Provider が設定されていません。appsettings.json で設定してください。"),
-
-            _ => throw new InvalidOperationException(
-                $"サポートされていないプロバイダー: {settings.Provider}")
-        };
+        _logger.LogInformation(
+            "DefaultAiClient initialized with provider: {Provider}, model: {Model}",
+            _provider,
+            settings.Model);
     }
 
     /// <inheritdoc />
