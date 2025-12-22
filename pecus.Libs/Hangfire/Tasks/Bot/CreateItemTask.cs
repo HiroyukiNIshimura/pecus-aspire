@@ -174,7 +174,7 @@ public class CreateItemTask
         {
             ChatRoomId = room.Id,
             SenderActorId = systemBot.ChatActor!.Id,
-            MessageType = ChatMessageType.System,
+            MessageType = ChatMessageType.Text,
             Content = content,
         };
         _context.ChatMessages.Add(message);
