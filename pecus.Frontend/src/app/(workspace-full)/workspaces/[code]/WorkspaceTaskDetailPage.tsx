@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getTaskOrganizationSettings, type TaskOrganizationSettings } from '@/actions/admin/organizations';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import {
   getPredecessorTaskOptions,
@@ -27,6 +26,7 @@ import type {
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
+import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
 import type { TaskEditStatus as TaskEditStatusType } from '@/providers/SignalRProvider';
 import { useSignalRContext } from '@/providers/SignalRProvider';
 import { taskPriorityOptions, updateWorkspaceTaskSchemaWithRequiredEstimate } from '@/schemas/workspaceTaskSchemas';
@@ -143,6 +143,9 @@ export default function WorkspaceTaskDetailPage({
   const effectiveCurrentUserIdRef = useRef<number>(0);
   const hasEditPermissionRef = useRef<boolean>(false);
 
+  // 組織設定（タスク関連）- AppSettingsProviderから取得
+  const { requireEstimateOnTaskCreation, enforcePredecessorCompletion } = useOrganizationSettings();
+
   // SignalR関数をrefで保持（useEffect依存配列から外すため）
   const signalRRef = useRef({
     joinTask,
@@ -200,13 +203,10 @@ export default function WorkspaceTaskDetailPage({
   const [predecessorTaskId, setPredecessorTaskId] = useState<number | null>(null);
   const [predecessorTaskOptions, setPredecessorTaskOptions] = useState<PredecessorTaskOption[]>([]);
 
-  // 組織設定（タスク関連）
-  const [taskSettings, setTaskSettings] = useState<TaskOrganizationSettings | null>(null);
-
   // 動的にスキーマを生成（組織設定に基づく）
   const taskSchema = useMemo(
-    () => updateWorkspaceTaskSchemaWithRequiredEstimate(taskSettings?.requireEstimateOnTaskCreation ?? false),
-    [taskSettings?.requireEstimateOnTaskCreation],
+    () => updateWorkspaceTaskSchemaWithRequiredEstimate(requireEstimateOnTaskCreation),
+    [requireEstimateOnTaskCreation],
   );
 
   // 現在選択中の先行タスクが完了していないかどうかを判定
@@ -355,11 +355,10 @@ export default function WorkspaceTaskDetailPage({
       setServerErrors([]);
 
       try {
-        // タスクデータ、先行タスク候補、組織設定を並列で取得
-        const [taskResult, predecessorResult, settingsResult] = await Promise.all([
+        // タスクデータと先行タスク候補を並列で取得（組織設定はAppSettingsProviderから取得済み）
+        const [taskResult, predecessorResult] = await Promise.all([
           getWorkspaceTask(workspaceId, itemId, targetTaskId),
           getPredecessorTaskOptions(workspaceId, itemId, targetTaskId),
-          getTaskOrganizationSettings(),
         ]);
 
         if (taskResult.success) {
@@ -371,10 +370,6 @@ export default function WorkspaceTaskDetailPage({
 
         if (predecessorResult.success) {
           setPredecessorTaskOptions(predecessorResult.data || []);
-        }
-
-        if (settingsResult.success && settingsResult.data) {
-          setTaskSettings(settingsResult.data);
         }
       } catch {
         notifyRef.current.error('タスクの取得中にエラーが発生しました');
@@ -1242,7 +1237,7 @@ export default function WorkspaceTaskDetailPage({
                       <label htmlFor="estimatedHours" className="label">
                         <span className="label-text font-semibold">
                           予定工数（時間）
-                          {taskSettings?.requireEstimateOnTaskCreation && <span className="text-error"> *</span>}
+                          {requireEstimateOnTaskCreation && <span className="text-error"> *</span>}
                         </span>
                       </label>
                       <input type="hidden" name="estimatedHours" value={estimatedHours || ''} />
@@ -1406,10 +1401,10 @@ export default function WorkspaceTaskDetailPage({
                           disabled={
                             isFormDisabled ||
                             (task?.itemCommitterId != null && currentUser?.id !== task.itemCommitterId) ||
-                            (taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete)
+                            (enforcePredecessorCompletion && isPredecessorIncomplete)
                           }
                           title={
-                            taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete
+                            enforcePredecessorCompletion && isPredecessorIncomplete
                               ? '先行タスクが完了していないため、完了にできません'
                               : task?.itemCommitterId != null && currentUser?.id !== task.itemCommitterId
                                 ? '完了操作はコミッターのみ可能です'
@@ -1421,7 +1416,7 @@ export default function WorkspaceTaskDetailPage({
                           {task?.itemCommitterId != null && currentUser?.id !== task.itemCommitterId && (
                             <span className="text-xs text-base-content/50 ml-1">(コミッターのみ)</span>
                           )}
-                          {taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete && (
+                          {enforcePredecessorCompletion && isPredecessorIncomplete && (
                             <span className="text-xs text-warning ml-1">(先行タスク未完了)</span>
                           )}
                         </label>

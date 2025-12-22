@@ -123,6 +123,32 @@ export function OrganizationInfo() {
 }
 ```
 
+#### タスク関連設定の取得
+
+```tsx
+'use client';
+
+import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
+
+export function TaskForm() {
+  const { requireEstimateOnTaskCreation, enforcePredecessorCompletion } = useOrganizationSettings();
+
+  return (
+    <form>
+      <label>
+        予定工数（時間）
+        {requireEstimateOnTaskCreation && <span className="text-error"> *</span>}
+      </label>
+      <input type="number" required={requireEstimateOnTaskCreation} />
+
+      {enforcePredecessorCompletion && (
+        <p className="text-warning">先行タスクが完了するまでこのタスクは完了にできません</p>
+      )}
+    </form>
+  );
+}
+```
+
 #### ユーザー設定の取得
 
 ```tsx
@@ -206,22 +232,25 @@ export function MyForm() {
 
 | プロパティ | 型 | 説明 |
 |-----------|------|------|
-| `name` | `string` | 組織名 |
-| `aiProvider` | `string` | AI プロバイダー（'None', 'OpenAI', 'Azure', 'Gemini'） |
+| `aiProvider` | `GenerativeApiVendor` | AI プロバイダー（'None', 'OpenAI', 'Azure', 'Gemini'） |
 | `isAiConfigured` | `boolean` | AI が正しく設定されているか |
-| `plan` | `string` | 契約プラン |
-| `trialEndsAt` | `string \| null` | トライアル終了日 |
-| `createdAt` | `string` | 組織作成日 |
+| `plan` | `OrganizationPlan` | 契約プラン |
+| `requireEstimateOnTaskCreation` | `boolean` | タスク作成時に見積もりを必須とするか |
+| `enforcePredecessorCompletion` | `boolean` | 先行タスクが完了しないと次のタスクを操作できないか |
+| `groupChatScope` | `GroupChatScope \| undefined` | グループチャットのスコープ設定 |
 
 ### UserPublicSettings
 
 | プロパティ | 型 | 説明 |
 |-----------|------|------|
-| `timeZone` | `string` | タイムゾーン |
+| `timeZone` | `string` | タイムゾーン（IANA zone name） |
 | `language` | `string` | 言語設定 |
-| `darkMode` | `boolean` | ダークモード有効 |
-| `emailNotifications` | `boolean` | メール通知有効 |
-| `pushNotifications` | `boolean` | プッシュ通知有効 |
+| `canReceiveEmail` | `boolean` | メール受信の可否 |
+| `canReceiveRealtimeNotification` | `boolean` | リアルタイム通知の可否 |
+| `landingPage` | `LandingPage \| undefined` | ログイン後のランディングページ |
+| `focusScorePriority` | `FocusScorePriority \| undefined` | フォーカス推奨のスコアリング優先要素 |
+| `focusTasksLimit` | `number` | フォーカス推奨タスクの表示件数 |
+| `waitingTasksLimit` | `number` | 待機中タスクの表示件数 |
 
 ---
 
@@ -230,21 +259,24 @@ export function MyForm() {
 Context Provider 外で Hook を使用した場合や、設定取得に失敗した場合のデフォルト値：
 
 ```typescript
-export const defaultAppSettings: AppPublicSettings = {
+export const defaultAppSettings: AppPublicSettingsResponse = {
   organization: {
-    name: '',
     aiProvider: 'None',
     isAiConfigured: false,
     plan: 'Free',
-    trialEndsAt: null,
-    createdAt: new Date().toISOString(),
+    requireEstimateOnTaskCreation: false,
+    enforcePredecessorCompletion: false,
+    groupChatScope: undefined,
   },
   user: {
     timeZone: 'Asia/Tokyo',
-    language: 'ja',
-    darkMode: false,
-    emailNotifications: true,
-    pushNotifications: true,
+    language: 'ja-JP',
+    canReceiveEmail: true,
+    canReceiveRealtimeNotification: true,
+    landingPage: undefined,
+    focusScorePriority: 'Deadline',
+    focusTasksLimit: 5,
+    waitingTasksLimit: 5,
   },
 };
 ```
@@ -261,19 +293,22 @@ export const defaultAppSettings: AppPublicSettings = {
 ```json
 {
   "organization": {
-    "name": "Example Corp",
     "aiProvider": "OpenAI",
     "isAiConfigured": true,
     "plan": "Pro",
-    "trialEndsAt": null,
-    "createdAt": "2024-01-15T00:00:00Z"
+    "requireEstimateOnTaskCreation": true,
+    "enforcePredecessorCompletion": false,
+    "groupChatScope": "AllMembers"
   },
   "user": {
     "timeZone": "Asia/Tokyo",
-    "language": "ja",
-    "darkMode": false,
-    "emailNotifications": true,
-    "pushNotifications": true
+    "language": "ja-JP",
+    "canReceiveEmail": true,
+    "canReceiveRealtimeNotification": true,
+    "landingPage": "Dashboard",
+    "focusScorePriority": "Deadline",
+    "focusTasksLimit": 5,
+    "waitingTasksLimit": 5
   }
 }
 ```
@@ -291,6 +326,7 @@ export const defaultAppSettings: AppPublicSettings = {
 
 - レイアウト層で一度だけ取得するため、子コンポーネントでの重複リクエストが発生しません
 - SSR で取得するため、初期表示時に設定が利用可能です
+- **重複API呼び出しの削減**: 従来は各コンポーネントで `getTaskOrganizationSettings()` 等を個別に呼び出していましたが、AppSettingsProvider により一元化されました
 
 ### エラーハンドリング
 

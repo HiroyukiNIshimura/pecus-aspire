@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getTaskOrganizationSettings, type TaskOrganizationSettings } from '@/actions/admin/organizations';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import {
   checkAssigneeTaskLoad,
@@ -21,6 +20,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
+import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
 import { createWorkspaceTaskSchemaWithRequiredEstimate, taskPriorityOptions } from '@/schemas/workspaceTaskSchemas';
 
 /** 選択されたユーザー情報 */
@@ -60,6 +60,9 @@ export default function CreateWorkspaceTaskModal({
   const notify = useNotify();
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
 
+  // 組織設定（タスク関連）- AppSettingsProviderから取得
+  const { requireEstimateOnTaskCreation } = useOrganizationSettings();
+
   // 担当者選択状態
   const [selectedAssignee, setSelectedAssignee] = useState<SelectedUser | null>(null);
   const [assigneeSearchResults, setAssigneeSearchResults] = useState<UserSearchResultResponse[]>([]);
@@ -85,13 +88,10 @@ export default function CreateWorkspaceTaskModal({
   const [assigneeLoadCheck, setAssigneeLoadCheck] = useState<AssigneeTaskLoadResponse | null>(null);
   const [assigneeLoadError, setAssigneeLoadError] = useState<string | null>(null);
 
-  // 組織設定（タスク関連）
-  const [taskSettings, setTaskSettings] = useState<TaskOrganizationSettings | null>(null);
-
   // 動的にスキーマを生成（組織設定に基づく）
   const taskSchema = useMemo(
-    () => createWorkspaceTaskSchemaWithRequiredEstimate(taskSettings?.requireEstimateOnTaskCreation ?? false),
-    [taskSettings?.requireEstimateOnTaskCreation],
+    () => createWorkspaceTaskSchemaWithRequiredEstimate(requireEstimateOnTaskCreation),
+    [requireEstimateOnTaskCreation],
   );
 
   const toISODateString = useCallback((dateStr: string | undefined | null): string | null => {
@@ -114,21 +114,12 @@ export default function CreateWorkspaceTaskModal({
     }
   }, [workspaceId, itemId]);
 
-  // 組織設定を取得
-  const fetchTaskSettings = useCallback(async () => {
-    const result = await getTaskOrganizationSettings();
-    if (result.success && result.data) {
-      setTaskSettings(result.data);
-    }
-  }, []);
-
-  // モーダルが開いたら先行タスク候補と組織設定を取得
+  // モーダルが開いたら先行タスク候補を取得
   useEffect(() => {
     if (isOpen) {
       fetchPredecessorTasks();
-      fetchTaskSettings();
     }
-  }, [isOpen, fetchPredecessorTasks, fetchTaskSettings]);
+  }, [isOpen, fetchPredecessorTasks]);
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
@@ -246,7 +237,6 @@ export default function CreateWorkspaceTaskModal({
       setPredecessorTaskOptions([]);
       setAssigneeLoadCheck(null);
       setAssigneeLoadError(null);
-      setTaskSettings(null);
     }
   }, [isOpen, resetForm]);
 
@@ -613,7 +603,7 @@ export default function CreateWorkspaceTaskModal({
               <label htmlFor="estimatedHours" className="label">
                 <span className="label-text font-semibold">
                   予定工数（時間）
-                  {taskSettings?.requireEstimateOnTaskCreation && <span className="text-error"> *</span>}
+                  {requireEstimateOnTaskCreation && <span className="text-error"> *</span>}
                 </span>
               </label>
               <input type="hidden" name="estimatedHours" value={estimatedHours || ''} />
