@@ -65,6 +65,47 @@ public abstract class GroupChatReplyTaskBase
     }
 
     /// <summary>
+    /// 指定したルームの過去 N ターンのメッセージを取得する
+    /// </summary>
+    /// <param name="roomId">チャットルーム ID</param>
+    /// <param name="turns">取得するターン数</param>
+    /// <param name="beforeMessageId">このメッセージ ID より前のメッセージを取得（null の場合は最新から）</param>
+    /// <returns>過去メッセージのリスト（古い順）</returns>
+    /// <remarks>
+    /// 取得したメッセージの SenderActor から以下の情報を参照可能：
+    /// - SenderActor.ActorType: User または Bot を判別
+    /// - SenderActor.DisplayName: 表示名
+    /// - SenderActor.User: ユーザー詳細（ActorType が User の場合）
+    /// - SenderActor.Bot: Bot 詳細（ActorType が Bot の場合）
+    /// </remarks>
+    protected async Task<List<ChatMessage>> GetRecentMessagesAsync(
+        int roomId,
+        int turns,
+        int? beforeMessageId = null)
+    {
+        var query = Context.ChatMessages
+            .Where(m => m.ChatRoomId == roomId);
+
+        if (beforeMessageId.HasValue)
+        {
+            query = query.Where(m => m.Id < beforeMessageId.Value);
+        }
+
+        var messages = await query
+            .OrderByDescending(m => m.Id)
+            .Take(turns)
+            .Include(m => m.SenderActor)
+                .ThenInclude(a => a!.User)
+            .Include(m => m.SenderActor)
+                .ThenInclude(a => a!.Bot)
+            .ToListAsync();
+
+        // 古い順に並べ替えて返す
+        messages.Reverse();
+        return messages;
+    }
+
+    /// <summary>
     /// 送信者ユーザーを取得する
     /// </summary>
     /// <param name="userId">ユーザーID</param>
