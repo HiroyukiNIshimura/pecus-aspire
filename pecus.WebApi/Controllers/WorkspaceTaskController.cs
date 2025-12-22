@@ -6,6 +6,7 @@ using Pecus.Libs;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Services;
@@ -84,6 +85,13 @@ public class WorkspaceTaskController : BaseSecureController
 
         // タスク作成通知メールを送信
         await SendTaskCreatedEmailAsync(task.Id);
+
+        // ワークスペースタスク作成通知をバックグラウンドジョブで実行
+        _backgroundJobClient.Enqueue<CreateTaskTask>(x =>
+                       x.NotifyTaskCreatedAsync(
+                          task.Id
+                       )
+                   );
 
         var response = new WorkspaceTaskResponse
         {
@@ -336,6 +344,13 @@ public class WorkspaceTaskController : BaseSecureController
         {
             await SendTaskCompletedEmailAsync(task.Id, request.IsDiscarded == true);
         }
+
+        // ワークスペースタスク作成通知をバックグラウンドジョブで実行
+        _backgroundJobClient.Enqueue<UpdateTaskTask>(x =>
+                       x.NotifyTaskUpdatedAsync(
+                          task.Id
+                       )
+                   );
 
         var response = new WorkspaceTaskResponse
         {
