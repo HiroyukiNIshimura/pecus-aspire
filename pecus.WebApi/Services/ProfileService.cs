@@ -5,6 +5,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Security;
+using Pecus.Models.Responses.Common;
 
 namespace Pecus.Services;
 
@@ -646,4 +647,43 @@ public class ProfileService
         );
     }
 
+    /// <summary>
+    /// ユーザーの公開設定を取得
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>ユーザーの公開設定</returns>
+    public async Task<UserPublicSettings> GetUserPublicSettingsAsync(int userId)
+    {
+        var setting = await _context.UserSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+
+        if (setting == null)
+        {
+            // 設定が存在しない場合はデフォルト値を返す
+            return new UserPublicSettings
+            {
+                TimeZone = "Asia/Tokyo",
+                Language = "ja-JP",
+                CanReceiveEmail = true,
+                CanReceiveRealtimeNotification = true,
+                LandingPage = null,
+                FocusScorePriority = FocusScorePriority.Deadline,
+                FocusTasksLimit = 5,
+                WaitingTasksLimit = 5,
+            };
+        }
+
+        return new UserPublicSettings
+        {
+            TimeZone = setting.TimeZone,
+            Language = setting.Language,
+            CanReceiveEmail = setting.CanReceiveEmail,
+            CanReceiveRealtimeNotification = setting.CanReceiveRealtimeNotification,
+            LandingPage = setting.LandingPage,
+            FocusScorePriority = setting.FocusScorePriority,
+            FocusTasksLimit = setting.FocusTasksLimit,
+            WaitingTasksLimit = setting.WaitingTasksLimit,
+        };
+    }
 }

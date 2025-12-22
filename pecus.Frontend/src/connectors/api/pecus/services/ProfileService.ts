@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AppPublicSettingsResponse } from '../models/AppPublicSettingsResponse';
 import type { DeviceResponse } from '../models/DeviceResponse';
 import type { EmailChangeRequestResponse } from '../models/EmailChangeRequestResponse';
 import type { EmailChangeVerifyResponse } from '../models/EmailChangeVerifyResponse';
@@ -224,6 +225,23 @@ export class ProfileService {
                 400: `Bad Request`,
                 404: `Not Found`,
                 500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * アプリケーション公開設定を取得
+     * フロントエンドで利用可能な組織設定とユーザー設定を統合して返します。
+     * APIキーやパスワード等のセンシティブ情報は含まれません。
+     * SSRでレイアウトレベルで取得し、Context経由で配信することを想定しています。
+     * @returns AppPublicSettingsResponse 公開設定を返します
+     * @throws ApiError
+     */
+    public static getApiProfileAppSettings(): CancelablePromise<AppPublicSettingsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/profile/app-settings',
+            errors: {
+                404: `組織に所属していません`,
             },
         });
     }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Models.Responses.Common;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Profile;
@@ -17,6 +18,7 @@ namespace Pecus.Controllers.Profile;
 public class ProfileController : BaseSecureController
 {
     private readonly ProfileService _profileService;
+    private readonly OrganizationService _organizationService;
     private readonly ILogger<ProfileController> _logger;
 
     /// <summary>
@@ -24,11 +26,13 @@ public class ProfileController : BaseSecureController
     /// </summary>
     public ProfileController(
         ILogger<ProfileController> logger,
-        ProfileService profileService
+        ProfileService profileService,
+        OrganizationService organizationService
     ) : base(profileService, logger)
     {
         _logger = logger;
         _profileService = profileService;
+        _organizationService = organizationService;
     }
 
     /// <summary>
@@ -183,4 +187,38 @@ public class ProfileController : BaseSecureController
         return TypedResults.Ok(new MessageResponse { Message = "パスワードを変更しました。" });
     }
 
+    /// <summary>
+    /// アプリケーション公開設定を取得
+    /// </summary>
+    /// <remarks>
+    /// フロントエンドで利用可能な組織設定とユーザー設定を統合して返します。
+    /// APIキーやパスワード等のセンシティブ情報は含まれません。
+    /// SSRでレイアウトレベルで取得し、Context経由で配信することを想定しています。
+    /// </remarks>
+    /// <response code="200">公開設定を返します</response>
+    /// <response code="404">組織に所属していません</response>
+    [HttpGet("app-settings")]
+    [ProducesResponseType(typeof(AppPublicSettingsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<Ok<AppPublicSettingsResponse>> GetAppPublicSettings()
+    {
+        if (CurrentUser?.OrganizationId == null)
+        {
+            throw new NotFoundException("組織に所属していません。");
+        }
+
+        // 組織設定とユーザー設定を並列取得
+        var organizationSettingsTask = _organizationService.GetOrganizationPublicSettingsAsync(CurrentUser.OrganizationId.Value);
+        var userSettingsTask = _profileService.GetUserPublicSettingsAsync(CurrentUserId);
+
+        await Task.WhenAll(organizationSettingsTask, userSettingsTask);
+
+        var response = new AppPublicSettingsResponse
+        {
+            Organization = await organizationSettingsTask,
+            User = await userSettingsTask,
+        };
+
+        return TypedResults.Ok(response);
+    }
 }

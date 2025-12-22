@@ -5,6 +5,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Requests.Organization;
+using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.Organization;
 
 namespace Pecus.Services;
@@ -635,5 +636,42 @@ public class OrganizationService
                     },
             }
         );
+    }
+
+    /// <summary>
+    /// 組織の公開設定を取得（センシティブ情報を除外）
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>組織の公開設定</returns>
+    public async Task<OrganizationPublicSettings> GetOrganizationPublicSettingsAsync(int organizationId)
+    {
+        var setting = await _context.OrganizationSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+
+        if (setting == null)
+        {
+            // 設定が存在しない場合はデフォルト値を返す
+            return new OrganizationPublicSettings
+            {
+                AiProvider = GenerativeApiVendor.None,
+                IsAiConfigured = false,
+                Plan = OrganizationPlan.Free,
+                RequireEstimateOnTaskCreation = false,
+                EnforcePredecessorCompletion = false,
+                GroupChatScope = null,
+            };
+        }
+
+        return new OrganizationPublicSettings
+        {
+            AiProvider = setting.GenerativeApiVendor,
+            IsAiConfigured = setting.GenerativeApiVendor != GenerativeApiVendor.None
+                && !string.IsNullOrWhiteSpace(setting.GenerativeApiKey),
+            Plan = setting.Plan,
+            RequireEstimateOnTaskCreation = setting.RequireEstimateOnTaskCreation,
+            EnforcePredecessorCompletion = setting.EnforcePredecessorCompletion,
+            GroupChatScope = setting.GroupChatScope,
+        };
     }
 }
