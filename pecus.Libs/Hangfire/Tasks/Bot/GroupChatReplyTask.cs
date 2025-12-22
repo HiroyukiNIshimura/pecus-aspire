@@ -37,11 +37,50 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     protected override BotType BotType => BotType.ChatBot;
 
     /// <inheritdoc />
-    protected override async Task<(string Message, BotType BotType)> BuildReplyMessage(
+    protected override async Task<BotType> DetermineBotTypeAsync(
+        int organizationId,
+        ChatMessage triggerMessage)
+    {
+        // 組織設定を取得
+        var setting = await GetOrganizationSettingAsync(organizationId);
+        if (setting == null ||
+            setting.GenerativeApiVendor == GenerativeApiVendor.None ||
+            string.IsNullOrEmpty(setting.GenerativeApiKey) ||
+            string.IsNullOrEmpty(setting.GenerativeApiModel))
+        {
+            return BotType.ChatBot;
+        }
+
+        // AI クライアントを作成
+        var aiClient = AiClientFactory.CreateClient(
+            setting.GenerativeApiVendor,
+            setting.GenerativeApiKey,
+            setting.GenerativeApiModel
+        );
+
+        if (aiClient == null)
+        {
+            return BotType.ChatBot;
+        }
+
+        // メッセージが注意を必要とするか判定（困っている or ネガティブ or 緊急）
+        var needsAttention = await MessageAnalyzer.NeedsAttentionAsync(
+            aiClient,
+            triggerMessage.Content ?? string.Empty,
+            Logger
+        );
+
+        // 注意が必要な場合は SystemBot、それ以外は ChatBot を使用
+        return needsAttention ? BotType.SystemBot : BotType.ChatBot;
+    }
+
+    /// <inheritdoc />
+    protected override async Task<string> BuildReplyMessageAsync(
         int organizationId,
         ChatRoom room,
         ChatMessage triggerMessage,
-        User senderUser)
+        User senderUser,
+        DB.Models.Bot bot)
     {
         // 組織設定を取得
         var setting = await GetOrganizationSettingAsync(organizationId);
@@ -54,7 +93,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 "AI settings not configured for organization: OrganizationId={OrganizationId}",
                 organizationId
             );
-            return ("AI設定が構成されていないため、返信できません。", BotType.ChatBot);
+            return "AI設定が構成されていないため、返信できません。";
         }
 
         // AI クライアントを作成
@@ -71,25 +110,8 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 setting.GenerativeApiVendor,
                 organizationId
             );
-            return ("AIクライアントの作成に失敗しました。", BotType.ChatBot);
+            return "AIクライアントの作成に失敗しました。";
         }
-
-        // メッセージが注意を必要とするか判定（困っている or ネガティブ or 緊急）
-        var needsAttention = await MessageAnalyzer.NeedsAttentionAsync(
-            aiClient,
-            triggerMessage.Content ?? string.Empty,
-            Logger
-        );
-
-        // 注意が必要な場合は SystemBot、それ以外は ChatBot を使用
-        var selectedBotType = needsAttention ? BotType.SystemBot : BotType.ChatBot;
-
-        Logger.LogDebug(
-            "Bot type selected: NeedsAttention={NeedsAttention}, BotType={BotType}, RoomId={RoomId}",
-            needsAttention,
-            selectedBotType,
-            room.Id
-        );
 
         // 過去メッセージを取得
         var recent = await GetRecentMessagesAsync(room.Id, MaxConversationTurns, triggerMessage.Id);
@@ -108,9 +130,8 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         // トリガーメッセージを追加
         messages.Add((MessageRole.User, $"{senderUser.Username}さん: {triggerMessage.Content}"));
 
-        // 選択された BotType で Bot を取得してペルソナを取得
-        var bot = await GetBotByTypeAsync(organizationId, selectedBotType);
-        var persona = bot?.Persona;
+        // 引数で渡された Bot のペルソナを使用
+        var persona = bot.Persona;
 
         // AI API を呼び出して返信を生成
         try
@@ -120,7 +141,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 persona
             );
 
-            return (responseText ?? "...", selectedBotType);
+            return responseText ?? "...";
         }
         catch (Exception ex)
         {
@@ -130,7 +151,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 organizationId,
                 room.Id
             );
-            return ("申し訳ありませんが、一時的なエラーが発生しました。", selectedBotType);
+            return "申し訳ありませんが、一時的なエラーが発生しました。";
         }
     }
 

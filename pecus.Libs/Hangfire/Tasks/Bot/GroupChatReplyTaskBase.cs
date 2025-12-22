@@ -247,18 +247,34 @@ public abstract class GroupChatReplyTaskBase
         BotTaskUtils.ShouldActivateBot(probability);
 
     /// <summary>
+    /// 使用する BotType を決定する（継承クラスで実装）
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="triggerMessage">トリガーメッセージ</param>
+    /// <returns>使用する BotType</returns>
+    /// <remarks>
+    /// このメソッドは typing 通知の前に呼び出されるため、軽量な処理にすること。
+    /// AI を使った感情分析など、比較的軽い処理は許容される。
+    /// </remarks>
+    protected abstract Task<BotType> DetermineBotTypeAsync(
+        int organizationId,
+        ChatMessage triggerMessage);
+
+    /// <summary>
     /// 返信メッセージの内容を生成する（継承クラスで実装）
     /// </summary>
     /// <param name="organizationId">組織ID</param>
     /// <param name="room">チャットルーム</param>
     /// <param name="triggerMessage">トリガーメッセージ</param>
     /// <param name="senderUser">送信者ユーザー</param>
-    /// <returns>メッセージ内容と使用する BotType のタプル</returns>
-    protected abstract Task<(string Message, BotType BotType)> BuildReplyMessage(
+    /// <param name="bot">使用する Bot</param>
+    /// <returns>メッセージ内容</returns>
+    protected abstract Task<string> BuildReplyMessageAsync(
         int organizationId,
         ChatRoom room,
         ChatMessage triggerMessage,
-        User senderUser);
+        User senderUser,
+        DB.Models.Bot bot);
 
     /// <summary>
     /// タスク名を取得する（ログ出力用、継承クラスで実装）
@@ -334,8 +350,8 @@ public abstract class GroupChatReplyTaskBase
                 return;
             }
 
-            // 返信メッセージと使用する BotType を決定
-            var (messageContent, selectedBotType) = await BuildReplyMessage(organizationId, room, triggerMessage, senderUser);
+            // 使用する BotType を決定
+            var selectedBotType = await DetermineBotTypeAsync(organizationId, triggerMessage);
 
             // 選択された BotType で Bot を取得
             bot = await GetBotByTypeAsync(organizationId, selectedBotType);
@@ -360,6 +376,9 @@ public abstract class GroupChatReplyTaskBase
                 bot.Name,
                 isTyping: true
             );
+
+            // 返信メッセージを生成
+            var messageContent = await BuildReplyMessageAsync(organizationId, room, triggerMessage, senderUser, bot);
 
             // 返信メッセージをグループチャットに送信
             await SendBotMessageAsync(organizationId, room, bot, messageContent, triggerMessageId);
