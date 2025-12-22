@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createOrGetAiRoom, createOrGetDmRoom, getDmCandidateUsers } from '@/actions/chat';
 import type { ChatRoomItem, DmCandidateUserItem } from '@/connectors/api/pecus';
+import { useIsAiEnabled } from '@/providers/AppSettingsProvider';
 import { type ChatTab, useChatStore } from '@/stores/chatStore';
 import ChatRoomListItem from './ChatRoomListItem';
 import DmCandidateUserListItem from './DmCandidateUserListItem';
@@ -28,6 +29,7 @@ const tabs: { key: ChatTab; label: string; icon: string }[] = [
  */
 export default function ChatRoomList({ rooms, loading = false, onRoomCreated }: ChatRoomListProps) {
   const { activeTab, setActiveTab, selectedRoomId, selectRoom, unreadCounts } = useChatStore();
+  const isAiEnabled = useIsAiEnabled();
   const [dmCandidates, setDmCandidates] = useState<DmCandidateUserItem[]>([]);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -182,8 +184,8 @@ export default function ChatRoomList({ rooms, loading = false, onRoomCreated }: 
                     <div className="flex items-center justify-center h-32 text-base-content/50">DMはありません</div>
                   )}
 
-                {/* AI アシスタントボタン（AI ルームが無い場合のみ表示） */}
-                {!rooms.some((r) => r.type === 'Ai') && (
+                {/* AI アシスタントボタン（AI機能有効かつAIルームが無い場合のみ表示） */}
+                {isAiEnabled && !rooms.some((r) => r.type === 'Ai') && (
                   <div className="p-3 border-b border-base-300">
                     <button
                       type="button"

@@ -60,6 +60,8 @@
   - Aspire構成、DB設計、マイグレーション、コントローラ設計、EF Core最適化等
 - **例外処理**: `docs/global-exception-handling.md`
 - **DB同時実行制御**: `docs/db-concurrency.md`
+- **アプリ全体設定**: `docs/app-settings-provider.md`
+  - 組織設定・ユーザー設定のContext配布、`useIsAiEnabled()` 等のHook利用方法
 - **その他**: 認証、権限、UI規定などの特定トピックは `docs/` または `docs/spec/` ディレクトリ内のドキュメントを参照してください。
 
 ## 開発フロー／コマンド

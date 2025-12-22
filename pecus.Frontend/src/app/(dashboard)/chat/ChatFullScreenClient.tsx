@@ -14,6 +14,7 @@ import type { ChatRoomItem, DmCandidateUserItem, UserSearchResultResponse } from
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSignalREvent } from '@/hooks/useSignalR';
 import { formatRelativeTime } from '@/libs/utils/date';
+import { useIsAiEnabled } from '@/providers/AppSettingsProvider';
 import { useChatStore } from '@/stores/chatStore';
 
 interface ChatFullScreenClientProps {
@@ -60,6 +61,7 @@ export default function ChatFullScreenClient({
 }: ChatFullScreenClientProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
+  const isAiEnabled = useIsAiEnabled();
   const { setUnreadCounts, selectRoom } = useChatStore();
   const [rooms, setRooms] = useState<ChatRoomItem[]>(initialRooms);
 
@@ -165,6 +167,7 @@ function ChatRoomListMobile({
 }) {
   const { activeTab, setActiveTab, unreadCounts, selectRoom } = useChatStore();
   const router = useRouter();
+  const isAiEnabled = useIsAiEnabled();
   const [dmCandidates, setDmCandidates] = useState<DmCandidateUserItem[]>([]);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -303,8 +306,8 @@ function ChatRoomListMobile({
                 <div className="flex items-center justify-center h-32 text-base-content/50">DMはありません</div>
               )}
 
-            {/* AI アシスタントボタン（AI ルームが無い場合のみ表示） */}
-            {!rooms.some((r) => r.type === 'Ai') && (
+            {/* AI アシスタントボタン（AI機能有効かつAIルームが無い場合のみ表示） */}
+            {isAiEnabled && !rooms.some((r) => r.type === 'Ai') && (
               <div className="p-3 border-b border-base-300">
                 <button
                   type="button"

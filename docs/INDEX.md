@@ -11,6 +11,7 @@
 - [Flyonui-color.md](./Flyonui-color.md) — FlyonUI 用のカラーパレットと利用ルール。
 - [frontend-guidelines.md](./frontend-guidelines.md) — フロントエンド実装のガイドライン（SSR/Server Actions 等）。
 - [frontend-url-security.md](./frontend-url-security.md) — フロントでの URL/ルーティングに関するセキュリティ指針。
+- [app-settings-provider.md](./app-settings-provider.md) — AppSettingsProvider（組織設定・ユーザー設定の全体共有）の使い方。
 - [global-exception-handling.md](./global-exception-handling.md) — 例外処理とグローバルフィルタの設計。
 - [layout-template.md](./layout-template.md) — **【必読】レイアウトテンプレート設計ガイドライン（h-screen/min-h-screen 禁止ルール）**。
 - [modal-dialog-template.md](./modal-dialog-template.md) — モーダルダイアログ実装リファレンス（AI エージェント向け）。
