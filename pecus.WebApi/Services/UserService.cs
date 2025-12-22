@@ -115,6 +115,7 @@ public class UserService
           .ThenInclude(r => r.Permissions)
       .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
       .Include(u => u.Setting)
+      .AsSplitQuery()
       .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
     /// <summary>
