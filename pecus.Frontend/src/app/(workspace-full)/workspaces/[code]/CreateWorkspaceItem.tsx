@@ -4,6 +4,7 @@ import type { LexicalEditor } from 'lexical';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createWorkspaceItem, fetchDocumentSuggestion } from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/filters/DatePicker';
+import AiSuggestButton from '@/components/common/forms/AiSuggestButton';
 import TagInput from '@/components/common/forms/TagInput';
 import { INSERT_MARKDOWN_COMMAND, PecusNotionLikeEditor, useNewItemImageUploadHandler } from '@/components/editor';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
@@ -305,16 +306,11 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                 <div className="form-control">
                   <div className="label flex items-center gap-2">
                     <span className="label-text font-semibold">本文</span>
-                    <button
-                      type="button"
-                      onClick={handleSuggestContent}
+                    <AiSuggestButton
+                      onSuggest={handleSuggestContent}
                       disabled={!formData.subject.trim() || isSubmitting || isSuggestLoading}
-                      className="btn btn-xs btn-outline btn-secondary gap-1"
-                      title={!formData.subject.trim() ? '件名を入力すると提案を利用できます' : 'AIが本文を提案します'}
-                    >
-                      <span className="icon-[mdi--auto-fix] size-4" aria-hidden="true" />
-                      提案を利用
-                    </button>
+                      hasSubject={!!formData.subject.trim()}
+                    />
                   </div>
                   <div className="relative">
                     {/* ローディングオーバーレイ */}

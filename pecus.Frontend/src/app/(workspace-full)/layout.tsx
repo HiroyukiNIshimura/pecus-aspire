@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import ChatProvider from '@/components/chat/ChatProvider';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
+import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 
 interface WorkspaceFullLayoutProps {
@@ -21,12 +23,24 @@ interface WorkspaceFullLayoutProps {
  */
 export default async function WorkspaceFullLayout({ children }: WorkspaceFullLayoutProps) {
   let userId: number | null = null;
+  let appSettings: AppPublicSettingsResponse = defaultAppSettings;
 
   try {
     const api = createPecusApiClients();
-    // ユーザー情報を取得して認証状態を確認
+
+    // まずユーザー情報を取得
     const userResponse = await api.profile.getApiProfile();
     userId = userResponse.id;
+
+    // 次にアプリ設定を取得（別のtry-catchで囲んで個別にエラーハンドリング）
+    try {
+      const settingsResponse = await api.profile.getApiProfileAppSettings();
+      appSettings = settingsResponse;
+      console.log('[WorkspaceFullLayout] appSettings fetched:', JSON.stringify(appSettings));
+    } catch (settingsError) {
+      console.error('[WorkspaceFullLayout] Failed to fetch app settings:', settingsError);
+      // 設定取得に失敗してもデフォルト値で続行
+    }
   } catch (error) {
     // 401 エラーの場合はログインページにリダイレクト
     if (detect401ValidationError(error)) {
@@ -39,9 +53,11 @@ export default async function WorkspaceFullLayout({ children }: WorkspaceFullLay
 
   return (
     <SignalRProvider>
-      {children}
-      {/* Chat Bottom Drawer (PC only) */}
-      {userId && <ChatProvider currentUserId={userId} />}
+      <AppSettingsProvider settings={appSettings}>
+        {children}
+        {/* Chat Bottom Drawer (PC only) */}
+        {userId && <ChatProvider currentUserId={userId} />}
+      </AppSettingsProvider>
     </SignalRProvider>
   );
 }

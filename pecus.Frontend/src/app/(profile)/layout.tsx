@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import ProfileLayoutClient from '@/components/common/layout/ProfileLayoutClient';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
+import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 
@@ -18,11 +20,17 @@ interface ProfileLayoutProps {
  */
 export default async function ProfileLayout({ children }: ProfileLayoutProps) {
   let userInfo = null;
+  let appSettings: AppPublicSettingsResponse = defaultAppSettings;
 
   try {
     const api = createPecusApiClients();
-    const userResponse = await api.profile.getApiProfile();
+    // ユーザー情報とアプリ設定を並列取得
+    const [userResponse, settingsResponse] = await Promise.all([
+      api.profile.getApiProfile(),
+      api.profile.getApiProfileAppSettings(),
+    ]);
     userInfo = mapUserResponseToUserInfo(userResponse);
+    appSettings = settingsResponse;
   } catch (error) {
     // 401 エラーの場合はログインページにリダイレクト
     if (detect401ValidationError(error)) {
@@ -30,12 +38,14 @@ export default async function ProfileLayout({ children }: ProfileLayoutProps) {
     }
     // その他のエラーはログに記録
     const errorDetail = parseErrorResponse(error);
-    console.error('ProfileLayout: Failed to fetch user', errorDetail);
+    console.error('ProfileLayout: Failed to fetch user or settings', errorDetail);
   }
 
   return (
     <SignalRProvider>
-      <ProfileLayoutClient userInfo={userInfo}>{children}</ProfileLayoutClient>
+      <AppSettingsProvider settings={appSettings}>
+        <ProfileLayoutClient userInfo={userInfo}>{children}</ProfileLayoutClient>
+      </AppSettingsProvider>
     </SignalRProvider>
   );
 }

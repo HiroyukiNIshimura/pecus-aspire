@@ -7,6 +7,7 @@ import {
   parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
 import type {
+  AppPublicSettingsResponse,
   AvatarType,
   EmailChangeRequestResponse,
   EmailChangeVerifyResponse,
@@ -360,5 +361,23 @@ export async function updateUserSetting(request: {
 
     console.error('Failed to update user setting:', error);
     return parseErrorResponse(error, 'ユーザー設定の更新に失敗しました');
+  }
+}
+
+/**
+ * Server Action: アプリケーション公開設定を取得
+ *
+ * 組織設定とユーザー設定を統合して返す。
+ * SSRでレイアウトレベルで取得し、Context経由で配信することを想定。
+ * APIキーやパスワード等のセンシティブ情報は含まれない。
+ */
+export async function fetchAppSettings(): Promise<ApiResponse<AppPublicSettingsResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.profile.getApiProfileAppSettings();
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch app settings:', error);
+    return parseErrorResponse(error, 'アプリケーション設定の取得に失敗しました');
   }
 }

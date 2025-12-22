@@ -207,16 +207,14 @@ public class ProfileController : BaseSecureController
             throw new NotFoundException("組織に所属していません。");
         }
 
-        // 組織設定とユーザー設定を並列取得
-        var organizationSettingsTask = _organizationService.GetOrganizationPublicSettingsAsync(CurrentUser.OrganizationId.Value);
-        var userSettingsTask = _profileService.GetUserPublicSettingsAsync(CurrentUserId);
-
-        await Task.WhenAll(organizationSettingsTask, userSettingsTask);
+        // 組織設定とユーザー設定を順次取得（DbContextはスレッドセーフではないため並列実行不可）
+        var organizationSettings = await _organizationService.GetOrganizationPublicSettingsAsync(CurrentUser.OrganizationId.Value);
+        var userSettings = await _profileService.GetUserPublicSettingsAsync(CurrentUserId);
 
         var response = new AppPublicSettingsResponse
         {
-            Organization = await organizationSettingsTask,
-            User = await userSettingsTask,
+            Organization = organizationSettings,
+            User = userSettings,
         };
 
         return TypedResults.Ok(response);

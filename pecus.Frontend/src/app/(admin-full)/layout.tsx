@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
+import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 
 interface AdminFullLayoutProps {
@@ -18,15 +20,21 @@ interface AdminFullLayoutProps {
  * 対象: /admin/*
  */
 export default async function AdminFullLayout({ children }: AdminFullLayoutProps) {
+  let appSettings: AppPublicSettingsResponse = defaultAppSettings;
+
   try {
     const api = createPecusApiClients();
-    // ユーザー情報を取得して認証状態を確認
-    const userResponse = await api.profile.getApiProfile();
+    // ユーザー情報とアプリ設定を並列取得
+    const [userResponse, settingsResponse] = await Promise.all([
+      api.profile.getApiProfile(),
+      api.profile.getApiProfileAppSettings(),
+    ]);
 
     // 管理者でない場合はダッシュボードにリダイレクト
     if (!userResponse.isAdmin) {
       redirect('/');
     }
+    appSettings = settingsResponse;
   } catch (error) {
     // 401 エラーの場合はログインページにリダイレクト
     if (detect401ValidationError(error)) {
@@ -34,8 +42,12 @@ export default async function AdminFullLayout({ children }: AdminFullLayoutProps
     }
     // その他のエラーはログに記録（ページの描画は続行）
     const errorDetail = parseErrorResponse(error);
-    console.error('AdminFullLayout: Failed to verify auth', errorDetail);
+    console.error('AdminFullLayout: Failed to verify auth or settings', errorDetail);
   }
 
-  return <SignalRProvider>{children}</SignalRProvider>;
+  return (
+    <SignalRProvider>
+      <AppSettingsProvider settings={appSettings}>{children}</AppSettingsProvider>
+    </SignalRProvider>
+  );
 }
