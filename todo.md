@@ -7,6 +7,7 @@
 * チャット機能
   * [x] Bot（AIによるコメント生成はのぞく）
     * [x] Bot利用の有無（組織設定）により機能切り替え対応
+  * [] DMの既読機能
 
 * Tooltip対応 title\s*=\s*(?:"[^"]*"|'[^']*'|\{[\s\S]*?\}) docs/ui-hint-components.md
 
