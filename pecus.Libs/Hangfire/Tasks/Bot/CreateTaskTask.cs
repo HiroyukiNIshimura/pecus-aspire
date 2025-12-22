@@ -27,6 +27,7 @@ public class CreateTaskTask : TaskNotificationTaskBase
 
     /// <inheritdoc />
     protected override string BuildNotificationMessage(
+        int organizationId,
         WorkspaceTask task,
         string userName,
         string workspaceCode)

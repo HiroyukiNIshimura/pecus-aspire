@@ -176,11 +176,13 @@ public abstract class TaskNotificationTaskBase
     /// <summary>
     /// 通知メッセージの内容を生成する（継承クラスで実装）
     /// </summary>
+    /// <param name="organizationId">組織ID</param>
     /// <param name="task">タスク</param>
     /// <param name="userName">ユーザー名</param>
     /// <param name="workspaceCode">ワークスペースコード</param>
     /// <returns>メッセージ内容</returns>
     protected abstract string BuildNotificationMessage(
+        int organizationId,
         WorkspaceTask task,
         string userName,
         string workspaceCode);
@@ -267,7 +269,7 @@ public abstract class TaskNotificationTaskBase
             // 5. TODO: メッセージ作成が必要か判定（現在は常に作成）
 
             // 6. メッセージを作成してグループチャットに送信
-            var messageContent = BuildNotificationMessage(task, userName, workspaceCode);
+            var messageContent = BuildNotificationMessage(organizationId, task, userName, workspaceCode);
             await SendBotMessageAsync(organizationId, room, systemBot, messageContent);
 
             Logger.LogDebug(

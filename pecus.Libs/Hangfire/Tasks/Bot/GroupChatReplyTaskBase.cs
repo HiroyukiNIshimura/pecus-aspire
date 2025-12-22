@@ -72,13 +72,13 @@ public abstract class GroupChatReplyTaskBase
     /// <param name="beforeMessageId">このメッセージ ID より前のメッセージを取得（null の場合は最新から）</param>
     /// <returns>過去メッセージのリスト（古い順）</returns>
     /// <remarks>
-    /// 取得したメッセージの SenderActor から以下の情報を参照可能：
-    /// - SenderActor.ActorType: User または Bot を判別
-    /// - SenderActor.DisplayName: 表示名
-    /// - SenderActor.User: ユーザー詳細（ActorType が User の場合）
-    /// - SenderActor.Bot: Bot 詳細（ActorType が Bot の場合）
+    /// 取得したメッセージには以下の情報が含まれます：
+    /// - IsBot: 送信者が Bot かどうか
+    /// - UserName: 送信者名（ユーザー名または Bot 名）
+    /// - Content: メッセージ本文
+    /// - CreatedAt: 送信日時
     /// </remarks>
-    protected async Task<List<ChatMessage>> GetRecentMessagesAsync(
+    protected async Task<List<BotChatMessageInfo>> GetRecentMessagesAsync(
         int roomId,
         int turns,
         int? beforeMessageId = null)
@@ -95,14 +95,11 @@ public abstract class GroupChatReplyTaskBase
             .OrderByDescending(m => m.Id)
             .Take(turns)
             .Include(m => m.SenderActor)
-                .ThenInclude(a => a!.User)
-            .Include(m => m.SenderActor)
-                .ThenInclude(a => a!.Bot)
             .ToListAsync();
 
-        // 古い順に並べ替えて返す
+        // 古い順に並べ替えて BotChatMessageInfo に変換
         messages.Reverse();
-        return messages;
+        return messages.Select(BotChatMessageInfo.FromChatMessage).ToList();
     }
 
     /// <summary>
@@ -229,11 +226,13 @@ public abstract class GroupChatReplyTaskBase
     /// <summary>
     /// 返信メッセージの内容を生成する（継承クラスで実装）
     /// </summary>
+    /// <param name="organizationId">組織ID</param>
     /// <param name="room">チャットルーム</param>
     /// <param name="triggerMessage">トリガーメッセージ</param>
     /// <param name="senderUser">送信者ユーザー</param>
     /// <returns>メッセージ内容</returns>
-    protected abstract string BuildReplyMessage(
+    protected abstract Task<string> BuildReplyMessage(
+        int organizationId,
         ChatRoom room,
         ChatMessage triggerMessage,
         User senderUser);
@@ -336,7 +335,7 @@ public abstract class GroupChatReplyTaskBase
             // 6. TODO: メッセージ作成が必要か判定（現在は常に作成）
 
             // 7. 返信メッセージを作成してグループチャットに送信
-            var messageContent = BuildReplyMessage(room, triggerMessage, senderUser);
+            var messageContent = await BuildReplyMessage(organizationId, room, triggerMessage, senderUser);
             await SendBotMessageAsync(organizationId, room, bot, messageContent, triggerMessageId);
 
             Logger.LogDebug(

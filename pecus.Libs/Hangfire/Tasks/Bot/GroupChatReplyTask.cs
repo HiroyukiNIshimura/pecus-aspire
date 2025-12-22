@@ -30,11 +30,13 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     protected override BotType BotType => BotType.ChatBot;
 
     /// <inheritdoc />
-    protected override string BuildReplyMessage(
+    protected override async Task<string> BuildReplyMessage(
+        int organizationId,
         ChatRoom room,
         ChatMessage triggerMessage,
         User senderUser)
     {
+        var recents = await GetRecentMessagesAsync(room.Id, 3, triggerMessage.Id);
         // TODO: 実際の返信メッセージ生成ロジックを実装
         return "工事中";
     }

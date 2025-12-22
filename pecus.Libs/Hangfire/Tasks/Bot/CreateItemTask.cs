@@ -27,6 +27,7 @@ public class CreateItemTask : ItemNotificationTaskBase
 
     /// <inheritdoc />
     protected override string BuildNotificationMessage(
+        int organizationId,
         WorkspaceItem item,
         string ownerName,
         string workspaceCode)
