@@ -123,12 +123,10 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         foreach (var msg in recent)
         {
             var role = msg.IsBot ? MessageRole.Assistant : MessageRole.User;
-            var content = msg.IsBot ? msg.Content : $"{msg.UserName}さん: {msg.Content}";
+            var content = msg.IsBot ? msg.Content : $"({msg.UserName}さん曰く): {msg.Content}";
             messages.Add((role, content ?? string.Empty));
         }
-
-        // トリガーメッセージを追加
-        messages.Add((MessageRole.User, $"{senderUser.Username}さん: {triggerMessage.Content}"));
+        messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、文章内を参照します。"));
 
         // 引数で渡された Bot のペルソナを使用
         var persona = bot.Persona;
