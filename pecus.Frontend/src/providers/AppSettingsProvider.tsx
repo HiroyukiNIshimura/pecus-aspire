@@ -67,20 +67,7 @@ export function useAppSettings(): AppPublicSettingsResponse {
  */
 export function useIsAiEnabled(): boolean {
   const { organization } = useAppSettings();
-  const isEnabled = organization.aiProvider !== 'None' && organization.isAiConfigured;
-
-  // デバッグ用ログ（問題解決後に削除）
-  console.log('[useIsAiEnabled] organization:', organization);
-  console.log(
-    '[useIsAiEnabled] aiProvider:',
-    organization.aiProvider,
-    'isAiConfigured:',
-    organization.isAiConfigured,
-    '=> isEnabled:',
-    isEnabled,
-  );
-
-  return isEnabled;
+  return organization.aiProvider !== 'None' && organization.isAiConfigured;
 }
 
 /**

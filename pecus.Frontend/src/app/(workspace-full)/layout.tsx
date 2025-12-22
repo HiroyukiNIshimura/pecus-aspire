@@ -27,20 +27,13 @@ export default async function WorkspaceFullLayout({ children }: WorkspaceFullLay
 
   try {
     const api = createPecusApiClients();
-
-    // まずユーザー情報を取得
-    const userResponse = await api.profile.getApiProfile();
+    // ユーザー情報とアプリ設定を並列取得
+    const [userResponse, settingsResponse] = await Promise.all([
+      api.profile.getApiProfile(),
+      api.profile.getApiProfileAppSettings(),
+    ]);
     userId = userResponse.id;
-
-    // 次にアプリ設定を取得（別のtry-catchで囲んで個別にエラーハンドリング）
-    try {
-      const settingsResponse = await api.profile.getApiProfileAppSettings();
-      appSettings = settingsResponse;
-      console.log('[WorkspaceFullLayout] appSettings fetched:', JSON.stringify(appSettings));
-    } catch (settingsError) {
-      console.error('[WorkspaceFullLayout] Failed to fetch app settings:', settingsError);
-      // 設定取得に失敗してもデフォルト値で続行
-    }
+    appSettings = settingsResponse;
   } catch (error) {
     // 401 エラーの場合はログインページにリダイレクト
     if (detect401ValidationError(error)) {
@@ -48,7 +41,7 @@ export default async function WorkspaceFullLayout({ children }: WorkspaceFullLay
     }
     // その他のエラーはログに記録（ページの描画は続行）
     const errorDetail = parseErrorResponse(error);
-    console.error('WorkspaceFullLayout: Failed to verify auth', errorDetail);
+    console.error('WorkspaceFullLayout: Failed to verify auth or settings', errorDetail);
   }
 
   return (

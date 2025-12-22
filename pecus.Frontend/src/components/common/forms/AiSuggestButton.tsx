@@ -36,9 +36,6 @@ export default function AiSuggestButton({
 }: AiSuggestButtonProps) {
   const isAiEnabled = useIsAiEnabled();
 
-  // デバッグ用ログ（問題解決後に削除）
-  console.log('[AiSuggestButton] isAiEnabled:', isAiEnabled);
-
   // AI機能が無効な場合は何も表示しない
   if (!isAiEnabled) {
     return null;
