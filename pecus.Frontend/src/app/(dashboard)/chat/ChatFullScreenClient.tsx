@@ -61,7 +61,6 @@ export default function ChatFullScreenClient({
 }: ChatFullScreenClientProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
-  const isAiEnabled = useIsAiEnabled();
   const { setUnreadCounts, selectRoom } = useChatStore();
   const [rooms, setRooms] = useState<ChatRoomItem[]>(initialRooms);
 
