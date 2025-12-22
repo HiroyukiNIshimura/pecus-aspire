@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Notifications;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
@@ -8,12 +10,8 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 /// グループチャット投稿時に Bot が返信を生成する Hangfire タスク
 /// ユーザーからのメッセージに対してワークスペースグループチャットに返信を送信する
 /// </summary>
-public class GroupChatReplyTask
+public class GroupChatReplyTask : GroupChatReplyTaskBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly SignalRNotificationPublisher _publisher;
-    private readonly ILogger<GroupChatReplyTask> _logger;
-
     /// <summary>
     /// GroupChatReplyTask のコンストラクタ
     /// </summary>
@@ -21,10 +19,24 @@ public class GroupChatReplyTask
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
         ILogger<GroupChatReplyTask> logger)
+        : base(context, publisher, logger)
     {
-        _context = context;
-        _publisher = publisher;
-        _logger = logger;
+    }
+
+    /// <inheritdoc />
+    protected override string TaskName => "GroupChatReplyTask";
+
+    /// <inheritdoc />
+    protected override BotType BotType => BotType.ChatBot;
+
+    /// <inheritdoc />
+    protected override string BuildReplyMessage(
+        ChatRoom room,
+        ChatMessage triggerMessage,
+        User senderUser)
+    {
+        // TODO: 実際の返信メッセージ生成ロジックを実装
+        return "工事中";
     }
 
     /// <summary>
@@ -36,39 +48,6 @@ public class GroupChatReplyTask
     /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
     public async Task SendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
-        _logger.LogDebug(
-            "GroupChatReplyTask started: OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}, SenderUserId={SenderUserId}",
-            organizationId,
-            roomId,
-            triggerMessageId,
-            senderUserId
-        );
-
-        try
-        {
-            // TODO: 1. チャットルームを取得
-            // TODO: 2. ワークスペース情報を取得
-            // TODO: 3. Bot 設定を取得
-            // TODO: 4. メッセージ作成が必要か判定
-            // TODO: 5. 必要であれば返信メッセージを作成
-            // TODO: 6. SignalR でリアルタイム通知
-
-            _logger.LogDebug(
-                "GroupChatReplyTask completed: OrganizationId={OrganizationId}, RoomId={RoomId}",
-                organizationId,
-                roomId
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "GroupChatReplyTask failed: OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}",
-                organizationId,
-                roomId,
-                triggerMessageId
-            );
-            throw;
-        }
+        await ExecuteReplyAsync(organizationId, roomId, triggerMessageId, senderUserId);
     }
 }

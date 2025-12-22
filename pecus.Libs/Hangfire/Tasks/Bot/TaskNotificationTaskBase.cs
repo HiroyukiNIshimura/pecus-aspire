@@ -137,32 +137,7 @@ public abstract class TaskNotificationTaskBase
         await Context.SaveChangesAsync();
 
         // SignalR 通知を送信（Redis Pub/Sub 経由）
-        var payload = new
-        {
-            RoomId = room.Id,
-            RoomType = room.Type.ToString(),
-            Message = new
-            {
-                message.Id,
-                SenderActorId = systemBot.ChatActor.Id,
-                message.MessageType,
-                message.Content,
-                message.ReplyToMessageId,
-                message.CreatedAt,
-                Sender = new
-                {
-                    Id = systemBot.ChatActor.Id,
-                    ActorType = systemBot.ChatActor.ActorType.ToString(),
-                    UserId = (int?)null,
-                    BotId = systemBot.Id,
-                    DisplayName = systemBot.Name,
-                    AvatarType = systemBot.ChatActor.AvatarType?.ToString()?.ToLowerInvariant(),
-                    AvatarUrl = systemBot.IconUrl,
-                    IdentityIconUrl = systemBot.IconUrl ?? "",
-                    IsActive = true,
-                },
-            },
-        };
+        var payload = BotTaskUtils.BuildMessagePayload(room, message, systemBot);
 
         // チャットルームグループに通知
         var receiverCount = await Publisher.PublishChatBotNotificationAsync(
@@ -184,16 +159,19 @@ public abstract class TaskNotificationTaskBase
         {
             GroupName = $"organization:{organizationId}",
             EventType = "chat:unread_updated",
-            Payload = new
-            {
-                RoomId = room.Id,
-                RoomType = room.Type.ToString(),
-                SenderActorId = systemBot.ChatActor.Id,
-            },
+            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, systemBot.ChatActor.Id),
             SourceType = NotificationSourceType.ChatBot,
             OrganizationId = organizationId,
         });
     }
+
+    /// <summary>
+    /// Bot 起動抽選を行う
+    /// </summary>
+    /// <param name="probability">確度（0-100 の整数、100 で必ず起動）</param>
+    /// <returns>抽選結果（true: 起動する、false: 起動しない）</returns>
+    protected static bool ShouldActivateBot(int probability) =>
+        BotTaskUtils.ShouldActivateBot(probability);
 
     /// <summary>
     /// 通知メッセージの内容を生成する（継承クラスで実装）
