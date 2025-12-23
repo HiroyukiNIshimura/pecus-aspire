@@ -62,6 +62,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 
 // メール関連サービスの登録
 builder.Services.AddSingleton<RazorTemplateService>();
+builder.Services.AddSingleton<ITemplateService>(sp => sp.GetRequiredService<RazorTemplateService>());
 builder.Services.AddSingleton<RazorNonEncodeTemplateService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 

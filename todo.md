@@ -3,6 +3,9 @@
 * 各種メール通知機能  送信処理[x] テンプレート[x]
   [] テスト
 
+https://localhost:7265/
+GET /api/dev/email-preview/index	テンプレート一覧をHTMLで表示（ブラウザ用インデックスページ）
+
 * チャット機能
   * [x] DMの既読機能
 
