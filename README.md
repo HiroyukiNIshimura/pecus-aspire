@@ -104,19 +104,19 @@ npm install -g @biomejs/biome
 
 #### 3.1 Aspire ホストから起動（推奨）
 
-**方法1: dotnet run を使用**
+**方法1: dotnet run を使用（非推奨）**
 
 ```bash
 cd pecus.AppHost
 dotnet run
 ```
 
-**方法2: Aspire CLI を使用（オプション）**
+**方法2: Aspire CLI を使用（推奨）**
 
 Aspire CLI をインストールしている場合：
 
 ```bash
-# Aspire CLI でプロジェクトを起動
+# プロジェクトルートで、Aspire CLI で起動
 aspire run
 ```
 
