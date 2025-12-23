@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.Focus.Models;
@@ -117,6 +118,104 @@ public class FocusTaskResult
     /// 待機中タスク（先行タスク未完了）
     /// </summary>
     public List<FocusTaskInfo> WaitingTasks { get; set; } = new();
+
+    /// <summary>
+    /// 対象タスクの総数
+    /// </summary>
+    public int TotalTaskCount { get; set; }
+}
+
+/// <summary>
+/// やることリストのタスク詳細情報（API用、エンティティ参照を含む）
+/// </summary>
+public class FocusTaskDetailInfo
+{
+    /// <summary>
+    /// タスクエンティティ
+    /// </summary>
+    public required WorkspaceTask Task { get; set; }
+
+    /// <summary>
+    /// 総合スコア
+    /// </summary>
+    public decimal TotalScore { get; set; }
+
+    /// <summary>
+    /// 後続タスク数
+    /// </summary>
+    public int SuccessorCount { get; set; }
+
+    /// <summary>
+    /// 後続タスクの先頭1件
+    /// </summary>
+    public WorkspaceTask? FirstSuccessor { get; set; }
+
+    /// <summary>
+    /// 着手可能かどうか
+    /// </summary>
+    public bool CanStart { get; set; }
+
+    /// <summary>
+    /// スコア詳細
+    /// </summary>
+    public required FocusScoreDetail ScoreDetail { get; set; }
+}
+
+/// <summary>
+/// スコア計算の詳細情報
+/// </summary>
+public class FocusScoreDetail
+{
+    /// <summary>
+    /// 優先度スコア
+    /// </summary>
+    public decimal PriorityScore { get; set; }
+
+    /// <summary>
+    /// 期限スコア
+    /// </summary>
+    public decimal DeadlineScore { get; set; }
+
+    /// <summary>
+    /// 後続タスク影響スコア
+    /// </summary>
+    public decimal SuccessorImpactScore { get; set; }
+
+    /// <summary>
+    /// 優先度の重み
+    /// </summary>
+    public decimal PriorityWeight { get; set; }
+
+    /// <summary>
+    /// 期限の重み
+    /// </summary>
+    public decimal DeadlineWeight { get; set; }
+
+    /// <summary>
+    /// 後続タスク影響の重み
+    /// </summary>
+    public decimal SuccessorImpactWeight { get; set; }
+
+    /// <summary>
+    /// スコア計算の説明
+    /// </summary>
+    public string Explanation { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// やることリスト詳細取得結果（API用）
+/// </summary>
+public class FocusTaskDetailResult
+{
+    /// <summary>
+    /// 今すぐ取り組むべきタスク（着手可能、スコア上位）
+    /// </summary>
+    public List<FocusTaskDetailInfo> FocusTasks { get; set; } = [];
+
+    /// <summary>
+    /// 待機中タスク（先行タスク未完了）
+    /// </summary>
+    public List<FocusTaskDetailInfo> WaitingTasks { get; set; } = [];
 
     /// <summary>
     /// 対象タスクの総数
