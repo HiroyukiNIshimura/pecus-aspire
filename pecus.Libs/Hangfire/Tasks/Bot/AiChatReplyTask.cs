@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Pecus.Libs.AI;
 using Pecus.Libs.AI.Models;
 using Pecus.Libs.DB;
@@ -9,7 +7,6 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Focus;
 using Pecus.Libs.Notifications;
-using System.Text.Json.Serialization;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
 
@@ -202,8 +199,6 @@ public class AiChatReplyTask
                 .WithRole(role)
                 .WithRawConstraint(chatBot.Constraint)
                 .Build();
-
-            _logger.LogDebug("messages Prompt: {messages}", JsonConvert.SerializeObject(messages));
 
             // AI API を呼び出して返信を生成
             var responseText = await aiClient.GenerateTextWithMessagesAsync(
@@ -721,7 +716,7 @@ public class AiChatReplyTask
         sb.AppendLine();
         sb.AppendLine("この情報を参考に、ユーザーが次に何をすべきか具体的にアドバイスしてください。");
         sb.AppendLine("ただし、タスク一覧をそのまま列挙するのではなく、自然な会話として提案してください。");
-        sb.AppendLine("タスク名にはコードを含めてください。");
+        sb.AppendLine("タスク名には[コード]を含めてください。");
 
         return sb.ToString();
     }

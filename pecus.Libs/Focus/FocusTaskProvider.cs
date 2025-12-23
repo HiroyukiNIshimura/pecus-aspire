@@ -60,7 +60,7 @@ public class FocusTaskProvider : IFocusTaskProvider
         var (priorityWeight, deadlineWeight, successorImpactWeight) =
             TaskScoreCalculator.GetWeights(focusScorePriority);
 
-        // ユーザーの未完了タスクを取得（破棄済みは除外）
+        // ユーザーの未完了タスクを取得（破棄済み、非アクティブ、アーカイブ済みは除外）
         var tasks = await _context.WorkspaceTasks
             .Include(t => t.WorkspaceItem)
                 .ThenInclude(i => i.Workspace)
@@ -69,7 +69,11 @@ public class FocusTaskProvider : IFocusTaskProvider
                 .ThenInclude(p => p.WorkspaceItem)
             .Where(t => t.AssignedUserId == userId
                 && !t.IsCompleted
-                && !t.IsDiscarded)
+                && !t.IsDiscarded
+                && t.WorkspaceItem.IsActive
+                && !t.WorkspaceItem.IsArchived
+                && t.WorkspaceItem.Workspace != null
+                && t.WorkspaceItem.Workspace.IsActive)
             .ToListAsync(cancellationToken);
 
         _logger.LogDebug("対象タスク数: {Count}", tasks.Count);
