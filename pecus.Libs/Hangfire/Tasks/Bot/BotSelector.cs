@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
+using Pecus.Libs.AI.Models;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;
 
@@ -13,6 +14,7 @@ public class BotSelector : IBotSelector
 {
     private readonly ApplicationDbContext _context;
     private readonly IMessageAnalyzer _messageAnalyzer;
+    private readonly IConversationTargetAnalyzer _conversationTargetAnalyzer;
     private readonly ILogger<BotSelector> _logger;
 
     /// <summary>
@@ -21,10 +23,12 @@ public class BotSelector : IBotSelector
     public BotSelector(
         ApplicationDbContext context,
         IMessageAnalyzer messageAnalyzer,
+        IConversationTargetAnalyzer conversationTargetAnalyzer,
         ILogger<BotSelector> logger)
     {
         _context = context;
         _messageAnalyzer = messageAnalyzer;
+        _conversationTargetAnalyzer = conversationTargetAnalyzer;
         _logger = logger;
     }
 
@@ -49,6 +53,66 @@ public class BotSelector : IBotSelector
         );
 
         return botType;
+    }
+
+    /// <inheritdoc />
+    public async Task<DB.Models.Bot?> SelectBotByConversationAsync(
+        int organizationId,
+        IAiClient aiClient,
+        IReadOnlyList<ConversationMessage> conversationHistory,
+        string lastUserMessage,
+        CancellationToken cancellationToken = default)
+    {
+        var targetResult = await _conversationTargetAnalyzer.AnalyzeTargetAsync(
+            aiClient,
+            conversationHistory,
+            lastUserMessage,
+            cancellationToken
+        );
+
+        if (string.IsNullOrEmpty(targetResult.TargetId))
+        {
+            _logger.LogDebug("No target bot determined from conversation");
+            return null;
+        }
+
+        if (!int.TryParse(targetResult.TargetId, out var botActorId))
+        {
+            _logger.LogWarning(
+                "Failed to parse TargetId as int: TargetId={TargetId}",
+                targetResult.TargetId
+            );
+            return null;
+        }
+
+        var bot = await _context.Bots
+            .Include(b => b.ChatActor)
+            .FirstOrDefaultAsync(b =>
+                b.OrganizationId == organizationId &&
+                b.ChatActor != null &&
+                b.ChatActor.Id == botActorId,
+                cancellationToken);
+
+        if (bot == null)
+        {
+            _logger.LogDebug(
+                "Bot not found by ChatActorId: OrganizationId={OrganizationId}, ChatActorId={ChatActorId}",
+                organizationId,
+                botActorId
+            );
+        }
+        else
+        {
+            _logger.LogDebug(
+                "Bot selected by conversation: BotId={BotId}, BotName={BotName}, Confidence={Confidence}, Reasoning={Reasoning}",
+                bot.Id,
+                bot.Name,
+                targetResult.Confidence,
+                targetResult.Reasoning
+            );
+        }
+
+        return bot;
     }
 
     /// <inheritdoc />

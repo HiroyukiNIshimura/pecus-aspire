@@ -1,4 +1,5 @@
 using Pecus.Libs.AI;
+using Pecus.Libs.AI.Models;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 
@@ -19,6 +20,22 @@ public interface IBotSelector
     Task<BotType> DetermineBotTypeByContentAsync(
         IAiClient aiClient,
         string contentForAnalysis,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 会話履歴から最後のユーザーメッセージがどのボットに向けられているかを判定してBotを取得する
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="aiClient">AIクライアント</param>
+    /// <param name="conversationHistory">会話履歴（時系列順）</param>
+    /// <param name="lastUserMessage">判定対象の最後のユーザーメッセージ</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>選択されたBot、見つからない場合はnull</returns>
+    Task<DB.Models.Bot?> SelectBotByConversationAsync(
+        int organizationId,
+        IAiClient aiClient,
+        IReadOnlyList<ConversationMessage> conversationHistory,
+        string lastUserMessage,
         CancellationToken cancellationToken = default);
 
     /// <summary>

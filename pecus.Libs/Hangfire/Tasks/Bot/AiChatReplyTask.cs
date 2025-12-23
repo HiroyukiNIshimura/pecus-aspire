@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
+using Pecus.Libs.AI.Models;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -100,19 +101,26 @@ public class AiChatReplyTask
                 return;
             }
 
-            // トリガーメッセージを取得して Bot タイプを決定
+            // トリガーメッセージを取得
             var triggerMessage = await _context.ChatMessages.FindAsync(triggerMessageId);
             var triggerContent = triggerMessage?.Content ?? string.Empty;
-            var botType = await DetermineBotTypeAsync(organizationId, aiClient, triggerContent);
 
-            // 決定した BotType に基づいて Bot を取得
-            chatBot = await GetBotByTypeAsync(organizationId, botType);
+            // 会話履歴を取得して宛先ボットを判定
+            var conversationHistory = await BuildConversationHistoryForTargetAnalysisAsync(roomId, organizationId);
+            chatBot = await SelectBotByConversationAsync(organizationId, aiClient, conversationHistory, triggerContent);
+
+            // 宛先判定できなかった場合は従来のBotType判定にフォールバック
+            if (chatBot?.ChatActor == null)
+            {
+                var botType = await DetermineBotTypeAsync(organizationId, aiClient, triggerContent);
+                chatBot = await GetBotByTypeAsync(organizationId, botType);
+            }
+
             if (chatBot?.ChatActor == null)
             {
                 _logger.LogWarning(
-                    "ChatBot not found for OrganizationId={OrganizationId}, BotType={BotType}. ChatBot={ChatBot}, ChatActor={ChatActor}",
+                    "ChatBot not found for OrganizationId={OrganizationId}. ChatBot={ChatBot}, ChatActor={ChatActor}",
                     organizationId,
-                    botType,
                     chatBot != null ? "exists" : "null",
                     chatBot?.ChatActor != null ? "exists" : "null"
                 );
@@ -246,6 +254,111 @@ public class AiChatReplyTask
     }
 
     /// <summary>
+    /// 会話履歴に基づいて宛先ボットを選択する
+    /// </summary>
+    private async Task<DB.Models.Bot?> SelectBotByConversationAsync(
+        int organizationId,
+        IAiClient aiClient,
+        IReadOnlyList<ConversationMessage> conversationHistory,
+        string lastUserMessage)
+    {
+        if (_botSelector == null || conversationHistory.Count == 0)
+        {
+            return null;
+        }
+
+        return await _botSelector.SelectBotByConversationAsync(
+            organizationId,
+            aiClient,
+            conversationHistory,
+            lastUserMessage
+        );
+    }
+
+    /// <summary>
+    /// 宛先判定用の会話履歴を構築する
+    /// </summary>
+    private async Task<List<ConversationMessage>> BuildConversationHistoryForTargetAnalysisAsync(
+        int roomId,
+        int organizationId)
+    {
+        var twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-ConversationHistoryDays);
+
+        var recentMessages = await _context.ChatMessages
+            .Where(m => m.ChatRoomId == roomId && m.CreatedAt >= twoDaysAgo)
+            .OrderByDescending(m => m.CreatedAt)
+            .Take(MaxConversationTurns * 2)
+            .OrderBy(m => m.CreatedAt)
+            .Select(m => new
+            {
+                m.SenderActorId,
+                m.Content,
+            })
+            .ToListAsync();
+
+        var actorIds = recentMessages.Select(m => m.SenderActorId).Distinct().ToList();
+
+        var actors = await _context.ChatActors
+            .Where(a => actorIds.Contains(a.Id))
+            .Select(a => new
+            {
+                a.Id,
+                a.ActorType,
+            })
+            .ToListAsync();
+
+        var bots = await _context.Bots
+            .Include(b => b.ChatActor)
+            .Where(b => b.OrganizationId == organizationId && b.ChatActor != null)
+            .Select(b => new
+            {
+                ChatActorId = b.ChatActor!.Id,
+                b.Name,
+            })
+            .ToListAsync();
+
+        var users = await _context.Users
+            .Include(u => u.ChatActor)
+            .Where(u => u.OrganizationId == organizationId && u.ChatActor != null)
+            .Select(u => new
+            {
+                ChatActorId = u.ChatActor!.Id,
+                u.Username,
+            })
+            .ToListAsync();
+
+        var conversationHistory = new List<ConversationMessage>();
+
+        foreach (var msg in recentMessages)
+        {
+            var actor = actors.FirstOrDefault(a => a.Id == msg.SenderActorId);
+            var isBot = actor?.ActorType == ChatActorType.Bot;
+
+            string senderName;
+            if (isBot)
+            {
+                var bot = bots.FirstOrDefault(b => b.ChatActorId == msg.SenderActorId);
+                senderName = bot?.Name ?? "Unknown Bot";
+            }
+            else
+            {
+                var user = users.FirstOrDefault(u => u.ChatActorId == msg.SenderActorId);
+                senderName = user?.Username ?? "Unknown User";
+            }
+
+            conversationHistory.Add(new ConversationMessage
+            {
+                SenderId = msg.SenderActorId.ToString()!,
+                SenderName = senderName,
+                IsBot = isBot,
+                Content = msg.Content,
+            });
+        }
+
+        return conversationHistory;
+    }
+
+    /// <summary>
     /// 指定された BotType の Bot を取得する
     /// </summary>
     private async Task<DB.Models.Bot?> GetBotByTypeAsync(int organizationId, BotType botType)
@@ -333,7 +446,7 @@ public class AiChatReplyTask
         }
 
         // メッセージを作成
-        var message = new ChatMessage
+        var message = new DB.Models.ChatMessage
         {
             ChatRoomId = roomId,
             SenderActorId = chatBot.ChatActor!.Id,

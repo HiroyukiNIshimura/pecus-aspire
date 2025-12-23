@@ -8,6 +8,7 @@ using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Hangfire.Tasks.Bot;
+using Pecus.Libs.Hangfire.Tasks.Bot.Extensions;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
@@ -56,6 +57,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<FrontendUrlResolver>();
 // メッセージ解析サービスの登録
 builder.Services.AddMessageAnalyzer();
+// BotSelector の登録
+builder.Services.AddBotSelector();
 
 // Lexical Converter gRPC サービスの登録
 var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";

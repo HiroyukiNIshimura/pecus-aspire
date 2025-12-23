@@ -488,7 +488,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                     <input
                       id="input-generative-api-key"
                       name="generativeApiKey"
-                      type="text"
+                      type="password"
                       className={`input input-bordered ${shouldShowError('generativeApiKey') ? 'input-error' : ''}`}
                       value={formData.generativeApiKey ?? ''}
                       onChange={(e) => handleFieldChange('generativeApiKey', e.target.value)}
