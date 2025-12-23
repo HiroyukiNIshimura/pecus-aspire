@@ -1,0 +1,58 @@
+@model Pecus.Libs.Mail.Templates.Models.WeeklyReportEmailModel
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 週間レポート: @Model.OrganizationName
+@Model.WeekStartDate.ToString("yyyy/MM/dd") 〜 @Model.WeekEndDate.ToString("yyyy/MM/dd")
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 あなたの今週
+────────────────────────────────────────
+完了したタスク: @Model.PersonalSummary.CompletedCount 件
+残りのタスク:   @Model.PersonalSummary.RemainingCount 件
+@if (Model.PersonalSummary.OverdueCount > 0)
+{
+@:期限切れ:       @Model.PersonalSummary.OverdueCount 件 ⚠️
+}
+else
+{
+@:期限切れ:       0 件
+}
+
+@if (Model.HasOwnerSection)
+{
+@:━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+@:🏢 あなたのワークスペース
+@:━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+foreach (var ws in Model.OwnerWorkspaces!)
+{
+@:■ @ws.WorkspaceName
+@:  タスク: 進行中 @ws.InProgressCount 件 / 完了 @ws.CompletedThisWeekCount 件 / 期限切れ @ws.OverdueCount 件@(ws.OverdueCount > 0 ? " ⚠️" : "") / 来週期限 @ws.DueNextWeekCount 件
+
+if (ws.HasCommitterItems)
+{
+@:
+@:  📋 責任アイテム:
+foreach (var item in ws.CommitterItems)
+{
+if (item.IsCompleted)
+{
+@:  ・@item.ItemName: 進捗 100%（完了）
+}
+else
+{
+var parts = new List<string> { $"残り {item.RemainingTaskCount}" };
+if (item.OverdueCount > 0) parts.Add($"期限切れ {item.OverdueCount} ⚠️");
+if (item.DueNextWeekCount > 0) parts.Add($"来週期限 {item.DueNextWeekCount}");
+@:  ・@item.ItemName: 進捗 @(item.ProgressPercent)%（@string.Join(" / ", parts)）
+}
+}
+}
+@:
+}
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ダッシュボードを開く: @Model.DashboardUrl
+
+このレポートは毎週自動で配信されています。

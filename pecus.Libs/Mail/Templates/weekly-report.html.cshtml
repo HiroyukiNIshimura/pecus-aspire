@@ -1,0 +1,104 @@
+@model Pecus.Libs.Mail.Templates.Models.WeeklyReportEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>📊 週間レポート</h2>
+<p>@Model.OrganizationName の @Model.WeekStartDate.ToString("yyyy/MM/dd") 〜 @Model.WeekEndDate.ToString("yyyy/MM/dd") の週間サマリをお届けします。</p>
+
+<hr style="border:none; border-top:2px solid #1976d2; margin:24px 0;" />
+
+<h3>📊 あなたの今週</h3>
+<table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+    <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f9f9f9; width:50%;">完了したタスク</td>
+        <td style="padding:8px; border:1px solid #ddd; text-align:right; font-weight:bold;">@Model.PersonalSummary.CompletedCount 件</td>
+    </tr>
+    <tr>
+        <td style="padding:8px; border:1px solid #ddd; background:#f9f9f9;">残りのタスク</td>
+        <td style="padding:8px; border:1px solid #ddd; text-align:right; font-weight:bold;">@Model.PersonalSummary.RemainingCount 件</td>
+    </tr>
+    @if (Model.PersonalSummary.OverdueCount > 0)
+    {
+        <tr>
+            <td style="padding:8px; border:1px solid #ddd; background:#fff3cd;">⚠️ 期限切れ</td>
+            <td style="padding:8px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#d32f2f;">@Model.PersonalSummary.OverdueCount 件</td>
+        </tr>
+    }
+    else
+    {
+        <tr>
+            <td style="padding:8px; border:1px solid #ddd; background:#f9f9f9;">期限切れ</td>
+            <td style="padding:8px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#4caf50;">0 件</td>
+        </tr>
+    }
+</table>
+
+@if (Model.HasOwnerSection)
+{
+    <hr style="border:none; border-top:2px solid #1976d2; margin:24px 0;" />
+
+    <h3>🏢 あなたのワークスペース</h3>
+
+    foreach (var ws in Model.OwnerWorkspaces!)
+    {
+        <div style="background:#f5f5f5; border-radius:8px; padding:16px; margin-bottom:16px;">
+            <h4 style="margin:0 0 12px 0; color:#1976d2;">■ @ws.WorkspaceName</h4>
+
+            <p style="margin:0 0 8px 0;">
+                <strong>タスク:</strong>
+                進行中 @ws.InProgressCount 件 /
+                完了 @ws.CompletedThisWeekCount 件 /
+                @if (ws.OverdueCount > 0)
+                {
+                    <span style="color:#d32f2f;">期限切れ @ws.OverdueCount 件 ⚠️</span>
+                }
+                else
+                {
+                    <span>期限切れ 0 件</span>
+                }
+                / 来週期限 @ws.DueNextWeekCount 件
+            </p>
+
+            @if (ws.HasCommitterItems)
+            {
+                <p style="margin:12px 0 8px 0;"><strong>📋 責任アイテム:</strong></p>
+                <ul style="margin:0; padding-left:20px;">
+                    @foreach (var item in ws.CommitterItems)
+                    {
+                        <li style="margin-bottom:4px;">
+                            @item.ItemName:
+                            @if (item.IsCompleted)
+                            {
+                                <span style="color:#4caf50;">進捗 100%（完了）</span>
+                            }
+                            else
+                            {
+                                <span>進捗 @item.ProgressPercent%（残り @item.RemainingTaskCount</span>
+                                @if (item.OverdueCount > 0)
+                                {
+                                    <span style="color:#d32f2f;"> / 期限切れ @item.OverdueCount ⚠️</span>
+                                }
+                                @if (item.DueNextWeekCount > 0)
+                                {
+                                    <span> / 来週期限 @item.DueNextWeekCount</span>
+                                }
+                                <span>）</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    }
+}
+
+<hr style="border:none; border-top:1px solid #ddd; margin:24px 0;" />
+
+<div style="text-align:center; margin:20px 0;">
+    <a href="@Model.DashboardUrl" class="button">ダッシュボードを開く</a>
+</div>
+
+<p style="font-size:14px; color:#666; text-align:center;">
+    このレポートは毎週自動で配信されています。
+</p>

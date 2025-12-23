@@ -100,6 +100,9 @@ builder.Services.AddScoped<CreateTaskTask>();
 builder.Services.AddScoped<UpdateTaskTask>();
 builder.Services.AddScoped<GroupChatReplyTask>();
 
+// 週間レポート関連サービスの登録
+builder.Services.AddWeeklyReportServices();
+
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
 builder.Services.AddHangfire(
@@ -128,5 +131,8 @@ if (app.Environment.IsDevelopment())
 
 // クリーンアップジョブの設定
 CleanupJobScheduler.ConfigureCleanupJobs(builder.Configuration);
+
+// 週間レポートジョブの設定
+WeeklyReportJobScheduler.ConfigureWeeklyReportJob(builder.Configuration);
 
 app.Run();
