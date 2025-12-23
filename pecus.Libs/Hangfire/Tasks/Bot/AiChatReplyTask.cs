@@ -105,9 +105,20 @@ public class AiChatReplyTask
             var triggerMessage = await _context.ChatMessages.FindAsync(triggerMessageId);
             var triggerContent = triggerMessage?.Content ?? string.Empty;
 
-            // 会話履歴を取得して宛先ボットを判定
-            var conversationHistory = await BuildConversationHistoryForTargetAnalysisAsync(roomId, organizationId);
-            chatBot = await SelectBotByConversationAsync(organizationId, aiClient, conversationHistory, triggerContent);
+            // ランダムにボット選択方法を決定（会話履歴分析 or ランダム選択）
+            var useRandomSelection = Random.Shared.Next(2) == 0;
+
+            if (useRandomSelection && _botSelector != null)
+            {
+                _logger.LogDebug("Using random bot selection for RoomId={RoomId}", roomId);
+                chatBot = await _botSelector.GetRandomBotAsync(organizationId);
+            }
+            else
+            {
+                // 会話履歴を取得して宛先ボットを判定
+                var conversationHistory = await BuildConversationHistoryForTargetAnalysisAsync(roomId, organizationId);
+                chatBot = await SelectBotByConversationAsync(organizationId, aiClient, conversationHistory, triggerContent);
+            }
 
             // 宛先判定できなかった場合は従来のBotType判定にフォールバック
             if (chatBot?.ChatActor == null)
