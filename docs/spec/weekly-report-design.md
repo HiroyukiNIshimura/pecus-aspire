@@ -11,8 +11,8 @@
 ## AI エージェント向け要約（必読）
 
 - 週間レポートは組織単位で、各ユーザーの役割に応じた情報を配信する
-- 配信先は「ワークスペースオーナー」「コミッター」「その他メンバー」の3分類
-- レポートは1テンプレートで、役割に応じてセクションを出し分ける（案B方式）
+- 配信先は `WorkspaceUser.Role` が **Owner** または **Member** のユーザーのみ（Viewer は配信対象外）
+- レポートは1テンプレートで、役割に応じてセクションを出し分ける
 - 配信曜日は `OrganizationSetting.WeeklyReportDeliveryDay` を参照
 - データ収集・メール配信は Hangfire ジョブで実行
 
@@ -37,13 +37,13 @@
 
 ## 2. 配信先の分類
 
-| 分類 | 判定条件 | 視点 |
-|------|----------|------|
-| **ワークスペースオーナー** | `WorkspaceUser.Role = Owner` | 自分のWSの健全性を把握 |
-| **コミッター** | `WorkspaceItem.CommitterId = userId` | 担当アイテム/タスクの進捗 |
-| **その他メンバー** | 上記以外の組織メンバー | 自分のタスクの状況 |
+| 分類 | 判定条件 | 表示内容 |
+|------|----------|----------|
+| **オーナー** | `WorkspaceUser.Role = Owner` | 個人タスク + 責任アイテム + ワークスペース状況 |
+| **メンバー** | `WorkspaceUser.Role = Member` | 個人タスクのみ |
+| **Viewer** | `WorkspaceUser.Role = Viewer` | **配信対象外** |
 
-※ 1ユーザーが複数の役割を持つ場合、該当するセクションがすべて表示される
+※ 1ユーザーが複数ワークスペースでオーナーの場合、すべてのWSが表示される
 
 ---
 
@@ -57,9 +57,11 @@
 
 ### 3.2 レポート本文構成
 
+#### メンバー向け（Member）
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 あなたの今週（全員表示）
+📊 あなたの今週
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 完了したタスク: N件
@@ -67,24 +69,37 @@
 期限切れ:       N件 ⚠️（該当がある場合のみ警告表示）
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 あなたが責任を持つアイテム（コミッターのみ表示）
+
+[ダッシュボードを開く] ← リンクボタン
+```
+
+#### オーナー向け（Owner）
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 あなたの今週
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-・アイテムA（WS名）
-  進捗: 80%（残り2タスク / 来週期限: 1件）
-
-・アイテムB（WS名）
-  進捗: 50%（期限切れ1件 ⚠️ / 来週期限: 3件）
+完了したタスク: N件
+残りのタスク:   N件
+期限切れ:       N件 ⚠️（該当がある場合のみ警告表示）
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🏢 あなたのワークスペース（オーナーのみ表示）
+🏢 あなたのワークスペース
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-・ワークスペースA
-  進行中: 12件 / 完了: 5件 / 期限切れ: 2件 ⚠️ / 来週期限: 4件
+■ ワークスペースA
+  タスク: 進行中 12件 / 完了 5件 / 期限切れ 2件 ⚠️ / 来週期限 4件
 
-・ワークスペースB
-  進行中: 8件 / 完了: 3件 / 期限切れ: 0件 / 来週期限: 2件
+  📋 責任アイテム:
+  ・アイテムA: 進捗 80%（残り2 / 来週期限 1）
+  ・アイテムB: 進捗 50%（期限切れ 1 ⚠️ / 来週期限 3）
+
+■ ワークスペースB
+  タスク: 進行中 8件 / 完了 3件 / 期限切れ 0件 / 来週期限 2件
+
+  📋 責任アイテム:
+  ・アイテムC: 進捗 100%（完了）
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -95,33 +110,33 @@
 
 ## 4. 集計データ仕様
 
-### 4.1 全員共通: あなたの今週
+### 4.1 全員共通: あなたの今週（Owner / Member 両方）
 
 | データ | 集計条件 |
 |--------|----------|
-| 完了したタスク | `Task.AssigneeUserId = userId` AND `Task.Status = Completed` AND `Task.CompletedAt` が今週内 |
-| 残りのタスク | `Task.AssigneeUserId = userId` AND `Task.Status IN (NotStarted, InProgress)` |
-| 期限切れ | `Task.AssigneeUserId = userId` AND `Task.Status NOT IN (Completed, Discarded)` AND `Task.DueDate < 今日` |
+| 完了したタスク | `Task.AssignedUserId = userId` AND `Task.IsCompleted = true` AND `Task.CompletedAt` が今週内 |
+| 残りのタスク | `Task.AssignedUserId = userId` AND `Task.IsCompleted = false` AND `Task.IsDiscarded = false` |
+| 期限切れ | `Task.AssignedUserId = userId` AND `Task.IsCompleted = false` AND `Task.IsDiscarded = false` AND `Task.DueDate < 今日` |
 
-### 4.2 コミッター向け: 責任を持つアイテム
+### 4.2 オーナー向け: ワークスペース状況（Owner のみ）
+
+| データ | 集計条件 |
+|--------|----------|
+| 対象WS | `WorkspaceUser.UserId = userId` AND `WorkspaceUser.Role = Owner` |
+| 進行中 | `Task.IsCompleted = false` AND `Task.IsDiscarded = false` |
+| 完了（今週） | `Task.IsCompleted = true` AND `Task.CompletedAt` が今週内 |
+| 期限切れ | `Task.DueDate < 今日` AND `Task.IsCompleted = false` AND `Task.IsDiscarded = false` |
+| 来週期限 | `Task.DueDate` が来週内（月〜日） AND `Task.IsCompleted = false` AND `Task.IsDiscarded = false` |
+
+### 4.3 オーナー向け: 責任アイテム（Owner のみ、WS内にネスト表示）
 
 | データ | 集計条件 |
 |--------|----------|
 | 対象アイテム | `WorkspaceItem.CommitterId = userId` AND `WorkspaceItem.Status = Published` |
 | 進捗率 | `完了タスク数 / 全タスク数 × 100` |
-| 残りタスク数 | `Task.Status NOT IN (Completed, Discarded)` |
-| 期限切れ数 | `Task.DueDate < 今日` AND `Task.Status NOT IN (Completed, Discarded)` |
-| 来週期限数 | `Task.DueDate` が来週内（月〜日） AND `Task.Status NOT IN (Completed, Discarded)` |
-
-### 4.3 オーナー向け: ワークスペース状況
-
-| データ | 集計条件 |
-|--------|----------|
-| 対象WS | `WorkspaceUser.UserId = userId` AND `WorkspaceUser.Role = Owner` |
-| 進行中 | `Task.Status IN (NotStarted, InProgress)` |
-| 完了（今週） | `Task.Status = Completed` AND `Task.CompletedAt` が今週内 |
-| 期限切れ | `Task.DueDate < 今日` AND `Task.Status NOT IN (Completed, Discarded)` |
-| 来週期限 | `Task.DueDate` が来週内（月〜日） AND `Task.Status NOT IN (Completed, Discarded)` |
+| 残りタスク数 | `Task.IsCompleted = false` AND `Task.IsDiscarded = false` |
+| 期限切れ数 | `Task.DueDate < 今日` AND `Task.IsCompleted = false` AND `Task.IsDiscarded = false` |
+| 来週期限数 | `Task.DueDate` が来週内（月〜日） AND `Task.IsCompleted = false` AND `Task.IsDiscarded = false` |
 
 ---
 
@@ -191,6 +206,14 @@
 - 大規模組織では、ユーザーごとの集計をバッチ処理
 - 集計クエリは可能な限りDB側で完結させる
 - メール送信は非同期キュー経由
+
+### 6.4 拡張性への備え
+
+将来的に `WorkspaceRole` に新しい役割（例: Committer）が追加された場合に備え、以下の設計方針を採用する：
+
+- **DTO設計を役割ごとに分離**: `PersonalTaskSummary`, `OwnerWorkspaceSummary` など役割別のDTOとし、新役割追加時は新DTOを追加するだけで既存に影響を与えない
+- **DataCollector のメソッドを役割ごとに分離**: `GetPersonalSummaryAsync()`, `GetOwnerWorkspacesAsync()` のように分離し、新役割追加時はメソッド追加で対応
+- **テンプレートは条件分岐で出し分け**: `@if (Model.HasOwnerSection)` のような条件分岐とし、新セクション追加が容易な構造を維持
 
 ---
 
