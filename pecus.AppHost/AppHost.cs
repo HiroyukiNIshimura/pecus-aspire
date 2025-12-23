@@ -30,10 +30,15 @@ try
         .WithVolume("postgres-data", "/var/lib/postgresql");
     var pecusDb = postgres.AddDatabase("pecusdb");
 
-    // WebApi の uploads フォルダの絶対パスを取得
-    var webApiProjectPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.WebApi"));
-    var uploadsPath = Path.Combine(webApiProjectPath, "uploads");
+    // 永続データのベースパス（開発時: ../data、本番時: /mnt/pecus-data など）
+    // appsettings.json の Parameters:dataBasePath から取得
+    var dataBasePathValue = builder.Configuration["Parameters:dataBasePath"] ?? "../data";
+    var dataBasePathResolved = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.AppHost", dataBasePathValue));
+    var uploadsPath = Path.Combine(dataBasePathResolved, "uploads");
+    var notificationsPath = Path.Combine(dataBasePathResolved, "notifications");
+    Log.Information("Data base path: {DataBasePath}", dataBasePathResolved);
     Log.Information("Uploads path: {UploadsPath}", uploadsPath);
+    Log.Information("Notifications path: {NotificationsPath}", notificationsPath);
 
     // Protos フォルダの絶対パスを取得
     var protosPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.Protos"));
@@ -65,6 +70,7 @@ try
     .WaitFor(pecusDb)
     .WaitFor(lexicalConverter)
     .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath)
+    .WithEnvironment("MaintenanceNotification__NotificationsPath", notificationsPath)
     .WithEnvironment("Frontend__Endpoint", frontendUrl)
     .WithEnvironment("LexicalConverter__Endpoint", lexicalConverterUrl);
 

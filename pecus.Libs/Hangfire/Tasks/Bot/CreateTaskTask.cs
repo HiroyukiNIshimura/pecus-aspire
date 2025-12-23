@@ -25,6 +25,7 @@ public class CreateTaskTask : TaskNotificationTaskBase
         - 100文字以内で簡潔にまとめる
         - タスクの要点（種類、優先度、期限など）を伝える
         - 絵文字は使わない
+        - Markdownは使用しない
         - 挨拶は不要
 
         例: 「新機能開発のバグ修正タスクです。優先度は高く、期限は12/25です。」

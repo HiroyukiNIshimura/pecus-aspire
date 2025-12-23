@@ -30,6 +30,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
         - 100文字以内で簡潔にまとめる
         - 差分情報（追加・削除）から変更の要点を伝える
         - 絵文字は使わない
+        - Markdownは使用しない
         - 挨拶は不要
 
         例: 「件名が『初期設計』から『詳細設計』に変更されました。フェーズが進んだようです。」

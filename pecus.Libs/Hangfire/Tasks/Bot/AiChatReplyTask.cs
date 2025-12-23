@@ -30,7 +30,7 @@ public class AiChatReplyTask
     /// <summary>
     /// 会話履歴の最大ターン数
     /// </summary>
-    private const int MaxConversationTurns = 3;
+    private const int MaxConversationTurns = 5;
 
     /// <summary>
     /// 会話履歴の有効期間（日数）
@@ -162,7 +162,7 @@ public class AiChatReplyTask
                 );
                 return;
             }
-            messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、{senderUserName}さんです。"));
+            messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、{senderUserName}さんです。回答はMarkdownは利用せずにプレーンテキストで行ってください。"));
 
             // AI API を呼び出して返信を生成
             var responseText = await aiClient.GenerateTextWithMessagesAsync(

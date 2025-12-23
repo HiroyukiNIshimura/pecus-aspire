@@ -26,6 +26,7 @@ public class CreateItemTask : ItemNotificationTaskBase
         - 100文字以内で簡潔にまとめる
         - アイテムの要点を伝える
         - 絵文字は使わない
+        - Markdownは使用しない
         - 挨拶は不要
 
         例: 「〇〇さんが、新規ユーザー登録フローの改善について検討が始まりました。UXの向上を目指します。」

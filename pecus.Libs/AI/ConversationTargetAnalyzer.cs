@@ -36,14 +36,17 @@ public class ConversationTargetAnalyzer : IConversationTargetAnalyzer
         - 必ずボット一覧から1つを選んでください
         - 判定できない場合でも、最も可能性が高いものを選んでください
         - 回答しないという選択肢はありません
+        - targetIdは必ず文字列（ダブルクォートで囲む）として返してください
 
         以下のJSON形式で必ず回答してください:
         {
-            "targetId": "選択したボットのID",
+            "targetId": "123",
             "targetName": "選択したボットの名前",
-            "confidence": 判定の確信度（0-100の数値）,
+            "confidence": 75,
             "reasoning": "判定の根拠（50文字以内）"
         }
+
+        targetIdは数値ではなく、必ず"123"のように文字列で返してください。
         """;
 
     /// <inheritdoc />

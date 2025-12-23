@@ -11,10 +11,7 @@ public static class MaintenanceNotificationJobScheduler
     /// 運営通知ジョブを設定します
     /// </summary>
     /// <param name="configuration">設定</param>
-    /// <param name="notificationsDirectory">Notifications フォルダの絶対パス</param>
-    public static void ConfigureMaintenanceNotificationJob(
-        IConfiguration configuration,
-        string notificationsDirectory)
+    public static void ConfigureMaintenanceNotificationJob(IConfiguration configuration)
     {
         var settings = configuration.GetSection("MaintenanceNotification")
             .Get<MaintenanceNotificationSettings>() ?? new MaintenanceNotificationSettings();
@@ -25,9 +22,15 @@ public static class MaintenanceNotificationJobScheduler
             return;
         }
 
+        if (string.IsNullOrEmpty(settings.NotificationsPath))
+        {
+            throw new InvalidOperationException(
+                "MaintenanceNotification:NotificationsPath is required when Enabled=true");
+        }
+
         RecurringJob.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.MaintenanceNotificationTask>(
             "MaintenanceNotification",
-            task => task.ProcessPendingNotificationsAsync(notificationsDirectory),
+            task => task.ProcessPendingNotificationsAsync(settings.NotificationsPath),
             "*/30 * * * *"
         );
     }
@@ -42,4 +45,9 @@ public class MaintenanceNotificationSettings
     /// ジョブを有効にするかどうか
     /// </summary>
     public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// 通知ファイルを配置する外部ディレクトリのパス
+    /// </summary>
+    public string? NotificationsPath { get; set; }
 }

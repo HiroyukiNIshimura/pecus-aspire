@@ -142,3 +142,6 @@ temp/*
 node_modules/
 
 */appsettings.Development.json
+
+# Local data directory (uploads, notifications, etc.)
+data/

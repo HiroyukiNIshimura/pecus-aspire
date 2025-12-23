@@ -132,7 +132,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
             var content = msg.IsBot ? msg.Content : $"({msg.UserName}さん曰く): {msg.Content}";
             messages.Add((role, content ?? string.Empty));
         }
-        messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、文章内を参照します。"));
+        messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、文章内を参照します。回答はMarkdownは利用せずにプレーンテキストで行ってください。"));
 
         // 引数で渡された Bot のペルソナを使用
         var persona = bot.Persona;
