@@ -62,6 +62,7 @@ public static class EmailPreviewDataFactory
             "help-comment" => CreateHelpCommentData(now),
             "reminder-comment" => CreateReminderCommentData(now),
             "weekly-report" => CreateWeeklyReportData(now),
+            _ => throw new NotImplementedException(),
         };
     }
 
