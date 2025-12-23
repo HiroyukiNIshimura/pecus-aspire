@@ -700,6 +700,7 @@ public class ChatController : BaseSecureController
             ),
             Role = member.Role,
             JoinedAt = member.JoinedAt,
+            LastReadAt = member.LastReadAt,
         };
     }
 

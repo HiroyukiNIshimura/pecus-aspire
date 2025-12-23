@@ -139,8 +139,36 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
     try {
       const [roomResult, messagesResult] = await Promise.all([getChatRoomDetail(roomId), getChatMessages(roomId)]);
 
+      console.log('[fetchRoomAndMessages] roomResult:', roomResult);
+      console.log('[fetchRoomAndMessages] roomResult.data?.type:', roomResult.data?.type);
+
       if (roomResult.success && roomResult.data) {
         setRoom(roomResult.data);
+
+        // DM の場合、相手の既読位置を初期化
+        console.log('[DM既読チェック] type:', roomResult.data.type, 'messagesResult.success:', messagesResult.success);
+        if (roomResult.data.type === 'Dm' && messagesResult.success && messagesResult.data) {
+          const otherMember = roomResult.data.members?.find((m) => m.userId !== currentUserId);
+          console.log('[DM既読初期化] currentUserId:', currentUserId);
+          console.log('[DM既読初期化] members:', roomResult.data.members);
+          console.log('[DM既読初期化] otherMember:', otherMember);
+          console.log('[DM既読初期化] otherMember.lastReadAt:', otherMember?.lastReadAt);
+          if (otherMember?.lastReadAt) {
+            // 相手の lastReadAt 以前に自分が送信したメッセージの中で最新のものを探す
+            const otherLastReadAt = new Date(otherMember.lastReadAt);
+            console.log('[DM既読初期化] otherLastReadAt:', otherLastReadAt);
+            const myMessages = messagesResult.data.messages.filter(
+              (m) => m.senderUserId === currentUserId && m.createdAt && new Date(m.createdAt) <= otherLastReadAt,
+            );
+            console.log('[DM既読初期化] myMessages (既読済み):', myMessages);
+            if (myMessages.length > 0) {
+              // 最新の既読メッセージID
+              const lastReadMsg = myMessages[myMessages.length - 1];
+              console.log('[DM既読初期化] lastReadMessageId:', lastReadMsg.id);
+              setLastReadMessageId(lastReadMsg.id);
+            }
+          }
+        }
       }
 
       if (messagesResult.success && messagesResult.data) {
@@ -161,7 +189,7 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
     } finally {
       setLoading(false);
     }
-  }, [roomId]);
+  }, [roomId, currentUserId]);
 
   // 過去のメッセージを読み込み
   const loadMoreMessages = useCallback(async () => {

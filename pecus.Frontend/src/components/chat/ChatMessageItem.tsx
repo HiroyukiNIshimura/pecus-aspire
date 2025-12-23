@@ -146,7 +146,12 @@ export default function ChatMessageItemComponent({
           />
           <div className="flex items-center justify-end gap-2 mt-1">
             <span className="text-xs text-base-content/50">{createdAt && formatRelativeTime(createdAt)}</span>
-            {showReadStatus && <span className="text-xs text-primary">既読</span>}
+            {showReadStatus && (
+              <span className="text-xs text-success font-medium flex items-center gap-0.5">
+                <span className="icon-[tabler--checks] size-3.5" aria-hidden="true" />
+                既読
+              </span>
+            )}
           </div>
         </div>
       </div>

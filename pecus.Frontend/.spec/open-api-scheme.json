@@ -11904,6 +11904,12 @@
             "type": "string",
             "description": "参加日時",
             "format": "date-time"
+          },
+          "lastReadAt": {
+            "type": "string",
+            "description": "最終既読日時",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "description": "チャットルームメンバー項目"

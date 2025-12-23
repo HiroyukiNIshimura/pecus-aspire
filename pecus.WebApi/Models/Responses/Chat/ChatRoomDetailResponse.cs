@@ -1,5 +1,6 @@
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.Chat;
 
@@ -18,6 +19,7 @@ public class ChatRoomDetailResponse
     /// ルームタイプ
     /// </summary>
     [Required]
+    [JsonConverter(typeof(JsonStringEnumConverter<ChatRoomType>))]
     public required ChatRoomType Type { get; set; }
 
     /// <summary>

@@ -32,5 +32,9 @@ export type ChatRoomMemberItem = {
      * 参加日時
      */
     joinedAt?: string;
+    /**
+     * 最終既読日時
+     */
+    lastReadAt?: string | null;
 };
 

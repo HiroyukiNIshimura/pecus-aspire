@@ -142,6 +142,13 @@ dotnet ef migrations add <MigrationName> --project pecus.DbManager --startup-pro
   - DB のカラム長制限に合わせた `MaxLength` を指定
   - エラーメッセージは日本語で具体的に記述
 
+- **レスポンスDTOのEnumフィールド**:
+```
+[JsonConverter(typeof(JsonStringEnumConverter<ChatRoomType>))]
+public required ChatRoomType Type { get; set; }
+```
+のようにJsonStringEnumConverterを必ず指定する。
+
 **DTO チェックリスト**:
 - [ ] **API 仕様書として適切か**: フロントエンド開発者がこの DTO を見て、何を送るべきか明確に理解できるか
 - [ ] **ユーザー種別ごとの分離**: 一般ユーザー向けと管理者向けで異なる項目がある場合、DTO を分離したか
@@ -151,6 +158,8 @@ dotnet ef migrations add <MigrationName> --project pecus.DbManager --startup-pro
 - [ ] 最大長制限が DB スキーマと一致しているか
 - [ ] `required` キーワードの使用が適切か
 - [ ] エラーメッセージが日本語で具体的か
+- [ ] エラーメッセージが日本語で具体的か
+- [ ] レスポンスDTOのEnumフィールドは指定属性が付与されているか
 
 #### 5. ビルド確認
 ```bash

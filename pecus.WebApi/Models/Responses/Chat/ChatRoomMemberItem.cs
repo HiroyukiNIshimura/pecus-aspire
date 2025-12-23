@@ -46,4 +46,9 @@ public class ChatRoomMemberItem
     /// 参加日時
     /// </summary>
     public DateTimeOffset JoinedAt { get; set; }
+
+    /// <summary>
+    /// 最終既読日時
+    /// </summary>
+    public DateTimeOffset? LastReadAt { get; set; }
 }
