@@ -1,0 +1,11 @@
+# Environment files (NEVER commit)
+.env
+.env.local
+.env.production
+
+# Backup files
+*.sql
+*.backup
+
+# Logs
+*.log

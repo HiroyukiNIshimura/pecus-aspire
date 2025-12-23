@@ -1,0 +1,208 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # PostgreSQL with PGroonga
+  # ============================================
+  postgres:
+    image: groonga/pgroonga:latest-debian-18
+    container_name: pecus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pecus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: pecusdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - pecus-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pecus} -d pecusdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Redis for Backend (session, cache)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: pecus-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - pecus-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Redis for Frontend (session)
+  # ============================================
+  redis-frontend:
+    image: redis:7-alpine
+    container_name: pecus-redis-frontend
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-frontend-data:/data
+    networks:
+      - pecus-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Lexical Converter (gRPC Service)
+  # ============================================
+  lexicalconverter:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/LexicalConverter.Dockerfile
+    container_name: pecus-lexicalconverter
+    restart: unless-stopped
+    environment:
+      GRPC_PORT: "5100"
+      GRPC_HOST: "0.0.0.0"
+      LEXICAL_PROTO_PATH: /app/protos/lexical/lexical.proto
+      NODE_ENV: production
+    networks:
+      - pecus-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(5100).on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # DB Manager (Migration & Seed)
+  # ============================================
+  dbmanager:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/DbManager.Dockerfile
+    container_name: pecus-dbmanager
+    restart: "no"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__pecusdb: "Host=postgres;Port=5432;Database=pecusdb;Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
+      LexicalConverter__Endpoint: "http://lexicalconverter:5100"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      lexicalconverter:
+        condition: service_healthy
+    networks:
+      - pecus-network
+
+  # ============================================
+  # BackFire (Hangfire Background Jobs)
+  # ============================================
+  backfire:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/BackFire.Dockerfile
+    container_name: pecus-backfire
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__pecusdb: "Host=postgres;Port=5432;Database=pecusdb;Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__redis: "redis:6379"
+      LexicalConverter__Endpoint: "http://lexicalconverter:5100"
+      Frontend__Endpoint: ${FRONTEND_URL:-https://localhost:3000}
+      UploadsCleanup__UploadsBasePath: /app/data/uploads
+      MaintenanceNotification__NotificationsPath: /app/data/notifications
+    volumes:
+      - pecus-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      lexicalconverter:
+        condition: service_healthy
+      dbmanager:
+        condition: service_completed_successfully
+    networks:
+      - pecus-network
+
+  # ============================================
+  # Web API
+  # ============================================
+  pecusapi:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/WebApi.Dockerfile
+    container_name: pecus-webapi
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-7265}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__pecusdb: "Host=postgres;Port=5432;Database=pecusdb;Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__redis: "redis:6379"
+      LexicalConverter__Endpoint: "http://lexicalconverter:5100"
+      Frontend__Endpoint: ${FRONTEND_URL:-https://localhost:3000}
+    volumes:
+      - pecus-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      lexicalconverter:
+        condition: service_healthy
+      dbmanager:
+        condition: service_completed_successfully
+      backfire:
+        condition: service_started
+    networks:
+      - pecus-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # Frontend (Next.js)
+  # ============================================
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Frontend.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://pecusapi:8080}
+    container_name: pecus-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PECUS_API_URL: "http://pecusapi:8080"
+      REDIS_URL: "redis://redis-frontend:6379"
+    depends_on:
+      pecusapi:
+        condition: service_healthy
+      redis-frontend:
+        condition: service_healthy
+    networks:
+      - pecus-network
+
+volumes:
+  postgres-data:
+  redis-data:
+  redis-frontend-data:
+  pecus-data:
+
+networks:
+  pecus-network:
+    driver: bridge
