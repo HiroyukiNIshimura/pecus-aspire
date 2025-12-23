@@ -18,6 +18,7 @@ public class AiChatReplyTask
     private readonly IAiClientFactory _aiClientFactory;
     private readonly SignalRNotificationPublisher _publisher;
     private readonly ILogger<AiChatReplyTask> _logger;
+    private readonly IBotSelector? _botSelector;
 
     /// <summary>
     /// Bot typing がタイムアウトするまでの時間（秒）
@@ -42,12 +43,14 @@ public class AiChatReplyTask
         ApplicationDbContext context,
         IAiClientFactory aiClientFactory,
         SignalRNotificationPublisher publisher,
-        ILogger<AiChatReplyTask> logger)
+        ILogger<AiChatReplyTask> logger,
+        IBotSelector? botSelector = null)
     {
         _context = context;
         _aiClientFactory = aiClientFactory;
         _publisher = publisher;
         _logger = logger;
+        _botSelector = botSelector;
     }
 
     /// <summary>
@@ -63,19 +66,6 @@ public class AiChatReplyTask
 
         try
         {
-            // ChatBot を取得
-            chatBot = await GetChatBotAsync(organizationId);
-            if (chatBot?.ChatActor == null)
-            {
-                _logger.LogWarning(
-                    "ChatBot not found for OrganizationId={OrganizationId}. ChatBot={ChatBot}, ChatActor={ChatActor}",
-                    organizationId,
-                    chatBot != null ? "exists" : "null",
-                    chatBot?.ChatActor != null ? "exists" : "null"
-                );
-                return;
-            }
-
             // 組織設定を取得
             var setting = await GetOrganizationSettingAsync(organizationId);
             if (setting == null ||
@@ -106,6 +96,25 @@ public class AiChatReplyTask
                     setting.GenerativeApiVendor,
                     organizationId,
                     !string.IsNullOrEmpty(setting.GenerativeApiKey)
+                );
+                return;
+            }
+
+            // トリガーメッセージを取得して Bot タイプを決定
+            var triggerMessage = await _context.ChatMessages.FindAsync(triggerMessageId);
+            var triggerContent = triggerMessage?.Content ?? string.Empty;
+            var botType = await DetermineBotTypeAsync(organizationId, aiClient, triggerContent);
+
+            // 決定した BotType に基づいて Bot を取得
+            chatBot = await GetBotByTypeAsync(organizationId, botType);
+            if (chatBot?.ChatActor == null)
+            {
+                _logger.LogWarning(
+                    "ChatBot not found for OrganizationId={OrganizationId}, BotType={BotType}. ChatBot={ChatBot}, ChatActor={ChatActor}",
+                    organizationId,
+                    botType,
+                    chatBot != null ? "exists" : "null",
+                    chatBot?.ChatActor != null ? "exists" : "null"
                 );
                 return;
             }
@@ -218,15 +227,34 @@ public class AiChatReplyTask
     }
 
     /// <summary>
-    /// ChatBot を取得する
+    /// メッセージの内容に基づいて BotType を決定する
     /// </summary>
-    private async Task<DB.Models.Bot?> GetChatBotAsync(int organizationId)
+    private async Task<BotType> DetermineBotTypeAsync(
+        int organizationId,
+        IAiClient aiClient,
+        string triggerContent)
+    {
+        if (_botSelector == null)
+        {
+            return BotType.ChatBot;
+        }
+
+        return await _botSelector.DetermineBotTypeByContentAsync(
+            aiClient,
+            triggerContent
+        );
+    }
+
+    /// <summary>
+    /// 指定された BotType の Bot を取得する
+    /// </summary>
+    private async Task<DB.Models.Bot?> GetBotByTypeAsync(int organizationId, BotType botType)
     {
         return await _context.Bots
             .Include(b => b.ChatActor)
             .FirstOrDefaultAsync(b =>
                 b.OrganizationId == organizationId &&
-                b.Type == BotType.ChatBot);
+                b.Type == botType);
     }
 
     /// <summary>
