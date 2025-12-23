@@ -33,7 +33,7 @@ public class CreateItemTask : ItemNotificationTaskBase
 
     private readonly ILexicalConverterService? _lexicalConverterService;
     private readonly IAiClientFactory? _aiClientFactory;
-    private readonly IMessageAnalyzer? _messageAnalyzer;
+    private readonly IBotSelector? _botSelector;
 
     /// <summary>
     /// CreateItemTask のコンストラクタ
@@ -44,12 +44,12 @@ public class CreateItemTask : ItemNotificationTaskBase
         ILogger<CreateItemTask> logger,
         ILexicalConverterService? lexicalConverterService = null,
         IAiClientFactory? aiClientFactory = null,
-        IMessageAnalyzer? messageAnalyzer = null)
+        IBotSelector? botSelector = null)
         : base(context, publisher, logger)
     {
         _lexicalConverterService = lexicalConverterService;
         _aiClientFactory = aiClientFactory;
-        _messageAnalyzer = messageAnalyzer;
+        _botSelector = botSelector;
     }
 
     /// <inheritdoc />
@@ -77,9 +77,9 @@ public class CreateItemTask : ItemNotificationTaskBase
         var defaultMessage = BuildDefaultMessage(updatedByUserName, workspaceCode, item.Code);
 
         // 必要なサービスが揃っていない場合は定型文を返す
-        if (_lexicalConverterService == null || _aiClientFactory == null || _messageAnalyzer == null)
+        if (_lexicalConverterService == null || _aiClientFactory == null || _botSelector == null)
         {
-            Logger.LogDebug("LexicalConverterService, AiClientFactory or MessageAnalyzer is not available, using default message");
+            Logger.LogDebug("LexicalConverterService, AiClientFactory or BotSelector is not available, using default message");
             return defaultMessage;
         }
 
@@ -129,19 +129,16 @@ public class CreateItemTask : ItemNotificationTaskBase
             // メッセージ内容を組み立て（件名 + 本文）
             var contentForAnalysis = $"件名: {item.Subject}\n\n本文:\n{markdownBody}";
 
-            // Bot タイプを判定（NeedsAttentionAsync で困っている/ネガティブ/緊急かを判定）
-            var needsAttention = await _messageAnalyzer.NeedsAttentionAsync(
+            // Bot を選定（感情分析に基づいて SystemBot または ChatBot を選択）
+            var bot = await _botSelector.SelectBotByContentAsync(
+                organizationId,
                 aiClient,
                 contentForAnalysis
             );
 
-            // Bot を選定（注意が必要な場合は SystemBot、それ以外は ChatBot）
-            var botType = needsAttention ? BotType.SystemBot : BotType.ChatBot;
-            var bot = await GetBotByTypeAsync(organizationId, botType);
-
             if (bot == null)
             {
-                Logger.LogDebug("Bot not found for type {BotType}, using default message", botType);
+                Logger.LogDebug("Bot not found, using default message");
                 return defaultMessage;
             }
 
@@ -202,17 +199,5 @@ public class CreateItemTask : ItemNotificationTaskBase
     {
         return await Context.OrganizationSettings
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
-    }
-
-    /// <summary>
-    /// 指定した BotType の Bot を取得する
-    /// </summary>
-    private async Task<DB.Models.Bot?> GetBotByTypeAsync(int organizationId, BotType botType)
-    {
-        return await Context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == botType);
     }
 }

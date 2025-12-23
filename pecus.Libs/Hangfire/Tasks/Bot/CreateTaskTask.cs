@@ -31,7 +31,7 @@ public class CreateTaskTask : TaskNotificationTaskBase
         """;
 
     private readonly IAiClientFactory? _aiClientFactory;
-    private readonly IMessageAnalyzer? _messageAnalyzer;
+    private readonly IBotSelector? _botSelector;
 
     /// <summary>
     /// CreateTaskTask のコンストラクタ
@@ -41,11 +41,11 @@ public class CreateTaskTask : TaskNotificationTaskBase
         SignalRNotificationPublisher publisher,
         ILogger<CreateTaskTask> logger,
         IAiClientFactory? aiClientFactory = null,
-        IMessageAnalyzer? messageAnalyzer = null)
+        IBotSelector? botSelector = null)
         : base(context, publisher, logger)
     {
         _aiClientFactory = aiClientFactory;
-        _messageAnalyzer = messageAnalyzer;
+        _botSelector = botSelector;
     }
 
     /// <inheritdoc />
@@ -70,9 +70,9 @@ public class CreateTaskTask : TaskNotificationTaskBase
     {
         var defaultMessage = BuildDefaultMessage(userName, workspaceCode, task.WorkspaceItem.Code, task.Sequence);
 
-        if (_aiClientFactory == null || _messageAnalyzer == null)
+        if (_aiClientFactory == null || _botSelector == null)
         {
-            Logger.LogDebug("AiClientFactory or MessageAnalyzer is not available, using default message");
+            Logger.LogDebug("AiClientFactory or BotSelector is not available, using default message");
             return defaultMessage;
         }
 
@@ -114,17 +114,15 @@ public class CreateTaskTask : TaskNotificationTaskBase
                 内容: {task.Content}
                 """;
 
-            var needsAttention = await _messageAnalyzer.NeedsAttentionAsync(
+            var bot = await _botSelector.SelectBotByContentAsync(
+                organizationId,
                 aiClient,
                 contentForAnalysis
             );
 
-            var botType = needsAttention ? BotType.SystemBot : BotType.ChatBot;
-            var bot = await GetBotByTypeAsync(organizationId, botType);
-
             if (bot == null)
             {
-                Logger.LogDebug("Bot not found for type {BotType}, using default message", botType);
+                Logger.LogDebug("Bot not found, using default message");
                 return defaultMessage;
             }
 
@@ -217,17 +215,5 @@ public class CreateTaskTask : TaskNotificationTaskBase
     {
         return await Context.OrganizationSettings
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
-    }
-
-    /// <summary>
-    /// 指定した BotType の Bot を取得する
-    /// </summary>
-    private async Task<DB.Models.Bot?> GetBotByTypeAsync(int organizationId, BotType botType)
-    {
-        return await Context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == botType);
     }
 }
