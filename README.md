@@ -102,21 +102,41 @@ npm install -g @biomejs/biome
 
 ※現在のAspire環境ではRedisを永続化させていないのでNextjs側の認証情報は揮発性です。ですのでアプリ起動後は毎回ログインが必要になります。
 
-#### 3.1 Aspire ホストから起動（推奨）
+#### 3.1 Visual Studio で起動（推奨）
 
-**方法1: dotnet run を使用（非推奨）**
+1. `pecus.sln` を Visual Studio で開く
+2. スタートアッププロジェクトが `pecus.AppHost` になっていることを確認
+3. **F5** または **デバッグ > デバッグの開始** を実行
+4. Aspire ダッシュボードが自動的にブラウザで開きます
+
+> 💡 **ヒント:** Visual Studio では Aspire のホットリロード、デバッグ、リソース監視がシームレスに統合されています。
+
+#### 3.2 VS Code で起動
+
+1. ワークスペースを VS Code で開く
+2. **ターミナル** で以下を実行：
 
 ```bash
-cd pecus.AppHost
-dotnet run
+# プロジェクトルートで Aspire CLI を使用して起動
+aspire run
 ```
 
-**方法2: Aspire CLI を使用（推奨）**
+または、**C# Dev Kit** 拡張機能がインストールされている場合：
 
-Aspire CLI をインストールしている場合：
+1. **実行とデバッグ** パネル（Ctrl+Shift+D / Cmd+Shift+D）を開く
+2. 起動構成で `pecus.AppHost` を選択
+3. **F5** でデバッグ開始
+
+> 📦 **必要な拡張機能:**
+> - [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
+> - [.NET Aspire](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-aspire) （オプション、ダッシュボード統合）
+
+#### 3.3 コマンドラインから起動
+
+**方法1: Aspire CLI を使用（推奨）**
 
 ```bash
-# プロジェクトルートで、Aspire CLI で起動
+# プロジェクトルートで実行
 aspire run
 ```
 
@@ -125,16 +145,23 @@ Aspire CLI のインストール：
 dotnet tool install -g Aspire.Hosting.Cli
 ```
 
+**方法2: dotnet run を使用**
+
+```bash
+cd pecus.AppHost
+dotnet run
+```
+
 **起動時の処理:**
 1. `pecus.DbManager` が自動的に起動し、データベースマイグレーションを実行
 2. シードデータが投入される（開発環境の場合）
 3. `pecus.WebApi` が起動（https://localhost:7265）
 4. `pecus.BackFire` Hangfire サーバーが起動
-5. Aspire ダッシュボードが表示（VisualStudioの場合は自動起動）
+5. Aspire ダッシュボードが表示
 
-> ⚠️ **初回起動時の注意:** 初回起動時はマイグレーションとシードデータの大量投を行うため、**数分程度の時間がかかります**。Aspire ダッシュボードで `pecus.DbManager` のコンソールを開いてシードデータの投入完了を確認してください。
+> ⚠️ **初回起動時の注意:** 初回起動時はマイグレーションとシードデータの大量投入を行うため、**数分程度の時間がかかります**。Aspire ダッシュボードで `pecus.DbManager` のコンソールを開いてシードデータの投入完了を確認してください。
 
-#### 3.2 個別にサービスを起動する場合
+#### 3.4 個別にサービスを起動する場合
 
 **別々のターミナルで実行:**
 
