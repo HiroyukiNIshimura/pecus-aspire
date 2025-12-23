@@ -129,6 +129,12 @@ public class UpdateTaskTask : TaskNotificationTaskBase
                 return defaultMessage;
             }
 
+            // Bot のペルソナと行動指針からシステムプロンプトを作成
+            var systemPrompt = new SystemPromptBuilder()
+                .WithRawPersona(bot.Persona)
+                .WithRawConstraint(bot.Constraint)
+                .Build();
+
             var userPrompt = $"以下の更新されたタスクについて紹介メッセージを生成してください:\n\n{contentForAnalysis}";
             var generatedMessage = await aiClient.GenerateTextWithMessagesAsync(
                 [
@@ -136,7 +142,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
                     (MessageRole.System, MessageGenerationPrompt),
                     (MessageRole.User, userPrompt)
                 ],
-                bot.Persona
+                systemPrompt
             );
 
             if (string.IsNullOrWhiteSpace(generatedMessage))

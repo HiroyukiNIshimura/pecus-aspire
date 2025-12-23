@@ -173,12 +173,18 @@ public class AiChatReplyTask
                 );
                 return;
             }
-            messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、{senderUserName}さんです。回答はMarkdownは利用せずにプレーンテキストで行ってください。"));
+            messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、{senderUserName}さんです。"));
+
+            // Bot のペルソナと行動指針からシステムプロンプトを作成
+            var systemPrompt = new SystemPromptBuilder()
+                .WithRawPersona(chatBot.Persona)
+                .WithRawConstraint(chatBot.Constraint)
+                .Build();
 
             // AI API を呼び出して返信を生成
             var responseText = await aiClient.GenerateTextWithMessagesAsync(
                 messages,
-                chatBot.Persona
+                systemPrompt
             );
 
             // 入力終了を通知

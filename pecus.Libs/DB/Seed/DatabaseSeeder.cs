@@ -826,21 +826,27 @@ public class DatabaseSeeder
             _logger.LogInformation("All organizations already have bots, skipping creation");
         }
 
-        // 全ての Bot の Persona を Type ごとに一括更新（2回のSQL発行）
+        // 全ての Bot の Persona と Constraint を Type ごとに一括更新
         var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
+        var chatBotConstraint = BotPersonaHelper.GetChatBotConstraint();
         var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
+        var systemBotConstraint = BotPersonaHelper.GetSystemBotConstraint();
 
         var chatBotUpdated = await _context.Bots
             .Where(b => b.Type == BotType.ChatBot)
-            .ExecuteUpdateAsync(s => s.SetProperty(b => b.Persona, chatBotPersona));
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(b => b.Persona, chatBotPersona)
+                .SetProperty(b => b.Constraint, chatBotConstraint));
 
         var systemBotUpdated = await _context.Bots
             .Where(b => b.Type == BotType.SystemBot)
-            .ExecuteUpdateAsync(s => s.SetProperty(b => b.Persona, systemBotPersona));
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(b => b.Persona, systemBotPersona)
+                .SetProperty(b => b.Constraint, systemBotConstraint));
 
         if (chatBotUpdated > 0 || systemBotUpdated > 0)
         {
-            _logger.LogInformation("Updated persona for {ChatBotCount} ChatBots and {SystemBotCount} SystemBots", chatBotUpdated, systemBotUpdated);
+            _logger.LogInformation("Updated persona and constraint for {ChatBotCount} ChatBots and {SystemBotCount} SystemBots", chatBotUpdated, systemBotUpdated);
         }
     }
 

@@ -33,6 +33,11 @@ public class Bot
     public string? Persona { get; set; }
 
     /// <summary>
+    /// 行動指針（制約条件）
+    /// </summary>
+    public string? Constraint { get; set; }
+
+    /// <summary>
     /// ボットのアイコンURL
     /// </summary>
     public string? IconUrl { get; set; }
