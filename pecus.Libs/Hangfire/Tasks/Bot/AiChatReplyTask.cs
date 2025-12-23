@@ -1,11 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Pecus.Libs.AI;
 using Pecus.Libs.AI.Models;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Focus;
 using Pecus.Libs.Notifications;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
 
@@ -20,6 +24,8 @@ public class AiChatReplyTask
     private readonly SignalRNotificationPublisher _publisher;
     private readonly ILogger<AiChatReplyTask> _logger;
     private readonly IBotSelector? _botSelector;
+    private readonly IMessageAnalyzer? _messageAnalyzer;
+    private readonly IFocusTaskProvider? _focusTaskProvider;
 
     /// <summary>
     /// Bot typing がタイムアウトするまでの時間（秒）
@@ -38,6 +44,11 @@ public class AiChatReplyTask
     private const int ConversationHistoryDays = 2;
 
     /// <summary>
+    /// 指示を求めているとみなす GuidanceSeekingScore の閾値
+    /// </summary>
+    private const int GuidanceSeekingThreshold = 50;
+
+    /// <summary>
     /// AiChatReplyTask のコンストラクタ
     /// </summary>
     public AiChatReplyTask(
@@ -45,13 +56,17 @@ public class AiChatReplyTask
         IAiClientFactory aiClientFactory,
         SignalRNotificationPublisher publisher,
         ILogger<AiChatReplyTask> logger,
-        IBotSelector? botSelector = null)
+        IBotSelector? botSelector = null,
+        IMessageAnalyzer? messageAnalyzer = null,
+        IFocusTaskProvider? focusTaskProvider = null)
     {
         _context = context;
         _aiClientFactory = aiClientFactory;
         _publisher = publisher;
         _logger = logger;
         _botSelector = botSelector;
+        _messageAnalyzer = messageAnalyzer;
+        _focusTaskProvider = focusTaskProvider;
     }
 
     /// <summary>
@@ -160,10 +175,7 @@ public class AiChatReplyTask
                 isTyping: true
             );
 
-            // 会話履歴を取得してメッセージ配列を構築
-            var messages = await BuildConversationMessagesAsync(roomId, chatBot.ChatActor.Id);
-
-            // 送信者のユーザー名を取得してシステムメッセージに追加
+            // 送信者のユーザー名を取得
             var senderUserName = await GetUserNameAsync(senderUserId);
             if (string.IsNullOrEmpty(senderUserName))
             {
@@ -173,14 +185,25 @@ public class AiChatReplyTask
                 );
                 return;
             }
-            messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、{senderUserName}さんです。"));
+
+            // 指示を求めているかどうかを判定し、適切なメッセージとロールを構築
+            var (messages, role) = await BuildMessagesWithContextAsync(
+                aiClient,
+                triggerContent,
+                senderUserId,
+                senderUserName,
+                roomId,
+                chatBot.ChatActor.Id
+            );
 
             // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
             var systemPrompt = new SystemPromptBuilder()
                 .WithRawPersona(chatBot.Persona)
-                .WithRole(RoleRandomizer.GetRandomRole())
+                .WithRole(role)
                 .WithRawConstraint(chatBot.Constraint)
                 .Build();
+
+            _logger.LogDebug("messages Prompt: {messages}", JsonConvert.SerializeObject(messages));
 
             // AI API を呼び出して返信を生成
             var responseText = await aiClient.GenerateTextWithMessagesAsync(
@@ -574,5 +597,160 @@ public class AiChatReplyTask
             member.LastReadAt = readAt;
             await _context.SaveChangesAsync();
         }
+    }
+
+    /// <summary>
+    /// コンテキストに応じたメッセージ配列とロールを構築する
+    /// 指示を求めている場合はタスク情報を含め、そうでない場合は会話履歴を使用
+    /// </summary>
+    private async Task<(List<(MessageRole Role, string Content)> Messages, RoleConfig Role)> BuildMessagesWithContextAsync(
+        IAiClient aiClient,
+        string triggerContent,
+        int userId,
+        string senderUserName,
+        int roomId,
+        int botActorId)
+    {
+        var userNamePrompt = $"Userを示す二人称は、{senderUserName}さんです。";
+
+        // 指示を求めているかどうかを判定
+        var taskContext = await TryGetTaskContextAsync(aiClient, triggerContent, userId);
+
+        if (taskContext != null)
+        {
+            // 秘書モード: タスクリストをコンテキストに含めたシンプルな構成
+            var messages = new List<(MessageRole Role, string Content)>
+            {
+                (MessageRole.System, userNamePrompt),
+                (MessageRole.System, taskContext),
+                (MessageRole.User, triggerContent)
+            };
+            return (messages, RoleRandomizer.SecretaryRole);
+        }
+
+        // 通常モード: 会話履歴を使用
+        var conversationMessages = await BuildConversationMessagesAsync(roomId, botActorId);
+        conversationMessages.Insert(0, (MessageRole.System, userNamePrompt));
+        return (conversationMessages, RoleRandomizer.GetRandomRole());
+    }
+
+    /// <summary>
+    /// 指示を求めている場合はタスクコンテキストを取得、そうでなければ null を返す
+    /// </summary>
+    private async Task<string?> TryGetTaskContextAsync(
+        IAiClient aiClient,
+        string triggerContent,
+        int userId)
+    {
+        if (_messageAnalyzer == null || _focusTaskProvider == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var sentimentResult = await _messageAnalyzer.AnalyzeAsync(aiClient, triggerContent);
+
+            if (sentimentResult.GuidanceSeekingScore < GuidanceSeekingThreshold)
+            {
+                _logger.LogDebug(
+                    "Message not seeking guidance: GuidanceSeekingScore={Score}, Threshold={Threshold}",
+                    sentimentResult.GuidanceSeekingScore,
+                    GuidanceSeekingThreshold
+                );
+                return null;
+            }
+
+            _logger.LogDebug(
+                "Message is seeking guidance, fetching task list: GuidanceSeekingScore={Score}",
+                sentimentResult.GuidanceSeekingScore
+            );
+
+            var taskResult = await _focusTaskProvider.GetFocusTasksAsync(
+                userId,
+                focusTasksLimit: 5,
+                waitingTasksLimit: 3
+            );
+
+            return BuildTaskContextPrompt(taskResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get task context");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// タスク情報からコンテキストプロンプトを生成する
+    /// </summary>
+    private static string BuildTaskContextPrompt(Focus.Models.FocusTaskResult taskResult)
+    {
+        if (taskResult.TotalTaskCount == 0)
+        {
+            return "【参考情報】このユーザーには現在割り当てられているタスクがありません。";
+        }
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("【参考情報】ユーザーのやることリスト（優先度順）:");
+
+        if (taskResult.FocusTasks.Count > 0)
+        {
+            sb.AppendLine("■ 今すぐ着手可能なタスク:");
+            foreach (var task in taskResult.FocusTasks)
+            {
+                var priorityText = task.Priority?.ToString() ?? "未設定";
+                var dueText = FormatDueDate(task.DueDate);
+                sb.AppendLine($"  - コード:[{task.WorkspaceCode}#{task.ItemCode}T{task.Sequence}] {task.Content} (優先度: {priorityText}, 期限: {dueText}, スコア: {task.TotalScore:F0})");
+                if (!string.IsNullOrEmpty(task.ItemSubject))
+                {
+                    sb.AppendLine($"    関連アイテム: {task.ItemSubject}");
+                }
+            }
+        }
+
+        if (taskResult.WaitingTasks.Count > 0)
+        {
+            sb.AppendLine("■ 待機中のタスク（先行タスク完了待ち）:");
+            foreach (var task in taskResult.WaitingTasks)
+            {
+                sb.AppendLine($"  - コード:[{task.WorkspaceCode}#{task.ItemCode}T{task.Sequence}] {task.Content} (待機中: {task.PredecessorItemCode} の完了待ち)");
+            }
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("この情報を参考に、ユーザーが次に何をすべきか具体的にアドバイスしてください。");
+        sb.AppendLine("ただし、タスク一覧をそのまま列挙するのではなく、自然な会話として提案してください。");
+        sb.AppendLine("タスク名にはコードを含めてください。");
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// 期限日時を人間が読みやすい形式にフォーマットする
+    /// </summary>
+    private static string FormatDueDate(DateTimeOffset dueDate)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var diff = dueDate - now;
+
+        if (diff.TotalHours < 0)
+        {
+            return "期限切れ";
+        }
+        if (diff.TotalHours <= 24)
+        {
+            return "今日中";
+        }
+        if (diff.TotalHours <= 48)
+        {
+            return "明日";
+        }
+        if (diff.TotalDays <= 7)
+        {
+            return $"{diff.TotalDays:F0}日後";
+        }
+
+        return dueDate.ToString("M/d");
     }
 }

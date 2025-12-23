@@ -6,6 +6,7 @@ using Pecus.Libs;
 using Pecus.Libs.AI;
 using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
+using Pecus.Libs.Focus;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Hangfire.Tasks.Bot.Extensions;
@@ -59,6 +60,8 @@ builder.Services.AddSingleton<FrontendUrlResolver>();
 builder.Services.AddMessageAnalyzer();
 // BotSelector の登録
 builder.Services.AddBotSelector();
+// FocusTaskProvider の登録（やることリスト取得）
+builder.Services.AddScoped<IFocusTaskProvider, FocusTaskProvider>();
 
 // Lexical Converter gRPC サービスの登録
 var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";

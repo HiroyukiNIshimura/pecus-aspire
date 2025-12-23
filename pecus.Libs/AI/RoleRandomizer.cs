@@ -72,7 +72,16 @@ public static class RoleRandomizer
             MainRole: "学習サポーター",
             FinalGoal: "新しい概念や技術の理解を助け、学習を促進すること"
         ),
+        SecretaryRole!,
     ];
+
+    /// <summary>
+    /// 秘書役割の定義
+    /// </summary>
+    public static readonly RoleConfig SecretaryRole = new(
+         MainRole: "秘書",
+         FinalGoal: "タスクの整理・スケジュール管理を手伝い、次にやるべきことを明確にすること"
+    );
 
     /// <summary>
     /// ランダムに役割を取得
@@ -83,6 +92,8 @@ public static class RoleRandomizer
         var index = _random.Next(_roles.Length);
         return _roles[index];
     }
+
+
 
     /// <summary>
     /// 指定した数の役割をランダムに取得（重複なし）

@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Focus;
 using Pecus.Models.Responses.Focus;
+using Pecus.Models.Responses.WorkspaceTask;
 
 namespace Pecus.Services;
 
@@ -42,16 +44,9 @@ public class FocusRecommendationService
         var focusTasksLimit = userSetting?.FocusTasksLimit ?? 5;
         var waitingTasksLimit = userSetting?.WaitingTasksLimit ?? 5;
 
-        // 優先要素に応じた重み設定
-        // 設計書基準: 優先度=2, 期限=3, 後続タスク影響=5
-        // 選択した要素は+2して強調
-        var (priorityWeight, deadlineWeight, successorImpactWeight) = focusScorePriority switch
-        {
-            FocusScorePriority.Priority => (4m, 3m, 5m),     // 優先度を強調
-            FocusScorePriority.Deadline => (2m, 5m, 5m),     // 期限を強調
-            FocusScorePriority.SuccessorImpact => (2m, 3m, 7m), // 後続タスク影響を強調
-            _ => (2m, 3m, 5m) // デフォルト（設計書基準）
-        };
+        // 優先要素に応じた重み設定（Libsのコアロジックを使用）
+        var (priorityWeight, deadlineWeight, successorImpactWeight) =
+            TaskScoreCalculator.GetWeights(focusScorePriority);
 
         _logger.LogDebug(
             "スコアリング設定: Priority={FocusScorePriority}, Weights=({PriorityWeight}, {DeadlineWeight}, {SuccessorImpactWeight}), Limits=({FocusLimit}, {WaitingLimit})",
@@ -171,7 +166,7 @@ public class FocusRecommendationService
     }
 
     /// <summary>
-    /// タスクの総合スコアを計算
+    /// タスクの総合スコアを計算（Libsのコアロジックを使用）
     /// </summary>
     /// <param name="task">タスク</param>
     /// <param name="successorCount">後続タスク数</param>
@@ -187,13 +182,18 @@ public class FocusRecommendationService
         decimal successorImpactWeight
     )
     {
-        var priorityScore = CalculatePriorityScore(task.Priority);
-        var deadlineScore = CalculateDeadlineScore(task.DueDate);
-        var successorImpactScore = CalculateSuccessorImpactScore(successorCount);
+        var priorityScore = TaskScoreCalculator.CalculatePriorityScore(task.Priority);
+        var deadlineScore = TaskScoreCalculator.CalculateDeadlineScore(task.DueDate);
+        var successorImpactScore = TaskScoreCalculator.CalculateSuccessorImpactScore(successorCount);
 
-        var totalScore = (priorityScore * priorityWeight)
-                       + (deadlineScore * deadlineWeight)
-                       + (successorImpactScore * successorImpactWeight);
+        var totalScore = TaskScoreCalculator.CalculateTotalScore(
+            task.Priority,
+            task.DueDate,
+            successorCount,
+            priorityWeight,
+            deadlineWeight,
+            successorImpactWeight
+        );
 
         var scoreDetail = new TaskScoreDetail
         {
@@ -207,90 +207,6 @@ public class FocusRecommendationService
         };
 
         return (totalScore, scoreDetail);
-    }
-
-    /// <summary>
-    /// 優先度スコアを計算
-    /// </summary>
-    /// <param name="priority">優先度（NULLの場合はLowとして扱う）</param>
-    /// <returns>優先度スコア（1-4）</returns>
-    private decimal CalculatePriorityScore(TaskPriority? priority)
-    {
-        return priority switch
-        {
-            TaskPriority.Critical => 4m,
-            TaskPriority.High => 3m,
-            TaskPriority.Medium => 2m,
-            TaskPriority.Low => 1m,
-            null => 1m, // NULLの場合はLowとして扱う（設計書準拠）
-            _ => 1m
-        };
-    }
-
-    /// <summary>
-    /// 期限スコアを計算
-    /// </summary>
-    /// <param name="dueDate">期限日時</param>
-    /// <returns>期限スコア（1-10、期限が近いほど高い）</returns>
-    private decimal CalculateDeadlineScore(DateTimeOffset dueDate)
-    {
-        var now = DateTimeOffset.UtcNow;
-        var timeUntilDue = dueDate - now;
-
-        // 期限切れ
-        if (timeUntilDue.TotalHours < 0)
-        {
-            return 10m;
-        }
-
-        // 今日中（24時間以内）
-        if (timeUntilDue.TotalHours <= 24)
-        {
-            return 8m;
-        }
-
-        // 明日（48時間以内）
-        if (timeUntilDue.TotalHours <= 48)
-        {
-            return 6m;
-        }
-
-        // 2-3日後（72時間以内）
-        if (timeUntilDue.TotalHours <= 72)
-        {
-            return 4m;
-        }
-
-        // 今週中（7日以内）
-        if (timeUntilDue.TotalDays <= 7)
-        {
-            return 3m;
-        }
-
-        // 来週（14日以内）
-        if (timeUntilDue.TotalDays <= 14)
-        {
-            return 2m;
-        }
-
-        // それ以降
-        return 1m;
-    }
-
-    /// <summary>
-    /// 後続タスク影響スコアを計算
-    /// </summary>
-    /// <param name="successorCount">後続タスク数</param>
-    /// <returns>影響スコア（0-10）</returns>
-    private decimal CalculateSuccessorImpactScore(int successorCount)
-    {
-        return successorCount switch
-        {
-            >= 3 => 10m,
-            2 => 6m,
-            1 => 3m,
-            _ => 0m
-        };
     }
 
     /// <summary>
