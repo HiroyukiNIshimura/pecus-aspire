@@ -70,11 +70,11 @@ public class ConversationTargetAnalyzer : IConversationTargetAnalyzer
 
         if (bots.Count == 0)
         {
-            _logger.LogDebug("No bots found in conversation history");
+            _logger.LogDebug("No bots found in conversation history, random selection required");
             return new ConversationTargetResult
             {
                 Confidence = 0,
-                Reasoning = "会話履歴にボットが存在しません",
+                Reasoning = "会話履歴にボットが存在しないためランダム選択が必要",
             };
         }
 

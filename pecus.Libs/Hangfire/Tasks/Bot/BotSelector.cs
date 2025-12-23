@@ -72,8 +72,11 @@ public class BotSelector : IBotSelector
 
         if (string.IsNullOrEmpty(targetResult.TargetId))
         {
-            _logger.LogDebug("No target bot determined from conversation");
-            return null;
+            _logger.LogDebug(
+                "No target bot determined from conversation, selecting random bot: Reasoning={Reasoning}",
+                targetResult.Reasoning
+            );
+            return await GetRandomBotAsync(organizationId, cancellationToken);
         }
 
         if (!int.TryParse(targetResult.TargetId, out var botActorId))
