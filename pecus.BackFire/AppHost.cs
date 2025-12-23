@@ -99,6 +99,7 @@ builder.Services.AddScoped<UpdateItemTask>();
 builder.Services.AddScoped<CreateTaskTask>();
 builder.Services.AddScoped<UpdateTaskTask>();
 builder.Services.AddScoped<GroupChatReplyTask>();
+builder.Services.AddScoped<MaintenanceNotificationTask>();
 
 // 週間レポート関連サービスの登録
 builder.Services.AddWeeklyReportServices();
@@ -134,5 +135,11 @@ CleanupJobScheduler.ConfigureCleanupJobs(builder.Configuration);
 
 // 週間レポートジョブの設定
 WeeklyReportJobScheduler.ConfigureWeeklyReportJob(builder.Configuration);
+
+// 運営通知ジョブの設定
+var notificationsDirectory = Path.Combine(AppContext.BaseDirectory, "Notifications");
+MaintenanceNotificationJobScheduler.ConfigureMaintenanceNotificationJob(
+    builder.Configuration,
+    notificationsDirectory);
 
 app.Run();
