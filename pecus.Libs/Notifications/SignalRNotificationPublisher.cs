@@ -209,4 +209,35 @@ public class SignalRNotificationPublisher
             "chat:bot_error",
             payload);
     }
+
+    /// <summary>
+    /// Bot の既読通知を送信する。
+    /// AI Bot がメッセージを「読んだ」ことをクライアントに通知。
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="roomId">チャットルームID</param>
+    /// <param name="botActorId">Bot のアクターID</param>
+    /// <param name="readAt">既読日時</param>
+    /// <param name="readMessageId">既読メッセージID（オプション）</param>
+    public async Task<long> PublishChatBotReadAsync(
+        int organizationId,
+        int roomId,
+        int botActorId,
+        DateTimeOffset readAt,
+        int? readMessageId = null)
+    {
+        var payload = new
+        {
+            RoomId = roomId,
+            BotActorId = botActorId,
+            ReadAt = readAt,
+            ReadMessageId = readMessageId,
+        };
+
+        return await PublishChatBotNotificationAsync(
+            organizationId,
+            roomId,
+            "chat:bot_message_read",
+            payload);
+    }
 }

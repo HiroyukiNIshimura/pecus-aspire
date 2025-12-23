@@ -11,10 +11,10 @@ interface ChatMessageListProps {
   loading?: boolean;
   hasMore?: boolean;
   onLoadMore?: () => void;
-  /** 相手が既読した最新のメッセージID（DM用） */
+  /** 相手が既読した最新のメッセージID（DM/AI チャット用） */
   lastReadMessageId?: number | null;
-  /** DMルームかどうか */
-  isDm?: boolean;
+  /** 既読表示を有効にするか（DM/AI チャット用） */
+  showReadStatus?: boolean;
 }
 
 /**
@@ -30,7 +30,7 @@ export default function ChatMessageList({
   hasMore = false,
   onLoadMore,
   lastReadMessageId,
-  isDm = false,
+  showReadStatus = false,
 }: ChatMessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -62,7 +62,7 @@ export default function ChatMessageList({
 
   // 自分のメッセージのうち、相手が既読した最新のものを特定
   const getShowReadStatus = (message: ChatMessageItem): boolean => {
-    if (!isDm || !lastReadMessageId) return false;
+    if (!showReadStatus || !lastReadMessageId) return false;
     // 自分のメッセージのみ既読表示
     if (message.senderUserId !== currentUserId) return false;
     // 既読されたメッセージID以下のメッセージは既読済み

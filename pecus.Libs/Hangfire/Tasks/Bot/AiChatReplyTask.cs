@@ -110,6 +110,19 @@ public class AiChatReplyTask
                 return;
             }
 
+            // Bot の既読通知を送信（Bot がメッセージを「読んだ」タイミング）
+            var readAt = DateTimeOffset.UtcNow;
+            await _publisher.PublishChatBotReadAsync(
+                organizationId,
+                roomId,
+                chatBot.ChatActor.Id,
+                readAt,
+                triggerMessageId
+            );
+
+            // Bot の LastReadAt を更新
+            await UpdateBotLastReadAtAsync(roomId, chatBot.ChatActor.Id, readAt);
+
             // 入力開始を通知
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
@@ -356,5 +369,23 @@ public class AiChatReplyTask
             SourceType = NotificationSourceType.ChatBot,
             OrganizationId = organizationId,
         });
+    }
+
+    /// <summary>
+    /// Bot の LastReadAt を更新する
+    /// </summary>
+    /// <param name="roomId">ルームID</param>
+    /// <param name="botActorId">Bot のアクターID</param>
+    /// <param name="readAt">既読日時</param>
+    private async Task UpdateBotLastReadAtAsync(int roomId, int botActorId, DateTimeOffset readAt)
+    {
+        var member = await _context.ChatRoomMembers
+            .FirstOrDefaultAsync(m => m.ChatRoomId == roomId && m.ChatActorId == botActorId);
+
+        if (member != null)
+        {
+            member.LastReadAt = readAt;
+            await _context.SaveChangesAsync();
+        }
     }
 }

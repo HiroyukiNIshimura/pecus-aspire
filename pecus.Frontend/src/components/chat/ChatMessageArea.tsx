@@ -55,6 +55,14 @@ interface ChatMessageReadPayload {
   readMessageId?: number | null;
 }
 
+/** SignalR chat:bot_message_read イベントのペイロード型 */
+interface ChatBotMessageReadPayload {
+  roomId: number;
+  botActorId: number;
+  readAt: string;
+  readMessageId?: number | null;
+}
+
 /** SignalR chat:bot_typing イベントのペイロード型 */
 interface ChatBotTypingPayload {
   roomId: number;
@@ -139,32 +147,25 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
     try {
       const [roomResult, messagesResult] = await Promise.all([getChatRoomDetail(roomId), getChatMessages(roomId)]);
 
-      console.log('[fetchRoomAndMessages] roomResult:', roomResult);
-      console.log('[fetchRoomAndMessages] roomResult.data?.type:', roomResult.data?.type);
-
       if (roomResult.success && roomResult.data) {
         setRoom(roomResult.data);
 
-        // DM の場合、相手の既読位置を初期化
-        console.log('[DM既読チェック] type:', roomResult.data.type, 'messagesResult.success:', messagesResult.success);
-        if (roomResult.data.type === 'Dm' && messagesResult.success && messagesResult.data) {
-          const otherMember = roomResult.data.members?.find((m) => m.userId !== currentUserId);
-          console.log('[DM既読初期化] currentUserId:', currentUserId);
-          console.log('[DM既読初期化] members:', roomResult.data.members);
-          console.log('[DM既読初期化] otherMember:', otherMember);
-          console.log('[DM既読初期化] otherMember.lastReadAt:', otherMember?.lastReadAt);
+        // DM/AI ルームの場合、相手（Bot）の既読位置を初期化
+        if ((roomResult.data.type === 'Dm' || roomResult.data.type === 'Ai') && messagesResult.success && messagesResult.data) {
+          // DM: 自分以外のメンバー、AI: Bot メンバー（userId が 0 のメンバー）
+          const otherMember = roomResult.data.type === 'Dm'
+            ? roomResult.data.members?.find((m) => m.userId !== currentUserId)
+            : roomResult.data.members?.find((m) => m.userId === 0); // Bot は userId が 0
+
           if (otherMember?.lastReadAt) {
             // 相手の lastReadAt 以前に自分が送信したメッセージの中で最新のものを探す
             const otherLastReadAt = new Date(otherMember.lastReadAt);
-            console.log('[DM既読初期化] otherLastReadAt:', otherLastReadAt);
             const myMessages = messagesResult.data.messages.filter(
               (m) => m.senderUserId === currentUserId && m.createdAt && new Date(m.createdAt) <= otherLastReadAt,
             );
-            console.log('[DM既読初期化] myMessages (既読済み):', myMessages);
             if (myMessages.length > 0) {
               // 最新の既読メッセージID
               const lastReadMsg = myMessages[myMessages.length - 1];
-              console.log('[DM既読初期化] lastReadMessageId:', lastReadMsg.id);
               setLastReadMessageId(lastReadMsg.id);
             }
           }
@@ -377,6 +378,29 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
 
   useSignalREvent<ChatMessageReadPayload>('chat:message_read', handleMessageRead);
 
+  // SignalR: Bot 既読通知（AI チャット用）
+  const handleBotMessageRead = useCallback(
+    (payload: ChatBotMessageReadPayload) => {
+      // 現在開いているルームのみ処理
+      if (payload.roomId !== roomId) {
+        return;
+      }
+      // AI ルームの場合のみ既読表示を更新
+      if (room?.type === 'Ai' && payload.readMessageId) {
+        setLastReadMessageId((prev) => {
+          // より新しいメッセージIDの場合のみ更新
+          if (prev === null || payload.readMessageId! > prev) {
+            return payload.readMessageId!;
+          }
+          return prev;
+        });
+      }
+    },
+    [roomId, room?.type],
+  );
+
+  useSignalREvent<ChatBotMessageReadPayload>('chat:bot_message_read', handleBotMessageRead);
+
   // SignalR: Bot 入力中通知
   const handleBotTyping = useCallback(
     (payload: ChatBotTypingPayload) => {
@@ -483,7 +507,7 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         hasMore={hasMore}
         onLoadMore={loadMoreMessages}
         lastReadMessageId={lastReadMessageId}
-        isDm={room?.type === 'Dm'}
+        showReadStatus={room?.type === 'Dm' || room?.type === 'Ai'}
       />
 
       {/* 入力中インジケーター */}
