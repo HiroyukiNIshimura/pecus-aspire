@@ -29,6 +29,12 @@ public class MessageSentimentResult
     public int UrgencyScore { get; set; }
 
     /// <summary>
+    /// 指示・ガイダンスを求めている度合い (0-100)
+    /// 「何をすればいい」「どうしたらいい」など次のアクションを求めている度合い
+    /// </summary>
+    public int GuidanceSeekingScore { get; set; }
+
+    /// <summary>
     /// 検出された主な感情カテゴリ
     /// </summary>
     public string PrimaryEmotion { get; set; } = string.Empty;
@@ -62,6 +68,11 @@ public class MessageSentimentResult
     /// 緊急性が高いかどうか（UrgencyScore >= 50）
     /// </summary>
     public bool IsUrgent => UrgencyScore >= 50;
+
+    /// <summary>
+    /// 指示・ガイダンスを求めているかどうか（GuidanceSeekingScore >= 50）
+    /// </summary>
+    public bool IsSeekingGuidance => GuidanceSeekingScore >= 50;
 
     /// <summary>
     /// 注意が必要かどうか（困っている or ネガティブ or 緊急）

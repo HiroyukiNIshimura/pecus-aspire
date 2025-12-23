@@ -55,4 +55,16 @@ public interface IMessageAnalyzer
         IAiClient aiClient,
         string message,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// メッセージが指示・ガイダンスを求めている内容かどうかを簡易判定する
+    /// </summary>
+    /// <param name="aiClient">AIクライアント</param>
+    /// <param name="message">判定対象のメッセージ</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>指示・ガイダンスを求めている場合は true</returns>
+    Task<bool> IsSeekingGuidanceAsync(
+        IAiClient aiClient,
+        string message,
+        CancellationToken cancellationToken = default);
 }
