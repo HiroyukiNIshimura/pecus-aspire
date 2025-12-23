@@ -33,6 +33,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
         """;
 
     private readonly IAiClientFactory? _aiClientFactory;
+    private readonly IMessageAnalyzer? _messageAnalyzer;
 
     /// <summary>
     /// UpdateTaskTask のコンストラクタ
@@ -41,10 +42,12 @@ public class UpdateTaskTask : TaskNotificationTaskBase
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
         ILogger<UpdateTaskTask> logger,
-        IAiClientFactory? aiClientFactory = null)
+        IAiClientFactory? aiClientFactory = null,
+        IMessageAnalyzer? messageAnalyzer = null)
         : base(context, publisher, logger)
     {
         _aiClientFactory = aiClientFactory;
+        _messageAnalyzer = messageAnalyzer;
     }
 
     /// <inheritdoc />
@@ -69,9 +72,9 @@ public class UpdateTaskTask : TaskNotificationTaskBase
     {
         var defaultMessage = BuildDefaultMessage(userName, workspaceCode, task.WorkspaceItem.Code, task.Sequence);
 
-        if (_aiClientFactory == null)
+        if (_aiClientFactory == null || _messageAnalyzer == null)
         {
-            Logger.LogDebug("AiClientFactory is not available, using default message");
+            Logger.LogDebug("AiClientFactory or MessageAnalyzer is not available, using default message");
             return defaultMessage;
         }
 
@@ -113,10 +116,9 @@ public class UpdateTaskTask : TaskNotificationTaskBase
                 内容: {task.Content}
                 """;
 
-            var needsAttention = await MessageAnalyzer.NeedsAttentionAsync(
+            var needsAttention = await _messageAnalyzer.NeedsAttentionAsync(
                 aiClient,
-                contentForAnalysis,
-                Logger
+                contentForAnalysis
             );
 
             var botType = needsAttention ? BotType.SystemBot : BotType.ChatBot;

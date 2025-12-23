@@ -4,10 +4,20 @@ using Pecus.Libs.AI.Models;
 namespace Pecus.Libs.AI;
 
 /// <summary>
-/// メッセージの感情分析を行う静的クラス
+/// メッセージの感情分析を行うサービス
 /// </summary>
-public static class MessageAnalyzer
+public class MessageAnalyzer : IMessageAnalyzer
 {
+    private readonly ILogger<MessageAnalyzer> _logger;
+
+    /// <summary>
+    /// MessageAnalyzer のコンストラクタ
+    /// </summary>
+    public MessageAnalyzer(ILogger<MessageAnalyzer> logger)
+    {
+        _logger = logger;
+    }
+
     /// <summary>
     /// 感情分析用のシステムプロンプト
     /// </summary>
@@ -36,23 +46,15 @@ public static class MessageAnalyzer
         必ず有効なJSONのみを返してください。説明文は不要です。
         """;
 
-    /// <summary>
-    /// メッセージの感情分析を実行する
-    /// </summary>
-    /// <param name="aiClient">AIクライアント</param>
-    /// <param name="message">分析対象のメッセージ</param>
-    /// <param name="logger">ロガー（オプション）</param>
-    /// <param name="cancellationToken">キャンセルトークン</param>
-    /// <returns>感情分析結果</returns>
-    public static async Task<MessageSentimentResult> AnalyzeAsync(
+    /// <inheritdoc />
+    public async Task<MessageSentimentResult> AnalyzeAsync(
         IAiClient aiClient,
         string message,
-        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(message))
         {
-            logger?.LogDebug("Empty message provided, returning neutral result");
+            _logger.LogDebug("Empty message provided, returning neutral result");
             return CreateNeutralResult();
         }
 
@@ -64,7 +66,7 @@ public static class MessageAnalyzer
                 cancellationToken: cancellationToken
             );
 
-            logger?.LogDebug(
+            _logger.LogDebug(
                 "Sentiment analysis completed: PrimaryEmotion={PrimaryEmotion}, Troubled={TroubledScore}, Negative={NegativeScore}, Positive={PositiveScore}, Urgency={UrgencyScore}, Confidence={Confidence}",
                 result.PrimaryEmotion,
                 result.TroubledScore,
@@ -78,63 +80,38 @@ public static class MessageAnalyzer
         }
         catch (Exception ex)
         {
-            logger?.LogWarning(ex, "Sentiment analysis failed, returning neutral result");
+            _logger.LogWarning(ex, "Sentiment analysis failed, returning neutral result");
             return CreateNeutralResult("分析に失敗しました");
         }
     }
 
-    /// <summary>
-    /// メッセージが困っている内容かどうかを簡易判定する
-    /// </summary>
-    /// <param name="aiClient">AIクライアント</param>
-    /// <param name="message">判定対象のメッセージ</param>
-    /// <param name="logger">ロガー（オプション）</param>
-    /// <param name="cancellationToken">キャンセルトークン</param>
-    /// <returns>困っている場合は true</returns>
-    public static async Task<bool> IsTroubledAsync(
+    /// <inheritdoc />
+    public async Task<bool> IsTroubledAsync(
         IAiClient aiClient,
         string message,
-        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await AnalyzeAsync(aiClient, message, logger, cancellationToken);
+        var result = await AnalyzeAsync(aiClient, message, cancellationToken);
         return result.IsTroubled;
     }
 
-    /// <summary>
-    /// メッセージが緊急性の高い内容かどうかを簡易判定する
-    /// </summary>
-    /// <param name="aiClient">AIクライアント</param>
-    /// <param name="message">判定対象のメッセージ</param>
-    /// <param name="logger">ロガー（オプション）</param>
-    /// <param name="cancellationToken">キャンセルトークン</param>
-    /// <returns>緊急性が高い場合は true</returns>
-    public static async Task<bool> IsUrgentAsync(
+    /// <inheritdoc />
+    public async Task<bool> IsUrgentAsync(
         IAiClient aiClient,
         string message,
-        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await AnalyzeAsync(aiClient, message, logger, cancellationToken);
+        var result = await AnalyzeAsync(aiClient, message, cancellationToken);
         return result.IsUrgent;
     }
 
-    /// <summary>
-    /// メッセージが注意が必要かどうかを簡易判定する
-    /// （困っている or ネガティブ or 緊急）
-    /// </summary>
-    /// <param name="aiClient">AIクライアント</param>
-    /// <param name="message">判定対象のメッセージ</param>
-    /// <param name="logger">ロガー（オプション）</param>
-    /// <param name="cancellationToken">キャンセルトークン</param>
-    /// <returns>注意が必要な場合は true</returns>
-    public static async Task<bool> NeedsAttentionAsync(
+    /// <inheritdoc />
+    public async Task<bool> NeedsAttentionAsync(
         IAiClient aiClient,
         string message,
-        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await AnalyzeAsync(aiClient, message, logger, cancellationToken);
+        var result = await AnalyzeAsync(aiClient, message, cancellationToken);
         return result.NeedsAttention;
     }
 

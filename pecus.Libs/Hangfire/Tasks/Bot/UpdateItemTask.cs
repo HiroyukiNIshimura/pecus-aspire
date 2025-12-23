@@ -49,6 +49,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
 
     private readonly ILexicalConverterService? _lexicalConverterService;
     private readonly IAiClientFactory? _aiClientFactory;
+    private readonly IMessageAnalyzer? _messageAnalyzer;
 
     /// <summary>
     /// UpdateItemTask のコンストラクタ
@@ -58,11 +59,13 @@ public class UpdateItemTask : ItemNotificationTaskBase
         SignalRNotificationPublisher publisher,
         ILogger<UpdateItemTask> logger,
         ILexicalConverterService? lexicalConverterService = null,
-        IAiClientFactory? aiClientFactory = null)
+        IAiClientFactory? aiClientFactory = null,
+        IMessageAnalyzer? messageAnalyzer = null)
         : base(context, publisher, logger)
     {
         _lexicalConverterService = lexicalConverterService;
         _aiClientFactory = aiClientFactory;
+        _messageAnalyzer = messageAnalyzer;
     }
 
     /// <inheritdoc />
@@ -89,9 +92,9 @@ public class UpdateItemTask : ItemNotificationTaskBase
     {
         var defaultMessage = BuildDefaultMessage(updatedByUserName, workspaceCode, item.Code);
 
-        if (_lexicalConverterService == null || _aiClientFactory == null)
+        if (_lexicalConverterService == null || _aiClientFactory == null || _messageAnalyzer == null)
         {
-            Logger.LogDebug("LexicalConverterService or AiClientFactory is not available, using default message");
+            Logger.LogDebug("LexicalConverterService, AiClientFactory or MessageAnalyzer is not available, using default message");
             return defaultMessage;
         }
 
@@ -168,10 +171,9 @@ public class UpdateItemTask : ItemNotificationTaskBase
                 return defaultMessage;
             }
 
-            var needsAttention = await MessageAnalyzer.NeedsAttentionAsync(
+            var needsAttention = await _messageAnalyzer.NeedsAttentionAsync(
                 aiClient,
-                newContent,
-                Logger
+                newContent
             );
 
             var botType = needsAttention ? BotType.SystemBot : BotType.ChatBot;

@@ -54,6 +54,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 
 // FrontendUrlResolver の登録
 builder.Services.AddSingleton<FrontendUrlResolver>();
+// メッセージ解析サービスの登録
+builder.Services.AddMessageAnalyzer();
 
 // Lexical Converter gRPC サービスの登録
 var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";

@@ -18,6 +18,8 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     /// </summary>
     private const int MaxConversationTurns = 5;
 
+    private readonly IMessageAnalyzer? _messageAnalyzer;
+
     /// <summary>
     /// GroupChatReplyTask のコンストラクタ
     /// </summary>
@@ -25,9 +27,11 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
         IAiClientFactory aiClientFactory,
-        ILogger<GroupChatReplyTask> logger)
+        ILogger<GroupChatReplyTask> logger,
+        IMessageAnalyzer? messageAnalyzer = null)
         : base(context, publisher, aiClientFactory, logger)
     {
+        _messageAnalyzer = messageAnalyzer;
     }
 
     /// <inheritdoc />
@@ -63,11 +67,16 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
             return BotType.ChatBot;
         }
 
+        // MessageAnalyzer が利用不可の場合はデフォルトの BotType を返す
+        if (_messageAnalyzer == null)
+        {
+            return BotType.ChatBot;
+        }
+
         // メッセージが注意を必要とするか判定（困っている or ネガティブ or 緊急）
-        var needsAttention = await MessageAnalyzer.NeedsAttentionAsync(
+        var needsAttention = await _messageAnalyzer.NeedsAttentionAsync(
             aiClient,
-            triggerMessage.Content ?? string.Empty,
-            Logger
+            triggerMessage.Content ?? string.Empty
         );
 
         // 注意が必要な場合は SystemBot、それ以外は ChatBot を使用

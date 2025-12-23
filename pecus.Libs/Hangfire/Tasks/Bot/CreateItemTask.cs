@@ -33,6 +33,7 @@ public class CreateItemTask : ItemNotificationTaskBase
 
     private readonly ILexicalConverterService? _lexicalConverterService;
     private readonly IAiClientFactory? _aiClientFactory;
+    private readonly IMessageAnalyzer? _messageAnalyzer;
 
     /// <summary>
     /// CreateItemTask のコンストラクタ
@@ -42,11 +43,13 @@ public class CreateItemTask : ItemNotificationTaskBase
         SignalRNotificationPublisher publisher,
         ILogger<CreateItemTask> logger,
         ILexicalConverterService? lexicalConverterService = null,
-        IAiClientFactory? aiClientFactory = null)
+        IAiClientFactory? aiClientFactory = null,
+        IMessageAnalyzer? messageAnalyzer = null)
         : base(context, publisher, logger)
     {
         _lexicalConverterService = lexicalConverterService;
         _aiClientFactory = aiClientFactory;
+        _messageAnalyzer = messageAnalyzer;
     }
 
     /// <inheritdoc />
@@ -74,9 +77,9 @@ public class CreateItemTask : ItemNotificationTaskBase
         var defaultMessage = BuildDefaultMessage(updatedByUserName, workspaceCode, item.Code);
 
         // 必要なサービスが揃っていない場合は定型文を返す
-        if (_lexicalConverterService == null || _aiClientFactory == null)
+        if (_lexicalConverterService == null || _aiClientFactory == null || _messageAnalyzer == null)
         {
-            Logger.LogDebug("LexicalConverterService or AiClientFactory is not available, using default message");
+            Logger.LogDebug("LexicalConverterService, AiClientFactory or MessageAnalyzer is not available, using default message");
             return defaultMessage;
         }
 
@@ -127,10 +130,9 @@ public class CreateItemTask : ItemNotificationTaskBase
             var contentForAnalysis = $"件名: {item.Subject}\n\n本文:\n{markdownBody}";
 
             // Bot タイプを判定（NeedsAttentionAsync で困っている/ネガティブ/緊急かを判定）
-            var needsAttention = await MessageAnalyzer.NeedsAttentionAsync(
+            var needsAttention = await _messageAnalyzer.NeedsAttentionAsync(
                 aiClient,
-                contentForAnalysis,
-                Logger
+                contentForAnalysis
             );
 
             // Bot を選定（注意が必要な場合は SystemBot、それ以外は ChatBot）
