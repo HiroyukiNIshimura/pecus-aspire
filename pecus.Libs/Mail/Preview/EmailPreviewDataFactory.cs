@@ -32,7 +32,6 @@ public static class EmailPreviewDataFactory
             new(HelpCommentEmailModel.TemplateName, "ヘルプ要求", "ヘルプコメント通知"),
             new(ReminderCommentEmailModel.TemplateName, "督促コメント", "リマインダーコメント通知"),
             new(WeeklyReportEmailModel.TemplateName, "週間レポート", "週間タスク・進捗レポート"),
-            new(TestEmailModel.TemplateName, "テストメール", "メール送信テスト用"),
         ];
     }
 
@@ -63,8 +62,6 @@ public static class EmailPreviewDataFactory
             "help-comment" => CreateHelpCommentData(now),
             "reminder-comment" => CreateReminderCommentData(now),
             "weekly-report" => CreateWeeklyReportData(now),
-            "test-email" => new TestEmailModel { Email = "test@example.com" },
-            _ => null,
         };
     }
 
