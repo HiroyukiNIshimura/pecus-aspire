@@ -190,7 +190,6 @@ dotnet run
 | **Hangfire Dashboard** | 動的 | バックグラウンドジョブ管理 |
 | **DbGate** | 動的 | Redis (Frontend) 管理UI |
 | **PostgreSQL** | tcp:5432 | DB（ユーザー: postgres, パスワード: postgres） |
-| **PostgreSQL** | tcp:5432 | DB（ユーザー: postgres, パスワード: postgres） |
 | **Redis** | 動的 | キャッシュ・キュー・セッション |
 
 ### 5. テストアカウント
@@ -321,4 +320,4 @@ MIT License
 
 ---
 
-**最終更新日:** 2025年12月15日
+**最終更新日:** 2025年12月23日
