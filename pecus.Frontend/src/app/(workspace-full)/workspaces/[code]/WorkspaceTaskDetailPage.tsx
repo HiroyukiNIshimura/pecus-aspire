@@ -1400,22 +1400,33 @@ export default function WorkspaceTaskDetailPage({
                           }}
                           disabled={
                             isFormDisabled ||
-                            (task?.itemCommitterId != null && currentUser?.id !== task.itemCommitterId) ||
+                            (task?.itemCommitterId != null &&
+                              currentUser?.id !== task.itemCommitterId &&
+                              currentUser?.id !== task.itemAssigneeId &&
+                              currentUser?.id !== task.itemOwnerId) ||
                             (enforcePredecessorCompletion && isPredecessorIncomplete)
                           }
                           title={
                             enforcePredecessorCompletion && isPredecessorIncomplete
                               ? '先行タスクが完了していないため、完了にできません'
-                              : task?.itemCommitterId != null && currentUser?.id !== task.itemCommitterId
-                                ? '完了操作はコミッターのみ可能です'
+                              : task?.itemCommitterId != null &&
+                                  currentUser?.id !== task.itemCommitterId &&
+                                  currentUser?.id !== task.itemAssigneeId &&
+                                  currentUser?.id !== task.itemOwnerId
+                                ? '完了操作はコミッター、アイテム担当者、またはオーナーのみ可能です'
                                 : undefined
                           }
                         />
                         <label htmlFor="isCompleted" className="label-text cursor-pointer">
                           完了
-                          {task?.itemCommitterId != null && currentUser?.id !== task.itemCommitterId && (
-                            <span className="text-xs text-base-content/50 ml-1">(コミッターのみ)</span>
-                          )}
+                          {task?.itemCommitterId != null &&
+                            currentUser?.id !== task.itemCommitterId &&
+                            currentUser?.id !== task.itemAssigneeId &&
+                            currentUser?.id !== task.itemOwnerId && (
+                              <span className="text-xs text-base-content/50 ml-1">
+                                (コミッター/担当者/オーナーのみ)
+                              </span>
+                            )}
                           {enforcePredecessorCompletion && isPredecessorIncomplete && (
                             <span className="text-xs text-warning ml-1">(先行タスク未完了)</span>
                           )}

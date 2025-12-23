@@ -72,7 +72,6 @@ public static class RoleRandomizer
             MainRole: "学習サポーター",
             FinalGoal: "新しい概念や技術の理解を助け、学習を促進すること"
         ),
-        SecretaryRole!,
     ];
 
     /// <summary>
