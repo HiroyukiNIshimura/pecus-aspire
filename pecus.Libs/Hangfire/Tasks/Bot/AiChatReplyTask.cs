@@ -403,7 +403,7 @@ public class AiChatReplyTask
 
     /// <summary>
     /// 会話履歴からメッセージ配列を構築する
-    /// 過去3ターン（2日以内）のメッセージを取得
+    /// 過去のメッセージを取得し、発言者を明示して AI が混乱しないようにする
     /// </summary>
     private async Task<List<(MessageRole Role, string Content)>> BuildConversationMessagesAsync(
         int roomId,
@@ -411,8 +411,9 @@ public class AiChatReplyTask
     {
         var twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-ConversationHistoryDays);
 
-        // 過去のメッセージを取得（最大 MaxConversationTurns * 2 = 6 メッセージ）
+        // 過去のメッセージを取得（最大 MaxConversationTurns * 2 = 10 メッセージ）
         var recentMessages = await _context.ChatMessages
+            .Include(m => m.SenderActor)
             .Where(m => m.ChatRoomId == roomId && m.CreatedAt >= twoDaysAgo)
             .OrderByDescending(m => m.CreatedAt)
             .Take(MaxConversationTurns * 2)
@@ -421,19 +422,46 @@ public class AiChatReplyTask
             {
                 m.SenderActorId,
                 m.Content,
+                m.SenderActor!.ActorType,
             })
             .ToListAsync();
+
+        // 他の Bot の ActorId と名前を取得
+        var otherBotActorIds = recentMessages
+            .Where(m => m.ActorType == ChatActorType.Bot && m.SenderActorId != botActorId)
+            .Select(m => m.SenderActorId)
+            .Distinct()
+            .ToList();
+
+        var otherBotNames = new Dictionary<int, string>();
+        if (otherBotActorIds.Count > 0)
+        {
+            otherBotNames = await _context.Bots
+                .Include(b => b.ChatActor)
+                .Where(b => b.ChatActor != null && otherBotActorIds.Contains(b.ChatActor.Id))
+                .ToDictionaryAsync(b => b.ChatActor!.Id, b => b.Name);
+        }
 
         var messages = new List<(MessageRole Role, string Content)>();
 
         foreach (var msg in recentMessages)
         {
-            // Bot からのメッセージは Assistant、それ以外（ユーザー）は User
-            var role = msg.SenderActorId == botActorId
-                ? MessageRole.Assistant
-                : MessageRole.User;
-
-            messages.Add((role, msg.Content));
+            if (msg.SenderActorId == botActorId)
+            {
+                // 自分（現在の Bot）のメッセージは Assistant
+                messages.Add((MessageRole.Assistant, msg.Content));
+            }
+            else if (msg.ActorType == ChatActorType.Bot && msg.SenderActorId.HasValue)
+            {
+                // 他の Bot のメッセージは User として、発言者名を付与して区別
+                var botName = otherBotNames.TryGetValue(msg.SenderActorId.Value, out var name) ? name : "他のBot";
+                messages.Add((MessageRole.User, $"[{botName}]: {msg.Content}"));
+            }
+            else
+            {
+                // 人間ユーザーのメッセージは User
+                messages.Add((MessageRole.User, msg.Content));
+            }
         }
 
         return messages;
