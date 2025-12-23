@@ -16,7 +16,6 @@ public static class EmailPreviewDataFactory
     {
         return
         [
-            new(WelcomeEmailModel.TemplateName, "ウェルカムメール", "新規ユーザー登録時の歓迎メール"),
             new(PasswordResetEmailModel.TemplateName, "パスワードリセット", "パスワードリセット要求時のメール"),
             new(PasswordSetupEmailModel.TemplateName, "パスワード設定", "初期パスワード設定用のメール"),
             new(EmailChangeConfirmationEmailModel.TemplateName, "メールアドレス変更確認", "メールアドレス変更時の確認メール"),
@@ -48,7 +47,6 @@ public static class EmailPreviewDataFactory
 
         return templateName switch
         {
-            "welcome" => CreateWelcomeData(now),
             "password-reset" => CreatePasswordResetData(now),
             "password-setup" => CreatePasswordSetupData(now),
             "email-change-confirmation" => CreateEmailChangeData(now),
@@ -69,16 +67,6 @@ public static class EmailPreviewDataFactory
             _ => null,
         };
     }
-
-    private static WelcomeEmailModel CreateWelcomeData(DateTimeOffset now) => new()
-    {
-        UserName = "田中 太郎",
-        Email = "tanaka@example.com",
-        OrganizationName = "サンプル株式会社",
-        WorkspaceName = "プロジェクトA",
-        LoginUrl = "https://app.example.com/login",
-        CreatedAt = now,
-    };
 
     private static PasswordResetEmailModel CreatePasswordResetData(DateTimeOffset now) => new()
     {
