@@ -12,7 +12,7 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251221020111_InitialCreate")]
+    [Migration("20251223044749_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -575,6 +575,9 @@ namespace pecus.DbManager.Migrations
                     b.Property<string>("GenerativeApiKey")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
+
+                    b.Property<string>("GenerativeApiModel")
+                        .HasColumnType("text");
 
                     b.Property<int>("GenerativeApiVendor")
                         .HasColumnType("integer");

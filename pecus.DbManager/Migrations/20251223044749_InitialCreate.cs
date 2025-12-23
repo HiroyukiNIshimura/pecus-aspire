@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using System;
 
 #nullable disable
 
@@ -158,6 +158,7 @@ namespace pecus.DbManager.Migrations
                     MailFromName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     GenerativeApiVendor = table.Column<int>(type: "integer", nullable: false),
                     GenerativeApiKey = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    GenerativeApiModel = table.Column<string>(type: "text", nullable: true),
                     Plan = table.Column<int>(type: "integer", nullable: false),
                     HelpNotificationTarget = table.Column<int>(type: "integer", nullable: true),
                     RequireEstimateOnTaskCreation = table.Column<bool>(type: "boolean", nullable: false),
