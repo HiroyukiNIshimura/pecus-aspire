@@ -175,9 +175,10 @@ public class AiChatReplyTask
             }
             messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、{senderUserName}さんです。"));
 
-            // Bot のペルソナと行動指針からシステムプロンプトを作成
+            // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
             var systemPrompt = new SystemPromptBuilder()
                 .WithRawPersona(chatBot.Persona)
+                .WithRole(RoleRandomizer.GetRandomRole())
                 .WithRawConstraint(chatBot.Constraint)
                 .Build();
 
