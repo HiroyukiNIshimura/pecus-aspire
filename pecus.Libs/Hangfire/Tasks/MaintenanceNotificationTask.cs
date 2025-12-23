@@ -93,6 +93,18 @@ public partial class MaintenanceNotificationTask
             return;
         }
 
+        if (notification.Delete && notification.MessageIds.Count > 0)
+        {
+            _logger.LogInformation(
+                "Deleting notification messages: {Subject}, MessageIds={MessageIds}",
+                notification.Subject,
+                string.Join(", ", notification.MessageIds));
+
+            await DeleteMessagesAsync(notification.MessageIds);
+            await AppendDeletedAtAndRenameAsync(filePath, content);
+            return;
+        }
+
         if (notification.PublishAt > DateOnly.FromDateTime(DateTime.UtcNow))
         {
             _logger.LogDebug(
@@ -111,6 +123,46 @@ public partial class MaintenanceNotificationTask
         var messageIds = await SendToAllOrganizationsAsync(notification);
 
         await AppendMessageIdsAndRenameAsync(filePath, content, messageIds);
+    }
+
+    private async Task DeleteMessagesAsync(List<int> messageIds)
+    {
+        var messages = await _context.ChatMessages
+            .Where(m => messageIds.Contains(m.Id))
+            .ToListAsync();
+
+        if (messages.Count == 0)
+        {
+            _logger.LogWarning("No messages found to delete: MessageIds={MessageIds}", string.Join(", ", messageIds));
+            return;
+        }
+
+        _context.ChatMessages.RemoveRange(messages);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Deleted {Count} message(s)", messages.Count);
+    }
+
+    private static async Task AppendDeletedAtAndRenameAsync(string filePath, string originalContent)
+    {
+        var frontMatterMatch = FrontMatterPattern().Match(originalContent);
+        if (!frontMatterMatch.Success)
+        {
+            RenameToProcessed(filePath);
+            return;
+        }
+
+        var yamlContent = frontMatterMatch.Groups[1].Value;
+        var bodyContent = originalContent[(frontMatterMatch.Index + frontMatterMatch.Length)..];
+
+        var deletedAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+
+        var newYaml = $"{yamlContent}\ndeletedAt: {deletedAt}";
+        var newContent = $"---\n{newYaml}\n---\n{bodyContent}";
+
+        await File.WriteAllTextAsync(filePath, newContent);
+
+        RenameToProcessed(filePath);
     }
 
     private async Task<List<int>> SendToAllOrganizationsAsync(MaintenanceNotification notification)
@@ -407,6 +459,8 @@ public partial class MaintenanceNotificationTask
             Category = category,
             Subject = frontMatter.Subject,
             Body = body,
+            Delete = frontMatter.Delete,
+            MessageIds = frontMatter.MessageIds ?? [],
         };
     }
 
@@ -418,6 +472,8 @@ public partial class MaintenanceNotificationTask
         public DateTime? PublishAt { get; set; }
         public string? Category { get; set; }
         public string? Subject { get; set; }
+        public bool Delete { get; set; }
+        public List<int>? MessageIds { get; set; }
     }
 
     private class MaintenanceNotification
@@ -426,5 +482,7 @@ public partial class MaintenanceNotificationTask
         public string Category { get; set; } = string.Empty;
         public string Subject { get; set; } = string.Empty;
         public string Body { get; set; } = string.Empty;
+        public bool Delete { get; set; }
+        public List<int> MessageIds { get; set; } = [];
     }
 }
