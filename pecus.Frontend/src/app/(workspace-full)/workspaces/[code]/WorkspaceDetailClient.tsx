@@ -358,63 +358,13 @@ export default function WorkspaceDetailClient({
         return;
       }
 
-      // アイテム作成通知
-      if (notification.eventType === 'workspace_item:created') {
-        const payload = notification.payload as {
-          ItemId: number;
-          ItemCode: string;
-          Subject: string;
-          CreatedByUserId: number;
-        };
-
-        // 自分が作成した通知はスキップ
-        if (payload.CreatedByUserId === currentUserId) {
-          return;
-        }
-
-        // サイドバーのアイテム一覧を更新
-        sidebarComponentRef.current?.refreshItems();
-        mobileSidebarComponentRef.current?.refreshItems();
-
-        // トースト通知
-        notify.info(`新しいアイテム「${payload.Subject}」が作成されました`);
-        return;
-      }
-
-      // タスク作成通知
-      if (notification.eventType === 'workspace_task:created') {
-        const payload = notification.payload as {
-          TaskId: number;
-          ItemId: number;
-          Content: string;
-          CreatedByUserId: number;
-        };
-
-        // 自分が作成した通知はスキップ
-        if (payload.CreatedByUserId === currentUserId) {
-          return;
-        }
-
-        // 現在表示中のアイテムのタスクが作成された場合、アイテム詳細を更新
-        if (payload.ItemId === selectedItemId) {
-          itemDetailRef.current?.refreshItem();
-        }
-
-        // トースト通知（タスク内容は長い可能性があるので切り詰め）
-        const contentPreview = payload.Content.length > 30 ? `${payload.Content.substring(0, 30)}...` : payload.Content;
-        notify.info(`新しいタスク「${contentPreview}」が作成されました`);
-        return;
-      }
-
       console.log('[WorkspaceDetail] Received notification:', notification.eventType);
     };
 
     const unsubscribe = onNotification(handler);
 
     return unsubscribe;
-    // notify を依存配列から除外（useRef ベースのため参照は安定）
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onNotification, currentUserId, selectedItemId]);
+  }, [onNotification]);
 
   // ===== pendingTaskSequence がある場合にタスクを直接取得してタスク詳細ページを開く =====
   useEffect(() => {
@@ -572,7 +522,7 @@ export default function WorkspaceDetailClient({
       setMembers((prev) => prev.map((m) => (m.id === userId ? { ...m, workspaceRole: newRole } : m)));
       notify.success(`${userName} のロールを変更しました。`);
       handleChangeRoleModalClose();
-    } else if (result.error === 'member_has_assignments') {
+    } else if (result.error === 'member_has_assignments' && 'assignments' in result && result.assignments) {
       // アサインメントエラーの場合はエラー情報を設定（モーダルは閉じない）
       setAssignmentsError(result.assignments);
     } else {

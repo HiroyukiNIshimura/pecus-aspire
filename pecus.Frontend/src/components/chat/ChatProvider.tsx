@@ -126,6 +126,8 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
   // organization グループに送信されるため、全ユーザーが受信可能
   const handleUnreadUpdated = useCallback(
     (payload: ChatUnreadUpdatedPayload) => {
+      console.log('[ChatProvider] chat:unread_updated received:', payload);
+
       // 既読更新の場合は自分自身の更新のみ処理
       if (payload.updateType === 'read') {
         if (payload.updatedByUserId === currentUserId) {
@@ -142,6 +144,7 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
         return;
       }
       // 未読数を再取得
+      console.log('[ChatProvider] Fetching unread counts...');
       fetchUnreadCounts();
       // ドロワーが開いていればルーム一覧も更新
       if (isDrawerOpen) {

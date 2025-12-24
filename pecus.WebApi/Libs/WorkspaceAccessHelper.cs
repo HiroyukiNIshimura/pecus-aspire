@@ -326,4 +326,19 @@ public class OrganizationAccessHelper
 
         return workspace;
     }
+
+    /// <summary>
+    /// 指定した組織でAI機能が有効かどうかをチェック
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>AI機能が有効な場合はtrue、無効な場合はfalse</returns>
+    public async Task<bool> IsAiEnabledAsync(int organizationId)
+    {
+        var setting = await _context.OrganizationSettings
+            .Where(s => s.OrganizationId == organizationId)
+            .Select(s => s.GenerativeApiVendor)
+            .FirstOrDefaultAsync();
+
+        return setting != GenerativeApiVendor.None;
+    }
 }

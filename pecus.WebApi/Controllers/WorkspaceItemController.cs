@@ -5,7 +5,6 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks.Bot;
-using Pecus.Libs.Notifications;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
@@ -24,7 +23,6 @@ public class WorkspaceItemController : BaseSecureController
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly DocumentSuggestionService _documentSuggestionService;
-    private readonly SignalRNotificationPublisher _signalRPublisher;
 
     public WorkspaceItemController(
         WorkspaceItemService workspaceItemService,
@@ -34,8 +32,7 @@ public class WorkspaceItemController : BaseSecureController
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
         FrontendUrlResolver frontendUrlResolver,
-        DocumentSuggestionService documentSuggestionService,
-        SignalRNotificationPublisher signalRPublisher
+        DocumentSuggestionService documentSuggestionService
     ) : base(profileService, logger)
     {
         _workspaceItemService = workspaceItemService;
@@ -45,7 +42,6 @@ public class WorkspaceItemController : BaseSecureController
         _backgroundJobClient = backgroundJobClient;
         _frontendUrlResolver = frontendUrlResolver;
         _documentSuggestionService = documentSuggestionService;
-        _signalRPublisher = signalRPublisher;
     }
 
     /// <summary>
@@ -70,25 +66,15 @@ public class WorkspaceItemController : BaseSecureController
             CurrentUserId
         );
 
-        // ワークスペースグループにリアルタイム通知を送信（他のメンバーの画面を更新）
-        await _signalRPublisher.PublishNotificationAsync(
-            $"workspace:{workspaceId}",
-            "workspace_item:created",
-            new
-            {
-                ItemId = item.Id,
-                ItemCode = item.Code,
-                Subject = item.Subject,
-                CreatedByUserId = CurrentUserId,
-            }
-        );
-
-        // ワークスペースアイテム作成通知をバックグラウンドジョブで実行
-        _backgroundJobClient.Enqueue<CreateItemTask>(x =>
-                 x.NotifyItemCreatedAsync(
-                    item.Id
-                 )
-             );
+        // AI機能が有効な場合のみ、ワークスペースアイテム作成通知をバックグラウンドジョブで実行
+        if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+        {
+            _backgroundJobClient.Enqueue<CreateItemTask>(x =>
+                     x.NotifyItemCreatedAsync(
+                        item.Id
+                     )
+                 );
+        }
 
         var response = new WorkspaceItemResponse
         {

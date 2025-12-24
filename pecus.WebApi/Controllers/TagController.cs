@@ -36,13 +36,7 @@ public class TagController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<TagResponse>> CreateTag([FromBody] CreateTagRequest request)
     {
-        // CurrentUser は基底クラスで有効性チェック済み
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織に所属していません。");
-        }
-
-        var tag = await _tagService.CreateTagAsync(request, CurrentUser.OrganizationId.Value, CurrentUserId);
+        var tag = await _tagService.CreateTagAsync(request, CurrentOrganizationId, CurrentUserId);
 
         var response = new TagResponse
         {
@@ -73,13 +67,7 @@ public class TagController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<TagDetailResponse>>> GetTags()
     {
-        // CurrentUser は基底クラスで有効性チェック済み
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織に所属していません。");
-        }
-
-        var tags = await _tagService.GetTagsByOrganizationAsync(CurrentUser.OrganizationId.Value);
+        var tags = await _tagService.GetTagsByOrganizationAsync(CurrentOrganizationId);
 
         var response = tags
             .Select(tag => new TagDetailResponse

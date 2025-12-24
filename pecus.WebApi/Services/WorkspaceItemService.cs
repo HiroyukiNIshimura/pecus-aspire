@@ -1012,15 +1012,21 @@ public class WorkspaceItemService
             );
         }
 
+        // AI機能が有効かチェック（Bot通知のエンキュー判定用）
+        var userOrgId = await _accessHelper.GetUserOrganizationIdAsync(userId);
+        var isAiEnabled = userOrgId.HasValue && await _accessHelper.IsAiEnabledAsync(userOrgId.Value);
+
         // Activity記録（変更があった場合のみ、型安全なビルダーを使用）
         // 本文更新は別途処理（oldのみ保存してデータサイズ削減）
         EnqueueActivityIfChanged(workspaceId, itemId, userId,
             ActivityActionType.BodyUpdated,
-            ActivityDetailsBuilder.BuildBodyChangeDetails(snapshot.Body, item.Body));
+            ActivityDetailsBuilder.BuildBodyChangeDetails(snapshot.Body, item.Body),
+            isAiEnabled);
 
         EnqueueActivityIfChanged(workspaceId, itemId, userId,
             ActivityActionType.SubjectUpdated,
-            ActivityDetailsBuilder.BuildStringChangeDetails(snapshot.Subject, item.Subject));
+            ActivityDetailsBuilder.BuildStringChangeDetails(snapshot.Subject, item.Subject),
+            isAiEnabled);
 
         // 担当者・コミッター変更: ユーザー名を取得してから記録
         string? newAssigneeName = null;
@@ -1777,12 +1783,14 @@ public class WorkspaceItemService
     /// <param name="userId">操作ユーザーID</param>
     /// <param name="actionType">アクションタイプ</param>
     /// <param name="details">ActivityDetailsBuilder で生成されたJSON（nullなら変更なし）</param>
+    /// <param name="isAiEnabled">AI機能が有効かどうか（Bot通知のエンキュー判定用）</param>
     private void EnqueueActivityIfChanged(
         int workspaceId,
         int itemId,
         int userId,
         ActivityActionType actionType,
-        string? details)
+        string? details,
+        bool isAiEnabled = false)
     {
         if (details == null) return;
 
@@ -1790,7 +1798,9 @@ public class WorkspaceItemService
             x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
         );
 
-        if (actionType == ActivityActionType.BodyUpdated || actionType == ActivityActionType.SubjectUpdated)
+        // AI機能が有効な場合のみBot通知タスクをエンキュー
+        if (isAiEnabled &&
+            (actionType == ActivityActionType.BodyUpdated || actionType == ActivityActionType.SubjectUpdated))
         {
             _backgroundJobClient.Enqueue<UpdateItemTask>(x =>
                 x.NotifyItemUpdatedAsync(

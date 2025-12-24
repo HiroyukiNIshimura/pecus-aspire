@@ -176,14 +176,18 @@ public class TaskCommentController : BaseSecureController
         {
             await SendHelpEmailAsync(workspaceId, itemId, taskId, comment);
 
-            _backgroundJobClient.Enqueue<TaskCommentHelpWantedTask>(x =>
-                x.SendHelpWantedNotificationAsync(comment.Id)
-            );
+            // AI機能が有効な場合のみ、Bot通知タスクをキュー
+            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+            {
+                _backgroundJobClient.Enqueue<TaskCommentHelpWantedTask>(x =>
+                    x.SendHelpWantedNotificationAsync(comment.Id)
+                );
 
-            _logger.LogDebug(
-                "Enqueued TaskCommentHelpWantedTask: CommentId={CommentId}",
-                comment.Id
-            );
+                _logger.LogDebug(
+                    "Enqueued TaskCommentHelpWantedTask: CommentId={CommentId}",
+                    comment.Id
+                );
+            }
         }
 
         var response = new TaskCommentResponse

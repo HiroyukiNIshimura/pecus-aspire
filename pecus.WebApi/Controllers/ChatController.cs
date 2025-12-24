@@ -20,6 +20,7 @@ public class ChatController : BaseSecureController
     private readonly ChatRoomService _chatRoomService;
     private readonly ChatMessageService _chatMessageService;
     private readonly OrganizationService _organizationService;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<ChatController> _logger;
 
@@ -27,6 +28,7 @@ public class ChatController : BaseSecureController
         ChatRoomService chatRoomService,
         ChatMessageService chatMessageService,
         OrganizationService organizationService,
+        OrganizationAccessHelper accessHelper,
         IBackgroundJobClient backgroundJobClient,
         ProfileService profileService,
         ILogger<ChatController> logger
@@ -36,6 +38,7 @@ public class ChatController : BaseSecureController
         _chatRoomService = chatRoomService;
         _chatMessageService = chatMessageService;
         _organizationService = organizationService;
+        _accessHelper = accessHelper;
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
     }
@@ -52,19 +55,14 @@ public class ChatController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<ChatRoomItem>>> GetRooms([FromQuery] ChatRoomType? type = null)
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         var rooms = await _chatRoomService.GetUserRoomsAsync(
             CurrentUserId,
-            CurrentUser.OrganizationId.Value,
+            CurrentOrganizationId,
             type
         );
 
         // GroupChatScope に応じてグループルームをフィルタリング
-        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentUser.OrganizationId.Value);
+        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentOrganizationId);
         var groupChatScope = organization?.Setting?.GroupChatScope ?? GroupChatScope.Workspace;
 
         // Group タイプのルームをフィルタ
@@ -178,15 +176,10 @@ public class ChatController : BaseSecureController
         [FromBody] CreateDmRoomRequest request
     )
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         var room = await _chatRoomService.GetOrCreateDmRoomAsync(
             CurrentUserId,
             request.TargetUserId,
-            CurrentUser.OrganizationId.Value
+            CurrentOrganizationId
         );
 
         var member = room.Members.FirstOrDefault(m => m.ChatActor.UserId == CurrentUserId);
@@ -220,17 +213,12 @@ public class ChatController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<DmCandidateUserItem>>> GetDmCandidateUsers([FromQuery] int limit = 10)
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         // 上限を50に制限
         var effectiveLimit = Math.Min(limit, 50);
 
         var users = await _chatRoomService.GetDmCandidateUsersAsync(
             CurrentUserId,
-            CurrentUser.OrganizationId.Value,
+            CurrentOrganizationId,
             effectiveLimit
         );
 
@@ -262,14 +250,9 @@ public class ChatController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<ChatRoomDetailResponse>> CreateOrGetAiRoom()
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         var room = await _chatRoomService.GetOrCreateAiRoomAsync(
             CurrentUserId,
-            CurrentUser.OrganizationId.Value
+            CurrentOrganizationId
         );
 
         var member = room.Members.FirstOrDefault(m => m.ChatActor.UserId == CurrentUserId);
@@ -303,20 +286,15 @@ public class ChatController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<ChatRoomDetailResponse>> GetGroupRoom()
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         // GroupChatScope が Workspace の場合は利用不可
-        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentUser.OrganizationId.Value);
+        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentOrganizationId);
         if (organization?.Setting?.GroupChatScope == GroupChatScope.Workspace)
         {
             throw new NotFoundException("この組織ではワークスペース単位のグループチャットが設定されています。");
         }
 
         var room = await _chatRoomService.GetOrCreateGroupRoomAsync(
-            CurrentUser.OrganizationId.Value,
+            CurrentOrganizationId,
             CurrentUserId
         );
 
@@ -347,13 +325,8 @@ public class ChatController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<ChatRoomDetailResponse>> GetSystemRoom()
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         var room = await _chatRoomService.GetOrCreateSystemRoomAsync(
-            CurrentUser.OrganizationId.Value,
+            CurrentOrganizationId,
             CurrentUserId
         );
 
@@ -389,13 +362,8 @@ public class ChatController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<ChatRoomDetailResponse>> GetWorkspaceGroupRoom(int workspaceId)
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         // GroupChatScope が Organization の場合は利用不可
-        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentUser.OrganizationId.Value);
+        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentOrganizationId);
         if (organization?.Setting?.GroupChatScope == GroupChatScope.Organization)
         {
             throw new NotFoundException("この組織では組織単位のグループチャットが設定されています。");
@@ -529,13 +497,14 @@ public class ChatController : BaseSecureController
             request.ReplyToMessageId
         );
 
-        // AI ルームへのメッセージの場合、AI 返信タスクをキュー
+        // AI ルームへのメッセージの場合、AI機能が有効ならAI 返信タスクをキュー
         var room = await _chatRoomService.GetRoomByIdAsync(roomId);
-        if (room?.Type == ChatRoomType.Ai && CurrentUser?.OrganizationId != null)
+        if (room?.Type == ChatRoomType.Ai &&
+            await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
         {
             _backgroundJobClient.Enqueue<AiChatReplyTask>(x =>
                 x.SendReplyAsync(
-                    CurrentUser.OrganizationId.Value,
+                    CurrentOrganizationId,
                     roomId,
                     message.Id,
                     CurrentUserId
@@ -549,13 +518,14 @@ public class ChatController : BaseSecureController
             );
         }
 
-        //グループチャットの場合は
-        if (room?.Type == ChatRoomType.Group && room.WorkspaceId != null)
+        // グループチャットの場合、AI機能が有効ならBot返信タスクをキュー
+        if (room?.Type == ChatRoomType.Group && room.WorkspaceId != null &&
+            await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
         {
             // ワークスペースのメンバーに対して通知を送信するバックグラウンドジョブをキュー
             _backgroundJobClient.Enqueue<GroupChatReplyTask>(x =>
                 x.SendReplyAsync(
-                    CurrentUser!.OrganizationId!.Value,
+                    CurrentOrganizationId,
                     roomId,
                     message.Id,
                     CurrentUserId
@@ -636,14 +606,9 @@ public class ChatController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<ChatUnreadCountResponse>> GetUnreadCount()
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         var totalUnread = await _chatRoomService.GetTotalUnreadCountAsync(
             CurrentUserId,
-            CurrentUser.OrganizationId.Value
+            CurrentOrganizationId
         );
 
         return TypedResults.Ok(new ChatUnreadCountResponse { TotalUnreadCount = totalUnread });
@@ -657,14 +622,9 @@ public class ChatController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<ChatUnreadCountByCategoryResponse>> GetUnreadCountByCategory()
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         var unreadByCategory = await _chatRoomService.GetUnreadCountByCategoryAsync(
             CurrentUserId,
-            CurrentUser.OrganizationId.Value
+            CurrentOrganizationId
         );
 
         var response = new ChatUnreadCountByCategoryResponse

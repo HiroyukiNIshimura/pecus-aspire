@@ -16,7 +16,6 @@ using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
-using Pecus.Libs.Notifications;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.OpenApi;
@@ -113,9 +112,6 @@ builder.Services.AddSignalR(options =>
     {
         options.Configuration.ChannelPrefix = RedisChannel.Literal("coati-signalr");
     });
-
-// SignalR Notification Publisher（Redis Pub/Sub経由での通知送信）
-builder.Services.AddSingleton<SignalRNotificationPublisher>();
 
 // ヘルパーの登録
 builder.Services.AddScoped<OrganizationAccessHelper>();
