@@ -337,11 +337,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                     <div className="card-body p-4 flex flex-col flex-1">
                       {/* ヘッダー */}
                       <div className="mb-3">
-                        {/* コード、ステータス、メニュー */}
-                        <div className="flex items-center justify-between gap-2 mb-2">
-                          <code className="text-xs badge badge-soft badge-accent badge-sm">{workspace.code}</code>
-                        </div>
-
                         {/* ワークスペース名 */}
                         <div>
                           <Link href={`/workspaces/${workspace.code}`}>
@@ -365,6 +360,11 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                               )}
                             </h3>
                           </Link>
+                        </div>
+
+                        {/* コード、ステータス、メニュー */}
+                        <div className="flex items-center justify-between gap-2 mt-2">
+                          <code className="text-xs badge badge-soft badge-accent badge-sm">{workspace.code}</code>
                         </div>
                       </div>
 
