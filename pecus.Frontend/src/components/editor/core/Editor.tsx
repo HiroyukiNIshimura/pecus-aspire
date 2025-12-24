@@ -28,6 +28,7 @@ import { useEffect, useState } from 'react';
 
 import { useSettings } from '../context/SettingsContext';
 import { useSharedHistoryContext } from '../context/SharedHistoryContext';
+import AiAssistantPlugin from '../plugins/AiAssistantPlugin';
 import AutocompletePlugin from '../plugins/AutocompletePlugin';
 import AutoEmbedPlugin from '../plugins/AutoEmbedPlugin';
 import AutoLinkPlugin from '../plugins/AutoLinkPlugin';
@@ -139,6 +140,7 @@ export default function Editor({ isFullscreen = false }: { isFullscreen?: boolea
         {selectionAlwaysOnDisplay && <SelectionAlwaysOnDisplay />}
         <ClearEditorPlugin />
         <ComponentPickerPlugin />
+        <AiAssistantPlugin />
         <EmojiPickerPlugin />
         <AutoEmbedPlugin />
         <MentionsPlugin />

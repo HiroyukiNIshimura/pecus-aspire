@@ -31,7 +31,9 @@ import type { JSX } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom';
 
+import { useIsAiEnabled } from '@/providers/AppSettingsProvider';
 import useModal from '../../hooks/useModal';
+import { INSERT_AI_ASSISTANT_COMMAND } from '../AiAssistantPlugin';
 import { EmbedConfigs } from '../AutoEmbedPlugin';
 import { INSERT_COLLAPSIBLE_COMMAND } from '../CollapsiblePlugin';
 import { INSERT_DATETIME_COMMAND } from '../DateTimePlugin';
@@ -135,8 +137,17 @@ function getDynamicOptions(editor: LexicalEditor, queryString: string) {
 
 type ShowModal = ReturnType<typeof useModal>[1];
 
-function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
+function getBaseOptions(editor: LexicalEditor, showModal: ShowModal, isAiEnabled: boolean) {
   return [
+    ...(isAiEnabled
+      ? [
+          new ComponentPickerOption('AI Assistant', {
+            icon: <i className="icon iconify lucide--sparkles" />,
+            keywords: ['ai', 'assistant', 'generate', 'write', 'help', '生成', 'アシスタント'],
+            onSelect: () => editor.dispatchCommand(INSERT_AI_ASSISTANT_COMMAND, undefined),
+          }),
+        ]
+      : []),
     new ComponentPickerOption('Paragraph', {
       icon: <i className="icon paragraph" />,
       keywords: ['normal', 'paragraph', 'p', 'text'],
@@ -308,6 +319,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
   const [editor] = useLexicalComposerContext();
   const [modal, showModal] = useModal();
   const [queryString, setQueryString] = useState<string | null>(null);
+  const isAiEnabled = useIsAiEnabled();
 
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch('/', {
     allowWhitespace: true,
@@ -315,7 +327,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
   });
 
   const options = useMemo(() => {
-    const baseOptions = getBaseOptions(editor, showModal);
+    const baseOptions = getBaseOptions(editor, showModal, isAiEnabled);
 
     if (!queryString) {
       return baseOptions;
@@ -329,7 +341,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
         (option) => regex.test(option.title) || option.keywords.some((keyword) => regex.test(keyword)),
       ),
     ];
-  }, [editor, queryString, showModal]);
+  }, [editor, queryString, showModal, isAiEnabled]);
 
   const onSelectOption = useCallback(
     (

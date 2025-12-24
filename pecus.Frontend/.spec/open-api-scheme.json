@@ -11,6 +11,65 @@
     }
   ],
   "paths": {
+    "/api/ai-assistant/generate": {
+      "post": {
+        "tags": [
+          "AiAssistant"
+        ],
+        "summary": "エディタのカーソル位置に挿入するテキストを生成",
+        "requestBody": {
+          "description": "キャンセルトークン",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateTextRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateTextRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateTextRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "テキスト生成成功",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateTextResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateTextResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateTextResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI機能が利用できない（組織設定が未構成）"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/chat/rooms": {
       "get": {
         "tags": [
@@ -13852,6 +13911,45 @@
         },
         "description": "やることピックアップタスクレスポンス"
       },
+      "GenerateTextRequest": {
+        "required": [
+          "markdown",
+          "cursorMarker",
+          "userPrompt"
+        ],
+        "type": "object",
+        "properties": {
+          "markdown": {
+            "maxLength": 100000,
+            "type": "string",
+            "description": "エディタ全体のMarkdownコンテンツ（カーソル位置マーカー含む）"
+          },
+          "cursorMarker": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "カーソル位置を示すマーカー文字列"
+          },
+          "userPrompt": {
+            "maxLength": 1000,
+            "type": "string",
+            "description": "ユーザーからの指示（何を生成してほしいか）"
+          }
+        },
+        "description": "AIアシスタントによるテキスト生成リクエスト"
+      },
+      "GenerateTextResponse": {
+        "required": [
+          "generatedText"
+        ],
+        "type": "object",
+        "properties": {
+          "generatedText": {
+            "type": "string",
+            "description": "生成されたテキスト（Markdown形式）"
+          }
+        },
+        "description": "AIアシスタントによるテキスト生成レスポンス"
+      },
       "GenerativeApiVendor": {
         "enum": [
           "None",
@@ -20236,6 +20334,9 @@
     }
   },
   "tags": [
+    {
+      "name": "AiAssistant"
+    },
     {
       "name": "Chat"
     },
