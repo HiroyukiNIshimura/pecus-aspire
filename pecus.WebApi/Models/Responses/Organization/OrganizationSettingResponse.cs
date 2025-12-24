@@ -88,6 +88,12 @@ public class OrganizationSettingResponse : IConflictModel
     public GroupChatScope? GroupChatScope { get; set; }
 
     /// <summary>
+    /// ワークスペース作成時のデフォルトモード
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<WorkspaceMode>))]
+    public WorkspaceMode? DefaultWorkspaceMode { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required]

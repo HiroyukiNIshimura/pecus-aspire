@@ -91,6 +91,11 @@ public class OrganizationSetting
     public GroupChatScope? GroupChatScope { get; set; }
 
     /// <summary>
+    /// ワークスペース作成時のデフォルトモード
+    /// </summary>
+    public WorkspaceMode? DefaultWorkspaceMode { get; set; }
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }

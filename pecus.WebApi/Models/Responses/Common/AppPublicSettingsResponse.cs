@@ -67,6 +67,12 @@ public class OrganizationPublicSettings
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter<GroupChatScope>))]
     public GroupChatScope? GroupChatScope { get; init; }
+
+    /// <summary>
+    /// ワークスペース作成時のデフォルトモード
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<WorkspaceMode>))]
+    public WorkspaceMode? DefaultWorkspaceMode { get; init; }
 }
 
 /// <summary>

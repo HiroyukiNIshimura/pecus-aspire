@@ -884,6 +884,7 @@ public class DatabaseSeeder
                     GenerativeApiVendor = GenerativeApiVendor.None,
                     GenerativeApiKey = null,
                     Plan = OrganizationPlan.Free,
+                    DefaultWorkspaceMode = WorkspaceMode.Normal,
                     UpdatedAt = DateTimeOffset.UtcNow,
                     UpdatedByUserId = null,
                 }
