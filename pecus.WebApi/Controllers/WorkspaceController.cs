@@ -136,7 +136,7 @@ public class WorkspaceController : BaseSecureController
         var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
         var pageSize = _config.Pagination.DefaultPageSize;
 
-        // ログインユーザーがアクセス可能なワークスペースを取得
+        // ログインユーザーがアクセス可能なワークスペースを取得（DTOで直接返却）
         (var workspaces, int totalCount) =
             await _workspaceService.GetAccessibleWorkspacesByUserPagedAsync(
                 userId: CurrentUserId,
@@ -146,65 +146,8 @@ public class WorkspaceController : BaseSecureController
                 name: request.Name
             );
 
-        var items = workspaces
-            .Select(w => new WorkspaceListItemResponse
-            {
-                Id = w.Id,
-                Name = w.Name,
-                Code = w.Code,
-                Description = w.Description,
-                OrganizationId = w.OrganizationId,
-                OrganizationName = w.Organization?.Name,
-                GenreId = w.GenreId,
-                GenreName = w.Genre?.Name,
-                GenreIcon = w.Genre?.Icon,
-                Mode = w.Mode,
-                ActiveItemCount = w.WorkspaceItems?.Count ?? 0, // IsActive でフィルタ済み
-                CreatedAt = w.CreatedAt,
-                UpdatedAt = w.UpdatedAt,
-                IsActive = w.IsActive,
-                MemberCount = w.WorkspaceUsers?.Count ?? 0,
-                Members = w.WorkspaceUsers?
-                    .Where(wu => wu.User != null && wu.User.IsActive)
-                    .Select(wu => new WorkspaceUserItem
-                    {
-                        UserId = wu.UserId,
-                        Username = wu.User!.Username,
-                        Email = wu.User.Email,
-                        IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
-                            iconType: wu.User.AvatarType,
-                            userId: wu.User.Id,
-                            username: wu.User.Username,
-                            email: wu.User.Email,
-                            avatarPath: wu.User.UserAvatarPath
-                        ),
-                        WorkspaceRole = wu.WorkspaceRole,
-                        IsActive = wu.User.IsActive,
-                        LastLoginAt = wu.User.LastLoginAt,
-                    })
-                    .ToList(),
-                Owner = w.Owner != null
-                    ? new WorkspaceUserItem
-                    {
-                        UserId = w.Owner.Id,
-                        Username = w.Owner.Username,
-                        Email = w.Owner.Email,
-                        IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
-                            iconType: w.Owner.AvatarType,
-                            userId: w.Owner.Id,
-                            username: w.Owner.Username,
-                            email: w.Owner.Email,
-                            avatarPath: w.Owner.UserAvatarPath
-                        ),
-                        IsActive = w.Owner.IsActive,
-                        LastLoginAt = w.Owner.LastLoginAt,
-                    }
-                    : null,
-            })
-            .ToList();
-
         var response = PaginationHelper.CreatePagedResponse(
-            data: items,
+            data: workspaces,
             totalCount: totalCount,
             page: validatedPage,
             pageSize: pageSize

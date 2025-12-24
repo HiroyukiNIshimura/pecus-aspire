@@ -535,8 +535,8 @@ public class WorkspaceService
         bool? activeOnly = null
     )
     {
-        var query = _context
-            .WorkspaceUsers.Include(wu => wu.User)
+        var query = _context.WorkspaceUsers
+            .Include(wu => wu.User)
             .Include(wu => wu.Workspace)
             .Where(wu => wu.WorkspaceId == workspaceId)
             .AsSplitQuery() // デカルト爆発防止
@@ -611,8 +611,13 @@ public class WorkspaceService
     /// ユーザーがアクセス可能なワークスペースをページネーション付きで取得
     /// 一般ユーザー向け：常にアクティブなワークスペースのみを返す
     /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="page">ページ番号</param>
+    /// <param name="pageSize">ページサイズ</param>
+    /// <param name="genreId">ジャンルIDフィルター</param>
+    /// <param name="name">名前フィルター（前方一致）</param>
     public async Task<(
-        List<Workspace> workspaces,
+        List<WorkspaceListItemResponse> workspaces,
         int totalCount
     )> GetAccessibleWorkspacesByUserPagedAsync(
         int userId,
@@ -622,38 +627,73 @@ public class WorkspaceService
         string? name = null
     )
     {
-        // ユーザーが参加しているワークスペースIDをサブクエリとして使用（2クエリ→1クエリに統合）
+        // ユーザーが参加しているワークスペースIDをサブクエリとして使用
         var accessibleWorkspaceIdsQuery = _context
             .WorkspaceUsers
             .Where(wu => wu.UserId == userId)
             .Select(wu => wu.WorkspaceId);
 
-        var query = _context
+        var baseQuery = _context
             .Workspaces
-            .Include(w => w.Organization)
-            .Include(w => w.Genre)
-            .Include(w => w.Owner)
-            .Include(w => w.WorkspaceUsers.Where(wu => wu.User != null && wu.User.IsActive))
-                .ThenInclude(wu => wu.User)
-            .Include(w => w.WorkspaceItems.Where(wi => wi.IsActive))
-            .Where(w => accessibleWorkspaceIdsQuery.Contains(w.Id) && w.IsActive)
-            .AsSplitQuery() // デカルト爆発防止
-            .AsQueryable();
+            .AsNoTracking()
+            .Where(w => accessibleWorkspaceIdsQuery.Contains(w.Id) && w.IsActive);
 
         if (genreId.HasValue)
         {
-            query = query.Where(w => w.GenreId == genreId.Value);
+            baseQuery = baseQuery.Where(w => w.GenreId == genreId.Value);
         }
 
         if (!string.IsNullOrEmpty(name))
         {
-            query = query.Where(w => w.Name.StartsWith(name));
+            baseQuery = baseQuery.Where(w => w.Name.StartsWith(name));
         }
 
-        query = query.OrderByDescending(w => w.Id);
+        // 総件数はシンプルにカウント
+        var totalCount = await baseQuery.CountAsync();
 
-        var totalCount = await query.CountAsync();
-        var workspaces = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        // DTOへの射影（カウントはDB側で計算）
+        var workspaces = await baseQuery
+            .OrderByDescending(w => w.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(w => new WorkspaceListItemResponse
+            {
+                Id = w.Id,
+                Name = w.Name,
+                Code = w.Code,
+                Description = w.Description,
+                OrganizationId = w.OrganizationId,
+                OrganizationName = w.Organization != null ? w.Organization.Name : null,
+                GenreId = w.GenreId,
+                GenreName = w.Genre != null ? w.Genre.Name : null,
+                GenreIcon = w.Genre != null ? w.Genre.Icon : null,
+                Mode = w.Mode,
+                // DB側でCOUNT（全件メモリロードしない）
+                ActiveItemCount = w.WorkspaceItems.Count(wi => wi.IsActive),
+                MemberCount = w.WorkspaceUsers.Count(wu => wu.User != null && wu.User.IsActive),
+                CreatedAt = w.CreatedAt,
+                UpdatedAt = w.UpdatedAt,
+                IsActive = w.IsActive,
+                // Owner情報
+                Owner = w.Owner != null
+                    ? new WorkspaceUserItem
+                    {
+                        UserId = w.Owner.Id,
+                        Username = w.Owner.Username,
+                        Email = w.Owner.Email,
+                        IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                            w.Owner.AvatarType,
+                            w.Owner.Id,
+                            w.Owner.Username,
+                            w.Owner.Email,
+                            w.Owner.UserAvatarPath
+                        ),
+                        IsActive = w.Owner.IsActive,
+                        LastLoginAt = w.Owner.LastLoginAt,
+                    }
+                    : null,
+            })
+            .ToListAsync();
 
         return (workspaces, totalCount);
     }

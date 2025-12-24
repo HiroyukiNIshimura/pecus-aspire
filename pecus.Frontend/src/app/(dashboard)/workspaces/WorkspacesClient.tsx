@@ -338,6 +338,22 @@ export default function WorkspacesClient({
                             <span>{workspace.genreName}</span>
                           </div>
                         )}
+                        {/* オーナー */}
+                        {workspace.owner && (
+                          <div className="flex items-center justify-between text-sm gap-2">
+                            <span className="text-base-content/70 flex-shrink-0">オーナー</span>
+                            <div className="flex items-center gap-2">
+                              {workspace.owner.identityIconUrl && (
+                                <img
+                                  src={workspace.owner.identityIconUrl}
+                                  alt={workspace.owner.username || 'オーナー'}
+                                  className="w-5 h-5 rounded-full"
+                                />
+                              )}
+                              <span className="font-medium truncate max-w-24">{workspace.owner.username}</span>
+                            </div>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between text-sm gap-2">
                           <span className="text-base-content/70 flex-shrink-0">メンバー</span>
                           <div className="flex items-center gap-1 font-medium">

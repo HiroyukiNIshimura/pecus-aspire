@@ -14,6 +14,7 @@
 - [app-settings-provider.md](./app-settings-provider.md) — AppSettingsProvider（組織設定・ユーザー設定の全体共有）の使い方。
 - [global-exception-handling.md](./global-exception-handling.md) — 例外処理とグローバルフィルタの設計。
 - [layout-template.md](./layout-template.md) — **【必読】レイアウトテンプレート設計ガイドライン（h-screen/min-h-screen 禁止ルール）**。
+- [list-query-best-practices.md](./list-query-best-practices.md) — **【必読】一覧検索クエリのベストプラクティス（Include禁止、DB側COUNT必須）**。
 - [modal-dialog-template.md](./modal-dialog-template.md) — モーダルダイアログ実装リファレンス（AI エージェント向け）。
 - [ssr-design-guidelines.md](./ssr-design-guidelines.md) — SSR設計ガイドライン（Server/Client Component の使い分け）。
 - [tailwind-arbitrary-values.md](./tailwind-arbitrary-values.md) — Tailwind CSS 任意値（`z-[10]` 等）禁止ルール。
