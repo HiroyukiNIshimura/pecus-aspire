@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { fetchWorkspaces } from '@/actions/workspace';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { Tooltip } from '@/components/common/feedback/Tooltip';
@@ -23,61 +24,38 @@ import CreateWorkspaceModal from './CreateWorkspaceModal';
 interface WorkspacesClientProps {
   genres: MasterGenreResponse[];
   initialStatistics: WorkspaceStatistics | null;
+  initialWorkspaces: PagedResponseOfWorkspaceListItemResponse | null;
+  fetchError: string | null;
 }
 
-export default function WorkspacesClient({ genres, initialStatistics }: WorkspacesClientProps) {
-  // ワークスペース一覧データはClient側で初期フェッチ
-  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
+export default function WorkspacesClient({
+  genres,
+  initialStatistics,
+  initialWorkspaces,
+  fetchError,
+}: WorkspacesClientProps) {
+  // SSRで取得した初期データを使用
+  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(initialWorkspaces?.data || []);
+  const [currentPage, setCurrentPage] = useState(initialWorkspaces?.currentPage || 1);
+  const [totalPages, setTotalPages] = useState(initialWorkspaces?.totalPages || 1);
+  const [totalCount, setTotalCount] = useState(initialWorkspaces?.totalCount || 0);
   const statistics = initialStatistics;
   const [filterName, setFilterName] = useState<string>('');
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const nameValidation = useValidation(workspaceNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
   const notify = useNotify();
 
-  // 初期データフェッチ（マウント時に1回だけ実行）
+  // SSRエラーがあった場合に通知
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchInitialData = async () => {
-      try {
-        const params = new URLSearchParams();
-        params.append('page', '1');
-
-        const response = await fetch(`/api/workspaces?${params.toString()}`);
-        if (response.ok && isMounted) {
-          const data: PagedResponseOfWorkspaceListItemResponse = await response.json();
-          setWorkspaces(data.data || []);
-          setCurrentPage(data.currentPage || 1);
-          setTotalPages(data.totalPages || 1);
-          setTotalCount(data.totalCount || 0);
-        }
-      } catch (error) {
-        console.error('Failed to fetch initial workspaces:', error);
-        if (isMounted) {
-          notify.error('ワークスペース一覧の取得に失敗しました。', true);
-        }
-      } finally {
-        if (isMounted) {
-          setIsInitialLoading(false);
-        }
-      }
-    };
-
-    fetchInitialData();
-
-    return () => {
-      isMounted = false;
-    };
+    if (fetchError) {
+      notify.error(fetchError, true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchError]);
 
   // 無限スクロール
   const {
@@ -95,22 +73,15 @@ export default function WorkspacesClient({ genres, initialStatistics }: Workspac
   const loadMoreWorkspaces = async () => {
     try {
       const nextPage = currentPage + 1;
-      const params = new URLSearchParams();
-      params.append('page', nextPage.toString());
-      if (filterName) {
-        params.append('Name', filterName);
-      }
-      if (filterGenreId !== null) {
-        params.append('GenreId', filterGenreId.toString());
-      }
+      const result = await fetchWorkspaces(nextPage, filterGenreId ?? undefined, filterName || undefined);
 
-      const response = await fetch(`/api/workspaces?${params.toString()}`);
-      if (response.ok) {
-        const data: PagedResponseOfWorkspaceListItemResponse = await response.json();
-        setWorkspaces((prev) => [...prev, ...(data.data || [])]);
-        setCurrentPage(data.currentPage || nextPage);
-        setTotalPages(data.totalPages || 1);
-        setTotalCount(data.totalCount || 0);
+      if (result.success && result.data) {
+        setWorkspaces((prev) => [...prev, ...(result.data.data || [])]);
+        setCurrentPage(result.data.currentPage || nextPage);
+        setTotalPages(result.data.totalPages || 1);
+        setTotalCount(result.data.totalCount || 0);
+      } else if (!result.success) {
+        notify.error(result.message || 'サーバーとの通信でエラーが発生しました。', true);
       }
     } catch (error) {
       console.error('Failed to load more workspaces:', error);
@@ -121,22 +92,15 @@ export default function WorkspacesClient({ genres, initialStatistics }: Workspac
   const handleFilterChange = withDelayedLoading(async () => {
     resetInfiniteScroll();
     try {
-      const params = new URLSearchParams();
-      params.append('page', '1');
-      if (filterName) {
-        params.append('Name', filterName);
-      }
-      if (filterGenreId !== null) {
-        params.append('GenreId', filterGenreId.toString());
-      }
+      const result = await fetchWorkspaces(1, filterGenreId ?? undefined, filterName || undefined);
 
-      const response = await fetch(`/api/workspaces?${params.toString()}`);
-      if (response.ok) {
-        const data: PagedResponseOfWorkspaceListItemResponse = await response.json();
-        setWorkspaces(data.data || []);
+      if (result.success && result.data) {
+        setWorkspaces(result.data.data || []);
         setCurrentPage(1);
-        setTotalPages(data.totalPages || 1);
-        setTotalCount(data.totalCount || 0);
+        setTotalPages(result.data.totalPages || 1);
+        setTotalCount(result.data.totalCount || 0);
+      } else if (!result.success) {
+        notify.error(result.message || 'サーバーとの通信でエラーが発生しました。', true);
       }
     } catch (error) {
       console.error('Failed to filter workspaces:', error);
@@ -165,16 +129,15 @@ export default function WorkspacesClient({ genres, initialStatistics }: Workspac
     // リセット後の値で直接検索を実行（stateの非同期更新を待たない）
     await withDelayedLoading(async () => {
       try {
-        const params = new URLSearchParams();
-        params.append('page', '1');
+        const result = await fetchWorkspaces(1);
 
-        const response = await fetch(`/api/workspaces?${params.toString()}`);
-        if (response.ok) {
-          const data: PagedResponseOfWorkspaceListItemResponse = await response.json();
-          setWorkspaces(data.data || []);
+        if (result.success && result.data) {
+          setWorkspaces(result.data.data || []);
           setCurrentPage(1);
-          setTotalPages(data.totalPages || 1);
-          setTotalCount(data.totalCount || 0);
+          setTotalPages(result.data.totalPages || 1);
+          setTotalCount(result.data.totalCount || 0);
+        } else if (!result.success) {
+          notify.error(result.message || 'サーバーとの通信でエラーが発生しました。', true);
         }
       } catch (error) {
         console.error('Failed to reset workspaces:', error);
@@ -191,10 +154,7 @@ export default function WorkspacesClient({ genres, initialStatistics }: Workspac
 
   return (
     <>
-      <LoadingOverlay
-        isLoading={isInitialLoading || showLoading}
-        message={isInitialLoading ? '読み込み中...' : '検索中...'}
-      />
+      <LoadingOverlay isLoading={showLoading} message="検索中..." />
 
       {/* ページヘッダー */}
       <div className="mb-6">

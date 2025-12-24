@@ -9,6 +9,7 @@ import {
   parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
 import type {
+  PagedResponseOfWorkspaceListItemResponse,
   SuccessResponse,
   UserSearchResultResponse,
   WorkspaceDetailResponse,
@@ -89,6 +90,29 @@ export async function getMyWorkspacesPaged(page: number = 1): Promise<ApiRespons
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
     return parseErrorResponse(error, 'ワークスペースリストの取得に失敗しました。');
+  }
+}
+
+/**
+ * Server Action: ワークスペース一覧を取得（フィルタ・ページネーション対応）
+ * WorkspacesClient の一覧表示で使用
+ *
+ * @param page ページ番号（1始まり）
+ * @param genreId ジャンルID（フィルタ用）
+ * @param name ワークスペース名（フィルタ用）
+ */
+export async function fetchWorkspaces(
+  page: number = 1,
+  genreId?: number,
+  name?: string,
+): Promise<ApiResponse<PagedResponseOfWorkspaceListItemResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspace.getApiWorkspaces(page, genreId, name);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch workspaces:', error);
+    return parseErrorResponse(error, 'ワークスペース一覧の取得に失敗しました。');
   }
 }
 
