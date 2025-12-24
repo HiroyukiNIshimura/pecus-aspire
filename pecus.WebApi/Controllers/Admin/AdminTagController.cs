@@ -53,14 +53,8 @@ public class AdminTagController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<TagResponse>> CreateTag([FromBody] CreateTagRequest request)
     {
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
-        if (!organizationId.HasValue)
-        {
-            throw new InvalidOperationException("ユーザーが組織に所属していません。");
-        }
-
         // 組織内のタグ数をチェック
-        var existingTagCount = await _tagService.GetTagCountByOrganizationAsync(organizationId.Value);
+        var existingTagCount = await _tagService.GetTagCountByOrganizationAsync(CurrentOrganizationId);
         if (existingTagCount >= _config.Limits.MaxTagsPerOrganization)
         {
             throw new InvalidOperationException(
@@ -68,7 +62,7 @@ public class AdminTagController : BaseAdminController
             );
         }
 
-        var tag = await _tagService.CreateTagAsync(request, organizationId.Value, CurrentUserId);
+        var tag = await _tagService.CreateTagAsync(request, CurrentOrganizationId, CurrentUserId);
 
         var response = new TagResponse
         {
@@ -139,27 +133,11 @@ public class AdminTagController : BaseAdminController
         [FromQuery] GetTagsRequest request
     )
     {
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
-
-        // 組織IDが取得できない場合は空のリストを返す（GraphQL的なnull-safety）
-        if (!organizationId.HasValue)
-        {
-            return TypedResults.Ok(
-                PaginationHelper.CreatePagedResponse<TagListItemResponse, TagStatistics>(
-                    data: new List<TagListItemResponse>(),
-                    totalCount: 0,
-                    page: 1,
-                    pageSize: _config.Pagination.DefaultPageSize,
-                    summary: null
-                )
-            );
-        }
-
         var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
         var pageSize = _config.Pagination.DefaultPageSize;
 
         (List<Tag> tags, int totalCount) = await _tagService.GetTagsByOrganizationPagedAsync(
-            organizationId.Value,
+            CurrentOrganizationId,
             validatedPage,
             pageSize,
             request.IsActive,
@@ -180,7 +158,7 @@ public class AdminTagController : BaseAdminController
             .ToList();
 
         // 統計情報を取得
-        var statistics = await _tagService.GetTagStatisticsByOrganizationAsync(organizationId.Value);
+        var statistics = await _tagService.GetTagStatisticsByOrganizationAsync(CurrentOrganizationId);
 
         var response = PaginationHelper.CreatePagedResponse(
             data: items,

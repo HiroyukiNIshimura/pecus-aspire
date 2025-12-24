@@ -38,7 +38,7 @@ public class DashboardStatisticsController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<DashboardSummaryResponse>> GetOrganizationSummary()
     {
-        var summary = await _dashboardService.GetOrganizationSummaryAsync(CurrentOrganizationId!.Value);
+        var summary = await _dashboardService.GetOrganizationSummaryAsync(CurrentOrganizationId);
         return TypedResults.Ok(summary);
     }
 
@@ -53,7 +53,7 @@ public class DashboardStatisticsController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<DashboardTasksByPriorityResponse>> GetTasksByPriority()
     {
-        var response = await _dashboardService.GetOrganizationTasksByPriorityAsync(CurrentOrganizationId!.Value);
+        var response = await _dashboardService.GetOrganizationTasksByPriorityAsync(CurrentOrganizationId);
         return TypedResults.Ok(response);
     }
 
@@ -68,7 +68,7 @@ public class DashboardStatisticsController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<DashboardPersonalSummaryResponse>> GetPersonalSummary()
     {
-        var summary = await _dashboardService.GetPersonalSummaryAsync(CurrentUserId, CurrentOrganizationId!.Value);
+        var summary = await _dashboardService.GetPersonalSummaryAsync(CurrentUserId, CurrentOrganizationId);
         return TypedResults.Ok(summary);
     }
 
@@ -83,7 +83,7 @@ public class DashboardStatisticsController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<DashboardWorkspaceBreakdownResponse>> GetWorkspaceBreakdown()
     {
-        var response = await _dashboardService.GetWorkspaceBreakdownAsync(CurrentOrganizationId!.Value);
+        var response = await _dashboardService.GetWorkspaceBreakdownAsync(CurrentOrganizationId);
         return TypedResults.Ok(response);
     }
 
@@ -101,7 +101,7 @@ public class DashboardStatisticsController : BaseSecureController
     {
         // 週数を1-12の範囲に制限
         weeks = Math.Clamp(weeks, 1, 12);
-        var response = await _dashboardService.GetTaskTrendAsync(CurrentOrganizationId!.Value, weeks);
+        var response = await _dashboardService.GetTaskTrendAsync(CurrentOrganizationId, weeks);
         return TypedResults.Ok(response);
     }
 
@@ -127,7 +127,7 @@ public class DashboardStatisticsController : BaseSecureController
         };
         limit = Math.Clamp(limit, 1, 20);
 
-        var response = await _dashboardService.GetHotItemsAsync(CurrentOrganizationId!.Value, CurrentUserId, hotPeriod, limit);
+        var response = await _dashboardService.GetHotItemsAsync(CurrentOrganizationId, CurrentUserId, hotPeriod, limit);
         return TypedResults.Ok(response);
     }
 
@@ -153,7 +153,7 @@ public class DashboardStatisticsController : BaseSecureController
         };
         limit = Math.Clamp(limit, 1, 20);
 
-        var response = await _dashboardService.GetHotWorkspacesAsync(CurrentOrganizationId!.Value, hotPeriod, limit);
+        var response = await _dashboardService.GetHotWorkspacesAsync(CurrentOrganizationId, hotPeriod, limit);
         return TypedResults.Ok(response);
     }
 
@@ -168,7 +168,7 @@ public class DashboardStatisticsController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<DashboardHelpCommentsResponse>> GetHelpComments()
     {
-        var response = await _dashboardService.GetHelpCommentsAsync(CurrentOrganizationId!.Value);
+        var response = await _dashboardService.GetHelpCommentsAsync(CurrentOrganizationId);
         return TypedResults.Ok(response);
     }
 }

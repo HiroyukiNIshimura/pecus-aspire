@@ -130,30 +130,12 @@ public class AdminSkillController : BaseAdminController
         [FromQuery] GetSkillsRequest request
     )
     {
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
-        if (!organizationId.HasValue)
-        {
-            // 認証済みユーザーが組織に所属していない場合、空のリストを返す
-            return TypedResults.Ok(
-                PaginationHelper.CreatePagedResponse<
-                    SkillListItemResponse,
-                    SkillStatistics
-                >(
-                    data: new List<SkillListItemResponse>(),
-                    totalCount: 0,
-                    page: 1,
-                    pageSize: _config.Pagination.DefaultPageSize,
-                    summary: null
-                )
-            );
-        }
-
         var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
         var pageSize = _config.Pagination.DefaultPageSize;
 
         (List<Skill> skills, int totalCount) =
             await _skillService.GetSkillsByOrganizationPagedAsync(
-                organizationId.Value,
+                CurrentOrganizationId,
                 validatedPage,
                 pageSize,
                 request.IsActive,
@@ -179,7 +161,7 @@ public class AdminSkillController : BaseAdminController
 
         // 統計情報を取得
         var statistics =
-            await _skillService.GetSkillStatisticsByOrganizationAsync(organizationId.Value);
+            await _skillService.GetSkillStatisticsByOrganizationAsync(CurrentOrganizationId);
 
         var response = PaginationHelper.CreatePagedResponse(
             data: items,

@@ -201,36 +201,12 @@ public class AdminWorkspaceController : BaseAdminController
         [FromQuery] AdminGetWorkspacesRequest request
     )
     {
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
-        if (!organizationId.HasValue)
-        {
-            // 認証済みユーザーが組織に所属していない場合、空のリストを返す
-            return TypedResults.Ok(
-                PaginationHelper.CreatePagedResponse(
-                    data: new List<WorkspaceListItemResponse>(),
-                    totalCount: 0,
-                    page: 1,
-                    pageSize: _config.Pagination.DefaultPageSize,
-                    summary: new WorkspaceStatistics
-                    {
-                        ActiveWorkspaceCount = 0,
-                        InactiveWorkspaceCount = 0,
-                        TotalWorkspaceCount = 0,
-                        UniqueMemberCount = 0,
-                        AverageMembersPerWorkspace = 0,
-                        RecentWorkspaceCount = 0,
-                        WorkspaceCountByGenre = new List<GenreCount>()
-                    }
-                )
-            );
-        }
-
         var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
         var pageSize = _config.Pagination.DefaultPageSize;
 
         (List<Workspace> workspaces, int totalCount) =
             await _workspaceService.GetWorkspacesByOrganizationPagedAsync(
-                organizationId.Value,
+                CurrentOrganizationId,
                 validatedPage,
                 pageSize,
                 request.IsActive,
@@ -296,7 +272,7 @@ public class AdminWorkspaceController : BaseAdminController
             .ToList();
 
         // 統計情報を取得
-        var statistics = await _workspaceService.GetWorkspaceStatisticsAsync(organizationId.Value);
+        var statistics = await _workspaceService.GetWorkspaceStatisticsAsync(CurrentOrganizationId);
 
         var response = PaginationHelper.CreatePagedResponse(
             data: items,

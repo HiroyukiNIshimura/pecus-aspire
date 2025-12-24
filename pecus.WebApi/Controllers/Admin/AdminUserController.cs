@@ -142,18 +142,11 @@ public class AdminUserController : BaseAdminController
         [FromQuery] GetUsersRequest request
     )
     {
-        // ログインユーザーの組織IDを取得
-        var user = await _userService.GetUserByIdAsync(CurrentUserId);
-        if (user?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織に所属していません。");
-        }
-
         var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
         var pageSize = _config.Pagination.DefaultPageSize;
 
         (List<User> users, int totalCount) = await _userService.GetUsersByOrganizationPagedAsync(
-            organizationId: user.OrganizationId.Value,
+            organizationId: CurrentOrganizationId,
             page: validatedPage,
             pageSize: pageSize,
             isActive: request.IsActive,
@@ -213,7 +206,7 @@ public class AdminUserController : BaseAdminController
 
         // 統計情報を取得
         var statistics = await _userService.GetUserStatisticsByOrganizationAsync(
-            user.OrganizationId.Value
+            CurrentOrganizationId
         );
 
         var response = PaginationHelper.CreatePagedResponse(
@@ -375,18 +368,11 @@ public class AdminUserController : BaseAdminController
         [FromBody] CreateUserWithoutPasswordRequest request
     )
     {
-        // ログインユーザーの組織IDを取得
-        var currentUser = await _userService.GetUserByIdAsync(CurrentUserId);
-        if (currentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織に所属していません。");
-        }
-
         // パスワードなしでユーザーを作成（ロール設定を含む）
         var user = await _userService.CreateUserWithoutPasswordAsync(request, CurrentUserId);
 
         // 組織IDを設定（同じ組織に所属させる）
-        user.OrganizationId = currentUser.OrganizationId;
+        user.OrganizationId = CurrentOrganizationId;
         await _userService.UpdateUserAsync(user.Id, new UpdateUserRequest
         {
             Username = user.Username,
@@ -394,11 +380,11 @@ public class AdminUserController : BaseAdminController
         }, CurrentUserId);
 
         // グループルームとシステムルームにメンバーとして追加
-        await _chatRoomService.AddUserToOrganizationRoomsAsync(user.Id, currentUser.OrganizationId.Value);
+        await _chatRoomService.AddUserToOrganizationRoomsAsync(user.Id, CurrentOrganizationId);
 
         // 組織情報を取得
         var organization = await _organizationService.GetOrganizationByIdAsync(
-            currentUser.OrganizationId.Value
+            CurrentOrganizationId
         );
         if (organization == null)
         {
