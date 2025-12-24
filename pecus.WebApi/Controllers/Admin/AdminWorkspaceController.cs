@@ -57,16 +57,9 @@ public class AdminWorkspaceController : BaseAdminController
         [FromBody] CreateWorkspaceRequest request
     )
     {
-        // ログインユーザーの情報を取得して組織IDを取得
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
-        if (!organizationId.HasValue)
-        {
-            throw new InvalidOperationException("ユーザーが組織に所属していません。");
-        }
-
         var workspace = await _workspaceService.CreateWorkspaceAsync(
             request,
-            organizationId.Value,
+            CurrentOrganizationId,
             CurrentUserId
         );
 

@@ -72,19 +72,8 @@ public class AdminUserController : BaseAdminController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Ok<UserDetailResponse>> GetUserById(int id)
     {
-        // 取得対象ユーザーが存在するか確認
-        var targetUser = await _userService.GetUserByIdAsync(id);
-        if (targetUser == null)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
         // ログインユーザーと同じ組織に所属しているか確認
-        var canAccess = await _accessHelper.CanAccessUserAsync(CurrentUserId, id);
-        if (!canAccess)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
+        var targetUser = await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
 
         var response = new UserDetailResponse
         {
@@ -259,19 +248,8 @@ public class AdminUserController : BaseAdminController
         [FromBody] SetUserActiveStatusRequest request
     )
     {
-        // 操作対象ユーザーが存在するか確認
-        var targetUser = await _userService.GetUserByIdAsync(id);
-        if (targetUser == null)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
         // ログインユーザーと同じ組織に所属しているか確認
-        var canAccess = await _accessHelper.CanAccessUserAsync(CurrentUserId, id);
-        if (!canAccess)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
+        await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
 
         var result = await _userService.SetUserActiveStatusAsync(
             id,
@@ -305,19 +283,8 @@ public class AdminUserController : BaseAdminController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Ok<SuccessResponse>> DeleteUser(int id)
     {
-        // 操作対象ユーザーが存在するか確認
-        var targetUser = await _userService.GetUserByIdAsync(id);
-        if (targetUser == null)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
         // ログインユーザーと同じ組織に所属しているか確認
-        var canAccess = await _accessHelper.CanAccessUserAsync(CurrentUserId, id);
-        if (!canAccess)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
+        var targetUser = await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
 
         // チャットルームからメンバーを削除
         if (targetUser.OrganizationId.HasValue)
@@ -363,19 +330,8 @@ public class AdminUserController : BaseAdminController
         [FromBody] SetUserSkillsRequest request
     )
     {
-        // 操作対象ユーザーが存在するか確認
-        var targetUser = await _userService.GetUserByIdAsync(id);
-        if (targetUser == null)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
         // ログインユーザーと同じ組織に所属しているか確認
-        var canAccess = await _accessHelper.CanAccessUserAsync(CurrentUserId, id);
-        if (!canAccess)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
+        await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
 
         // 管理者が別のユーザーのスキルを設定（洗い替え）
         // 操作実行者（me = 管理者）がスキル情報を変更
@@ -533,19 +489,8 @@ public class AdminUserController : BaseAdminController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Ok<SuccessResponse>> RequestPasswordReset(int id)
     {
-        // 操作対象ユーザーが存在するか確認
-        var targetUser = await _userService.GetUserByIdAsync(id);
-        if (targetUser == null)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
         // ログインユーザーと同じ組織に所属しているか確認
-        var canAccess = await _accessHelper.CanAccessUserAsync(CurrentUserId, id);
-        if (!canAccess)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
+        var targetUser = await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
 
         (bool success, User? user) = await _userService.RequestPasswordResetByUserIdAsync(id);
         if (success && user != null)
@@ -615,19 +560,8 @@ public class AdminUserController : BaseAdminController
         [FromBody] SetUserRolesRequest request
     )
     {
-        // 操作対象ユーザーが存在するか確認
-        var targetUser = await _userService.GetUserByIdAsync(id);
-        if (targetUser == null)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
         // ログインユーザーと同じ組織に所属しているか確認
-        var canAccess = await _accessHelper.CanAccessUserAsync(CurrentUserId, id);
-        if (!canAccess)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
+        await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
 
         // 管理者が別のユーザーのロールを設定（洗い替え）
         // 操作実行者（me = 管理者）がロール情報を変更

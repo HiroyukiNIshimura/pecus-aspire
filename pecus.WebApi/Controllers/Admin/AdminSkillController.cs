@@ -45,16 +45,9 @@ public class AdminSkillController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SkillResponse>> CreateSkill([FromBody] CreateSkillRequest request)
     {
-        // ログインユーザーの情報を取得して組織IDを取得
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
-        if (!organizationId.HasValue)
-        {
-            throw new InvalidOperationException("ユーザーが組織に所属していません。");
-        }
-
         // 組織内のスキル数をチェック
         var existingSkillCount = await _skillService.GetSkillCountByOrganizationAsync(
-            organizationId.Value
+            CurrentOrganizationId
         );
         if (existingSkillCount >= _config.Limits.MaxSkillsPerOrganization)
         {
@@ -63,7 +56,7 @@ public class AdminSkillController : BaseAdminController
             );
         }
 
-        var skill = await _skillService.CreateSkillAsync(request, organizationId.Value, CurrentUserId);
+        var skill = await _skillService.CreateSkillAsync(request, CurrentOrganizationId, CurrentUserId);
 
         var response = new SkillResponse
         {
@@ -94,14 +87,8 @@ public class AdminSkillController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SkillDetailResponse>> GetSkill(int id)
     {
-        var skill = await _skillService.GetSkillByIdAsync(id);
+        var skill = await _skillService.GetSkillByIdAsync(id, CurrentOrganizationId);
         if (skill == null)
-        {
-            throw new NotFoundException("スキルが見つかりません。");
-        }
-
-        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-        if (!await CanAccessSkillAsync(skill))
         {
             throw new NotFoundException("スキルが見つかりません。");
         }
@@ -218,19 +205,13 @@ public class AdminSkillController : BaseAdminController
         [FromBody] UpdateSkillRequest request
     )
     {
-        var skill = await _skillService.GetSkillByIdAsync(id);
+        var skill = await _skillService.GetSkillByIdAsync(id, CurrentOrganizationId);
         if (skill == null)
         {
             throw new NotFoundException("スキルが見つかりません。");
         }
 
-        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-        if (!await CanAccessSkillAsync(skill))
-        {
-            throw new NotFoundException("スキルが見つかりません。");
-        }
-
-        var updatedSkill = await _skillService.UpdateSkillAsync(id, request, CurrentUserId);
+        var updatedSkill = await _skillService.UpdateSkillAsync(id, CurrentOrganizationId, request, CurrentUserId);
 
         var response = new SkillResponse
         {
@@ -263,19 +244,13 @@ public class AdminSkillController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeleteSkill(int id)
     {
-        var skill = await _skillService.GetSkillByIdAsync(id);
+        var skill = await _skillService.GetSkillByIdAsync(id, CurrentOrganizationId);
         if (skill == null)
         {
             throw new NotFoundException("スキルが見つかりません。");
         }
 
-        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-        if (!await CanAccessSkillAsync(skill))
-        {
-            throw new NotFoundException("スキルが見つかりません。");
-        }
-
-        var result = await _skillService.DeleteSkillAsync(id);
+        var result = await _skillService.DeleteSkillAsync(id, CurrentOrganizationId);
         if (!result)
         {
             throw new NotFoundException("スキルが見つかりません。");
@@ -300,14 +275,8 @@ public class AdminSkillController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeactivateSkill(int id)
     {
-        var skill = await _skillService.GetSkillByIdAsync(id);
+        var skill = await _skillService.GetSkillByIdAsync(id, CurrentOrganizationId);
         if (skill == null)
-        {
-            throw new NotFoundException("スキルが見つかりません。");
-        }
-
-        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-        if (!await CanAccessSkillAsync(skill))
         {
             throw new NotFoundException("スキルが見つかりません。");
         }
@@ -337,14 +306,8 @@ public class AdminSkillController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> ActivateSkill(int id)
     {
-        var skill = await _skillService.GetSkillByIdAsync(id);
+        var skill = await _skillService.GetSkillByIdAsync(id, CurrentOrganizationId);
         if (skill == null)
-        {
-            throw new NotFoundException("スキルが見つかりません。");
-        }
-
-        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-        if (!await CanAccessSkillAsync(skill))
         {
             throw new NotFoundException("スキルが見つかりません。");
         }
@@ -362,17 +325,5 @@ public class AdminSkillController : BaseAdminController
                 Message = "スキルが正常に有効化されました。",
             }
         );
-    }
-
-    /// <summary>
-    /// ログインユーザーの組織IDを取得（組織に所属していない場合はnullを返す）
-    /// </summary>
-    /// <summary>
-    /// ログインユーザーが指定したスキルにアクセス可能かチェック
-    /// </summary>
-    private async Task<bool> CanAccessSkillAsync(Skill skill)
-    {
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
-        return organizationId.HasValue && organizationId.Value == skill.OrganizationId;
     }
 }

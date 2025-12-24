@@ -98,8 +98,8 @@ public class AdminTagController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<TagDetailResponse>> GetTag(int id)
     {
-        var tag = await _tagService.GetTagByIdAsync(id);
-        if (tag == null || !await CanAccessTagAsync(tag))
+        var tag = await _tagService.GetTagByIdAsync(id, CurrentOrganizationId);
+        if (tag == null)
         {
             throw new NotFoundException("タグが見つかりません。");
         }
@@ -203,13 +203,13 @@ public class AdminTagController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<TagResponse>> UpdateTag(int id, [FromBody] UpdateTagRequest request)
     {
-        var tag = await _tagService.GetTagByIdAsync(id);
-        if (tag == null || !await CanAccessTagAsync(tag))
+        var tag = await _tagService.GetTagByIdAsync(id, CurrentOrganizationId);
+        if (tag == null)
         {
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var updatedTag = await _tagService.UpdateTagAsync(id, request, CurrentUserId);
+        var updatedTag = await _tagService.UpdateTagAsync(id, CurrentOrganizationId, request, CurrentUserId);
 
         var response = new TagResponse
         {
@@ -241,13 +241,13 @@ public class AdminTagController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeleteTag(int id)
     {
-        var tag = await _tagService.GetTagByIdAsync(id);
-        if (tag == null || !await CanAccessTagAsync(tag))
+        var tag = await _tagService.GetTagByIdAsync(id, CurrentOrganizationId);
+        if (tag == null)
         {
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var result = await _tagService.DeleteTagAsync(id);
+        var result = await _tagService.DeleteTagAsync(id, CurrentOrganizationId);
         if (!result)
         {
             throw new NotFoundException("タグが見つかりません。");
@@ -272,8 +272,8 @@ public class AdminTagController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeactivateTag(int id)
     {
-        var tag = await _tagService.GetTagByIdAsync(id);
-        if (tag == null || !await CanAccessTagAsync(tag))
+        var tag = await _tagService.GetTagByIdAsync(id, CurrentOrganizationId);
+        if (tag == null)
         {
             throw new NotFoundException("タグが見つかりません。");
         }
@@ -303,8 +303,8 @@ public class AdminTagController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> ActivateTag(int id)
     {
-        var tag = await _tagService.GetTagByIdAsync(id);
-        if (tag == null || !await CanAccessTagAsync(tag))
+        var tag = await _tagService.GetTagByIdAsync(id, CurrentOrganizationId);
+        if (tag == null)
         {
             throw new NotFoundException("タグが見つかりません。");
         }
@@ -322,17 +322,5 @@ public class AdminTagController : BaseAdminController
                 Message = "タグが正常に有効化されました。",
             }
         );
-    }
-
-    /// <summary>
-    /// ログインユーザーの組織IDを取得
-    /// </summary>
-    /// <summary>
-    /// ログインユーザーが指定したタグにアクセス可能かチェック
-    /// </summary>
-    private async Task<bool> CanAccessTagAsync(Tag tag)
-    {
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
-        return organizationId.HasValue && organizationId.Value == tag.OrganizationId;
     }
 }

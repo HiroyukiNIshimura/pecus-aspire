@@ -68,14 +68,14 @@ public class TagService
     }
 
     /// <summary>
-    /// タグID取得
+    /// タグ取得
     /// </summary>
-    public async Task<Tag?> GetTagByIdAsync(int tagId)
+    public async Task<Tag?> GetTagByIdAsync(int tagId, int organizationId)
     {
         return await _context.Tags
             .Include(t => t.CreatedByUser)
             .Include(t => t.WorkspaceItemTags)
-            .FirstOrDefaultAsync(t => t.Id == tagId);
+            .FirstOrDefaultAsync(t => t.Id == tagId && t.OrganizationId == organizationId);
     }
 
     /// <summary>
@@ -143,11 +143,12 @@ public class TagService
     /// </summary>
     public async Task<Tag> UpdateTagAsync(
         int tagId,
+        int organizationId,
         UpdateTagRequest request,
         int? updatedByUserId = null
     )
     {
-        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId && t.OrganizationId == organizationId);
 
         if (tag == null)
         {
@@ -190,9 +191,9 @@ public class TagService
     /// <summary>
     /// タグ削除
     /// </summary>
-    public async Task<bool> DeleteTagAsync(int tagId)
+    public async Task<bool> DeleteTagAsync(int tagId, int organizationId)
     {
-        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId && t.OrganizationId == organizationId);
 
         if (tag == null)
         {
@@ -214,9 +215,9 @@ public class TagService
     /// <summary>
     /// タグ無効化
     /// </summary>
-    public async Task<bool> DeactivateTagAsync(int tagId, int? updatedByUserId = null)
+    public async Task<bool> DeactivateTagAsync(int tagId, int organizationId, int? updatedByUserId = null)
     {
-        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId && t.OrganizationId == organizationId);
         if (tag == null)
         {
             return false;
@@ -249,9 +250,9 @@ public class TagService
     /// <summary>
     /// タグ有効化
     /// </summary>
-    public async Task<bool> ActivateTagAsync(int tagId, int? updatedByUserId = null)
+    public async Task<bool> ActivateTagAsync(int tagId, int organizationId, int? updatedByUserId = null)
     {
-        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId && t.OrganizationId == organizationId);
         if (tag == null)
         {
             return false;
@@ -303,7 +304,7 @@ public class TagService
     /// <summary>
     /// 組織のタグ統計情報を取得
     /// </summary>
-    public async Task<Models.Responses.Tag.TagStatistics> GetTagStatisticsByOrganizationAsync(
+    public async Task<TagStatistics> GetTagStatisticsByOrganizationAsync(
         int organizationId
     )
     {

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 
@@ -30,6 +31,31 @@ public class OrganizationAccessHelper
             .FirstOrDefaultAsync();
 
         return user?.OrganizationId;
+    }
+
+    /// <summary>
+    ///  ユーザーが指定した組織に所属しているかチェック
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="organizationId"></param>
+    /// <returns></returns>
+    public async Task<User> CheckIncludeOrganizationAsync(int userId, int? organizationId)
+    {
+        if (!organizationId.HasValue)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        var user = await _context
+            .Users.Where(u => u.Id == userId && u.IsActive && u.OrganizationId == organizationId)
+            .FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        return user;
     }
 
     /// <summary>
@@ -195,48 +221,6 @@ public class OrganizationAccessHelper
     }
 
     /// <summary>
-    /// 2つのユーザーが同じ組織に所属しているかチェック
-    /// </summary>
-    /// <param name="userId1">ユーザーID1</param>
-    /// <param name="userId2">ユーザーID2</param>
-    /// <returns>同じ組織に所属している場合はtrue、異なる場合またはいずれかのユーザーが見つからない場合はfalse</returns>
-    public async Task<bool> AreUsersInSameOrganizationAsync(int userId1, int userId2)
-    {
-        var org1 = await GetUserOrganizationIdAsync(userId1);
-        var org2 = await GetUserOrganizationIdAsync(userId2);
-
-        return org1.HasValue && org2.HasValue && org1.Value == org2.Value;
-    }
-
-    /// <summary>
-    /// 指定したユーザーが操作対象ユーザーにアクセス可能かチェック（同じ組織の確認）
-    /// </summary>
-    /// <param name="operatingUserId">操作を行うユーザーID</param>
-    /// <param name="targetUserId">操作対象のユーザーID</param>
-    /// <returns>アクセス可能な場合はtrue、不可能な場合はfalse</returns>
-    public async Task<bool> CanAccessUserAsync(int operatingUserId, int targetUserId)
-    {
-        // 操作対象ユーザーが存在しない場合はfalse
-        if (!await UserExistsAsync(targetUserId))
-        {
-            return false;
-        }
-
-        // 同じ組織に所属しているかチェック
-        return await AreUsersInSameOrganizationAsync(operatingUserId, targetUserId);
-    }
-
-    /// <summary>
-    /// ユーザーが存在するかチェック
-    /// </summary>
-    /// <param name="userId">ユーザーID</param>
-    /// <returns>存在する場合はtrue、存在しない場合はfalse</returns>
-    private async Task<bool> UserExistsAsync(int userId)
-    {
-        return await _context.Users.AnyAsync(u => u.Id == userId && u.IsActive);
-    }
-
-    /// <summary>
     /// ユーザーが指定したワークスペースにアクセス可能かチェックし、不可の場合は例外をスロー
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
@@ -248,7 +232,7 @@ public class OrganizationAccessHelper
         var hasAccess = await CanAccessWorkspaceAsync(userId, workspaceId, includeInactive);
         if (!hasAccess)
         {
-            throw new Exceptions.NotFoundException("ワークスペースが見つかりません。");
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
     }
 }

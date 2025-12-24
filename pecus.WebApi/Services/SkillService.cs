@@ -55,11 +55,11 @@ public class SkillService
     /// <summary>
     /// スキルIDで取得
     /// </summary>
-    public async Task<Skill?> GetSkillByIdAsync(int skillId)
+    public async Task<Skill?> GetSkillByIdAsync(int skillId, int organizationId)
     {
         return await _context.Skills
-    .Include(s => s.UserSkills)
-       .FirstOrDefaultAsync(s => s.Id == skillId);
+            .Include(s => s.UserSkills)
+            .FirstOrDefaultAsync(s => s.Id == skillId && s.OrganizationId == organizationId);
     }
 
     /// <summary>
@@ -109,12 +109,13 @@ public class SkillService
     /// スキルを更新
     /// </summary>
     public async Task<Skill> UpdateSkillAsync(
-      int skillId,
+        int skillId,
+        int organizationId,
         UpdateSkillRequest request,
         int? updatedByUserId = null
     )
     {
-        var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
+        var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId && s.OrganizationId == organizationId);
         if (skill == null)
         {
             throw new NotFoundException("スキルが見つかりません。");
@@ -123,14 +124,13 @@ public class SkillService
         // 更新前に同じ組織の同じ名前のスキルが存在しないかチェック
         if (!string.IsNullOrEmpty(request.Name) && request.Name != skill.Name)
         {
-            var existingSkill = await _context
-      .Skills
-      .Where(s =>
-            s.OrganizationId == skill.OrganizationId
-            && s.Name == request.Name
-            && s.Id != skillId
-        )
-      .FirstOrDefaultAsync();
+            var existingSkill = await _context.Skills
+            .Where(s =>
+                    s.OrganizationId == skill.OrganizationId
+                    && s.Name == request.Name
+                    && s.Id != skillId
+                )
+            .FirstOrDefaultAsync();
 
             if (existingSkill != null)
             {
@@ -165,9 +165,9 @@ public class SkillService
     /// <summary>
     /// スキルを削除
     /// </summary>
-    public async Task<bool> DeleteSkillAsync(int skillId)
+    public async Task<bool> DeleteSkillAsync(int skillId, int organizationId)
     {
-        var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
+        var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId && s.OrganizationId == organizationId);
         if (skill == null)
         {
             return false;
@@ -183,9 +183,9 @@ public class SkillService
     /// <summary>
     /// スキルを非アクティブ化
     /// </summary>
-    public async Task<bool> DeactivateSkillAsync(int skillId, int? updatedByUserId = null)
+    public async Task<bool> DeactivateSkillAsync(int skillId, int organizationId, int? updatedByUserId = null)
     {
-        var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
+        var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId && s.OrganizationId == organizationId);
         if (skill == null)
         {
             return false;
@@ -211,9 +211,9 @@ public class SkillService
     /// <summary>
     /// スキルをアクティブ化
     /// </summary>
-    public async Task<bool> ActivateSkillAsync(int skillId, int? updatedByUserId = null)
+    public async Task<bool> ActivateSkillAsync(int skillId, int organizationId, int? updatedByUserId = null)
     {
-        var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
+        var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId && s.OrganizationId == organizationId);
         if (skill == null)
         {
             return false;
@@ -242,16 +242,16 @@ public class SkillService
     /// </summary>
     public async Task<List<Skill>> GetActiveSkillsByOrganizationAsync(int organizationId)
     {
-        return await _context
-         .Skills.Where(s => s.OrganizationId == organizationId && s.IsActive)
-     .OrderBy(s => s.Name)
-      .ToListAsync();
+        return await _context.Skills
+        .Where(s => s.OrganizationId == organizationId && s.IsActive)
+        .OrderBy(s => s.Name)
+        .ToListAsync();
     }
 
     /// <summary>
     /// Get total skill count for an organization
     /// </summary>
-    public async Task<int> GetSkillCountByOrganizationAsync(int organizationId)
+    public async Task<int> GetSkillCountByOrganizationAsync(int? organizationId)
     {
         return await _context.Skills.CountAsync(s => s.OrganizationId == organizationId);
     }
@@ -259,7 +259,7 @@ public class SkillService
     /// <summary>
     /// 組織のスキル統計情報を取得
     /// </summary>
-    public async Task<Models.Responses.Skill.SkillStatistics> GetSkillStatisticsByOrganizationAsync(
+    public async Task<SkillStatistics> GetSkillStatisticsByOrganizationAsync(
         int organizationId
     )
     {
@@ -278,7 +278,7 @@ public class SkillService
             .Where(s => s.UserSkills?.Count > 0)
             .OrderByDescending(s => s.UserSkills!.Count)
             .Take(5)
-            .Select(s => new Models.Responses.Skill.SkillUsageItem
+            .Select(s => new SkillUsageItem
             {
                 Id = s.Id,
                 Name = s.Name,
@@ -289,14 +289,14 @@ public class SkillService
         var unusedSkills = skills
             .Where(s => s.UserSkills?.Count == 0)
             .OrderBy(s => s.Name)
-            .Select(s => new Models.Responses.Skill.SkillUsageItem
+            .Select(s => new SkillUsageItem
             {
                 Id = s.Id,
                 Name = s.Name,
             })
             .ToList();
 
-        return new Models.Responses.Skill.SkillStatistics
+        return new SkillStatistics
         {
             TotalSkills = totalSkills,
             ActiveSkills = activeSkills,

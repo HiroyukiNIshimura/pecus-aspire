@@ -32,7 +32,7 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
     /// <summary>
     /// 現在認証されているユーザーが所属する組織ID
     /// </summary>
-    protected int? CurrentOrganizationId { get; private set; }
+    protected int CurrentOrganizationId { get; private set; }
 
     /// <summary>
     /// 現在認証されているユーザー（有効性確認済み）
@@ -65,14 +65,16 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
             CurrentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
             if (CurrentUserId == 0)
             {
+                // ユーザーIDが取得できない場合は拒否
                 context.Result = new UnauthorizedResult();
                 return;
             }
 
             // 組織ID取得
-            CurrentOrganizationId = JwtBearerUtil.GetOrganizationIdFromPrincipal(User);
-            if (!CurrentOrganizationId.HasValue || CurrentOrganizationId == 0)
+            CurrentOrganizationId = JwtBearerUtil.GetOrganizationIdFromPrincipal(User) ?? -1;
+            if (CurrentOrganizationId == -1)
             {
+                // 組織に所属していないユーザーは拒否
                 context.Result = new UnauthorizedResult();
                 return;
             }

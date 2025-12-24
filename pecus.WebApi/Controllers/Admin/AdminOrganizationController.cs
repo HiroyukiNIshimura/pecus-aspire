@@ -46,14 +46,8 @@ public class AdminOrganizationController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<OrganizationResponse>> GetMyOrganization()
     {
-        // CurrentUser は基底クラスで有効性チェック済み
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("ユーザーが組織に所属していません。");
-        }
-
         var organization = await _organizationService.GetOrganizationByIdAsync(
-            CurrentUser.OrganizationId.Value
+            CurrentOrganizationId
         );
         if (organization == null)
         {
@@ -112,14 +106,8 @@ public class AdminOrganizationController : BaseAdminController
         [FromBody] AdminUpdateOrganizationRequest request
     )
     {
-        // CurrentUser は基底クラスで有効性チェック済み
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("ユーザーが組織に所属していません。");
-        }
-
         var organization = await _organizationService.AdminUpdateOrganizationAsync(
-            CurrentUser.OrganizationId.Value,
+            CurrentOrganizationId,
             request,
             CurrentUserId
         );
@@ -176,13 +164,8 @@ public class AdminOrganizationController : BaseAdminController
         [FromBody] AdminUpdateOrganizationSettingRequest request
     )
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("ユーザーが組織に所属していません。");
-        }
-
         var setting = await _organizationService.AdminUpdateOrganizationSettingAsync(
-            organizationId: CurrentUser.OrganizationId.Value,
+            organizationId: CurrentOrganizationId,
             request: request,
             updatedByUserId: CurrentUserId
         );
