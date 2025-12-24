@@ -145,6 +145,7 @@ export default function WorkspaceTaskDetailPage({
   const prevTaskIdRef = useRef<number | null>(null);
   const effectiveCurrentUserIdRef = useRef<number>(0);
   const hasEditPermissionRef = useRef<boolean>(false);
+  const assigneeSearchInputRef = useRef<HTMLInputElement>(null);
 
   // 組織設定（タスク関連）- AppSettingsProviderから取得
   const { requireEstimateOnTaskCreation, enforcePredecessorCompletion } = useOrganizationSettings();
@@ -776,6 +777,10 @@ export default function WorkspaceTaskDetailPage({
     if (shouldShowError('assignedUserId')) {
       validateField('assignedUserId', '');
     }
+    // クリア後に検索入力欄にフォーカス
+    setTimeout(() => {
+      assigneeSearchInputRef.current?.focus();
+    }, 0);
   }, [shouldShowError, validateField]);
 
   // 自分を担当者に設定
@@ -1085,6 +1090,7 @@ export default function WorkspaceTaskDetailPage({
                     ) : (
                       <div className="relative" onClick={(e) => e.stopPropagation()}>
                         <DebouncedSearchInput
+                          inputRef={assigneeSearchInputRef}
                           onSearch={handleAssigneeSearch}
                           placeholder="名前で検索..."
                           debounceMs={300}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { searchWorkspaceMembers } from '@/actions/workspace';
 import {
   checkAssigneeTaskLoad,
@@ -62,6 +62,7 @@ export default function CreateWorkspaceTaskModal({
 }: CreateWorkspaceTaskModalProps) {
   const notify = useNotify();
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
+  const assigneeSearchInputRef = useRef<HTMLInputElement>(null);
 
   // 組織設定（タスク関連）- AppSettingsProviderから取得
   const { requireEstimateOnTaskCreation } = useOrganizationSettings();
@@ -214,6 +215,10 @@ export default function CreateWorkspaceTaskModal({
     if (shouldShowError('assignedUserId')) {
       validateField('assignedUserId', '');
     }
+    // クリア後に検索入力欄にフォーカス
+    setTimeout(() => {
+      assigneeSearchInputRef.current?.focus();
+    }, 0);
   }, [shouldShowError, validateField]);
 
   // 自分を担当者に設定
@@ -443,6 +448,7 @@ export default function CreateWorkspaceTaskModal({
               ) : (
                 <div className="relative" onClick={(e) => e.stopPropagation()}>
                   <DebouncedSearchInput
+                    inputRef={assigneeSearchInputRef}
                     onSearch={handleAssigneeSearch}
                     placeholder="名前で検索..."
                     debounceMs={300}

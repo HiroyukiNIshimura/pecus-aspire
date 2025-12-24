@@ -23,6 +23,8 @@ interface DebouncedSearchInputProps {
   isLoading?: boolean;
   /** 入力を無効化するか */
   disabled?: boolean;
+  /** 外部からinput要素にアクセスするためのref */
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 /**
@@ -41,6 +43,7 @@ export default function DebouncedSearchInput({
   showClearButton = true,
   isLoading = false,
   disabled = false,
+  inputRef,
 }: DebouncedSearchInputProps) {
   const [value, setValue] = useState(defaultValue);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -117,6 +120,7 @@ export default function DebouncedSearchInput({
   return (
     <div className={`relative ${className}`}>
       <input
+        ref={inputRef}
         type="text"
         placeholder={placeholder}
         className={`input input-bordered ${inputSizeClass} w-full ${showSearchIcon ? 'pl-9' : ''} ${showClearButton && value ? 'pr-9' : ''}`}
