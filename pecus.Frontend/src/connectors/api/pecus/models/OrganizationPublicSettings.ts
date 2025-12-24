@@ -5,6 +5,7 @@
 import type { GenerativeApiVendor } from './GenerativeApiVendor';
 import type { GroupChatScope } from './GroupChatScope';
 import type { OrganizationPlan } from './OrganizationPlan';
+import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * 組織の公開設定（センシティブ情報を除外）
  */
@@ -24,5 +25,6 @@ export type OrganizationPublicSettings = {
      */
     enforcePredecessorCompletion: boolean;
     groupChatScope?: GroupChatScope;
+    defaultWorkspaceMode?: WorkspaceMode;
 };
 

@@ -5,6 +5,7 @@ const generativeVendors = ['None', 'OpenAi', 'Anthropic', 'GoogleGemini', 'DeepS
 const organizationPlans = ['Unknown', 'Free', 'Standard', 'Enterprise'] as const;
 const helpNotificationTargets = ['Organization', 'WorkspaceUsers'] as const;
 const groupChatScopes = ['Workspace', 'Organization'] as const;
+const workspaceModes = ['Unknown', 'Normal', 'Document'] as const;
 
 export const organizationSettingSchema = z.object({
   taskOverdueThreshold: z.preprocess(
@@ -75,6 +76,12 @@ export const organizationSettingSchema = z.object({
   groupChatScope: z
     .enum(groupChatScopes, {
       message: 'グループチャットスコープを選択してください。',
+    })
+    .optional()
+    .nullable(),
+  defaultWorkspaceMode: z
+    .enum(workspaceModes, {
+      message: 'デフォルトワークスペースモードを選択してください。',
     })
     .optional()
     .nullable(),

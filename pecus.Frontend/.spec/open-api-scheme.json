@@ -11640,6 +11640,16 @@
               }
             ]
           },
+          "defaultWorkspaceMode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
+          },
           "rowVersion": {
             "type": "integer",
             "description": "楽観的ロック用RowVersion",
@@ -15024,6 +15034,16 @@
                 "$ref": "#/components/schemas/GroupChatScope"
               }
             ]
+          },
+          "defaultWorkspaceMode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
           }
         },
         "description": "組織の公開設定（センシティブ情報を除外）"
@@ -15189,6 +15209,16 @@
               },
               {
                 "$ref": "#/components/schemas/GroupChatScope"
+              }
+            ]
+          },
+          "defaultWorkspaceMode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
               }
             ]
           },

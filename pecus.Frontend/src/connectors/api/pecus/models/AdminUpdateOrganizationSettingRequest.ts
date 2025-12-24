@@ -6,6 +6,7 @@ import type { GenerativeApiVendor } from './GenerativeApiVendor';
 import type { GroupChatScope } from './GroupChatScope';
 import type { HelpNotificationTarget } from './HelpNotificationTarget';
 import type { OrganizationPlan } from './OrganizationPlan';
+import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * 組織設定更新リクエスト（管理者用）
  */
@@ -50,6 +51,7 @@ export type AdminUpdateOrganizationSettingRequest = {
      */
     dashboardHelpCommentMaxCount?: number;
     groupChatScope?: GroupChatScope;
+    defaultWorkspaceMode?: WorkspaceMode;
     /**
      * 楽観的ロック用RowVersion
      */

@@ -5,6 +5,7 @@ import { createWorkspace } from '@/actions/workspace';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type { MasterGenreResponse, WorkspaceMode } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
+import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
 import { createWorkspaceSchema } from '@/schemas/workspaceSchemas';
 
 interface CreateWorkspaceModalProps {
@@ -16,7 +17,9 @@ interface CreateWorkspaceModalProps {
 
 export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genres }: CreateWorkspaceModalProps) {
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
-  const [selectedMode, setSelectedMode] = useState<WorkspaceMode>('Normal');
+  const { defaultWorkspaceMode } = useOrganizationSettings();
+  const initialMode: WorkspaceMode = defaultWorkspaceMode === 'Document' ? 'Document' : 'Normal';
+  const [selectedMode, setSelectedMode] = useState<WorkspaceMode>(initialMode);
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
@@ -48,10 +51,10 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
   useEffect(() => {
     if (!isOpen) {
       setServerErrors([]);
-      setSelectedMode('Normal');
+      setSelectedMode(initialMode);
       resetForm();
     }
-  }, [isOpen, resetForm]);
+  }, [isOpen, initialMode, resetForm]);
 
   // body スクロール制御
   useEffect(() => {

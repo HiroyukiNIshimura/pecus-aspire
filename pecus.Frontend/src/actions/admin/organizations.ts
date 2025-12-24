@@ -82,6 +82,7 @@ export async function updateOrganizationSetting(request: {
   enforcePredecessorCompletion?: boolean;
   dashboardHelpCommentMaxCount?: number;
   groupChatScope?: OrganizationSettingResponse['groupChatScope'];
+  defaultWorkspaceMode?: OrganizationSettingResponse['defaultWorkspaceMode'];
   rowVersion: number;
 }): Promise<ApiResponse<OrganizationSettingResponse>> {
   try {

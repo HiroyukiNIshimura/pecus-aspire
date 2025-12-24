@@ -91,6 +91,19 @@ const normalizePlan = (value: unknown): OrganizationSettingResponse['plan'] => {
   return 'Unknown';
 };
 
+const normalizeWorkspaceMode = (value: unknown): OrganizationSettingResponse['defaultWorkspaceMode'] | null => {
+  if (typeof value === 'string') {
+    switch (value) {
+      case 'Normal':
+      case 'Document':
+        return value;
+      default:
+        return null;
+    }
+  }
+  return null;
+};
+
 const weekdayOptions: { value: number; label: string }[] = [
   { value: 0, label: '日曜日' },
   { value: 1, label: '月曜日' },
@@ -125,6 +138,11 @@ const groupChatScopeOptions: { value: 'Workspace' | 'Organization'; label: strin
   { value: 'Organization', label: '組織単位' },
 ];
 
+const workspaceModeOptions: { value: 'Normal' | 'Document'; label: string }[] = [
+  { value: 'Normal', label: '通常' },
+  { value: 'Document', label: 'ドキュメント' },
+];
+
 export default function AdminSettingsClient({ initialUser, organization, fetchError }: AdminSettingsClientProps) {
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -146,6 +164,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     enforcePredecessorCompletion: false,
     dashboardHelpCommentMaxCount: 6,
     groupChatScope: null as OrganizationSettingResponse['groupChatScope'],
+    defaultWorkspaceMode: null as OrganizationSettingResponse['defaultWorkspaceMode'],
     rowVersion: 0,
   };
 
@@ -167,6 +186,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     enforcePredecessorCompletion: initialSetting.enforcePredecessorCompletion ?? false,
     dashboardHelpCommentMaxCount: initialSetting.dashboardHelpCommentMaxCount ?? 6,
     groupChatScope: initialSetting.groupChatScope ?? null,
+    defaultWorkspaceMode: normalizeWorkspaceMode(initialSetting.defaultWorkspaceMode),
   });
 
   // モデル一覧を取得する関数
@@ -253,6 +273,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
             enforcePredecessorCompletion: data.enforcePredecessorCompletion ?? false,
             dashboardHelpCommentMaxCount: data.dashboardHelpCommentMaxCount ?? 6,
             groupChatScope: data.groupChatScope ?? undefined,
+            defaultWorkspaceMode: data.defaultWorkspaceMode ?? undefined,
             rowVersion,
           });
 
@@ -297,6 +318,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
       enforcePredecessorCompletion: setting.enforcePredecessorCompletion ?? false,
       dashboardHelpCommentMaxCount: setting.dashboardHelpCommentMaxCount ?? 6,
       groupChatScope: setting.groupChatScope ?? null,
+      defaultWorkspaceMode: normalizeWorkspaceMode(setting.defaultWorkspaceMode),
     });
   };
 
@@ -797,6 +819,44 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                       )}
                       <span className="label-text-alt text-xs text-base-content/60 mt-1">
                         グループチャットをワークスペースごとに作成するか、組織全体で1つのチャットルームを共有するかを設定します。
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ワークスペース設定 */}
+                <div className="card bg-base-100 shadow-sm">
+                  <div className="card-body">
+                    <h2 className="card-title text-lg mb-4">
+                      <span className="icon-[mdi--folder-outline] size-5" aria-hidden="true" />
+                      ワークスペース設定
+                    </h2>
+
+                    <div className="form-control">
+                      <label className="label" htmlFor="select-default-workspace-mode">
+                        <span className="label-text font-semibold">デフォルトのワークスペースモード</span>
+                      </label>
+                      <select
+                        id="select-default-workspace-mode"
+                        name="defaultWorkspaceMode"
+                        className={`select select-bordered ${shouldShowError('defaultWorkspaceMode') ? 'select-error' : ''}`}
+                        value={formData.defaultWorkspaceMode ?? 'Normal'}
+                        onChange={(e) =>
+                          handleFieldChange('defaultWorkspaceMode', e.target.value as 'Normal' | 'Document')
+                        }
+                        disabled={isSubmitting}
+                      >
+                        {workspaceModeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      {shouldShowError('defaultWorkspaceMode') && (
+                        <span className="label-text-alt text-error">{getFieldError('defaultWorkspaceMode')}</span>
+                      )}
+                      <span className="label-text-alt text-xs text-base-content/60 mt-1">
+                        新しいワークスペースを作成する際のデフォルトモードを設定します。通常モードはすべての機能が利用可能、ドキュメントモードはドキュメント中心のシンプルな構成になります。
                       </span>
                     </div>
                   </div>

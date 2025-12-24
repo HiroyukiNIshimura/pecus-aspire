@@ -102,6 +102,7 @@ export const defaultAppSettings: AppPublicSettingsResponse = {
     requireEstimateOnTaskCreation: false,
     enforcePredecessorCompletion: false,
     groupChatScope: undefined,
+    defaultWorkspaceMode: undefined,
   },
   user: {
     timeZone: 'Asia/Tokyo',
