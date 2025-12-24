@@ -161,28 +161,31 @@ export default function CreateWorkspaceTaskModal({
     });
 
   // 担当者検索
-  const handleAssigneeSearch = useCallback(async (query: string) => {
-    if (query.length < 2) {
-      setAssigneeSearchResults([]);
-      setShowAssigneeDropdown(false);
-      return;
-    }
-
-    setIsSearchingAssignee(true);
-    setShowAssigneeDropdown(true);
-
-    try {
-      const result = await searchWorkspaceMembers(workspaceId, query, true);
-      if (result.success) {
-        setAssigneeSearchResults(result.data || []);
-        setShowAssigneeDropdown(true);
+  const handleAssigneeSearch = useCallback(
+    async (query: string) => {
+      if (query.length < 2) {
+        setAssigneeSearchResults([]);
+        setShowAssigneeDropdown(false);
+        return;
       }
-    } catch {
-      // エラーは無視
-    } finally {
-      setIsSearchingAssignee(false);
-    }
-  }, [workspaceId]);
+
+      setIsSearchingAssignee(true);
+      setShowAssigneeDropdown(true);
+
+      try {
+        const result = await searchWorkspaceMembers(workspaceId, query, true);
+        if (result.success) {
+          setAssigneeSearchResults(result.data || []);
+          setShowAssigneeDropdown(true);
+        }
+      } catch {
+        // エラーは無視
+      } finally {
+        setIsSearchingAssignee(false);
+      }
+    },
+    [workspaceId],
+  );
 
   // 担当者選択
   const handleSelectAssignee = useCallback(

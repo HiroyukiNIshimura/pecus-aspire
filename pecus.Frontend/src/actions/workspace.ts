@@ -408,12 +408,7 @@ export async function searchWorkspaceMembers(
     }
 
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspacesMembersSearch(
-      workspaceId,
-      query,
-      limit,
-      excludeViewer,
-    );
+    const response = await api.workspace.getApiWorkspacesMembersSearch(workspaceId, query, limit, excludeViewer);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to search workspace members:', error);
