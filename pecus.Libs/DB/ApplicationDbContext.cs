@@ -296,6 +296,11 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.Code).IsUnique();
             entity.Property(e => e.Mode).IsRequired().HasDefaultValue(WorkspaceMode.Unknown);
 
+            // パフォーマンス向上用インデックス
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.GenreId);
+            entity.HasIndex(e => e.Name);
+
             // Workspace と Organization の多対一リレーションシップ
             entity
                 .HasOne(w => w.Organization)
