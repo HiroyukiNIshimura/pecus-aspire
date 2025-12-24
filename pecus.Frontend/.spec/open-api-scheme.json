@@ -3093,7 +3093,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics"
+                  "$ref": "#/components/schemas/PagedResponseOfWorkspaceListItemResponse"
                 }
               }
             }
@@ -3289,6 +3289,37 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/workspaces/statistics": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ログインユーザーがアクセス可能なワークスペースの統計情報を取得する",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceStatistics"
                 }
               }
             }
@@ -15703,6 +15734,50 @@
           }
         },
         "description": "ページネーション付きレスポンス（統計情報付き）"
+      },
+      "PagedResponseOfWorkspaceListItemResponse": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceListItemResponse"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          }
+        },
+        "description": "ページネーション付きレスポンス"
       },
       "PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics": {
         "required": [

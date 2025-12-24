@@ -124,11 +124,11 @@ public class WorkspaceController : BaseSecureController
     /// <param name="request">ワークスペース一覧取得リクエスト</param>
     [HttpGet]
     [ProducesResponseType(
-        typeof(PagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>),
+        typeof(PagedResponse<WorkspaceListItemResponse>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<PagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>>> GetAccessibleWorkspaces(
+    public async Task<Ok<PagedResponse<WorkspaceListItemResponse>>> GetAccessibleWorkspaces(
         [FromQuery] GetWorkspacesRequest request
     )
     {
@@ -203,18 +203,26 @@ public class WorkspaceController : BaseSecureController
             })
             .ToList();
 
-        // ログインユーザーがアクセス可能なワークスペースの統計情報を取得
-        var statistics = await _workspaceService.GetAccessibleWorkspaceStatisticsAsync(CurrentUserId);
-
         var response = PaginationHelper.CreatePagedResponse(
             data: items,
             totalCount: totalCount,
             page: validatedPage,
-            pageSize: pageSize,
-            summary: statistics
+            pageSize: pageSize
         );
 
         return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// ログインユーザーがアクセス可能なワークスペースの統計情報を取得する
+    /// </summary>
+    [HttpGet("statistics")]
+    [ProducesResponseType(typeof(WorkspaceStatistics), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceStatistics>> GetAccessibleWorkspaceStatistics()
+    {
+        var statistics = await _workspaceService.GetAccessibleWorkspaceStatisticsAsync(CurrentUserId);
+        return TypedResults.Ok(statistics);
     }
 
     /// <summary>

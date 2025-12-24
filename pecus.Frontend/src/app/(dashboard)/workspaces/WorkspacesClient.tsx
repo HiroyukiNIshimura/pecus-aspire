@@ -8,7 +8,7 @@ import { Tooltip } from '@/components/common/feedback/Tooltip';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
-  PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
+  PagedResponseOfWorkspaceListItemResponse,
   WorkspaceListItemResponse,
   WorkspaceStatistics,
 } from '@/connectors/api/pecus';
@@ -22,15 +22,16 @@ import CreateWorkspaceModal from './CreateWorkspaceModal';
 
 interface WorkspacesClientProps {
   genres: MasterGenreResponse[];
+  initialStatistics: WorkspaceStatistics | null;
 }
 
-export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
+export default function WorkspacesClient({ genres, initialStatistics }: WorkspacesClientProps) {
   // ワークスペース一覧データはClient側で初期フェッチ
   const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(null);
+  const statistics = initialStatistics;
   const [filterName, setFilterName] = useState<string>('');
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -52,12 +53,11 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
         const response = await fetch(`/api/workspaces?${params.toString()}`);
         if (response.ok && isMounted) {
-          const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
+          const data: PagedResponseOfWorkspaceListItemResponse = await response.json();
           setWorkspaces(data.data || []);
           setCurrentPage(data.currentPage || 1);
           setTotalPages(data.totalPages || 1);
           setTotalCount(data.totalCount || 0);
-          setStatistics(data.summary || null);
         }
       } catch (error) {
         console.error('Failed to fetch initial workspaces:', error);
@@ -106,14 +106,11 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
       if (response.ok) {
-        const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
+        const data: PagedResponseOfWorkspaceListItemResponse = await response.json();
         setWorkspaces((prev) => [...prev, ...(data.data || [])]);
         setCurrentPage(data.currentPage || nextPage);
         setTotalPages(data.totalPages || 1);
         setTotalCount(data.totalCount || 0);
-        if (data.summary) {
-          setStatistics(data.summary);
-        }
       }
     } catch (error) {
       console.error('Failed to load more workspaces:', error);
@@ -135,12 +132,11 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
       if (response.ok) {
-        const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
+        const data: PagedResponseOfWorkspaceListItemResponse = await response.json();
         setWorkspaces(data.data || []);
         setCurrentPage(1);
         setTotalPages(data.totalPages || 1);
         setTotalCount(data.totalCount || 0);
-        setStatistics(data.summary || null);
       }
     } catch (error) {
       console.error('Failed to filter workspaces:', error);
@@ -174,12 +170,11 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
         const response = await fetch(`/api/workspaces?${params.toString()}`);
         if (response.ok) {
-          const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
+          const data: PagedResponseOfWorkspaceListItemResponse = await response.json();
           setWorkspaces(data.data || []);
           setCurrentPage(1);
           setTotalPages(data.totalPages || 1);
           setTotalCount(data.totalCount || 0);
-          setStatistics(data.summary || null);
         }
       } catch (error) {
         console.error('Failed to reset workspaces:', error);

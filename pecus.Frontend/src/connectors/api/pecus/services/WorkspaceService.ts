@@ -5,13 +5,14 @@
 import type { AddUserToWorkspaceRequest } from '../models/AddUserToWorkspaceRequest';
 import type { CreateWorkspaceRequest } from '../models/CreateWorkspaceRequest';
 import type { DocumentTreeResponse } from '../models/DocumentTreeResponse';
-import type { PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics } from '../models/PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics';
+import type { PagedResponseOfWorkspaceListItemResponse } from '../models/PagedResponseOfWorkspaceListItemResponse';
 import type { SetWorkspaceSkillsRequest } from '../models/SetWorkspaceSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
 import type { UserSearchResultResponse } from '../models/UserSearchResultResponse';
 import type { WorkspaceFullDetailResponse } from '../models/WorkspaceFullDetailResponse';
+import type { WorkspaceStatistics } from '../models/WorkspaceStatistics';
 import type { WorkspaceUserDetailResponse } from '../models/WorkspaceUserDetailResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -67,14 +68,14 @@ export class WorkspaceService {
      * @param page
      * @param genreId
      * @param name
-     * @returns PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics OK
+     * @returns PagedResponseOfWorkspaceListItemResponse OK
      * @throws ApiError
      */
     public static getApiWorkspaces(
         page?: number,
         genreId?: number,
         name?: string,
-    ): CancelablePromise<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics> {
+    ): CancelablePromise<PagedResponseOfWorkspaceListItemResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/workspaces',
@@ -153,6 +154,20 @@ export class WorkspaceService {
             },
             errors: {
                 404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ログインユーザーがアクセス可能なワークスペースの統計情報を取得する
+     * @returns WorkspaceStatistics OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesStatistics(): CancelablePromise<WorkspaceStatistics> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/statistics',
+            errors: {
                 500: `Internal Server Error`,
             },
         });

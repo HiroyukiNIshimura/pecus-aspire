@@ -126,6 +126,7 @@ export type { PagedResponseOfTaskCommentDetailResponse } from './models/PagedRes
 export type { PagedResponseOfUserDetailResponseAndUserStatistics } from './models/PagedResponseOfUserDetailResponseAndUserStatistics';
 export type { PagedResponseOfWorkspaceItemDetailResponse } from './models/PagedResponseOfWorkspaceItemDetailResponse';
 export type { PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics } from './models/PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics';
+export type { PagedResponseOfWorkspaceListItemResponse } from './models/PagedResponseOfWorkspaceListItemResponse';
 export type { PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics } from './models/PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics';
 export type { PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics } from './models/PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics';
 export type { PagedResponseOfWorkspaceUserDetailResponseAndObject } from './models/PagedResponseOfWorkspaceUserDetailResponseAndObject';
