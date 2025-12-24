@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { searchUsersForWorkspace } from '@/actions/admin/user';
+import { searchWorkspaceMembers } from '@/actions/workspace';
 import {
   getPredecessorTaskOptions,
   getWorkspaceTask,
@@ -734,7 +734,7 @@ export default function WorkspaceTaskDetailPage({
     setShowAssigneeDropdown(true);
 
     try {
-      const result = await searchUsersForWorkspace(query);
+      const result = await searchWorkspaceMembers(workspaceId, query, true);
       if (result.success) {
         setAssigneeSearchResults(result.data || []);
         setShowAssigneeDropdown(true);
@@ -744,7 +744,7 @@ export default function WorkspaceTaskDetailPage({
     } finally {
       setIsSearchingAssignee(false);
     }
-  }, []);
+  }, [workspaceId]);
 
   // 担当者選択
   const handleSelectAssignee = useCallback(

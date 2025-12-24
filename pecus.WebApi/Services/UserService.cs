@@ -841,17 +841,31 @@ public class UserService
     /// <param name="organizationId">組織ID（同一組織内のユーザーのみ検索）</param>
     /// <param name="searchQuery">検索クエリ（ユーザー名またはメールアドレスの一部）</param>
     /// <param name="limit">取得件数上限（デフォルト20件）</param>
+    /// <param name="workspaceId">ワークスペースID（指定時はそのワークスペースのメンバーのみ検索）</param>
+    /// <param name="excludeViewer">Viewerロールを除外するかどうか（workspaceId指定時のみ有効）</param>
     /// <returns>検索にヒットしたユーザー一覧</returns>
     public async Task<List<User>> SearchUsersWithPgroongaAsync(
         int organizationId,
         string searchQuery,
-        int limit = 20
+        int limit = 20,
+        int? workspaceId = null,
+        bool excludeViewer = false
     )
     {
         if (string.IsNullOrWhiteSpace(searchQuery) || searchQuery.Length < 2)
         {
             return new List<User>();
         }
+
+        // ワークスペースメンバー限定の条件
+        var workspaceJoin = workspaceId.HasValue
+            ? @"INNER JOIN ""WorkspaceUsers"" wu ON u.""Id"" = wu.""UserId"" AND wu.""WorkspaceId"" = {3}"
+            : "";
+
+        // Viewerロール除外条件（WorkspaceRole.Viewer = 1）
+        var viewerCondition = workspaceId.HasValue && excludeViewer
+            ? @"AND wu.""WorkspaceRole"" != 1"
+            : "";
 
         // pgroonga のあいまい検索を使用
         // &@~ 演算子：類似検索（タイポ許容）
@@ -862,31 +876,45 @@ public class UserService
         // 注意: DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
         //       サブクエリで重複排除してから外側でスコア順にソートする
         // 注意: サブクエリ内の u.* には xmin が含まれないため、外側で sub.xmin を明示的に SELECT する
-        var users = await _context.Users
-            .FromSqlInterpolated($@"
-                SELECT sub.""Id"", sub.""LoginId"", sub.""Username"", sub.""Email"", sub.""PasswordHash"",
-                       sub.""AvatarType"", sub.""UserAvatarPath"", sub.""OrganizationId"",
-                       sub.""CreatedAt"", sub.""CreatedByUserId"", sub.""LastLoginAt"",
-                       sub.""UpdatedAt"", sub.""UpdatedByUserId"",
-                       sub.""PasswordResetToken"", sub.""PasswordResetTokenExpiresAt"",
-                       sub.""IsActive"", sub.xmin
-                FROM (
-                    SELECT DISTINCT ON (u.""Id"") u.*, u.xmin, pgroonga_score(u.tableoid, u.ctid) AS score
-                    FROM ""Users"" u
-                    LEFT JOIN ""UserSkills"" us ON u.""Id"" = us.""UserId""
-                    LEFT JOIN ""Skills"" s ON us.""SkillId"" = s.""Id"" AND s.""IsActive"" = true
-                    WHERE u.""OrganizationId"" = {organizationId}
-                      AND u.""IsActive"" = true
-                      AND (
-                        ARRAY[u.""Username"", u.""Email""] &@~ {searchQuery}
-                        OR s.""Name"" &@~ {searchQuery}
-                      )
-                    ORDER BY u.""Id"", pgroonga_score(u.tableoid, u.ctid) DESC
-                ) sub
-                ORDER BY sub.score DESC
-                LIMIT {limit}
-            ")
-            .ToListAsync();
+        var sql = $@"
+            SELECT sub.""Id"", sub.""LoginId"", sub.""Username"", sub.""Email"", sub.""PasswordHash"",
+                   sub.""AvatarType"", sub.""UserAvatarPath"", sub.""OrganizationId"",
+                   sub.""CreatedAt"", sub.""CreatedByUserId"", sub.""LastLoginAt"",
+                   sub.""UpdatedAt"", sub.""UpdatedByUserId"",
+                   sub.""PasswordResetToken"", sub.""PasswordResetTokenExpiresAt"",
+                   sub.""IsActive"", sub.xmin
+            FROM (
+                SELECT DISTINCT ON (u.""Id"") u.*, u.xmin, pgroonga_score(u.tableoid, u.ctid) AS score
+                FROM ""Users"" u
+                LEFT JOIN ""UserSkills"" us ON u.""Id"" = us.""UserId""
+                LEFT JOIN ""Skills"" s ON us.""SkillId"" = s.""Id"" AND s.""IsActive"" = true
+                {workspaceJoin}
+                WHERE u.""OrganizationId"" = {{0}}
+                  AND u.""IsActive"" = true
+                  AND (
+                    ARRAY[u.""Username"", u.""Email""] &@~ {{1}}
+                    OR s.""Name"" &@~ {{1}}
+                  )
+                  {viewerCondition}
+                ORDER BY u.""Id"", pgroonga_score(u.tableoid, u.ctid) DESC
+            ) sub
+            ORDER BY sub.score DESC
+            LIMIT {{2}}
+        ";
+
+        List<User> users;
+        if (workspaceId.HasValue)
+        {
+            users = await _context.Users
+                .FromSqlRaw(sql, organizationId, searchQuery, limit, workspaceId.Value)
+                .ToListAsync();
+        }
+        else
+        {
+            users = await _context.Users
+                .FromSqlRaw(sql, organizationId, searchQuery, limit)
+                .ToListAsync();
+        }
 
         // Include はサブクエリで処理するため、別途取得
         if (users.Any())

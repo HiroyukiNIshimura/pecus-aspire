@@ -845,6 +845,12 @@ export default function WorkspaceDetailClient({
 
   // 関連アイテム追加モードをトグル
   const handleStartAddRelation = useCallback(async () => {
+    // ワークスペース編集権限チェック
+    if (!canEdit) {
+      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+      return;
+    }
+
     if (!selectedItemId) return;
 
     // 既に追加モードの場合は解除
@@ -872,7 +878,7 @@ export default function WorkspaceDetailClient({
     // デスクトップとモバイル両方のサイドバーで選択モードを開始
     sidebarComponentRef.current?.startSelectionMode(selectedItemId, excludeIds);
     mobileSidebarComponentRef.current?.startSelectionMode(selectedItemId, excludeIds);
-  }, [selectedItemId, workspaceDetail.id, isAddingRelation]);
+  }, [canEdit, notify, selectedItemId, workspaceDetail.id, isAddingRelation]);
 
   // 関連アイテム選択確定時のハンドラ
   const handleSelectionConfirm = useCallback(

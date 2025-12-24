@@ -3612,6 +3612,97 @@
         ]
       }
     },
+    "/api/workspaces/{id}/members/search": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ワークスペースのメンバーをあいまい検索する",
+        "description": "ワークスペースに参加しているメンバーの中から、ユーザー名またはメールアドレスで\nあいまい検索を行います。pgroonga を使用しているため、日本語の漢字のゆらぎや\nタイポにも対応します。\n\nタスクの担当者選択など、編集権限が必要な場面では excludeViewer=true を指定して\nViewer ロールのメンバーを除外できます。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Q",
+            "in": "query",
+            "description": "検索クエリ（2文字以上100文字以内）",
+            "schema": {
+              "maxLength": 100,
+              "minLength": 2,
+              "type": "string"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "取得件数上限（1〜50、デフォルト20）",
+            "schema": {
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ExcludeViewer",
+            "in": "query",
+            "description": "Viewerロールを除外するかどうか（デフォルト: false）",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserSearchResultResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/workspaces/{id}/activate": {
       "post": {
         "tags": [

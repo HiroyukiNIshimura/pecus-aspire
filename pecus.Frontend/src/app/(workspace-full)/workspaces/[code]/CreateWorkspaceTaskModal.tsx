@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { searchUsersForWorkspace } from '@/actions/admin/user';
+import { searchWorkspaceMembers } from '@/actions/workspace';
 import {
   checkAssigneeTaskLoad,
   createWorkspaceTask,
@@ -172,7 +172,7 @@ export default function CreateWorkspaceTaskModal({
     setShowAssigneeDropdown(true);
 
     try {
-      const result = await searchUsersForWorkspace(query);
+      const result = await searchWorkspaceMembers(workspaceId, query, true);
       if (result.success) {
         setAssigneeSearchResults(result.data || []);
         setShowAssigneeDropdown(true);
@@ -182,7 +182,7 @@ export default function CreateWorkspaceTaskModal({
     } finally {
       setIsSearchingAssignee(false);
     }
-  }, []);
+  }, [workspaceId]);
 
   // 担当者選択
   const handleSelectAssignee = useCallback(

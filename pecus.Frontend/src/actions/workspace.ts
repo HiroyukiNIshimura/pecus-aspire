@@ -9,6 +9,7 @@ import {
 } from '@/connectors/api/PecusApiClient';
 import type {
   SuccessResponse,
+  UserSearchResultResponse,
   WorkspaceDetailResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
@@ -383,5 +384,39 @@ export async function setWorkspaceSkills(
     }
 
     return parseErrorResponse(error, 'スキルの設定に失敗しました');
+  }
+}
+
+/**
+ * Server Action: ワークスペースメンバーのあいまい検索
+ * pgroonga を使用したあいまい検索で、日本語の漢字のゆらぎやタイポにも対応
+ * タスクの担当者選択など、編集権限が必要な場面では excludeViewer=true を指定
+ * @param workspaceId ワークスペースID
+ * @param query 検索クエリ（2文字以上）
+ * @param excludeViewer Viewerロールを除外するかどうか
+ * @param limit 取得件数上限（デフォルト20）
+ */
+export async function searchWorkspaceMembers(
+  workspaceId: number,
+  query: string,
+  excludeViewer: boolean = false,
+  limit: number = 20,
+): Promise<ApiResponse<UserSearchResultResponse[]>> {
+  try {
+    if (!query || query.length < 2) {
+      return { success: true, data: [] };
+    }
+
+    const api = createPecusApiClients();
+    const response = await api.workspace.getApiWorkspacesMembersSearch(
+      workspaceId,
+      query,
+      limit,
+      excludeViewer,
+    );
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to search workspace members:', error);
+    return parseErrorResponse(error, 'メンバー検索に失敗しました');
   }
 }

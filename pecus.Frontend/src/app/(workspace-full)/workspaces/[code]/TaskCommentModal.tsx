@@ -13,6 +13,8 @@ interface TaskCommentModalProps {
   currentUserId: number;
   /** コメント数が変更された時のコールバック */
   onCommentCountChange?: (count: number) => void;
+  /** ワークスペース編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
 export default function TaskCommentModal({
@@ -23,6 +25,7 @@ export default function TaskCommentModal({
   task,
   currentUserId,
   onCommentCountChange,
+  canEdit = true,
 }: TaskCommentModalProps) {
   // body スクロール制御
   useEffect(() => {
@@ -74,6 +77,7 @@ export default function TaskCommentModal({
           currentUserId={currentUserId}
           onCommentCountChange={onCommentCountChange}
           autoFocus
+          canEdit={canEdit}
         />
       </div>
     </div>

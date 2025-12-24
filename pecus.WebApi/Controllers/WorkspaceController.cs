@@ -21,6 +21,7 @@ namespace Pecus.Controllers;
 public class WorkspaceController : BaseSecureController
 {
     private readonly WorkspaceService _workspaceService;
+    private readonly UserService _userService;
     private readonly ILogger<WorkspaceController> _logger;
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
@@ -28,6 +29,7 @@ public class WorkspaceController : BaseSecureController
 
     public WorkspaceController(
         WorkspaceService workspaceService,
+        UserService userService,
         ProfileService profileService,
         ILogger<WorkspaceController> logger,
         PecusConfig config,
@@ -36,6 +38,7 @@ public class WorkspaceController : BaseSecureController
     ) : base(profileService, logger)
     {
         _workspaceService = workspaceService;
+        _userService = userService;
         _logger = logger;
         _config = config;
         _backgroundJobClient = backgroundJobClient;
@@ -418,6 +421,67 @@ public class WorkspaceController : BaseSecureController
             LastAccessedAt = workspaceUser.LastAccessedAt,
             IsActive = workspaceUser.User?.IsActive ?? false,
         };
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// ワークスペースのメンバーをあいまい検索する
+    /// </summary>
+    /// <remarks>
+    /// ワークスペースに参加しているメンバーの中から、ユーザー名またはメールアドレスで
+    /// あいまい検索を行います。pgroonga を使用しているため、日本語の漢字のゆらぎや
+    /// タイポにも対応します。
+    ///
+    /// タスクの担当者選択など、編集権限が必要な場面では excludeViewer=true を指定して
+    /// Viewer ロールのメンバーを除外できます。
+    /// </remarks>
+    /// <param name="id">ワークスペースID</param>
+    /// <param name="request">検索リクエスト</param>
+    [HttpGet("{id:int}/members/search")]
+    [ProducesResponseType(typeof(List<UserSearchResultResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<Ok<List<UserSearchResultResponse>>> SearchWorkspaceMembers(
+        int id,
+        [FromQuery] SearchWorkspaceMembersRequest request
+    )
+    {
+        // ワークスペースメンバーであることを確認（Viewer含む全ロールがアクセス可能）
+        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
+
+        // メンバー検索を実行（UserService の既存メソッドを利用）
+        var users = await _userService.SearchUsersWithPgroongaAsync(
+            organizationId: CurrentOrganizationId,
+            searchQuery: request.Q,
+            limit: request.Limit,
+            workspaceId: id,
+            excludeViewer: request.ExcludeViewer
+        );
+
+        var response = users.Select(u => new UserSearchResultResponse
+        {
+            Id = u.Id,
+            Username = u.Username,
+            Email = u.Email,
+            AvatarType = u.AvatarType,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: u.AvatarType,
+                userId: u.Id,
+                username: u.Username,
+                email: u.Email,
+                avatarPath: u.UserAvatarPath
+            ),
+            Skills = u.UserSkills
+                .Where(us => us.Skill != null && us.Skill.IsActive)
+                .Select(us => new UserSearchSkillResponse
+                {
+                    Id = us.Skill!.Id,
+                    Name = us.Skill.Name,
+                })
+                .OrderBy(s => s.Name)
+                .ToList(),
+        }).ToList();
 
         return TypedResults.Ok(response);
     }

@@ -448,6 +448,7 @@ const WorkspaceTasks = ({
           task={commentTargetTask}
           currentUserId={currentUser.id}
           onCommentCountChange={() => fetchTasks(currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder)}
+          canEdit={canEdit}
         />
       )}
     </>

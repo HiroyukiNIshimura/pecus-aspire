@@ -10,6 +10,7 @@ import type { SetWorkspaceSkillsRequest } from '../models/SetWorkspaceSkillsRequ
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
+import type { UserSearchResultResponse } from '../models/UserSearchResultResponse';
 import type { WorkspaceFullDetailResponse } from '../models/WorkspaceFullDetailResponse';
 import type { WorkspaceUserDetailResponse } from '../models/WorkspaceUserDetailResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -256,6 +257,44 @@ export class WorkspaceService {
                 400: `Bad Request`,
                 404: `Not Found`,
                 500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ワークスペースのメンバーをあいまい検索する
+     * ワークスペースに参加しているメンバーの中から、ユーザー名またはメールアドレスで
+     * あいまい検索を行います。pgroonga を使用しているため、日本語の漢字のゆらぎや
+     * タイポにも対応します。
+     *
+     * タスクの担当者選択など、編集権限が必要な場面では excludeViewer=true を指定して
+     * Viewer ロールのメンバーを除外できます。
+     * @param id ワークスペースID
+     * @param q 検索クエリ（2文字以上100文字以内）
+     * @param limit 取得件数上限（1〜50、デフォルト20）
+     * @param excludeViewer Viewerロールを除外するかどうか（デフォルト: false）
+     * @returns UserSearchResultResponse OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesMembersSearch(
+        id: number,
+        q?: string,
+        limit?: number,
+        excludeViewer?: boolean,
+    ): CancelablePromise<Array<UserSearchResultResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/{id}/members/search',
+            path: {
+                'id': id,
+            },
+            query: {
+                'Q': q,
+                'Limit': limit,
+                'ExcludeViewer': excludeViewer,
+            },
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
             },
         });
     }
