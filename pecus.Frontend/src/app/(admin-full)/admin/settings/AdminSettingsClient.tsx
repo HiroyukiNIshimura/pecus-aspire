@@ -618,7 +618,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                   </div>
                 </div>
 
-                <div className="divider">タスクの設定</div>
+                <h2 className="text-lg font-semibold mt-8 pb-2 border-b border-base-content/20">タスクの設定</h2>
 
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -754,46 +754,36 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                   </div>
                 </div>
 
-                {/* ダッシュボード設定 */}
-                <div className="card bg-base-100 shadow-sm">
-                  <div className="card-body">
-                    <h2 className="card-title text-lg mb-4">
-                      <span className="icon-[mdi--view-dashboard-outline] size-5" aria-hidden="true" />
-                      ダッシュボード設定
-                    </h2>
+                <h2 className="text-lg font-semibold mt-8 pb-2 border-b border-base-content/20">ダッシュボード設定</h2>
 
-                    <div className="space-y-4">
-                      <Slider
-                        min={5}
-                        max={20}
-                        step={1}
-                        name="dashboardHelpCommentMaxCount"
-                        value={formData.dashboardHelpCommentMaxCount ?? 6}
-                        onChange={(value) => handleFieldChange('dashboardHelpCommentMaxCount', value)}
-                        label="ヘルプコメント表示件数"
-                        showValue
-                        valueFormatter={(v) => `${v}件`}
-                        disabled={isSubmitting}
-                        ariaLabel="ダッシュボードに表示するヘルプコメントの最大件数"
-                      />
-                      <p className="text-sm text-base-content/60">
-                        ダッシュボードに表示する「ヘルプを求めているタスク」の最大件数を設定します。
-                      </p>
-                      {shouldShowError('dashboardHelpCommentMaxCount') && (
-                        <p className="text-sm text-error">{getFieldError('dashboardHelpCommentMaxCount')}</p>
-                      )}
-                    </div>
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <Slider
+                      min={5}
+                      max={20}
+                      step={1}
+                      name="dashboardHelpCommentMaxCount"
+                      value={formData.dashboardHelpCommentMaxCount ?? 6}
+                      onChange={(value) => handleFieldChange('dashboardHelpCommentMaxCount', value)}
+                      label="ヘルプコメント表示件数"
+                      showValue
+                      valueFormatter={(v) => `${v}件`}
+                      disabled={isSubmitting}
+                      ariaLabel="ダッシュボードに表示するヘルプコメントの最大件数"
+                    />
+                    <p className="text-sm text-base-content/60">
+                      ダッシュボードに表示する「ヘルプを求めているタスク」の最大件数を設定します。
+                    </p>
+                    {shouldShowError('dashboardHelpCommentMaxCount') && (
+                      <p className="text-sm text-error">{getFieldError('dashboardHelpCommentMaxCount')}</p>
+                    )}
                   </div>
                 </div>
 
-                {/* チャット設定 */}
-                <div className="card bg-base-100 shadow-sm">
-                  <div className="card-body">
-                    <h2 className="card-title text-lg mb-4">
-                      <span className="icon-[mdi--chat-outline] size-5" aria-hidden="true" />
-                      チャット設定
-                    </h2>
+                <h2 className="text-lg font-semibold mt-8 pb-2 border-b border-base-content/20">チャット設定</h2>
 
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="form-control">
                       <label className="label" htmlFor="select-group-chat-scope">
                         <span className="label-text font-semibold">グループチャットのスコープ</span>
@@ -824,14 +814,10 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                   </div>
                 </div>
 
-                {/* ワークスペース設定 */}
-                <div className="card bg-base-100 shadow-sm">
-                  <div className="card-body">
-                    <h2 className="card-title text-lg mb-4">
-                      <span className="icon-[mdi--folder-outline] size-5" aria-hidden="true" />
-                      ワークスペース設定
-                    </h2>
+                <h2 className="text-lg font-semibold mt-8 pb-2 border-b border-base-content/20">ワークスペース設定</h2>
 
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="form-control">
                       <label className="label" htmlFor="select-default-workspace-mode">
                         <span className="label-text font-semibold">デフォルトのワークスペースモード</span>
