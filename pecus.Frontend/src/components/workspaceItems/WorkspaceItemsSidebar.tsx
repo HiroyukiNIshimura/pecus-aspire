@@ -466,6 +466,14 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold">アイテム一覧</h3>
+                  <button
+                    type="button"
+                    onClick={() => refreshItems()}
+                    className="btn btn-text btn-xs"
+                    title="一覧を更新"
+                  >
+                    <span className="icon-[mdi--refresh] w-4 h-4" aria-hidden="true" />
+                  </button>
                   {currentWorkspace?.mode === 'Document' && (
                     <div className="join">
                       <button
