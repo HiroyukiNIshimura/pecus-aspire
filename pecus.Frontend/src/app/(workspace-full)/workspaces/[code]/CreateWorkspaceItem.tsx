@@ -9,6 +9,7 @@ import TagInput from '@/components/common/forms/TagInput';
 import { INSERT_MARKDOWN_COMMAND, PecusNotionLikeEditor, useNewItemImageUploadHandler } from '@/components/editor';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
+import { useNotify } from '@/hooks/useNotify';
 import type { CreateWorkspaceItemInput } from '@/schemas/editSchemas';
 import { createWorkspaceItemSchema } from '@/schemas/editSchemas';
 
@@ -17,9 +18,18 @@ interface CreateWorkspaceItemProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate?: (itemId: number, itemCode: string) => void;
+  /** 編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
-export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCreate }: CreateWorkspaceItemProps) {
+export default function CreateWorkspaceItem({
+  workspaceId,
+  isOpen,
+  onClose,
+  onCreate,
+  canEdit = true,
+}: CreateWorkspaceItemProps) {
+  const notify = useNotify();
   // 一時ファイルアップロード用のセッションID（モーダル表示ごとに生成）
   const sessionId = useMemo(() => crypto.randomUUID(), []);
 
@@ -74,6 +84,12 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
   } = useFormValidation({
     schema: createWorkspaceItemSchema,
     onSubmit: async (data) => {
+      // 編集権限チェック
+      if (!canEdit) {
+        notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+        return;
+      }
+
       try {
         // dueDate を ISO 8601 形式に変換（空の場合は null）
         let dueDateValue: string | null = null;

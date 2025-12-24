@@ -104,6 +104,8 @@ interface WorkspaceTasksProps {
   onShowFlowMap?: () => void;
   /** アイテムコード（URL用） */
   itemCode: string;
+  /** ワークスペース編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
 const ITEMS_PER_PAGE = 8; // 4列 x 2行
@@ -121,6 +123,7 @@ const WorkspaceTasks = ({
   onShowTaskDetail,
   onShowFlowMap,
   itemCode,
+  canEdit = true,
 }: WorkspaceTasksProps) => {
   const notify = useNotify();
   const [tasks, setTasks] = useState<WorkspaceTaskDetailResponse[]>([]);
@@ -399,7 +402,17 @@ const WorkspaceTasks = ({
           <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
           フロー
         </button>
-        <button type="button" className="btn btn-outline btn-primary btn-sm" onClick={() => setIsCreateModalOpen(true)}>
+        <button
+          type="button"
+          className="btn btn-outline btn-primary btn-sm"
+          onClick={() => {
+            if (!canEdit) {
+              notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+              return;
+            }
+            setIsCreateModalOpen(true);
+          }}
+        >
           <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
           タスク追加
         </button>
@@ -419,6 +432,7 @@ const WorkspaceTasks = ({
         itemId={itemId}
         taskTypes={taskTypes}
         currentUser={currentUser}
+        canEdit={canEdit}
       />
 
       {/* コメントモーダル */}

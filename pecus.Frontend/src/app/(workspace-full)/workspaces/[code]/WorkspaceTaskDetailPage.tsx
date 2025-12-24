@@ -96,6 +96,8 @@ export interface WorkspaceTaskDetailPageProps {
   onShowFlowMap?: () => void;
   /** 指定タスクへナビゲートするコールバック（先行タスクリンク用） */
   onNavigateToTask?: (taskSequence: number) => void;
+  /** 編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
 export default function WorkspaceTaskDetailPage({
@@ -115,6 +117,7 @@ export default function WorkspaceTaskDetailPage({
   isModal = false,
   onShowFlowMap,
   onNavigateToTask,
+  canEdit = true,
 }: WorkspaceTaskDetailPageProps) {
   const notify = useNotify();
   const notifyRef = useRef(notify);
@@ -636,6 +639,12 @@ export default function WorkspaceTaskDetailPage({
       onSubmit: async (data) => {
         if (!task) return;
         setServerErrors([]);
+
+        // ワークスペース編集権限チェック
+        if (!canEdit) {
+          notifyRef.current.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+          return;
+        }
 
         if (isLockedByOther) {
           notifyRef.current.warning('他のユーザーが編集中です。編集できません。');
@@ -1557,6 +1566,7 @@ export default function WorkspaceTaskDetailPage({
                 taskId={task.id}
                 currentUserId={currentUser?.id}
                 autoFocus={initialFocusComments}
+                canEdit={canEdit}
               />
             )}
           </div>

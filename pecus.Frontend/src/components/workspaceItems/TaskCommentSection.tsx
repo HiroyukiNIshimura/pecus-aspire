@@ -36,6 +36,8 @@ interface TaskCommentSectionProps {
   onCommentCountChange?: (count: number) => void;
   /** コメント入力欄にフォーカスするかどうか */
   autoFocus?: boolean;
+  /** ワークスペース編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
 export default function TaskCommentSection({
@@ -45,6 +47,7 @@ export default function TaskCommentSection({
   currentUserId,
   onCommentCountChange,
   autoFocus = false,
+  canEdit = true,
 }: TaskCommentSectionProps) {
   const notify = useNotify();
   const [comments, setComments] = useState<TaskCommentDetailResponse[]>([]);
@@ -142,6 +145,12 @@ export default function TaskCommentSection({
 
   // 新規コメント投稿
   const handleSubmitComment = useCallback(async () => {
+    // ワークスペース編集権限チェック
+    if (!canEdit) {
+      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+      return;
+    }
+
     const trimmed = newComment.trim();
     if (!trimmed) {
       setNewCommentError('コメントを入力してください。');
@@ -179,7 +188,7 @@ export default function TaskCommentSection({
     } finally {
       setIsSubmitting(false);
     }
-  }, [newComment, newCommentType, workspaceId, itemId, taskId, fetchComments, notify]);
+  }, [newComment, newCommentType, workspaceId, itemId, taskId, fetchComments, notify, canEdit]);
 
   // 編集開始
   const handleStartEdit = useCallback((comment: TaskCommentDetailResponse) => {
@@ -198,6 +207,12 @@ export default function TaskCommentSection({
   // 編集保存
   const handleSaveEdit = useCallback(
     async (comment: TaskCommentDetailResponse) => {
+      // ワークスペース編集権限チェック
+      if (!canEdit) {
+        notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+        return;
+      }
+
       if (!editingContent.trim()) {
         notify.error('コメントを入力してください');
         return;
@@ -229,14 +244,22 @@ export default function TaskCommentSection({
         setIsSubmitting(false);
       }
     },
-    [editingContent, editingType, workspaceId, itemId, taskId, fetchComments, notify],
+    [editingContent, editingType, workspaceId, itemId, taskId, fetchComments, notify, canEdit],
   );
 
   // 削除確認モーダルを開く
-  const handleDeleteClick = useCallback((comment: TaskCommentDetailResponse) => {
-    setDeleteTargetComment(comment);
-    setIsDeleteModalOpen(true);
-  }, []);
+  const handleDeleteClick = useCallback(
+    (comment: TaskCommentDetailResponse) => {
+      // ワークスペース編集権限チェック
+      if (!canEdit) {
+        notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+        return;
+      }
+      setDeleteTargetComment(comment);
+      setIsDeleteModalOpen(true);
+    },
+    [canEdit, notify],
+  );
 
   // 削除確認モーダルを閉じる
   const handleDeleteModalClose = useCallback(() => {

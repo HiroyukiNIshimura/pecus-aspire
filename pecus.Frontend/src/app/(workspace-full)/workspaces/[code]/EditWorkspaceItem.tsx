@@ -16,9 +16,18 @@ interface EditWorkspaceItemProps {
   onClose: () => void;
   onSave?: (updatedItem: WorkspaceItemDetailResponse) => void;
   currentUserId?: number;
+  /** 編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
-export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, currentUserId }: EditWorkspaceItemProps) {
+export default function EditWorkspaceItem({
+  item,
+  isOpen,
+  onClose,
+  onSave,
+  currentUserId,
+  canEdit = true,
+}: EditWorkspaceItemProps) {
   const notify = useNotify();
   const { startItemEdit, endItemEdit } = useSignalRContext();
 
@@ -58,6 +67,12 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
       event.preventDefault();
 
       if (isSubmitting) return;
+
+      // 編集権限チェック
+      if (!canEdit) {
+        notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+        return;
+      }
 
       setIsSubmitting(true);
       setFieldErrors({});

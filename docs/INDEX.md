@@ -20,6 +20,7 @@
 - [ui-component-guidelines.md](./ui-component-guidelines.md) — UI コンポーネント実装の必須ルール（エラー表示位置、モーダル、スクロール等）。
 - [ui-writing-guidelines.md](./ui-writing-guidelines.md) — UI 文言・コピーの作法と例。
 - [use-infinite-scroll.md](./use-infinite-scroll.md) — 無限スクロール用カスタムフック（useInfiniteScroll）の使い方。
+- [workspace-viewer-permission.md](./workspace-viewer-permission.md) — ワークスペース Viewer 権限のフロントエンド実装ガイド（canEdit パターン）。
 
 ### 仕様書 (docs/spec)
 

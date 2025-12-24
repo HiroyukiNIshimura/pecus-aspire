@@ -18,6 +18,8 @@ interface DocumentTreeSidebarProps {
   onItemMoved?: () => Promise<void> | void;
   /** ツリーを再取得するためのキー（変更されると再取得） */
   refreshKey?: number;
+  /** 編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
 type CustomNodeModel = NodeModel<DocumentTreeItemResponse>;
@@ -28,6 +30,7 @@ export default function DocumentTreeSidebar({
   selectedItemId,
   onItemMoved,
   refreshKey,
+  canEdit = true,
 }: DocumentTreeSidebarProps) {
   const [treeData, setTreeData] = useState<CustomNodeModel[]>([]);
   const [items, setItems] = useState<DocumentTreeItemResponse[]>([]);
@@ -82,6 +85,12 @@ export default function DocumentTreeSidebar({
 
   // ドロップ時の処理
   const handleDrop = async (newTree: CustomNodeModel[], options: DropOptions) => {
+    // 編集権限がない場合は通知を表示して処理中断
+    if (!canEdit) {
+      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+      return;
+    }
+
     const { dragSourceId, dropTargetId } = options;
 
     // 親子関係の更新
@@ -222,6 +231,10 @@ export default function DocumentTreeSidebar({
             sort={false}
             insertDroppableFirst={false}
             canDrop={(_tree, { dragSource, dropTargetId }) => {
+              // 編集権限がない場合はドロップ不可
+              if (!canEdit) {
+                return false;
+              }
               if (dragSource?.parent === dropTargetId) {
                 return true;
               }

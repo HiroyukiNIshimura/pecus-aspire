@@ -17,6 +17,7 @@ import type {
   WorkspaceItemDetailResponse,
   WorkspaceMode,
 } from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
 
 /** 優先度のラベル定義 */
 const PRIORITY_OPTIONS: { value: TaskPriority | null; label: string; className: string }[] = [
@@ -47,6 +48,8 @@ interface WorkspaceItemDrawerProps {
   workspaceMode?: WorkspaceMode | null;
   /** アーカイブ完了時のコールバック（ツリー更新用） */
   onArchiveComplete?: () => void;
+  /** ワークスペース編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
 export default function WorkspaceItemDrawer({
@@ -59,6 +62,7 @@ export default function WorkspaceItemDrawer({
   currentUserId,
   workspaceMode,
   onArchiveComplete,
+  canEdit: canEditWorkspace = true,
 }: WorkspaceItemDrawerProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +89,8 @@ export default function WorkspaceItemDrawer({
   // 下書き中はオーナーのみ編集可能
   const canEditDraft = isOwner;
 
+  const notify = useNotify();
+
   if (!isOpen) return null;
 
   /** 汎用アイテム更新ハンドラー */
@@ -97,6 +103,13 @@ export default function WorkspaceItemDrawer({
     errorMessage: string,
     rollbackFn?: () => void,
   ) => {
+    // ワークスペース編集権限チェック
+    if (!canEditWorkspace) {
+      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+      rollbackFn?.();
+      return;
+    }
+
     try {
       setIsUpdating(true);
       setError(null);
@@ -161,6 +174,12 @@ export default function WorkspaceItemDrawer({
 
   /** アーカイブ切り替えハンドラー */
   const handleArchivedChange = async (newIsArchived: boolean) => {
+    // ワークスペース編集権限チェック
+    if (!canEditWorkspace) {
+      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+      return;
+    }
+
     // アーカイブOFFにする場合は従来通り
     if (!newIsArchived) {
       await executeArchive(false, undefined);

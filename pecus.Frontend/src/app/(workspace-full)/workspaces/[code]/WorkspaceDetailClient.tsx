@@ -166,6 +166,10 @@ export default function WorkspaceDetailClient({
   // ===== メンバー管理の状態 =====
   // ログインユーザーがOwnerかどうか
   const isOwner = currentWorkspaceDetail.currentUserRole === 'Owner';
+  // ログインユーザーがViewerかどうか
+  const isViewer = currentWorkspaceDetail.currentUserRole === 'Viewer';
+  // 編集権限があるかどうか（MemberまたはOwner）
+  const canEdit = !isViewer;
 
   // メンバー一覧（状態管理）
   const [members, setMembers] = useState<WorkspaceDetailUserResponse[]>(workspaceDetail.members || []);
@@ -1118,6 +1122,7 @@ export default function WorkspaceDetailClient({
               }
               onSelectionConfirm={handleSelectionConfirm}
               onSelectionCancel={handleSelectionCancel}
+              canEdit={canEdit}
             />
 
             {/* リサイズハンドル */}
@@ -1307,6 +1312,7 @@ export default function WorkspaceDetailClient({
               onSuccess={handleTaskDetailSuccess}
               onShowFlowMap={handleShowFlowMapFromTaskDetail}
               onNavigateToTask={handleNavigateToTask}
+              canEdit={canEdit}
             />
           )}
 
@@ -1367,6 +1373,7 @@ export default function WorkspaceDetailClient({
                 onShowTaskDetail={handleShowTaskDetail}
                 onShowFlowMap={handleShowFlowMap}
                 onArchiveComplete={handleArchiveComplete}
+                canEdit={canEdit}
               />
             )}
         </main>
@@ -1418,6 +1425,7 @@ export default function WorkspaceDetailClient({
           isOpen={isCreateModalOpen}
           onClose={handleCloseCreateModal}
           onCreate={handleCreateComplete}
+          canEdit={canEdit}
         />
 
         {/* ワークスペース編集モーダル */}
@@ -1530,6 +1538,7 @@ export default function WorkspaceDetailClient({
               }
               onSelectionConfirm={handleSelectionConfirm}
               onSelectionCancel={handleSelectionCancel}
+              canEdit={canEdit}
             />
           </div>
         </div>

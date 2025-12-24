@@ -74,6 +74,8 @@ interface WorkspaceItemsSidebarProps {
   onSelectionConfirm?: (selectedItemIds: number[]) => void;
   /** 選択モードがキャンセルされた時のコールバック */
   onSelectionCancel?: () => void;
+  /** 編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
 export interface WorkspaceItemsSidebarHandle {
@@ -97,6 +99,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       currentUser,
       onSelectionConfirm,
       onSelectionCancel,
+      canEdit = true,
     },
     ref,
   ) => {
@@ -487,6 +490,10 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                 <button
                   type="button"
                   onClick={() => {
+                    if (!canEdit) {
+                      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+                      return;
+                    }
                     setSelectedItemId('new');
                     onCreateNew?.();
                   }}
@@ -546,6 +553,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             selectedItemId={typeof selectedItemId === 'number' ? selectedItemId : null}
             onItemMoved={() => refreshItems()}
             refreshKey={treeRefreshKey}
+            canEdit={canEdit}
           />
         ) : items.length === 0 ? (
           <div className="p-4 text-center text-base-content/70">

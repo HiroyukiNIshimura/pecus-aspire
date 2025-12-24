@@ -93,6 +93,8 @@ interface WorkspaceItemDetailProps {
   ) => void;
   /** アイテムアーカイブ完了時のコールバック（ツリー更新用） */
   onArchiveComplete?: () => void;
+  /** 編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
 /** WorkspaceItemDetail の外部公開メソッド */
@@ -119,6 +121,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       itemCode,
       onShowFlowMap,
       onArchiveComplete,
+      canEdit = true,
     },
     ref,
   ) {
@@ -276,6 +279,12 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const handleEditClick = () => {
       if (!item) return;
 
+      // ワークスペース編集権限チェック
+      if (!canEdit) {
+        notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+        return;
+      }
+
       if (isLockedByOther) {
         notify.warning(`${editingUserName} さんが編集中です。`);
         return;
@@ -310,6 +319,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
     // 関連削除モーダルを開く
     const handleOpenDeleteRelationModal = (relation: RelatedItemInfo) => {
+      // ワークスペース編集権限チェック
+      if (!canEdit) {
+        notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+        return;
+      }
       setDeleteRelationModal({ isOpen: true, relation });
     };
 
@@ -758,6 +772,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                         )
                     : undefined
                 }
+                canEdit={canEdit}
               />
             </div>
           )}
@@ -822,6 +837,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             onClose={() => setIsEditModalOpen(false)}
             onSave={handleEditSave}
             currentUserId={currentUserId}
+            canEdit={canEdit}
           />
         )}
 
@@ -836,6 +852,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           currentUserId={currentUserId}
           workspaceMode={workspaceMode}
           onArchiveComplete={onArchiveComplete}
+          canEdit={canEdit}
         />
 
         {/* タイムラインモーダル */}

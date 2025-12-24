@@ -46,6 +46,8 @@ interface CreateWorkspaceTaskModalProps {
     email: string;
     identityIconUrl: string | null;
   } | null;
+  /** ワークスペース編集権限があるかどうか（Viewer以外）*/
+  canEdit?: boolean;
 }
 
 export default function CreateWorkspaceTaskModal({
@@ -56,6 +58,7 @@ export default function CreateWorkspaceTaskModal({
   itemId,
   taskTypes,
   currentUser,
+  canEdit = true,
 }: CreateWorkspaceTaskModalProps) {
   const notify = useNotify();
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
@@ -125,6 +128,12 @@ export default function CreateWorkspaceTaskModal({
     useFormValidation({
       schema: taskSchema,
       onSubmit: async (data) => {
+        // ワークスペース編集権限チェック
+        if (!canEdit) {
+          notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+          return;
+        }
+
         setServerErrors([]);
 
         const requestData: CreateWorkspaceTaskRequest = {
