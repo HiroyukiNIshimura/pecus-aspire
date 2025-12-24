@@ -7,6 +7,7 @@ import Axios from "axios";
 import type { ConcurrencyErrorResponseBody } from "./ConflictDataTypes.generated";
 import { ErrorResponse } from "@/actions/types";
 import { ApiError } from "./pecus/core/ApiError";
+import type { WorkspaceMemberAssignmentsResponse } from "./pecus";
 
 const isApiError = (error: unknown): error is ApiError=> {
   return error instanceof ApiError;
@@ -153,6 +154,37 @@ export function detect403ValidationError(error: unknown): ErrorResponse | undefi
     };
   }
   return undefined;
+}
+
+/**
+ * Viewer変更時のアサインメントエラー（409 Conflict）を検出
+ * メンバーに担当タスク/アイテムがある場合に返される
+ *
+ * @param error - キャッチしたエラーオブジェクト
+ * @returns アサインメントがある場合は WorkspaceMemberAssignmentsResponse、それ以外は null
+ */
+export function detectMemberHasAssignmentsError(error: unknown): WorkspaceMemberAssignmentsResponse | null {
+  let body: unknown;
+  if (isApiError(error) && error.status === 409) {
+    body = error.body ?? {};
+  } else if (Axios.isAxiosError(error) && error.response?.status === 409) {
+    body = error.response.data ?? {};
+  } else {
+    return null;
+  }
+
+  // hasAssignments プロパティがある場合はアサインメントエラー
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "hasAssignments" in body &&
+    (body as Record<string, unknown>).hasAssignments === true
+  ) {
+    console.error('Member has assignments error detected');
+    return body as WorkspaceMemberAssignmentsResponse;
+  }
+
+  return null;
 }
 
 export const parseErrorResponse = (error: unknown, defaultMessage?: string): ErrorResponse => {

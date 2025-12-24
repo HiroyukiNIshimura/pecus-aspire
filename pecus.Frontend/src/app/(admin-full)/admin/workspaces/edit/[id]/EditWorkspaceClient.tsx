@@ -20,6 +20,7 @@ import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import type {
   MasterGenreResponse,
   WorkspaceDetailResponse,
+  WorkspaceMemberAssignmentsResponse,
   WorkspaceRole,
   WorkspaceUserItem,
 } from '@/connectors/api/pecus';
@@ -71,6 +72,9 @@ export default function EditWorkspaceClient({
     currentRole: WorkspaceRole;
     newRole: WorkspaceRole;
   }>({ isOpen: false, userId: 0, userName: '', currentRole: 'Member', newRole: 'Member' });
+
+  // ロール変更時のアサインメントエラー情報
+  const [assignmentsError, setAssignmentsError] = useState<WorkspaceMemberAssignmentsResponse | null>(null);
 
   // フォーム状態（スキーマの型に合わせる）
   const [formData, setFormData] = useState({
@@ -251,11 +255,14 @@ export default function EditWorkspaceClient({
       // メンバー一覧のロールを更新
       setMembers((prev) => prev.map((m) => (m.userId === userId ? { ...m, workspaceRole: newRole } : m)));
       notify.success(`${userName} のロールを変更しました。`);
+      handleChangeRoleModalClose();
+    } else if (result.error === 'member_has_assignments') {
+      // アサインメントエラーの場合はエラー情報を設定（モーダルは閉じない）
+      setAssignmentsError(result.assignments);
     } else {
       notify.error(result.message || 'ロールの変更に失敗しました。');
+      handleChangeRoleModalClose();
     }
-
-    handleChangeRoleModalClose();
   };
 
   return (
@@ -503,6 +510,8 @@ export default function EditWorkspaceClient({
         newRole={changeRoleModal.newRole}
         onConfirm={handleChangeRoleConfirm}
         onClose={handleChangeRoleModalClose}
+        assignmentsError={assignmentsError}
+        onClearAssignmentsError={() => setAssignmentsError(null)}
       />
 
       {/* メンバー追加モーダル */}

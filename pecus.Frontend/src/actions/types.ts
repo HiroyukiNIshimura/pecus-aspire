@@ -3,6 +3,7 @@
  */
 
 import type { ConflictLatestData } from '@/connectors/api/ConflictDataTypes.generated';
+import type { WorkspaceMemberAssignmentsResponse } from '@/connectors/api/pecus';
 
 /**
  * 409 Conflict レスポンス型
@@ -23,6 +24,17 @@ export type ConflictResponse<_T> = {
 };
 
 /**
+ * メンバーにアサインメントがあるため操作できないエラー
+ * Viewer変更時、メンバーがタスク/アイテムを担当している場合に返される
+ */
+export type MemberHasAssignmentsErrorResponse = {
+  success: false;
+  error: 'member_has_assignments';
+  message: string;
+  assignments: WorkspaceMemberAssignmentsResponse;
+};
+
+/**
  * 汎用エラーレスポンス型
  */
 export type ErrorResponse = {
@@ -36,9 +48,14 @@ export type ErrorResponse = {
  * Server Actions の戻り値として使用
  * - success: 成功
  * - conflict: 409 Conflict（並行更新による競合）
+ * - member_has_assignments: 409 Conflict（Viewer変更時にアサインメントあり）
  * - error: その他のエラー（validation, server, not_found, forbidden）
  */
-export type ApiResponse<T> = { success: true; data: T } | ConflictResponse<T> | ErrorResponse;
+export type ApiResponse<T> =
+  | { success: true; data: T }
+  | ConflictResponse<T>
+  | MemberHasAssignmentsErrorResponse
+  | ErrorResponse;
 
 // ============================================
 // ヘルパー関数

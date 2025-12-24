@@ -1,6 +1,11 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+  detectMemberHasAssignmentsError,
+  parseErrorResponse,
+} from '@/connectors/api/PecusApiClient';
 import type {
   PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
   SuccessResponse,
@@ -214,6 +219,18 @@ export async function updateWorkspaceMemberRole(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update workspace member role:', error);
+
+    // Viewerへの変更時にアサインメントがある場合（409 Conflict）
+    const assignmentsError = detectMemberHasAssignmentsError(error);
+    if (assignmentsError) {
+      return {
+        success: false,
+        error: 'member_has_assignments',
+        message: 'このメンバーには担当中のタスク/アイテムがあります。担当を外してからViewerに変更してください。',
+        assignments: assignmentsError,
+      };
+    }
+
     return parseErrorResponse(error, 'ロールの変更に失敗しました');
   }
 }

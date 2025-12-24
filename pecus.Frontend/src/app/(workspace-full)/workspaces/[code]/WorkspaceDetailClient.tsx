@@ -33,6 +33,7 @@ import type {
   TaskStatusFilter,
   WorkspaceDetailUserResponse,
   WorkspaceFullDetailResponse,
+  WorkspaceMemberAssignmentsResponse,
   WorkspaceRole,
   WorkspaceTaskDetailResponse,
 } from '@/connectors/api/pecus';
@@ -196,6 +197,9 @@ export default function WorkspaceDetailClient({
     currentRole: WorkspaceRole;
     newRole: WorkspaceRole;
   }>({ isOpen: false, userId: 0, userName: '', currentRole: 'Member', newRole: 'Member' });
+
+  // ロール変更時のアサインメントエラー情報
+  const [assignmentsError, setAssignmentsError] = useState<WorkspaceMemberAssignmentsResponse | null>(null);
 
   // サイドバー幅（初期値: null → クライアントサイドでローカルストレージから復元）
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
@@ -520,11 +524,14 @@ export default function WorkspaceDetailClient({
     if (result.success) {
       setMembers((prev) => prev.map((m) => (m.id === userId ? { ...m, workspaceRole: newRole } : m)));
       notify.success(`${userName} のロールを変更しました。`);
+      handleChangeRoleModalClose();
+    } else if (result.error === 'member_has_assignments') {
+      // アサインメントエラーの場合はエラー情報を設定（モーダルは閉じない）
+      setAssignmentsError(result.assignments);
     } else {
       notify.error(result.message || 'ロールの変更に失敗しました。');
+      handleChangeRoleModalClose();
     }
-
-    handleChangeRoleModalClose();
   };
 
   // ===== ワークスペースアクションメニューのコールバック =====
@@ -1423,6 +1430,8 @@ export default function WorkspaceDetailClient({
           userName={changeRoleModal.userName}
           currentRole={changeRoleModal.currentRole}
           newRole={changeRoleModal.newRole}
+          assignmentsError={assignmentsError}
+          onClearAssignmentsError={() => setAssignmentsError(null)}
         />
 
         {/* 新規アイテム作成モーダル */}

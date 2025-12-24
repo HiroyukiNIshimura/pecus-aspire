@@ -5,6 +5,7 @@ import {
   detect400ValidationError,
   detect404ValidationError,
   detectConcurrencyError,
+  detectMemberHasAssignmentsError,
   parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
 import type {
@@ -328,6 +329,17 @@ export async function updateMemberRoleInWorkspace(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update member role:', error);
+
+    // Viewerへの変更時にアサインメントがある場合（409 Conflict）
+    const assignmentsError = detectMemberHasAssignmentsError(error);
+    if (assignmentsError) {
+      return {
+        success: false,
+        error: 'member_has_assignments',
+        message: 'このメンバーには担当中のタスク/アイテムがあります。担当を外してからViewerに変更してください。',
+        assignments: assignmentsError,
+      };
+    }
 
     const badRequest = detect400ValidationError(error);
     if (badRequest) {
