@@ -81,7 +81,7 @@ export default function AdminClient({
                 <div className="card-body">
                   <h2 className="card-title text-2xl mb-4">組織情報</h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="form-control">
                       <label htmlFor="org-name" className="label">
                         <span className="label-text font-semibold">組織名</span>
@@ -92,32 +92,11 @@ export default function AdminClient({
                     </div>
 
                     <div className="form-control">
-                      <label htmlFor="org-id" className="label">
-                        <span className="label-text font-semibold">組織ID</span>
-                      </label>
-                      <div id="org-id" className="text-lg">
-                        {organization?.id ?? '未設定'}
-                      </div>
-                    </div>
-
-                    <div className="form-control">
                       <label htmlFor="org-code" className="label">
                         <span className="label-text font-semibold">組織コード</span>
                       </label>
                       <div id="org-code" className="text-lg">
                         {organization?.code ?? '未設定'}
-                      </div>
-                    </div>
-
-                    <div className="form-control">
-                      <label htmlFor="org-status" className="label">
-                        <span className="label-text font-semibold">ステータス</span>
-                      </label>
-                      <div
-                        id="org-status"
-                        className={`badge badge-lg ${organization?.isActive ? 'badge-success' : 'badge-error'}`}
-                      >
-                        {organization?.isActive ? 'アクティブ' : '非アクティブ'}
                       </div>
                     </div>
 
@@ -142,7 +121,7 @@ export default function AdminClient({
 
                   <div className="divider"></div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="form-control">
                       <label htmlFor="org-representative" className="label">
                         <span className="label-text font-semibold">代表者名</span>
@@ -161,7 +140,7 @@ export default function AdminClient({
                       </div>
                     </div>
 
-                    <div className="form-control md:col-span-2">
+                    <div className="form-control">
                       <label htmlFor="org-email" className="label">
                         <span className="label-text font-semibold">メールアドレス</span>
                       </label>

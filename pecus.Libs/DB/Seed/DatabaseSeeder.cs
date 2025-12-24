@@ -743,11 +743,11 @@ public class DatabaseSeeder
         {
             var organizations = new List<Organization>();
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 2; i++)
             {
                 var organization = new Organization
                 {
-                    Name = _faker.Company.CompanyName().ClampLength(max: 100),
+                    Name = _faker.Vehicle.Manufacturer().ClampLength(max: 100),
                     Code = $"ORG{(i + 1):D3}",
                     Description = _faker.Company.CatchPhrase().ClampLength(max: 500),
                     RepresentativeName = _faker.Name.LastName().ClampLength(max: 40) + " " + _faker.Name.FirstName().ClampLength(max: 40),
