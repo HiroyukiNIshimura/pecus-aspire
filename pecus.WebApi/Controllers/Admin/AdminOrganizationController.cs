@@ -83,6 +83,7 @@ public class AdminOrganizationController : BaseAdminController
                 EnforcePredecessorCompletion = organization.Setting?.EnforcePredecessorCompletion ?? false,
                 DashboardHelpCommentMaxCount = organization.Setting?.DashboardHelpCommentMaxCount ?? 6,
                 GroupChatScope = organization.Setting?.GroupChatScope,
+                DefaultWorkspaceMode = organization.Setting?.DefaultWorkspaceMode,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };
@@ -141,6 +142,7 @@ public class AdminOrganizationController : BaseAdminController
                 EnforcePredecessorCompletion = organization.Setting?.EnforcePredecessorCompletion ?? false,
                 DashboardHelpCommentMaxCount = organization.Setting?.DashboardHelpCommentMaxCount ?? 6,
                 GroupChatScope = organization.Setting?.GroupChatScope,
+                DefaultWorkspaceMode = organization.Setting?.DefaultWorkspaceMode,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };
