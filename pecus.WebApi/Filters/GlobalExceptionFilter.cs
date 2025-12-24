@@ -34,6 +34,7 @@ public class GlobalExceptionFilter : IExceptionFilter
         var result = context.Exception switch
         {
             UnauthorizedException ex => HandleUnauthorizedException(ex, context),
+            ForbiddenException ex => HandleForbiddenException(ex, context),
             NotFoundException ex => HandleNotFoundException(ex, context),
             BadRequestException ex => HandleBadRequestException(ex, context),
             DuplicateException ex => HandleDuplicateException(ex, context),
@@ -88,6 +89,28 @@ public class GlobalExceptionFilter : IExceptionFilter
         )
         {
             StatusCode = StatusCodes.Status401Unauthorized,
+        };
+    }
+
+    /// <summary>
+    /// ForbiddenException: 403 Forbidden
+    /// </summary>
+    private IActionResult HandleForbiddenException(ForbiddenException ex, ExceptionContext context)
+    {
+        _logger.LogWarning(
+            "Forbidden Exception: {Message}",
+            ex.Message
+        );
+
+        return new ObjectResult(
+            new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status403Forbidden,
+                Message = ex.Message,
+            }
+        )
+        {
+            StatusCode = StatusCodes.Status403Forbidden,
         };
     }
 

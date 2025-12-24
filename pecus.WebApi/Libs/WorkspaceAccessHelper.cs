@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs;
 
@@ -234,5 +235,95 @@ public class OrganizationAccessHelper
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
+    }
+
+    /// <summary>
+    /// ユーザーがワークスペースにアクセス可能かつ編集権限（Member以上）を持つかをチェック
+    /// Viewer権限の場合は canEdit=false となる
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="includeInactive">非アクティブなワークスペースも含めるか</param>
+    /// <returns>アクセス可能フラグ、編集可能フラグ、ワークスペースロール、ワークスペース情報</returns>
+    public async Task<(bool hasAccess, bool canEdit, WorkspaceRole? role, Workspace? workspace)> CheckWorkspaceEditPermissionAsync(
+        int userId,
+        int workspaceId,
+        bool includeInactive = false
+    )
+    {
+        var organizationId = await GetUserOrganizationIdAsync(userId);
+        if (!organizationId.HasValue)
+        {
+            return (false, false, null, null);
+        }
+
+        var workspace = await _context.Workspaces
+            .Include(w => w.Organization)
+            .Include(w => w.Genre)
+            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+
+        if (workspace == null || workspace.OrganizationId != organizationId.Value)
+        {
+            return (false, false, null, null);
+        }
+
+        // 非アクティブチェック
+        if (!includeInactive && !workspace.IsActive)
+        {
+            return (false, false, null, null);
+        }
+
+        // ワークスペースメンバーとロールを取得
+        var workspaceUser = await _context.WorkspaceUsers
+            .Where(wu =>
+                wu.WorkspaceId == workspaceId
+                && wu.UserId == userId
+                && wu.User != null
+                && wu.User.IsActive
+            )
+            .Select(wu => new { wu.WorkspaceRole })
+            .FirstOrDefaultAsync();
+
+        if (workspaceUser == null)
+        {
+            // メンバーではないがアクセス可能（組織内）
+            return (true, false, null, workspace);
+        }
+
+        // Viewer権限の場合は編集不可
+        var canEdit = workspaceUser.WorkspaceRole != WorkspaceRole.Viewer;
+
+        return (true, canEdit, workspaceUser.WorkspaceRole, workspace);
+    }
+
+    /// <summary>
+    /// ワークスペースの編集権限（Member以上）がない場合に ForbiddenException をスロー
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="errorMessage">カスタムエラーメッセージ（省略可）</param>
+    /// <exception cref="NotFoundException">ワークスペースが見つからない/アクセス権がない場合</exception>
+    /// <exception cref="ForbiddenException">Viewer権限の場合</exception>
+    public async Task<Workspace> RequireWorkspaceEditPermissionAsync(
+        int userId,
+        int workspaceId,
+        string? errorMessage = null
+    )
+    {
+        var (hasAccess, canEdit, role, workspace) = await CheckWorkspaceEditPermissionAsync(userId, workspaceId);
+
+        if (!hasAccess || workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        if (!canEdit)
+        {
+            throw new ForbiddenException(
+                errorMessage ?? "この操作を実行する権限がありません。閲覧専用ユーザーは変更操作を行えません。"
+            );
+        }
+
+        return workspace;
     }
 }
