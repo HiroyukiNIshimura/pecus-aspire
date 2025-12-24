@@ -305,6 +305,7 @@ public class ProfileService
     {
         var user = await _context.Users
             .Include(u => u.Roles)
+            .Include(u => u.Setting)
             .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
         return user;
     }

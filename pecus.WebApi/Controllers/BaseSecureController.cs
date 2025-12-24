@@ -79,7 +79,7 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
                 return;
             }
 
-            // ユーザーが有効か確認（ロール情報も含まれる）
+            // ユーザーが有効か確認（ロール情報、ユーザー設定も含まれる）
             CurrentUser = await _profileService.GetUserAsync(CurrentUserId);
             if (CurrentUser == null || !CurrentUser.IsActive)
             {
