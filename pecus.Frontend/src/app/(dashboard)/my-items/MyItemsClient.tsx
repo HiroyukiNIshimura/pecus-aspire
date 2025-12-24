@@ -545,90 +545,114 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                     className="card bg-base-200/50 hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
                   >
                     <div className="card-body p-4 flex flex-col flex-1">
-                      {/* ヘッダー */}
-                      <div className="mb-3">
-                        {/* ワークスペース名 + ステータス */}
-                        <div className="flex items-center justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                            <span className="badge badge-soft badge-accent badge-sm p-3 flex items-center gap-1 max-w-full">
-                              {item.genreIcon && (
-                                <img
-                                  src={`/icons/genres/${item.genreIcon}.svg`}
-                                  alt={item.genreName || 'ジャンルアイコン'}
-                                  title={item.genreName || 'ジャンル'}
-                                  className="w-4 h-4 flex-shrink-0"
+                      {/* ワークスペース名部分 */}
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <span className="badge badge-soft badge-accent badge-sm p-3 flex items-center gap-1 max-w-full">
+                            {item.genreIcon && (
+                              <img
+                                src={`/icons/genres/${item.genreIcon}.svg`}
+                                alt={item.genreName || 'ジャンルアイコン'}
+                                title={item.genreName || 'ジャンル'}
+                                className="w-4 h-4 flex-shrink-0"
+                              />
+                            )}
+                            <span className="truncate">{item.workspaceName || 'ワークスペース'}</span>
+                            {item.workspaceMode === 'Document' && (
+                              <Tooltip text="ドキュメントモード" position="top">
+                                <span
+                                  className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60 flex-shrink-0"
+                                  aria-label="ドキュメントモード"
                                 />
-                              )}
-                              <span className="truncate">{item.workspaceName || 'ワークスペース'}</span>
-                              {item.workspaceMode === 'Document' && (
-                                <Tooltip text="ドキュメントモード" position="top">
-                                  <span
-                                    className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60 flex-shrink-0"
-                                    aria-label="ドキュメントモード"
-                                  />
-                                </Tooltip>
-                              )}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            {item.isArchived && <span className="badge badge-neutral badge-xs">アーカイブ</span>}
-                            {item.isDraft && <span className="badge badge-warning badge-xs">下書き</span>}
-                            {item.isPinned && <span className="icon-[mdi--pin] w-4 h-4 text-info" aria-hidden="true" />}
-                          </div>
+                              </Tooltip>
+                            )}
+                          </span>
                         </div>
-
-                        {/* アイテムコード */}
-                        <span className="text-xs text-base-content/50 font-mono">#{item.code}</span>
-                        {/* 件名 */}
-                        <Link href={`/workspaces/${item.workspaceCode}?itemCode=${item.code}`}>
-                          <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer wrap-break-word line-clamp-2">
-                            {item.subject || '（件名未設定）'}
-                          </h3>
-                        </Link>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {item.isArchived && <span className="badge badge-neutral badge-xs">アーカイブ</span>}
+                          {item.isPinned && <span className="icon-[mdi--pin] w-4 h-4 text-info" aria-hidden="true" />}
+                        </div>
                       </div>
 
-                      {/* メタ情報 */}
-                      <div className="space-y-2 mb-3">
-                        {/* 優先度 */}
-                        {item.priority && (
-                          <div className="flex items-center justify-between text-sm gap-2">
-                            <span
-                              className={`badge badge-sm ${
-                                item.priority === 'Critical'
+                      {/* アイテムコード + 下書きバッジ */}
+                      <div className="flex items-center gap-2">
+                        <Link href={`/workspaces/${item.workspaceCode}?itemCode=${item.code}`}>
+                          <span className="text-xs text-base-content/50 font-mono hover:text-primary transition-colors cursor-pointer">
+                            #{item.code}
+                          </span>
+                        </Link>
+                        {item.isDraft && <span className="badge badge-warning badge-xs">下書き</span>}
+                      </div>
+
+                      {/* アイテム件名 */}
+                      <Link href={`/workspaces/${item.workspaceCode}?itemCode=${item.code}`}>
+                        <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer wrap-break-word line-clamp-2 mb-2">
+                          {item.subject || '（件名未設定）'}
+                        </h3>
+                      </Link>
+
+                      {/* 優先度・担当・コミッター */}
+                      <div className="space-y-1 mb-2">
+                        {/* 優先度 + 担当ユーザー */}
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`badge badge-sm min-w-12 justify-center ${
+                              item.priority
+                                ? item.priority === 'Critical'
                                   ? 'badge-error'
                                   : item.priority === 'High'
                                     ? 'badge-warning'
                                     : item.priority === 'Medium'
                                       ? 'badge-info'
                                       : 'badge-default'
-                              }`}
-                            >
-                              {item.priority === 'Critical'
+                                : 'invisible'
+                            }`}
+                          >
+                            {item.priority
+                              ? item.priority === 'Critical'
                                 ? '緊急'
                                 : item.priority === 'High'
                                   ? '高'
                                   : item.priority === 'Medium'
                                     ? '中'
-                                    : '低'}
-                            </span>
+                                    : '低'
+                              : '-'}
+                          </span>
+                          <div className="flex items-center gap-1 text-xs">
+                            <span className="text-base-content/70 w-16 flex-shrink-0">担当</span>
+                            {item.assigneeUsername ? (
+                              <UserAvatar
+                                userName={item.assigneeUsername}
+                                identityIconUrl={item.assigneeAvatarUrl}
+                                size={20}
+                                nameClassName="truncate"
+                              />
+                            ) : (
+                              <span className="text-base-content/50">-</span>
+                            )}
                           </div>
-                        )}
+                        </div>
 
-                        {/* 担当者 */}
-                        {item.assigneeUsername && (
-                          <div className="flex items-center justify-between text-sm gap-2">
-                            <span className="text-base-content/70 flex-shrink-0">担当</span>
-                            <UserAvatar
-                              userName={item.assigneeUsername}
-                              identityIconUrl={item.assigneeAvatarUrl}
-                              size={20}
-                              nameClassName="truncate"
-                            />
+                        {/* コミッター */}
+                        <div className="flex items-center gap-2">
+                          <span className="min-w-12" />
+                          <div className="flex items-center gap-1 text-xs">
+                            <span className="text-base-content/70 w-16 flex-shrink-0">コミッター</span>
+                            {item.committerUsername ? (
+                              <UserAvatar
+                                userName={item.committerUsername}
+                                identityIconUrl={item.committerAvatarUrl}
+                                size={20}
+                                nameClassName="truncate"
+                              />
+                            ) : (
+                              <span className="text-base-content/50">-</span>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
 
-                      {/* フッター - 下部に固定 */}
+                      {/* フッター部 - 下部に固定 */}
                       <div className="pt-3 border-t border-base-300 mt-auto space-y-2">
                         {/* オーナー */}
                         <div className="flex items-center justify-between text-sm gap-2">
@@ -640,19 +664,6 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                             nameClassName="truncate"
                           />
                         </div>
-
-                        {/* コミッター */}
-                        {item.committerUsername && (
-                          <div className="flex items-center justify-between text-sm gap-2">
-                            <span className="text-base-content/70 flex-shrink-0">コミッター</span>
-                            <UserAvatar
-                              userName={item.committerUsername}
-                              identityIconUrl={item.committerAvatarUrl}
-                              size={20}
-                              nameClassName="truncate"
-                            />
-                          </div>
-                        )}
 
                         {/* 期限 */}
                         <div className="flex items-center justify-between text-sm gap-2">
