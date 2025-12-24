@@ -8205,12 +8205,12 @@
         ]
       }
     },
-    "/api/dev/email-test/templates": {
+    "/api/dev/email-preview": {
       "get": {
         "tags": [
-          "TestEmail"
+          "EmailPreview"
         ],
-        "summary": "利用可能なテンプレート一覧を返す",
+        "summary": "利用可能なテンプレート一覧を取得",
         "responses": {
           "200": {
             "description": "OK",
@@ -8219,7 +8219,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/EmailTemplateInfo"
                   }
                 }
               },
@@ -8227,7 +8227,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/EmailTemplateInfo"
                   }
                 }
               },
@@ -8235,7 +8235,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/EmailTemplateInfo"
                   }
                 }
               }
@@ -8249,17 +8249,18 @@
         ]
       }
     },
-    "/api/dev/email-test/send": {
-      "post": {
+    "/api/dev/email-preview/{templateName}": {
+      "get": {
         "tags": [
-          "TestEmail"
+          "EmailPreview"
         ],
-        "summary": "テスト送信（テンプレート名を指定）",
+        "summary": "指定したテンプレートのHTMLプレビューを取得\nダミーデータを使用してレンダリング",
         "parameters": [
           {
-            "name": "template",
-            "in": "query",
-            "description": "テンプレート名（welcome, password-setup, password-reset, test-email）",
+            "name": "templateName",
+            "in": "path",
+            "description": "テンプレート名",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -8269,94 +8270,9 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
+              "text/html": {
                 "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/dev/email-test/set-recipient": {
-      "post": {
-        "tags": [
-          "TestEmail"
-        ],
-        "summary": "テスト用受信先を設定する",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RecipientRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RecipientRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RecipientRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
+                  "type": "string"
                 }
               }
             }
@@ -8377,6 +8293,127 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/dev/email-preview/{templateName}/text": {
+      "get": {
+        "tags": [
+          "EmailPreview"
+        ],
+        "summary": "指定したテンプレートのテキスト版プレビューを取得",
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "テンプレート名",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/dev/email-preview/index": {
+      "get": {
+        "tags": [
+          "EmailPreview"
+        ],
+        "summary": "プレビュー用の簡易インデックスページを返す",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -8890,8 +8927,8 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -9341,8 +9378,8 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -13331,6 +13368,29 @@
         },
         "description": "メールアドレス変更確認レスポンス"
       },
+      "EmailTemplateInfo": {
+        "required": [
+          "name",
+          "displayName",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "テンプレート名（識別子）"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "表示名"
+          },
+          "description": {
+            "type": "string",
+            "description": "説明"
+          }
+        },
+        "description": "メールテンプレートの情報"
+      },
       "ErrorResponse": {
         "required": [
           "message"
@@ -15707,14 +15767,6 @@
           "instance": {
             "type": "string",
             "nullable": true
-          }
-        }
-      },
-      "RecipientRequest": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string"
           }
         }
       },
@@ -19933,7 +19985,7 @@
       "name": "Entrance - Password"
     },
     {
-      "name": "TestEmail"
+      "name": "EmailPreview"
     },
     {
       "name": "Backend - Specs"

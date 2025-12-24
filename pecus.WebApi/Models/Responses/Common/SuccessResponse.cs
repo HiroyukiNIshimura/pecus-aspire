@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.Common;
@@ -10,7 +11,7 @@ public class SuccessResponse
     /// <summary>
     /// HTTPステータスコード
     /// </summary>
-    public int StatusCode { get; set; }
+    public int StatusCode { get; set; } = StatusCodes.Status200OK;
 
     /// <summary>
     /// 成功メッセージ

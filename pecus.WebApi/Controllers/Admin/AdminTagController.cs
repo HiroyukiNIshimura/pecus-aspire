@@ -17,28 +17,17 @@ namespace Pecus.Controllers.Admin;
 public class AdminTagController : BaseAdminController
 {
     private readonly TagService _tagService;
-    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<AdminTagController> _logger;
     private readonly PecusConfig _config;
 
-    /// <summary>
-    /// コンストラクタ
-    /// </summary>
-    /// <param name="tagService"></param>
-    /// <param name="accessHelper"></param>
-    /// <param name="logger"></param>
-    /// <param name="config"></param>
-    /// <param name="profileService"></param>
     public AdminTagController(
         TagService tagService,
-        OrganizationAccessHelper accessHelper,
         ILogger<AdminTagController> logger,
         PecusConfig config,
         ProfileService profileService
     ) : base(profileService, logger)
     {
         _tagService = tagService;
-        _accessHelper = accessHelper;
         _logger = logger;
         _config = config;
     }
@@ -47,11 +36,11 @@ public class AdminTagController : BaseAdminController
     /// タグ登録
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(TagResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(TagResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<TagResponse>> CreateTag([FromBody] CreateTagRequest request)
+    public async Task<Created<TagResponse>> CreateTag([FromBody] CreateTagRequest request)
     {
         // 組織内のタグ数をチェック
         var existingTagCount = await _tagService.GetTagCountByOrganizationAsync(CurrentOrganizationId);
@@ -80,7 +69,7 @@ public class AdminTagController : BaseAdminController
                 RowVersion = tag.RowVersion!,
             },
         };
-        return TypedResults.Ok(response);
+        return TypedResults.Created($"/api/admin/tags/{tag.Id}", response);
     }
 
     /// <summary>
@@ -181,12 +170,6 @@ public class AdminTagController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<TagResponse>> UpdateTag(int id, [FromBody] UpdateTagRequest request)
     {
-        var tag = await _tagService.GetTagByIdAsync(id, CurrentOrganizationId);
-        if (tag == null)
-        {
-            throw new NotFoundException("タグが見つかりません。");
-        }
-
         var updatedTag = await _tagService.UpdateTagAsync(id, CurrentOrganizationId, request, CurrentUserId);
 
         var response = new TagResponse
@@ -204,7 +187,7 @@ public class AdminTagController : BaseAdminController
                 UpdatedByUserId = updatedTag.UpdatedByUserId,
                 IsActive = updatedTag.IsActive,
                 ItemCount = updatedTag.WorkspaceItemTags?.Count ?? 0,
-                RowVersion = tag.RowVersion!,
+                RowVersion = updatedTag.RowVersion!,
             },
         };
         return TypedResults.Ok(response);
@@ -232,11 +215,7 @@ public class AdminTagController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "タグが正常に削除されました。",
-            }
+            new SuccessResponse { Message = "タグが正常に削除されました。" }
         );
     }
 
@@ -263,11 +242,7 @@ public class AdminTagController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "タグが正常に無効化されました。",
-            }
+            new SuccessResponse { Message = "タグが正常に無効化されました。" }
         );
     }
 
@@ -294,11 +269,7 @@ public class AdminTagController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "タグが正常に有効化されました。",
-            }
+            new SuccessResponse { Message = "タグが正常に有効化されました。" }
         );
     }
 }

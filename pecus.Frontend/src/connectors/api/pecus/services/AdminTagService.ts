@@ -15,7 +15,7 @@ export class AdminTagService {
     /**
      * タグ登録
      * @param requestBody
-     * @returns TagResponse OK
+     * @returns TagResponse Created
      * @throws ApiError
      */
     public static postApiAdminTags(

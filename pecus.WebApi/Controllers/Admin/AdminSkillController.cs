@@ -17,20 +17,17 @@ namespace Pecus.Controllers.Admin;
 public class AdminSkillController : BaseAdminController
 {
     private readonly SkillService _skillService;
-    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<AdminSkillController> _logger;
     private readonly PecusConfig _config;
 
     public AdminSkillController(
         SkillService skillService,
-        OrganizationAccessHelper accessHelper,
         ILogger<AdminSkillController> logger,
         PecusConfig config,
         ProfileService profileService
     ) : base(profileService, logger)
     {
         _skillService = skillService;
-        _accessHelper = accessHelper;
         _logger = logger;
         _config = config;
     }
@@ -39,11 +36,11 @@ public class AdminSkillController : BaseAdminController
     /// スキル登録
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(SkillResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SkillResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<SkillResponse>> CreateSkill([FromBody] CreateSkillRequest request)
+    public async Task<Created<SkillResponse>> CreateSkill([FromBody] CreateSkillRequest request)
     {
         // 組織内のスキル数をチェック
         var existingSkillCount = await _skillService.GetSkillCountByOrganizationAsync(
@@ -75,7 +72,7 @@ public class AdminSkillController : BaseAdminController
                 RowVersion = skill.RowVersion!,
             },
         };
-        return TypedResults.Ok(response);
+        return TypedResults.Created($"/api/admin/skills/{skill.Id}", response);
     }
 
     /// <summary>
@@ -187,12 +184,6 @@ public class AdminSkillController : BaseAdminController
         [FromBody] UpdateSkillRequest request
     )
     {
-        var skill = await _skillService.GetSkillByIdAsync(id, CurrentOrganizationId);
-        if (skill == null)
-        {
-            throw new NotFoundException("スキルが見つかりません。");
-        }
-
         var updatedSkill = await _skillService.UpdateSkillAsync(id, CurrentOrganizationId, request, CurrentUserId);
 
         var response = new SkillResponse
@@ -239,11 +230,7 @@ public class AdminSkillController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "スキルが正常に削除されました。",
-            }
+            new SuccessResponse { Message = "スキルが正常に削除されました。" }
         );
     }
 
@@ -270,11 +257,7 @@ public class AdminSkillController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "スキルが正常に無効化されました。",
-            }
+            new SuccessResponse { Message = "スキルが正常に無効化されました。" }
         );
     }
 
@@ -301,11 +284,7 @@ public class AdminSkillController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "スキルが正常に有効化されました。",
-            }
+            new SuccessResponse { Message = "スキルが正常に有効化されました。" }
         );
     }
 }

@@ -151,11 +151,16 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         setRoom(roomResult.data);
 
         // DM/AI ルームの場合、相手（Bot）の既読位置を初期化
-        if ((roomResult.data.type === 'Dm' || roomResult.data.type === 'Ai') && messagesResult.success && messagesResult.data) {
+        if (
+          (roomResult.data.type === 'Dm' || roomResult.data.type === 'Ai') &&
+          messagesResult.success &&
+          messagesResult.data
+        ) {
           // DM: 自分以外のメンバー、AI: Bot メンバー（userId が 0 のメンバー）
-          const otherMember = roomResult.data.type === 'Dm'
-            ? roomResult.data.members?.find((m) => m.userId !== currentUserId)
-            : roomResult.data.members?.find((m) => m.userId === 0); // Bot は userId が 0
+          const otherMember =
+            roomResult.data.type === 'Dm'
+              ? roomResult.data.members?.find((m) => m.userId !== currentUserId)
+              : roomResult.data.members?.find((m) => m.userId === 0); // Bot は userId が 0
 
           if (otherMember?.lastReadAt) {
             // 相手の lastReadAt 以前に自分が送信したメッセージの中で最新のものを探す

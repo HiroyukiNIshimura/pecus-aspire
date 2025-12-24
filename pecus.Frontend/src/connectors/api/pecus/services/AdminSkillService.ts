@@ -15,7 +15,7 @@ export class AdminSkillService {
     /**
      * スキル登録
      * @param requestBody
-     * @returns SkillResponse OK
+     * @returns SkillResponse Created
      * @throws ApiError
      */
     public static postApiAdminSkills(

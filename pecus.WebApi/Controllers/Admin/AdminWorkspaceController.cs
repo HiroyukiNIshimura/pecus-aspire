@@ -112,7 +112,8 @@ public class AdminWorkspaceController : BaseAdminController
         var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(
             userId: CurrentUserId,
             workspaceId: id,
-            includeMembers: true
+            includeMembers: true,
+            includeInactive: true
         );
         if (!hasAccess || workspace == null)
         {
@@ -365,11 +366,7 @@ public class AdminWorkspaceController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "ワークスペースが正常に削除されました。",
-            }
+            new SuccessResponse { Message = "ワークスペースが正常に削除されました。" }
         );
     }
 
@@ -402,11 +399,7 @@ public class AdminWorkspaceController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "ワークスペースが正常に無効化されました。",
-            }
+            new SuccessResponse { Message = "ワークスペースが正常に無効化されました。" }
         );
     }
 
@@ -439,11 +432,7 @@ public class AdminWorkspaceController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "ワークスペースが正常に有効化されました。",
-            }
+            new SuccessResponse { Message = "ワークスペースが正常に有効化されました。" }
         );
     }
 
@@ -540,11 +529,7 @@ public class AdminWorkspaceController : BaseAdminController
         }
 
         return TypedResults.Ok(
-            new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "ユーザーがワークスペースから正常に削除されました。",
-            }
+            new SuccessResponse { Message = "ユーザーがワークスペースから正常に削除されました。" }
         );
     }
 
