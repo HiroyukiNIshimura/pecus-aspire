@@ -21,9 +21,6 @@ public class ProfileController : BaseSecureController
     private readonly OrganizationService _organizationService;
     private readonly ILogger<ProfileController> _logger;
 
-    /// <summary>
-    /// コンストラクタ
-    /// </summary>
     public ProfileController(
         ILogger<ProfileController> logger,
         ProfileService profileService,
@@ -202,12 +199,7 @@ public class ProfileController : BaseSecureController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Ok<AppPublicSettingsResponse>> GetAppPublicSettings()
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織に所属していません。");
-        }
-
-        var organizationSettings = await _organizationService.GetOrganizationPublicSettingsAsync(CurrentUser.OrganizationId.Value);
+        var organizationSettings = await _organizationService.GetOrganizationPublicSettingsAsync(CurrentOrganizationId);
         var userSettings = await _profileService.GetUserPublicSettingsAsync(CurrentUserId);
 
         var response = new AppPublicSettingsResponse

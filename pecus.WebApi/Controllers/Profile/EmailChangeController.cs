@@ -1,9 +1,7 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
-using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
@@ -28,19 +26,14 @@ namespace Pecus.Controllers.Profile;
 public class EmailChangeController : BaseSecureController
 {
     private readonly EmailChangeService _emailChangeService;
-    private readonly ApplicationDbContext _context;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly ILogger<EmailChangeController> _logger;
 
-    /// <summary>
-    /// コンストラクタ
-    /// </summary>
     public EmailChangeController(
         ILogger<EmailChangeController> logger,
         ProfileService profileService,
         EmailChangeService emailChangeService,
-        ApplicationDbContext context,
         IBackgroundJobClient backgroundJobClient,
         FrontendUrlResolver frontendUrlResolver
     )
@@ -48,7 +41,6 @@ public class EmailChangeController : BaseSecureController
     {
         _logger = logger;
         _emailChangeService = emailChangeService;
-        _context = context;
         _backgroundJobClient = backgroundJobClient;
         _frontendUrlResolver = frontendUrlResolver;
     }
@@ -79,24 +71,14 @@ public class EmailChangeController : BaseSecureController
             request: request
         );
 
-        // ユーザー情報を取得
-        var user = await _context
-            .Users.Where(u => u.Id == CurrentUserId && u.IsActive)
-            .FirstOrDefaultAsync();
-
-        if (user == null)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
         // Aspire の Frontend:Endpoint からフロントエンドURLを取得
         var frontendUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         var confirmationUrl = $"{frontendUrl}/verify-email?token={response.Token}";
 
         var emailModel = new EmailChangeConfirmationEmailModel
         {
-            UserName = user.Username,
-            CurrentEmail = user.Email,
+            UserName = CurrentUser!.Username,
+            CurrentEmail = CurrentUser.Email,
             NewEmail = request.NewEmail,
             ConfirmationUrl = confirmationUrl,
             TokenExpiresAt = response.ExpiresAt,

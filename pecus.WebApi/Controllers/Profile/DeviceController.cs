@@ -15,9 +15,6 @@ public class DeviceController : BaseSecureController
     private readonly ProfileService _profileService;
     private readonly ILogger<DeviceController> _logger;
 
-    /// <summary>
-    /// コンストラクタ
-    /// </summary>
     public DeviceController(
         ProfileService profileService,
         ILogger<DeviceController> logger
