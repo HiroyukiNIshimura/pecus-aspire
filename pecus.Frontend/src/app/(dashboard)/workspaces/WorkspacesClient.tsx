@@ -375,8 +375,14 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                         </p>
                       )}
 
-                      {/* メタ情報 */}
-                      <div className="space-y-2 mb-3 flex-1">
+                      {/* フッター - 下部に固定 */}
+                      <div className="pt-3 border-t border-base-300 mt-auto space-y-2">
+                        {/* ジャンル */}
+                        {workspace.genreIcon && workspace.genreName && (
+                          <div className="flex items-center gap-2 text-sm text-base-content/70">
+                            <span>{workspace.genreName}</span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between text-sm gap-2">
                           <span className="text-base-content/70 flex-shrink-0">メンバー</span>
                           <div className="flex items-center gap-1 font-medium">
@@ -389,16 +395,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                           <span className="font-medium">{formatDate(workspace.createdAt)}</span>
                         </div>
                       </div>
-
-                      {/* フッター（ジャンル） - 下部に固定 */}
-                      {workspace.genreIcon && workspace.genreName && (
-                        <div className="pt-3 border-t border-base-300 mt-auto">
-                          <div className="flex items-center gap-2 text-sm text-base-content/70">
-                            <span className="text-lg">{workspace.genreIcon}</span>
-                            <span>{workspace.genreName}</span>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}

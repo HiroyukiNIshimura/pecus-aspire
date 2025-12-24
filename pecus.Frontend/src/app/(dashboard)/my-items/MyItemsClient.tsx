@@ -578,7 +578,7 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                         </div>
 
                         {/* アイテムコード */}
-                        <span className="text-xs text-base-content/50 font-mono"># {item.code}</span>
+                        <span className="text-xs text-base-content/50 font-mono">#{item.code}</span>
                         {/* 件名 */}
                         <Link href={`/workspaces/${item.workspaceCode}?itemCode=${item.code}`}>
                           <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer wrap-break-word line-clamp-2">
@@ -588,48 +588,10 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                       </div>
 
                       {/* メタ情報 */}
-                      <div className="space-y-2 mb-3 flex-1">
-                        {/* オーナー */}
-                        <div className="flex items-center text-sm gap-2">
-                          <span className="text-base-content/70 w-20 flex-shrink-0">オーナー</span>
-                          <UserAvatar
-                            userName={item.ownerUsername}
-                            identityIconUrl={item.ownerAvatarUrl}
-                            size={20}
-                            nameClassName="truncate"
-                          />
-                        </div>
-
-                        {/* 担当者 */}
-                        {item.assigneeUsername && (
-                          <div className="flex items-center text-sm gap-2">
-                            <span className="text-base-content/70 w-20 flex-shrink-0">担当</span>
-                            <UserAvatar
-                              userName={item.assigneeUsername}
-                              identityIconUrl={item.assigneeAvatarUrl}
-                              size={20}
-                              nameClassName="truncate"
-                            />
-                          </div>
-                        )}
-
-                        {/* コミッター */}
-                        {item.committerUsername && (
-                          <div className="flex items-center text-sm gap-2">
-                            <span className="text-base-content/70 w-20 flex-shrink-0">コミッター</span>
-                            <UserAvatar
-                              userName={item.committerUsername}
-                              identityIconUrl={item.committerAvatarUrl}
-                              size={20}
-                              nameClassName="truncate"
-                            />
-                          </div>
-                        )}
-
+                      <div className="space-y-2 mb-3">
                         {/* 優先度 */}
                         {item.priority && (
-                          <div className="flex items-center text-sm gap-2">
-                            <span className="text-base-content/70 w-20 flex-shrink-0">優先度</span>
+                          <div className="flex items-center justify-between text-sm gap-2">
                             <span
                               className={`badge badge-sm ${
                                 item.priority === 'Critical'
@@ -652,9 +614,49 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                           </div>
                         )}
 
+                        {/* 担当者 */}
+                        {item.assigneeUsername && (
+                          <div className="flex items-center justify-between text-sm gap-2">
+                            <span className="text-base-content/70 flex-shrink-0">担当</span>
+                            <UserAvatar
+                              userName={item.assigneeUsername}
+                              identityIconUrl={item.assigneeAvatarUrl}
+                              size={20}
+                              nameClassName="truncate"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* フッター - 下部に固定 */}
+                      <div className="pt-3 border-t border-base-300 mt-auto space-y-2">
+                        {/* オーナー */}
+                        <div className="flex items-center justify-between text-sm gap-2">
+                          <span className="text-base-content/70 flex-shrink-0">オーナー</span>
+                          <UserAvatar
+                            userName={item.ownerUsername}
+                            identityIconUrl={item.ownerAvatarUrl}
+                            size={20}
+                            nameClassName="truncate"
+                          />
+                        </div>
+
+                        {/* コミッター */}
+                        {item.committerUsername && (
+                          <div className="flex items-center justify-between text-sm gap-2">
+                            <span className="text-base-content/70 flex-shrink-0">コミッター</span>
+                            <UserAvatar
+                              userName={item.committerUsername}
+                              identityIconUrl={item.committerAvatarUrl}
+                              size={20}
+                              nameClassName="truncate"
+                            />
+                          </div>
+                        )}
+
                         {/* 期限 */}
-                        <div className="flex items-center text-sm gap-2">
-                          <span className="text-base-content/70 w-20 flex-shrink-0">期限</span>
+                        <div className="flex items-center justify-between text-sm gap-2">
+                          <span className="text-base-content/70 flex-shrink-0">期限</span>
                           {item.dueDate ? (
                             <span
                               className={
@@ -671,15 +673,15 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                         </div>
 
                         {/* 作成日 */}
-                        <div className="flex items-center text-sm gap-2">
-                          <span className="text-base-content/70 w-20 flex-shrink-0">作成日</span>
-                          <span>{formatDate(item.createdAt)}</span>
+                        <div className="flex items-center justify-between text-sm gap-2">
+                          <span className="text-base-content/70 flex-shrink-0">作成日</span>
+                          <span className="font-medium">{formatDate(item.createdAt)}</span>
                         </div>
 
                         {/* 更新日 */}
-                        <div className="flex items-center text-sm gap-2">
-                          <span className="text-base-content/70 w-20 flex-shrink-0">更新日</span>
-                          <span>{formatDate(item.updatedAt)}</span>
+                        <div className="flex items-center justify-between text-sm gap-2">
+                          <span className="text-base-content/70 flex-shrink-0">更新日</span>
+                          <span className="font-medium">{formatDate(item.updatedAt)}</span>
                         </div>
                       </div>
                     </div>
