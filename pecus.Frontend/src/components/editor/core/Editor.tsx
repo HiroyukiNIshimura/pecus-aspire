@@ -93,7 +93,7 @@ export default function Editor({ isFullscreen = false }: { isFullscreen?: boolea
     },
   } = useSettings();
   const isEditable = useLexicalEditable();
-  const placeholder = 'Enter some rich text...';
+  const placeholder = '文章を入力する前に是非「/」を入力してみてください。';
   const [floatingAnchorElem, setFloatingAnchorElem] = useState<HTMLDivElement | null>(null);
   const [isSmallWidthViewport, setIsSmallWidthViewport] = useState<boolean>(false);
   const [editor] = useLexicalComposerContext();
