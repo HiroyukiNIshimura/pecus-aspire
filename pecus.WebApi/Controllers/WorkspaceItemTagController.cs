@@ -48,18 +48,8 @@ public class WorkspaceItemTagController : BaseSecureController
         [FromBody] SetTagsToItemRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがタグを設定できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         // タグを一括設定（楽観的ロック対応）
         var tags = await _tagService.SetTagsToItemAsync(

@@ -56,18 +56,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         IFormFile file
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみが添付ファイルをアップロードできます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         if (file == null || file.Length == 0)
         {
@@ -226,18 +216,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<NoContent> DeleteAttachment(int workspaceId, int itemId, int attachmentId)
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみが添付ファイルを削除できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var attachment = await _attachmentService.DeleteAttachmentAsync(
             workspaceId,

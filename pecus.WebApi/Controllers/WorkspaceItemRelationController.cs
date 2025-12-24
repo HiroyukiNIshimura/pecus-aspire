@@ -41,12 +41,8 @@ public class WorkspaceItemRelationController : BaseSecureController
         [FromBody] AddWorkspaceItemRelationRequest request
     )
     {
-        // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var relation = await _relationService.AddRelationAsync(
             workspaceId,
@@ -152,12 +148,8 @@ public class WorkspaceItemRelationController : BaseSecureController
         int relationId
     )
     {
-        // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         await _relationService.DeleteRelationAsync(
             workspaceId,

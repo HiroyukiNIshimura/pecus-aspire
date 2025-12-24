@@ -154,18 +154,8 @@ public class TaskCommentController : BaseSecureController
         [FromBody] CreateTaskCommentRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがコメントを作成できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var comment = await _taskCommentService.CreateTaskCommentAsync(
             workspaceId,
@@ -229,18 +219,8 @@ public class TaskCommentController : BaseSecureController
         [FromBody] UpdateTaskCommentRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがコメントを更新できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var comment = await _taskCommentService.UpdateTaskCommentAsync(
             workspaceId,
@@ -284,18 +264,8 @@ public class TaskCommentController : BaseSecureController
         [FromBody] DeleteTaskCommentRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがコメントを削除できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var comment = await _taskCommentService.DeleteTaskCommentAsync(
             workspaceId,

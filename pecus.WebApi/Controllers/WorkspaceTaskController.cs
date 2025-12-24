@@ -63,18 +63,8 @@ public class WorkspaceTaskController : BaseSecureController
         [FromBody] CreateWorkspaceTaskRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがタスクを作成できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var task = await _workspaceTaskService.CreateWorkspaceTaskAsync(
             workspaceId,
@@ -277,16 +267,8 @@ public class WorkspaceTaskController : BaseSecureController
         [FromQuery] CheckAssigneeTaskLoadRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException("ワークスペースのメンバーのみがタスクを確認できます。");
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var response = await _workspaceTaskService.CheckAssigneeTaskLoadAsync(
             workspaceId,
@@ -318,18 +300,8 @@ public class WorkspaceTaskController : BaseSecureController
         [FromBody] UpdateWorkspaceTaskRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがタスクを更新できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var (task, commentCount, commentTypeCounts) = await _workspaceTaskService.UpdateWorkspaceTaskAsync(
             workspaceId,

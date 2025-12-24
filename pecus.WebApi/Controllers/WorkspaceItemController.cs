@@ -57,18 +57,8 @@ public class WorkspaceItemController : BaseSecureController
         [FromBody] CreateWorkspaceItemRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがアイテムを作成できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var item = await _workspaceItemService.CreateWorkspaceItemAsync(
             workspaceId,
@@ -225,18 +215,8 @@ public class WorkspaceItemController : BaseSecureController
         [FromBody] UpdateWorkspaceItemRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがアイテムを更新できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var item = await _workspaceItemService.UpdateWorkspaceItemAsync(
             workspaceId,
@@ -270,18 +250,8 @@ public class WorkspaceItemController : BaseSecureController
         [FromBody] UpdateWorkspaceItemStatusRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがアイテムのステータスを更新できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var item = await _workspaceItemService.UpdateWorkspaceItemStatusAsync(
             workspaceId,
@@ -315,18 +285,8 @@ public class WorkspaceItemController : BaseSecureController
         [FromBody] UpdateWorkspaceItemAssigneeRequest request
     )
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがアイテムの担当者を変更できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var item = await _workspaceItemService.UpdateWorkspaceItemAssigneeAsync(
             workspaceId,
@@ -355,18 +315,8 @@ public class WorkspaceItemController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeleteWorkspaceItem(int workspaceId, int itemId)
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがアイテムを削除できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         await _workspaceItemService.DeleteWorkspaceItemAsync(workspaceId, itemId, CurrentUserId);
 
@@ -409,18 +359,8 @@ public class WorkspaceItemController : BaseSecureController
             throw new InvalidOperationException($"無効な属性です: {attr}。使用可能な属性: assignee, committer, priority, duedate, archive");
         }
 
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがアイテムの属性を変更できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
         var item = await _workspaceItemService.UpdateWorkspaceItemAttributeAsync(
             workspaceId,
@@ -449,20 +389,10 @@ public class WorkspaceItemController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<DocumentSuggestionResponse>> GetDocumentSuggestion(int workspaceId, [FromBody] DocumentSuggestionRequest request)
     {
-        // ワークスペースへのアクセス権限とメンバーシップを同時にチェック
-        var (hasAccess, isMember, workspace) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
-        if (!hasAccess)
-        {
-            throw new NotFoundException("ワークスペースが見つかりません。");
-        }
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみが機能を使用できます。"
-            );
-        }
+        // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
+        var workspace = await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
-        var suggestion = await _documentSuggestionService.SuggestDocumentContentForOrganizationAsync(workspace!.OrganizationId, workspace, request.Title);
+        var suggestion = await _documentSuggestionService.SuggestDocumentContentForOrganizationAsync(workspace.OrganizationId, workspace, request.Title);
         var response = new DocumentSuggestionResponse
         {
             SuggestedContent = suggestion ?? string.Empty

@@ -826,10 +826,10 @@ public class WorkspaceService
             throw new NotFoundException("ワークスペースにアクセスできません。");
         }
 
-        // Viewer は更新権限なし
+        // Viewer は更新権限なし（403 Forbidden）
         if (workspaceUser.WorkspaceRole == WorkspaceRole.Viewer)
         {
-            throw new InvalidOperationException("この操作を実行する権限がありません。Member以上の権限が必要です。");
+            throw new ForbiddenException("この操作を実行する権限がありません。閲覧専用ユーザーは変更操作を行えません。");
         }
     }
 
