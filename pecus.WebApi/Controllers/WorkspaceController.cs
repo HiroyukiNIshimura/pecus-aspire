@@ -55,16 +55,10 @@ public class WorkspaceController : BaseSecureController
         [FromBody] CreateWorkspaceRequest request
     )
     {
-        // CurrentUser は基底クラスで有効性チェック済み
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織情報が見つかりません。");
-        }
-
         // ワークスペースを作成
         var workspace = await _workspaceService.CreateWorkspaceAsync(
             request: request,
-            organizationId: CurrentUser.OrganizationId.Value,
+            organizationId: CurrentOrganizationId,
             createdByUserId: CurrentUserId
         );
 

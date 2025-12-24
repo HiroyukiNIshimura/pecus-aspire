@@ -63,14 +63,7 @@ public class MasterDataController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<MasterSkillResponse>>> GetSkills()
     {
-        // CurrentUser は基底クラスで有効性チェック済み
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
-        if (!organizationId.HasValue)
-        {
-            throw new InvalidOperationException("ユーザーが組織に所属していません。");
-        }
-
-        var skills = await _masterDataService.GetActiveSkillsByOrganizationAsync(organizationId.Value);
+        var skills = await _masterDataService.GetActiveSkillsByOrganizationAsync(CurrentOrganizationId);
 
         var response = skills
             .Select(s => new MasterSkillResponse

@@ -47,7 +47,7 @@ public class UserController : BaseSecureController
     )
     {
         List<User> users = await _userService.SearchUsersWithPgroongaAsync(
-                organizationId: CurrentUser!.OrganizationId!.Value,
+                organizationId: CurrentOrganizationId,
                 searchQuery: request.Q,
                 limit: request.Limit
             );

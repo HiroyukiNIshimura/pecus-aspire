@@ -33,17 +33,11 @@ public class FileDownloadController : BaseSecureController
         [FromRoute] FileDownloadRequest request,
         bool useOriginal)
     {
-        // CurrentUser は基底クラスで有効性チェック済み
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("ファイルが見つかりません。");
-        }
-
         // 組織IDを使用してファイルパスを構築
         var uploadsPath = "uploads";
         var filePath = Path.Combine(
             uploadsPath,
-            CurrentUser.OrganizationId.Value.ToString(),
+            CurrentOrganizationId.ToString(),
             request.FileType.ToString().ToLowerInvariant(),
             request.ResourceId.ToString(),
             request.FileName
@@ -99,17 +93,11 @@ public class FileDownloadController : BaseSecureController
         [FromQuery] DeleteIconRequest request
     )
     {
-        // CurrentUser は基底クラスで有効性チェック済み
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("ファイルが見つかりません。");
-        }
-
         // 組織IDを使用してファイルパスを構築
         var uploadsPath = "uploads";
         var filePath = Path.Combine(
             uploadsPath,
-            CurrentUser.OrganizationId.Value.ToString(),
+            CurrentOrganizationId.ToString(),
             request.FileType.GetDisplayName().ToLowerInvariant(),
             request.ResourceId.ToString(),
             request.FileName
@@ -138,7 +126,7 @@ public class FileDownloadController : BaseSecureController
         {
             _logger.LogDebug(
                 "アイコンファイルを削除しました。OrganizationId: {OrganizationId}, FileType: {FileType}, ResourceId: {ResourceId}, FileName: {FileName}, DeletedFiles: {DeletedFiles}",
-                CurrentUser.OrganizationId.Value,
+                CurrentOrganizationId,
                 request.FileType,
                 request.ResourceId,
                 request.FileName,
@@ -149,7 +137,7 @@ public class FileDownloadController : BaseSecureController
         {
             _logger.LogDebug(
                 "削除対象のファイルが既に存在しないため、削除をスキップしました。OrganizationId: {OrganizationId}, FileType: {FileType}, ResourceId: {ResourceId}, FileName: {FileName}",
-                CurrentUser.OrganizationId.Value,
+                CurrentOrganizationId,
                 request.FileType,
                 request.ResourceId,
                 request.FileName

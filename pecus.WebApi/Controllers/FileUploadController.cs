@@ -12,19 +12,16 @@ namespace Pecus.Controllers;
 public class FileUploadController : BaseSecureController
 {
     private readonly FileUploadService _fileUploadService;
-    private readonly GenreService _genreService;
     private readonly UserService _userService;
 
     public FileUploadController(
         FileUploadService fileUploadService,
-        GenreService genreService,
         UserService userService,
         ProfileService profileService,
         ILogger<FileUploadController> logger
     ) : base(profileService, logger)
     {
         _fileUploadService = fileUploadService;
-        _genreService = genreService;
         _userService = userService;
     }
 
@@ -41,12 +38,6 @@ public class FileUploadController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<FileUploadResponse>> UploadFile([FromForm] FileUploadRequest request)
     {
-        // CurrentUser は基底クラスで有効性チェック済み
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new InvalidOperationException("組織に所属していません。");
-        }
-
         // ファイルの種類に応じたバリデーション
         if (request.FileType == FileType.Avatar)
         {
@@ -54,7 +45,7 @@ public class FileUploadController : BaseSecureController
             if (
                 !await _fileUploadService.ValidateUserResourceAsync(
                     request.ResourceId,
-                    CurrentUser.OrganizationId.Value
+                    CurrentOrganizationId
                 )
             )
             {
@@ -71,7 +62,7 @@ public class FileUploadController : BaseSecureController
             request.File,
             request.FileType.ToString().ToLowerInvariant(),
             request.ResourceId,
-            CurrentUser.OrganizationId.Value
+            CurrentOrganizationId
         );
 
         // アバターの場合、ユーザー情報を更新（WebP変換後のファイル名を保存）

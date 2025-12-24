@@ -40,13 +40,8 @@ public class MyOrganizationController : BaseSecureController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Ok<OrganizationResponse>> GetMyOrganization()
     {
-        if (CurrentUser?.OrganizationId == null)
-        {
-            throw new NotFoundException("組織に所属していません。");
-        }
-
         var organization = await _organizationService.GetOrganizationByIdAsync(
-            CurrentUser.OrganizationId.Value
+            CurrentOrganizationId
         );
 
         if (organization == null)

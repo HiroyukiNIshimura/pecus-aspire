@@ -14,18 +14,15 @@ namespace Pecus.Controllers;
 public class WorkspaceRelationsController : BaseSecureController
 {
     private readonly WorkspaceItemService _itemService;
-    private readonly OrganizationAccessHelper _accessHelper;
 
     public WorkspaceRelationsController(
         WorkspaceItemService itemService,
-        OrganizationAccessHelper accessHelper,
         ILogger<WorkspaceRelationsController> logger,
         ProfileService profileService
     )
         : base(profileService, logger)
     {
         _itemService = itemService;
-        _accessHelper = accessHelper;
     }
 
     /// <summary>
