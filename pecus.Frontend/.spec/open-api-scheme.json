@@ -3521,7 +3521,7 @@
           "Workspace"
         ],
         "summary": "ワークスペースメンバーのロールを変更する（Ownerのみ実行可能）",
-        "description": "ワークスペースの Owner ロールを持つユーザーのみ実行可能です。\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。",
+        "description": "ワークスペースの Owner ロールを持つユーザーのみ実行可能です。\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。\nまた、Viewer に変更する場合、対象ユーザーが担当中のタスクやアイテムがあると変更できません。",
         "parameters": [
           {
             "name": "id",
@@ -3574,6 +3574,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceMemberAssignmentsResponse"
                 }
               }
             }
@@ -11654,6 +11664,68 @@
         },
         "description": "アプリケーション公開設定レスポンス\nフロントエンドで利用可能な組織設定とユーザー設定を統合したDTO\n※ APIキー、パスワード等のセンシティブ情報は含まない"
       },
+      "AssignedItemInfo": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "description": "アイテムID",
+            "format": "int32"
+          },
+          "itemNumber": {
+            "type": "integer",
+            "description": "アイテム番号（I-456 形式表示用）",
+            "format": "int32"
+          },
+          "itemSubject": {
+            "type": "string",
+            "description": "アイテム件名"
+          },
+          "workspaceCode": {
+            "type": "string",
+            "description": "ワークスペースコード（URL生成用）"
+          }
+        },
+        "description": "担当アイテム情報（リンク生成用）"
+      },
+      "AssignedTaskInfo": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "taskSequence": {
+            "type": "integer",
+            "description": "タスクシーケンス番号（T-123 形式表示用）",
+            "format": "int32"
+          },
+          "taskContent": {
+            "type": "string",
+            "description": "タスク内容（省略表示用）"
+          },
+          "itemId": {
+            "type": "integer",
+            "description": "所属アイテムID",
+            "format": "int32"
+          },
+          "itemNumber": {
+            "type": "integer",
+            "description": "所属アイテム番号",
+            "format": "int32"
+          },
+          "itemSubject": {
+            "type": "string",
+            "description": "所属アイテム件名（どのアイテムのタスクか分かるように）"
+          },
+          "workspaceCode": {
+            "type": "string",
+            "description": "ワークスペースコード（URL生成用）"
+          }
+        },
+        "description": "担当タスク情報（リンク生成用）"
+      },
       "AssigneeTaskLoadResponse": {
         "type": "object",
         "properties": {
@@ -19509,6 +19581,44 @@
           }
         },
         "description": "ワークスペースリストアイテムレスポンス"
+      },
+      "WorkspaceMemberAssignmentsResponse": {
+        "type": "object",
+        "properties": {
+          "assignedTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignedTaskInfo"
+            },
+            "description": "未完了タスク担当（タスク詳細へのリンク用）"
+          },
+          "assignedItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignedItemInfo"
+            },
+            "description": "アイテム担当者（アイテム詳細へのリンク用）"
+          },
+          "committerItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignedItemInfo"
+            },
+            "description": "コミッター（アイテム詳細へのリンク用）"
+          },
+          "ownerItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignedItemInfo"
+            },
+            "description": "オーナー（アイテム詳細へのリンク用）"
+          },
+          "hasAssignments": {
+            "type": "boolean",
+            "description": "担当があるかどうか"
+          }
+        },
+        "description": "ワークスペースメンバーが担当しているタスク/アイテムの情報\nViewer変更前のチェック用"
       },
       "WorkspaceMode": {
         "enum": [

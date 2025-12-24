@@ -16,6 +16,8 @@ export type { AddWorkspaceItemRelationResponse } from './models/AddWorkspaceItem
 export type { AdminUpdateOrganizationRequest } from './models/AdminUpdateOrganizationRequest';
 export type { AdminUpdateOrganizationSettingRequest } from './models/AdminUpdateOrganizationSettingRequest';
 export type { AppPublicSettingsResponse } from './models/AppPublicSettingsResponse';
+export type { AssignedItemInfo } from './models/AssignedItemInfo';
+export type { AssignedTaskInfo } from './models/AssignedTaskInfo';
 export type { AssigneeTaskLoadResponse } from './models/AssigneeTaskLoadResponse';
 export type { AvailableModelResponse } from './models/AvailableModelResponse';
 export type { AvatarType } from './models/AvatarType';
@@ -218,6 +220,7 @@ export type { WorkspaceItemRelationsResponse } from './models/WorkspaceItemRelat
 export type { WorkspaceItemResponse } from './models/WorkspaceItemResponse';
 export type { WorkspaceItemStatistics } from './models/WorkspaceItemStatistics';
 export type { WorkspaceListItemResponse } from './models/WorkspaceListItemResponse';
+export type { WorkspaceMemberAssignmentsResponse } from './models/WorkspaceMemberAssignmentsResponse';
 export type { WorkspaceMode } from './models/WorkspaceMode';
 export type { WorkspaceRole } from './models/WorkspaceRole';
 export type { WorkspaceSkillResponse } from './models/WorkspaceSkillResponse';

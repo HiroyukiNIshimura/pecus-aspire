@@ -233,6 +233,7 @@ export class WorkspaceService {
      * ワークスペースメンバーのロールを変更する（Ownerのみ実行可能）
      * ワークスペースの Owner ロールを持つユーザーのみ実行可能です。
      * ただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。
+     * また、Viewer に変更する場合、対象ユーザーが担当中のタスクやアイテムがあると変更できません。
      * @param id ワークスペースID
      * @param userId 対象ユーザーID
      * @param requestBody ロール変更リクエスト
@@ -256,6 +257,7 @@ export class WorkspaceService {
             errors: {
                 400: `Bad Request`,
                 404: `Not Found`,
+                409: `Conflict`,
                 500: `Internal Server Error`,
             },
         });

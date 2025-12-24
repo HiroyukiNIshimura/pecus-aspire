@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
+using Pecus.Models.Responses.Workspace;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -376,16 +378,18 @@ public class WorkspaceController : BaseSecureController
     /// <remarks>
     /// ワークスペースの Owner ロールを持つユーザーのみ実行可能です。
     /// ただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。
+    /// また、Viewer に変更する場合、対象ユーザーが担当中のタスクやアイテムがあると変更できません。
     /// </remarks>
     /// <param name="id">ワークスペースID</param>
     /// <param name="userId">対象ユーザーID</param>
     /// <param name="request">ロール変更リクエスト</param>
     [HttpPatch("{id:int}/members/{userId:int}/role")]
     [ProducesResponseType(typeof(WorkspaceUserDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WorkspaceMemberAssignmentsResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<WorkspaceUserDetailResponse>> UpdateWorkspaceMemberRole(
+    public async Task<Results<Ok<WorkspaceUserDetailResponse>, Conflict<WorkspaceMemberAssignmentsResponse>>> UpdateWorkspaceMemberRole(
         int id,
         int userId,
         [FromBody] UpdateWorkspaceUserRoleRequest request
@@ -394,6 +398,17 @@ public class WorkspaceController : BaseSecureController
         // CurrentUser は基底クラスで有効性チェック済み
         // ワークスペースオーナー権限チェック（ワークスペース情報も同時に取得）
         var workspace = await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+
+        // Viewerへの変更時のみ、担当タスク/アイテムをチェック
+        if (request.WorkspaceRole == WorkspaceRole.Viewer)
+        {
+            var assignments = await _workspaceService.GetMemberAssignmentsAsync(id, userId);
+            if (assignments.HasAssignments)
+            {
+                // 担当があれば409 Conflictを返す（担当情報を含める）
+                return TypedResults.Conflict(assignments);
+            }
+        }
 
         // ロール変更実行（権限チェック済みのワークスペースを渡して再検索を省略）
         var workspaceUser = await _workspaceService.UpdateWorkspaceUserRoleAsync(

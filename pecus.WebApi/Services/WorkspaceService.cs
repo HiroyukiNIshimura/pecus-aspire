@@ -5,6 +5,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Utils;
+using Pecus.Models.Responses.Workspace;
 
 namespace Pecus.Services;
 
@@ -1150,5 +1151,95 @@ public class WorkspaceService
     {
         var genre = await _context.Genres.FindAsync(genreId);
         return genre?.Name;
+    }
+
+    /// <summary>
+    /// ユーザーがワークスペース内で担当しているタスク/アイテムを取得
+    /// Viewer変更前のチェック用
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <returns>担当タスク/アイテム情報</returns>
+    public async Task<WorkspaceMemberAssignmentsResponse> GetMemberAssignmentsAsync(int workspaceId, int userId)
+    {
+        var workspace = await _context.Workspaces.FindAsync(workspaceId);
+        if (workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var workspaceCode = workspace.Code ?? "";
+
+        // 未完了タスク担当
+        var assignedTasks = await _context
+            .WorkspaceTasks.Include(t => t.WorkspaceItem)
+            .Where(t =>
+                t.WorkspaceItem!.WorkspaceId == workspaceId
+                && t.AssignedUserId == userId
+                && !t.IsCompleted
+                && !t.IsDiscarded
+            )
+            .Select(t => new AssignedTaskInfo
+            {
+                TaskId = t.Id,
+                TaskSequence = t.Sequence,
+                TaskContent =
+                    t.Content.Length > 50 ? t.Content.Substring(0, 50) + "..." : t.Content,
+                ItemId = t.WorkspaceItemId,
+                ItemNumber = t.WorkspaceItem!.ItemNumber,
+                ItemSubject = t.WorkspaceItem.Subject,
+                WorkspaceCode = workspaceCode,
+            })
+            .ToListAsync();
+
+        // アイテム担当者（アーカイブされていないもの）
+        var assignedItems = await _context
+            .WorkspaceItems.Where(i =>
+                i.WorkspaceId == workspaceId && i.AssigneeId == userId && !i.IsArchived
+            )
+            .Select(i => new AssignedItemInfo
+            {
+                ItemId = i.Id,
+                ItemNumber = i.ItemNumber,
+                ItemSubject = i.Subject,
+                WorkspaceCode = workspaceCode,
+            })
+            .ToListAsync();
+
+        // コミッター（アーカイブされていないもの）
+        var committerItems = await _context
+            .WorkspaceItems.Where(i =>
+                i.WorkspaceId == workspaceId && i.CommitterId == userId && !i.IsArchived
+            )
+            .Select(i => new AssignedItemInfo
+            {
+                ItemId = i.Id,
+                ItemNumber = i.ItemNumber,
+                ItemSubject = i.Subject,
+                WorkspaceCode = workspaceCode,
+            })
+            .ToListAsync();
+
+        // オーナー（アーカイブされていないもの）
+        var ownerItems = await _context
+            .WorkspaceItems.Where(i =>
+                i.WorkspaceId == workspaceId && i.OwnerId == userId && !i.IsArchived
+            )
+            .Select(i => new AssignedItemInfo
+            {
+                ItemId = i.Id,
+                ItemNumber = i.ItemNumber,
+                ItemSubject = i.Subject,
+                WorkspaceCode = workspaceCode,
+            })
+            .ToListAsync();
+
+        return new WorkspaceMemberAssignmentsResponse
+        {
+            AssignedTasks = assignedTasks,
+            AssignedItems = assignedItems,
+            CommitterItems = committerItems,
+            OwnerItems = ownerItems,
+        };
     }
 }
