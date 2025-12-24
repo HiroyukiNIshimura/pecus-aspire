@@ -5,6 +5,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks.Bot;
+using Pecus.Libs.Notifications;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
@@ -23,6 +24,7 @@ public class WorkspaceItemController : BaseSecureController
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly DocumentSuggestionService _documentSuggestionService;
+    private readonly SignalRNotificationPublisher _signalRPublisher;
 
     public WorkspaceItemController(
         WorkspaceItemService workspaceItemService,
@@ -32,7 +34,8 @@ public class WorkspaceItemController : BaseSecureController
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
         FrontendUrlResolver frontendUrlResolver,
-        DocumentSuggestionService documentSuggestionService
+        DocumentSuggestionService documentSuggestionService,
+        SignalRNotificationPublisher signalRPublisher
     ) : base(profileService, logger)
     {
         _workspaceItemService = workspaceItemService;
@@ -42,6 +45,7 @@ public class WorkspaceItemController : BaseSecureController
         _backgroundJobClient = backgroundJobClient;
         _frontendUrlResolver = frontendUrlResolver;
         _documentSuggestionService = documentSuggestionService;
+        _signalRPublisher = signalRPublisher;
     }
 
     /// <summary>
@@ -64,6 +68,19 @@ public class WorkspaceItemController : BaseSecureController
             workspaceId,
             request,
             CurrentUserId
+        );
+
+        // ワークスペースグループにリアルタイム通知を送信（他のメンバーの画面を更新）
+        await _signalRPublisher.PublishNotificationAsync(
+            $"workspace:{workspaceId}",
+            "workspace_item:created",
+            new
+            {
+                ItemId = item.Id,
+                ItemCode = item.Code,
+                Subject = item.Subject,
+                CreatedByUserId = CurrentUserId,
+            }
         );
 
         // ワークスペースアイテム作成通知をバックグラウンドジョブで実行

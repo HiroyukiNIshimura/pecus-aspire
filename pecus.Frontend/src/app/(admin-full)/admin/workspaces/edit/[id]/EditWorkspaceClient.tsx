@@ -256,7 +256,7 @@ export default function EditWorkspaceClient({
       setMembers((prev) => prev.map((m) => (m.userId === userId ? { ...m, workspaceRole: newRole } : m)));
       notify.success(`${userName} のロールを変更しました。`);
       handleChangeRoleModalClose();
-    } else if (result.error === 'member_has_assignments') {
+    } else if (result.error === 'member_has_assignments' && 'assignments' in result && result.assignments) {
       // アサインメントエラーの場合はエラー情報を設定（モーダルは閉じない）
       setAssignmentsError(result.assignments);
     } else {

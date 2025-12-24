@@ -8,6 +8,7 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Notifications;
 using Pecus.Libs.Security;
 using Pecus.Services;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ public class WorkspaceTaskController : BaseSecureController
     private readonly ILogger<WorkspaceTaskController> _logger;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly FrontendUrlResolver _frontendUrlResolver;
+    private readonly SignalRNotificationPublisher _signalRPublisher;
 
     public WorkspaceTaskController(
         WorkspaceTaskService workspaceTaskService,
@@ -35,7 +37,8 @@ public class WorkspaceTaskController : BaseSecureController
         ProfileService profileService,
         ILogger<WorkspaceTaskController> logger,
         IBackgroundJobClient backgroundJobClient,
-        FrontendUrlResolver frontendUrlResolver
+        FrontendUrlResolver frontendUrlResolver,
+        SignalRNotificationPublisher signalRPublisher
     ) : base(profileService, logger)
     {
         _workspaceTaskService = workspaceTaskService;
@@ -43,6 +46,7 @@ public class WorkspaceTaskController : BaseSecureController
         _logger = logger;
         _backgroundJobClient = backgroundJobClient;
         _frontendUrlResolver = frontendUrlResolver;
+        _signalRPublisher = signalRPublisher;
     }
 
     /// <summary>
@@ -75,6 +79,19 @@ public class WorkspaceTaskController : BaseSecureController
 
         // タスク作成通知メールを送信
         await SendTaskCreatedEmailAsync(task.Id);
+
+        // ワークスペースグループにリアルタイム通知を送信（他のメンバーの画面を更新）
+        await _signalRPublisher.PublishNotificationAsync(
+            $"workspace:{workspaceId}",
+            "workspace_task:created",
+            new
+            {
+                TaskId = task.Id,
+                ItemId = itemId,
+                Content = task.Content,
+                CreatedByUserId = CurrentUserId,
+            }
+        );
 
         // ワークスペースタスク作成通知をバックグラウンドジョブで実行
         _backgroundJobClient.Enqueue<CreateTaskTask>(x =>
