@@ -40,17 +40,21 @@ export default function LoginFormClient() {
   // === API エラー管理（ログイン失敗など） ===
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // === Info メッセージ管理 ===
+  const [apiInfo, setApiInfo] = useState<string | null>(null);
+
   // === Zod一本化フック ===
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: loginSchema,
     onSubmit: async (data) => {
       // エラーをクリア
       setApiError(null);
+      setApiInfo(null);
 
       // === ログイン API 呼び出し ===
       try {
         if (!deviceInfo) {
-          setApiError('デバイス情報の取得に失敗しました。ページを再読み込みしてください。');
+          setApiInfo('デバイス情報の取得に失敗しました。もう一度ログインボタンを押してください。');
           return;
         }
 
@@ -106,6 +110,13 @@ export default function LoginFormClient() {
           {apiError && (
             <div className="alert alert-soft alert-error" role="alert">
               {apiError}
+            </div>
+          )}
+
+          {/* === Info メッセージ表示エリア === */}
+          {apiInfo && (
+            <div className="alert alert-soft alert-info" role="status">
+              {apiInfo}
             </div>
           )}
 
