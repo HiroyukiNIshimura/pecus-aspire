@@ -63,7 +63,7 @@ public class WorkspaceController : BaseSecureController
         );
 
         // ワークスペース作成通知メールを送信
-        await SendWorkspaceCreatedEmailAsync(workspace.Id, CurrentUser.OrganizationId.Value);
+        await SendWorkspaceCreatedEmailAsync(workspace.Id, CurrentOrganizationId);
 
         // 作成されたワークスペースの詳細情報を取得
         var response = await _workspaceService.GetWorkspaceDetailAsync(workspace.Id, CurrentUserId);

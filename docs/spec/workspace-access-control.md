@@ -1,5 +1,12 @@
 # ワークスペースアクセス権限
 
+## AI エージェント向け要約（必読）
+
+- **Viewer権限のユーザーは変更操作不可** → 403 Forbidden を返す
+- 権限チェックには `OrganizationAccessHelper.RequireWorkspaceEditPermissionAsync()` を使用
+- `ForbiddenException` は `GlobalExceptionFilter` で HTTP 403 に変換される
+- ピン操作（`WorkspaceItemPinController`）のみ Viewer でも許可
+
 ## 概要
 
 ワークスペースへのアクセス権限は `WorkspaceUser.WorkspaceRole` により制御されます。
@@ -21,23 +28,89 @@
 
 ## 権限マトリクス
 
-### WorkspaceController（一般ユーザー向け API）
+### WorkspaceController（ワークスペース管理）
 
 | 操作 | エンドポイント | Viewer | Member | Owner |
 |------|---------------|:------:|:------:|:-----:|
 | 一覧取得 | `GET /api/workspaces` | ✅ | ✅ | ✅ |
 | 詳細取得 | `GET /api/workspaces/{id}` | ✅ | ✅ | ✅ |
 | 詳細取得(code) | `GET /api/workspaces/code/{code}` | ✅ | ✅ | ✅ |
-| アイテム一覧 | `GET /api/workspaces/{id}/items` | ✅ | ✅ | ✅ |
-| 更新 | `PUT /api/workspaces/{id}` | ❌ | ✅ | ✅ |
+| **更新** | `PUT /api/workspaces/{id}` | ❌ 403 | ✅ | ✅ |
 | 有効化 | `POST /api/workspaces/{id}/activate` | ❌ | ❌ | ✅ |
 | 無効化 | `POST /api/workspaces/{id}/deactivate` | ❌ | ❌ | ✅ |
 | メンバー追加 | `POST /api/workspaces/{id}/members` | ❌ | ❌ | ✅ |
 | メンバー削除 | `DELETE /api/workspaces/{id}/members/{userId}` | ❌ | ❌ | ✅ |
 | メンバーロール変更 | `PATCH /api/workspaces/{id}/members/{userId}/role` | ❌ | ❌ | ✅ |
-| 削除 | `DELETE /api/workspaces/{id}` | - | - | - |
 
-※ 削除は Admin 権限が必要（WorkspaceRole とは別）
+### WorkspaceItemController（ワークスペースアイテム）
+
+| 操作 | エンドポイント | Viewer | Member | Owner |
+|------|---------------|:------:|:------:|:-----:|
+| 一覧取得 | `GET /api/workspaces/{id}/items` | ✅ | ✅ | ✅ |
+| 詳細取得 | `GET /api/workspaces/{id}/items/{itemId}` | ✅ | ✅ | ✅ |
+| コードで取得 | `GET /api/workspaces/{id}/items/code/{code}` | ✅ | ✅ | ✅ |
+| **作成** | `POST /api/workspaces/{id}/items` | ❌ 403 | ✅ | ✅ |
+| **更新** | `PATCH /api/workspaces/{id}/items/{itemId}` | ❌ 403 | ✅ | ✅ |
+| **ステータス更新** | `PATCH /api/workspaces/{id}/items/{itemId}/status` | ❌ 403 | ✅ | ✅ |
+| **担当者更新** | `PATCH /api/workspaces/{id}/items/{itemId}/assignee` | ❌ 403 | ✅ | ✅ |
+| **削除** | `DELETE /api/workspaces/{id}/items/{itemId}` | ❌ 403 | ✅ | ✅ |
+| **属性更新** | `PATCH /api/workspaces/{id}/items/{itemId}/{attr}` | ❌ 403 | ✅ | ✅ |
+| **ドキュメント提案** | `POST /api/workspaces/{id}/items/document-suggestion` | ❌ 403 | ✅ | ✅ |
+| 子アイテム数取得 | `GET /api/workspaces/{id}/items/{itemId}/children/count` | ✅ | ✅ | ✅ |
+
+### WorkspaceItemTagController（タグ）
+
+| 操作 | エンドポイント | Viewer | Member | Owner |
+|------|---------------|:------:|:------:|:-----:|
+| **タグ設定** | `PUT /api/workspaces/{id}/items/{itemId}/tags` | ❌ 403 | ✅ | ✅ |
+
+### WorkspaceItemRelationController（関連）
+
+| 操作 | エンドポイント | Viewer | Member | Owner |
+|------|---------------|:------:|:------:|:-----:|
+| 関連一覧取得 | `GET /api/workspaces/{id}/items/{itemId}/relations` | ✅ | ✅ | ✅ |
+| **関連追加** | `POST /api/workspaces/{id}/items/{itemId}/relations` | ❌ 403 | ✅ | ✅ |
+| **関連削除** | `DELETE /api/workspaces/{id}/items/{itemId}/relations/{relationId}` | ❌ 403 | ✅ | ✅ |
+
+### WorkspaceItemAttachmentController（添付ファイル）
+
+| 操作 | エンドポイント | Viewer | Member | Owner |
+|------|---------------|:------:|:------:|:-----:|
+| 添付一覧取得 | `GET /api/workspaces/{id}/items/{itemId}/attachments` | ✅ | ✅ | ✅ |
+| ダウンロード | `GET /api/workspaces/{id}/items/{itemId}/attachments/download/{fileName}` | ✅ | ✅ | ✅ |
+| **アップロード** | `POST /api/workspaces/{id}/items/{itemId}/attachments` | ❌ 403 | ✅ | ✅ |
+| **削除** | `DELETE /api/workspaces/{id}/items/{itemId}/attachments/{attachmentId}` | ❌ 403 | ✅ | ✅ |
+
+### WorkspaceItemPinController（ピン）※ Viewer でも許可
+
+| 操作 | エンドポイント | Viewer | Member | Owner |
+|------|---------------|:------:|:------:|:-----:|
+| **ピン追加** | `POST /api/workspaces/{id}/items/{itemId}/pin` | ✅ | ✅ | ✅ |
+| **ピン削除** | `DELETE /api/workspaces/{id}/items/{itemId}/pin` | ✅ | ✅ | ✅ |
+
+> ピン機能はユーザー個人の設定であり、ワークスペースのデータを変更しないため Viewer でも許可
+
+### WorkspaceTaskController（タスク）
+
+| 操作 | エンドポイント | Viewer | Member | Owner |
+|------|---------------|:------:|:------:|:-----:|
+| タスク一覧取得 | `GET /api/workspaces/{id}/items/{itemId}/tasks` | ✅ | ✅ | ✅ |
+| タスク取得 | `GET /api/workspaces/{id}/items/{itemId}/tasks/{taskId}` | ✅ | ✅ | ✅ |
+| シーケンスで取得 | `GET /api/workspaces/{id}/items/{itemId}/tasks/sequence/{sequence}` | ✅ | ✅ | ✅ |
+| フローマップ取得 | `GET /api/workspaces/{id}/items/{itemId}/tasks/flow-map` | ✅ | ✅ | ✅ |
+| **タスク作成** | `POST /api/workspaces/{id}/items/{itemId}/tasks` | ❌ 403 | ✅ | ✅ |
+| **タスク更新** | `PUT /api/workspaces/{id}/items/{itemId}/tasks/{taskId}` | ❌ 403 | ✅ | ✅ |
+| **担当者負荷チェック** | `GET /api/workspaces/{id}/items/{itemId}/tasks/assignee-load-check` | ❌ 403 | ✅ | ✅ |
+
+### TaskCommentController（タスクコメント）
+
+| 操作 | エンドポイント | Viewer | Member | Owner |
+|------|---------------|:------:|:------:|:-----:|
+| コメント一覧取得 | `GET /api/workspaces/{id}/items/{itemId}/tasks/{taskId}/comments` | ✅ | ✅ | ✅ |
+| コメント取得 | `GET /api/workspaces/{id}/items/{itemId}/tasks/{taskId}/comments/{commentId}` | ✅ | ✅ | ✅ |
+| **コメント作成** | `POST /api/workspaces/{id}/items/{itemId}/tasks/{taskId}/comments` | ❌ 403 | ✅ | ✅ |
+| **コメント更新** | `PUT /api/workspaces/{id}/items/{itemId}/tasks/{taskId}/comments/{commentId}` | ❌ 403 | ✅ | ✅ |
+| **コメント削除** | `DELETE /api/workspaces/{id}/items/{itemId}/tasks/{taskId}/comments/{commentId}` | ❌ 403 | ✅ | ✅ |
 
 ### AdminWorkspaceController（組織管理者向け API）
 
@@ -78,11 +151,44 @@
 
 ## 実装
 
-アクセスチェックは `WorkspaceService` の以下のメソッドで行います：
+### 権限チェック用メソッド
 
-- `CheckWorkspaceAccessAsync` - Viewer 以上（一覧・詳細取得）
-- `CheckWorkspaceMemberOrOwnerAsync` - Member 以上（更新系）
-- `CheckWorkspaceOwnerAsync` - Owner のみ（有効化/無効化・メンバー管理・ロール変更）
+アクセスチェックは以下のクラス・メソッドで行います：
+
+#### OrganizationAccessHelper（推奨）
+
+| メソッド | 用途 | 失敗時 |
+|---------|------|--------|
+| `CanAccessWorkspaceAsync` | 組織所属確認（読み取り用） | `false` を返す |
+| `CheckWorkspaceAccessAndMembershipAsync` | アクセス権 + メンバーシップ確認 | タプルで結果を返す |
+| `CheckWorkspaceEditPermissionAsync` | アクセス権 + 編集権限確認（Viewer判定） | タプルで結果を返す |
+| **`RequireWorkspaceEditPermissionAsync`** | **編集権限必須（Viewer は 403）** | `ForbiddenException` |
+
+#### WorkspaceService
+
+| メソッド | 用途 | 失敗時 |
+|---------|------|--------|
+| `CheckWorkspaceMemberOrOwnerAsync` | Member 以上（更新系） | `ForbiddenException` |
+| `CheckWorkspaceOwnerAsync` | Owner のみ（メンバー管理） | `NotFoundException` |
+
+### 例外クラス
+
+| 例外 | HTTP ステータス | 用途 |
+|------|----------------|------|
+| `ForbiddenException` | 403 Forbidden | Viewer が変更操作を試みた場合 |
+| `NotFoundException` | 404 Not Found | リソースが見つからない / アクセス権がない |
+| `InvalidOperationException` | 400 Bad Request | その他の操作エラー |
+
+### コントローラーでの使用例
+
+```csharp
+// Viewer を含むメンバーチェック（読み取り専用操作）
+var (hasAccess, isMember, _) = await _accessHelper.CheckWorkspaceAccessAndMembershipAsync(CurrentUserId, workspaceId);
+if (!hasAccess) throw new NotFoundException("ワークスペースが見つかりません。");
+
+// 編集権限チェック（Viewer は 403）
+await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
+```
 
 ## レスポンスの CurrentUserRole
 
@@ -145,3 +251,8 @@ const isOwner = workspaceDetail.currentUserRole === 'Owner';
 - `pecus.Frontend/src/components/workspaces/WorkspaceMemberList.tsx` - メンバー一覧コンポーネント（`ownerId` による制御）
 - `pecus.Frontend/src/app/(dashbord)/workspaces/[code]/WorkspaceDetailClient.tsx` - 一般ユーザー向けワークスペース詳細
 - `pecus.Frontend/src/app/(dashbord)/admin/workspaces/edit/[id]/EditWorkspaceClient.tsx` - 管理者向けワークスペース編集
+
+## 更新履歴
+
+- 2025-12-24: Viewer 権限チェック（403 Forbidden）の詳細を追加、API 権限マトリクスを大幅拡充
+- 2025-12-16: 初版作成

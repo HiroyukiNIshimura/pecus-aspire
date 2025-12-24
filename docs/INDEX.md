@@ -40,7 +40,7 @@
 - [task-focus-recommendation.md](./spec/task-focus-recommendation.md) — タスク集中推薦機能の設計。
 - [task-ui-redesign.md](./spec/task-ui-redesign.md) — タスクUIの再設計仕様。
 - [user-onboarding.md](./spec/user-onboarding.md) — ユーザーオンボーディング（初回ガイド/チュートリアル）の設計。
-- [workspace-access-control.md](./spec/workspace-access-control.md) — ワークスペースのアクセス制御方針。
+- [workspace-access-control.md](./spec/workspace-access-control.md) — **【重要】ワークスペースのアクセス制御方針（Viewer/Member/Owner 権限マトリクス、403 Forbidden）**。
 - [workspace-item-edit-permission.md](./spec/workspace-item-edit-permission.md) — アイテム編集権限の詳細。
 - [workspace-item-task-relationship.md](./spec/workspace-item-task-relationship.md) — アイテムとタスクの関係性設計。
 
