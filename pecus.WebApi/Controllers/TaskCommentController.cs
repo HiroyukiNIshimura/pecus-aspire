@@ -286,6 +286,34 @@ public class TaskCommentController : BaseSecureController
             CurrentUserId
         );
 
+        // リマインダーコメントの場合、既存ジョブをキャンセルして新規にスケジュールタスクをキュー
+        if (comment.CommentType == TaskCommentType.Reminder)
+        {
+            // 既存のスケジュール済みジョブがあればキャンセル
+            if (!string.IsNullOrEmpty(comment.ScheduledJobId))
+            {
+                _backgroundJobClient.Delete(comment.ScheduledJobId);
+                _logger.LogDebug(
+                    "Cancelled existing reminder job for update: CommentId={CommentId}, JobId={JobId}",
+                    commentId,
+                    comment.ScheduledJobId
+                );
+            }
+
+            // AI機能が有効な場合のみ、新規にリマインダースケジュールタスクをキュー
+            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+            {
+                _backgroundJobClient.Enqueue<TaskCommentReminderTask>(x =>
+                    x.ScheduleReminderAsync(comment.Id)
+                );
+
+                _logger.LogDebug(
+                    "Enqueued Reminder Comment for update: CommentId={CommentId}",
+                    comment.Id
+                );
+            }
+        }
+
         var response = new TaskCommentResponse
         {
             Success = true,
@@ -330,6 +358,17 @@ public class TaskCommentController : BaseSecureController
             request,
             CurrentUserId
         );
+
+        // スケジュール済みリマインダージョブがあればキャンセル
+        if (!string.IsNullOrEmpty(comment.ScheduledJobId))
+        {
+            _backgroundJobClient.Delete(comment.ScheduledJobId);
+            _logger.LogDebug(
+                "Cancelled scheduled reminder job: CommentId={CommentId}, JobId={JobId}",
+                commentId,
+                comment.ScheduledJobId
+            );
+        }
 
         var response = new TaskCommentResponse
         {

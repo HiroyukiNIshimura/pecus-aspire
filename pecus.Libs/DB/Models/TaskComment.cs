@@ -54,6 +54,12 @@ public class TaskComment
     /// </summary>
     public DateTime? DeletedAt { get; set; }
 
+    /// <summary>
+    /// Hangfire スケジュールジョブID（リマインダー通知用）
+    /// コメント削除時にジョブをキャンセルするために使用
+    /// </summary>
+    public string? ScheduledJobId { get; set; }
+
     // ナビゲーションプロパティ
 
     /// <summary>

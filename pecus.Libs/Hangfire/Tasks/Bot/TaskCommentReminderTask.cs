@@ -167,15 +167,20 @@ public class TaskCommentReminderTask
 
             var scheduleTime = CalculateScheduleTime(reminderDate.Value);
 
-            _backgroundJobClient.Schedule<TaskCommentReminderFireTask>(
+            var jobId = _backgroundJobClient.Schedule<TaskCommentReminderFireTask>(
                 x => x.SendReminderFireNotificationAsync(commentId, reminderDate.Value.Month, reminderDate.Value.Day),
                 scheduleTime);
 
+            // ジョブIDをコメントに保存（削除時にキャンセルするため）
+            comment.ScheduledJobId = jobId;
+            await _context.SaveChangesAsync();
+
             _logger.LogInformation(
-                "Reminder scheduled: CommentId={CommentId}, ReminderDate={ReminderDate}, ScheduleTime={ScheduleTime}",
+                "Reminder scheduled: CommentId={CommentId}, ReminderDate={ReminderDate}, ScheduleTime={ScheduleTime}, JobId={JobId}",
                 commentId,
                 reminderDate.Value.ToString("yyyy-MM-dd"),
-                scheduleTime);
+                scheduleTime,
+                jobId);
         }
         catch (Exception ex)
         {

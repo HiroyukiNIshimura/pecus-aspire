@@ -38,7 +38,7 @@ const commentTypeConfig: Record<
     label: '助けて',
     color: 'badge-warning',
     iconClass: 'icon-[mdi--help-circle-outline]',
-    placeholder: 'コメント... (Shift+Enterで改行)',
+    placeholder: '宛先考えずに助けてほしい内容を書きましょう！',
   },
   NeedReply: {
     label: '返事が欲しい',
@@ -132,7 +132,6 @@ export default function TaskCommentSection({
   // 編集中のコメント
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState('');
-  const [editingType, setEditingType] = useState<TaskCommentType>('Normal');
 
   // 削除確認モーダル
   const [deleteTargetComment, setDeleteTargetComment] = useState<TaskCommentDetailResponse | null>(null);
@@ -270,14 +269,12 @@ export default function TaskCommentSection({
   const handleStartEdit = useCallback((comment: TaskCommentDetailResponse) => {
     setEditingCommentId(comment.id);
     setEditingContent(comment.content || '');
-    setEditingType(comment.commentType || 'Normal');
   }, []);
 
   // 編集キャンセル
   const handleCancelEdit = useCallback(() => {
     setEditingCommentId(null);
     setEditingContent('');
-    setEditingType('Normal');
   }, []);
 
   // 編集保存
@@ -298,7 +295,6 @@ export default function TaskCommentSection({
       try {
         const result = await updateTaskComment(workspaceId, itemId, taskId, comment.id, {
           content: editingContent.trim(),
-          commentType: editingType,
           rowVersion: comment.rowVersion,
         });
 
@@ -320,7 +316,7 @@ export default function TaskCommentSection({
         setIsSubmitting(false);
       }
     },
-    [editingContent, editingType, workspaceId, itemId, taskId, fetchComments, notify, canEdit],
+    [editingContent, workspaceId, itemId, taskId, fetchComments, notify, canEdit],
   );
 
   // 削除確認モーダルを開く
@@ -462,7 +458,7 @@ export default function TaskCommentSection({
 
                     {/* 内容 */}
                     {editingCommentId === comment.id ? (
-                      // 編集モード
+                      // 編集モード（内容のみ編集可、コメントタイプは変更不可）
                       <div className="space-y-2">
                         <textarea
                           className="textarea textarea-bordered textarea-sm w-full"
@@ -471,20 +467,7 @@ export default function TaskCommentSection({
                           rows={2}
                           disabled={isSubmitting}
                         />
-                        <div className="flex items-center gap-1.5">
-                          <select
-                            className="select select-bordered select-xs"
-                            value={editingType ?? 'Normal'}
-                            onChange={(e) => setEditingType(e.target.value as TaskCommentType)}
-                            disabled={isSubmitting}
-                          >
-                            {Object.entries(commentTypeConfig).map(([key, config]) => (
-                              <option key={key} value={key}>
-                                {config.label}
-                              </option>
-                            ))}
-                          </select>
-                          <div className="flex-1"></div>
+                        <div className="flex items-center gap-1.5 justify-end">
                           <button
                             type="button"
                             className="btn btn-xs btn-secondary"

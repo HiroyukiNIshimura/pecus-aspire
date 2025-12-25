@@ -244,15 +244,10 @@ public class TaskCommentService
             throw new InvalidOperationException("削除済みのコメントは編集できません。");
         }
 
-        // 各フィールドを更新（nullでない場合のみ）
+        // コメント内容を更新（nullでない場合のみ、コメントタイプは変更不可）
         if (request.Content != null)
         {
             comment.Content = request.Content;
-        }
-
-        if (request.CommentType.HasValue)
-        {
-            comment.CommentType = request.CommentType.Value;
         }
 
         comment.UpdatedAt = DateTimeOffset.UtcNow;
