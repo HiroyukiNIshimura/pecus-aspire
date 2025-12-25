@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Statistics;
 using Pecus.Models.Responses.Dashboard;
 
 namespace Pecus.Services;
@@ -299,28 +300,19 @@ public class DashboardStatisticsService
     /// 週の開始日（月曜日）を取得
     /// </summary>
     private static DateTimeOffset GetStartOfWeek(DateTimeOffset date)
-    {
-        var diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
-        return date.AddDays(-diff);
-    }
+        => StatisticsDateHelper.GetStartOfWeek(date);
 
     /// <summary>
     /// 週の終了日（日曜日の終わり）を取得
     /// </summary>
     private static DateTimeOffset GetEndOfWeek(DateTimeOffset date)
-    {
-        var startOfWeek = GetStartOfWeek(date);
-        return startOfWeek.AddDays(7).AddTicks(-1);
-    }
+        => StatisticsDateHelper.GetEndOfWeek(date);
 
     /// <summary>
     /// ISO週番号を取得
     /// </summary>
     private static int GetIsoWeekNumber(DateTimeOffset date)
-    {
-        var cal = System.Globalization.CultureInfo.InvariantCulture.Calendar;
-        return cal.GetWeekOfYear(date.DateTime, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
-    }
+        => StatisticsDateHelper.GetIsoWeekNumber(date);
 
     #endregion
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Statistics;
 using Pecus.Libs.WeeklyReport.Models;
 
 namespace Pecus.Libs.WeeklyReport;
@@ -270,33 +271,11 @@ public class WeeklyReportDataCollector
     /// 前週の月曜～日曜の日付範囲を計算（月曜起点）
     /// </summary>
     public static (DateOnly WeekStart, DateOnly WeekEnd) GetLastWeekDateRange(DateOnly today)
-    {
-        // 今日が何曜日か（月曜=1, 日曜=7）
-        var dayOfWeek = (int)today.DayOfWeek;
-        if (dayOfWeek == 0) dayOfWeek = 7; // 日曜日を7に変換
-
-        // 今週の月曜日
-        var thisWeekMonday = today.AddDays(-(dayOfWeek - 1));
-
-        // 前週の月曜日と日曜日
-        var lastWeekMonday = thisWeekMonday.AddDays(-7);
-        var lastWeekSunday = lastWeekMonday.AddDays(6);
-
-        return (lastWeekMonday, lastWeekSunday);
-    }
+        => StatisticsDateHelper.GetLastWeekDateRange(today);
 
     /// <summary>
     /// 来週の月曜～日曜の日付範囲を計算（月曜起点）
     /// </summary>
     public static (DateOnly WeekStart, DateOnly WeekEnd) GetNextWeekDateRange(DateOnly today)
-    {
-        var dayOfWeek = (int)today.DayOfWeek;
-        if (dayOfWeek == 0) dayOfWeek = 7;
-
-        var thisWeekMonday = today.AddDays(-(dayOfWeek - 1));
-        var nextWeekMonday = thisWeekMonday.AddDays(7);
-        var nextWeekSunday = nextWeekMonday.AddDays(6);
-
-        return (nextWeekMonday, nextWeekSunday);
-    }
+        => StatisticsDateHelper.GetNextWeekDateRange(today);
 }

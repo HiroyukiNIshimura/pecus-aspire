@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Pecus.Libs.DB;
+using Pecus.Libs.Statistics;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
 
@@ -21,137 +20,61 @@ public interface IHealthDataProvider
 
 /// <summary>
 /// 健康状態データを取得するプロバイダー実装
+/// IStatisticsCollector を使用して統一された計算ロジックでデータを取得
 /// </summary>
 public class HealthDataProvider : IHealthDataProvider
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IStatisticsCollector _statisticsCollector;
 
     /// <summary>
     /// HealthDataProvider のコンストラクタ
     /// </summary>
-    public HealthDataProvider(ApplicationDbContext context)
+    public HealthDataProvider(IStatisticsCollector statisticsCollector)
     {
-        _context = context;
+        _statisticsCollector = statisticsCollector;
     }
 
     /// <inheritdoc />
     public async Task<HealthData> GetWorkspaceHealthDataAsync(int workspaceId)
     {
-        var now = DateTimeOffset.UtcNow;
-        var oneWeekAgo = now.AddDays(-7);
+        var oneWeekAgo = StatisticsDateHelper.GetDaysAgo(7);
 
-        var baseQuery = _context.WorkspaceTasks
-            .Where(t => t.WorkspaceId == workspaceId);
-
-        var totalMembers = await _context.WorkspaceUsers
-            .Where(m => m.WorkspaceId == workspaceId)
-            .CountAsync();
-
-        var totalTasks = await baseQuery.CountAsync();
-
-        var completedTasks = await baseQuery
-            .Where(t => t.IsCompleted)
-            .CountAsync();
-
-        var overdueTasks = await baseQuery
-            .Where(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < now)
-            .CountAsync();
-
-        var tasksCreatedThisWeek = await baseQuery
-            .Where(t => t.CreatedAt >= oneWeekAgo)
-            .CountAsync();
-
-        var tasksCompletedThisWeek = await baseQuery
-            .Where(t => t.IsCompleted && t.CompletedAt.HasValue && t.CompletedAt.Value >= oneWeekAgo)
-            .CountAsync();
-
-        var incompleteTaskCreatedDates = await baseQuery
-            .Where(t => !t.IsCompleted && !t.IsDiscarded)
-            .Select(t => t.CreatedAt)
-            .ToListAsync();
-
-        var averageTaskAgeDays = incompleteTaskCreatedDates.Count > 0
-            ? incompleteTaskCreatedDates.Average(createdAt => (now - createdAt).TotalDays)
-            : 0;
-
-        var activitiesThisWeek = await _context.Activities
-            .Where(a => a.WorkspaceId == workspaceId && a.CreatedAt >= oneWeekAgo)
-            .CountAsync();
+        var taskStats = await _statisticsCollector.GetWorkspaceTaskStatisticsAsync(workspaceId);
+        var memberCount = await _statisticsCollector.GetWorkspaceMemberCountAsync(workspaceId);
+        var activityCount = await _statisticsCollector.GetWorkspaceActivityCountAsync(workspaceId, oneWeekAgo);
 
         return new HealthData
         {
-            TotalMembers = totalMembers,
-            TotalTasks = totalTasks,
-            CompletedTasks = completedTasks,
-            OverdueTasks = overdueTasks,
-            TasksCreatedThisWeek = tasksCreatedThisWeek,
-            TasksCompletedThisWeek = tasksCompletedThisWeek,
-            AverageTaskAgeDays = Math.Round(averageTaskAgeDays, 1),
-            ActivitiesThisWeek = activitiesThisWeek,
+            TotalMembers = memberCount,
+            TotalTasks = taskStats.TotalCount,
+            CompletedTasks = taskStats.CompletedCount,
+            OverdueTasks = taskStats.OverdueCount,
+            TasksCreatedThisWeek = taskStats.CreatedThisWeekCount,
+            TasksCompletedThisWeek = taskStats.CompletedThisWeekCount,
+            AverageTaskAgeDays = taskStats.AverageTaskAgeDays,
+            ActivitiesThisWeek = activityCount,
         };
     }
 
     /// <inheritdoc />
     public async Task<HealthData> GetOrganizationHealthDataAsync(int organizationId)
     {
-        var now = DateTimeOffset.UtcNow;
-        var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
-        var oneWeekAgo = now.AddDays(-7);
+        var oneWeekAgo = StatisticsDateHelper.GetDaysAgo(7);
 
-        // DashboardStatisticsServiceに合わせてアクティブなワークスペースのみを対象にする
-        var activeWorkspaceIds = await _context.Workspaces
-            .Where(w => w.OrganizationId == organizationId && w.IsActive)
-            .Select(w => w.Id)
-            .ToListAsync();
-
-        var baseQuery = _context.WorkspaceTasks
-            .Where(t => activeWorkspaceIds.Contains(t.WorkspaceId));
-
-        var totalMembers = await _context.Users
-            .Where(u => u.OrganizationId == organizationId && u.IsActive)
-            .CountAsync();
-
-        var totalTasks = await baseQuery.CountAsync();
-
-        var completedTasks = await baseQuery
-            .Where(t => t.IsCompleted)
-            .CountAsync();
-
-        var overdueTasks = await baseQuery
-            .Where(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart)
-            .CountAsync();
-
-        var tasksCreatedThisWeek = await baseQuery
-            .Where(t => t.CreatedAt >= oneWeekAgo)
-            .CountAsync();
-
-        var tasksCompletedThisWeek = await baseQuery
-            .Where(t => t.IsCompleted && t.CompletedAt.HasValue && t.CompletedAt.Value >= oneWeekAgo)
-            .CountAsync();
-
-        var incompleteTaskCreatedDates = await baseQuery
-            .Where(t => !t.IsCompleted && !t.IsDiscarded)
-            .Select(t => t.CreatedAt)
-            .ToListAsync();
-
-        var averageTaskAgeDays = incompleteTaskCreatedDates.Count > 0
-            ? incompleteTaskCreatedDates.Average(createdAt => (now - createdAt).TotalDays)
-            : 0;
-
-        var activitiesThisWeek = await _context.Activities
-            .Where(a => activeWorkspaceIds.Contains(a.WorkspaceId) && a.CreatedAt >= oneWeekAgo)
-            .CountAsync();
+        var taskStats = await _statisticsCollector.GetOrganizationTaskStatisticsAsync(organizationId);
+        var memberCount = await _statisticsCollector.GetOrganizationMemberCountAsync(organizationId);
+        var activityCount = await _statisticsCollector.GetOrganizationActivityCountAsync(organizationId, oneWeekAgo);
 
         return new HealthData
         {
-            TotalMembers = totalMembers,
-            TotalTasks = totalTasks,
-            CompletedTasks = completedTasks,
-            OverdueTasks = overdueTasks,
-            TasksCreatedThisWeek = tasksCreatedThisWeek,
-            TasksCompletedThisWeek = tasksCompletedThisWeek,
-            AverageTaskAgeDays = Math.Round(averageTaskAgeDays, 1),
-            ActivitiesThisWeek = activitiesThisWeek,
+            TotalMembers = memberCount,
+            TotalTasks = taskStats.TotalCount,
+            CompletedTasks = taskStats.CompletedCount,
+            OverdueTasks = taskStats.OverdueCount,
+            TasksCreatedThisWeek = taskStats.CreatedThisWeekCount,
+            TasksCompletedThisWeek = taskStats.CompletedThisWeekCount,
+            AverageTaskAgeDays = taskStats.AverageTaskAgeDays,
+            ActivitiesThisWeek = activityCount,
         };
     }
 }

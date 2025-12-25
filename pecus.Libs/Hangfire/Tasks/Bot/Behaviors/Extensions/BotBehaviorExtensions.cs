@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Pecus.Libs.Hangfire.Tasks.Bot.Behaviors.Implementations;
+using Pecus.Libs.Statistics;
+using Pecus.Libs.Statistics.Extensions;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Behaviors.Extensions;
 
@@ -15,6 +17,7 @@ public static class BotBehaviorExtensions
     /// <returns>サービスコレクション</returns>
     public static IServiceCollection AddBotBehaviors(this IServiceCollection services)
     {
+        services.AddStatistics();
         services.AddScoped<IHealthDataProvider, HealthDataProvider>();
 
         services.AddScoped<IBotBehavior, SilentBehavior>();
