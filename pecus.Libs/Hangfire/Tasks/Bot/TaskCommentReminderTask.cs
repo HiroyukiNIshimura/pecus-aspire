@@ -33,7 +33,7 @@ public class ReminderDateResponse
 }
 
 /// <summary>
-/// タスクコメントで Reminder（催促）が投稿された際にAIで日付を解析し、リマインダーをスケジュールする Hangfire タスク
+/// タスクコメントで リマインダーが投稿された際にAIで日付を解析し、リマインダーをスケジュールする Hangfire タスク
 /// </summary>
 public class TaskCommentReminderTask
 {
