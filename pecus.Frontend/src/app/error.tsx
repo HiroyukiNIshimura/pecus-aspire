@@ -1,8 +1,26 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 
-export default function ServerErrorPage() {
+interface ErrorPageProps {
+  error: Error & { digest?: string };
+  reset: () => void;
+}
+
+/**
+ * グローバルエラーページ
+ *
+ * Next.js App Router のエラーバウンダリとして機能し、
+ * Server Component / Client Component で throw されたエラーをキャッチして表示する。
+ *
+ * 500, 502, 503 など全てのサーバーエラーをこのページで処理する。
+ */
+export default function ErrorPage({ error, reset }: ErrorPageProps) {
+  useEffect(() => {
+    console.error('Application error:', error);
+  }, [error]);
+
   return (
     <div className="relative flex items-center justify-center flex-1 overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* 背景アニメーション用の浮遊要素 */}
@@ -24,14 +42,14 @@ export default function ServerErrorPage() {
         {/* エラーコード */}
         <div className="mb-8">
           <h1 className="text-9xl font-bold bg-linear-to-r from-red-400 via-pink-400 to-orange-400 bg-clip-text text-transparent mb-4 animate-pulse">
-            500
+            Error
           </h1>
           <div className="h-1 w-24 bg-linear-to-r from-red-400 to-orange-400 rounded-full mx-auto mb-6"></div>
         </div>
 
         {/* エラータイトル */}
         <div className="mb-6">
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">サーバーエラーが発生しました</h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">エラーが発生しました</h2>
           <p className="text-lg sm:text-xl text-gray-300 max-w-md mx-auto">
             申し訳ございません。予期しないエラーが発生しました。しばらく時間を置いてからもう一度お試しください。
           </p>
@@ -53,17 +71,18 @@ export default function ServerErrorPage() {
 
         {/* アクションボタン */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 mb-6 max-w-xs mx-auto">
-          <Link
-            href="/"
+          <button
+            type="button"
+            onClick={() => reset()}
             className="px-6 py-3 bg-linear-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/50"
           >
-            ホームに戻る
-          </Link>
+            もう一度試す
+          </button>
           <Link
-            href="/signin"
+            href="/"
             className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-slate-500/50"
           >
-            ログインページへ
+            ホームに戻る
           </Link>
         </div>
 
