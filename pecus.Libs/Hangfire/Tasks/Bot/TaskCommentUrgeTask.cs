@@ -8,22 +8,22 @@ using Pecus.Libs.Notifications;
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
 
 /// <summary>
-/// タスクコメントで Reminder（督促）が投稿された際にDMへ通知する Hangfire タスク
+/// タスクコメントで Urge（督促）が投稿された際にDMへ通知する Hangfire タスク
 /// SystemBot がタスク担当者へのDMでメッセージを送信する
 /// </summary>
-public class TaskCommentReminderTask
+public class TaskCommentUrgeTask
 {
     private readonly ApplicationDbContext _context;
     private readonly SignalRNotificationPublisher _publisher;
-    private readonly ILogger<TaskCommentReminderTask> _logger;
+    private readonly ILogger<TaskCommentUrgeTask> _logger;
 
     /// <summary>
-    /// TaskCommentReminderTask のコンストラクタ
+    /// TaskCommentUrgeTask のコンストラクタ
     /// </summary>
-    public TaskCommentReminderTask(
+    public TaskCommentUrgeTask(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
-        ILogger<TaskCommentReminderTask> logger)
+        ILogger<TaskCommentUrgeTask> logger)
     {
         _context = context;
         _publisher = publisher;
@@ -31,10 +31,10 @@ public class TaskCommentReminderTask
     }
 
     /// <summary>
-    /// Reminder コメントに対するDM通知を送信する
+    /// Urge コメントに対するDM通知を送信する
     /// </summary>
     /// <param name="commentId">タスクコメントID</param>
-    public async Task SendReminderNotificationAsync(int commentId)
+    public async Task SendUrgeNotificationAsync(int commentId)
     {
         DB.Models.Bot? systemBot = null;
         int organizationId = 0;
@@ -59,10 +59,10 @@ public class TaskCommentReminderTask
                 return;
             }
 
-            if (comment.CommentType != TaskCommentType.Reminder)
+            if (comment.CommentType != TaskCommentType.Urge)
             {
                 _logger.LogDebug(
-                    "TaskComment is not Reminder type, skipping: CommentId={CommentId}, Type={Type}",
+                    "TaskComment is not Urge type, skipping: CommentId={CommentId}, Type={Type}",
                     commentId,
                     comment.CommentType);
                 return;
@@ -121,7 +121,7 @@ public class TaskCommentReminderTask
                 messageContent);
 
             _logger.LogInformation(
-                "Reminder notification sent: CommentId={CommentId}, TargetUserId={TargetUserId}",
+                "Urge notification sent: CommentId={CommentId}, TargetUserId={TargetUserId}",
                 commentId,
                 taskAssignedUserId);
         }
@@ -129,7 +129,7 @@ public class TaskCommentReminderTask
         {
             _logger.LogError(
                 ex,
-                "TaskCommentReminderTask failed: CommentId={CommentId}",
+                "TaskCommentUrgeTask failed: CommentId={CommentId}",
                 commentId);
 
             throw;
@@ -145,7 +145,7 @@ public class TaskCommentReminderTask
         string itemCode,
         int taskSequence)
     {
-        return $"{userName}さんから催促コメントがタスクで作成されました。[{workspaceCode}#{itemCode}T{taskSequence}]";
+        return $"{userName}さんから督促コメントがタスクで作成されました。[{workspaceCode}#{itemCode}T{taskSequence}]";
     }
 
     /// <summary>
@@ -195,7 +195,7 @@ public class TaskCommentReminderTask
             isTyping: false);
 
         _logger.LogDebug(
-            "Reminder DM sent: TargetUserId={TargetUserId}, RoomId={RoomId}",
+            "Urge DM sent: TargetUserId={TargetUserId}, RoomId={RoomId}",
             targetUserId,
             dmRoom.Id);
     }

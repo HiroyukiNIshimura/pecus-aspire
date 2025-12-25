@@ -165,7 +165,7 @@ public class TaskCommentController : BaseSecureController
             CurrentUserId
         );
 
-        // 督促コメントの場合、タスク担当者にメール送信
+        // 催促コメントの場合、タスク担当者にメール送信
         if (request.CommentType == TaskCommentType.Reminder)
         {
             await SendReminderEmailAsync(workspaceId, itemId, taskId, comment);
@@ -219,6 +219,23 @@ public class TaskCommentController : BaseSecureController
 
                 _logger.LogDebug(
                     "Enqueued NeedReply Comment: CommentId={CommentId}",
+                    comment.Id
+                );
+            }
+        }
+
+        // 督促コメントの場合の処理
+        if (request.CommentType == TaskCommentType.Urge)
+        {
+            // AI機能が有効な場合のみ、Bot通知タスクをキュー
+            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+            {
+                _backgroundJobClient.Enqueue<TaskCommentUrgeTask>(x =>
+                    x.SendUrgeNotificationAsync(comment.Id)
+                );
+
+                _logger.LogDebug(
+                    "Enqueued Urge Comment: CommentId={CommentId}",
                     comment.Id
                 );
             }

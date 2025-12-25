@@ -109,6 +109,8 @@ builder.Services.AddScoped<UpdateTaskTask>();
 builder.Services.AddScoped<GroupChatReplyTask>();
 builder.Services.AddScoped<MaintenanceNotificationTask>();
 builder.Services.AddScoped<SimilarTaskSuggestionTask>();
+builder.Services.AddScoped<TaskCommentHelpWantedTask>();
+builder.Services.AddScoped<TaskCommentUrgeTask>();
 
 // 週間レポート関連サービスの登録
 builder.Services.AddWeeklyReportServices();

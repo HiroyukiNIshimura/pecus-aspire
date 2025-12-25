@@ -29,7 +29,7 @@ public enum TaskCommentType
     NeedReply = 4,
 
     /// <summary>
-    /// 催促
+    /// リマインダー
     /// </summary>
     Reminder = 5,
 
