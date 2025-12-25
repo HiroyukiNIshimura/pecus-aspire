@@ -50,12 +50,6 @@ public class OrganizationHealthBehavior : IBotBehavior
 
         var healthData = await _healthDataProvider.GetOrganizationHealthDataAsync(context.OrganizationId);
 
-        _logger.LogInformation(
-            "OrganizationHealthBehavior healthData: OrganizationId={OrganizationId}, Summary={Summary}",
-            context.OrganizationId,
-            healthData.ToSummary()
-        );
-
         var systemPrompt = $"""
             あなたはチャットに参加しているボットです。
             会話の流れとは無関係に、ふと思い立って組織全体のタスク状況について呟きます。

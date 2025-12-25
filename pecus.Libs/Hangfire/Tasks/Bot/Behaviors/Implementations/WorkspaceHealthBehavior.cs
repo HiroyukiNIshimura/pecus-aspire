@@ -50,12 +50,6 @@ public class WorkspaceHealthBehavior : IBotBehavior
 
         var healthData = await _healthDataProvider.GetWorkspaceHealthDataAsync(context.WorkspaceId.Value);
 
-        _logger.LogInformation(
-            "WorkspaceHealthBehavior healthData: WorkspaceId={WorkspaceId}, Summary={Summary}",
-            context.WorkspaceId,
-            healthData.ToSummary()
-        );
-
         var systemPrompt = $"""
             あなたはチャットに参加しているボットです。
             会話の流れとは無関係に、ふと思い立ってワークスペースのタスク状況について呟きます。
