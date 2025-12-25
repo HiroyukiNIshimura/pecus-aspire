@@ -3,6 +3,7 @@ using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
 using Pecus.Libs.Notifications;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
@@ -13,12 +14,8 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 /// </summary>
 public class GroupChatReplyTask : GroupChatReplyTaskBase
 {
-    /// <summary>
-    /// 会話履歴の最大ターン数
-    /// </summary>
-    private const int MaxConversationTurns = 5;
-
     private readonly IBotSelector? _botSelector;
+    private readonly IBotBehaviorSelector? _behaviorSelector;
 
     /// <summary>
     /// GroupChatReplyTask のコンストラクタ
@@ -28,10 +25,12 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         SignalRNotificationPublisher publisher,
         IAiClientFactory aiClientFactory,
         ILogger<GroupChatReplyTask> logger,
-        IBotSelector? botSelector = null)
+        IBotSelector? botSelector = null,
+        IBotBehaviorSelector? behaviorSelector = null)
         : base(context, publisher, aiClientFactory, logger)
     {
         _botSelector = botSelector;
+        _behaviorSelector = behaviorSelector;
     }
 
     /// <inheritdoc />
@@ -90,76 +89,70 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     {
         // 組織設定を取得
         var setting = await GetOrganizationSettingAsync(organizationId);
-        if (setting == null ||
-            setting.GenerativeApiVendor == GenerativeApiVendor.None ||
-            string.IsNullOrEmpty(setting.GenerativeApiKey) ||
-            string.IsNullOrEmpty(setting.GenerativeApiModel))
+        IAiClient? aiClient = null;
+
+        if (setting != null &&
+            setting.GenerativeApiVendor != GenerativeApiVendor.None &&
+            !string.IsNullOrEmpty(setting.GenerativeApiKey) &&
+            !string.IsNullOrEmpty(setting.GenerativeApiModel))
+        {
+            aiClient = AiClientFactory.CreateClient(
+                setting.GenerativeApiVendor,
+                setting.GenerativeApiKey,
+                setting.GenerativeApiModel
+            );
+        }
+
+        if (_behaviorSelector != null)
+        {
+            var behaviorContext = new BotBehaviorContext
+            {
+                OrganizationId = organizationId,
+                Room = room,
+                TriggerMessage = triggerMessage,
+                SenderUser = senderUser,
+                Bot = bot,
+                AiClient = aiClient,
+                DbContext = Context,
+                GetRecentMessagesAsync = GetRecentMessagesAsync,
+            };
+
+            var behavior = await _behaviorSelector.SelectBehaviorAsync(behaviorContext);
+
+            if (behavior != null)
+            {
+                Logger.LogInformation(
+                    "Executing behavior '{BehaviorName}': OrganizationId={OrganizationId}, RoomId={RoomId}",
+                    behavior.Name,
+                    organizationId,
+                    room.Id
+                );
+
+                var result = await behavior.ExecuteAsync(behaviorContext);
+
+                if (result != null)
+                {
+                    return result;
+                }
+
+                Logger.LogDebug(
+                    "Behavior '{BehaviorName}' returned null, skipping message",
+                    behavior.Name
+                );
+                return string.Empty;
+            }
+        }
+
+        if (aiClient == null)
         {
             Logger.LogWarning(
-                "AI settings not configured for organization: OrganizationId={OrganizationId}",
+                "AI settings not configured and no behavior selected: OrganizationId={OrganizationId}",
                 organizationId
             );
             return "AI設定が構成されていないため、返信できません。";
         }
 
-        // AI クライアントを作成
-        var aiClient = AiClientFactory.CreateClient(
-            setting.GenerativeApiVendor,
-            setting.GenerativeApiKey,
-            setting.GenerativeApiModel
-        );
-
-        if (aiClient == null)
-        {
-            Logger.LogWarning(
-                "Failed to create AI client: Vendor={Vendor}, OrganizationId={OrganizationId}",
-                setting.GenerativeApiVendor,
-                organizationId
-            );
-            return "AIクライアントの作成に失敗しました。";
-        }
-
-        // 過去メッセージを取得
-        var recent = await GetRecentMessagesAsync(room.Id, MaxConversationTurns, triggerMessage.Id);
-
-        // メッセージを AI ロール形式に変換
-        var messages = new List<(MessageRole Role, string Content)>();
-
-        // 過去メッセージをロール形式に変換（Bot は assistant、その他は user）
-        foreach (var msg in recent)
-        {
-            var role = msg.IsBot ? MessageRole.Assistant : MessageRole.User;
-            var content = msg.IsBot ? msg.Content : $"({msg.UserName}さん曰く): {msg.Content}";
-            messages.Add((role, content ?? string.Empty));
-        }
-        messages.Insert(0, (MessageRole.System, $"Userを示す二人称は、文章内を参照します。"));
-
-        // Bot のペルソナと行動指針からシステムプロンプトを作成
-        var systemPrompt = new SystemPromptBuilder()
-            .WithRawPersona(bot.Persona)
-            .WithRawConstraint(bot.Constraint)
-            .Build();
-
-        // AI API を呼び出して返信を生成
-        try
-        {
-            var responseText = await aiClient.GenerateTextWithMessagesAsync(
-                messages,
-                systemPrompt
-            );
-
-            return responseText ?? "...";
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(
-                ex,
-                "AI generation failed: OrganizationId={OrganizationId}, RoomId={RoomId}",
-                organizationId,
-                room.Id
-            );
-            return "申し訳ありませんが、一時的なエラーが発生しました。";
-        }
+        return "...";
     }
 
     /// <summary>

@@ -7,9 +7,9 @@ using Pecus.Libs.AI;
 using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
 using Pecus.Libs.Focus;
-using Pecus.Libs.Hangfire.Tasks;
-using Pecus.Libs.Hangfire.Tasks.Bot;
+using Pecus.Libs.Hangfire.Tasks.Bot.Behaviors.Extensions;
 using Pecus.Libs.Hangfire.Tasks.Bot.Extensions;
+using Pecus.Libs.Hangfire.Tasks.Extensions;
 using Pecus.Libs.Hangfire.Tasks.Services;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
@@ -61,6 +61,8 @@ builder.Services.AddSingleton<FrontendUrlResolver>();
 builder.Services.AddMessageAnalyzer();
 // BotSelector の登録
 builder.Services.AddBotSelector();
+// BotBehaviors の登録（振る舞いプラグインシステム）
+builder.Services.AddBotBehaviors();
 // FocusTaskProvider の登録（やることリスト取得）
 builder.Services.AddScoped<IFocusTaskProvider, FocusTaskProvider>();
 
@@ -94,27 +96,7 @@ builder.Services.AddDefaultAiClient(builder.Configuration);
 builder.Services.AddAiClientFactory();
 
 // Hangfireタスクの登録
-// ここでDIコンテナに登録することで、タスク内でコンストラクタインジェクションが利用可能になる
-// なので一律にタスクはScoped登録とする
-builder.Services.AddScoped<ActivityTasks>();
-builder.Services.AddScoped<EmailTasks>();
-builder.Services.AddScoped<ImageTasks>();
-builder.Services.AddScoped<CleanupTasks>();
-builder.Services.AddScoped<UploadsCleanupTasks>();
-builder.Services.AddScoped<WorkspaceItemTasks>();
-builder.Services.AddScoped<FirstTouchdownTask>();
-builder.Services.AddScoped<AiChatReplyTask>();
-builder.Services.AddScoped<CreateItemTask>();
-builder.Services.AddScoped<UpdateItemTask>();
-builder.Services.AddScoped<CreateTaskTask>();
-builder.Services.AddScoped<UpdateTaskTask>();
-builder.Services.AddScoped<GroupChatReplyTask>();
-builder.Services.AddScoped<MaintenanceNotificationTask>();
-builder.Services.AddScoped<SimilarTaskSuggestionTask>();
-builder.Services.AddScoped<TaskCommentHelpWantedTask>();
-builder.Services.AddScoped<TaskCommentUrgeTask>();
-builder.Services.AddScoped<TaskCommentReminderTask>();
-builder.Services.AddScoped<TaskCommentReminderFireTask>();
+builder.Services.AddHangfireTasks();
 
 // 週間レポート関連サービスの登録
 builder.Services.AddWeeklyReportServices();
