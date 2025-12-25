@@ -19,6 +19,7 @@ public static class BotBehaviorExtensions
     {
         services.AddStatistics();
         services.AddScoped<IHealthDataProvider, HealthDataProvider>();
+        services.AddSingleton<IPerspectiveRotator, PerspectiveRotator>();
 
         services.AddScoped<IBotBehavior, SilentBehavior>();
         services.AddScoped<IBotBehavior, NormalReplyBehavior>();

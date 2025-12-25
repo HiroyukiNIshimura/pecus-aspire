@@ -8,7 +8,17 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot.Behaviors.Implementations;
 /// </summary>
 public class WorkspaceHealthBehavior : IBotBehavior
 {
+    private static readonly string[] Perspectives =
+    [
+        "完了率に注目して",
+        "期限切れタスクに注目して",
+        "進行中タスクの数に注目して",
+        "今週の進捗に注目して",
+        "残りタスク数に注目して"
+    ];
+
     private readonly IHealthDataProvider _healthDataProvider;
+    private readonly IPerspectiveRotator _perspectiveRotator;
     private readonly ILogger<WorkspaceHealthBehavior> _logger;
 
     /// <summary>
@@ -16,9 +26,11 @@ public class WorkspaceHealthBehavior : IBotBehavior
     /// </summary>
     public WorkspaceHealthBehavior(
         IHealthDataProvider healthDataProvider,
+        IPerspectiveRotator perspectiveRotator,
         ILogger<WorkspaceHealthBehavior> logger)
     {
         _healthDataProvider = healthDataProvider;
+        _perspectiveRotator = perspectiveRotator;
         _logger = logger;
     }
 
@@ -46,6 +58,7 @@ public class WorkspaceHealthBehavior : IBotBehavior
         }
 
         var healthData = await _healthDataProvider.GetWorkspaceHealthDataAsync(context.WorkspaceId.Value);
+        var perspective = _perspectiveRotator.GetNext(Name, context.WorkspaceId.Value, Perspectives);
 
         var systemPrompt = $"""
             あなたはチャットに参加しているボットです。
@@ -55,8 +68,11 @@ public class WorkspaceHealthBehavior : IBotBehavior
             【参照データ】以下のタスク統計データに基づいて呟いてください:
             {healthData.ToSummary()}
 
+            【今回の注目ポイント】
+            {perspective}
+
             【呟きルール】
-            - 上記データの具体的な数字（完了率、タスク数、期限切れ数など）を必ず1つ以上言及
+            - 上記の注目ポイントを中心に、データの具体的な数字を必ず1つ以上言及
             - 「〜だね」「〜かな」「〜やん」など独り言っぽい語尾
             - 2-3文で簡潔に
             - 質問形式にしない（「どう思う？」などで終わらない）
@@ -69,7 +85,7 @@ public class WorkspaceHealthBehavior : IBotBehavior
 
         var messages = new List<(MessageRole Role, string Content)>
         {
-            (MessageRole.User, "ワークスペースのタスク状況について呟いて")
+            (MessageRole.User, $"ワークスペースのタスク状況について、{perspective}呟いて")
         };
 
         try
