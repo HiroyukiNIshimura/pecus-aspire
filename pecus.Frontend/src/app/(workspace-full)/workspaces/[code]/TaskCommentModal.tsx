@@ -10,7 +10,6 @@ interface TaskCommentModalProps {
   workspaceId: number;
   itemId: number;
   task: WorkspaceTaskDetailResponse;
-  currentUserId: number;
   /** コメント数が変更された時のコールバック */
   onCommentCountChange?: (count: number) => void;
   /** ワークスペース編集権限があるかどうか（Viewer以外）*/
@@ -23,7 +22,6 @@ export default function TaskCommentModal({
   workspaceId,
   itemId,
   task,
-  currentUserId,
   onCommentCountChange,
   canEdit = true,
 }: TaskCommentModalProps) {
@@ -74,7 +72,6 @@ export default function TaskCommentModal({
           workspaceId={workspaceId}
           itemId={itemId}
           taskId={task.id}
-          currentUserId={currentUserId}
           onCommentCountChange={onCommentCountChange}
           autoFocus
           canEdit={canEdit}

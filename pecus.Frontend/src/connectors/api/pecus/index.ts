@@ -54,6 +54,7 @@ export type { CreateUserWithoutPasswordRequest } from './models/CreateUserWithou
 export type { CreateWorkspaceItemRequest } from './models/CreateWorkspaceItemRequest';
 export type { CreateWorkspaceRequest } from './models/CreateWorkspaceRequest';
 export type { CreateWorkspaceTaskRequest } from './models/CreateWorkspaceTaskRequest';
+export type { CurrentUserInfo } from './models/CurrentUserInfo';
 export type { DashboardHelpCommentsResponse } from './models/DashboardHelpCommentsResponse';
 export type { DashboardHotItemsResponse } from './models/DashboardHotItemsResponse';
 export type { DashboardHotWorkspacesResponse } from './models/DashboardHotWorkspacesResponse';

@@ -4,11 +4,11 @@ import { type ReactNode, useState } from 'react';
 import ChatProvider from '@/components/chat/ChatProvider';
 import AppHeader from '@/components/common/layout/AppHeader';
 import DashboardSidebar from '@/components/common/layout/DashboardSidebar.server';
-import type { UserInfo } from '@/types/userInfo';
+import type { CurrentUserInfo } from '@/connectors/api/pecus';
 
 interface DashboardLayoutClientProps {
   children: ReactNode;
-  userInfo: UserInfo | null;
+  userInfo: CurrentUserInfo | null;
 }
 
 /**

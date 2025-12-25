@@ -1,11 +1,11 @@
 'use client';
 
 import { logout } from '@/actions/auth';
-import type { UserInfo } from '@/types/userInfo';
+import type { CurrentUserInfo } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface UserMenuProps {
-  userInfo: UserInfo | null;
+  userInfo: CurrentUserInfo | null;
   hideProfileMenu?: boolean;
   hideSettingsMenu?: boolean;
   onLogout?: () => void;
@@ -37,10 +37,10 @@ export default function UserMenu({
         <div className="avatar">
           <div className="size-10 rounded-full ring-0 hover:ring-2 hover:ring-primary transition-all">
             {userInfo?.identityIconUrl ? (
-              <img src={getDisplayIconUrl(userInfo.identityIconUrl)} alt={userInfo.name || 'User Avatar'} />
+              <img src={getDisplayIconUrl(userInfo.identityIconUrl)} alt={userInfo.username || 'User Avatar'} />
             ) : (
               <div className="w-full h-full bg-primary flex items-center justify-center text-primary-content font-bold">
-                {userInfo?.name?.charAt(0).toUpperCase() || 'U'}
+                {userInfo?.username?.charAt(0).toUpperCase() || 'U'}
               </div>
             )}
           </div>

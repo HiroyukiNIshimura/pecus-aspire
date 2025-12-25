@@ -18,8 +18,8 @@ import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { formatDate } from '@/libs/utils/date';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { workspaceNameFilterSchema } from '@/schemas/filterSchemas';
-import type { UserInfo } from '@/types/userInfo';
 
 /**
  * ワークスペース管理画面のクライアントコンポーネント
@@ -38,13 +38,12 @@ import type { UserInfo } from '@/types/userInfo';
  */
 
 interface AdminWorkspacesClientProps {
-  initialUser?: UserInfo | null;
   initialGenres?: MasterGenreResponse[];
 }
 
-export default function AdminWorkspacesClient({ initialUser, initialGenres }: AdminWorkspacesClientProps) {
+export default function AdminWorkspacesClient({ initialGenres }: AdminWorkspacesClientProps) {
+  const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, _setUserInfo] = useState<UserInfo | null>(initialUser || null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -201,7 +200,7 @@ export default function AdminWorkspacesClient({ initialUser, initialGenres }: Ad
       />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
+      <AdminHeader userInfo={currentUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}

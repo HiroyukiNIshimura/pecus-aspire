@@ -12,6 +12,12 @@ interface MyTasksDashboardClientProps {
   initialWorkspaces: MyTaskWorkspaceResponse[];
   taskTypes: TaskTypeOption[];
   fetchError?: string | null;
+  currentUser: {
+    id: number;
+    username: string;
+    email: string;
+    identityIconUrl: string | null;
+  };
 }
 
 /**
@@ -21,6 +27,7 @@ export default function MyTasksDashboardClient({
   initialWorkspaces,
   taskTypes,
   fetchError,
+  currentUser,
 }: MyTasksDashboardClientProps) {
   const [currentFilter, setCurrentFilter] = useState<DashboardTaskFilter>('Active');
   const notify = useNotify();
@@ -132,7 +139,7 @@ export default function MyTasksDashboardClient({
         showItemCount={false}
         taskTypes={taskTypes}
         displayMode="committer"
-        currentUser={null}
+        currentUser={currentUser}
       />
     </>
   );

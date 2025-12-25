@@ -14,14 +14,13 @@ import type {
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import {
   type OrganizationSettingInput,
   organizationSettingSchemaWithRules,
 } from '@/schemas/organizationSettingSchemas';
-import type { UserInfo } from '@/types/userInfo';
 
 interface AdminSettingsClientProps {
-  initialUser: UserInfo | null;
   organization: OrganizationResponse;
   fetchError: string | null;
 }
@@ -143,8 +142,9 @@ const workspaceModeOptions: { value: 'Normal' | 'Document'; label: string }[] = 
   { value: 'Document', label: 'ドキュメント' },
 ];
 
-export default function AdminSettingsClient({ initialUser, organization, fetchError }: AdminSettingsClientProps) {
+export default function AdminSettingsClient({ organization, fetchError }: AdminSettingsClientProps) {
   const notify = useNotify();
+  const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const initialSetting = (organization.setting as OrganizationSettingResponse & {
@@ -365,7 +365,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     <div className="flex flex-col flex-1 overflow-hidden">
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
-      <AdminHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
+      <AdminHeader userInfo={currentUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar sidebarOpen={sidebarOpen} />

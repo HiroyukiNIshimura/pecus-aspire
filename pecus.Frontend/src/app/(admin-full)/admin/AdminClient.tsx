@@ -7,8 +7,8 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { formatDate } from '@/libs/utils/date';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
-import type { UserInfo } from '@/types/userInfo';
 
 interface OrganizationData {
   id?: number | string;
@@ -26,16 +26,14 @@ interface OrganizationData {
 
 export default function AdminClient({
   initialOrganization,
-  initialUser,
   fetchError,
 }: {
   initialOrganization: OrganizationData | null;
-  initialUser: UserInfo | null;
   fetchError?: string | null;
 }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, _setUserInfo] = useState<UserInfo | null>(initialUser);
+  const currentUser = useCurrentUser();
   const [organization, _setOrganization] = useState<OrganizationData | null>(initialOrganization);
   const [clientError, _setClientError] = useState<ApiErrorResponse | null>(fetchError ? JSON.parse(fetchError) : null);
 
@@ -52,7 +50,7 @@ export default function AdminClient({
     <div className="flex flex-col flex-1 overflow-hidden">
       <LoadingOverlay isLoading={showLoading} message="読み込み中..." />
 
-      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={showLoading} />
+      <AdminHeader userInfo={currentUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={showLoading} />
 
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar sidebarOpen={sidebarOpen} />

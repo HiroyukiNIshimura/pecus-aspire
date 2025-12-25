@@ -5,7 +5,6 @@ import { createPecusApiClients, detect401ValidationError, parseErrorResponse } f
 import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -14,23 +13,17 @@ interface DashboardLayoutProps {
 /**
  * ダッシュボード（認証済み）レイアウト
  *
- * - SSRでユーザー情報を取得
+ * - SSRでアプリ設定とユーザー情報を取得（単一のAPI呼び出し）
  * - 共通の AppHeader と DashboardSidebar を配置
  * - SignalR によるリアルタイム通知を有効化
  */
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
-  let userInfo = null;
   let appSettings: AppPublicSettingsResponse = defaultAppSettings;
 
   try {
     const api = createPecusApiClients();
-    // ユーザー情報とアプリ設定を並列取得
-    const [userResponse, settingsResponse] = await Promise.all([
-      api.profile.getApiProfile(),
-      api.profile.getApiProfileAppSettings(),
-    ]);
-    userInfo = mapUserResponseToUserInfo(userResponse);
-    appSettings = settingsResponse;
+    // アプリ設定とユーザー情報を単一のAPI呼び出しで取得
+    appSettings = await api.profile.getApiProfileAppSettings();
   } catch (error) {
     // 401 エラーの場合はログインページにリダイレクト
     if (detect401ValidationError(error)) {
@@ -38,13 +31,13 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     }
     // その他のエラーはログに記録
     const errorDetail = parseErrorResponse(error);
-    console.error('DashboardLayout: Failed to fetch user or settings', errorDetail);
+    console.error('DashboardLayout: Failed to fetch app settings', errorDetail);
   }
 
   return (
     <SignalRProvider>
       <AppSettingsProvider settings={appSettings}>
-        <DashboardLayoutClient userInfo={userInfo}>{children}</DashboardLayoutClient>
+        <DashboardLayoutClient userInfo={appSettings.currentUser}>{children}</DashboardLayoutClient>
       </AppSettingsProvider>
     </SignalRProvider>
   );

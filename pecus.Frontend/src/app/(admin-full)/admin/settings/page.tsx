@@ -1,22 +1,20 @@
 import { redirect } from 'next/navigation';
 import { getOrganizationDetail } from '@/actions/admin/organizations';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { OrganizationResponse, UserDetailResponse } from '@/connectors/api/pecus';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
+import type { OrganizationResponse } from '@/connectors/api/pecus';
 import AdminSettingsClient from './AdminSettingsClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminSettingsPage() {
   let organization: OrganizationResponse | null = null;
-  let userResponse: UserDetailResponse | null = null;
   let fetchError: string | null = null;
 
   try {
     const api = createPecusApiClients();
 
-    // ユーザー情報を取得
-    userResponse = await api.profile.getApiProfile();
+    // 認証チェック（プロフィール取得）
+    await api.profile.getApiProfile();
 
     // 組織情報（設定を含む）を取得
     const organizationResult = await getOrganizationDetail();
@@ -34,15 +32,9 @@ export default async function AdminSettingsPage() {
     fetchError = parseErrorResponse(error, 'データの取得に失敗しました。').message;
   }
 
-  if (!userResponse) {
-    redirect('/signin');
-  }
-
   if (!organization) {
     redirect('/admin');
   }
 
-  const user = mapUserResponseToUserInfo(userResponse);
-
-  return <AdminSettingsClient initialUser={user} organization={organization} fetchError={fetchError} />;
+  return <AdminSettingsClient organization={organization} fetchError={fetchError} />;
 }

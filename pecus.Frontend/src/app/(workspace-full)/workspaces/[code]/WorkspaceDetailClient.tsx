@@ -39,13 +39,13 @@ import type {
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import type { WorkspacePresenceUser } from '@/providers/SignalRProvider';
 import {
   type SignalRNotification,
   useSignalRContext,
   type WorkspaceEditStatus as WorkspaceEditStatusType,
 } from '@/providers/SignalRProvider';
-import type { UserInfo } from '@/types/userInfo';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
 import TaskFlowMapPage from './TaskFlowMapPage';
 import WorkspaceItemDetail, { type WorkspaceItemDetailHandle } from './WorkspaceItemDetail';
@@ -71,7 +71,6 @@ interface TaskNavigation {
 interface WorkspaceDetailClientProps {
   workspaceCode: string;
   workspaceDetail: WorkspaceFullDetailResponse;
-  userInfo: UserInfo | null;
   genres: MasterGenreResponse[];
   skills: MasterSkillResponse[];
   /** タスクタイプマスタデータ */
@@ -89,7 +88,6 @@ interface WorkspaceDetailClientProps {
 export default function WorkspaceDetailClient({
   workspaceCode,
   workspaceDetail,
-  userInfo,
   genres,
   skills,
   taskTypes,
@@ -101,6 +99,8 @@ export default function WorkspaceDetailClient({
   const router = useRouter();
   const pathname = usePathname();
   const notify = useNotify();
+  // 現在のユーザー情報を AppSettingsProvider から取得
+  const currentUser = useCurrentUser();
   const { connectionState, joinWorkspace, leaveWorkspace, onNotification, startWorkspaceEdit, endWorkspaceEdit } =
     useSignalRContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -204,7 +204,7 @@ export default function WorkspaceDetailClient({
   // サイドバー幅（初期値: null → クライアントサイドでローカルストレージから復元）
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
 
-  const currentUserId = userInfo?.id ?? 0;
+  const currentUserId = currentUser.id;
   const isWorkspaceLockedByOther =
     workspaceEditStatus.isEditing && workspaceEditStatus.editor?.userId !== currentUserId;
   const workspaceEditingUserName = workspaceEditStatus.editor?.userName ?? '他のユーザー';
@@ -799,15 +799,14 @@ export default function WorkspaceDetailClient({
   // タスクフローマップ用のタスク編集権限チェック関数
   const canEditTaskForFlowMap = useCallback(
     (task: TaskFlowNode): boolean => {
-      if (!userInfo) return false;
       return (
-        task.assignedUserId === userInfo.id ||
-        flowMapItemCommitterId === userInfo.id ||
-        flowMapItemAssigneeId === userInfo.id ||
-        flowMapItemOwnerId === userInfo.id
+        task.assignedUserId === currentUser.id ||
+        flowMapItemCommitterId === currentUser.id ||
+        flowMapItemAssigneeId === currentUser.id ||
+        flowMapItemOwnerId === currentUser.id
       );
     },
-    [userInfo, flowMapItemCommitterId, flowMapItemAssigneeId, flowMapItemOwnerId],
+    [currentUser.id, flowMapItemCommitterId, flowMapItemAssigneeId, flowMapItemOwnerId],
   );
 
   // スクロール完了後にURLをクリーンアップ
@@ -1063,7 +1062,7 @@ export default function WorkspaceDetailClient({
                   )}
                 </button>
               </li>
-              {userInfo?.isAdmin && (
+              {currentUser.isAdmin && (
                 <>
                   <div className="divider my-0"></div>
                   <li>
@@ -1090,7 +1089,7 @@ export default function WorkspaceDetailClient({
 
   return (
     <div className="flex h-screen overflow-hidden flex-col">
-      <AppHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} userInfo={userInfo} />
+      <AppHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} userInfo={currentUser} />
 
       {/* スマホ: ヘッダーのみ表示 */}
       <div className="lg:hidden bg-base-100 p-4 border-b border-base-300">
@@ -1120,16 +1119,12 @@ export default function WorkspaceDetailClient({
               onItemSelect={handleItemSelect}
               onCreateNew={handleCreateNew}
               initialSelectedItemId={initialItemId}
-              currentUser={
-                userInfo
-                  ? {
-                      id: userInfo.id,
-                      username: userInfo.username || userInfo.name,
-                      email: userInfo.email,
-                      identityIconUrl: userInfo.identityIconUrl,
-                    }
-                  : null
-              }
+              currentUser={{
+                id: currentUser.id,
+                username: currentUser.username,
+                email: currentUser.email,
+                identityIconUrl: currentUser.identityIconUrl ?? null,
+              }}
               onSelectionConfirm={handleSelectionConfirm}
               onSelectionCancel={handleSelectionCancel}
               canEdit={canEdit}
@@ -1159,7 +1154,7 @@ export default function WorkspaceDetailClient({
 
                 <WorkspaceEditStatus
                   workspaceId={currentWorkspaceDetail.id}
-                  currentUserId={userInfo?.id ?? 0}
+                  currentUserId={currentUser.id}
                   initialStatus={initialWorkspaceEditStatus}
                   onStatusChange={setWorkspaceEditStatus}
                   className="mb-3"
@@ -1308,16 +1303,12 @@ export default function WorkspaceDetailClient({
               itemCommitterAvatarUrl={taskDetailItemCommitterAvatarUrl}
               initialNavigation={taskDetailNavigation}
               taskTypes={taskTypes}
-              currentUser={
-                userInfo
-                  ? {
-                      id: userInfo.id,
-                      username: userInfo.username || userInfo.name,
-                      email: userInfo.email,
-                      identityIconUrl: userInfo.identityIconUrl,
-                    }
-                  : null
-              }
+              currentUser={{
+                id: currentUser.id,
+                username: currentUser.username,
+                email: currentUser.email,
+                identityIconUrl: currentUser.identityIconUrl ?? null,
+              }}
               onClose={handleCloseTaskDetail}
               onSuccess={handleTaskDetailSuccess}
               onShowFlowMap={handleShowFlowMapFromTaskDetail}
@@ -1373,7 +1364,7 @@ export default function WorkspaceDetailClient({
                 itemCode={selectedItemCode}
                 onItemSelect={handleItemSelect}
                 members={members}
-                currentUserId={userInfo?.id}
+                currentUserId={currentUser.id}
                 taskTypes={taskTypes}
                 onStartAddRelation={handleStartAddRelation}
                 isAddingRelation={isAddingRelation}
@@ -1538,16 +1529,12 @@ export default function WorkspaceDetailClient({
               }}
               onCreateNew={handleCreateNew}
               initialSelectedItemId={initialItemId}
-              currentUser={
-                userInfo
-                  ? {
-                      id: userInfo.id,
-                      username: userInfo.username || userInfo.name,
-                      email: userInfo.email,
-                      identityIconUrl: userInfo.identityIconUrl,
-                    }
-                  : null
-              }
+              currentUser={{
+                id: currentUser.id,
+                username: currentUser.username,
+                email: currentUser.email,
+                identityIconUrl: currentUser.identityIconUrl ?? null,
+              }}
               onSelectionConfirm={handleSelectionConfirm}
               onSelectionCancel={handleSelectionCancel}
               canEdit={canEdit}
@@ -1557,13 +1544,11 @@ export default function WorkspaceDetailClient({
       </div>
 
       {/* ワークスペース参加者のリアルタイム表示 */}
-      {userInfo && (
-        <WorkspacePresence
-          workspaceId={currentWorkspaceDetail.id}
-          currentUserId={userInfo.id}
-          initialUsers={initialPresenceUsers}
-        />
-      )}
+      <WorkspacePresence
+        workspaceId={currentWorkspaceDetail.id}
+        currentUserId={currentUser.id}
+        initialUsers={initialPresenceUsers}
+      />
     </div>
   );
 }

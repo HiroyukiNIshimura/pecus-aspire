@@ -12,6 +12,12 @@ namespace Pecus.Models.Responses.Common;
 public class AppPublicSettingsResponse
 {
     /// <summary>
+    /// 現在ログイン中のユーザー情報（最小限）
+    /// </summary>
+    [Required]
+    public required CurrentUserInfo CurrentUser { get; init; }
+
+    /// <summary>
     /// 組織の公開設定
     /// </summary>
     [Required]
@@ -22,6 +28,47 @@ public class AppPublicSettingsResponse
     /// </summary>
     [Required]
     public required UserPublicSettings User { get; init; }
+}
+
+/// <summary>
+/// 現在ログイン中のユーザーの最小限情報
+/// </summary>
+public class CurrentUserInfo
+{
+    /// <summary>
+    /// ユーザーID
+    /// </summary>
+    [Required]
+    public required int Id { get; init; }
+
+    /// <summary>
+    /// 組織ID
+    /// </summary>
+    [Required]
+    public required int OrganizationId { get; init; }
+
+    /// <summary>
+    /// ユーザー名
+    /// </summary>
+    [Required]
+    public required string Username { get; init; }
+
+    /// <summary>
+    /// メールアドレス
+    /// </summary>
+    [Required]
+    public required string Email { get; init; }
+
+    /// <summary>
+    /// アイデンティティアイコンURL（表示用）
+    /// </summary>
+    public string? IdentityIconUrl { get; init; }
+
+    /// <summary>
+    /// 管理者権限を持つかどうか
+    /// </summary>
+    [Required]
+    public required bool IsAdmin { get; init; }
 }
 
 /// <summary>

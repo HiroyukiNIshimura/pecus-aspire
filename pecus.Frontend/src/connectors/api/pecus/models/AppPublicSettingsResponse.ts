@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { CurrentUserInfo } from './CurrentUserInfo';
 import type { OrganizationPublicSettings } from './OrganizationPublicSettings';
 import type { UserPublicSettings } from './UserPublicSettings';
 /**
@@ -10,6 +11,7 @@ import type { UserPublicSettings } from './UserPublicSettings';
  * ※ APIキー、パスワード等のセンシティブ情報は含まない
  */
 export type AppPublicSettingsResponse = {
+    currentUser: CurrentUserInfo;
     organization: OrganizationPublicSettings;
     user: UserPublicSettings;
 };

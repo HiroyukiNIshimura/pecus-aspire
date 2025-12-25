@@ -13,17 +13,13 @@ import type { SkillListItemResponse, SkillStatistics } from '@/connectors/api/pe
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { skillNameFilterSchema } from '@/schemas/filterSchemas';
-import type { UserInfo } from '@/types/userInfo';
 
-interface AdminSkillsClientProps {
-  initialUser?: UserInfo | null;
-}
-
-export default function AdminSkillsClient({ initialUser }: AdminSkillsClientProps) {
+export default function AdminSkillsClient() {
   const router = useRouter();
+  const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo] = useState<UserInfo | null>(initialUser || null);
   const [skills, setSkills] = useState<SkillListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -187,7 +183,7 @@ export default function AdminSkillsClient({ initialUser }: AdminSkillsClientProp
       />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
+      <AdminHeader userInfo={currentUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}

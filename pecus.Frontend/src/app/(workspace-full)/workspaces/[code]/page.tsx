@@ -8,14 +8,7 @@ import {
   detect401ValidationError,
   detect404ValidationError,
 } from '@/connectors/api/PecusApiClient';
-import type {
-  MasterGenreResponse,
-  MasterSkillResponse,
-  UserDetailResponse,
-  WorkspaceFullDetailResponse,
-} from '@/connectors/api/pecus';
-import type { UserInfo } from '@/types/userInfo';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
+import type { MasterGenreResponse, MasterSkillResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
 import WorkspaceDetailClient from './WorkspaceDetailClient';
 
 interface WorkspaceDetailPageProps {
@@ -35,9 +28,6 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
   // タスクシーケンス番号をパース（数値でない場合はundefined）
   const initialTaskSequence = task ? parseInt(task, 10) : undefined;
 
-  // ユーザー情報取得
-  let userInfo: UserInfo | null = null;
-  let userResponse: UserDetailResponse | null = null;
   let workspaceDetail: WorkspaceFullDetailResponse | null = null;
   let genres: MasterGenreResponse[] = [];
   let skills: MasterSkillResponse[] = [];
@@ -46,8 +36,6 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
 
   try {
     const api = createPecusApiClients();
-    userResponse = await api.profile.getApiProfile();
-    userInfo = mapUserResponseToUserInfo(userResponse);
 
     // ワークスペース詳細情報取得（code ベース）
     workspaceDetail = await api.workspace.getApiWorkspacesCode(code);
@@ -70,7 +58,6 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
       genres = await api.master.getApiMasterGenres();
     } catch (err) {
       console.warn('Failed to fetch genres:', err);
-      // ジャンル一覧取得失敗時は空配列を渡す
       genres = [];
     }
 
@@ -79,7 +66,6 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
       skills = await api.master.getApiMasterSkills();
     } catch (err) {
       console.warn('Failed to fetch skills:', err);
-      // スキル一覧取得失敗時は空配列を渡す
       skills = [];
     }
 
@@ -94,7 +80,6 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
       }));
     } catch (err) {
       console.warn('Failed to fetch task types:', err);
-      // タスクタイプ一覧取得失敗時は空配列を渡す
       taskTypes = [];
     }
   } catch (error) {
@@ -113,11 +98,6 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
     }
   }
 
-  // ユーザー情報が取得できない場合はリダイレクト
-  if (!userInfo) {
-    redirect('/signin');
-  }
-
   // ワークスペース情報が取得できない場合はリダイレクト
   if (!workspaceDetail) {
     redirect('/workspaces');
@@ -127,7 +107,6 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
     <WorkspaceDetailClient
       workspaceCode={code}
       workspaceDetail={workspaceDetail}
-      userInfo={userInfo}
       genres={genres}
       skills={skills}
       taskTypes={taskTypes}

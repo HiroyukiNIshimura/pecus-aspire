@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import ChatIconButton from '@/components/chat/ChatIconButton';
-import type { UserInfo } from '@/types/userInfo';
+import type { CurrentUserInfo } from '@/connectors/api/pecus';
 import HeaderLogo from '../navigation/HeaderLogo';
 import HeaderNavItem from '../navigation/HeaderNavItem';
 import MobileMenuButton from '../navigation/MobileMenuButton';
@@ -10,7 +10,7 @@ import ThemeToggle from '../navigation/ThemeToggle';
 import UserMenu from '../navigation/UserMenu';
 
 interface AppHeaderProps {
-  userInfo: UserInfo | null;
+  userInfo: CurrentUserInfo | null;
   onToggleSidebar?: () => void;
   loading?: boolean;
   showAdminLink?: boolean;

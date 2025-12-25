@@ -12,6 +12,7 @@ import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentTy
 import { useNotify } from '@/hooks/useNotify';
 import { convertToLinks } from '@/libs/utils/autoLink';
 import { formatDateTime } from '@/libs/utils/date';
+import { useCurrentUserId } from '@/providers/AppSettingsProvider';
 
 /** コメントタイプのラベルと色 */
 /** コメントの最大文字数 */
@@ -30,8 +31,6 @@ interface TaskCommentSectionProps {
   workspaceId: number;
   itemId: number;
   taskId: number;
-  /** 現在のユーザーID（未ログイン時はundefined） */
-  currentUserId?: number;
   /** コメント数が変更された時のコールバック */
   onCommentCountChange?: (count: number) => void;
   /** コメント入力欄にフォーカスするかどうか */
@@ -44,12 +43,12 @@ export default function TaskCommentSection({
   workspaceId,
   itemId,
   taskId,
-  currentUserId,
   onCommentCountChange,
   autoFocus = false,
   canEdit = true,
 }: TaskCommentSectionProps) {
   const notify = useNotify();
+  const currentUserId = useCurrentUserId();
   const [comments, setComments] = useState<TaskCommentDetailResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

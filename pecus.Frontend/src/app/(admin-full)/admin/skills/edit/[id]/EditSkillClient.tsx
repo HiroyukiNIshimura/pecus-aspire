@@ -10,18 +10,18 @@ import type { SkillDetailResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { editSkillSchema } from '@/schemas/editSchemas';
-import type { UserInfo } from '@/types/userInfo';
 
 interface EditSkillClientProps {
-  initialUser: UserInfo | null;
   skillDetail: SkillDetailResponse;
   fetchError: string | null;
 }
 
-export default function EditSkillClient({ initialUser, skillDetail, fetchError }: EditSkillClientProps) {
+export default function EditSkillClient({ skillDetail, fetchError }: EditSkillClientProps) {
   const router = useRouter();
   const notify = useNotify();
+  const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // フォーム状態
@@ -87,7 +87,7 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
+      <AdminHeader userInfo={currentUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}

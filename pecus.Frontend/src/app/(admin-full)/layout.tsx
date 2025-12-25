@@ -15,6 +15,7 @@ interface AdminFullLayoutProps {
  * 管理者ページは独自の AdminHeader + AdminSidebar を持つため、
  * 共通の DashboardLayoutClient は適用しない。
  * - 認証チェック（401の場合はリダイレクト）
+ * - 管理者権限チェック（非管理者はダッシュボードにリダイレクト）
  * - SignalRProvider によるリアルタイム通知
  *
  * 対象: /admin/*
@@ -24,17 +25,13 @@ export default async function AdminFullLayout({ children }: AdminFullLayoutProps
 
   try {
     const api = createPecusApiClients();
-    // ユーザー情報とアプリ設定を並列取得
-    const [userResponse, settingsResponse] = await Promise.all([
-      api.profile.getApiProfile(),
-      api.profile.getApiProfileAppSettings(),
-    ]);
+    // アプリ設定とユーザー情報を単一のAPI呼び出しで取得
+    appSettings = await api.profile.getApiProfileAppSettings();
 
     // 管理者でない場合はダッシュボードにリダイレクト
-    if (!userResponse.isAdmin) {
+    if (!appSettings.currentUser?.isAdmin) {
       redirect('/');
     }
-    appSettings = settingsResponse;
   } catch (error) {
     // 401 エラーの場合はログインページにリダイレクト
     if (detect401ValidationError(error)) {

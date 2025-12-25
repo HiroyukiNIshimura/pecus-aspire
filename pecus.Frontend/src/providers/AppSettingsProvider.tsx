@@ -1,7 +1,15 @@
 'use client';
 
 import { createContext, type ReactNode, useContext } from 'react';
-import type { AppPublicSettingsResponse, OrganizationPublicSettings, UserPublicSettings } from '@/connectors/api/pecus';
+import type {
+  AppPublicSettingsResponse,
+  CurrentUserInfo,
+  OrganizationPublicSettings,
+  UserPublicSettings,
+} from '@/connectors/api/pecus';
+
+// 自動生成された型を再エクスポート
+export type { CurrentUserInfo } from '@/connectors/api/pecus';
 
 /**
  * アプリケーション公開設定のコンテキスト
@@ -19,6 +27,9 @@ import type { AppPublicSettingsResponse, OrganizationPublicSettings, UserPublicS
  *
  * // ユーザー設定のみ取得
  * const { timeZone } = useUserSettings();
+ *
+ * // 現在のユーザー情報を取得
+ * const currentUser = useCurrentUser();
  * ```
  */
 const AppSettingsContext = createContext<AppPublicSettingsResponse | null>(null);
@@ -84,6 +95,37 @@ export function useUserSettings(): UserPublicSettings {
   return useAppSettings().user;
 }
 
+/**
+ * 現在のユーザー情報を取得するフック
+ *
+ * @returns 現在のユーザー情報
+ * @throws {Error} AppSettingsProvider の外で呼び出された場合
+ *
+ * @example
+ * ```tsx
+ * const currentUser = useCurrentUser();
+ * console.log(currentUser.id, currentUser.username);
+ * ```
+ */
+export function useCurrentUser(): CurrentUserInfo {
+  return useAppSettings().currentUser;
+}
+
+/**
+ * 現在のユーザーIDを取得するフック
+ *
+ * @returns 現在のユーザーID
+ *
+ * @example
+ * ```tsx
+ * const currentUserId = useCurrentUserId();
+ * const isOwn = comment.userId === currentUserId;
+ * ```
+ */
+export function useCurrentUserId(): number {
+  return useCurrentUser().id;
+}
+
 // ============================================
 // デフォルト値（エラー時のフォールバック用）
 // ============================================
@@ -95,6 +137,14 @@ export function useUserSettings(): UserPublicSettings {
  * AI機能は無効、基本的な設定はデフォルト値を使用。
  */
 export const defaultAppSettings: AppPublicSettingsResponse = {
+  currentUser: {
+    id: 0,
+    organizationId: 0,
+    username: '',
+    email: '',
+    identityIconUrl: null,
+    isAdmin: false,
+  },
   organization: {
     aiProvider: 'None',
     isAiConfigured: false,

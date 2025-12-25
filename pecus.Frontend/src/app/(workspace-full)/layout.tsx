@@ -22,18 +22,11 @@ interface WorkspaceFullLayoutProps {
  * 対象: /workspaces/[code]
  */
 export default async function WorkspaceFullLayout({ children }: WorkspaceFullLayoutProps) {
-  let userId: number | null = null;
   let appSettings: AppPublicSettingsResponse = defaultAppSettings;
 
   try {
     const api = createPecusApiClients();
-    // ユーザー情報とアプリ設定を並列取得
-    const [userResponse, settingsResponse] = await Promise.all([
-      api.profile.getApiProfile(),
-      api.profile.getApiProfileAppSettings(),
-    ]);
-    userId = userResponse.id;
-    appSettings = settingsResponse;
+    appSettings = await api.profile.getApiProfileAppSettings();
   } catch (error) {
     // 401 エラーの場合はログインページにリダイレクト
     if (detect401ValidationError(error)) {
@@ -49,7 +42,7 @@ export default async function WorkspaceFullLayout({ children }: WorkspaceFullLay
       <AppSettingsProvider settings={appSettings}>
         {children}
         {/* Chat Bottom Drawer (PC only) */}
-        {userId && <ChatProvider currentUserId={userId} />}
+        {appSettings.currentUser.id !== 0 && <ChatProvider currentUserId={appSettings.currentUser.id} />}
       </AppSettingsProvider>
     </SignalRProvider>
   );

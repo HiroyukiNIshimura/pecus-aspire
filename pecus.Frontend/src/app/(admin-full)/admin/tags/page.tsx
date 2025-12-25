@@ -1,7 +1,5 @@
 import { redirect } from 'next/navigation';
 import { createPecusApiClients, detect401ValidationError } from '@/connectors/api/PecusApiClient';
-import type { UserDetailResponse } from '@/connectors/api/pecus';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import AdminTagsClient from './AdminTagsClient';
 
 export const dynamic = 'force-dynamic';
@@ -13,13 +11,11 @@ export const dynamic = 'force-dynamic';
  * （SSRでHTMLレンダリングしないデータをSSRでフェッチしない方針）
  */
 export default async function AdminTags() {
-  let userResponse: UserDetailResponse | null = null;
-
   try {
     const api = createPecusApiClients();
 
-    // ユーザー情報を取得（認証チェック）
-    userResponse = await api.profile.getApiProfile();
+    // 認証チェック（プロフィール取得）
+    await api.profile.getApiProfile();
   } catch (error) {
     console.error('AdminTags: failed to fetch user', error);
 
@@ -30,13 +26,5 @@ export default async function AdminTags() {
     }
   }
 
-  // ユーザー情報が取得できない場合はリダイレクト
-  if (!userResponse) {
-    redirect('/signin');
-  }
-
-  // UserDetailResponse から UserInfo に変換
-  const user = mapUserResponseToUserInfo(userResponse);
-
-  return <AdminTagsClient initialUser={user} />;
+  return <AdminTagsClient />;
 }

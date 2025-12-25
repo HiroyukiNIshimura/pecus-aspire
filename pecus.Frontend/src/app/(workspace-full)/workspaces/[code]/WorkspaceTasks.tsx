@@ -436,7 +436,7 @@ const WorkspaceTasks = ({
       />
 
       {/* コメントモーダル */}
-      {commentTargetTask && currentUser && (
+      {commentTargetTask && (
         <TaskCommentModal
           isOpen={isCommentModalOpen}
           onClose={() => {
@@ -446,7 +446,6 @@ const WorkspaceTasks = ({
           workspaceId={workspaceId}
           itemId={itemId}
           task={commentTargetTask}
-          currentUserId={currentUser.id}
           onCommentCountChange={() => fetchTasks(currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder)}
           canEdit={canEdit}
         />

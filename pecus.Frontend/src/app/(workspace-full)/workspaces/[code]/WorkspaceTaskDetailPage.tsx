@@ -1573,7 +1573,6 @@ export default function WorkspaceTaskDetailPage({
                 workspaceId={workspaceId}
                 itemId={itemId}
                 taskId={task.id}
-                currentUserId={currentUser?.id}
                 autoFocus={initialFocusComments}
                 canEdit={canEdit}
               />

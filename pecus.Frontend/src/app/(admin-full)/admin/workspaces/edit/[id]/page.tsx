@@ -1,8 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getWorkspaceDetail } from '@/actions/admin/workspace';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { MasterGenreResponse, UserDetailResponse } from '@/connectors/api/pecus';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
+import type { MasterGenreResponse } from '@/connectors/api/pecus';
 import EditWorkspaceClient from './EditWorkspaceClient';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +14,6 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  let userResponse: UserDetailResponse | null = null;
   let workspaceDetail = null;
   let genres: MasterGenreResponse[] = [];
   let fetchError = null;
@@ -23,8 +21,8 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
   try {
     const api = createPecusApiClients();
 
-    // ユーザー情報を取得
-    userResponse = await api.profile.getApiProfile();
+    // 認証チェック（プロフィール取得）
+    await api.profile.getApiProfile();
 
     // ワークスペース詳細を取得
     const workspaceResult = await getWorkspaceDetail(workspaceId);
@@ -51,19 +49,9 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
     fetchError = parseErrorResponse(error, 'データの取得中にエラーが発生しました。').message;
   }
 
-  // エラーまたはユーザー情報が取得できない場合はリダイレクト
-  if (!userResponse) {
-    redirect('/signin');
-  }
-
-  // UserDetailResponse から UserInfo に変換
-  const user = mapUserResponseToUserInfo(userResponse);
-
   if (!workspaceDetail) {
     notFound();
   }
 
-  return (
-    <EditWorkspaceClient initialUser={user} workspaceDetail={workspaceDetail} genres={genres} fetchError={fetchError} />
-  );
+  return <EditWorkspaceClient workspaceDetail={workspaceDetail} genres={genres} fetchError={fetchError} />;
 }

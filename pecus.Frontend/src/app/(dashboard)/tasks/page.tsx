@@ -55,5 +55,17 @@ export default async function MyTasksPage() {
     redirect('/signin');
   }
 
-  return <MyTasksDashboardClient initialWorkspaces={initialWorkspaces} taskTypes={taskTypes} fetchError={fetchError} />;
+  return (
+    <MyTasksDashboardClient
+      initialWorkspaces={initialWorkspaces}
+      taskTypes={taskTypes}
+      fetchError={fetchError}
+      currentUser={{
+        id: userResponse.id,
+        username: userResponse.username || '',
+        email: userResponse.email || '',
+        identityIconUrl: userResponse.identityIconUrl || null,
+      }}
+    />
+  );
 }

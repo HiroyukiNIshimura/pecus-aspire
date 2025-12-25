@@ -1,8 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getSkillDetail } from '@/actions/admin/skills';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { UserDetailResponse } from '@/connectors/api/pecus';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import EditSkillClient from './EditSkillClient';
 
 export const dynamic = 'force-dynamic';
@@ -15,15 +13,14 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  let userResponse: UserDetailResponse | null = null;
   let skillDetail = null;
   let fetchError = null;
 
   try {
     const api = createPecusApiClients();
 
-    // ユーザー情報を取得
-    userResponse = await api.profile.getApiProfile();
+    // 認証チェック（プロフィール取得）
+    await api.profile.getApiProfile();
 
     const skillResult = await getSkillDetail(skillId);
     if (skillResult.success) {
@@ -41,17 +38,9 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
     fetchError = parseErrorResponse(error, 'データの取得中にエラーが発生しました。').message;
   }
 
-  // エラーまたはユーザー情報が取得できない場合はリダイレクト
-  if (!userResponse) {
-    redirect('/signin');
-  }
-
-  // UserDetailResponse から UserInfo に変換
-  const user = mapUserResponseToUserInfo(userResponse);
-
   if (!skillDetail) {
     notFound();
   }
 
-  return <EditSkillClient initialUser={user} skillDetail={skillDetail} fetchError={fetchError} />;
+  return <EditSkillClient skillDetail={skillDetail} fetchError={fetchError} />;
 }

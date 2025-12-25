@@ -9,7 +9,7 @@ import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import MultiSelectDropdown from '@/components/common/filters/MultiSelectDropdown';
 import type { UserDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import type { UserInfo } from '@/types/userInfo';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 
 interface Skill {
   id: number;
@@ -22,7 +22,6 @@ interface Role {
 }
 
 interface EditUserClientProps {
-  initialUser: UserInfo | null;
   userDetail: UserDetailResponse;
   availableSkills: Skill[];
   availableRoles: Role[];
@@ -30,7 +29,6 @@ interface EditUserClientProps {
 }
 
 export default function EditUserClient({
-  initialUser,
   userDetail,
   availableSkills,
   availableRoles,
@@ -38,6 +36,7 @@ export default function EditUserClient({
 }: EditUserClientProps) {
   const router = useRouter();
   const notify = useNotify();
+  const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // === 状態管理: ユーザー編集対象の3つの項目 ===
@@ -181,7 +180,7 @@ export default function EditUserClient({
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
+      <AdminHeader userInfo={currentUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}

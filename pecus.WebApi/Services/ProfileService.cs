@@ -687,4 +687,37 @@ public class ProfileService
             WaitingTasksLimit = setting.WaitingTasksLimit,
         };
     }
+
+    /// <summary>
+    /// 現在のユーザー情報（最小限）を取得
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>現在のユーザー情報</returns>
+    /// <exception cref="NotFoundException">ユーザーが見つからない場合</exception>
+    public async Task<CurrentUserInfo> GetCurrentUserInfoAsync(int userId)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .Include(u => u.Roles)
+            .FirstOrDefaultAsync(u => u.Id == userId)
+            ?? throw new NotFoundException("ユーザーが見つかりません。");
+
+        var identityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+            user.AvatarType,
+            user.Id,
+            user.Username,
+            user.Email,
+            user.UserAvatarPath
+        );
+
+        return new CurrentUserInfo
+        {
+            Id = user.Id,
+            OrganizationId = user.OrganizationId ?? 0,
+            Username = user.Username,
+            Email = user.Email,
+            IdentityIconUrl = identityIconUrl,
+            IsAdmin = user.Roles.Any(r => r.Name == "Admin"),
+        };
+    }
 }

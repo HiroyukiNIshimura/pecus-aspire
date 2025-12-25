@@ -188,7 +188,7 @@ public class ProfileController : BaseSecureController
     /// アプリケーション公開設定を取得
     /// </summary>
     /// <remarks>
-    /// フロントエンドで利用可能な組織設定とユーザー設定を統合して返します。
+    /// フロントエンドで利用可能な現在のユーザー情報、組織設定、ユーザー設定を統合して返します。
     /// APIキーやパスワード等のセンシティブ情報は含まれません。
     /// SSRでレイアウトレベルで取得し、Context経由で配信することを想定しています。
     /// </remarks>
@@ -199,11 +199,13 @@ public class ProfileController : BaseSecureController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Ok<AppPublicSettingsResponse>> GetAppPublicSettings()
     {
+        var currentUserInfo = await _profileService.GetCurrentUserInfoAsync(CurrentUserId);
         var organizationSettings = await _organizationService.GetOrganizationPublicSettingsAsync(CurrentOrganizationId);
         var userSettings = await _profileService.GetUserPublicSettingsAsync(CurrentUserId);
 
         var response = new AppPublicSettingsResponse
         {
+            CurrentUser = currentUserInfo,
             Organization = organizationSettings,
             User = userSettings,
         };

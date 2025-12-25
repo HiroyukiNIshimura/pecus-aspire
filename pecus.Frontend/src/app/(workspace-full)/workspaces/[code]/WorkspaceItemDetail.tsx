@@ -719,17 +719,15 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 itemCommitterAvatarUrl={item?.committerAvatarUrl}
                 taskTypes={taskTypes}
                 currentUser={
-                  currentUserId && members.length > 0
+                  currentUserId
                     ? (() => {
                         const user = members.find((m) => m.id === currentUserId);
-                        return user
-                          ? {
-                              id: user.id || 0,
-                              username: user.userName || '',
-                              email: user.email || '',
-                              identityIconUrl: user.identityIconUrl || null,
-                            }
-                          : null;
+                        return {
+                          id: currentUserId,
+                          username: user?.userName || '',
+                          email: user?.email || '',
+                          identityIconUrl: user?.identityIconUrl || null,
+                        };
                       })()
                     : null
                 }

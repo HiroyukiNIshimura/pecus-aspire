@@ -1,10 +1,10 @@
 'use client';
 
 import AppHeader from '@/components/common/layout/AppHeader';
-import type { UserInfo } from '@/types/userInfo';
+import type { CurrentUserInfo } from '@/connectors/api/pecus';
 
 interface AdminHeaderProps {
-  userInfo: UserInfo | null;
+  userInfo: CurrentUserInfo | null;
   onToggleSidebar?: () => void;
   loading?: boolean;
 }

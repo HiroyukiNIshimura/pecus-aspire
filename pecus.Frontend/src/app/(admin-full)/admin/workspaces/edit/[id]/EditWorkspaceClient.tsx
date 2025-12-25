@@ -27,24 +27,19 @@ import type {
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { editWorkspaceSchema } from '@/schemas/editSchemas';
-import type { UserInfo } from '@/types/userInfo';
 
 interface EditWorkspaceClientProps {
-  initialUser: UserInfo | null;
   workspaceDetail: WorkspaceDetailResponse;
   genres: MasterGenreResponse[];
   fetchError: string | null;
 }
 
-export default function EditWorkspaceClient({
-  initialUser,
-  workspaceDetail,
-  genres,
-  fetchError,
-}: EditWorkspaceClientProps) {
+export default function EditWorkspaceClient({ workspaceDetail, genres, fetchError }: EditWorkspaceClientProps) {
   const router = useRouter();
   const notify = useNotify();
+  const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // メンバー管理の状態
@@ -270,7 +265,7 @@ export default function EditWorkspaceClient({
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
+      <AdminHeader userInfo={currentUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}

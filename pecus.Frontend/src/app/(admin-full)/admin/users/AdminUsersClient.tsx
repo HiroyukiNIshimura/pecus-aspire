@@ -14,8 +14,8 @@ import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { formatDate } from '@/libs/utils/date';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { usernameFilterSchema } from '@/schemas/filterSchemas';
-import type { UserInfo } from '@/types/userInfo';
 
 interface Skill {
   id: number;
@@ -40,14 +40,10 @@ interface UserStatistics {
   noWorkspaceParticipationCount?: number;
 }
 
-interface AdminUsersClientProps {
-  initialUser?: UserInfo | null;
-}
-
-export default function AdminUsersClient({ initialUser }: AdminUsersClientProps) {
+export default function AdminUsersClient() {
   const router = useRouter();
+  const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo] = useState<UserInfo | null>(initialUser || null);
   const [users, setUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -287,7 +283,7 @@ export default function AdminUsersClient({ initialUser }: AdminUsersClientProps)
       />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
+      <AdminHeader userInfo={currentUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}

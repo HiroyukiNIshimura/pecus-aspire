@@ -13,17 +13,13 @@ import type { TagListItemResponse, TagStatistics } from '@/connectors/api/pecus'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { tagNameFilterSchema } from '@/schemas/filterSchemas';
-import type { UserInfo } from '@/types/userInfo';
 
-interface AdminTagsClientProps {
-  initialUser?: UserInfo | null;
-}
-
-export default function AdminTagsClient({ initialUser }: AdminTagsClientProps) {
+export default function AdminTagsClient() {
   const router = useRouter();
+  const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo] = useState<UserInfo | null>(initialUser || null);
   const [tags, setTags] = useState<TagListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -187,7 +183,7 @@ export default function AdminTagsClient({ initialUser }: AdminTagsClientProps) {
       />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
+      <AdminHeader userInfo={currentUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}

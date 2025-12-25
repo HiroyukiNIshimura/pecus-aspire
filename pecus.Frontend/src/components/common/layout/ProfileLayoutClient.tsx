@@ -3,11 +3,11 @@
 import { type ReactNode, useState } from 'react';
 import AppHeader from '@/components/common/layout/AppHeader';
 import ProfileSidebar from '@/components/common/layout/ProfileSidebar';
-import type { UserInfo } from '@/types/userInfo';
+import type { CurrentUserInfo } from '@/connectors/api/pecus';
 
 interface ProfileLayoutClientProps {
   children: ReactNode;
-  userInfo: UserInfo | null;
+  userInfo: CurrentUserInfo | null;
 }
 
 /**
