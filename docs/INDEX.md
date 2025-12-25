@@ -23,6 +23,10 @@
 - [use-infinite-scroll.md](./use-infinite-scroll.md) — 無限スクロール用カスタムフック（useInfiniteScroll）の使い方。
 - [workspace-viewer-permission.md](./workspace-viewer-permission.md) — ワークスペース Viewer 権限のフロントエンド実装ガイド（canEdit パターン）。
 
+### バックグラウンドタスク
+
+- [bot-hangfire-tasks.md](./bot-hangfire-tasks.md) — Bot Hangfire タスク一覧（AI チャット返信、通知、リマインダー等）。
+
 ### 仕様書 (docs/spec)
 
 - [activity-requirements.md](./spec/activity-requirements.md) — 活動要件と仕様のまとめ。
