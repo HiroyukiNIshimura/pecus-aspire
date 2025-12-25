@@ -1575,6 +1575,10 @@ export default function WorkspaceTaskDetailPage({
                 taskId={task.id}
                 autoFocus={initialFocusComments}
                 canEdit={canEdit}
+                taskAssigneeId={task.assignedUserId}
+                itemOwnerId={task.itemOwnerId}
+                itemAssigneeId={task.itemAssigneeId}
+                itemCommitterId={task.itemCommitterId}
               />
             )}
           </div>

@@ -75,6 +75,10 @@ export default function TaskCommentModal({
           onCommentCountChange={onCommentCountChange}
           autoFocus
           canEdit={canEdit}
+          taskAssigneeId={task.assignedUserId}
+          itemOwnerId={task.itemOwnerId}
+          itemAssigneeId={task.itemAssigneeId}
+          itemCommitterId={task.itemCommitterId}
         />
       </div>
     </div>

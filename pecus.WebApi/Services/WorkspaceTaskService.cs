@@ -1117,6 +1117,7 @@ public class WorkspaceTaskService
                 .ThenInclude(w => w.Genre)
             .Where(wi => wi.CommitterId == userId)
             .Where(wi => !wi.IsArchived) // アーカイブされていないアイテムのみ
+            .Where(wi => wi.Workspace!.IsActive) // アクティブなワークスペースのみ
             .GroupBy(wi => new
             {
                 wi.WorkspaceId,
@@ -1214,6 +1215,7 @@ public class WorkspaceTaskService
             .Include(t => t.TaskComments)
             .Where(t => t.AssignedUserId == userId)
             .Where(t => !t.WorkspaceItem!.IsArchived) // アーカイブされていないアイテムのみ
+            .Where(t => t.WorkspaceItem!.Workspace!.IsActive) // アクティブなワークスペースのみ
             .GroupBy(t => new
             {
                 t.WorkspaceId,

@@ -18,13 +18,46 @@ import { useCurrentUserId } from '@/providers/AppSettingsProvider';
 /** コメントの最大文字数 */
 const MAX_COMMENT_LENGTH = 500;
 
-const commentTypeConfig: Record<NonNullable<TaskCommentType>, { label: string; color: string; iconClass: string }> = {
-  Normal: { label: '通常', color: 'badge-neutral', iconClass: 'icon-[mdi--message-outline]' },
-  Memo: { label: 'メモ', color: 'badge-info', iconClass: 'icon-[mdi--note-outline]' },
-  HelpWanted: { label: '助けて', color: 'badge-warning', iconClass: 'icon-[mdi--help-circle-outline]' },
-  NeedReply: { label: '返事が欲しい', color: 'badge-primary', iconClass: 'icon-[mdi--email-outline]' },
-  Reminder: { label: 'リマインダー', color: 'badge-secondary', iconClass: 'icon-[mdi--bell-outline]' },
-  Urge: { label: '督促', color: 'badge-error', iconClass: 'icon-[mdi--alarm]' },
+const commentTypeConfig: Record<
+  NonNullable<TaskCommentType>,
+  { label: string; color: string; iconClass: string; placeholder: string }
+> = {
+  Normal: {
+    label: '通常',
+    color: 'badge-neutral',
+    iconClass: 'icon-[mdi--message-outline]',
+    placeholder: 'コメント... (Shift+Enterで改行)',
+  },
+  Memo: {
+    label: 'メモ',
+    color: 'badge-info',
+    iconClass: 'icon-[mdi--note-outline]',
+    placeholder: 'コメント... (Shift+Enterで改行)',
+  },
+  HelpWanted: {
+    label: '助けて',
+    color: 'badge-warning',
+    iconClass: 'icon-[mdi--help-circle-outline]',
+    placeholder: 'コメント... (Shift+Enterで改行)',
+  },
+  NeedReply: {
+    label: '返事が欲しい',
+    color: 'badge-primary',
+    iconClass: 'icon-[mdi--email-outline]',
+    placeholder: '誰から返事が欲しいかを含めましょう！',
+  },
+  Reminder: {
+    label: 'リマインダー',
+    color: 'badge-secondary',
+    iconClass: 'icon-[mdi--bell-outline]',
+    placeholder: '通知を受けたい日付を含めましょう！',
+  },
+  Urge: {
+    label: '督促',
+    color: 'badge-error',
+    iconClass: 'icon-[mdi--alarm]',
+    placeholder: 'コメント... (Shift+Enterで改行)',
+  },
 };
 
 interface TaskCommentSectionProps {
@@ -37,6 +70,37 @@ interface TaskCommentSectionProps {
   autoFocus?: boolean;
   /** ワークスペース編集権限があるかどうか（Viewer以外）*/
   canEdit?: boolean;
+  /** タスクの担当者ID */
+  taskAssigneeId?: number | null;
+  /** アイテムのオーナーID */
+  itemOwnerId?: number | null;
+  /** アイテムの担当者ID */
+  itemAssigneeId?: number | null;
+  /** アイテムのコミッターID */
+  itemCommitterId?: number | null;
+}
+
+/** ユーザーの役割に応じて利用可能なコメントタイプを取得 */
+function getAvailableCommentTypes(
+  currentUserId: number,
+  taskAssigneeId?: number | null,
+  itemOwnerId?: number | null,
+  itemAssigneeId?: number | null,
+  itemCommitterId?: number | null,
+): NonNullable<TaskCommentType>[] {
+  const isTaskAssignee = taskAssigneeId != null && taskAssigneeId === currentUserId;
+  const isItemOwnerOrAssigneeOrCommitter =
+    (itemOwnerId != null && itemOwnerId === currentUserId) ||
+    (itemAssigneeId != null && itemAssigneeId === currentUserId) ||
+    (itemCommitterId != null && itemCommitterId === currentUserId);
+
+  if (isTaskAssignee) {
+    return ['Normal', 'Memo', 'HelpWanted', 'NeedReply', 'Reminder'];
+  }
+  if (isItemOwnerOrAssigneeOrCommitter) {
+    return ['Normal', 'NeedReply', 'Urge'];
+  }
+  return ['Normal'];
 }
 
 export default function TaskCommentSection({
@@ -46,6 +110,10 @@ export default function TaskCommentSection({
   onCommentCountChange,
   autoFocus = false,
   canEdit = true,
+  taskAssigneeId,
+  itemOwnerId,
+  itemAssigneeId,
+  itemCommitterId,
 }: TaskCommentSectionProps) {
   const notify = useNotify();
   const currentUserId = useCurrentUserId();
@@ -76,6 +144,15 @@ export default function TaskCommentSection({
 
   // IME入力中かどうか（日本語変換中のEnterでサブミットされるのを防止）
   const isComposingRef = useRef(false);
+
+  // 利用可能なコメントタイプ
+  const availableCommentTypes = getAvailableCommentTypes(
+    currentUserId,
+    taskAssigneeId,
+    itemOwnerId,
+    itemAssigneeId,
+    itemCommitterId,
+  );
 
   // コメント一覧を取得（削除済み含む）
   const fetchComments = useCallback(
@@ -507,7 +584,7 @@ export default function TaskCommentSection({
             <textarea
               ref={textareaRef}
               className={`textarea textarea-bordered textarea-sm w-full min-h-10 max-h-24 resize-none ${newCommentError ? 'textarea-error' : ''}`}
-              placeholder="コメント... (Shift+Enterで改行)"
+              placeholder={commentTypeConfig[newCommentType ?? 'Normal'].placeholder}
               value={newComment}
               onChange={(e) => handleNewCommentChange(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -535,18 +612,22 @@ export default function TaskCommentSection({
         </div>
         {/* コメントタイプ選択と文字数 */}
         <div className="flex justify-between items-center mt-2">
-          <select
-            className="select select-bordered select-xs w-auto min-w-0"
-            value={newCommentType ?? 'Normal'}
-            onChange={(e) => setNewCommentType(e.target.value as TaskCommentType)}
-            disabled={isSubmitting}
-          >
-            {Object.entries(commentTypeConfig).map(([key, config]) => (
-              <option key={key} value={key}>
-                {config.label}
-              </option>
-            ))}
-          </select>
+          {availableCommentTypes.length > 1 ? (
+            <select
+              className="select select-bordered select-xs w-auto min-w-0"
+              value={newCommentType ?? 'Normal'}
+              onChange={(e) => setNewCommentType(e.target.value as TaskCommentType)}
+              disabled={isSubmitting}
+            >
+              {availableCommentTypes.map((key) => (
+                <option key={key} value={key}>
+                  {commentTypeConfig[key].label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="text-xs text-base-content/50">{commentTypeConfig[availableCommentTypes[0]].label}</span>
+          )}
           <div className="flex items-center gap-2">
             {newCommentError && <span className="text-error text-xs">{newCommentError}</span>}
             <span
