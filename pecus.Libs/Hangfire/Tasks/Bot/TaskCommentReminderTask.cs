@@ -171,8 +171,8 @@ public class TaskCommentReminderTask
                 x => x.SendReminderFireNotificationAsync(commentId, reminderDate.Value.Month, reminderDate.Value.Day),
                 scheduleTime);
 
-            // ジョブIDをコメントに保存（削除時にキャンセルするため）
-            comment.ScheduledJobId = jobId;
+            // ジョブIDをコメントに保存（削除・更新時にキャンセルするため）
+            comment.ReminderJobId = jobId;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation(

@@ -290,13 +290,13 @@ public class TaskCommentController : BaseSecureController
         if (comment.CommentType == TaskCommentType.Reminder)
         {
             // 既存のスケジュール済みジョブがあればキャンセル
-            if (!string.IsNullOrEmpty(comment.ScheduledJobId))
+            if (!string.IsNullOrEmpty(comment.ReminderJobId))
             {
-                _backgroundJobClient.Delete(comment.ScheduledJobId);
+                _backgroundJobClient.Delete(comment.ReminderJobId);
                 _logger.LogDebug(
                     "Cancelled existing reminder job for update: CommentId={CommentId}, JobId={JobId}",
                     commentId,
-                    comment.ScheduledJobId
+                    comment.ReminderJobId
                 );
             }
 
@@ -360,13 +360,13 @@ public class TaskCommentController : BaseSecureController
         );
 
         // スケジュール済みリマインダージョブがあればキャンセル
-        if (!string.IsNullOrEmpty(comment.ScheduledJobId))
+        if (!string.IsNullOrEmpty(comment.ReminderJobId))
         {
-            _backgroundJobClient.Delete(comment.ScheduledJobId);
+            _backgroundJobClient.Delete(comment.ReminderJobId);
             _logger.LogDebug(
                 "Cancelled scheduled reminder job: CommentId={CommentId}, JobId={JobId}",
                 commentId,
-                comment.ScheduledJobId
+                comment.ReminderJobId
             );
         }
 
