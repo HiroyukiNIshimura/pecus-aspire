@@ -1,20 +1,59 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Pecus.Libs.AI;
 using Pecus.Libs.DB;
-using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
-using Pecus.Libs.Notifications;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
 
 /// <summary>
-/// タスクコメントで Reminder（督促）が投稿された際にDMへ通知する Hangfire タスク
-/// SystemBot がタスク担当者へのDMでメッセージを送信する
+/// AIが解析した日付情報を表すレスポンスモデル
+/// </summary>
+public class ReminderDateResponse
+{
+    /// <summary>
+    /// 年（省略可能、nullの場合は未来として成り立つ年を推定）
+    /// </summary>
+    [JsonPropertyName("year")]
+    public int? Year { get; set; }
+
+    /// <summary>
+    /// 月（1-12）
+    /// </summary>
+    [JsonPropertyName("month")]
+    public int? Month { get; set; }
+
+    /// <summary>
+    /// 日（1-31）
+    /// </summary>
+    [JsonPropertyName("day")]
+    public int? Day { get; set; }
+}
+
+/// <summary>
+/// タスクコメントで Reminder（催促）が投稿された際にAIで日付を解析し、リマインダーをスケジュールする Hangfire タスク
 /// </summary>
 public class TaskCommentReminderTask
 {
+    private const string DateExtractionPrompt = """
+        あなたはテキストから日付情報を抽出するアシスタントです。
+        ユーザーが入力したテキストから、リマインダーとして設定したい日付を抽出してください。
+
+        ルール:
+        - 日付情報が見つかった場合は、year, month, day をJSON形式で返してください
+        - 年が明示されていない場合は year を null にしてください
+        - 日付情報が見つからない場合や、日付として解釈できない場合は、month と day を null にしてください
+        - 「明日」「来週」などの相対的な表現は、具体的な日付に変換しないでください（null を返す）
+        - 必ず指定されたJSON形式で返してください
+        """;
+
+    private static readonly TimeZoneInfo JstTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
+
     private readonly ApplicationDbContext _context;
-    private readonly SignalRNotificationPublisher _publisher;
+    private readonly IAiClientFactory _aiClientFactory;
+    private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<TaskCommentReminderTask> _logger;
 
     /// <summary>
@@ -22,23 +61,22 @@ public class TaskCommentReminderTask
     /// </summary>
     public TaskCommentReminderTask(
         ApplicationDbContext context,
-        SignalRNotificationPublisher publisher,
+        IAiClientFactory aiClientFactory,
+        IBackgroundJobClient backgroundJobClient,
         ILogger<TaskCommentReminderTask> logger)
     {
         _context = context;
-        _publisher = publisher;
+        _aiClientFactory = aiClientFactory;
+        _backgroundJobClient = backgroundJobClient;
         _logger = logger;
     }
 
     /// <summary>
-    /// Reminder コメントに対するDM通知を送信する
+    /// Reminder コメントを解析してリマインダーをスケジュールする
     /// </summary>
     /// <param name="commentId">タスクコメントID</param>
-    public async Task SendReminderNotificationAsync(int commentId)
+    public async Task ScheduleReminderAsync(int commentId)
     {
-        DB.Models.Bot? systemBot = null;
-        int organizationId = 0;
-
         try
         {
             var comment = await _context.TaskComments
@@ -46,9 +84,6 @@ public class TaskCommentReminderTask
                 .Include(c => c.WorkspaceTask)
                     .ThenInclude(t => t.WorkspaceItem)
                         .ThenInclude(i => i!.Workspace)
-                .Include(c => c.WorkspaceTask)
-                    .ThenInclude(t => t.AssignedUser)
-                        .ThenInclude(u => u.ChatActor)
                 .FirstOrDefaultAsync(c => c.Id == commentId);
 
             if (comment == null)
@@ -80,50 +115,67 @@ public class TaskCommentReminderTask
                 return;
             }
 
-            organizationId = workspace.OrganizationId;
+            var organizationId = workspace.OrganizationId;
 
-            var commentUserId = comment.UserId;
-            var taskAssignedUserId = task.AssignedUserId;
+            var setting = await _context.OrganizationSettings
+                .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
 
-            if (commentUserId == taskAssignedUserId)
+            if (setting == null ||
+                setting.GenerativeApiVendor == GenerativeApiVendor.None ||
+                string.IsNullOrEmpty(setting.GenerativeApiKey) ||
+                string.IsNullOrEmpty(setting.GenerativeApiModel))
             {
                 _logger.LogDebug(
-                    "Comment creator is the same as task assignee, skipping: CommentId={CommentId}, UserId={UserId}",
-                    commentId,
-                    commentUserId);
-                return;
-            }
-
-            systemBot = await GetSystemBotAsync(organizationId);
-            if (systemBot?.ChatActor == null)
-            {
-                _logger.LogWarning(
-                    "SystemBot not found for organization: OrganizationId={OrganizationId}",
+                    "AI settings not configured for organization, skipping reminder: OrganizationId={OrganizationId}",
                     organizationId);
                 return;
             }
 
-            var commentUserName = comment.User?.Username ?? "不明なユーザー";
-            var workspaceCode = workspace.Code ?? workspace.Name;
-            var itemCode = item.Code;
-            var taskSequence = task.Sequence;
+            var aiClient = _aiClientFactory.CreateClient(
+                setting.GenerativeApiVendor,
+                setting.GenerativeApiKey,
+                setting.GenerativeApiModel);
 
-            var messageContent = BuildNotificationMessage(
-                commentUserName,
-                workspaceCode,
-                itemCode,
-                taskSequence);
+            if (aiClient == null)
+            {
+                _logger.LogWarning(
+                    "Failed to create AI client: OrganizationId={OrganizationId}",
+                    organizationId);
+                return;
+            }
 
-            await SendDmToUserAsync(
-                organizationId,
-                taskAssignedUserId,
-                systemBot,
-                messageContent);
+            var dateResponse = await ExtractDateFromCommentAsync(aiClient, comment.Content);
+
+            if (dateResponse == null || !dateResponse.Month.HasValue || !dateResponse.Day.HasValue)
+            {
+                _logger.LogDebug(
+                    "No valid date found in comment: CommentId={CommentId}",
+                    commentId);
+                return;
+            }
+
+            var reminderDate = ResolveReminderDate(dateResponse);
+            if (reminderDate == null)
+            {
+                _logger.LogDebug(
+                    "Could not resolve valid future date from comment: CommentId={CommentId}, Month={Month}, Day={Day}",
+                    commentId,
+                    dateResponse.Month,
+                    dateResponse.Day);
+                return;
+            }
+
+            var scheduleTime = CalculateScheduleTime(reminderDate.Value);
+
+            _backgroundJobClient.Schedule<TaskCommentReminderFireTask>(
+                x => x.SendReminderFireNotificationAsync(commentId, reminderDate.Value.Month, reminderDate.Value.Day),
+                scheduleTime);
 
             _logger.LogInformation(
-                "Reminder notification sent: CommentId={CommentId}, TargetUserId={TargetUserId}",
+                "Reminder scheduled: CommentId={CommentId}, ReminderDate={ReminderDate}, ScheduleTime={ScheduleTime}",
                 commentId,
-                taskAssignedUserId);
+                reminderDate.Value.ToString("yyyy-MM-dd"),
+                scheduleTime);
         }
         catch (Exception ex)
         {
@@ -137,195 +189,112 @@ public class TaskCommentReminderTask
     }
 
     /// <summary>
-    /// 通知メッセージを生成する
+    /// AIを使用してコメントから日付情報を抽出する
     /// </summary>
-    private static string BuildNotificationMessage(
-        string userName,
-        string workspaceCode,
-        string itemCode,
-        int taskSequence)
+    private async Task<ReminderDateResponse?> ExtractDateFromCommentAsync(IAiClient aiClient, string commentContent)
     {
-        return $"{userName}さんから催促コメントがタスクで作成されました。[{workspaceCode}#{itemCode}T{taskSequence}]";
-    }
-
-    /// <summary>
-    /// SystemBot を取得する
-    /// </summary>
-    private async Task<DB.Models.Bot?> GetSystemBotAsync(int organizationId)
-    {
-        return await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == BotType.SystemBot);
-    }
-
-    /// <summary>
-    /// 指定ユーザーへDMを送信する
-    /// </summary>
-    private async Task SendDmToUserAsync(
-        int organizationId,
-        int targetUserId,
-        DB.Models.Bot systemBot,
-        string messageContent)
-    {
-        var dmRoom = await GetOrCreateDmRoomAsync(organizationId, targetUserId, systemBot);
-        if (dmRoom == null)
+        try
         {
-            _logger.LogWarning(
-                "Failed to get or create DM room: TargetUserId={TargetUserId}",
-                targetUserId);
-            return;
+            var response = await aiClient.GenerateJsonAsync<ReminderDateResponse>(
+                DateExtractionPrompt,
+                commentContent);
+
+            return response;
         }
-
-        await _publisher.PublishChatBotTypingAsync(
-            organizationId,
-            dmRoom.Id,
-            systemBot.ChatActor!.Id,
-            systemBot.Name,
-            isTyping: true);
-
-        await SendBotMessageAsync(organizationId, dmRoom, systemBot, messageContent);
-
-        await _publisher.PublishChatBotTypingAsync(
-            organizationId,
-            dmRoom.Id,
-            systemBot.ChatActor.Id,
-            systemBot.Name,
-            isTyping: false);
-
-        _logger.LogDebug(
-            "Reminder DM sent: TargetUserId={TargetUserId}, RoomId={RoomId}",
-            targetUserId,
-            dmRoom.Id);
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to extract date from comment using AI");
+            return null;
+        }
     }
 
     /// <summary>
-    /// DM ルームを取得または作成する（Bot と指定ユーザー間）
+    /// 日付レスポンスから有効な未来の日付を解決する
     /// </summary>
-    private async Task<ChatRoom?> GetOrCreateDmRoomAsync(
-        int organizationId,
-        int targetUserId,
-        DB.Models.Bot systemBot)
+    private static DateOnly? ResolveReminderDate(ReminderDateResponse dateResponse)
     {
-        var targetUser = await _context.Users
-            .Include(u => u.ChatActor)
-            .FirstOrDefaultAsync(u => u.Id == targetUserId);
-
-        if (targetUser?.ChatActor == null)
+        if (!dateResponse.Month.HasValue || !dateResponse.Day.HasValue)
         {
-            _logger.LogWarning(
-                "Target user or ChatActor not found: UserId={UserId}",
-                targetUserId);
             return null;
         }
 
-        var existingRoom = await _context.ChatRooms
-            .Include(r => r.Members)
-            .FirstOrDefaultAsync(r =>
-                r.OrganizationId == organizationId &&
-                r.Type == ChatRoomType.Ai &&
-                r.Members.Any(m => m.ChatActorId == targetUser.ChatActor.Id));
+        var month = dateResponse.Month.Value;
+        var day = dateResponse.Day.Value;
 
-        if (existingRoom != null)
+        if (month < 1 || month > 12 || day < 1 || day > 31)
         {
-            await EnsureBotIsMemberAsync(existingRoom.Id, systemBot.ChatActor!.Id);
-            return existingRoom;
+            return null;
         }
 
-        var room = new ChatRoom
+        var nowJst = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, JstTimeZone);
+        var todayJst = DateOnly.FromDateTime(nowJst);
+
+        int year;
+        if (dateResponse.Year.HasValue)
         {
-            Type = ChatRoomType.Ai,
-            OrganizationId = organizationId,
-            CreatedByUserId = targetUserId,
-            Members =
-            [
-                new ChatRoomMember
-                {
-                    ChatActorId = targetUser.ChatActor.Id,
-                    Role = ChatRoomRole.Member
-                },
-                new ChatRoomMember
-                {
-                    ChatActorId = systemBot.ChatActor!.Id,
-                    Role = ChatRoomRole.Member
-                }
-            ]
-        };
-
-        _context.ChatRooms.Add(room);
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation(
-            "AI chat room created for DM: RoomId={RoomId}, UserId={UserId}",
-            room.Id,
-            targetUserId);
-
-        return room;
-    }
-
-    /// <summary>
-    /// Bot がルームのメンバーであることを確認し、メンバーでなければ追加する
-    /// </summary>
-    private async Task EnsureBotIsMemberAsync(int roomId, int chatActorId)
-    {
-        var isMember = await _context.ChatRoomMembers.AnyAsync(m =>
-            m.ChatRoomId == roomId && m.ChatActorId == chatActorId);
-
-        if (!isMember)
+            year = dateResponse.Year.Value;
+        }
+        else
         {
-            _context.ChatRoomMembers.Add(new ChatRoomMember
+            year = todayJst.Year;
+            var candidateDate = CreateValidDate(year, month, day);
+            if (candidateDate == null || candidateDate.Value <= todayJst)
             {
-                ChatRoomId = roomId,
-                ChatActorId = chatActorId,
-                Role = ChatRoomRole.Member,
-            });
-            await _context.SaveChangesAsync();
+                year = todayJst.Year + 1;
+            }
+        }
 
-            _logger.LogInformation(
-                "Bot added to room: RoomId={RoomId}, ChatActorId={ChatActorId}",
-                roomId,
-                chatActorId);
+        var reminderDate = CreateValidDate(year, month, day);
+        if (reminderDate == null)
+        {
+            return null;
+        }
+
+        if (reminderDate.Value <= todayJst)
+        {
+            return null;
+        }
+
+        return reminderDate;
+    }
+
+    /// <summary>
+    /// 有効な日付を作成する（無効な日付の場合はnull）
+    /// </summary>
+    private static DateOnly? CreateValidDate(int year, int month, int day)
+    {
+        try
+        {
+            var daysInMonth = DateTime.DaysInMonth(year, month);
+            if (day > daysInMonth)
+            {
+                return null;
+            }
+            return new DateOnly(year, month, day);
+        }
+        catch
+        {
+            return null;
         }
     }
 
     /// <summary>
-    /// Bot メッセージを保存して SignalR 通知を送信する
+    /// リマインダー日の8:00 JSTをUTCに変換してスケジュール時刻を計算する
     /// </summary>
-    private async Task SendBotMessageAsync(
-        int organizationId,
-        ChatRoom room,
-        DB.Models.Bot systemBot,
-        string content)
+    private static DateTimeOffset CalculateScheduleTime(DateOnly reminderDate)
     {
-        var message = new ChatMessage
-        {
-            ChatRoomId = room.Id,
-            SenderActorId = systemBot.ChatActor!.Id,
-            MessageType = ChatMessageType.Text,
-            Content = content,
-        };
-        _context.ChatMessages.Add(message);
+        var reminderDateTime = new DateTime(
+            reminderDate.Year,
+            reminderDate.Month,
+            reminderDate.Day,
+            8, 0, 0,
+            DateTimeKind.Unspecified);
 
-        room.UpdatedAt = DateTimeOffset.UtcNow;
+        var jstOffset = JstTimeZone.GetUtcOffset(reminderDateTime);
+        var reminderDateTimeOffset = new DateTimeOffset(reminderDateTime, jstOffset);
 
-        await _context.SaveChangesAsync();
-
-        var payload = BotTaskUtils.BuildMessagePayload(room, message, systemBot);
-
-        await _publisher.PublishChatBotNotificationAsync(
-            organizationId,
-            room.Id,
-            "chat:message_received",
-            payload);
-
-        await _publisher.PublishAsync(new SignalRNotification
-        {
-            GroupName = $"organization:{organizationId}",
-            EventType = "chat:unread_updated",
-            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, systemBot.ChatActor.Id),
-            SourceType = NotificationSourceType.ChatBot,
-            OrganizationId = organizationId,
-        });
+        return reminderDateTimeOffset.ToUniversalTime();
     }
 }

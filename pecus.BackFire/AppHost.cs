@@ -94,6 +94,8 @@ builder.Services.AddDefaultAiClient(builder.Configuration);
 builder.Services.AddAiClientFactory();
 
 // Hangfireタスクの登録
+// ここでDIコンテナに登録することで、タスク内でコンストラクタインジェクションが利用可能になる
+// なので一律にタスクはScoped登録とする
 builder.Services.AddScoped<ActivityTasks>();
 builder.Services.AddScoped<EmailTasks>();
 builder.Services.AddScoped<ImageTasks>();
@@ -111,6 +113,8 @@ builder.Services.AddScoped<MaintenanceNotificationTask>();
 builder.Services.AddScoped<SimilarTaskSuggestionTask>();
 builder.Services.AddScoped<TaskCommentHelpWantedTask>();
 builder.Services.AddScoped<TaskCommentUrgeTask>();
+builder.Services.AddScoped<TaskCommentReminderTask>();
+builder.Services.AddScoped<TaskCommentReminderFireTask>();
 
 // 週間レポート関連サービスの登録
 builder.Services.AddWeeklyReportServices();

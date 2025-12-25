@@ -165,16 +165,16 @@ public class TaskCommentController : BaseSecureController
             CurrentUserId
         );
 
-        // 催促コメントの場合、タスク担当者にメール送信
+        // リマインダーコメントの場合、タスク担当者にDM送信
         if (request.CommentType == TaskCommentType.Reminder)
         {
             await SendReminderEmailAsync(workspaceId, itemId, taskId, comment);
 
-            // AI機能が有効な場合のみ、Bot通知タスクをキュー
+            // AI機能が有効な場合のみ、リマインダースケジュールタスクをキュー
             if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
             {
                 _backgroundJobClient.Enqueue<TaskCommentReminderTask>(x =>
-                    x.SendReminderNotificationAsync(comment.Id)
+                    x.ScheduleReminderAsync(comment.Id)
                 );
 
                 _logger.LogDebug(
@@ -184,7 +184,7 @@ public class TaskCommentController : BaseSecureController
             }
         }
 
-        // ヘルプコメントの場合、通知先ユーザーにメール送信
+        // ヘルプコメントの場合、通知先ユーザーにDM送信
         if (request.CommentType == TaskCommentType.HelpWanted)
         {
             await SendHelpEmailAsync(workspaceId, itemId, taskId, comment);
