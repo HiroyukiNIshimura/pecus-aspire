@@ -65,11 +65,14 @@ public class HealthDataProvider : IHealthDataProvider
             .Where(t => t.IsCompleted && t.CompletedAt.HasValue && t.CompletedAt.Value >= oneWeekAgo)
             .CountAsync();
 
-        var averageTaskAgeDays = await baseQuery
+        var incompleteTaskCreatedDates = await baseQuery
             .Where(t => !t.IsCompleted && !t.IsDiscarded)
-            .Select(t => (now - t.CreatedAt).TotalDays)
-            .DefaultIfEmpty(0)
-            .AverageAsync();
+            .Select(t => t.CreatedAt)
+            .ToListAsync();
+
+        var averageTaskAgeDays = incompleteTaskCreatedDates.Count > 0
+            ? incompleteTaskCreatedDates.Average(createdAt => (now - createdAt).TotalDays)
+            : 0;
 
         var activitiesThisWeek = await _context.Activities
             .Where(a => a.WorkspaceId == workspaceId && a.CreatedAt >= oneWeekAgo)
@@ -119,11 +122,14 @@ public class HealthDataProvider : IHealthDataProvider
             .Where(t => t.IsCompleted && t.CompletedAt.HasValue && t.CompletedAt.Value >= oneWeekAgo)
             .CountAsync();
 
-        var averageTaskAgeDays = await baseQuery
+        var incompleteTaskCreatedDates = await baseQuery
             .Where(t => !t.IsCompleted && !t.IsDiscarded)
-            .Select(t => (now - t.CreatedAt).TotalDays)
-            .DefaultIfEmpty(0)
-            .AverageAsync();
+            .Select(t => t.CreatedAt)
+            .ToListAsync();
+
+        var averageTaskAgeDays = incompleteTaskCreatedDates.Count > 0
+            ? incompleteTaskCreatedDates.Average(createdAt => (now - createdAt).TotalDays)
+            : 0;
 
         var activitiesThisWeek = await _context.Activities
             .Where(a => a.Workspace!.OrganizationId == organizationId && a.CreatedAt >= oneWeekAgo)
