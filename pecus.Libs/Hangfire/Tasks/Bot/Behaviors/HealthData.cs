@@ -26,9 +26,6 @@ public record HealthData
     /// <summary>未完了タスクの平均滞留日数</summary>
     public double AverageTaskAgeDays { get; init; }
 
-    /// <summary>直近7日間のアクティブメンバー数</summary>
-    public int ActiveMembersThisWeek { get; init; }
-
     /// <summary>直近7日間のアクティビティ数</summary>
     public int ActivitiesThisWeek { get; init; }
 
@@ -43,7 +40,6 @@ public record HealthData
         return $"""
             チーム人員:
             - 総メンバー数: {TotalMembers}人
-            - 直近7日間のアクティブメンバー: {ActiveMembersThisWeek}人
 
             タスク状況:
             - 総数: {TotalTasks}件（完了: {CompletedTasks}件、完了率: {CompletionRate}%）

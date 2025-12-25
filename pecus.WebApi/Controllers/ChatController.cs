@@ -519,7 +519,7 @@ public class ChatController : BaseSecureController
         }
 
         // グループチャットの場合、AI機能が有効ならBot返信タスクをキュー
-        if (room?.Type == ChatRoomType.Group && room.WorkspaceId != null &&
+        if (room?.Type == ChatRoomType.Group &&
             await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
         {
             // ワークスペースのメンバーに対して通知を送信するバックグラウンドジョブをキュー

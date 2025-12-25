@@ -1,6 +1,7 @@
 using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
 
@@ -13,6 +14,11 @@ public class BotBehaviorContext
     /// 組織ID
     /// </summary>
     public required int OrganizationId { get; init; }
+
+    /// <summary>
+    /// 組織設定
+    /// </summary>
+    public required OrganizationSetting OrganizationSetting { get; init; }
 
     /// <summary>
     /// チャットルーム
@@ -50,12 +56,14 @@ public class BotBehaviorContext
     public required Func<int, int, int?, Task<List<BotChatMessageInfo>>> GetRecentMessagesAsync { get; init; }
 
     /// <summary>
-    /// ルームがワークスペーススコープかどうか
+    /// グループチャットがワークスペーススコープかどうか（組織設定に基づく）
     /// </summary>
-    public bool IsWorkspaceScope => Room.WorkspaceId != null;
+    public bool IsWorkspaceScope =>
+        OrganizationSetting.GroupChatScope == null ||
+        OrganizationSetting.GroupChatScope == GroupChatScope.Workspace;
 
     /// <summary>
-    /// ワークスペースID（ワークスペーススコープの場合）
+    /// ワークスペースID（ワークスペーススコープかつルームにWorkspaceIdがある場合）
     /// </summary>
-    public int? WorkspaceId => Room.WorkspaceId;
+    public int? WorkspaceId => IsWorkspaceScope ? Room.WorkspaceId : null;
 }

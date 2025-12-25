@@ -40,42 +40,36 @@ public class HealthDataProvider : IHealthDataProvider
         var now = DateTimeOffset.UtcNow;
         var oneWeekAgo = now.AddDays(-7);
 
+        var baseQuery = _context.WorkspaceTasks
+            .Where(t => t.WorkspaceId == workspaceId);
+
         var totalMembers = await _context.WorkspaceUsers
             .Where(m => m.WorkspaceId == workspaceId)
             .CountAsync();
 
-        var tasks = await _context.WorkspaceTasks
-            .Where(t => t.WorkspaceId == workspaceId && !t.IsDiscarded)
-            .Select(t => new
-            {
-                t.IsCompleted,
-                t.DueDate,
-                t.CreatedAt,
-                t.CompletedAt,
-            })
-            .ToListAsync();
+        var totalTasks = await baseQuery.CountAsync();
 
-        var totalTasks = tasks.Count;
-        var completedTasks = tasks.Count(t => t.IsCompleted);
-        var overdueTasks = tasks.Count(t =>
-            !t.IsCompleted &&
-            t.DueDate < now);
-        var tasksCreatedThisWeek = tasks.Count(t => t.CreatedAt >= oneWeekAgo);
-        var tasksCompletedThisWeek = tasks.Count(t =>
-            t.IsCompleted &&
-            t.CompletedAt.HasValue &&
-            t.CompletedAt.Value >= oneWeekAgo);
-
-        var incompleteTasks = tasks.Where(t => !t.IsCompleted).ToList();
-        var averageTaskAgeDays = incompleteTasks.Count > 0
-            ? incompleteTasks.Average(t => (now - t.CreatedAt).TotalDays)
-            : 0;
-
-        var activeMembers = await _context.Activities
-            .Where(a => a.WorkspaceId == workspaceId && a.CreatedAt >= oneWeekAgo)
-            .Select(a => a.UserId)
-            .Distinct()
+        var completedTasks = await baseQuery
+            .Where(t => t.IsCompleted)
             .CountAsync();
+
+        var overdueTasks = await baseQuery
+            .Where(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < now)
+            .CountAsync();
+
+        var tasksCreatedThisWeek = await baseQuery
+            .Where(t => t.CreatedAt >= oneWeekAgo)
+            .CountAsync();
+
+        var tasksCompletedThisWeek = await baseQuery
+            .Where(t => t.IsCompleted && t.CompletedAt.HasValue && t.CompletedAt.Value >= oneWeekAgo)
+            .CountAsync();
+
+        var averageTaskAgeDays = await baseQuery
+            .Where(t => !t.IsCompleted && !t.IsDiscarded)
+            .Select(t => (now - t.CreatedAt).TotalDays)
+            .DefaultIfEmpty(0)
+            .AverageAsync();
 
         var activitiesThisWeek = await _context.Activities
             .Where(a => a.WorkspaceId == workspaceId && a.CreatedAt >= oneWeekAgo)
@@ -90,7 +84,6 @@ public class HealthDataProvider : IHealthDataProvider
             TasksCreatedThisWeek = tasksCreatedThisWeek,
             TasksCompletedThisWeek = tasksCompletedThisWeek,
             AverageTaskAgeDays = Math.Round(averageTaskAgeDays, 1),
-            ActiveMembersThisWeek = activeMembers,
             ActivitiesThisWeek = activitiesThisWeek,
         };
     }
@@ -101,42 +94,36 @@ public class HealthDataProvider : IHealthDataProvider
         var now = DateTimeOffset.UtcNow;
         var oneWeekAgo = now.AddDays(-7);
 
+        var baseQuery = _context.WorkspaceTasks
+            .Where(t => t.OrganizationId == organizationId);
+
         var totalMembers = await _context.Users
             .Where(u => u.OrganizationId == organizationId && u.IsActive)
             .CountAsync();
 
-        var tasks = await _context.WorkspaceTasks
-            .Where(t => t.OrganizationId == organizationId && !t.IsDiscarded)
-            .Select(t => new
-            {
-                t.IsCompleted,
-                t.DueDate,
-                t.CreatedAt,
-                t.CompletedAt,
-            })
-            .ToListAsync();
+        var totalTasks = await baseQuery.CountAsync();
 
-        var totalTasks = tasks.Count;
-        var completedTasks = tasks.Count(t => t.IsCompleted);
-        var overdueTasks = tasks.Count(t =>
-            !t.IsCompleted &&
-            t.DueDate < now);
-        var tasksCreatedThisWeek = tasks.Count(t => t.CreatedAt >= oneWeekAgo);
-        var tasksCompletedThisWeek = tasks.Count(t =>
-            t.IsCompleted &&
-            t.CompletedAt.HasValue &&
-            t.CompletedAt.Value >= oneWeekAgo);
-
-        var incompleteTasks = tasks.Where(t => !t.IsCompleted).ToList();
-        var averageTaskAgeDays = incompleteTasks.Count > 0
-            ? incompleteTasks.Average(t => (now - t.CreatedAt).TotalDays)
-            : 0;
-
-        var activeMembers = await _context.Activities
-            .Where(a => a.Workspace!.OrganizationId == organizationId && a.CreatedAt >= oneWeekAgo)
-            .Select(a => a.UserId)
-            .Distinct()
+        var completedTasks = await baseQuery
+            .Where(t => t.IsCompleted)
             .CountAsync();
+
+        var overdueTasks = await baseQuery
+            .Where(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < now)
+            .CountAsync();
+
+        var tasksCreatedThisWeek = await baseQuery
+            .Where(t => t.CreatedAt >= oneWeekAgo)
+            .CountAsync();
+
+        var tasksCompletedThisWeek = await baseQuery
+            .Where(t => t.IsCompleted && t.CompletedAt.HasValue && t.CompletedAt.Value >= oneWeekAgo)
+            .CountAsync();
+
+        var averageTaskAgeDays = await baseQuery
+            .Where(t => !t.IsCompleted && !t.IsDiscarded)
+            .Select(t => (now - t.CreatedAt).TotalDays)
+            .DefaultIfEmpty(0)
+            .AverageAsync();
 
         var activitiesThisWeek = await _context.Activities
             .Where(a => a.Workspace!.OrganizationId == organizationId && a.CreatedAt >= oneWeekAgo)
@@ -151,7 +138,6 @@ public class HealthDataProvider : IHealthDataProvider
             TasksCreatedThisWeek = tasksCreatedThisWeek,
             TasksCompletedThisWeek = tasksCompletedThisWeek,
             AverageTaskAgeDays = Math.Round(averageTaskAgeDays, 1),
-            ActiveMembersThisWeek = activeMembers,
             ActivitiesThisWeek = activitiesThisWeek,
         };
     }

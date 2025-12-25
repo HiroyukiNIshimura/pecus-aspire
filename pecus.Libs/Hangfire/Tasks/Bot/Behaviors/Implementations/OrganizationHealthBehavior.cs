@@ -25,8 +25,14 @@ public class OrganizationHealthBehavior : IBotBehavior
     /// <inheritdoc />
     public string Name => "OrganizationHealth";
 
-    /// <inheritdoc />
-    public int Weight => 15;
+    /// <summary>
+    /// Weight 配分（全 Behavior の合計: 85）:
+    /// - Silent: 40 → 47.1%
+    /// - NormalReply: 30 → 35.3%
+    /// - WorkspaceHealth/OrganizationHealth: 15 → 17.6%
+    /// ※ GroupChatScope == Organization の場合のみ適用（WorkspaceHealth と排他）
+    /// </summary>
+    public int Weight => 1500;
 
     /// <inheritdoc />
     public Task<bool> CanExecuteAsync(BotBehaviorContext context)
@@ -44,18 +50,35 @@ public class OrganizationHealthBehavior : IBotBehavior
 
         var healthData = await _healthDataProvider.GetOrganizationHealthDataAsync(context.OrganizationId);
 
-        var systemPrompt = new SystemPromptBuilder()
-            .WithRawPersona(context.Bot.Persona)
-            .WithRawConstraint(context.Bot.Constraint)
-            .AddConstraint($"以下の組織の健康状態データに基づいてコメントしてください:\n{healthData.ToSummary()}")
-            .AddConstraint("ポジティブな状況ならば励まし、改善が必要ならば優しくアドバイスしてください")
-            .AddConstraint("データの数値をそのまま列挙するのではなく、自然な会話として伝えてください")
-            .AddConstraint("返答は2-3文で簡潔に")
-            .Build();
+        _logger.LogInformation(
+            "OrganizationHealthBehavior healthData: OrganizationId={OrganizationId}, Summary={Summary}",
+            context.OrganizationId,
+            healthData.ToSummary()
+        );
+
+        var systemPrompt = $"""
+            あなたはチャットに参加しているボットです。
+            会話の流れとは無関係に、ふと思い立って組織全体のタスク状況について呟きます。
+            質問に答えるのではなく、独り言のように自然に発言してください。
+
+            【参照データ】以下のタスク統計データに基づいて呟いてください:
+            {healthData.ToSummary()}
+
+            【呟きルール】
+            - 上記データの具体的な数字（完了率、タスク数、期限切れ数、メンバー数など）を必ず1つ以上言及
+            - 「〜だね」「〜かな」「〜やん」など独り言っぽい語尾
+            - 2-3文で簡潔に
+            - 質問形式にしない（「どう思う？」などで終わらない）
+            - 相手のメッセージに対する返事ではない
+            - 物理的なオフィスや机の話はしない
+
+            【口調】
+            {context.Bot.Persona ?? "フレンドリーな口調で"}
+            """;
 
         var messages = new List<(MessageRole Role, string Content)>
         {
-            (MessageRole.User, "この組織の状態について一言お願いします")
+            (MessageRole.User, "組織のタスク状況について呟いて")
         };
 
         try

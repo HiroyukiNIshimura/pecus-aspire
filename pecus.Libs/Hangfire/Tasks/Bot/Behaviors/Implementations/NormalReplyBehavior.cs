@@ -22,7 +22,13 @@ public class NormalReplyBehavior : IBotBehavior
     /// <inheritdoc />
     public string Name => "NormalReply";
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Weight 配分（全 Behavior の合計: 85）:
+    /// - Silent: 40 → 47.1%
+    /// - NormalReply: 30 → 35.3%
+    /// - WorkspaceHealth/OrganizationHealth: 15 → 17.6%
+    /// ※ WorkspaceHealth と OrganizationHealth は GroupChatScope により排他
+    /// </summary>
     public int Weight => 30;
 
     /// <inheritdoc />

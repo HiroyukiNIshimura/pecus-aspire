@@ -103,11 +103,12 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
             );
         }
 
-        if (_behaviorSelector != null)
+        if (_behaviorSelector != null && setting != null)
         {
             var behaviorContext = new BotBehaviorContext
             {
                 OrganizationId = organizationId,
+                OrganizationSetting = setting,
                 Room = room,
                 TriggerMessage = triggerMessage,
                 SenderUser = senderUser,
