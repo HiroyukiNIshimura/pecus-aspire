@@ -380,8 +380,20 @@ public abstract class GroupChatReplyTaskBase
             // 返信メッセージを生成
             var messageContent = await BuildReplyMessageAsync(organizationId, room, triggerMessage, senderUser, bot);
 
-            // 返信メッセージをグループチャットに送信
-            await SendBotMessageAsync(organizationId, room, bot, messageContent, triggerMessageId);
+            // 空文字またはnullの場合はメッセージ送信をスキップ（Silent behavior等）
+            if (!string.IsNullOrEmpty(messageContent))
+            {
+                // 返信メッセージをグループチャットに送信
+                await SendBotMessageAsync(organizationId, room, bot, messageContent, triggerMessageId);
+            }
+            else
+            {
+                Logger.LogDebug(
+                    "Skipping message send due to empty content: OrganizationId={OrganizationId}, RoomId={RoomId}",
+                    organizationId,
+                    room.Id
+                );
+            }
 
             // 入力終了を通知
             await Publisher.PublishChatBotTypingAsync(

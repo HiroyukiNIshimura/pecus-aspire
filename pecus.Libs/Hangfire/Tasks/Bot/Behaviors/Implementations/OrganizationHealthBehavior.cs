@@ -4,17 +4,21 @@ using Pecus.Libs.AI;
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Behaviors.Implementations;
 
 /// <summary>
-/// 組織の健康状態についてコメントする振る舞い（スタブ）
+/// 組織の健康状態についてコメントする振る舞い
 /// </summary>
 public class OrganizationHealthBehavior : IBotBehavior
 {
+    private readonly IHealthDataProvider _healthDataProvider;
     private readonly ILogger<OrganizationHealthBehavior> _logger;
 
     /// <summary>
     /// OrganizationHealthBehavior のコンストラクタ
     /// </summary>
-    public OrganizationHealthBehavior(ILogger<OrganizationHealthBehavior> logger)
+    public OrganizationHealthBehavior(
+        IHealthDataProvider healthDataProvider,
+        ILogger<OrganizationHealthBehavior> logger)
     {
+        _healthDataProvider = healthDataProvider;
         _logger = logger;
     }
 
@@ -38,14 +42,15 @@ public class OrganizationHealthBehavior : IBotBehavior
             return null;
         }
 
-        var healthData = await GetOrganizationHealthDataAsync(context);
+        var healthData = await _healthDataProvider.GetOrganizationHealthDataAsync(context.OrganizationId);
 
         var systemPrompt = new SystemPromptBuilder()
             .WithRawPersona(context.Bot.Persona)
             .WithRawConstraint(context.Bot.Constraint)
-            .AddConstraint($"以下の組織の健康状態データに基づいてコメントしてください: {healthData}")
+            .AddConstraint($"以下の組織の健康状態データに基づいてコメントしてください:\n{healthData.ToSummary()}")
             .AddConstraint("ポジティブな状況ならば励まし、改善が必要ならば優しくアドバイスしてください")
             .AddConstraint("データの数値をそのまま列挙するのではなく、自然な会話として伝えてください")
+            .AddConstraint("返答は2-3文で簡潔に")
             .Build();
 
         var messages = new List<(MessageRole Role, string Content)>
@@ -71,19 +76,5 @@ public class OrganizationHealthBehavior : IBotBehavior
             );
             return null;
         }
-    }
-
-    /// <summary>
-    /// 組織の健康状態データを取得する（スタブ実装）
-    /// </summary>
-    private Task<string> GetOrganizationHealthDataAsync(BotBehaviorContext context)
-    {
-        // TODO: 実際の組織健康状態を取得
-        // 例: 全体のタスク完了率、アクティブワークスペース数、メンバーのアクティビティなど
-        // var workspaceCount = await context.DbContext.Workspaces
-        //     .Where(w => w.OrganizationId == context.OrganizationId && !w.IsArchived)
-        //     .CountAsync();
-
-        return Task.FromResult("（健康状態データは未実装です）");
     }
 }

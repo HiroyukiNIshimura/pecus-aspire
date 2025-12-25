@@ -15,6 +15,8 @@ public static class BotBehaviorExtensions
     /// <returns>サービスコレクション</returns>
     public static IServiceCollection AddBotBehaviors(this IServiceCollection services)
     {
+        services.AddScoped<IHealthDataProvider, HealthDataProvider>();
+
         services.AddScoped<IBotBehavior, SilentBehavior>();
         services.AddScoped<IBotBehavior, NormalReplyBehavior>();
         services.AddScoped<IBotBehavior, WorkspaceHealthBehavior>();

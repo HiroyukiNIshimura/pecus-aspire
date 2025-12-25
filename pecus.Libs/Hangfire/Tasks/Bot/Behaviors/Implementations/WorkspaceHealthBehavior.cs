@@ -4,17 +4,21 @@ using Pecus.Libs.AI;
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Behaviors.Implementations;
 
 /// <summary>
-/// ワークスペースの健康状態についてコメントする振る舞い（スタブ）
+/// ワークスペースの健康状態についてコメントする振る舞い
 /// </summary>
 public class WorkspaceHealthBehavior : IBotBehavior
 {
+    private readonly IHealthDataProvider _healthDataProvider;
     private readonly ILogger<WorkspaceHealthBehavior> _logger;
 
     /// <summary>
     /// WorkspaceHealthBehavior のコンストラクタ
     /// </summary>
-    public WorkspaceHealthBehavior(ILogger<WorkspaceHealthBehavior> logger)
+    public WorkspaceHealthBehavior(
+        IHealthDataProvider healthDataProvider,
+        ILogger<WorkspaceHealthBehavior> logger)
     {
+        _healthDataProvider = healthDataProvider;
         _logger = logger;
     }
 
@@ -38,14 +42,15 @@ public class WorkspaceHealthBehavior : IBotBehavior
             return null;
         }
 
-        var healthData = await GetWorkspaceHealthDataAsync(context);
+        var healthData = await _healthDataProvider.GetWorkspaceHealthDataAsync(context.WorkspaceId.Value);
 
         var systemPrompt = new SystemPromptBuilder()
             .WithRawPersona(context.Bot.Persona)
             .WithRawConstraint(context.Bot.Constraint)
-            .AddConstraint($"以下のワークスペースの健康状態データに基づいてコメントしてください: {healthData}")
+            .AddConstraint($"以下のワークスペースの健康状態データに基づいてコメントしてください:\n{healthData.ToSummary()}")
             .AddConstraint("ポジティブな状況ならば励まし、改善が必要ならば優しくアドバイスしてください")
             .AddConstraint("データの数値をそのまま列挙するのではなく、自然な会話として伝えてください")
+            .AddConstraint("返答は2-3文で簡潔に")
             .Build();
 
         var messages = new List<(MessageRole Role, string Content)>
@@ -71,19 +76,5 @@ public class WorkspaceHealthBehavior : IBotBehavior
             );
             return null;
         }
-    }
-
-    /// <summary>
-    /// ワークスペースの健康状態データを取得する（スタブ実装）
-    /// </summary>
-    private Task<string> GetWorkspaceHealthDataAsync(BotBehaviorContext context)
-    {
-        // TODO: 実際のワークスペース健康状態を取得
-        // 例: タスク完了率、期限切れタスク数、アクティブメンバー数など
-        // var taskCount = await context.DbContext.WorkItems
-        //     .Where(w => w.WorkspaceId == context.WorkspaceId)
-        //     .CountAsync();
-
-        return Task.FromResult("（健康状態データは未実装です）");
     }
 }
