@@ -169,6 +169,19 @@ public class TaskCommentController : BaseSecureController
         if (request.CommentType == TaskCommentType.Reminder)
         {
             await SendReminderEmailAsync(workspaceId, itemId, taskId, comment);
+
+            // AI機能が有効な場合のみ、Bot通知タスクをキュー
+            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+            {
+                _backgroundJobClient.Enqueue<TaskCommentReminderTask>(x =>
+                    x.SendReminderNotificationAsync(comment.Id)
+                );
+
+                _logger.LogDebug(
+                    "Enqueued Reminder Comment: CommentId={CommentId}",
+                    comment.Id
+                );
+            }
         }
 
         // ヘルプコメントの場合、通知先ユーザーにメール送信
@@ -189,6 +202,23 @@ public class TaskCommentController : BaseSecureController
 
                 _logger.LogDebug(
                     "Enqueued Help Comment: CommentId={CommentId}",
+                    comment.Id
+                );
+            }
+        }
+
+        // 回答依頼コメントの場合の処理
+        if (request.CommentType == TaskCommentType.NeedReply)
+        {
+            // AI機能が有効な場合のみ、Bot通知タスクをキュー
+            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+            {
+                _backgroundJobClient.Enqueue<TaskCommentNeedReplyTask>(x =>
+                    x.SendNeedReplyNotificationAsync(comment.Id)
+                );
+
+                _logger.LogDebug(
+                    "Enqueued NeedReply Comment: CommentId={CommentId}",
                     comment.Id
                 );
             }

@@ -167,7 +167,6 @@ builder.Services.AddSingleton<ILexicalConverterService>(sp =>
 });
 
 // Hangfireタスクの登録
-builder.Services.AddScoped<HangfireTasks>();
 builder.Services.AddScoped<EmailTasks>();
 builder.Services.AddScoped<ImageTasks>();
 builder.Services.AddScoped<WorkspaceItemTasks>();

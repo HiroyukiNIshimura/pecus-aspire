@@ -95,7 +95,6 @@ builder.Services.AddAiClientFactory();
 
 // Hangfireタスクの登録
 builder.Services.AddScoped<ActivityTasks>();
-builder.Services.AddScoped<HangfireTasks>();
 builder.Services.AddScoped<EmailTasks>();
 builder.Services.AddScoped<ImageTasks>();
 builder.Services.AddScoped<CleanupTasks>();
