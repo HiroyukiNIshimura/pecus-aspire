@@ -25,6 +25,7 @@ public static class HangfireTaskExtensions
         services.AddScoped<FirstTouchdownTask>();
 
         // AI/Bot 関連
+        services.AddSingleton<IRoomReplyLock, RedisRoomReplyLock>();
         services.AddScoped<AiChatReplyTask>();
         services.AddScoped<GroupChatReplyTask>();
 

@@ -16,6 +16,12 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
 {
     private readonly IBotSelector? _botSelector;
     private readonly IBotBehaviorSelector? _behaviorSelector;
+    private readonly IRoomReplyLock? _roomReplyLock;
+
+    /// <summary>
+    /// ロックの有効期限（タスク処理の最大時間を想定）
+    /// </summary>
+    private static readonly TimeSpan LockTtl = TimeSpan.FromMinutes(2);
 
     /// <summary>
     /// GroupChatReplyTask のコンストラクタ
@@ -26,11 +32,13 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         IAiClientFactory aiClientFactory,
         ILogger<GroupChatReplyTask> logger,
         IBotSelector? botSelector = null,
-        IBotBehaviorSelector? behaviorSelector = null)
+        IBotBehaviorSelector? behaviorSelector = null,
+        IRoomReplyLock? roomReplyLock = null)
         : base(context, publisher, aiClientFactory, logger)
     {
         _botSelector = botSelector;
         _behaviorSelector = behaviorSelector;
+        _roomReplyLock = roomReplyLock;
     }
 
     /// <inheritdoc />
@@ -170,6 +178,25 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
             return;
         }
 
-        await ExecuteReplyAsync(organizationId, roomId, triggerMessageId, senderUserId);
+        // ルーム単位の排他制御
+        if (_roomReplyLock != null)
+        {
+            await using var lockHandle = await _roomReplyLock.TryAcquireAsync(roomId, LockTtl);
+
+            if (lockHandle == null)
+            {
+                Logger.LogDebug(
+                    "Skipping GroupChatReplyTask: RoomId={RoomId} is already being processed",
+                    roomId
+                );
+                return;
+            }
+
+            await ExecuteReplyAsync(organizationId, roomId, triggerMessageId, senderUserId);
+        }
+        else
+        {
+            await ExecuteReplyAsync(organizationId, roomId, triggerMessageId, senderUserId);
+        }
     }
 }

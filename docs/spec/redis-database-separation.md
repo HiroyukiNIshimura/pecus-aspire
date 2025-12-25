@@ -20,6 +20,7 @@
 |----|------|----------|----------------------|
 | **db0** | トークンブラックリスト | `TokenBlacklistService` | `user_jtis:*`, `refresh:*`, `refresh_user:*` |
 | **db1** | Hangfire（バックグラウンドジョブ） | `AppHost.cs` | `hangfire:*`（`RedisStorageOptions.Db = 1`） |
+| **db1** | Bot 返信ロック | `RedisRoomReplyLock` | `bot-reply-lock:room:*` |
 | **db2** | SignalR プレゼンス | `SignalRPresenceService` | `presence:conn_user:*`, `presence:conn_ws:*`, `presence:conn_item:*`, `presence:ws_conns:*` |
 
 ## DB 番号の割り当て（Frontend Redis）
