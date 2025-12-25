@@ -239,4 +239,36 @@ UPDATE 操作で DbUpdateConcurrencyException を処理するサービスメソ�
 必要なら各ファイルの該当行番号も追加できます。指定があれば該当関数や行の範囲を追記します。
 
 ---
+
+### Hangfire タスクでの特殊対応（RowVersion 競合回避）
+
+**重要**: Hangfire バックグラウンドタスクでは、上記の「競合検出 → 409 → リトライ」パターンは適用しません。代わりに **競合を起こさない設計** を採用しています。
+
+#### 理由
+
+1. **HTTP レスポンスを返す相手がいない**: バックグラウンド処理では 409 を返しても意味がない
+2. **並行実行の可能性**: 複数のタスクが同じエンティティを同時に更新する場合がある
+3. **後勝ちで問題ない**: `ChatRoom.UpdatedAt` のような「最新アクティビティ時刻」は後勝ちで十分
+
+#### 実装パターン（Hangfire タスク用）
+
+```csharp
+// ❌ NG: 追跡エンティティ経由の更新（RowVersion 競合リスクあり）
+room.UpdatedAt = DateTimeOffset.UtcNow;
+await _context.SaveChangesAsync();
+
+// ✅ OK: ExecuteUpdateAsync で直接 SQL 更新（RowVersion チェックをスキップ）
+await _context.ChatRooms
+    .Where(r => r.Id == room.Id)
+    .ExecuteUpdateAsync(s => s.SetProperty(r => r.UpdatedAt, DateTimeOffset.UtcNow));
+```
+
+#### 対象ファイル
+
+- `pecus.Libs/Hangfire/Tasks/Bot/` 配下の全タスク
+- `pecus.Libs/Hangfire/Tasks/MaintenanceNotificationTask.cs`
+
+詳細は [`docs/bot-hangfire-tasks.md`](./bot-hangfire-tasks.md) の「DB 更新の特殊ケース」セクションを参照してください。
+
+---
 このドキュメントはプロジェクト内での実装方針と現状のコードパターンに基づいて作成しています。実装に変更が必要な場合は、該当サービス／コントローラーの実装を参照し、このドキュメントを更新してください。
