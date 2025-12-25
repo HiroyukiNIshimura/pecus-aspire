@@ -211,3 +211,52 @@ Bot 関連の Hangfire バックグラウンドタスクの一覧と概要。
 | `Bot/IBotSelector.cs` | Bot セレクターインターフェース |
 | `Bot/BotTaskUtils.cs` | Bot タスク共通ユーティリティ |
 | `Bot/BotChatMessageInfo.cs` | Bot チャットメッセージ情報モデル |
+
+## DB 更新の特殊ケース
+
+### ChatRoom.UpdatedAt の更新（RowVersion 競合回避）
+
+Bot タスクでは `ChatRoom.UpdatedAt` をメッセージ送信時に更新しています。これはチャットルーム一覧の並び順（最新のアクティビティがあるルームが上）を実現するためです。
+
+**重要**: この更新処理では **`ExecuteUpdateAsync` を使用して直接 SQL で更新** しています。通常のエンティティ追跡による更新（`room.UpdatedAt = ...`）は使用しません。
+
+#### 理由
+
+- Bot タスクはバックグラウンドで並行実行される可能性がある
+- 同じ `ChatRoom` に対して複数のタスクが同時に処理された場合、RowVersion（PostgreSQL の `xmin`）の競合により `DbUpdateConcurrencyException` が発生する
+- バックグラウンド処理では「後勝ち」で問題ないため、RowVersion チェックを回避する
+
+#### 実装パターン
+
+```csharp
+// ❌ NG: RowVersion 競合リスクあり
+room.UpdatedAt = DateTimeOffset.UtcNow;
+await Context.SaveChangesAsync();
+
+// ✅ OK: 後勝ち、RowVersion 競合回避
+await Context.ChatMessages.Add(message);
+await Context.SaveChangesAsync();
+
+await Context.ChatRooms
+    .Where(r => r.Id == room.Id)
+    .ExecuteUpdateAsync(s => s.SetProperty(r => r.UpdatedAt, DateTimeOffset.UtcNow));
+```
+
+#### 対象ファイル
+
+以下のファイルで同様のパターンを適用しています：
+
+- `GroupChatReplyTaskBase.cs` - `SendBotMessageAsync`
+- `TaskNotificationTaskBase.cs` - `SendBotMessageAsync`
+- `ItemNotificationTaskBase.cs` - `SendBotMessageAsync`
+- `AiChatReplyTask.cs` - `SendBotReplyAsync`
+- `TaskCommentNeedReplyTask.cs` - `SendBotMessageAsync`
+- `TaskCommentReminderFireTask.cs` - `SendBotMessageAsync`
+- `TaskCommentHelpWantedTask.cs` - `SendBotMessageAsync`
+- `TaskCommentUrgeTask.cs` - `SendBotMessageAsync`
+- `SimilarTaskSuggestionTask.cs` - `SendBotMessageAsync`
+
+#### 注意事項
+
+- **新しい Bot タスクを追加する際**は、`ChatRoom.UpdatedAt` の更新に必ず `ExecuteUpdateAsync` を使用すること
+- 通常の Web API コントローラーでは RowVersion による楽観的ロックが有効なため、このパターンは **Bot タスク専用**

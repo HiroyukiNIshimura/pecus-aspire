@@ -518,11 +518,12 @@ public class AiChatReplyTask
             Content = content,
         };
         _context.ChatMessages.Add(message);
-
-        // ルームの UpdatedAt を更新
-        room.UpdatedAt = DateTimeOffset.UtcNow;
-
         await _context.SaveChangesAsync();
+
+        // ルームの UpdatedAt を更新（後勝ち、RowVersion 競合回避）
+        await _context.ChatRooms
+            .Where(r => r.Id == room.Id)
+            .ExecuteUpdateAsync(s => s.SetProperty(r => r.UpdatedAt, DateTimeOffset.UtcNow));
 
         // SignalR 通知を送信（Redis Pub/Sub 経由）
         var payload = new

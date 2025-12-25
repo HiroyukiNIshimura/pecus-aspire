@@ -340,10 +340,12 @@ public class TaskCommentHelpWantedTask
             Content = content,
         };
         _context.ChatMessages.Add(message);
-
-        room.UpdatedAt = DateTimeOffset.UtcNow;
-
         await _context.SaveChangesAsync();
+
+        // ルームの UpdatedAt を更新（後勝ち、RowVersion 競合回避）
+        await _context.ChatRooms
+            .Where(r => r.Id == room.Id)
+            .ExecuteUpdateAsync(s => s.SetProperty(r => r.UpdatedAt, DateTimeOffset.UtcNow));
 
         var payload = BotTaskUtils.BuildMessagePayload(room, message, bot);
 

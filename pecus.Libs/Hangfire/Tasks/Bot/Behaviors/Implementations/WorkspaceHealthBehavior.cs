@@ -26,13 +26,10 @@ public class WorkspaceHealthBehavior : IBotBehavior
     public string Name => "WorkspaceHealth";
 
     /// <summary>
-    /// Weight 配分（全 Behavior の合計: 85）:
-    /// - Silent: 40 → 47.1%
-    /// - NormalReply: 30 → 35.3%
-    /// - WorkspaceHealth/OrganizationHealth: 15 → 17.6%
-    /// ※ GroupChatScope == Workspace の場合のみ適用（OrganizationHealth と排他）
+    /// Weight 配分
+    /// ※ WorkspaceHealth と OrganizationHealth は GroupChatScope により排他
     /// </summary>
-    public int Weight => 15;
+    public int Weight => 10;
 
     /// <inheritdoc />
     public Task<bool> CanExecuteAsync(BotBehaviorContext context)

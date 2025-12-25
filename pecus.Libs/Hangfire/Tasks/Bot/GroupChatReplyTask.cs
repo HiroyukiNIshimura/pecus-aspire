@@ -173,6 +173,10 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
     public async Task SendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
+        // Botの発動確率
+        // IBotBehaviorのWeight合計を100としたときの発動率
+        // SilentBehaviorも含むので、必ずしも返信が生成されるとは限らない
+        // 発動させるかしないかぐらいのつもりで設定する
         if (!BotTaskUtils.ShouldActivateBot(100))
         {
             return;
