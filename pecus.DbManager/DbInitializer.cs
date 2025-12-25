@@ -134,6 +134,14 @@ internal class DbInitializer(
             cancellationToken
         );
 
+        // WorkspaceTasks テーブルに pgroonga インデックスを作成（類似タスク検索による担当者推薦用）
+        await dbContext.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS idx_workspacetasks_content_pgroonga
+              ON ""WorkspaceTasks""
+              USING pgroonga (""Content"") WITH (tokenizer=""TokenMecab"");",
+            cancellationToken
+        );
+
         logger.LogInformation("pgroonga extension and indexes enabled successfully");
     }
 }

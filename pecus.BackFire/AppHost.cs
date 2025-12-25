@@ -10,6 +10,7 @@ using Pecus.Libs.Focus;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Hangfire.Tasks.Bot.Extensions;
+using Pecus.Libs.Hangfire.Tasks.Services;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
@@ -73,6 +74,8 @@ builder.Services.AddSingleton<ILexicalConverterService>(sp =>
 
 // SignalR 通知パブリッシャー（Redis Pub/Sub 経由で WebApi に通知を送信）
 builder.Services.AddSingleton<SignalRNotificationPublisher>();
+// タスクアサインメントサジェスターの登録
+builder.Services.AddScoped<ITaskAssignmentSuggester, TaskAssignmentSuggester>();
 
 // AI クライアントの登録（AiChatReplyTask で使用、APIキーが設定されているプロバイダーのみ有効化）
 builder.Services.AddOpenAIClient(builder.Configuration);
