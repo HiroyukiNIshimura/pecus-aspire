@@ -97,11 +97,21 @@ public class TaskAssignmentSuggester : ITaskAssignmentSuggester
         - 単なる文言の一致（「確認」「対応」など一般的な言葉の一致は重視しない）
         - 関係のない識別番号やコード
 
-        出力形式:
-        類似するタスクがあれば、担当者ごとにグループ化して返してください。
-        類似するものがなければ空配列を返してください。
+        出力形式（JSON）:
+        {
+          "suggestedAssignees": [
+            {
+              "userId": 123,
+              "similarTaskIndexes": [1, 3],
+              "reason": "類似理由"
+            }
+          ]
+        }
 
-        必ず有効なJSONのみを返してください。説明文は不要です。
+        類似するものがなければ suggestedAssignees を空配列にしてください:
+        { "suggestedAssignees": [] }
+
+        必ず有効なJSONオブジェクトのみを返してください。説明文は不要です。
         """;
 
     /// <summary>

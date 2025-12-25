@@ -87,8 +87,11 @@ public class DatabaseSeeder
             }
         }
 
-        // pgroonga インデックスを再構築（シードデータ投入後に必須）
-        await ReindexPgroongaAsync();
+        // pgroonga インデックスを再構築（本番環境のみ実施）
+        if (!isDevelopment)
+        {
+            await ReindexPgroongaAsync();
+        }
 
         _logger.LogInformation("Database seeding completed successfully");
     }
@@ -193,25 +196,42 @@ public class DatabaseSeeder
 
         try
         {
-            // Users テーブルの pgroonga インデックスを再構築
-            await _context.Database.ExecuteSqlRawAsync(
-                @"REINDEX INDEX CONCURRENTLY idx_users_pgroonga;"
-            );
+            // REINDEX CONCURRENTLY は時間がかかるため、コマンドタイムアウトを90秒に設定
+            var originalTimeout = _context.Database.GetCommandTimeout();
+            _context.Database.SetCommandTimeout(90);
 
-            // WorkspaceItems テーブルの pgroonga インデックスを再構築（Subject, RawBody, Code）
-            await _context.Database.ExecuteSqlRawAsync(
-                @"REINDEX INDEX CONCURRENTLY idx_workspaceitems_pgroonga;"
-            );
+            try
+            {
+                // Users テーブルの pgroonga インデックスを再構築
+                await _context.Database.ExecuteSqlRawAsync(
+                    @"REINDEX INDEX CONCURRENTLY idx_users_pgroonga;"
+                );
 
-            // Skills テーブルの pgroonga インデックスを再構築
-            await _context.Database.ExecuteSqlRawAsync(
-                @"REINDEX INDEX CONCURRENTLY idx_skills_pgroonga;"
-            );
+                // WorkspaceItems テーブルの pgroonga インデックスを再構築（Subject, RawBody, Code）
+                await _context.Database.ExecuteSqlRawAsync(
+                    @"REINDEX INDEX CONCURRENTLY idx_workspaceitems_pgroonga;"
+                );
 
-            // Tags テーブルの pgroonga インデックスを再構築
-            await _context.Database.ExecuteSqlRawAsync(
-                @"REINDEX INDEX CONCURRENTLY idx_tags_pgroonga;"
-            );
+                // Skills テーブルの pgroonga インデックスを再構築
+                await _context.Database.ExecuteSqlRawAsync(
+                    @"REINDEX INDEX CONCURRENTLY idx_skills_pgroonga;"
+                );
+
+                // Tags テーブルの pgroonga インデックスを再構築
+                await _context.Database.ExecuteSqlRawAsync(
+                    @"REINDEX INDEX CONCURRENTLY idx_tags_pgroonga;"
+                );
+
+                // WorkspaceTasks テーブルの pgroonga インデックスを再構築
+                await _context.Database.ExecuteSqlRawAsync(
+                    @"REINDEX INDEX CONCURRENTLY idx_workspacetasks_content_pgroonga;"
+                );
+            }
+            finally
+            {
+                // コマンドタイムアウトを元に戻す
+                _context.Database.SetCommandTimeout(originalTimeout);
+            }
 
             _logger.LogInformation("pgroonga indexes rebuilt successfully");
         }

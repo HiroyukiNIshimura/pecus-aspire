@@ -74,7 +74,7 @@ builder.Services.AddSingleton<ILexicalConverterService>(sp =>
 
 // SignalR 通知パブリッシャー（Redis Pub/Sub 経由で WebApi に通知を送信）
 builder.Services.AddSingleton<SignalRNotificationPublisher>();
-// タスクアサインメントサジェスターの登録
+// 類似タスク担当者推薦サービスの登録
 builder.Services.AddScoped<ITaskAssignmentSuggester, TaskAssignmentSuggester>();
 
 // AI クライアントの登録（AiChatReplyTask で使用、APIキーが設定されているプロバイダーのみ有効化）
@@ -109,6 +109,7 @@ builder.Services.AddScoped<CreateTaskTask>();
 builder.Services.AddScoped<UpdateTaskTask>();
 builder.Services.AddScoped<GroupChatReplyTask>();
 builder.Services.AddScoped<MaintenanceNotificationTask>();
+builder.Services.AddScoped<SimilarTaskSuggestionTask>();
 
 // 週間レポート関連サービスの登録
 builder.Services.AddWeeklyReportServices();

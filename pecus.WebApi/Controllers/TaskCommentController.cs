@@ -183,8 +183,12 @@ public class TaskCommentController : BaseSecureController
                     x.SendHelpWantedNotificationAsync(comment.Id)
                 );
 
+                _backgroundJobClient.Enqueue<SimilarTaskSuggestionTask>(x =>
+                    x.SuggestSimilarTaskAssigneesAsync(taskId)
+                );
+
                 _logger.LogDebug(
-                    "Enqueued TaskCommentHelpWantedTask: CommentId={CommentId}",
+                    "Enqueued Help Comment: CommentId={CommentId}",
                     comment.Id
                 );
             }
