@@ -95,10 +95,17 @@ public class HealthDataProvider : IHealthDataProvider
     public async Task<HealthData> GetOrganizationHealthDataAsync(int organizationId)
     {
         var now = DateTimeOffset.UtcNow;
+        var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
         var oneWeekAgo = now.AddDays(-7);
 
+        // DashboardStatisticsServiceに合わせてアクティブなワークスペースのみを対象にする
+        var activeWorkspaceIds = await _context.Workspaces
+            .Where(w => w.OrganizationId == organizationId && w.IsActive)
+            .Select(w => w.Id)
+            .ToListAsync();
+
         var baseQuery = _context.WorkspaceTasks
-            .Where(t => t.OrganizationId == organizationId);
+            .Where(t => activeWorkspaceIds.Contains(t.WorkspaceId));
 
         var totalMembers = await _context.Users
             .Where(u => u.OrganizationId == organizationId && u.IsActive)
@@ -111,7 +118,7 @@ public class HealthDataProvider : IHealthDataProvider
             .CountAsync();
 
         var overdueTasks = await baseQuery
-            .Where(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < now)
+            .Where(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart)
             .CountAsync();
 
         var tasksCreatedThisWeek = await baseQuery
@@ -132,7 +139,7 @@ public class HealthDataProvider : IHealthDataProvider
             : 0;
 
         var activitiesThisWeek = await _context.Activities
-            .Where(a => a.Workspace!.OrganizationId == organizationId && a.CreatedAt >= oneWeekAgo)
+            .Where(a => activeWorkspaceIds.Contains(a.WorkspaceId) && a.CreatedAt >= oneWeekAgo)
             .CountAsync();
 
         return new HealthData
