@@ -61,7 +61,7 @@ public class DeveloperAtoms : BaseSeedAtoms
 
         try
         {
-            await CommonAtoms.DisableConstraintsAndIndexesAsync(_context);
+            await _seedAtoms.DisableConstraintsAndIndexesAsync(_context);
 
             // 開発共通のマスターデータ
             await _seedAtoms.SeedPermissionsAsync(_context);
@@ -88,8 +88,8 @@ public class DeveloperAtoms : BaseSeedAtoms
         }
         finally
         {
-            await CommonAtoms.EnableConstraintsAndIndexesAsync(_context);
-            //await CommonAtoms.ReindexPgroongaAsync(_context);
+            await _seedAtoms.EnableConstraintsAndIndexesAsync(_context);
+            //await _seedAtoms.ReindexPgroongaAsync(_context);
         }
 
         _logger.LogInformation("Development mock data seeding completed");
