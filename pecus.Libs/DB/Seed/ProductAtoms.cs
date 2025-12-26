@@ -1,13 +1,4 @@
-using Bogus.Extensions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Pecus.Libs.AI;
-using Pecus.Libs.DB.Models;
-using Pecus.Libs.DB.Models.Enums;
-using Pecus.Libs.Lexical;
-using Pecus.Libs.Security;
-using Pecus.Libs.Utils;
-using System.Reflection;
 
 namespace Pecus.Libs.DB.Seed;
 
@@ -18,9 +9,6 @@ public class ProductAtoms
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ProductAtoms> _logger;
-    private readonly ILexicalConverterService? _lexicalConverterService;
-    private readonly Random _random = new Random();
-    private readonly Bogus.Faker _faker;
     private readonly CommonAtoms _seedAtoms;
 
     /// <summary>
@@ -29,18 +17,14 @@ public class ProductAtoms
     /// <param name="context"></param>
     /// <param name="logger"></param>
     /// <param name="seedAtoms"></param>
-    /// <param name="lexicalConverterService"></param>
     public ProductAtoms(
         ApplicationDbContext context,
         ILogger<ProductAtoms> logger,
-        CommonAtoms seedAtoms,
-        ILexicalConverterService? lexicalConverterService = null)
+        CommonAtoms seedAtoms)
     {
         _context = context;
         _logger = logger;
         _seedAtoms = seedAtoms;
-        _lexicalConverterService = lexicalConverterService;
-        _faker = new Bogus.Faker("ja");
     }
 
     /// <summary>
