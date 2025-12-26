@@ -52,6 +52,7 @@ public class ProductAtoms
 
         if (Environment.GetEnvironmentVariable("PECUS_DEMO_MODE") == "true")
         {
+            //TODO: デモ用データ投入処理を実装
             _logger.LogInformation("Demo mode is enabled. Seeding demo data...");
         }
 
