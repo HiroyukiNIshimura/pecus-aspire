@@ -25,9 +25,9 @@ public class DatabaseSeeder
     /// <param name="loadTestAtoms"></param>
     public DatabaseSeeder(
         ILogger<DatabaseSeeder> logger,
-        ProductAtoms? productAtoms = null,
-        DeveloperAtoms? developerAtoms = null,
-        LoadTestAtoms? loadTestAtoms = null)
+        ProductAtoms productAtoms,
+        DeveloperAtoms developerAtoms,
+        LoadTestAtoms loadTestAtoms)
     {
         _logger = logger;
         _productAtoms = productAtoms;

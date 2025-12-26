@@ -38,5 +38,13 @@ public class ProductAtoms
         await _seedAtoms.SeedRolesAsync(_context);
         await _seedAtoms.SeedGenresAsync(_context);
         await _seedAtoms.SeedTaskTypesAsync(_context);
+
+        //もしデモモードならばデモ用データを投入
+        if (Environment.GetEnvironmentVariable("PECUS_DEMO_MODE") == "true")
+        {
+            _logger.LogInformation("Demo mode is enabled. Seeding demo data...");
+        }
+
+        _logger.LogInformation("Production data seeding completed");
     }
 }
