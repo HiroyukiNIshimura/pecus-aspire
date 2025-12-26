@@ -49,6 +49,7 @@ public class ProductAtoms
         await _seedAtoms.SeedTaskTypesAsync(_context);
 
         // TODO エージェントの生成内容がなんか変な状態
+        // 作成済みのデータをIDでなく名前とかで検索している
         // BackOffice関連データのシード
         await SeedBackOfficeOrganizationAsync();
         await SeedBackOfficeOrganizationSettingsAsync();
