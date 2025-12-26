@@ -40,7 +40,7 @@ public class DeveloperAtoms : BaseSeedAtoms
             Organizations = 2,
             UsersPerOrganization = 10,
             WorkspacesPerOrganization = 5,
-            ItemsPerWorkspace = 50,
+            ItemsPerWorkspace = 30,
             TasksPerItemMin = 0,
             TasksPerItemMax = 10,
             CommentsPerTaskMin = 0,
@@ -59,28 +59,38 @@ public class DeveloperAtoms : BaseSeedAtoms
     {
         _logger.LogInformation("Seeding development mock data...");
 
-        // 開発共通のマスターデータ
-        await _seedAtoms.SeedPermissionsAsync();
-        await _seedAtoms.SeedRolesAsync();
-        await _seedAtoms.SeedGenresAsync();
-        await _seedAtoms.SeedTaskTypesAsync();
-        await SeedOrganizationsAsync();
-        await SeedOrganizationSettingsAsync();
-        await SeedBotsAsync();
-        await _seedAtoms.SeedSkillsAsync();
-        await SeedTagsAsync();
-        await SeedUsersAsync();
-        await SeedChatActorsAsync();
-        await SeedUserSettingsAsync();
-        await SeedUserSkillsAsync();
-        await SeedWorkspacesAsync();
-        await SeedChatRoomsAsync();
-        await SeedWorkspaceSkillsAsync();
-        await SeedWorkspaceItemsAsync();
-        await SeedWorkspaceItemRelationsAsync();
-        await SeedWorkspaceTasksAsync();
-        await SeedTaskCommentsAsync();
-        await SeedActivitiesAsync();
+        try
+        {
+            await CommonAtoms.DisableConstraintsAndIndexesAsync(_context);
+
+            // 開発共通のマスターデータ
+            await _seedAtoms.SeedPermissionsAsync();
+            await _seedAtoms.SeedRolesAsync();
+            await _seedAtoms.SeedGenresAsync();
+            await _seedAtoms.SeedTaskTypesAsync();
+            await SeedOrganizationsAsync();
+            await SeedOrganizationSettingsAsync();
+            await SeedBotsAsync();
+            await _seedAtoms.SeedSkillsAsync();
+            await SeedTagsAsync();
+            await SeedUsersAsync();
+            await SeedChatActorsAsync();
+            await SeedUserSettingsAsync();
+            await SeedUserSkillsAsync();
+            await SeedWorkspacesAsync();
+            await SeedChatRoomsAsync();
+            await SeedWorkspaceSkillsAsync();
+            await SeedWorkspaceItemsAsync();
+            await SeedWorkspaceItemRelationsAsync();
+            await SeedWorkspaceTasksAsync();
+            await SeedTaskCommentsAsync();
+            await SeedActivitiesAsync();
+        }
+        finally
+        {
+            await CommonAtoms.EnableConstraintsAndIndexesAsync(_context);
+            //await CommonAtoms.ReindexPgroongaAsync(_context);
+        }
 
         _logger.LogInformation("Development mock data seeding completed");
     }

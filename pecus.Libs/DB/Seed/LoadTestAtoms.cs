@@ -59,7 +59,7 @@ public class LoadTestAtoms : BaseSeedAtoms
     {
         _logger.LogInformation("Seeding development(LoadTest) mock data...");
 
-        await _seedAtoms.DisableConstraintsAndIndexesAsync();
+        await CommonAtoms.DisableConstraintsAndIndexesAsync(_context);
 
         try
         {
@@ -87,8 +87,8 @@ public class LoadTestAtoms : BaseSeedAtoms
         }
         finally
         {
-            await _seedAtoms.EnableConstraintsAndIndexesAsync();
-            await _seedAtoms.ReindexPgroongaAsync();
+            await CommonAtoms.EnableConstraintsAndIndexesAsync(_context);
+            //await CommonAtoms.ReindexPgroongaAsync(_context);
         }
 
         _logger.LogInformation("Development(LoadTest) mock data seeding completed");

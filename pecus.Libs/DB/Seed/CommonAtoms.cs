@@ -12,7 +12,8 @@ using System.Reflection;
 namespace Pecus.Libs.DB.Seed;
 
 /// <summary>
-///
+/// 共通のシードデータ生成
+/// TODO Contextは呼び出し側からもらうように変更する
 /// </summary>
 public class CommonAtoms
 {
@@ -42,87 +43,64 @@ public class CommonAtoms
     /// <summary>
     /// 制約とインデックスを一時的に無効化（大量データ投入の高速化）
     /// </summary>
-    public async Task DisableConstraintsAndIndexesAsync()
+    public static async Task DisableConstraintsAndIndexesAsync(ApplicationDbContext context)
     {
-        _logger.LogInformation("Disabling constraints and indexes for bulk insert...");
-
-        try
+        // 存在するテーブルのみトリガー無効化（存在チェック付き）
+        // EF Core 規則: パスカルケース複数形（例: WorkspaceItemRelations）
+        var tableNames = new[]
         {
-            // 存在するテーブルのみトリガー無効化（存在チェック付き）
-            // EF Core 規則: パスカルケース複数形（例: WorkspaceItemRelations）
-            var tableNames = new[]
-            {
                 "Users", "WorkspaceItems", "WorkspaceTasks", "TaskComments", "Activities",
                 "Workspaces", "WorkspaceUsers", "Skills", "Tags", "UserSkills",
                 "WorkspaceSkills", "WorkspaceItemRelations"
             };
 
-            foreach (var tableName in tableNames)
-            {
-                // テーブルが存在するかチェック
+        foreach (var tableName in tableNames)
+        {
+            // テーブルが存在するかチェック
 #pragma warning disable EF1002 // テーブル名は定数配列から取得されており安全
-                await _context.Database.ExecuteSqlRawAsync(
-                    $@"DO $$
+            await context.Database.ExecuteSqlRawAsync(
+                $@"DO $$
                        BEGIN
                            IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{tableName}') THEN
                                EXECUTE 'ALTER TABLE ""{tableName}"" DISABLE TRIGGER ALL';
                            END IF;
                        END $$;"
-                );
+            );
 #pragma warning restore EF1002
-            }
-
-            _logger.LogInformation("Constraints and triggers disabled successfully");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to disable some constraints/triggers");
         }
     }
 
     /// <summary>
     /// 制約とインデックスを再有効化
     /// </summary>
-    public async Task EnableConstraintsAndIndexesAsync()
+    public static async Task EnableConstraintsAndIndexesAsync(ApplicationDbContext context)
     {
-        _logger.LogInformation("Re-enabling constraints and indexes...");
-
-        try
+        // 存在するテーブルのみトリガー再有効化（存在チェック付き）
+        // EF Core 規則: パスカルケース複数形（例: WorkspaceItemRelations）
+        var tableNames = new[]
         {
-            // 存在するテーブルのみトリガー再有効化（存在チェック付き）
-            // EF Core 規則: パスカルケース複数形（例: WorkspaceItemRelations）
-            var tableNames = new[]
-            {
                 "Users", "WorkspaceItems", "WorkspaceTasks", "TaskComments", "Activities",
                 "Workspaces", "WorkspaceUsers", "Skills", "Tags", "UserSkills",
                 "WorkspaceSkills", "WorkspaceItemRelations"
             };
 
-            foreach (var tableName in tableNames)
-            {
-                // テーブルが存在するかチェック
+        foreach (var tableName in tableNames)
+        {
+            // テーブルが存在するかチェック
 #pragma warning disable EF1002 // テーブル名は定数配列から取得されており安全
-                await _context.Database.ExecuteSqlRawAsync(
-                    $@"DO $$
+            await context.Database.ExecuteSqlRawAsync(
+                $@"DO $$
                        BEGIN
                            IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{tableName}') THEN
                                EXECUTE 'ALTER TABLE ""{tableName}"" ENABLE TRIGGER ALL';
                            END IF;
                        END $$;"
-                );
+            );
 #pragma warning restore EF1002
-            }
-
-            // VACUUMとANALYZEで統計情報を更新（クエリプランナーの最適化）
-            await _context.Database.ExecuteSqlRawAsync("VACUUM ANALYZE;");
-
-            _logger.LogInformation("Constraints and triggers re-enabled, statistics updated");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to re-enable constraints/triggers");
-            throw;
-        }
+
+        // VACUUMとANALYZEで統計情報を更新（クエリプランナーの最適化）
+        await context.Database.ExecuteSqlRawAsync("VACUUM ANALYZE;");
     }
 
     /// <summary>
@@ -133,55 +111,43 @@ public class CommonAtoms
     /// 新しく追加されたデータが検索対象に含まれるようになります。
     /// WorkspaceItems のインデックスは Subject, RawBody, Code を含みます。
     /// </remarks>
-    public async Task ReindexPgroongaAsync()
+    public static async Task ReindexPgroongaAsync(ApplicationDbContext context)
     {
-        _logger.LogInformation("Rebuilding pgroonga indexes...");
+        // REINDEX CONCURRENTLY は時間がかかるため、コマンドタイムアウトを90秒に設定
+        var originalTimeout = context.Database.GetCommandTimeout();
+        context.Database.SetCommandTimeout(90);
 
         try
         {
-            // REINDEX CONCURRENTLY は時間がかかるため、コマンドタイムアウトを90秒に設定
-            var originalTimeout = _context.Database.GetCommandTimeout();
-            _context.Database.SetCommandTimeout(90);
+            // Users テーブルの pgroonga インデックスを再構築
+            await context.Database.ExecuteSqlRawAsync(
+                @"REINDEX INDEX CONCURRENTLY idx_users_pgroonga;"
+            );
 
-            try
-            {
-                // Users テーブルの pgroonga インデックスを再構築
-                await _context.Database.ExecuteSqlRawAsync(
-                    @"REINDEX INDEX CONCURRENTLY idx_users_pgroonga;"
-                );
+            // WorkspaceItems テーブルの pgroonga インデックスを再構築（Subject, RawBody, Code）
+            await context.Database.ExecuteSqlRawAsync(
+                @"REINDEX INDEX CONCURRENTLY idx_workspaceitems_pgroonga;"
+            );
 
-                // WorkspaceItems テーブルの pgroonga インデックスを再構築（Subject, RawBody, Code）
-                await _context.Database.ExecuteSqlRawAsync(
-                    @"REINDEX INDEX CONCURRENTLY idx_workspaceitems_pgroonga;"
-                );
+            // Skills テーブルの pgroonga インデックスを再構築
+            await context.Database.ExecuteSqlRawAsync(
+                @"REINDEX INDEX CONCURRENTLY idx_skills_pgroonga;"
+            );
 
-                // Skills テーブルの pgroonga インデックスを再構築
-                await _context.Database.ExecuteSqlRawAsync(
-                    @"REINDEX INDEX CONCURRENTLY idx_skills_pgroonga;"
-                );
+            // Tags テーブルの pgroonga インデックスを再構築
+            await context.Database.ExecuteSqlRawAsync(
+                @"REINDEX INDEX CONCURRENTLY idx_tags_pgroonga;"
+            );
 
-                // Tags テーブルの pgroonga インデックスを再構築
-                await _context.Database.ExecuteSqlRawAsync(
-                    @"REINDEX INDEX CONCURRENTLY idx_tags_pgroonga;"
-                );
-
-                // WorkspaceTasks テーブルの pgroonga インデックスを再構築
-                await _context.Database.ExecuteSqlRawAsync(
-                    @"REINDEX INDEX CONCURRENTLY idx_workspacetasks_content_pgroonga;"
-                );
-            }
-            finally
-            {
-                // コマンドタイムアウトを元に戻す
-                _context.Database.SetCommandTimeout(originalTimeout);
-            }
-
-            _logger.LogInformation("pgroonga indexes rebuilt successfully");
+            // WorkspaceTasks テーブルの pgroonga インデックスを再構築
+            await context.Database.ExecuteSqlRawAsync(
+                @"REINDEX INDEX CONCURRENTLY idx_workspacetasks_content_pgroonga;"
+            );
         }
-        catch (Exception ex)
+        finally
         {
-            // REINDEX が失敗してもシード処理は継続（pgroonga が利用できない環境を考慮）
-            _logger.LogWarning(ex, "Failed to rebuild pgroonga indexes. Search may not work correctly until indexes are rebuilt.");
+            // コマンドタイムアウトを元に戻す
+            context.Database.SetCommandTimeout(originalTimeout);
         }
     }
 
