@@ -42,6 +42,10 @@ builder.Services.ConfigureDbContext<ApplicationDbContext>(options =>
 });
 
 // DatabaseSeederの登録
+builder.Services.AddScoped<CommonAtoms>();
+builder.Services.AddScoped<ProductAtoms>();
+builder.Services.AddScoped<DeveloperAtoms>();
+builder.Services.AddScoped<LoadTestAtoms>();
 builder.Services.AddScoped<DatabaseSeeder>();
 
 // Lexical Converter gRPC サービスの登録

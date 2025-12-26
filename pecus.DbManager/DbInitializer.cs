@@ -83,7 +83,7 @@ internal class DbInitializer(
         logger.LogInformation("Seeding database");
 
         var isDevelopment = environment.IsDevelopment();
-        await seeder.SeedAllAsync(isDevelopment);
+        await seeder.SeedAsync(isDevelopment);
 
         logger.LogInformation("Database seeding completed");
     }
