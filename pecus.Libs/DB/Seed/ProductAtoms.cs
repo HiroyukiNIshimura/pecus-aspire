@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Pecus.Libs.AI;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 
@@ -107,8 +108,8 @@ public class ProductAtoms
             WeeklyReportDeliveryDay = 0,
             MailFromAddress = org.Email,
             MailFromName = org.Name,
-            GenerativeApiVendor = GenerativeApiVendor.None,
-            Plan = OrganizationPlan.Free,
+            GenerativeApiVendor = GenerativeApiVendor.DeepSeek,
+            Plan = OrganizationPlan.Enterprise,
             UpdatedAt = DateTimeOffset.UtcNow
         };
 
@@ -126,25 +127,65 @@ public class ProductAtoms
             return;
         }
 
-        if (await _context.Bots.AnyAsync(b => b.OrganizationId == org.Id && b.Name == "BackOffice Assistant"))
+        var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
+        var systemBotConstraint = BotPersonaHelper.GetSystemBotConstraint();
+        var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
+        var chatBotConstraint = BotPersonaHelper.GetChatBotConstraint();
+
+        var existingSystemBot = await _context.Bots
+            .FirstOrDefaultAsync(b => b.OrganizationId == org.Id && b.Type == BotType.SystemBot);
+        var existingChatBot = await _context.Bots
+            .FirstOrDefaultAsync(b => b.OrganizationId == org.Id && b.Type == BotType.ChatBot);
+
+        if (existingSystemBot != null)
         {
-            _logger.LogInformation("BackOffice bot already exists, skipping...");
-            return;
+            existingSystemBot.Persona = systemBotPersona;
+            existingSystemBot.Constraint = systemBotConstraint;
+            existingSystemBot.UpdatedAt = DateTimeOffset.UtcNow;
+            _logger.LogInformation("BackOffice SystemBot Persona/Constraint updated: {Name}", existingSystemBot.Name);
+        }
+        else
+        {
+            var bot1 = new Bot
+            {
+                OrganizationId = org.Id,
+                Type = BotType.SystemBot,
+                Name = "Butler Bot",
+                IconUrl = "/icons/bot/system.webp",
+                Persona = systemBotPersona,
+                Constraint = systemBotConstraint,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            await _context.Bots.AddAsync(bot1);
+            _logger.LogInformation("BackOffice SystemBot created: {Name}", bot1.Name);
         }
 
-        var bot = new Bot
+        if (existingChatBot != null)
         {
-            OrganizationId = org.Id,
-            Type = BotType.SystemBot,
-            Name = "BackOffice Assistant",
-            Persona = "System maintenance support bot",
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
+            existingChatBot.Persona = chatBotPersona;
+            existingChatBot.Constraint = chatBotConstraint;
+            existingChatBot.UpdatedAt = DateTimeOffset.UtcNow;
+            _logger.LogInformation("BackOffice ChatBot Persona/Constraint updated: {Name}", existingChatBot.Name);
+        }
+        else
+        {
+            var bot2 = new Bot
+            {
+                OrganizationId = org.Id,
+                Type = BotType.ChatBot,
+                Name = "Coati Bot",
+                IconUrl = "/icons/bot/chat.webp",
+                Persona = chatBotPersona,
+                Constraint = chatBotConstraint,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            await _context.Bots.AddAsync(bot2);
+            _logger.LogInformation("BackOffice ChatBot created: {Name}", bot2.Name);
+        }
 
-        await _context.Bots.AddAsync(bot);
         await _context.SaveChangesAsync();
-        _logger.LogInformation("BackOffice bot created: {Name}", bot.Name);
     }
 
     private async Task SeedBackOfficeUsersAsync()
