@@ -37,18 +37,18 @@ public class LoadTestAtoms : BaseSeedAtoms
     {
         return new SeedDataVolume
         {
-            Organizations = 2,
-            UsersPerOrganization = 500,
-            WorkspacesPerOrganization = 70,
+            Organizations = 5,
+            UsersPerOrganization = 100,
+            WorkspacesPerOrganization = 50,
             ItemsPerWorkspace = 100,
             TasksPerItemMin = 0,
-            TasksPerItemMax = 5,
+            TasksPerItemMax = 10,
             CommentsPerTaskMin = 0,
-            CommentsPerTaskMax = 3,
+            CommentsPerTaskMax = 10,
             ActivitiesPerItemMin = 2,
             ActivitiesPerItemMax = 5,
             RelationsPerWorkspaceMin = 0,
-            RelationsPerWorkspaceMax = 10,
+            RelationsPerWorkspaceMax = 5,
         };
     }
 
