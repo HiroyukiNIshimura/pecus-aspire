@@ -48,6 +48,8 @@ public class ProductAtoms
         await _seedAtoms.SeedGenresAsync(_context);
         await _seedAtoms.SeedTaskTypesAsync(_context);
 
+        // TODO エージェントの生成内容がなんか変な状態
+        // BackOffice関連データのシード
         await SeedBackOfficeOrganizationAsync();
         await SeedBackOfficeOrganizationSettingsAsync();
         await SeedBackOfficeBotsAsync();
@@ -197,8 +199,8 @@ public class ProductAtoms
             return;
         }
 
-        var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Administrator");
-        var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Member");
+        var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+        var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
 
         if (adminRole == null || memberRole == null)
         {
