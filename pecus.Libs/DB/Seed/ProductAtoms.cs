@@ -50,9 +50,9 @@ public class ProductAtoms
     {
         _logger.LogInformation("Seeding production data...");
 
-        await _seedAtoms.SeedPermissionsAsync();
-        await _seedAtoms.SeedRolesAsync();
-        await _seedAtoms.SeedGenresAsync();
-        await _seedAtoms.SeedTaskTypesAsync();
+        await _seedAtoms.SeedPermissionsAsync(_context);
+        await _seedAtoms.SeedRolesAsync(_context);
+        await _seedAtoms.SeedGenresAsync(_context);
+        await _seedAtoms.SeedTaskTypesAsync(_context);
     }
 }

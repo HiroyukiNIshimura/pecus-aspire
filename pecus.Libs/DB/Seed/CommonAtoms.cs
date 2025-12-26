@@ -13,11 +13,10 @@ namespace Pecus.Libs.DB.Seed;
 
 /// <summary>
 /// 共通のシードデータ生成
-/// TODO Contextは呼び出し側からもらうように変更する
+/// TODO 各メソッドでContextは呼び出し側からもらうように変更する
 /// </summary>
 public class CommonAtoms
 {
-    private readonly ApplicationDbContext _context;
     private readonly ILogger<CommonAtoms> _logger;
     private readonly ILexicalConverterService? _lexicalConverterService;
     private readonly Random _random = new Random();
@@ -26,15 +25,12 @@ public class CommonAtoms
     /// <summary>
     ///  Constructor
     /// </summary>
-    /// <param name="context"></param>
     /// <param name="logger"></param>
     /// <param name="lexicalConverterService"></param>
     public CommonAtoms(
-        ApplicationDbContext context,
         ILogger<CommonAtoms> logger,
         ILexicalConverterService? lexicalConverterService = null)
     {
-        _context = context;
         _logger = logger;
         _lexicalConverterService = lexicalConverterService;
         _faker = new Bogus.Faker("ja");
@@ -56,17 +52,25 @@ public class CommonAtoms
 
         foreach (var tableName in tableNames)
         {
-            // テーブルが存在するかチェック
+            try
+            {
+                // テーブルが存在するかチェック
 #pragma warning disable EF1002 // テーブル名は定数配列から取得されており安全
-            await context.Database.ExecuteSqlRawAsync(
-                $@"DO $$
+                await context.Database.ExecuteSqlRawAsync(
+                    $@"DO $$
                        BEGIN
                            IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{tableName}') THEN
                                EXECUTE 'ALTER TABLE ""{tableName}"" DISABLE TRIGGER ALL';
                            END IF;
                        END $$;"
-            );
+                );
 #pragma warning restore EF1002
+            }
+            catch (Exception)
+            {
+                // テーブルが存在しない場合はスキップ
+                continue;
+            }
         }
     }
 
@@ -86,17 +90,25 @@ public class CommonAtoms
 
         foreach (var tableName in tableNames)
         {
-            // テーブルが存在するかチェック
+            try
+            {
+                // テーブルが存在するかチェック
 #pragma warning disable EF1002 // テーブル名は定数配列から取得されており安全
-            await context.Database.ExecuteSqlRawAsync(
-                $@"DO $$
+                await context.Database.ExecuteSqlRawAsync(
+                    $@"DO $$
                        BEGIN
                            IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{tableName}') THEN
                                EXECUTE 'ALTER TABLE ""{tableName}"" ENABLE TRIGGER ALL';
                            END IF;
                        END $$;"
-            );
+                );
 #pragma warning restore EF1002
+            }
+            catch (Exception)
+            {
+                // テーブルが存在しない場合はスキップ
+                continue;
+            }
         }
 
         // VACUUMとANALYZEで統計情報を更新（クエリプランナーの最適化）
@@ -154,7 +166,7 @@ public class CommonAtoms
     /// <summary>
     /// 権限のシードデータを投入
     /// </summary>
-    public async Task SeedPermissionsAsync()
+    public async Task SeedPermissionsAsync(ApplicationDbContext context)
     {
         var permissions = new[]
         {
@@ -238,7 +250,7 @@ public class CommonAtoms
             },
         };
 
-        var existingPermissionNames = await _context.Permissions
+        var existingPermissionNames = await context.Permissions
             .Select(p => p.Name)
             .ToHashSetAsync();
 
@@ -248,8 +260,8 @@ public class CommonAtoms
 
         if (newPermissions.Any())
         {
-            _context.Permissions.AddRange(newPermissions);
-            await _context.SaveChangesAsync();
+            context.Permissions.AddRange(newPermissions);
+            await context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} permissions", newPermissions.Count);
         }
     }
@@ -257,44 +269,44 @@ public class CommonAtoms
     /// <summary>
     /// ロールのシードデータを投入
     /// </summary>
-    public async Task SeedRolesAsync()
+    public async Task SeedRolesAsync(ApplicationDbContext context)
     {
-        var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+        var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
         if (adminRole == null)
         {
             adminRole = new Role { Name = "Admin", Description = "システム管理者" };
-            _context.Roles.Add(adminRole);
-            await _context.SaveChangesAsync();
+            context.Roles.Add(adminRole);
+            await context.SaveChangesAsync();
 
             // すべての権限を割り当て
-            var allPermissions = await _context.Permissions.ToListAsync();
+            var allPermissions = await context.Permissions.ToListAsync();
             adminRole.Permissions = allPermissions;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             _logger.LogInformation("Added role: Admin with all permissions");
         }
 
-        var userRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
+        var userRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
         if (userRole == null)
         {
             userRole = new Role { Name = "User", Description = "一般ユーザー" };
-            _context.Roles.Add(userRole);
-            await _context.SaveChangesAsync();
+            context.Roles.Add(userRole);
+            await context.SaveChangesAsync();
 
             // 読み取り権限のみを割り当て
-            var readPermissions = await _context
+            var readPermissions = await context
                 .Permissions.Where(p => p.Name.EndsWith(".Read"))
                 .ToListAsync();
             userRole.Permissions = readPermissions;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             _logger.LogInformation("Added role: User with read permissions");
         }
 
-        var backendRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Backend");
+        var backendRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Backend");
         if (backendRole == null)
         {
             backendRole = new Role { Name = "Backend", Description = "バックエンドシステム" };
-            _context.Roles.Add(backendRole);
-            await _context.SaveChangesAsync();
+            context.Roles.Add(backendRole);
+            await context.SaveChangesAsync();
 
             _logger.LogInformation("Added role: Backend with all permissions");
         }
@@ -303,7 +315,7 @@ public class CommonAtoms
     /// <summary>
     /// ジャンルのシードデータを投入
     /// </summary>
-    public async Task SeedGenresAsync()
+    public async Task SeedGenresAsync(ApplicationDbContext context)
     {
         var genres = new[]
         {
@@ -376,7 +388,7 @@ public class CommonAtoms
             },
         };
 
-        var existingGenreNames = await _context.Genres
+        var existingGenreNames = await context.Genres
             .Select(g => g.Name)
             .ToHashSetAsync();
 
@@ -386,8 +398,8 @@ public class CommonAtoms
 
         if (newGenres.Any())
         {
-            _context.Genres.AddRange(newGenres);
-            await _context.SaveChangesAsync();
+            context.Genres.AddRange(newGenres);
+            await context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} genres", newGenres.Count);
         }
     }
@@ -395,7 +407,7 @@ public class CommonAtoms
     /// <summary>
     /// タスク種類のシードデータを投入
     /// </summary>
-    public async Task SeedTaskTypesAsync()
+    public async Task SeedTaskTypesAsync(ApplicationDbContext context)
     {
         var taskTypes = new[]
         {
@@ -489,7 +501,7 @@ public class CommonAtoms
             },
         };
 
-        var existingTaskTypeCodes = await _context.TaskTypes
+        var existingTaskTypeCodes = await context.TaskTypes
             .Select(t => t.Code)
             .ToHashSetAsync();
 
@@ -499,8 +511,8 @@ public class CommonAtoms
 
         if (newTaskTypes.Any())
         {
-            _context.TaskTypes.AddRange(newTaskTypes);
-            await _context.SaveChangesAsync();
+            context.TaskTypes.AddRange(newTaskTypes);
+            await context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} task types", newTaskTypes.Count);
         }
     }
@@ -508,9 +520,9 @@ public class CommonAtoms
     /// <summary>
     /// スキルのシードデータを投入
     /// </summary>
-    public async Task SeedSkillsAsync()
+    public async Task SeedSkillsAsync(ApplicationDbContext context)
     {
-        var organizations = await _context.Organizations.ToListAsync();
+        var organizations = await context.Organizations.ToListAsync();
 
         if (!organizations.Any())
         {
@@ -532,7 +544,7 @@ public class CommonAtoms
         };
 
         // 既存のスキルを取得（組織ID + 名前の組み合わせ）
-        var existingSkills = await _context.Skills
+        var existingSkills = await context.Skills
             .Select(s => new { s.OrganizationId, s.Name })
             .ToHashSetAsync();
 
@@ -557,8 +569,8 @@ public class CommonAtoms
 
         if (newSkills.Any())
         {
-            _context.Skills.AddRange(newSkills);
-            await _context.SaveChangesAsync();
+            context.Skills.AddRange(newSkills);
+            await context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} skills for {OrgCount} organizations", newSkills.Count, organizations.Count);
         }
     }
@@ -615,34 +627,34 @@ public class CommonAtoms
     /// <summary>
     /// アクティビティを生SQLで一括INSERT
     /// </summary>
-    public async Task ExecuteBulkInsertActivitiesAsync(List<string> valuesList)
+    public async Task ExecuteBulkInsertActivitiesAsync(ApplicationDbContext context, List<string> valuesList)
     {
         var valuesClause = string.Join(", ", valuesList);
         var sql = "INSERT INTO \"Activities\" (\"WorkspaceId\", \"ItemId\", \"UserId\", \"ActionType\", \"Details\", \"CreatedAt\") VALUES " + valuesClause;
 
-        await _context.Database.ExecuteSqlRawAsync(sql);
+        await context.Database.ExecuteSqlRawAsync(sql);
     }
 
     /// <summary>
     /// タスクコメントを生SQLで一括INSERT
     /// </summary>
-    public async Task ExecuteBulkInsertTaskCommentsAsync(List<string> valuesList)
+    public async Task ExecuteBulkInsertTaskCommentsAsync(ApplicationDbContext context, List<string> valuesList)
     {
         var valuesClause = string.Join(", ", valuesList);
         var sql = "INSERT INTO \"TaskComments\" (\"WorkspaceTaskId\", \"UserId\", \"Content\", \"CommentType\", \"CreatedAt\", \"UpdatedAt\", \"IsDeleted\") VALUES " + valuesClause;
 
-        await _context.Database.ExecuteSqlRawAsync(sql);
+        await context.Database.ExecuteSqlRawAsync(sql);
     }
 
     /// <summary>
     /// ワークスペースタスクを生SQLで一括INSERT
     /// </summary>
-    public async Task ExecuteBulkInsertWorkspaceTasksAsync(List<string> valuesList)
+    public async Task ExecuteBulkInsertWorkspaceTasksAsync(ApplicationDbContext context, List<string> valuesList)
     {
         var valuesClause = string.Join(", ", valuesList);
         var sql = "INSERT INTO \"WorkspaceTasks\" (\"WorkspaceItemId\", \"WorkspaceId\", \"OrganizationId\", \"Sequence\", \"AssignedUserId\", \"CreatedByUserId\", \"Content\", \"TaskTypeId\", \"Priority\", \"StartDate\", \"DueDate\", \"EstimatedHours\", \"ActualHours\", \"ProgressPercentage\", \"IsCompleted\", \"CompletedAt\", \"IsDiscarded\", \"DiscardedAt\", \"DiscardReason\", \"CreatedAt\", \"UpdatedAt\") VALUES " + valuesClause;
 
-        await _context.Database.ExecuteSqlRawAsync(sql);
+        await context.Database.ExecuteSqlRawAsync(sql);
     }
 
     /// <summary>

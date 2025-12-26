@@ -63,14 +63,14 @@ public class LoadTestAtoms : BaseSeedAtoms
 
         try
         {
-            await _seedAtoms.SeedPermissionsAsync();
-            await _seedAtoms.SeedRolesAsync();
-            await _seedAtoms.SeedGenresAsync();
-            await _seedAtoms.SeedTaskTypesAsync();
+            await _seedAtoms.SeedPermissionsAsync(_context);
+            await _seedAtoms.SeedRolesAsync(_context);
+            await _seedAtoms.SeedGenresAsync(_context);
+            await _seedAtoms.SeedTaskTypesAsync(_context);
             await SeedOrganizationsAsync();
             await SeedOrganizationSettingsAsync();
             await SeedBotsAsync();
-            await _seedAtoms.SeedSkillsAsync();
+            await _seedAtoms.SeedSkillsAsync(_context);
             await SeedTagsAsync();
             await SeedUsersAsync();
             await SeedChatActorsAsync();
@@ -1221,7 +1221,7 @@ public class LoadTestAtoms : BaseSeedAtoms
 
                 if (valuesList.Count >= batchSize)
                 {
-                    await _seedAtoms.ExecuteBulkInsertWorkspaceTasksAsync(valuesList);
+                    await _seedAtoms.ExecuteBulkInsertWorkspaceTasksAsync(_context, valuesList);
                     _logger.LogInformation("Added {Count} workspace tasks", totalTasksAdded);
                     valuesList.Clear();
                 }
@@ -1230,7 +1230,7 @@ public class LoadTestAtoms : BaseSeedAtoms
 
         if (valuesList.Any())
         {
-            await _seedAtoms.ExecuteBulkInsertWorkspaceTasksAsync(valuesList);
+            await _seedAtoms.ExecuteBulkInsertWorkspaceTasksAsync(_context, valuesList);
         }
         _logger.LogInformation("Added {Count} workspace tasks in total", totalTasksAdded);
 
@@ -1387,7 +1387,7 @@ public class LoadTestAtoms : BaseSeedAtoms
                 // バッチサイズに達したら一括INSERT
                 if (valuesList.Count >= batchSize)
                 {
-                    await _seedAtoms.ExecuteBulkInsertTaskCommentsAsync(valuesList);
+                    await _seedAtoms.ExecuteBulkInsertTaskCommentsAsync(_context, valuesList);
                     _logger.LogInformation("Added {Count} task comments", totalCommentsAdded);
                     valuesList.Clear();
                 }
@@ -1397,7 +1397,7 @@ public class LoadTestAtoms : BaseSeedAtoms
         // 残りを一括INSERT
         if (valuesList.Any())
         {
-            await _seedAtoms.ExecuteBulkInsertTaskCommentsAsync(valuesList);
+            await _seedAtoms.ExecuteBulkInsertTaskCommentsAsync(_context, valuesList);
         }
         _logger.LogInformation("Added {Count} task comments in total", totalCommentsAdded);
     }
@@ -1467,7 +1467,7 @@ public class LoadTestAtoms : BaseSeedAtoms
 
                 if (valuesList.Count >= batchSize)
                 {
-                    await _seedAtoms.ExecuteBulkInsertActivitiesAsync(valuesList);
+                    await _seedAtoms.ExecuteBulkInsertActivitiesAsync(_context, valuesList);
                     _logger.LogInformation("Added {Count} activities", totalActivitiesAdded);
                     valuesList.Clear();
                 }
@@ -1476,7 +1476,7 @@ public class LoadTestAtoms : BaseSeedAtoms
 
         if (valuesList.Any())
         {
-            await _seedAtoms.ExecuteBulkInsertActivitiesAsync(valuesList);
+            await _seedAtoms.ExecuteBulkInsertActivitiesAsync(_context, valuesList);
         }
 
         _logger.LogInformation("Added {Count} activities in total", totalActivitiesAdded);
