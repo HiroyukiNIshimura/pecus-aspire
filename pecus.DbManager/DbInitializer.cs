@@ -10,7 +10,6 @@ namespace Pecus.DbManager;
 /// </summary>
 internal class DbInitializer(
     IServiceProvider serviceProvider,
-    IHostEnvironment environment,
     ILogger<DbInitializer> logger
 ) : BackgroundService
 {
@@ -82,8 +81,7 @@ internal class DbInitializer(
     {
         logger.LogInformation("Seeding database");
 
-        var isDevelopment = environment.IsDevelopment();
-        await seeder.SeedAsync(isDevelopment);
+        await seeder.SeedAsync();
 
         logger.LogInformation("Database seeding completed");
     }

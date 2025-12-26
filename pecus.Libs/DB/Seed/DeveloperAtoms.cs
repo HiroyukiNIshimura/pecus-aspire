@@ -14,33 +14,42 @@ namespace Pecus.Libs.DB.Seed;
 /// <summary>
 /// 開発者向けのシードデータ生成
 /// </summary>
-public class DeveloperAtoms
+public class DeveloperAtoms : BaseSeedAtoms
 {
-    private readonly ApplicationDbContext _context;
-    private readonly ILogger<DeveloperAtoms> _logger;
-    private readonly ILexicalConverterService? _lexicalConverterService;
-    private readonly Random _random = new Random();
-    private readonly Bogus.Faker _faker;
-    private readonly CommonAtoms _seedAtoms;
-
     /// <summary>
     ///  Constructor
     /// </summary>
     /// <param name="context"></param>
     /// <param name="logger"></param>
     /// <param name="seedAtoms"></param>
-    /// <param name="lexicalConverterService"></param>
     public DeveloperAtoms(
         ApplicationDbContext context,
         ILogger<DeveloperAtoms> logger,
-        CommonAtoms seedAtoms,
-        ILexicalConverterService? lexicalConverterService = null)
+        CommonAtoms seedAtoms)
+        : base(context, logger, seedAtoms)
     {
-        _context = context;
-        _logger = logger;
-        _seedAtoms = seedAtoms;
-        _lexicalConverterService = lexicalConverterService;
-        _faker = new Bogus.Faker("ja");
+    }
+
+    /// <summary>
+    /// データ投入量の設定を取得
+    /// </summary>
+    protected override SeedDataVolume GetDataVolume()
+    {
+        return new SeedDataVolume
+        {
+            Organizations = 2,
+            UsersPerOrganization = 10,
+            WorkspacesPerOrganization = 5,
+            ItemsPerWorkspace = 20,
+            TasksPerItemMin = 0,
+            TasksPerItemMax = 3,
+            CommentsPerTaskMin = 0,
+            CommentsPerTaskMax = 2,
+            ActivitiesPerItemMin = 1,
+            ActivitiesPerItemMax = 3,
+            RelationsPerWorkspaceMin = 0,
+            RelationsPerWorkspaceMax = 5,
+        };
     }
 
     /// <summary>
@@ -77,87 +86,16 @@ public class DeveloperAtoms
     }
 
     /// <summary>
-    /// タグのシードデータを投入
-    /// </summary>
-    public async Task SeedTagsAsync()
-    {
-        var organizations = await _context.Organizations.ToListAsync();
-
-        if (!organizations.Any())
-        {
-            _logger.LogWarning("No organizations found for seeding tags");
-            return;
-        }
-
-        var tagNames = new[]
-        {
-            "緊急",
-            "重要",
-            "開発",
-            "デザイン",
-            "レビュー待ち",
-            "完了",
-            "バグ修正",
-            "テスト",
-            "ドキュメント",
-            "定期メンテナンス",
-        };
-
-        // 各組織の最初のユーザーを一括取得
-        var usersByOrg = await _context.Users
-            .Where(u => u.OrganizationId != null)
-            .GroupBy(u => u.OrganizationId!.Value)
-            .Select(g => new { OrganizationId = g.Key, UserId = g.First().Id })
-            .ToDictionaryAsync(x => x.OrganizationId, x => x.UserId);
-
-        // 既存のタグを取得（組織ID + 名前の組み合わせ）
-        var existingTags = await _context.Tags
-            .Select(t => new { t.OrganizationId, t.Name })
-            .ToHashSetAsync();
-
-        var newTags = new List<Tag>();
-        foreach (var organization in organizations)
-        {
-            if (!usersByOrg.TryGetValue(organization.Id, out var userId))
-            {
-                continue;
-            }
-
-            foreach (var tagName in tagNames)
-            {
-                if (!existingTags.Contains(new { OrganizationId = organization.Id, Name = tagName }))
-                {
-                    newTags.Add(new Tag
-                    {
-                        Name = tagName,
-                        OrganizationId = organization.Id,
-                        CreatedByUserId = userId,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow,
-                    });
-                }
-            }
-        }
-
-        if (newTags.Any())
-        {
-            _context.Tags.AddRange(newTags);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Added {Count} tags for {OrgCount} organizations", newTags.Count, organizations.Count);
-        }
-    }
-
-    /// <summary>
     /// 組織のシードデータを投入
     /// </summary>
     public async Task SeedOrganizationsAsync()
     {
+        var dataVolume = GetDataVolume();
         if (!await _context.Organizations.AnyAsync())
         {
             var organizations = new List<Organization>();
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < dataVolume.Organizations; i++)
             {
                 var organization = new Organization
                 {
@@ -176,140 +114,6 @@ public class DeveloperAtoms
             _context.Organizations.AddRange(organizations);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} organizations", organizations.Count);
-        }
-    }
-
-    /// <summary>
-    /// ボットのシードデータを投入
-    /// 各組織に ChatBot と SystemBot を作成
-    /// </summary>
-    public async Task SeedBotsAsync()
-    {
-        var organizations = await _context.Organizations.ToListAsync();
-        if (!organizations.Any())
-        {
-            _logger.LogInformation("No organizations found, skipping bot seeding");
-            return;
-        }
-
-        // 既存の Bot を取得して組織ごとに存在チェック
-        var existingBots = await _context.Bots.ToListAsync();
-        var existingBotsByOrg = existingBots
-            .GroupBy(b => b.OrganizationId)
-            .ToDictionary(g => g.Key, g => g.ToList());
-
-        var botsToAdd = new List<Bot>();
-
-        foreach (var org in organizations)
-        {
-            var orgBots = existingBotsByOrg.GetValueOrDefault(org.Id, []);
-
-            // ChatBot が存在しなければ作成
-            if (!orgBots.Any(b => b.Type == BotType.ChatBot))
-            {
-                botsToAdd.Add(new Bot
-                {
-                    OrganizationId = org.Id,
-                    Type = BotType.ChatBot,
-                    Name = "Coati Bot",
-                    IconUrl = "/icons/bot/chat.webp",
-                });
-            }
-
-            // SystemBot が存在しなければ作成
-            if (!orgBots.Any(b => b.Type == BotType.SystemBot))
-            {
-                botsToAdd.Add(new Bot
-                {
-                    OrganizationId = org.Id,
-                    Type = BotType.SystemBot,
-                    Name = "Butler Bot",
-                    IconUrl = "/icons/bot/system.webp",
-                });
-            }
-        }
-
-        if (botsToAdd.Count > 0)
-        {
-            _context.Bots.AddRange(botsToAdd);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Added {Count} bots", botsToAdd.Count);
-        }
-        else
-        {
-            _logger.LogInformation("All organizations already have bots, skipping creation");
-        }
-
-        // 全ての Bot の Persona と Constraint を Type ごとに一括更新
-        var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
-        var chatBotConstraint = BotPersonaHelper.GetChatBotConstraint();
-        var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
-        var systemBotConstraint = BotPersonaHelper.GetSystemBotConstraint();
-
-        var chatBotUpdated = await _context.Bots
-            .Where(b => b.Type == BotType.ChatBot)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(b => b.Persona, chatBotPersona)
-                .SetProperty(b => b.Constraint, chatBotConstraint));
-
-        var systemBotUpdated = await _context.Bots
-            .Where(b => b.Type == BotType.SystemBot)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(b => b.Persona, systemBotPersona)
-                .SetProperty(b => b.Constraint, systemBotConstraint));
-
-        if (chatBotUpdated > 0 || systemBotUpdated > 0)
-        {
-            _logger.LogInformation("Updated persona and constraint for {ChatBotCount} ChatBots and {SystemBotCount} SystemBots", chatBotUpdated, systemBotUpdated);
-        }
-    }
-
-    /// <summary>
-    /// 組織設定のシードデータを投入（欠損分を補完）
-    /// </summary>
-    public async Task SeedOrganizationSettingsAsync()
-    {
-        var organizations = await _context.Organizations.ToListAsync();
-        if (!organizations.Any())
-        {
-            return;
-        }
-
-        var existingSettings = await _context.OrganizationSettings
-            .ToDictionaryAsync(x => x.OrganizationId, x => x);
-
-        var settingsToAdd = new List<OrganizationSetting>();
-
-        foreach (var organization in organizations)
-        {
-            if (existingSettings.ContainsKey(organization.Id))
-            {
-                continue;
-            }
-
-            settingsToAdd.Add(
-                new OrganizationSetting
-                {
-                    OrganizationId = organization.Id,
-                    TaskOverdueThreshold = 0,
-                    WeeklyReportDeliveryDay = 0,
-                    MailFromAddress = organization.Email,
-                    MailFromName = organization.Name,
-                    GenerativeApiVendor = GenerativeApiVendor.None,
-                    GenerativeApiKey = null,
-                    Plan = OrganizationPlan.Free,
-                    DefaultWorkspaceMode = WorkspaceMode.Normal,
-                    UpdatedAt = DateTimeOffset.UtcNow,
-                    UpdatedByUserId = null,
-                }
-            );
-        }
-
-        if (settingsToAdd.Count > 0)
-        {
-            _context.OrganizationSettings.AddRange(settingsToAdd);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Added {Count} organization settings", settingsToAdd.Count);
         }
     }
 
@@ -373,15 +177,16 @@ public class DeveloperAtoms
             _logger.LogInformation("Added admin user: {Username}", adminUser.Username);
         }
 
-        // 一般ユーザーを 200 名作成（ランダムな組織に割り当て）
-        // adminを除くユーザー数をカウント
+        var dataVolume = GetDataVolume();
+        var organizations = await _context.Organizations.ToListAsync();
+        var targetUserCount = organizations.Count * dataVolume.UsersPerOrganization;
+
         var existingUserCount = await _context.Users.CountAsync(u => u.Email != "admin@sample.com");
-        var usersToCreate = 200 - existingUserCount;
+        var usersToCreate = targetUserCount - existingUserCount;
 
         if (usersToCreate > 0)
         {
             var userRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
-            var organizations = await _context.Organizations.ToListAsync();
 
             if (organizations.Any())
             {
@@ -466,7 +271,7 @@ public class DeveloperAtoms
     /// ChatActor のシードデータを投入
     /// User と Bot に対応する ChatActor を作成
     /// </summary>
-    private async Task SeedChatActorsAsync()
+    private new async Task SeedChatActorsAsync()
     {
         var chatActorsToAdd = new List<ChatActor>();
 
@@ -531,7 +336,7 @@ public class DeveloperAtoms
     /// <summary>
     /// ユーザー設定のシードデータを投入（欠損分を補完）
     /// </summary>
-    public async Task SeedUserSettingsAsync()
+    public new async Task SeedUserSettingsAsync()
     {
         var users = await _context.Users.ToListAsync();
         if (!users.Any())
@@ -569,25 +374,11 @@ public class DeveloperAtoms
     }
 
     /// <summary>
-    /// ジャンルに合わせたワークスペース説明文を生成
-    /// </summary>
-    /// <param name="genreName">ジャンル名</param>
-    /// <returns>ジャンルに適した説明文</returns>
-    private string GenerateWorkspaceDescription(string genreName)
-    {
-        if (SeedConstants.WorkspaceDescriptionsByGenre.TryGetValue(genreName, out var descriptions))
-        {
-            return descriptions[_random.Next(descriptions.Length)];
-        }
-
-        return "チームでの情報共有とドキュメント管理を行うワークスペースです。";
-    }
-
-    /// <summary>
     /// ワークスペースのシードデータを投入
     /// </summary>
     public async Task SeedWorkspacesAsync()
     {
+        var dataVolume = GetDataVolume();
         if (!await _context.Workspaces.AnyAsync())
         {
             var organizations = await _context.Organizations.ToListAsync();
@@ -603,13 +394,12 @@ public class DeveloperAtoms
             {
                 int totalWorkspacesAdded = 0;
 
-                // 各組織に70件のワークスペースを作成
                 var workspaceBatch = new List<Workspace>();
                 const int batchSize = 500;
 
                 foreach (var organization in organizations)
                 {
-                    for (int i = 0; i < 70; i++)
+                    for (int i = 0; i < dataVolume.WorkspacesPerOrganization; i++)
                     {
                         var genre = genres[_random.Next(genres.Count)];
 
@@ -651,7 +441,7 @@ public class DeveloperAtoms
                     _context.Workspaces.AddRange(workspaceBatch);
                     await _context.SaveChangesAsync();
                 }
-                _logger.LogInformation("Added {Count} workspaces completed ({WorkspacesPerOrg} per organization)", totalWorkspacesAdded, 70);
+                _logger.LogInformation("Added {Count} workspaces completed ({WorkspacesPerOrg} per organization)", totalWorkspacesAdded, dataVolume.WorkspacesPerOrganization);
 
                 // 各ワークスペースにアイテム連番シーケンスを作成
                 var allWorkspaces = await _context.Workspaces.ToListAsync();

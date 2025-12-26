@@ -9,18 +9,31 @@ namespace Pecus.Libs.DB.Seed;
 /// 作業が済んだら、同ドキュメントも更新し、作業履歴を作成してください。
 ///
 /// </summary>
-/// <remarks>
-/// コンストラクタ
-/// </remarks>
-/// <param name="logger"></param>
-public class DatabaseSeeder(
-    ILogger<DatabaseSeeder> logger
-        )
+public class DatabaseSeeder
 {
-    private readonly ILogger<DatabaseSeeder> _logger = logger;
+    private readonly ILogger<DatabaseSeeder> _logger;
     private readonly ProductAtoms? _productAtoms;
     private readonly DeveloperAtoms? _developerAtoms;
     private readonly LoadTestAtoms? _loadTestAtoms;
+
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    /// <param name="logger"></param>
+    /// <param name="productAtoms"></param>
+    /// <param name="developerAtoms"></param>
+    /// <param name="loadTestAtoms"></param>
+    public DatabaseSeeder(
+        ILogger<DatabaseSeeder> logger,
+        ProductAtoms? productAtoms = null,
+        DeveloperAtoms? developerAtoms = null,
+        LoadTestAtoms? loadTestAtoms = null)
+    {
+        _logger = logger;
+        _productAtoms = productAtoms;
+        _developerAtoms = developerAtoms;
+        _loadTestAtoms = loadTestAtoms;
+    }
 
     /// <summary>
     /// すべてのシードデータを投入（環境に応じて本番用または開発用）
