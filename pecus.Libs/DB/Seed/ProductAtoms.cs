@@ -48,15 +48,7 @@ public class ProductAtoms
         await _seedAtoms.SeedGenresAsync(_context);
         await _seedAtoms.SeedTaskTypesAsync(_context);
 
-        // TODO エージェントの生成内容がなんか変な状態
-        // 作成済みのデータをIDでなく名前とかで検索している
-        // BackOffice関連データのシード
-        await SeedBackOfficeOrganizationAsync();
-        await SeedBackOfficeOrganizationSettingsAsync();
-        await SeedBackOfficeBotsAsync();
-        await SeedBackOfficeUsersAsync();
-        await SeedBackOfficeChatActorsAsync();
-        await SeedBackOfficeChatRoomsAsync();
+        await SeedBackOfficeDataAsync();
 
         if (Environment.GetEnvironmentVariable("PECUS_DEMO_MODE") == "true")
         {
@@ -66,70 +58,73 @@ public class ProductAtoms
         _logger.LogInformation("Production data seeding completed");
     }
 
-    private async Task SeedBackOfficeOrganizationAsync()
+    /// <summary>
+    /// BackOffice関連のデータを1つのトランザクションで投入
+    /// </summary>
+    private async Task SeedBackOfficeDataAsync()
     {
-        if (await _context.Organizations.AnyAsync(o => o.Code == BackOfficeOrgCode))
+        var existingOrg = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == BackOfficeOrgCode);
+        if (existingOrg != null)
         {
-            _logger.LogInformation("BackOffice organization already exists, skipping...");
+            _logger.LogInformation("BackOffice organization already exists, updating bots if needed...");
+            await UpdateBackOfficeBotsAsync(existingOrg);
             return;
         }
 
-        var organization = new Organization
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            Name = "System Maintenance",
-            Code = BackOfficeOrgCode,
-            PhoneNumber = "000-0000-0000",
-            Email = "system@backoffice.local",
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+            _logger.LogInformation("Creating BackOffice organization and related data...");
 
-        await _context.Organizations.AddAsync(organization);
-        await _context.SaveChangesAsync();
-        _logger.LogInformation("BackOffice organization created: {Name}", organization.Name);
+            var organization = CreateBackOfficeOrganization();
+            await _context.Organizations.AddAsync(organization);
+            await _context.SaveChangesAsync();
+
+            var settings = CreateBackOfficeOrganizationSettings(organization);
+            await _context.OrganizationSettings.AddAsync(settings);
+
+            var (systemBot, chatBot) = CreateBackOfficeBots(organization);
+            await _context.Bots.AddRangeAsync(systemBot, chatBot);
+            await _context.SaveChangesAsync();
+
+            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+            var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
+            if (adminRole == null || memberRole == null)
+            {
+                _logger.LogWarning("Required roles not found. Rolling back transaction.");
+                await transaction.RollbackAsync();
+                return;
+            }
+
+            var users = CreateBackOfficeUsers(organization, adminRole, memberRole);
+            await _context.Users.AddRangeAsync(users);
+            await _context.SaveChangesAsync();
+
+            var chatActors = CreateBackOfficeChatActors(organization, users, chatBot);
+            await _context.ChatActors.AddRangeAsync(chatActors);
+            await _context.SaveChangesAsync();
+
+            var chatRooms = CreateBackOfficeChatRooms(organization, users, chatActors);
+            await _context.ChatRooms.AddRangeAsync(chatRooms);
+            await _context.SaveChangesAsync();
+
+            var chatRoomMembers = CreateChatRoomMembers(chatRooms, users, chatActors);
+            await _context.ChatRoomMembers.AddRangeAsync(chatRoomMembers);
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+            _logger.LogInformation("BackOffice data seeding completed successfully");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Failed to seed BackOffice data. Transaction rolled back.");
+            throw;
+        }
     }
 
-    private async Task SeedBackOfficeOrganizationSettingsAsync()
+    private async Task UpdateBackOfficeBotsAsync(Organization org)
     {
-        var org = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == BackOfficeOrgCode);
-        if (org == null)
-        {
-            _logger.LogWarning("BackOffice organization not found. Skipping settings seeding.");
-            return;
-        }
-
-        if (await _context.OrganizationSettings.AnyAsync(s => s.OrganizationId == org.Id))
-        {
-            _logger.LogInformation("BackOffice organization settings already exist, skipping...");
-            return;
-        }
-
-        var settings = new OrganizationSetting
-        {
-            OrganizationId = org.Id,
-            TaskOverdueThreshold = 0,
-            WeeklyReportDeliveryDay = 0,
-            MailFromAddress = org.Email,
-            MailFromName = org.Name,
-            GenerativeApiVendor = GenerativeApiVendor.DeepSeek,
-            Plan = OrganizationPlan.Enterprise,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
-
-        await _context.OrganizationSettings.AddAsync(settings);
-        await _context.SaveChangesAsync();
-        _logger.LogInformation("BackOffice organization settings created");
-    }
-
-    private async Task SeedBackOfficeBotsAsync()
-    {
-        var org = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == BackOfficeOrgCode);
-        if (org == null)
-        {
-            _logger.LogWarning("BackOffice organization not found. Skipping bot seeding.");
-            return;
-        }
-
         var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
         var systemBotConstraint = BotPersonaHelper.GetSystemBotConstraint();
         var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
@@ -140,28 +135,15 @@ public class ProductAtoms
         var existingChatBot = await _context.Bots
             .FirstOrDefaultAsync(b => b.OrganizationId == org.Id && b.Type == BotType.ChatBot);
 
+        var updated = false;
+
         if (existingSystemBot != null)
         {
             existingSystemBot.Persona = systemBotPersona;
             existingSystemBot.Constraint = systemBotConstraint;
             existingSystemBot.UpdatedAt = DateTimeOffset.UtcNow;
+            updated = true;
             _logger.LogInformation("BackOffice SystemBot Persona/Constraint updated: {Name}", existingSystemBot.Name);
-        }
-        else
-        {
-            var bot1 = new Bot
-            {
-                OrganizationId = org.Id,
-                Type = BotType.SystemBot,
-                Name = "Butler Bot",
-                IconUrl = "/icons/bot/system.webp",
-                Persona = systemBotPersona,
-                Constraint = systemBotConstraint,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow
-            };
-            await _context.Bots.AddAsync(bot1);
-            _logger.LogInformation("BackOffice SystemBot created: {Name}", bot1.Name);
         }
 
         if (existingChatBot != null)
@@ -169,61 +151,90 @@ public class ProductAtoms
             existingChatBot.Persona = chatBotPersona;
             existingChatBot.Constraint = chatBotConstraint;
             existingChatBot.UpdatedAt = DateTimeOffset.UtcNow;
+            updated = true;
             _logger.LogInformation("BackOffice ChatBot Persona/Constraint updated: {Name}", existingChatBot.Name);
         }
-        else
-        {
-            var bot2 = new Bot
-            {
-                OrganizationId = org.Id,
-                Type = BotType.ChatBot,
-                Name = "Coati Bot",
-                IconUrl = "/icons/bot/chat.webp",
-                Persona = chatBotPersona,
-                Constraint = chatBotConstraint,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow
-            };
-            await _context.Bots.AddAsync(bot2);
-            _logger.LogInformation("BackOffice ChatBot created: {Name}", bot2.Name);
-        }
 
-        await _context.SaveChangesAsync();
+        if (updated)
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 
-    private async Task SeedBackOfficeUsersAsync()
+    private Organization CreateBackOfficeOrganization()
     {
-        var org = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == BackOfficeOrgCode);
-        if (org == null)
+        return new Organization
         {
-            _logger.LogWarning("BackOffice organization not found. Skipping user seeding.");
-            return;
-        }
+            Name = "System Maintenance",
+            Code = BackOfficeOrgCode,
+            PhoneNumber = "000-0000-0000",
+            Email = "system@backoffice.local",
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
 
-        var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
-        var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
-
-        if (adminRole == null || memberRole == null)
+    private OrganizationSetting CreateBackOfficeOrganizationSettings(Organization org)
+    {
+        return new OrganizationSetting
         {
-            _logger.LogWarning("Required roles not found. Skipping user seeding.");
-            return;
-        }
+            OrganizationId = org.Id,
+            TaskOverdueThreshold = 0,
+            WeeklyReportDeliveryDay = 0,
+            MailFromAddress = org.Email,
+            MailFromName = org.Name,
+            GenerativeApiVendor = GenerativeApiVendor.DeepSeek,
+            Plan = OrganizationPlan.Enterprise,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+    }
 
-        var users = new List<(Role Role, string Email, string Username, string LoginId)>
+    private (Bot SystemBot, Bot ChatBot) CreateBackOfficeBots(Organization org)
+    {
+        var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
+        var systemBotConstraint = BotPersonaHelper.GetSystemBotConstraint();
+        var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
+        var chatBotConstraint = BotPersonaHelper.GetChatBotConstraint();
+
+        var systemBot = new Bot
+        {
+            OrganizationId = org.Id,
+            Type = BotType.SystemBot,
+            Name = "Butler Bot",
+            IconUrl = "/icons/bot/system.webp",
+            Persona = systemBotPersona,
+            Constraint = systemBotConstraint,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        var chatBot = new Bot
+        {
+            OrganizationId = org.Id,
+            Type = BotType.ChatBot,
+            Name = "Coati Bot",
+            IconUrl = "/icons/bot/chat.webp",
+            Persona = chatBotPersona,
+            Constraint = chatBotConstraint,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        return (systemBot, chatBot);
+    }
+
+    private List<User> CreateBackOfficeUsers(Organization org, Role adminRole, Role memberRole)
+    {
+        var usersData = new List<(Role Role, string Email, string Username, string LoginId)>
         {
             (adminRole, BackOfficeAdminEmail, "BackOffice Admin", "backoffice-admin"),
             (memberRole, BackOfficeOperator1Email, "Operator One", "backoffice-operator1"),
             (memberRole, BackOfficeOperator2Email, "Operator Two", "backoffice-operator2")
         };
 
-        foreach (var (role, email, username, loginId) in users)
+        var users = new List<User>();
+        foreach (var (role, email, username, loginId) in usersData)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == email))
-            {
-                _logger.LogInformation("User {Email} already exists, skipping...", email);
-                continue;
-            }
-
             var user = new User
             {
                 OrganizationId = org.Id,
@@ -236,35 +247,18 @@ public class ProductAtoms
                 UpdatedAt = DateTime.UtcNow
             };
             user.Roles.Add(role);
-
-            await _context.Users.AddAsync(user);
-            _logger.LogInformation("BackOffice user created: {Email}", user.Email);
+            users.Add(user);
         }
 
-        await _context.SaveChangesAsync();
+        return users;
     }
 
-    private async Task SeedBackOfficeChatActorsAsync()
+    private List<ChatActor> CreateBackOfficeChatActors(Organization org, List<User> users, Bot chatBot)
     {
-        var org = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == BackOfficeOrgCode);
-        if (org == null)
+        var chatActors = new List<ChatActor>();
+
+        foreach (var user in users)
         {
-            _logger.LogWarning("BackOffice organization not found. Skipping chat actor seeding.");
-            return;
-        }
-
-        var userEmails = new[] { BackOfficeAdminEmail, BackOfficeOperator1Email, BackOfficeOperator2Email };
-
-        foreach (var email in userEmails)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null) continue;
-
-            if (await _context.ChatActors.AnyAsync(a => a.UserId == user.Id))
-            {
-                continue;
-            }
-
             var actor = new ChatActor
             {
                 OrganizationId = org.Id,
@@ -277,83 +271,48 @@ public class ProductAtoms
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow
             };
-
-            await _context.ChatActors.AddAsync(actor);
+            chatActors.Add(actor);
         }
 
-        var bot = await _context.Bots.FirstOrDefaultAsync(b => b.OrganizationId == org.Id && b.Name == "BackOffice Assistant");
-        if (bot != null && !await _context.ChatActors.AnyAsync(a => a.BotId == bot.Id))
+        var botActor = new ChatActor
         {
-            var botActor = new ChatActor
-            {
-                OrganizationId = org.Id,
-                ActorType = ChatActorType.Bot,
-                UserId = null,
-                BotId = bot.Id,
-                DisplayName = bot.Name,
-                AvatarType = null,
-                AvatarUrl = bot.IconUrl,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow
-            };
+            OrganizationId = org.Id,
+            ActorType = ChatActorType.Bot,
+            UserId = null,
+            BotId = chatBot.Id,
+            DisplayName = chatBot.Name,
+            AvatarType = null,
+            AvatarUrl = chatBot.IconUrl,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+        chatActors.Add(botActor);
 
-            await _context.ChatActors.AddAsync(botActor);
-        }
-
-        await _context.SaveChangesAsync();
-        _logger.LogInformation("BackOffice chat actors created");
+        return chatActors;
     }
 
-    private async Task SeedBackOfficeChatRoomsAsync()
+    private List<ChatRoom> CreateBackOfficeChatRooms(
+        Organization org,
+        List<User> users,
+        List<ChatActor> chatActors)
     {
-        var org = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == BackOfficeOrgCode);
-        if (org == null)
+        var adminUser = users.First(u => u.Email == BackOfficeAdminEmail);
+        var operator1User = users.First(u => u.Email == BackOfficeOperator1Email);
+        var operator2User = users.First(u => u.Email == BackOfficeOperator2Email);
+
+        var rooms = new List<ChatRoom>();
+
+        var directMessagePairs = new List<(User user1, User user2)>
         {
-            _logger.LogWarning("BackOffice organization not found. Skipping chat room seeding.");
-            return;
-        }
-
-        var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == BackOfficeAdminEmail);
-        var operator1User = await _context.Users.FirstOrDefaultAsync(u => u.Email == BackOfficeOperator1Email);
-        var operator2User = await _context.Users.FirstOrDefaultAsync(u => u.Email == BackOfficeOperator2Email);
-
-        if (adminUser == null || operator1User == null || operator2User == null)
-        {
-            _logger.LogWarning("Required users not found. Skipping chat room seeding.");
-            return;
-        }
-
-        var adminActor = await _context.ChatActors.FirstOrDefaultAsync(a => a.UserId == adminUser.Id);
-        var operator1Actor = await _context.ChatActors.FirstOrDefaultAsync(a => a.UserId == operator1User.Id);
-        var operator2Actor = await _context.ChatActors.FirstOrDefaultAsync(a => a.UserId == operator2User.Id);
-
-        if (adminActor == null || operator1Actor == null || operator2Actor == null)
-        {
-            _logger.LogWarning("Required chat actors not found. Skipping chat room seeding.");
-            return;
-        }
-
-        var directMessagePairs = new List<(ChatActor actor1, ChatActor actor2, User user1, User user2)>
-        {
-            (adminActor, operator1Actor, adminUser, operator1User),
-            (adminActor, operator2Actor, adminUser, operator2User)
+            (adminUser, operator1User),
+            (adminUser, operator2User)
         };
 
-        foreach (var (actor1, actor2, user1, user2) in directMessagePairs)
+        foreach (var (user1, user2) in directMessagePairs)
         {
             var minId = Math.Min(user1.Id, user2.Id);
             var maxId = Math.Max(user1.Id, user2.Id);
             var dmUserPair = $"{minId}_{maxId}";
-
-            var existingRoom = await _context.ChatRooms
-                .Where(r => r.OrganizationId == org.Id && r.Type == ChatRoomType.Dm && r.DmUserPair == dmUserPair)
-                .FirstOrDefaultAsync();
-
-            if (existingRoom != null)
-            {
-                _logger.LogInformation("Direct message room between {Actor1} and {Actor2} already exists, skipping...", actor1.DisplayName, actor2.DisplayName);
-                continue;
-            }
 
             var room = new ChatRoom
             {
@@ -364,34 +323,55 @@ public class ProductAtoms
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow
             };
-
-            await _context.ChatRooms.AddAsync(room);
-            await _context.SaveChangesAsync();
-
-            var members = new List<ChatRoomMember>
-            {
-                new ChatRoomMember
-                {
-                    ChatRoomId = room.Id,
-                    ChatActorId = actor1.Id,
-                    Role = ChatRoomRole.Member,
-                    JoinedAt = DateTimeOffset.UtcNow
-                },
-                new ChatRoomMember
-                {
-                    ChatRoomId = room.Id,
-                    ChatActorId = actor2.Id,
-                    Role = ChatRoomRole.Member,
-                    JoinedAt = DateTimeOffset.UtcNow
-                }
-            };
-
-            await _context.ChatRoomMembers.AddRangeAsync(members);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("BackOffice direct message room created: {User1} - {User2}", user1.Username, user2.Username);
+            rooms.Add(room);
         }
 
-        _logger.LogInformation("BackOffice chat rooms seeding completed");
+        return rooms;
+    }
+
+    private List<ChatRoomMember> CreateChatRoomMembers(
+        List<ChatRoom> rooms,
+        List<User> users,
+        List<ChatActor> chatActors)
+    {
+        var adminUser = users.First(u => u.Email == BackOfficeAdminEmail);
+        var operator1User = users.First(u => u.Email == BackOfficeOperator1Email);
+        var operator2User = users.First(u => u.Email == BackOfficeOperator2Email);
+
+        var adminActor = chatActors.First(a => a.UserId == adminUser.Id);
+        var operator1Actor = chatActors.First(a => a.UserId == operator1User.Id);
+        var operator2Actor = chatActors.First(a => a.UserId == operator2User.Id);
+
+        var members = new List<ChatRoomMember>();
+
+        var actorPairs = new List<(ChatActor actor1, ChatActor actor2)>
+        {
+            (adminActor, operator1Actor),
+            (adminActor, operator2Actor)
+        };
+
+        for (var i = 0; i < rooms.Count; i++)
+        {
+            var room = rooms[i];
+            var (actor1, actor2) = actorPairs[i];
+
+            members.Add(new ChatRoomMember
+            {
+                ChatRoomId = room.Id,
+                ChatActorId = actor1.Id,
+                Role = ChatRoomRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow
+            });
+
+            members.Add(new ChatRoomMember
+            {
+                ChatRoomId = room.Id,
+                ChatActorId = actor2.Id,
+                Role = ChatRoomRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        return members;
     }
 }
