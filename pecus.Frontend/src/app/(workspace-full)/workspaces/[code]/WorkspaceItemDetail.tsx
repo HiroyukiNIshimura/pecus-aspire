@@ -464,42 +464,45 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       <div className="card">
         <div className="card-body">
           {/* ヘッダー */}
-          <div className="flex items-start justify-between gap-2 mb-4">
-            <div className="min-w-0 flex-1">
-              <h2 className="text-2xl font-bold mb-2">{item.subject || '（未設定）'}</h2>
-              <div className="flex items-center gap-2 flex-wrap">
-                {item.code && <span className="text-xs text-base-content/50 font-mono">#{item.code}</span>}
-                {item.priority !== undefined && item.priority !== null && (
-                  <div
-                    className={`badge ${
-                      item.priority === 'Critical'
-                        ? 'badge-error'
-                        : item.priority === 'High'
-                          ? 'badge-warning'
-                          : item.priority === 'Medium'
-                            ? 'badge-info'
-                            : ''
-                    }`}
-                  >
-                    優先度:{' '}
-                    {item.priority === 'Critical'
-                      ? '緊急'
-                      : item.priority === 'High'
-                        ? '高'
-                        : item.priority === 'Medium'
-                          ? '中'
-                          : '低'}
-                  </div>
-                )}
-                {item.dueDate && (
-                  <span className="badge badge-outline badge-success badge-md gap-1">
-                    <span className="text-xs">期限:</span>
-                    {formatDate(item.dueDate)}
-                  </span>
-                )}
-              </div>
+          <div className="flex flex-col gap-3 mb-4">
+            {/* 件名とコード */}
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold wrap-break-word">{item.subject || '（未設定）'}</h2>
+              {item.code && <span className="text-xs text-base-content/50 font-mono block mt-1">#{item.code}</span>}
             </div>
-            <div className="flex items-center gap-2">
+            {/* 優先度・期限バッジ */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {item.priority !== undefined && item.priority !== null && (
+                <div
+                  className={`badge ${
+                    item.priority === 'Critical'
+                      ? 'badge-error'
+                      : item.priority === 'High'
+                        ? 'badge-warning'
+                        : item.priority === 'Medium'
+                          ? 'badge-info'
+                          : ''
+                  }`}
+                >
+                  優先度:{' '}
+                  {item.priority === 'Critical'
+                    ? '緊急'
+                    : item.priority === 'High'
+                      ? '高'
+                      : item.priority === 'Medium'
+                        ? '中'
+                        : '低'}
+                </div>
+              )}
+              {item.dueDate && (
+                <span className="badge badge-outline badge-success badge-md gap-1">
+                  <span className="text-xs">期限:</span>
+                  {formatDate(item.dueDate)}
+                </span>
+              )}
+            </div>
+            {/* アクションボタン */}
+            <div className="flex items-center gap-2 flex-wrap">
               {/* PINボタン */}
               <button
                 type="button"
