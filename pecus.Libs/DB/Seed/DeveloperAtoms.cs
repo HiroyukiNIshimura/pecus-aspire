@@ -63,11 +63,6 @@ public class DeveloperAtoms : BaseSeedAtoms
         {
             await _seedAtoms.DisableConstraintsAndIndexesAsync(_context);
 
-            // 開発共通のマスターデータ
-            await _seedAtoms.SeedPermissionsAsync(_context);
-            await _seedAtoms.SeedRolesAsync(_context);
-            await _seedAtoms.SeedGenresAsync(_context);
-            await _seedAtoms.SeedTaskTypesAsync(_context);
             await SeedOrganizationsAsync();
             await SeedOrganizationSettingsAsync();
             await SeedBotsAsync();

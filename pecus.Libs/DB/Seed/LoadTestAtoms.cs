@@ -63,10 +63,7 @@ public class LoadTestAtoms : BaseSeedAtoms
 
         try
         {
-            await _seedAtoms.SeedPermissionsAsync(_context);
-            await _seedAtoms.SeedRolesAsync(_context);
-            await _seedAtoms.SeedGenresAsync(_context);
-            await _seedAtoms.SeedTaskTypesAsync(_context);
+            // 開発共通のマスターデータはProductAtomsで投入済みのため削除
             await SeedOrganizationsAsync();
             await SeedOrganizationSettingsAsync();
             await SeedBotsAsync();

@@ -40,25 +40,18 @@ public class DatabaseSeeder
     /// </summary>
     public async Task SeedAsync()
     {
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+        // 1. Product環境作成 (共通)
+        if (_productAtoms == null)
         {
-            if (_productAtoms == null)
-            {
-                throw new InvalidOperationException("ProductAtoms is not initialized.");
-            }
-            _logger.LogInformation("Seeding production data...");
-            await _productAtoms.SeedProductAsync();
+            throw new InvalidOperationException("ProductAtoms is not initialized.");
         }
-        else if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "LoadTest")
-        {
-            if (_loadTestAtoms == null)
-            {
-                throw new InvalidOperationException("LoadTestAtoms is not initialized.");
-            }
-            _logger.LogInformation("Seeding load test data...");
-            await _loadTestAtoms.SeedDevelopmentDataAsync();
-        }
-        else
+        _logger.LogInformation("Seeding production data (Base)...");
+        await _productAtoms.SeedProductAsync();
+
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+        // 2. 開発環境の場合 (ProductionでもLoadTestでもない場合)
+        if (environment != "Production" && environment != "LoadTest")
         {
             if (_developerAtoms == null)
             {
@@ -66,6 +59,16 @@ public class DatabaseSeeder
             }
             _logger.LogInformation("Seeding development data...");
             await _developerAtoms.SeedDevelopmentDataAsync();
+        }
+        // 3. 負荷テスト環境の場合
+        else if (environment == "LoadTest")
+        {
+            if (_loadTestAtoms == null)
+            {
+                throw new InvalidOperationException("LoadTestAtoms is not initialized.");
+            }
+            _logger.LogInformation("Seeding load test data...");
+            await _loadTestAtoms.SeedDevelopmentDataAsync();
         }
     }
 }
