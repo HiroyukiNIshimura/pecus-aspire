@@ -49,7 +49,7 @@ namespace Pecus.Libs
             // ロール情報をクレームに追加
             foreach (var role in user.Roles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role.Name));
+                claims.Add(new Claim(ClaimTypes.Role, role.Name.ToString()));
             }
 
             // 権限情報をクレームに追加

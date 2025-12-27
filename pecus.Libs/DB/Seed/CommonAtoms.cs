@@ -296,10 +296,10 @@ public class CommonAtoms
     /// </summary>
     public async Task SeedRolesAsync(ApplicationDbContext context)
     {
-        var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+        var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Admin);
         if (adminRole == null)
         {
-            adminRole = new Role { Name = "Admin", Description = "システム管理者" };
+            adminRole = new Role { Name = SystemRole.Admin, Description = "システム管理者" };
             context.Roles.Add(adminRole);
             await context.SaveChangesAsync();
 
@@ -310,10 +310,10 @@ public class CommonAtoms
             _logger.LogInformation("Added role: Admin with all permissions");
         }
 
-        var userRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
+        var userRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.User);
         if (userRole == null)
         {
-            userRole = new Role { Name = "User", Description = "一般ユーザー" };
+            userRole = new Role { Name = SystemRole.User, Description = "一般ユーザー" };
             context.Roles.Add(userRole);
             await context.SaveChangesAsync();
 
@@ -326,10 +326,10 @@ public class CommonAtoms
             _logger.LogInformation("Added role: User with read permissions");
         }
 
-        var backendRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Backend");
+        var backendRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Backend);
         if (backendRole == null)
         {
-            backendRole = new Role { Name = "Backend", Description = "バックエンドシステム" };
+            backendRole = new Role { Name = SystemRole.Backend, Description = "バックエンドシステム" };
             context.Roles.Add(backendRole);
             await context.SaveChangesAsync();
 

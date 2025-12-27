@@ -359,7 +359,7 @@ public class ProfileService
                     Name = us.Skill.Name,
                 })
                 .ToList() ?? new List<UserSkillResponse>(),
-            IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
+            IsAdmin = user.Roles?.Any(r => r.Name == SystemRole.Admin) ?? false,
             IsActive = user.IsActive,
             RowVersion = user.RowVersion!,
             Setting = new UserSettingResponse
@@ -717,7 +717,7 @@ public class ProfileService
             Username = user.Username,
             Email = user.Email,
             IdentityIconUrl = identityIconUrl,
-            IsAdmin = user.Roles.Any(r => r.Name == "Admin"),
+            IsAdmin = user.Roles.Any(r => r.Name == SystemRole.Admin),
         };
     }
 }

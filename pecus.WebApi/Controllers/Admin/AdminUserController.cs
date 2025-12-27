@@ -107,7 +107,7 @@ public class AdminUserController : BaseAdminController
                     Name = us.Skill.Name,
                 })
                 .ToList() ?? new List<UserSkillResponse>(),
-            IsAdmin = targetUser.Roles?.Any(r => r.Name == "Admin") ?? false,
+            IsAdmin = targetUser.Roles?.Any(r => r.Name == SystemRole.Admin) ?? false,
             IsActive = targetUser.IsActive,
             Setting = new UserSettingResponse
             {
@@ -186,7 +186,7 @@ public class AdminUserController : BaseAdminController
                     Name = us.Skill.Name,
                 })
                 .ToList() ?? new List<UserSkillResponse>(),
-            IsAdmin = u.Roles?.Any(r => r.Name == "Admin") ?? false,
+            IsAdmin = u.Roles?.Any(r => r.Name == SystemRole.Admin) ?? false,
             IsActive = u.IsActive,
             LastLoginAt = u.LastLoginAt,
             RowVersion = u.RowVersion!,
@@ -438,7 +438,7 @@ public class AdminUserController : BaseAdminController
                 })
                 .ToList() ?? new List<UserRoleResponse>(),
             Skills = new List<UserSkillResponse>(),
-            IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
+            IsAdmin = user.Roles?.Any(r => r.Name == SystemRole.Admin) ?? false,
             LastLoginAt = user.LastLoginAt,
             RowVersion = user.RowVersion!,
             Setting = new UserSettingResponse

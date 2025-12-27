@@ -136,7 +136,7 @@ public class LoadTestAtoms : BaseSeedAtoms
         // admin ユーザーを作成（Email で存在チェック）
         if (!await _context.Users.AnyAsync(u => u.Email == "admin@sample.com"))
         {
-            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Admin);
             var organization = await _context.Organizations.OrderBy(o => o.Id).FirstOrDefaultAsync();
 
             var adminUser = new User
@@ -196,7 +196,7 @@ public class LoadTestAtoms : BaseSeedAtoms
 
         if (usersToCreate > 0)
         {
-            var userRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
+            var userRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.User);
 
             if (organizations.Any())
             {

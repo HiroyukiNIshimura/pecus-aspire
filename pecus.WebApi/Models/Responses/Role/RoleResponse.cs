@@ -1,4 +1,6 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.Role;
 
@@ -17,7 +19,8 @@ public class RoleResponse
     /// ロール名
     /// </summary>
     [Required]
-    public required string Name { get; set; }
+    [JsonConverter(typeof(JsonStringEnumConverter<SystemRole>))]
+    public required SystemRole Name { get; set; }
 
     /// <summary>
     /// ロールの説明

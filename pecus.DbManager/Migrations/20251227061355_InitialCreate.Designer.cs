@@ -12,8 +12,8 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251223114405_AddBotConstraintColumn")]
-    partial class AddBotConstraintColumn
+    [Migration("20251227061355_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -572,6 +572,9 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("DashboardHelpCommentMaxCount")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("DefaultWorkspaceMode")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("EnforcePredecessorCompletion")
                         .HasColumnType("boolean");
 
@@ -749,10 +752,8 @@ namespace pecus.DbManager.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("Name")
+                        .HasColumnType("integer");
 
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
@@ -901,6 +902,9 @@ namespace pecus.DbManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
+
+                    b.Property<string>("ReminderJobId")
+                        .HasColumnType("text");
 
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
@@ -1222,6 +1226,10 @@ namespace pecus.DbManager.Migrations
                         .IsUnique();
 
                     b.HasIndex("GenreId");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("Name");
 
                     b.HasIndex("OrganizationId");
 

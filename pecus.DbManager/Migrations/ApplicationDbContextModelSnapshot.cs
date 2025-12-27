@@ -749,10 +749,8 @@ namespace pecus.DbManager.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("Name")
+                        .HasColumnType("integer");
 
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()

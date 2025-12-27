@@ -109,7 +109,7 @@ public class OrganizationService
             adminUser.PasswordResetTokenExpiresAt = tokenExpiresAt;
 
             // Admin ロールを取得
-            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Admin);
             if (adminRole != null)
             {
                 adminUser.Roles.Add(adminRole);

@@ -1,4 +1,6 @@
-﻿namespace Pecus.Libs.DB.Models;
+﻿using Pecus.Libs.DB.Models.Enums;
+
+namespace Pecus.Libs.DB.Models;
 
 /// <summary>
 /// ロールエンティティ
@@ -13,7 +15,7 @@ public class Role
     /// <summary>
     /// ロール名
     /// </summary>
-    public required string Name { get; set; }
+    public required SystemRole Name { get; set; }
 
     /// <summary>
     /// ロールの説明

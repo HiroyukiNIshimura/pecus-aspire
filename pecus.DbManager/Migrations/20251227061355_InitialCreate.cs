@@ -84,7 +84,7 @@ namespace pecus.DbManager.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<int>(type: "integer", nullable: false),
                     Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
@@ -130,6 +130,7 @@ namespace pecus.DbManager.Migrations
                     Type = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Persona = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    Constraint = table.Column<string>(type: "text", nullable: true),
                     IconUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
@@ -165,6 +166,7 @@ namespace pecus.DbManager.Migrations
                     EnforcePredecessorCompletion = table.Column<bool>(type: "boolean", nullable: false),
                     DashboardHelpCommentMaxCount = table.Column<int>(type: "integer", nullable: false),
                     GroupChatScope = table.Column<int>(type: "integer", nullable: true),
+                    DefaultWorkspaceMode = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -1054,6 +1056,7 @@ namespace pecus.DbManager.Migrations
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ReminderJobId = table.Column<string>(type: "text", nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
@@ -1538,6 +1541,16 @@ namespace pecus.DbManager.Migrations
                 name: "IX_Workspaces_GenreId",
                 table: "Workspaces",
                 column: "GenreId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Workspaces_IsActive",
+                table: "Workspaces",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Workspaces_Name",
+                table: "Workspaces",
+                column: "Name");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Workspaces_OrganizationId",

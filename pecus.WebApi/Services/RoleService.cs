@@ -2,6 +2,7 @@
 using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Services;
 
@@ -118,7 +119,7 @@ public class RoleService
     /// <summary>
     /// ロール名で取得（権限を含む）
     /// </summary>
-    public async Task<Role?> GetRoleByNameAsync(string name) =>
+    public async Task<Role?> GetRoleByNameAsync(SystemRole name) =>
         await _context.Roles.Include(r => r.Permissions).FirstOrDefaultAsync(r => r.Name == name);
 
     /// <summary>

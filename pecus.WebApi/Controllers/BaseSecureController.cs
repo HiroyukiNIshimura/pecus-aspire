@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -93,7 +94,7 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
             _logger.LogDebug(
                 "User authenticated and active: UserId={UserId}, Roles={Roles}",
                 CurrentUserId,
-                string.Join(",", CurrentUser.Roles?.Select(r => r.Name) ?? Array.Empty<string>())
+                string.Join(",", CurrentUser.Roles?.Select(r => r.Name) ?? Array.Empty<SystemRole>())
             );
 
             // 次のアクションを実行
@@ -117,7 +118,7 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
     [NonAction]
     protected void RequireAdminRole()
     {
-        if (CurrentUser?.Roles == null || !CurrentUser.Roles.Any(r => r.Name == "Admin"))
+        if (CurrentUser?.Roles == null || !CurrentUser.Roles.Any(r => r.Name == SystemRole.Admin))
         {
             throw new InvalidOperationException("この操作を実行する権限がありません。Admin権限が必要です。");
         }

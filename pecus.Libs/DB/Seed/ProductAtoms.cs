@@ -88,8 +88,8 @@ public class ProductAtoms
             await _context.Bots.AddRangeAsync(systemBot, chatBot);
             await _context.SaveChangesAsync();
 
-            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
-            var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
+            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Admin);
+            var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.User);
             if (adminRole == null || memberRole == null)
             {
                 _logger.LogWarning("Required roles not found. Rolling back transaction.");
