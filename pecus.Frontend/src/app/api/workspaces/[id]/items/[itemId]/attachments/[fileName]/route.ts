@@ -7,10 +7,13 @@ export const dynamic = 'force-dynamic';
 /**
  * GET /api/workspaces/{id}/items/{itemId}/attachments/{fileName}
  * 添付ファイルをプロキシ経由で取得（認証を代行）
- * エディタ内の画像表示に使用
+ *
+ * クエリパラメータ:
+ * - download=true: ダウンロードモード（Content-Disposition: attachment）
+ * - download=false または未指定: インライン表示（エディタ内の画像表示用）
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string; itemId: string; fileName: string }> },
 ) {
   try {
@@ -26,7 +29,10 @@ export async function GET(
       return badRequestError('ファイル名が指定されていません');
     }
 
-    // 認証済みAxiosでバックエンドから画像を取得
+    // ダウンロードモードかどうかを判定
+    const isDownload = request.nextUrl.searchParams.get('download') === 'true';
+
+    // 認証済みAxiosでバックエンドからファイルを取得
     const axios = await createAuthenticatedAxios();
     const response = await axios.get(
       `/api/workspaces/${workspaceId}/items/${workspaceItemId}/attachments/download/${fileName}`,
@@ -38,13 +44,24 @@ export async function GET(
     // Content-Type を取得（デフォルトは application/octet-stream）
     const contentType = response.headers['content-type'] || 'application/octet-stream';
 
-    // 画像データをそのまま返却
+    // レスポンスヘッダーを構築
+    const headers: Record<string, string> = {
+      'Content-Type': contentType,
+    };
+
+    if (isDownload) {
+      // ダウンロードモード: ブラウザにダウンロードを促す
+      // RFC 5987 に従い filename* で UTF-8 エンコード
+      const encodedFileName = encodeURIComponent(fileName).replace(/['()]/g, escape);
+      headers['Content-Disposition'] = `attachment; filename*=UTF-8''${encodedFileName}`;
+    } else {
+      // インラインモード: ブラウザ内で表示（キャッシュ有効）
+      headers['Cache-Control'] = 'private, max-age=3600';
+    }
+
     return new NextResponse(response.data, {
       status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'private, max-age=3600', // 1時間キャッシュ
-      },
+      headers,
     });
   } catch (error) {
     console.error('Attachment proxy error:', error);
