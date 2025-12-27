@@ -44,7 +44,9 @@ public class BotSelector : IBotSelector
             cancellationToken
         );
 
-        var botType = needsAttention ? BotType.SystemBot : BotType.ChatBot;
+        // 注意が必要な場合（困っている、緊急、ネガティブ）は ChatBot（親しみやすいサポート）
+        // 通常の業務報告は SystemBot（フォーマルな報告）
+        var botType = needsAttention ? BotType.ChatBot : BotType.SystemBot;
 
         _logger.LogDebug(
             "Bot type determined: NeedsAttention={NeedsAttention}, BotType={BotType}",

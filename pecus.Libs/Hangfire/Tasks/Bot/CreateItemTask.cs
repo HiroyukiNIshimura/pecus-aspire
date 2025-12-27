@@ -143,21 +143,21 @@ public class CreateItemTask : ItemNotificationTaskBase
                 return defaultMessage;
             }
 
-            // Bot のペルソナと行動指針からシステムプロンプトを作成
-            var systemPrompt = new SystemPromptBuilder()
+            // Bot のペルソナと行動指針を MessageGenerationPrompt と統合
+            var botPersonaPrompt = new SystemPromptBuilder()
                 .WithRawPersona(bot.Persona)
                 .WithRawConstraint(bot.Constraint)
                 .Build();
+            var fullSystemPrompt = $"{MessageGenerationPrompt}\n\n{botPersonaPrompt}";
 
             // AI でメッセージを生成
             var userPrompt = $"以下のアイテムについて紹介メッセージを生成してください:\n\n{contentForAnalysis}";
             var generatedMessage = await aiClient.GenerateTextWithMessagesAsync(
                 [
                     (MessageRole.System, $@"Userの一人称は「{updatedByUserName}」さんです。"),
-                    (MessageRole.System, MessageGenerationPrompt),
                     (MessageRole.User, userPrompt)
                 ],
-                systemPrompt
+                fullSystemPrompt
             );
 
             if (string.IsNullOrWhiteSpace(generatedMessage))

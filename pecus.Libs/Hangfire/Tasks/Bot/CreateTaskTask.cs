@@ -127,20 +127,20 @@ public class CreateTaskTask : TaskNotificationTaskBase
                 return defaultMessage;
             }
 
-            // Bot のペルソナと行動指針からシステムプロンプトを作成
-            var systemPrompt = new SystemPromptBuilder()
+            // Bot のペルソナと行動指針を MessageGenerationPrompt と統合
+            var botPersonaPrompt = new SystemPromptBuilder()
                 .WithRawPersona(bot.Persona)
                 .WithRawConstraint(bot.Constraint)
                 .Build();
+            var fullSystemPrompt = $"{MessageGenerationPrompt}\n\n{botPersonaPrompt}";
 
             var userPrompt = $"以下のタスクについて紹介メッセージを生成してください:\n\n{contentForAnalysis}";
             var generatedMessage = await aiClient.GenerateTextWithMessagesAsync(
                 [
                     (MessageRole.System, $@"Userの一人称は「{userName}」さんです。"),
-                    (MessageRole.System, MessageGenerationPrompt),
                     (MessageRole.User, userPrompt)
                 ],
-                systemPrompt
+                fullSystemPrompt
             );
 
             if (string.IsNullOrWhiteSpace(generatedMessage))
