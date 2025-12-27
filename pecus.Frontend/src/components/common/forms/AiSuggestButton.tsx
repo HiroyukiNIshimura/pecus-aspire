@@ -46,7 +46,7 @@ export default function AiSuggestButton({
       type="button"
       onClick={onSuggest}
       disabled={disabled}
-      className={`btn btn-xs btn-outline btn-secondary gap-1 ${className}`}
+      className={`btn btn-xs btn-outline gap-1 ${hasSubject ? 'btn-info' : 'btn-secondary'} ${className}`}
       title={!hasSubject ? '件名を入力すると提案を利用できます' : 'AIが本文を提案します'}
     >
       <span className="icon-[mdi--auto-fix] size-4" aria-hidden="true" />
