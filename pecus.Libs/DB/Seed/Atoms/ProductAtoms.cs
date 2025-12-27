@@ -24,7 +24,6 @@ public class ProductAtoms
     /// <param name="context"></param>
     /// <param name="logger"></param>
     /// <param name="options"></param>
-    /// <param name="demoModeOptions"></param>
     public ProductAtoms(
         ApplicationDbContext context,
         ILogger<ProductAtoms> logger,
