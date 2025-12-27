@@ -118,7 +118,7 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
     [NonAction]
     protected void RequireAdminRole()
     {
-        if (CurrentUser?.Roles == null || !CurrentUser.Roles.Any(r => r.Name == SystemRole.Admin))
+        if (CurrentUser?.Roles == null || !CurrentUser.Roles.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice))
         {
             throw new InvalidOperationException("この操作を実行する権限がありません。Admin権限が必要です。");
         }

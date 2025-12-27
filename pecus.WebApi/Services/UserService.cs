@@ -811,7 +811,7 @@ public class UserService
                     Id = r.Id,
                     Name = r.Name
                 }).ToList(),
-                IsAdmin = latestUser.Roles.Any(r => r.Name == SystemRole.Admin),
+                IsAdmin = latestUser.Roles.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice),
                 CreatedAt = latestUser.CreatedAt,
                 LastLoginAt = latestUser.LastLoginAt,
                 RowVersion = latestUser.RowVersion!,

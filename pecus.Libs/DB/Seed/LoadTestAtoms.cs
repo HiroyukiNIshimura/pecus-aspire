@@ -191,7 +191,7 @@ public class LoadTestAtoms : BaseSeedAtoms
         var dataVolume = GetDataVolume();
         var organizations = await _context.Organizations.ToListAsync();
         var targetUserCount = organizations.Count * dataVolume.UsersPerOrganization;
-        var existingUserCount = await _context.Users.CountAsync(u => u.Email != "admin@sample.com");
+        var existingUserCount = await _context.Users.CountAsync(u => u.Roles.All(r => r.Name == SystemRole.User));
         var usersToCreate = targetUserCount - existingUserCount;
 
         if (usersToCreate > 0)

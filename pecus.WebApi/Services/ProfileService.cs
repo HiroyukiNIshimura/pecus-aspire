@@ -359,7 +359,7 @@ public class ProfileService
                     Name = us.Skill.Name,
                 })
                 .ToList() ?? new List<UserSkillResponse>(),
-            IsAdmin = user.Roles?.Any(r => r.Name == SystemRole.Admin) ?? false,
+            IsAdmin = user.Roles?.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice) ?? false,
             IsActive = user.IsActive,
             RowVersion = user.RowVersion!,
             Setting = new UserSettingResponse
