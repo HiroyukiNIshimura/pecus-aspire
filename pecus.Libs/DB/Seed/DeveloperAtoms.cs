@@ -113,7 +113,7 @@ public class DeveloperAtoms : BaseSeedAtoms
                     RepresentativeName = _faker.Name.LastName().ClampLength(max: 40) + " " + _faker.Name.FirstName().ClampLength(max: 40),
                     PhoneNumber = _faker.Phone.PhoneNumber().ClampLength(max: 20),
                     Email = _faker.Internet.Email("foo").ClampLength(max: 254),
-                    IsActive = _random.Next(2) == 1,
+                    IsActive = true,
                 };
 
                 organizations.Add(organization);
@@ -130,8 +130,8 @@ public class DeveloperAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedUsersAsync()
     {
-        // admin ユーザーを作成（Email で存在チェック）
-        if (!await _context.Users.AnyAsync(u => u.Email == "admin@sample.com"))
+        // admin ユーザーを作成（Adminロールを持つユーザーが存在しない場合）
+        if (!await _context.Users.AnyAsync(u => u.Roles.Any(r => r.Name == SystemRole.Admin)))
         {
             var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Admin);
             var organization = await _context.Organizations
@@ -260,7 +260,7 @@ public class DeveloperAtoms : BaseSeedAtoms
                 if (userRole != null)
                 {
                     var usersToUpdate = await _context.Users
-                        .Where(u => u.Email != "admin@sample.com" && !u.Roles.Any())
+                        .Where(u => !u.Roles.Any(r => r.Name == SystemRole.Admin) && !u.Roles.Any())
                         .ToListAsync();
 
                     foreach (var user in usersToUpdate)
@@ -392,14 +392,16 @@ public class DeveloperAtoms : BaseSeedAtoms
     public async Task SeedWorkspacesAsync()
     {
         var dataVolume = GetDataVolume();
-        if (!await _context.Workspaces.AnyAsync())
+        if (!await _context.Workspaces.AnyAsync(w => w.OrganizationId != _excludeOrganizationId))
         {
-            var organizations = await _context.Organizations.ToListAsync();
+            var organizations = await _context.Organizations
+                .Where(o => o.Id != _excludeOrganizationId)
+                .ToListAsync();
             var genres = await _context.Genres.ToListAsync();
 
             // 組織ごとのアクティブなユーザーを事前に取得（オーナー候補）
             var usersByOrganization = await _context.Users
-                .Where(u => u.OrganizationId != null && u.IsActive)
+                .Where(u => u.OrganizationId != null && u.OrganizationId != _excludeOrganizationId && u.IsActive)
                 .GroupBy(u => u.OrganizationId!.Value)
                 .ToDictionaryAsync(g => g.Key, g => g.ToList());
 
@@ -790,8 +792,9 @@ public class DeveloperAtoms : BaseSeedAtoms
         // キャッシュをクリアして再度読み込み
         _context.ChangeTracker.Clear();
 
-        // admin ユーザーを取得（Email で検索）
-        var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "admin@sample.com");
+        // admin ユーザーを取得（Adminロールで検索）
+        var adminUser = await _context.Users
+            .FirstOrDefaultAsync(u => u.Roles.Any(r => r.Name == SystemRole.Admin));
         if (adminUser == null)
         {
             _logger.LogWarning("Admin user not found for seeding workspace skills");
@@ -879,15 +882,18 @@ public class DeveloperAtoms : BaseSeedAtoms
         // キャッシュをクリアして再度読み込み
         _context.ChangeTracker.Clear();
 
-        // admin ユーザーを取得（Email で検索）
-        var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "admin@sample.com");
+        // admin ユーザーを取得（Adminロールで検索）
+        var adminUser = await _context.Users
+            .FirstOrDefaultAsync(u => u.Roles.Any(r => r.Name == SystemRole.Admin));
         if (adminUser == null)
         {
             _logger.LogWarning("Admin user not found for seeding user skills");
             return;
         }
 
-        var users = await _context.Users.Where(u => u.Email != "admin@sample.com").ToListAsync();
+        var users = await _context.Users
+            .Where(u => !u.Roles.Any(r => r.Name == SystemRole.Admin))
+            .ToListAsync();
 
         if (!users.Any())
         {
