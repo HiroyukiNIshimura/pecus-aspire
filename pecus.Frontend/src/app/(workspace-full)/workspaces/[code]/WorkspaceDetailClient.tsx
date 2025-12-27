@@ -376,10 +376,13 @@ export default function WorkspaceDetailClient({
     const loadTaskBySequence = async () => {
       try {
         // シーケンス番号で直接タスクを取得（1件取得API）
-        const result = await getWorkspaceTaskBySequence(currentWorkspaceDetail.id, selectedItemId, pendingTaskSequence);
+        const [taskResult, itemResult] = await Promise.all([
+          getWorkspaceTaskBySequence(currentWorkspaceDetail.id, selectedItemId, pendingTaskSequence),
+          fetchLatestWorkspaceItem(currentWorkspaceDetail.id, selectedItemId),
+        ]);
 
-        if (result.success && result.data) {
-          const task = result.data;
+        if (taskResult.success && taskResult.data) {
+          const task = taskResult.data;
           // タスクナビゲーション情報を構築（1件のみ）
           const navigation: TaskNavigation = {
             tasks: [task],
@@ -389,6 +392,17 @@ export default function WorkspaceDetailClient({
             totalCount: 1,
             statusFilter: 'All',
           };
+
+          // アイテム情報を設定（フローマップ遷移用）
+          if (itemResult.success && itemResult.data) {
+            const item = itemResult.data;
+            setTaskDetailItemCommitterId(item.committerId ?? null);
+            setTaskDetailItemCommitterName(item.committerUsername ?? null);
+            setTaskDetailItemCommitterAvatarUrl(item.committerAvatarUrl ?? null);
+            setTaskDetailItemOwnerId(item.ownerId ?? null);
+            setTaskDetailItemAssigneeId(item.assigneeId ?? null);
+            setTaskDetailItemTitle(item.subject ?? null);
+          }
 
           // タスク詳細ページを表示
           setTaskDetailItemId(selectedItemId);
