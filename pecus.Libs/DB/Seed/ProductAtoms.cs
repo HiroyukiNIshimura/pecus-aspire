@@ -37,7 +37,8 @@ public class ProductAtoms
     /// <summary>
     /// 本番環境用のデータを投入
     /// </summary>
-    public async Task SeedProductAsync()
+    /// <returns>作成されたBackOffice組織のID</returns>
+    public async Task<long> SeedProductAsync()
     {
         _logger.LogInformation("Seeding production data...");
 
@@ -46,7 +47,7 @@ public class ProductAtoms
         await SeedGenresAsync();
         await SeedTaskTypesAsync();
 
-        await SeedBackOfficeDataAsync();
+        var backOfficeOrgId = await SeedBackOfficeDataAsync();
 
         if (Environment.GetEnvironmentVariable("PECUS_DEMO_MODE") == "true")
         {
@@ -55,19 +56,21 @@ public class ProductAtoms
         }
 
         _logger.LogInformation("Production data seeding completed");
+        return backOfficeOrgId;
     }
 
     /// <summary>
     /// BackOffice関連のデータを1つのトランザクションで投入
     /// </summary>
-    private async Task SeedBackOfficeDataAsync()
+    /// <returns>作成または取得されたBackOffice組織のID</returns>
+    private async Task<long> SeedBackOfficeDataAsync()
     {
         var existingOrg = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == _options.Organization.Code);
         if (existingOrg != null)
         {
             _logger.LogInformation("BackOffice organization already exists, updating bots if needed...");
             await UpdateBackOfficeBotsAsync(existingOrg);
-            return;
+            return existingOrg.Id;
         }
 
         await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -92,7 +95,7 @@ public class ProductAtoms
             {
                 _logger.LogWarning("Required roles not found. Rolling back transaction.");
                 await transaction.RollbackAsync();
-                return;
+                throw new InvalidOperationException("Required roles (Admin/User) not found.");
             }
 
             var users = CreateBackOfficeUsers(organization, adminRole, memberRole);
@@ -113,6 +116,7 @@ public class ProductAtoms
 
             await transaction.CommitAsync();
             _logger.LogInformation("BackOffice data seeding completed successfully");
+            return organization.Id;
         }
         catch (Exception ex)
         {

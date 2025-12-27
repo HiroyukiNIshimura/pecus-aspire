@@ -35,6 +35,10 @@ public abstract class BaseSeedAtoms
     ///
     /// </summary>
     protected readonly Bogus.Faker _faker;
+    /// <summary>
+    /// 除外する組織ID（BackOffice組織など）
+    /// </summary>
+    protected long _excludeOrganizationId;
 
     /// <summary>
     /// Constructor

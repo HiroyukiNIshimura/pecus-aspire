@@ -55,8 +55,10 @@ public class DeveloperAtoms : BaseSeedAtoms
     /// <summary>
     /// 開発環境用のモックデータを投入
     /// </summary>
-    public async Task SeedDevelopmentDataAsync()
+    /// <param name="excludeOrganizationId">除外する組織ID（BackOffice組織）</param>
+    public async Task SeedDevelopmentDataAsync(long excludeOrganizationId)
     {
+        _excludeOrganizationId = excludeOrganizationId;
         _logger.LogInformation("Seeding development mock data...");
 
         try
@@ -96,7 +98,8 @@ public class DeveloperAtoms : BaseSeedAtoms
     public async Task SeedOrganizationsAsync()
     {
         var dataVolume = GetDataVolume();
-        if (!await _context.Organizations.AnyAsync())
+        var existingCount = await _context.Organizations.CountAsync(o => o.Id != _excludeOrganizationId);
+        if (existingCount == 0)
         {
             var organizations = new List<Organization>();
 
@@ -131,7 +134,10 @@ public class DeveloperAtoms : BaseSeedAtoms
         if (!await _context.Users.AnyAsync(u => u.Email == "admin@sample.com"))
         {
             var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Admin);
-            var organization = await _context.Organizations.OrderBy(o => o.Id).FirstOrDefaultAsync();
+            var organization = await _context.Organizations
+                .Where(o => o.Id != _excludeOrganizationId)
+                .OrderBy(o => o.Id)
+                .FirstOrDefaultAsync();
 
             var adminUser = new User
             {
@@ -183,7 +189,9 @@ public class DeveloperAtoms : BaseSeedAtoms
         }
 
         var dataVolume = GetDataVolume();
-        var organizations = await _context.Organizations.ToListAsync();
+        var organizations = await _context.Organizations
+            .Where(o => o.Id != _excludeOrganizationId)
+            .ToListAsync();
         var targetUserCount = organizations.Count * dataVolume.UsersPerOrganization;
 
         var existingUserCount = await _context.Users.CountAsync(u => u.Roles.All(r => r.Name == SystemRole.User));
