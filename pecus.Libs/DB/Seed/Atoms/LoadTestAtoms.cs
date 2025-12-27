@@ -99,7 +99,7 @@ public class LoadTestAtoms : BaseSeedAtoms
     public async Task SeedOrganizationsAsync()
     {
         var dataVolume = GetDataVolume();
-        var existingCount = await _context.Organizations.CountAsync(o => o.Id != _excludeOrganizationId);
+        var existingCount = await _context.Organizations.CountAsync(o => o.Id != _excludeOrganizationId && !o.IsDemo);
         if (existingCount == 0)
         {
             var organizations = new List<Organization>();
@@ -138,7 +138,7 @@ public class LoadTestAtoms : BaseSeedAtoms
         {
             var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Admin);
             var organization = await _context.Organizations
-                .Where(o => o.Id != _excludeOrganizationId)
+                .Where(o => o.Id != _excludeOrganizationId && !o.IsDemo)
                 .OrderBy(o => o.Id)
                 .FirstOrDefaultAsync();
 
@@ -193,7 +193,7 @@ public class LoadTestAtoms : BaseSeedAtoms
 
         var dataVolume = GetDataVolume();
         var organizations = await _context.Organizations
-            .Where(o => o.Id != _excludeOrganizationId)
+            .Where(o => o.Id != _excludeOrganizationId && !o.IsDemo)
             .ToListAsync();
         var targetUserCount = organizations.Count * dataVolume.UsersPerOrganization;
         var existingUserCount = await _context.Users.CountAsync(u => u.Roles.All(r => r.Name == SystemRole.User));
@@ -290,16 +290,16 @@ public class LoadTestAtoms : BaseSeedAtoms
     public async Task SeedWorkspacesAsync()
     {
         var dataVolume = GetDataVolume();
-        if (!await _context.Workspaces.AnyAsync(w => w.OrganizationId != _excludeOrganizationId))
+        if (!await _context.Workspaces.AnyAsync(w => w.Organization != null && w.OrganizationId != _excludeOrganizationId && !w.Organization.IsDemo))
         {
             var organizations = await _context.Organizations
-                .Where(o => o.Id != _excludeOrganizationId)
+                .Where(o => o.Id != _excludeOrganizationId && !o.IsDemo)
                 .ToListAsync();
             var genres = await _context.Genres.ToListAsync();
 
             // 組織ごとのアクティブなユーザーを事前に取得（オーナー候補）
             var usersByOrganization = await _context.Users
-                .Where(u => u.OrganizationId != null && u.OrganizationId != _excludeOrganizationId && u.IsActive)
+                .Where(u => u.OrganizationId != null && u.OrganizationId != _excludeOrganizationId && u.IsActive && u.Organization != null && !u.Organization.IsDemo)
                 .GroupBy(u => u.OrganizationId!.Value)
                 .ToDictionaryAsync(g => g.Key, g => g.ToList());
 
