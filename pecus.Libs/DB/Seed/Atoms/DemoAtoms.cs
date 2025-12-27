@@ -127,10 +127,7 @@ public class DemoAtoms
             await _context.WorkspaceUsers.AddRangeAsync(workspaceUsers);
             await _context.SaveChangesAsync();
 
-            var (workspaceChatRooms, workspaceChatRoomMembers) = CreateWorkspaceGroupChatRooms(organization, workspaces, users, chatActors);
-            await _context.ChatRooms.AddRangeAsync(workspaceChatRooms);
-            await _context.SaveChangesAsync();
-
+            var workspaceChatRoomMembers = await CreateWorkspaceGroupChatRoomsAsync(organization, workspaces, users, chatActors);
             await _context.ChatRoomMembers.AddRangeAsync(workspaceChatRoomMembers);
             await _context.SaveChangesAsync();
 
@@ -540,7 +537,7 @@ public class DemoAtoms
         return workspaceUsers;
     }
 
-    private (List<ChatRoom> ChatRooms, List<ChatRoomMember> Members) CreateWorkspaceGroupChatRooms(
+    private async Task<List<ChatRoomMember>> CreateWorkspaceGroupChatRoomsAsync(
         Organization org,
         List<Workspace> workspaces,
         List<User> users,
@@ -567,8 +564,8 @@ public class DemoAtoms
             chatRooms.Add(room);
         }
 
-        _context.ChatRooms.AddRange(chatRooms);
-        _context.SaveChanges();
+        await _context.ChatRooms.AddRangeAsync(chatRooms);
+        await _context.SaveChangesAsync();
 
         foreach (var room in chatRooms)
         {
@@ -604,7 +601,7 @@ public class DemoAtoms
         _logger.LogInformation("Created {RoomCount} workspace group chat rooms with {MemberCount} members",
             chatRooms.Count, chatRoomMembers.Count);
 
-        return (chatRooms, chatRoomMembers);
+        return chatRoomMembers;
     }
 
     private async Task CreateDemoWorkspaceItemsAsync(Workspace workspace, User? adminUser)
@@ -831,7 +828,16 @@ public class DemoAtoms
             {
                 var commentUser = users[random.Next(users.Count)];
                 var commentType = commentTypes[random.Next(commentTypes.Length)];
-                var content = normalComments[random.Next(normalComments.Length)];
+
+                var content = commentType switch
+                {
+                    TaskCommentType.Memo => "メモを追加しました。後で確認してください。",
+                    TaskCommentType.HelpWanted => "助けてください！この作業で詰まっています。どなたかアドバイスをいただけないでしょうか？",
+                    TaskCommentType.NeedReply => "確認をお願いします。返信をお待ちしています。",
+                    TaskCommentType.Reminder => "リマインドです。進捗はいかがでしょうか？",
+                    TaskCommentType.Urge => "至急対応をお願いします。期限が迫っています！",
+                    _ => normalComments[random.Next(normalComments.Length)]
+                };
 
                 var comment = new TaskComment
                 {

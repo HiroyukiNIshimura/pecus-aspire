@@ -290,7 +290,7 @@ public class LoadTestAtoms : BaseSeedAtoms
     public async Task SeedWorkspacesAsync()
     {
         var dataVolume = GetDataVolume();
-        if (!await _context.Workspaces.AnyAsync(w => w.Organization != null && w.OrganizationId != _excludeOrganizationId && !w.Organization.IsDemo))
+        if (!await _context.Workspaces.AnyAsync(w => w.Organization != null && w.OrganizationId != _excludeOrganizationId && !w.Organization!.IsDemo))
         {
             var organizations = await _context.Organizations
                 .Where(o => o.Id != _excludeOrganizationId && !o.IsDemo)
@@ -869,9 +869,13 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedWorkspaceItemsAsync()
     {
-        if (!await _context.WorkspaceItems.AnyAsync())
+        var hasNonDemoItems = await _context.WorkspaceItems
+            .AnyAsync(wi => wi.Workspace!.Organization != null && !wi.Workspace!.Organization!.IsDemo);
+        if (!hasNonDemoItems)
         {
-            var workspaces = await _context.Workspaces.ToListAsync();
+            var workspaces = await _context.Workspaces
+                .Where(w => w.Organization != null && !w.Organization!.IsDemo)
+                .ToListAsync();
 
             if (!workspaces.Any())
             {
@@ -1020,9 +1024,13 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedWorkspaceItemRelationsAsync()
     {
-        if (!await _context.WorkspaceItemRelations.AnyAsync())
+        var hasNonDemoRelations = await _context.WorkspaceItemRelations
+            .AnyAsync(r => r.FromItem!.Workspace!.Organization != null && !r.FromItem!.Workspace!.Organization!.IsDemo);
+        if (!hasNonDemoRelations)
         {
-            var workspaces = await _context.Workspaces.ToListAsync();
+            var workspaces = await _context.Workspaces
+                .Where(w => w.Organization != null && !w.Organization!.IsDemo)
+                .ToListAsync();
 
             if (!workspaces.Any())
             {
@@ -1120,13 +1128,16 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedWorkspaceTasksAsync()
     {
-        if (await _context.WorkspaceTasks.AnyAsync())
+        var hasNonDemoTasks = await _context.WorkspaceTasks
+            .AnyAsync(t => t.Workspace!.Organization != null && !t.Workspace!.Organization!.IsDemo);
+        if (hasNonDemoTasks)
         {
             _logger.LogInformation("Workspace tasks already exist, skipping seeding");
             return;
         }
 
         var workspaceItems = await _context.WorkspaceItems
+            .Where(wi => wi.Workspace!.Organization != null && !wi.Workspace!.Organization!.IsDemo)
             .Select(wi => new { wi.Id, wi.WorkspaceId })
             .ToListAsync();
 
@@ -1328,14 +1339,17 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedTaskCommentsAsync()
     {
-        // TaskCommentsが既に存在する場合はスキップ
-        if (await _context.TaskComments.AnyAsync())
+        // TaskCommentsが既に存在する場合はスキップ（Demo組織を除外）
+        var hasNonDemoComments = await _context.TaskComments
+            .AnyAsync(c => c.WorkspaceTask.Workspace!.Organization != null && !c.WorkspaceTask.Workspace!.Organization!.IsDemo);
+        if (hasNonDemoComments)
         {
             _logger.LogInformation("Task comments already seeded, skipping");
             return;
         }
 
         var workspaceTasks = await _context.WorkspaceTasks
+            .Where(wt => wt.Workspace!.Organization != null && !wt.Workspace!.Organization!.IsDemo)
             .Select(wt => new { wt.Id, wt.WorkspaceId })
             .ToListAsync();
 
@@ -1418,13 +1432,16 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedActivitiesAsync()
     {
-        if (await _context.Activities.AnyAsync())
+        var hasNonDemoActivities = await _context.Activities
+            .AnyAsync(a => a.Workspace!.Organization != null && !a.Workspace!.Organization!.IsDemo);
+        if (hasNonDemoActivities)
         {
             _logger.LogInformation("Activities already seeded, skipping");
             return;
         }
 
         var items = await _context.WorkspaceItems
+            .Where(wi => wi.Workspace!.Organization != null && !wi.Workspace!.Organization!.IsDemo)
             .Select(wi => new { wi.Id, wi.WorkspaceId, wi.CreatedAt })
             .ToListAsync();
 
