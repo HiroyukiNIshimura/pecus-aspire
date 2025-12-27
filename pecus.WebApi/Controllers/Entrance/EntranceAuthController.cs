@@ -167,6 +167,7 @@ public class EntranceAuthController : ControllerBase
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    user.OrganizationId ?? 0,
                     user.Email,
                     "セキュリティ通知: 新しいデバイスからのログインを検知しました",
                     model

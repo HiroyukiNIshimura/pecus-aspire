@@ -497,6 +497,7 @@ public class AdminWorkspaceController : BaseAdminController
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    CurrentOrganizationId,
                     workspaceUser.User.Email,
                     "ワークスペースへの参加のお知らせ",
                     emailModel

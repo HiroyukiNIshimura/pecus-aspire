@@ -110,6 +110,7 @@ public class EntrancePasswordController : ControllerBase
             // バックグラウンドでメール送信
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    user.OrganizationId ?? 0,
                     user.Email,
                     "パスワードリセット",
                     emailModel

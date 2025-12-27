@@ -435,6 +435,7 @@ public class TaskCommentController : BaseSecureController
 
         _backgroundJobClient.Enqueue<EmailTasks>(x =>
             x.SendTemplatedEmailAsync(
+                CurrentOrganizationId,
                 taskInfo.AssignedUser.Email,
                 "タスクへの督促コメントが届きました",
                 emailModel
@@ -515,6 +516,7 @@ public class TaskCommentController : BaseSecureController
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    CurrentOrganizationId,
                     user.Email,
                     "ヘルプが求められています",
                     emailModel

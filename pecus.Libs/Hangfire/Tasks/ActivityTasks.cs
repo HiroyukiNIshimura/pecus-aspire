@@ -216,6 +216,7 @@ public class ActivityTasks
 
                     _backgroundJobClient.Enqueue<EmailTasks>(x =>
                         x.SendTemplatedEmailAsync(
+                            workspace.OrganizationId,
                             user.Email,
                             $"新しいアイテムが作成されました: {item.Subject}",
                             emailModel
@@ -249,6 +250,7 @@ public class ActivityTasks
 
                     _backgroundJobClient.Enqueue<EmailTasks>(x =>
                         x.SendTemplatedEmailAsync(
+                            workspace.OrganizationId,
                             user.Email,
                             $"アイテムが更新されました: {item.Subject}",
                             emailModel

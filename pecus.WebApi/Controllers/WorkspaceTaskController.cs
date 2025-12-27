@@ -399,6 +399,7 @@ public class WorkspaceTaskController : BaseSecureController
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    CurrentOrganizationId,
                     user.Email,
                     "新しいタスクが作成されました",
                     emailModel
@@ -476,6 +477,7 @@ public class WorkspaceTaskController : BaseSecureController
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    CurrentOrganizationId,
                     user.Email,
                     subject,
                     emailModel

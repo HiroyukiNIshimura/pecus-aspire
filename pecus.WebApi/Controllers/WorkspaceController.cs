@@ -274,6 +274,7 @@ public class WorkspaceController : BaseSecureController
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    CurrentOrganizationId,
                     workspaceUser.User.Email,
                     "ワークスペースへの参加のお知らせ",
                     emailModel
@@ -666,6 +667,7 @@ public class WorkspaceController : BaseSecureController
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    CurrentOrganizationId,
                     user.Email,
                     "新しいワークスペースが作成されました",
                     emailModel
@@ -772,6 +774,7 @@ public class WorkspaceController : BaseSecureController
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    CurrentOrganizationId,
                     user.Email,
                     "ワークスペースが更新されました",
                     emailModel
@@ -825,6 +828,7 @@ public class WorkspaceController : BaseSecureController
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    CurrentOrganizationId,
                     user.Email,
                     "ワークスペースが削除されました",
                     emailModel

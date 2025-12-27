@@ -92,6 +92,7 @@ public class EntranceOrganizationController : ControllerBase
         // バックグラウンドでメール送信
         _backgroundJobClient.Enqueue<EmailTasks>(x =>
             x.SendTemplatedEmailAsync(
+                organization.Id,
                 organization.Email ?? string.Empty,
                 "組織登録完了",
                 emailModel

@@ -398,6 +398,7 @@ public class AdminUserController : BaseAdminController
         // パスワード設定メールを送信
         _backgroundJobClient.Enqueue<EmailTasks>(x =>
             x.SendTemplatedEmailAsync(
+                organization.Id,
                 user.Email,
                 "パスワード設定のお知らせ",
                 new PasswordSetupEmailModel
@@ -498,6 +499,7 @@ public class AdminUserController : BaseAdminController
             // バックグラウンドでメール送信
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
                 x.SendTemplatedEmailAsync(
+                    CurrentOrganizationId,
                     user.Email,
                     "パスワードリセット",
                     emailModel
