@@ -8,7 +8,7 @@ using Pecus.Libs.Lexical;
 using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
 
-namespace Pecus.Libs.DB.Seed;
+namespace Pecus.Libs.DB.Seed.Atoms;
 
 /// <summary>
 /// シードデータ投入の共通ロジックを提供する抽象基底クラス

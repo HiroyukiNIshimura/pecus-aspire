@@ -7,7 +7,7 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
 
-namespace Pecus.Libs.DB.Seed;
+namespace Pecus.Libs.DB.Seed.Atoms;
 
 /// <summary>
 /// 本番環境向けのシードデータ生成

@@ -4,6 +4,7 @@ using Pecus.DbManager;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Seed;
+using Pecus.Libs.DB.Seed.Atoms;
 using Pecus.Libs.Lexical;
 
 #if DEBUG

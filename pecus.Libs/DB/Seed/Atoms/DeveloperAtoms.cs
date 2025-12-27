@@ -9,12 +9,12 @@ using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
 using System.Reflection;
 
-namespace Pecus.Libs.DB.Seed;
+namespace Pecus.Libs.DB.Seed.Atoms;
 
 /// <summary>
-/// 負荷テスト向けのシードデータ生成
+/// 開発者向けのシードデータ生成
 /// </summary>
-public class LoadTestAtoms : BaseSeedAtoms
+public class DeveloperAtoms : BaseSeedAtoms
 {
     /// <summary>
     ///  Constructor
@@ -22,9 +22,9 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// <param name="context"></param>
     /// <param name="logger"></param>
     /// <param name="seedAtoms"></param>
-    public LoadTestAtoms(
+    public DeveloperAtoms(
         ApplicationDbContext context,
-        ILogger<LoadTestAtoms> logger,
+        ILogger<DeveloperAtoms> logger,
         CommonAtoms seedAtoms)
         : base(context, logger, seedAtoms)
     {
@@ -37,35 +37,34 @@ public class LoadTestAtoms : BaseSeedAtoms
     {
         return new SeedDataVolume
         {
-            Organizations = 5,
-            UsersPerOrganization = 100,
-            WorkspacesPerOrganization = 50,
-            ItemsPerWorkspace = 100,
+            Organizations = 2,
+            UsersPerOrganization = 10,
+            WorkspacesPerOrganization = 5,
+            ItemsPerWorkspace = 30,
             TasksPerItemMin = 0,
             TasksPerItemMax = 10,
             CommentsPerTaskMin = 0,
             CommentsPerTaskMax = 10,
-            ActivitiesPerItemMin = 2,
-            ActivitiesPerItemMax = 5,
+            ActivitiesPerItemMin = 1,
+            ActivitiesPerItemMax = 3,
             RelationsPerWorkspaceMin = 0,
             RelationsPerWorkspaceMax = 5,
         };
     }
 
     /// <summary>
-    /// 負荷確認、開発環境用のモックデータを投入
+    /// 開発環境用のモックデータを投入
     /// </summary>
     /// <param name="excludeOrganizationId">除外する組織ID（BackOffice組織）</param>
     public async Task SeedDevelopmentDataAsync(long excludeOrganizationId)
     {
         _excludeOrganizationId = excludeOrganizationId;
-        _logger.LogInformation("Seeding development(LoadTest) mock data...");
-
-        await _seedAtoms.DisableConstraintsAndIndexesAsync(_context);
+        _logger.LogInformation("Seeding development mock data...");
 
         try
         {
-            // 開発共通のマスターデータはProductAtomsで投入済みのため削除
+            await _seedAtoms.DisableConstraintsAndIndexesAsync(_context);
+
             await SeedOrganizationsAsync();
             await SeedOrganizationSettingsAsync();
             await SeedBotsAsync();
@@ -90,7 +89,7 @@ public class LoadTestAtoms : BaseSeedAtoms
             //await _seedAtoms.ReindexPgroongaAsync(_context);
         }
 
-        _logger.LogInformation("Development(LoadTest) mock data seeding completed");
+        _logger.LogInformation("Development mock data seeding completed");
     }
 
     /// <summary>
@@ -114,7 +113,7 @@ public class LoadTestAtoms : BaseSeedAtoms
                     RepresentativeName = _faker.Name.LastName().ClampLength(max: 40) + " " + _faker.Name.FirstName().ClampLength(max: 40),
                     PhoneNumber = _faker.Phone.PhoneNumber().ClampLength(max: 20),
                     Email = _faker.Internet.Email("foo").ClampLength(max: 254),
-                    IsActive = _random.Next(2) == 1,
+                    IsActive = true,
                 };
 
                 organizations.Add(organization);
@@ -125,8 +124,6 @@ public class LoadTestAtoms : BaseSeedAtoms
             _logger.LogInformation("Added {Count} organizations", organizations.Count);
         }
     }
-
-
 
     /// <summary>
     /// ユーザーのシードデータを投入
@@ -196,6 +193,7 @@ public class LoadTestAtoms : BaseSeedAtoms
             .Where(o => o.Id != _excludeOrganizationId)
             .ToListAsync();
         var targetUserCount = organizations.Count * dataVolume.UsersPerOrganization;
+
         var existingUserCount = await _context.Users.CountAsync(u => u.Roles.All(r => r.Name == SystemRole.User));
         var usersToCreate = targetUserCount - existingUserCount;
 
@@ -282,7 +280,111 @@ public class LoadTestAtoms : BaseSeedAtoms
         }
     }
 
+    /// <summary>
+    /// ChatActor のシードデータを投入
+    /// User と Bot に対応する ChatActor を作成
+    /// </summary>
+    private new async Task SeedChatActorsAsync()
+    {
+        var chatActorsToAdd = new List<ChatActor>();
 
+        // 1. ChatActor が未作成のユーザーを取得して作成
+        var usersWithoutActor = await _context.Users
+            .Where(u => u.OrganizationId != null && !_context.ChatActors.Any(a => a.UserId == u.Id))
+            .ToListAsync();
+
+        foreach (var user in usersWithoutActor)
+        {
+            chatActorsToAdd.Add(new ChatActor
+            {
+                OrganizationId = user.OrganizationId!.Value,
+                ActorType = ChatActorType.User,
+                UserId = user.Id,
+                DisplayName = user.Username,
+                AvatarType = user.AvatarType,
+                AvatarUrl = user.UserAvatarPath,
+            });
+        }
+
+        // 2. ChatActor が未作成のボットを取得して作成
+        var botsWithoutActor = await _context.Bots
+            .Where(b => !_context.ChatActors.Any(a => a.BotId == b.Id))
+            .ToListAsync();
+
+        foreach (var bot in botsWithoutActor)
+        {
+            chatActorsToAdd.Add(new ChatActor
+            {
+                OrganizationId = bot.OrganizationId,
+                ActorType = ChatActorType.Bot,
+                BotId = bot.Id,
+                DisplayName = bot.Name,
+                AvatarType = null,
+                AvatarUrl = bot.IconUrl,
+            });
+        }
+
+        if (!chatActorsToAdd.Any())
+        {
+            _logger.LogInformation("All users and bots already have ChatActors, skipping");
+            return;
+        }
+
+        // バッチ保存
+        const int batchSize = 500;
+        for (int i = 0; i < chatActorsToAdd.Count; i += batchSize)
+        {
+            var batch = chatActorsToAdd.Skip(i).Take(batchSize).ToList();
+            _context.ChatActors.AddRange(batch);
+            await _context.SaveChangesAsync();
+        }
+
+        _logger.LogInformation(
+            "Added {UserCount} ChatActors for users, {BotCount} ChatActors for bots",
+            usersWithoutActor.Count,
+            botsWithoutActor.Count
+        );
+    }
+
+    /// <summary>
+    /// ユーザー設定のシードデータを投入（欠損分を補完）
+    /// </summary>
+    public new async Task SeedUserSettingsAsync()
+    {
+        var users = await _context.Users.ToListAsync();
+        if (!users.Any())
+        {
+            return;
+        }
+
+        var existingSettings = await _context.UserSettings.ToDictionaryAsync(x => x.UserId, x => x);
+        var settingsToAdd = new List<UserSetting>();
+
+        foreach (var user in users)
+        {
+            if (existingSettings.ContainsKey(user.Id))
+            {
+                continue;
+            }
+
+            settingsToAdd.Add(
+                new UserSetting
+                {
+                    UserId = user.Id,
+                    CanReceiveEmail = true,
+                    UpdatedAt = DateTimeOffset.UtcNow,
+                    UpdatedByUserId = null,
+                }
+            );
+        }
+
+        if (settingsToAdd.Count > 0)
+        {
+            _context.UserSettings.AddRange(settingsToAdd);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} user settings", settingsToAdd.Count);
+        }
+    }
 
     /// <summary>
     /// ワークスペースのシードデータを投入

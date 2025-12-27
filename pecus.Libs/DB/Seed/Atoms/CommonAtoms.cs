@@ -9,7 +9,7 @@ using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
 using System.Reflection;
 
-namespace Pecus.Libs.DB.Seed;
+namespace Pecus.Libs.DB.Seed.Atoms;
 
 /// <summary>
 /// 共通のシードデータ生成
