@@ -7,7 +7,7 @@
 https://localhost:7265/
 GET /api/dev/email-preview/index	テンプレート一覧をHTMLで表示（ブラウザ用インデックスページ）
 
-### アイテムへのファイル添付機能（すっかり忘れてた😅）
+### [x] アイテムへのファイル添付機能（すっかり忘れてた😅）
 
 * [] Tooltip対応 title\s*=\s*(?:"[^"]*"|'[^']*'|\{[\s\S]*?\}) docs/ui-hint-components.md → スマフォ考えるとボタンにもやってくのは微妙
 
