@@ -50,6 +50,7 @@ builder.Services.AddScoped<CommonAtoms>();
 builder.Services.AddScoped<ProductAtoms>();
 builder.Services.AddScoped<DeveloperAtoms>();
 builder.Services.AddScoped<LoadTestAtoms>();
+builder.Services.AddScoped<DemoAtoms>();
 builder.Services.AddScoped<DatabaseSeeder>();
 
 // Lexical Converter gRPC サービスの登録

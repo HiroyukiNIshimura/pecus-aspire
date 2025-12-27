@@ -17,6 +17,7 @@ public class DatabaseSeeder
     private readonly ProductAtoms _productAtoms;
     private readonly DeveloperAtoms _developerAtoms;
     private readonly LoadTestAtoms _loadTestAtoms;
+    private readonly DemoAtoms _demoAtoms;
     private readonly DemoModeOptions _demoModeOptions;
 
     /// <summary>
@@ -26,18 +27,21 @@ public class DatabaseSeeder
     /// <param name="productAtoms"></param>
     /// <param name="developerAtoms"></param>
     /// <param name="loadTestAtoms"></param>
+    /// <param name="demoAtoms"></param>
     /// <param name="demoModeOptions"></param>
     public DatabaseSeeder(
         ILogger<DatabaseSeeder> logger,
         ProductAtoms productAtoms,
         DeveloperAtoms developerAtoms,
         LoadTestAtoms loadTestAtoms,
+        DemoAtoms demoAtoms,
         IOptions<DemoModeOptions> demoModeOptions)
     {
         _logger = logger;
         _productAtoms = productAtoms;
         _developerAtoms = developerAtoms;
         _loadTestAtoms = loadTestAtoms;
+        _demoAtoms = demoAtoms;
         _demoModeOptions = demoModeOptions.Value;
     }
 
@@ -51,8 +55,8 @@ public class DatabaseSeeder
 
         if (_demoModeOptions.Enabled)
         {
-            //TODO: デモ用データ投入処理を実装
             _logger.LogInformation("Demo mode is enabled. Seeding demo data...");
+            await _demoAtoms.SeedDemoAsync();
         }
 
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
