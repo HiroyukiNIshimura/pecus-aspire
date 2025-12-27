@@ -11,11 +11,13 @@ import {
   removeWorkspaceItemPin,
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
+import { fetchWorkspaceItemAttachments } from '@/actions/workspaceItemAttachment';
 import ItemActivityTimeline from '@/components/activity/ItemActivityTimeline';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import ItemEditStatus from '@/components/common/feedback/ItemEditStatus';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
+import { ItemAttachmentModal } from '@/components/workspaceItems/attachments';
 import WorkspaceItemDrawer from '@/components/workspaceItems/WorkspaceItemDrawer';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
@@ -23,6 +25,7 @@ import type {
   RelatedItemInfo,
   TaskStatusFilter,
   WorkspaceDetailUserResponse,
+  WorkspaceItemAttachmentResponse,
   WorkspaceItemDetailResponse,
   WorkspaceMode,
   WorkspaceTaskDetailResponse,
@@ -149,6 +152,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     // JoinItem の戻り値から取得した編集状態（initialStatus として渡す）
     const [initialEditStatus, setInitialEditStatus] = useState<ItemEditState | undefined>(undefined);
 
+    // 添付ファイル関連の状態
+    const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+    const [attachments, setAttachments] = useState<WorkspaceItemAttachmentResponse[]>([]);
+    const [attachmentCount, setAttachmentCount] = useState(0);
+
     // アイテム詳細を取得する関数
     const fetchItemDetail = useCallback(async () => {
       try {
@@ -209,6 +217,18 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     useEffect(() => {
       fetchItemDetail();
     }, [fetchItemDetail]);
+
+    // 添付ファイル一覧を取得
+    useEffect(() => {
+      const loadAttachments = async () => {
+        const result = await fetchWorkspaceItemAttachments(workspaceId, itemId);
+        if (result.success) {
+          setAttachments(result.data);
+          setAttachmentCount(result.data.length);
+        }
+      };
+      loadAttachments();
+    }, [workspaceId, itemId]);
 
     // スクロールターゲットが指定されている場合のスクロール処理（propsベース）
     useEffect(() => {
@@ -505,6 +525,16 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 title="タイムラインを表示"
               >
                 <span className="icon-[mdi--history] size-4" aria-hidden="true" />
+              </button>
+              {/* 添付ファイルボタン */}
+              <button
+                type="button"
+                onClick={() => setIsAttachmentModalOpen(true)}
+                className="btn btn-secondary btn-sm gap-1"
+                title="添付ファイル"
+              >
+                <span className="icon-[mdi--paperclip] size-4" aria-hidden="true" />
+                {attachmentCount > 0 && <span className="text-xs">{attachmentCount}</span>}
               </button>
               {/* タスクフローマップボタン（ドキュメントモードでは非表示） */}
               {!isDocumentMode && onShowFlowMap && (
@@ -859,6 +889,19 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           itemId={itemId}
           isOpen={isTimelineOpen}
           onClose={() => setIsTimelineOpen(false)}
+        />
+
+        {/* 添付ファイルモーダル */}
+        <ItemAttachmentModal
+          isOpen={isAttachmentModalOpen}
+          onClose={() => setIsAttachmentModalOpen(false)}
+          workspaceId={workspaceId}
+          itemId={itemId}
+          initialAttachments={attachments}
+          canEdit={canEdit}
+          currentUserId={currentUserId ?? 0}
+          itemOwnerId={item.ownerId}
+          onAttachmentCountChange={setAttachmentCount}
         />
 
         {/* 関連削除確認モーダル */}

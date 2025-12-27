@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { SystemRole } from './SystemRole';
 /**
  * ロールごとのユーザー数
  */
@@ -10,10 +11,7 @@ export type RoleUserCountResponse = {
      * ロールID
      */
     id: number;
-    /**
-     * ロール名
-     */
-    name: string;
+    name: SystemRole;
     /**
      * ユーザー数
      */

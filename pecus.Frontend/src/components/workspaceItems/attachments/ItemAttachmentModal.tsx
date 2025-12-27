@@ -1,0 +1,204 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { deleteWorkspaceItemAttachment, fetchWorkspaceItemAttachments } from '@/actions/workspaceItemAttachment';
+import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
+import AttachmentDropzone from './AttachmentDropzone';
+import AttachmentList, { type UploadingFile } from './AttachmentList';
+
+interface ItemAttachmentModalProps {
+  /** モーダルが開いているかどうか */
+  isOpen: boolean;
+  /** モーダルを閉じるコールバック */
+  onClose: () => void;
+  /** ワークスペースID */
+  workspaceId: number;
+  /** アイテムID */
+  itemId: number;
+  /** 初期添付ファイル一覧 */
+  initialAttachments: WorkspaceItemAttachmentResponse[];
+  /** 編集可能かどうか（Viewer以外はtrue） */
+  canEdit: boolean;
+  /** 現在のユーザーID（削除権限判定用） */
+  currentUserId: number;
+  /** アイテムオーナーID（オーナーは全ファイル削除可能） */
+  itemOwnerId?: number;
+  /** 添付ファイル数が変更された時のコールバック */
+  onAttachmentCountChange?: (count: number) => void;
+}
+
+/**
+ * アイテム添付ファイル管理モーダル
+ */
+export default function ItemAttachmentModal({
+  isOpen,
+  onClose,
+  workspaceId,
+  itemId,
+  initialAttachments,
+  canEdit,
+  currentUserId,
+  itemOwnerId,
+  onAttachmentCountChange,
+}: ItemAttachmentModalProps) {
+  const notify = useNotify();
+
+  const [attachments, setAttachments] = useState<WorkspaceItemAttachmentResponse[]>(initialAttachments);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+
+  // 初期データが変更されたら同期
+  useEffect(() => {
+    setAttachments(initialAttachments);
+  }, [initialAttachments]);
+
+  // 添付ファイル数の変更を通知
+  useEffect(() => {
+    onAttachmentCountChange?.(attachments.length);
+  }, [attachments.length, onAttachmentCountChange]);
+
+  // モーダルが開いている間はbodyのスクロールを無効化
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // 削除可能かどうかを判定
+  const canDeleteAttachment = useCallback(
+    (attachment: WorkspaceItemAttachmentResponse): boolean => {
+      if (!canEdit) return false;
+      // オーナーは全ファイル削除可能
+      if (itemOwnerId !== undefined && currentUserId === itemOwnerId) return true;
+      // 自分がアップロードしたファイルのみ削除可能
+      return attachment.uploadedByUserId === currentUserId;
+    },
+    [canEdit, currentUserId, itemOwnerId],
+  );
+
+  // 添付ファイル一覧を再取得
+  const refreshAttachments = useCallback(async () => {
+    const result = await fetchWorkspaceItemAttachments(workspaceId, itemId);
+    if (result.success) {
+      setAttachments(result.data);
+    }
+  }, [workspaceId, itemId]);
+
+  // ファイルアップロード処理
+  const handleFilesSelected = useCallback(
+    async (files: File[]) => {
+      for (const file of files) {
+        const tempId = `uploading-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+        // アップロード中の状態を追加
+        setUploadingFiles((prev) => [...prev, { id: tempId, fileName: file.name, progress: 0 }]);
+
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+
+          // 進捗を更新するシミュレーション（実際はXHRで進捗を取得できるが、fetch APIでは難しい）
+          setUploadingFiles((prev) => prev.map((f) => (f.id === tempId ? { ...f, progress: 30 } : f)));
+
+          const response = await fetch(`/api/workspaces/${workspaceId}/items/${itemId}/attachments`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          setUploadingFiles((prev) => prev.map((f) => (f.id === tempId ? { ...f, progress: 90 } : f)));
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'アップロードに失敗しました');
+          }
+
+          // アップロード完了 - サーバーから最新の添付ファイル一覧を再取得
+          await refreshAttachments();
+          notify.success(`「${file.name}」をアップロードしました。`);
+        } catch (error) {
+          console.error('Upload error:', error);
+          notify.error(error instanceof Error ? error.message : 'ファイルのアップロードに失敗しました。');
+        } finally {
+          // アップロード中の状態を削除
+          setUploadingFiles((prev) => prev.filter((f) => f.id !== tempId));
+        }
+      }
+    },
+    [workspaceId, itemId, notify, refreshAttachments],
+  );
+
+  // ファイル削除処理
+  const handleDelete = useCallback(
+    async (attachmentId: number) => {
+      const result = await deleteWorkspaceItemAttachment(workspaceId, itemId, attachmentId);
+
+      if (result.success) {
+        setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
+        notify.success('ファイルを削除しました。');
+      } else {
+        notify.error(result.message || 'ファイルの削除に失敗しました。');
+      }
+    },
+    [workspaceId, itemId, notify],
+  );
+
+  // エラーハンドリング
+  const handleUploadError = useCallback(
+    (message: string) => {
+      notify.error(message);
+    },
+    [notify],
+  );
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      {/* オーバーレイ */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+        {/* モーダルコンテナ */}
+        <div
+          className="bg-base-100 rounded-box shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* ヘッダー */}
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+              <span className="icon-[mdi--paperclip] size-6" aria-hidden="true" />
+              添付ファイル
+              {attachments.length > 0 && <span className="badge badge-secondary badge-sm">{attachments.length}</span>}
+            </h2>
+            <button type="button" onClick={onClose} className="btn btn-sm btn-circle btn-ghost" aria-label="閉じる">
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+            </button>
+          </div>
+
+          {/* ボディ */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+            {/* ドロップゾーン（編集可能な場合のみ表示） */}
+            {canEdit && (
+              <AttachmentDropzone
+                onFilesSelected={handleFilesSelected}
+                onError={handleUploadError}
+                disabled={!canEdit}
+              />
+            )}
+
+            {/* ファイル一覧 */}
+            <AttachmentList
+              attachments={attachments}
+              uploadingFiles={uploadingFiles}
+              onDelete={handleDelete}
+              canDelete={canDeleteAttachment}
+              workspaceId={workspaceId}
+              itemId={itemId}
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

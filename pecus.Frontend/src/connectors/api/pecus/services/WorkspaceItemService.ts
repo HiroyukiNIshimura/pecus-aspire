@@ -31,16 +31,18 @@ export class WorkspaceItemService {
      * ワークスペースアイテムに添付ファイルをアップロード
      * @param workspaceId ワークスペースID
      * @param itemId アイテムID
-     * @param formData アップロードするファイル
+     * @param formData 元のファイル名（オプション、省略時はfile.FileNameを使用）
      * @returns WorkspaceItemAttachmentResponse Created
      * @throws ApiError
      */
     public static postApiWorkspacesItemsAttachments(
         workspaceId: number,
         itemId: number,
-        formData: {
+        formData: ({
             file?: IFormFile;
-        },
+        } & {
+            originalFileName?: string;
+        }),
     ): CancelablePromise<WorkspaceItemAttachmentResponse> {
         return __request(OpenAPI, {
             method: 'POST',

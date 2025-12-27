@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { SystemRole } from './SystemRole';
 /**
  * ユーザーロール情報レスポンス
  */
@@ -10,9 +11,6 @@ export type UserRoleResponse = {
      * ロールID
      */
     id: number;
-    /**
-     * ロール名
-     */
-    name: string;
+    name: SystemRole;
 };
 

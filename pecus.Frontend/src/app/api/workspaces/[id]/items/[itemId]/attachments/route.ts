@@ -76,6 +76,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       contentType: file.type,
     });
 
+    // 元のファイル名を別フィールドとして送信（DBに保存される表示用ファイル名）
+    formData.append('originalFileName', file.name);
+
     // Axiosで直接POSTリクエスト
     const response = await axios.post(`/api/workspaces/${workspaceId}/items/${workspaceItemId}/attachments`, formData, {
       headers: {

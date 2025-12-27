@@ -43,6 +43,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">アイテムID</param>
     /// <param name="file">アップロードするファイル</param>
+    /// <param name="originalFileName">元のファイル名（オプション、省略時はfile.FileNameを使用）</param>
     /// <returns>アップロードされた添付ファイル情報</returns>
     [HttpPost]
     [ProducesResponseType(typeof(WorkspaceItemAttachmentResponse), StatusCodes.Status201Created)]
@@ -53,7 +54,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
     public async Task<Created<WorkspaceItemAttachmentResponse>> UploadAttachment(
         int workspaceId,
         int itemId,
-        IFormFile file
+        IFormFile file,
+        [FromForm] string? originalFileName = null
     )
     {
         // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
@@ -65,7 +67,10 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         }
 
         // ファイル名とMIMEタイプを取得
-        var fileName = Path.GetFileName(file.FileName);
+        // originalFileNameが指定されていればそれを使用（表示用）、なければfile.FileNameを使用
+        var displayFileName = !string.IsNullOrWhiteSpace(originalFileName)
+            ? Path.GetFileName(originalFileName)
+            : Path.GetFileName(file.FileName);
         var mimeType = file.ContentType;
 
         // ファイルを保存するパスを生成
@@ -79,7 +84,9 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         );
         Directory.CreateDirectory(uploadsDir);
 
-        var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
+        // 物理ファイル名はfile.FileNameを使用（Next.jsでsafe名に変換済み）
+        var physicalFileName = Path.GetFileName(file.FileName);
+        var uniqueFileName = $"{Guid.NewGuid()}_{physicalFileName}";
         var filePath = Path.Combine(uploadsDir, uniqueFileName);
 
         // ファイルを保存
@@ -106,7 +113,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         var attachment = await _attachmentService.AddAttachmentAsync(
             workspaceId,
             itemId,
-            fileName,
+            displayFileName,
             file.Length,
             mimeType,
             filePath,
@@ -128,7 +135,10 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         }
 
         // Activity 記録（ファイル追加）
-        var fileAddedDetails = ActivityDetailsBuilder.BuildFileAddedDetails(fileName, file.Length);
+        var fileAddedDetails = ActivityDetailsBuilder.BuildFileAddedDetails(
+            displayFileName,
+            file.Length
+        );
         _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(
                 workspaceId,

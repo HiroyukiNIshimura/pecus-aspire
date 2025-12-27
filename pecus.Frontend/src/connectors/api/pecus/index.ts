@@ -166,6 +166,7 @@ export type { SortOrder } from './models/SortOrder';
 export type { SuccessorTaskInfo } from './models/SuccessorTaskInfo';
 export type { SuccessResponse } from './models/SuccessResponse';
 export type { SummaryWorkspaceResponse } from './models/SummaryWorkspaceResponse';
+export type { SystemRole } from './models/SystemRole';
 export type { TagDetailResponse } from './models/TagDetailResponse';
 export type { TagInfoResponse } from './models/TagInfoResponse';
 export type { TagListItemResponse } from './models/TagListItemResponse';
