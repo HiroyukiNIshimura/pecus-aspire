@@ -262,6 +262,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.RepresentativeName).HasMaxLength(100);
             entity.Property(e => e.PhoneNumber).IsRequired().HasMaxLength(20);
             entity.Property(e => e.Email).HasMaxLength(254);
+            entity.Property(e => e.IsDemo).IsRequired().HasDefaultValue(false);
             entity.HasIndex(e => e.Code).IsUnique();
         });
 

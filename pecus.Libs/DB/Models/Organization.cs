@@ -66,6 +66,11 @@ public class Organization
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// デモ組織フラグ
+    /// </summary>
+    public bool IsDemo { get; set; } = false;
+
+    /// <summary>
     /// この組織に所属するユーザー
     /// </summary>
     public ICollection<User> Users { get; set; } = new List<User>();
