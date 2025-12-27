@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Pecus.Libs.AI;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Security;
+using Pecus.Libs.Utils;
 
 namespace Pecus.Libs.DB.Seed;
 
@@ -14,11 +17,7 @@ public class ProductAtoms
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ProductAtoms> _logger;
     private readonly CommonAtoms _seedAtoms;
-
-    private const string BackOfficeOrgCode = "SYS-MAINT-001";
-    private const string BackOfficeAdminEmail = "admin@backoffice.local";
-    private const string BackOfficeOperator1Email = "operator1@backoffice.local";
-    private const string BackOfficeOperator2Email = "operator2@backoffice.local";
+    private readonly BackOfficeOptions _options;
 
     /// <summary>
     ///  Constructor
@@ -26,14 +25,17 @@ public class ProductAtoms
     /// <param name="context"></param>
     /// <param name="logger"></param>
     /// <param name="seedAtoms"></param>
+    /// <param name="options"></param>
     public ProductAtoms(
         ApplicationDbContext context,
         ILogger<ProductAtoms> logger,
-        CommonAtoms seedAtoms)
+        CommonAtoms seedAtoms,
+        IOptions<BackOfficeOptions> options)
     {
         _context = context;
         _logger = logger;
         _seedAtoms = seedAtoms;
+        _options = options.Value;
     }
 
     /// <summary>
@@ -64,7 +66,7 @@ public class ProductAtoms
     /// </summary>
     private async Task SeedBackOfficeDataAsync()
     {
-        var existingOrg = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == BackOfficeOrgCode);
+        var existingOrg = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == _options.Organization.Code);
         if (existingOrg != null)
         {
             _logger.LogInformation("BackOffice organization already exists, updating bots if needed...");
@@ -166,10 +168,10 @@ public class ProductAtoms
     {
         return new Organization
         {
-            Name = "System Maintenance",
-            Code = BackOfficeOrgCode,
-            PhoneNumber = "000-0000-0000",
-            Email = "system@backoffice.local",
+            Name = _options.Organization.Name,
+            Code = _options.Organization.Code,
+            PhoneNumber = _options.Organization.PhoneNumber,
+            Email = _options.Organization.Email,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -226,23 +228,20 @@ public class ProductAtoms
 
     private List<User> CreateBackOfficeUsers(Organization org, Role adminRole, Role memberRole)
     {
-        var usersData = new List<(Role Role, string Email, string Username, string LoginId)>
-        {
-            (adminRole, BackOfficeAdminEmail, "BackOffice Admin", "backoffice-admin"),
-            (memberRole, BackOfficeOperator1Email, "Operator One", "backoffice-operator1"),
-            (memberRole, BackOfficeOperator2Email, "Operator Two", "backoffice-operator2")
-        };
-
         var users = new List<User>();
-        foreach (var (role, email, username, loginId) in usersData)
+        foreach (var userOption in _options.Users)
         {
+            var role = userOption.Role == "Admin" ? adminRole : memberRole;
+            var loginId = CodeGenerator.GenerateLoginId();
+            var passwordHash = PasswordHasher.HashPassword(userOption.Password);
+
             var user = new User
             {
                 OrganizationId = org.Id,
-                Email = email,
-                Username = username,
+                Email = userOption.Email,
+                Username = userOption.Username,
                 LoginId = loginId,
-                PasswordHash = "BACKOFFICE_PLACEHOLDER_HASH",
+                PasswordHash = passwordHash,
                 IsActive = true,
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -297,22 +296,18 @@ public class ProductAtoms
         List<User> users,
         List<ChatActor> chatActors)
     {
-        var adminUser = users.First(u => u.Email == BackOfficeAdminEmail);
-        var operator1User = users.First(u => u.Email == BackOfficeOperator1Email);
-        var operator2User = users.First(u => u.Email == BackOfficeOperator2Email);
+        var adminUserOption = _options.Users.FirstOrDefault(u => u.Role == "Admin");
+        if (adminUserOption == null) return new List<ChatRoom>();
+
+        var adminUser = users.First(u => u.Email == adminUserOption.Email);
+        var operatorUsers = users.Where(u => u.Email != adminUser.Email).ToList();
 
         var rooms = new List<ChatRoom>();
 
-        var directMessagePairs = new List<(User user1, User user2)>
+        foreach (var operatorUser in operatorUsers)
         {
-            (adminUser, operator1User),
-            (adminUser, operator2User)
-        };
-
-        foreach (var (user1, user2) in directMessagePairs)
-        {
-            var minId = Math.Min(user1.Id, user2.Id);
-            var maxId = Math.Max(user1.Id, user2.Id);
+            var minId = Math.Min(adminUser.Id, operatorUser.Id);
+            var maxId = Math.Max(adminUser.Id, operatorUser.Id);
             var dmUserPair = $"{minId}_{maxId}";
 
             var room = new ChatRoom
@@ -320,7 +315,7 @@ public class ProductAtoms
                 OrganizationId = org.Id,
                 Type = ChatRoomType.Dm,
                 DmUserPair = dmUserPair,
-                CreatedByUserId = user1.Id,
+                CreatedByUserId = adminUser.Id,
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow
             };
@@ -335,31 +330,27 @@ public class ProductAtoms
         List<User> users,
         List<ChatActor> chatActors)
     {
-        var adminUser = users.First(u => u.Email == BackOfficeAdminEmail);
-        var operator1User = users.First(u => u.Email == BackOfficeOperator1Email);
-        var operator2User = users.First(u => u.Email == BackOfficeOperator2Email);
-
-        var adminActor = chatActors.First(a => a.UserId == adminUser.Id);
-        var operator1Actor = chatActors.First(a => a.UserId == operator1User.Id);
-        var operator2Actor = chatActors.First(a => a.UserId == operator2User.Id);
-
         var members = new List<ChatRoomMember>();
 
-        var actorPairs = new List<(ChatActor actor1, ChatActor actor2)>
+        foreach (var room in rooms)
         {
-            (adminActor, operator1Actor),
-            (adminActor, operator2Actor)
-        };
+            if (string.IsNullOrEmpty(room.DmUserPair)) continue;
 
-        for (var i = 0; i < rooms.Count; i++)
-        {
-            var room = rooms[i];
-            var (actor1, actor2) = actorPairs[i];
+            var ids = room.DmUserPair.Split('_').Select(long.Parse).ToList();
+            if (ids.Count != 2) continue;
+
+            var user1Id = ids[0];
+            var user2Id = ids[1];
+
+            var user1Actor = chatActors.FirstOrDefault(a => a.UserId == user1Id);
+            var user2Actor = chatActors.FirstOrDefault(a => a.UserId == user2Id);
+
+            if (user1Actor == null || user2Actor == null) continue;
 
             members.Add(new ChatRoomMember
             {
                 ChatRoomId = room.Id,
-                ChatActorId = actor1.Id,
+                ChatActorId = user1Actor.Id,
                 Role = ChatRoomRole.Member,
                 JoinedAt = DateTimeOffset.UtcNow
             });
@@ -367,7 +358,7 @@ public class ProductAtoms
             members.Add(new ChatRoomMember
             {
                 ChatRoomId = room.Id,
-                ChatActorId = actor2.Id,
+                ChatActorId = user2Actor.Id,
                 Role = ChatRoomRole.Member,
                 JoinedAt = DateTimeOffset.UtcNow
             });

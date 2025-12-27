@@ -326,14 +326,14 @@ public class CommonAtoms
             _logger.LogInformation("Added role: User with read permissions");
         }
 
-        var backendRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Backend);
+        var backendRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.BackOffice);
         if (backendRole == null)
         {
-            backendRole = new Role { Name = SystemRole.Backend, Description = "バックエンドシステム" };
+            backendRole = new Role { Name = SystemRole.BackOffice, Description = "バックオフィス" };
             context.Roles.Add(backendRole);
             await context.SaveChangesAsync();
 
-            _logger.LogInformation("Added role: Backend with all permissions");
+            _logger.LogInformation("Added role: BackOffice with all permissions");
         }
     }
 

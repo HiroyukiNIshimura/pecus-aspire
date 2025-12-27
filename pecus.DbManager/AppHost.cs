@@ -25,6 +25,8 @@ else
     builder.AddServiceDefaults(SerilogHelper.LogEnvironment.Development);
 }
 
+builder.Services.Configure<BackOfficeOptions>(builder.Configuration.GetSection("BackOffice"));
+
 // DbContextの登録 - Aspireの接続文字列を使用
 builder.AddNpgsqlDbContext<ApplicationDbContext>(
     "pecusdb",
