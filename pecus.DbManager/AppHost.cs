@@ -27,6 +27,7 @@ else
 }
 
 builder.Services.Configure<BackOfficeOptions>(builder.Configuration.GetSection("BackOffice"));
+builder.Services.Configure<DemoModeOptions>(builder.Configuration.GetSection("DemoMode"));
 
 // DbContextの登録 - Aspireの接続文字列を使用
 builder.AddNpgsqlDbContext<ApplicationDbContext>(

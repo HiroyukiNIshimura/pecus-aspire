@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Pecus.Libs.DB.Seed.Atoms;
 
 namespace Pecus.Libs.DB.Seed;
@@ -16,6 +17,7 @@ public class DatabaseSeeder
     private readonly ProductAtoms _productAtoms;
     private readonly DeveloperAtoms _developerAtoms;
     private readonly LoadTestAtoms _loadTestAtoms;
+    private readonly DemoModeOptions _demoModeOptions;
 
     /// <summary>
     /// コンストラクタ
@@ -24,16 +26,19 @@ public class DatabaseSeeder
     /// <param name="productAtoms"></param>
     /// <param name="developerAtoms"></param>
     /// <param name="loadTestAtoms"></param>
+    /// <param name="demoModeOptions"></param>
     public DatabaseSeeder(
         ILogger<DatabaseSeeder> logger,
         ProductAtoms productAtoms,
         DeveloperAtoms developerAtoms,
-        LoadTestAtoms loadTestAtoms)
+        LoadTestAtoms loadTestAtoms,
+        IOptions<DemoModeOptions> demoModeOptions)
     {
         _logger = logger;
         _productAtoms = productAtoms;
         _developerAtoms = developerAtoms;
         _loadTestAtoms = loadTestAtoms;
+        _demoModeOptions = demoModeOptions.Value;
     }
 
     /// <summary>
@@ -44,13 +49,21 @@ public class DatabaseSeeder
         _logger.LogInformation("Seeding production data (Base)...");
         var backOfficeOrgId = await _productAtoms.SeedProductAsync();
 
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (_demoModeOptions.Enabled)
+        {
+            //TODO: デモ用データ投入処理を実装
+            _logger.LogInformation("Demo mode is enabled. Seeding demo data...");
+        }
 
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         if (environment == "Production")
         {
+            _logger.LogInformation("Production environment detected. Skipping development data seeding.");
+            // 本番環境ではここで終了
             return;
         }
 
+        // 開発環境用データ投入
         if (environment == "LoadTest")
         {
             _logger.LogInformation("Seeding load test data...");

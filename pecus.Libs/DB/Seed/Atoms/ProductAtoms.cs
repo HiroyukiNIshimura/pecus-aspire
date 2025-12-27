@@ -24,6 +24,7 @@ public class ProductAtoms
     /// <param name="context"></param>
     /// <param name="logger"></param>
     /// <param name="options"></param>
+    /// <param name="demoModeOptions"></param>
     public ProductAtoms(
         ApplicationDbContext context,
         ILogger<ProductAtoms> logger,
@@ -48,12 +49,6 @@ public class ProductAtoms
         await SeedTaskTypesAsync();
 
         var backOfficeOrgId = await SeedBackOfficeDataAsync();
-
-        if (Environment.GetEnvironmentVariable("PECUS_DEMO_MODE") == "true")
-        {
-            //TODO: デモ用データ投入処理を実装
-            _logger.LogInformation("Demo mode is enabled. Seeding demo data...");
-        }
 
         _logger.LogInformation("Production data seeding completed");
         return backOfficeOrgId;
