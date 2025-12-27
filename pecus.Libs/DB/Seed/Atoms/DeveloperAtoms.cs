@@ -143,7 +143,7 @@ public class DeveloperAtoms : BaseSeedAtoms
             {
                 LoginId = CodeGenerator.GenerateLoginId(),
                 Username = "管 理者",
-                Email = "admin@sample.com",
+                Email = "admin@coati.none",
                 PasswordHash = PasswordHasher.HashPassword("P@ssw0rd"),
                 OrganizationId = organization?.Id,
                 IsActive = true,
@@ -156,7 +156,7 @@ public class DeveloperAtoms : BaseSeedAtoms
             {
                 LoginId = CodeGenerator.GenerateLoginId(),
                 Username = "一 般人",
-                Email = "user1@sample.com",
+                Email = "user1@coati.none",
                 PasswordHash = PasswordHasher.HashPassword("P@ssw0rd"),
                 OrganizationId = organization?.Id,
                 IsActive = true,
@@ -167,7 +167,7 @@ public class DeveloperAtoms : BaseSeedAtoms
             {
                 LoginId = CodeGenerator.GenerateLoginId(),
                 Username = "二 般人",
-                Email = "user2@sample.com",
+                Email = "user2@coati.none",
                 PasswordHash = PasswordHasher.HashPassword("P@ssw0rd"),
                 OrganizationId = organization?.Id,
                 IsActive = true,
@@ -217,7 +217,7 @@ public class DeveloperAtoms : BaseSeedAtoms
                     {
                         var loginId = CodeGenerator.GenerateLoginId();
                         // 一意なEmailを生成（連番 + GUID の一部を使用）
-                        var email = $"user{existingUserCount + i + 1}_{Guid.NewGuid():N}"[..30] + "@sample.com";
+                        var email = $"user{existingUserCount + i + 1}_{Guid.NewGuid():N}"[..30] + "@coati.none";
 
                         // ランダムな組織を選択
                         var organization = organizations[_random.Next(organizations.Count)];
