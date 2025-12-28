@@ -63,6 +63,14 @@ export default function UserMenu({
             </a>
           </li>
         )}
+        <li className="dropdown-divider" />
+        <li>
+          <a className="dropdown-item" href="/help">
+            <span className="icon-[mdi--help-circle-outline] size-5" aria-hidden="true" />
+            ヘルプ
+          </a>
+        </li>
+        <li className="dropdown-divider" />
         <li>
           <button type="button" className="dropdown-item w-full text-left" onClick={handleLogout}>
             <span className="icon-[mdi--logout] size-5" aria-hidden="true" />

@@ -618,16 +618,16 @@ MDXのCalloutコンポーネントの代わりに、引用ブロックと絵文�
 
 ## 10. 移行チェックリスト
 
-- [ ] 依存パッケージの確認（flexsearch）
-- [ ] `getHelpContent.ts` ユーティリティ作成
-- [ ] `HelpContent.tsx` コンポーネント作成（Client Component）
-- [ ] 検索インデックス生成スクリプト作成
-- [ ] ヘルプページ（layout, page, [slug]）作成
-- [ ] 既存Markdownの移行（.mdx → .md にリネーム）
+- [x] 依存パッケージの確認（flexsearch）
+- [x] `getHelpContent.ts` ユーティリティ作成
+- [x] `HelpContent.tsx` コンポーネント作成（Client Component）
+- [x] 検索インデックス生成スクリプト作成
+- [x] ヘルプページ（layout, page, [slug]）作成
+- [x] 既存Markdownの移行（.mdx → .md にリネーム）
 - [ ] シードコードの削除
 - [ ] ナビゲーションへのヘルプリンク追加
-- [ ] GFMテーブルの動作確認
-- [ ] 動作確認テスト
+- [x] GFMテーブルの動作確認
+- [x] 動作確認テスト
 
 ---
 

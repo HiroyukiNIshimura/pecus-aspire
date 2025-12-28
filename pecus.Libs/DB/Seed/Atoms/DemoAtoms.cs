@@ -131,13 +131,6 @@ public class DemoAtoms
             await _context.ChatRoomMembers.AddRangeAsync(workspaceChatRoomMembers);
             await _context.SaveChangesAsync();
 
-            var hintWorkspace = workspaces.FirstOrDefault(w => w.Name == "Coatiのヒント");
-            if (hintWorkspace != null)
-            {
-                var adminUser = users.FirstOrDefault(u => _options.Users.Any(o => o.Role == "Admin" && o.Email == u.Email));
-                await CreateDemoWorkspaceItemsAsync(hintWorkspace, adminUser);
-            }
-
             var sampleProjectWorkspace = workspaces.FirstOrDefault(w => w.Name == "サンプルプロジェクト");
             if (sampleProjectWorkspace != null)
             {
@@ -463,22 +456,6 @@ public class DemoAtoms
         var manualDescriptions = SeedConstants.WorkspaceDescriptionsByGenre.GetValueOrDefault("マニュアル・手順", Array.Empty<string>());
         var projectDescriptions = SeedConstants.WorkspaceDescriptionsByGenre.GetValueOrDefault("プロジェクト・開発", Array.Empty<string>());
 
-        var hintWorkspace = new Workspace
-        {
-            Name = "Coatiのヒント",
-            Code = CodeGenerator.GenerateWorkspaceCode(),
-            Description = manualDescriptions.Length > 0 ? manualDescriptions[0] : "Coatiの使い方を説明するワークスペースです。",
-            OrganizationId = org.Id,
-            GenreId = manualGenre?.Id,
-            Mode = WorkspaceMode.Document,
-            OwnerId = user1.Id,
-            CreatedByUserId = user1.Id,
-            IsActive = true,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-        workspaces.Add(hintWorkspace);
-
         var sampleProjectWorkspace = new Workspace
         {
             Name = "サンプルプロジェクト",
@@ -604,74 +581,6 @@ public class DemoAtoms
             chatRooms.Count, chatRoomMembers.Count);
 
         return chatRoomMembers;
-    }
-
-    private async Task CreateDemoWorkspaceItemsAsync(Workspace workspace, User? adminUser)
-    {
-        if (adminUser == null)
-        {
-            _logger.LogWarning("Admin user not found for creating demo workspace items");
-            return;
-        }
-
-        var bodyDataList = await _commonAtoms.LoadMarkdownFilesAsLexicalJsonAsync();
-        if (bodyDataList.Count == 0)
-        {
-            _logger.LogWarning("No markdown files found for seeding demo workspace items");
-            return;
-        }
-
-        var sequenceName = $"workspace_{workspace.Id}_item_seq";
-#pragma warning disable EF1002
-        await _context.Database.ExecuteSqlRawAsync(
-            $@"CREATE SEQUENCE IF NOT EXISTS ""{sequenceName}"" START WITH 1 INCREMENT BY 1"
-        );
-#pragma warning restore EF1002
-        workspace.ItemNumberSequenceName = sequenceName;
-
-        var items = new List<WorkspaceItem>();
-        var itemNumber = 0;
-
-        foreach (var bodyData in bodyDataList)
-        {
-            itemNumber++;
-
-            var workspaceItem = new WorkspaceItem
-            {
-                WorkspaceId = workspace.Id,
-                ItemNumber = itemNumber,
-                Code = itemNumber.ToString(),
-                Subject = bodyData.FileName,
-                Body = bodyData.Body,
-                RawBody = bodyData.RawBody,
-                OwnerId = adminUser.Id,
-                AssigneeId = null,
-                Priority = null,
-                DueDate = null,
-                IsArchived = false,
-                IsDraft = false,
-                CommitterId = null,
-                IsActive = true,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            items.Add(workspaceItem);
-        }
-
-        await _context.WorkspaceItems.AddRangeAsync(items);
-        await _context.SaveChangesAsync();
-
-        if (itemNumber > 0)
-        {
-#pragma warning disable EF1002
-            await _context.Database.ExecuteSqlRawAsync(
-                $@"SELECT setval('""{sequenceName}""', {itemNumber}, true)"
-            );
-#pragma warning restore EF1002
-        }
-
-        _logger.LogInformation("Created {Count} demo workspace items for '{WorkspaceName}'", items.Count, workspace.Name);
     }
 
     /// <summary>

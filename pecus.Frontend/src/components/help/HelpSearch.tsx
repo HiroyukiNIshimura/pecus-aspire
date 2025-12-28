@@ -60,7 +60,7 @@ export function HelpSearch({ searchIndex }: HelpSearchProps) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="btn btn-ghost btn-sm gap-2"
+        className="btn btn-text btn-sm gap-2"
         aria-label="検索を開く"
       >
         <span className="icon-[tabler--search] size-4" />

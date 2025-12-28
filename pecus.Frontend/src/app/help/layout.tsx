@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import Link from 'next/link';
 import { HelpSearch } from '@/components/help/HelpSearch';
 import { HelpSidebar } from '@/components/help/HelpSidebar';
 import { getAllHelpArticles } from '@/libs/help/getHelpContent';
@@ -25,7 +26,13 @@ export default async function HelpLayout({ children }: { children: React.ReactNo
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex items-center justify-between border-b border-base-content/10 px-6 py-3">
           <h1 className="text-lg font-semibold">Coatiのヒント</h1>
-          <HelpSearch searchIndex={searchIndex} />
+          <div className="flex items-center gap-3">
+            <Link href="/" className="btn btn-text btn-sm gap-1">
+              <span className="icon-[mdi--view-dashboard] w-4 h-4" aria-hidden="true" />
+              ダッシュボードに戻る
+            </Link>
+            <HelpSearch searchIndex={searchIndex} />
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto">{children}</main>
