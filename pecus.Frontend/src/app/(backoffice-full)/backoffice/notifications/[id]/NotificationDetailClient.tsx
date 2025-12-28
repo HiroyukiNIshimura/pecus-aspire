@@ -235,7 +235,7 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
 
                       <div className="form-control mb-4">
                         <label className="label" htmlFor="edit-notification-body">
-                          <span className="label-text font-semibold">本文（Markdown）</span>
+                          <span className="label-text font-semibold">本文</span>
                         </label>
                         <textarea
                           id="edit-notification-body"

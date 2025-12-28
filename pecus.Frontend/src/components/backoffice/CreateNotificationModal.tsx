@@ -229,7 +229,6 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
               <span className="label-text font-semibold">
                 本文 <span className="text-error">*</span>
               </span>
-              <span className="label-text-alt">Markdown形式で記述可能</span>
             </label>
             <textarea
               id="notification-body"
