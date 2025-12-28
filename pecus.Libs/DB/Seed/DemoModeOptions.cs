@@ -1,3 +1,5 @@
+using Pecus.Libs.DB.Models.Enums;
+
 namespace Pecus.Libs.DB.Seed;
 
 /// <summary>
@@ -45,6 +47,22 @@ public class DemoOrganization
     /// メールアドレス
     /// </summary>
     public string Email { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 利用する生成AI APIベンダー
+    /// </summary>
+    public GenerativeApiVendor GenerativeApiVendor { get; set; } = GenerativeApiVendor.None;
+
+    /// <summary>
+    /// 生成AI APIキー
+    /// </summary>
+    public string GenerativeApiKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 生成AIモデル
+    /// </summary>
+    public string GenerativeApiModel { get; set; } = string.Empty;
+
 }
 
 /// <summary>

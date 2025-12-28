@@ -83,16 +83,15 @@ public class ProductAtoms
             await _context.Bots.AddRangeAsync(systemBot, chatBot);
             await _context.SaveChangesAsync();
 
-            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Admin);
-            var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.User);
-            if (adminRole == null || memberRole == null)
+            var backOfficeRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.BackOffice);
+            if (backOfficeRole == null)
             {
                 _logger.LogWarning("Required roles not found. Rolling back transaction.");
                 await transaction.RollbackAsync();
-                throw new InvalidOperationException("Required roles (Admin/User) not found.");
+                throw new InvalidOperationException("Required role (BackOffice) not found.");
             }
 
-            var users = CreateBackOfficeUsers(organization, adminRole, memberRole);
+            var users = CreateBackOfficeUsers(organization, backOfficeRole);
             await _context.Users.AddRangeAsync(users);
             await _context.SaveChangesAsync();
 
@@ -180,7 +179,7 @@ public class ProductAtoms
             WeeklyReportDeliveryDay = 0,
             MailFromAddress = org.Email,
             MailFromName = org.Name,
-            GenerativeApiVendor = GenerativeApiVendor.DeepSeek,
+            GenerativeApiVendor = GenerativeApiVendor.None,
             Plan = OrganizationPlan.Enterprise,
             UpdatedAt = DateTimeOffset.UtcNow
         };
@@ -220,12 +219,11 @@ public class ProductAtoms
         return (systemBot, chatBot);
     }
 
-    private List<User> CreateBackOfficeUsers(Organization org, Role adminRole, Role memberRole)
+    private List<User> CreateBackOfficeUsers(Organization org, Role backOfficeRole)
     {
         var users = new List<User>();
         foreach (var userOption in _options.Users)
         {
-            var role = userOption.Role == "Admin" ? adminRole : memberRole;
             var loginId = CodeGenerator.GenerateLoginId();
             var passwordHash = PasswordHasher.HashPassword(userOption.Password);
 
@@ -240,7 +238,7 @@ public class ProductAtoms
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-            user.Roles.Add(role);
+            user.Roles.Add(backOfficeRole);
             users.Add(user);
         }
 
@@ -290,10 +288,7 @@ public class ProductAtoms
         List<User> users,
         List<ChatActor> chatActors)
     {
-        var adminUserOption = _options.Users.FirstOrDefault(u => u.Role == "Admin");
-        if (adminUserOption == null) return new List<ChatRoom>();
-
-        var adminUser = users.First(u => u.Email == adminUserOption.Email);
+        var adminUser = users.First(u => u.Email == _options.Organization.Email);
         var operatorUsers = users.Where(u => u.Email != adminUser.Email).ToList();
 
         var rooms = new List<ChatRoom>();

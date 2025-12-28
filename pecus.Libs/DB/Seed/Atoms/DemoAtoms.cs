@@ -217,7 +217,9 @@ public class DemoAtoms
             WeeklyReportDeliveryDay = 0,
             MailFromAddress = org.Email,
             MailFromName = org.Name,
-            GenerativeApiVendor = GenerativeApiVendor.DeepSeek,
+            GenerativeApiVendor = _options.Organization.GenerativeApiVendor,
+            GenerativeApiKey = _options.Organization.GenerativeApiKey,
+            GenerativeApiModel = _options.Organization.GenerativeApiModel,
             Plan = OrganizationPlan.Free,
             UpdatedAt = DateTimeOffset.UtcNow
         };

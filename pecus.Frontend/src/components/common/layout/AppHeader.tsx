@@ -62,6 +62,12 @@ export default function AppHeader({
                 <span className="hidden md:inline">管理者</span>
               </HeaderNavItem>
             )}
+            {!loading && userInfo?.isBackOffice && (
+              <HeaderNavItem href="/backoffice">
+                <span className="icon-[mdi--office-building] size-6" aria-hidden="true" />
+                <span className="hidden md:inline">バックオフィス</span>
+              </HeaderNavItem>
+            )}
           </ul>
         </div>
 

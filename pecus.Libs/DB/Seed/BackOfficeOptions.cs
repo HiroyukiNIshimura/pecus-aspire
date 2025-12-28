@@ -1,3 +1,5 @@
+using Pecus.Libs.DB.Models.Enums;
+
 namespace Pecus.Libs.DB.Seed;
 
 /// <summary>
@@ -62,8 +64,4 @@ public class BackOfficeUser
     /// </summary>
     public string Password { get; set; } = string.Empty;
 
-    /// <summary>
-    /// ロール (Admin/User)
-    /// </summary>
-    public string Role { get; set; } = string.Empty;
 }
