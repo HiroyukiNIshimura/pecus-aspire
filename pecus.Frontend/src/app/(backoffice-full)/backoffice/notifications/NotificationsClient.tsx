@@ -80,12 +80,12 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
 
     if (result.success) {
       notify.success('システム通知を作成しました');
+      setShowCreateModal(false);
       router.refresh();
-    } else {
-      setClientError({ message: result.message, code: result.error });
-      notify.error(result.message || '作成に失敗しました');
-      throw new Error(result.message);
+      return { success: true };
     }
+    notify.error(result.message || 'システム通知の作成に失敗しました');
+    return { success: false, message: result.message };
   };
 
   const getStatusBadge = (item: BackOfficeNotificationListItemResponse) => {

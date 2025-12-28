@@ -19,7 +19,7 @@ interface CreateNotificationModalProps {
     type: SystemNotificationType;
     publishAt: string;
     endAt?: string;
-  }) => Promise<void>;
+  }) => Promise<{ success: boolean; message?: string }>;
 }
 
 const notificationTypeLabels: Record<string, string> = {
@@ -52,11 +52,13 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
   const [form, setForm] = useState<CreateNotificationFormData>(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof CreateNotificationFormData | 'endTime', string>>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setForm(initialForm);
       setErrors({});
+      setSubmitError(null);
     }
   }, [isOpen]);
 
@@ -124,19 +126,22 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
     const isValid = await validate();
     if (!isValid) return;
 
+    setSubmitError(null);
     setIsSubmitting(true);
     try {
       const publishAt = `${form.publishDate}T${form.publishTime}:00`;
       const endAt = form.endDate ? `${form.endDate}T${form.endTime || '23:59'}:00` : undefined;
 
-      await onConfirm({
+      const result = await onConfirm({
         subject: form.subject.trim(),
         body: form.body.trim(),
         type: form.type,
         publishAt,
         endAt,
       });
-      onClose();
+      if (!result.success) {
+        setSubmitError(result.message || 'システム通知の作成に失敗しました');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -176,6 +181,13 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {submitError && (
+            <div className="alert alert-error mb-4">
+              <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+              <span>{submitError}</span>
+            </div>
+          )}
+
           <div className="form-control mb-4">
             <label className="label" htmlFor="notification-type">
               <span className="label-text font-semibold">通知種類</span>

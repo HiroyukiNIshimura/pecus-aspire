@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import { createBackOfficeOrganization } from '@/actions/backoffice/organizations';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
@@ -27,10 +27,11 @@ export default function OrganizationsClient({ initialData, fetchError }: Organiz
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUser = useCurrentUser();
-  const [data, _setData] = useState(initialData);
-  const [clientError, setClientError] = useState<ApiErrorResponse | null>(fetchError ? JSON.parse(fetchError) : null);
+  const [clientError, _setClientError] = useState<ApiErrorResponse | null>(fetchError ? JSON.parse(fetchError) : null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [isPending, startTransition] = useTransition();
+
+  // initialData を直接使用（router.refresh() で更新される）
+  const data = initialData;
 
   const { showLoading } = useDelayedLoading();
   const notify = useNotify();
@@ -46,22 +47,20 @@ export default function OrganizationsClient({ initialData, fetchError }: Organiz
   };
 
   const handleCreateOrganization = async (request: CreateOrganizationRequest) => {
-    startTransition(async () => {
-      const result = await createBackOfficeOrganization(request);
-      if (result.success) {
-        notify.success('組織を作成しました');
-        router.refresh();
-      } else {
-        setClientError({ message: result.message, code: result.error });
-        notify.error(result.message || '組織の作成に失敗しました');
-        throw new Error(result.message);
-      }
-    });
+    const result = await createBackOfficeOrganization(request);
+    if (result.success) {
+      notify.success('組織を作成しました');
+      setShowCreateModal(false);
+      router.refresh();
+      return { success: true };
+    }
+    notify.error(result.message || '組織の作成に失敗しました');
+    return { success: false, message: result.message };
   };
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <LoadingOverlay isLoading={showLoading || isPending} message="読み込み中..." />
+      <LoadingOverlay isLoading={showLoading} message="読み込み中..." />
 
       <BackOfficeHeader
         userInfo={currentUser}

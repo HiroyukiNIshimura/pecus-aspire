@@ -48,6 +48,12 @@ public class OrganizationService
                 throw new DuplicateException("組織コードは既に使用されています。");
             }
 
+            // 管理者メールアドレスの重複チェック
+            if (await _context.Users.AnyAsync(u => u.Email == request.AdminEmail))
+            {
+                throw new DuplicateException("管理者メールアドレスは既に使用されています。");
+            }
+
             // 組織を作成
             var organization = new Organization
             {

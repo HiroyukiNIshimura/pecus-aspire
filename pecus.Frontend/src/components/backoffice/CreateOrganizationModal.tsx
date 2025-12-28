@@ -7,7 +7,7 @@ import { type CreateOrganizationFormData, createOrganizationSchema } from '@/sch
 interface CreateOrganizationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: CreateOrganizationRequest) => Promise<void>;
+  onConfirm: (data: CreateOrganizationRequest) => Promise<{ success: boolean; message?: string }>;
 }
 
 const initialForm: CreateOrganizationFormData = {
@@ -25,11 +25,13 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
   const [form, setForm] = useState<CreateOrganizationFormData>(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof CreateOrganizationFormData, string>>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setForm(initialForm);
       setErrors({});
+      setSubmitError(null);
     }
   }, [isOpen]);
 
@@ -97,9 +99,10 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
     const isValid = await validate();
     if (!isValid) return;
 
+    setSubmitError(null);
     setIsSubmitting(true);
     try {
-      await onConfirm({
+      const result = await onConfirm({
         name: form.name.trim(),
         phoneNumber: form.phoneNumber.trim(),
         code: form.code.trim(),
@@ -109,7 +112,9 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
         adminUsername: form.adminUsername.trim(),
         adminEmail: form.adminEmail.trim(),
       });
-      onClose();
+      if (!result.success) {
+        setSubmitError(result.message || '組織の作成に失敗しました');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -154,6 +159,13 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {submitError && (
+            <div className="alert alert-error mb-4">
+              <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+              <span>{submitError}</span>
+            </div>
+          )}
+
           <div className="divider mt-0">組織情報</div>
 
           <div className="form-control mb-4">

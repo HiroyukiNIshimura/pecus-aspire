@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect400ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
   BackOfficeOrganizationDetailResponse,
   BackOfficeUpdateOrganizationRequest,
@@ -94,6 +94,10 @@ export async function createBackOfficeOrganization(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create backoffice organization:', error);
+    const validationError = detect400ValidationError(error);
+    if (validationError) {
+      return validationError;
+    }
     return parseErrorResponse(error, '組織の作成に失敗しました');
   }
 }
