@@ -167,7 +167,7 @@ export class LexicalService implements OnModuleInit {
 
     editor.update(
       () => {
-        $convertFromMarkdownString(markdown, PLAYGROUND_TRANSFORMERS);
+        $convertFromMarkdownString(markdown, PLAYGROUND_TRANSFORMERS, undefined, true);
       },
       { discrete: true },
     );
