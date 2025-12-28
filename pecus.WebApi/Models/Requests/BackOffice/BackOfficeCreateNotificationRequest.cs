@@ -6,7 +6,7 @@ namespace Pecus.Models.Requests.BackOffice;
 /// <summary>
 /// BackOffice用 システム通知作成リクエスト
 /// </summary>
-public class BackOfficeCreateNotificationRequest
+public class BackOfficeCreateNotificationRequest : IValidatableObject
 {
     /// <summary>
     /// 件名
@@ -37,4 +37,26 @@ public class BackOfficeCreateNotificationRequest
     /// 公開終了日時（null=無期限）
     /// </summary>
     public DateTimeOffset? EndAt { get; set; }
+
+    /// <summary>
+    /// カスタムバリデーション
+    /// </summary>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // 公開日時が過去の場合はエラー
+        if (PublishAt < DateTimeOffset.UtcNow)
+        {
+            yield return new ValidationResult(
+                "公開日時は現在以降の日時を設定してください。",
+                [nameof(PublishAt)]);
+        }
+
+        // 終了日時が公開日時より前の場合はエラー
+        if (EndAt.HasValue && EndAt.Value <= PublishAt)
+        {
+            yield return new ValidationResult(
+                "終了日時は公開日時より後に設定してください。",
+                [nameof(EndAt)]);
+        }
+    }
 }

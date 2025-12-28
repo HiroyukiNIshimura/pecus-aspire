@@ -1,10 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import { createBackOfficeNotification } from '@/actions/backoffice/notifications';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
+import CreateNotificationModal from '@/components/backoffice/CreateNotificationModal';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import Pagination from '@/components/common/filters/Pagination';
 import type {
@@ -13,6 +14,7 @@ import type {
   SystemNotificationType,
 } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
@@ -42,19 +44,14 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUser = useCurrentUser();
-  const [data] = useState(initialData);
   const [clientError, setClientError] = useState<ApiErrorResponse | null>(fetchError ? JSON.parse(fetchError) : null);
 
   const { showLoading } = useDelayedLoading();
-  const [isPending, startTransition] = useTransition();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [createForm, setCreateForm] = useState({
-    subject: '',
-    body: '',
-    type: 'Info' as SystemNotificationType,
-    publishAt: '',
-    endAt: '',
-  });
+  const notify = useNotify();
+
+  // initialData を直接使用（router.refresh() で更新される）
+  const data = initialData;
 
   useEffect(() => {
     if (clientError && isAuthenticationError(clientError)) {
@@ -66,26 +63,29 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
     router.push(`/backoffice/notifications?page=${selected + 1}`);
   };
 
-  const handleCreate = () => {
-    if (!createForm.subject || !createForm.body || !createForm.publishAt) return;
-
-    startTransition(async () => {
-      const result = await createBackOfficeNotification({
-        subject: createForm.subject,
-        body: createForm.body,
-        type: createForm.type,
-        publishAt: createForm.publishAt,
-        endAt: createForm.endAt || undefined,
-      });
-
-      if (result.success) {
-        setShowCreateModal(false);
-        setCreateForm({ subject: '', body: '', type: 'Info', publishAt: '', endAt: '' });
-        router.refresh();
-      } else {
-        setClientError({ message: result.message, code: result.error });
-      }
+  const handleCreate = async (formData: {
+    subject: string;
+    body: string;
+    type: SystemNotificationType;
+    publishAt: string;
+    endAt?: string;
+  }) => {
+    const result = await createBackOfficeNotification({
+      subject: formData.subject,
+      body: formData.body,
+      type: formData.type,
+      publishAt: formData.publishAt,
+      endAt: formData.endAt,
     });
+
+    if (result.success) {
+      notify.success('システム通知を作成しました');
+      router.refresh();
+    } else {
+      setClientError({ message: result.message, code: result.error });
+      notify.error(result.message || '作成に失敗しました');
+      throw new Error(result.message);
+    }
   };
 
   const getStatusBadge = (item: BackOfficeNotificationListItemResponse) => {
@@ -108,7 +108,7 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <LoadingOverlay isLoading={showLoading || isPending} message="処理中..." />
+      <LoadingOverlay isLoading={showLoading} message="処理中..." />
 
       <BackOfficeHeader
         userInfo={currentUser}
@@ -180,8 +180,8 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
                       <td>{getStatusBadge(item)}</td>
                       <td className="text-sm text-base-content/70">{item.createdByUserName || '-'}</td>
                       <td>
-                        <a href={`/backoffice/notifications/${item.id}`} className="btn btn-ghost btn-sm">
-                          <span className="icon-[mdi--eye-outline] size-5" aria-hidden="true" />
+                        <a href={`/backoffice/notifications/${item.id}`} className="btn btn-ghost btn-sm btn-square">
+                          <span className="icon-[mdi--dots-vertical] size-5" aria-hidden="true" />
                           <span className="sr-only">詳細を見る</span>
                         </a>
                       </td>
@@ -211,113 +211,11 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
         </main>
       </div>
 
-      {showCreateModal && (
-        <div className="modal modal-open">
-          <div className="modal-box max-w-2xl">
-            <h3 className="font-bold text-lg mb-4">システム通知を作成</h3>
-
-            <div className="form-control mb-4">
-              <label className="label" htmlFor="create-notification-type">
-                <span className="label-text">種類</span>
-              </label>
-              <select
-                id="create-notification-type"
-                className="select select-bordered"
-                value={createForm.type || 'Info'}
-                onChange={(e) =>
-                  setCreateForm({
-                    ...createForm,
-                    type: e.target.value as SystemNotificationType,
-                  })
-                }
-              >
-                {Object.entries(notificationTypeLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-control mb-4">
-              <label className="label" htmlFor="create-notification-subject">
-                <span className="label-text">件名 *</span>
-              </label>
-              <input
-                id="create-notification-subject"
-                type="text"
-                className="input input-bordered"
-                value={createForm.subject}
-                onChange={(e) => setCreateForm({ ...createForm, subject: e.target.value })}
-                placeholder="通知の件名を入力"
-              />
-            </div>
-
-            <div className="form-control mb-4">
-              <label className="label" htmlFor="create-notification-body">
-                <span className="label-text">本文 *（Markdown形式）</span>
-              </label>
-              <textarea
-                id="create-notification-body"
-                className="textarea textarea-bordered h-40"
-                value={createForm.body}
-                onChange={(e) => setCreateForm({ ...createForm, body: e.target.value })}
-                placeholder="通知の本文を入力..."
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="form-control">
-                <label className="label" htmlFor="create-notification-publishAt">
-                  <span className="label-text">公開日時 *</span>
-                </label>
-                <input
-                  id="create-notification-publishAt"
-                  type="datetime-local"
-                  className="input input-bordered"
-                  value={createForm.publishAt}
-                  onChange={(e) => setCreateForm({ ...createForm, publishAt: e.target.value })}
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label" htmlFor="create-notification-endAt">
-                  <span className="label-text">終了日時（任意）</span>
-                </label>
-                <input
-                  id="create-notification-endAt"
-                  type="datetime-local"
-                  className="input input-bordered"
-                  value={createForm.endAt}
-                  onChange={(e) => setCreateForm({ ...createForm, endAt: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="modal-action">
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setCreateForm({ subject: '', body: '', type: 'Info', publishAt: '', endAt: '' });
-                }}
-              >
-                キャンセル
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                disabled={!createForm.subject || !createForm.body || !createForm.publishAt || isPending}
-                onClick={handleCreate}
-              >
-                作成
-              </button>
-            </div>
-          </div>
-          <div className="modal-backdrop" onClick={() => setShowCreateModal(false)}></div>
-        </div>
-      )}
+      <CreateNotificationModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onConfirm={handleCreate}
+      />
     </div>
   );
 }

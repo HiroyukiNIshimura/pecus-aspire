@@ -5,9 +5,11 @@ import { useEffect, useState, useTransition } from 'react';
 import { deleteBackOfficeNotification, updateBackOfficeNotification } from '@/actions/backoffice/notifications';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
+import DeleteNotificationModal from '@/components/backoffice/DeleteNotificationModal';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import type { BackOfficeNotificationDetailResponse, SystemNotificationType } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
@@ -42,7 +44,7 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
 
   const { showLoading } = useDelayedLoading();
   const [isPending, startTransition] = useTransition();
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const notify = useNotify();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<{
@@ -60,7 +62,6 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
   });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteMessages, setDeleteMessages] = useState(false);
 
   useEffect(() => {
     if (clientError && isAuthenticationError(clientError)) {
@@ -84,27 +85,28 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
       if (result.success) {
         setData(result.data);
         setIsEditing(false);
-        setSuccessMessage('更新しました');
-        setTimeout(() => setSuccessMessage(null), 3000);
+        setClientError(null);
+        notify.success('通知を更新しました');
       } else {
         setClientError({ message: result.message, code: result.error });
+        notify.error(result.message || '更新に失敗しました');
       }
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async (deleteMessages: boolean) => {
     if (!data) return;
 
-    startTransition(async () => {
-      const result = await deleteBackOfficeNotification(data.id, data.rowVersion, deleteMessages);
+    const result = await deleteBackOfficeNotification(data.id, data.rowVersion, deleteMessages);
 
-      if (result.success) {
-        router.push('/backoffice/notifications');
-      } else {
-        setClientError({ message: result.message, code: result.error });
-        setShowDeleteModal(false);
-      }
-    });
+    if (result.success) {
+      notify.success('通知を削除しました');
+      router.push('/backoffice/notifications');
+    } else {
+      setClientError({ message: result.message, code: result.error });
+      notify.error(result.message || '削除に失敗しました');
+      throw new Error(result.message);
+    }
   };
 
   const getStatusBadge = () => {
@@ -145,20 +147,7 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
 
         <main className="flex-1 p-6 bg-base-100 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-4 mb-6">
-              <a href="/backoffice/notifications" className="btn btn-ghost btn-sm">
-                <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
-                戻る
-              </a>
-              <h1 className="text-3xl font-bold">通知詳細</h1>
-            </div>
-
-            {successMessage && (
-              <div className="alert alert-soft alert-success mb-4">
-                <span className="icon-[mdi--check-circle] size-5" aria-hidden="true" />
-                <span>{successMessage}</span>
-              </div>
-            )}
+            <h1 className="text-3xl font-bold mb-6">通知詳細</h1>
 
             {clientError && (
               <div className="alert alert-soft alert-error mb-4">
@@ -178,13 +167,19 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
                       {getStatusBadge()}
                     </div>
                     <div className="flex gap-2">
+                      {!isEditing && (
+                        <a href="/backoffice/notifications" className="btn btn-ghost btn-sm">
+                          <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
+                          戻る
+                        </a>
+                      )}
                       {data.isEditable && !isEditing && (
                         <button type="button" className="btn btn-primary btn-sm" onClick={() => setIsEditing(true)}>
                           <span className="icon-[mdi--pencil] size-4" aria-hidden="true" />
                           編集
                         </button>
                       )}
-                      {!data.isDeleted && (
+                      {!data.isDeleted && !isEditing && (
                         <button type="button" className="btn btn-error btn-sm" onClick={() => setShowDeleteModal(true)}>
                           <span className="icon-[mdi--delete] size-4" aria-hidden="true" />
                           削除
@@ -344,48 +339,21 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
         </main>
       </div>
 
-      {showDeleteModal && data && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg text-error">通知を削除</h3>
-            <p className="py-4">この通知を削除します。</p>
-
-            {data.isProcessed && data.messageIds && (
-              <div className="form-control">
-                <label className="label cursor-pointer justify-start gap-2">
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-error"
-                    checked={deleteMessages}
-                    onChange={(e) => setDeleteMessages(e.target.checked)}
-                  />
-                  <span className="label-text">配信済みメッセージも削除する</span>
-                </label>
-                <p className="text-sm text-base-content/70 ml-8">
-                  チェックすると、すでに配信されたチャットメッセージも削除されます。
-                </p>
-              </div>
-            )}
-
-            <div className="modal-action">
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setDeleteMessages(false);
-                }}
-              >
-                キャンセル
-              </button>
-              <button type="button" className="btn btn-error" disabled={isPending} onClick={handleDelete}>
-                削除する
-              </button>
-            </div>
-          </div>
-          <div className="modal-backdrop" onClick={() => setShowDeleteModal(false)}></div>
-        </div>
-      )}
+      <DeleteNotificationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        notification={
+          data
+            ? {
+                id: data.id,
+                subject: data.subject ?? '',
+                isProcessed: data.isProcessed ?? false,
+                messageIds: data.messageIds,
+              }
+            : null
+        }
+      />
     </div>
   );
 }

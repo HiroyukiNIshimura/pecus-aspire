@@ -113,8 +113,8 @@ export default function OrganizationsClient({ initialData, fetchError }: Organiz
                             {org.createdAt ? formatDate(org.createdAt) : '-'}
                           </td>
                           <td>
-                            <a href={`/backoffice/organizations/${org.id}`} className="btn btn-ghost btn-sm">
-                              <span className="icon-[mdi--eye-outline] size-5" aria-hidden="true" />
+                            <a href={`/backoffice/organizations/${org.id}`} className="btn btn-ghost btn-sm btn-square">
+                              <span className="icon-[mdi--dots-vertical] size-5" aria-hidden="true" />
                               <span className="sr-only">詳細を見る</span>
                             </a>
                           </td>

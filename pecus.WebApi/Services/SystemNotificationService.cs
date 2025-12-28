@@ -109,8 +109,8 @@ public class SystemNotificationService
             Subject = request.Subject,
             Body = request.Body,
             Type = request.Type,
-            PublishAt = request.PublishAt,
-            EndAt = request.EndAt,
+            PublishAt = request.PublishAt.ToUniversalTime(),
+            EndAt = request.EndAt?.ToUniversalTime(),
             IsProcessed = false,
             IsDeleted = false,
             CreatedAt = DateTimeOffset.UtcNow,
@@ -171,12 +171,12 @@ public class SystemNotificationService
 
         if (request.PublishAt.HasValue)
         {
-            notification.PublishAt = request.PublishAt.Value;
+            notification.PublishAt = request.PublishAt.Value.ToUniversalTime();
         }
 
         if (request.EndAt.HasValue)
         {
-            notification.EndAt = request.EndAt.Value;
+            notification.EndAt = request.EndAt.Value.ToUniversalTime();
         }
 
         notification.UpdatedAt = DateTimeOffset.UtcNow;

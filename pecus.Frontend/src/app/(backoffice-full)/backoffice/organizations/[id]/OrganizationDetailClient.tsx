@@ -120,13 +120,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
 
         <main className="flex-1 p-6 bg-base-100 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-4 mb-6">
-              <a href="/backoffice/organizations" className="btn btn-ghost btn-sm">
-                <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
-                戻る
-              </a>
-              <h1 className="text-3xl font-bold">組織詳細</h1>
-            </div>
+            <h1 className="text-3xl font-bold mb-6">組織詳細</h1>
 
             {clientError && (
               <div className="alert alert-soft alert-error mb-4">
@@ -143,6 +137,10 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                     <div className="flex gap-2">
                       {!isEditing ? (
                         <>
+                          <a href="/backoffice/organizations" className="btn btn-ghost btn-sm">
+                            <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
+                            戻る
+                          </a>
                           <button type="button" className="btn btn-primary btn-sm" onClick={startEditing}>
                             <span className="icon-[mdi--pencil] size-4" aria-hidden="true" />
                             編集
