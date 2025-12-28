@@ -3,16 +3,12 @@
 import { useEffect, useState } from 'react';
 import DatePicker from '@/components/common/filters/DatePicker';
 import type { SystemNotificationType } from '@/connectors/api/pecus';
-
-interface CreateNotificationForm {
-  subject: string;
-  body: string;
-  type: SystemNotificationType;
-  publishDate: string;
-  publishTime: string;
-  endDate: string;
-  endTime: string;
-}
+import {
+  type CreateNotificationFormData,
+  createNotificationBaseSchema,
+  createNotificationSchema,
+  type systemNotificationTypes,
+} from '@/schemas/backofficeSchemas';
 
 interface CreateNotificationModalProps {
   isOpen: boolean;
@@ -42,7 +38,7 @@ const notificationTypeDescriptions: Record<string, string> = {
   IncidentReport: 'システム障害や問題の報告を通知',
 };
 
-const initialForm: CreateNotificationForm = {
+const initialForm: CreateNotificationFormData = {
   subject: '',
   body: '',
   type: 'Info',
@@ -53,9 +49,9 @@ const initialForm: CreateNotificationForm = {
 };
 
 export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: CreateNotificationModalProps) {
-  const [form, setForm] = useState<CreateNotificationForm>(initialForm);
+  const [form, setForm] = useState<CreateNotificationFormData>(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateNotificationForm, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateNotificationFormData | 'endTime', string>>>({});
 
   useEffect(() => {
     if (!isOpen) {
@@ -79,51 +75,54 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
     }
   };
 
-  const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof CreateNotificationForm, string>> = {};
+  const validateField = async (fieldName: keyof CreateNotificationFormData, value: string) => {
+    const fieldSchema = createNotificationBaseSchema.shape[fieldName];
+    if (!fieldSchema) return;
 
-    if (!form.subject.trim()) {
-      newErrors.subject = '件名は必須です';
-    } else if (form.subject.length > 200) {
-      newErrors.subject = '件名は200文字以内で入力してください';
+    const result = await fieldSchema.safeParseAsync(value);
+    if (result.success) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[fieldName];
+        return next;
+      });
+    } else {
+      setErrors((prev) => ({
+        ...prev,
+        [fieldName]: result.error.issues[0]?.message || 'バリデーションエラー',
+      }));
     }
+  };
 
-    if (!form.body.trim()) {
-      newErrors.body = '本文は必須です';
-    }
+  const handleFieldChange = (fieldName: keyof CreateNotificationFormData, value: string) => {
+    setForm({ ...form, [fieldName]: value });
+    validateField(fieldName, value);
+  };
 
-    if (!form.publishDate) {
-      newErrors.publishDate = '公開日は必須です';
-    } else if (form.publishTime) {
-      const publishDateTime = new Date(`${form.publishDate}T${form.publishTime}`);
-      const now = new Date();
-      if (publishDateTime < now) {
-        newErrors.publishDate = '公開日時は現在以降の日時を設定してください';
+  const validate = async (): Promise<boolean> => {
+    const result = await createNotificationSchema.safeParseAsync(form);
+
+    if (!result.success) {
+      const newErrors: Partial<Record<string, string>> = {};
+      for (const issue of result.error.issues) {
+        const path = issue.path[0] as string;
+        if (!newErrors[path]) {
+          newErrors[path] = issue.message;
+        }
       }
+      setErrors(newErrors);
+      return false;
     }
 
-    if (!form.publishTime) {
-      newErrors.publishTime = '公開時間は必須です';
-    }
-
-    if (form.endDate && !form.endTime) {
-      newErrors.endTime = '終了日を設定した場合、終了時間も必須です';
-    }
-
-    if (form.publishDate && form.endDate) {
-      const publishDateTime = new Date(`${form.publishDate}T${form.publishTime}`);
-      const endDateTime = new Date(`${form.endDate}T${form.endTime || '23:59'}`);
-      if (endDateTime <= publishDateTime) {
-        newErrors.endDate = '終了日時は公開日時より後に設定してください';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleConfirm = async () => {
-    if (!validate() || isSubmitting) return;
+    if (isSubmitting) return;
+
+    const isValid = await validate();
+    if (!isValid) return;
 
     setIsSubmitting(true);
     try {
@@ -185,7 +184,7 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
               id="notification-type"
               className="select select-bordered w-full"
               value={form.type || 'Info'}
-              onChange={(e) => setForm({ ...form, type: e.target.value as SystemNotificationType })}
+              onChange={(e) => setForm({ ...form, type: e.target.value as (typeof systemNotificationTypes)[number] })}
               disabled={isSubmitting}
             >
               {Object.entries(notificationTypeLabels).map(([value, label]) => (
@@ -209,10 +208,11 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
             </label>
             <input
               id="notification-subject"
+              name="subject"
               type="text"
               className={`input input-bordered w-full ${errors.subject ? 'input-error' : ''}`}
               value={form.subject}
-              onChange={(e) => setForm({ ...form, subject: e.target.value })}
+              onChange={(e) => handleFieldChange('subject', e.target.value)}
               placeholder="通知の件名を入力"
               maxLength={200}
               disabled={isSubmitting}
@@ -232,9 +232,10 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
             </label>
             <textarea
               id="notification-body"
+              name="body"
               className={`textarea textarea-bordered h-32 ${errors.body ? 'textarea-error' : ''}`}
               value={form.body}
-              onChange={(e) => setForm({ ...form, body: e.target.value })}
+              onChange={(e) => handleFieldChange('body', e.target.value)}
               placeholder="通知の本文を入力..."
               disabled={isSubmitting}
             />
@@ -256,7 +257,7 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
               </label>
               <DatePicker
                 value={form.publishDate}
-                onChange={(date) => setForm({ ...form, publishDate: date })}
+                onChange={(date) => handleFieldChange('publishDate', date)}
                 disabled={isSubmitting}
                 placeholder="公開日を選択"
                 error={!!errors.publishDate}
@@ -276,10 +277,11 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
               </label>
               <input
                 id="notification-publish-time"
+                name="publishTime"
                 type="time"
                 className={`input input-bordered w-full ${errors.publishTime ? 'input-error' : ''}`}
                 value={form.publishTime}
-                onChange={(e) => setForm({ ...form, publishTime: e.target.value })}
+                onChange={(e) => handleFieldChange('publishTime', e.target.value)}
                 disabled={isSubmitting}
               />
               {errors.publishTime && (
@@ -296,8 +298,8 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
                 <span className="label-text font-semibold">終了日（任意）</span>
               </label>
               <DatePicker
-                value={form.endDate}
-                onChange={(date) => setForm({ ...form, endDate: date })}
+                value={form.endDate || ''}
+                onChange={(date) => handleFieldChange('endDate', date)}
                 disabled={isSubmitting}
                 placeholder="終了日を選択"
                 error={!!errors.endDate}
@@ -315,10 +317,11 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
               </label>
               <input
                 id="notification-end-time"
+                name="endTime"
                 type="time"
                 className={`input input-bordered w-full ${errors.endTime ? 'input-error' : ''}`}
-                value={form.endTime}
-                onChange={(e) => setForm({ ...form, endTime: e.target.value })}
+                value={form.endTime || ''}
+                onChange={(e) => handleFieldChange('endTime', e.target.value)}
                 disabled={isSubmitting || !form.endDate}
               />
               {errors.endTime && (

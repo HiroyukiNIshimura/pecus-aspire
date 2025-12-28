@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { CreateOrganizationRequest } from '@/connectors/api/pecus';
-
-type CreateOrganizationForm = Omit<CreateOrganizationRequest, 'name'> & { name: string };
+import { type CreateOrganizationFormData, createOrganizationSchema } from '@/schemas/backofficeSchemas';
 
 interface CreateOrganizationModalProps {
   isOpen: boolean;
@@ -11,7 +10,7 @@ interface CreateOrganizationModalProps {
   onConfirm: (data: CreateOrganizationRequest) => Promise<void>;
 }
 
-const initialForm: CreateOrganizationForm = {
+const initialForm: CreateOrganizationFormData = {
   name: '',
   code: '',
   phoneNumber: '',
@@ -23,9 +22,9 @@ const initialForm: CreateOrganizationForm = {
 };
 
 export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: CreateOrganizationModalProps) {
-  const [form, setForm] = useState<CreateOrganizationForm>(initialForm);
+  const [form, setForm] = useState<CreateOrganizationFormData>(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateOrganizationForm, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateOrganizationFormData, string>>>({});
 
   useEffect(() => {
     if (!isOpen) {
@@ -49,56 +48,61 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
     }
   };
 
-  const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof CreateOrganizationForm, string>> = {};
+  const validateField = async (fieldName: keyof CreateOrganizationFormData, value: string) => {
+    const fieldSchema = createOrganizationSchema.shape[fieldName];
+    if (!fieldSchema) return;
 
-    if (!form.name.trim()) {
-      newErrors.name = '組織名は必須です';
-    } else if (form.name.length > 100) {
-      newErrors.name = '組織名は100文字以内で入力してください';
+    const result = await fieldSchema.safeParseAsync(value);
+    if (result.success) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[fieldName];
+        return next;
+      });
+    } else {
+      setErrors((prev) => ({
+        ...prev,
+        [fieldName]: result.error.issues[0]?.message || 'バリデーションエラー',
+      }));
+    }
+  };
+
+  const handleFieldChange = (fieldName: keyof CreateOrganizationFormData, value: string) => {
+    setForm({ ...form, [fieldName]: value });
+    validateField(fieldName, value);
+  };
+
+  const validate = async (): Promise<boolean> => {
+    const result = await createOrganizationSchema.safeParseAsync(form);
+
+    if (!result.success) {
+      const newErrors: Partial<Record<keyof CreateOrganizationFormData, string>> = {};
+      for (const issue of result.error.issues) {
+        const path = issue.path[0] as keyof CreateOrganizationFormData;
+        if (!newErrors[path]) {
+          newErrors[path] = issue.message;
+        }
+      }
+      setErrors(newErrors);
+      return false;
     }
 
-    if (!form.phoneNumber.trim()) {
-      newErrors.phoneNumber = '電話番号は必須です';
-    } else if (!/^[0-9-]+$/.test(form.phoneNumber)) {
-      newErrors.phoneNumber = '電話番号は半角数字とハイフンのみ入力できます';
-    }
-
-    if (!form.code?.trim()) {
-      newErrors.code = '組織コードは必須です';
-    } else if (!/^[a-zA-Z0-9-_]+$/.test(form.code)) {
-      newErrors.code = 'コードは半角英数字とハイフン、アンダースコアのみ入力できます';
-    }
-
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      newErrors.email = '有効なメールアドレスを入力してください';
-    }
-
-    if (!form.adminUsername.trim()) {
-      newErrors.adminUsername = '管理者ユーザー名は必須です';
-    } else if (form.adminUsername.length < 3) {
-      newErrors.adminUsername = '管理者ユーザー名は3文字以上で入力してください';
-    }
-
-    if (!form.adminEmail.trim()) {
-      newErrors.adminEmail = '管理者メールアドレスは必須です';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.adminEmail)) {
-      newErrors.adminEmail = '有効なメールアドレスを入力してください';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleConfirm = async () => {
-    if (!validate() || isSubmitting) return;
+    if (isSubmitting) return;
+
+    const isValid = await validate();
+    if (!isValid) return;
 
     setIsSubmitting(true);
     try {
       await onConfirm({
         name: form.name.trim(),
         phoneNumber: form.phoneNumber.trim(),
-        code: form.code?.trim(),
+        code: form.code.trim(),
         description: form.description?.trim() || undefined,
         representativeName: form.representativeName?.trim() || undefined,
         email: form.email?.trim() || undefined,
@@ -113,7 +117,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
 
   const isFormValid =
     form.name.trim() &&
-    form.code?.trim() &&
+    form.code.trim() &&
     form.phoneNumber.trim() &&
     form.adminUsername.trim() &&
     form.adminEmail.trim();
@@ -160,10 +164,11 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
             </label>
             <input
               id="organization-name"
+              name="name"
               type="text"
               className={`input input-bordered w-full ${errors.name ? 'input-error' : ''}`}
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => handleFieldChange('name', e.target.value)}
               placeholder="株式会社サンプル"
               maxLength={100}
               disabled={isSubmitting}
@@ -184,10 +189,11 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
               </label>
               <input
                 id="organization-code"
+                name="code"
                 type="text"
                 className={`input input-bordered w-full ${errors.code ? 'input-error' : ''}`}
-                value={form.code || ''}
-                onChange={(e) => setForm({ ...form, code: e.target.value })}
+                value={form.code}
+                onChange={(e) => handleFieldChange('code', e.target.value)}
                 placeholder="sample-corp"
                 disabled={isSubmitting}
               />
@@ -206,10 +212,11 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
               </label>
               <input
                 id="organization-phone"
+                name="phoneNumber"
                 type="tel"
                 className={`input input-bordered w-full ${errors.phoneNumber ? 'input-error' : ''}`}
                 value={form.phoneNumber}
-                onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+                onChange={(e) => handleFieldChange('phoneNumber', e.target.value)}
                 placeholder="03-1234-5678"
                 disabled={isSubmitting}
               />
@@ -228,10 +235,11 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
               </label>
               <input
                 id="organization-representative"
+                name="representativeName"
                 type="text"
                 className="input input-bordered w-full"
                 value={form.representativeName || ''}
-                onChange={(e) => setForm({ ...form, representativeName: e.target.value })}
+                onChange={(e) => handleFieldChange('representativeName', e.target.value)}
                 placeholder="山田 太郎"
                 disabled={isSubmitting}
               />
@@ -243,10 +251,11 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
               </label>
               <input
                 id="organization-email"
+                name="email"
                 type="email"
                 className={`input input-bordered w-full ${errors.email ? 'input-error' : ''}`}
                 value={form.email || ''}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                onChange={(e) => handleFieldChange('email', e.target.value)}
                 placeholder="info@example.com"
                 disabled={isSubmitting}
               />
@@ -264,9 +273,10 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
             </label>
             <textarea
               id="organization-description"
+              name="description"
               className="textarea textarea-bordered h-20"
               value={form.description || ''}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) => handleFieldChange('description', e.target.value)}
               placeholder="組織の説明（任意）"
               disabled={isSubmitting}
             />
@@ -290,10 +300,11 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
               </label>
               <input
                 id="admin-username"
+                name="adminUsername"
                 type="text"
                 className={`input input-bordered w-full ${errors.adminUsername ? 'input-error' : ''}`}
                 value={form.adminUsername}
-                onChange={(e) => setForm({ ...form, adminUsername: e.target.value })}
+                onChange={(e) => handleFieldChange('adminUsername', e.target.value)}
                 placeholder="admin_user"
                 disabled={isSubmitting}
               />
@@ -312,10 +323,11 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
               </label>
               <input
                 id="admin-email"
+                name="adminEmail"
                 type="email"
                 className={`input input-bordered w-full ${errors.adminEmail ? 'input-error' : ''}`}
                 value={form.adminEmail}
-                onChange={(e) => setForm({ ...form, adminEmail: e.target.value })}
+                onChange={(e) => handleFieldChange('adminEmail', e.target.value)}
                 placeholder="admin@example.com"
                 disabled={isSubmitting}
               />
