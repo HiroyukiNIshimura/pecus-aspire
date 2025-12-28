@@ -27,7 +27,7 @@ function MarkdownLoader({ markdown }: { markdown: string }) {
 
   useEffect(() => {
     editor.update(() => {
-      $convertFromMarkdownString(markdown, PLAYGROUND_TRANSFORMERS);
+      $convertFromMarkdownString(markdown, PLAYGROUND_TRANSFORMERS, undefined, true);
     });
   }, [editor, markdown]);
 
