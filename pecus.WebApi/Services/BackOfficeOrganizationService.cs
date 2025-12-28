@@ -175,9 +175,9 @@ public class BackOfficeOrganizationService
             throw new NotFoundException("組織が見つかりません。");
         }
 
-        if (organization.Name != request.ConfirmOrganizationName)
+        if (organization.Code != request.ConfirmOrganizationCode)
         {
-            throw new BadRequestException("確認用の組織名が一致しません。");
+            throw new BadRequestException("確認用の組織コードが一致しません。");
         }
 
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -329,6 +329,15 @@ public class BackOfficeOrganizationService
             await _context.Skills
                 .Where(s => s.OrganizationId == id)
                 .ExecuteDeleteAsync();
+
+            // WorkspaceItemRelations は CreatedByUserId で Users を参照しているため、
+            // Users 削除前に組織に属するユーザーが作成した全てのリレーションを削除
+            if (userIds.Count > 0)
+            {
+                await _context.WorkspaceItemRelations
+                    .Where(r => userIds.Contains(r.CreatedByUserId))
+                    .ExecuteDeleteAsync();
+            }
 
             await _context.Users
                 .Where(u => u.OrganizationId == id)

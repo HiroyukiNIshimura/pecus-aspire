@@ -7,9 +7,9 @@
  */
 export type BackOfficeDeleteOrganizationRequest = {
     /**
-     * 確認用組織名（誤操作防止）
+     * 確認用組織コード（誤操作防止）
      */
-    confirmOrganizationName: string;
+    confirmOrganizationCode: string;
     /**
      * 楽観的ロック用バージョン番号
      */

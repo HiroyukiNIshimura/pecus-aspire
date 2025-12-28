@@ -12512,15 +12512,15 @@
       },
       "BackOfficeDeleteOrganizationRequest": {
         "required": [
-          "confirmOrganizationName",
+          "confirmOrganizationCode",
           "rowVersion"
         ],
         "type": "object",
         "properties": {
-          "confirmOrganizationName": {
-            "maxLength": 100,
+          "confirmOrganizationCode": {
+            "maxLength": 50,
             "type": "string",
-            "description": "確認用組織名（誤操作防止）"
+            "description": "確認用組織コード（誤操作防止）"
           },
           "rowVersion": {
             "type": "integer",

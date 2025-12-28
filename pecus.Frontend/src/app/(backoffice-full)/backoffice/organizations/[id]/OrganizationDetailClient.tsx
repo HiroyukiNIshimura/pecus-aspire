@@ -6,6 +6,7 @@ import { deleteBackOfficeOrganization, updateBackOfficeOrganization } from '@/ac
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import DeleteOrganizationModal from '@/components/common/overlays/DeleteOrganizationModal';
 import type { BackOfficeOrganizationDetailResponse } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
@@ -38,7 +39,6 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
   });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteConfirmName, setDeleteConfirmName] = useState('');
 
   useEffect(() => {
     if (clientError && isAuthenticationError(clientError)) {
@@ -84,19 +84,18 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     });
   };
 
-  const handleDelete = () => {
-    if (!data || deleteConfirmName !== data.name) return;
+  const handleDelete = async () => {
+    if (!data || !data.code) return;
 
-    startTransition(async () => {
-      const result = await deleteBackOfficeOrganization(data.id, deleteConfirmName, data.rowVersion);
+    const result = await deleteBackOfficeOrganization(data.id, data.code, data.rowVersion);
 
-      if (result.success) {
-        router.push('/backoffice/organizations');
-      } else {
-        setClientError({ message: result.message, code: result.error });
-        setShowDeleteModal(false);
-      }
-    });
+    if (result.success) {
+      notify.success('組織を削除しました');
+      router.push('/backoffice/organizations');
+    } else {
+      setClientError({ message: result.message, code: result.error });
+      notify.error(result.message || '削除に失敗しました');
+    }
   };
 
   return (
@@ -316,51 +315,21 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
         </main>
       </div>
 
-      {showDeleteModal && data && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg text-error">組織を削除</h3>
-            <p className="py-4">
-              この操作は取り消せません。組織「<strong>{data.name}</strong>
-              」とすべての関連データ（ユーザー、ワークスペース、タスクなど）が完全に削除されます。
-            </p>
-            <div className="form-control">
-              <label className="label" htmlFor="delete-confirm-org-name">
-                <span className="label-text">確認のため、組織名を入力してください</span>
-              </label>
-              <input
-                id="delete-confirm-org-name"
-                type="text"
-                className="input input-bordered"
-                value={deleteConfirmName}
-                onChange={(e) => setDeleteConfirmName(e.target.value)}
-                placeholder={data.name}
-              />
-            </div>
-            <div className="modal-action">
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setDeleteConfirmName('');
-                }}
-              >
-                キャンセル
-              </button>
-              <button
-                type="button"
-                className="btn btn-error"
-                disabled={deleteConfirmName !== data.name || isPending}
-                onClick={handleDelete}
-              >
-                削除する
-              </button>
-            </div>
-          </div>
-          <div className="modal-backdrop" onClick={() => setShowDeleteModal(false)}></div>
-        </div>
-      )}
+      <DeleteOrganizationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        organization={
+          data?.code
+            ? {
+                id: data.id,
+                name: data.name,
+                code: data.code,
+                isActive: data.isActive ?? true,
+              }
+            : null
+        }
+      />
     </div>
   );
 }

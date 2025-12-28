@@ -60,17 +60,17 @@ export async function updateBackOfficeOrganization(
 
 /**
  * Server Action: BackOffice - 組織を削除（物理削除）
- * 確認用に組織名の入力が必要
+ * 確認用に組織コードの入力が必要
  */
 export async function deleteBackOfficeOrganization(
   id: number,
-  confirmOrganizationName: string,
+  confirmOrganizationCode: string,
   rowVersion: number,
 ): Promise<ApiResponse<void>> {
   try {
     const api = createPecusApiClients();
     await api.backOfficeOrganizations.deleteApiBackofficeOrganizations(id, {
-      confirmOrganizationName,
+      confirmOrganizationCode,
       rowVersion,
     });
     return { success: true, data: undefined };
