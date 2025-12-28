@@ -167,6 +167,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Bot> Bots { get; set; }
 
     /// <summary>
+    /// システム通知テーブル
+    /// </summary>
+    public DbSet<SystemNotification> SystemNotifications { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -1118,6 +1123,34 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.OrganizationId);
         });
 
+        // SystemNotification エンティティの設定
+        modelBuilder.Entity<SystemNotification>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Body).IsRequired();
+            entity.Property(e => e.MessageIds).HasMaxLength(4000);
+
+            // 作成者ユーザーとのリレーション
+            entity
+                .HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 更新者ユーザーとのリレーション
+            entity
+                .HasOne(e => e.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 公開日時でのソート用インデックス
+            entity.HasIndex(e => e.PublishAt);
+            // 未処理通知の検索用インデックス
+            entity.HasIndex(e => new { e.IsProcessed, e.IsDeleted, e.PublishAt });
+        });
+
         // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）
         ConfigureRowVersionForAllEntities(modelBuilder);
     }
@@ -1293,6 +1326,15 @@ public class ApplicationDbContext : DbContext
         // ChatRoom
         modelBuilder
             .Entity<ChatRoom>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // SystemNotification
+        modelBuilder
+            .Entity<SystemNotification>()
             .Property(e => e.RowVersion)
             .HasColumnName("xmin")
             .HasColumnType("xid")

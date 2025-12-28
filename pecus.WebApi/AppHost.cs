@@ -124,6 +124,8 @@ builder.Services.AddScoped<EmailChangeService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<OrganizationService>();
+builder.Services.AddScoped<BackOfficeOrganizationService>();
+builder.Services.AddScoped<SystemNotificationService>();
 builder.Services.AddScoped<WorkspaceService>();
 builder.Services.AddScoped<WorkspaceItemService>();
 builder.Services.AddScoped<WorkspaceItemAttachmentService>();

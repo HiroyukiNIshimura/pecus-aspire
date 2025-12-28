@@ -10,20 +10,24 @@ using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
+using Pecus.Models.Requests.BackOffice;
+using Pecus.Models.Responses.BackOffice;
+using Pecus.Models.Responses.Common;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Entrance;
 
 /// <summary>
-/// バックオフィス用コントローラー
+/// バックオフィス用コントローラー（組織管理）
 /// </summary>
 [ApiController]
 [Route("api/backoffice/organizations")]
 [Produces("application/json")]
-[Tags("BackOffice")]
+[Tags("BackOffice - Organizations")]
 public class BackOfficeController : BaseBackendController
 {
     private readonly OrganizationService _organizationService;
+    private readonly BackOfficeOrganizationService _backOfficeOrganizationService;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<BackOfficeController> _logger;
     private readonly FrontendUrlResolver _frontendUrlResolver;
@@ -31,6 +35,7 @@ public class BackOfficeController : BaseBackendController
     public BackOfficeController(
         ProfileService profileService,
         OrganizationService organizationService,
+        BackOfficeOrganizationService backOfficeOrganizationService,
         IBackgroundJobClient backgroundJobClient,
         ILogger<BackOfficeController> logger,
         FrontendUrlResolver frontendUrlResolver
@@ -40,9 +45,81 @@ public class BackOfficeController : BaseBackendController
     )
     {
         _organizationService = organizationService;
+        _backOfficeOrganizationService = backOfficeOrganizationService;
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
         _frontendUrlResolver = frontendUrlResolver;
+    }
+
+    /// <summary>
+    /// 組織一覧を取得
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResponse<BackOfficeOrganizationListItemResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<Ok<PagedResponse<BackOfficeOrganizationListItemResponse>>> GetOrganizations(
+        [FromQuery] BackOfficeGetOrganizationsRequest request)
+    {
+        var response = await _backOfficeOrganizationService.GetOrganizationsAsync(request);
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// 組織詳細を取得
+    /// </summary>
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(BackOfficeOrganizationDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<Ok<BackOfficeOrganizationDetailResponse>> GetOrganization(int id)
+    {
+        var response = await _backOfficeOrganizationService.GetOrganizationAsync(id);
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// 組織を更新
+    /// </summary>
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(typeof(BackOfficeOrganizationDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<Ok<BackOfficeOrganizationDetailResponse>> UpdateOrganization(
+        int id,
+        [FromBody] BackOfficeUpdateOrganizationRequest request)
+    {
+        var response = await _backOfficeOrganizationService.UpdateOrganizationAsync(
+            id,
+            request,
+            CurrentUserId);
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// 組織を削除（物理削除）
+    /// </summary>
+    /// <remarks>
+    /// 組織とすべての関連データを物理削除します。
+    /// 誤操作防止のため、確認用に組織名の入力が必要です。
+    /// </remarks>
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<NoContent> DeleteOrganization(
+        int id,
+        [FromBody] BackOfficeDeleteOrganizationRequest request)
+    {
+        await _backOfficeOrganizationService.DeleteOrganizationAsync(id, request);
+        return TypedResults.NoContent();
     }
 
     /// <summary>
