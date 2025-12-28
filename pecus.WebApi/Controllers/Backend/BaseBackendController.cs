@@ -5,10 +5,10 @@ using Pecus.Services;
 namespace Pecus.Controllers.Backend;
 
 /// <summary>
-/// バックエンド専用コントローラー基盤クラス
-/// Backend ロール（内部サービス用）での認可を提供します。
+/// バックオフィス専用コントローラー基盤クラス
+/// BackOffice ロール（内部サービス用）での認可を提供します。
 /// </summary>
-[Authorize(Roles = "Backend")]
+[Authorize(Roles = "BackOffice")]
 public abstract class BaseBackendController : BaseSecureController, IAsyncActionFilter
 {
     protected BaseBackendController(

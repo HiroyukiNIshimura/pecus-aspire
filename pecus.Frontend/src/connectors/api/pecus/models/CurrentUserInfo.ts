@@ -30,5 +30,9 @@ export type CurrentUserInfo = {
      * 管理者権限を持つかどうか
      */
     isAdmin: boolean;
+    /**
+     * バックオフィス権限を持つかどうか
+     */
+    isBackOffice: boolean;
 };
 

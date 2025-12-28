@@ -69,6 +69,12 @@ public class CurrentUserInfo
     /// </summary>
     [Required]
     public required bool IsAdmin { get; init; }
+
+    /// <summary>
+    /// バックオフィス権限を持つかどうか
+    /// </summary>
+    [Required]
+    public required bool IsBackOffice { get; init; }
 }
 
 /// <summary>

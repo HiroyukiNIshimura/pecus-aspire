@@ -7,7 +7,7 @@ import type { OrganizationWithAdminResponse } from '../models/OrganizationWithAd
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class EntranceOrganizationService {
+export class BackOfficeService {
     /**
      * 組織登録（管理者ユーザーも同時作成）
      * 新規組織を登録し、管理者ユーザーを同時に作成します。
@@ -17,12 +17,12 @@ export class EntranceOrganizationService {
      * @returns OrganizationWithAdminResponse OK
      * @throws ApiError
      */
-    public static postApiEntranceOrganizations(
+    public static postApiBackofficeOrganizations(
         requestBody: CreateOrganizationRequest,
     ): CancelablePromise<OrganizationWithAdminResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/entrance/organizations',
+            url: '/api/backoffice/organizations',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

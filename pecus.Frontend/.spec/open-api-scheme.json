@@ -8012,6 +8012,289 @@
         ]
       }
     },
+    "/api/dev/email-preview": {
+      "get": {
+        "tags": [
+          "EmailPreview"
+        ],
+        "summary": "利用可能なテンプレート一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmailTemplateInfo"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmailTemplateInfo"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmailTemplateInfo"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/dev/email-preview/{templateName}": {
+      "get": {
+        "tags": [
+          "EmailPreview"
+        ],
+        "summary": "指定したテンプレートのHTMLプレビューを取得\nダミーデータを使用してレンダリング",
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "テンプレート名",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/dev/email-preview/{templateName}/text": {
+      "get": {
+        "tags": [
+          "EmailPreview"
+        ],
+        "summary": "指定したテンプレートのテキスト版プレビューを取得",
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "テンプレート名",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/dev/email-preview/index": {
+      "get": {
+        "tags": [
+          "EmailPreview"
+        ],
+        "summary": "プレビュー用の簡易インデックスページを返す",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/backoffice/organizations": {
+      "post": {
+        "tags": [
+          "BackOffice"
+        ],
+        "summary": "組織登録（管理者ユーザーも同時作成）",
+        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\n管理者ユーザーへはパスワード設定メールが送信されます。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationWithAdminResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/entrance/auth/login": {
       "post": {
         "tags": [
@@ -8056,68 +8339,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": { }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/entrance/organizations": {
-      "post": {
-        "tags": [
-          "Entrance - Organization"
-        ],
-        "summary": "組織登録（管理者ユーザーも同時作成）",
-        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\n管理者ユーザーへはパスワード設定メールが送信されます。",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOrganizationRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOrganizationRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOrganizationRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrganizationWithAdminResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -8399,435 +8620,6 @@
             "description": "Internal Server Error",
             "content": {
               "application/json": { }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/dev/email-preview": {
-      "get": {
-        "tags": [
-          "EmailPreview"
-        ],
-        "summary": "利用可能なテンプレート一覧を取得",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EmailTemplateInfo"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EmailTemplateInfo"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EmailTemplateInfo"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/dev/email-preview/{templateName}": {
-      "get": {
-        "tags": [
-          "EmailPreview"
-        ],
-        "summary": "指定したテンプレートのHTMLプレビューを取得\nダミーデータを使用してレンダリング",
-        "parameters": [
-          {
-            "name": "templateName",
-            "in": "path",
-            "description": "テンプレート名",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/dev/email-preview/{templateName}/text": {
-      "get": {
-        "tags": [
-          "EmailPreview"
-        ],
-        "summary": "指定したテンプレートのテキスト版プレビューを取得",
-        "parameters": [
-          {
-            "name": "templateName",
-            "in": "path",
-            "description": "テンプレート名",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/dev/email-preview/index": {
-      "get": {
-        "tags": [
-          "EmailPreview"
-        ],
-        "summary": "プレビュー用の簡易インデックスページを返す",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/backend/specs/openapi": {
-      "get": {
-        "tags": [
-          "Backend - Specs"
-        ],
-        "summary": "OpenAPIスキーマ取得",
-        "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをJSON形式で取得します。",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/backend/specs/openapi/{documentName}": {
-      "get": {
-        "tags": [
-          "Backend - Specs"
-        ],
-        "summary": "OpenAPIスキーマ取得",
-        "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをJSON形式で取得します。",
-        "parameters": [
-          {
-            "name": "documentName",
-            "in": "path",
-            "description": "ドキュメント名（デフォルト: v1）",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "default": "v1"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/backend/specs/openapi.yaml": {
-      "get": {
-        "tags": [
-          "Backend - Specs"
-        ],
-        "summary": "OpenAPIスキーマ取得（YAML形式）",
-        "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをYAML形式で取得します。",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/backend/specs/openapi/{documentName}.yaml": {
-      "get": {
-        "tags": [
-          "Backend - Specs"
-        ],
-        "summary": "OpenAPIスキーマ取得（YAML形式）",
-        "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをYAML形式で取得します。",
-        "parameters": [
-          {
-            "name": "documentName",
-            "in": "path",
-            "description": "ドキュメント名（デフォルト: v1）",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "default": "v1"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
             }
           }
         },
@@ -13021,7 +12813,8 @@
           "organizationId",
           "username",
           "email",
-          "isAdmin"
+          "isAdmin",
+          "isBackOffice"
         ],
         "type": "object",
         "properties": {
@@ -13051,6 +12844,10 @@
           "isAdmin": {
             "type": "boolean",
             "description": "管理者権限を持つかどうか"
+          },
+          "isBackOffice": {
+            "type": "boolean",
+            "description": "バックオフィス権限を持つかどうか"
           }
         },
         "description": "現在ログイン中のユーザーの最小限情報"
@@ -20434,19 +20231,16 @@
       "name": "Profile"
     },
     {
-      "name": "Entrance - Auth"
-    },
-    {
-      "name": "Entrance - Organization"
-    },
-    {
-      "name": "Entrance - Password"
-    },
-    {
       "name": "EmailPreview"
     },
     {
-      "name": "Backend - Specs"
+      "name": "BackOffice"
+    },
+    {
+      "name": "Entrance - Auth"
+    },
+    {
+      "name": "Entrance - Password"
     },
     {
       "name": "Admin - Organization"

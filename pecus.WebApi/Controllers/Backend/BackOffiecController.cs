@@ -2,48 +2,47 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Controllers.Backend;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Entrance;
 
 /// <summary>
-/// 組織登録コントローラー（公開エンドポイント）
+/// バックオフィス用コントローラー
 /// </summary>
 [ApiController]
-[Route("api/entrance/organizations")]
+[Route("api/backoffice/organizations")]
 [Produces("application/json")]
-[AllowAnonymous]
-[Tags("Entrance - Organization")]
-public class EntranceOrganizationController : ControllerBase
+[Tags("BackOffice")]
+public class BackOfficeController : BaseBackendController
 {
     private readonly OrganizationService _organizationService;
-    private readonly EmailTasks _emailTasks;
-    private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
-    private readonly ILogger<EntranceOrganizationController> _logger;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<BackOfficeController> _logger;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
 
-    public EntranceOrganizationController(
+    public BackOfficeController(
+        ProfileService profileService,
         OrganizationService organizationService,
-        EmailTasks emailTasks,
-        PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
-        ILogger<EntranceOrganizationController> logger,
-        IHttpContextAccessor httpContextAccessor
+        ILogger<BackOfficeController> logger,
+        FrontendUrlResolver frontendUrlResolver
+    ) : base(
+        profileService: profileService,
+        logger: logger
     )
     {
         _organizationService = organizationService;
-        _emailTasks = emailTasks;
-        _config = config;
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
-        _httpContextAccessor = httpContextAccessor;
+        _frontendUrlResolver = frontendUrlResolver;
     }
 
     /// <summary>
@@ -60,19 +59,11 @@ public class EntranceOrganizationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<OrganizationWithAdminResponse>> CreateOrganization([FromBody] CreateOrganizationRequest request)
     {
-        if (!_config.Application.EnableEntranceOrganization)
-        {
-            _logger.LogWarning("組織登録機能が無効化されています。");
-            throw new NotFoundException("現在、組織登録機能は公開されていません。");
-        }
-
         var (organization, adminUser, passwordSetupToken, tokenExpiresAt) =
             await _organizationService.CreateOrganizationWithUserAsync(request);
 
-        // 動的にBaseUrlを取得
-        var requestContext = _httpContextAccessor.HttpContext?.Request;
-        var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
-
+        // Aspire の Frontend:Endpoint からフロントエンドURLを取得
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         // パスワード設定URLを構築
         var passwordSetupUrl = $"{baseUrl}/password-setup?token={passwordSetupToken}";
 

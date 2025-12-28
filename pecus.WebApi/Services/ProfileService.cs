@@ -717,7 +717,8 @@ public class ProfileService
             Username = user.Username,
             Email = user.Email,
             IdentityIconUrl = identityIconUrl,
-            IsAdmin = user.Roles.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice),
+            IsAdmin = user.Roles.Any(r => r.Name == SystemRole.Admin),
+            IsBackOffice = user.Roles.Any(r => r.Name == SystemRole.BackOffice),
         };
     }
 }
