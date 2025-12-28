@@ -4,6 +4,8 @@ import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/Pecu
 import type {
   BackOfficeOrganizationDetailResponse,
   BackOfficeUpdateOrganizationRequest,
+  CreateOrganizationRequest,
+  OrganizationWithAdminResponse,
   PagedResponseOfBackOfficeOrganizationListItemResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from '../types';
@@ -77,5 +79,21 @@ export async function deleteBackOfficeOrganization(
   } catch (error) {
     console.error('Failed to delete backoffice organization:', error);
     return parseErrorResponse(error, '組織の削除に失敗しました');
+  }
+}
+
+/**
+ * Server Action: BackOffice - 組織を新規作成（管理者ユーザーも同時作成）
+ */
+export async function createBackOfficeOrganization(
+  request: CreateOrganizationRequest,
+): Promise<ApiResponse<OrganizationWithAdminResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.backOfficeOrganizations.postApiBackofficeOrganizations(request);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to create backoffice organization:', error);
+    return parseErrorResponse(error, '組織の作成に失敗しました');
   }
 }

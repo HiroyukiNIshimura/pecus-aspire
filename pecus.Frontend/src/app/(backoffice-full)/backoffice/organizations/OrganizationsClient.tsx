@@ -1,13 +1,19 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
+import { createBackOfficeOrganization } from '@/actions/backoffice/organizations';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
+import CreateOrganizationModal from '@/components/backoffice/CreateOrganizationModal';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import Pagination from '@/components/common/filters/Pagination';
-import type { PagedResponseOfBackOfficeOrganizationListItemResponse } from '@/connectors/api/pecus';
+import type {
+  CreateOrganizationRequest,
+  PagedResponseOfBackOfficeOrganizationListItemResponse,
+} from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
@@ -22,9 +28,12 @@ export default function OrganizationsClient({ initialData, fetchError }: Organiz
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUser = useCurrentUser();
   const [data, _setData] = useState(initialData);
-  const [clientError, _setClientError] = useState<ApiErrorResponse | null>(fetchError ? JSON.parse(fetchError) : null);
+  const [clientError, setClientError] = useState<ApiErrorResponse | null>(fetchError ? JSON.parse(fetchError) : null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const { showLoading } = useDelayedLoading();
+  const notify = useNotify();
 
   useEffect(() => {
     if (clientError && isAuthenticationError(clientError)) {
@@ -36,9 +45,23 @@ export default function OrganizationsClient({ initialData, fetchError }: Organiz
     router.push(`/backoffice/organizations?page=${selected + 1}`);
   };
 
+  const handleCreateOrganization = async (request: CreateOrganizationRequest) => {
+    startTransition(async () => {
+      const result = await createBackOfficeOrganization(request);
+      if (result.success) {
+        notify.success('組織を作成しました');
+        router.refresh();
+      } else {
+        setClientError({ message: result.message, code: result.error });
+        notify.error(result.message || '組織の作成に失敗しました');
+        throw new Error(result.message);
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <LoadingOverlay isLoading={showLoading} message="読み込み中..." />
+      <LoadingOverlay isLoading={showLoading || isPending} message="読み込み中..." />
 
       <BackOfficeHeader
         userInfo={currentUser}
@@ -60,9 +83,15 @@ export default function OrganizationsClient({ initialData, fetchError }: Organiz
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-bold">組織管理</h1>
-              <span className="text-base-content/70">
-                {data?.totalCount !== undefined && `全 ${data.totalCount} 件`}
-              </span>
+              <div className="flex items-center gap-4">
+                <span className="text-base-content/70">
+                  {data?.totalCount !== undefined && `全 ${data.totalCount} 件`}
+                </span>
+                <button type="button" className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
+                  <span className="icon-[mdi--plus] size-5" aria-hidden="true" />
+                  新規作成
+                </button>
+              </div>
             </div>
 
             {clientError ? (
@@ -145,6 +174,12 @@ export default function OrganizationsClient({ initialData, fetchError }: Organiz
           </div>
         </main>
       </div>
+
+      <CreateOrganizationModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onConfirm={handleCreateOrganization}
+      />
     </div>
   );
 }

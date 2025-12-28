@@ -127,7 +127,6 @@ public class BackOfficeController : BaseBackendController
     /// </summary>
     /// <remarks>
     /// 新規組織を登録し、管理者ユーザーを同時に作成します。
-    /// このエンドポイントは未認証でアクセス可能です（新規サインアップ用）。
     /// 管理者ユーザーへはパスワード設定メールが送信されます。
     /// </remarks>
     [HttpPost]
