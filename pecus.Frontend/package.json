@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "npm run generate:conflict-types && node scripts/generate-pecus-api-client.js",
+    "predev": "npm run generate:conflict-types && npm run generate:help-index && node scripts/generate-pecus-api-client.js",
     "dev": "next dev",
-    "prebuild": "npm run generate:conflict-types && node scripts/generate-pecus-api-client.js",
+    "prebuild": "npm run generate:conflict-types && npm run generate:help-index && node scripts/generate-pecus-api-client.js",
     "build": "next build",
     "start": "next start",
     "lint": "biome check --write",
@@ -15,6 +15,7 @@
     "generate:api": "npm run clean:api && openapi --input ./.spec/open-api-scheme.json --output src/connectors/api/pecus --useUnionTypes --client axios && npm run generate:conflict-types",
     "generate:client": "node scripts/generate-pecus-api-client.js",
     "generate:conflict-types": "node scripts/generate-conflict-types.js",
+    "generate:help-index": "npx tsx scripts/generate-help-index.ts",
     "clean:api": "rimraf src/connectors/api/pecus",
     "update:check": "ncu",
     "update": "ncu -u"
@@ -48,6 +49,7 @@
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
     "flatpickr": "^4.6.13",
+    "flexsearch": "^0.8.212",
     "flyonui": "^2.4.1",
     "ioredis": "^5.8.2",
     "jotai": "^2.16.0",

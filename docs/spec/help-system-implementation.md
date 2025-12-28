@@ -2,11 +2,12 @@
 
 ## AI エージェント向け要約（必読）
 
-- ヘルプコンテンツは**フロントエンドに静的MDXファイル**として配置する
+- ヘルプコンテンツは**フロントエンドに静的Markdownファイル**として配置する（MDXは使用しない）
 - DBへのヒントワークスペースシードは**廃止**する
-- 検索は**FlexSearch**を使用し、ビルド時にインデックスを生成する
-- 画像は `public/help/images/` に配置し、Next.js `Image` コンポーネントで表示
-- 既存の `pecus.Libs/DB/Seed/md/` のMarkdownファイルをMDXに移行する
+- レンダリングは**既存の `PLAYGROUND_TRANSFORMERS` を使用**し、Client ComponentでMarkdown→Lexical変換して表示
+- 検索は**FlexSearch**を使用し、ビルド時にインデックス生成
+- **MDXを使用しない理由**: Next.js 15 + Turbopackで remark-gfm が「serializable options」エラーを起こすため
+- **画像**: Markdownの `![alt](src)` 構文で記述。既存の `IMAGE` Transformerがサポート
 
 ---
 
@@ -22,7 +23,15 @@
 | 削除可能 | ユーザーがワークスペースを削除するとヒントが消失する |
 | 更新困難 | デプロイ後のコンテンツ更新ができない |
 
-### 1.2 新アプローチのメリット
+### 1.2 MDX断念の経緯
+
+当初は @next/mdx + remark-gfm での実装を計画していたが、以下の問題により断念：
+
+- **remark-gfm非互換**: Next.js 15 + Turbopackでは remark-gfm が「Must have serializable options」エラーを引き起こす
+- **GFMテーブル未対応**: remark-gfm なしではMarkdownテーブル（`|`構文）がレンダリングされない
+- **回避策の却下**: MDX内でHTMLテーブルを直書きするのはMarkdown採用の意味がない
+
+### 1.3 新アプローチ（Lexical + PLAYGROUND_TRANSFORMERS）のメリット
 
 | メリット | 説明 |
 |----------|------|
@@ -30,7 +39,8 @@
 | 削除不可 | ユーザーが削除できない |
 | 即時更新 | デプロイで自動的に最新化 |
 | 検索可能 | FlexSearchによる高速全文検索 |
-| リッチコンテンツ | 画像、テーブル、動画、インタラクティブ要素が利用可能 |
+| **GFM完全対応** | 既存の `PLAYGROUND_TRANSFORMERS` にTABLE, IMAGE, EMOJI等が含まれる |
+| **既存資産活用** | プロジェクト既存のLexicalインフラを完全に再利用 |
 | i18n対応 | 将来的に多言語対応が容易 |
 
 ---
@@ -39,11 +49,11 @@
 
 | 技術 | 用途 |
 |------|------|
-| MDX | Markdownに React コンポーネントを埋め込み可能 |
-| @next/mdx | Next.js の MDX サポート |
+| Markdown | 純粋なMarkdownファイル（MDXではない） |
+| `PLAYGROUND_TRANSFORMERS` | GFM（テーブル、画像、絵文字等）の変換 |
+| `$convertFromMarkdownString` | Markdown→Lexical EditorState変換 |
+| PecusNotionLikeViewer | Lexical JSONをReadOnlyモードで表示 |
 | FlexSearch | クライアントサイド全文検索エンジン |
-| gray-matter | MDX フロントマター（メタデータ）のパース |
-| Next.js Image | 画像の最適化・遅延読み込み |
 
 ---
 
@@ -63,11 +73,11 @@ pecus.Frontend/
 │   ├── content/
 │   │   └── help/
 │   │       ├── ja/
-│   │       │   ├── 01-getting-started.mdx
-│   │       │   ├── 02-workspace.mdx
-│   │       │   ├── 03-tasks.mdx
-│   │       │   ├── 04-focus-session.mdx
-│   │       │   ├── 05-ai-assistant.mdx
+│   │       │   ├── 01-getting-started.md    # 純粋なMarkdown
+│   │       │   ├── 02-workspace.md
+│   │       │   ├── 03-tasks.md
+│   │       │   ├── 04-focus-session.md
+│   │       │   ├── 05-ai-assistant.md
 │   │       │   └── ...
 │   │       └── search-index.json  # 生成される検索インデックス
 │   ├── app/
@@ -78,97 +88,218 @@ pecus.Frontend/
 │   │           └── page.tsx       # 個別ヘルプページ
 │   ├── components/
 │   │   └── help/
-│   │       ├── MdxComponents.tsx  # MDXグローバルスタイル
 │   │       ├── HelpSearch.tsx     # 検索コンポーネント
 │   │       ├── HelpSearchModal.tsx # Cmd+K 検索モーダル
 │   │       ├── HelpSidebar.tsx    # サイドナビゲーション
-│   │       ├── Callout.tsx        # 注意・ヒント・警告ボックス
-│   │       ├── ImageWithCaption.tsx # キャプション付き画像
-│   │       ├── ZoomableImage.tsx  # クリックで拡大表示
-│   │       ├── StepImage.tsx      # ステップバイステップ画像
-│   │       ├── VideoDemo.tsx      # 動画デモ
+│   │       ├── Callout.tsx        # 注意・ヒント・警告ボックス（オプション）
+│   │       ├── HelpContent.tsx    # Markdown→Lexical変換＋表示
 │   │       └── KeyboardShortcut.tsx # ショートカットキー表示
 │   └── libs/
 │       └── help/
 │           ├── search.ts          # FlexSearch ラッパー
-│           └── getHelpContent.ts  # MDXコンテンツ取得
+│           ├── getHelpContent.ts  # Markdownコンテンツ取得（Server側）
+│           └── types.ts           # 型定義
 ```
 
 ---
 
-## 4. 実装タスク
+## 4. アーキテクチャ概要
+
+### 4.1 データフロー
+
+```
+┌─────────────────────┐
+│ .md ファイル        │  純粋なMarkdown（GFMテーブル対応）
+│ src/content/help/ja │
+└─────────┬───────────┘
+          │
+          ▼ Server Component で文字列として読み込み
+┌─────────────────────┐
+│ getHelpContent()    │  fs.readFile でMarkdown文字列取得
+│ (Node.js実行)       │
+└─────────┬───────────┘
+          │
+          ▼ Markdown文字列をpropsで渡す
+┌─────────────────────────────────────────┐
+│ HelpContent (Client Component)          │
+│ $convertFromMarkdownString()            │
+│ + PLAYGROUND_TRANSFORMERS               │
+│ → Lexicalエディタ内でリアルタイム変換    │
+└─────────┬───────────────────────────────┘
+          │
+          ▼ ReadOnlyモードで表示
+┌─────────────────────┐
+│ 既存のLexical Viewer │
+│ (テーブル、画像対応) │
+└─────────────────────┘
+```
+
+### 4.2 技術的ポイント
+
+- **`PLAYGROUND_TRANSFORMERS`**: プロジェクト既存のカスタムトランスフォーマー
+  - `TABLE`: GFMテーブル（`|`構文）対応
+  - `IMAGE`: 画像（`![alt](src)`）対応
+  - `EMOJI`: 絵文字（`:emoji:`）対応
+  - `HR`: 水平線（`---`）対応
+  - その他: CHECK_LIST, HEADING, QUOTE, CODE等
+- **Client Componentで変換**: `$convertFromMarkdownString` はLexicalエディタコンテキスト内でのみ動作
+- **ReadOnlyモード**: 既存のViewerを `editable: false` で使用
+
+---
+
+## 5. 実装タスク
 
 ### Phase 1: 基盤構築
 
-#### 4.1 依存パッケージのインストール
+#### 5.1 依存パッケージの確認
 
 ```bash
 cd pecus.Frontend
-npm install @next/mdx @mdx-js/loader @mdx-js/react gray-matter flexsearch
-npm install -D @types/mdx
+npm install flexsearch
+npm install -D @types/flexsearch
+# @lexical/markdown, PLAYGROUND_TRANSFORMERS は既にプロジェクトにインストール済み
+# 追加インストール不要
 ```
 
-#### 4.2 next.config.ts の更新
+#### 5.2 ヘルプコンテンツ取得ユーティリティ（Server側）
+
+`src/libs/help/getHelpContent.ts`:
 
 ```typescript
-import createMDX from '@next/mdx';
+import fs from 'fs/promises';
+import path from 'path';
 
-const withMDX = createMDX({
-  extension: /\.mdx?$/,
-  options: {
-    remarkPlugins: [],
-    rehypePlugins: [],
-  },
-});
+interface HelpArticle {
+  slug: string;
+  title: string;
+  markdown: string;  // Markdown文字列をそのまま渡す
+  order: number;
+}
 
-const nextConfig = {
-  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
-  // ...existing config...
-};
+export async function getHelpArticle(slug: string, locale = 'ja'): Promise<HelpArticle | null> {
+  const helpDir = path.join(process.cwd(), 'src/content/help', locale);
 
-export default withMDX(nextConfig);
+  try {
+    const files = await fs.readdir(helpDir);
+    const file = files.find(f => f.endsWith('.md') && f.includes(slug));
+
+    if (!file) return null;
+
+    const filePath = path.join(helpDir, file);
+    const markdown = await fs.readFile(filePath, 'utf-8');
+
+    // 最初のh1をタイトルとして抽出
+    const titleMatch = markdown.match(/^#\s+(.+)$/m);
+    const title = titleMatch ? titleMatch[1] : slug;
+
+    // ファイル名から順序を取得
+    const orderMatch = file.match(/^(\d+)-/);
+    const order = orderMatch ? parseInt(orderMatch[1], 10) : 999;
+
+    return { slug, title, markdown, order };
+  } catch {
+    return null;
+  }
+}
+
+export async function getAllHelpArticles(locale = 'ja'): Promise<HelpArticle[]> {
+  const helpDir = path.join(process.cwd(), 'src/content/help', locale);
+  const files = await fs.readdir(helpDir);
+
+  const articles: HelpArticle[] = [];
+
+  for (const file of files.filter(f => f.endsWith('.md'))) {
+    const slug = file.replace('.md', '');
+    const article = await getHelpArticle(slug, locale);
+    if (article) articles.push(article);
+  }
+
+  return articles.sort((a, b) => a.order - b.order);
+}
 ```
-
-#### 4.3 MDXコンポーネントプロバイダー作成
-
-`src/components/help/MdxComponents.tsx` にグローバルスタイルを定義。
 
 ---
 
 ### Phase 2: コンポーネント実装
 
-#### 4.4 基本コンポーネント
+#### 5.3 HelpContent コンポーネント（Client Component）
+
+`src/components/help/HelpContent.tsx`:
+
+```tsx
+'use client';
+
+import { useEffect } from 'react';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $convertFromMarkdownString } from '@lexical/markdown';
+import { PLAYGROUND_TRANSFORMERS } from '@/components/editor/plugins/MarkdownTransformers';
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import NotionLikeEditorNodes from '@/components/editor/nodes/NotionLikeEditorNodes';
+import NotionLikeViewerTheme from '@/components/editor/themes/NotionLikeViewerTheme';
+import { TableContext } from '@/components/editor/plugins/TablePlugin';
+
+interface HelpContentProps {
+  markdown: string;
+}
+
+function MarkdownLoader({ markdown }: { markdown: string }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    editor.update(() => {
+      $convertFromMarkdownString(markdown, PLAYGROUND_TRANSFORMERS);
+    });
+  }, [editor, markdown]);
+
+  return null;
+}
+
+export function HelpContent({ markdown }: HelpContentProps) {
+  const initialConfig = {
+    namespace: 'HelpContent',
+    nodes: NotionLikeEditorNodes,
+    theme: NotionLikeViewerTheme,
+    editable: false,
+    onError: (error: Error) => console.error('Lexical error:', error),
+  };
+
+  return (
+    <div className="prose prose-slate max-w-none">
+      <LexicalComposer initialConfig={initialConfig}>
+        <TableContext>
+          <MarkdownLoader markdown={markdown} />
+          <RichTextPlugin
+            contentEditable={<ContentEditable className="outline-none" />}
+            placeholder={null}
+          />
+        </TableContext>
+      </LexicalComposer>
+    </div>
+  );
+}
+```
+
+#### 5.4 基本コンポーネント（必要に応じて）
 
 | コンポーネント | 説明 | 優先度 |
 |----------------|------|--------|
-| `MdxComponents.tsx` | h1〜h6, p, table, ul, ol, blockquote等のスタイリング | 高 |
-| `Callout.tsx` | info/warning/tip の注意書きボックス | 高 |
-| `ImageWithCaption.tsx` | キャプション付き画像表示 | 高 |
+| `HelpContent.tsx` | Markdown→Lexical変換＋ReadOnly表示 | 高 |
 | `HelpSidebar.tsx` | 左サイドバーのナビゲーション | 高 |
 | `HelpSearch.tsx` | 検索入力とインクリメンタル検索 | 高 |
-
-#### 4.5 拡張コンポーネント
-
-| コンポーネント | 説明 | 優先度 |
-|----------------|------|--------|
-| `ZoomableImage.tsx` | クリックで拡大表示するモーダル | 中 |
-| `StepImage.tsx` | ステップ番号付きチュートリアル用 | 中 |
-| `HelpSearchModal.tsx` | Cmd+K で起動する検索モーダル | 中 |
-| `VideoDemo.tsx` | 操作デモ動画の埋め込み | 低 |
-| `KeyboardShortcut.tsx` | キーボードショートカット表示 | 低 |
 
 ---
 
 ### Phase 3: 検索機能実装
 
-#### 4.6 インデックス生成スクリプト
+#### 5.5 インデックス生成スクリプト
 
 `scripts/generate-help-index.ts`:
 
 ```typescript
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
 
 interface HelpIndexEntry {
   slug: string;
@@ -181,42 +312,42 @@ interface HelpIndexEntry {
 
 function generateHelpIndex() {
   const helpDir = path.join(process.cwd(), 'src/content/help/ja');
-  const files = fs.readdirSync(helpDir).filter(f => f.endsWith('.mdx'));
+  const files = fs.readdirSync(helpDir).filter(f => f.endsWith('.md'));
 
   const index: HelpIndexEntry[] = files.map(file => {
     const content = fs.readFileSync(path.join(helpDir, file), 'utf-8');
-    const { data, content: body } = matter(content);
 
-    // MDX/JSXタグを除去してプレーンテキスト化
-    const plainText = body
-      .replace(/<[^>]+>/g, '')
-      .replace(/import .+$/gm, '')
-      .replace(/export .+$/gm, '')
-      .replace(/\{[^}]+\}/g, '')
-      .replace(/[#*`_~\[\]]/g, '')
+    // プレーンテキスト化（検索用）
+    const plainText = content
+      .replace(/[#*`_~\[\]|]/g, '')
       .replace(/\n+/g, ' ')
       .trim();
 
     // 見出しを抽出
-    const headings = body.match(/^#{1,3}\s+.+$/gm)?.map(h =>
+    const headings = content.match(/^#{1,3}\s+.+$/gm)?.map(h =>
       h.replace(/^#+\s+/, '')
     ) || [];
 
-    // ファイル名から順序を取得（例: 01-getting-started.mdx → 1）
+    // 最初のh1をタイトルとして使用
+    const title = headings[0] || file.replace(/^\d+-/, '').replace('.md', '');
+
+    // 2番目以降のh2をdescriptionとして使用
+    const description = headings.slice(1, 3).join(' / ') || '';
+
+    // ファイル名から順序を取得
     const orderMatch = file.match(/^(\d+)-/);
     const order = orderMatch ? parseInt(orderMatch[1], 10) : 999;
 
     return {
-      slug: file.replace('.mdx', ''),
-      title: data.title || headings[0] || file.replace(/^\d+-/, '').replace('.mdx', ''),
-      description: data.description || '',
+      slug: file.replace('.md', ''),
+      title,
+      description,
       content: plainText,
       headings,
       order,
     };
   });
 
-  // 順序でソート
   index.sort((a, b) => a.order - b.order);
 
   const outputPath = path.join(process.cwd(), 'src/content/help/search-index.json');
@@ -228,14 +359,13 @@ function generateHelpIndex() {
 generateHelpIndex();
 ```
 
-#### 4.7 FlexSearchラッパー
+#### 5.7 FlexSearchラッパー
 
 `src/libs/help/search.ts`:
 
 ```typescript
 import FlexSearch from 'flexsearch';
 
-// 型定義
 interface HelpDocument {
   slug: string;
   title: string;
@@ -287,7 +417,7 @@ export function searchHelp(query: string, limit = 10): HelpDocument[] {
 }
 ```
 
-#### 4.8 package.json スクリプト追加
+#### 5.8 package.json スクリプト追加
 
 ```json
 {
@@ -302,56 +432,71 @@ export function searchHelp(query: string, limit = 10): HelpDocument[] {
 
 ### Phase 4: ページ実装
 
-#### 4.9 ヘルプレイアウト
+#### 5.9 ヘルプレイアウト
 
 `src/app/help/layout.tsx`:
 - 左サイドバー: 目次ナビゲーション
 - 上部: 検索バー
 - メイン: コンテンツ表示領域
 
-#### 4.10 ヘルプ一覧ページ
+#### 5.10 ヘルプ一覧ページ
 
 `src/app/help/page.tsx`:
 - カード形式でヘルプ記事一覧を表示
 - 検索入力フィールド
 
-#### 4.11 個別ヘルプページ
+#### 5.11 個別ヘルプページ
 
 `src/app/help/[slug]/page.tsx`:
-- MDXコンテンツの動的読み込み
-- 前後の記事へのナビゲーション
+
+```tsx
+import { getHelpArticle, getAllHelpArticles } from '@/libs/help/getHelpContent';
+import { HelpContent } from '@/components/help/HelpContent';
+import { notFound } from 'next/navigation';
+
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  const articles = await getAllHelpArticles();
+  return articles.map(article => ({ slug: article.slug }));
+}
+
+export default async function HelpArticlePage({ params }: Props) {
+  const { slug } = await params;
+  const article = await getHelpArticle(slug);
+
+  if (!article) {
+    notFound();
+  }
+
+  return (
+    <article className="flex-1 overflow-y-auto p-6">
+      <HelpContent markdown={article.markdown} />
+    </article>
+  );
+}
+```
 
 ---
 
 ### Phase 5: コンテンツ移行
 
-#### 4.12 既存Markdownの移行
+#### 5.12 既存Markdownの移行
 
 `pecus.Libs/DB/Seed/md/` から `pecus.Frontend/src/content/help/ja/` へ移行：
 
 | 移行元 | 移行先 |
 |--------|--------|
-| `01.Getting Started.md` | `01-getting-started.mdx` |
-| `02.Create Workspace Item.md` | `02-workspace-item.mdx` |
-| `03.Create Task.md` | `03-task.mdx` |
-| `04.Focus.md` | `04-focus-session.mdx` |
+| `01.Getting Started.md` | `01-getting-started.md` |
+| `02.Create Workspace Item.md` | `02-workspace-item.md` |
+| `03.Create Task.md` | `03-task.md` |
+| `04.Focus.md` | `04-focus-session.md` |
 
-#### 4.13 フロントマター追加
+**注意**: ファイルは純粋なMarkdown（`.md`）のまま使用。MDX（`.mdx`）には変換しない。
 
-各MDXファイルの先頭にメタデータを追加：
-
-```mdx
----
-title: はじめての方へ
-description: Coatiの基本的な使い方を学びましょう
----
-
-# はじめての方へ
-
-...
-```
-
-#### 4.14 シードコード削除
+#### 5.13 シードコード削除
 
 `pecus.Libs/DB/Seed/Atoms/DemoAtoms.cs` から「Coatiのヒント」ワークスペース作成処理を削除。
 
@@ -359,51 +504,30 @@ description: Coatiの基本的な使い方を学びましょう
 
 ### Phase 6: ナビゲーション統合
 
-#### 4.15 ヘルプボタン追加
+#### 5.14 ヘルプボタン追加
 
 アプリ全体のヘッダーまたはサイドバーに「ヘルプ」リンクを追加。
 
-#### 4.16 コンテキストヘルプ（オプション）
-
-各画面に関連ヘルプへのリンクを表示：
-
-```tsx
-<HelpLink slug="03-task" />
-// → "タスクについて詳しく見る" リンクを表示
-```
-
 ---
 
-## 5. MDXコンテンツの書き方
+## 6. Markdownコンテンツの書き方
 
-### 5.1 基本構文
+### 6.1 基本構文
 
-```mdx
----
-title: ワークスペースの使い方
-description: ワークスペースの作成・管理方法を解説します
----
+純粋なMarkdownを使用します。**フロントマターは不要**です。
 
-import { Callout } from '@/components/help/Callout'
-import { ImageWithCaption } from '@/components/help/ImageWithCaption'
-
+```markdown
 # ワークスペースの使い方
 
 ## 概要
 
 ワークスペースはCoatiの基本単位です。
 
-<Callout type="tip">
-  ワークスペースは目標やプロジェクトごとに作成すると管理しやすくなります。
-</Callout>
+> 💡 **ヒント**: ワークスペースは目標やプロジェクトごとに作成すると管理しやすくなります。
 
 ## 新規作成
 
-<ImageWithCaption
-  src="/help/images/create-workspace.webp"
-  alt="ワークスペース作成画面"
-  caption="図1: 新規ワークスペースの作成"
-/>
+![ワークスペース作成画面](/help/images/create-workspace.webp)
 
 ### ワークスペースロール
 
@@ -414,33 +538,48 @@ import { ImageWithCaption } from '@/components/help/ImageWithCaption'
 | Viewer | 閲覧者 | ❌ |
 ```
 
-### 5.2 使用可能なコンポーネント
+### 6.2 サポートされるGFM機能
 
-| コンポーネント | 用途 | 例 |
-|----------------|------|-----|
-| `<Callout type="info\|warning\|tip">` | 注意書き | 補足情報、警告、ヒント |
-| `<ImageWithCaption>` | 画像 | スクリーンショット、図解 |
-| `<ZoomableImage>` | 拡大画像 | 詳細なUI説明 |
-| `<StepImage>` | ステップ画像 | チュートリアル |
-| `<VideoDemo>` | 動画 | 操作デモ |
-| `<KeyboardShortcut keys={['Cmd', 'K']}>` | ショートカット | キーボード操作説明 |
+Lexicalの@lexical/markdownが対応する機能:
+
+| 機能 | 構文 | 例 |
+|------|------|-----|
+| テーブル | `\| ... \|` | GFMテーブル |
+| 取り消し線 | `~~text~~` | ~~削除~~された文字 |
+| タスクリスト | `- [ ]` / `- [x]` | チェックボックス |
+| リンク | `[text](url)` | 自動リンク化 |
+| 画像 | `![alt](src)` | 画像埋め込み |
+| コードブロック | ` ``` ` | シンタックスハイライト |
+| 引用 | `>` | ブロッククォート |
+
+### 6.3 注意書きの書き方（Callout代替）
+
+MDXのCalloutコンポーネントの代わりに、引用ブロックと絵文字を使用:
+
+```markdown
+> 💡 **ヒント**: ワークスペースは目標やプロジェクトごとに作成すると管理しやすくなります。
+
+> ⚠️ **注意**: この操作は取り消せません。
+
+> ℹ️ **補足**: 詳しくは設定画面をご確認ください。
+```
 
 ---
 
-## 6. 画像ガイドライン
+## 7. 画像ガイドライン
 
-### 6.1 ファイル形式
+### 7.1 ファイル形式
 
 - **WebP推奨**: 高圧縮・高品質
 - 透過が必要な場合: PNG
 - アニメーション: GIF または MP4
 
-### 6.2 サイズ
+### 7.2 サイズ
 
 - 幅: 最大1600px（表示は800px程度にリサイズ）
 - ファイルサイズ: 200KB以下を目標
 
-### 6.3 命名規則
+### 7.3 命名規則
 
 ```
 /help/images/
@@ -452,20 +591,21 @@ import { ImageWithCaption } from '@/components/help/ImageWithCaption'
 
 ---
 
-## 7. テスト項目
+## 8. テスト項目
 
 | テスト | 内容 |
 |--------|------|
 | 検索機能 | 日本語キーワードでの検索が正常に動作する |
 | 画像表示 | 画像が最適化されて表示される |
-| テーブル | テーブルが正しくスタイリングされる |
+| **テーブル** | GFMテーブルが正しくレンダリングされる |
 | レスポンシブ | モバイルでも読みやすく表示される |
 | ナビゲーション | 目次からの遷移が正常に動作する |
 | キーボード | Cmd+K で検索モーダルが開く |
+| Lexical変換 | Markdown→Lexical変換が正常に動作する |
 
 ---
 
-## 8. 今後の拡張
+## 9. 今後の拡張
 
 | 機能 | 説明 | 優先度 |
 |------|------|--------|
@@ -476,15 +616,40 @@ import { ImageWithCaption } from '@/components/help/ImageWithCaption'
 
 ---
 
-## 9. 移行チェックリスト
+## 10. 移行チェックリスト
 
-- [ ] 依存パッケージのインストール
-- [ ] `next.config.ts` の更新
-- [ ] MDXコンポーネント作成
+- [ ] 依存パッケージの確認（flexsearch）
+- [ ] `getHelpContent.ts` ユーティリティ作成
+- [ ] `HelpContent.tsx` コンポーネント作成（Client Component）
 - [ ] 検索インデックス生成スクリプト作成
 - [ ] ヘルプページ（layout, page, [slug]）作成
-- [ ] 既存Markdownの移行
-- [ ] 画像ファイルの配置
+- [ ] 既存Markdownの移行（.mdx → .md にリネーム）
 - [ ] シードコードの削除
 - [ ] ナビゲーションへのヘルプリンク追加
+- [ ] GFMテーブルの動作確認
 - [ ] 動作確認テスト
+
+---
+
+## 11. トラブルシューティング
+
+### 11.1 テーブルがレンダリングされない
+
+`PLAYGROUND_TRANSFORMERS` に `TABLE` トランスフォーマーが含まれていることを確認。
+ファイル: `src/components/editor/plugins/MarkdownTransformers/index.ts`
+
+### 11.2 Client Componentでの変換エラー
+
+`$convertFromMarkdownString` はLexicalエディタコンテキスト内（`LexicalComposer`の子コンポーネント）でのみ動作。
+`useLexicalComposerContext` を使用してエディタインスタンスを取得し、`editor.update()` 内で呼び出すこと。
+
+### 11.3 画像が表示されない
+
+`PLAYGROUND_TRANSFORMERS` に `IMAGE` トランスフォーマーが含まれている。
+Markdown構文: `![代替テキスト](/help/images/example.webp)`
+画像ファイルは `public/help/images/` に配置すること。
+
+### 11.4 スタイリングの調整
+
+`HelpContent` コンポーネント内で `prose` クラスを適用してTypographyを調整。
+Lexicalエディタのテーマは `NotionLikeViewerTheme` を使用。
