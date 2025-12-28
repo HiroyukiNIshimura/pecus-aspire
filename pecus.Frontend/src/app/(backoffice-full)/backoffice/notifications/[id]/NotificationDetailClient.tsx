@@ -7,6 +7,7 @@ import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import DeleteNotificationModal from '@/components/backoffice/DeleteNotificationModal';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import DatePicker from '@/components/common/filters/DatePicker';
 import type { BackOfficeNotificationDetailResponse, SystemNotificationType } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
@@ -47,18 +48,34 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
   const notify = useNotify();
 
   const [isEditing, setIsEditing] = useState(false);
+
+  const extractDateAndTime = (isoString: string | null | undefined) => {
+    if (!isoString) return { date: '', time: '' };
+    const d = new Date(isoString);
+    const date = d.toISOString().slice(0, 10);
+    const time = d.toTimeString().slice(0, 5);
+    return { date, time };
+  };
+
+  const publishDateTime = extractDateAndTime(data?.publishAt);
+  const endDateTime = extractDateAndTime(data?.endAt);
+
   const [editForm, setEditForm] = useState<{
     subject: string;
     body: string;
     type: NonNullable<SystemNotificationType>;
-    publishAt: string;
-    endAt: string;
+    publishDate: string;
+    publishTime: string;
+    endDate: string;
+    endTime: string;
   }>({
     subject: data?.subject ?? '',
     body: data?.body ?? '',
     type: data?.type ?? 'Info',
-    publishAt: data?.publishAt ? new Date(data.publishAt).toISOString().slice(0, 16) : '',
-    endAt: data?.endAt ? new Date(data.endAt).toISOString().slice(0, 16) : '',
+    publishDate: publishDateTime.date,
+    publishTime: publishDateTime.time || '09:00',
+    endDate: endDateTime.date,
+    endTime: endDateTime.time || '23:59',
   });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -72,13 +89,16 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
   const handleSave = () => {
     if (!data) return;
 
+    const publishAt = editForm.publishDate ? `${editForm.publishDate}T${editForm.publishTime}:00` : undefined;
+    const endAt = editForm.endDate ? `${editForm.endDate}T${editForm.endTime || '23:59'}:00` : undefined;
+
     startTransition(async () => {
       const result = await updateBackOfficeNotification(data.id, {
         subject: editForm.subject || undefined,
         body: editForm.body || undefined,
         type: (editForm.type as BackOfficeNotificationDetailResponse['type']) || undefined,
-        publishAt: editForm.publishAt || undefined,
-        endAt: editForm.endAt || undefined,
+        publishAt,
+        endAt,
         rowVersion: data.rowVersion,
       });
 
@@ -245,30 +265,64 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="divider">配信スケジュール</div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div className="form-control">
-                          <label className="label" htmlFor="edit-notification-publishAt">
-                            <span className="label-text font-semibold">公開日時</span>
+                          <label className="label" htmlFor="edit-notification-publishDate">
+                            <span className="label-text font-semibold">
+                              公開日 <span className="text-error">*</span>
+                            </span>
                           </label>
-                          <input
-                            id="edit-notification-publishAt"
-                            type="datetime-local"
-                            className="input input-bordered"
-                            value={editForm.publishAt}
-                            onChange={(e) => setEditForm({ ...editForm, publishAt: e.target.value })}
+                          <DatePicker
+                            value={editForm.publishDate}
+                            onChange={(date) => setEditForm({ ...editForm, publishDate: date })}
+                            disabled={isPending}
+                            placeholder="公開日を選択"
                           />
                         </div>
 
                         <div className="form-control">
-                          <label className="label" htmlFor="edit-notification-endAt">
-                            <span className="label-text font-semibold">終了日時</span>
+                          <label className="label" htmlFor="edit-notification-publishTime">
+                            <span className="label-text font-semibold">
+                              公開時間 <span className="text-error">*</span>
+                            </span>
                           </label>
                           <input
-                            id="edit-notification-endAt"
-                            type="datetime-local"
-                            className="input input-bordered"
-                            value={editForm.endAt}
-                            onChange={(e) => setEditForm({ ...editForm, endAt: e.target.value })}
+                            id="edit-notification-publishTime"
+                            type="time"
+                            className="input input-bordered w-full"
+                            value={editForm.publishTime}
+                            onChange={(e) => setEditForm({ ...editForm, publishTime: e.target.value })}
+                            disabled={isPending}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="form-control">
+                          <label className="label" htmlFor="edit-notification-endDate">
+                            <span className="label-text font-semibold">終了日（任意）</span>
+                          </label>
+                          <DatePicker
+                            value={editForm.endDate}
+                            onChange={(date) => setEditForm({ ...editForm, endDate: date })}
+                            disabled={isPending}
+                            placeholder="終了日を選択"
+                          />
+                        </div>
+
+                        <div className="form-control">
+                          <label className="label" htmlFor="edit-notification-endTime">
+                            <span className="label-text font-semibold">終了時間</span>
+                          </label>
+                          <input
+                            id="edit-notification-endTime"
+                            type="time"
+                            className="input input-bordered w-full"
+                            value={editForm.endTime}
+                            onChange={(e) => setEditForm({ ...editForm, endTime: e.target.value })}
+                            disabled={isPending}
                           />
                         </div>
                       </div>
