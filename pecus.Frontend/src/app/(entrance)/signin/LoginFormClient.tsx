@@ -72,7 +72,9 @@ export default function LoginFormClient() {
         });
 
         if (result.success) {
-          const redirectUrl = getLandingPageUrl(result.data?.landingPage);
+          // BackOffice ロールを持つユーザーは /backoffice にリダイレクト
+          const isBackOfficeUser = result.data?.roles?.some((role) => role.name === 'BackOffice');
+          const redirectUrl = isBackOfficeUser ? '/backoffice' : getLandingPageUrl(result.data?.landingPage);
           // ハードナビゲーションでCookieを確実に反映
           window.location.href = redirectUrl;
           return;

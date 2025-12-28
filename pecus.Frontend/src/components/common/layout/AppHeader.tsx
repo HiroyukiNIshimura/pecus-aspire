@@ -14,6 +14,7 @@ interface AppHeaderProps {
   onToggleSidebar?: () => void;
   loading?: boolean;
   showAdminLink?: boolean;
+  showBackOfficeLink?: boolean;
   hideProfileMenu?: boolean;
   hideSettingsMenu?: boolean;
   onLogout?: () => void;
@@ -29,12 +30,14 @@ export default function AppHeader({
   onToggleSidebar,
   loading = false,
   showAdminLink = true,
+  showBackOfficeLink = false,
   hideProfileMenu = false,
   hideSettingsMenu = false,
   onLogout,
 }: AppHeaderProps) {
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith('/admin');
+  const isBackOfficePage = pathname?.startsWith('/backoffice');
 
   return (
     <header className="sticky top-0 z-50 bg-base-100 shadow-sm border-b border-base-300">
@@ -62,12 +65,18 @@ export default function AppHeader({
                 <span className="hidden md:inline">管理者</span>
               </HeaderNavItem>
             )}
+            {!loading && showBackOfficeLink && userInfo?.isBackOffice && (
+              <HeaderNavItem href="/backoffice">
+                <span className="icon-[mdi--shield-crown-outline] size-6" aria-hidden="true" />
+                <span className="hidden md:inline">BackOffice</span>
+              </HeaderNavItem>
+            )}
           </ul>
         </div>
 
         <div className="navbar-end flex items-center">
           <ThemeToggle />
-          {!isAdminPage && <ChatIconButton />}
+          {!isAdminPage && !isBackOfficePage && <ChatIconButton />}
           <UserMenu
             userInfo={userInfo}
             hideProfileMenu={hideProfileMenu}
