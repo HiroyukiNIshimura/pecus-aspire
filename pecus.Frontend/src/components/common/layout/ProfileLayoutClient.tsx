@@ -19,7 +19,11 @@ export default function ProfileLayoutClient({ children, userInfo }: ProfileLayou
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <AppHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <AppHeader
+        userInfo={userInfo}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        showBackOfficeLink={userInfo?.isBackOffice ?? false}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}

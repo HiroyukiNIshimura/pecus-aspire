@@ -10,5 +10,13 @@ interface AdminHeaderProps {
 }
 
 export default function AdminHeader({ userInfo, onToggleSidebar, loading = false }: AdminHeaderProps) {
-  return <AppHeader userInfo={userInfo} onToggleSidebar={onToggleSidebar} loading={loading} showAdminLink={true} />;
+  return (
+    <AppHeader
+      userInfo={userInfo}
+      onToggleSidebar={onToggleSidebar}
+      loading={loading}
+      showAdminLink={true}
+      showBackOfficeLink={userInfo?.isBackOffice ?? false}
+    />
+  );
 }
