@@ -19,11 +19,7 @@ export async function getBackOfficeNotifications(
 ): Promise<ApiResponse<PagedResponseOfBackOfficeNotificationListItemResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeNotifications.getApiBackofficeNotifications(
-      page,
-      pageSize,
-      includeDeleted,
-    );
+    const response = await api.backOfficeNotifications.getApiBackofficeNotifications(page, pageSize, includeDeleted);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice notifications:', error);
