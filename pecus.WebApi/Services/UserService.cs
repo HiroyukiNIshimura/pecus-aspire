@@ -90,21 +90,8 @@ public class UserService
     /// <summary>
     /// ユニークなLoginIdを生成
     /// </summary>
-    private static async Task<string> GenerateUniqueLoginIdAsync(ApplicationDbContext context)
-    {
-        string loginId;
-        bool exists;
-
-        do
-        {
-            loginId = CodeGenerator.GenerateLoginId();
-
-            // 既に存在するかチェック
-            exists = await context.Users.AnyAsync(u => u.LoginId == loginId);
-        } while (exists);
-
-        return loginId;
-    }
+    private static Task<string> GenerateUniqueLoginIdAsync(ApplicationDbContext context) =>
+        CodeGenerator.GenerateUniqueLoginIdAsync(context);
 
     /// <summary>
     /// ユーザーIDで取得(ロールと権限を含む)

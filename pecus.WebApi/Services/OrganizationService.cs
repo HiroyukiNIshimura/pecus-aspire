@@ -4,6 +4,7 @@ using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Utils;
 using Pecus.Models.Requests.Organization;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.Organization;
@@ -89,14 +90,16 @@ public class OrganizationService
             await _context.SaveChangesAsync();
             organization.Setting = setting;
 
+            // ユニークなLoginIdを生成
+            var loginId = await CodeGenerator.GenerateUniqueLoginIdAsync(_context);
+
             // 管理者ユーザーを作成（パスワード未設定）
-            // User オブジェクトを直接作成し、パスワードは未設定状態で保存
             var adminUser = new User
             {
                 Username = request.AdminUsername,
                 Email = request.AdminEmail,
-                LoginId = request.AdminEmail, // LoginId はメールアドレスを使用
-                PasswordHash = string.Empty, // パスワード未設定
+                LoginId = loginId,
+                PasswordHash = string.Empty,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 OrganizationId = organization.Id,

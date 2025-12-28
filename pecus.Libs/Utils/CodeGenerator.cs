@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Pecus.Libs.DB;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -40,5 +42,22 @@ public static class CodeGenerator
             .Replace("/", "_")
             .Replace("=", "")
             .Substring(0, 16);
+    }
+
+    /// <summary>
+    /// ユニークなLoginIdを生成（DB重複チェック付き）
+    /// </summary>
+    public static async Task<string> GenerateUniqueLoginIdAsync(ApplicationDbContext context)
+    {
+        string loginId;
+        bool exists;
+
+        do
+        {
+            loginId = GenerateLoginId();
+            exists = await context.Users.AnyAsync(u => u.LoginId == loginId);
+        } while (exists);
+
+        return loginId;
     }
 }

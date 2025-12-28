@@ -55,9 +55,9 @@ public class EmailService : IEmailService
         if (_hostEnvironment.IsDevelopment() && !_settings.SendMailInDevelopment)
         {
             var textBodyForLog = message.TextBody ?? "(none)";
-            if (textBodyForLog.Length > 200)
+            if (textBodyForLog.Length > 500)
             {
-                textBodyForLog = textBodyForLog.Substring(0, 200) + "...(truncated)";
+                textBodyForLog = textBodyForLog.Substring(0, 500) + "...(truncated)";
             }
 
             _logger.LogInformation(

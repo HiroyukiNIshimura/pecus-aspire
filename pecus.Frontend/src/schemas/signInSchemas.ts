@@ -28,3 +28,29 @@ export const requestPasswordResetSchema = z.object({
 });
 
 export type RequestPasswordResetInput = z.infer<typeof requestPasswordResetSchema>;
+
+/**
+ * パスワード設定検証スキーマ（新規ユーザー向け）
+ * - トークン: 必須
+ * - パスワード: 8〜100文字、大文字・小文字・数字を含む
+ * - パスワード確認: パスワードと一致
+ */
+export const setPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'トークンは必須です。'),
+    password: z
+      .string()
+      .min(8, 'パスワードは8文字以上で入力してください。')
+      .max(100, 'パスワードは100文字以内で入力してください。')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/,
+        'パスワードは大文字・小文字・数字を含む8文字以上で設定してください。',
+      ),
+    confirmPassword: z.string().min(1, 'パスワード確認は必須です。'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'パスワードが一致しません。',
+    path: ['confirmPassword'],
+  });
+
+export type SetPasswordInput = z.infer<typeof setPasswordSchema>;
