@@ -144,6 +144,7 @@ export const defaultAppSettings: AppPublicSettingsResponse = {
     email: '',
     identityIconUrl: null,
     isAdmin: false,
+    isBackOffice: false,
   },
   organization: {
     aiProvider: 'None',

@@ -37,6 +37,7 @@ public static class HangfireTaskExtensions
 
         // 通知・リマインダー
         services.AddScoped<MaintenanceNotificationTask>();
+        services.AddScoped<SystemNotificationDeliveryTask>();
         services.AddScoped<SimilarTaskSuggestionTask>();
         services.AddScoped<TaskCommentHelpWantedTask>();
         services.AddScoped<TaskCommentUrgeTask>();

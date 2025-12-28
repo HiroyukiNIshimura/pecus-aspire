@@ -8234,9 +8234,76 @@
       }
     },
     "/api/backoffice/organizations": {
+      "get": {
+        "tags": [
+          "BackOffice - Organizations"
+        ],
+        "summary": "組織一覧を取得",
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "description": "ページ番号",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "description": "ページサイズ",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfBackOfficeOrganizationListItemResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
       "post": {
         "tags": [
-          "BackOffice"
+          "BackOffice - Organizations"
         ],
         "summary": "組織登録（管理者ユーザーも同時作成）",
         "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\n管理者ユーザーへはパスワード設定メールが送信されます。",
@@ -8285,6 +8352,694 @@
             "description": "Internal Server Error",
             "content": {
               "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/backoffice/organizations/{id}": {
+      "get": {
+        "tags": [
+          "BackOffice - Organizations"
+        ],
+        "summary": "組織詳細を取得",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackOfficeOrganizationDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "BackOffice - Organizations"
+        ],
+        "summary": "組織を更新",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeUpdateOrganizationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeUpdateOrganizationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeUpdateOrganizationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackOfficeOrganizationDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "BackOffice - Organizations"
+        ],
+        "summary": "組織を削除（物理削除）",
+        "description": "組織とすべての関連データを物理削除します。\n誤操作防止のため、確認用に組織名の入力が必要です。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeDeleteOrganizationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeDeleteOrganizationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeDeleteOrganizationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/backoffice/notifications": {
+      "get": {
+        "tags": [
+          "BackOffice - Notifications"
+        ],
+        "summary": "システム通知一覧を取得",
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "description": "ページ番号",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "description": "ページサイズ",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "IncludeDeleted",
+            "in": "query",
+            "description": "削除済みを含めるか",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfBackOfficeNotificationListItemResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "BackOffice - Notifications"
+        ],
+        "summary": "システム通知を作成",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeCreateNotificationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeCreateNotificationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeCreateNotificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackOfficeNotificationDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/backoffice/notifications/{id}": {
+      "get": {
+        "tags": [
+          "BackOffice - Notifications"
+        ],
+        "summary": "システム通知詳細を取得",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackOfficeNotificationDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "BackOffice - Notifications"
+        ],
+        "summary": "システム通知を更新（公開前のみ）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeUpdateNotificationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeUpdateNotificationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeUpdateNotificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackOfficeNotificationDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "BackOffice - Notifications"
+        ],
+        "summary": "システム通知を削除",
+        "description": "論理削除を行います。配信済みのメッセージも削除するかどうかを指定できます。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeDeleteNotificationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeDeleteNotificationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackOfficeDeleteNotificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
             }
           }
         },
@@ -11701,6 +12456,487 @@
         ],
         "type": "string",
         "nullable": true
+      },
+      "BackOfficeCreateNotificationRequest": {
+        "required": [
+          "subject",
+          "body",
+          "type",
+          "publishAt"
+        ],
+        "type": "object",
+        "properties": {
+          "subject": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "件名"
+          },
+          "body": {
+            "type": "string",
+            "description": "本文（Markdown形式）"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SystemNotificationType"
+          },
+          "publishAt": {
+            "type": "string",
+            "description": "公開開始日時",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "description": "公開終了日時（null=無期限）",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "description": "BackOffice用 システム通知作成リクエスト"
+      },
+      "BackOfficeDeleteNotificationRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "deleteMessages": {
+            "type": "boolean",
+            "description": "配信済みメッセージも削除するか"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用バージョン番号",
+            "format": "uint32"
+          }
+        },
+        "description": "BackOffice用 システム通知削除リクエスト"
+      },
+      "BackOfficeDeleteOrganizationRequest": {
+        "required": [
+          "confirmOrganizationName",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "confirmOrganizationName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "確認用組織名（誤操作防止）"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用バージョン番号",
+            "format": "uint32"
+          }
+        },
+        "description": "BackOffice用 組織削除リクエスト"
+      },
+      "BackOfficeNotificationDetailResponse": {
+        "required": [
+          "id",
+          "subject",
+          "body",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "通知ID",
+            "format": "int32"
+          },
+          "subject": {
+            "type": "string",
+            "description": "件名"
+          },
+          "body": {
+            "type": "string",
+            "description": "本文（Markdown形式）"
+          },
+          "type": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/SystemNotificationType"
+              }
+            ]
+          },
+          "publishAt": {
+            "type": "string",
+            "description": "公開開始日時",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "description": "公開終了日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isProcessed": {
+            "type": "boolean",
+            "description": "配信済みフラグ"
+          },
+          "processedAt": {
+            "type": "string",
+            "description": "配信日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "messageIds": {
+            "type": "string",
+            "description": "配信したChatMessageのID（JSON配列）",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "削除済みフラグ"
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "削除日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "createdByUserId": {
+            "type": "integer",
+            "description": "作成者ユーザーID",
+            "format": "int32"
+          },
+          "createdByUserName": {
+            "type": "string",
+            "description": "作成者ユーザー名",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "更新日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedByUserId": {
+            "type": "integer",
+            "description": "更新者ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "updatedByUserName": {
+            "type": "string",
+            "description": "更新者ユーザー名",
+            "nullable": true
+          },
+          "isEditable": {
+            "type": "boolean",
+            "description": "編集可能か（公開前のみ編集可）"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用バージョン番号",
+            "format": "uint32"
+          }
+        },
+        "description": "BackOffice用 システム通知詳細レスポンス"
+      },
+      "BackOfficeNotificationListItemResponse": {
+        "required": [
+          "id",
+          "subject",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "通知ID",
+            "format": "int32"
+          },
+          "subject": {
+            "type": "string",
+            "description": "件名"
+          },
+          "type": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/SystemNotificationType"
+              }
+            ]
+          },
+          "publishAt": {
+            "type": "string",
+            "description": "公開開始日時",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "description": "公開終了日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isProcessed": {
+            "type": "boolean",
+            "description": "配信済みフラグ"
+          },
+          "processedAt": {
+            "type": "string",
+            "description": "配信日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "削除済みフラグ"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "createdByUserName": {
+            "type": "string",
+            "description": "作成者ユーザー名",
+            "nullable": true
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用バージョン番号",
+            "format": "uint32"
+          }
+        },
+        "description": "BackOffice用 システム通知リスト項目レスポンス"
+      },
+      "BackOfficeOrganizationDetailResponse": {
+        "required": [
+          "id",
+          "name",
+          "phoneNumber",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "組織ID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "組織名"
+          },
+          "code": {
+            "type": "string",
+            "description": "組織コード",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "組織の説明",
+            "nullable": true
+          },
+          "representativeName": {
+            "type": "string",
+            "description": "代表者名",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "電話番号"
+          },
+          "email": {
+            "type": "string",
+            "description": "メールアドレス",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "description": "デモ組織フラグ"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "更新日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "userCount": {
+            "type": "integer",
+            "description": "所属ユーザー数",
+            "format": "int32"
+          },
+          "workspaceCount": {
+            "type": "integer",
+            "description": "ワークスペース数",
+            "format": "int32"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用バージョン番号",
+            "format": "uint32"
+          }
+        },
+        "description": "BackOffice用 組織詳細レスポンス"
+      },
+      "BackOfficeOrganizationListItemResponse": {
+        "required": [
+          "id",
+          "name",
+          "phoneNumber",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "組織ID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "組織名"
+          },
+          "code": {
+            "type": "string",
+            "description": "組織コード",
+            "nullable": true
+          },
+          "representativeName": {
+            "type": "string",
+            "description": "代表者名",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "電話番号"
+          },
+          "email": {
+            "type": "string",
+            "description": "メールアドレス",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ"
+          },
+          "isDemo": {
+            "type": "boolean",
+            "description": "デモ組織フラグ"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "userCount": {
+            "type": "integer",
+            "description": "所属ユーザー数",
+            "format": "int32"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用バージョン番号",
+            "format": "uint32"
+          }
+        },
+        "description": "BackOffice用 組織リスト項目レスポンス"
+      },
+      "BackOfficeUpdateNotificationRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "subject": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "件名",
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "description": "本文（Markdown形式）",
+            "nullable": true
+          },
+          "type": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/SystemNotificationType"
+              }
+            ]
+          },
+          "publishAt": {
+            "type": "string",
+            "description": "公開開始日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endAt": {
+            "type": "string",
+            "description": "公開終了日時（null=無期限）",
+            "format": "date-time",
+            "nullable": true
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用バージョン番号",
+            "format": "uint32"
+          }
+        },
+        "description": "BackOffice用 システム通知更新リクエスト"
+      },
+      "BackOfficeUpdateOrganizationRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "representativeName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "代表者名",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "maxLength": 20,
+            "type": "string",
+            "description": "電話番号",
+            "nullable": true
+          },
+          "email": {
+            "maxLength": 254,
+            "type": "string",
+            "description": "メールアドレス",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ",
+            "nullable": true
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用バージョン番号",
+            "format": "uint32"
+          }
+        },
+        "description": "BackOffice用 組織更新リクエスト"
       },
       "ChatMessageItem": {
         "required": [
@@ -15285,6 +16521,94 @@
         },
         "description": "ページネーション付きレスポンス"
       },
+      "PagedResponseOfBackOfficeNotificationListItemResponse": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BackOfficeNotificationListItemResponse"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          }
+        },
+        "description": "ページネーション付きレスポンス"
+      },
+      "PagedResponseOfBackOfficeOrganizationListItemResponse": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BackOfficeOrganizationListItemResponse"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          }
+        },
+        "description": "ページネーション付きレスポンス"
+      },
       "PagedResponseOfItemWithTasksResponse": {
         "required": [
           "data"
@@ -16833,6 +18157,17 @@
             ]
           }
         }
+      },
+      "SystemNotificationType": {
+        "enum": [
+          "EmergencyMaintenance",
+          "ScheduledMaintenance",
+          "Important",
+          "Info",
+          "IncidentReport"
+        ],
+        "type": "string",
+        "nullable": true
       },
       "SystemRole": {
         "enum": [
@@ -20234,7 +21569,10 @@
       "name": "EmailPreview"
     },
     {
-      "name": "BackOffice"
+      "name": "BackOffice - Organizations"
+    },
+    {
+      "name": "BackOffice - Notifications"
     },
     {
       "name": "Entrance - Auth"

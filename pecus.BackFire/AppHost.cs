@@ -133,7 +133,7 @@ CleanupJobScheduler.ConfigureCleanupJobs(builder.Configuration);
 // 週間レポートジョブの設定
 WeeklyReportJobScheduler.ConfigureWeeklyReportJob(builder.Configuration);
 
-// 運営通知ジョブの設定（NotificationsPath は環境変数で注入）
-MaintenanceNotificationJobScheduler.ConfigureMaintenanceNotificationJob(builder.Configuration);
+// システム通知配信ジョブの設定（DBベース）
+SystemNotificationJobScheduler.ConfigureSystemNotificationJob(builder.Configuration);
 
 app.Run();

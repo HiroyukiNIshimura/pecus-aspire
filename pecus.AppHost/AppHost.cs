@@ -35,10 +35,8 @@ try
     var dataBasePathValue = builder.Configuration["Parameters:dataBasePath"] ?? "../data";
     var dataBasePathResolved = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.AppHost", dataBasePathValue));
     var uploadsPath = Path.Combine(dataBasePathResolved, "uploads");
-    var notificationsPath = Path.Combine(dataBasePathResolved, "notifications");
     Log.Information("Data base path: {DataBasePath}", dataBasePathResolved);
     Log.Information("Uploads path: {UploadsPath}", uploadsPath);
-    Log.Information("Notifications path: {NotificationsPath}", notificationsPath);
 
     // Protos フォルダの絶対パスを取得
     var protosPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.Protos"));
@@ -70,7 +68,6 @@ try
     .WaitFor(pecusDb)
     .WaitFor(lexicalConverter)
     .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath)
-    .WithEnvironment("MaintenanceNotification__NotificationsPath", notificationsPath)
     .WithEnvironment("Frontend__Endpoint", frontendUrl)
     .WithEnvironment("LexicalConverter__Endpoint", lexicalConverterUrl);
 

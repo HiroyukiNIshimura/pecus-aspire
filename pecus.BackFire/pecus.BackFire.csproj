@@ -23,9 +23,6 @@
     <Content Include="..\pecus.Libs\Mail\Templates\**\*.cshtml" LinkBase="Mail\Templates">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Notifications\**\*.md" LinkBase="Notifications">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <PropertyGroup>
