@@ -232,14 +232,18 @@ public class OrganizationService
     }
 
     /// <summary>
-    /// パスワード設定トークンを生成
+    /// パスワード設定トークンを生成（URL安全なBase64）
     /// </summary>
     private static string GeneratePasswordResetToken()
     {
         using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
         var tokenBytes = new byte[32];
         rng.GetBytes(tokenBytes);
-        return Convert.ToBase64String(tokenBytes);
+        // URL安全なBase64エンコード（+を-に、/を_に置換し、=パディングを削除）
+        return Convert.ToBase64String(tokenBytes)
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
     }
 
     /// <summary>
