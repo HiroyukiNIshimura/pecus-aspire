@@ -4,7 +4,9 @@ import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/Pecu
 import type { MessageResponse } from '@/connectors/api/pecus';
 import {
   type RequestPasswordResetInput,
+  type ResetPasswordInput,
   requestPasswordResetSchema,
+  resetPasswordSchema,
   type SetPasswordInput,
   setPasswordSchema,
 } from '@/schemas/signInSchemas';
@@ -83,5 +85,45 @@ export async function setPasswordAction(input: SetPasswordInput): Promise<ApiRes
   } catch (error) {
     console.error('Failed to set password:', error);
     return parseErrorResponse(error, 'パスワード設定に失敗しました。トークンが無効または期限切れの可能性があります。');
+  }
+}
+
+/**
+ * パスワードリセット実行（既存ユーザー向け）
+ * トークンを使ってパスワードをリセット
+ *
+ * @param input - パスワードリセット入力値
+ * @returns ApiResponse<MessageResponse> 形式の統一レスポンス
+ */
+export async function resetPasswordAction(input: ResetPasswordInput): Promise<ApiResponse<MessageResponse>> {
+  try {
+    // サーバーサイド検証
+    const parseResult = await resetPasswordSchema.safeParseAsync(input);
+    if (!parseResult.success) {
+      const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+      return validationError(errorMessages);
+    }
+
+    // API クライアント生成（認証不要なので公開エンドポイント）
+    const clients = await createPecusApiClients();
+
+    // パスワードリセット API 呼び出し
+    const result = await clients.entrancePassword.postApiEntrancePasswordReset({
+      token: parseResult.data.token,
+      password: parseResult.data.password,
+    });
+
+    return {
+      success: true,
+      data: {
+        message: result.message || 'パスワードがリセットされました。新しいパスワードでログインしてください。',
+      },
+    };
+  } catch (error) {
+    console.error('Failed to reset password:', error);
+    return parseErrorResponse(
+      error,
+      'パスワードリセットに失敗しました。トークンが無効または期限切れの可能性があります。',
+    );
   }
 }
