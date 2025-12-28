@@ -113,6 +113,8 @@ export default function CreateWorkspaceItem({
         const result = await createWorkspaceItem(workspaceId, request);
 
         if (result.success) {
+          notify.success('アイテムを作成しました。');
+
           // 作成成功時のコールバック
           if (onCreate && result.data.workspaceItem?.id && result.data.workspaceItem?.code) {
             onCreate(result.data.workspaceItem.id, result.data.workspaceItem.code);
