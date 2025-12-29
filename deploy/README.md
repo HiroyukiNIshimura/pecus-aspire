@@ -6,11 +6,13 @@
 
 ## 設定ファイルの役割分離
 
+> **詳細は `docs/config-management.md` を参照してください。**
+
 | ファイル | 用途 | 管理対象 |
 |----------|------|----------|
-| `config/settings.base.json` | アプリ設定（共有） | Git管理 |
-| `config/settings.base.prod.json` | アプリ設定（本番シークレット） | **Git管理外** |
-| `deploy/.env` | Docker/インフラ設定 | **Git管理外** |
+| `config/settings.base.json` | 全設定の唯一のソース | Git管理 |
+| `config/settings.base.prod.json` | 本番用オーバーライド（シークレット） | **Git管理外** |
+| `deploy/.env` | Docker/インフラ設定（**自動生成**） | **Git管理外** |
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -135,31 +137,34 @@ node scripts/generate-appsettings.js -P
 POSTGRES_PASSWORD=xxx AI_API_KEY=xxx node scripts/generate-appsettings.js -P
 ```
 
-### 3. 環境変数の設定（Docker Compose 用）
+### 3. 環境変数ファイルの生成
+
+`deploy/.env` は **手動作成不要** です。ステップ2の `generate-appsettings.js -P` で自動生成されます。
+
+生成される `.env` の内容（`config/settings.base.json` + `settings.base.prod.json` から抽出）:
 
 ```bash
-cd deploy
-cp .env.example .env
-```
-
-`.env` ファイルを編集（Docker/インフラ設定のみ）:
-
-```bash
-# PostgreSQL（コンテナ起動用）
+# PostgreSQL
 POSTGRES_USER=pecus
 POSTGRES_PASSWORD=secure_postgres_password
+POSTGRES_DB=pecusdb
 
 # ポート番号
-API_PORT=7265
+WEBAPI_PORT=7265
 FRONTEND_PORT=3000
 
 # 公開URL
 FRONTEND_URL=https://your-domain.com
 NEXT_PUBLIC_API_URL=https://your-domain.com/api
+
+# Docker 内部ホスト/URL
+LEXICAL_CONVERTER_URL=http://lexicalconverter:5100
+REDIS_URL=redis://redis-frontend:6379
+# ... 他
 ```
 
-> **Note**: JWT、AI、メール等のアプリ設定は `config/settings.base.prod.json` で管理します。
-> `.env` には Docker/インフラ設定のみを記述してください。
+> **Note**: `.env` は `settings.base.json` の `_infrastructure` セクションから自動生成されます。
+> 手動編集は不要です。本番用の値は `settings.base.prod.json` でオーバーライドしてください。
 
 ### 4. Next.js の設定確認
 
@@ -193,7 +198,7 @@ sh deploy.sh --generate-only
 **方法2: 手動で実行**
 
 ```bash
-# 設定生成
+# 設定生成（appsettings.json + deploy/.env を生成）
 node scripts/generate-appsettings.js -P
 
 # イメージのビルドと起動
@@ -357,16 +362,18 @@ docker compose exec frontend ping pecusapi
 ```
 pecus-aspire/
 ├── config/
-│   ├── settings.base.json           # ベース設定 (Git管理)
+│   ├── settings.base.json           # 唯一の設定ソース (Git管理)
 │   ├── settings.base.dev.json       # 開発用オーバーライド (.gitignore)
 │   ├── settings.base.prod.json      # 本番用オーバーライド (.gitignore)
 │   └── settings.base.prod.json.example  # 本番用テンプレート
+├── docs/
+│   └── config-management.md         # 設定管理の詳細ドキュメント
 ├── scripts/
 │   └── generate-appsettings.js      # 設定生成スクリプト
 └── deploy/
     ├── deploy.sh                    # 本番デプロイスクリプト
     ├── docker-compose.yml           # メイン Compose ファイル
-    ├── .env.example                 # 環境変数テンプレート
+    ├── .env                         # Docker 環境変数 (自動生成、.gitignore)
     ├── README.md                    # このファイル
     └── dockerfiles/
         ├── WebApi.Dockerfile            # Web API
