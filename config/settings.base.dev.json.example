@@ -1,0 +1,56 @@
+{
+  "_comment": "開発環境用のオーバーライド設定。settings.base.json にマージされます。このファイルをコピーして settings.base.dev.json を作成してください。",
+
+  "_parameters": {
+    "password": "P@ssw0rd"
+  },
+
+  "_shared": {
+    "Email": {
+      "Username": "dev@example.local",
+      "Password": "your-smtp-password",
+      "SendMailInDevelopment": false
+    },
+    "DefaultAi": {
+      "ApiKey": "your-ai-api-key"
+    }
+  },
+
+  "dbmanager": {
+    "BackOffice": {
+      "Users": [
+        {
+          "Email": "admin@backoffice.none",
+          "Username": "BackOffice Admin",
+          "Password": "your-backoffice-admin-password"
+        }
+      ]
+    },
+    "DemoMode": {
+      "Enabled": true,
+      "Organization": {
+        "GenerativeApiKey": "your-demo-generative-api-key"
+      },
+      "Users": [
+        {
+          "Email": "admin@demo.coati.none",
+          "Username": "小当 管理",
+          "Password": "your-demo-password",
+          "Role": "Admin"
+        },
+        {
+          "Email": "user1@demo.coati.none",
+          "Username": "子宛 一",
+          "Password": "your-demo-password",
+          "Role": "User"
+        },
+        {
+          "Email": "user2@demo.coati.none",
+          "Username": "個宛 二",
+          "Password": "your-demo-password",
+          "Role": "User"
+        }
+      ]
+    }
+  }
+}

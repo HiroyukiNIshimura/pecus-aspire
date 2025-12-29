@@ -141,7 +141,14 @@ temp/*
 
 node_modules/
 
-*/appsettings.Development.json
+# Generated appsettings (from config/settings.base.json)
+pecus.AppHost/appsettings.json
+pecus.WebApi/appsettings.json
+pecus.BackFire/appsettings.json
+pecus.DbManager/appsettings.json
+
+# Local environment override (each developer manages locally)
+config/settings.base.dev.json
 
 # Local data directory (uploads, notifications, etc.)
 data/

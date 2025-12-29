@@ -80,7 +80,25 @@ cd pecus-aspire
 dotnet restore pecus.sln
 ```
 
-#### 2.2 フロントエンド環境設定（pecus.Frontend）
+#### 2.2 設定ファイルの生成
+
+```bash
+# 開発用オーバーライドファイルを作成（初回のみ）
+cp config/settings.base.dev.json.example config/settings.base.dev.json
+
+# 必要に応じて API キー等を編集
+# vim config/settings.base.dev.json
+
+# 設定ファイルを生成
+node scripts/generate-appsettings.js -D
+```
+
+**補足:**
+- `config/settings.base.json` がベース設定（Git管理）
+- `config/settings.base.dev.json` は開発者ローカル用（.gitignore）
+- 生成された `appsettings.json` は各プロジェクトに配置されます
+
+#### 2.3 フロントエンド環境設定（pecus.Frontend）
 
 ```bash
 # pecus.Frontend ディレクトリに移動

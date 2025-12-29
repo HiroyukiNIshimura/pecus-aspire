@@ -1,0 +1,224 @@
+{
+  "_comment": "このファイルが設定の唯一のソースです。scripts/generate-appsettings.js で各プロジェクト用に生成されます。",
+
+  "_parameters": {
+    "username": "pecus",
+    "password": "",
+    "frontendUrl": "https://localhost:3000",
+    "lexicalConverterUrl": "https://localhost:5100",
+    "dataBasePath": "../data"
+  },
+
+  "_shared": {
+    "Email": {
+      "SmtpHost": "smtp.example.local",
+      "SmtpPort": 587,
+      "UseSsl": true,
+      "Username": "",
+      "Password": "",
+      "FromEmail": "noreply@example.local",
+      "FromName": "Coati",
+      "TemplateRootPath": "Mail/Templates",
+      "SendMailInDevelopment": false
+    },
+    "DeepSeek": {
+      "BaseUrl": "https://api.deepseek.com",
+      "TimeoutSeconds": 60,
+      "DefaultMaxTokens": 2048,
+      "DefaultTemperature": 0.7
+    },
+    "OpenAI": {
+      "BaseUrl": "https://api.openai.com/v1",
+      "TimeoutSeconds": 60,
+      "DefaultMaxTokens": 2048,
+      "DefaultTemperature": 0.7,
+      "ModelCreatedAfter": "2024-01-01"
+    },
+    "Anthropic": {
+      "BaseUrl": "https://api.anthropic.com/v1",
+      "ApiVersion": "2023-06-01",
+      "TimeoutSeconds": 60,
+      "DefaultMaxTokens": 2048,
+      "DefaultTemperature": 0.7
+    },
+    "Gemini": {
+      "BaseUrl": "https://generativelanguage.googleapis.com/v1beta",
+      "TimeoutSeconds": 60,
+      "DefaultMaxTokens": 2048,
+      "DefaultTemperature": 0.7
+    },
+    "DefaultAi": {
+      "Provider": "DeepSeek",
+      "Model": "deepseek-chat",
+      "ApiKey": ""
+    }
+  },
+
+  "webapi": {
+    "Logging": {
+      "LogLevel": {
+        "Default": "Information",
+        "Microsoft.AspNetCore": "Warning",
+        "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+      }
+    },
+    "AllowedHosts": "*",
+    "Pecus": {
+      "Jwt": {
+        "IssuerSigningKey": "P8v9IoORqBUelu6dxWXMfmKtnyjG1NhZ4awCT7EcQAbDi0zLgrY2s5pFkSJHV3",
+        "ValidIssuer": "http://localhost/",
+        "ValidAudience": "https://localhost/",
+        "ExpiresMinutes": 15
+      },
+      "Application": {
+        "Name": "Pecus API",
+        "Version": "1.0.0",
+        "EnableEntranceOrganization": true
+      },
+      "Pagination": {
+        "DefaultPageSize": 20
+      },
+      "Limits": {
+        "MaxTagsPerOrganization": 100,
+        "MaxSkillsPerOrganization": 100,
+        "MaxDocumentsPerWorkspace": 1000
+      },
+      "FileUpload": {
+        "StoragePath": "uploads",
+        "MaxFileSize": 5242880,
+        "AllowedImageExtensions": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+        "AllowedMimeTypes": ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        "MaxAttachmentFileSize": 20971520,
+        "AllowedAttachmentExtensions": [
+          ".jpg", ".jpeg", ".png", ".gif", ".webp",
+          ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+          ".txt", ".csv", ".zip", ".rar"
+        ],
+        "AllowedAttachmentMimeTypes": [
+          "image/jpeg", "image/png", "image/gif", "image/webp",
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-powerpoint",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "text/plain", "text/csv",
+          "application/zip", "application/x-rar-compressed"
+        ],
+        "ThumbnailMediumSize": 800,
+        "ThumbnailSmallSize": 200
+      }
+    },
+    "Security": {
+      "AllowedFrontendUrls": ["https://your-production-domain.com"]
+    }
+  },
+
+  "backfire": {
+    "Logging": {
+      "LogLevel": {
+        "Default": "Information",
+        "Microsoft.AspNetCore": "Warning",
+        "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+      }
+    },
+    "RefreshTokenCleanup": {
+      "BatchSize": 1000,
+      "OlderThanDays": 30,
+      "Hour": 2,
+      "Minute": 0
+    },
+    "DeviceCleanup": {
+      "BatchSize": 1000,
+      "OlderThanDays": 30,
+      "VeryOldDays": 365,
+      "Hour": 2,
+      "Minute": 30
+    },
+    "EmailChangeTokenCleanup": {
+      "BatchSize": 1000,
+      "OlderThanDays": 7,
+      "Hour": 3,
+      "Minute": 0
+    },
+    "UploadsCleanup": {
+      "UploadsBasePath": "",
+      "TempRetentionHours": 24,
+      "Hour": 4,
+      "Minute": 0
+    },
+    "ChatCleanup": {
+      "BatchSize": 1000,
+      "System": { "OlderThanDays": 40 },
+      "Group": { "OlderThanDays": 120 },
+      "Dm": { "OlderThanDays": 380 },
+      "Ai": { "OlderThanDays": 40 },
+      "Hour": 5,
+      "Minute": 0
+    },
+    "WeeklyReport": {
+      "DeliveryHour": 8,
+      "DeliveryMinute": 0,
+      "DashboardBaseUrl": ""
+    },
+    "MaintenanceNotification": {
+      "Enabled": true
+    },
+    "SystemNotification": {
+      "Enabled": true,
+      "CronExpression": "30 * * * *"
+    }
+  },
+
+  "dbmanager": {
+    "AllowedHosts": "*",
+    "BackOffice": {
+      "Organization": {
+        "Name": "System Maintenance",
+        "Code": "SYS-MAINT-001",
+        "PhoneNumber": "000-0000-0000",
+        "Email": "admin@backoffice.none"
+      },
+      "Users": [
+        {
+          "Email": "admin@backoffice.none",
+          "Username": "BackOffice Admin",
+          "Password": ""
+        }
+      ]
+    },
+    "DemoMode": {
+      "Enabled": false,
+      "Organization": {
+        "Name": "株式会社デモコアティ",
+        "Code": "DEMO-001",
+        "PhoneNumber": "000-0000-0000",
+        "Email": "admin@demo.coati.none",
+        "GenerativeApiVendor": "DeepSeek",
+        "GenerativeApiKey": "",
+        "GenerativeApiModel": "deepseek-chat"
+      },
+      "Users": [
+        {
+          "Email": "admin@demo.coati.none",
+          "Username": "小当 管理",
+          "Password": "",
+          "Role": "Admin"
+        },
+        {
+          "Email": "user1@demo.coati.none",
+          "Username": "子宛 一",
+          "Password": "",
+          "Role": "User"
+        },
+        {
+          "Email": "user2@demo.coati.none",
+          "Username": "個宛 二",
+          "Password": "",
+          "Role": "User"
+        }
+      ]
+    }
+  }
+}
