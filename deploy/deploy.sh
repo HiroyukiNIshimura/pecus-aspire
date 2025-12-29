@@ -157,9 +157,9 @@ health_check() {
         fi
         sleep 5
         ELAPSED=$((ELAPSED + 5))
-        echo -n "."
+        printf "."
     done
-    echo ""
+    printf "\n"
 
     if [ $ELAPSED -ge $TIMEOUT ]; then
         log_error "DB マイグレーションがタイムアウトしました"
@@ -177,9 +177,9 @@ health_check() {
         fi
         sleep 5
         ELAPSED=$((ELAPSED + 5))
-        echo -n "."
+        printf "."
     done
-    echo ""
+    printf "\n"
 
     if [ $ELAPSED -ge $TIMEOUT ]; then
         log_warn "API ヘルスチェックがタイムアウトしました（起動中の可能性あり）"
