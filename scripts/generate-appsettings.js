@@ -221,7 +221,7 @@ function generate() {
 /**
  * Docker Compose 用の .env ファイルを生成
  */
-function generateDockerEnv(infra, shared, projects) {
+function generateDockerEnv(infra, _shared, _projects) {
   const docker = infra.docker || {};
   const lexicalConverterPort = infra.ports.lexicalConverter || 5100;
 
