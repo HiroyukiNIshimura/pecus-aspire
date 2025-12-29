@@ -1,18 +1,36 @@
 import Redis, { type RedisOptions } from 'ioredis';
+import { getRedisConnectionString } from './env';
 
-// Aspire から提供される接続文字列を取得
-// 形式: "localhost:port,password=xxx" または "host:port,password=xxx"
-const REDIS_CONNECTION_STRING = process.env.ConnectionStrings__redisFrontend;
-
-if (!REDIS_CONNECTION_STRING) {
-  throw new Error('環境変数 ConnectionStrings__redisFrontend が設定されていません');
-}
+// 統一ヘルパーから Redis 接続文字列を取得
+// Aspire: ConnectionStrings__redisFrontend
+// Docker: REDIS_URL
+const REDIS_CONNECTION_STRING = getRedisConnectionString();
 
 /**
- * Aspire の Redis 接続文字列をパースする
- * 形式: "host:port,password=xxx" または "host:port,password=xxx,ssl=true"
+ * Redis 接続文字列をパースする
+ *
+ * サポートする形式:
+ * 1. Aspire 形式: "host:port,password=xxx,ssl=true"
+ * 2. Docker/標準 URL 形式: "redis://[:password@]host:port"
  */
 function parseRedisConnectionString(connectionString: string): RedisOptions {
+  // Docker/標準 URL 形式 (redis://...)
+  if (connectionString.startsWith('redis://') || connectionString.startsWith('rediss://')) {
+    const url = new URL(connectionString);
+    const options: RedisOptions = {
+      host: url.hostname,
+      port: Number.parseInt(url.port || '6379', 10),
+    };
+    if (url.password) {
+      options.password = url.password;
+    }
+    if (connectionString.startsWith('rediss://')) {
+      options.tls = {};
+    }
+    return options;
+  }
+
+  // Aspire 形式: "host:port,password=xxx,ssl=true"
   const parts = connectionString.split(',');
   const hostPort = parts[0];
   const [host, portStr] = hostPort.split(':');

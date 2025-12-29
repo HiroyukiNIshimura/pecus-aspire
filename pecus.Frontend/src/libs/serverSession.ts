@@ -9,6 +9,7 @@
  */
 
 import { cookies } from 'next/headers';
+import { getApiBaseUrl } from './env';
 import { getRedisClient } from './redis';
 
 // ========================================
@@ -530,7 +531,7 @@ export class ServerSessionManager {
 
       const session: ServerSessionData = JSON.parse(sessionJson);
 
-      const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
+      const apiBaseUrl = getApiBaseUrl();
 
       const body = {
         refreshToken: session.refreshToken,

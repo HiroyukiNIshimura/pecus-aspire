@@ -8,6 +8,7 @@ import type { ConcurrencyErrorResponseBody } from "./ConflictDataTypes.generated
 import { ErrorResponse } from "@/actions/types";
 import { ApiError } from "./pecus/core/ApiError";
 import type { WorkspaceMemberAssignmentsResponse } from "./pecus";
+import { getApiBaseUrl } from "@/libs/env";
 
 const isApiError = (error: unknown): error is ApiError=> {
   return error instanceof ApiError;
@@ -365,11 +366,8 @@ export const parseErrorResponse = (error: unknown, defaultMessage?: string): Err
  * - getAccessToken() が自動的にトークンを取得
  */
 export function createPecusApiClients() {
-  // BASE URL を環境に応じて決定
-  const baseUrl =
-    process.env.API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://localhost:7265";
+  // BASE URL を環境に応じて決定（統一ヘルパー使用）
+  const baseUrl = getApiBaseUrl();
 
   // OpenAPI 設定を初期化
   configureOpenAPI(baseUrl, async () => {
@@ -395,7 +393,7 @@ export function createPecusApiClients() {
  */
 export async function createAuthenticatedAxios() {
   const token = await getAccessToken();
-  const baseURL = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7265";
+  const baseURL = getApiBaseUrl();
 
   return Axios.create({
     baseURL,

@@ -21,15 +21,23 @@ try
     var infraConfig = builder.Configuration.GetSection("Infrastructure");
     var postgresUser = infraConfig["postgres:user"] ?? "pecus";
     var postgresPassword = infraConfig["postgres:password"] ?? "";
+    var postgresPort = int.TryParse(infraConfig["postgres:port"], out var pgPort) ? pgPort : 5432;
+    var postgresImage = infraConfig["postgres:image"] ?? "groonga/pgroonga:latest-debian-18";
+    var lexicalConverterPort = int.TryParse(infraConfig["ports:lexicalConverter"], out var lcPort) ? lcPort : 5100;
+    var grpcHost = infraConfig["grpc:host"] ?? "0.0.0.0";
 
     var username = builder.AddParameter("username", postgresUser);
     var password = builder.AddParameter("password", postgresPassword);
 
     var redis = builder.AddRedis("redis");
 
+    var postgresImageParts = postgresImage.Split(':');
+    var postgresImageName = postgresImageParts[0];
+    var postgresImageTag = postgresImageParts.Length > 1 ? postgresImageParts[1] : "latest";
+
     var postgres = builder
-            .AddPostgres("postgres", userName: username, password: password, port: 5432)
-            .WithImage("groonga/pgroonga", "latest-debian-18")
+            .AddPostgres("postgres", userName: username, password: password, port: postgresPort)
+            .WithImage(postgresImageName, postgresImageTag)
         .WithVolume("postgres-data", "/var/lib/postgresql");
     var pecusDb = postgres.AddDatabase("pecusdb");
 
@@ -48,9 +56,9 @@ try
     // Lexical Converter (Node.js gRPC Service)
     var lexicalConverter = builder.AddNpmApp("lexicalconverter", "../pecus.LexicalConverter", "start:dev")
         .WithNpmPackageInstallation()
-        .WithHttpEndpoint(targetPort: 5100, name: "grpc", isProxied: false)
-        .WithEnvironment("GRPC_PORT", "5100")
-        .WithEnvironment("GRPC_HOST", "0.0.0.0")
+        .WithHttpEndpoint(targetPort: lexicalConverterPort, name: "grpc", isProxied: false)
+        .WithEnvironment("GRPC_PORT", lexicalConverterPort.ToString())
+        .WithEnvironment("GRPC_HOST", grpcHost)
         .WithEnvironment("LEXICAL_PROTO_PATH", lexicalProtoPath);
 
     //マイグレーションとシードデータの投入サービス

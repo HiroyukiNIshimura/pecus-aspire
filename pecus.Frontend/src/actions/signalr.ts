@@ -1,5 +1,6 @@
 'use server';
 
+import { getApiBaseUrl } from '@/libs/env';
 import { ServerSessionManager } from '@/libs/serverSession';
 
 /**
@@ -30,17 +31,12 @@ export async function getSignalRToken(): Promise<string | null> {
 /**
  * SignalR Hub の URL を取得する Server Action
  *
- * 環境変数から WebAPI のベース URL を取得し、Hub パスを付与して返す。
+ * 統一ヘルパー getApiBaseUrl() を使用して WebAPI のベース URL を取得し、
+ * Hub パスを付与して返す。
  *
  * @returns Hub の完全な URL
  */
 export async function getSignalRHubUrl(): Promise<string> {
-  // Aspire 環境では services__pecusapi__https__0 などの環境変数が設定される
-  const baseUrl =
-    process.env.services__pecusapi__https__0 ||
-    process.env.services__pecusapi__http__0 ||
-    process.env.PECUS_API_URL ||
-    'https://localhost:7265';
-
+  const baseUrl = getApiBaseUrl();
   return `${baseUrl}/hubs/notifications`;
 }

@@ -188,7 +188,7 @@ services:
     environment:
       NODE_ENV: production
       PECUS_API_URL: "http://${WEBAPI_HOST:-pecusapi}:8080"
-      REDIS_URL: "redis://${REDIS_FRONTEND_HOST:-redis-frontend}:6379"
+      REDIS_URL: ${REDIS_URL:-redis://redis-frontend:6379}
     depends_on:
       pecusapi:
         condition: service_healthy

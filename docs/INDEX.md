@@ -2,6 +2,10 @@
 
 このディレクトリ内のドキュメント一覧と簡単な説明です。ファイル名をクリックして該当ファイルを開いてください。
 
+### 🔴 最重要事項
+
+- [config-management.md](./config-management.md) — **【必読】設定ファイル管理方式（config/settings.base.json が唯一のソース）**。
+
 ### コーディングルール・ガイドライン
 
 - [api-list-response-design.md](./api-list-response-design.md) — API の一覧レスポンス設計指針。

@@ -7,7 +7,9 @@
     "postgres": {
       "user": "pecus",
       "password": "",
-      "db": "pecusdb"
+      "db": "pecusdb",
+      "port": 5432,
+      "image": "groonga/pgroonga:latest-debian-18"
     },
     "redis": {
       "port": 6379
@@ -17,6 +19,9 @@
       "frontend": 3000,
       "backfire": 5010,
       "lexicalConverter": 5100
+    },
+    "grpc": {
+      "host": "0.0.0.0"
     },
     "urls": {
       "frontend": "https://localhost:3000",

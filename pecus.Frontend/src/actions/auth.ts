@@ -5,6 +5,7 @@ import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/Pecu
 import type { LoginResponse, RoleInfoResponse } from '@/connectors/api/pecus';
 import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
 import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
+import { getApiBaseUrl } from '@/libs/env';
 import { type CreateSessionInput, type ServerSessionData, ServerSessionManager } from '@/libs/serverSession';
 import type { ApiResponse } from './types';
 import { serverError } from './types';
@@ -126,7 +127,7 @@ export async function logout(): Promise<ApiResponse<null>> {
 
     // WebAPIのログアウトエンドポイントを呼んでトークンを無効化
     if (session?.accessToken) {
-      const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         await fetch(`${apiBaseUrl}/api/entrance/logout`, {
           method: 'POST',
