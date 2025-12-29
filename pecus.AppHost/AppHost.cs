@@ -21,24 +21,38 @@ try
     var infraConfig = builder.Configuration.GetSection("Infrastructure");
     var postgresUser = infraConfig["postgres:user"] ?? "pecus";
     var postgresPassword = infraConfig["postgres:password"] ?? "";
-    var postgresPort = int.TryParse(infraConfig["postgres:port"], out var pgPort) ? pgPort : 5432;
+    var postgresPort = int.TryParse(infraConfig["postgres:port"], out var pgPort) ? (int?)pgPort : null;
     var postgresImage = infraConfig["postgres:image"] ?? "groonga/pgroonga:latest-debian-18";
+    var redisPort = int.TryParse(infraConfig["redis:port"], out var rdPort) ? (int?)rdPort : null;
     var lexicalConverterPort = int.TryParse(infraConfig["ports:lexicalConverter"], out var lcPort) ? lcPort : 5100;
     var grpcHost = infraConfig["grpc:host"] ?? "0.0.0.0";
 
     var username = builder.AddParameter("username", postgresUser);
     var password = builder.AddParameter("password", postgresPassword);
 
-    var redis = builder.AddRedis("redis");
+    // Redis: ポート指定があれば使用、なければ Aspire のデフォルト（ランダム）
+    var redis = redisPort.HasValue
+        ? builder.AddRedis("redis", port: redisPort.Value)
+        : builder.AddRedis("redis");
+
+    // フロントエンド用 Redis（DbGate 付き）
+    var redisFrontend = (redisPort.HasValue
+        ? builder.AddRedis("redisFrontend", port: redisPort.Value + 1)
+        : builder.AddRedis("redisFrontend"))
+        .WithDbGate();
 
     var postgresImageParts = postgresImage.Split(':');
     var postgresImageName = postgresImageParts[0];
     var postgresImageTag = postgresImageParts.Length > 1 ? postgresImageParts[1] : "latest";
 
-    var postgres = builder
-            .AddPostgres("postgres", userName: username, password: password, port: postgresPort)
+    // PostgreSQL: ポート指定があれば使用、なければ Aspire のデフォルト（ランダム）
+    var postgres = postgresPort.HasValue
+        ? builder.AddPostgres("postgres", userName: username, password: password, port: postgresPort.Value)
             .WithImage(postgresImageName, postgresImageTag)
-        .WithVolume("postgres-data", "/var/lib/postgresql");
+            .WithVolume("postgres-data", "/var/lib/postgresql")
+        : builder.AddPostgres("postgres", userName: username, password: password)
+            .WithImage(postgresImageName, postgresImageTag)
+            .WithVolume("postgres-data", "/var/lib/postgresql");
     var pecusDb = postgres.AddDatabase("pecusdb");
 
     // 永続データのベースパス（開発時: ../data、本番時: /mnt/pecus-data など）
@@ -94,8 +108,6 @@ try
         .WithEnvironment("Pecus__FileUpload__StoragePath", uploadsPath);
 
     // Frontendの設定(開発環境モード)
-    var redisFrontend = builder.AddRedis("redisFrontend").WithDbGate();
-
     var frontend = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")
         .WithReference(pecusApi)
         .WithReference(redisFrontend)

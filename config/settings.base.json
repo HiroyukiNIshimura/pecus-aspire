@@ -6,7 +6,7 @@
     "dataPath": "../data",
     "postgres": {
       "user": "pecus",
-      "password": "",
+      "password": "P@ssw0rd",
       "db": "pecusdb",
       "port": 5432,
       "image": "groonga/pgroonga:latest-debian-18"
@@ -215,12 +215,12 @@
         {
           "Email": "admin@backoffice.none",
           "Username": "BackOffice Admin",
-          "Password": ""
+          "Password": "P@ssw0rd"
         }
       ]
     },
     "DemoMode": {
-      "Enabled": false,
+      "Enabled": true,
       "Organization": {
         "Name": "株式会社デモコアティ",
         "Code": "DEMO-001",
@@ -234,19 +234,19 @@
         {
           "Email": "admin@demo.coati.none",
           "Username": "小当 管理",
-          "Password": "",
+          "Password": "P@ssw0rd",
           "Role": "Admin"
         },
         {
           "Email": "user1@demo.coati.none",
           "Username": "子宛 一",
-          "Password": "",
+          "Password": "P@ssw0rd",
           "Role": "User"
         },
         {
           "Email": "user2@demo.coati.none",
           "Username": "個宛 二",
-          "Password": "",
+          "Password": "P@ssw0rd",
           "Role": "User"
         }
       ]
