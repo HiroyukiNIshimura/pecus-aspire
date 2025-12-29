@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Models.Config;
 using Pecus.Models.Requests.File;
 using Pecus.Services;
 
@@ -14,11 +15,13 @@ namespace Pecus.Controllers;
 public class FileDownloadController : BaseSecureController
 {
     private readonly ILogger<FileDownloadController> _logger;
+    private readonly PecusConfig _config;
 
-    public FileDownloadController(ProfileService profileService, ILogger<FileDownloadController> logger)
+    public FileDownloadController(ProfileService profileService, PecusConfig config, ILogger<FileDownloadController> logger)
         : base(profileService, logger)
     {
         _logger = logger;
+        _config = config;
     }
 
     /// <summary>
@@ -34,7 +37,7 @@ public class FileDownloadController : BaseSecureController
         bool useOriginal)
     {
         // 組織IDを使用してファイルパスを構築
-        var uploadsPath = "uploads";
+        var uploadsPath = _config.FileUpload.StoragePath;
         var filePath = Path.Combine(
             uploadsPath,
             CurrentOrganizationId.ToString(),
@@ -94,7 +97,7 @@ public class FileDownloadController : BaseSecureController
     )
     {
         // 組織IDを使用してファイルパスを構築
-        var uploadsPath = "uploads";
+        var uploadsPath = _config.FileUpload.StoragePath;
         var filePath = Path.Combine(
             uploadsPath,
             CurrentOrganizationId.ToString(),

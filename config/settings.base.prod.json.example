@@ -37,6 +37,9 @@
         "IssuerSigningKey": "",
         "ValidIssuer": "",
         "ValidAudience": ""
+      },
+      "FileUpload": {
+        "StoragePath": "/app/data/uploads"
       }
     },
     "Security": {

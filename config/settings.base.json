@@ -88,7 +88,7 @@
         "MaxDocumentsPerWorkspace": 1000
       },
       "FileUpload": {
-        "StoragePath": "uploads",
+        "StoragePath": "../data/uploads",
         "MaxFileSize": 5242880,
         "AllowedImageExtensions": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
         "AllowedMimeTypes": ["image/jpeg", "image/png", "image/gif", "image/webp"],

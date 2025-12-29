@@ -78,7 +78,8 @@ try
         .WaitFor(backfire)
         .WaitFor(lexicalConverter)
         .WithExternalHttpEndpoints()
-        .WithHttpHealthCheck("/");
+        .WithHttpHealthCheck("/")
+        .WithEnvironment("Pecus__FileUpload__StoragePath", uploadsPath);
 
     // Frontendの設定(開発環境モード)
     var redisFrontend = builder.AddRedis("redisFrontend").WithDbGate();
