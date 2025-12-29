@@ -3,7 +3,7 @@
 # ============================================
 
 # Use Debian-based images for gRPC Tools compatibility (Alpine ARM64 has issues)
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview-noble AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS base
 WORKDIR /app
 EXPOSE 8080
 
@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-
 # ============================================
 # Build stage
 # ============================================
-FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-noble AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
 WORKDIR /src
 
 # Copy project files
