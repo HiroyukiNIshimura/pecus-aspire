@@ -1,5 +1,13 @@
 # 設定ファイル管理
 
+## AI エージェント向け要約（必読）
+
+- **唯一のソース**: `config/settings.base.json` — 全ての設定はここで管理
+- **生成コマンド**: `node scripts/generate-appsettings.js`（開発用）、`-P` で本番用
+- **生成ファイルは編集禁止**: `appsettings.json`, `.env.local`, `deploy/.env` は自動生成
+- **設定変更時**: `settings.base.json` を編集 → `generate-appsettings.js` を実行
+- **Aspire 環境**: ポート設定があれば固定、なければランダム割り当て
+
 ## 概要
 
 本システムでは `config/settings.base.json` を**唯一の設定ソース**として管理し、開発環境と本番環境の乖離を最小化しています。
@@ -86,3 +94,14 @@ const apiUrl = getApiBaseUrl();  // Aspire / Docker / フォールバック を�
 - 生成されるファイルは `.gitignore` で管理（手動編集禁止）
 - 設定変更は必ず `config/settings.base.json` で行う
 - 変更後は `node scripts/generate-appsettings.js` を実行
+
+## Aspire 開発環境のポート動作
+
+Aspire 環境では、`_infrastructure.postgres.port` や `_infrastructure.redis.port` の設定に応じて動作が変わります：
+
+| 設定 | 動作 |
+|------|------|
+| ポート指定あり（例: `5432`） | 指定したポートで起動（ポート競合時はエラー） |
+| ポート指定なし | Aspire がランダムポートを割り当て |
+
+**推奨**: 開発環境ではランダムポートを許容し、ポート競合を回避する。他サービスへの接続は Aspire が自動注入する接続文字列を使用するため、ポート番号を意識する必要はない。
