@@ -1,0 +1,63 @@
+{
+  "_comment": "本番環境用のオーバーライド設定。CI/CD で環境変数から生成するか、シークレット管理ツールから取得します。",
+
+  "_parameters": {
+    "username": "pecus",
+    "password": "",
+    "frontendUrl": "",
+    "lexicalConverterUrl": "http://lexicalconverter:5100",
+    "dataBasePath": "/app/data"
+  },
+
+  "_shared": {
+    "Email": {
+      "SmtpHost": "",
+      "SmtpPort": 587,
+      "UseSsl": true,
+      "Username": "",
+      "Password": "",
+      "FromEmail": "",
+      "FromName": "Coati",
+      "SendMailInDevelopment": false
+    },
+    "DefaultAi": {
+      "Provider": "DeepSeek",
+      "Model": "deepseek-chat",
+      "ApiKey": ""
+    }
+  },
+
+  "webapi": {
+    "Pecus": {
+      "Jwt": {
+        "IssuerSigningKey": "",
+        "ValidIssuer": "",
+        "ValidAudience": ""
+      }
+    },
+    "Security": {
+      "AllowedFrontendUrls": []
+    }
+  },
+
+  "backfire": {
+    "WeeklyReport": {
+      "DashboardBaseUrl": ""
+    }
+  },
+
+  "dbmanager": {
+    "BackOffice": {
+      "Users": [
+        {
+          "Email": "admin@backoffice.none",
+          "Username": "BackOffice Admin",
+          "Password": ""
+        }
+      ]
+    },
+    "DemoMode": {
+      "Enabled": false
+    }
+  }
+}

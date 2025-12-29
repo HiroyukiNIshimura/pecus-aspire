@@ -150,5 +150,8 @@ pecus.DbManager/appsettings.json
 # Local environment override (each developer manages locally)
 config/settings.base.dev.json
 
+# Production environment override (managed by CI/CD or secrets manager)
+config/settings.base.prod.json
+
 # Local data directory (uploads, notifications, etc.)
 data/
