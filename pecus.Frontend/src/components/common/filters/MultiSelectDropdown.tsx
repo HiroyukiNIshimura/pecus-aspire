@@ -35,6 +35,8 @@ interface MultiSelectDropdownProps {
   changeMessage?: string;
   /** 初期表示時にドロップダウンを開いた状態にする */
   defaultOpen?: boolean;
+  /** 最大選択数（省略時は無制限） */
+  maxItems?: number;
 }
 
 /**
@@ -68,7 +70,10 @@ export default function MultiSelectDropdown({
   badgeColor = 'primary',
   changeMessage,
   defaultOpen = false,
+  maxItems,
 }: MultiSelectDropdownProps) {
+  /** 最大選択数に達しているか */
+  const isMaxReached = maxItems !== undefined && selectedIds.length >= maxItems;
   /**
    * アイテムの選択状態をトグル
    */
@@ -77,10 +82,13 @@ export default function MultiSelectDropdown({
       if (selectedIds.includes(itemId)) {
         onSelectionChange(selectedIds.filter((id) => id !== itemId));
       } else {
+        if (maxItems !== undefined && selectedIds.length >= maxItems) {
+          return;
+        }
         onSelectionChange([...selectedIds, itemId]);
       }
     },
-    [selectedIds, onSelectionChange],
+    [selectedIds, onSelectionChange, maxItems],
   );
 
   /**
@@ -114,7 +122,7 @@ export default function MultiSelectDropdown({
       <div className="label">
         <span className="label-text font-semibold text-base">{label}</span>
         <span className="label-text-alt">
-          {selectedIds.length} / {items.length} 個選択中
+          {selectedIds.length} / {maxItems ?? items.length} 個選択中
         </span>
       </div>
 
@@ -139,24 +147,28 @@ export default function MultiSelectDropdown({
               <EmptyState message={emptyMessage} size="sm" />
             </li>
           ) : (
-            items.map((item) => (
-              <li key={item.id}>
-                <label
-                  className="label cursor-pointer gap-3 hover:bg-base-200 rounded p-2"
-                  htmlFor={`multi-select-item-${item.id}`}
-                >
-                  <input
-                    id={`multi-select-item-${item.id}`}
-                    type="checkbox"
-                    checked={selectedIds.includes(item.id)}
-                    onChange={() => toggleItem(item.id)}
-                    className="checkbox checkbox-primary checkbox-sm"
-                    disabled={disabled}
-                  />
-                  <span className="label-text flex-1">{item.name}</span>
-                </label>
-              </li>
-            ))
+            items.map((item) => {
+              const isSelected = selectedIds.includes(item.id);
+              const isDisabledByMax = isMaxReached && !isSelected;
+              return (
+                <li key={item.id}>
+                  <label
+                    className={`label cursor-pointer gap-3 hover:bg-base-200 rounded p-2 ${isDisabledByMax ? 'opacity-50' : ''}`}
+                    htmlFor={`multi-select-item-${item.id}`}
+                  >
+                    <input
+                      id={`multi-select-item-${item.id}`}
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleItem(item.id)}
+                      className="checkbox checkbox-primary checkbox-sm"
+                      disabled={disabled || isDisabledByMax}
+                    />
+                    <span className="label-text flex-1">{item.name}</span>
+                  </label>
+                </li>
+              );
+            })
           )}
         </ul>
       </details>

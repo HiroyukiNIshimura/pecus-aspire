@@ -218,6 +218,7 @@ export default function EditWorkspaceSkillsModal({
               badgeColor="accent"
               changeMessage={skillsChanged ? '✓ スキルが変更されています' : undefined}
               defaultOpen
+              maxItems={50}
             />
           </div>
 

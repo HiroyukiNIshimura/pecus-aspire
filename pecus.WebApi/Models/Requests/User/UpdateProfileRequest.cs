@@ -18,7 +18,7 @@ public class UpdateProfileRequest
     [MaxLength(200, ErrorMessage = "ユーザーアバターパスは200文字以内で入力してください。")]
     public string? UserAvatarPath { get; set; }
 
-    [IntListRange(1, 50)]
+    [IntListRange(0, 50)]
     public List<int>? SkillIds { get; set; }
 
     [Required(ErrorMessage = "RowVersionは必須です。")]

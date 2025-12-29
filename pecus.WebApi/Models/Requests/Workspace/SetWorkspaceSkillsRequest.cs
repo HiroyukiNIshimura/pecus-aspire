@@ -11,7 +11,7 @@ public class SetWorkspaceSkillsRequest
     /// スキルIDのリスト。既存のすべてのスキルを置き換えます。
     /// 空のリストまたはnullの場合はすべてのスキルを削除します。
     /// </summary>
-    [IntListRange(1, 50)]
+    [IntListRange(0, 50)]
     public List<int>? SkillIds { get; set; }
 
     /// <summary>

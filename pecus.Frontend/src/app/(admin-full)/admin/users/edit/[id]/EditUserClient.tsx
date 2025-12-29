@@ -257,6 +257,7 @@ export default function EditUserClient({
                     emptyMessage="利用可能なスキルがありません"
                     badgeColor="primary"
                     changeMessage={skillsChanged ? '✓ スキルが変更されています' : undefined}
+                    maxItems={50}
                   />
 
                   {/* ロール編集 */}
@@ -271,6 +272,7 @@ export default function EditUserClient({
                     emptyMessage="利用可能なロールがありません"
                     badgeColor="secondary"
                     changeMessage={rolesChanged ? '✓ ロールが変更されています' : undefined}
+                    maxItems={5}
                   />
 
                   {/* アクティブ状態 */}

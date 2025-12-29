@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Pecus.Models.Validation;
 
 /// <summary>
-/// 整数リストの各要素に対して範囲チェックを行う属性
+/// 整数リストの要素数が指定範囲内かをチェックする属性
 /// </summary>
 public class IntListRangeAttribute : ValidationAttribute
 {
@@ -28,14 +28,11 @@ public class IntListRangeAttribute : ValidationAttribute
             return new ValidationResult("IntListRangeAttribute は int の列挙にのみ適用できます。");
         }
 
-        var index = 0;
-        foreach (var item in list)
+        var count = list.Count();
+
+        if (count < Min || count > Max)
         {
-            if (item < Min || item > Max)
-            {
-                return new ValidationResult($"リストの要素は {Min} から {Max} の範囲である必要があります。インデックス: {index}");
-            }
-            index++;
+            return new ValidationResult($"リストの要素数は {Min} から {Max} の範囲である必要があります。現在の要素数: {count}");
         }
 
         return ValidationResult.Success;
