@@ -59,14 +59,16 @@ function applyEnvOverrides(config) {
   if (process.env.POSTGRES_PASSWORD) {
     config._parameters.password = process.env.POSTGRES_PASSWORD;
   }
-  if (process.env.FRONTEND_URL) {
-    config._parameters.frontendUrl = process.env.FRONTEND_URL;
-  }
-  if (process.env.LEXICAL_CONVERTER_URL) {
-    config._parameters.lexicalConverterUrl = process.env.LEXICAL_CONVERTER_URL;
-  }
   if (process.env.DATA_BASE_PATH) {
     config._parameters.dataBasePath = process.env.DATA_BASE_PATH;
+  }
+
+  // Frontend & LexicalConverter
+  if (process.env.FRONTEND_URL) {
+    config._shared.Frontend.Endpoint = process.env.FRONTEND_URL;
+  }
+  if (process.env.LEXICAL_CONVERTER_URL) {
+    config._shared.LexicalConverter.Endpoint = process.env.LEXICAL_CONVERTER_URL;
   }
 
   // Email

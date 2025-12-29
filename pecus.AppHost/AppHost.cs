@@ -19,8 +19,6 @@ try
 
     var username = builder.AddParameter("username", secret: true);
     var password = builder.AddParameter("password", secret: true);
-    var frontendUrl = builder.AddParameter("frontendUrl");
-    var lexicalConverterUrl = builder.AddParameter("lexicalConverterUrl");
 
     var redis = builder.AddRedis("redis");
 
@@ -67,9 +65,7 @@ try
     .WaitFor(redis)
     .WaitFor(pecusDb)
     .WaitFor(lexicalConverter)
-    .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath)
-    .WithEnvironment("Frontend__Endpoint", frontendUrl)
-    .WithEnvironment("LexicalConverter__Endpoint", lexicalConverterUrl);
+    .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath);
 
     var pecusApi = builder
         .AddProject<Projects.pecus_WebApi>("pecusapi")
@@ -82,9 +78,7 @@ try
         .WaitFor(backfire)
         .WaitFor(lexicalConverter)
         .WithExternalHttpEndpoints()
-        .WithHttpHealthCheck("/")
-        .WithEnvironment("LexicalConverter__Endpoint", lexicalConverterUrl)
-        .WithEnvironment("Frontend__Endpoint", frontendUrl);
+        .WithHttpHealthCheck("/");
 
     // Frontendの設定(開発環境モード)
     var redisFrontend = builder.AddRedis("redisFrontend").WithDbGate();

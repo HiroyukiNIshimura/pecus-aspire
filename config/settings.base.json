@@ -4,12 +4,16 @@
   "_parameters": {
     "username": "pecus",
     "password": "",
-    "frontendUrl": "https://localhost:3000",
-    "lexicalConverterUrl": "https://localhost:5100",
     "dataBasePath": "../data"
   },
 
   "_shared": {
+    "Frontend": {
+      "Endpoint": "https://localhost:3000"
+    },
+    "LexicalConverter": {
+      "Endpoint": "http://localhost:5100"
+    },
     "Email": {
       "SmtpHost": "smtp.example.local",
       "SmtpPort": 587,

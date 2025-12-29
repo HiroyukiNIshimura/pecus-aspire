@@ -4,12 +4,16 @@
   "_parameters": {
     "username": "pecus",
     "password": "",
-    "frontendUrl": "",
-    "lexicalConverterUrl": "http://lexicalconverter:5100",
     "dataBasePath": "/app/data"
   },
 
   "_shared": {
+    "Frontend": {
+      "Endpoint": ""
+    },
+    "LexicalConverter": {
+      "Endpoint": "http://lexicalconverter:5100"
+    },
     "Email": {
       "SmtpHost": "",
       "SmtpPort": 587,
