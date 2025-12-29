@@ -76,7 +76,7 @@ export function HelpContent({ markdown }: HelpContentProps) {
           max-width: 100% !important;
           height: auto !important;
           border-radius: 0.5rem;
-          border: 1px solid oklch(var(--bc) / 0.2);
+          border: 1px solid var(--color-gray-500) !important;
         }
       `}</style>
       <LexicalComposer initialConfig={initialConfig}>
