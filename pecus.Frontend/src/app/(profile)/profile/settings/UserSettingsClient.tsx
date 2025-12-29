@@ -124,7 +124,7 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
                     id="canReceiveEmail"
                     name="canReceiveEmail"
                     type="checkbox"
-                    className="switch switch-primary"
+                    className="switch switch-outline switch-primary"
                     checked={!!formData.canReceiveEmail}
                     onChange={(e) => handleFieldChange('canReceiveEmail', e.target.checked)}
                     disabled={isSubmitting}

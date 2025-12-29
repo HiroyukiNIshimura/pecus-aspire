@@ -303,7 +303,7 @@ export default function CreateWorkspaceItem({
                     id="subject"
                     name="subject"
                     type="text"
-                    placeholder="例：新しいタスクの件名"
+                    placeholder="例：新しいアイテムの件名"
                     className={`input input-bordered w-full ${shouldShowError('subject') ? 'input-error' : ''}`}
                     value={formData.subject}
                     onChange={(e) => handleFieldChange('subject', e.target.value)}
