@@ -131,29 +131,53 @@ export function detect400ValidationError(error: unknown): ErrorResponse | undefi
 }
 
 export function detect404ValidationError(error: unknown): ErrorResponse | undefined {
-  if ((Axios.isAxiosError(error) && error.response?.status === 404)||
-    Axios.isAxiosError(error) && error.response?.status === 404) {
-    console.error('Not Found error detected:', error.message);
-    return {
-      success: false,
-      error: 'not_found',
-      message: '対象が見つかりません。',
-    };
+  let body;
+  if (isApiError(error) && error.status === 404) {
+    body = error.body ?? {};
+  } else if (Axios.isAxiosError(error) && error.response?.status === 404) {
+    body = error.response.data ?? {};
+  } else {
+    return undefined;
   }
-  return undefined;
+
+  const message =
+    (typeof body === "object" &&
+    body !== null &&
+    "message" in body
+      ? (body as Record<string, unknown>).message
+      : null) || '対象が見つかりません。';
+
+  console.error('Not Found error detected:', message);
+  return {
+    success: false,
+    error: 'not_found',
+    message: String(message),
+  };
 }
 
 export function detect403ValidationError(error: unknown): ErrorResponse | undefined {
-  if ((isApiError(error) && error.status === 403) ||
-    (Axios.isAxiosError(error) && error.response?.status === 403)) {
-    console.error('Forbidden error detected:', error.message);
-    return {
-      success: false,
-      error: 'forbidden',
-      message: 'アクセスが禁止されています。',
-    };
+  let body;
+  if (isApiError(error) && error.status === 403) {
+    body = error.body ?? {};
+  } else if (Axios.isAxiosError(error) && error.response?.status === 403) {
+    body = error.response.data ?? {};
+  } else {
+    return undefined;
   }
-  return undefined;
+
+  const message =
+    (typeof body === "object" &&
+    body !== null &&
+    "message" in body
+      ? (body as Record<string, unknown>).message
+      : null) || 'アクセスが禁止されています。';
+
+  console.error('Forbidden error detected:', message);
+  return {
+    success: false,
+    error: 'forbidden',
+    message: String(message),
+  };
 }
 
 /**
@@ -187,7 +211,112 @@ export function detectMemberHasAssignmentsError(error: unknown): WorkspaceMember
   return null;
 }
 
+/**
+ * エラーからHTTPステータスコードを抽出
+ */
+function getHttpStatus(error: unknown): number | undefined {
+  if (isApiError(error)) {
+    return error.status;
+  }
+  if (Axios.isAxiosError(error)) {
+    return error.response?.status;
+  }
+  return undefined;
+}
+
+/**
+ * APIエラーからレスポンスボディのメッセージを抽出するヘルパー
+ * 500系エラーの場合は null を返す（セキュリティ上、詳細を露出しない）
+ */
+function extractBodyMessage(error: unknown): string | null {
+  const status = getHttpStatus(error);
+
+  // 500系エラーの場合は body.message を使わない（セキュリティ対策）
+  if (status !== undefined && status >= 500) {
+    return null;
+  }
+
+  let body: unknown;
+
+  if (isApiError(error)) {
+    body = error.body;
+  } else if (Axios.isAxiosError(error)) {
+    body = error.response?.data;
+  } else if (typeof error === 'object' && error !== null && 'body' in error) {
+    body = (error as { body: unknown }).body;
+  }
+
+  if (typeof body === 'object' && body !== null && 'message' in body) {
+    return String((body as Record<string, unknown>).message);
+  }
+
+  return null;
+}
+
+/**
+ * 500系サーバーエラーを検出
+ * セキュリティ上、詳細メッセージは返さずデフォルトメッセージを使用
+ */
+export function detect500ServerError(error: unknown, defaultMessage?: string): ErrorResponse | undefined {
+  const status = getHttpStatus(error);
+
+  if (status !== undefined && status >= 500) {
+    console.error('Server error detected:', status);
+    return {
+      success: false,
+      error: 'server',
+      message: defaultMessage || 'サーバーエラーが発生しました。しばらく経ってから再度お試しください。',
+    };
+  }
+  return undefined;
+}
+
+/**
+ * エラーレスポンスを統一的に解析して ErrorResponse を返す
+ *
+ * 処理順序:
+ * 1. 500+ Server Error → server エラー（body.message は使わない、セキュリティ対策）
+ * 2. 400 Bad Request → validation エラー（body.message を優先）
+ * 3. 401 Unauthorized → unauthorized エラー
+ * 4. 403 Forbidden → forbidden エラー（body.message を優先）
+ * 5. 404 Not Found → not_found エラー（body.message を優先）
+ * 6. その他 → server エラー（body.message を優先、なければ defaultMessage）
+ *
+ * 注意: 409 Conflict は detectConcurrencyError または detectMemberHasAssignmentsError で
+ *       先にハンドルすること（parseErrorResponse では汎用的な server エラーとして扱われる）
+ */
 export const parseErrorResponse = (error: unknown, defaultMessage?: string): ErrorResponse => {
+  // 500+ Server Error: 詳細を隠蔽（セキュリティ対策）
+  const error500 = detect500ServerError(error, defaultMessage);
+  if (error500) return error500;
+
+  // 400 Bad Request: バリデーションエラー
+  const error400 = detect400ValidationError(error);
+  if (error400) return error400;
+
+  // 401 Unauthorized: 認証エラー
+  const error401 = detect401ValidationError(error);
+  if (error401) return error401;
+
+  // 403 Forbidden: 権限エラー
+  const error403 = detect403ValidationError(error);
+  if (error403) return error403;
+
+  // 404 Not Found: リソース未検出エラー
+  const error404 = detect404ValidationError(error);
+  if (error404) return error404;
+
+  // その他のエラー: body.message を優先的に抽出
+  const bodyMessage = extractBodyMessage(error);
+  if (bodyMessage) {
+    return {
+      success: false,
+      error: 'server',
+      message: bodyMessage,
+    };
+  }
+
+  // 文字列エラー
   if (typeof error === 'string') {
     return {
       success: false,
@@ -196,15 +325,17 @@ export const parseErrorResponse = (error: unknown, defaultMessage?: string): Err
     };
   }
 
+  // Axios エラー（body.message がない場合）
   if (Axios.isAxiosError(error)) {
     return {
       success: false,
       error: 'server',
-      message: error.message || defaultMessage || 'An unexpected error occurred',
+      message: defaultMessage || 'An unexpected error occurred',
     };
   }
 
-  if (error instanceof Error) {
+  // 一般的な Error オブジェクト（ApiError 以外）
+  if (error instanceof Error && !isApiError(error)) {
     return {
       success: false,
       error: 'server',
@@ -212,22 +343,7 @@ export const parseErrorResponse = (error: unknown, defaultMessage?: string): Err
     };
   }
 
-  if (typeof error === 'object' && error !== null) {
-    if ('message' in error) {
-      return {
-        success: false,
-        error: 'server',
-        message: (error.message as string) || defaultMessage || 'An unexpected error occurred',
-      };
-    }
-    if ('body' in error && typeof error.body === 'object' && error.body !== null && 'message' in error.body) {
-      return {
-        success: false,
-        error: 'server',
-        message: (error.body?.message as string) || defaultMessage || 'An unexpected error occurred',
-      };
-    }
-  }
+  // デフォルト
   return {
     success: false,
     error: 'server',

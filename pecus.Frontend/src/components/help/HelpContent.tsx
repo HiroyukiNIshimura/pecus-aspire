@@ -69,7 +69,16 @@ export function HelpContent({ markdown }: HelpContentProps) {
   };
 
   return (
-    <div className="notion-like-editor">
+    <div className="notion-like-editor help-content">
+      {/* イメージのスタイル調整 for Help Content */}
+      <style>{`
+        .help-content .editor-image img {
+          max-width: 100% !important;
+          height: auto !important;
+          border-radius: 0.5rem;
+          border: 1px solid oklch(var(--bc) / 0.2);
+        }
+      `}</style>
       <LexicalComposer initialConfig={initialConfig}>
         <TableContext>
           <HelpContentInner markdown={markdown} />
