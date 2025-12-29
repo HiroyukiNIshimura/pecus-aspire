@@ -119,21 +119,19 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
           <div className="card-body">
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               <div className="form-control">
-                <label htmlFor="canReceiveEmail" className="label cursor-pointer justify-start gap-4">
+                <label htmlFor="canReceiveEmail" className="flex items-center gap-3 cursor-pointer">
                   <input
                     id="canReceiveEmail"
                     name="canReceiveEmail"
                     type="checkbox"
-                    className="checkbox checkbox-primary"
+                    className="switch switch-primary"
                     checked={!!formData.canReceiveEmail}
                     onChange={(e) => handleFieldChange('canReceiveEmail', e.target.checked)}
                     disabled={isSubmitting}
                   />
-                  <div>
-                    <span className="label-text font-semibold">メール通知を受信する</span>
-                    <p className="text-sm text-base-content/70 mt-1">システムからの通知メールを受信します</p>
-                  </div>
+                  <span className="label-text font-semibold">メール通知を受信する</span>
                 </label>
+                <p className="text-sm text-base-content/70 ml-10">システムからの通知メールを受信します</p>
               </div>
 
               <div className="form-control">
