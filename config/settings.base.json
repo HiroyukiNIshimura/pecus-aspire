@@ -1,16 +1,39 @@
 {
   "_comment": "このファイルが設定の唯一のソースです。scripts/generate-appsettings.js で各プロジェクト用に生成されます。",
 
-  "_parameters": {
-    "username": "pecus",
-    "password": "",
-    "dataBasePath": "../data"
+  "_infrastructure": {
+    "_comment": "Docker/Aspire 共通のインフラ設定",
+    "dataPath": "../data",
+    "postgres": {
+      "user": "pecus",
+      "password": "",
+      "db": "pecusdb"
+    },
+    "redis": {
+      "port": 6379
+    },
+    "ports": {
+      "webapi": 7265,
+      "frontend": 3000,
+      "backfire": 5010,
+      "lexicalConverter": 5100
+    },
+    "urls": {
+      "frontend": "https://localhost:3000",
+      "webapiPublic": "https://localhost:7265",
+      "lexicalConverterInternal": "http://localhost:5100"
+    },
+    "docker": {
+      "_comment": "Docker Compose 内部ホスト名（本番用）",
+      "lexicalConverterHost": "lexicalconverter",
+      "postgresHost": "postgres",
+      "redisHost": "redis",
+      "redisFrontendHost": "redis-frontend",
+      "webapiHost": "pecusapi"
+    }
   },
 
   "_shared": {
-    "Frontend": {
-      "Endpoint": "https://localhost:3000"
-    },
     "LexicalConverter": {
       "Endpoint": "http://localhost:5100"
     },
@@ -163,8 +186,7 @@
     },
     "WeeklyReport": {
       "DeliveryHour": 8,
-      "DeliveryMinute": 0,
-      "DashboardBaseUrl": ""
+      "DeliveryMinute": 0
     },
     "MaintenanceNotification": {
       "Enabled": true

@@ -4,6 +4,28 @@
 
 このディレクトリには、Pecus Aspire（Coati）を本番環境にデプロイするための Docker Compose 構成が含まれています。
 
+## 設定ファイルの役割分離
+
+| ファイル | 用途 | 管理対象 |
+|----------|------|----------|
+| `config/settings.base.json` | アプリ設定（共有） | Git管理 |
+| `config/settings.base.prod.json` | アプリ設定（本番シークレット） | **Git管理外** |
+| `deploy/.env` | Docker/インフラ設定 | **Git管理外** |
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ config/settings.base.prod.json （アプリ設定）                    │
+│ - JWT シークレット、AI APIキー、メール認証                        │
+│ - BackOffice パスワード、データベースシード                       │
+│ - その他アプリケーションレベルの設定                              │
+├─────────────────────────────────────────────────────────────────┤
+│ deploy/.env （Docker/インフラ設定）                              │
+│ - PostgreSQL ユーザー/パスワード（コンテナ起動用）               │
+│ - ポート番号（API_PORT, FRONTEND_PORT）                          │
+│ - 公開URL（FRONTEND_URL, NEXT_PUBLIC_API_URL）                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## アーキテクチャ
 
 ```
@@ -120,14 +142,24 @@ cd deploy
 cp .env.example .env
 ```
 
-`.env` ファイルを編集:
+`.env` ファイルを編集（Docker/インフラ設定のみ）:
 
 ```bash
-# 必須設定（settings.base.prod.json と同じ値を設定）
+# PostgreSQL（コンテナ起動用）
+POSTGRES_USER=pecus
 POSTGRES_PASSWORD=secure_postgres_password
+
+# ポート番号
+API_PORT=7265
+FRONTEND_PORT=3000
+
+# 公開URL
 FRONTEND_URL=https://your-domain.com
 NEXT_PUBLIC_API_URL=https://your-domain.com/api
 ```
+
+> **Note**: JWT、AI、メール等のアプリ設定は `config/settings.base.prod.json` で管理します。
+> `.env` には Docker/インフラ設定のみを記述してください。
 
 ### 4. Next.js の設定確認
 

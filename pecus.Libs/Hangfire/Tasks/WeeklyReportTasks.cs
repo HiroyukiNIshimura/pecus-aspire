@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Libs.WeeklyReport;
 using Pecus.Libs.WeeklyReport.Models;
 
@@ -18,6 +19,7 @@ public class WeeklyReportTasks
     private readonly ApplicationDbContext _dbContext;
     private readonly WeeklyReportDataCollector _dataCollector;
     private readonly IEmailService _emailService;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
 
     /// <summary>
     /// コンストラクタ
@@ -26,22 +28,25 @@ public class WeeklyReportTasks
     /// <param name="dbContext">DBコンテキスト</param>
     /// <param name="dataCollector">データ収集サービス</param>
     /// <param name="emailService">メール送信サービス</param>
+    /// <param name="frontendUrlResolver">フロントエンドURL解決</param>
     public WeeklyReportTasks(
         ILogger<WeeklyReportTasks> logger,
         ApplicationDbContext dbContext,
         WeeklyReportDataCollector dataCollector,
-        IEmailService emailService)
+        IEmailService emailService,
+        FrontendUrlResolver frontendUrlResolver)
     {
         _logger = logger;
         _dbContext = dbContext;
         _dataCollector = dataCollector;
         _emailService = emailService;
+        _frontendUrlResolver = frontendUrlResolver;
     }
 
     /// <summary>
     /// 毎日実行: 今日が配信日の組織を検出し、レポート生成ジョブをキューに追加
     /// </summary>
-    public async Task CheckAndDispatchWeeklyReportsAsync(string dashboardBaseUrl)
+    public async Task CheckAndDispatchWeeklyReportsAsync()
     {
         _logger.LogInformation("WeeklyReport: Checking organizations for today's delivery...");
 
@@ -65,17 +70,20 @@ public class WeeklyReportTasks
         {
             // 組織ごとにレポート生成ジョブをキュー
             BackgroundJob.Enqueue<WeeklyReportTasks>(
-                task => task.GenerateAndSendWeeklyReportAsync(org.OrganizationId, org.Name, dashboardBaseUrl));
+                task => task.GenerateAndSendWeeklyReportAsync(org.OrganizationId, org.Name));
         }
     }
 
     /// <summary>
     /// 組織単位: レポートを生成してメール送信
     /// </summary>
-    public async Task GenerateAndSendWeeklyReportAsync(int organizationId, string organizationName, string dashboardBaseUrl)
+    public async Task GenerateAndSendWeeklyReportAsync(int organizationId, string organizationName)
     {
         _logger.LogInformation("WeeklyReport: Generating report for organization {OrgId} ({OrgName})",
             organizationId, organizationName);
+
+        // フロントエンドURLを取得
+        var dashboardBaseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
 
         try
         {

@@ -67,14 +67,16 @@ check_prerequisites() {
         log_error "config/settings.base.prod.json が見つかりません"
         log_info "テンプレートからコピーしてください:"
         log_info "  cp config/settings.base.prod.json.example config/settings.base.prod.json"
+        log_info "このファイルにはアプリ設定（JWT, AI, メール等）を記述します"
         exit 1
     fi
 
-    # .env ファイル
+    # .env ファイル（Docker/インフラ設定）
     if [ ! -f "$DEPLOY_DIR/.env" ]; then
         log_error "deploy/.env が見つかりません"
         log_info "テンプレートからコピーしてください:"
         log_info "  cp deploy/.env.example deploy/.env"
+        log_info "このファイルにはDocker設定（ポート, PostgreSQL等）を記述します"
         exit 1
     fi
 

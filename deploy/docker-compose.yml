@@ -11,13 +11,13 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-pecus}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      POSTGRES_DB: pecusdb
+      POSTGRES_DB: ${POSTGRES_DB:-pecusdb}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - ${DATA_PATH:?DATA_PATH is required}/postgres:/var/lib/postgresql/data
     networks:
       - pecus-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pecus} -d pecusdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pecus} -d ${POSTGRES_DB:-pecusdb}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes
     volumes:
-      - redis-data:/data
+      - ${DATA_PATH}/redis:/data
     networks:
       - pecus-network
     healthcheck:
@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes
     volumes:
-      - redis-frontend-data:/data
+      - ${DATA_PATH}/redis-frontend:/data
     networks:
       - pecus-network
     healthcheck:
@@ -57,7 +57,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
   # ============================================
   # Lexical Converter (gRPC Service)
   # ============================================
@@ -91,8 +90,8 @@ services:
     restart: "no"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__pecusdb: "Host=postgres;Port=5432;Database=pecusdb;Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
-      LexicalConverter__Endpoint: "http://lexicalconverter:5100"
+      ConnectionStrings__pecusdb: "Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-pecusdb};Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
+      LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
     depends_on:
       postgres:
         condition: service_healthy
@@ -112,14 +111,15 @@ services:
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__pecusdb: "Host=postgres;Port=5432;Database=pecusdb;Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
-      ConnectionStrings__redis: "redis:6379"
-      LexicalConverter__Endpoint: "http://lexicalconverter:5100"
+      ConnectionStrings__pecusdb: "Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-pecusdb};Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__redis: "${REDIS_HOST:-redis}:6379"
+      LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
       Frontend__Endpoint: ${FRONTEND_URL:-https://localhost:3000}
       UploadsCleanup__UploadsBasePath: /app/data/uploads
       MaintenanceNotification__NotificationsPath: /app/data/notifications
     volumes:
-      - pecus-data:/app/data
+      - ${DATA_PATH}/uploads:/app/data/uploads
+      - ${DATA_PATH}/notifications:/app/data/notifications
     depends_on:
       postgres:
         condition: service_healthy
@@ -142,16 +142,17 @@ services:
     container_name: pecus-webapi
     restart: unless-stopped
     ports:
-      - "${API_PORT:-7265}:8080"
+      - "${WEBAPI_PORT:-7265}:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: "http://+:8080"
-      ConnectionStrings__pecusdb: "Host=postgres;Port=5432;Database=pecusdb;Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
-      ConnectionStrings__redis: "redis:6379"
-      LexicalConverter__Endpoint: "http://lexicalconverter:5100"
+      ConnectionStrings__pecusdb: "Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-pecusdb};Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__redis: "${REDIS_HOST:-redis}:6379"
+      LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
       Frontend__Endpoint: ${FRONTEND_URL:-https://localhost:3000}
+      Pecus__FileUpload__StoragePath: /app/data/uploads
     volumes:
-      - pecus-data:/app/data
+      - ${DATA_PATH}/uploads:/app/data/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -187,8 +188,8 @@ services:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
-      PECUS_API_URL: "http://pecusapi:8080"
-      REDIS_URL: "redis://redis-frontend:6379"
+      PECUS_API_URL: "http://${WEBAPI_HOST:-pecusapi}:8080"
+      REDIS_URL: "redis://${REDIS_FRONTEND_HOST:-redis-frontend}:6379"
     depends_on:
       pecusapi:
         condition: service_healthy
@@ -197,11 +198,8 @@ services:
     networks:
       - pecus-network
 
-volumes:
-  postgres-data:
-  redis-data:
-  redis-frontend-data:
-  pecus-data:
+# ボリュームはすべて ${DATA_PATH} ディレクトリにバインドマウント
+# 名前付きボリュームは使用しない（バックアップ・移行を容易にするため）
 
 networks:
   pecus-network:

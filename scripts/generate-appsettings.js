@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 /**
- * config/settings.base.json から各プロジェクト用の appsettings.json を生成するスクリプト
+ * config/settings.base.json から各プロジェクト用の appsettings.json と deploy/.env を生成するスクリプト
  *
  * 使い方:
- *   node scripts/generate-appsettings.js           # base のみ
+ *   node scripts/generate-appsettings.js           # base のみ（開発用）
  *   node scripts/generate-appsettings.js -D        # base + settings.base.dev.json をマージ
- *   node scripts/generate-appsettings.js -P        # base + settings.base.prod.json をマージ
+ *   node scripts/generate-appsettings.js -P        # base + settings.base.prod.json をマージ（本番用）
  *   node scripts/generate-appsettings.js --env dev # 上記 -D と同じ
  *
- * 環境変数で値を上書き可能（本番用）:
- *   POSTGRES_USERNAME, POSTGRES_PASSWORD, FRONTEND_URL, LEXICAL_CONVERTER_URL, DATA_BASE_PATH
- *   SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, SMTP_FROM_EMAIL, SMTP_FROM_NAME
- *   AI_PROVIDER, AI_MODEL, AI_API_KEY
+ * 生成されるファイル:
+ *   - pecus.AppHost/appsettings.json   (Aspire 開発環境用)
+ *   - pecus.WebApi/appsettings.json
+ *   - pecus.BackFire/appsettings.json
+ *   - pecus.DbManager/appsettings.json
+ *   - deploy/.env                      (Docker Compose 本番環境用、-P 指定時のみ)
  */
 
 const fs = require('fs');
@@ -52,23 +54,31 @@ function deepMerge(target, source) {
 }
 
 function applyEnvOverrides(config) {
-  // Parameters
-  if (process.env.POSTGRES_USERNAME) {
-    config._parameters.username = process.env.POSTGRES_USERNAME;
+  // Infrastructure (PostgreSQL)
+  if (process.env.POSTGRES_USER) {
+    config._infrastructure.postgres.user = process.env.POSTGRES_USER;
   }
   if (process.env.POSTGRES_PASSWORD) {
-    config._parameters.password = process.env.POSTGRES_PASSWORD;
+    config._infrastructure.postgres.password = process.env.POSTGRES_PASSWORD;
   }
-  if (process.env.DATA_BASE_PATH) {
-    config._parameters.dataBasePath = process.env.DATA_BASE_PATH;
+  if (process.env.DATA_PATH) {
+    config._infrastructure.dataPath = process.env.DATA_PATH;
   }
 
-  // Frontend & LexicalConverter
+  // URLs
   if (process.env.FRONTEND_URL) {
-    config._shared.Frontend.Endpoint = process.env.FRONTEND_URL;
+    config._infrastructure.urls.frontend = process.env.FRONTEND_URL;
   }
-  if (process.env.LEXICAL_CONVERTER_URL) {
-    config._shared.LexicalConverter.Endpoint = process.env.LEXICAL_CONVERTER_URL;
+  if (process.env.WEBAPI_PUBLIC_URL) {
+    config._infrastructure.urls.webapiPublic = process.env.WEBAPI_PUBLIC_URL;
+  }
+
+  // Ports
+  if (process.env.WEBAPI_PORT) {
+    config._infrastructure.ports.webapi = parseInt(process.env.WEBAPI_PORT, 10);
+  }
+  if (process.env.FRONTEND_PORT) {
+    config._infrastructure.ports.frontend = parseInt(process.env.FRONTEND_PORT, 10);
   }
 
   // Email
@@ -113,11 +123,6 @@ function applyEnvOverrides(config) {
     config.webapi.Pecus.Jwt.ValidAudience = process.env.JWT_VALID_AUDIENCE;
   }
 
-  // WeeklyReport (BackFire only)
-  if (process.env.WEEKLY_REPORT_DASHBOARD_URL) {
-    config.backfire.WeeklyReport.DashboardBaseUrl = process.env.WEEKLY_REPORT_DASHBOARD_URL;
-  }
-
   return config;
 }
 
@@ -158,24 +163,38 @@ function generate() {
 
   const config = loadConfig(env);
 
-  const { _comment, _parameters, _shared, ...projects } = config;
+  const { _comment, _infrastructure, _shared, ...projects } = config;
 
-  // pecus.AppHost/appsettings.json
+  // pecus.AppHost/appsettings.json (Aspire 開発環境用)
   const appHostConfig = {
-    Parameters: _parameters,
+    Infrastructure: _infrastructure,
   };
   const appHostPath = path.join(ROOT_DIR, 'pecus.AppHost', 'appsettings.json');
   fs.writeFileSync(appHostPath, JSON.stringify(appHostConfig, null, 2) + '\n');
   console.log('Generated:', appHostPath);
 
   // pecus.WebApi/appsettings.json
-  const webapiConfig = deepMerge(_shared, projects.webapi);
+  const webapiConfig = {
+    ..._shared,
+    ...projects.webapi,
+    // Frontend URL を追加
+    Frontend: {
+      Endpoint: _infrastructure.urls.frontend,
+    },
+  };
   const webapiPath = path.join(ROOT_DIR, 'pecus.WebApi', 'appsettings.json');
   fs.writeFileSync(webapiPath, JSON.stringify(webapiConfig, null, 2) + '\n');
   console.log('Generated:', webapiPath);
 
   // pecus.BackFire/appsettings.json
-  const backfireConfig = deepMerge(_shared, projects.backfire);
+  const backfireConfig = {
+    ..._shared,
+    ...projects.backfire,
+    // Frontend URL を追加
+    Frontend: {
+      Endpoint: _infrastructure.urls.frontend,
+    },
+  };
   const backfirePath = path.join(ROOT_DIR, 'pecus.BackFire', 'appsettings.json');
   fs.writeFileSync(backfirePath, JSON.stringify(backfireConfig, null, 2) + '\n');
   console.log('Generated:', backfirePath);
@@ -186,7 +205,55 @@ function generate() {
   fs.writeFileSync(dbmanagerPath, JSON.stringify(dbmanagerConfig, null, 2) + '\n');
   console.log('Generated:', dbmanagerPath);
 
-  console.log('\nDone! Generated 4 appsettings.json files.');
+  // deploy/.env (本番用、-P 指定時のみ生成)
+  if (env === 'prod') {
+    generateDockerEnv(_infrastructure, _shared, projects);
+  }
+
+  console.log(`\nDone! Generated ${env === 'prod' ? '5' : '4'} files.`);
+}
+
+/**
+ * Docker Compose 用の .env ファイルを生成
+ */
+function generateDockerEnv(infra, shared, projects) {
+  const docker = infra.docker || {};
+  const lexicalConverterPort = infra.ports.lexicalConverter || 5100;
+
+  const lines = [
+    '# ============================================',
+    '# Generated from config/settings.base.prod.json',
+    '# Do NOT edit this file directly!',
+    '# ============================================',
+    '',
+    '# PostgreSQL',
+    `POSTGRES_USER=${infra.postgres.user}`,
+    `POSTGRES_PASSWORD=${infra.postgres.password}`,
+    `POSTGRES_DB=${infra.postgres.db}`,
+    '',
+    '# Data Path (host directory for volumes)',
+    `DATA_PATH=${infra.dataPath}`,
+    '',
+    '# Ports (external)',
+    `WEBAPI_PORT=${infra.ports.webapi}`,
+    `FRONTEND_PORT=${infra.ports.frontend}`,
+    '',
+    '# URLs (public)',
+    `FRONTEND_URL=${infra.urls.frontend}`,
+    `NEXT_PUBLIC_API_URL=${infra.urls.webapiPublic}`,
+    '',
+    '# Docker internal hosts and URLs',
+    `LEXICAL_CONVERTER_URL=http://${docker.lexicalConverterHost || 'lexicalconverter'}:${lexicalConverterPort}`,
+    `POSTGRES_HOST=${docker.postgresHost || 'postgres'}`,
+    `REDIS_HOST=${docker.redisHost || 'redis'}`,
+    `REDIS_FRONTEND_HOST=${docker.redisFrontendHost || 'redis-frontend'}`,
+    `WEBAPI_HOST=${docker.webapiHost || 'pecusapi'}`,
+    '',
+  ];
+
+  const envPath = path.join(ROOT_DIR, 'deploy', '.env');
+  fs.writeFileSync(envPath, lines.join('\n') + '\n');
+  console.log('Generated:', envPath);
 }
 
 generate();

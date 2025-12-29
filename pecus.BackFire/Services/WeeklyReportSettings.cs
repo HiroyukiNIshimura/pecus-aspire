@@ -19,9 +19,4 @@ public class WeeklyReportSettings
     /// 配信時刻（分）デフォルト: 0分
     /// </summary>
     public int DeliveryMinute { get; set; } = 0;
-
-    /// <summary>
-    /// ダッシュボードのベースURL（メール内のリンク用）
-    /// </summary>
-    public string DashboardBaseUrl { get; set; } = string.Empty;
 }

@@ -25,7 +25,7 @@ public static class WeeklyReportJobScheduler
         // 毎日指定時刻に実行（各組織の配信曜日を確認してキュー）
         RecurringJob.AddOrUpdate<WeeklyReportTasks>(
             "WeeklyReportScheduler",
-            task => task.CheckAndDispatchWeeklyReportsAsync(settings.DashboardBaseUrl),
+            task => task.CheckAndDispatchWeeklyReportsAsync(),
             Cron.Daily(settings.DeliveryHour, settings.DeliveryMinute)
         );
     }

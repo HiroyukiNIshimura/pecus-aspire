@@ -1,19 +1,35 @@
 {
   "_comment": "本番環境用のオーバーライド設定。CI/CD で環境変数から生成するか、シークレット管理ツールから取得します。",
 
-  "_parameters": {
-    "username": "pecus",
-    "password": "",
-    "dataBasePath": "/app/data"
+  "_infrastructure": {
+    "_comment": "Docker/本番環境のインフラ設定",
+    "dataPath": "/var/pecus/data",
+    "postgres": {
+      "user": "pecus",
+      "password": "CHANGE_ME_SECURE_PASSWORD",
+      "db": "pecusdb"
+    },
+    "ports": {
+      "webapi": 7265,
+      "frontend": 3000,
+      "lexicalConverter": 5100
+    },
+    "urls": {
+      "frontend": "https://your-domain.com",
+      "webapiPublic": "https://your-domain.com/api",
+      "lexicalConverterInternal": "http://lexicalconverter:5100"
+    },
+    "docker": {
+      "_comment": "Docker Compose 内部ホスト名（通常変更不要）",
+      "lexicalConverterHost": "lexicalconverter",
+      "postgresHost": "postgres",
+      "redisHost": "redis",
+      "redisFrontendHost": "redis-frontend",
+      "webapiHost": "pecusapi"
+    }
   },
 
   "_shared": {
-    "Frontend": {
-      "Endpoint": ""
-    },
-    "LexicalConverter": {
-      "Endpoint": "http://lexicalconverter:5100"
-    },
     "Email": {
       "SmtpHost": "",
       "SmtpPort": 587,
@@ -37,19 +53,10 @@
         "IssuerSigningKey": "",
         "ValidIssuer": "",
         "ValidAudience": ""
-      },
-      "FileUpload": {
-        "StoragePath": "/app/data/uploads"
       }
     },
     "Security": {
       "AllowedFrontendUrls": []
-    }
-  },
-
-  "backfire": {
-    "WeeklyReport": {
-      "DashboardBaseUrl": ""
     }
   },
 

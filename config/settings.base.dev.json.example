@@ -1,8 +1,10 @@
 {
   "_comment": "開発環境用のオーバーライド設定。settings.base.json にマージされます。このファイルをコピーして settings.base.dev.json を作成してください。",
 
-  "_parameters": {
-    "password": "P@ssw0rd"
+  "_infrastructure": {
+    "postgres": {
+      "password": "P@ssw0rd"
+    }
   },
 
   "_shared": {

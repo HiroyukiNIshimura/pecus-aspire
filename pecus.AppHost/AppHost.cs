@@ -17,8 +17,13 @@ try
     // Serilogを使用
     builder.Services.AddSerilog(dispose: true);
 
-    var username = builder.AddParameter("username", secret: true);
-    var password = builder.AddParameter("password", secret: true);
+    // Infrastructure 設定を読み込み
+    var infraConfig = builder.Configuration.GetSection("Infrastructure");
+    var postgresUser = infraConfig["postgres:user"] ?? "pecus";
+    var postgresPassword = infraConfig["postgres:password"] ?? "";
+
+    var username = builder.AddParameter("username", postgresUser);
+    var password = builder.AddParameter("password", postgresPassword);
 
     var redis = builder.AddRedis("redis");
 
@@ -29,11 +34,10 @@ try
     var pecusDb = postgres.AddDatabase("pecusdb");
 
     // 永続データのベースパス（開発時: ../data、本番時: /mnt/pecus-data など）
-    // appsettings.json の Parameters:dataBasePath から取得
-    var dataBasePathValue = builder.Configuration["Parameters:dataBasePath"] ?? "../data";
-    var dataBasePathResolved = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.AppHost", dataBasePathValue));
-    var uploadsPath = Path.Combine(dataBasePathResolved, "uploads");
-    Log.Information("Data base path: {DataBasePath}", dataBasePathResolved);
+    var dataPathValue = infraConfig["dataPath"] ?? "../data";
+    var dataPathResolved = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.AppHost", dataPathValue));
+    var uploadsPath = Path.Combine(dataPathResolved, "uploads");
+    Log.Information("Data path: {DataPath}", dataPathResolved);
     Log.Information("Uploads path: {UploadsPath}", uploadsPath);
 
     // Protos フォルダの絶対パスを取得

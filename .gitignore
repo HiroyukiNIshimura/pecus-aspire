@@ -147,6 +147,9 @@ pecus.WebApi/appsettings.json
 pecus.BackFire/appsettings.json
 pecus.DbManager/appsettings.json
 
+# Generated deploy/.env (from config/settings.base.prod.json)
+deploy/.env
+
 # Local environment override (each developer manages locally)
 config/settings.base.dev.json
 
