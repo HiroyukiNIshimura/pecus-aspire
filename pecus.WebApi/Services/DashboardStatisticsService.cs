@@ -688,11 +688,12 @@ public class DashboardStatisticsService
                 CommentUserId = c.UserId,
                 CommentUsername = c.User.Username,
                 CommentUserAvatarUrl = IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: c.User.AvatarType,
-                    userId: c.User.Id,
-                    username: c.User.Username,
-                    email: c.User.Email,
-                    avatarPath: c.User.UserAvatarPath
+                    c.User.AvatarType,
+                    c.User.Id,
+                    c.User.Username,
+                    c.User.Email,
+                    c.User.UserAvatarPath,
+                    200
                 ),
                 TaskId = c.WorkspaceTaskId,
                 TaskSequence = c.WorkspaceTask!.Sequence,

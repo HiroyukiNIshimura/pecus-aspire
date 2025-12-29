@@ -2,17 +2,18 @@
 # pecus.WebApi Dockerfile
 # ============================================
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS base
+# Use Debian-based images for gRPC Tools compatibility (Alpine ARM64 has issues)
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview-noble AS base
 WORKDIR /app
 EXPOSE 8080
 
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install curl for healthcheck and Kerberos library for Npgsql
+RUN apt-get update && apt-get install -y --no-install-recommends curl libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
 
 # ============================================
 # Build stage
 # ============================================
-FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-noble AS build
 WORKDIR /src
 
 # Copy project files
@@ -27,15 +28,20 @@ RUN dotnet restore "pecus.WebApi/pecus.WebApi.csproj"
 COPY pecus.WebApi/ pecus.WebApi/
 COPY pecus.Libs/ pecus.Libs/
 COPY pecus.ServiceDefaults/ pecus.ServiceDefaults/
+COPY pecus.Protos/ pecus.Protos/
 
 WORKDIR /src/pecus.WebApi
-RUN dotnet build "pecus.WebApi.csproj" -c Release -o /app/build
+RUN dotnet build "pecus.WebApi.csproj" -c Release -o /app/build /p:SKIP_GRPC_CODEGEN=true
 
 # ============================================
-# Publish stage
+# Publish stage - use build output directly
 # ============================================
 FROM build AS publish
-RUN dotnet publish "pecus.WebApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# dotnet publish has issues with Web SDK in certain configurations
+# Use the build output directly
+RUN mkdir -p /app/publish && \
+    cp -r /app/build/* /app/publish/ && \
+    test -f /app/publish/pecus.WebApi.dll
 
 # ============================================
 # Final stage

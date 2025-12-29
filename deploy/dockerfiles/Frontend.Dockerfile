@@ -11,8 +11,8 @@ WORKDIR /app
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 
-COPY pecus.Frontend/package*.json ./
-RUN npm ci
+COPY pecus.Frontend/package.json pecus.Frontend/package-lock.json ./
+RUN npm ci --loglevel verbose
 
 # ============================================
 # Build stage
@@ -26,6 +26,13 @@ COPY pecus.Frontend/ ./
 # Build arguments for public env vars
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
+# Build-time dummy values for SSR pages that check env vars
+# These are only used during build, not at runtime
+ENV ConnectionStrings__redisFrontend="localhost:6379"
+ENV PECUS_API_URL="http://localhost:5000"
+ENV NEXTAUTH_URL="http://localhost:3000"
+ENV NEXTAUTH_SECRET="build-time-dummy-secret"
 
 # Build Next.js application
 RUN npm run build

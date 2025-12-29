@@ -686,7 +686,8 @@ public class WorkspaceService
                             w.Owner.Id,
                             w.Owner.Username,
                             w.Owner.Email,
-                            w.Owner.UserAvatarPath
+                            w.Owner.UserAvatarPath,
+                            200
                         ),
                         IsActive = w.Owner.IsActive,
                         LastLoginAt = w.Owner.LastLoginAt,

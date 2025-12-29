@@ -103,13 +103,21 @@ builder.Services.AddWeeklyReportServices();
 
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
+var redisConnectionString = builder.Configuration.GetConnectionString("redis");
+var redisStorage = new Hangfire.Redis.StackExchange.RedisStorage(
+    redisConnectionString,
+    new Hangfire.Redis.StackExchange.RedisStorageOptions { Prefix = "hangfire:", Db = 1 }
+);
+
 builder.Services.AddHangfire(
     (serviceProvider, config) =>
     {
-        var redis = builder.Configuration.GetConnectionString("redis");
-        config.UseRedisStorage(redis, new RedisStorageOptions { Prefix = "hangfire:", Db = 1 });
+        config.UseStorage(redisStorage);
     }
 );
+
+// JobStorage.Current を設定（RecurringJob 静的メソッド用）
+Hangfire.JobStorage.Current = redisStorage;
 
 builder.Services.AddHangfireServer();
 

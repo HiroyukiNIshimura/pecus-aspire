@@ -10,6 +10,7 @@ namespace Pecus.DbManager;
 /// </summary>
 internal class DbInitializer(
     IServiceProvider serviceProvider,
+    IHostApplicationLifetime applicationLifetime,
     ILogger<DbInitializer> logger
 ) : BackgroundService
 {
@@ -28,6 +29,14 @@ internal class DbInitializer(
         );
 
         await InitializeDatabaseAsync(dbContext, seeder, cancellationToken);
+
+        // 本番環境ではマイグレーション完了後にアプリケーションを終了
+        var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+        if (env.IsProduction())
+        {
+            logger.LogInformation("Production environment: shutting down after database initialization");
+            applicationLifetime.StopApplication();
+        }
     }
 
     public async Task InitializeDatabaseAsync(

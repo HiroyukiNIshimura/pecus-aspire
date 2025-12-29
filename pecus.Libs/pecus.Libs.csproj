@@ -28,17 +28,18 @@
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- gRPC コード生成: SKIP_GRPC_CODEGEN=true の場合は事前生成ファイルを使用 -->
+  <ItemGroup Condition="'$(SKIP_GRPC_CODEGEN)' != 'true'">
     <Protobuf Include="../pecus.Protos/lexical/lexical.proto" GrpcServices="Client" />
+    <!-- 事前生成ファイルを除外（重複防止） -->
+    <Compile Remove="Lexical/Generated/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="DB\Seed\playground.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <PropertyGroup>
+  </ItemGroup>  <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>

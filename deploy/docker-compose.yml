@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ============================================
   # PostgreSQL with PGroonga
@@ -13,7 +11,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-pecusdb}
     volumes:
-      - ${DATA_PATH:?DATA_PATH is required}/postgres:/var/lib/postgresql/data
+      # PostgreSQL 18+ requires mount at /var/lib/postgresql (not /var/lib/postgresql/data)
+      - ${DATA_PATH:?DATA_PATH is required}/postgres:/var/lib/postgresql
     networks:
       - pecus-network
     healthcheck:
