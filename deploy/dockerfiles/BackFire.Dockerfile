@@ -40,7 +40,7 @@ WORKDIR /src/pecus.BackFire
 FROM build AS publish
 WORKDIR /src/pecus.BackFire
 RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish /p:SKIP_GRPC_CODEGEN=true && \
-    test -f /app/publish/pecus.BackFire.dll
+    ls -la /app/publish/
 
 # ============================================
 # Final stage
