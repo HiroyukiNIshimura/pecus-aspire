@@ -29,15 +29,15 @@ COPY pecus.Libs/ pecus.Libs/
 COPY pecus.ServiceDefaults/ pecus.ServiceDefaults/
 COPY pecus.Protos/ pecus.Protos/
 
-WORKDIR /src/pecus.DbManager
-RUN dotnet build "pecus.DbManager.csproj" -c Release -o /app/build /p:SKIP_GRPC_CODEGEN=true
-
 # ============================================
-# Publish stage - use build output directly
+# Publish stage - use dotnet publish
 # ============================================
 FROM build AS publish
-RUN mkdir -p /app/publish && \
-    cp -r /app/build/* /app/publish/ && \
+WORKDIR /src/pecus.DbManager
+RUN dotnet publish "pecus.DbManager.csproj" -c Release -o /app/publish \
+    --self-contained false \
+    /p:SKIP_GRPC_CODEGEN=true \
+    /p:PublishReadyToRun=false && \
     ls -la /app/publish/ && \
     test -f /app/publish/pecus.DbManager.dll
 

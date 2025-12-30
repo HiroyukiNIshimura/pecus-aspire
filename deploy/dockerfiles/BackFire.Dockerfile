@@ -32,15 +32,15 @@ COPY pecus.ServiceDefaults/ pecus.ServiceDefaults/
 COPY pecus.DbManager/ pecus.DbManager/
 COPY pecus.Protos/ pecus.Protos/
 
-WORKDIR /src/pecus.BackFire
-RUN dotnet build "pecus.BackFire.csproj" -c Release -o /app/build /p:SKIP_GRPC_CODEGEN=true
-
 # ============================================
-# Publish stage - use build output directly
+# Publish stage - use dotnet publish
 # ============================================
 FROM build AS publish
-RUN mkdir -p /app/publish && \
-    cp -r /app/build/* /app/publish/ && \
+WORKDIR /src/pecus.BackFire
+RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish \
+    --self-contained false \
+    /p:SKIP_GRPC_CODEGEN=true \
+    /p:PublishReadyToRun=false && \
     ls -la /app/publish/ && \
     test -f /app/publish/pecus.BackFire.dll
 
