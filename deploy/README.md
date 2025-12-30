@@ -188,11 +188,14 @@ cd deploy
 # 通常デプロイ（設定生成 → 起動）
 sh deploy.sh
 
-# イメージを再ビルドしてデプロイ
+# イメージを再ビルドしてデプロイ（git pull も実行）
 sh deploy.sh --rebuild
 
 # 設定生成のみ（デプロイしない）
 sh deploy.sh --generate-only
+
+# DBを完全に初期化してデプロイ（⚠️ すべてのデータが削除されます）
+sh deploy.sh --reset-db
 ```
 
 **方法2: 手動で実行**
@@ -271,13 +274,21 @@ cat backup.sql | docker compose exec -T postgres psql -U pecus pecusdb
 
 ### Nginx
 
+> **Note**: 完全な nginx 設定ファイルは `deploy/nginx/coati.conf` にあります。
+> 以下は主要な設定の抜粋です。
+
 ```nginx
-upstream frontend {
-    server localhost:3000;
+upstream coati {
+    server 192.168.1.234:3000;  # Docker ホストの IP
 }
 
-upstream api {
-    server localhost:7265;
+upstream coati-api {
+    server 192.168.1.234:7265;  # Docker ホストの IP
+}
+
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
 }
 
 server {
@@ -287,33 +298,36 @@ server {
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
 
-    # Frontend
-    location / {
-        proxy_pass http://frontend;
+    # SignalR Hub (WebSocket) - /api/ より前に配置
+    location /api/hubs/ {
+        proxy_pass http://coati-api/hubs/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
+        proxy_set_header Connection $connection_upgrade;
         proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 86400s;
     }
 
-    # API
+    # Frontend API Routes (Next.js) - アバター画像等
+    location /api/images/ {
+        proxy_pass http://coati;
+    }
+
+    # WebAPI (.NET)
     location /api/ {
-        proxy_pass http://api/api/;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # SignalR WebSocket
-    location /hubs/ {
-        proxy_pass http://api/hubs/;
+        proxy_pass http://coati-api/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_read_timeout 86400s;
+    }
+
+    # Frontend (Next.js)
+    location / {
+        proxy_pass http://coati;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
     }
 }
 ```
@@ -330,11 +344,21 @@ docker compose logs dbmanager
 docker compose up -d dbmanager
 ```
 
+### DBを完全に初期化したい
+
+ボリュームを削除せずにDBをリセットしたい場合は `--reset-db` オプションを使用:
+
+```bash
+sh deploy.sh --reset-db
+```
+
+これにより `DbInitializer` が `EnsureDeletedAsync()` を実行し、DBを再作成します。
+
 ### API ヘルスチェックが失敗する
 
 ```bash
 # コンテナ内から確認
-docker compose exec pecusapi curl http://localhost:8080/health
+docker compose exec pecusapi curl http://localhost:7265/health
 
 # ログ確認
 docker compose logs pecusapi
@@ -375,6 +399,8 @@ pecus-aspire/
     ├── docker-compose.yml           # メイン Compose ファイル
     ├── .env                         # Docker 環境変数 (自動生成、.gitignore)
     ├── README.md                    # このファイル
+    ├── nginx/
+    │   └── coati.conf               # nginx リバースプロキシ設定
     └── dockerfiles/
         ├── WebApi.Dockerfile            # Web API
         ├── BackFire.Dockerfile          # Hangfire
