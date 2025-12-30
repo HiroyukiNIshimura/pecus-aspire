@@ -75,25 +75,6 @@ builder.Services.AddHealthChecks().AddCheck<DbInitializerHealthCheck>("DbInitial
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    // 開発環境専用: データベースリセットエンドポイント
-    app.MapPost(
-        "/reset-db",
-        async (
-            ApplicationDbContext dbContext,
-            DatabaseSeeder seeder,
-            DbInitializer dbInitializer,
-            CancellationToken cancellationToken
-        ) =>
-        {
-            // データベースを削除して再作成
-            await dbContext.Database.EnsureDeletedAsync(cancellationToken);
-            await dbInitializer.InitializeDatabaseAsync(dbContext, seeder, cancellationToken);
-        }
-    );
-}
-
 app.MapDefaultEndpoints();
 
 await app.RunAsync();

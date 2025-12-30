@@ -11,6 +11,7 @@ namespace Pecus.DbManager;
 internal class DbInitializer(
     IServiceProvider serviceProvider,
     IHostApplicationLifetime applicationLifetime,
+    IConfiguration configuration,
     ILogger<DbInitializer> logger
 ) : BackgroundService
 {
@@ -27,6 +28,17 @@ internal class DbInitializer(
             "Initializing pecus database",
             ActivityKind.Client
         );
+
+        // DB_RESET_MODE 環境変数をチェック
+        var resetMode = configuration["DB_RESET_MODE"];
+        var shouldReset = string.Equals(resetMode, "true", StringComparison.OrdinalIgnoreCase);
+
+        if (shouldReset)
+        {
+            logger.LogWarning("DB_RESET_MODE is enabled. Deleting and recreating database...");
+            await dbContext.Database.EnsureDeletedAsync(cancellationToken);
+            logger.LogInformation("Database deleted successfully");
+        }
 
         await InitializeDatabaseAsync(dbContext, seeder, cancellationToken);
 

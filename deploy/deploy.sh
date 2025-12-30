@@ -6,6 +6,7 @@
 #   ./deploy.sh                    # 通常デプロイ
 #   ./deploy.sh --rebuild          # イメージを再ビルドしてデプロイ
 #   ./deploy.sh --generate-only    # 設定生成のみ（デプロイしない）
+#   ./deploy.sh --reset-db         # DBを完全に初期化してデプロイ（データ全削除）
 # =============================================================================
 
 set -e
@@ -198,6 +199,7 @@ show_status() {
 main() {
     REBUILD=false
     GENERATE_ONLY=false
+    RESET_DB=false
 
     # 引数解析
     for arg in "$@"; do
@@ -208,12 +210,16 @@ main() {
             --generate-only)
                 GENERATE_ONLY=true
                 ;;
+            --reset-db)
+                RESET_DB=true
+                ;;
             --help|-h)
                 echo "使い方: $0 [オプション]"
                 echo ""
                 echo "オプション:"
                 echo "  --rebuild        イメージを再ビルドしてデプロイ"
                 echo "  --generate-only  設定生成のみ（デプロイしない）"
+                echo "  --reset-db       DBを完全に初期化してデプロイ（データ全削除）"
                 echo "  --help, -h       このヘルプを表示"
                 exit 0
                 ;;
@@ -235,6 +241,23 @@ main() {
 
     if [ "$REBUILD" = true ]; then
         build_images
+    fi
+
+    # DB初期化モードの設定
+    if [ "$RESET_DB" = true ]; then
+        echo ""
+        log_warn "========================================"
+        log_warn " 警告: DB初期化モードが有効です"
+        log_warn " すべてのデータが削除されます！"
+        log_warn "========================================"
+        echo ""
+        printf "続行しますか？ (yes/no): "
+        read -r CONFIRM
+        if [ "$CONFIRM" != "yes" ]; then
+            log_info "キャンセルしました"
+            exit 0
+        fi
+        export DB_RESET_MODE=true
     fi
 
     start_services
