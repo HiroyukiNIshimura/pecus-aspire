@@ -33,71 +33,9 @@ GET /api/dev/email-preview/index	テンプレート一覧をHTMLで表示（ブ�
 
 ## バグ
 
-### 本番環境
+Serverアクション
+pecus.Frontend/src/connectors/api/PecusApiClient.tsのparseErrorResponseは本来ハンドルできなかったその他のエラーのためのものなのに、エラーをまとめるために改竄されてる。
 
-Frontエンドの.envを作ってないバグ。
-エージェントが理解しないので今日はもうやめ。
-ビルド通らないからといってダミーセットし始めたやつ
-# Build-time dummy values for SSR pages that check env vars
-# These are only used during build, not at runtime
-ENV ConnectionStrings__redisFrontend="localhost:6379"
-ENV PECUS_API_URL="http://localhost:5000"
-ENV NEXTAUTH_URL="http://localhost:3000"
-ENV NEXTAUTH_SECRET="build-time-dummy-secret"
-
-   ▲ Next.js 16.0.10
-
-   - Local:         http://localhost:3000⁠
-
-   - Network:       http://0.0.0.0:3000⁠
-
-
- ✓ Starting...
-
- ✓ Ready in 42ms
-
-[Middleware] SessionId found: bc7bd655..., allowing access
-
- ⨯ Error: 環境変数 ConnectionStrings__redisFrontend が設定されていません
-
-    at module evaluation (build/server/chunks/ssr/_719d23a0._.js:139:86377)
-
-    at instantiateModule (build/server/chunks/ssr/[turbopack]_runtime.js:715:9)
-
-    at getOrInstantiateModuleFromParent (build/server/chunks/ssr/[turbopack]_runtime.js:738:12)
-
-    at Context.esmImport [as i] (build/server/chunks/ssr/[turbopack]_runtime.js:228:20)
-
-    at module evaluation (build/server/chunks/ssr/_1db09255._.js:2:9273)
-
-    at instantiateModule (build/server/chunks/ssr/[turbopack]_runtime.js:715:9)
-
-    at getOrInstantiateModuleFromParent (build/server/chunks/ssr/[turbopack]_runtime.js:738:12)
-
-    at Context.esmImport [as i] (build/server/chunks/ssr/[turbopack]_runtime.js:228:20)
-
-    at module evaluation (build/server/chunks/ssr/[root-of-the-server]__5347848c._.js:1:19759)
-
-    at instantiateModule (build/server/chunks/ssr/[turbopack]_runtime.js:715:9)
-
- ⨯ Error: 環境変数 ConnectionStrings__redisFrontend が設定されていません
-
-    at module evaluation (build/server/chunks/ssr/_719d23a0._.js:139:86377)
-
-    at instantiateModule (build/server/chunks/ssr/[turbopack]_runtime.js:715:9)
-
-    at getOrInstantiateModuleFromParent (build/server/chunks/ssr/[turbopack]_runtime.js:738:12)
-
-    at Context.esmImport [as i] (build/server/chunks/ssr/[turbopack]_runtime.js:228:20)
-
-    at module evaluation (build/server/chunks/ssr/_1db09255._.js:2:9273)
-
-    at instantiateModule (build/server/chunks/ssr/[turbopack]_runtime.js:715:9)
-
-    at getOrInstantiateModuleFromParent (build/server/chunks/ssr/[turbopack]_runtime.js:738:12)
-
-    at Context.esmImport [as i] (build/server/chunks/ssr/[turbopack]_runtime.js:228:20)
-
-    at module evaluation (build/server/chunks/ssr/[root-of-the-server]__5347848c._.js:1:19759)
-
-    at instantiateModule (build/server/chunks/ssr/[turbopack]_runtime.js:715:9)
+APIルーター
+pecus.Frontend/src/app/api/routerError.tsのparseRouterErrorもエラーをまとめてサーバーエラーにしてしまっている。
+折角NextResponseはそういうことができるようになっているのに😭
