@@ -13,6 +13,6 @@ public class UpdatePasswordRequest
 
     [Required(ErrorMessage = "新しいパスワードは必須です。")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$", ErrorMessage = "パスワードは大文字・小文字・数字を含む8文字以上で設定してください。")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[\x21-\x7E]{8,}$", ErrorMessage = "パスワードは大文字・小文字・数字を含む8文字以上で設定してください。")]
     public required string NewPassword { get; set; }
 }

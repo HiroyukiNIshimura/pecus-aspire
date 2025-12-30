@@ -22,7 +22,6 @@ export const currentPasswordSchema = z.string().min(1, '現在のパスワード
 
 /**
  * 新しいパスワード（WebAPI要件: 大小文字・数字必須）
- * パターン: ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$
  * 要件: 最小8文字、大文字・小文字・数字を必ず含む
  */
 export const newPasswordSchema = z

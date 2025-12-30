@@ -42,10 +42,9 @@ export const setPasswordSchema = z
       .string()
       .min(8, 'パスワードは8文字以上で入力してください。')
       .max(100, 'パスワードは100文字以内で入力してください。')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/,
-        'パスワードは大文字・小文字・数字を含む8文字以上で設定してください。',
-      ),
+      .regex(/[a-z]/, '小文字を含める必要があります。')
+      .regex(/[A-Z]/, '大文字を含める必要があります。')
+      .regex(/\d/, '数字を含める必要があります。'),
     confirmPassword: z.string().min(1, 'パスワード確認は必須です。'),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -68,10 +67,9 @@ export const resetPasswordSchema = z
       .string()
       .min(8, 'パスワードは8文字以上で入力してください。')
       .max(100, 'パスワードは100文字以内で入力してください。')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/,
-        'パスワードは大文字・小文字・数字を含む8文字以上で設定してください。',
-      ),
+      .regex(/[a-z]/, '小文字を含める必要があります。')
+      .regex(/[A-Z]/, '大文字を含める必要があります。')
+      .regex(/\d/, '数字を含める必要があります。'),
     confirmPassword: z.string().min(1, 'パスワード確認は必須です。'),
   })
   .refine((data) => data.password === data.confirmPassword, {
