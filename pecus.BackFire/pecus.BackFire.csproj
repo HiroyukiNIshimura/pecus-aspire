@@ -14,7 +14,6 @@
     <PackageReference Include="Hangfire" Version="1.8.22" />
     <PackageReference Include="Hangfire.Core" Version="1.8.22" />
     <PackageReference Include="Hangfire.Redis.StackExchange" Version="1.12.0" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\pecus.ServiceDefaults\pecus.ServiceDefaults.csproj" />
