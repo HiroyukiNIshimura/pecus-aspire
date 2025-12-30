@@ -1,5 +1,7 @@
 using Pecus.Libs;
 using Serilog;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 // Serilogの初期化（pecus.Libsの共通設定を使用）
 
@@ -27,6 +29,14 @@ try
     var lexicalConverterPort = int.TryParse(infraConfig["ports:lexicalConverter"], out var lcPort) ? lcPort : 5100;
     var grpcHost = infraConfig["grpc:host"] ?? "0.0.0.0";
 
+    //パラメータをログに表示（パスワードは除く）
+    Log.Information("PostgreSQL User: {PostgresUser}", postgresUser);
+    Log.Information("PostgreSQL Port: {PostgresPort}", postgresPort?.ToString() ?? "default");
+    Log.Information("PostgreSQL Image: {PostgresImage}", postgresImage);
+    Log.Information("Redis Port: {RedisPort}", redisPort?.ToString() ?? "default");
+    Log.Information("Lexical Converter Port: {LexicalConverterPort}", lexicalConverterPort);
+    Log.Information("gRPC Host: {GrpcHost}", grpcHost);
+
     var username = builder.AddParameter("username", postgresUser);
     var password = builder.AddParameter("password", postgresPassword);
 
@@ -35,11 +45,10 @@ try
         ? builder.AddRedis("redis", port: redisPort.Value)
         : builder.AddRedis("redis");
 
-    // フロントエンド用 Redis（DbGate 付き）
+    // フロントエンド用 Redis: ポート指定があれば使用、なければ Aspire のデフォルト（ランダム）
     var redisFrontend = (redisPort.HasValue
         ? builder.AddRedis("redisFrontend", port: redisPort.Value + 1)
-        : builder.AddRedis("redisFrontend"))
-        .WithDbGate();
+        : builder.AddRedis("redisFrontend"));
 
     var postgresImageParts = postgresImage.Split(':');
     var postgresImageName = postgresImageParts[0];
