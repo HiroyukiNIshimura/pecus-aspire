@@ -181,14 +181,14 @@ services:
       context: ..
       dockerfile: deploy/dockerfiles/Frontend.Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://pecusapi:8080}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: pecus-frontend
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
-      PECUS_API_URL: "http://${WEBAPI_HOST:-pecusapi}:8080"
+      PECUS_API_URL: ${PECUS_API_URL}
       REDIS_URL: ${REDIS_URL:-redis://redis-frontend:6379}
     depends_on:
       pecusapi:

@@ -132,6 +132,13 @@ start_services() {
 health_check() {
     log_info "ヘルスチェック中..."
 
+    # .env から環境変数を読み込む
+    if [ -f "$DEPLOY_DIR/.env" ]; then
+        set -a
+        . "$DEPLOY_DIR/.env"
+        set +a
+    fi
+
     # dbmanager の完了を待機（最大5分）
     log_info "DB マイグレーションの完了を待機中..."
     TIMEOUT=300
@@ -165,7 +172,7 @@ health_check() {
     TIMEOUT=120
     ELAPSED=0
     while [ $ELAPSED -lt $TIMEOUT ]; do
-        if docker compose exec -T pecusapi curl -sf http://localhost:8080/health > /dev/null 2>&1; then
+        if docker compose exec -T pecusapi curl -sf http://localhost:${WEBAPI_PORT:-7265}/health > /dev/null 2>&1; then
             log_info "API ヘルスチェック OK"
             break
         fi
