@@ -214,9 +214,9 @@ dotnet run
 
 | ユーザー | ログインID | パスワード | 権限 |
 |---------|-----------|----------|------|
-| 管理者 | `admin@coati.none` | `P@ssw0rd` | Admin（全権限） |
-| 一般 | `user1@coati.none` | `P@ssw0rd` | ユーザー |
-| 一般 | `user2@coati.none` | `P@ssw0rd` | ユーザー |
+| 管理者 | `admin@demo.coati.non` | `P@ssw0rd` | Admin（全権限） |
+| 一般 | `user1@demo.coati.non` | `P@ssw0rd` | ユーザー |
+| 一般 | `user2@demo.coati.non` | `P@ssw0rd` | ユーザー |
 
 ## 📚 ドキュメント
 
