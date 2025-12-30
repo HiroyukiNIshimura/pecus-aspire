@@ -146,6 +146,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: "http://+:${WEBAPI_PORT:-7265}"
+      ASPNETCORE_HTTP_PORTS: "${WEBAPI_PORT:-7265}"
       ConnectionStrings__pecusdb: "Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-pecusdb};Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
       ConnectionStrings__redis: "${REDIS_HOST:-redis}:6379"
       LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
