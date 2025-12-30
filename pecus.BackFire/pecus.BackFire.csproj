@@ -7,6 +7,9 @@
     <UserSecretsId>3241d74a-4cdc-4536-a5e7-4215939f8e8a</UserSecretsId>
     <!-- Docker publish 時に web.config 変換をスキップ -->
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+    <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+    <!-- 重複ファイルの競合時に自プロジェクトのファイルを優先 -->
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.StackExchange.Redis" Version="13.1.0" />
