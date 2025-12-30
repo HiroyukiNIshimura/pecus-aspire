@@ -51,7 +51,7 @@ export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 認証不要なパス（公開ページ）
-  const publicPaths = ['/signin', '/signup', '/forgot-password', '/password-reset', '/error-test'];
+  const publicPaths = ['/signin', '/signup', '/forgot-password', '/password-reset', '/password-setup', '/error-test'];
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
