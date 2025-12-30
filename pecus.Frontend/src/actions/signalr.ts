@@ -1,6 +1,6 @@
 'use server';
 
-import { getApiBaseUrl } from '@/libs/env';
+import { getPublicApiBaseUrl } from '@/libs/env';
 import { ServerSessionManager } from '@/libs/serverSession';
 
 /**
@@ -31,12 +31,13 @@ export async function getSignalRToken(): Promise<string | null> {
 /**
  * SignalR Hub の URL を取得する Server Action
  *
- * 統一ヘルパー getApiBaseUrl() を使用して WebAPI のベース URL を取得し、
- * Hub パスを付与して返す。
+ * SignalRはクライアント（ブラウザ）から直接WebAPIに接続するため、
+ * 公開URL（NEXT_PUBLIC_API_URL）を使用する必要がある。
+ * 内部URL（PECUS_API_URL）を使うとブラウザからアクセスできない。
  *
- * @returns Hub の完全な URL
+ * @returns Hub の完全な公開URL
  */
 export async function getSignalRHubUrl(): Promise<string> {
-  const baseUrl = getApiBaseUrl();
+  const baseUrl = getPublicApiBaseUrl();
   return `${baseUrl}/hubs/notifications`;
 }
