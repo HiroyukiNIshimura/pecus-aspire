@@ -31,13 +31,13 @@ COPY pecus.ServiceDefaults/ pecus.ServiceDefaults/
 COPY pecus.Protos/ pecus.Protos/
 
 WORKDIR /src/pecus.WebApi
-RUN dotnet build "pecus.WebApi.csproj" -c Release /p:SKIP_GRPC_CODEGEN=true
 
 # ============================================
 # Publish stage
 # ============================================
 FROM build AS publish
-RUN dotnet publish "pecus.WebApi.csproj" -c Release -o /app/publish --no-build /p:SKIP_GRPC_CODEGEN=true && \
+WORKDIR /src/pecus.WebApi
+RUN dotnet publish "pecus.WebApi.csproj" -c Release -o /app/publish /p:SKIP_GRPC_CODEGEN=true && \
     test -f /app/publish/pecus.WebApi.dll
 
 # ============================================

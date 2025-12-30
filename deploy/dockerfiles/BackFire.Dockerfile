@@ -33,13 +33,13 @@ COPY pecus.DbManager/ pecus.DbManager/
 COPY pecus.Protos/ pecus.Protos/
 
 WORKDIR /src/pecus.BackFire
-RUN dotnet build "pecus.BackFire.csproj" -c Release /p:SKIP_GRPC_CODEGEN=true
 
 # ============================================
 # Publish stage
 # ============================================
 FROM build AS publish
-RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish --no-build /p:SKIP_GRPC_CODEGEN=true && \
+WORKDIR /src/pecus.BackFire
+RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish /p:SKIP_GRPC_CODEGEN=true && \
     test -f /app/publish/pecus.BackFire.dll
 
 # ============================================
