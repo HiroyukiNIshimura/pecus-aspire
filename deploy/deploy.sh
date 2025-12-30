@@ -7,7 +7,6 @@
 #   ./deploy.sh --rebuild          # イメージを再ビルドしてデプロイ
 #   ./deploy.sh --generate-only    # 設定生成のみ（デプロイしない）
 #   ./deploy.sh --reset-db         # DBを完全に初期化してデプロイ（データ全削除）
-#   ./deploy.sh --setup-nginx      # nginx設定をセットアップ（要sudo）
 # =============================================================================
 
 set -e
@@ -128,50 +127,6 @@ start_services() {
 }
 
 # =============================================================================
-# nginx 設定セットアップ
-# =============================================================================
-setup_nginx() {
-    log_info "nginx 設定をセットアップ中..."
-
-    NGINX_CONF="$DEPLOY_DIR/nginx/coati.conf"
-    NGINX_AVAILABLE="/etc/nginx/sites-available/coati"
-    NGINX_ENABLED="/etc/nginx/sites-enabled/coati"
-
-    if [ ! -f "$NGINX_CONF" ]; then
-        log_error "nginx 設定ファイルが見つかりません: $NGINX_CONF"
-        exit 1
-    fi
-
-    # sites-available にシンボリックリンク作成
-    if [ -L "$NGINX_AVAILABLE" ] || [ -f "$NGINX_AVAILABLE" ]; then
-        log_info "既存の $NGINX_AVAILABLE を削除..."
-        sudo rm -f "$NGINX_AVAILABLE"
-    fi
-    sudo ln -sf "$NGINX_CONF" "$NGINX_AVAILABLE"
-    log_info "シンボリックリンク作成: $NGINX_AVAILABLE -> $NGINX_CONF"
-
-    # sites-enabled にシンボリックリンク作成
-    if [ -L "$NGINX_ENABLED" ] || [ -f "$NGINX_ENABLED" ]; then
-        log_info "既存の $NGINX_ENABLED を削除..."
-        sudo rm -f "$NGINX_ENABLED"
-    fi
-    sudo ln -sf "$NGINX_AVAILABLE" "$NGINX_ENABLED"
-    log_info "シンボリックリンク作成: $NGINX_ENABLED -> $NGINX_AVAILABLE"
-
-    # 設定テスト
-    log_info "nginx 設定をテスト中..."
-    if sudo nginx -t; then
-        log_info "nginx 設定テスト OK"
-        log_info "nginx をリロード中..."
-        sudo systemctl reload nginx
-        log_info "nginx 設定セットアップ完了"
-    else
-        log_error "nginx 設定にエラーがあります"
-        exit 1
-    fi
-}
-
-# =============================================================================
 # ヘルスチェック
 # =============================================================================
 health_check() {
@@ -252,7 +207,6 @@ main() {
     REBUILD=false
     GENERATE_ONLY=false
     RESET_DB=false
-    SETUP_NGINX=false
 
     # 引数解析
     for arg in "$@"; do
@@ -266,9 +220,6 @@ main() {
             --reset-db)
                 RESET_DB=true
                 ;;
-            --setup-nginx)
-                SETUP_NGINX=true
-                ;;
             --help|-h)
                 echo "使い方: $0 [オプション]"
                 echo ""
@@ -276,7 +227,6 @@ main() {
                 echo "  --rebuild        イメージを再ビルドしてデプロイ"
                 echo "  --generate-only  設定生成のみ（デプロイしない）"
                 echo "  --reset-db       DBを完全に初期化してデプロイ（データ全削除）"
-                echo "  --setup-nginx    nginx設定をセットアップ（要sudo）"
                 echo "  --help, -h       このヘルプを表示"
                 exit 0
                 ;;
@@ -287,12 +237,6 @@ main() {
     echo " Pecus Aspire - 本番デプロイ"
     echo "========================================"
     echo ""
-
-    # nginx設定のみモード
-    if [ "$SETUP_NGINX" = true ]; then
-        setup_nginx
-        exit 0
-    fi
 
     check_prerequisites
     generate_appsettings
