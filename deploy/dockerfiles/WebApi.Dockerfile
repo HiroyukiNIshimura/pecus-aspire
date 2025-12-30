@@ -49,6 +49,9 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
+# Copy mail templates from source
+COPY --from=build /src/pecus.Libs/Mail/Templates ./Mail/Templates
+
 # Set timezone to JST
 ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
