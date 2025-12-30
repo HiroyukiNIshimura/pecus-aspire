@@ -29,6 +29,10 @@ FROM base AS final
 WORKDIR /app
 ENV NODE_ENV=production
 
+# Set timezone to JST
+ENV TZ=Asia/Tokyo
+RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Copy production dependencies
 COPY --from=deps /app/node_modules ./node_modules
 
