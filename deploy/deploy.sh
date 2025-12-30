@@ -240,6 +240,9 @@ main() {
     fi
 
     if [ "$REBUILD" = true ]; then
+        log_info "最新のコードを取得中..."
+        cd "$ROOT_DIR"
+        git pull
         build_images
     fi
 
