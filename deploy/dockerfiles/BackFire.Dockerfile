@@ -11,9 +11,9 @@ EXPOSE 8080
 RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
 
 # ============================================
-# Build and Publish stage (combined)
+# Build stage
 # ============================================
-FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS publish
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
 WORKDIR /src
 
 # Copy project files
@@ -32,10 +32,17 @@ COPY pecus.ServiceDefaults/ pecus.ServiceDefaults/
 COPY pecus.DbManager/ pecus.DbManager/
 COPY pecus.Protos/ pecus.Protos/
 
-# Build and Publish
 WORKDIR /src/pecus.BackFire
-RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish /p:SKIP_GRPC_CODEGEN=true -v d 2>&1 | tail -100 && \
-    ls -la /app/publish/ || echo "=== PUBLISH FAILED ==="
+RUN dotnet build "pecus.BackFire.csproj" -c Release -o /app/build /p:SKIP_GRPC_CODEGEN=true
+
+# ============================================
+# Publish stage - use build output directly
+# ============================================
+FROM build AS publish
+RUN mkdir -p /app/publish && \
+    cp -r /app/build/* /app/publish/ && \
+    ls -la /app/publish/ && \
+    test -f /app/publish/pecus.BackFire.dll
 
 # ============================================
 # Final stage
