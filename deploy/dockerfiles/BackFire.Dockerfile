@@ -33,17 +33,13 @@ COPY pecus.DbManager/ pecus.DbManager/
 COPY pecus.Protos/ pecus.Protos/
 
 WORKDIR /src/pecus.BackFire
-RUN dotnet build "pecus.BackFire.csproj" -c Release -o /app/build /p:SKIP_GRPC_CODEGEN=true
+RUN dotnet build "pecus.BackFire.csproj" -c Release /p:SKIP_GRPC_CODEGEN=true
 
 # ============================================
-# Publish stage - use build output directly
+# Publish stage
 # ============================================
 FROM build AS publish
-# dotnet publish has issues with Web SDK + IsTransformWebConfigDisabled
-# Use the build output directly and copy dependencies
-RUN mkdir -p /app/publish && \
-    cp -r /app/build/* /app/publish/ && \
-    ls -la /app/publish/ && \
+RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish --no-build /p:SKIP_GRPC_CODEGEN=true && \
     test -f /app/publish/pecus.BackFire.dll
 
 # ============================================

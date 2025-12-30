@@ -31,16 +31,13 @@ COPY pecus.ServiceDefaults/ pecus.ServiceDefaults/
 COPY pecus.Protos/ pecus.Protos/
 
 WORKDIR /src/pecus.WebApi
-RUN dotnet build "pecus.WebApi.csproj" -c Release -o /app/build /p:SKIP_GRPC_CODEGEN=true
+RUN dotnet build "pecus.WebApi.csproj" -c Release /p:SKIP_GRPC_CODEGEN=true
 
 # ============================================
-# Publish stage - use build output directly
+# Publish stage
 # ============================================
 FROM build AS publish
-# dotnet publish has issues with Web SDK in certain configurations
-# Use the build output directly
-RUN mkdir -p /app/publish && \
-    cp -r /app/build/* /app/publish/ && \
+RUN dotnet publish "pecus.WebApi.csproj" -c Release -o /app/publish --no-build /p:SKIP_GRPC_CODEGEN=true && \
     test -f /app/publish/pecus.WebApi.dll
 
 # ============================================
