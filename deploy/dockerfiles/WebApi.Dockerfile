@@ -5,7 +5,8 @@
 # Use Debian-based images for gRPC Tools compatibility (Alpine ARM64 has issues)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS base
 WORKDIR /app
-EXPOSE 8080
+# EXPOSE is documentation only; actual port is set via ASPNETCORE_URLS env var
+EXPOSE 7265
 
 # Install curl for healthcheck and Kerberos library for Npgsql
 RUN apt-get update && apt-get install -y --no-install-recommends curl libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
