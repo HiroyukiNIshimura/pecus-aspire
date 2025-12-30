@@ -429,7 +429,6 @@ export type ErrorResponse = {
 | `serverError<T>(message)` | API レスポンスエラー（非例外） | `server` |
 | `notFoundError<T>(message)` | リソースが見つからない | `not_found` |
 | `forbiddenError<T>(message)` | 権限不足 | `forbidden` |
-| `parseErrorResponse<T>(error, defaultMessage)` | catch で捕捉した例外を解析 | 状況による |
 
 ### API ルーターのエラーレスポンス（`src/app/api/`）
 
