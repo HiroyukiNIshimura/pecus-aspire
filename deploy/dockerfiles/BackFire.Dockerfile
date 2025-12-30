@@ -39,9 +39,11 @@ WORKDIR /src/pecus.BackFire
 # ============================================
 FROM build AS publish
 WORKDIR /src/pecus.BackFire
-RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish /p:SKIP_GRPC_CODEGEN=true; \
-    echo "Exit code: $?"; \
-    ls -la /app/publish/ || echo "Directory not found"
+RUN set -x && \
+    dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish /p:SKIP_GRPC_CODEGEN=true 2>&1 || true && \
+    echo "=== Checking output ===" && \
+    ls -la /app/publish/ 2>&1 || echo "Directory not found" && \
+    echo "=== Build complete ==="
 
 # ============================================
 # Final stage
