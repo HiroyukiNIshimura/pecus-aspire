@@ -1,10 +1,10 @@
 /**
- * Next.js Middleware - セッション認証
+ * Next.js Proxy - セッション認証
  *
  * セキュリティ改善: Cookie には sessionId のみ保存し、
  * トークンは Redis に保持（ServerSessionManager 経由）。
  *
- * Edge Runtime の制限により、middleware では Redis に直接アクセスできないため、
+ * Edge Runtime の制限により、proxy では Redis に直接アクセスできないため、
  * sessionId の存在確認のみ行い、詳細なトークン検証は Server Components に委譲する。
  *
  * @see docs/auth-architecture-redesign.md
@@ -38,7 +38,7 @@ function redirectToSignIn(request: NextRequest): NextResponse {
 }
 
 /**
- * Next.js Middleware
+ * Next.js Proxy
  *
  * 全ページアクセス時に sessionId の存在をチェック。
  * 詳細なトークン検証と自動リフレッシュは Server Components / API で行う。
@@ -47,7 +47,7 @@ function redirectToSignIn(request: NextRequest): NextResponse {
  * - サーバーコンポーネントのレンダリング前
  * - クライアントサイドのナビゲーション時
  */
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 認証不要なパス（公開ページ）
@@ -64,9 +64,9 @@ export async function middleware(request: NextRequest) {
     // 旧形式の Cookie が残っている場合も移行のためリダイレクト
     const hasLegacyCookies = request.cookies.get('accessToken')?.value || request.cookies.get('refreshToken')?.value;
     if (hasLegacyCookies) {
-      console.log('[Middleware] Legacy cookies found, clearing and redirecting to signin');
+      console.log('[Proxy] Legacy cookies found, clearing and redirecting to signin');
     } else {
-      console.log('[Middleware] No sessionId found, redirecting to signin');
+      console.log('[Proxy] No sessionId found, redirecting to signin');
     }
     return redirectToSignIn(request);
   }
@@ -74,7 +74,7 @@ export async function middleware(request: NextRequest) {
   // sessionId が存在する場合はリクエストを続行
   // 詳細なセッション検証（Redis 参照、トークンリフレッシュ等）は
   // Server Components / Server Actions で ServerSessionManager を使用して行う
-  console.log(`[Middleware] SessionId found: ${sessionId.substring(0, 8)}..., allowing access`);
+  console.log(`[Proxy] SessionId found: ${sessionId.substring(0, 8)}..., allowing access`);
 
   const response = NextResponse.next();
   // 保護されたページはキャッシュ無効化（セッション依存のため）
@@ -83,7 +83,7 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-// Middleware を適用するパスを指定
+// Proxy を適用するパスを指定
 export const config = {
   matcher: [
     /*

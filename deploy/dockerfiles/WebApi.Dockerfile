@@ -37,10 +37,9 @@ RUN dotnet build "pecus.WebApi.csproj" -c Release -o /app/build /p:SKIP_GRPC_COD
 # Publish stage - use build output directly
 # ============================================
 FROM build AS publish
-# dotnet publish has issues with Web SDK in certain configurations
-# Use the build output directly
 RUN mkdir -p /app/publish && \
     cp -r /app/build/* /app/publish/ && \
+    ls -la /app/publish/ && \
     test -f /app/publish/pecus.WebApi.dll
 
 # ============================================
@@ -49,6 +48,10 @@ RUN mkdir -p /app/publish && \
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Set timezone to JST
+ENV TZ=Asia/Tokyo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Create directories for uploads and logs
 RUN mkdir -p /app/data/uploads /app/logs

@@ -39,8 +39,6 @@ RUN dotnet build "pecus.BackFire.csproj" -c Release -o /app/build /p:SKIP_GRPC_C
 # Publish stage - use build output directly
 # ============================================
 FROM build AS publish
-# dotnet publish has issues with Web SDK + IsTransformWebConfigDisabled
-# Use the build output directly and copy dependencies
 RUN mkdir -p /app/publish && \
     cp -r /app/build/* /app/publish/ && \
     ls -la /app/publish/ && \
@@ -52,6 +50,10 @@ RUN mkdir -p /app/publish && \
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Set timezone to JST
+ENV TZ=Asia/Tokyo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Create directories for data and logs
 RUN mkdir -p /app/data/uploads /app/data/notifications /app/logs

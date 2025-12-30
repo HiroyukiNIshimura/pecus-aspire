@@ -39,7 +39,8 @@
     <None Update="DB\Seed\playground.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>  <PropertyGroup>
+  </ItemGroup>
+  <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>

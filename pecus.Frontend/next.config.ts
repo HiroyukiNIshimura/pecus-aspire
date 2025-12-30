@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb',
+      allowedOrigins: [process.env.NEXT_ALLOW_DOMAIN || 'localhost'],
     },
   },
 };

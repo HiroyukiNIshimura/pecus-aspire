@@ -24,6 +24,7 @@
       "host": "0.0.0.0"
     },
     "urls": {
+      "allowDomain": "localhost",
       "frontend": "https://localhost:3000",
       "webapiPublic": "https://localhost:7265",
       "lexicalConverterInternal": "http://localhost:5100"
