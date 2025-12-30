@@ -1,9 +1,7 @@
 using Hangfire;
-using Hangfire.Redis.StackExchange;
 using Pecus.BackFire;
 using Pecus.BackFire.Services;
 using Pecus.Libs;
-using Pecus.Libs.AI;
 using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
 using Pecus.Libs.Focus;
