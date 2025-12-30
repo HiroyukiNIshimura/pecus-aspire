@@ -84,11 +84,11 @@ public class EmailService : IEmailService
 
         try
         {
-            // SMTPサーバーに接続
+            // SMTPサーバーに接続（Auto でポートに応じて適切な SSL/TLS 方式を自動選択）
             await client.ConnectAsync(
                 _settings.SmtpHost,
                 _settings.SmtpPort,
-                _settings.UseSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None,
+                SecureSocketOptions.Auto,
                 cancellationToken
             );
 
