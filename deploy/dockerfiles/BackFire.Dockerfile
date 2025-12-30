@@ -34,7 +34,8 @@ COPY pecus.Protos/ pecus.Protos/
 
 # Build and Publish
 WORKDIR /src/pecus.BackFire
-RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish /p:SKIP_GRPC_CODEGEN=true
+RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish /p:SKIP_GRPC_CODEGEN=true -v d 2>&1 | tail -100 && \
+    ls -la /app/publish/ || echo "=== PUBLISH FAILED ==="
 
 # ============================================
 # Final stage
