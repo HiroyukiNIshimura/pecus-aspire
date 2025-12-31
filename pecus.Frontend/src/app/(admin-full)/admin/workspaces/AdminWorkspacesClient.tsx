@@ -219,6 +219,9 @@ export default function AdminWorkspacesClient({ initialGenres }: AdminWorkspaces
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">ワークスペース管理</h1>
+              <span className="text-sm text-base-content opacity-70">
+                ワークスペースの作成はワークスペースで行ってください。
+              </span>
             </div>
 
             {/* Filter Section */}

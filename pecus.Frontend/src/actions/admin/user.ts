@@ -3,6 +3,7 @@
 import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
   PagedResponseOfUserDetailResponseAndUserStatistics,
+  RoleListItemResponse,
   SuccessResponse,
   UserDetailResponse,
   UserSearchResultResponse,
@@ -219,5 +220,19 @@ export async function searchUsersForWorkspace(
   } catch (error) {
     console.error('Failed to search users:', error);
     return parseErrorResponse(error, 'ユーザー検索に失敗しました');
+  }
+}
+
+/**
+ * Server Action: 全ロール一覧を取得
+ */
+export async function getRoles(): Promise<ApiResponse<RoleListItemResponse[]>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminUser.getApiAdminUsersRoles();
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch roles:', error);
+    return parseErrorResponse(error, 'ロール一覧の取得に失敗しました');
   }
 }

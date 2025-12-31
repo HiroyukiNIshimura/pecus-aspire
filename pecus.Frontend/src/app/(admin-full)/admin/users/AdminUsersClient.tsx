@@ -16,6 +16,7 @@ import { useValidation } from '@/hooks/useValidation';
 import { formatDate } from '@/libs/utils/date';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { usernameFilterSchema } from '@/schemas/filterSchemas';
+import CreateUserModal from './CreateUserModal';
 
 interface Skill {
   id: number;
@@ -64,6 +65,9 @@ export default function AdminUsersClient() {
   // 削除モーダルの状態
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+
+  // 新規ユーザー作成モーダルの状態
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // 削除ボタンクリック時のハンドラ
   const handleDeleteClick = useCallback((user: User) => {
@@ -302,7 +306,8 @@ export default function AdminUsersClient() {
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">ユーザー管理</h1>
-              <button type="button" className="btn btn-primary">
+              <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
+                <span className="icon-[mdi--account-plus-outline] w-5 h-5" aria-hidden="true" />
                 新規ユーザー作成
               </button>
             </div>
@@ -659,6 +664,13 @@ export default function AdminUsersClient() {
           </div>
         </main>
       </div>
+
+      {/* 新規ユーザー作成モーダル */}
+      <CreateUserModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleFilterChange}
+      />
 
       {/* 削除確認モーダル */}
       <DeleteUserModal

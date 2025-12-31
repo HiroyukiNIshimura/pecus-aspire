@@ -141,6 +141,7 @@ export default function LoginFormClient() {
                   onChange={(event) => handleFieldChange('loginIdentifier', event.target.value)}
                   disabled={isSubmitting}
                   required
+                  autoComplete="email"
                 />
                 {shouldShowError('loginIdentifier') && (
                   <span className="label-text-alt text-error">{getFieldError('loginIdentifier')}</span>
@@ -165,6 +166,7 @@ export default function LoginFormClient() {
                   onChange={(event) => handleFieldChange('password', event.target.value)}
                   disabled={isSubmitting}
                   required
+                  autoComplete="current-password"
                 />
                 {shouldShowError('password') && (
                   <span className="label-text-alt text-error">{getFieldError('password')}</span>
