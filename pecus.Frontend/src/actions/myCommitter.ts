@@ -1,12 +1,13 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   DashboardTaskFilter,
   MyCommitterWorkspaceResponse,
   PagedResponseOfItemWithTasksResponse,
   TasksByDueDateResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
 /**
@@ -20,7 +21,9 @@ export async function fetchMyCommitterWorkspaces(): Promise<ApiResponse<MyCommit
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch committer workspaces:', error);
-    return parseErrorResponse(error, 'コミッターワークスペース一覧の取得に失敗しました');
+    return handleApiErrorForAction<MyCommitterWorkspaceResponse[]>(error, {
+      defaultMessage: 'コミッターワークスペース一覧の取得に失敗しました',
+    });
   }
 }
 
@@ -38,7 +41,9 @@ export async function fetchMyCommitterItems(
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch committer items:', error);
-    return parseErrorResponse(error, 'コミッターアイテム一覧の取得に失敗しました');
+    return handleApiErrorForAction<PagedResponseOfItemWithTasksResponse>(error, {
+      defaultMessage: 'コミッターアイテム一覧の取得に失敗しました',
+    });
   }
 }
 
@@ -56,6 +61,8 @@ export async function fetchCommitterTasksByWorkspace(
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch committer tasks by workspace:', error);
-    return parseErrorResponse(error, 'コミッタータスク一覧の取得に失敗しました');
+    return handleApiErrorForAction<TasksByDueDateResponse[]>(error, {
+      defaultMessage: 'コミッタータスク一覧の取得に失敗しました',
+    });
   }
 }

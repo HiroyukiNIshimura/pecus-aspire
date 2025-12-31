@@ -2,11 +2,8 @@
 
 import {
   createPecusApiClients,
-  detect400ValidationError,
-  detect404ValidationError,
   detectConcurrencyError,
   detectMemberHasAssignmentsError,
-  parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
 import type {
   PagedResponseOfWorkspaceListItemResponse,
@@ -19,6 +16,7 @@ import type {
   WorkspaceRole,
   WorkspaceUserDetailResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 import { validationError } from './types';
 
@@ -51,7 +49,9 @@ export async function getMyWorkspaces(): Promise<ApiResponse<WorkspaceListItemRe
     return { success: true, data: allWorkspaces };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
-    return parseErrorResponse(error, 'ワークスペースリストの取得に失敗しました。');
+    return handleApiErrorForAction<WorkspaceListItemResponse[]>(error, {
+      defaultMessage: 'ワークスペースリストの取得に失敗しました。',
+    });
   }
 }
 
@@ -89,7 +89,9 @@ export async function getMyWorkspacesPaged(page: number = 1): Promise<ApiRespons
     };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
-    return parseErrorResponse(error, 'ワークスペースリストの取得に失敗しました。');
+    return handleApiErrorForAction<PagedWorkspacesResponse>(error, {
+      defaultMessage: 'ワークスペースリストの取得に失敗しました。',
+    });
   }
 }
 
@@ -112,7 +114,9 @@ export async function fetchWorkspaces(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
-    return parseErrorResponse(error, 'ワークスペース一覧の取得に失敗しました。');
+    return handleApiErrorForAction<PagedResponseOfWorkspaceListItemResponse>(error, {
+      defaultMessage: 'ワークスペース一覧の取得に失敗しました。',
+    });
   }
 }
 
@@ -133,13 +137,10 @@ export async function createWorkspace(request: {
   } catch (error) {
     console.error('Failed to create workspace:', error);
 
-    const badRequest = detect400ValidationError(error);
-    // バリデーションエラー
-    if (badRequest) {
-      return badRequest;
-    }
-
-    return parseErrorResponse(error, 'ワークスペースの作成に失敗しました。');
+    return handleApiErrorForAction<WorkspaceFullDetailResponse>(error, {
+      defaultMessage: 'ワークスペースの作成に失敗しました。',
+      handled: { validation: true },
+    });
   }
 }
 
@@ -154,14 +155,10 @@ export async function getWorkspaceDetail(workspaceId: number): Promise<ApiRespon
   } catch (error) {
     console.error('Failed to get workspace detail:', error);
 
-    const notFound = detect404ValidationError(error);
-    // 存在しない（404 Not Found）
-    if (notFound) {
-      return notFound;
-    }
-
-    // その他のエラー
-    return parseErrorResponse(error, 'ワークスペースの取得に失敗しました。');
+    return handleApiErrorForAction<WorkspaceFullDetailResponse>(error, {
+      defaultMessage: 'ワークスペースの取得に失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }
 
@@ -200,18 +197,10 @@ export async function updateWorkspace(
       };
     }
 
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      // バリデーションエラー
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-    // その他のエラー
-    return parseErrorResponse(error, 'ワークスペースの更新に失敗しました。');
+    return handleApiErrorForAction<WorkspaceFullDetailResponse>(error, {
+      defaultMessage: 'ワークスペースの更新に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -262,19 +251,10 @@ export async function toggleWorkspaceActive(
       };
     }
 
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      // バリデーションエラー
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      // 存在しない（404 Not Found）
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'ワークスペースの状態変更に失敗しました。');
+    return handleApiErrorForAction<WorkspaceFullDetailResponse>(error, {
+      defaultMessage: 'ワークスペースの状態変更に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -297,18 +277,10 @@ export async function addMemberToWorkspace(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to add member to workspace:', error);
-
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'メンバーの追加に失敗しました');
+    return handleApiErrorForAction<WorkspaceUserDetailResponse>(error, {
+      defaultMessage: 'メンバーの追加に失敗しました',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -322,18 +294,10 @@ export async function removeMemberFromWorkspace(workspaceId: number, userId: num
     return { success: true, data: undefined };
   } catch (error) {
     console.error('Failed to remove member from workspace:', error);
-
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'メンバーの削除に失敗しました');
+    return handleApiErrorForAction<void>(error, {
+      defaultMessage: 'メンバーの削除に失敗しました',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -365,17 +329,10 @@ export async function updateMemberRoleInWorkspace(
       };
     }
 
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'ロールの変更に失敗しました');
+    return handleApiErrorForAction<WorkspaceUserDetailResponse>(error, {
+      defaultMessage: 'ロールの変更に失敗しました',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -409,17 +366,10 @@ export async function setWorkspaceSkills(
       };
     }
 
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'スキルの設定に失敗しました');
+    return handleApiErrorForAction<SuccessResponse>(error, {
+      defaultMessage: 'スキルの設定に失敗しました',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -448,6 +398,8 @@ export async function searchWorkspaceMembers(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to search workspace members:', error);
-    return parseErrorResponse(error, 'メンバー検索に失敗しました');
+    return handleApiErrorForAction<UserSearchResultResponse[]>(error, {
+      defaultMessage: 'メンバー検索に失敗しました',
+    });
   }
 }

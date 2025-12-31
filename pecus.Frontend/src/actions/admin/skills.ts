@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   PagedResponseOfSkillListItemResponseAndSkillStatistics,
   SkillDetailResponse,
@@ -8,6 +8,7 @@ import type {
   SkillResponse,
   SuccessResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 
 /**
@@ -23,7 +24,7 @@ export async function getSkills(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch skills:', error);
-    return parseErrorResponse(error, 'スキル一覧の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'スキル一覧の取得に失敗しました' });
   }
 }
 
@@ -60,7 +61,7 @@ export async function getAllSkills(isActive: boolean = true): Promise<ApiRespons
     return { success: true, data: allSkills };
   } catch (error) {
     console.error('Failed to fetch all skills:', error);
-    return parseErrorResponse(error, '全スキルの取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '全スキルの取得に失敗しました' });
   }
 }
 
@@ -74,7 +75,7 @@ export async function getSkillDetail(id: number): Promise<ApiResponse<SkillDetai
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch skill detail:', error);
-    return parseErrorResponse(error, 'スキル情報の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'スキル情報の取得に失敗しました' });
   }
 }
 
@@ -91,7 +92,7 @@ export async function createSkill(request: {
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create skill:', error);
-    return parseErrorResponse(error, 'スキルの作成に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'スキルの作成に失敗しました' });
   }
 }
 
@@ -144,7 +145,7 @@ export async function updateSkill(
     }
 
     console.error('Failed to update skill:', error);
-    return parseErrorResponse(error, 'スキルの更新に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'スキルの更新に失敗しました' });
   }
 }
 
@@ -159,7 +160,7 @@ export async function deleteSkill(id: number): Promise<ApiResponse<SuccessRespon
   } catch (error) {
     console.error('Failed to delete skill:', error);
 
-    return parseErrorResponse(error, 'スキルの削除に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'スキルの削除に失敗しました' });
   }
 }
 
@@ -187,7 +188,7 @@ export async function activateSkill(id: number): Promise<ApiResponse<SuccessResp
       };
     }
     console.error('Failed to activate skill:', error);
-    return parseErrorResponse(error, 'スキルの有効化に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'スキルの有効化に失敗しました' });
   }
 }
 
@@ -215,6 +216,6 @@ export async function deactivateSkill(id: number): Promise<ApiResponse<SuccessRe
       };
     }
     console.error('Failed to deactivate skill:', error);
-    return parseErrorResponse(error, 'スキルの無効化に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'スキルの無効化に失敗しました' });
   }
 }

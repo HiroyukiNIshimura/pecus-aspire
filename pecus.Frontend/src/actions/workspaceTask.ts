@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   AssigneeTaskLoadResponse,
   CreateWorkspaceTaskRequest,
@@ -12,6 +12,7 @@ import type {
   WorkspaceTaskDetailResponse,
   WorkspaceTaskResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 import { validationError } from './types';
 
@@ -29,12 +30,10 @@ export async function getWorkspaceTaskBySequence(
 
     return { success: true, data: response };
   } catch (error: unknown) {
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'タスクの取得に失敗しました',
-    };
+    console.error('Failed to get task by sequence:', error);
+    return handleApiErrorForAction<WorkspaceTaskDetailResponse>(error, {
+      defaultMessage: 'タスクの取得に失敗しました',
+    });
   }
 }
 
@@ -66,12 +65,10 @@ export async function getWorkspaceTasks(
 
     return { success: true, data: response };
   } catch (error: unknown) {
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'タスク一覧の取得に失敗しました',
-    };
+    console.error('Failed to get workspace tasks:', error);
+    return handleApiErrorForAction<PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics>(error, {
+      defaultMessage: 'タスク一覧の取得に失敗しました',
+    });
   }
 }
 
@@ -114,12 +111,10 @@ export async function getAllWorkspaceTasks(
 
     return { success: true, data: allTasks };
   } catch (error: unknown) {
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'タスク一覧の取得に失敗しました',
-    };
+    console.error('Failed to get all workspace tasks:', error);
+    return handleApiErrorForAction<WorkspaceTaskDetailResponse[]>(error, {
+      defaultMessage: 'タスク一覧の取得に失敗しました',
+    });
   }
 }
 
@@ -137,12 +132,10 @@ export async function getWorkspaceTask(
 
     return { success: true, data: response };
   } catch (error: unknown) {
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'タスクの取得に失敗しました',
-    };
+    console.error('Failed to get workspace task:', error);
+    return handleApiErrorForAction<WorkspaceTaskDetailResponse>(error, {
+      defaultMessage: 'タスクの取得に失敗しました',
+    });
   }
 }
 
@@ -160,12 +153,10 @@ export async function createWorkspaceTask(
 
     return { success: true, data: response };
   } catch (error: unknown) {
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'タスクの作成に失敗しました',
-    };
+    console.error('Failed to create workspace task:', error);
+    return handleApiErrorForAction<WorkspaceTaskResponse>(error, {
+      defaultMessage: 'タスクの作成に失敗しました',
+    });
   }
 }
 
@@ -200,12 +191,10 @@ export async function updateWorkspaceTask(
       };
     }
 
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'タスクの更新に失敗しました',
-    };
+    console.error('Failed to update workspace task:', error);
+    return handleApiErrorForAction<WorkspaceTaskResponse>(error, {
+      defaultMessage: 'タスクの更新に失敗しました',
+    });
   }
 }
 
@@ -236,7 +225,10 @@ export async function checkAssigneeTaskLoad(
 
     return { success: true, data: response };
   } catch (error) {
-    return parseErrorResponse(error, '担当者のタスク負荷の確認に失敗しました');
+    console.error('Failed to check assignee task load:', error);
+    return handleApiErrorForAction<AssigneeTaskLoadResponse>(error, {
+      defaultMessage: '担当者のタスク負荷の確認に失敗しました',
+    });
   }
 }
 
@@ -281,7 +273,10 @@ export async function getPredecessorTaskOptions(
 
     return { success: true, data: tasks };
   } catch (error) {
-    return parseErrorResponse(error, '先行タスク一覧の取得に失敗しました');
+    console.error('Failed to get predecessor task options:', error);
+    return handleApiErrorForAction<PredecessorTaskOption[]>(error, {
+      defaultMessage: '先行タスク一覧の取得に失敗しました',
+    });
   }
 }
 
@@ -299,6 +294,9 @@ export async function getTaskFlowMap(
 
     return { success: true, data: response };
   } catch (error) {
-    return parseErrorResponse(error, 'タスクフローマップの取得に失敗しました');
+    console.error('Failed to get task flow map:', error);
+    return handleApiErrorForAction<import('@/connectors/api/pecus').TaskFlowMapResponse>(error, {
+      defaultMessage: 'タスクフローマップの取得に失敗しました',
+    });
   }
 }

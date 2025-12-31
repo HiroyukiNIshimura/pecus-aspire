@@ -1,7 +1,8 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { FocusRecommendationResponse } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
 /**
@@ -15,6 +16,8 @@ export async function fetchFocusRecommendation(): Promise<ApiResponse<FocusRecom
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch focus recommendation:', error);
-    return parseErrorResponse(error, 'やることピックアップタスクの取得に失敗しました');
+    return handleApiErrorForAction<FocusRecommendationResponse>(error, {
+      defaultMessage: 'やることピックアップタスクの取得に失敗しました',
+    });
   }
 }

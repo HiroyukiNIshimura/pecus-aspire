@@ -1,12 +1,13 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   BackOfficeCreateNotificationRequest,
   BackOfficeNotificationDetailResponse,
   BackOfficeUpdateNotificationRequest,
   PagedResponseOfBackOfficeNotificationListItemResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 
 /**
@@ -23,7 +24,7 @@ export async function getBackOfficeNotifications(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice notifications:', error);
-    return parseErrorResponse(error, 'システム通知一覧の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'システム通知一覧の取得に失敗しました' });
   }
 }
 
@@ -39,7 +40,7 @@ export async function getBackOfficeNotificationDetail(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice notification detail:', error);
-    return parseErrorResponse(error, 'システム通知詳細の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'システム通知詳細の取得に失敗しました' });
   }
 }
 
@@ -55,7 +56,7 @@ export async function createBackOfficeNotification(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create backoffice notification:', error);
-    return parseErrorResponse(error, 'システム通知の作成に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'システム通知の作成に失敗しました' });
   }
 }
 
@@ -72,7 +73,7 @@ export async function updateBackOfficeNotification(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update backoffice notification:', error);
-    return parseErrorResponse(error, 'システム通知の更新に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'システム通知の更新に失敗しました' });
   }
 }
 
@@ -95,6 +96,6 @@ export async function deleteBackOfficeNotification(
     return { success: true, data: undefined };
   } catch (error) {
     console.error('Failed to delete backoffice notification:', error);
-    return parseErrorResponse(error, 'システム通知の削除に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'システム通知の削除に失敗しました' });
   }
 }

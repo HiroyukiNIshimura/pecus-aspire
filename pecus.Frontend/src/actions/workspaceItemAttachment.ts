@@ -1,12 +1,8 @@
 'use server';
 
-import {
-  createPecusApiClients,
-  detect400ValidationError,
-  detect404ValidationError,
-  parseErrorResponse,
-} from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
 /**
@@ -24,13 +20,10 @@ export async function fetchWorkspaceItemAttachments(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace item attachments:', error);
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, '添付ファイル一覧の取得に失敗しました。');
+    return handleApiErrorForAction<WorkspaceItemAttachmentResponse[]>(error, {
+      defaultMessage: '添付ファイル一覧の取得に失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }
 
@@ -51,17 +44,9 @@ export async function deleteWorkspaceItemAttachment(
     return { success: true, data: undefined };
   } catch (error) {
     console.error('Failed to delete workspace item attachment:', error);
-
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, '添付ファイルの削除に失敗しました。');
+    return handleApiErrorForAction<void>(error, {
+      defaultMessage: '添付ファイルの削除に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }

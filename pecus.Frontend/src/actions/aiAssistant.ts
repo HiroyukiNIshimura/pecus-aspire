@@ -1,7 +1,8 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { GenerateTextResponse } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
 /**
@@ -37,6 +38,8 @@ export async function generateAiText(request: GenerateAiTextRequest): Promise<Ap
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to generate AI text:', error);
-    return parseErrorResponse(error, 'テキストの生成に失敗しました。');
+    return handleApiErrorForAction<GenerateTextResponse>(error, {
+      defaultMessage: 'テキストの生成に失敗しました。',
+    });
   }
 }

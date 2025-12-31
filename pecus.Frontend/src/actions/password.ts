@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { MessageResponse } from '@/connectors/api/pecus';
 import {
   type RequestPasswordResetInput,
@@ -10,6 +10,7 @@ import {
   type SetPasswordInput,
   setPasswordSchema,
 } from '@/schemas/signInSchemas';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 import { validationError } from './types';
 
@@ -47,7 +48,9 @@ export async function requestPasswordResetAction(
     };
   } catch (error) {
     console.error('Failed to request password reset:', error);
-    return parseErrorResponse(error, 'パスワードリセットリクエストに失敗しました。');
+    return handleApiErrorForAction<MessageResponse>(error, {
+      defaultMessage: 'パスワードリセットリクエストに失敗しました。',
+    });
   }
 }
 
@@ -84,7 +87,9 @@ export async function setPasswordAction(input: SetPasswordInput): Promise<ApiRes
     };
   } catch (error) {
     console.error('Failed to set password:', error);
-    return parseErrorResponse(error, 'パスワード設定に失敗しました。トークンが無効または期限切れの可能性があります。');
+    return handleApiErrorForAction<MessageResponse>(error, {
+      defaultMessage: 'パスワード設定に失敗しました。トークンが無効または期限切れの可能性があります。',
+    });
   }
 }
 
@@ -121,9 +126,8 @@ export async function resetPasswordAction(input: ResetPasswordInput): Promise<Ap
     };
   } catch (error) {
     console.error('Failed to reset password:', error);
-    return parseErrorResponse(
-      error,
-      'パスワードリセットに失敗しました。トークンが無効または期限切れの可能性があります。',
-    );
+    return handleApiErrorForAction<MessageResponse>(error, {
+      defaultMessage: 'パスワードリセットに失敗しました。トークンが無効または期限切れの可能性があります。',
+    });
   }
 }

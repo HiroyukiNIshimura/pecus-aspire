@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   PagedResponseOfUserDetailResponseAndUserStatistics,
   RoleListItemResponse,
@@ -8,6 +8,7 @@ import type {
   UserDetailResponse,
   UserSearchResultResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 
 /**
@@ -26,7 +27,7 @@ export async function getUsers(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch users:', error);
-    return parseErrorResponse(error, 'ユーザー一覧の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザー一覧の取得に失敗しました' });
   }
 }
 
@@ -44,7 +45,7 @@ export async function createUserWithoutPassword(request: {
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create user:', error);
-    return parseErrorResponse(error, 'ユーザーの作成に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザーの作成に失敗しました' });
   }
 }
 
@@ -58,7 +59,7 @@ export async function deleteUser(userId: number): Promise<ApiResponse<SuccessRes
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete user:', error);
-    return parseErrorResponse(error, 'ユーザーの削除に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザーの削除に失敗しました' });
   }
 }
 
@@ -89,7 +90,7 @@ export async function setUserActiveStatus(userId: number, isActive: boolean): Pr
       };
     }
     console.error('Failed to set user active status:', error);
-    return parseErrorResponse(error, 'ユーザーのアクティブ状態の設定に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザーのアクティブ状態の設定に失敗しました' });
   }
 }
 
@@ -103,7 +104,7 @@ export async function requestPasswordReset(userId: number): Promise<ApiResponse<
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to request password reset:', error);
-    return parseErrorResponse(error, 'パスワードリセットのリクエストに失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'パスワードリセットのリクエストに失敗しました' });
   }
 }
 
@@ -117,7 +118,7 @@ export async function resendPasswordSetup(userId: number): Promise<ApiResponse<S
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to resend password setup email:', error);
-    return parseErrorResponse(error, 'パスワード設定メールの再送に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'パスワード設定メールの再送に失敗しました' });
   }
 }
 
@@ -131,7 +132,7 @@ export async function getUserDetail(userId: number): Promise<ApiResponse<UserDet
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch user detail:', error);
-    return parseErrorResponse(error, 'ユーザー情報の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザー情報の取得に失敗しました' });
   }
 }
 
@@ -169,7 +170,7 @@ export async function setUserSkills(
     }
 
     console.error('Failed to set user skills:', error);
-    return parseErrorResponse(error, 'ユーザースキルの更新に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザースキルの更新に失敗しました' });
   }
 }
 
@@ -211,7 +212,7 @@ export async function setUserRoles(
     }
 
     console.error('Failed to set user roles:', error);
-    return parseErrorResponse(error, 'ユーザーロールの更新に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザーロールの更新に失敗しました' });
   }
 }
 
@@ -233,7 +234,7 @@ export async function searchUsersForWorkspace(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to search users:', error);
-    return parseErrorResponse(error, 'ユーザー検索に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザー検索に失敗しました' });
   }
 }
 
@@ -247,6 +248,6 @@ export async function getRoles(): Promise<ApiResponse<RoleListItemResponse[]>> {
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch roles:', error);
-    return parseErrorResponse(error, 'ロール一覧の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ロール一覧の取得に失敗しました' });
   }
 }

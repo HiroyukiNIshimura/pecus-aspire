@@ -1,6 +1,5 @@
 'use server';
 
-import { parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { ApiResponse } from './types';
 import { serverError, validationError } from './types';
 
@@ -134,7 +133,7 @@ export async function getLocationFromCoordinates(
     if (typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError') {
       return serverError('位置情報の取得がタイムアウトしました。');
     }
-    return parseErrorResponse(error, '位置情報の取得中にエラーが発生しました。');
+    return serverError('位置情報の取得中にエラーが発生しました。');
   }
 }
 
@@ -185,6 +184,6 @@ export async function getLocationsFromCoordinates(
     };
   } catch (error) {
     console.error('Failed to get locations from coordinates:', error);
-    return parseErrorResponse(error, '複数の位置情報取得中にエラーが発生しました。');
+    return serverError('複数の位置情報取得中にエラーが発生しました。');
   }
 }

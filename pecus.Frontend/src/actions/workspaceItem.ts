@@ -1,12 +1,6 @@
 'use server';
 
-import {
-  createPecusApiClients,
-  detect400ValidationError,
-  detect404ValidationError,
-  detectConcurrencyError,
-  parseErrorResponse,
-} from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   AddWorkspaceItemRelationResponse,
   CreateWorkspaceItemRequest,
@@ -23,6 +17,7 @@ import type {
   WorkspaceItemDetailResponse,
   WorkspaceItemResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 import { serverError } from './types';
 
@@ -61,7 +56,9 @@ export async function fetchMyItems(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch my items:', error);
-    return parseErrorResponse(error, 'マイアイテムの取得に失敗しました。');
+    return handleApiErrorForAction<PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics>(error, {
+      defaultMessage: 'マイアイテムの取得に失敗しました。',
+    });
   }
 }
 
@@ -78,14 +75,10 @@ export async function fetchLatestWorkspaceItem(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace item:', error);
-
-    const notFound = detect404ValidationError(error);
-    // アイテムが見つからない（404 Not Found）
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'アイテムの取得に失敗しました。');
+    return handleApiErrorForAction<WorkspaceItemDetailResponse>(error, {
+      defaultMessage: 'アイテムの取得に失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }
 
@@ -102,14 +95,10 @@ export async function fetchWorkspaceItemByCode(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace item by code:', error);
-
-    const notFound = detect404ValidationError(error);
-    // アイテムが見つからない（404 Not Found）
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'アイテムの取得に失敗しました。');
+    return handleApiErrorForAction<WorkspaceItemDetailResponse>(error, {
+      defaultMessage: 'アイテムの取得に失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }
 
@@ -126,20 +115,10 @@ export async function createWorkspaceItem(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create workspace item:', error);
-
-    const badRequest = detect400ValidationError(error);
-    // バリデーションエラー
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    // アイテムが見つからない（404 Not Found）
-    if (notFound) {
-      return notFound;
-    }
-    // その他のエラー
-    return parseErrorResponse(error, 'アイテムの作成に失敗しました。');
+    return handleApiErrorForAction<WorkspaceItemResponse>(error, {
+      defaultMessage: 'アイテムの作成に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -172,19 +151,10 @@ export async function updateWorkspaceItem(
       };
     }
 
-    // バリデーションエラー
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      // バリデーションエラー
-      return badRequest;
-    }
-    const notFound = detect404ValidationError(error);
-    // アイテムが見つからない（404 Not Found）
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'アイテムの更新に失敗しました。');
+    return handleApiErrorForAction<WorkspaceItemResponse>(error, {
+      defaultMessage: 'アイテムの更新に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -209,18 +179,10 @@ export async function addWorkspaceItemPin(
     return serverError('PIN操作の結果取得に失敗しました。');
   } catch (error) {
     console.error('Failed to add pin to workspace item:', error);
-
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'PINの追加に失敗しました。');
+    return handleApiErrorForAction<WorkspaceItemDetailResponse>(error, {
+      defaultMessage: 'PINの追加に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -245,18 +207,10 @@ export async function removeWorkspaceItemPin(
     return serverError('PIN操作の結果取得に失敗しました。');
   } catch (error) {
     console.error('Failed to remove pin from workspace item:', error);
-
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'PINの削除に失敗しました。');
+    return handleApiErrorForAction<WorkspaceItemDetailResponse>(error, {
+      defaultMessage: 'PINの削除に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -301,20 +255,10 @@ export async function updateWorkspaceItemAssignee(
       };
     }
 
-    // バリデーションエラー
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      // バリデーションエラー
-      return badRequest;
-    }
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      // アイテムが見つからない（404 Not Found）
-      return notFound;
-    }
-
-    // その他のエラー
-    return parseErrorResponse(error, '担当者の更新に失敗しました。');
+    return handleApiErrorForAction<WorkspaceItemDetailResponse>(error, {
+      defaultMessage: '担当者の更新に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -361,17 +305,10 @@ export async function updateWorkspaceItemStatus(
       };
     }
 
-    // バリデーションエラー
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'ステータスの更新に失敗しました。');
+    return handleApiErrorForAction<WorkspaceItemDetailResponse>(error, {
+      defaultMessage: 'ステータスの更新に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -424,17 +361,6 @@ export async function updateWorkspaceItemAttribute(
       };
     }
 
-    // バリデーションエラー
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
     // 属性名に応じたエラーメッセージ
     const attributeNames: Record<WorkspaceItemAttributeType, string> = {
       assignee: '担当者',
@@ -445,7 +371,10 @@ export async function updateWorkspaceItemAttribute(
     };
     const attrName = attributeNames[attribute] || attribute;
 
-    return parseErrorResponse(error, `${attrName}の更新に失敗しました。`);
+    return handleApiErrorForAction<WorkspaceItemDetailResponse>(error, {
+      defaultMessage: `${attrName}の更新に失敗しました。`,
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -478,18 +407,10 @@ export async function addWorkspaceItemRelations(
     return { success: true, data: results };
   } catch (error) {
     console.error('Failed to add workspace item relations:', error);
-
-    const badRequest = detect400ValidationError(error);
-    if (badRequest) {
-      return badRequest;
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, '関連アイテムの追加に失敗しました。');
+    return handleApiErrorForAction<AddWorkspaceItemRelationResponse[]>(error, {
+      defaultMessage: '関連アイテムの追加に失敗しました。',
+      handled: { validation: true, not_found: true },
+    });
   }
 }
 
@@ -510,13 +431,10 @@ export async function removeWorkspaceItemRelation(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to remove workspace item relation:', error);
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, '関連アイテムの削除に失敗しました。');
+    return handleApiErrorForAction<SuccessResponse>(error, {
+      defaultMessage: '関連アイテムの削除に失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }
 
@@ -537,13 +455,10 @@ export async function exportWorkspaceItemMarkdown(workspaceId: number, itemId: n
     return { success: true, data: response as string };
   } catch (error) {
     console.error('Failed to export workspace item as markdown:', error);
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'Markdownエクスポートに失敗しました。');
+    return handleApiErrorForAction<string>(error, {
+      defaultMessage: 'Markdownエクスポートに失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }
 
@@ -559,13 +474,10 @@ export async function exportWorkspaceItemHtml(workspaceId: number, itemId: numbe
     return { success: true, data: response as string };
   } catch (error) {
     console.error('Failed to export workspace item as HTML:', error);
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'HTMLエクスポートに失敗しました。');
+    return handleApiErrorForAction<string>(error, {
+      defaultMessage: 'HTMLエクスポートに失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }
 
@@ -581,13 +493,10 @@ export async function exportWorkspaceItemJson(workspaceId: number, itemId: numbe
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to export workspace item as JSON:', error);
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'JSONエクスポートに失敗しました。');
+    return handleApiErrorForAction<unknown>(error, {
+      defaultMessage: 'JSONエクスポートに失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }
 
@@ -612,13 +521,10 @@ export async function fetchChildrenCount(
     };
   } catch (error) {
     console.error('Failed to fetch children count:', error);
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, '子アイテム数の取得に失敗しました。');
+    return handleApiErrorForAction<{ childrenCount: number; totalDescendantsCount: number }>(error, {
+      defaultMessage: '子アイテム数の取得に失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }
 
@@ -643,12 +549,9 @@ export async function fetchDocumentSuggestion(
     };
   } catch (error) {
     console.error('Failed to fetch document suggestion:', error);
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return notFound;
-    }
-
-    return parseErrorResponse(error, 'ドキュメント提案の取得に失敗しました。');
+    return handleApiErrorForAction<{ suggestedContent: string }>(error, {
+      defaultMessage: 'ドキュメント提案の取得に失敗しました。',
+      handled: { not_found: true },
+    });
   }
 }

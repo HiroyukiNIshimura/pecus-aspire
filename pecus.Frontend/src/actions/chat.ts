@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   ChatMessageItem,
   ChatMessagesResponse,
@@ -11,7 +11,8 @@ import type {
   DmCandidateUserItem,
   UserSearchResultResponse,
 } from '@/connectors/api/pecus';
-import { type ApiResponse, serverError } from './types';
+import { handleApiErrorForAction } from './apiErrorPolicy';
+import type { ApiResponse } from './types';
 
 /**
  * Server Action: チャットルーム一覧を取得
@@ -22,9 +23,8 @@ export async function getChatRooms(type?: ChatRoomType): Promise<ApiResponse<Cha
     const response = await api.chat.getApiChatRooms(type);
     return { success: true, data: response };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('getChatRooms error:', errorDetail);
-    return serverError(errorDetail.message || 'ルーム一覧の取得に失敗しました');
+    console.error('getChatRooms error:', error);
+    return handleApiErrorForAction<ChatRoomItem[]>(error, { defaultMessage: 'ルーム一覧の取得に失敗しました' });
   }
 }
 
@@ -37,9 +37,8 @@ export async function getChatRoomDetail(roomId: number): Promise<ApiResponse<Cha
     const response = await api.chat.getApiChatRooms1(roomId);
     return { success: true, data: response };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('getChatRoomDetail error:', errorDetail);
-    return serverError(errorDetail.message || 'ルーム詳細の取得に失敗しました');
+    console.error('getChatRoomDetail error:', error);
+    return handleApiErrorForAction<ChatRoomDetailResponse>(error, { defaultMessage: 'ルーム詳細の取得に失敗しました' });
   }
 }
 
@@ -54,9 +53,8 @@ export async function createOrGetDmRoom(targetUserId: number): Promise<ApiRespon
     const response = await api.chat.postApiChatRoomsDm({ targetUserId });
     return { success: true, data: response };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('createOrGetDmRoom error:', errorDetail);
-    return serverError(errorDetail.message || 'DMルームの作成に失敗しました');
+    console.error('createOrGetDmRoom error:', error);
+    return handleApiErrorForAction<ChatRoomDetailResponse>(error, { defaultMessage: 'DMルームの作成に失敗しました' });
   }
 }
 
@@ -70,9 +68,8 @@ export async function createOrGetAiRoom(): Promise<ApiResponse<ChatRoomDetailRes
     const response = await api.chat.postApiChatRoomsAi();
     return { success: true, data: response };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('createOrGetAiRoom error:', errorDetail);
-    return serverError(errorDetail.message || 'AIルームの作成に失敗しました');
+    console.error('createOrGetAiRoom error:', error);
+    return handleApiErrorForAction<ChatRoomDetailResponse>(error, { defaultMessage: 'AIルームの作成に失敗しました' });
   }
 }
 
@@ -85,9 +82,10 @@ export async function getChatUnreadCounts(): Promise<ApiResponse<ChatUnreadCount
     const response = await api.chat.getApiChatUnreadByCategory();
     return { success: true, data: response };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('getChatUnreadCounts error:', errorDetail);
-    return serverError(errorDetail.message || '未読数の取得に失敗しました');
+    console.error('getChatUnreadCounts error:', error);
+    return handleApiErrorForAction<ChatUnreadCountByCategoryResponse>(error, {
+      defaultMessage: '未読数の取得に失敗しました',
+    });
   }
 }
 
@@ -104,9 +102,8 @@ export async function getChatMessages(
     const response = await api.chat.getApiChatRoomsMessages(roomId, limit, cursor);
     return { success: true, data: response };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('getChatMessages error:', errorDetail);
-    return serverError(errorDetail.message || 'メッセージの取得に失敗しました');
+    console.error('getChatMessages error:', error);
+    return handleApiErrorForAction<ChatMessagesResponse>(error, { defaultMessage: 'メッセージの取得に失敗しました' });
   }
 }
 
@@ -126,9 +123,8 @@ export async function sendChatMessage(
     });
     return { success: true, data: response };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('sendChatMessage error:', errorDetail);
-    return serverError(errorDetail.message || 'メッセージの送信に失敗しました');
+    console.error('sendChatMessage error:', error);
+    return handleApiErrorForAction<ChatMessageItem>(error, { defaultMessage: 'メッセージの送信に失敗しました' });
   }
 }
 
@@ -151,9 +147,8 @@ export async function updateReadPosition(
     });
     return { success: true, data: undefined };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('updateReadPosition error:', errorDetail);
-    return serverError(errorDetail.message || '既読位置の更新に失敗しました');
+    console.error('updateReadPosition error:', error);
+    return handleApiErrorForAction<void>(error, { defaultMessage: '既読位置の更新に失敗しました' });
   }
 }
 
@@ -168,9 +163,8 @@ export async function notifyTyping(roomId: number, isTyping: boolean): Promise<A
     await api.chat.postApiChatRoomsTyping(roomId, { isTyping });
     return { success: true, data: undefined };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('notifyTyping error:', errorDetail);
-    return serverError(errorDetail.message || '入力中通知の送信に失敗しました');
+    console.error('notifyTyping error:', error);
+    return handleApiErrorForAction<void>(error, { defaultMessage: '入力中通知の送信に失敗しました' });
   }
 }
 
@@ -185,9 +179,10 @@ export async function getDmCandidateUsers(limit = 10): Promise<ApiResponse<DmCan
     const response = await api.chat.getApiChatDmCandidates(limit);
     return { success: true, data: response };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('getDmCandidateUsers error:', errorDetail);
-    return serverError(errorDetail.message || 'DM候補ユーザーの取得に失敗しました');
+    console.error('getDmCandidateUsers error:', error);
+    return handleApiErrorForAction<DmCandidateUserItem[]>(error, {
+      defaultMessage: 'DM候補ユーザーの取得に失敗しました',
+    });
   }
 }
 
@@ -202,8 +197,9 @@ export async function searchUsers(query: string, limit = 20): Promise<ApiRespons
     const response = await api.user.getApiUsersSearch(query, limit);
     return { success: true, data: response };
   } catch (error) {
-    const errorDetail = parseErrorResponse(error);
-    console.error('searchUsers error:', errorDetail);
-    return serverError(errorDetail.message || 'ユーザーの検索に失敗しました');
+    console.error('searchUsers error:', error);
+    return handleApiErrorForAction<UserSearchResultResponse[]>(error, {
+      defaultMessage: 'ユーザーの検索に失敗しました',
+    });
   }
 }

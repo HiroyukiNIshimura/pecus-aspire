@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detect400ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   BackOfficeOrganizationDetailResponse,
   BackOfficeUpdateOrganizationRequest,
@@ -9,6 +9,7 @@ import type {
   PagedResponseOfBackOfficeOrganizationListItemResponse,
   SuccessResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 
 /**
@@ -24,7 +25,7 @@ export async function getBackOfficeOrganizations(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice organizations:', error);
-    return parseErrorResponse(error, '組織一覧の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '組織一覧の取得に失敗しました' });
   }
 }
 
@@ -40,7 +41,7 @@ export async function getBackOfficeOrganizationDetail(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice organization detail:', error);
-    return parseErrorResponse(error, '組織詳細の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '組織詳細の取得に失敗しました' });
   }
 }
 
@@ -57,7 +58,7 @@ export async function updateBackOfficeOrganization(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update backoffice organization:', error);
-    return parseErrorResponse(error, '組織の更新に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '組織の更新に失敗しました' });
   }
 }
 
@@ -79,7 +80,7 @@ export async function deleteBackOfficeOrganization(
     return { success: true, data: undefined };
   } catch (error) {
     console.error('Failed to delete backoffice organization:', error);
-    return parseErrorResponse(error, '組織の削除に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '組織の削除に失敗しました' });
   }
 }
 
@@ -95,11 +96,7 @@ export async function createBackOfficeOrganization(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create backoffice organization:', error);
-    const validationError = detect400ValidationError(error);
-    if (validationError) {
-      return validationError;
-    }
-    return parseErrorResponse(error, '組織の作成に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '組織の作成に失敗しました' });
   }
 }
 
@@ -113,6 +110,6 @@ export async function resendOrganizationCreatedEmail(organizationId: number): Pr
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to resend organization created email:', error);
-    return parseErrorResponse(error, '組織登録完了メールの再送に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '組織登録完了メールの再送に失敗しました' });
   }
 }

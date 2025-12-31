@@ -4,7 +4,6 @@ import {
   createAuthenticatedAxios,
   createPecusApiClients,
   detectConcurrencyError,
-  parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
 import type {
   AppPublicSettingsResponse,
@@ -19,6 +18,7 @@ import type {
   UserSettingResponse,
 } from '@/connectors/api/pecus';
 import type { UpdateEmailFormInput, UpdatePasswordFormInput, UpdateSkillsFormInput } from '@/schemas/profileSchemas';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
 /**
@@ -60,7 +60,9 @@ export async function updateProfile(request: {
     }
 
     console.error('Failed to update profile:', error);
-    return parseErrorResponse(error, 'プロフィールの更新に失敗しました');
+    return handleApiErrorForAction<UserDetailResponse>(error, {
+      defaultMessage: 'プロフィールの更新に失敗しました',
+    });
   }
 }
 
@@ -81,7 +83,9 @@ export async function requestEmailChange(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to request email change:', error);
-    return parseErrorResponse(error, 'メールアドレス変更リクエストに失敗しました');
+    return handleApiErrorForAction<EmailChangeRequestResponse>(error, {
+      defaultMessage: 'メールアドレス変更リクエストに失敗しました',
+    });
   }
 }
 
@@ -97,7 +101,9 @@ export async function verifyEmailChange(token: string): Promise<ApiResponse<Emai
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to verify email change:', error);
-    return parseErrorResponse(error, 'メールアドレス変更の確認に失敗しました');
+    return handleApiErrorForAction<EmailChangeVerifyResponse>(error, {
+      defaultMessage: 'メールアドレス変更の確認に失敗しました',
+    });
   }
 }
 
@@ -116,7 +122,9 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update password:', error);
-    return parseErrorResponse(error, 'パスワード変更に失敗しました');
+    return handleApiErrorForAction<MessageResponse>(error, {
+      defaultMessage: 'パスワード変更に失敗しました',
+    });
   }
 }
 
@@ -147,7 +155,9 @@ export async function deleteDevice(deviceId: number): Promise<ApiResponse<Messag
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete device:', error);
-    return parseErrorResponse(error, '接続端末の削除に失敗しました');
+    return handleApiErrorForAction<MessageResponse>(error, {
+      defaultMessage: '接続端末の削除に失敗しました',
+    });
   }
 }
 
@@ -201,7 +211,9 @@ export async function logoutOtherDevices(): Promise<
     };
   } catch (error) {
     console.error('Failed to logout other devices:', error);
-    return parseErrorResponse(error, '他デバイスのログアウトに失敗しました');
+    return handleApiErrorForAction<{ deletedSessionCount: number; deletedDeviceCount: number }>(error, {
+      defaultMessage: '他デバイスのログアウトに失敗しました',
+    });
   }
 }
 
@@ -230,7 +242,9 @@ export async function setUserSkills(input: UpdateSkillsFormInput): Promise<ApiRe
     }
 
     console.error('Failed to set skills:', error);
-    return parseErrorResponse(error, 'スキル設定に失敗しました');
+    return handleApiErrorForAction<SuccessResponse>(error, {
+      defaultMessage: 'スキル設定に失敗しました',
+    });
   }
 }
 
@@ -290,7 +304,9 @@ export async function uploadAvatarFile(fileData: {
     };
   } catch (error) {
     console.error('Failed to upload avatar file:', error);
-    return parseErrorResponse(error, 'アップロードに失敗しました');
+    return handleApiErrorForAction<{ fileUrl?: string; fileSize: number; contentType?: string }>(error, {
+      defaultMessage: 'アップロードに失敗しました',
+    });
   }
 }
 
@@ -309,7 +325,9 @@ export async function deleteAvatarFile(fileData: {
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete avatar file:', error);
-    return parseErrorResponse(error, '削除に失敗しました');
+    return handleApiErrorForAction<MessageResponse>(error, {
+      defaultMessage: '削除に失敗しました',
+    });
   }
 }
 
@@ -360,7 +378,9 @@ export async function updateUserSetting(request: {
     }
 
     console.error('Failed to update user setting:', error);
-    return parseErrorResponse(error, 'ユーザー設定の更新に失敗しました');
+    return handleApiErrorForAction<UserSettingResponse>(error, {
+      defaultMessage: 'ユーザー設定の更新に失敗しました',
+    });
   }
 }
 
@@ -378,6 +398,8 @@ export async function fetchAppSettings(): Promise<ApiResponse<AppPublicSettingsR
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch app settings:', error);
-    return parseErrorResponse(error, 'アプリケーション設定の取得に失敗しました');
+    return handleApiErrorForAction<AppPublicSettingsResponse>(error, {
+      defaultMessage: 'アプリケーション設定の取得に失敗しました',
+    });
   }
 }

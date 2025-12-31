@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   AdminUpdateOrganizationSettingRequest,
   GetAvailableModelsRequest,
@@ -8,6 +8,7 @@ import type {
   OrganizationResponse,
   OrganizationSettingResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 
 /**
@@ -20,7 +21,7 @@ export async function getOrganizationDetail(): Promise<ApiResponse<OrganizationR
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch organization detail:', error);
-    return parseErrorResponse(error, '組織情報の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '組織情報の取得に失敗しました' });
   }
 }
 
@@ -60,7 +61,7 @@ export async function updateOrganization(request: {
     }
 
     console.error('Failed to update organization:', error);
-    return parseErrorResponse(error, '組織情報の更新に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '組織情報の更新に失敗しました' });
   }
 }
 
@@ -112,7 +113,7 @@ export async function updateOrganizationSetting(request: {
     }
 
     console.error('Failed to update organization setting:', error);
-    return parseErrorResponse(error, '組織設定の更新に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: '組織設定の更新に失敗しました' });
   }
 }
 
@@ -142,6 +143,6 @@ export async function getAvailableModels(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch available models:', error);
-    return parseErrorResponse(error, 'モデル一覧の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'モデル一覧の取得に失敗しました' });
   }
 }

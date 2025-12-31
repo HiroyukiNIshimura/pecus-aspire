@@ -1,7 +1,8 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { RoleResponse } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 
 /**
@@ -14,6 +15,6 @@ export async function getAllRoles(): Promise<ApiResponse<RoleResponse[]>> {
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch roles:', error);
-    return parseErrorResponse(error, 'ロール一覧の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ロール一覧の取得に失敗しました' });
   }
 }

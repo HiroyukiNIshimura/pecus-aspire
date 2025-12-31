@@ -1,12 +1,13 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { LoginResponse, RoleInfoResponse } from '@/connectors/api/pecus';
 import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
 import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
 import { getApiBaseUrl } from '@/libs/env';
 import { type CreateSessionInput, type ServerSessionData, ServerSessionManager } from '@/libs/serverSession';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 import { serverError } from './types';
 
@@ -87,14 +88,9 @@ export async function login(request: {
 
     return { success: true, data: response };
   } catch (error) {
-    // エラーの詳細をログに出力（デバッグ用）
-    console.error('Failed to login:', error);
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
-    return parseErrorResponse(error, 'ログインに失敗しました');
+    return handleApiErrorForAction<LoginResponse>(error, {
+      defaultMessage: 'ログインに失敗しました',
+    });
   }
 }
 
@@ -116,7 +112,9 @@ export async function getCurrentUser(): Promise<ApiResponse<ServerSessionData['u
     return { success: true, data: user };
   } catch (error) {
     console.error('Failed to get current user:', error);
-    return parseErrorResponse(error, 'ユーザー情報の取得に失敗しました');
+    return handleApiErrorForAction<ServerSessionData['user'] | null>(error, {
+      defaultMessage: 'ユーザー情報の取得に失敗しました',
+    });
   }
 }
 
@@ -155,6 +153,8 @@ export async function logout(): Promise<ApiResponse<null>> {
     return { success: true, data: null };
   } catch (error) {
     console.error('Failed to logout:', error);
-    return parseErrorResponse(error, 'ログアウトに失敗しました');
+    return handleApiErrorForAction<null>(error, {
+      defaultMessage: 'ログアウトに失敗しました',
+    });
   }
 }

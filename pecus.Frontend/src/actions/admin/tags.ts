@@ -1,12 +1,13 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   PagedResponseOfTagListItemResponseAndTagStatistics,
   SuccessResponse,
   TagDetailResponse,
   TagResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 
 /**
@@ -22,7 +23,7 @@ export async function getTags(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch tags:', error);
-    return parseErrorResponse(error, 'タグ一覧の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'タグ一覧の取得に失敗しました' });
   }
 }
 
@@ -36,7 +37,7 @@ export async function getTagDetail(id: number): Promise<ApiResponse<TagDetailRes
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch tag detail:', error);
-    return parseErrorResponse(error, 'タグ情報の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'タグ情報の取得に失敗しました' });
   }
 }
 
@@ -50,7 +51,7 @@ export async function createTag(request: { name: string; description?: string })
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create tag:', error);
-    return parseErrorResponse(error, 'タグの作成に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'タグの作成に失敗しました' });
   }
 }
 
@@ -101,7 +102,7 @@ export async function updateTag(
     }
 
     console.error('Failed to update tag:', error);
-    return parseErrorResponse(error, 'タグの更新に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'タグの更新に失敗しました' });
   }
 }
 
@@ -115,7 +116,7 @@ export async function deleteTag(id: number): Promise<ApiResponse<SuccessResponse
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete tag:', error);
-    return parseErrorResponse(error, 'タグの削除に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'タグの削除に失敗しました' });
   }
 }
 
@@ -143,7 +144,7 @@ export async function activateTag(id: number): Promise<ApiResponse<SuccessRespon
       };
     }
     console.error('Failed to activate tag:', error);
-    return parseErrorResponse(error, 'タグの有効化に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'タグの有効化に失敗しました' });
   }
 }
 
@@ -172,6 +173,6 @@ export async function deactivateTag(id: number): Promise<ApiResponse<SuccessResp
     }
     console.error('Failed to deactivate tag:', error);
 
-    return parseErrorResponse(error, 'タグの無効化に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'タグの無効化に失敗しました' });
   }
 }

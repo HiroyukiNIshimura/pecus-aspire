@@ -4,7 +4,6 @@ import {
   createPecusApiClients,
   detectConcurrencyError,
   detectMemberHasAssignmentsError,
-  parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
 import type {
   PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
@@ -12,6 +11,7 @@ import type {
   WorkspaceDetailResponse,
   WorkspaceUserDetailResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 
 /**
@@ -28,7 +28,7 @@ export async function getWorkspaces(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
-    return parseErrorResponse(error, 'ワークスペース一覧の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ワークスペース一覧の取得に失敗しました' });
   }
 }
 
@@ -42,7 +42,7 @@ export async function getWorkspaceDetail(workspaceId: number): Promise<ApiRespon
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace detail:', error);
-    return parseErrorResponse(error, 'ワークスペース詳細の取得に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ワークスペース詳細の取得に失敗しました' });
   }
 }
 
@@ -61,7 +61,7 @@ export async function createWorkspace(request: {
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create workspace:', error);
-    return parseErrorResponse(error, 'ワークスペースの作成に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ワークスペースの作成に失敗しました' });
   }
 }
 
@@ -100,7 +100,7 @@ export async function updateWorkspace(
     }
 
     console.error('Failed to update workspace:', error);
-    return parseErrorResponse(error, 'ワークスペースの更新に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ワークスペースの更新に失敗しました' });
   }
 }
 
@@ -114,7 +114,7 @@ export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete workspace:', error);
-    return parseErrorResponse(error, 'ワークスペースの削除に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ワークスペースの削除に失敗しました' });
   }
 }
 
@@ -148,7 +148,7 @@ export async function activateWorkspace(
     }
 
     console.error('Failed to activate workspace:', error);
-    return parseErrorResponse(error, 'ワークスペースの有効化に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ワークスペースの有効化に失敗しました' });
   }
 }
 
@@ -182,7 +182,7 @@ export async function deactivateWorkspace(
     }
 
     console.error('Failed to deactivate workspace:', error);
-    return parseErrorResponse(error, 'ワークスペースの無効化に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ワークスペースの無効化に失敗しました' });
   }
 }
 
@@ -199,7 +199,7 @@ export async function removeWorkspaceMember(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to remove workspace member:', error);
-    return parseErrorResponse(error, 'メンバーの削除に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'メンバーの削除に失敗しました' });
   }
 }
 
@@ -231,7 +231,7 @@ export async function updateWorkspaceMemberRole(
       };
     }
 
-    return parseErrorResponse(error, 'ロールの変更に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'ロールの変更に失敗しました' });
   }
 }
 
@@ -252,6 +252,7 @@ export async function addWorkspaceMember(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to add workspace member:', error);
-    return parseErrorResponse(error, 'メンバーの追加に失敗しました');
+    return handleApiErrorForAction(error, { defaultMessage: 'メンバーの追加に失敗しました' });
   }
 }
+

@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   DashboardTaskFilter,
   MyTaskWorkspaceResponse,
@@ -8,6 +8,7 @@ import type {
   TaskStatusFilter,
   TasksByDueDateResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
 /**
@@ -23,12 +24,10 @@ export async function fetchMyTasks(
 
     return { success: true, data: response };
   } catch (error: unknown) {
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'タスク一覧の取得に失敗しました',
-    };
+    console.error('Failed to fetch my tasks:', error);
+    return handleApiErrorForAction<PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics>(error, {
+      defaultMessage: 'タスク一覧の取得に失敗しました',
+    });
   }
 }
 
@@ -43,7 +42,9 @@ export async function fetchMyTaskWorkspaces(): Promise<ApiResponse<MyTaskWorkspa
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch task workspaces:', error);
-    return parseErrorResponse(error, 'タスクワークスペース一覧の取得に失敗しました');
+    return handleApiErrorForAction<MyTaskWorkspaceResponse[]>(error, {
+      defaultMessage: 'タスクワークスペース一覧の取得に失敗しました',
+    });
   }
 }
 
@@ -61,6 +62,8 @@ export async function fetchMyTasksByWorkspace(
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch my tasks by workspace:', error);
-    return parseErrorResponse(error, 'マイタスク一覧の取得に失敗しました');
+    return handleApiErrorForAction<TasksByDueDateResponse[]>(error, {
+      defaultMessage: 'マイタスク一覧の取得に失敗しました',
+    });
   }
 }

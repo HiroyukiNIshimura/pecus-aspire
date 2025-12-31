@@ -1,7 +1,8 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { MasterGenreResponse } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
 /**
@@ -14,6 +15,8 @@ export async function getGenres(): Promise<ApiResponse<MasterGenreResponse[]>> {
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch genres:', error);
-    return parseErrorResponse(error, 'マスタージャンルの取得に失敗しました。');
+    return handleApiErrorForAction<MasterGenreResponse[]>(error, {
+      defaultMessage: 'マスタージャンルの取得に失敗しました。',
+    });
   }
 }
