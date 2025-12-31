@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import {
+  detect400ValidationError,
   detect401ValidationError,
   detect403ValidationError,
   detect404ValidationError,
+  getHttpErrorInfo,
+  getUserSafeErrorMessage,
 } from '@/connectors/api/PecusApiClient';
 
 export type RouterErrorType = {
@@ -51,6 +54,12 @@ export const serverError = (message: string): NextResponse<RouterErrorType> => {
  * catch ブロックで捕捉した例外を解析して適切な HTTP ステータスにマッピング
  */
 export const parseRouterError = (error: unknown, defaultMessage: string): NextResponse<RouterErrorType> => {
+  const badRequest = detect400ValidationError(error);
+  if (badRequest) {
+    console.error('Bad Request error detected:', badRequest.message);
+    return NextResponse.json({ error: badRequest.message, status: 400 }, { status: 400 });
+  }
+
   const noAuthError = detect401ValidationError(error);
   if (noAuthError) {
     console.error('Unauthorized error detected:', noAuthError.message);
@@ -69,11 +78,15 @@ export const parseRouterError = (error: unknown, defaultMessage: string): NextRe
     return NextResponse.json({ error: notFound.message, status: 404 }, { status: 404 });
   }
 
-  return NextResponse.json(
-    {
-      error: defaultMessage,
-      status: 500,
-    },
-    { status: 500 },
-  );
+  const info = getHttpErrorInfo(error);
+  if (info.status !== undefined) {
+    const status = info.status >= 500 ? 500 : info.status;
+    const message = getUserSafeErrorMessage(error, defaultMessage);
+
+    console.error('Router error passthrough:', { status: info.status });
+    return NextResponse.json({ error: message, status }, { status });
+  }
+
+  console.error('Router unknown error:', error);
+  return NextResponse.json({ error: defaultMessage, status: 500 }, { status: 500 });
 };

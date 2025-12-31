@@ -5,7 +5,7 @@ import {
 } from "./PecusApiClient.generated";
 import Axios from "axios";
 import type { ConcurrencyErrorResponseBody } from "./ConflictDataTypes.generated";
-import { ErrorResponse } from "@/actions/types";
+import type { ErrorResponse } from "@/actions/types";
 import { ApiError } from "./pecus/core/ApiError";
 import type { WorkspaceMemberAssignmentsResponse } from "./pecus";
 import { getApiBaseUrl } from "@/libs/env";
@@ -252,6 +252,51 @@ function extractBodyMessage(error: unknown): string | null {
   }
 
   return null;
+}
+
+/**
+ * 通信層の“デコード結果”（ここでは業務判断しない）
+ */
+export type HttpErrorInfo = {
+  status?: number;
+  /**
+   * body.message を可能なら抽出（ただし 5xx は常に null）
+   */
+  bodyMessage: string | null;
+};
+
+export function getHttpErrorInfo(error: unknown): HttpErrorInfo {
+  return {
+    status: getHttpStatus(error),
+    bodyMessage: extractBodyMessage(error),
+  };
+}
+
+/**
+ * ユーザーに出してよいメッセージ候補を返す（5xxは必ずfallback）
+ * - 4xx: body.message があればそれを優先
+ * - それ以外: fallback
+ */
+export function getUserSafeErrorMessage(error: unknown, fallback: string): string {
+  const { status, bodyMessage } = getHttpErrorInfo(error);
+
+  if (status !== undefined && status >= 500) {
+    return fallback;
+  }
+
+  if (bodyMessage) {
+    return bodyMessage;
+  }
+
+  if (typeof error === "string" && error) {
+    return error;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
 }
 
 /**

@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   DashboardHelpCommentsResponse,
   DashboardPersonalSummaryResponse,
@@ -9,6 +9,7 @@ import type {
   DashboardTaskTrendResponse,
   DashboardWorkspaceBreakdownResponse,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
 /**
@@ -23,7 +24,9 @@ export async function fetchDashboardSummary(): Promise<ApiResponse<DashboardSumm
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch dashboard summary:', error);
-    return parseErrorResponse(error, 'ダッシュボードサマリの取得に失敗しました');
+    return handleApiErrorForAction<DashboardSummaryResponse>(error, {
+      defaultMessage: 'ダッシュボードサマリの取得に失敗しました',
+    });
   }
 }
 
@@ -39,7 +42,9 @@ export async function fetchTasksByPriority(): Promise<ApiResponse<DashboardTasks
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch tasks by priority:', error);
-    return parseErrorResponse(error, '優先度別タスク数の取得に失敗しました');
+    return handleApiErrorForAction<DashboardTasksByPriorityResponse>(error, {
+      defaultMessage: '優先度別タスク数の取得に失敗しました',
+    });
   }
 }
 
@@ -55,7 +60,9 @@ export async function fetchPersonalSummary(): Promise<ApiResponse<DashboardPerso
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch personal summary:', error);
-    return parseErrorResponse(error, '個人サマリの取得に失敗しました');
+    return handleApiErrorForAction<DashboardPersonalSummaryResponse>(error, {
+      defaultMessage: '個人サマリの取得に失敗しました',
+    });
   }
 }
 
@@ -71,7 +78,9 @@ export async function fetchWorkspaceBreakdown(): Promise<ApiResponse<DashboardWo
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch workspace breakdown:', error);
-    return parseErrorResponse(error, 'ワークスペース別統計の取得に失敗しました');
+    return handleApiErrorForAction<DashboardWorkspaceBreakdownResponse>(error, {
+      defaultMessage: 'ワークスペース別統計の取得に失敗しました',
+    });
   }
 }
 
@@ -88,7 +97,9 @@ export async function fetchTaskTrend(weeks: number = 8): Promise<ApiResponse<Das
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch task trend:', error);
-    return parseErrorResponse(error, 'タスクトレンドの取得に失敗しました');
+    return handleApiErrorForAction<DashboardTaskTrendResponse>(error, {
+      defaultMessage: 'タスクトレンドの取得に失敗しました',
+    });
   }
 }
 
@@ -104,6 +115,8 @@ export async function fetchHelpComments(): Promise<ApiResponse<DashboardHelpComm
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch help comments:', error);
-    return parseErrorResponse(error, 'ヘルプコメントの取得に失敗しました');
+    return handleApiErrorForAction<DashboardHelpCommentsResponse>(error, {
+      defaultMessage: 'ヘルプコメントの取得に失敗しました',
+    });
   }
 }
