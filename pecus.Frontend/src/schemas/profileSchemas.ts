@@ -105,3 +105,29 @@ export const createUserWithoutPasswordSchema = z.object({
   email: newEmailSchema,
 });
 export type CreateUserWithoutPasswordInput = z.infer<typeof createUserWithoutPasswordSchema>;
+
+/**
+ * スキル名（最大100文字）
+ */
+export const skillNameSchema = z
+  .string()
+  .min(1, 'スキル名は必須です。')
+  .max(100, 'スキル名は100文字以内で入力してください。');
+
+/**
+ * スキル説明（最大500文字、オプション）
+ */
+export const skillDescriptionSchema = z
+  .string()
+  .max(500, '説明は500文字以内で入力してください。')
+  .optional()
+  .or(z.literal(''));
+
+/**
+ * スキル作成フォーム（管理者用）
+ */
+export const createSkillSchema = z.object({
+  name: skillNameSchema,
+  description: skillDescriptionSchema,
+});
+export type CreateSkillInput = z.infer<typeof createSkillSchema>;

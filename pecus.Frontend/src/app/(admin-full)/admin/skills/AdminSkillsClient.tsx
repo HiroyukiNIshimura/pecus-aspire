@@ -15,6 +15,7 @@ import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { skillNameFilterSchema } from '@/schemas/filterSchemas';
+import CreateSkillModal from './CreateSkillModal';
 
 export default function AdminSkillsClient() {
   const router = useRouter();
@@ -36,6 +37,9 @@ export default function AdminSkillsClient() {
   // 削除モーダルの状態
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [skillToDelete, setSkillToDelete] = useState<SkillListItemResponse | null>(null);
+
+  // 新規スキル作成モーダルの状態
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // バリデーション
   const nameValidation = useValidation(skillNameFilterSchema);
@@ -202,7 +206,8 @@ export default function AdminSkillsClient() {
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">スキル管理</h1>
-              <button type="button" className="btn btn-primary">
+              <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
+                <span className="icon-[mdi--tag-plus-outline] w-5 h-5" aria-hidden="true" />
                 新規スキル追加
               </button>
             </div>
@@ -507,6 +512,13 @@ export default function AdminSkillsClient() {
           </div>
         </main>
       </div>
+
+      {/* 新規スキル作成モーダル */}
+      <CreateSkillModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleFilterChange}
+      />
 
       {/* 削除確認モーダル */}
       <DeleteConfirmModal
