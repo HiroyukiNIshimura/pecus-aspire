@@ -2,7 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import { deleteBackOfficeOrganization, updateBackOfficeOrganization } from '@/actions/backoffice/organizations';
+import {
+  deleteBackOfficeOrganization,
+  resendOrganizationCreatedEmail,
+  updateBackOfficeOrganization,
+} from '@/actions/backoffice/organizations';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
@@ -95,6 +99,22 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     } else {
       setClientError({ message: result.message, code: result.error });
       notify.error(result.message || '削除に失敗しました');
+    }
+  };
+
+  const handleResendCreatedEmail = async () => {
+    if (!data) return;
+
+    try {
+      const result = await resendOrganizationCreatedEmail(data.id);
+      if (result.success) {
+        notify.success('組織登録完了メールを再送しました。');
+      } else {
+        notify.error(result.message || '組織登録完了メールの再送に失敗しました。');
+      }
+    } catch (err: unknown) {
+      console.error('組織登録完了メール再送中にエラーが発生:', err);
+      notify.error('組織登録完了メール再送中にエラーが発生しました。');
     }
   };
 
@@ -305,6 +325,21 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                   <div className="mt-6">
                     <div className="text-sm font-semibold text-base-content/70 mb-1">説明</div>
                     <div className="text-base whitespace-pre-wrap">{data.description || '未設定'}</div>
+                  </div>
+
+                  {/* その他の操作 */}
+                  <div className="divider" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-base-content/70 mb-3">その他の操作</h3>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={handleResendCreatedEmail}
+                      disabled={isPending}
+                    >
+                      <span className="icon-[tabler--mail-forward] w-4 h-4" />
+                      組織登録完了メール再送
+                    </button>
                   </div>
                 </div>
               </div>

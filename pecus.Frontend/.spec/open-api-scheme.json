@@ -8636,6 +8636,65 @@
         ]
       }
     },
+    "/api/backoffice/organizations/{id}/resend-created-email": {
+      "post": {
+        "tags": [
+          "BackOffice - Organizations"
+        ],
+        "summary": "組織登録完了メールを再送",
+        "description": "組織登録完了メールを再送します。\n管理者ユーザーがパスワード未設定の場合のみ再送可能です。\nパスワード設定トークンは再生成されます。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "組織ID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "組織登録完了メールが送信されました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "管理者ユーザーは既にパスワードを設定済みです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "組織または管理者ユーザーが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/backoffice/notifications": {
       "get": {
         "tags": [

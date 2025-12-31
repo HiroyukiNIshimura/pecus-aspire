@@ -7,6 +7,7 @@ import type {
   CreateOrganizationRequest,
   OrganizationWithAdminResponse,
   PagedResponseOfBackOfficeOrganizationListItemResponse,
+  SuccessResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from '../types';
 
@@ -99,5 +100,19 @@ export async function createBackOfficeOrganization(
       return validationError;
     }
     return parseErrorResponse(error, '組織の作成に失敗しました');
+  }
+}
+
+/**
+ * Server Action: BackOffice - 組織登録完了メールを再送
+ */
+export async function resendOrganizationCreatedEmail(organizationId: number): Promise<ApiResponse<SuccessResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.backOfficeOrganizations.postApiBackofficeOrganizationsResendCreatedEmail(organizationId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to resend organization created email:', error);
+    return parseErrorResponse(error, '組織登録完了メールの再送に失敗しました');
   }
 }

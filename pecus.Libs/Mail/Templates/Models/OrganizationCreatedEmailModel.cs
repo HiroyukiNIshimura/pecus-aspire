@@ -34,6 +34,11 @@ public class OrganizationCreatedEmailModel : IEmailTemplateModel<OrganizationCre
     public string AdminEmail { get; set; } = string.Empty;
 
     /// <summary>
+    /// 管理者ログインID
+    /// </summary>
+    public string AdminLoginId { get; set; } = string.Empty;
+
+    /// <summary>
     /// パスワード設定URL（トークンを含む）
     /// </summary>
     public string PasswordSetupUrl { get; set; } = string.Empty;

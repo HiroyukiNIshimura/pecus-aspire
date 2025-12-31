@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Requests.BackOffice;
 using Pecus.Models.Responses.BackOffice;
 using Pecus.Models.Responses.Common;
@@ -368,5 +369,20 @@ public class BackOfficeOrganizationService
             _logger.LogError(ex, "組織の削除に失敗しました: OrganizationId={OrganizationId}", id);
             throw;
         }
+    }
+
+    /// <summary>
+    /// 組織の管理者ユーザーを取得（Adminロールを持つ最初のユーザー）
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>管理者ユーザー（見つからない場合はnull）</returns>
+    public async Task<User?> GetOrganizationAdminUserAsync(int organizationId)
+    {
+        return await _context.Users
+            .Include(u => u.Roles)
+            .Where(u => u.OrganizationId == organizationId && u.IsActive)
+            .Where(u => u.Roles.Any(r => r.Name == SystemRole.Admin))
+            .OrderBy(u => u.CreatedAt)
+            .FirstOrDefaultAsync();
     }
 }

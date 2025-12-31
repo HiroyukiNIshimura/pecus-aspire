@@ -234,7 +234,7 @@ public class OrganizationService
     /// <summary>
     /// パスワード設定トークンを生成（URL安全なBase64）
     /// </summary>
-    private static string GeneratePasswordResetToken()
+    public static string GeneratePasswordResetToken()
     {
         using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
         var tokenBytes = new byte[32];
@@ -245,6 +245,11 @@ public class OrganizationService
             .Replace('/', '_')
             .TrimEnd('=');
     }
+
+    /// <summary>
+    /// 変更を保存
+    /// </summary>
+    public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
 
     /// <summary>
     /// 組織IDで取得

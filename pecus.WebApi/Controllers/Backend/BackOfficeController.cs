@@ -151,6 +151,7 @@ public class BackOfficeController : BaseBackendController
             RepresentativeName = organization.RepresentativeName ?? string.Empty,
             AdminUserName = adminUser.Username,
             AdminEmail = adminUser.Email,
+            AdminLoginId = adminUser.LoginId,
             PasswordSetupUrl = passwordSetupUrl,
             TokenExpiresAt = tokenExpiresAt,
             CreatedAt = organization.CreatedAt,
@@ -216,5 +217,86 @@ public class BackOfficeController : BaseBackendController
             },
         };
         return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// 組織登録完了メールを再送
+    /// </summary>
+    /// <remarks>
+    /// 組織登録完了メールを再送します。
+    /// 管理者ユーザーがパスワード未設定の場合のみ再送可能です。
+    /// パスワード設定トークンは再生成されます。
+    /// </remarks>
+    /// <param name="id">組織ID</param>
+    /// <response code="200">組織登録完了メールが送信されました</response>
+    /// <response code="400">管理者ユーザーは既にパスワードを設定済みです</response>
+    /// <response code="404">組織または管理者ユーザーが見つかりません</response>
+    [HttpPost("{id:int}/resend-created-email")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<Ok<SuccessResponse>> ResendOrganizationCreatedEmail(int id)
+    {
+        // 組織を取得
+        var organization = await _organizationService.GetOrganizationByIdAsync(id);
+        if (organization == null)
+        {
+            throw new NotFoundException("組織が見つかりません。");
+        }
+
+        // 組織の管理者ユーザーを取得（Adminロールを持つ最初のユーザー）
+        var adminUser = await _backOfficeOrganizationService.GetOrganizationAdminUserAsync(id);
+        if (adminUser == null)
+        {
+            throw new NotFoundException("組織の管理者ユーザーが見つかりません。");
+        }
+
+        // パスワードが既に設定されている場合はエラー（空文字列はパスワード未設定）
+        if (!string.IsNullOrEmpty(adminUser.PasswordHash))
+        {
+            throw new InvalidOperationException("管理者ユーザーは既にパスワードを設定済みです。パスワードリセット機能をご利用ください。");
+        }
+
+        // パスワード設定トークンを再生成
+        var token = OrganizationService.GeneratePasswordResetToken();
+        var tokenExpiresAt = DateTime.UtcNow.AddHours(24);
+        adminUser.PasswordResetToken = token;
+        adminUser.PasswordResetTokenExpiresAt = tokenExpiresAt;
+        await _organizationService.SaveChangesAsync();
+
+        // Aspire の Frontend:Endpoint からフロントエンドURLを取得
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
+        var passwordSetupUrl = $"{baseUrl}/password-setup?token={token}";
+
+        // 組織登録完了メールを送信
+        var emailModel = new OrganizationCreatedEmailModel
+        {
+            OrganizationName = organization.Name,
+            OrganizationEmail = organization.Email ?? string.Empty,
+            RepresentativeName = organization.RepresentativeName ?? string.Empty,
+            AdminUserName = adminUser.Username,
+            AdminEmail = adminUser.Email,
+            AdminLoginId = adminUser.LoginId,
+            PasswordSetupUrl = passwordSetupUrl,
+            TokenExpiresAt = tokenExpiresAt,
+            CreatedAt = organization.CreatedAt,
+        };
+
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendTemplatedEmailAsync(
+                organization.Id,
+                organization.Email ?? string.Empty,
+                "組織登録完了",
+                emailModel
+            )
+        );
+
+        _logger.LogInformation(
+            "組織登録完了メールを再送しました: OrganizationId={OrganizationId}, AdminEmail={AdminEmail}",
+            organization.Id,
+            adminUser.Email
+        );
+
+        return TypedResults.Ok(new SuccessResponse { Message = "組織登録完了メールを再送しました。" });
     }
 }

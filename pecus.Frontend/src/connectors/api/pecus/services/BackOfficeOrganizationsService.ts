@@ -8,6 +8,7 @@ import type { BackOfficeUpdateOrganizationRequest } from '../models/BackOfficeUp
 import type { CreateOrganizationRequest } from '../models/CreateOrganizationRequest';
 import type { OrganizationWithAdminResponse } from '../models/OrganizationWithAdminResponse';
 import type { PagedResponseOfBackOfficeOrganizationListItemResponse } from '../models/PagedResponseOfBackOfficeOrganizationListItemResponse';
+import type { SuccessResponse } from '../models/SuccessResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -135,6 +136,30 @@ export class BackOfficeOrganizationsService {
                 403: `Forbidden`,
                 404: `Not Found`,
                 409: `Conflict`,
+            },
+        });
+    }
+    /**
+     * 組織登録完了メールを再送
+     * 組織登録完了メールを再送します。
+     * 管理者ユーザーがパスワード未設定の場合のみ再送可能です。
+     * パスワード設定トークンは再生成されます。
+     * @param id 組織ID
+     * @returns SuccessResponse 組織登録完了メールが送信されました
+     * @throws ApiError
+     */
+    public static postApiBackofficeOrganizationsResendCreatedEmail(
+        id: number,
+    ): CancelablePromise<SuccessResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/backoffice/organizations/{id}/resend-created-email',
+            path: {
+                'id': id,
+            },
+            errors: {
+                400: `管理者ユーザーは既にパスワードを設定済みです`,
+                404: `組織または管理者ユーザーが見つかりません`,
             },
         });
     }
