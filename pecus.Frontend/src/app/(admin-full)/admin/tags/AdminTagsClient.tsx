@@ -15,6 +15,7 @@ import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { tagNameFilterSchema } from '@/schemas/filterSchemas';
+import CreateTagModal from './CreateTagModal';
 
 export default function AdminTagsClient() {
   const router = useRouter();
@@ -36,6 +37,9 @@ export default function AdminTagsClient() {
   // 削除モーダルの状態
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [tagToDelete, setTagToDelete] = useState<TagListItemResponse | null>(null);
+
+  // 新規タグ作成モーダルの状態
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // バリデーション
   const nameValidation = useValidation(tagNameFilterSchema);
@@ -202,7 +206,8 @@ export default function AdminTagsClient() {
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">タグ管理</h1>
-              <button type="button" className="btn btn-primary">
+              <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
+                <span className="icon-[mdi--tag-plus-outline] w-5 h-5" aria-hidden="true" />
                 新規作成
               </button>
             </div>
@@ -503,6 +508,13 @@ export default function AdminTagsClient() {
           </div>
         </main>
       </div>
+
+      {/* 新規タグ作成モーダル */}
+      <CreateTagModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleFilterChange}
+      />
 
       {/* 削除確認モーダル */}
       <DeleteConfirmModal

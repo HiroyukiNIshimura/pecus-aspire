@@ -131,3 +131,16 @@ export const createSkillSchema = z.object({
   description: skillDescriptionSchema,
 });
 export type CreateSkillInput = z.infer<typeof createSkillSchema>;
+
+/**
+ * タグ名（最大50文字）
+ */
+export const tagNameSchema = z.string().min(1, 'タグ名は必須です。').max(50, 'タグ名は50文字以内で入力してください。');
+
+/**
+ * タグ作成フォーム（管理者用）
+ */
+export const createTagSchema = z.object({
+  name: tagNameSchema,
+});
+export type CreateTagInput = z.infer<typeof createTagSchema>;

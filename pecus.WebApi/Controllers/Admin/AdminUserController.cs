@@ -405,6 +405,7 @@ public class AdminUserController : BaseAdminController
                 {
                     UserName = user.Username,
                     Email = user.Email,
+                    LoginId = user.LoginId,
                     OrganizationName = organization.Name,
                     PasswordSetupUrl = passwordSetupUrl,
                     TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,

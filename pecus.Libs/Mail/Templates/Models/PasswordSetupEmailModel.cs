@@ -19,6 +19,11 @@ public class PasswordSetupEmailModel : IEmailTemplateModel<PasswordSetupEmailMod
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
+    /// ログインID
+    /// </summary>
+    public string LoginId { get; set; } = string.Empty;
+
+    /// <summary>
     /// 組織名
     /// </summary>
     public string OrganizationName { get; set; } = string.Empty;
