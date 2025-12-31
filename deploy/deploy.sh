@@ -16,6 +16,15 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 CONFIG_DIR="$ROOT_DIR/config"
 DEPLOY_DIR="$SCRIPT_DIR"
 
+# スクリプト終了時にターミナルの状態を復元
+cleanup() {
+    # カーソルを表示
+    printf '\033[?25h'
+    # ターミナルの状態をリセット
+    stty sane 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM
+
 # 色付き出力
 RED='\033[0;31m'
 GREEN='\033[0;32m'
