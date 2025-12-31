@@ -51,8 +51,15 @@ export default function DocumentTreeSidebar({
   const loadDocumentTree = useCallback(async () => {
     try {
       setError(null);
-      const data = await fetchDocumentTree(workspaceId);
-      setItems(data.items || []);
+      const result = await fetchDocumentTree(workspaceId);
+      if (result.success) {
+        setItems(result.data.items || []);
+        return;
+      }
+
+      const errorMessage = result.message || 'ドキュメントツリーの取得に失敗しました。';
+      setError(errorMessage);
+      notifyRef.current.error(errorMessage);
     } catch (err) {
       console.error('Failed to fetch document tree:', err);
       const errorMessage = err instanceof Error ? err.message : 'ドキュメントツリーの取得に失敗しました。';
@@ -108,11 +115,18 @@ export default function DocumentTreeSidebar({
       const draggedItem = items.find((item) => item.id === targetItemId);
       const rowVersion = draggedItem?.rowVersion ?? 0;
 
-      await updateItemParent(workspaceId, {
+      const updateResult = await updateItemParent(workspaceId, {
         itemId: targetItemId,
         newParentItemId: newParentId,
         rowVersion,
       });
+
+      if (!updateResult.success) {
+        notifyRef.current.error(updateResult.message || 'アイテムの移動に失敗しました。');
+        // エラー時はツリーを再取得して元に戻す
+        await loadDocumentTree();
+        return;
+      }
 
       notifyRef.current.success('アイテムを移動しました。');
 

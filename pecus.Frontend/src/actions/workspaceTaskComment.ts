@@ -9,6 +9,7 @@ import type {
   TaskCommentType,
   UpdateTaskCommentRequest,
 } from '@/connectors/api/pecus';
+import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
 /**
@@ -35,12 +36,10 @@ export async function getTaskComments(
 
     return { success: true, data: response };
   } catch (error: unknown) {
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'コメント一覧の取得に失敗しました',
-    };
+    console.error('getTaskComments error:', error);
+    return handleApiErrorForAction<PagedResponseOfTaskCommentDetailResponse>(error, {
+      defaultMessage: 'コメント一覧の取得に失敗しました',
+    });
   }
 }
 
@@ -59,12 +58,10 @@ export async function getTaskComment(
 
     return { success: true, data: response };
   } catch (error: unknown) {
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'コメントの取得に失敗しました',
-    };
+    console.error('getTaskComment error:', error);
+    return handleApiErrorForAction<TaskCommentDetailResponse>(error, {
+      defaultMessage: 'コメントの取得に失敗しました',
+    });
   }
 }
 
@@ -83,12 +80,10 @@ export async function createTaskComment(
 
     return { success: true, data: response };
   } catch (error: unknown) {
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'コメントの作成に失敗しました',
-    };
+    console.error('createTaskComment error:', error);
+    return handleApiErrorForAction<TaskCommentResponse>(error, {
+      defaultMessage: 'コメントの作成に失敗しました',
+    });
   }
 }
 
@@ -130,12 +125,10 @@ export async function updateTaskComment(
       };
     }
 
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'コメントの更新に失敗しました',
-    };
+    console.error('updateTaskComment error:', error);
+    return handleApiErrorForAction<TaskCommentResponse>(error, {
+      defaultMessage: 'コメントの更新に失敗しました',
+    });
   }
 }
 
@@ -177,11 +170,9 @@ export async function deleteTaskComment(
       };
     }
 
-    const err = error as { body?: { message?: string }; message?: string };
-    return {
-      success: false,
-      error: 'server',
-      message: err.body?.message || err.message || 'コメントの削除に失敗しました',
-    };
+    console.error('deleteTaskComment error:', error);
+    return handleApiErrorForAction<TaskCommentResponse>(error, {
+      defaultMessage: 'コメントの削除に失敗しました',
+    });
   }
 }
