@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import { ServerSessionManager } from '@/libs/serverSession';
 import ChatFullScreenClient from './ChatFullScreenClient';
 
@@ -37,8 +37,11 @@ export default async function ChatPage() {
     if (detect401ValidationError(error)) {
       redirect('/signin');
     }
-    const errorDetail = parseErrorResponse(error);
-    console.error('ChatPage: Failed to fetch chat data', errorDetail);
+    const info = getHttpErrorInfo(error);
+    console.error('ChatPage: Failed to fetch chat data', {
+      status: info.status,
+      message: getUserSafeErrorMessage(error, 'チャットデータの取得に失敗しました'),
+    });
 
     // エラー時はサインインへリダイレクト
     redirect('/signin');

@@ -1,4 +1,4 @@
-import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import type { UserSettingResponse } from '@/connectors/api/pecus';
 import UserSettingsClient from './UserSettingsClient';
 
@@ -20,7 +20,7 @@ export default async function UserSettingsPage() {
     userSettings = userResponse.setting ?? null;
   } catch (error) {
     console.error('Failed to fetch user settings data:', error);
-    fetchError = parseErrorResponse(error, 'ユーザー設定情報の取得に失敗しました').message;
+    fetchError = getUserSafeErrorMessage(error, 'ユーザー設定情報の取得に失敗しました');
   }
 
   // 設定が取得できない場合はデフォルト値を使用

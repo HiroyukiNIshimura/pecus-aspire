@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { detect404ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { detect404ValidationError } from '@/connectors/api/PecusApiClient';
 import type { DeviceResponse, MasterSkillResponse, PendingEmailChangeResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
@@ -35,6 +35,35 @@ function getTabFromParam(param: string | null): TabType {
   if (!param) return 'basic';
   const normalized = param.toLowerCase();
   return tabParamMap[normalized] ?? 'basic';
+}
+
+function getStatusFromUnknown(error: unknown): number | undefined {
+  if (typeof error !== 'object' || error === null) {
+    return undefined;
+  }
+
+  if ('status' in error && typeof (error as { status?: unknown }).status === 'number') {
+    return (error as { status: number }).status;
+  }
+
+  return undefined;
+}
+
+function getClientSafeErrorMessage(error: unknown, fallback: string): string {
+  const status = getStatusFromUnknown(error);
+  if (status !== undefined && status >= 500) {
+    return fallback;
+  }
+
+  if (typeof error === 'string' && error) {
+    return error;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
 }
 
 export default function ProfileClient({
@@ -97,8 +126,7 @@ export default function ProfileClient({
         return;
       }
 
-      const parsed = parseErrorResponse(error, '接続端末の取得に失敗しました');
-      setDevicesError(parsed.message);
+      setDevicesError(getClientSafeErrorMessage(error, '接続端末の取得に失敗しました'));
       // エラー時も再試行ループを避けるため空配列をセット
       setDevices([]);
     } finally {

@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getSkillDetail } from '@/actions/admin/skills';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import EditSkillClient from './EditSkillClient';
 
 export const dynamic = 'force-dynamic';
@@ -35,7 +35,7 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
       redirect('/signin');
     }
 
-    fetchError = parseErrorResponse(error, 'データの取得中にエラーが発生しました。').message;
+    fetchError = getUserSafeErrorMessage(error, 'データの取得中にエラーが発生しました。');
   }
 
   if (!skillDetail) {

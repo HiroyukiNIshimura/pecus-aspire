@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getOrganizationDetail } from '@/actions/admin/organizations';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import type { OrganizationResponse } from '@/connectors/api/pecus';
 import AdminSettingsClient from './AdminSettingsClient';
 
@@ -29,7 +29,7 @@ export default async function AdminSettingsPage() {
       redirect('/signin');
     }
 
-    fetchError = parseErrorResponse(error, 'データの取得に失敗しました。').message;
+    fetchError = getUserSafeErrorMessage(error, 'データの取得に失敗しました。');
   }
 
   if (!organization) {

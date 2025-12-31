@@ -1,6 +1,11 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  getHttpErrorInfo,
+  getUserSafeErrorMessage,
+} from '@/connectors/api/PecusApiClient';
 import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
@@ -38,8 +43,11 @@ export default async function AdminFullLayout({ children }: AdminFullLayoutProps
       redirect('/signin');
     }
     // その他のエラーはログに記録（ページの描画は続行）
-    const errorDetail = parseErrorResponse(error);
-    console.error('AdminFullLayout: Failed to verify auth or settings', errorDetail);
+    const info = getHttpErrorInfo(error);
+    console.error('AdminFullLayout: Failed to verify auth or settings', {
+      status: info.status,
+      message: getUserSafeErrorMessage(error, '認証または設定の取得に失敗しました'),
+    });
   }
 
   return (

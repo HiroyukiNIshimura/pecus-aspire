@@ -1,7 +1,12 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import DashboardLayoutClient from '@/components/common/layout/DashboardLayoutClient';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  getHttpErrorInfo,
+  getUserSafeErrorMessage,
+} from '@/connectors/api/PecusApiClient';
 import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
@@ -30,8 +35,11 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
       redirect('/signin');
     }
     // その他のエラーはログに記録
-    const errorDetail = parseErrorResponse(error);
-    console.error('DashboardLayout: Failed to fetch app settings', errorDetail);
+    const info = getHttpErrorInfo(error);
+    console.error('DashboardLayout: Failed to fetch app settings', {
+      status: info.status,
+      message: getUserSafeErrorMessage(error, 'アプリ設定の取得に失敗しました'),
+    });
   }
 
   return (

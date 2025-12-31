@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import type { OrganizationResponse } from '@/connectors/api/pecus';
 import AdminClient from './AdminClient';
 
@@ -24,7 +24,7 @@ export default async function AdminPage() {
       redirect('/signin');
     }
 
-    fetchError = parseErrorResponse(error, 'データの取得に失敗しました').message;
+    fetchError = getUserSafeErrorMessage(error, 'データの取得に失敗しました');
   }
 
   return <AdminClient initialOrganization={organization} fetchError={fetchError} />;

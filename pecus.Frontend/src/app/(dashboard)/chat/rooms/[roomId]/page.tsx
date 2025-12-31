@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import ChatRoomMessageClient from './ChatRoomMessageClient';
 
 interface ChatRoomPageProps {
@@ -39,8 +39,11 @@ export default async function ChatRoomPage({ params }: ChatRoomPageProps) {
     if (detect401ValidationError(error)) {
       redirect('/signin');
     }
-    const errorDetail = parseErrorResponse(error);
-    console.error('ChatRoomPage: Failed to fetch data', errorDetail);
+    const info = getHttpErrorInfo(error);
+    console.error('ChatRoomPage: Failed to fetch data', {
+      status: info.status,
+      message: getUserSafeErrorMessage(error, 'チャットデータの取得に失敗しました'),
+    });
 
     // エラー時はチャット一覧に戻る
     redirect('/chat');

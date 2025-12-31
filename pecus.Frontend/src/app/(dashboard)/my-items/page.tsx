@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { fetchMyItems } from '@/actions/workspaceItem';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import type {
   PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics,
   UserDetailResponse,
@@ -35,7 +35,7 @@ export default async function MyItemsPage() {
       redirect('/signin');
     }
 
-    fetchError = parseErrorResponse(error, 'データの取得に失敗しました').message;
+    fetchError = getUserSafeErrorMessage(error, 'データの取得に失敗しました');
   }
 
   if (!userResponse) {

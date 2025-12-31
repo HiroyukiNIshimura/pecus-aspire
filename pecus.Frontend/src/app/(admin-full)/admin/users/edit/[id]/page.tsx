@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getAllRoles } from '@/actions/admin/role';
 import { getAllSkills } from '@/actions/admin/skills';
 import { getUserDetail } from '@/actions/admin/user';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import type { RoleResponse, SkillListItemResponse } from '@/connectors/api/pecus';
 import EditUserClient from './EditUserClient';
 
@@ -50,7 +50,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
       redirect('/signin');
     }
 
-    fetchError = parseErrorResponse(error, 'データの取得中にエラーが発生しました。').message;
+    fetchError = getUserSafeErrorMessage(error, 'データの取得中にエラーが発生しました。');
   }
 
   if (!userDetail) {

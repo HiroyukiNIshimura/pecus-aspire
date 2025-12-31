@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchMyTaskWorkspaces } from '@/actions/myTask';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import type { MyTaskWorkspaceResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import MyTasksDashboardClient from './MyTasksDashboardClient';
 
@@ -48,7 +48,7 @@ export default async function MyTasksPage() {
       redirect('/signin');
     }
 
-    fetchError = parseErrorResponse(error, 'データの取得に失敗しました').message;
+    fetchError = getUserSafeErrorMessage(error, 'データの取得に失敗しました');
   }
 
   if (!userResponse) {
