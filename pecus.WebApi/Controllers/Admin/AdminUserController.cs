@@ -521,6 +521,84 @@ public class AdminUserController : BaseAdminController
     }
 
     /// <summary>
+    /// パスワード設定メールを再送（新規ユーザー用）
+    /// </summary>
+    /// <remarks>
+    /// 新規作成時に送信されたパスワード設定メールを再送します。
+    /// ユーザーがメールを紛失した場合などに使用します。
+    /// トークンは再生成されます。
+    /// </remarks>
+    /// <param name="id">ユーザーID</param>
+    /// <response code="200">パスワード設定メールが送信されました</response>
+    /// <response code="400">パスワードが既に設定されています</response>
+    /// <response code="403">他組織のユーザーは操作できません</response>
+    /// <response code="404">ユーザーが見つかりません</response>
+    [HttpPost("{id}/resend-password-setup")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<Ok<SuccessResponse>> ResendPasswordSetup(int id)
+    {
+        // ログインユーザーと同じ組織に所属しているか確認
+        await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
+
+        // 新しいトークンを生成（ユーザー情報も取得）
+        (bool success, User? user) = await _userService.RequestPasswordResetByUserIdAsync(id);
+        if (!success || user == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        // パスワードが既に設定されている場合はエラー（空文字列はパスワード未設定）
+        if (!string.IsNullOrEmpty(user.PasswordHash))
+        {
+            throw new InvalidOperationException("このユーザーは既にパスワードを設定済みです。パスワードリセット機能をご利用ください。");
+        }
+
+        // 組織情報を取得
+        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentOrganizationId);
+        if (organization == null)
+        {
+            throw new NotFoundException("組織が見つかりません。");
+        }
+
+        // Aspire の Frontend:Endpoint からフロントエンドURLを取得
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
+        var passwordSetupUrl = $"{baseUrl}/password-setup?token={user.PasswordResetToken}";
+
+        // パスワード設定メールを送信
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendTemplatedEmailAsync(
+                organization.Id,
+                user.Email,
+                "パスワード設定のお知らせ",
+                new PasswordSetupEmailModel
+                {
+                    UserName = user.Username,
+                    Email = user.Email,
+                    LoginId = user.LoginId,
+                    OrganizationName = organization.Name,
+                    PasswordSetupUrl = passwordSetupUrl,
+                    TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
+                    CreatedAt = user.CreatedAt,
+                }
+            )
+        );
+
+        _logger.LogDebug(
+            "管理者によるパスワード設定メール再送: AdminUserId={AdminUserId}, TargetUserId={TargetUserId}, TargetEmail={TargetEmail}",
+            CurrentUserId,
+            id,
+            user.Email
+        );
+
+        return TypedResults.Ok(
+            new SuccessResponse { Message = "パスワード設定メールを再送しました。" }
+        );
+    }
+
+    /// <summary>
     /// ユーザーのロールを設定（管理者が他のユーザーのロールを管理）
     /// </summary>
     /// <remarks>

@@ -108,6 +108,20 @@ export async function requestPasswordReset(userId: number): Promise<ApiResponse<
 }
 
 /**
+ * Server Action: パスワード設定メールを再送（新規ユーザー用）
+ */
+export async function resendPasswordSetup(userId: number): Promise<ApiResponse<SuccessResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminUser.postApiAdminUsersResendPasswordSetup(userId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to resend password setup email:', error);
+    return parseErrorResponse(error, 'パスワード設定メールの再送に失敗しました');
+  }
+}
+
+/**
  * Server Action: ユーザー情報を取得
  */
 export async function getUserDetail(userId: number): Promise<ApiResponse<UserDetailResponse>> {

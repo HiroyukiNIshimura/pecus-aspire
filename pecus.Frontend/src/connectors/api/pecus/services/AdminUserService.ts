@@ -195,6 +195,31 @@ export class AdminUserService {
         });
     }
     /**
+     * パスワード設定メールを再送（新規ユーザー用）
+     * 新規作成時に送信されたパスワード設定メールを再送します。
+     * ユーザーがメールを紛失した場合などに使用します。
+     * トークンは再生成されます。
+     * @param id ユーザーID
+     * @returns SuccessResponse パスワード設定メールが送信されました
+     * @throws ApiError
+     */
+    public static postApiAdminUsersResendPasswordSetup(
+        id: number,
+    ): CancelablePromise<SuccessResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/admin/users/{id}/resend-password-setup',
+            path: {
+                'id': id,
+            },
+            errors: {
+                400: `パスワードが既に設定されています`,
+                403: `他組織のユーザーは操作できません`,
+                404: `ユーザーが見つかりません`,
+            },
+        });
+    }
+    /**
      * ユーザーのロールを設定（管理者が他のユーザーのロールを管理）
      *     管理者が組織内のユーザーのロールを設定します（洗い替え）。
      * 指定されたロール以外は削除されます。

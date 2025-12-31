@@ -39,7 +39,6 @@ export class BackOfficeOrganizationsService {
     /**
      * 組織登録（管理者ユーザーも同時作成）
      * 新規組織を登録し、管理者ユーザーを同時に作成します。
-     * このエンドポイントは未認証でアクセス可能です（新規サインアップ用）。
      * 管理者ユーザーへはパスワード設定メールが送信されます。
      * @param requestBody
      * @returns OrganizationWithAdminResponse OK

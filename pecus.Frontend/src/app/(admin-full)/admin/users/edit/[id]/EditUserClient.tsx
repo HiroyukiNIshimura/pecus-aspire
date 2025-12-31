@@ -2,7 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
-import { requestPasswordReset, setUserActiveStatus, setUserRoles, setUserSkills } from '@/actions/admin/user';
+import {
+  requestPasswordReset,
+  resendPasswordSetup,
+  setUserActiveStatus,
+  setUserRoles,
+  setUserSkills,
+} from '@/actions/admin/user';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
@@ -151,9 +157,6 @@ export default function EditUserClient({
 
   const handleRequestPasswordReset = async () => {
     try {
-      // === パスワードリセットメール送信 ===
-      // UI更新は伴わないため、変更検知対象ではない（isSubmitting, handleSubmit を使わない独立操作）
-      // 成功時はメール送信完了をユーザーに通知
       const result = await requestPasswordReset(userDetail.id!);
       if (result.success) {
         notify.success('パスワードリセットメールを送信しました。');
@@ -163,6 +166,20 @@ export default function EditUserClient({
     } catch (err: unknown) {
       console.error('パスワードリセット送信中にエラーが発生:', err);
       notify.error('パスワードリセット送信中にエラーが発生しました。');
+    }
+  };
+
+  const handleResendPasswordSetup = async () => {
+    try {
+      const result = await resendPasswordSetup(userDetail.id!);
+      if (result.success) {
+        notify.success('パスワード設定メールを再送しました。');
+      } else {
+        notify.error(result.message || 'パスワード設定メールの再送に失敗しました。');
+      }
+    } catch (err: unknown) {
+      console.error('パスワード設定メール再送中にエラーが発生:', err);
+      notify.error('パスワード設定メール再送中にエラーが発生しました。');
     }
   };
 
@@ -358,23 +375,17 @@ export default function EditUserClient({
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">その他の操作</h2>
 
-                <button type="button" className="btn btn-outline w-full" onClick={handleRequestPasswordReset}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
-                    />
-                  </svg>
-                  パスワードリセットメール送信
-                </button>
+                <div className="space-y-3">
+                  <button type="button" className="btn btn-outline w-full" onClick={handleRequestPasswordReset}>
+                    <span className="icon-[tabler--mail] w-5 h-5" />
+                    パスワードリセットメール送信
+                  </button>
+
+                  <button type="button" className="btn btn-outline w-full" onClick={handleResendPasswordSetup}>
+                    <span className="icon-[tabler--mail-forward] w-5 h-5" />
+                    パスワード設定メール再送
+                  </button>
+                </div>
               </div>
             </div>
           </div>

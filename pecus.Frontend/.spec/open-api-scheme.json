@@ -8306,7 +8306,7 @@
           "BackOffice - Organizations"
         ],
         "summary": "組織登録（管理者ユーザーも同時作成）",
-        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\n管理者ユーザーへはパスワード設定メールが送信されます。",
+        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\n管理者ユーザーへはパスワード設定メールが送信されます。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -11030,6 +11030,74 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "他組織のユーザーは操作できません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{id}/resend-password-setup": {
+      "post": {
+        "tags": [
+          "Admin - User"
+        ],
+        "summary": "パスワード設定メールを再送（新規ユーザー用）",
+        "description": "新規作成時に送信されたパスワード設定メールを再送します。\nユーザーがメールを紛失した場合などに使用します。\nトークンは再生成されます。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ユーザーID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "パスワード設定メールが送信されました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "パスワードが既に設定されています",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -17545,7 +17613,7 @@
           "password": {
             "maxLength": 100,
             "minLength": 8,
-            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[\\x21-\\x7E]{8,}$",
             "type": "string"
           }
         },
@@ -17751,7 +17819,7 @@
           "password": {
             "maxLength": 100,
             "minLength": 8,
-            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[\\x21-\\x7E]{8,}$",
             "type": "string"
           },
           "resetAllDeviceSessions": {
@@ -19249,7 +19317,7 @@
           "newPassword": {
             "maxLength": 100,
             "minLength": 8,
-            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[\\x21-\\x7E]{8,}$",
             "type": "string"
           }
         },
