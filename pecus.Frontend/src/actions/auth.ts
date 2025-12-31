@@ -87,7 +87,13 @@ export async function login(request: {
 
     return { success: true, data: response };
   } catch (error) {
+    // エラーの詳細をログに出力（デバッグ用）
     console.error('Failed to login:', error);
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     return parseErrorResponse(error, 'ログインに失敗しました');
   }
 }

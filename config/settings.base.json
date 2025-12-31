@@ -12,7 +12,12 @@
       "image": "groonga/pgroonga:latest-debian-18"
     },
     "redis": {
-      "port": 6379
+      "port": 6379,
+      "_comment": "バックエンド用 Redis（WebApi, BackFire）"
+    },
+    "redisFrontend": {
+      "port": 6380,
+      "_comment": "フロントエンド用 Redis（Next.js セッション管理）"
     },
     "ports": {
       "webapi": 7265,
@@ -144,7 +149,10 @@
       }
     },
     "Security": {
-      "AllowedFrontendUrls": ["https://your-production-domain.com"]
+      "AllowedFrontendUrls": [
+        "https://localhost:3000",
+        "http://localhost:3000"
+      ]
     }
   },
 

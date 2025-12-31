@@ -208,7 +208,7 @@ function generate() {
   // pecus.Frontend/.env.local (開発用、Aspire 未使用時のフォールバック)
   // Aspire 環境では環境変数が自動注入されるため、このファイルは主に
   // Aspire を使わずに Next.js 単体で開発する場合に使用
-  generateFrontendEnv(_infrastructure);
+  generateFrontendEnv(_infrastructure, env);
 
   // deploy/.env (本番用、-P 指定時のみ生成)
   if (env === 'prod') {
@@ -250,6 +250,10 @@ function generateDockerEnv(infra, _shared, _projects) {
     '# API URL (server-side SSR/Server Actions)',
     `PECUS_API_URL=${infra.urls.webapiInternal || `http://${docker.webapiHost || 'pecusapi'}:${infra.ports.webapi}`}`,
     '',
+    '# Redis Ports',
+    `REDIS_PORT=${infra.redis.port}`,
+    `REDIS_FRONTEND_PORT=${infra.redisFrontend.port}`,
+    '',
     '# Docker internal hosts and URLs',
     `LEXICAL_CONVERTER_URL=http://${docker.lexicalConverterHost || 'lexicalconverter'}:${lexicalConverterPort}`,
     `POSTGRES_HOST=${docker.postgresHost || 'postgres'}`,
@@ -258,7 +262,7 @@ function generateDockerEnv(infra, _shared, _projects) {
     `WEBAPI_HOST=${docker.webapiHost || 'pecusapi'}`,
     '',
     '# Frontend Redis URL (redis:// format for Docker environment)',
-    `REDIS_URL=redis://${docker.redisFrontendHost || 'redis-frontend'}:${infra.redis.port}`,
+    `REDIS_URL=redis://${docker.redisFrontendHost || 'redis-frontend'}:${infra.redisFrontend.port}`,
     '',
   ];
 
@@ -270,8 +274,12 @@ function generateDockerEnv(infra, _shared, _projects) {
 /**
  * Frontend 用の .env.local ファイルを生成
  * Aspire 未使用時（Next.js 単体開発）のフォールバック用
+ * @param {object} infra - インフラ設定
+ * @param {string|null} env - 環境 ('dev' | 'prod' | null)
  */
-function generateFrontendEnv(infra) {
+function generateFrontendEnv(infra, env) {
+  const isDev = env === 'dev' || env === null; // dev または未指定の場合は開発環境扱い
+
   const lines = [
     '# ============================================',
     '# Generated from config/settings.base.json',
@@ -280,6 +288,18 @@ function generateFrontendEnv(infra) {
     '# This file is used when running Next.js standalone (without Aspire)',
     '# In Aspire environment, these values are automatically injected',
     '',
+  ];
+
+  // 開発環境のみ: 自己署名証明書を許可
+  if (isDev) {
+    lines.push(
+      '# Development: Allow self-signed certificates (Aspire uses HTTPS with self-signed certs)',
+      'NODE_TLS_REJECT_UNAUTHORIZED=0',
+      '',
+    );
+  }
+
+  lines.push(
     '# APP DOMAIN (server-side, used by next.config.ts)',
     `NEXT_ALLOW_DOMAIN=${infra.urls.allowDomain || 'localhost'}`,
     '',
@@ -290,9 +310,9 @@ function generateFrontendEnv(infra) {
     `NEXT_PUBLIC_API_URL=${infra.urls.webapiPublic}`,
     '',
     '# Redis connection (Aspire format: host:port)',
-    `ConnectionStrings__redisFrontend=localhost:${infra.redis.port}`,
+    `ConnectionStrings__redisFrontend=localhost:${infra.redisFrontend.port}`,
     '',
-  ];
+  );
 
   const envPath = path.join(ROOT_DIR, 'pecus.Frontend', '.env.local');
   fs.writeFileSync(envPath, lines.join('\n') + '\n');

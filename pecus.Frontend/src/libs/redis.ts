@@ -50,8 +50,11 @@ function parseRedisConnectionString(connectionString: string): RedisOptions {
     const [key, value] = parts[i].split('=');
     if (key === 'password') {
       options.password = value;
-    } else if (key === 'ssl' && value === 'true') {
-      options.tls = {};
+    } else if (key === 'ssl' && value.toLowerCase() === 'true') {
+      // Aspire 環境では自己署名証明書を使用するため、rejectUnauthorized を無効化
+      options.tls = {
+        rejectUnauthorized: false,
+      };
     }
   }
 

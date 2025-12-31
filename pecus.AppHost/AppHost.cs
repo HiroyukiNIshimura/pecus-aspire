@@ -26,6 +26,7 @@ try
     var postgresPort = int.TryParse(infraConfig["postgres:port"], out var pgPort) ? (int?)pgPort : null;
     var postgresImage = infraConfig["postgres:image"] ?? "groonga/pgroonga:latest-debian-18";
     var redisPort = int.TryParse(infraConfig["redis:port"], out var rdPort) ? (int?)rdPort : null;
+    var redisFrontendPort = int.TryParse(infraConfig["redisFrontend:port"], out var rdFrontPort) ? (int?)rdFrontPort : null;
     var lexicalConverterPort = int.TryParse(infraConfig["ports:lexicalConverter"], out var lcPort) ? lcPort : 5100;
     var grpcHost = infraConfig["grpc:host"] ?? "0.0.0.0";
 
@@ -34,6 +35,7 @@ try
     Log.Information("PostgreSQL Port: {PostgresPort}", postgresPort?.ToString() ?? "default");
     Log.Information("PostgreSQL Image: {PostgresImage}", postgresImage);
     Log.Information("Redis Port: {RedisPort}", redisPort?.ToString() ?? "default");
+    Log.Information("Redis Frontend Port: {RedisFrontendPort}", redisFrontendPort?.ToString() ?? "default");
     Log.Information("Lexical Converter Port: {LexicalConverterPort}", lexicalConverterPort);
     Log.Information("gRPC Host: {GrpcHost}", grpcHost);
 
@@ -46,9 +48,9 @@ try
         : builder.AddRedis("redis");
 
     // フロントエンド用 Redis: ポート指定があれば使用、なければ Aspire のデフォルト（ランダム）
-    var redisFrontend = (redisPort.HasValue
-        ? builder.AddRedis("redisFrontend", port: redisPort.Value + 1)
-        : builder.AddRedis("redisFrontend"));
+    var redisFrontend = redisFrontendPort.HasValue
+        ? builder.AddRedis("redisFrontend", port: redisFrontendPort.Value)
+        : builder.AddRedis("redisFrontend");
 
     var postgresImageParts = postgresImage.Split(':');
     var postgresImageName = postgresImageParts[0];
@@ -123,7 +125,9 @@ try
         .WaitFor(redisFrontend)
         .WaitFor(pecusApi)
         .WithNpmPackageInstallation()
-        .WithExternalHttpEndpoints();
+        .WithExternalHttpEndpoints()
+        // 開発環境: Aspire の自己署名証明書を許可
+        .WithEnvironment("NODE_TLS_REJECT_UNAUTHORIZED", "0");
 
     builder.Build().Run();
 }
