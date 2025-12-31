@@ -2,7 +2,11 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { fetchMyActivities } from '@/actions/activity';
-import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  getUserSafeErrorMessage,
+} from '@/connectors/api/PecusApiClient';
 import type { PagedResponseOfActivityResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import ActivityClient from './ActivityClient';
 

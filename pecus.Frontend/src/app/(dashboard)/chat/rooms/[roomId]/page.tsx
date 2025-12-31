@@ -1,5 +1,10 @@
 import { redirect } from 'next/navigation';
-import { createPecusApiClients, detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  getHttpErrorInfo,
+  getUserSafeErrorMessage,
+} from '@/connectors/api/PecusApiClient';
 import ChatRoomMessageClient from './ChatRoomMessageClient';
 
 interface ChatRoomPageProps {

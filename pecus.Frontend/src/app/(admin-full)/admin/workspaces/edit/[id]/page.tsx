@@ -1,6 +1,10 @@
 import { notFound, redirect } from 'next/navigation';
 import { getWorkspaceDetail } from '@/actions/admin/workspace';
-import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  getUserSafeErrorMessage,
+} from '@/connectors/api/PecusApiClient';
 import type { MasterGenreResponse } from '@/connectors/api/pecus';
 import EditWorkspaceClient from './EditWorkspaceClient';
 

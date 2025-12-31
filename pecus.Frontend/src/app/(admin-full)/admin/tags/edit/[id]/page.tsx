@@ -1,6 +1,10 @@
 import { notFound, redirect } from 'next/navigation';
 import { getTagDetail } from '@/actions/admin/tags';
-import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  getUserSafeErrorMessage,
+} from '@/connectors/api/PecusApiClient';
 import EditTagClient from './EditTagClient';
 
 export const dynamic = 'force-dynamic';

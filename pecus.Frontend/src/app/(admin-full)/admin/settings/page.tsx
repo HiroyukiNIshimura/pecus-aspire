@@ -1,6 +1,10 @@
 import { redirect } from 'next/navigation';
 import { getOrganizationDetail } from '@/actions/admin/organizations';
-import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  getUserSafeErrorMessage,
+} from '@/connectors/api/PecusApiClient';
 import type { OrganizationResponse } from '@/connectors/api/pecus';
 import AdminSettingsClient from './AdminSettingsClient';
 

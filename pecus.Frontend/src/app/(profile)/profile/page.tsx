@@ -1,5 +1,9 @@
 import { redirect } from 'next/navigation';
-import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  getUserSafeErrorMessage,
+} from '@/connectors/api/PecusApiClient';
 import type { MasterSkillResponse, PendingEmailChangeResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import ProfileClient from './ProfileClient';

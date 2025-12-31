@@ -1,6 +1,10 @@
 import { notFound, redirect } from 'next/navigation';
 import { getSkillDetail } from '@/actions/admin/skills';
-import { createPecusApiClients, detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  getUserSafeErrorMessage,
+} from '@/connectors/api/PecusApiClient';
 import EditSkillClient from './EditSkillClient';
 
 export const dynamic = 'force-dynamic';
