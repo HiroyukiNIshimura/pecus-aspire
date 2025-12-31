@@ -205,17 +205,19 @@ function generate() {
   fs.writeFileSync(dbmanagerPath, JSON.stringify(dbmanagerConfig, null, 2) + '\n');
   console.log('Generated:', dbmanagerPath);
 
-  // pecus.Frontend/.env.local (開発用、Aspire 未使用時のフォールバック)
-  // Aspire 環境では環境変数が自動注入されるため、このファイルは主に
-  // Aspire を使わずに Next.js 単体で開発する場合に使用
-  generateFrontendEnv(_infrastructure, env);
+  // pecus.Frontend/.env.local (開発用のみ生成)
+  // 本番環境では Docker Compose が環境変数を直接注入するため不要
+  if (env !== 'prod') {
+    generateFrontendEnv(_infrastructure, env);
+  }
 
   // deploy/.env (本番用、-P 指定時のみ生成)
   if (env === 'prod') {
     generateDockerEnv(_infrastructure, _shared, projects);
   }
 
-  console.log(`\nDone! Generated ${env === 'prod' ? '6' : '5'} files.`);
+  const fileCount = env === 'prod' ? 5 : 5;
+  console.log(`\nDone! Generated ${fileCount} files.`);
 }
 
 /**
