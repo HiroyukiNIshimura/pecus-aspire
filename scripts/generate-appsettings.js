@@ -261,7 +261,8 @@ function generateDockerEnv(infra, _shared, _projects) {
     `WEBAPI_HOST=${docker.webapiHost || 'pecusapi'}`,
     '',
     '# Frontend Redis URL (redis:// format for Docker environment)',
-    `REDIS_URL=redis://${docker.redisFrontendHost || 'redis-frontend'}:${infra.redisFrontend.port}`,
+    '# Docker 内部通信は常にポート 6379 を使用（redisFrontend.port はホストマッピング用）',
+    `REDIS_URL=redis://${docker.redisFrontendHost || 'redis-frontend'}:6379`,
     '',
   ];
 
