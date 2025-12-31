@@ -1,0 +1,23 @@
+services:
+  # ============================================
+  # Helper for restore (pg_restore)
+  # 使い方:
+  #   CONFIRM_RESTORE=YES ./scripts/pg-restore.sh /abs/path/to/file.dump
+  # ============================================
+  postgres-restore:
+    image: postgres:18-alpine
+    container_name: pecus-pgrestore
+    restart: "no"
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_USER: ${POSTGRES_USER:-pecus}
+      POSTGRES_DB: ${POSTGRES_DB:-pecusdb}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+    networks:
+      - pecus-network
+
+networks:
+  pecus-network:
+    external: true
+    name: pecus-network

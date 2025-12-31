@@ -168,3 +168,25 @@ DB_RESET_MODE=false docker compose -f docker-compose.infra.yml -f docker-compose
 - TLS終端（443）を nginx コンテナで行う場合は、証明書の mount と更新方式（certbot/外部ALB等）を決める
 - 監視（/health の外形監視、コンテナ再起動、ログ収集）
 - イメージのタグ運用（git sha / semver）
+
+## Postgres バックアップ（pg_dump）
+
+バックアップは `pg_dump` の **custom format（.dump）** で `${DATA_PATH}/backups/postgres/` に保存します。
+
+```bash
+cd deploy-bluegreen
+
+./scripts/pg-backup.sh
+```
+
+- 保持期間は `.env` の `BACKUP_KEEP_DAYS`（デフォルト 14 日）で制御し、実行時に古いバックアップを削除します。
+
+### （任意）復元
+
+復元はデータ破壊的なので、**明示的な確認フラグ**が必要です。
+
+```bash
+cd deploy-bluegreen
+
+CONFIRM_RESTORE=YES ./scripts/pg-restore.sh /absolute/path/to/pecusdb_20250101T000000Z.dump
+```
