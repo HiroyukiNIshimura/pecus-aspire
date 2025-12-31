@@ -308,10 +308,17 @@ function generateFrontendEnv(infra, env) {
     '# API URL (client-side, embedded at build time)',
     `NEXT_PUBLIC_API_URL=${infra.urls.webapiPublic}`,
     '',
-    '# Redis connection (Aspire format: host:port)',
-    `ConnectionStrings__redisFrontend=localhost:${infra.redisFrontend.port}`,
-    '',
   );
+
+  // Redis 接続設定は開発環境のみ
+  // 本番環境では Docker Compose が REDIS_URL を環境変数として注入するため不要
+  if (isDev) {
+    lines.push(
+      '# Redis connection (Aspire format: host:port)',
+      `ConnectionStrings__redisFrontend=localhost:${infra.redisFrontend.port}`,
+      '',
+    );
+  }
 
   const envPath = path.join(ROOT_DIR, 'pecus.Frontend', '.env.local');
   fs.writeFileSync(envPath, lines.join('\n') + '\n');
