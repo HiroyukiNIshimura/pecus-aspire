@@ -205,19 +205,16 @@ function generate() {
   fs.writeFileSync(dbmanagerPath, JSON.stringify(dbmanagerConfig, null, 2) + '\n');
   console.log('Generated:', dbmanagerPath);
 
-  // pecus.Frontend/.env.local (開発用のみ生成)
-  // 本番環境では Docker Compose が環境変数を直接注入するため不要
-  if (env !== 'prod') {
-    generateFrontendEnv(_infrastructure, env);
-  }
+  // pecus.Frontend/.env.local
+  // 開発環境・本番環境ともに生成（Next.js ビルド時に NEXT_PUBLIC_* を埋め込むために必要）
+  generateFrontendEnv(_infrastructure, env);
 
   // deploy/.env (本番用、-P 指定時のみ生成)
   if (env === 'prod') {
     generateDockerEnv(_infrastructure, _shared, projects);
   }
 
-  const fileCount = env === 'prod' ? 5 : 5;
-  console.log(`\nDone! Generated ${fileCount} files.`);
+  console.log(`\nDone! Generated ${env === 'prod' ? '6' : '5'} files.`);
 }
 
 /**
