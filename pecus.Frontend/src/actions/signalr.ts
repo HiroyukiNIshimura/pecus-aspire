@@ -35,9 +35,15 @@ export async function getSignalRToken(): Promise<string | null> {
  * 公開URL（NEXT_PUBLIC_API_URL）を使用する必要がある。
  * 内部URL（PECUS_API_URL）を使うとブラウザからアクセスできない。
  *
+ * 本番環境ルーティング:
+ *   /backend/* → .NET WebAPI
+ *   /api/*     → Next.js API Routes
+ *
  * @returns Hub の完全な公開URL
  */
 export async function getSignalRHubUrl(): Promise<string> {
   const baseUrl = getPublicApiBaseUrl();
+  // NEXT_PUBLIC_API_URL は /backend を含む（例: https://domain.com/backend）
+  // Hub URL は /backend/hubs/notifications となる
   return `${baseUrl}/hubs/notifications`;
 }

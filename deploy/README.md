@@ -70,6 +70,21 @@
 | `pecusapi` | .NET Web API | 7265 (外部) |
 | `frontend` | Next.js フロントエンド | 3000 (外部) |
 
+## nginx ルーティング設計
+
+nginx リバースプロキシでは以下のルーティングを使用します:
+
+| パス | 転送先 | 説明 |
+|------|--------|------|
+| `/backend/hubs/*` | pecusapi (WebSocket) | SignalR Hub |
+| `/backend/*` | pecusapi | .NET WebAPI |
+| `/api/*` | frontend | Next.js API Routes |
+| `/*` | frontend | Next.js フロントエンド |
+
+**設定ファイル**: `deploy/nginx/coati.conf`
+
+この設計により、Next.js API Routes が増えても nginx 設定の変更は不要です。
+
 ## クイックスタート
 
 ### 1. 設定ファイルの準備
@@ -155,7 +170,7 @@ FRONTEND_PORT=3000
 
 # 公開URL
 FRONTEND_URL=https://your-domain.com
-NEXT_PUBLIC_API_URL=https://your-domain.com/api
+NEXT_PUBLIC_API_URL=https://your-domain.com/backend
 
 # Docker 内部ホスト/URL
 LEXICAL_CONVERTER_URL=http://lexicalconverter:5100

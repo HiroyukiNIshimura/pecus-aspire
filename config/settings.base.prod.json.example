@@ -16,7 +16,7 @@
     },
     "urls": {
       "frontend": "https://your-domain.com",
-      "webapiPublic": "https://your-domain.com/api",
+      "webapiPublic": "https://your-domain.com/backend",
       "lexicalConverterInternal": "http://lexicalconverter:5100"
     },
     "docker": {
