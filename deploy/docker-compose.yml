@@ -92,6 +92,8 @@ services:
       ConnectionStrings__pecusdb: "Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-pecusdb};Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
       LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
       DB_RESET_MODE: ${DB_RESET_MODE:-false}
+    volumes:
+      - ${DATA_PATH}/logs/dbmanager:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -120,6 +122,7 @@ services:
     volumes:
       - ${DATA_PATH}/uploads:/app/data/uploads
       - ${DATA_PATH}/notifications:/app/data/notifications
+      - ${DATA_PATH}/logs/backfire:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -154,6 +157,7 @@ services:
       Pecus__FileUpload__StoragePath: /app/data/uploads
     volumes:
       - ${DATA_PATH}/uploads:/app/data/uploads
+      - ${DATA_PATH}/logs/webapi:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
