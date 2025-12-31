@@ -116,7 +116,8 @@ start_services() {
     log_info "サービスを起動中..."
 
     cd "$DEPLOY_DIR"
-    docker compose up -d
+    # --force-recreate: 環境変数の変更を確実に反映するためコンテナを再作成
+    docker compose up -d --force-recreate
 
     if [ $? -eq 0 ]; then
         log_info "サービス起動完了"
