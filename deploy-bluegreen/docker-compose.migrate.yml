@@ -1,0 +1,31 @@
+services:
+  # ============================================
+  # DB Manager (Migration & Seed)
+  #  - Expand/Contract の "Expand" と "Contract" はここを実行単位にする
+  # ============================================
+  dbmanager:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/DbManager.Dockerfile
+    image: coati-dbmanager:local
+    container_name: pecus-dbmanager
+    restart: "no"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__pecusdb: "Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-pecusdb};Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
+      LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
+      DB_RESET_MODE: ${DB_RESET_MODE:-false}
+    volumes:
+      - ${DATA_PATH:?DATA_PATH is required}/logs/dbmanager:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      lexicalconverter:
+        condition: service_healthy
+    networks:
+      - pecus-network
+
+networks:
+  pecus-network:
+    external: true
+    name: pecus-network

@@ -1,0 +1,99 @@
+services:
+  # ============================================
+  # Web API (green)
+  # ============================================
+  pecusapi-green:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/WebApi.Dockerfile
+    image: coati-webapi-green:local
+    container_name: pecus-webapi-green
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:7265"
+      ASPNETCORE_HTTP_PORTS: "7265"
+      ConnectionStrings__pecusdb: "Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-pecusdb};Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__redis: "${REDIS_HOST:-redis}:6379"
+      LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
+      Frontend__Endpoint: ${FRONTEND_URL:-https://localhost:3000}
+      Pecus__FileUpload__StoragePath: /app/data/uploads
+    volumes:
+      - ${DATA_PATH:?DATA_PATH is required}/uploads:/app/data/uploads
+      - ${DATA_PATH:?DATA_PATH is required}/logs/webapi-green:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      lexicalconverter:
+        condition: service_healthy
+    networks:
+      - pecus-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7265/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # Frontend (green)
+  # ============================================
+  frontend-green:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Frontend.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    image: coati-frontend-green:local
+    container_name: pecus-frontend-green
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PECUS_API_URL: http://pecusapi-green:7265
+      REDIS_URL: ${REDIS_URL:-redis://redis-frontend:6379}
+    depends_on:
+      pecusapi-green:
+        condition: service_healthy
+      redis-frontend:
+        condition: service_healthy
+    networks:
+      - pecus-network
+
+  # ============================================
+  # BackFire (green) - 2重起動しないこと
+  # ============================================
+  backfire-green:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/BackFire.Dockerfile
+    image: coati-backfire-green:local
+    container_name: pecus-backfire-green
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__pecusdb: "Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-pecusdb};Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__redis: "${REDIS_HOST:-redis}:6379"
+      LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
+      Frontend__Endpoint: ${FRONTEND_URL:-https://localhost:3000}
+      UploadsCleanup__UploadsBasePath: /app/data/uploads
+      MaintenanceNotification__NotificationsPath: /app/data/notifications
+    volumes:
+      - ${DATA_PATH:?DATA_PATH is required}/uploads:/app/data/uploads
+      - ${DATA_PATH:?DATA_PATH is required}/notifications:/app/data/notifications
+      - ${DATA_PATH:?DATA_PATH is required}/logs/backfire-green:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      lexicalconverter:
+        condition: service_healthy
+    networks:
+      - pecus-network
+
+networks:
+  pecus-network:
+    external: true
+    name: pecus-network
