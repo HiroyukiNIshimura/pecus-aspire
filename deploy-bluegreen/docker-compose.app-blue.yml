@@ -21,13 +21,7 @@ services:
     volumes:
       - ${DATA_PATH:?DATA_PATH is required}/uploads:/app/data/uploads
       - ${DATA_PATH:?DATA_PATH is required}/logs/webapi-blue:/app/logs
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      lexicalconverter:
-        condition: service_healthy
+    # depends_on は ops スクリプトで制御（infra compose と分離するため）
     networks:
       - pecus-network
     healthcheck:
@@ -53,11 +47,7 @@ services:
       NODE_ENV: production
       PECUS_API_URL: http://pecusapi-blue:7265
       REDIS_URL: ${REDIS_URL:-redis://redis-frontend:6379}
-    depends_on:
-      pecusapi-blue:
-        condition: service_healthy
-      redis-frontend:
-        condition: service_healthy
+    # depends_on は ops スクリプトで制御（infra compose と分離するため）
     networks:
       - pecus-network
 
@@ -83,13 +73,7 @@ services:
       - ${DATA_PATH:?DATA_PATH is required}/uploads:/app/data/uploads
       - ${DATA_PATH:?DATA_PATH is required}/notifications:/app/data/notifications
       - ${DATA_PATH:?DATA_PATH is required}/logs/backfire-blue:/app/logs
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      lexicalconverter:
-        condition: service_healthy
+    # depends_on は ops スクリプトで制御（infra compose と分離するため）
     networks:
       - pecus-network
 

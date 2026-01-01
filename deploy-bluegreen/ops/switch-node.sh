@@ -68,6 +68,12 @@ if $target_running; then
   exit 2
 fi
 
+echo "[info] checking infra health before deployment..." >&2
+if ! check_infra_healthy; then
+  echo "[ng] infra services are not healthy. run infra-up.sh first." >&2
+  exit 3
+fi
+
 echo "[info] current(active)=$current target=$target" >&2
 
 echo "[info] 3.1 deploying target (without backfire): $target" >&2

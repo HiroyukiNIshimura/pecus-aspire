@@ -42,14 +42,26 @@ compose_infra() {
 compose_app() {
   local slot="$1"
   shift
-  local cmd="${1:-}"
+  # app compose は depends_on を削除済みなので単体で実行可能
+  compose -f "$bluegreen_dir/docker-compose.app-$slot.yml" "$@"
+}
 
-  # app compose は infra 側サービス(redis-frontend等)に depends_on しているが、
-  # infra は既に起動済みの前提なので --no-deps で依存を無視して app compose 単体で実行する。
-  # これにより infra コンテナ（nginx等）が影響を受けない。
-  compose \
-    -f "$bluegreen_dir/docker-compose.app-$slot.yml" \
-    "$cmd" --no-deps "${@:2}"
+check_infra_healthy() {
+  local services=("pecus-postgres" "pecus-redis" "pecus-redis-frontend" "pecus-lexicalconverter")
+  local all_healthy=true
+  for svc in "${services[@]}"; do
+    local status
+    status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$svc" 2>/dev/null || echo "")
+    if [[ "$status" != "healthy" ]]; then
+      echo "[ng] infra not healthy: $svc (status=$status)" >&2
+      all_healthy=false
+    fi
+  done
+  if [[ "$all_healthy" == "false" ]]; then
+    return 1
+  fi
+  echo "[ok] all infra services healthy"
+  return 0
 }
 
 compose_migrate() {
