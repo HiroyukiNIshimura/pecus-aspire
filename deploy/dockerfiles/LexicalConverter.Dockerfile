@@ -6,14 +6,22 @@ FROM node:22-alpine AS base
 WORKDIR /app
 
 # ============================================
-# Build @coati/editor package
+# Build @coati/editor package (npm workspaces 使用)
 # ============================================
 FROM base AS editor-build
-WORKDIR /app/packages/coati-editor
-COPY packages/coati-editor/package*.json ./
-RUN npm ci
-COPY packages/coati-editor/ ./
-RUN npm run build
+WORKDIR /app
+
+# ルートの package.json と lock ファイルをコピー
+COPY package.json package-lock.json ./
+
+# coati-editor パッケージをコピー
+COPY packages/coati-editor/ ./packages/coati-editor/
+
+# ワークスペースで @coati/editor の依存関係をインストール
+RUN npm ci --workspace=@coati/editor
+
+# @coati/editor をビルド
+RUN npm run build --workspace=@coati/editor
 
 # ============================================
 # Dependencies stage
@@ -25,12 +33,14 @@ WORKDIR /app
 COPY --from=editor-build /app/packages/coati-editor/dist ./packages/coati-editor/dist
 COPY --from=editor-build /app/packages/coati-editor/package.json ./packages/coati-editor/
 
+# Copy root package.json and lock file
+COPY package.json package-lock.json ./
+
 # Copy LexicalConverter package.json
 COPY pecus.LexicalConverter/package*.json ./pecus.LexicalConverter/
 
-# Create workspace structure for npm to resolve local package
-COPY package.json ./
-RUN cd pecus.LexicalConverter && npm ci --only=production
+# Install production dependencies for LexicalConverter
+RUN npm ci --workspace=pecus.LexicalConverter --omit=dev
 
 # ============================================
 # Build stage
@@ -42,10 +52,14 @@ WORKDIR /app
 COPY --from=editor-build /app/packages/coati-editor/dist ./packages/coati-editor/dist
 COPY --from=editor-build /app/packages/coati-editor/package.json ./packages/coati-editor/
 
-# Copy and build LexicalConverter
+# Copy root package.json and lock file
+COPY package.json package-lock.json ./
+
+# Copy LexicalConverter package.json
 COPY pecus.LexicalConverter/package*.json ./pecus.LexicalConverter/
-COPY package.json ./
-RUN cd pecus.LexicalConverter && npm ci
+
+# Install all dependencies (including dev for build)
+RUN npm ci --workspace=pecus.LexicalConverter
 
 COPY pecus.LexicalConverter/ ./pecus.LexicalConverter/
 RUN cd pecus.LexicalConverter && npm run build

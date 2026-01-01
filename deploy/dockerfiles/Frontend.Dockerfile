@@ -6,14 +6,22 @@ FROM node:22-alpine AS base
 WORKDIR /app
 
 # ============================================
-# Build @coati/editor package
+# Build @coati/editor package (npm workspaces 使用)
 # ============================================
 FROM base AS editor-build
-WORKDIR /app/packages/coati-editor
-COPY packages/coati-editor/package*.json ./
-RUN npm ci
-COPY packages/coati-editor/ ./
-RUN npm run build
+WORKDIR /app
+
+# ルートの package.json と lock ファイルをコピー
+COPY package.json package-lock.json ./
+
+# coati-editor パッケージをコピー
+COPY packages/coati-editor/ ./packages/coati-editor/
+
+# ワークスペースで @coati/editor の依存関係をインストール
+RUN npm ci --workspace=@coati/editor
+
+# @coati/editor をビルド
+RUN npm run build --workspace=@coati/editor
 
 # ============================================
 # Dependencies stage
@@ -32,7 +40,7 @@ COPY --from=editor-build /app/packages/coati-editor/dist ./packages/coati-editor
 COPY pecus.Frontend/package.json ./pecus.Frontend/
 
 # ワークスペース全体の依存関係をインストール
-RUN npm ci --workspace=pecus.Frontend --loglevel verbose
+RUN npm ci --workspace=pecus.Frontend
 
 # ============================================
 # Build stage
