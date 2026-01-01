@@ -50,9 +50,16 @@ check_infra_healthy() {
   local services=("pecus-postgres" "pecus-redis" "pecus-redis-frontend" "pecus-lexicalconverter")
   local all_healthy=true
   for svc in "${services[@]}"; do
+    local running
+    running=$(docker inspect -f '{{.State.Running}}' "$svc" 2>/dev/null || echo "")
+    if [[ "$running" != "true" ]]; then
+      echo "[ng] infra not running: $svc" >&2
+      all_healthy=false
+      continue
+    fi
     local status
     status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$svc" 2>/dev/null || echo "")
-    if [[ "$status" != "healthy" ]]; then
+    if [[ "$status" != "healthy" && "$status" != "none" ]]; then
       echo "[ng] infra not healthy: $svc (status=$status)" >&2
       all_healthy=false
     fi
