@@ -7,6 +7,7 @@
 - `deploy-bluegreen/.env` が無い場合、各スクリプト実行時に `scripts/generate-appsettings.js -P` を呼び出して生成します。
 - DB リセット（破壊的）を伴う操作は確認入力が必要です。
 - 実行は `./xxx.sh` を推奨です（`sh xxx.sh` で実行しても bash にフォールバックします）。
+- app compose は `redis-frontend` 等の infra サービスに `depends_on` しているため、ops スクリプトは内部で `docker-compose.infra.yml` と app compose を合成して実行します。
 
 ## よく使うコマンド
 
