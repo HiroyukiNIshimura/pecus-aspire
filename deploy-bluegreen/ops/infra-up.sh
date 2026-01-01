@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Infra only: postgres/redis/redis-frontend/lexicalconverter/nginx
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib.sh
+source "$script_dir/lib.sh"
+
+require_cmd docker
+
+compose_infra up -d
+
+wait_health pecus-postgres 300
+wait_health pecus-redis 300
+wait_health pecus-redis-frontend 300
+wait_health pecus-lexicalconverter 300
+wait_running pecus-nginx 60
+
+echo "[ok] infra is up"

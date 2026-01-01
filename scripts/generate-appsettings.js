@@ -14,6 +14,7 @@
  *   - pecus.BackFire/appsettings.json
  *   - pecus.DbManager/appsettings.json
  *   - deploy/.env                      (Docker Compose 本番環境用、-P 指定時のみ)
+ *   - deploy-bluegreen/.env            (Docker Compose 本番環境用（blue/green）、-P 指定時のみ)
  */
 
 const fs = require('fs');
@@ -214,7 +215,7 @@ function generate() {
     generateDockerEnv(_infrastructure, _shared, projects);
   }
 
-  console.log(`\nDone! Generated ${env === 'prod' ? '6' : '5'} files.`);
+  console.log(`\nDone! Generated ${env === 'prod' ? '7' : '5'} files.`);
 }
 
 /**
@@ -223,6 +224,8 @@ function generate() {
 function generateDockerEnv(infra, _shared, _projects) {
   const docker = infra.docker || {};
   const lexicalConverterPort = infra.ports.lexicalConverter || 5100;
+  const nginxHttpPort = process.env.NGINX_HTTP_PORT || '80';
+  const backupKeepDays = process.env.BACKUP_KEEP_DAYS || '14';
 
   const lines = [
     '# ============================================',
@@ -264,11 +267,23 @@ function generateDockerEnv(infra, _shared, _projects) {
     '# Docker 内部通信は常にポート 6379 を使用（redisFrontend.port はホストマッピング用）',
     `REDIS_URL=redis://${docker.redisFrontendHost || 'redis-frontend'}:6379`,
     '',
+
+    '# Optional: Nginx public port (blue/green switch only)',
+    `NGINX_HTTP_PORT=${nginxHttpPort}`,
+    '',
+
+    '# Optional: Postgres backup retention days',
+    `BACKUP_KEEP_DAYS=${backupKeepDays}`,
+    '',
   ];
 
-  const envPath = path.join(ROOT_DIR, 'deploy', '.env');
-  fs.writeFileSync(envPath, lines.join('\n') + '\n');
-  console.log('Generated:', envPath);
+  const deployEnvPath = path.join(ROOT_DIR, 'deploy', '.env');
+  fs.writeFileSync(deployEnvPath, lines.join('\n') + '\n');
+  console.log('Generated:', deployEnvPath);
+
+  const blueGreenEnvPath = path.join(ROOT_DIR, 'deploy-bluegreen', '.env');
+  fs.writeFileSync(blueGreenEnvPath, lines.join('\n') + '\n');
+  console.log('Generated:', blueGreenEnvPath);
 }
 
 /**
