@@ -48,7 +48,7 @@ builder.Services.ConfigureDbContext<ApplicationDbContext>(options =>
 // EmailSettings設定
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 // ApplicationSettings設定（メールテンプレート用）
-builder.Services.Configure<Pecus.Libs.Mail.Configuration.ApplicationSettings>(
+builder.Services.Configure<ApplicationSettings>(
     builder.Configuration.GetSection("Pecus:Application"));
 
 // メール関連サービスの登録
