@@ -1,27 +1,10 @@
 # ============================================
 # pecus.LexicalConverter Dockerfile (gRPC Service)
+# ビルド済み @coati/editor/dist を使用（Docker ビルド高速化）
 # ============================================
 
 FROM node:22-alpine AS base
 WORKDIR /app
-
-# ============================================
-# Build @coati/editor package (npm workspaces 使用)
-# ============================================
-FROM base AS editor-build
-WORKDIR /app
-
-# ルートの package.json と lock ファイルをコピー
-COPY package.json package-lock.json ./
-
-# coati-editor パッケージをコピー
-COPY packages/coati-editor/ ./packages/coati-editor/
-
-# ワークスペースで @coati/editor の依存関係をインストール
-RUN npm ci --workspace=@coati/editor
-
-# @coati/editor をビルド
-RUN npm run build --workspace=@coati/editor
 
 # ============================================
 # Dependencies stage
@@ -29,12 +12,12 @@ RUN npm run build --workspace=@coati/editor
 FROM base AS deps
 WORKDIR /app
 
-# Copy @coati/editor package (built)
-COPY --from=editor-build /app/packages/coati-editor/dist ./packages/coati-editor/dist
-COPY --from=editor-build /app/packages/coati-editor/package.json ./packages/coati-editor/
-
 # Copy root package.json and lock file
 COPY package.json package-lock.json ./
+
+# Copy @coati/editor package (ビルド済み dist を含む)
+COPY packages/coati-editor/package.json ./packages/coati-editor/
+COPY packages/coati-editor/dist ./packages/coati-editor/dist
 
 # Copy LexicalConverter package.json
 COPY pecus.LexicalConverter/package*.json ./pecus.LexicalConverter/
@@ -48,12 +31,12 @@ RUN npm ci --workspace=pecus.LexicalConverter --omit=dev
 FROM base AS build
 WORKDIR /app
 
-# Copy @coati/editor package (built)
-COPY --from=editor-build /app/packages/coati-editor/dist ./packages/coati-editor/dist
-COPY --from=editor-build /app/packages/coati-editor/package.json ./packages/coati-editor/
-
 # Copy root package.json and lock file
 COPY package.json package-lock.json ./
+
+# Copy @coati/editor package (ビルド済み dist を含む)
+COPY packages/coati-editor/package.json ./packages/coati-editor/
+COPY packages/coati-editor/dist ./packages/coati-editor/dist
 
 # Copy LexicalConverter package.json
 COPY pecus.LexicalConverter/package*.json ./pecus.LexicalConverter/
@@ -76,8 +59,8 @@ ENV TZ=Asia/Tokyo
 RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Copy @coati/editor package
-COPY --from=editor-build /app/packages/coati-editor/dist ./node_modules/@coati/editor/dist
-COPY --from=editor-build /app/packages/coati-editor/package.json ./node_modules/@coati/editor/
+COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
+COPY packages/coati-editor/package.json ./node_modules/@coati/editor/
 
 # Copy production dependencies
 COPY --from=deps /app/pecus.LexicalConverter/node_modules ./node_modules

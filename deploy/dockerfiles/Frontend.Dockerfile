@@ -1,27 +1,10 @@
 # ============================================
 # pecus.Frontend Dockerfile (Next.js) - モノレポ対応版
+# ビルド済み @coati/editor/dist を使用（Docker ビルド高速化）
 # ============================================
 
 FROM node:22-alpine AS base
 WORKDIR /app
-
-# ============================================
-# Build @coati/editor package (npm workspaces 使用)
-# ============================================
-FROM base AS editor-build
-WORKDIR /app
-
-# ルートの package.json と lock ファイルをコピー
-COPY package.json package-lock.json ./
-
-# coati-editor パッケージをコピー
-COPY packages/coati-editor/ ./packages/coati-editor/
-
-# ワークスペースで @coati/editor の依存関係をインストール
-RUN npm ci --workspace=@coati/editor
-
-# @coati/editor をビルド
-RUN npm run build --workspace=@coati/editor
 
 # ============================================
 # Dependencies stage
@@ -32,9 +15,9 @@ RUN apk add --no-cache libc6-compat
 # ルートのワークスペース設定をコピー
 COPY package.json package-lock.json ./
 
-# エディタパッケージ（ビルド済み）
-COPY --from=editor-build /app/packages/coati-editor/package.json ./packages/coati-editor/
-COPY --from=editor-build /app/packages/coati-editor/dist ./packages/coati-editor/dist
+# エディタパッケージ（ビルド済み dist を含む）
+COPY packages/coati-editor/package.json ./packages/coati-editor/
+COPY packages/coati-editor/dist ./packages/coati-editor/dist
 
 # Frontend の package.json をコピー
 COPY pecus.Frontend/package.json ./pecus.Frontend/

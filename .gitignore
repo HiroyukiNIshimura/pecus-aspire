@@ -79,6 +79,9 @@ publish/
 ## TODO: If the tool you use requires repositories.config, also uncomment the next line
 # !packages/repositories.config
 
+# @coati/editor のビルド済み dist はコミット対象（Docker ビルド高速化のため）
+!packages/coati-editor/dist/
+
 # Windows Azure Build Output
 csx/
 *.build.csdef
@@ -140,10 +143,6 @@ uploads/
 temp/*
 
 node_modules/
-
-# packages/coati-editor/dist/ はビルド成果物のためコミット不要
-# （Docker ビルド時に自動的にビルドされる）
-packages/coati-editor/dist/
 
 # ワークスペース内の個別 package-lock.json は無視（ルートのみ使用）
 pecus.Frontend/package-lock.json
