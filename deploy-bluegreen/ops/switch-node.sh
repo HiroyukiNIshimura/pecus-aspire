@@ -81,6 +81,13 @@ echo "[情報] 現在(アクティブ)=$current ターゲット=$target" >&2
 echo "[情報] 3.1 最新ソースを取得 (git pull)" >&2
 git -C "$repo_root" pull
 
+echo ""
+read -rp "[確認] デプロイを続行しますか? (yes/no) [no]: " confirm
+if [[ "$confirm" != "yes" ]]; then
+  echo "[中止] デプロイをキャンセルしました" >&2
+  exit 0
+fi
+
 echo "[情報] 3.2 ターゲットのイメージをビルド: $target" >&2
 compose_app "$target" build "pecusapi-$target" "frontend-$target" "backfire-$target"
 
