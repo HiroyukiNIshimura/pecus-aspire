@@ -30,9 +30,8 @@ import {
 import type { JSX } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom';
-
-import useModal from '../../hooks/useModal';
 import { useComponentPickerContext } from '../../context/ComponentPickerContext';
+import useModal from '../../hooks/useModal';
 import { EmbedConfigs } from '../AutoEmbedPlugin';
 import { INSERT_COLLAPSIBLE_COMMAND } from '../CollapsiblePlugin';
 import { INSERT_DATETIME_COMMAND } from '../DateTimePlugin';
@@ -100,19 +99,25 @@ function ComponentPickerMenuItem({
     className += ' selected';
   }
   return (
-    <li
-      key={option.key}
+    <div
       tabIndex={-1}
       className={className}
       ref={option.setRefElement}
+      role="option"
       aria-selected={isSelected}
       id={`typeahead-item-${index}`}
       onMouseEnter={onMouseEnter}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
       {option.icon}
       <span className="text">{option.title}</span>
-    </li>
+    </div>
   );
 }
 
