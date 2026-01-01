@@ -6,11 +6,13 @@ fi
 set -euo pipefail
 
 # Blue/Green switch procedure
-#  3.1 指定ノードをデプロイ（Backfire除く）
-#  3.2 稼働中ノードのダウン（Backfire含む）
-#  3.3 DBマイグレーション
-#  3.4 指定ノード Backfire デプロイ
-#  3.5 Nginx 切り替え
+#  3.1 最新ソースを取得 (git pull)
+#  3.2 指定ノードのイメージをビルド
+#  3.3 指定ノードをデプロイ（Backfire除く）
+#  3.4 稼働中ノードのダウン（Backfire含む）
+#  3.5 DBマイグレーション
+#  3.6 指定ノード Backfire デプロイ
+#  3.7 Nginx 切り替え
 
 # Notes:
 # - 判定は「コンテナが動いているか（Running）」で行います。
@@ -76,31 +78,37 @@ fi
 
 echo "[情報] 現在(アクティブ)=$current ターゲット=$target" >&2
 
-echo "[情報] 3.1 ターゲットをデプロイ (BackFire除く): $target" >&2
+echo "[情報] 3.1 最新ソースを取得 (git pull)" >&2
+git -C "$repo_root" pull
+
+echo "[情報] 3.2 ターゲットのイメージをビルド: $target" >&2
+compose_app "$target" build "pecusapi-$target" "frontend-$target" "backfire-$target"
+
+echo "[情報] 3.3 ターゲットをデプロイ (BackFire除く): $target" >&2
 compose_app "$target" up -d "pecusapi-$target" "frontend-$target"
 wait_health "pecus-webapi-$target" 300
 wait_running "pecus-frontend-$target" 120
 
 if $other_running; then
-  echo "[情報] 3.2 旧スロットを停止 (BackFire含む): $other" >&2
+  echo "[情報] 3.4 旧スロットを停止 (BackFire含む): $other" >&2
   compose_app "$other" stop "pecusapi-$other" "frontend-$other" "backfire-$other" || true
   compose_app "$other" rm -f "pecusapi-$other" "frontend-$other" "backfire-$other" || true
 else
-  echo "[情報] 3.2 旧スロット停止をスキップ (稼働していない): $other" >&2
+  echo "[情報] 3.4 旧スロット停止をスキップ (稼働していない): $other" >&2
 fi
 
-echo "[情報] 3.3 DBマイグレーション実行" >&2
+echo "[情報] 3.5 DBマイグレーション実行" >&2
 # Best-effort cleanup of previous dbmanager container
 if docker ps -a --format '{{.Names}}' | grep -qx 'pecus-dbmanager'; then
   docker rm -f pecus-dbmanager >/dev/null 2>&1 || true
 fi
 compose_migrate run --rm dbmanager
 
-echo "[情報] 3.4 ターゲットのBackFireをデプロイ: $target" >&2
+echo "[情報] 3.6 ターゲットのBackFireをデプロイ: $target" >&2
 compose_app "$target" up -d "backfire-$target"
 wait_running "pecus-backfire-$target" 120
 
-echo "[情報] 3.5 Nginxを切り替え: $target" >&2
+echo "[情報] 3.7 Nginxを切り替え: $target" >&2
 conf="$bluegreen_dir/nginx/conf.d/00-active-slot.conf"
 cat >"$conf" <<EOF
 # ここだけを書き換えてスイッチする（ops/switch-node.sh 推奨）
