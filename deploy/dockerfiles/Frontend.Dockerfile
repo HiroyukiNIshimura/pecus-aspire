@@ -1,5 +1,5 @@
 # ============================================
-# pecus.Frontend Dockerfile (Next.js)
+# pecus.Frontend Dockerfile (Next.js) - モノレポ対応版
 # ============================================
 
 FROM node:22-alpine AS base
@@ -11,8 +11,18 @@ WORKDIR /app
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 
-COPY pecus.Frontend/package.json pecus.Frontend/package-lock.json ./
-RUN npm ci --loglevel verbose
+# ルートのワークスペース設定をコピー
+COPY package.json package-lock.json ./
+
+# エディタパッケージ（ビルド済み dist を含む）
+COPY packages/coati-editor/package.json ./packages/coati-editor/
+COPY packages/coati-editor/dist ./packages/coati-editor/dist
+
+# Frontend の package.json をコピー
+COPY pecus.Frontend/package.json ./pecus.Frontend/
+
+# ワークスペース全体の依存関係をインストール
+RUN npm ci --workspace=pecus.Frontend --loglevel verbose
 
 # ============================================
 # Build stage
@@ -20,8 +30,13 @@ RUN npm ci --loglevel verbose
 FROM base AS builder
 WORKDIR /app
 
+# 依存関係をコピー
 COPY --from=deps /app/node_modules ./node_modules
-COPY pecus.Frontend/ ./
+COPY --from=deps /app/packages ./packages
+COPY --from=deps /app/pecus.Frontend/node_modules ./pecus.Frontend/node_modules
+
+# Frontend のソースをコピー
+COPY pecus.Frontend/ ./pecus.Frontend/
 
 # Build arguments for public env vars
 ARG NEXT_PUBLIC_API_URL
@@ -35,6 +50,7 @@ ENV NEXTAUTH_URL="http://localhost:3000"
 ENV NEXTAUTH_SECRET="build-time-dummy-secret"
 
 # Build Next.js application
+WORKDIR /app/pecus.Frontend
 RUN npm run build
 
 # ============================================
@@ -53,7 +69,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy public assets
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/pecus.Frontend/public ./public
 
 # Create .next directory with proper permissions
 RUN mkdir .next
@@ -61,8 +77,8 @@ RUN chown nextjs:nodejs .next
 
 # Copy standalone build output
 # Note: Requires output: 'standalone' in next.config.ts
-COPY --from=builder --chown=nextjs:nodejs /app/build/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/build/static ./build/static
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/static ./build/static
 
 # Switch to non-root user
 USER nextjs

@@ -9,26 +9,25 @@
  * - 現在のエディタ内容をMarkdownに変換し、カーソル位置マーカーを挿入
  * - Server Action経由でAI APIを呼び出し、生成されたテキストを挿入
  */
+'use client';
 
+import { PLAYGROUND_TRANSFORMERS } from '@coati/editor';
 import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { mergeRegister } from '@lexical/utils';
 import {
-  $createParagraphNode,
   $getRoot,
   $getSelection,
   $isRangeSelection,
   COMMAND_PRIORITY_EDITOR,
   createCommand,
   type LexicalCommand,
-  type LexicalNode,
 } from 'lexical';
 import type { JSX } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { generateAiText } from '@/actions/aiAssistant';
-import { PLAYGROUND_TRANSFORMERS } from '../MarkdownTransformers';
 import './index.css';
 
 const CURSOR_MARKER = '{AI_CURSOR}';
@@ -233,51 +232,34 @@ export default function AiAssistantPlugin(): JSX.Element | null {
         userPrompt,
       });
 
-      editor.update(() => {
-        const selection = $getSelection();
-
-        let textToInsert: string;
-        if (result.success && result.data?.generatedText) {
-          textToInsert = result.data.generatedText;
-        } else {
-          textToInsert = ERROR_MESSAGE;
-        }
-
-        const paragraphNode = $createParagraphNode();
-        $convertFromMarkdownString(textToInsert, PLAYGROUND_TRANSFORMERS, paragraphNode, true);
-
-        const children = paragraphNode.getChildren();
-
-        if (children.length > 0) {
-          if ($isRangeSelection(selection)) {
-            const anchorNode = selection.anchor.getNode();
-            const topLevelNode = anchorNode.getTopLevelElement();
-
-            if (topLevelNode) {
-              let lastInserted: LexicalNode = topLevelNode;
-              for (const child of children) {
-                lastInserted.insertAfter(child);
-                lastInserted = child;
-              }
-
-              if (topLevelNode.getTextContent().trim() === '') {
-                topLevelNode.remove();
-              }
-
-              lastInserted.selectEnd();
-            } else {
-              selection.insertNodes(children);
-            }
+      editor.update(
+        () => {
+          let textToInsert: string;
+          if (result.success && result.data?.generatedText) {
+            textToInsert = result.data.generatedText;
           } else {
-            const root = $getRoot();
-            for (const child of children) {
-              root.append(child);
-            }
-            const lastChild = root.getLastChild();
-            lastChild?.selectEnd();
+            textToInsert = ERROR_MESSAGE;
           }
-        }
-      });
+
+          // 現在のコンテンツをMarkdownとして取得
+          const currentMarkdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
+
+          // 現在のコンテンツと生成されたテキストを結合
+          const combinedMarkdown = currentMarkdown.trim()
+            ? `${currentMarkdown.trim()}\n\n${textToInsert}`
+            : textToInsert;
+
+          // ルートをクリアして結合したマークダウンを変換
+          const root = $getRoot();
+          root.clear();
+          $convertFromMarkdownString(combinedMarkdown, PLAYGROUND_TRANSFORMERS);
+
+          // 最後のノードを選択
+          const newLastChild = root.getLastChild();
+          newLastChild?.selectEnd();
+        },
+        { skipTransforms: true },
+      );
 
       setIsOpen(false);
       setAnchorRect(null);

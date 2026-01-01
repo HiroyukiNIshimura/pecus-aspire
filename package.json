@@ -1,4 +1,11 @@
 {
+  "name": "pecus-aspire",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "pecus.Frontend",
+    "pecus.LexicalConverter"
+  ],
   "dependencies": {
     "jsdom": "^27.0.1"
   },

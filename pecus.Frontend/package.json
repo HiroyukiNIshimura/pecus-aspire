@@ -21,6 +21,7 @@
     "update": "ncu -u"
   },
   "dependencies": {
+    "@coati/editor": "*",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@excalidraw/excalidraw": "^0.18.0",
@@ -31,9 +32,11 @@
     "@lexical/extension": "^0.39.0",
     "@lexical/file": "0.39.0",
     "@lexical/hashtag": "0.39.0",
+    "@lexical/html": "0.39.0",
     "@lexical/link": "0.39.0",
     "@lexical/list": "0.39.0",
     "@lexical/mark": "0.39.0",
+    "@lexical/markdown": "0.39.0",
     "@lexical/overflow": "0.39.0",
     "@lexical/plain-text": "0.39.0",
     "@lexical/react": "^0.39.0",

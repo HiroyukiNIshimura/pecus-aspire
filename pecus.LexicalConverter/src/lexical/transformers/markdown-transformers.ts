@@ -4,6 +4,17 @@
  * @see pecus.Frontend/src/components/editor/plugins/MarkdownTransformers/index.ts
  */
 
+import {
+  $createEquationNode,
+  $createImageNode,
+  $createTweetNode,
+  $isEquationNode,
+  $isImageNode,
+  $isTweetNode,
+  EquationNode,
+  ImageNode,
+  TweetNode,
+} from '@coati/editor';
 import { $createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode } from '@lexical/extension';
 import {
   $convertFromMarkdownString,
@@ -30,17 +41,6 @@ import {
   TableRowNode,
 } from '@lexical/table';
 import { $createTextNode, $isParagraphNode, $isTextNode, type LexicalNode } from 'lexical';
-import {
-  $createEquationNode,
-  $createImageNode,
-  $createTweetNode,
-  $isEquationNode,
-  $isImageNode,
-  $isTweetNode,
-  EquationNode,
-  ImageNode,
-  TweetNode,
-} from '../nodes';
 import { emojiList } from './emoji-list';
 
 /**

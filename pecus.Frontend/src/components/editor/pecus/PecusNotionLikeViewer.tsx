@@ -7,15 +7,23 @@
  */
 'use client';
 
-import type { NotionLikeViewerProps } from '../core/NotionLikeViewer';
-import NotionLikeViewer from '../core/NotionLikeViewer';
+import { NotionLikeViewer } from '@coati/editor';
+
+// NotionLikeViewerのPropsは@coati/editorからの型を再利用
+// 現在のインターフェースは@coati/editor/src/core/NotionLikeViewer.tsxに定義
+export interface NotionLikeViewerProps {
+  /** エディタに読み込む初期マークダウン */
+  initialMarkdown?: string;
+  /** AIアシスタントを有効にするか */
+  isAiEnabled?: boolean;
+  /** 組織ID（AI機能用） */
+  organizationId?: number;
+}
 
 /**
  * Pecus固有のNotionLikeViewer
  *
- * core/NotionLikeViewer をそのまま再エクスポート。
+ * @coati/editor のNotionLikeViewer をそのまま再エクスポート。
  * 将来的にPecus固有の機能を追加する場合は、ここで拡張します。
  */
 export default NotionLikeViewer;
-
-export type { NotionLikeViewerProps };

@@ -5,16 +5,16 @@
  * - ワークスペース連携
  * - 画像アップロード（Pecus API）
  * - AutoLinkカスタムMatcher
+ * - AIアシスタントプラグイン
  */
 
-export type { NotionLikeViewerProps } from '../core/NotionLikeViewer';
+// 型定義（@coati/editorから再エクスポート）
+export type { ImageUploadHandler, ImageUploadResult, PecusEditorProps } from '@coati/editor';
 export type { ItemCodeLinkMatcherOptions, LinkMatcher } from '../hooks/useAutoLinkMatchers';
 // AutoLink Matcherのフック
 export { createLinkMatcherWithRegExp, useItemCodeLinkMatchers } from '../hooks/useAutoLinkMatchers';
 export type {
   ExistingItemUploadOptions,
-  ImageUploadHandler,
-  ImageUploadResult,
   NewItemUploadOptions,
 } from '../hooks/useImageUploadHandler';
 
@@ -23,8 +23,9 @@ export {
   useExistingItemImageUploadHandler,
   useNewItemImageUploadHandler,
 } from '../hooks/useImageUploadHandler';
-// 型定義
-export type { PecusEditorProps } from '../types';
+// プラグイン
+export { default as AiAssistantPlugin, INSERT_AI_ASSISTANT_COMMAND } from '../plugins/AiAssistantPlugin';
 // コンポーネント
 export { default as PecusNotionLikeEditor } from './PecusNotionLikeEditor';
+export type { NotionLikeViewerProps } from './PecusNotionLikeViewer';
 export { default as PecusNotionLikeViewer } from './PecusNotionLikeViewer';

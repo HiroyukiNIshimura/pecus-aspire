@@ -1,5 +1,14 @@
 'use client';
 
+import {
+  HorizontalRulePlugin,
+  ImagesPlugin,
+  NotionLikeEditorNodes,
+  NotionLikeViewerTheme,
+  PLAYGROUND_TRANSFORMERS,
+  TableContext,
+} from '@coati/editor';
+import '@coati/editor/styles';
 import { $convertFromMarkdownString } from '@lexical/markdown';
 import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -10,13 +19,6 @@ import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
 import { useEffect } from 'react';
-import NotionLikeEditorNodes from '@/components/editor/nodes/NotionLikeEditorNodes';
-import { HorizontalRulePlugin } from '@/components/editor/plugins/HorizontalRulePlugin';
-import ImagesPlugin from '@/components/editor/plugins/ImagesPlugin';
-import { PLAYGROUND_TRANSFORMERS } from '@/components/editor/plugins/MarkdownTransformers';
-import { TableContext } from '@/components/editor/plugins/TablePlugin';
-import NotionLikeViewerTheme from '@/components/editor/themes/NotionLikeViewerTheme';
-import '@/components/editor/core/Editor.css';
 
 interface HelpContentProps {
   markdown: string;

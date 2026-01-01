@@ -7,15 +7,47 @@
  */
 'use client';
 
-import type { NotionLikeEditorProps } from '../core/NotionLikeEditor';
-import NotionLikeEditor from '../core/NotionLikeEditor';
+import type { CoreEditorProps, ExtraOptionsProvider } from '@coati/editor';
+import { NotionLikeEditor } from '@coati/editor';
+import { useCallback } from 'react';
+import { useIsAiEnabled } from '@/providers/AppSettingsProvider';
+import AiAssistantPlugin, { INSERT_AI_ASSISTANT_COMMAND } from '../plugins/AiAssistantPlugin';
+
+export type NotionLikeEditorProps = CoreEditorProps;
 
 /**
  * Pecus固有のNotionLikeEditor
  *
- * core/NotionLikeEditor をそのまま再エクスポート。
- * 将来的にPecus固有の機能を追加する場合は、ここで拡張します。
+ * @coati/editor のNotionLikeEditor にPecus固有のプラグインを追加。
+ * AiAssistantPlugin: 組織設定でAIが有効な場合にのみ表示
  */
-export default NotionLikeEditor;
+export default function PecusNotionLikeEditor(props: NotionLikeEditorProps) {
+  const isAiEnabled = useIsAiEnabled();
 
-export type { NotionLikeEditorProps };
+  const extraComponentPickerOptions: ExtraOptionsProvider = useCallback(
+    (editor) => {
+      if (!isAiEnabled) {
+        return [];
+      }
+      return [
+        {
+          title: 'AI Assistant',
+          icon: <span className="icon-[tabler--sparkles] size-4" />,
+          keywords: ['ai', 'assistant', 'generate', 'write', '文章生成', 'アシスタント'],
+          onSelect: () => {
+            editor.dispatchCommand(INSERT_AI_ASSISTANT_COMMAND, undefined);
+          },
+        },
+      ];
+    },
+    [isAiEnabled],
+  );
+
+  return (
+    <NotionLikeEditor
+      {...props}
+      extraPlugins={<>{isAiEnabled && <AiAssistantPlugin />}</>}
+      extraComponentPickerOptions={extraComponentPickerOptions}
+    />
+  );
+}

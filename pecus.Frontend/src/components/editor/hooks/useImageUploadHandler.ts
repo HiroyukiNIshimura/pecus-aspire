@@ -1,7 +1,7 @@
 'use client';
 
+import type { ImageUploadHandler, ImageUploadResult } from '@coati/editor';
 import { useCallback, useMemo } from 'react';
-import type { ImageUploadHandler, ImageUploadResult } from '../context/ImageUploadContext';
 
 /**
  * 既存アイテム編集用のアップロードハンドラー作成オプション
@@ -120,5 +120,5 @@ export function useNewItemImageUploadHandler(options: NewItemUploadOptions): Ima
   return useMemo(() => ({ uploadImage }), [uploadImage]);
 }
 
-// 型のエクスポート
-export type { ImageUploadHandler, ImageUploadResult } from '../context/ImageUploadContext';
+// 型の再エクスポート
+export type { ImageUploadHandler, ImageUploadResult } from '@coati/editor';
