@@ -12,18 +12,36 @@ source "$script_dir/lib.sh"
 require_cmd docker
 
 slot="$(active_slot)"
-echo "active_slot=$slot"
+echo "アクティブスロット=$slot"
 echo
+
+show_container_status() {
+  local name="$1"
+  local running health
+  running=$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null || echo "")
+  if [[ "$running" != "true" ]]; then
+    printf "  %-30s %s\n" "$name" "stopped"
+    return
+  fi
+  health=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}}' "$name" 2>/dev/null || echo "-")
+  printf "  %-30s running (%s)\n" "$name" "$health"
+}
 
 echo "--- infra ---"
-compose_infra ps
+show_container_status "pecus-postgres"
+show_container_status "pecus-redis"
+show_container_status "pecus-redis-frontend"
+show_container_status "pecus-lexicalconverter"
+show_container_status "pecus-nginx"
 
 echo
-
 echo "--- app-blue ---"
-compose_app blue ps
+show_container_status "pecus-webapi-blue"
+show_container_status "pecus-frontend-blue"
+show_container_status "pecus-backfire-blue"
 
 echo
-
 echo "--- app-green ---"
-compose_app green ps
+show_container_status "pecus-webapi-green"
+show_container_status "pecus-frontend-green"
+show_container_status "pecus-backfire-green"

@@ -16,4 +16,4 @@ compose \
   -f "$bluegreen_dir/docker-compose.backup.yml" \
   run --rm pgbackup
 
-echo "[ok] backup finished"
+echo "[OK] バックアップ完了"

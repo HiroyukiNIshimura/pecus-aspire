@@ -18,7 +18,7 @@ set -euo pipefail
 
 slot="${1:-}"
 if [[ "$slot" != "blue" && "$slot" != "green" ]]; then
-  echo "usage: $0 {blue|green}" >&2
+  echo "使用方法: $0 {blue|green}" >&2
   exit 2
 fi
 
@@ -63,46 +63,44 @@ if slot_any_running "$other"; then
 fi
 
 if $target_running; then
-  echo "[ng] target slot containers are already running: $target" >&2
-  echo "      stop them first (docker compose -f docker-compose.app-$target.yml down)" >&2
+  echo "[エラー] ターゲットスロットのコンテナが既に稼働中です: $target" >&2
+  echo "        先に停止してください (docker compose -f docker-compose.app-$target.yml down)" >&2
   exit 2
 fi
 
-echo "[info] checking infra health before deployment..." >&2
+echo "[情報] デプロイ前にインフラの状態を確認中..." >&2
 if ! check_infra_healthy; then
-  echo "[ng] infra services are not healthy. run infra-up.sh first." >&2
+  echo "[エラー] インフラサービスが正常ではありません。先に infra-up.sh を実行してください。" >&2
   exit 3
 fi
 
-echo "[info] current(active)=$current target=$target" >&2
+echo "[情報] 現在(アクティブ)=$current ターゲット=$target" >&2
 
-echo "[info] 3.1 deploying target (without backfire): $target" >&2
+echo "[情報] 3.1 ターゲットをデプロイ (BackFire除く): $target" >&2
 compose_app "$target" up -d "pecusapi-$target" "frontend-$target"
 wait_health "pecus-webapi-$target" 300
 wait_running "pecus-frontend-$target" 120
 
 if $other_running; then
-  echo "[info] 3.2 stopping other (including backfire): $other" >&2
-  # NOTE: compose_app は infra+app を合成しているため、down すると nginx/postgres 等も落ちる。
-  # ここでは他slotのアプリ層だけを停止する。
+  echo "[情報] 3.2 旧スロットを停止 (BackFire含む): $other" >&2
   compose_app "$other" stop "pecusapi-$other" "frontend-$other" "backfire-$other" || true
   compose_app "$other" rm -f "pecusapi-$other" "frontend-$other" "backfire-$other" || true
 else
-  echo "[info] 3.2 skipping stop other (not running): $other" >&2
+  echo "[情報] 3.2 旧スロット停止をスキップ (稼働していない): $other" >&2
 fi
 
-echo "[info] 3.3 running db migration" >&2
+echo "[情報] 3.3 DBマイグレーション実行" >&2
 # Best-effort cleanup of previous dbmanager container
 if docker ps -a --format '{{.Names}}' | grep -qx 'pecus-dbmanager'; then
   docker rm -f pecus-dbmanager >/dev/null 2>&1 || true
 fi
 compose_migrate run --rm dbmanager
 
-echo "[info] 3.4 deploying target backfire: $target" >&2
+echo "[情報] 3.4 ターゲットのBackFireをデプロイ: $target" >&2
 compose_app "$target" up -d "backfire-$target"
 wait_running "pecus-backfire-$target" 120
 
-echo "[info] 3.5 switching nginx to: $target" >&2
+echo "[情報] 3.5 Nginxを切り替え: $target" >&2
 conf="$bluegreen_dir/nginx/conf.d/00-active-slot.conf"
 cat >"$conf" <<EOF
 # ここだけを書き換えてスイッチする（ops/switch-node.sh 推奨）
@@ -115,4 +113,4 @@ EOF
 compose_infra exec -T nginx nginx -t
 compose_infra exec -T nginx nginx -s reload
 
-echo "[ok] switched active slot to: $target"
+echo "[OK] アクティブスロットを切り替えました: $target"

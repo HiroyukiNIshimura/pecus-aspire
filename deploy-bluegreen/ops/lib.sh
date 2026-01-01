@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# カーソル復元（異常終了時対策）
+trap 'tput cnorm 2>/dev/null || true' EXIT
+
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 bluegreen_dir="$(cd "$script_dir/.." && pwd)"
 repo_root="$(cd "$bluegreen_dir/.." && pwd)"
@@ -8,7 +11,7 @@ repo_root="$(cd "$bluegreen_dir/.." && pwd)"
 require_cmd() {
   local cmd="$1"
   command -v "$cmd" >/dev/null 2>&1 || {
-    echo "[ng] required command not found: $cmd" >&2
+    echo "[エラー] 必要なコマンドが見つかりません: $cmd" >&2
     exit 127
   }
 }
@@ -19,13 +22,13 @@ ensure_env_file() {
     return 0
   fi
 
-  echo "[warn] $env_path not found. generating via scripts/generate-appsettings.js (-P)" >&2
+  echo "[警告] $env_path が見つかりません。scripts/generate-appsettings.js (-P) で生成します" >&2
 
   require_cmd node
   node "$repo_root/scripts/generate-appsettings.js" -P
 
   if [[ ! -f "$env_path" ]]; then
-    echo "[ng] failed to generate $env_path" >&2
+    echo "[エラー] $env_path の生成に失敗しました" >&2
     exit 1
   fi
 }
@@ -53,21 +56,21 @@ check_infra_healthy() {
     local running
     running=$(docker inspect -f '{{.State.Running}}' "$svc" 2>/dev/null || echo "")
     if [[ "$running" != "true" ]]; then
-      echo "[ng] infra not running: $svc" >&2
+      echo "[エラー] インフラが起動していません: $svc" >&2
       all_healthy=false
       continue
     fi
     local status
     status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$svc" 2>/dev/null || echo "")
     if [[ "$status" != "healthy" && "$status" != "none" ]]; then
-      echo "[ng] infra not healthy: $svc (status=$status)" >&2
+      echo "[エラー] インフラが正常ではありません: $svc (status=$status)" >&2
       all_healthy=false
     fi
   done
   if [[ "$all_healthy" == "false" ]]; then
     return 1
   fi
-  echo "[ok] all infra services healthy"
+  echo "[OK] 全インフラサービス正常"
   return 0
 }
 
@@ -81,14 +84,14 @@ compose_migrate() {
 active_slot() {
   local conf="$bluegreen_dir/nginx/conf.d/00-active-slot.conf"
   if [[ ! -f "$conf" ]]; then
-    echo "[ng] active slot config not found: $conf" >&2
+    echo "[エラー] アクティブスロット設定が見つかりません: $conf" >&2
     exit 1
   fi
 
   local slot
   slot=$(awk '/default[[:space:]]+(blue|green);/{print $2}' "$conf" | tr -d ';' | tail -n 1)
   if [[ "$slot" != "blue" && "$slot" != "green" ]]; then
-    echo "[ng] failed to detect active slot from: $conf" >&2
+    echo "[エラー] アクティブスロットの検出に失敗: $conf" >&2
     exit 1
   fi
   echo "$slot"
@@ -106,20 +109,20 @@ wait_health() {
 
     case "$status" in
       healthy)
-        echo "[ok] healthy: $container_name"
+        echo "[OK] 正常: $container_name"
         return 0
         ;;
       unhealthy)
-        echo "[ng] unhealthy: $container_name" >&2
+        echo "[エラー] 異常: $container_name" >&2
         docker inspect "$container_name" --format '{{json .State.Health}}' 2>/dev/null || true
         return 1
         ;;
       none)
-        echo "[ng] no healthcheck: $container_name" >&2
+        echo "[エラー] ヘルスチェック未定義: $container_name" >&2
         return 2
         ;;
       "")
-        echo "[ng] container not found: $container_name" >&2
+        echo "[エラー] コンテナが見つかりません: $container_name" >&2
         return 3
         ;;
     esac
@@ -127,7 +130,7 @@ wait_health() {
     local now
     now=$(date +%s)
     if (( now - start > timeout_sec )); then
-      echo "[ng] timeout waiting for healthy: $container_name" >&2
+      echo "[エラー] タイムアウト (ヘルスチェック待機): $container_name" >&2
       return 4
     fi
 
@@ -145,14 +148,14 @@ wait_running() {
     local running
     running=$(docker inspect -f '{{.State.Running}}' "$container_name" 2>/dev/null || true)
     if [[ "$running" == "true" ]]; then
-      echo "[ok] running: $container_name"
+      echo "[OK] 起動中: $container_name"
       return 0
     fi
 
     local now
     now=$(date +%s)
     if (( now - start > timeout_sec )); then
-      echo "[ng] timeout waiting for running: $container_name" >&2
+      echo "[エラー] タイムアウト (起動待機): $container_name" >&2
       return 1
     fi
 
@@ -162,11 +165,11 @@ wait_running() {
 
 confirm_phrase() {
   local phrase="$1"
-  echo "[warn] destructive operation. type exactly: $phrase" >&2
+  echo "[警告] 破壊的な操作です。続行するには次の文字列を正確に入力してください: $phrase" >&2
   local input
   read -r input
   if [[ "$input" != "$phrase" ]]; then
-    echo "[ng] confirmation failed" >&2
+    echo "[エラー] 確認に失敗しました" >&2
     exit 3
   fi
 }

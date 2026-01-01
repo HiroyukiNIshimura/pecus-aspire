@@ -13,13 +13,13 @@ source "$script_dir/lib.sh"
 
 require_cmd docker
 
-# Ensure infra is up (at least postgres and lexicalconverter)
+# インフラが起動しているか確認 (最低限 postgres と lexicalconverter)
 wait_health pecus-postgres 10 >/dev/null || {
-  echo "[ng] infra seems down. run infra-up.sh first." >&2
+  echo "[エラー] インフラが停止しています。先に infra-up.sh を実行してください。" >&2
   exit 2
 }
 wait_health pecus-lexicalconverter 10 >/dev/null || {
-  echo "[ng] infra seems down. run infra-up.sh first." >&2
+  echo "[エラー] インフラが停止しています。先に infra-up.sh を実行してください。" >&2
   exit 2
 }
 
@@ -42,4 +42,4 @@ fi
 
 compose_migrate run --rm -e DB_RESET_MODE=true dbmanager
 
-echo "[ok] db reset+migrate finished"
+echo "[OK] DBリセット+マイグレーション完了"

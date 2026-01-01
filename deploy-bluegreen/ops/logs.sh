@@ -26,7 +26,7 @@ if [[ "$slot" == "active" ]]; then
 fi
 
 if [[ "$slot" != "blue" && "$slot" != "green" ]]; then
-  echo "usage: $0 [active|blue|green] [logs options...]" >&2
+  echo "使用方法: $0 [active|blue|green] [logs オプション...]" >&2
   exit 2
 fi
 

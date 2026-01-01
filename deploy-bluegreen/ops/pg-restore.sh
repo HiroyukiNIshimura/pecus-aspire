@@ -9,12 +9,12 @@ set -euo pipefail
 
 dump_file=${1-}
 if [[ -z "$dump_file" || ! -f "$dump_file" ]]; then
-  echo "usage: $0 /absolute/path/to/xxx.dump" >&2
+  echo "使用方法: $0 /absolute/path/to/xxx.dump" >&2
   exit 2
 fi
 
 if [[ "${CONFIRM_RESTORE-}" != "YES" ]]; then
-  echo "Refusing to restore. Set CONFIRM_RESTORE=YES to proceed." >&2
+  echo "[エラー] リストアを拒否しました。続行するには CONFIRM_RESTORE=YES を設定してください。" >&2
   exit 3
 fi
 
@@ -31,4 +31,4 @@ compose \
   -e RESTORE_DUMP="/dump/$(basename -- "$dump_file")" \
   -v "$dump_file:/dump/$(basename -- "$dump_file"):ro" \
   postgres-restore \
-  sh -lc 'set -eu; echo "[info] restoring $RESTORE_DUMP"; pg_restore -h "${POSTGRES_HOST:-postgres}" -p "${POSTGRES_PORT:-5432}" -U "${POSTGRES_USER:-pecus}" -d "${POSTGRES_DB:-pecusdb}" --clean --if-exists "$RESTORE_DUMP"; echo "[ok] restore finished"'
+  sh -lc 'set -eu; echo "[情報] リストア中: $RESTORE_DUMP"; pg_restore -h "${POSTGRES_HOST:-postgres}" -p "${POSTGRES_PORT:-5432}" -U "${POSTGRES_USER:-pecus}" -d "${POSTGRES_DB:-pecusdb}" --clean --if-exists "$RESTORE_DUMP"; echo "[OK] リストア完了"'
