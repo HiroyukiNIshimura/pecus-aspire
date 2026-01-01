@@ -94,10 +94,12 @@ RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
 # Copy standalone build output
-# Next.js standalone output places server.js in the project subdirectory
+# Next.js standalone: server.js と node_modules は standalone/pecus.Frontend/ にある
+# static ファイルは build/static/ に別途出力される
 COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/pecus.Frontend/server.js ./server.js
-COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/pecus.Frontend/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/pecus.Frontend/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/pecus.Frontend/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/static ./.next/static
 
 # Switch to non-root user
 USER nextjs
