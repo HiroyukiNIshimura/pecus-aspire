@@ -89,11 +89,11 @@ RUN adduser --system --uid 1001 nextjs
 # Copy public assets to the correct location
 COPY --from=builder /app/pecus.Frontend/public ./pecus.Frontend/public
 
-# Copy standalone build output (includes server.js, .next, node_modules)
+# Copy standalone build output (includes server.js, build/, node_modules)
 COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone ./
 
-# Copy static files to the correct location
-COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/static ./pecus.Frontend/.next/static
+# Copy static files to the correct location (distDir: 'build' なので build/static へ)
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/static ./pecus.Frontend/build/static
 
 # Switch to non-root user
 USER nextjs
