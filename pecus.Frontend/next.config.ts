@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       allowedOrigins: [process.env.NEXT_ALLOW_DOMAIN || 'localhost'],
     },
   },
+  turbopack: {
+    // モノレポ環境でのワークスペースルートを明示（警告抑止）
+    root: '..',
+  },
 };
 
 export default nextConfig;
