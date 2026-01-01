@@ -4,40 +4,133 @@
 
 ## 事前準備
 
-- `deploy-bluegreen/.env` が無い場合、各スクリプト実行時に `scripts/generate-appsettings.js -P` を呼び出して生成します。
-- DB リセット（破壊的）を伴う操作は確認入力が必要です。
-- 実行は `./xxx.sh` を推奨です（`sh xxx.sh` で実行しても bash にフォールバックします）。
-- app compose は `redis-frontend` 等の infra サービスに `depends_on` しているため、ops スクリプトは内部で `docker-compose.infra.yml` と app compose を合成して実行します。
+- `deploy-bluegreen/.env` が無い場合、各スクリプト実行時に `scripts/generate-appsettings.js -P` を呼び出して生成します
+- 破壊的操作は `yes/no` 確認が必要です（デフォルト no）
+- 実行は `sh xxx.sh` または `./xxx.sh` どちらでも可（bash にフォールバックします）
 
-## よく使うコマンド
+## スクリプト一覧
 
-- インフラ起動/終了
-  - `./infra-up.sh`
-  - `./infra-down.sh`
+### インフラ起動/終了
 
-- DB 初期化（drop & recreate 級）+ migrate
-  - 対話実行: `./db-reset-migrate.sh`（実行時に `RESET-DB` の入力が必要）
-  - 非対話実行: `./db-reset-migrate.sh RESET-DB`
-  - 明示: `./db-reset-migrate.sh --confirm RESET-DB`
+```
+sh infra-up.sh
+sh infra-down.sh
+```
 
-- ノード切替（blue/green）
-  - `./switch-node.sh blue`
-  - `./switch-node.sh green`
-  - 指定した slot のコンテナが既に動いている場合はエラーになります（意図しない再デプロイ防止）
-  - 指定した slot が動いていなければ、そちらを起動→（必要なら）反対側を停止→マイグレーション→BackFire起動→Nginx切替を行います
-  - 反対側の停止は「アプリ層のみ」（WebApi/Frontend/BackFire）で、infra（nginx/postgres/redis 等）は落としません
+### ノード切替（blue/green）
 
-- 状態確認
-  - `./status.sh`
+```
+sh switch-node.sh blue
+sh switch-node.sh green
+```
 
-- ログ（active/blue/green 指定可。後続は docker compose logs のオプションをそのまま渡します）
-  - `./logs.sh active -f --tail=200`
-  - `./logs.sh blue --since=10m`
+- 指定した slot のコンテナが既に動いている場合はエラー（意図しない再デプロイ防止）
+- 処理フロー:
+  1. infra のヘルスチェック
+  2. ターゲットの WebApi/Frontend を起動
+  3. 旧スロットの WebApi/Frontend/BackFire を停止・削除
+  4. DBマイグレーション実行
+  5. ターゲットの BackFire を起動
+  6. Nginx を切り替え
 
-- バックアップ/リストア
-  - `./pg-backup.sh`
-  - `CONFIRM_RESTORE=YES ./pg-restore.sh /abs/path/to/file.dump`
+### 状態確認
 
-- 掃除（確認入力 `CLEANUP` 必須）
-  - `./cleanup.sh`
-  - `./cleanup.sh --prune-images --prune-builder`
+```
+sh status.sh
+```
+
+出力例:
+```
+アクティブスロット=blue
+
+--- infra ---
+  pecus-postgres                 running (healthy)
+  pecus-redis                    running (healthy)
+  pecus-redis-frontend           running (healthy)
+  pecus-lexicalconverter         running (healthy)
+  pecus-nginx                    running (-)
+
+--- app-blue ---
+  pecus-webapi-blue              running (healthy)
+  pecus-frontend-blue            running (-)
+  pecus-backfire-blue            running (-)
+
+--- app-green ---
+  pecus-webapi-green             stopped
+  pecus-frontend-green           stopped
+  pecus-backfire-green           stopped
+```
+
+### ログ確認
+
+```
+sh logs.sh active -f --tail=200
+sh logs.sh blue --since=10m
+sh logs.sh green
+```
+
+第1引数は `active` / `blue` / `green`。以降は `docker compose logs` のオプションをそのまま渡せます。
+
+### DB リセット + マイグレーション（破壊的）
+
+```
+sh db-reset-migrate.sh
+```
+
+`yes` 入力で実行。非対話で実行する場合:
+
+```
+sh db-reset-migrate.sh -y
+```
+
+### バックアップ
+
+```
+sh pg-backup.sh
+```
+
+バックアップ先: `${DATA_PATH}/backups/postgres/`
+
+### リストア（破壊的）
+
+```
+CONFIRM_RESTORE=YES sh pg-restore.sh /path/to/pecusdb_YYYYMMDD.dump
+```
+
+パスはホスト側の絶対パスを指定。例:
+
+```
+CONFIRM_RESTORE=YES sh pg-restore.sh /var/docker/coati/data/backups/postgres/pecusdb_20260101T061046Z.dump
+```
+
+### クリーンアップ
+
+```
+sh cleanup.sh
+sh cleanup.sh --prune-images
+sh cleanup.sh --prune-images --prune-builder
+```
+
+`yes` 入力で実行。
+
+## トラブルシューティング
+
+### infra が起動しない / switch-node.sh でエラー
+
+```
+sh status.sh
+```
+
+で各コンテナの状態を確認。`stopped` や `unhealthy` があれば:
+
+```
+sh infra-up.sh
+```
+
+### バックアップファイルのパスが分からない
+
+```
+grep DATA_PATH ../deploy-bluegreen/.env
+```
+
+で `DATA_PATH` を確認し、`${DATA_PATH}/backups/postgres/` 配下を指定。
