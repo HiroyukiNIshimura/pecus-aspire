@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
+
 set -euo pipefail
 
 # usage: CONFIRM_RESTORE=YES ./pg-restore.sh /absolute/path/to/xxx.dump
