@@ -23,19 +23,14 @@ wait_health pecus-lexicalconverter 10 >/dev/null || {
   exit 2
 }
 
-# Confirmation
-# - interactive: ./db-reset-migrate.sh
-# - non-interactive: ./db-reset-migrate.sh RESET-DB
-# - explicit: ./db-reset-migrate.sh --confirm RESET-DB
-if [[ "${1:-}" == "RESET-DB" ]]; then
-  shift
-elif [[ "${1:-}" == "--confirm" && "${2:-}" == "RESET-DB" ]]; then
-  shift 2
-else
-  confirm_phrase "RESET-DB"
+# 確認
+# - 対話式: ./db-reset-migrate.sh
+# - スキップ: ./db-reset-migrate.sh -y
+if [[ "${1:-}" != "-y" ]]; then
+  confirm_yes "DBをリセットしてマイグレーションを実行します。"
 fi
 
-# Best-effort cleanup of previous dbmanager container
+# 前回の dbmanager コンテナが残っていれば削除
 if docker ps -a --format '{{.Names}}' | grep -qx 'pecus-dbmanager'; then
   docker rm -f pecus-dbmanager >/dev/null 2>&1 || true
 fi

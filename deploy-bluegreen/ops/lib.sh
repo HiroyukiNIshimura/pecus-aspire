@@ -163,13 +163,13 @@ wait_running() {
   done
 }
 
-confirm_phrase() {
-  local phrase="$1"
-  echo "[警告] 破壊的な操作です。続行するには次の文字列を正確に入力してください: $phrase" >&2
+confirm_yes() {
+  local message="${1:-破壊的な操作です}"
+  echo "[警告] $message 続行しますか? (yes/no) [no]: " >&2
   local input
   read -r input
-  if [[ "$input" != "$phrase" ]]; then
-    echo "[エラー] 確認に失敗しました" >&2
+  if [[ "$input" != "yes" ]]; then
+    echo "[中止] キャンセルしました" >&2
     exit 3
   fi
 }

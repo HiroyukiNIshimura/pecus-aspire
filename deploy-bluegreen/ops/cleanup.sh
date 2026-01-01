@@ -39,7 +39,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-confirm_phrase "CLEANUP"
+confirm_yes "コンテナ/イメージのクリーンアップを実行します。"
 
 echo "[情報] 停止中のコンテナを削除 (グローバル)" >&2
 docker container prune -f
