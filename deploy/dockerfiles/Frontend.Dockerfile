@@ -94,9 +94,10 @@ RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
 # Copy standalone build output
-# Note: Requires output: 'standalone' in next.config.ts
-COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/static ./build/static
+# Next.js standalone output places server.js in the project subdirectory
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/pecus.Frontend/server.js ./server.js
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/pecus.Frontend/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/node_modules ./node_modules
 
 # Switch to non-root user
 USER nextjs
