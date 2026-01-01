@@ -45,9 +45,13 @@ done
 confirm_yes "コンテナ/イメージのクリーンアップを実行します (pecus-* 対象)。"
 
 echo "[情報] 停止中の pecus-* コンテナを削除" >&2
-docker ps -a --filter "status=exited" --format '{{.Names}}' 2>/dev/null | \
-  grep -E '^pecus-' | \
-  xargs -r docker rm 2>/dev/null || true
+for container in $(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -E '^pecus-'); do
+  running=$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null || echo "false")
+  if [[ "$running" != "true" ]]; then
+    echo "  削除: $container" >&2
+    docker rm -f "$container" 2>/dev/null || true
+  fi
+done
 
 if $prune_images; then
   echo "[情報] 未使用の pecus-* イメージを削除" >&2

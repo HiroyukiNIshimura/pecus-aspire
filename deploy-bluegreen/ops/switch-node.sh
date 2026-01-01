@@ -130,10 +130,13 @@ compose_infra exec -T nginx nginx -s reload
 
 echo "[情報] 3.8 未使用のDockerリソースをクリーンアップ (pecus-*)" >&2
 
-# プロジェクト固有の停止済みコンテナを削除
-docker ps -a --filter "status=exited" --format '{{.Names}}' 2>/dev/null | \
-  grep -E '^pecus-' | \
-  xargs -r docker rm 2>/dev/null || true
+# プロジェクト固有の停止済みコンテナを削除（稼働中以外すべて）
+for container in $(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -E '^pecus-'); do
+  running=$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null || echo "false")
+  if [[ "$running" != "true" ]]; then
+    docker rm -f "$container" 2>/dev/null || true
+  fi
+done
 
 # プロジェクト固有の未使用イメージを削除
 for img in $(docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null | grep -E '^pecus-'); do
