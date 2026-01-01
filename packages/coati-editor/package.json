@@ -1,0 +1,79 @@
+{
+  "name": "@coati/editor",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./nodes": {
+      "types": "./dist/nodes.d.ts",
+      "import": "./dist/nodes.mjs",
+      "require": "./dist/nodes.js"
+    },
+    "./nodes-headless": {
+      "types": "./dist/nodes-headless.d.ts",
+      "import": "./dist/nodes-headless.mjs",
+      "require": "./dist/nodes-headless.js"
+    },
+    "./transformers": {
+      "types": "./dist/transformers.d.ts",
+      "import": "./dist/transformers.mjs",
+      "require": "./dist/transformers.js"
+    },
+    "./styles": "./dist/index.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "biome check --write",
+    "format": "biome format --write"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@floating-ui/react": "^0.27.16",
+    "@lexical/clipboard": "0.39.0",
+    "@lexical/code": "0.39.0",
+    "@lexical/code-shiki": "0.39.0",
+    "@lexical/extension": "^0.39.0",
+    "@lexical/file": "0.39.0",
+    "@lexical/hashtag": "0.39.0",
+    "@lexical/html": "0.39.0",
+    "@lexical/link": "0.39.0",
+    "@lexical/list": "0.39.0",
+    "@lexical/mark": "0.39.0",
+    "@lexical/markdown": "0.39.0",
+    "@lexical/overflow": "0.39.0",
+    "@lexical/plain-text": "0.39.0",
+    "@lexical/react": "^0.39.0",
+    "@lexical/rich-text": "0.39.0",
+    "@lexical/selection": "0.39.0",
+    "@lexical/table": "0.39.0",
+    "@lexical/tailwind": "^0.39.0",
+    "@lexical/utils": "0.39.0",
+    "date-fns": "^4.1.0",
+    "katex": "^0.16.27",
+    "lexical": "^0.39.0",
+    "react-day-picker": "^9.13.0",
+    "use-debounce": "^10.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.10",
+    "@types/katex": "^0.16.7",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3"
+  }
+}
