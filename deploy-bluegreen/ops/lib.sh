@@ -44,21 +44,12 @@ compose_app() {
   shift
   local cmd="${1:-}"
 
-  # app compose は infra 側サービス(redis-frontend等)に depends_on しているため、
-  # 同一プロジェクトとして infra+app を合成して実行する。
-  # ただし up 時は --no-recreate で既存 infra コンテナを再起動しない。
-  if [[ "$cmd" == "up" ]]; then
-    shift
-    compose \
-      -f "$bluegreen_dir/docker-compose.infra.yml" \
-      -f "$bluegreen_dir/docker-compose.app-$slot.yml" \
-      up --no-recreate "$@"
-  else
-    compose \
-      -f "$bluegreen_dir/docker-compose.infra.yml" \
-      -f "$bluegreen_dir/docker-compose.app-$slot.yml" \
-      "$cmd" "$@"
-  fi
+  # app compose は infra 側サービス(redis-frontend等)に depends_on しているが、
+  # infra は既に起動済みの前提なので --no-deps で依存を無視して app compose 単体で実行する。
+  # これにより infra コンテナ（nginx等）が影響を受けない。
+  compose \
+    -f "$bluegreen_dir/docker-compose.app-$slot.yml" \
+    "$cmd" --no-deps "${@:2}"
 }
 
 compose_migrate() {
