@@ -25,6 +25,7 @@
   - `./switch-node.sh green`
   - 指定した slot のコンテナが既に動いている場合はエラーになります（意図しない再デプロイ防止）
   - 指定した slot が動いていなければ、そちらを起動→（必要なら）反対側を停止→マイグレーション→BackFire起動→Nginx切替を行います
+  - 反対側の停止は「アプリ層のみ」（WebApi/Frontend/BackFire）で、infra（nginx/postgres/redis 等）は落としません
 
 - 状態確認
   - `./status.sh`

@@ -77,7 +77,10 @@ wait_running "pecus-frontend-$target" 120
 
 if $other_running; then
   echo "[info] 3.2 stopping other (including backfire): $other" >&2
-  compose_app "$other" down
+  # NOTE: compose_app は infra+app を合成しているため、down すると nginx/postgres 等も落ちる。
+  # ここでは他slotのアプリ層だけを停止する。
+  compose_app "$other" stop "pecusapi-$other" "frontend-$other" "backfire-$other" || true
+  compose_app "$other" rm -f "pecusapi-$other" "frontend-$other" "backfire-$other" || true
 else
   echo "[info] 3.2 skipping stop other (not running): $other" >&2
 fi
