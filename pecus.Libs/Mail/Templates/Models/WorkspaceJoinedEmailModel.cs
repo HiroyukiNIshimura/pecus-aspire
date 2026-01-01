@@ -3,7 +3,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// ワークスペース加入通知メールテンプレート用のモデル
 /// </summary>
-public class WorkspaceJoinedEmailModel : IEmailTemplateModel<WorkspaceJoinedEmailModel>
+public class WorkspaceJoinedEmailModel : EmailTemplateModelBase, IEmailTemplateModel<WorkspaceJoinedEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "workspace-joined";

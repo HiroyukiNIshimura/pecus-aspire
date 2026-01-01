@@ -1,29 +1,32 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.Mail.Configuration;
+using Pecus.Libs.Mail.Templates;
 using RazorLight;
 
 namespace Pecus.Libs.Mail.Services;
 
 /// <summary>
-/// RazorLightを使用したテンプレートレンダリングサービス
+/// RazorLightを使用したテンプレートレンダリングサービス（HTMLエンコードなし）
 /// </summary>
 public class RazorNonEncodeTemplateService : ITemplateService
 {
     private readonly IRazorLightEngine _razorEngine;
     private readonly EmailSettings _settings;
+    private readonly ApplicationSettings _appSettings;
     private readonly ILogger<RazorNonEncodeTemplateService> _logger;
+
     /// <summary>
     /// コンストラクタ
     /// </summary>
-    /// <param name="settings"></param>
-    /// <param name="logger"></param>
     public RazorNonEncodeTemplateService(
         IOptions<EmailSettings> settings,
+        IOptions<ApplicationSettings> appSettings,
         ILogger<RazorNonEncodeTemplateService> logger
     )
     {
         _settings = settings.Value;
+        _appSettings = appSettings.Value;
         _logger = logger;
 
         var templateRootPath = Path.Combine(AppContext.BaseDirectory, _settings.TemplateRootPath);
@@ -44,6 +47,12 @@ public class RazorNonEncodeTemplateService : ITemplateService
     {
         try
         {
+            // モデルが EmailTemplateModelBase を継承している場合、App を自動注入
+            if (model is EmailTemplateModelBase baseModel)
+            {
+                baseModel.App = AppSettings.FromApplicationSettings(_appSettings);
+            }
+
             var result = await _razorEngine.CompileRenderAsync(templateName, model);
 
             _logger.LogDebug("Template {TemplateName} rendered successfully", templateName);

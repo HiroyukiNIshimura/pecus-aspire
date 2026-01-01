@@ -89,6 +89,12 @@
       "Provider": "DeepSeek",
       "Model": "deepseek-chat",
       "ApiKey": ""
+    },
+    "Application": {
+      "Name": "Coati",
+      "Version": "1.0.0",
+      "SiteUrl": "https://coati.bright-l.0am.jp",
+      "CompanyName": "Bright-L Co., Ltd."
     }
   },
 
@@ -107,11 +113,6 @@
         "ValidIssuer": "http://localhost/",
         "ValidAudience": "https://localhost/",
         "ExpiresMinutes": 15
-      },
-      "Application": {
-        "Name": "Pecus API",
-        "Version": "1.0.0",
-        "EnableEntranceOrganization": true
       },
       "Pagination": {
         "DefaultPageSize": 20

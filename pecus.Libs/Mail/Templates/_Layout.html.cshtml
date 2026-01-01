@@ -2,12 +2,14 @@
 共通レイアウト（ヘッダ／フッタ）
 ミニマル＆プロフェッショナルなデザイン
 *@
+@using Pecus.Libs.Mail.Templates
+@model EmailTemplateModelBase
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Coati</title>
+    <title>@Model.App.Name</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Arial, sans-serif;
@@ -151,15 +153,14 @@
     <div class="container">
         <div class="card">
             <div class="header">
-                <span class="brand">Coati</span>
+                <span class="brand">@Model.App.Name</span>
             </div>
             <div class="content">
                 @RenderBody()
             </div>
             <div class="footer">
-                <p>このメールは <a href="https://pecus.example/">Coati</a> から自動送信されています。返信しないでください。</p>
-                <p>ご不明な点は <a href="mailto:support@pecus.example">サポート</a> までご連絡ください。</p>
-                <p class="muted" style="margin-top: 12px;">&copy; @DateTime.UtcNow.Year Coati. All rights reserved.</p>
+                <p>このメールは <a href="@Model.App.SiteUrl">@Model.App.Name</a> から自動送信されています。返信しないでください。</p>
+                <p class="muted" style="margin-top: 12px;">&copy; @Model.App.Year @Model.App.CompanyName. All rights reserved.</p>
             </div>
         </div>
     </div>

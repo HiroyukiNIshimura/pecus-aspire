@@ -5,7 +5,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// アイテム作成通知メールテンプレート用のモデル
 /// </summary>
-public class ItemCreatedEmailModel : IEmailTemplateModel<ItemCreatedEmailModel>
+public class ItemCreatedEmailModel : EmailTemplateModelBase, IEmailTemplateModel<ItemCreatedEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "item-created";
@@ -54,7 +54,7 @@ public class ItemCreatedEmailModel : IEmailTemplateModel<ItemCreatedEmailModel>
 /// 全ての ActivityActionType に対応する統一テンプレート。
 /// エフェクト内容は ActivityActionType に応じて変化する。
 /// </remarks>
-public class ItemUpdatedEmailModel : IEmailTemplateModel<ItemUpdatedEmailModel>
+public class ItemUpdatedEmailModel : EmailTemplateModelBase, IEmailTemplateModel<ItemUpdatedEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "item-updated";

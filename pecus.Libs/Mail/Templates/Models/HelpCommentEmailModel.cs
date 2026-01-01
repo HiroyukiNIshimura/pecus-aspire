@@ -3,7 +3,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// ヘルプコメント（ヘルプ要求）通知メールテンプレート用モデル
 /// </summary>
-public class HelpCommentEmailModel : IEmailTemplateModel<HelpCommentEmailModel>
+public class HelpCommentEmailModel : EmailTemplateModelBase, IEmailTemplateModel<HelpCommentEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "help-comment";

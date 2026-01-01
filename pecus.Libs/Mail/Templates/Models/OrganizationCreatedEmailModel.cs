@@ -3,7 +3,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// 組織登録完了メールテンプレート用のモデル
 /// </summary>
-public class OrganizationCreatedEmailModel : IEmailTemplateModel<OrganizationCreatedEmailModel>
+public class OrganizationCreatedEmailModel : EmailTemplateModelBase, IEmailTemplateModel<OrganizationCreatedEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "organization-created";

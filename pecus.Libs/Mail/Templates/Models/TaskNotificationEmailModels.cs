@@ -3,7 +3,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// タスク作成通知メールテンプレート用モデル
 /// </summary>
-public class TaskCreatedEmailModel : IEmailTemplateModel<TaskCreatedEmailModel>
+public class TaskCreatedEmailModel : EmailTemplateModelBase, IEmailTemplateModel<TaskCreatedEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "task-created";
@@ -45,7 +45,7 @@ public class TaskCreatedEmailModel : IEmailTemplateModel<TaskCreatedEmailModel>
 /// <summary>
 /// タスク完了通知メールテンプレート用モデル
 /// </summary>
-public class TaskCompletedEmailModel : IEmailTemplateModel<TaskCompletedEmailModel>
+public class TaskCompletedEmailModel : EmailTemplateModelBase, IEmailTemplateModel<TaskCompletedEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "task-completed";

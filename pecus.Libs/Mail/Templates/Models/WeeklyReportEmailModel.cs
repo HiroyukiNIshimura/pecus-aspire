@@ -5,7 +5,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// 週間レポートメールテンプレート用モデル
 /// </summary>
-public class WeeklyReportEmailModel : IEmailTemplateModel<WeeklyReportEmailModel>
+public class WeeklyReportEmailModel : EmailTemplateModelBase, IEmailTemplateModel<WeeklyReportEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "weekly-report";

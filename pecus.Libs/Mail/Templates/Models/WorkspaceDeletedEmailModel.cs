@@ -3,7 +3,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// ワークスペース削除通知メールテンプレート用モデル
 /// </summary>
-public class WorkspaceDeletedEmailModel : IEmailTemplateModel<WorkspaceDeletedEmailModel>
+public class WorkspaceDeletedEmailModel : EmailTemplateModelBase, IEmailTemplateModel<WorkspaceDeletedEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "workspace-deleted";

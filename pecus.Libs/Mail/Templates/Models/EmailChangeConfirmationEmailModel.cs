@@ -3,7 +3,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// メールアドレス変更確認メールテンプレート用のモデル
 /// </summary>
-public class EmailChangeConfirmationEmailModel : IEmailTemplateModel<EmailChangeConfirmationEmailModel>
+public class EmailChangeConfirmationEmailModel : EmailTemplateModelBase, IEmailTemplateModel<EmailChangeConfirmationEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "email-change-confirmation";

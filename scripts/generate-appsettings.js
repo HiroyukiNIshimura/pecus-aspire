@@ -175,9 +175,15 @@ function generate() {
   console.log('Generated:', appHostPath);
 
   // pecus.WebApi/appsettings.json
+  // _shared.Application を Pecus.Application にマージ
+  const { Application: sharedApplication, ...restShared } = _shared;
   const webapiConfig = {
-    ..._shared,
+    ...restShared,
     ...projects.webapi,
+    Pecus: {
+      ...projects.webapi.Pecus,
+      Application: sharedApplication,
+    },
     // Frontend URL を追加
     Frontend: {
       Endpoint: _infrastructure.urls.frontend,
@@ -189,8 +195,11 @@ function generate() {
 
   // pecus.BackFire/appsettings.json
   const backfireConfig = {
-    ..._shared,
+    ...restShared,
     ...projects.backfire,
+    Pecus: {
+      Application: sharedApplication,
+    },
     // Frontend URL を追加
     Frontend: {
       Endpoint: _infrastructure.urls.frontend,

@@ -3,7 +3,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// ワークスペース更新通知メールテンプレート用モデル
 /// </summary>
-public class WorkspaceUpdatedEmailModel : IEmailTemplateModel<WorkspaceUpdatedEmailModel>
+public class WorkspaceUpdatedEmailModel : EmailTemplateModelBase, IEmailTemplateModel<WorkspaceUpdatedEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "workspace-updated";

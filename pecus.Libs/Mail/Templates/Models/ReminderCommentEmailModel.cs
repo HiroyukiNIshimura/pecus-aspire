@@ -3,7 +3,7 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// 督促コメント（リマインダー）通知メールテンプレート用モデル
 /// </summary>
-public class ReminderCommentEmailModel : IEmailTemplateModel<ReminderCommentEmailModel>
+public class ReminderCommentEmailModel : EmailTemplateModelBase, IEmailTemplateModel<ReminderCommentEmailModel>
 {
     /// <inheritdoc />
     public static string TemplateName => "reminder-comment";
