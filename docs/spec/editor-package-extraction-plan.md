@@ -465,9 +465,199 @@ import './globals.css';               // アプリ固有のスタイル
 
 ---
 
+## `pecus.LexicalConverter` への影響と改善点
+
+### 現状の問題：ノード定義の重複
+
+現在、カスタムノードが2箇所で重複定義されています：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  現在の構成（ノード定義が重複）                              │
+│                                                             │
+│  pecus.Frontend/src/components/editor/nodes/               │
+│    └── ImageNode.ts  （React コンポーネント付き）           │
+│    └── MentionNode.ts                                      │
+│    └── ...                                                 │
+│                                                             │
+│  pecus.LexicalConverter/src/lexical/nodes/                 │
+│    └── ImageNode.ts  （ヘッドレス用、コピー＆簡略化）       │
+│    └── MentionNode.ts                                      │
+│    └── ...                                                 │
+│                                                             │
+│  問題：ノードのシリアライズ/デシリアライズロジックが        │
+│        2箇所で維持され、同期が困難                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 改善案：ノード定義を共有パッケージに
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  改善後の構成                                               │
+│                                                             │
+│  packages/coati-editor/                                    │
+│    └── src/                                                │
+│        └── nodes/                                          │
+│            └── ImageNode.ts      （コア定義）              │
+│            └── MentionNode.ts                              │
+│            └── index.ts          （ノードのみエクスポート）│
+│        └── react/                                          │
+│            └── ImageComponent.tsx （React UI のみ）        │
+│                                                             │
+│  pecus.Frontend/                                           │
+│    └── @coati/editor からインポート                        │
+│                                                             │
+│  pecus.LexicalConverter/                                   │
+│    └── @coati/editor からインポート（React 不要部分のみ）  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 具体的なメリット
+
+| 項目 | 現状 | 改善後 |
+|------|------|--------|
+| **ノード定義の重複** | 2箇所で維持が必要 | 1箇所（`@coati/editor`） |
+| **同期漏れリスク** | 高い | なし |
+| **新ノード追加** | 2ファイル修正必要 | 1ファイルで完結 |
+| **型の一貫性** | 手動で同期 | 自動的に一致 |
+| **Markdown Transformer** | 別々に定義 | 共有可能 |
+
+### パッケージ構成の拡張案
+
+複数のエントリポイントを提供し、React 依存部分と非依存部分を分離：
+
+```json
+{
+  "name": "@coati/editor",
+  "version": "0.1.0",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./nodes": {
+      "import": "./dist/nodes.mjs",
+      "require": "./dist/nodes.js",
+      "types": "./dist/nodes.d.ts"
+    },
+    "./transformers": {
+      "import": "./dist/transformers.mjs",
+      "require": "./dist/transformers.js",
+      "types": "./dist/transformers.d.ts"
+    },
+    "./styles": "./dist/styles.css"
+  }
+}
+```
+
+### `pecus.LexicalConverter` からの利用
+
+```typescript
+// 現在: ローカルにコピーしたノード定義を使用
+import { CustomNodes } from './nodes';
+import { PLAYGROUND_TRANSFORMERS } from './transformers/markdown-transformers';
+
+// 改善後: 共有パッケージから直接インポート
+import { CustomNodes } from '@coati/editor/nodes';
+import { PLAYGROUND_TRANSFORMERS } from '@coati/editor/transformers';
+```
+
+### `pecus.LexicalConverter/package.json` の更新
+
+```json
+{
+  "dependencies": {
+    "@coati/editor": "workspace:*"
+  }
+}
+```
+
+---
+
+## `LexicalConverter.Dockerfile` への影響
+
+`pecus.LexicalConverter` も同じパッケージを参照するため、Dockerfile の更新が必要です。
+
+### 更新後の `deploy/dockerfiles/LexicalConverter.Dockerfile`
+
+```dockerfile
+# ============================================
+# pecus.LexicalConverter Dockerfile - モノレポ対応版
+# ============================================
+
+FROM node:22-alpine AS base
+WORKDIR /app
+
+# ============================================
+# Dependencies stage
+# ============================================
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+
+# ルートのワークスペース設定をコピー
+COPY package.json package-lock.json ./
+
+# エディタパッケージ（ビルド済み dist を含む）
+COPY packages/coati-editor/package.json ./packages/coati-editor/
+COPY packages/coati-editor/dist ./packages/coati-editor/dist
+
+# LexicalConverter の package.json をコピー
+COPY pecus.LexicalConverter/package.json ./pecus.LexicalConverter/
+
+# ワークスペース全体の依存関係をインストール
+RUN npm ci --workspace=pecus.LexicalConverter
+
+# ============================================
+# Build stage
+# ============================================
+FROM base AS builder
+WORKDIR /app
+
+# 依存関係をコピー
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
+COPY --from=deps /app/pecus.LexicalConverter/node_modules ./pecus.LexicalConverter/node_modules
+
+# LexicalConverter のソースをコピー
+COPY pecus.LexicalConverter/ ./pecus.LexicalConverter/
+
+# Build
+WORKDIR /app/pecus.LexicalConverter
+RUN npm run build
+
+# ============================================
+# Production stage
+# ============================================
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# ...以下、既存の production stage と同様
+```
+
+---
+
+## 変更が必要なファイル（更新版）
+
+| ファイル | 変更内容 |
+|----------|----------|
+| `deploy/dockerfiles/Frontend.Dockerfile` | モノレポ構成に対応 |
+| `deploy/dockerfiles/LexicalConverter.Dockerfile` | モノレポ構成に対応（追加） |
+| `package.json`（ルート） | `workspaces` 設定追加 |
+| `package-lock.json`（ルート） | 新規生成 |
+| `pecus.LexicalConverter/package.json` | `@coati/editor` 依存追加（追加） |
+| `pecus.LexicalConverter/src/lexical/nodes/` | 削除可能（追加） |
+| `.gitignore` | `dist/` の例外設定 |
+
+---
+
 ## 決定事項（レビュー後に記載）
 
 - [ ] パッケージ分離を実施するか
 - [ ] パッケージ名: `@coati/editor` で良いか
 - [ ] ビルド戦略: ビルド済み dist をコミットする方式で良いか
+- [ ] `pecus.LexicalConverter` のノード定義も共有化するか
 - [ ] 移行時期: いつ実施するか
