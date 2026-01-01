@@ -128,4 +128,25 @@ EOF
 compose_infra exec -T nginx nginx -t
 compose_infra exec -T nginx nginx -s reload
 
+echo "[情報] 3.8 未使用のDockerリソースをクリーンアップ (pecus-*)" >&2
+
+# プロジェクト固有の停止済みコンテナを削除
+docker ps -a --filter "status=exited" --format '{{.Names}}' 2>/dev/null | \
+  grep -E '^pecus-' | \
+  xargs -r docker rm 2>/dev/null || true
+
+# プロジェクト固有の未使用イメージを削除
+for img in $(docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null | grep -E '^pecus-'); do
+  img_id=$(docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep "^$img " | awk '{print $2}')
+  if [[ -n "$img_id" ]] && ! docker ps -q --filter "ancestor=$img_id" 2>/dev/null | grep -q .; then
+    docker rmi "$img" 2>/dev/null || true
+  fi
+done
+
+# dangling イメージを削除（ラベルでフィルタできないため全体対象）
+docker images -f "dangling=true" -q 2>/dev/null | xargs -r docker rmi 2>/dev/null || true
+
+# ビルドキャッシュのクリーンアップ
+docker builder prune -f 2>/dev/null || true
+
 echo "[OK] アクティブスロットを切り替えました: $target"

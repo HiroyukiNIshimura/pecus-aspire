@@ -5,9 +5,10 @@ fi
 
 set -euo pipefail
 
-# Conservative cleanup helper.
-# - Removes stopped containers (global)
-# - Optionally removes dangling images and build cache
+# Conservative cleanup helper for pecus project.
+# - Removes stopped pecus-* containers
+# - Optionally removes unused pecus-* images and dangling images
+# - Optionally removes build cache
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=./lib.sh
@@ -30,6 +31,8 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       echo "使用方法: $0 [--prune-images] [--prune-builder]" >&2
+      echo "  --prune-images   未使用の pecus-* イメージと dangling イメージを削除" >&2
+      echo "  --prune-builder  ビルドキャッシュを削除" >&2
       exit 0
       ;;
     *)
@@ -39,19 +42,30 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-confirm_yes "コンテナ/イメージのクリーンアップを実行します。"
+confirm_yes "コンテナ/イメージのクリーンアップを実行します (pecus-* 対象)。"
 
-echo "[情報] 停止中のコンテナを削除 (グローバル)" >&2
-docker container prune -f
+echo "[情報] 停止中の pecus-* コンテナを削除" >&2
+docker ps -a --filter "status=exited" --format '{{.Names}}' 2>/dev/null | \
+  grep -E '^pecus-' | \
+  xargs -r docker rm 2>/dev/null || true
 
 if $prune_images; then
-  echo "[情報] 不要なイメージを削除 (グローバル)" >&2
-  docker image prune -f
+  echo "[情報] 未使用の pecus-* イメージを削除" >&2
+  for img in $(docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null | grep -E '^pecus-'); do
+    img_id=$(docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep "^$img " | awk '{print $2}')
+    if [[ -n "$img_id" ]] && ! docker ps -q --filter "ancestor=$img_id" 2>/dev/null | grep -q .; then
+      echo "  削除: $img" >&2
+      docker rmi "$img" 2>/dev/null || true
+    fi
+  done
+
+  echo "[情報] dangling イメージを削除" >&2
+  docker images -f "dangling=true" -q 2>/dev/null | xargs -r docker rmi 2>/dev/null || true
 fi
 
 if $prune_builder; then
-  echo "[情報] ビルドキャッシュを削除 (グローバル)" >&2
-  docker builder prune -f
+  echo "[情報] ビルドキャッシュを削除" >&2
+  docker builder prune -f 2>/dev/null || true
 fi
 
 echo "[OK] クリーンアップ完了"
