@@ -3,10 +3,10 @@
     Layout = "_Layout.html.cshtml";
 }
 
-<h2 style="color:#d32f2f;">ワークスペースが削除されました</h2>
+<h2>ワークスペースが削除されました</h2>
 
-<div style="background-color:#ffebee; padding:15px; margin:15px 0; border-left:4px solid #f44336;">
-    <p style="margin:0;"><strong>重要:</strong> 以下のワークスペースが削除されました。</p>
+<div class="warning">
+    <strong>重要:</strong> 以下のワークスペースが削除されました。
 </div>
 
 <p><strong>ワークスペース名:</strong> @Model.WorkspaceName</p>
@@ -24,20 +24,20 @@
 
 @if (!string.IsNullOrWhiteSpace(Model.DeletionReason))
 {
-    <div style="background-color:#fff3cd; padding:15px; margin:15px 0; border-left:4px solid #ffc107;">
-        <h3 style="margin-top:0;">削除理由</h3>
-        <p style="margin:0; white-space:pre-wrap;">@Model.DeletionReason</p>
+    <div class="warning">
+        <strong>削除理由</strong>
+        <p style="margin:8px 0 0 0; white-space:pre-wrap;">@Model.DeletionReason</p>
     </div>
 }
 
 @if (!string.IsNullOrWhiteSpace(Model.BackupInfo))
 {
-    <div style="background-color:#e3f2fd; padding:15px; margin:15px 0; border-left:4px solid #2196F3;">
-        <h3 style="margin-top:0;">バックアップ・復旧について</h3>
-        <p style="margin:0; white-space:pre-wrap;">@Model.BackupInfo</p>
+    <div class="info">
+        <strong>バックアップ・復旧について</strong>
+        <p style="margin:8px 0 0 0; white-space:pre-wrap;">@Model.BackupInfo</p>
     </div>
 }
 
-<p style="font-size:14px; color:#d32f2f; font-weight:bold;">このワークスペースに含まれていたデータへのアクセスはできなくなりました。</p>
+<p style="font-weight:bold;">このワークスペースに含まれていたデータへのアクセスはできなくなりました。</p>
 
-<p style="font-size:14px; color:#666;">この削除に心当たりがない場合、または誤って削除された可能性がある場合は、すぐに管理者またはサポートまでご連絡ください。</p>
+<p class="muted">この削除に心当たりがない場合、または誤って削除された可能性がある場合は、すぐに管理者またはサポートまでご連絡ください。</p>

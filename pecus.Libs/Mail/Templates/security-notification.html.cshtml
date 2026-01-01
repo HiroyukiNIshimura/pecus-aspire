@@ -13,9 +13,9 @@
 
 <p>あなたのアカウントに新しいデバイスからログインがありました。心当たりがない場合は、すぐにパスワードを変更し、サポートまでご連絡ください。</p>
 
-<div style="background:#f8f9fa; padding:16px; border-radius:6px; margin:16px 0; border-left:4px solid #1976d2;">
-    <p style="margin:0 0 8px 0; font-weight:bold; color:#1976d2;">ログイン情報:</p>
-    <ul style="margin:0; padding-left:20px; color:#333;">
+<div class="info">
+    <p style="margin:0 0 8px 0; font-weight:bold;">ログイン情報:</p>
+    <ul style="margin:0; padding-left:20px;">
         <li><strong>日時:</strong> @Model.LoginAt.ToString("yyyy年MM月dd日 HH:mm:ss") (UTC)</li>
         <li><strong>デバイス名:</strong> @Model.DeviceName</li>
         <li><strong>デバイスタイプ:</strong> @Model.DeviceType</li>
@@ -40,11 +40,10 @@
     <a href="@Model.SecuritySettingsUrl" class="button">セキュリティ設定を確認</a>
 </div>
 
-<div style="border-top:1px solid #e3e3e3; padding-top:16px; margin-top:24px;">
-    <p style="font-size:14px; color:#666; margin:0;">
-        <strong>心当たりがない場合:</strong><br>
-        1. すぐにパスワードを変更してください<br>
-        2. すべてのデバイスからログアウトしてください<br>
-        3. <a href="mailto:support@pecus.example" style="color:#1976d2;">サポート</a>までご連絡ください
-    </p>
-</div>
+<hr class="divider" />
+<p class="muted">
+    <strong>心当たりがない場合:</strong><br>
+    1. すぐにパスワードを変更してください<br>
+    2. すべてのデバイスからログアウトしてください<br>
+    3. <a href="mailto:support@pecus.example">サポート</a>までご連絡ください
+</p>

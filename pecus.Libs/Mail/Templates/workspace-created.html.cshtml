@@ -11,7 +11,7 @@
 
 @if (!string.IsNullOrWhiteSpace(Model.Description))
 {
-    <div style="background-color:#f9f9f9; padding:15px; margin:15px 0; border-left:4px solid #4CAF50;">
+    <div class="info">
         <p style="margin:0; white-space:pre-wrap;">@Model.Description</p>
     </div>
 }
@@ -31,4 +31,4 @@
     <a href="@Model.WorkspaceUrl" class="button">ワークスペースを表示</a>
 </div>
 
-<p style="font-size:14px; color:#666;">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>
+<p class="muted">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>
