@@ -59,8 +59,6 @@ builder.Services.ConfigureDbContext<ApplicationDbContext>(options =>
     // NpgsqlRetryingExecutionStrategyを無効化してNonRetryingExecutionStrategyを使用
     options.ReplaceService<Microsoft.EntityFrameworkCore.Storage.IExecutionStrategy, Microsoft.EntityFrameworkCore.Storage.NonRetryingExecutionStrategy>();
 });
-// EmailSettings設定
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 
 // メール関連サービスの登録
 builder.Services.AddSingleton<RazorTemplateService>();
