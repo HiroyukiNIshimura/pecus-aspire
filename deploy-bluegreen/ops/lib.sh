@@ -35,7 +35,8 @@ ensure_env_file() {
 
 compose() {
   ensure_env_file
-  docker compose --env-file "$bluegreen_dir/.env" --project-directory "$bluegreen_dir" "$@"
+  # orphan 警告を抑制（infra/app を別 compose で管理しているため）
+  COMPOSE_IGNORE_ORPHANS=1 docker compose --env-file "$bluegreen_dir/.env" --project-directory "$bluegreen_dir" "$@"
 }
 
 compose_infra() {
