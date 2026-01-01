@@ -86,23 +86,20 @@ RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy public assets
-COPY --from=builder /app/pecus.Frontend/public ./public
+# Copy public assets to the correct location
+COPY --from=builder /app/pecus.Frontend/public ./pecus.Frontend/public
 
-# Create .next directory with proper permissions
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
+# Copy standalone build output (includes server.js, .next, node_modules)
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone ./
 
-# Copy standalone build output
-# Next.js standalone: server.js と node_modules は standalone/pecus.Frontend/ にある
-# static ファイルは build/static/ に別途出力される
-COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/pecus.Frontend/server.js ./server.js
-COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/pecus.Frontend/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/standalone/pecus.Frontend/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/static ./.next/static
+# Copy static files to the correct location
+COPY --from=builder --chown=nextjs:nodejs /app/pecus.Frontend/build/static ./pecus.Frontend/.next/static
 
 # Switch to non-root user
 USER nextjs
+
+# Set working directory to where server.js is located
+WORKDIR /app/pecus.Frontend
 
 EXPOSE 3000
 
