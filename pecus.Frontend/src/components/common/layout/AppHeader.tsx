@@ -74,7 +74,7 @@ export default function AppHeader({
           </ul>
         </div>
 
-        <div className="navbar-end flex items-center">
+        <div className="navbar-end flex items-center gap-1">
           <ThemeToggle />
           {!isAdminPage && !isBackOfficePage && <ChatIconButton />}
           <UserMenu

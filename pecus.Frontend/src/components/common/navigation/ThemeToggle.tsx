@@ -27,12 +27,12 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     // マウント前は空のプレースホルダーを表示（レイアウトシフト防止）
-    return <div className="w-10 h-10 mr-2" />;
+    return <div className="w-10 h-10" />;
   }
 
   return (
-    <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end] mr-2">
-      <button type="button" className="dropdown-toggle bg-transparent hover:bg-transparent before:hidden p-2">
+    <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end]">
+      <button type="button" className="dropdown-toggle btn btn-text btn-circle">
         {theme === 'light' && <span className="icon-[mdi--white-balance-sunny] size-6" aria-hidden="true" />}
         {theme === 'dark' && <span className="icon-[mdi--moon-and-stars] size-6" aria-hidden="true" />}
         {theme === 'auto' && <span className="icon-[mdi--brightness-auto] size-6" aria-hidden="true" />}

@@ -37,7 +37,7 @@ export default function ChatIconButton() {
   };
 
   return (
-    <button type="button" onClick={handleClick} className="btn btn-text btn-circle relative mr-2" aria-label="チャット">
+    <button type="button" onClick={handleClick} className="btn btn-text btn-circle relative" aria-label="チャット">
       <span className="icon-[tabler--message-circle] size-6" aria-hidden="true" />
       <ChatUnreadBadge />
     </button>
