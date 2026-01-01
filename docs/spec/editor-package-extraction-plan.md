@@ -904,6 +904,7 @@ Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 
 - [x] `npm run build` 成功
 - [x] CJS, ESM, DTS すべて生成
 - [x] 型定義ファイル生成確認
+- [x] `dist/` を Git にコミット（Docker ビルド高速化のため）
 
 #### Phase 5: Frontend 統合 ✅
 - [x] `pecus.Frontend/package.json` に `@coati/editor: "*"` 追加
@@ -914,8 +915,6 @@ Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 
 - [x] 型チェック成功
 - [x] lint 成功
 
-### 未実施フェーズ
-
 #### Phase 6: LexicalConverter 統合 ✅
 - [x] Lexical バージョンを 0.39.0 にアップグレード
 - [x] `pecus.LexicalConverter/package.json` に `@coati/editor: "*"` を追加
@@ -924,13 +923,18 @@ Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 
 - [x] 重複ノードファイル（18ファイル）を削除
 - [x] ビルド成功確認
 
-#### Phase 7: Docker / デプロイ対応
-- [ ] `deploy/dockerfiles/Frontend.Dockerfile` を更新
+#### Phase 7: Docker / デプロイ対応 ✅
+- [x] `deploy/dockerfiles/Frontend.Dockerfile` を更新（ビルド済み dist を使用）
+- [x] `deploy/dockerfiles/LexicalConverter.Dockerfile` を更新（ビルド済み dist を使用）
+- [x] `.gitignore` に `!packages/coati-editor/dist/` を追加
+- [x] Blue-Green デプロイで動作確認完了（2026-01-02）
+
+### 未実施フェーズ
 
 #### Phase 8: CI/CD 対応
-- [ ] ビルドチェックを追加
+- [ ] ビルドチェックを追加（`npm run build -w @coati/editor && git diff --exit-code packages/coati-editor/dist/`）
 
 #### Phase 9: クリーンアップと文書化
-- [x] `packages/coati-editor/README.md` 作成（未完了）
+- [ ] `packages/coati-editor/README.md` 作成
 - [ ] ルート `README.md` にモノレポ構成の説明を追加
 - [ ] `docs/frontend-guidelines.md` にエディタパッケージの使い方を追記
