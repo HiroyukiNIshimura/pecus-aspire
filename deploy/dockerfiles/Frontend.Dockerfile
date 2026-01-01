@@ -6,6 +6,16 @@ FROM node:22-alpine AS base
 WORKDIR /app
 
 # ============================================
+# Build @coati/editor package
+# ============================================
+FROM base AS editor-build
+WORKDIR /app/packages/coati-editor
+COPY packages/coati-editor/package*.json ./
+RUN npm ci
+COPY packages/coati-editor/ ./
+RUN npm run build
+
+# ============================================
 # Dependencies stage
 # ============================================
 FROM base AS deps
@@ -14,9 +24,9 @@ RUN apk add --no-cache libc6-compat
 # ルートのワークスペース設定をコピー
 COPY package.json package-lock.json ./
 
-# エディタパッケージ（ビルド済み dist を含む）
-COPY packages/coati-editor/package.json ./packages/coati-editor/
-COPY packages/coati-editor/dist ./packages/coati-editor/dist
+# エディタパッケージ（ビルド済み）
+COPY --from=editor-build /app/packages/coati-editor/package.json ./packages/coati-editor/
+COPY --from=editor-build /app/packages/coati-editor/dist ./packages/coati-editor/dist
 
 # Frontend の package.json をコピー
 COPY pecus.Frontend/package.json ./pecus.Frontend/

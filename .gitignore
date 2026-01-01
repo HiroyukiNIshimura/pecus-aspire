@@ -141,9 +141,9 @@ temp/*
 
 node_modules/
 
-# packages/coati-editor/dist/ は例外としてコミット対象にする
-# （Docker ビルド時にエディタパッケージの再ビルドを避けるため）
-!packages/coati-editor/dist/
+# packages/coati-editor/dist/ はビルド成果物のためコミット不要
+# （Docker ビルド時に自動的にビルドされる）
+packages/coati-editor/dist/
 
 # ワークスペース内の個別 package-lock.json は無視（ルートのみ使用）
 pecus.Frontend/package-lock.json
