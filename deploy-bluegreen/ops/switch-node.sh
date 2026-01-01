@@ -12,6 +12,10 @@ set -euo pipefail
 #  3.4 指定ノード Backfire デプロイ
 #  3.5 Nginx 切り替え
 
+# Notes:
+# - 判定は「コンテナが動いているか（Running）」で行います。
+# - nginx は常に指定した slot を見るように切り替えます。
+
 slot="${1:-}"
 if [[ "$slot" != "blue" && "$slot" != "green" ]]; then
   echo "usage: $0 {blue|green}" >&2
@@ -25,13 +29,44 @@ source "$script_dir/lib.sh"
 require_cmd docker
 
 current="$(active_slot)"
-if [[ "$current" == "$slot" ]]; then
-  echo "[ng] target slot is already active: $slot" >&2
-  exit 2
+
+slot_any_running() {
+  local s="$1"
+
+  local api
+  api=$(docker inspect -f '{{.State.Running}}' "pecus-webapi-$s" 2>/dev/null || true)
+  local fe
+  fe=$(docker inspect -f '{{.State.Running}}' "pecus-frontend-$s" 2>/dev/null || true)
+  local bf
+  bf=$(docker inspect -f '{{.State.Running}}' "pecus-backfire-$s" 2>/dev/null || true)
+
+  [[ "$api" == "true" || "$fe" == "true" || "$bf" == "true" ]]
+}
+
+target="$slot"
+other="green"
+if [[ "$target" == "green" ]]; then
+  other="blue"
 fi
 
-other="$current"
-target="$slot"
+target_running=false
+other_running=false
+any_running=false
+
+if slot_any_running "$target"; then
+  target_running=true
+  any_running=true
+fi
+if slot_any_running "$other"; then
+  other_running=true
+  any_running=true
+fi
+
+if $target_running; then
+  echo "[ng] target slot containers are already running: $target" >&2
+  echo "      stop them first (docker compose -f docker-compose.app-$target.yml down)" >&2
+  exit 2
+fi
 
 echo "[info] current(active)=$current target=$target" >&2
 
@@ -40,8 +75,12 @@ compose_app "$target" up -d "pecusapi-$target" "frontend-$target"
 wait_health "pecus-webapi-$target" 300
 wait_running "pecus-frontend-$target" 120
 
-echo "[info] 3.2 stopping other (including backfire): $other" >&2
-compose_app "$other" down
+if $other_running; then
+  echo "[info] 3.2 stopping other (including backfire): $other" >&2
+  compose_app "$other" down
+else
+  echo "[info] 3.2 skipping stop other (not running): $other" >&2
+fi
 
 echo "[info] 3.3 running db migration" >&2
 # Best-effort cleanup of previous dbmanager container
