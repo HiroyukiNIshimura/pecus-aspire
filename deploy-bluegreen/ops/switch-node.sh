@@ -138,8 +138,12 @@ for container in $(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -E '^pe
   fi
 done
 
-# プロジェクト固有の未使用イメージを削除
-for img in $(docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null | grep -E '^pecus-'); do
+# プロジェクト固有の未使用イメージを削除（snapshot-latest は保護）
+for img in $(docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null | grep -E '^coati-'); do
+  # snapshot-latest タグは保護（リカバリ用）
+  if [[ "$img" == *":snapshot-latest" ]]; then
+    continue
+  fi
   img_id=$(docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep "^$img " | awk '{print $2}')
   if [[ -n "$img_id" ]] && ! docker ps -q --filter "ancestor=$img_id" 2>/dev/null | grep -q .; then
     docker rmi "$img" 2>/dev/null || true
