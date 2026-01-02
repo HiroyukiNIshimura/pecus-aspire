@@ -141,6 +141,44 @@ public class ProfileService
     }
 
     /// <summary>
+    /// 現在のリクエスト情報からデバイスをマッチングしてPublicIdを取得
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="deviceType">デバイス種別</param>
+    /// <param name="os">OS</param>
+    /// <param name="userAgent">User-Agent</param>
+    /// <param name="ipAddress">IPアドレス</param>
+    /// <returns>マッチしたデバイスのPublicId、見つからない場合はnull</returns>
+    public async Task<string?> FindMatchingDevicePublicIdAsync(
+        int userId,
+        DeviceType deviceType,
+        OSPlatform os,
+        string? userAgent,
+        string? ipAddress)
+    {
+        var hashedIdentifier = GenerateDeviceIdentifier(deviceType, os, userAgent, ipAddress);
+
+        var device = await _context.Devices
+            .AsNoTracking()
+            .Where(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && !d.IsRevoked)
+            .Select(d => new { d.PublicId })
+            .FirstOrDefaultAsync();
+
+        return device?.PublicId;
+    }
+
+    /// <summary>
+    /// デバイス識別子を生成します（RefreshTokenServiceと同じロジック）
+    /// </summary>
+    private static string GenerateDeviceIdentifier(DeviceType deviceType, OSPlatform os, string? userAgent, string? ipAddress)
+    {
+        var identifier = $"{deviceType}:{os}:{userAgent ?? "unknown"}:{ipAddress ?? "unknown"}";
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var hash = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(identifier));
+        return Convert.ToBase64String(hash);
+    }
+
+    /// <summary>
     /// 自ユーザーの設定を更新
     /// </summary>
     /// <param name="userId">ユーザーID</param>

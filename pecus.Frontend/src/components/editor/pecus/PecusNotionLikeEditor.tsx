@@ -46,7 +46,7 @@ export default function PecusNotionLikeEditor(props: NotionLikeEditorProps) {
   return (
     <NotionLikeEditor
       {...props}
-      extraPlugins={<>{isAiEnabled && <AiAssistantPlugin />}</>}
+      extraPlugins={isAiEnabled && <AiAssistantPlugin />}
       extraComponentPickerOptions={extraComponentPickerOptions}
     />
   );

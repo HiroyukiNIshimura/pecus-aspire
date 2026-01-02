@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Profile;
@@ -41,6 +42,51 @@ public class DeviceController : BaseSecureController
         }
 
         return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// 自分の接続しているデバイス情報の一覧を取得（現在のデバイス判定付き）
+    /// </summary>
+    /// <param name="deviceType">デバイス種別</param>
+    /// <param name="os">OS</param>
+    /// <param name="userAgent">User-Agent</param>
+    [HttpGet("with-current")]
+    [ProducesResponseType(typeof(DeviceListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<DeviceListResponse>> GetDevicesWithCurrent(
+        [FromQuery] DeviceType? deviceType,
+        [FromQuery] OSPlatform? os,
+        [FromQuery] string? userAgent)
+    {
+        var devices = await _profileService.GetUserDevicesAsync(CurrentUserId);
+
+        if (devices == null || devices.Count == 0)
+        {
+            throw new NotFoundException("デバイスが見つかりません。");
+        }
+
+        string? currentDevicePublicId = null;
+
+        if (deviceType.HasValue && os.HasValue)
+        {
+            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var forwardedFor = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            var realIp = forwardedFor?.Split(',').FirstOrDefault()?.Trim() ?? clientIp;
+
+            currentDevicePublicId = await _profileService.FindMatchingDevicePublicIdAsync(
+                CurrentUserId,
+                deviceType.Value,
+                os.Value,
+                userAgent,
+                realIp);
+        }
+
+        return TypedResults.Ok(new DeviceListResponse
+        {
+            Devices = devices,
+            CurrentDevicePublicId = currentDevicePublicId
+        });
     }
 
     /// <summary>
