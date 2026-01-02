@@ -54,4 +54,4 @@ COPY pecus.Protos/ /app/protos/
 
 EXPOSE 5100
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "-e", "require.extensions['.css']=()=>{};require('./dist/main.js')"]
