@@ -22,8 +22,11 @@ COPY packages/coati-editor/dist ./packages/coati-editor/dist
 # LexicalConverter の package.json をコピー
 COPY pecus.LexicalConverter/package.json ./pecus.LexicalConverter/
 
+# Frontend の package.json もコピー（workspaceに含まれているため必要）
+COPY pecus.Frontend/package.json ./pecus.Frontend/
+
 # ワークスペース全体の依存関係をインストール
-RUN npm ci --workspace=pecus.LexicalConverter
+RUN npm ci
 
 # ============================================
 # Build stage
