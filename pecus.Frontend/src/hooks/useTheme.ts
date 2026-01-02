@@ -1,12 +1,44 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 type ThemeType = 'light' | 'dark' | 'auto';
+
+const getDataTheme = (): 'light' | 'dark' => {
+  if (typeof document === 'undefined') return 'light';
+  const current = document.documentElement.getAttribute('data-theme');
+  return current === 'dark' ? 'dark' : 'light';
+};
+
+let dataThemeListeners: Array<() => void> = [];
+
+const subscribeToDataTheme = (callback: () => void) => {
+  dataThemeListeners.push(callback);
+  return () => {
+    dataThemeListeners = dataThemeListeners.filter((l) => l !== callback);
+  };
+};
+
+const notifyDataThemeChange = () => {
+  for (const listener of dataThemeListeners) {
+    listener();
+  }
+};
+
+if (typeof window !== 'undefined') {
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+        notifyDataThemeChange();
+      }
+    }
+  });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+}
 
 export function useTheme() {
   const [theme, setTheme] = useState<ThemeType>('auto');
   const [mounted, setMounted] = useState(false);
-  // 実際に適用されているテーマ（auto の場合はシステム設定を反映）
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+
+  const resolvedTheme = useSyncExternalStore(subscribeToDataTheme, getDataTheme, () => 'light' as const);
 
   const getResolvedTheme = (selectedTheme: ThemeType): 'light' | 'dark' => {
     if (selectedTheme === 'auto') {
@@ -20,24 +52,20 @@ export function useTheme() {
     const html = document.documentElement;
     const resolved = getResolvedTheme(selectedTheme);
     html.setAttribute('data-theme', resolved);
-    setResolvedTheme(resolved);
   };
 
-  // マウント時に localStorage から復元
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme') as ThemeType | null;
     if (storedTheme && ['light', 'dark', 'auto'].includes(storedTheme)) {
       setTheme(storedTheme);
       applyTheme(storedTheme);
     } else {
-      // デフォルトは auto
       setTheme('auto');
       applyTheme('auto');
     }
     setMounted(true);
   }, []);
 
-  // システム設定の変更を監視（auto モードの場合）
   useEffect(() => {
     if (theme !== 'auto') return;
 
