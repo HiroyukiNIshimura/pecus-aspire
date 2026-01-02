@@ -13,7 +13,7 @@ source "$script_dir/lib.sh"
 
 require_cmd docker
 
-compose_infra up -d
+compose_infra up -d --build
 
 wait_health pecus-postgres 300
 wait_health pecus-redis 300
