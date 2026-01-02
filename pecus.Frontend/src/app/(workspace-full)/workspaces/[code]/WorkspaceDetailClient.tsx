@@ -9,7 +9,7 @@ import {
   toggleWorkspaceActive,
   updateMemberRoleInWorkspace,
 } from '@/actions/workspace';
-import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
+import { addWorkspaceItemRelations, fetchLatestWorkspaceItem, fetchWorkspaceItemByCode } from '@/actions/workspaceItem';
 import { getWorkspaceTaskBySequence } from '@/actions/workspaceTask';
 import { Tooltip } from '@/components/common/feedback/Tooltip';
 import WorkspaceEditStatus from '@/components/common/feedback/WorkspaceEditStatus';
@@ -239,13 +239,29 @@ export default function WorkspaceDetailClient({
 
   // ブラウザの戻る/進むボタンに対応
   useEffect(() => {
-    const handlePopState = () => {
+    const handlePopState = async () => {
       // URLからパラメータを取得
       const urlParams = new URLSearchParams(window.location.search);
       const itemCodeParam = urlParams.get('itemCode');
       const taskParam = urlParams.get('task');
 
       if (itemCodeParam) {
+        // 現在表示中のアイテムコードと異なる場合はアイテムIDを解決
+        if (itemCodeParam !== selectedItemCode) {
+          const itemResult = await fetchWorkspaceItemByCode(currentWorkspaceDetail.id, itemCodeParam);
+          if (itemResult.success && itemResult.data) {
+            setSelectedItemId(itemResult.data.id);
+            setSelectedItemCode(itemCodeParam);
+            setShowWorkspaceDetail(false);
+          } else {
+            // アイテムが見つからない場合はホームへ
+            setShowWorkspaceDetail(true);
+            setSelectedItemId(null);
+            setSelectedItemCode(null);
+            return;
+          }
+        }
+
         // taskパラメータがある場合は、タスク詳細を表示
         if (taskParam) {
           const taskSequence = parseInt(taskParam, 10);
@@ -268,6 +284,7 @@ export default function WorkspaceDetailClient({
         // itemCodeがない場合はホーム表示
         setShowWorkspaceDetail(true);
         setSelectedItemId(null);
+        setSelectedItemCode(null);
         setShowTaskDetail(false);
         setTaskDetailNavigation(null);
         setPendingTaskSequence(null);
@@ -278,7 +295,7 @@ export default function WorkspaceDetailClient({
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [showTaskDetail]);
+  }, [showTaskDetail, selectedItemCode, currentWorkspaceDetail.id]);
 
   // ===== SignalR ワークスペースグループ参加・離脱 =====
   const workspaceIdRef = useRef<number | null>(null);
