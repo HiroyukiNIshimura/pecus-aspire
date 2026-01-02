@@ -58,8 +58,8 @@ ENV NODE_ENV=production
 ENV TZ=Asia/Tokyo
 RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Copy production dependencies (hoisted to root node_modules)
-COPY --from=deps /app/node_modules ./node_modules
+# Copy all dependencies from build stage (includes all required packages)
+COPY --from=build /app/node_modules ./node_modules
 
 # Copy @coati/editor package (overwrite hoisted version with built dist)
 COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
