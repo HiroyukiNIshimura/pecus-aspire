@@ -41,8 +41,8 @@ COPY packages/coati-editor/dist ./packages/coati-editor/dist
 # Copy LexicalConverter package.json
 COPY pecus.LexicalConverter/package*.json ./pecus.LexicalConverter/
 
-# Install all dependencies (including dev for build)
-RUN npm ci --workspace=pecus.LexicalConverter
+# Install all dependencies (full workspace install to resolve all transitive deps)
+RUN npm ci
 
 COPY pecus.LexicalConverter/ ./pecus.LexicalConverter/
 RUN cd pecus.LexicalConverter && npm run build
