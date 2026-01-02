@@ -3,26 +3,27 @@
 import { type ReactNode, useState } from 'react';
 import AppHeader from '@/components/common/layout/AppHeader';
 import ProfileSidebar from '@/components/common/layout/ProfileSidebar';
-import type { CurrentUserInfo } from '@/connectors/api/pecus';
+import { useCurrentUser } from '@/providers/AppSettingsProvider';
 
 interface ProfileLayoutClientProps {
   children: ReactNode;
-  userInfo: CurrentUserInfo | null;
 }
 
 /**
  * プロフィールレイアウトのClient Component
  * サイドバーの開閉状態を管理
+ * useCurrentUser 経由で currentUser を取得し、プロフィール更新時も即時反映
  */
-export default function ProfileLayoutClient({ children, userInfo }: ProfileLayoutClientProps) {
+export default function ProfileLayoutClient({ children }: ProfileLayoutClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const currentUser = useCurrentUser();
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <AppHeader
-        userInfo={userInfo}
+        userInfo={currentUser}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        showBackOfficeLink={userInfo?.isBackOffice ?? false}
+        showBackOfficeLink={currentUser?.isBackOffice ?? false}
       />
 
       <div className="flex flex-1 overflow-hidden">

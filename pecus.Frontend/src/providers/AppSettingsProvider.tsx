@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, type ReactNode, useContext } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 import type {
   AppPublicSettingsResponse,
   CurrentUserInfo,
@@ -10,6 +10,14 @@ import type {
 
 // 自動生成された型を再エクスポート
 export type { CurrentUserInfo } from '@/connectors/api/pecus';
+
+/**
+ * アプリケーション設定コンテキストの値型
+ */
+interface AppSettingsContextValue {
+  settings: AppPublicSettingsResponse;
+  updateCurrentUser: (updates: Partial<CurrentUserInfo>) => void;
+}
 
 /**
  * アプリケーション公開設定のコンテキスト
@@ -30,9 +38,13 @@ export type { CurrentUserInfo } from '@/connectors/api/pecus';
  *
  * // 現在のユーザー情報を取得
  * const currentUser = useCurrentUser();
+ *
+ * // 現在のユーザー情報を更新（プロフィール変更時）
+ * const { updateCurrentUser } = useUpdateCurrentUser();
+ * updateCurrentUser({ identityIconUrl: newUrl });
  * ```
  */
-const AppSettingsContext = createContext<AppPublicSettingsResponse | null>(null);
+const AppSettingsContext = createContext<AppSettingsContextValue | null>(null);
 
 interface AppSettingsProviderProps {
   settings: AppPublicSettingsResponse;
@@ -44,8 +56,39 @@ interface AppSettingsProviderProps {
  *
  * 認証済みレイアウトでSSR時に設定を取得し、このProviderで配信する。
  */
-export function AppSettingsProvider({ settings, children }: AppSettingsProviderProps) {
-  return <AppSettingsContext.Provider value={settings}>{children}</AppSettingsContext.Provider>;
+export function AppSettingsProvider({ settings: initialSettings, children }: AppSettingsProviderProps) {
+  const [settings, setSettings] = useState<AppPublicSettingsResponse>(initialSettings);
+
+  const updateCurrentUser = useCallback((updates: Partial<CurrentUserInfo>) => {
+    setSettings((prev) => ({
+      ...prev,
+      currentUser: {
+        ...prev.currentUser,
+        ...updates,
+      },
+    }));
+  }, []);
+
+  const contextValue = useMemo<AppSettingsContextValue>(
+    () => ({
+      settings,
+      updateCurrentUser,
+    }),
+    [settings, updateCurrentUser],
+  );
+
+  return <AppSettingsContext.Provider value={contextValue}>{children}</AppSettingsContext.Provider>;
+}
+
+/**
+ * アプリケーション設定コンテキストを取得する内部フック
+ */
+function useAppSettingsContext(): AppSettingsContextValue {
+  const context = useContext(AppSettingsContext);
+  if (!context) {
+    throw new Error('useAppSettings must be used within AppSettingsProvider');
+  }
+  return context;
 }
 
 /**
@@ -54,11 +97,23 @@ export function AppSettingsProvider({ settings, children }: AppSettingsProviderP
  * @throws {Error} AppSettingsProvider の外で呼び出された場合
  */
 export function useAppSettings(): AppPublicSettingsResponse {
-  const context = useContext(AppSettingsContext);
-  if (!context) {
-    throw new Error('useAppSettings must be used within AppSettingsProvider');
-  }
-  return context;
+  return useAppSettingsContext().settings;
+}
+
+/**
+ * 現在のユーザー情報を更新するフック
+ *
+ * プロフィール更新時にヘッダー等の表示を即時反映するために使用。
+ *
+ * @example
+ * ```tsx
+ * const { updateCurrentUser } = useUpdateCurrentUser();
+ * updateCurrentUser({ identityIconUrl: newUrl, username: newName });
+ * ```
+ */
+export function useUpdateCurrentUser(): { updateCurrentUser: (updates: Partial<CurrentUserInfo>) => void } {
+  const { updateCurrentUser } = useAppSettingsContext();
+  return { updateCurrentUser };
 }
 
 // ============================================

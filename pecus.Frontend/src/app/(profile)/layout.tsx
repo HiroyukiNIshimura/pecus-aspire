@@ -45,7 +45,7 @@ export default async function ProfileLayout({ children }: ProfileLayoutProps) {
   return (
     <SignalRProvider>
       <AppSettingsProvider settings={appSettings}>
-        <ProfileLayoutClient userInfo={appSettings.currentUser}>{children}</ProfileLayoutClient>
+        <ProfileLayoutClient>{children}</ProfileLayoutClient>
       </AppSettingsProvider>
     </SignalRProvider>
   );

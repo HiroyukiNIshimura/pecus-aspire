@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { deleteAvatarFile, updateProfile, uploadAvatarFile } from '@/actions/profile';
 import { useFormValidation } from '@/hooks/useFormValidation';
+import { useUpdateCurrentUser } from '@/providers/AppSettingsProvider';
 import { usernameSchema } from '@/schemas/profileSchemas';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -38,6 +39,9 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
   // Server Action を早期バインド（初期レンダリング時にエンドポイントを確立）
   const uploadActionRef = useRef(uploadAvatarFile);
 
+  // ヘッダー等のcurrentUser表示を即時更新するためのフック
+  const { updateCurrentUser } = useUpdateCurrentUser();
+
   // フォームバリデーションフック
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: basicInfoSchema,
@@ -61,6 +65,11 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
             rowVersion: result.data.rowVersion,
           };
           onUpdate(updatedUserInfo);
+          // ヘッダー等のcurrentUser表示を即時反映
+          updateCurrentUser({
+            username: result.data.username,
+            identityIconUrl: result.data.identityIconUrl,
+          });
           setUploadedFileUrl(result.data.userAvatarPath || null);
           setAvatarPreviewUrl(null);
           notify.success('プロフィールを更新しました。');
