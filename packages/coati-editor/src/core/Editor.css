@@ -623,6 +623,11 @@ i.bold {
   background-image: url(../images/icons/scissors.svg);
 }
 
+.notion-like-editor i.sparkles,
+.notion-like-editor i.icon.sparkles {
+  background-image: url(../images/icons/sparkles.svg);
+}
+
 .notion-like-editor .link-editor .button.active,
 .notion-like-editor .toolbar .button.active {
   background-color: var(--color-info);

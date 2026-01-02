@@ -94,17 +94,15 @@ function ComponentPickerMenuItem({
   onMouseEnter: () => void;
   option: ComponentPickerOption;
 }) {
-  let className = 'item';
+  let className = '';
   if (isSelected) {
-    className += ' selected';
+    className = 'selected';
   }
   return (
-    <div
+    <li
       tabIndex={-1}
       className={className}
       ref={option.setRefElement}
-      role="option"
-      aria-selected={isSelected}
       id={`typeahead-item-${index}`}
       onMouseEnter={onMouseEnter}
       onClick={onClick}
@@ -117,7 +115,7 @@ function ComponentPickerMenuItem({
     >
       {option.icon}
       <span className="text">{option.title}</span>
-    </div>
+    </li>
   );
 }
 

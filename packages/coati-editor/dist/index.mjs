@@ -8734,18 +8734,16 @@ function ComponentPickerMenuItem({
   onMouseEnter,
   option
 }) {
-  let className = "item";
+  let className = "";
   if (isSelected) {
-    className += " selected";
+    className = "selected";
   }
   return /* @__PURE__ */ jsxs19(
-    "div",
+    "li",
     {
       tabIndex: -1,
       className,
       ref: option.setRefElement,
-      role: "option",
-      "aria-selected": isSelected,
       id: `typeahead-item-${index}`,
       onMouseEnter,
       onClick,

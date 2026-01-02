@@ -32,7 +32,7 @@ export default function PecusNotionLikeEditor(props: NotionLikeEditorProps) {
       return [
         {
           title: 'AI Assistant',
-          icon: <span className="icon-[tabler--sparkles] size-4" />,
+          icon: <i className="icon sparkles" />,
           keywords: ['ai', 'assistant', 'generate', 'write', '文章生成', 'アシスタント'],
           onSelect: () => {
             editor.dispatchCommand(INSERT_AI_ASSISTANT_COMMAND, undefined);
