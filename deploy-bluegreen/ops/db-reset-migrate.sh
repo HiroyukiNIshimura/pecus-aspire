@@ -35,6 +35,6 @@ if docker ps -a --format '{{.Names}}' | grep -qx 'pecus-dbmanager'; then
   docker rm -f pecus-dbmanager >/dev/null 2>&1 || true
 fi
 
-compose_migrate run --rm -e DB_RESET_MODE=true dbmanager
+compose_migrate run --rm --build -e DB_RESET_MODE=true dbmanager
 
 echo "[OK] DBリセット+マイグレーション完了"
