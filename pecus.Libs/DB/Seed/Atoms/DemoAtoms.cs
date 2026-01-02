@@ -107,7 +107,7 @@ public class DemoAtoms
             await _context.UserSkills.AddRangeAsync(userSkills);
             await _context.SaveChangesAsync();
 
-            var chatActors = CreateDemoChatActors(organization, users, chatBot);
+            var chatActors = CreateDemoChatActors(organization, users, systemBot, chatBot);
             await _context.ChatActors.AddRangeAsync(chatActors);
             await _context.SaveChangesAsync();
 
@@ -316,7 +316,7 @@ public class DemoAtoms
         return userSkills;
     }
 
-    private List<ChatActor> CreateDemoChatActors(Organization org, List<User> users, Bot chatBot)
+    private List<ChatActor> CreateDemoChatActors(Organization org, List<User> users, Bot systemBot, Bot chatBot)
     {
         var chatActors = new List<ChatActor>();
 
@@ -337,7 +337,21 @@ public class DemoAtoms
             chatActors.Add(actor);
         }
 
-        var botActor = new ChatActor
+        var systemBotActor = new ChatActor
+        {
+            OrganizationId = org.Id,
+            ActorType = ChatActorType.Bot,
+            UserId = null,
+            BotId = systemBot.Id,
+            DisplayName = systemBot.Name,
+            AvatarType = null,
+            AvatarUrl = systemBot.IconUrl,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+        chatActors.Add(systemBotActor);
+
+        var chatBotActor = new ChatActor
         {
             OrganizationId = org.Id,
             ActorType = ChatActorType.Bot,
@@ -349,7 +363,7 @@ public class DemoAtoms
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow
         };
-        chatActors.Add(botActor);
+        chatActors.Add(chatBotActor);
 
         return chatActors;
     }
