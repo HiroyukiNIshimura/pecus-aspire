@@ -6,6 +6,7 @@ import { fetchWorkspaces } from '@/actions/workspace';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { Tooltip } from '@/components/common/feedback/Tooltip';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
@@ -342,16 +343,13 @@ export default function WorkspacesClient({
                         {workspace.owner && (
                           <div className="flex items-center justify-between text-sm gap-2">
                             <span className="text-base-content/70 flex-shrink-0">オーナー</span>
-                            <div className="flex items-center gap-2">
-                              {workspace.owner.identityIconUrl && (
-                                <img
-                                  src={workspace.owner.identityIconUrl}
-                                  alt={workspace.owner.username || 'オーナー'}
-                                  className="w-5 h-5 rounded-full"
-                                />
-                              )}
-                              <span className="font-medium truncate max-w-24">{workspace.owner.username}</span>
-                            </div>
+                            <UserAvatar
+                              userName={workspace.owner.username}
+                              identityIconUrl={workspace.owner.identityIconUrl}
+                              size={20}
+                              showName={true}
+                              nameClassName="font-medium truncate max-w-24"
+                            />
                           </div>
                         )}
                         <div className="flex items-center justify-between text-sm gap-2">
