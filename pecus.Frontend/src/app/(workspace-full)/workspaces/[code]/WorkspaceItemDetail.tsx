@@ -605,7 +605,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           {/* 本文  */}
           {item.body && (
             <div className="mb-4 border border-base-300 rounded-lg p-4">
-              <WorkspaceItemBodyViewer body={item.body} workspaceId={item.workspaceId!} />
+              <WorkspaceItemBodyViewer body={item.body} workspaceCode={item.workspaceCode!} />
             </div>
           )}
 
@@ -971,8 +971,8 @@ export default WorkspaceItemDetail;
  * 本文表示用のビューアーコンポーネント
  * アイテムコードリンク用のMatcherを設定した状態でViewerをラップ
  */
-function WorkspaceItemBodyViewer({ body, workspaceId }: { body: string; workspaceId: number }) {
-  const itemCodeMatchers = useItemCodeLinkMatchers({ workspaceId });
+function WorkspaceItemBodyViewer({ body, workspaceCode }: { body: string; workspaceCode: string }) {
+  const itemCodeMatchers = useItemCodeLinkMatchers({ workspaceCode });
 
   return <PecusNotionLikeViewer initialViewerState={body} customLinkMatchers={itemCodeMatchers} />;
 }
