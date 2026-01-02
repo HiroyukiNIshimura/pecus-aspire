@@ -2674,7 +2674,6 @@ i.icon.plus {
   right: 10px;
   border-radius: 15px;
   color: var(--color-neutral);
-  display: inline-block;
   cursor: pointer;
 }
 .notion-like-editor i.chevron-down {
@@ -2768,11 +2767,10 @@ i.icon.plus {
 }
 .notion-like-editor button.toolbar-item i.format {
   background-size: contain;
-  display: inline-block;
+  display: flex;
   height: 18px;
   width: 18px;
   vertical-align: -0.25em;
-  display: flex;
   opacity: 0.6;
 }
 .notion-like-editor button.toolbar-item:disabled .icon,
@@ -2869,7 +2867,7 @@ i.icon.plus {
   padding: 20px 10px;
   position: relative;
   border: 1px solid var(--color-base-300);
-  font-family: "Reenie Beanie";
+  font-family: "Reenie Beanie", cursive;
   font-size: 24px;
   border-bottom-right-radius: 60px 5px;
   display: block;
@@ -3015,7 +3013,6 @@ i.icon.plus {
   width: 16px;
   height: 16px;
   user-select: none;
-  background-color: var(--color-secondary-content) !important;
   background-color: transparent;
   background-size: contain;
   display: inline-block;

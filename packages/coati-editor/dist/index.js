@@ -8719,21 +8719,27 @@ function ComponentPickerMenuItem({
     className += " selected";
   }
   return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(
-    "li",
+    "div",
     {
       tabIndex: -1,
       className,
       ref: option.setRefElement,
+      role: "option",
       "aria-selected": isSelected,
       id: `typeahead-item-${index}`,
       onMouseEnter,
       onClick,
+      onKeyDown: (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      },
       children: [
         option.icon,
         /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text", children: option.title })
       ]
-    },
-    option.key
+    }
   );
 }
 function getDynamicOptions(editor, queryString) {
