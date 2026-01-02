@@ -7,25 +7,39 @@ FROM node:22-alpine AS base
 WORKDIR /app
 
 # ============================================
+# Dependencies stage
+# ============================================
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+
+# ルートのワークスペース設定をコピー
+COPY package.json package-lock.json ./
+
+# エディタパッケージ（ビルド済み dist を含む）
+COPY packages/coati-editor/package.json ./packages/coati-editor/
+COPY packages/coati-editor/dist ./packages/coati-editor/dist
+
+# LexicalConverter の package.json をコピー
+COPY pecus.LexicalConverter/package.json ./pecus.LexicalConverter/
+
+# ワークスペース全体の依存関係をインストール
+RUN npm ci --workspace=pecus.LexicalConverter
+
+# ============================================
 # Build stage
 # ============================================
 FROM base AS build
 WORKDIR /app
 
-# @coati/editor をローカルパッケージとしてセットアップ
-RUN mkdir -p /app/packages/coati-editor
-COPY packages/coati-editor/package.json ./packages/coati-editor/
-COPY packages/coati-editor/dist ./packages/coati-editor/dist
+# 依存関係をコピー
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
 
-# Copy LexicalConverter package.json
-COPY pecus.LexicalConverter/package*.json ./
+# LexicalConverter のソースをコピー
+COPY pecus.LexicalConverter/ ./pecus.LexicalConverter/
 
-# @coati/editor をファイルプロトコルで参照するように変更して npm install
-RUN sed -i 's|"@coati/editor": "\*"|"@coati/editor": "file:./packages/coati-editor"|' package.json && \
-    npm install && \
-    npm install @lexical/html@0.39.0
-
-COPY pecus.LexicalConverter/ ./
+# Build
+WORKDIR /app/pecus.LexicalConverter
 RUN npm run build
 
 # ============================================
@@ -39,15 +53,12 @@ ENV NODE_ENV=production
 ENV TZ=Asia/Tokyo
 RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Copy all dependencies from build stage
-COPY --from=build /app/node_modules ./node_modules
-
-# Copy @coati/editor package (file: protocol creates symlink, so copy actual files)
-COPY packages/coati-editor/package.json ./node_modules/@coati/editor/
-COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
+# Copy node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
 
 # Copy built files
-COPY --from=build /app/dist ./dist
+COPY --from=build /app/pecus.LexicalConverter/dist ./dist
 
 # Copy proto files
 COPY pecus.Protos/ /app/protos/
