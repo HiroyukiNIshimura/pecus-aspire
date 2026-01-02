@@ -58,12 +58,12 @@ ENV NODE_ENV=production
 ENV TZ=Asia/Tokyo
 RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Copy @coati/editor package
-COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
-COPY packages/coati-editor/package.json ./node_modules/@coati/editor/
-
 # Copy production dependencies (hoisted to root node_modules)
 COPY --from=deps /app/node_modules ./node_modules
+
+# Copy @coati/editor package (overwrite hoisted version with built dist)
+COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
+COPY packages/coati-editor/package.json ./node_modules/@coati/editor/
 
 # Copy built files
 COPY --from=build /app/pecus.LexicalConverter/dist ./dist
