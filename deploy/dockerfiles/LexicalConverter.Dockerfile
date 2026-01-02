@@ -22,12 +22,8 @@ COPY packages/coati-editor/dist ./packages/coati-editor/dist
 # LexicalConverter の package.json をコピー
 COPY pecus.LexicalConverter/package.json ./pecus.LexicalConverter/
 
-# Frontend の package.json もコピー（workspaceに含まれているため必要）
-COPY pecus.Frontend/package.json ./pecus.Frontend/
-
 # ワークスペース全体の依存関係をインストール
-# @lexical/html が hoisting で欠落する問題を回避するため明示的にインストール
-RUN npm ci && npm install @lexical/html@0.39.0
+RUN npm ci --workspace=pecus.LexicalConverter
 
 # ============================================
 # Build stage
@@ -38,15 +34,13 @@ WORKDIR /app
 # 依存関係をコピー
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
+COPY --from=deps /app/pecus.LexicalConverter/node_modules ./pecus.LexicalConverter/node_modules
 
 # LexicalConverter のソースをコピー
 COPY pecus.LexicalConverter/ ./pecus.LexicalConverter/
 
-# pecus.LexicalConverter から node_modules へのシンボリックリンクを作成
-RUN ln -s /app/node_modules /app/pecus.LexicalConverter/node_modules
-
-# Build
-RUN cd pecus.LexicalConverter && npm run build
+WORKDIR /app/pecus.LexicalConverter
+RUN npm run build
 
 # ============================================
 # Final stage
