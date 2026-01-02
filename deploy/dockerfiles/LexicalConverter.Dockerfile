@@ -42,6 +42,10 @@ RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime 
 # Copy all dependencies from build stage
 COPY --from=build /app/node_modules ./node_modules
 
+# Copy @coati/editor package (file: protocol creates symlink, so copy actual files)
+COPY packages/coati-editor/package.json ./node_modules/@coati/editor/
+COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
+
 # Copy built files
 COPY --from=build /app/dist ./dist
 
