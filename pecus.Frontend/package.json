@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "npm run generate:conflict-types && npm run generate:help-index && node scripts/generate-pecus-api-client.js",
+    "predev": "npm run generate:conflict-types && npm run generate:help-index && node scripts/generate-pecus-api-client.js && node ../scripts/generate-appsettings.js -D",
     "dev": "next dev",
     "prebuild": "npm run generate:conflict-types && npm run generate:help-index && node scripts/generate-pecus-api-client.js",
     "build": "next build",

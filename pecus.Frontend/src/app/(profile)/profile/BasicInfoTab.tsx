@@ -149,7 +149,7 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
 
       if (uploadResult.success) {
         setUploadedFileUrl(uploadResult.data?.fileUrl || null);
-        notify.success('画像をアップロードしました。');
+        notify.success('画像をアップロードしました。アバターは基本情報更新後に反映されます。');
       } else {
         notify.error(uploadResult.message || 'アップロードに失敗しました');
         setAvatarPreviewUrl(null);
