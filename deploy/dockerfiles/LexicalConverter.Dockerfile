@@ -62,8 +62,8 @@ RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime 
 COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
 COPY packages/coati-editor/package.json ./node_modules/@coati/editor/
 
-# Copy production dependencies
-COPY --from=deps /app/pecus.LexicalConverter/node_modules ./node_modules
+# Copy production dependencies (hoisted to root node_modules)
+COPY --from=deps /app/node_modules ./node_modules
 
 # Copy built files
 COPY --from=build /app/pecus.LexicalConverter/dist ./dist
