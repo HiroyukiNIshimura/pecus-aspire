@@ -3,10 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { AppPublicSettingsResponse } from '../models/AppPublicSettingsResponse';
+import type { DeviceListResponse } from '../models/DeviceListResponse';
 import type { DeviceResponse } from '../models/DeviceResponse';
+import type { DeviceType } from '../models/DeviceType';
 import type { EmailChangeRequestResponse } from '../models/EmailChangeRequestResponse';
 import type { EmailChangeVerifyResponse } from '../models/EmailChangeVerifyResponse';
 import type { MessageResponse } from '../models/MessageResponse';
+import type { OSPlatform } from '../models/OSPlatform';
 import type { PendingEmailChangeResponse } from '../models/PendingEmailChangeResponse';
 import type { RequestEmailChangeRequest } from '../models/RequestEmailChangeRequest';
 import type { SetOwnSkillsRequest } from '../models/SetOwnSkillsRequest';
@@ -29,6 +32,33 @@ export class ProfileService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/profile/devices',
+            errors: {
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 自分の接続しているデバイス情報の一覧を取得（現在のデバイス判定付き）
+     * @param deviceType デバイス種別
+     * @param os OS
+     * @param userAgent User-Agent
+     * @returns DeviceListResponse OK
+     * @throws ApiError
+     */
+    public static getApiProfileDevicesWithCurrent(
+        deviceType?: DeviceType,
+        os?: OSPlatform,
+        userAgent?: string,
+    ): CancelablePromise<DeviceListResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/profile/devices/with-current',
+            query: {
+                'deviceType': deviceType,
+                'os': os,
+                'userAgent': userAgent,
+            },
             errors: {
                 404: `Not Found`,
                 500: `Internal Server Error`,

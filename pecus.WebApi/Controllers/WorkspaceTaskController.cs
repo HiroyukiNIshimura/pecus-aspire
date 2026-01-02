@@ -24,6 +24,7 @@ namespace Pecus.Controllers;
 public class WorkspaceTaskController : BaseSecureController
 {
     private readonly WorkspaceTaskService _workspaceTaskService;
+    private readonly TaskContentSuggestionService _taskContentSuggestionService;
     private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<WorkspaceTaskController> _logger;
     private readonly IBackgroundJobClient _backgroundJobClient;
@@ -31,6 +32,7 @@ public class WorkspaceTaskController : BaseSecureController
 
     public WorkspaceTaskController(
         WorkspaceTaskService workspaceTaskService,
+        TaskContentSuggestionService taskContentSuggestionService,
         OrganizationAccessHelper accessHelper,
         ProfileService profileService,
         ILogger<WorkspaceTaskController> logger,
@@ -39,6 +41,7 @@ public class WorkspaceTaskController : BaseSecureController
     ) : base(profileService, logger)
     {
         _workspaceTaskService = workspaceTaskService;
+        _taskContentSuggestionService = taskContentSuggestionService;
         _accessHelper = accessHelper;
         _logger = logger;
         _backgroundJobClient = backgroundJobClient;
@@ -598,6 +601,39 @@ public class WorkspaceTaskController : BaseSecureController
             CreatedAt = item.CreatedAt,
             UpdatedAt = item.UpdatedAt,
         };
+    }
+
+    /// <summary>
+    /// タスク内容提案取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <param name="request">タスク内容提案リクエスト</param>
+    /// <returns>提案されたタスク内容</returns>
+    [HttpPost("content-suggestion")]
+    [ProducesResponseType(typeof(TaskContentSuggestionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<TaskContentSuggestionResponse>> GetTaskContentSuggestion(
+        int workspaceId,
+        int itemId,
+        [FromBody] TaskContentSuggestionRequest request)
+    {
+        var workspace = await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
+
+        var workspaceContext = $"{workspace.Genre?.Name}: {workspace.Name}";
+
+        var suggestion = await _taskContentSuggestionService.SuggestTaskContentForOrganizationAsync(
+            workspace.OrganizationId,
+            workspaceId,
+            itemId,
+            request.TaskTypeId,
+            workspaceContext);
+
+        return TypedResults.Ok(new TaskContentSuggestionResponse
+        {
+            SuggestedContent = suggestion ?? string.Empty
+        });
     }
 
     /// <summary>

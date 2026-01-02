@@ -300,3 +300,33 @@ export async function getTaskFlowMap(
     });
   }
 }
+
+/**
+ * タスク内容提案を取得
+ * AIがアイテム情報とタスクタイプからタスク内容を提案（プレーンテキスト）
+ */
+export async function fetchTaskContentSuggestion(
+  workspaceId: number,
+  itemId: number,
+  taskTypeId: number,
+): Promise<ApiResponse<{ suggestedContent: string }>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.workspaceTask.postApiWorkspacesItemsTasksContentSuggestion(workspaceId, itemId, {
+      taskTypeId,
+    });
+
+    return {
+      success: true,
+      data: {
+        suggestedContent: response.suggestedContent ?? '',
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch task content suggestion:', error);
+    return handleApiErrorForAction<{ suggestedContent: string }>(error, {
+      defaultMessage: 'タスク内容提案の取得に失敗しました。',
+      handled: { not_found: true },
+    });
+  }
+}

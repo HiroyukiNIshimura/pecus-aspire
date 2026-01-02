@@ -78,6 +78,7 @@ export type { DashboardWorkspaceBreakdownResponse } from './models/DashboardWork
 export type { DashboardWorkspaceStatistics } from './models/DashboardWorkspaceStatistics';
 export type { DashboardWorkspaceSummary } from './models/DashboardWorkspaceSummary';
 export type { DeleteTaskCommentRequest } from './models/DeleteTaskCommentRequest';
+export type { DeviceListResponse } from './models/DeviceListResponse';
 export type { DeviceResponse } from './models/DeviceResponse';
 export type { DeviceType } from './models/DeviceType';
 export type { DmCandidateUserItem } from './models/DmCandidateUserItem';
@@ -188,6 +189,8 @@ export type { TagUsageItem } from './models/TagUsageItem';
 export type { TaskCommentDetailResponse } from './models/TaskCommentDetailResponse';
 export type { TaskCommentResponse } from './models/TaskCommentResponse';
 export type { TaskCommentType } from './models/TaskCommentType';
+export type { TaskContentSuggestionRequest } from './models/TaskContentSuggestionRequest';
+export type { TaskContentSuggestionResponse } from './models/TaskContentSuggestionResponse';
 export type { TaskFlowMapResponse } from './models/TaskFlowMapResponse';
 export type { TaskFlowNode } from './models/TaskFlowNode';
 export type { TaskFlowPredecessorInfo } from './models/TaskFlowPredecessorInfo';

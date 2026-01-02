@@ -7074,6 +7074,90 @@
         ]
       }
     },
+    "/api/workspaces/{workspaceId}/items/{itemId}/tasks/content-suggestion": {
+      "post": {
+        "tags": [
+          "WorkspaceTask"
+        ],
+        "summary": "タスク内容提案取得",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "タスク内容提案リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskContentSuggestionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskContentSuggestionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskContentSuggestionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskContentSuggestionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/profile/devices": {
       "get": {
         "tags": [
@@ -7106,6 +7190,90 @@
                   "items": {
                     "$ref": "#/components/schemas/DeviceResponse"
                   }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/profile/devices/with-current": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "自分の接続しているデバイス情報の一覧を取得（現在のデバイス判定付き）",
+        "parameters": [
+          {
+            "name": "deviceType",
+            "in": "query",
+            "description": "デバイス種別",
+            "schema": {
+              "$ref": "#/components/schemas/DeviceType"
+            }
+          },
+          {
+            "name": "os",
+            "in": "query",
+            "description": "OS",
+            "schema": {
+              "$ref": "#/components/schemas/OSPlatform"
+            }
+          },
+          {
+            "name": "userAgent",
+            "in": "query",
+            "description": "User-Agent",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceListResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceListResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceListResponse"
                 }
               }
             }
@@ -14599,6 +14767,24 @@
         },
         "description": "タスクコメント削除（無効化）リクエスト"
       },
+      "DeviceListResponse": {
+        "type": "object",
+        "properties": {
+          "devices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeviceResponse"
+            },
+            "description": "デバイス一覧"
+          },
+          "currentDevicePublicId": {
+            "type": "string",
+            "description": "現在のリクエストに対応するデバイスのPublicId\nリクエスト情報からマッチングして特定",
+            "nullable": true
+          }
+        },
+        "description": "デバイス一覧レスポンス（現在のデバイスPublicId付き）"
+      },
       "DeviceResponse": {
         "type": "object",
         "properties": {
@@ -18615,6 +18801,32 @@
         ],
         "type": "string",
         "nullable": true
+      },
+      "TaskContentSuggestionRequest": {
+        "required": [
+          "taskTypeId"
+        ],
+        "type": "object",
+        "properties": {
+          "taskTypeId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "タスク種類ID",
+            "format": "int32"
+          }
+        },
+        "description": "タスク内容提案リクエスト"
+      },
+      "TaskContentSuggestionResponse": {
+        "type": "object",
+        "properties": {
+          "suggestedContent": {
+            "type": "string",
+            "description": "提案されたタスク内容（プレーンテキスト）"
+          }
+        },
+        "description": "タスク内容提案レスポンス"
       },
       "TaskFlowMapResponse": {
         "required": [

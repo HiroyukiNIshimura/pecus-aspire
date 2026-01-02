@@ -5,6 +5,7 @@ import { searchWorkspaceMembers } from '@/actions/workspace';
 import {
   checkAssigneeTaskLoad,
   createWorkspaceTask,
+  fetchTaskContentSuggestion,
   getPredecessorTaskOptions,
   type PredecessorTaskOption,
 } from '@/actions/workspaceTask';
@@ -20,7 +21,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
-import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
+import { useIsAiEnabled, useOrganizationSettings } from '@/providers/AppSettingsProvider';
 import { createWorkspaceTaskSchemaWithRequiredEstimate, taskPriorityOptions } from '@/schemas/workspaceTaskSchemas';
 
 /** 選択されたユーザー情報 */
@@ -67,6 +68,9 @@ export default function CreateWorkspaceTaskModal({
   // 組織設定（タスク関連）- AppSettingsProviderから取得
   const { requireEstimateOnTaskCreation } = useOrganizationSettings();
 
+  // AI機能が有効かどうか
+  const isAiEnabled = useIsAiEnabled();
+
   // 担当者選択状態
   const [selectedAssignee, setSelectedAssignee] = useState<SelectedUser | null>(null);
   const [assigneeSearchResults, setAssigneeSearchResults] = useState<UserSearchResultResponse[]>([]);
@@ -91,6 +95,14 @@ export default function CreateWorkspaceTaskModal({
   // 担当者負荷チェック
   const [assigneeLoadCheck, setAssigneeLoadCheck] = useState<AssigneeTaskLoadResponse | null>(null);
   const [assigneeLoadError, setAssigneeLoadError] = useState<string | null>(null);
+
+  // タスク内容（AI提案用に controlled に変更）
+  const [taskContent, setTaskContent] = useState<string>('');
+
+  // AI提案状態
+  const [isSuggestLoading, setIsSuggestLoading] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const suggestCancelledRef = useRef(false);
 
   // 動的にスキーマを生成（組織設定に基づく）
   const taskSchema = useMemo(
@@ -238,6 +250,58 @@ export default function CreateWorkspaceTaskModal({
     }
   }, [currentUser, shouldShowError, validateField]);
 
+  // タスク内容提案処理のキャンセル
+  const cancelSuggestion = useCallback(() => {
+    if (isSuggestLoading) {
+      suggestCancelledRef.current = true;
+      setIsSuggestLoading(false);
+    }
+  }, [isSuggestLoading]);
+
+  // タスク内容提案を取得
+  const handleSuggestContent = useCallback(async () => {
+    if (!taskTypeId || isSuggestLoading) return;
+
+    suggestCancelledRef.current = false;
+    setIsSuggestLoading(true);
+    setSuggestError(null);
+
+    try {
+      const result = await fetchTaskContentSuggestion(workspaceId, itemId, taskTypeId);
+
+      if (suggestCancelledRef.current) return;
+
+      if (result.success && result.data.suggestedContent) {
+        setTaskContent(result.data.suggestedContent);
+        validateField('content', result.data.suggestedContent);
+      } else if (!result.success) {
+        setSuggestError(result.message || '提案の取得に失敗しました。');
+      }
+    } catch {
+      if (!suggestCancelledRef.current) {
+        setSuggestError('提案の取得中にエラーが発生しました。');
+      }
+    } finally {
+      if (!suggestCancelledRef.current) {
+        setIsSuggestLoading(false);
+      }
+    }
+  }, [workspaceId, itemId, taskTypeId, isSuggestLoading, validateField]);
+
+  // Escキーでタスク内容提案をキャンセル
+  useEffect(() => {
+    if (!isSuggestLoading) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        cancelSuggestion();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isSuggestLoading, cancelSuggestion]);
+
   // モーダルが閉じられたらエラーとフォームをクリア
   useEffect(() => {
     if (!isOpen) {
@@ -254,6 +318,9 @@ export default function CreateWorkspaceTaskModal({
       setPredecessorTaskOptions([]);
       setAssigneeLoadCheck(null);
       setAssigneeLoadError(null);
+      setTaskContent('');
+      setIsSuggestLoading(false);
+      setSuggestError(null);
     }
   }, [isOpen, resetForm]);
 
@@ -491,24 +558,66 @@ export default function CreateWorkspaceTaskModal({
 
             {/* タスク内容 */}
             <div className="form-control">
-              <label htmlFor="content" className="label">
+              <div className="label flex items-center gap-2">
                 <span className="label-text font-semibold">
                   タスク内容 <span className="text-error">*</span>
                 </span>
-              </label>
-              <textarea
-                id="content"
-                name="content"
-                placeholder="タスクは、単純かつ具体的で達成可能な内容を入力にします..."
-                className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
-                onChange={(e) => {
-                  if (shouldShowError('content')) {
-                    validateField('content', e.target.value);
-                  }
-                }}
-                onBlur={(e) => validateField('content', e.target.value)}
-                disabled={isSubmitting}
-              />
+                {/* AI提案ボタン（AI有効時のみ表示） */}
+                {isAiEnabled && (
+                  <button
+                    type="button"
+                    onClick={handleSuggestContent}
+                    disabled={!taskTypeId || isSubmitting || isSuggestLoading}
+                    className={`btn btn-xs btn-outline gap-1 ${taskTypeId ? 'btn-info' : 'btn-secondary'}`}
+                    title={
+                      !taskTypeId
+                        ? 'タスクタイプを選択すると提案を利用できます'
+                        : 'AIがタスク内容を提案します'
+                    }
+                  >
+                    <span className="icon-[mdi--auto-fix] size-4" aria-hidden="true" />
+                    提案を利用
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                {/* ローディングオーバーレイ */}
+                {isSuggestLoading && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-base-100/80 backdrop-blur-sm rounded-box">
+                    <span className="loading loading-ring loading-lg text-secondary"></span>
+                    <span className="mt-2 text-sm text-base-content/70">AIがタスク内容を生成中...</span>
+                    <button
+                      type="button"
+                      onClick={cancelSuggestion}
+                      className="mt-3 btn btn-sm btn-secondary gap-1"
+                    >
+                      キャンセル
+                      <kbd className="kbd kbd-xs">Esc</kbd>
+                    </button>
+                  </div>
+                )}
+                <textarea
+                  id="content"
+                  name="content"
+                  placeholder="タスクは、単純かつ具体的で達成可能な内容を入力にします..."
+                  className={`textarea textarea-bordered h-24 w-full ${shouldShowError('content') ? 'textarea-error' : ''}`}
+                  value={taskContent}
+                  onChange={(e) => {
+                    setTaskContent(e.target.value);
+                    if (shouldShowError('content')) {
+                      validateField('content', e.target.value);
+                    }
+                  }}
+                  onBlur={(e) => validateField('content', e.target.value)}
+                  disabled={isSubmitting || isSuggestLoading}
+                />
+              </div>
+              {/* 提案エラー表示 */}
+              {suggestError && (
+                <div className="label">
+                  <span className="label-text-alt text-warning">{suggestError}</span>
+                </div>
+              )}
               {shouldShowError('content') && (
                 <div className="label">
                   <span className="label-text-alt text-error">{getFieldError('content')}</span>

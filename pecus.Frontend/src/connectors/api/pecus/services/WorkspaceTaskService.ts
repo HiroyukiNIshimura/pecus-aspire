@@ -6,6 +6,8 @@ import type { AssigneeTaskLoadResponse } from '../models/AssigneeTaskLoadRespons
 import type { CreateWorkspaceTaskRequest } from '../models/CreateWorkspaceTaskRequest';
 import type { PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics } from '../models/PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics';
 import type { SortOrder } from '../models/SortOrder';
+import type { TaskContentSuggestionRequest } from '../models/TaskContentSuggestionRequest';
+import type { TaskContentSuggestionResponse } from '../models/TaskContentSuggestionResponse';
 import type { TaskFlowMapResponse } from '../models/TaskFlowMapResponse';
 import type { TaskSortBy } from '../models/TaskSortBy';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
@@ -230,6 +232,34 @@ export class WorkspaceTaskService {
             },
             errors: {
                 400: `Bad Request`,
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * タスク内容提案取得
+     * @param workspaceId ワークスペースID
+     * @param itemId ワークスペースアイテムID
+     * @param requestBody タスク内容提案リクエスト
+     * @returns TaskContentSuggestionResponse OK
+     * @throws ApiError
+     */
+    public static postApiWorkspacesItemsTasksContentSuggestion(
+        workspaceId: number,
+        itemId: number,
+        requestBody: TaskContentSuggestionRequest,
+    ): CancelablePromise<TaskContentSuggestionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/content-suggestion',
+            path: {
+                'workspaceId': workspaceId,
+                'itemId': itemId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
                 404: `Not Found`,
                 500: `Internal Server Error`,
             },

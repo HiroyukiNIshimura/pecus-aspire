@@ -148,6 +148,7 @@ builder.Services.AddScoped<ChatRoomService>();
 builder.Services.AddScoped<ChatMessageService>();
 builder.Services.AddScoped<BotMessageService>();
 builder.Services.AddScoped<DocumentSuggestionService>();
+builder.Services.AddScoped<TaskContentSuggestionService>();
 builder.Services.AddScoped<IAiAssistantService, AiAssistantService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
