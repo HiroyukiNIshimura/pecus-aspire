@@ -33,13 +33,13 @@
 .code-action-menu-container {
   height: 30px;
   font-size: 10px;
-  color: var(--color--base-content);
+  color: var(--color-base-content);
   position: absolute;
   display: flex;
   align-items: center;
   flex-direction: row;
   user-select: none;
-  background: var(--color--base-200, rgba(255, 255, 255, 0.95));
+  background: var(--color-base-200, rgba(255, 255, 255, 0.95));
   padding: 6px 10px;
   margin-top: 3px;
   border-radius: 6px;
@@ -55,7 +55,7 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  color: var(--color--base-content);
+  color: var(--color-base-content);
   text-transform: uppercase;
 }
 .code-action-menu-container button.menu-item i.format {
@@ -63,7 +63,7 @@
   width: 16px;
   opacity: 0.6;
   display: flex;
-  color: var(--color--base-content);
+  color: var(--color-base-content);
   background-size: contain;
 }
 .code-action-menu-container button.menu-item:hover {
@@ -503,7 +503,7 @@
   background-color: #eee;
 }
 .link-editor .button i,
-.actions i {
+.link-editor .actions i {
   background-size: contain;
   display: inline-block;
   height: 20px;
@@ -1041,6 +1041,16 @@
   overflow-x: auto;
   margin: 0px 25px 30px 0px;
 }
+.NotionLikeEditorTheme__table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  overflow-y: scroll;
+  overflow-x: scroll;
+  table-layout: fixed;
+  width: fit-content;
+  margin-top: 25px;
+  margin-bottom: 30px;
+}
 .NotionLikeEditorTheme__tableScrollableWrapper > .NotionLikeEditorTheme__table {
   margin-top: 0;
   margin-bottom: 0;
@@ -1051,16 +1061,6 @@
 }
 .NotionLikeEditorTheme__tableAlignmentRight {
   margin-left: auto;
-}
-.NotionLikeEditorTheme__table {
-  border-collapse: collapse;
-  border-spacing: 0;
-  overflow-y: scroll;
-  overflow-x: scroll;
-  table-layout: fixed;
-  width: fit-content;
-  margin-top: 25px;
-  margin-bottom: 30px;
 }
 .NotionLikeEditorTheme__tableScrollableWrapper.NotionLikeEditorTheme__tableFrozenRow {
   overflow-x: clip;
@@ -1253,14 +1253,14 @@
 .NotionLikeEditorTheme__ul {
   padding: 0;
   margin: 0;
-  list-style-position: outside;
   list-style: disc;
+  list-style-position: outside;
 }
 .NotionLikeEditorTheme__ol {
   padding: 0;
   margin: 0;
-  list-style-position: outside;
   list-style: decimal;
+  list-style-position: outside;
 }
 .NotionLikeEditorTheme__ol1 {
   padding: 0;
@@ -3149,30 +3149,17 @@ i.icon.plus {
 }
 
 /* src/ui/Select.css */
-select {
+.editor-select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-color: transparent;
-  border: none;
-  padding: 0 1em 0 0;
   margin: 0;
   font-family: inherit;
-  font-size: inherit;
-  cursor: inherit;
-  line-height: inherit;
   z-index: 1;
   outline: none;
-}
-:root {
-  --select-border: #393939;
-  --select-focus: #101484;
-  --select-arrow: var(--select-border);
-}
-.select {
   min-width: 160px;
   max-width: 290px;
-  border: 1px solid var(--select-border);
+  border: 1px solid #393939;
   border-radius: 0.25em;
   padding: 0.25em 0.5em;
   font-size: 1rem;

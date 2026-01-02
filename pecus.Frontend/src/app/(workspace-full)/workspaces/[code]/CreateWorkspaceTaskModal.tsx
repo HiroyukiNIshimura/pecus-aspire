@@ -569,11 +569,7 @@ export default function CreateWorkspaceTaskModal({
                     onClick={handleSuggestContent}
                     disabled={!taskTypeId || isSubmitting || isSuggestLoading}
                     className={`btn btn-xs btn-outline gap-1 ${taskTypeId ? 'btn-info' : 'btn-secondary'}`}
-                    title={
-                      !taskTypeId
-                        ? 'タスクタイプを選択すると提案を利用できます'
-                        : 'AIがタスク内容を提案します'
-                    }
+                    title={!taskTypeId ? 'タスクタイプを選択すると提案を利用できます' : 'AIがタスク内容を提案します'}
                   >
                     <span className="icon-[mdi--auto-fix] size-4" aria-hidden="true" />
                     提案を利用
@@ -586,11 +582,7 @@ export default function CreateWorkspaceTaskModal({
                   <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-base-100/80 backdrop-blur-sm rounded-box">
                     <span className="loading loading-ring loading-lg text-secondary"></span>
                     <span className="mt-2 text-sm text-base-content/70">AIがタスク内容を生成中...</span>
-                    <button
-                      type="button"
-                      onClick={cancelSuggestion}
-                      className="mt-3 btn btn-sm btn-secondary gap-1"
-                    >
+                    <button type="button" onClick={cancelSuggestion} className="mt-3 btn btn-sm btn-secondary gap-1">
                       キャンセル
                       <kbd className="kbd kbd-xs">Esc</kbd>
                     </button>

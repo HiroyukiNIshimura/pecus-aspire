@@ -9,13 +9,13 @@
 .code-action-menu-container {
   height: 30px;
   font-size: 10px;
-  color: var(--color--base-content);
+  color: var(--color-base-content);
   position: absolute;
   display: flex;
   align-items: center;
   flex-direction: row;
   user-select: none;
-  background: var(--color--base-200, rgba(255, 255, 255, 0.95));
+  background: var(--color-base-200, rgba(255, 255, 255, 0.95));
   padding: 6px 10px;
   margin-top: 3px;
   border-radius: 6px;
@@ -31,7 +31,7 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  color: var(--color--base-content);
+  color: var(--color-base-content);
   text-transform: uppercase;
 }
 
@@ -40,7 +40,7 @@
   width: 16px;
   opacity: 0.6;
   display: flex;
-  color: var(--color--base-content);
+  color: var(--color-base-content);
   background-size: contain;
 }
 

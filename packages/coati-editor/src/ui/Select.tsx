@@ -27,7 +27,7 @@ export default function Select({ children, label, className, ...other }: SelectP
       <label style={{ marginTop: '-1em' }} className="Input__label" htmlFor={selectId}>
         {label}
       </label>
-      <select id={selectId} {...other} className={className || 'select'}>
+      <select id={selectId} {...other} className={className || 'editor-select'}>
         {children}
       </select>
     </div>

@@ -32435,7 +32435,7 @@ function Select({ children, label, className, ...other }) {
   const [selectId] = useState36(generateId3(label));
   return /* @__PURE__ */ jsxs35("div", { className: "Input__wrapper", children: [
     /* @__PURE__ */ jsx63("label", { style: { marginTop: "-1em" }, className: "Input__label", htmlFor: selectId, children: label }),
-    /* @__PURE__ */ jsx63("select", { id: selectId, ...other, className: className || "select", children })
+    /* @__PURE__ */ jsx63("select", { id: selectId, ...other, className: className || "editor-select", children })
   ] });
 }
 

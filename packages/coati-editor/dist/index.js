@@ -32231,7 +32231,7 @@ function Select({ children, label, className, ...other }) {
   const [selectId] = (0, import_react74.useState)(generateId3(label));
   return /* @__PURE__ */ (0, import_jsx_runtime63.jsxs)("div", { className: "Input__wrapper", children: [
     /* @__PURE__ */ (0, import_jsx_runtime63.jsx)("label", { style: { marginTop: "-1em" }, className: "Input__label", htmlFor: selectId, children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime63.jsx)("select", { id: selectId, ...other, className: className || "select", children })
+    /* @__PURE__ */ (0, import_jsx_runtime63.jsx)("select", { id: selectId, ...other, className: className || "editor-select", children })
   ] });
 }
 

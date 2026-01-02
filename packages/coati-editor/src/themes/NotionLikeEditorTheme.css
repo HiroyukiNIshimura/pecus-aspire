@@ -208,6 +208,16 @@
   overflow-x: auto;
   margin: 0px 25px 30px 0px;
 }
+.NotionLikeEditorTheme__table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  overflow-y: scroll;
+  overflow-x: scroll;
+  table-layout: fixed;
+  width: fit-content;
+  margin-top: 25px;
+  margin-bottom: 30px;
+}
 .NotionLikeEditorTheme__tableScrollableWrapper > .NotionLikeEditorTheme__table {
   /* Remove the table's vertical margin and put it on the wrapper */
   margin-top: 0;
@@ -219,16 +229,6 @@
 }
 .NotionLikeEditorTheme__tableAlignmentRight {
   margin-left: auto;
-}
-.NotionLikeEditorTheme__table {
-  border-collapse: collapse;
-  border-spacing: 0;
-  overflow-y: scroll;
-  overflow-x: scroll;
-  table-layout: fixed;
-  width: fit-content;
-  margin-top: 25px;
-  margin-bottom: 30px;
 }
 .NotionLikeEditorTheme__tableScrollableWrapper.NotionLikeEditorTheme__tableFrozenRow {
   /* position:sticky needs overflow:clip or visible
@@ -430,14 +430,14 @@
 .NotionLikeEditorTheme__ul {
   padding: 0;
   margin: 0;
-  list-style-position: outside;
   list-style: disc;
+  list-style-position: outside;
 }
 .NotionLikeEditorTheme__ol {
   padding: 0;
   margin: 0;
-  list-style-position: outside;
   list-style: decimal;
+  list-style-position: outside;
 }
 .NotionLikeEditorTheme__ol1 {
   padding: 0;
