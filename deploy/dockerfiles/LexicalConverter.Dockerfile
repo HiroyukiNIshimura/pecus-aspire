@@ -26,7 +26,8 @@ COPY pecus.LexicalConverter/package.json ./pecus.LexicalConverter/
 COPY pecus.Frontend/package.json ./pecus.Frontend/
 
 # ワークスペース全体の依存関係をインストール
-RUN npm ci
+# @lexical/html が hoisting で欠落する問題を回避するため明示的にインストール
+RUN npm ci && npm install @lexical/html@0.39.0
 
 # ============================================
 # Build stage
