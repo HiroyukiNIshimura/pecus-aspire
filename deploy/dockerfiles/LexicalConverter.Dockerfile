@@ -38,9 +38,8 @@ COPY --from=deps /app/packages ./packages
 # LexicalConverter のソースをコピー
 COPY pecus.LexicalConverter/ ./pecus.LexicalConverter/
 
-# Build
-WORKDIR /app/pecus.LexicalConverter
-RUN npm run build
+# Build (ルートの node_modules を参照するためルートで実行)
+RUN cd pecus.LexicalConverter && npm run build
 
 # ============================================
 # Final stage
