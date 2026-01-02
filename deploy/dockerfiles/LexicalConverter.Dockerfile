@@ -12,16 +12,18 @@ WORKDIR /app
 FROM base AS build
 WORKDIR /app
 
-# Copy LexicalConverter package.json (workspace から独立してインストール)
+# @coati/editor をローカルパッケージとしてセットアップ
+RUN mkdir -p /app/packages/coati-editor
+COPY packages/coati-editor/package.json ./packages/coati-editor/
+COPY packages/coati-editor/dist ./packages/coati-editor/dist
+
+# Copy LexicalConverter package.json
 COPY pecus.LexicalConverter/package*.json ./
 
-# @coati/editor をローカルパッケージとしてセットアップ
-COPY packages/coati-editor/package.json ./node_modules/@coati/editor/
-COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
-
-# package.json から @coati/editor の参照を削除して npm install
-# （@coati/editor は既に node_modules にコピー済み）
-RUN sed -i '/"@coati\/editor"/d' package.json && npm install
+# @coati/editor をファイルプロトコルで参照するように変更して npm install
+RUN sed -i 's|"@coati/editor": "\*"|"@coati/editor": "file:./packages/coati-editor"|' package.json && \
+    npm install && \
+    npm install @lexical/html@0.39.0
 
 COPY pecus.LexicalConverter/ ./
 RUN npm run build
