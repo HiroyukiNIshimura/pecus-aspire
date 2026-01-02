@@ -55,6 +55,7 @@ RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime 
 
 # Copy node_modules from deps stage
 COPY --from=deps /app/packages ./packages
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/pecus.LexicalConverter/node_modules ./node_modules
 
 # Copy built files
