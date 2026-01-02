@@ -7,45 +7,24 @@ FROM node:22-alpine AS base
 WORKDIR /app
 
 # ============================================
-# Dependencies stage
-# ============================================
-FROM base AS deps
-WORKDIR /app
-
-# Copy root package.json and lock file
-COPY package.json package-lock.json ./
-
-# Copy @coati/editor package (ビルド済み dist を含む)
-COPY packages/coati-editor/package.json ./packages/coati-editor/
-COPY packages/coati-editor/dist ./packages/coati-editor/dist
-
-# Copy LexicalConverter package.json
-COPY pecus.LexicalConverter/package*.json ./pecus.LexicalConverter/
-
-# Install production dependencies for LexicalConverter
-RUN npm ci --workspace=pecus.LexicalConverter --omit=dev
-
-# ============================================
 # Build stage
 # ============================================
 FROM base AS build
 WORKDIR /app
 
-# Copy root package.json and lock file
-COPY package.json package-lock.json ./
+# Copy LexicalConverter package.json (workspace から独立してインストール)
+COPY pecus.LexicalConverter/package*.json ./
 
-# Copy @coati/editor package (ビルド済み dist を含む)
-COPY packages/coati-editor/package.json ./packages/coati-editor/
-COPY packages/coati-editor/dist ./packages/coati-editor/dist
+# @coati/editor をローカルパッケージとしてセットアップ
+COPY packages/coati-editor/package.json ./node_modules/@coati/editor/
+COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
 
-# Copy LexicalConverter package.json
-COPY pecus.LexicalConverter/package*.json ./pecus.LexicalConverter/
+# package.json から @coati/editor の参照を削除して npm install
+# （@coati/editor は既に node_modules にコピー済み）
+RUN sed -i '/"@coati\/editor"/d' package.json && npm install
 
-# Install all dependencies (full workspace install to resolve all transitive deps)
-RUN npm ci
-
-COPY pecus.LexicalConverter/ ./pecus.LexicalConverter/
-RUN cd pecus.LexicalConverter && npm run build
+COPY pecus.LexicalConverter/ ./
+RUN npm run build
 
 # ============================================
 # Final stage
@@ -58,15 +37,11 @@ ENV NODE_ENV=production
 ENV TZ=Asia/Tokyo
 RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Copy all dependencies from build stage (includes all required packages)
+# Copy all dependencies from build stage
 COPY --from=build /app/node_modules ./node_modules
 
-# Copy @coati/editor package (overwrite hoisted version with built dist)
-COPY packages/coati-editor/dist ./node_modules/@coati/editor/dist
-COPY packages/coati-editor/package.json ./node_modules/@coati/editor/
-
 # Copy built files
-COPY --from=build /app/pecus.LexicalConverter/dist ./dist
+COPY --from=build /app/dist ./dist
 
 # Copy proto files
 COPY pecus.Protos/ /app/protos/
