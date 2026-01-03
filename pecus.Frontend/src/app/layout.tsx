@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
-import AppFooter from '@/components/common/layout/AppFooter.server';
+import AppFooter from '@/components/common/layout/AppFooter';
 import FlyonuiScript from '@/libs/flyon/FlyonuiScript';
 
 const notoSansJP = Noto_Sans_JP({

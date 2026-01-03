@@ -40,14 +40,23 @@ export default function ChatMessageList({
   useEffect(() => {
     if (messages.length > prevMessagesLengthRef.current) {
       // メッセージが増えた場合、最下部にスクロール
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      // scrollIntoView は親要素にも影響を与える可能性があるため、scrollTop を使用
+      if (containerRef.current) {
+        containerRef.current.scrollTo({
+          top: containerRef.current.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
     }
     prevMessagesLengthRef.current = messages.length;
   }, [messages.length]);
 
   // 初回表示時に最下部にスクロール
   useEffect(() => {
-    bottomRef.current?.scrollIntoView();
+    // scrollIntoView は親要素にも影響を与える可能性があるため、scrollTop を使用
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
   }, []);
 
   // スクロール位置監視（上端に達したら過去メッセージを読み込み）
