@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run AppHost (https)",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/pecus.AppHost/pecus.AppHost.csproj",
+      "preLaunchTask": "pre-launch"
+    }
+  ]
+}

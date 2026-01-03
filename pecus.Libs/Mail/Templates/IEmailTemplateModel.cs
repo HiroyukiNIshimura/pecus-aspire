@@ -27,6 +27,10 @@ public abstract class EmailTemplateModelBase
     /// </summary>
     public AppSettings App { get; set; } = new();
 
+    /// <summary>
+    ///  ロゴの SVG データ
+    /// </summary>
+    /// <value></value>
     public string LogoSvg { get; set; } = string.Empty;
 }
 
