@@ -57,13 +57,13 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
         )}
 
         {/* Main Content */}
-        <main
+        <div
           className={`flex-1 bg-base-100 ${
             isMobileChatPage ? 'flex flex-col overflow-hidden' : 'p-4 md:p-6 overflow-y-auto'
           }`}
         >
           {children}
-        </main>
+        </div>
       </div>
 
       {/* Chat Bottom Drawer (PC only) */}
