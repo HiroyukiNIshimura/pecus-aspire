@@ -1,10 +1,12 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
 import ChatProvider from '@/components/chat/ChatProvider';
 import AppHeader from '@/components/common/layout/AppHeader';
 import DashboardSidebar from '@/components/common/layout/DashboardSidebar.server';
 import type { CurrentUserInfo } from '@/connectors/api/pecus';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface DashboardLayoutClientProps {
   children: ReactNode;
@@ -17,21 +19,29 @@ interface DashboardLayoutClientProps {
  */
 export default function DashboardLayoutClient({ children, userInfo }: DashboardLayoutClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
+  const isMobile = useIsMobile();
+
+  // スマホ用チャットページでは AppHeader/Sidebar を非表示
+  // /chat または /chat/rooms/* のパスで、スマホ表示の場合
+  const isMobileChatPage = isMobile === true && pathname?.startsWith('/chat');
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <AppHeader
-        userInfo={userInfo}
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        showBackOfficeLink={userInfo?.isBackOffice ?? false}
-      />
+      {!isMobileChatPage && (
+        <AppHeader
+          userInfo={userInfo}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          showBackOfficeLink={userInfo?.isBackOffice ?? false}
+        />
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}
-        <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={userInfo?.isAdmin ?? false} />
+        {!isMobileChatPage && <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={userInfo?.isAdmin ?? false} />}
 
         {/* Overlay for mobile */}
-        {sidebarOpen && (
+        {sidebarOpen && !isMobileChatPage && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
             onClick={() => setSidebarOpen(false)}
@@ -45,7 +55,9 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 bg-base-100 overflow-y-auto">{children}</main>
+        <main className={`flex-1 ${isMobileChatPage ? '' : 'p-4 md:p-6'} bg-base-100 overflow-y-auto`}>
+          {children}
+        </main>
       </div>
 
       {/* Chat Bottom Drawer (PC only) */}
