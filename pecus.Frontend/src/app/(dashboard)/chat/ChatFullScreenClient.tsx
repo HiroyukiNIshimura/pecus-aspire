@@ -122,9 +122,9 @@ export default function ChatFullScreenClient({
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-base-100">
+    <div className="flex flex-col h-full overflow-hidden bg-base-100 border-4 border-red-500">
       {/* ヘッダー */}
-      <div className="flex items-center px-4 py-3 border-b border-base-300 bg-base-200">
+      <div className="flex items-center px-4 py-3 border-b border-base-300 bg-base-200 border-4 border-blue-500 shrink-0">
         <button
           type="button"
           onClick={() => router.back()}
@@ -137,7 +137,7 @@ export default function ChatFullScreenClient({
       </div>
 
       {/* ルーム一覧（共通コンポーネントを使用） */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden border-4 border-green-500">
         <ChatRoomList rooms={rooms} onRoomSelect={handleRoomSelect} onRoomCreated={fetchRooms} />
       </div>
     </div>
