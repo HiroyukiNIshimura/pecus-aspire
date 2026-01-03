@@ -3,6 +3,7 @@
 ミニマル＆プロフェッショナルなデザイン
 *@
 @using Pecus.Libs.Mail.Templates
+@using RazorLight.Text
 @model EmailTemplateModelBase
 <!DOCTYPE html>
 <html lang="ja">
@@ -36,15 +37,17 @@
             border-bottom: 1px solid #f3f4f6;
         }
         .brand {
+            display: inline-flex;
+            align-items: center;
             font-size: 20px;
             font-weight: 600;
             color: #111827;
             letter-spacing: -0.5px;
         }
-        .brand::before {
-            content: "🦝";
+        .brand-logo {
+            width: 42px;
+            height: auto;
             margin-right: 8px;
-            font-size: 24px;
         }
         .content {
             padding: 32px;
@@ -153,7 +156,12 @@
     <div class="container">
         <div class="card">
             <div class="header">
-                <span class="brand">@Model.App.Name</span>
+                <span class="brand">
+                    <svg class="brand-logo" viewBox="0 0 986 590" xmlns="http://www.w3.org/2000/svg">
+                        @(value: new RawString(Model.LogoSvg))
+                    </svg>
+                    @Model.App.Name
+                </span>
             </div>
             <div class="content">
                 @RenderBody()

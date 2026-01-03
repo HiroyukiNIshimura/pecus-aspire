@@ -26,6 +26,8 @@ public abstract class EmailTemplateModelBase
     /// アプリケーション設定（テンプレートサービスが自動設定）
     /// </summary>
     public AppSettings App { get; set; } = new();
+
+    public string LogoSvg { get; set; } = string.Empty;
 }
 
 /// <summary>
