@@ -137,7 +137,7 @@ export default function ChatFullScreenClient({
       </div>
 
       {/* ルーム一覧（共通コンポーネントを使用） */}
-      <div className="flex-1 overflow-hidden border-4 border-green-500">
+      <div className="flex-1 overflow-hidden">
         <ChatRoomList rooms={rooms} onRoomSelect={handleRoomSelect} onRoomCreated={fetchRooms} />
       </div>
     </div>
