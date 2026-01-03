@@ -36,18 +36,25 @@ public abstract class GroupChatReplyTaskBase
     protected readonly ILogger Logger;
 
     /// <summary>
+    /// 返信判定アナライザー（オプション）
+    /// </summary>
+    protected readonly IShouldReplyAnalyzer? ShouldReplyAnalyzer;
+
+    /// <summary>
     /// GroupChatReplyTaskBase のコンストラクタ
     /// </summary>
     protected GroupChatReplyTaskBase(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
         IAiClientFactory aiClientFactory,
-        ILogger logger)
+        ILogger logger,
+        IShouldReplyAnalyzer? shouldReplyAnalyzer = null)
     {
         Context = context;
         Publisher = publisher;
         AiClientFactory = aiClientFactory;
         Logger = logger;
+        ShouldReplyAnalyzer = shouldReplyAnalyzer;
     }
 
     /// <summary>
@@ -131,6 +138,141 @@ public abstract class GroupChatReplyTaskBase
     {
         return await Context.OrganizationSettings
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+    }
+
+    /// <summary>
+    /// 組織のすべての Bot を取得する
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>Bot のリスト</returns>
+    protected async Task<List<DB.Models.Bot>> GetAllBotsAsync(int organizationId)
+    {
+        return await Context.Bots
+            .Include(b => b.ChatActor)
+            .Where(b => b.OrganizationId == organizationId && b.ChatActor != null)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 返信すべきかどうかを AI で判定する
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="roomId">チャットルームID</param>
+    /// <param name="triggerMessageId">トリガーメッセージID</param>
+    /// <returns>判定結果、判定をスキップした場合は null</returns>
+    protected async Task<AI.Models.GroupChatReplyDecision?> EvaluateShouldReplyAsync(
+        int organizationId,
+        int roomId,
+        int triggerMessageId)
+    {
+        if (ShouldReplyAnalyzer == null)
+        {
+            return null;
+        }
+
+        var setting = await GetOrganizationSettingAsync(organizationId);
+        if (setting == null ||
+            setting.GenerativeApiVendor == GenerativeApiVendor.None ||
+            string.IsNullOrEmpty(setting.GenerativeApiKey) ||
+            string.IsNullOrEmpty(setting.GenerativeApiModel))
+        {
+            Logger.LogDebug(
+                "Skipping should-reply analysis: AI not configured for OrganizationId={OrganizationId}",
+                organizationId
+            );
+            return null;
+        }
+
+        var aiClient = AiClientFactory.CreateClient(
+            setting.GenerativeApiVendor,
+            setting.GenerativeApiKey,
+            setting.GenerativeApiModel
+        );
+
+        if (aiClient == null)
+        {
+            Logger.LogDebug(
+                "Skipping should-reply analysis: Failed to create AI client for OrganizationId={OrganizationId}",
+                organizationId
+            );
+            return null;
+        }
+
+        var triggerMessage = await GetTriggerMessageAsync(triggerMessageId);
+        if (triggerMessage == null || string.IsNullOrWhiteSpace(triggerMessage.Content))
+        {
+            Logger.LogDebug(
+                "Skipping should-reply analysis: Trigger message not found or empty: MessageId={MessageId}",
+                triggerMessageId
+            );
+            return null;
+        }
+
+        var recentMessages = await GetRecentMessagesAsync(roomId, 10, triggerMessageId);
+        var conversationHistory = recentMessages
+            .Select(m => new AI.Models.ConversationMessage
+            {
+                SenderId = m.SenderActorId?.ToString() ?? string.Empty,
+                SenderName = m.UserName,
+                Content = m.Content,
+                IsBot = m.IsBot,
+            })
+            .ToList();
+
+        var allBots = await GetAllBotsAsync(organizationId);
+        var availableBots = allBots
+            .Where(b => b.ChatActor != null)
+            .Select(b => new AI.Models.BotInfo
+            {
+                ChatActorId = b.ChatActor!.Id,
+                Name = b.Name,
+                RoleDescription = b.Type switch
+                {
+                    BotType.ChatBot => "親しみやすいサポート担当",
+                    BotType.SystemBot => "公式アナウンス担当",
+                    _ => "チャットボット",
+                },
+            })
+            .ToList();
+
+        if (availableBots.Count == 0)
+        {
+            Logger.LogDebug(
+                "Skipping should-reply analysis: No bots available for OrganizationId={OrganizationId}",
+                organizationId
+            );
+            return null;
+        }
+
+        try
+        {
+            var decision = await ShouldReplyAnalyzer.AnalyzeAsync(
+                aiClient,
+                conversationHistory,
+                triggerMessage.Content,
+                availableBots
+            );
+
+            Logger.LogDebug(
+                "Should-reply decision: ShouldReply={ShouldReply}, ResponderBot={ResponderBot}, Confidence={Confidence}, Reasoning={Reasoning}",
+                decision.ShouldAnyoneReply,
+                decision.ResponderBotName,
+                decision.Confidence,
+                decision.Reasoning
+            );
+
+            return decision;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(
+                ex,
+                "Should-reply analysis failed, proceeding with default behavior: OrganizationId={OrganizationId}, RoomId={RoomId}",
+                organizationId,
+                roomId
+            );
+            return null;
+        }
     }
 
     /// <summary>
@@ -296,7 +438,23 @@ public abstract class GroupChatReplyTaskBase
         DB.Models.Bot? bot = null;
         ChatRoom? room = null;
 
-        //生成AIでこのタイミングで発言すべきかどうかを判定する処理
+        // 生成AIでこのタイミングで発言すべきかどうかを判定する処理
+        var replyDecision = await EvaluateShouldReplyAsync(
+            organizationId,
+            roomId,
+            triggerMessageId
+        );
+
+        if (replyDecision != null && !replyDecision.ShouldAnyoneReply)
+        {
+            Logger.LogDebug(
+                "Skipping reply based on AI analysis: RoomId={RoomId}, Reasoning={Reasoning}, Confidence={Confidence}",
+                roomId,
+                replyDecision.Reasoning,
+                replyDecision.Confidence
+            );
+            return;
+        }
 
         try
         {

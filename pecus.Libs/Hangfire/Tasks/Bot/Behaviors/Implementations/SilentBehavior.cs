@@ -12,7 +12,7 @@ public class SilentBehavior : IBotBehavior
     /// Weight 配分
     /// ※ WorkspaceHealth と OrganizationHealth は GroupChatScope により排他
     /// </summary>
-    public int Weight => 40;
+    public int Weight => 30;
 
     /// <inheritdoc />
     public Task<bool> CanExecuteAsync(BotBehaviorContext context)

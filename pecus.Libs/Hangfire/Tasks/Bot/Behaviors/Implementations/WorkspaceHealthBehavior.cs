@@ -41,7 +41,7 @@ public class WorkspaceHealthBehavior : IBotBehavior
     /// Weight 配分
     /// ※ WorkspaceHealth と OrganizationHealth は GroupChatScope により排他
     /// </summary>
-    public int Weight => 10;
+    public int Weight => 20;
 
     /// <inheritdoc />
     public Task<bool> CanExecuteAsync(BotBehaviorContext context)

@@ -2,22 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build",
-      "type": "shell",
-      "command": "dotnet build pecus.sln",
-      "group": "build",
-      "problemMatcher": ["$msCompile"]
-    },
-    {
       "label": "generate-appsettings",
       "type": "shell",
       "command": "node scripts/generate-appsettings.js -D",
-      "problemMatcher": []
-    },
-    {
-      "label": "pre-launch",
-      "dependsOn": ["generate-appsettings", "build"],
-      "dependsOrder": "sequence",
       "problemMatcher": []
     }
   ]

@@ -32,10 +32,11 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         SignalRNotificationPublisher publisher,
         IAiClientFactory aiClientFactory,
         ILogger<GroupChatReplyTask> logger,
+        IShouldReplyAnalyzer? shouldReplyAnalyzer = null,
         IBotSelector? botSelector = null,
         IBotBehaviorSelector? behaviorSelector = null,
         IRoomReplyLock? roomReplyLock = null)
-        : base(context, publisher, aiClientFactory, logger)
+        : base(context, publisher, aiClientFactory, logger, shouldReplyAnalyzer)
     {
         _botSelector = botSelector;
         _behaviorSelector = behaviorSelector;

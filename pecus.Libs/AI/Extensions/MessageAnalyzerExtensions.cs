@@ -16,6 +16,7 @@ public static class MessageAnalyzerExtensions
     {
         services.AddScoped<IMessageAnalyzer, MessageAnalyzer>();
         services.AddScoped<IConversationTargetAnalyzer, ConversationTargetAnalyzer>();
+        services.AddScoped<IShouldReplyAnalyzer, ShouldReplyAnalyzer>();
         return services;
     }
 }
