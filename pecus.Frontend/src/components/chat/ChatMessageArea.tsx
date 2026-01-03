@@ -222,8 +222,14 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
       try {
         const result = await sendChatMessage(roomId, content);
         if (result.success && result.data) {
+          // senderUserId が null/undefined の場合は currentUserId を使用
+          // API レスポンスのシリアライズ時に null になる場合があるため
+          const messageWithSender = {
+            ...result.data,
+            senderUserId: result.data.senderUserId ?? currentUserId,
+          };
           // 送信したメッセージを一覧に追加
-          setMessages((prev) => [...prev, result.data!]);
+          setMessages((prev) => [...prev, messageWithSender]);
         }
       } catch (error) {
         console.error('Failed to send message:', error);
@@ -231,7 +237,7 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         setSending(false);
       }
     },
-    [roomId, sendChatTyping],
+    [roomId, sendChatTyping, currentUserId],
   );
 
   // 入力中通知

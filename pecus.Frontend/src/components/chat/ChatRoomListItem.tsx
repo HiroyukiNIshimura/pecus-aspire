@@ -5,14 +5,14 @@ import { formatRelativeTime } from '@/libs/utils/date';
 
 interface ChatRoomListItemProps {
   room: ChatRoomItem;
-  isSelected: boolean;
+  isSelected?: boolean;
   onClick: () => void;
 }
 
 /**
  * ルーム一覧の1行コンポーネント
  */
-export default function ChatRoomListItem({ room, isSelected, onClick }: ChatRoomListItemProps) {
+export default function ChatRoomListItem({ room, isSelected = false, onClick }: ChatRoomListItemProps) {
   // ルームタイプに応じたアイコン
   const getRoomIcon = () => {
     switch (room.type) {

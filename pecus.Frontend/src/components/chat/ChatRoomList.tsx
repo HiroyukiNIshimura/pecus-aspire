@@ -13,6 +13,8 @@ interface ChatRoomListProps {
   rooms: ChatRoomItem[];
   loading?: boolean;
   onRoomCreated?: () => void;
+  /** ルーム選択時のコールバック（スマホ用ページ遷移など）。指定しない場合は selectRoom() のみ実行 */
+  onRoomSelect?: (roomId: number) => void;
 }
 
 /**
@@ -27,7 +29,7 @@ const tabs: { key: ChatTab; label: string; icon: string }[] = [
 /**
  * ルーム一覧コンポーネント（タブ付き）
  */
-export default function ChatRoomList({ rooms, loading = false, onRoomCreated }: ChatRoomListProps) {
+export default function ChatRoomList({ rooms, loading = false, onRoomCreated, onRoomSelect }: ChatRoomListProps) {
   const { activeTab, setActiveTab, selectedRoomId, selectRoom, unreadCounts } = useChatStore();
   const isAiEnabled = useIsAiEnabled();
   const [dmCandidates, setDmCandidates] = useState<DmCandidateUserItem[]>([]);
@@ -67,6 +69,8 @@ export default function ChatRoomList({ rooms, loading = false, onRoomCreated }: 
         // DM候補リストから削除（既存DMになったため）
         setDmCandidates((prev) => prev.filter((u) => u.id !== userId));
         onRoomCreated?.();
+        // スマホなど外部遷移が必要な場合
+        onRoomSelect?.(result.data.id);
       }
     } finally {
       setStartingDm(null);
@@ -87,6 +91,8 @@ export default function ChatRoomList({ rooms, loading = false, onRoomCreated }: 
       if (result.success) {
         selectRoom(result.data.id);
         onRoomCreated?.();
+        // スマホなど外部遷移が必要な場合
+        onRoomSelect?.(result.data.id);
       }
     } finally {
       setStartingAi(false);
@@ -170,7 +176,10 @@ export default function ChatRoomList({ rooms, loading = false, onRoomCreated }: 
                 key={room.id}
                 room={room}
                 isSelected={selectedRoomId === room.id}
-                onClick={() => selectRoom(room.id)}
+                onClick={() => {
+                  selectRoom(room.id);
+                  onRoomSelect?.(room.id);
+                }}
               />
             ))}
 

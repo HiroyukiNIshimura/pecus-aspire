@@ -10,6 +10,8 @@ interface DmUserSearchModalProps {
   onSelectUser: (userId: number) => void;
   /** 既存DMがあるユーザーID（除外用） */
   existingDmUserIds: number[];
+  /** 表示形式: modal（PC用中央配置）/ bottom-sheet（スマホ用下からスライド） */
+  variant?: 'modal' | 'bottom-sheet';
 }
 
 /**
@@ -21,6 +23,7 @@ export default function DmUserSearchModal({
   onClose,
   onSelectUser,
   existingDmUserIds,
+  variant = 'modal',
 }: DmUserSearchModalProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResultResponse[]>([]);
@@ -96,9 +99,18 @@ export default function DmUserSearchModal({
 
   if (!isOpen) return null;
 
+  // variant に応じたスタイル
+  const isBottomSheet = variant === 'bottom-sheet';
+  const overlayClass = isBottomSheet
+    ? 'fixed inset-0 z-50 flex items-end justify-center bg-black/50'
+    : 'fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4';
+  const containerClass = isBottomSheet
+    ? 'bg-base-100 rounded-t-box w-full max-h-[80vh] flex flex-col animate-slide-up'
+    : 'bg-base-100 rounded-box shadow-xl w-full max-w-md max-h-[70vh] flex flex-col';
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className={overlayClass}
       onClick={(e) => {
         // 背景クリックで閉じる
         if (e.target === e.currentTarget) {
@@ -106,7 +118,7 @@ export default function DmUserSearchModal({
         }
       }}
     >
-      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-md max-h-[70vh] flex flex-col">
+      <div className={containerClass}>
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 border-b border-base-300 shrink-0">
           <h2 className="text-lg font-bold">ユーザーを検索</h2>

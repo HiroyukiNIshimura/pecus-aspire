@@ -111,7 +111,13 @@ export default function ChatRoomMessageClient({
       try {
         const result = await sendChatMessage(room.id, content);
         if (result.success && result.data) {
-          setMessages((prev) => [...prev, result.data!]);
+          // senderUserId が null/undefined の場合は currentUserId を使用
+          // API レスポンスのシリアライズ時に null になる場合があるため
+          const messageWithSender = {
+            ...result.data,
+            senderUserId: result.data.senderUserId ?? currentUserId,
+          };
+          setMessages((prev) => [...prev, messageWithSender]);
         }
       } catch (error) {
         console.error('Failed to send message:', error);
@@ -119,7 +125,7 @@ export default function ChatRoomMessageClient({
         setSending(false);
       }
     },
-    [room.id],
+    [room.id, currentUserId],
   );
 
   // SignalR: 現在開いているルームのメッセージをリアルタイム受信
