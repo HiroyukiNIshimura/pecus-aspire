@@ -80,14 +80,6 @@ builder.Services.AddSingleton<SignalRNotificationPublisher>();
 // 類似タスク担当者推薦サービスの登録
 builder.Services.AddScoped<ITaskAssignmentSuggester, TaskAssignmentSuggester>();
 
-// AI クライアントの登録（AiChatReplyTask で使用、APIキーが設定されているプロバイダーのみ有効化）
-builder.Services.AddOpenAIClient(builder.Configuration);
-builder.Services.AddAnthropicClient(builder.Configuration);
-builder.Services.AddDeepSeekClient(builder.Configuration);
-builder.Services.AddGeminiClient(builder.Configuration);
-builder.Services.AddDefaultAiClient(builder.Configuration);
-builder.Services.AddAiClientFactory();
-
 // AI クライアントの登録（APIキーが設定されているプロバイダーのみ有効化）
 builder.Services.AddOpenAIClient(builder.Configuration);
 builder.Services.AddAnthropicClient(builder.Configuration);

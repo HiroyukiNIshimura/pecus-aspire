@@ -1,6 +1,6 @@
 using Pecus.Libs.DB.Models;
 
-namespace Pecus.Libs.Hangfire.Tasks.Bot;
+namespace Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 
 /// <summary>
 /// Bot タスク共通のユーティリティメソッドを提供する静的クラス

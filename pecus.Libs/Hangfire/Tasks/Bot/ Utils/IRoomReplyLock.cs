@@ -1,4 +1,4 @@
-namespace Pecus.Libs.Hangfire.Tasks.Bot;
+namespace Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 
 /// <summary>
 /// ルーム単位の Bot 返信ロックを管理するインターフェース

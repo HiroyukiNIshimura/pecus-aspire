@@ -3,7 +3,7 @@ using Pecus.Libs.AI.Models;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 
-namespace Pecus.Libs.Hangfire.Tasks.Bot;
+namespace Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 
 /// <summary>
 /// Bot選択に関する処理を提供するサービスのインターフェース

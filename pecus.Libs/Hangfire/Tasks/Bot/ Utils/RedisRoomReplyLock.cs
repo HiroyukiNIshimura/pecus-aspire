@@ -1,6 +1,6 @@
 using StackExchange.Redis;
 
-namespace Pecus.Libs.Hangfire.Tasks.Bot;
+namespace Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 
 /// <summary>
 /// Redis を使用したルーム単位の分散ロック実装

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Pecus.Libs.Hangfire.Tasks.Bot;
+using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 
 namespace Pecus.Libs.Hangfire.Tasks.Extensions;
 

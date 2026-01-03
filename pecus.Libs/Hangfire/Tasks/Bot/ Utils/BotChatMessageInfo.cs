@@ -1,7 +1,7 @@
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 
-namespace Pecus.Libs.Hangfire.Tasks.Bot;
+namespace Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 
 /// <summary>
 /// Bot タスクで使用するチャットメッセージ情報
