@@ -74,10 +74,4 @@ public interface IBotSelector
         int organizationId,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Bot起動抽選を行う
-    /// </summary>
-    /// <param name="probability">確度（0-100 の整数、100 で必ず起動）</param>
-    /// <returns>抽選結果（true: 起動する、false: 起動しない）</returns>
-    bool ShouldActivate(int probability);
 }

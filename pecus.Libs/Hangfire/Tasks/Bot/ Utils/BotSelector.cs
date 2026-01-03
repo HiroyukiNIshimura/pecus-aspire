@@ -192,10 +192,4 @@ public class BotSelector : IBotSelector
 
         return selectedBot;
     }
-
-    /// <inheritdoc />
-    public bool ShouldActivate(int probability)
-    {
-        return BotTaskUtils.ShouldActivateBot(probability);
-    }
 }

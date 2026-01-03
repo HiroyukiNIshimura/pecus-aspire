@@ -241,14 +241,6 @@ public abstract class GroupChatReplyTaskBase
     }
 
     /// <summary>
-    /// Bot 起動抽選を行う
-    /// </summary>
-    /// <param name="probability">確度（0-100 の整数、100 で必ず起動）</param>
-    /// <returns>抽選結果（true: 起動する、false: 起動しない）</returns>
-    protected static bool ShouldActivateBot(int probability) =>
-        BotTaskUtils.ShouldActivateBot(probability);
-
-    /// <summary>
     /// 使用する BotType を決定する（継承クラスで実装）
     /// </summary>
     /// <param name="organizationId">組織ID</param>
