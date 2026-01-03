@@ -127,6 +127,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 GetRecentMessagesAsync = GetRecentMessagesAsync,
             };
 
+            // 行動選択器を使用して振る舞いを選択
             var behavior = await _behaviorSelector.SelectBehaviorAsync(behaviorContext);
 
             if (behavior != null)
@@ -174,15 +175,6 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
     /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
     public async Task SendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
-        // Botの発動確率
-        // IBotBehaviorのWeight合計を100としたときの発動率
-        // SilentBehaviorも含むので、必ずしも返信が生成されるとは限らない
-        // 発動させるかしないかぐらいのつもりで設定する
-        if (!BotTaskUtils.ShouldActivateBot(100))
-        {
-            return;
-        }
-
         // ルーム単位の排他制御
         if (_roomReplyLock != null)
         {

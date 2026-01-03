@@ -8,27 +8,6 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 public static class BotTaskUtils
 {
     /// <summary>
-    /// Bot 起動抽選を行う
-    /// </summary>
-    /// <param name="probability">確度（0-100 の整数、100 で必ず起動）</param>
-    /// <returns>抽選結果（true: 起動する、false: 起動しない）</returns>
-    public static bool ShouldActivateBot(int probability)
-    {
-        if (probability <= 0)
-        {
-            return false;
-        }
-
-        if (probability >= 100)
-        {
-            return true;
-        }
-
-        var random = Random.Shared.Next(1, 101);
-        return random <= probability;
-    }
-
-    /// <summary>
     /// Bot メッセージ用の SignalR 通知ペイロードを生成する
     /// </summary>
     /// <param name="room">チャットルーム</param>

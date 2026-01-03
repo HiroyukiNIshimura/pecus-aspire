@@ -296,6 +296,8 @@ public abstract class GroupChatReplyTaskBase
         DB.Models.Bot? bot = null;
         ChatRoom? room = null;
 
+        //生成AIでこのタイミングで発言すべきかどうかを判定する処理
+
         try
         {
             // チャットルームを取得
