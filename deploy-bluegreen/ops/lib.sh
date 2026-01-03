@@ -4,6 +4,8 @@ set -euo pipefail
 # カーソル復元（異常終了時対策）
 trap 'tput cnorm 2>/dev/null || true' EXIT
 
+export DATA_PATH="/var/docker/coati/data"
+
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 bluegreen_dir="$(cd "$script_dir/.." && pwd)"
 repo_root="$(cd "$bluegreen_dir/.." && pwd)"

@@ -17,6 +17,15 @@ sh infra-up.sh
 sh infra-down.sh
 ```
 
+### アプリ層停止
+
+```
+sh app-down.sh
+sh app-down.sh -y   # 確認スキップ
+```
+
+稼働中のアクティブスロットのアプリ層（WebApi/Frontend/BackFire）のみを停止します。infra は停止しません。
+
 ### ノード切替（blue/green）
 
 ```
@@ -102,6 +111,37 @@ CONFIRM_RESTORE=YES sh pg-restore.sh /path/to/pecusdb_YYYYMMDD.dump
 ```
 CONFIRM_RESTORE=YES sh pg-restore.sh /var/docker/coati/data/backups/postgres/pecusdb_20260101T061046Z.dump
 ```
+
+### スナップショット作成
+
+```
+sh snapshot-create.sh
+```
+
+現在稼働中の DB と Docker イメージをセットでスナップショットとして保存します（1世代のみ保持）。
+
+- 保存先: `${DATA_PATH}/snapshot/`
+- 処理内容:
+  1. 既存スナップショットを削除
+  2. DBバックアップを実行
+  3. 現在のアクティブスロットのイメージに `snapshot-latest` タグを付与
+  4. メタデータ（作成日時、gitコミット、スロット情報）を保存
+
+### スナップショットリストア（破壊的）
+
+```
+sh snapshot-restore.sh
+```
+
+スナップショットから DB とイメージを復元し、非アクティブスロットに展開します。
+
+- 処理フロー:
+  1. 非アクティブスロットを停止
+  2. スナップショットイメージを復元
+  3. DBリストア
+  4. 非アクティブスロットを起動
+  5. Nginx を切り替え
+  6. 旧スロットを停止
 
 ### クリーンアップ
 
