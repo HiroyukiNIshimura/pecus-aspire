@@ -504,17 +504,38 @@ public abstract class GroupChatReplyTaskBase
                 return;
             }
 
-            // 使用する BotType を決定
-            var selectedBotType = await DetermineBotTypeAsync(organizationId, triggerMessage);
+            if (replyDecision != null && replyDecision.ResponderBotActorId != null)
+            {
+                // AI が選択した Bot を使用
+                bot = await Context.Bots
+                    .Include(b => b.ChatActor)
+                    .FirstOrDefaultAsync(b =>
+                        b.OrganizationId == organizationId &&
+                        b.ChatActor != null &&
+                        b.ChatActor.Id == replyDecision.ResponderBotActorId);
 
-            // 選択された BotType で Bot を取得
-            bot = await GetBotByTypeAsync(organizationId, selectedBotType);
+                if (bot == null)
+                {
+                    Logger.LogWarning(
+                        "AI selected bot not found, falling back to DetermineBotTypeAsync: ResponderBotActorId={ResponderBotActorId}",
+                        replyDecision.ResponderBotActorId
+                    );
+                }
+            }
+
+            if (bot == null)
+            {
+                // 使用する BotType を決定
+                var selectedBotType = await DetermineBotTypeAsync(organizationId, triggerMessage);
+                bot = await GetBotByTypeAsync(organizationId, selectedBotType);
+            }
+
             if (bot?.ChatActor == null)
             {
                 Logger.LogWarning(
-                    "Bot not found for organization: OrganizationId={OrganizationId}, BotType={BotType}",
+                    "Bot | Bot.ChatActor not found for organization: OrganizationId={OrganizationId}, BotName={Name}",
                     organizationId,
-                    selectedBotType
+                    bot?.Name
                 );
                 return;
             }
