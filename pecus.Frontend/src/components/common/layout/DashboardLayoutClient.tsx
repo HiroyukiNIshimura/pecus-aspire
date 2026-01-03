@@ -24,7 +24,9 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
 
   // スマホ用チャットページでは AppHeader/Sidebar を非表示
   // /chat または /chat/rooms/* のパスで、スマホ表示の場合
-  const isMobileChatPage = isMobile === true && pathname?.startsWith('/chat');
+  // isMobile === null（初期化中）の場合は、チャットページなら AppHeader を非表示にしておく（ちらつき防止）
+  const isChatPage = pathname?.startsWith('/chat') ?? false;
+  const isMobileChatPage = isChatPage && isMobile !== false;
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
