@@ -219,7 +219,7 @@ export default function DocumentTreeSidebar({
         {isMobile && (
           <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-info/10 text-info text-xs rounded-lg">
             <span className="icon-[mdi--information-outline] w-4 h-4 flex-shrink-0" aria-hidden="true" />
-            <span>PCでドラッグ＆ドロップにより親子関係を変更できます</span>
+            <span>スマホの場合は長押ししてから、ドラッグ＆ドロップで親子関係を変更できます</span>
           </div>
         )}
         {treeData.length === 0 ? (

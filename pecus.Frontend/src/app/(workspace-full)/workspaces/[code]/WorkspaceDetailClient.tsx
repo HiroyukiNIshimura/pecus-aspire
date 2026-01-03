@@ -1518,10 +1518,9 @@ export default function WorkspaceDetailClient({
 
         {/* アイテム一覧ドロワー (スマホ) */}
         <div
-          className={`lg:hidden fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 shadow-lg transition-all duration-300 ease-in-out z-40 ${
-            mobileDrawerOpen ? '' : 'translate-y-[calc(100%-48px)]'
+          className={`lg:hidden fixed left-0 right-0 bg-base-100 border-t border-base-300 shadow-lg transition-all duration-300 ease-in-out z-40 ${
+            mobileDrawerOpen ? 'bottom-0 top-48' : 'bottom-0 h-12'
           }`}
-          style={{ height: mobileDrawerOpen ? '70vh' : '48px', maxHeight: '600px' }}
         >
           {/* ドロワーハンドル */}
           <button
