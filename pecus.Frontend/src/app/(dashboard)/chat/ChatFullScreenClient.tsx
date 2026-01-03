@@ -122,7 +122,7 @@ export default function ChatFullScreenClient({
   };
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden bg-base-100">
+    <div className="flex flex-col h-full overflow-hidden bg-base-100">
       {/* ヘッダー */}
       <div className="flex items-center px-4 py-3 border-b border-base-300 bg-base-200">
         <button
