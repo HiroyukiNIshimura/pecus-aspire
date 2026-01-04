@@ -37,24 +37,23 @@ Pecus Aspire は、.NET Aspire 10.0 を使用した分散マイクロサービ�
 **バックエンド:**
 - .NET 10 (Preview)
 - Entity Framework Core 10
-- .NET Aspire 10.0
+- .NET Aspire 13.1
 - PostgreSQL (pgroonga拡張による全文検索)
 - Redis (セッションストア、Hangfireキュー)
 
 **フロントエンド:**
-- Next.js 16 (App Router)
-- React 19
-- Tailwind CSS 4
-- FlyonUI (UIコンポーネント)
+- Next.js 16.1.1 (App Router)
+- React 19.2.3
+- Tailwind CSS 4.1.18
+- FlyonUI 2.4.1 (UIコンポーネント)
 - @iconify/tailwind4 (アイコン)
-- Biome (リンター/フォーマッター)
+- Biome 2.3.10 (リンター/フォーマッター)
 
 ### インフラストラクチャ
 
 - **PostgreSQL** - メインデータベース（pecusdb）
 - **Redis** - セッション管理、Hangfire キュー・キャッシュ
 - **Hangfire Dashboard** - バックグラウンドジョブ管理UI
-- **DbGate** - Redis (Frontend) 管理UI
 
 ## 🔧 必要な環境
 
@@ -97,15 +96,13 @@ node scripts/generate-appsettings.js -D
 - `config/settings.base.json` がベース設定（Git管理）
 - `config/settings.base.dev.json` は開発者ローカル用（.gitignore）
 - 生成された `appsettings.json` は各プロジェクトに配置されます
+- `pecus.Frontend/.env.local` も自動生成されます
 
 #### 2.3 フロントエンド環境設定（pecus.Frontend）
 
 ```bash
 # pecus.Frontend ディレクトリに移動
 cd pecus.Frontend
-
-# .env.sample から .env ファイルを作成
-cp .env.sample .env
 
 # npm 依存パッケージをインストール
 npm install
@@ -114,11 +111,11 @@ npm install
 npm install -g @biomejs/biome
 ```
 
-**注:** `.env` ファイルには WebApi のベース URL などの環境変数が含まれます。`.env.sample` をコピーして必要に応じて値を調整してください。
+**注:** 環境変数ファイル `.env.local` は手順 2.2 で自動生成されています。手動作成は不要です。
 
 ### 3. アプリケーション起動
 
-※現在のAspire環境ではRedisを永続化させていないのでNextjs側の認証情報は揮発性です。ですのでアプリ起動後は毎回ログインが必要になります。
+※開発環境のAspire環境ではRedisを永続化させていないのでNextjs側の認証情報は揮発性です。ですのでアプリ起動後は毎回ログインが必要になります。
 
 #### 3.1 Visual Studio で起動（推奨）
 
@@ -177,7 +174,7 @@ dotnet run
 4. `pecus.BackFire` Hangfire サーバーが起動
 5. Aspire ダッシュボードが表示
 
-> ⚠️ **初回起動時の注意:** 初回起動時はマイグレーションとシードデータの大量投入を行うため、**数分程度の時間がかかります**。Aspire ダッシュボードで `pecus.DbManager` のコンソールを開いてシードデータの投入完了を確認してください。
+> ⚠️ **初回起動時の注意:** 初回起動時はマイグレーションとシードデータの大量投入を行うモードの場合、**数分程度の時間がかかります**。Aspire ダッシュボードで `pecus.DbManager` のコンソールを開いてシードデータの投入完了を確認してください。
 
 #### 3.4 個別にサービスを起動する場合
 
@@ -206,7 +203,6 @@ dotnet run
 | **Aspire Dashboard** | 動的 | サービス管理・監視 |
 | **WebApi** | https://localhost:7265 | REST API ベースURL |
 | **Hangfire Dashboard** | 動的 | バックグラウンドジョブ管理 |
-| **DbGate** | 動的 | Redis (Frontend) 管理UI |
 | **PostgreSQL** | tcp:5432 | DB（ユーザー: postgres, パスワード: postgres） |
 | **Redis** | 動的 | キャッシュ・キュー・セッション |
 
@@ -252,21 +248,31 @@ dotnet run
 
 ### シードデータ
 
-**開発環境:**
-- 権限・ロール・ジャンル・スキルマスターデータ
-- 5 つの組織（テナント）
-- 1 つの admin ユーザー（管理者）
-- 200 件のモックユーザー（user001 ～ user200）
-- 350 件のモックワークスペース（各組織70件、各種ステータス・優先度付き）
-- ユーザースキル関連付け（各ユーザーに 1 ～ 5 個のランダムなスキル）
-- ワークスペースアイテム（タスク）: 全体で最大20,000件（各ワークスペース約50件）
-- ワークスペースアイテムリレーション（関連タスク）: 各ワークスペース10〜20件
-- アクティビティ履歴、担当者割り当てなど
+**共通（全環境）:**
+- マスターデータ（権限・ロール・ジャンル・タスクタイプ）
+- バックオフィス組織と管理者ユーザー
 
-> ⚠️ **注意:** 初回起動時は上記すべてのデータ投入を行うため、**数分程度の時間がかかります**。
+**開発環境 (Development):**
+- 2 つの組織（テナント）
+- 各組織に 10 人のユーザー
+- 各組織に 5 つのワークスペース
+- 各ワークスペースに 30 件のアイテム
+- その他、タスク、コメント、アクティビティなどの関連データ
 
-**本番環境:**
-- マスターデータのみ投入（権限・ロール・ジャンル・スキル）
+**負荷テスト環境 (LoadTest):**
+- `ASPNETCORE_ENVIRONMENT=LoadTest` で実行時
+- 5 つの組織
+- 各組織に 100 人のユーザー
+- 各組織に 50 つのワークスペース
+- 大量のアイテムと関連データ
+
+**デモモード:**
+- `DemoModeOptions:Enabled=true` の場合、デモ用データを追加投入
+
+> ⚠️ **注意:** 初回起動時はデータ投入を行うため、時間がかかる場合があります。
+
+**本番環境 (Production):**
+- マスターデータとバックオフィス組織のみ投入
 
 ## 📝 ログとモニタリング
 
@@ -339,4 +345,4 @@ MIT License
 
 ---
 
-**最終更新日:** 2025年12月23日
+**最終更新日:** 2026年1月4日
