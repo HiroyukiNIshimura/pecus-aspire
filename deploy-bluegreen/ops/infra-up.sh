@@ -20,5 +20,6 @@ wait_health pecus-redis 300
 wait_health pecus-redis-frontend 300
 wait_health pecus-lexicalconverter 300
 wait_running pecus-nginx 60
+wait_health pecus-prometheus 120
 
 echo "[OK] インフラ起動完了"
