@@ -545,7 +545,7 @@ export default function MonitoringClient({
                       className={`tab ${metricsTab === 'process' ? 'tab-active' : ''}`}
                       onClick={() => setMetricsTab('process')}
                     >
-                      プロセス別
+                      サービス別
                     </button>
                     <button
                       type="button"
@@ -583,12 +583,12 @@ export default function MonitoringClient({
                   {metricsTab === 'process' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <MetricsChart
-                        title="CPU使用率（プロセス）"
+                        title="CPU使用率（サービス）"
                         series={metrics?.cpuUsage ?? []}
                         unit="%"
                         yAxisDomain={[0, 'auto']}
                       />
-                      <MetricsChart title="メモリ使用量（プロセス）" series={metrics?.processMemory ?? []} unit="MB" />
+                      <MetricsChart title="メモリ使用量（サービス）" series={metrics?.processMemory ?? []} unit="MB" />
                     </div>
                   )}
 

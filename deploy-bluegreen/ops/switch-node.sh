@@ -109,7 +109,7 @@ echo "[情報] 3.5 DBマイグレーション実行" >&2
 if docker ps -a --format '{{.Names}}' | grep -qx 'pecus-dbmanager'; then
   docker rm -f pecus-dbmanager >/dev/null 2>&1 || true
 fi
-compose_migrate run --rm dbmanager
+compose_migrate run --rm --build dbmanager
 
 echo "[情報] 3.6 ターゲットのBackFireをデプロイ: $target" >&2
 compose_app "$target" up -d "backfire-$target"
