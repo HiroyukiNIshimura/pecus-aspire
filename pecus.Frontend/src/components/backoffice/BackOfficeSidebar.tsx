@@ -10,6 +10,7 @@ const menuItems = [
   { href: '/backoffice', label: 'ダッシュボード', iconClass: 'icon-[mdi--view-dashboard-outline]' },
   { href: '/backoffice/organizations', label: '組織管理', iconClass: 'icon-[mdi--office-building-outline]' },
   { href: '/backoffice/notifications', label: 'システム通知', iconClass: 'icon-[mdi--bell-outline]' },
+  { href: '/backoffice/monitoring', label: 'システム状況', iconClass: 'icon-[mdi--chart-line]' },
 ];
 
 export default function BackOfficeSidebar({ sidebarOpen }: BackOfficeSidebarProps) {

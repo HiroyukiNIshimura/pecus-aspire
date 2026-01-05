@@ -84,17 +84,17 @@ export default function BackOfficeDashboardClient({ fetchError }: BackOfficeDash
                   </div>
                 </a>
 
-                <div className="card bg-base-200 opacity-50 cursor-not-allowed">
+                <a href="/backoffice/monitoring" className="card bg-base-200 hover:bg-base-300 transition-colors">
                   <div className="card-body">
                     <div className="flex items-center gap-4">
-                      <span className="icon-[mdi--chart-line] size-12 text-base-content/50" aria-hidden="true" />
+                      <span className="icon-[mdi--chart-line] size-12 text-primary" aria-hidden="true" />
                       <div>
-                        <h2 className="card-title text-base-content/70">システム状況</h2>
-                        <p className="text-base-content/50">（今後実装予定）</p>
+                        <h2 className="card-title">システム状況</h2>
+                        <p className="text-base-content/70">サービスの稼働状況を監視</p>
                       </div>
                     </div>
                   </div>
-                </div>
+                </a>
               </div>
             )}
           </div>

@@ -30,19 +30,38 @@
 # docker-compose.infra.yml (抜粋)
 services:
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v3.4.1
+    container_name: pecus-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
     volumes:
-      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${DATA_PATH}/prometheus:/prometheus
     networks:
-      - pecus-network # 既存ネットワークに参加
+      - pecus-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   node-exporter:
-    image: prom/node-exporter
+    image: prom/node-exporter:v1.9.1
+    container_name: pecus-node-exporter
+    restart: unless-stopped
     networks:
       - pecus-network
 
   blackbox-exporter:
-    image: prom/blackbox-exporter
+    image: prom/blackbox-exporter:v0.26.0
+    container_name: pecus-blackbox-exporter
+    restart: unless-stopped
+    volumes:
+      - ./ops/prometheus/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
     networks:
       - pecus-network
 
@@ -55,20 +74,23 @@ networks:
 ```yaml
 scrape_configs:
   - job_name: 'backend'
+    metrics_path: /metrics
     static_configs:
       - targets:
-        - 'pecus-webapi-blue:8080'
-        - 'pecus-webapi-green:8080'
+        - 'pecusapi-blue:7265'
+        - 'pecusapi-green:7265'
   - job_name: 'frontend'
+    metrics_path: /api/metrics
     static_configs:
       - targets:
-        - 'pecus-frontend-blue:3000'
-        - 'pecus-frontend-green:3000'
+        - 'frontend-blue:3000'
+        - 'frontend-green:3000'
   - job_name: 'lexicalconverter'
+    metrics_path: /metrics
     static_configs:
       - targets:
-        - 'pecus-lexicalconverter-blue:8080'
-        - 'pecus-lexicalconverter-green:8080'
+        - 'lexicalconverter-blue:5100'
+        - 'lexicalconverter-green:5100'
   - job_name: 'node'
     static_configs:
       - targets: ['node-exporter:9100']
@@ -78,10 +100,10 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-        - http://pecus-webapi-blue:8080/health
-        - http://pecus-webapi-green:8080/health
-        - http://pecus-frontend-blue:3000/health
-        - http://pecus-frontend-green:3000/health
+        - http://pecusapi-blue:7265/health
+        - http://pecusapi-green:7265/health
+        - http://frontend-blue:3000/health
+        - http://frontend-green:3000/health
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -111,19 +133,40 @@ var response = await httpClient.GetAsync("http://prometheus:9090/api/v1/query?qu
 
 1.  **AppHostへの追加**: `pecus.AppHost` に Prometheus コンテナを追加する。
     ```csharp
-    // pecus.AppHost/Program.cs (イメージ)
-    var prometheus = builder.AddContainer("prometheus", "prom/prometheus")
-        .WithBindMount("../deploy-bluegreen/ops/prometheus/prometheus.dev.yml", "/etc/prometheus/prometheus.yml")
-        .WithHttpEndpoint(port: 9090, targetPort: 9090, name: "prometheus-api");
+    // pecus.AppHost/AppHost.cs (実装例)
+    var monitoringEnabled = bool.TryParse(infraConfig["monitoring:enabled"], out var monEnabled) && monEnabled;
+    var prometheusPort = int.TryParse(infraConfig["monitoring:prometheus:port"], out var promPort) ? promPort : 9090;
 
-    // フロントエンド等に参照を渡す
-    var frontend = builder.AddNpmApp("frontend", "../pecus.Frontend")
-        .WithEnvironment("PROMETHEUS_URL", prometheus.GetEndpoint("prometheus-api"));
+    // Prometheus 設定ファイルの絶対パスを取得
+    var prometheusConfigPath = Path.GetFullPath(Path.Combine(
+        AppContext.BaseDirectory, "..", "..", "..", "..",
+        "deploy-bluegreen", "ops", "prometheus", "prometheus.dev.yml"));
+
+    // Prometheus (Monitoring) - 監視が有効な場合のみ起動
+    IResourceBuilder<ContainerResource>? prometheus = null;
+    if (monitoringEnabled)
+    {
+        prometheus = builder.AddContainer("prometheus", "prom/prometheus", "v3.4.1")
+            .WithBindMount(prometheusConfigPath, "/etc/prometheus/prometheus.yml", isReadOnly: true)
+            .WithHttpEndpoint(port: prometheusPort, targetPort: 9090, name: "prometheus-http")
+            .WithArgs("--config.file=/etc/prometheus/prometheus.yml",
+                      "--storage.tsdb.retention.time=7d",
+                      "--web.enable-lifecycle");
+    }
+
+    // フロントエンドに Prometheus URL を渡す
+    if (prometheus != null)
+    {
+        var prometheusUrl = $"http://localhost:{prometheusPort}";
+        frontendBuilder
+            .WaitFor(prometheus)
+            .WithEnvironment("PROMETHEUS_URL", prometheusUrl);
+    }
     ```
-2.  **開発用設定ファイル**: `deploy-bluegreen/ops/prometheus/prometheus.dev.yml` を作成。
+2.  **開発用設定ファイル**: `deploy-bluegreen/ops/prometheus/prometheus.dev.yml` は `generate-appsettings.js` により自動生成される。
     -   Aspire環境では各サービスがホストマシンのポートで公開されるため、`host.docker.internal` を使用して参照する。
-    -   **注意**: Aspireはポートを動的に割り当てる場合があるため、固定ポート設定（`launchSettings.json`等）または環境変数での制御が必要になる場合がある。
-    -   簡易的には、`host.docker.internal:固定ポート` をターゲットに指定する。
+    -   バックエンド(.NET)は HTTPS で公開されるため、`scheme: https` と `tls_config.insecure_skip_verify: true` を設定。
+    -   フロントエンド(Next.js)のメトリクスエンドポイントは `/api/metrics`。
 
 ## セキュリティ・運用
 - Prometheusの`ports`は外部公開しない。
@@ -185,15 +228,23 @@ Prometheus の設定ファイルは `scripts/generate-appsettings.js` により 
 ```yaml
 scrape_configs:
   - job_name: 'backend'
+    metrics_path: /metrics
     static_configs:
       - targets:
         - 'pecusapi-blue:7265'
         - 'pecusapi-green:7265'
   - job_name: 'frontend'
+    metrics_path: /api/metrics
     static_configs:
       - targets:
         - 'frontend-blue:3000'
         - 'frontend-green:3000'
+  - job_name: 'lexicalconverter'
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+        - 'lexicalconverter-blue:5100'
+        - 'lexicalconverter-green:5100'
 ```
 
 #### 開発環境（`-D` オプションまたはオプションなし）
@@ -203,11 +254,20 @@ Aspire 環境では各サービスがホストマシンのポートで公開さ�
 ```yaml
 scrape_configs:
   - job_name: 'backend'
+    metrics_path: /metrics
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
     static_configs:
       - targets: ['host.docker.internal:7265']
   - job_name: 'frontend'
+    metrics_path: /api/metrics
     static_configs:
       - targets: ['host.docker.internal:3000']
+  - job_name: 'lexicalconverter'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['host.docker.internal:9101']
 ```
 
 ### コマンド
