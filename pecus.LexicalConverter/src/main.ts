@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { type MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -12,6 +13,7 @@ async function bootstrap() {
   const port = configService.get<number>('GRPC_PORT');
   const host = configService.get<string>('GRPC_HOST') ?? '0.0.0.0';
   const protoPath = configService.get<string>('LEXICAL_PROTO_PATH');
+  const metricsPort = configService.get<number>('METRICS_PORT') ?? 9101;
 
   if (!port) {
     console.error('GRPC_PORT environment variable is required');
@@ -24,6 +26,11 @@ async function bootstrap() {
   }
 
   await appContext.close();
+
+  // HTTP サーバー（メトリクス・ヘルスチェック用）を起動
+  const httpApp = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  await httpApp.listen(metricsPort, '0.0.0.0');
+  console.log(`📊 Metrics server is running on http://0.0.0.0:${metricsPort}/metrics`);
 
   // gRPCマイクロサービスとして起動
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {

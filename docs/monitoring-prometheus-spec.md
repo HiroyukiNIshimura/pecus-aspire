@@ -130,3 +130,99 @@ var response = await httpClient.GetAsync("http://prometheus:9090/api/v1/query?qu
 - docker-composeのネットワーク内で分離。
 - 管理者のみ一時的に内部アクセス可能（ポートフォワード等）。
 
+## 設定ファイル自動生成（generate-appsettings.js 統合）
+
+### 概要
+Prometheus の設定ファイルは `scripts/generate-appsettings.js` により `config/settings.base.json` から自動生成される。
+これにより、ポート番号やホスト名の設定を一元管理し、設定の不整合を防止する。
+
+### settings.base.json への追加設定
+
+`_infrastructure` セクションに `monitoring` 設定を追加する:
+
+```json
+{
+  "_infrastructure": {
+    "monitoring": {
+      "enabled": true,
+      "prometheus": {
+        "port": 9090
+      },
+      "nodeExporter": {
+        "port": 9100
+      },
+      "blackboxExporter": {
+        "port": 9115
+      }
+    },
+    "docker": {
+      "webapiHost": "pecusapi",
+      "frontendHost": "frontend",
+      "lexicalConverterHost": "lexicalconverter"
+    },
+    "ports": {
+      "webapi": 7265,
+      "frontend": 3000,
+      "lexicalConverter": 5100
+    }
+  }
+}
+```
+
+### 生成されるファイル
+
+| 環境 | ファイルパス | 用途 |
+|------|-------------|------|
+| 本番（Blue/Green） | `deploy-bluegreen/ops/prometheus/prometheus.yml` | Blue/Green両系をターゲットに設定 |
+| 開発（Aspire） | `deploy-bluegreen/ops/prometheus/prometheus.dev.yml` | `host.docker.internal` 経由でローカルサービスを参照 |
+
+### 生成ロジック
+
+#### 本番環境（`-P` オプション指定時）
+
+`_infrastructure.docker` のホスト名に `-blue` / `-green` サフィックスを付与してターゲットを生成:
+
+```yaml
+scrape_configs:
+  - job_name: 'backend'
+    static_configs:
+      - targets:
+        - 'pecusapi-blue:7265'
+        - 'pecusapi-green:7265'
+  - job_name: 'frontend'
+    static_configs:
+      - targets:
+        - 'frontend-blue:3000'
+        - 'frontend-green:3000'
+```
+
+#### 開発環境（`-D` オプションまたはオプションなし）
+
+Aspire 環境では各サービスがホストマシンのポートで公開されるため、`host.docker.internal` を使用:
+
+```yaml
+scrape_configs:
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['host.docker.internal:7265']
+  - job_name: 'frontend'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+```
+
+### コマンド
+
+```bash
+# 開発環境用設定を生成（prometheus.dev.yml）
+node scripts/generate-appsettings.js -D
+
+# 本番環境用設定を生成（prometheus.yml）
+node scripts/generate-appsettings.js -P
+```
+
+### 注意事項
+
+- **手動編集禁止**: 生成されたファイル（`prometheus.yml`, `prometheus.dev.yml`）は手動編集しない。設定変更は `config/settings.base.json` または環境別オーバーライドファイルで行う。
+- **ディレクトリ自動作成**: `deploy-bluegreen/ops/prometheus/` ディレクトリが存在しない場合は自動作成される。
+- **監視無効化**: `monitoring.enabled: false` に設定すると Prometheus 設定ファイルは生成されない。
+

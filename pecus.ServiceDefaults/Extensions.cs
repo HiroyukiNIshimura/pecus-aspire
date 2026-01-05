@@ -64,6 +64,7 @@ public static class Extensions
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
+                    .AddPrometheusExporter()
             )
             .WithTracing(tracing =>
                 tracing
@@ -119,6 +120,9 @@ public static class Extensions
 
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
+        // Prometheus metrics endpoint
+        app.MapPrometheusScrapingEndpoint("/metrics");
+
         // Health check endpoints are required for container orchestration
         // All health checks must pass for app to be considered ready to accept traffic after starting
         app.MapHealthChecks(HealthEndpointPath);

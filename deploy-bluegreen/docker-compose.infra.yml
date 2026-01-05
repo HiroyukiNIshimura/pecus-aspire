@@ -94,6 +94,60 @@ services:
     networks:
       - pecus-network
 
+  # ============================================
+  # Prometheus (Metrics Collection)
+  # ============================================
+  prometheus:
+    image: prom/prometheus:v3.4.1
+    container_name: pecus-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${DATA_PATH:?DATA_PATH is required}/prometheus:/prometheus
+    networks:
+      - pecus-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================
+  # Node Exporter (OS Metrics)
+  # ============================================
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: pecus-node-exporter
+    restart: unless-stopped
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - pecus-network
+
+  # ============================================
+  # Blackbox Exporter (External Probing)
+  # ============================================
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.26.0
+    container_name: pecus-blackbox-exporter
+    restart: unless-stopped
+    volumes:
+      - ./ops/prometheus/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    networks:
+      - pecus-network
+
 networks:
   pecus-network:
     name: pecus-network

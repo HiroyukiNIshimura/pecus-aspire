@@ -25,7 +25,21 @@
       "postgresHost": "postgres",
       "redisHost": "redis",
       "redisFrontendHost": "redis-frontend",
-      "webapiHost": "pecusapi"
+      "webapiHost": "pecusapi",
+      "frontendHost": "frontend"
+    },
+    "monitoring": {
+      "_comment": "Prometheus 監視設定。本番環境では通常 enabled: true",
+      "enabled": true,
+      "prometheus": {
+        "port": 9090
+      },
+      "nodeExporter": {
+        "port": 9100
+      },
+      "blackboxExporter": {
+        "port": 9115
+      }
     }
   },
 

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { LexicalModule } from './lexical/lexical.module';
+import { MetricsModule } from './metrics';
 
 @Module({
   imports: [
@@ -9,6 +10,7 @@ import { LexicalModule } from './lexical/lexical.module';
       envFilePath: '.env',
     }),
     LexicalModule,
+    MetricsModule,
   ],
 })
 export class AppModule {}

@@ -28,7 +28,10 @@ try
     var redisPort = int.TryParse(infraConfig["redis:port"], out var rdPort) ? (int?)rdPort : null;
     var redisFrontendPort = int.TryParse(infraConfig["redisFrontend:port"], out var rdFrontPort) ? (int?)rdFrontPort : null;
     var lexicalConverterPort = int.TryParse(infraConfig["ports:lexicalConverter"], out var lcPort) ? lcPort : 5100;
+    var lexicalConverterMetricsPort = int.TryParse(infraConfig["ports:lexicalConverterMetrics"], out var lcMetricsPort) ? lcMetricsPort : 9101;
     var grpcHost = infraConfig["grpc:host"] ?? "0.0.0.0";
+    var monitoringEnabled = bool.TryParse(infraConfig["monitoring:enabled"], out var monEnabled) && monEnabled;
+    var prometheusPort = int.TryParse(infraConfig["monitoring:prometheus:port"], out var promPort) ? promPort : 9090;
 
     //パラメータをログに表示（パスワードは除く）
     Log.Information("PostgreSQL User: {PostgresUser}", postgresUser);
@@ -38,6 +41,8 @@ try
     Log.Information("Redis Frontend Port: {RedisFrontendPort}", redisFrontendPort?.ToString() ?? "default");
     Log.Information("Lexical Converter Port: {LexicalConverterPort}", lexicalConverterPort);
     Log.Information("gRPC Host: {GrpcHost}", grpcHost);
+    Log.Information("Monitoring Enabled: {MonitoringEnabled}", monitoringEnabled);
+    Log.Information("Prometheus Port: {PrometheusPort}", prometheusPort);
 
     var username = builder.AddParameter("username", postgresUser);
     var password = builder.AddParameter("password", postgresPassword);
@@ -78,12 +83,28 @@ try
     var lexicalProtoPath = Path.Combine(protosPath, "lexical", "lexical.proto");
     Log.Information("Lexical proto path: {LexicalProtoPath}", lexicalProtoPath);
 
+    // Prometheus 設定ファイルの絶対パスを取得
+    var prometheusConfigPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "deploy-bluegreen", "ops", "prometheus", "prometheus.dev.yml"));
+    Log.Information("Prometheus config path: {PrometheusConfigPath}", prometheusConfigPath);
+
+    // Prometheus (Monitoring) - 監視が有効な場合のみ起動
+    IResourceBuilder<ContainerResource>? prometheus = null;
+    if (monitoringEnabled)
+    {
+        prometheus = builder.AddContainer("prometheus", "prom/prometheus", "v3.4.1")
+            .WithBindMount(prometheusConfigPath, "/etc/prometheus/prometheus.yml", isReadOnly: true)
+            .WithHttpEndpoint(port: prometheusPort, targetPort: 9090, name: "prometheus-http")
+            .WithArgs("--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d", "--web.enable-lifecycle");
+    }
+
     // Lexical Converter (Node.js gRPC Service)
     var lexicalConverter = builder.AddNpmApp("lexicalconverter", "../pecus.LexicalConverter", "start:dev")
         .WithNpmPackageInstallation()
         .WithHttpEndpoint(targetPort: lexicalConverterPort, name: "grpc", isProxied: false)
+        .WithHttpEndpoint(targetPort: lexicalConverterMetricsPort, name: "metrics", isProxied: false)
         .WithEnvironment("GRPC_PORT", lexicalConverterPort.ToString())
         .WithEnvironment("GRPC_HOST", grpcHost)
+        .WithEnvironment("METRICS_PORT", lexicalConverterMetricsPort.ToString())
         .WithEnvironment("LEXICAL_PROTO_PATH", lexicalProtoPath);
 
     //マイグレーションとシードデータの投入サービス
@@ -119,7 +140,7 @@ try
         .WithEnvironment("Pecus__FileUpload__StoragePath", uploadsPath);
 
     // Frontendの設定(開発環境モード)
-    var frontend = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")
+    var frontendBuilder = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")
         .WithReference(pecusApi)
         .WithReference(redisFrontend)
         .WaitFor(redisFrontend)
@@ -128,6 +149,15 @@ try
         .WithExternalHttpEndpoints()
         // 開発環境: Aspire の自己署名証明書を許可
         .WithEnvironment("NODE_TLS_REJECT_UNAUTHORIZED", "0");
+
+    // Prometheus が有効な場合、フロントエンドに参照を追加
+    if (prometheus != null)
+    {
+        var prometheusUrl = $"http://localhost:{prometheusPort}";
+        frontendBuilder
+            .WaitFor(prometheus)
+            .WithEnvironment("PROMETHEUS_URL", prometheusUrl);
+    }
 
     builder.Build().Run();
 }

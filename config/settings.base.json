@@ -23,7 +23,8 @@
       "webapi": 7265,
       "frontend": 3000,
       "backfire": 5010,
-      "lexicalConverter": 5100
+      "lexicalConverter": 5100,
+      "lexicalConverterMetrics": 9101
     },
     "grpc": {
       "host": "0.0.0.0"
@@ -40,7 +41,21 @@
       "postgresHost": "postgres",
       "redisHost": "redis",
       "redisFrontendHost": "redis-frontend",
-      "webapiHost": "pecusapi"
+      "webapiHost": "pecusapi",
+      "frontendHost": "frontend"
+    },
+    "monitoring": {
+      "_comment": "Prometheus 監視設定。enabled: false で設定ファイル生成をスキップ",
+      "enabled": true,
+      "prometheus": {
+        "port": 9090
+      },
+      "nodeExporter": {
+        "port": 9100
+      },
+      "blackboxExporter": {
+        "port": 9115
+      }
     }
   },
 
