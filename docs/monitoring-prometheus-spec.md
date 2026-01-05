@@ -1,187 +1,241 @@
-# Prometheus監視導入仕様（pecus-aspire）
+# Prometheus 監視導入仕様（pecus-aspire）
+
+## AI エージェント向け要約（必読）
+
+- **監視基盤は独立**: `docker-compose.monitoring.yml` で管理（`docker-compose.infra.yml` とは分離）
+- **ターゲットは動的管理**: `file_sd_config` を使用し、`targets/*.json` ファイルで監視対象を制御
+- **Blue/Green対応**: `ops/update-prometheus-targets.sh` でアクティブスロットのみを監視対象に設定
+- **セキュリティ**: `/api/metrics` は Nginx で Docker 内部ネットワークからのみアクセス許可
+- **設定ファイルは手動管理**: `generate-appsettings.js` からは生成しない（Git 管理）
 
 ## 目的
-- バックエンド（.NET）・フロントエンド（Next.js）・マイクロサービス（Nestjs/gRPC, 例：pecus-lexicalconverter）・インフラ（OS/外形監視）をPrometheusで統合監視する。
-- 監視・可観測性の強化、障害検知・パフォーマンス分析・運用性向上を実現する。
-- **Blue/Greenデプロイ環境**においても継続的な監視を実現する。
 
-## 構成方針
-- Prometheusは**外部公開せず、docker-compose内の専用ネットワークでのみ稼働**。
-- 監視対象サービス（バックエンド/フロント/マイクロサービス/Exporter）は同一ネットワーク（例: `pecus-network` または `monitoring`）に参加。
-- PrometheusのAPIはバックエンドから直接参照可能（同一ネットワーク内）。
-- 必要に応じてExporter（Node Exporter, Blackbox Exporter等）を組み合わせ、三層監視を実現。
-- gRPC通信を行うマイクロサービスも、HTTPで/metricsエンドポイントを公開すれば監視可能。
-- **Blue/Green対応**: アプリケーションコンテナはBlue/Greenの両系が稼働する可能性があるため、Prometheusのターゲットには両系（例: `pecus-webapi-blue`, `pecus-webapi-green`）を登録する。停止中の系へのスクレイピングエラーは許容する。
+- バックエンド（.NET）・フロントエンド（Next.js）・マイクロサービス（NestJS/gRPC）・インフラ（OS/外形監視）を Prometheus で統合監視
+- Blue/Green デプロイ環境で、アクティブスロットのみを動的に監視
+- 監視基盤と監視対象を分離し、独立した運用を実現
 
-## 監視対象・Exporter構成
-- **アプリ監視**：
-  - バックエンド（.NET）：`OpenTelemetry.Exporter.Prometheus.AspNetCore` を `pecus.ServiceDefaults` に導入し、`/metrics` エンドポイントを提供。
-  - フロントエンド（Next.js）：`prom-client` を導入し、API Route (`src/app/api/metrics/route.ts`) で `/metrics` エンドポイントを提供。
-  - マイクロサービス（Nestjs/gRPC, 例：pecus-lexicalconverter）：`@willsoto/nestjs-prometheus` (または `prom-client`) で `/metrics` エンドポイントを提供。
-- **インフラ監視**：
-  - Node ExporterでOSリソース監視
-- **外形監視**：
-  - Blackbox ExporterでAPI/フロント/マイクロサービスの死活監視
+## アーキテクチャ
 
-## docker-compose例（deploy-bluegreen構成）
-`deploy-bluegreen/docker-compose.infra.yml` に監視基盤を追加し、アプリ側はネットワークに参加させる。
+### ディレクトリ構成
 
-```yaml
-# docker-compose.infra.yml (抜粋)
-services:
-  prometheus:
-    image: prom/prometheus:v3.4.1
-    container_name: pecus-prometheus
-    restart: unless-stopped
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=15d'
-      - '--web.enable-lifecycle'
-    volumes:
-      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ${DATA_PATH}/prometheus:/prometheus
-    networks:
-      - pecus-network
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  node-exporter:
-    image: prom/node-exporter:v1.9.1
-    container_name: pecus-node-exporter
-    restart: unless-stopped
-    networks:
-      - pecus-network
-
-  blackbox-exporter:
-    image: prom/blackbox-exporter:v0.26.0
-    container_name: pecus-blackbox-exporter
-    restart: unless-stopped
-    volumes:
-      - ./ops/prometheus/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
-    networks:
-      - pecus-network
-
-networks:
-  pecus-network:
-    external: true
+```
+deploy-bluegreen/
+├── docker-compose.infra.yml       # PostgreSQL, Redis, Nginx（監視対象）
+├── docker-compose.monitoring.yml  # Prometheus, Exporters（監視基盤）← 分離
+├── docker-compose.app-blue.yml
+├── docker-compose.app-green.yml
+├── nginx/
+│   └── conf.d/
+│       └── 10-coati.conf          # /api/metrics をブロック
+└── ops/
+    ├── prometheus/
+    │   ├── prometheus.yml         # 本番用（file_sd_config）
+    │   ├── prometheus.dev.yml     # 開発用（Aspire）
+    │   ├── blackbox.yml
+    │   ├── targets/               # 本番用ターゲット（動的生成）
+    │   │   ├── backend.json
+    │   │   ├── frontend.json
+    │   │   ├── infra.json
+    │   │   ├── node.json
+    │   │   └── blackbox.json
+    │   └── targets-dev/           # 開発用ターゲット（静的）
+    │       ├── backend.json
+    │       ├── frontend.json
+    │       └── infra.json
+    ├── update-prometheus-targets.sh  # ターゲット更新スクリプト
+    ├── infra-up.sh                   # インフラ + 監視基盤起動
+    ├── switch-node.sh                # Blue/Green切替（ターゲット更新含む）
+    └── status.sh                     # 状態確認
 ```
 
-## prometheus.yml例（Blue/Green対応）
-```yaml
-scrape_configs:
-  - job_name: 'backend'
-    metrics_path: /metrics
-    static_configs:
-      - targets:
-        - 'pecusapi-blue:7265'
-        - 'pecusapi-green:7265'
-  - job_name: 'frontend'
-    metrics_path: /api/metrics
-    static_configs:
-      - targets:
-        - 'frontend-blue:3000'
-        - 'frontend-green:3000'
-  - job_name: 'lexicalconverter'
-    metrics_path: /metrics
-    static_configs:
-      - targets:
-        - 'lexicalconverter-blue:5100'
-        - 'lexicalconverter-green:5100'
-  - job_name: 'node'
-    static_configs:
-      - targets: ['node-exporter:9100']
-  - job_name: 'blackbox'
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-        - http://pecusapi-blue:7265/health
-        - http://pecusapi-green:7265/health
-        - http://frontend-blue:3000/health
-        - http://frontend-green:3000/health
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter:9115
-```
+### 責務分離
 
-## バックエンド・マイクロサービスからPrometheus集計値取得
-- .NETやNestJSから`HttpClient`等で`http://prometheus:9090/api/v1/query?...`にアクセスし、PromQLで集計値を取得。
-- 例：リクエスト数合計
-```csharp
-var response = await httpClient.GetAsync("http://prometheus:9090/api/v1/query?query=http_requests_total");
-```
+| compose ファイル | 責務 | サービス |
+|-----------------|------|---------|
+| `docker-compose.infra.yml` | アプリ基盤 | PostgreSQL, Redis, Nginx, LexicalConverter |
+| `docker-compose.monitoring.yml` | 監視基盤 | Prometheus, Node Exporter, Blackbox Exporter |
+| `docker-compose.app-*.yml` | アプリケーション | WebAPI, Frontend, BackFire |
 
-## 導入手順
-1. **アプリ実装**:
-   - **Backend**: `pecus.ServiceDefaults` に `OpenTelemetry.Exporter.Prometheus.AspNetCore` を追加し、`MapPrometheusScrapingEndpoint()` を設定。
-   - **Frontend**: `prom-client` を追加し、`src/app/api/metrics/route.ts` を実装。
-   - **Microservice**: `prom-client` 等でメトリクス公開実装。
-2. **インフラ定義**: `deploy-bluegreen/docker-compose.infra.yml` に Prometheus 関連コンテナを追加。
-3. **設定ファイル**: `deploy-bluegreen/ops/prometheus/prometheus.yml` を作成し、Blue/Green 両系をターゲットに設定。
-
-## 開発環境（Aspire）での対応
-フロントエンドでの可視化実装のため、開発環境でもPrometheusを稼働させる。
-
-1.  **AppHostへの追加**: `pecus.AppHost` に Prometheus コンテナを追加する。
-    ```csharp
-    // pecus.AppHost/AppHost.cs (実装例)
-    var monitoringEnabled = bool.TryParse(infraConfig["monitoring:enabled"], out var monEnabled) && monEnabled;
-    var prometheusPort = int.TryParse(infraConfig["monitoring:prometheus:port"], out var promPort) ? promPort : 9090;
-
-    // Prometheus 設定ファイルの絶対パスを取得
-    var prometheusConfigPath = Path.GetFullPath(Path.Combine(
-        AppContext.BaseDirectory, "..", "..", "..", "..",
-        "deploy-bluegreen", "ops", "prometheus", "prometheus.dev.yml"));
-
-    // Prometheus (Monitoring) - 監視が有効な場合のみ起動
-    IResourceBuilder<ContainerResource>? prometheus = null;
-    if (monitoringEnabled)
-    {
-        prometheus = builder.AddContainer("prometheus", "prom/prometheus", "v3.4.1")
-            .WithBindMount(prometheusConfigPath, "/etc/prometheus/prometheus.yml", isReadOnly: true)
-            .WithHttpEndpoint(port: prometheusPort, targetPort: 9090, name: "prometheus-http")
-            .WithArgs("--config.file=/etc/prometheus/prometheus.yml",
-                      "--storage.tsdb.retention.time=7d",
-                      "--web.enable-lifecycle");
-    }
-
-    // フロントエンドに Prometheus URL を渡す
-    if (prometheus != null)
-    {
-        var prometheusUrl = $"http://localhost:{prometheusPort}";
-        frontendBuilder
-            .WaitFor(prometheus)
-            .WithEnvironment("PROMETHEUS_URL", prometheusUrl);
-    }
-    ```
-2.  **開発用設定ファイル**: `deploy-bluegreen/ops/prometheus/prometheus.dev.yml` は `generate-appsettings.js` により自動生成される。
-    -   Aspire環境では各サービスがホストマシンのポートで公開されるため、`host.docker.internal` を使用して参照する。
-    -   バックエンド(.NET)は HTTPS で公開されるため、`scheme: https` と `tls_config.insecure_skip_verify: true` を設定。
-    -   フロントエンド(Next.js)のメトリクスエンドポイントは `/api/metrics`。
-
-## セキュリティ・運用
-- Prometheusの`ports`は外部公開しない。
-- docker-composeのネットワーク内で分離。
-- 管理者のみ一時的に内部アクセス可能（ポートフォワード等）。
-
-## 設定ファイル自動生成（generate-appsettings.js 統合）
+## File Service Discovery
 
 ### 概要
-Prometheus の設定ファイルは `scripts/generate-appsettings.js` により `config/settings.base.json` から自動生成される。
-これにより、ポート番号やホスト名の設定を一元管理し、設定の不整合を防止する。
 
-### settings.base.json への追加設定
+Prometheus の `file_sd_config` を使用し、ターゲットファイル（JSON）で監視対象を動的に管理します。
+これにより Blue/Green 切り替え時に Prometheus の再起動なしでターゲットを更新できます。
 
-`_infrastructure` セクションに `monitoring` 設定を追加する:
+### prometheus.yml（本番）
+
+```yaml
+scrape_configs:
+  - job_name: "backend"
+    metrics_path: /metrics
+    file_sd_configs:
+      - files:
+          - '/etc/prometheus/targets/backend.json'
+        refresh_interval: 30s
+
+  - job_name: "frontend"
+    metrics_path: /api/metrics
+    file_sd_configs:
+      - files:
+          - '/etc/prometheus/targets/frontend.json'
+        refresh_interval: 30s
+```
+
+### ターゲットファイル例（targets/backend.json）
+
+```json
+[
+  {
+    "targets": ["pecusapi-blue:7265"],
+    "labels": {
+      "slot": "blue",
+      "env": "production",
+      "service": "backend"
+    }
+  }
+]
+```
+
+### ターゲット更新スクリプト
+
+```bash
+# アクティブスロットを指定してターゲット更新
+./ops/update-prometheus-targets.sh blue
+
+# または active_slot ファイルから自動取得
+./ops/update-prometheus-targets.sh
+```
+
+## Blue/Green 切り替えフロー
+
+1. `switch-node.sh blue` 実行
+2. 新スロットのアプリをデプロイ
+3. 旧スロットを停止
+4. Nginx を新スロットに切り替え
+5. **`update-prometheus-targets.sh` でターゲット更新**（自動実行）
+6. Prometheus が 30 秒以内に新ターゲットを検出
+
+## セキュリティ
+
+### /api/metrics のアクセス制限
+
+フロントエンドの `/api/metrics` は内部監視専用のため、Nginx で外部アクセスをブロックします。
+
+```nginx
+# 10-coati.conf
+location = /api/metrics {
+  # Docker 内部ネットワークからのみ許可
+  allow 172.16.0.0/12;
+  allow 10.0.0.0/8;
+  allow 192.168.0.0/16;
+  deny all;
+  proxy_pass http://$coati_frontend_upstream;
+}
+```
+
+### Prometheus のアクセス
+
+- Prometheus は外部公開しない（`ports` 設定なし）
+- Docker ネットワーク内からのみアクセス可能
+- フロントエンドからは `PROMETHEUS_URL` 環境変数経由でアクセス
+
+## 開発環境（Aspire）
+
+### AppHost 設定
+
+```csharp
+// pecus.AppHost/AppHost.cs
+var prometheusBasePath = Path.GetFullPath(Path.Combine(
+    AppContext.BaseDirectory, "..", "..", "..", "..",
+    "deploy-bluegreen", "ops", "prometheus"));
+var prometheusConfigPath = Path.Combine(prometheusBasePath, "prometheus.dev.yml");
+var prometheusTargetsPath = Path.Combine(prometheusBasePath, "targets-dev");
+
+if (monitoringEnabled)
+{
+    prometheus = builder.AddContainer("prometheus", "prom/prometheus", "v3.4.1")
+        .WithBindMount(prometheusConfigPath, "/etc/prometheus/prometheus.yml", isReadOnly: true)
+        .WithBindMount(prometheusTargetsPath, "/etc/prometheus/targets", isReadOnly: true)
+        .WithHttpEndpoint(port: prometheusPort, targetPort: 9090, name: "prometheus-http")
+        .WithArgs("--config.file=/etc/prometheus/prometheus.yml",
+                  "--storage.tsdb.retention.time=7d",
+                  "--web.enable-lifecycle");
+}
+```
+
+### 開発用ターゲット（targets-dev/）
+
+開発環境では静的なターゲットファイルを使用（Git 管理）:
+
+```json
+// targets-dev/backend.json
+[
+  {
+    "targets": ["host.docker.internal:7265"],
+    "labels": {
+      "env": "development",
+      "service": "backend"
+    }
+  }
+]
+```
+
+## 運用コマンド
+
+### インフラ + 監視基盤起動
+
+```bash
+cd deploy-bluegreen/ops
+./infra-up.sh
+```
+
+### 監視基盤のみ再起動
+
+```bash
+cd deploy-bluegreen/ops
+source lib.sh
+compose_monitoring restart
+```
+
+### ターゲット手動更新
+
+```bash
+cd deploy-bluegreen/ops
+./update-prometheus-targets.sh blue
+```
+
+### 状態確認
+
+```bash
+cd deploy-bluegreen/ops
+./status.sh
+```
+
+## 監視対象・メトリクスエンドポイント
+
+| サービス | エンドポイント | ライブラリ |
+|---------|--------------|-----------|
+| Backend (.NET) | `/metrics` | OpenTelemetry.Exporter.Prometheus.AspNetCore |
+| Frontend (Next.js) | `/api/metrics` | prom-client |
+| LexicalConverter (NestJS) | `/metrics` (port 9101) | prom-client |
+| Node Exporter | `:9100/metrics` | - |
+| Blackbox Exporter | `:9115/probe` | - |
+
+## 設定管理
+
+### 重要: prometheus.yml は手動管理
+
+`prometheus.yml` および `prometheus.dev.yml` は `generate-appsettings.js` からは生成しません。
+理由:
+
+1. ターゲットは `file_sd_config` で動的管理するため、YAML 構造は固定
+2. 設定変更頻度が低く、手動管理で十分
+3. `targets/*.json` のみがデプロイ状態に応じて変更される
+
+### settings.base.json の monitoring セクション
+
+AppHost での Prometheus 有効/無効化に使用:
 
 ```json
 {
@@ -190,99 +244,9 @@ Prometheus の設定ファイルは `scripts/generate-appsettings.js` により 
       "enabled": true,
       "prometheus": {
         "port": 9090
-      },
-      "nodeExporter": {
-        "port": 9100
-      },
-      "blackboxExporter": {
-        "port": 9115
       }
-    },
-    "docker": {
-      "webapiHost": "pecusapi",
-      "frontendHost": "frontend",
-      "lexicalConverterHost": "lexicalconverter"
-    },
-    "ports": {
-      "webapi": 7265,
-      "frontend": 3000,
-      "lexicalConverter": 5100
     }
   }
 }
 ```
-
-### 生成されるファイル
-
-| 環境 | ファイルパス | 用途 |
-|------|-------------|------|
-| 本番（Blue/Green） | `deploy-bluegreen/ops/prometheus/prometheus.yml` | Blue/Green両系をターゲットに設定 |
-| 開発（Aspire） | `deploy-bluegreen/ops/prometheus/prometheus.dev.yml` | `host.docker.internal` 経由でローカルサービスを参照 |
-
-### 生成ロジック
-
-#### 本番環境（`-P` オプション指定時）
-
-`_infrastructure.docker` のホスト名に `-blue` / `-green` サフィックスを付与してターゲットを生成:
-
-```yaml
-scrape_configs:
-  - job_name: 'backend'
-    metrics_path: /metrics
-    static_configs:
-      - targets:
-        - 'pecusapi-blue:7265'
-        - 'pecusapi-green:7265'
-  - job_name: 'frontend'
-    metrics_path: /api/metrics
-    static_configs:
-      - targets:
-        - 'frontend-blue:3000'
-        - 'frontend-green:3000'
-  - job_name: 'lexicalconverter'
-    metrics_path: /metrics
-    static_configs:
-      - targets:
-        - 'lexicalconverter-blue:5100'
-        - 'lexicalconverter-green:5100'
-```
-
-#### 開発環境（`-D` オプションまたはオプションなし）
-
-Aspire 環境では各サービスがホストマシンのポートで公開されるため、`host.docker.internal` を使用:
-
-```yaml
-scrape_configs:
-  - job_name: 'backend'
-    metrics_path: /metrics
-    scheme: https
-    tls_config:
-      insecure_skip_verify: true
-    static_configs:
-      - targets: ['host.docker.internal:7265']
-  - job_name: 'frontend'
-    metrics_path: /api/metrics
-    static_configs:
-      - targets: ['host.docker.internal:3000']
-  - job_name: 'lexicalconverter'
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['host.docker.internal:9101']
-```
-
-### コマンド
-
-```bash
-# 開発環境用設定を生成（prometheus.dev.yml）
-node scripts/generate-appsettings.js -D
-
-# 本番環境用設定を生成（prometheus.yml）
-node scripts/generate-appsettings.js -P
-```
-
-### 注意事項
-
-- **手動編集禁止**: 生成されたファイル（`prometheus.yml`, `prometheus.dev.yml`）は手動編集しない。設定変更は `config/settings.base.json` または環境別オーバーライドファイルで行う。
-- **ディレクトリ自動作成**: `deploy-bluegreen/ops/prometheus/` ディレクトリが存在しない場合は自動作成される。
-- **監視無効化**: `monitoring.enabled: false` に設定すると Prometheus 設定ファイルは生成されない。
 

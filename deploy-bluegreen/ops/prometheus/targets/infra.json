@@ -1,0 +1,9 @@
+[
+  {
+    "targets": ["lexicalconverter:9101"],
+    "labels": {
+      "env": "production",
+      "service": "lexicalconverter"
+    }
+  }
+]

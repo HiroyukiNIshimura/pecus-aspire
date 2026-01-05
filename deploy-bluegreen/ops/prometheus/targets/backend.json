@@ -1,0 +1,10 @@
+[
+  {
+    "targets": ["pecusapi-blue:7265"],
+    "labels": {
+      "slot": "blue",
+      "env": "production",
+      "service": "backend"
+    }
+  }
+]

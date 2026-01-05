@@ -84,8 +84,11 @@ try
     Log.Information("Lexical proto path: {LexicalProtoPath}", lexicalProtoPath);
 
     // Prometheus 設定ファイルの絶対パスを取得
-    var prometheusConfigPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "deploy-bluegreen", "ops", "prometheus", "prometheus.dev.yml"));
+    var prometheusBasePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "deploy-bluegreen", "ops", "prometheus"));
+    var prometheusConfigPath = Path.Combine(prometheusBasePath, "prometheus.dev.yml");
+    var prometheusTargetsPath = Path.Combine(prometheusBasePath, "targets-dev");
     Log.Information("Prometheus config path: {PrometheusConfigPath}", prometheusConfigPath);
+    Log.Information("Prometheus targets path: {PrometheusTargetsPath}", prometheusTargetsPath);
 
     // Prometheus (Monitoring) - 監視が有効な場合のみ起動
     IResourceBuilder<ContainerResource>? prometheus = null;
@@ -93,6 +96,7 @@ try
     {
         prometheus = builder.AddContainer("prometheus", "prom/prometheus", "v3.4.1")
             .WithBindMount(prometheusConfigPath, "/etc/prometheus/prometheus.yml", isReadOnly: true)
+            .WithBindMount(prometheusTargetsPath, "/etc/prometheus/targets", isReadOnly: true)
             .WithHttpEndpoint(port: prometheusPort, targetPort: 9090, name: "prometheus-http")
             .WithArgs("--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d", "--web.enable-lifecycle");
     }

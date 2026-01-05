@@ -156,4 +156,7 @@ docker images -f "dangling=true" -q 2>/dev/null | xargs -r docker rmi 2>/dev/nul
 # ビルドキャッシュのクリーンアップ
 docker builder prune -f 2>/dev/null || true
 
+echo "[情報] 3.9 Prometheusターゲット更新: $target" >&2
+"$script_dir/update-prometheus-targets.sh" "$target"
+
 echo "[OK] アクティブスロットを切り替えました: $target"

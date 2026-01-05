@@ -1,0 +1,12 @@
+[
+  {
+    "targets": [
+      "http://pecusapi-blue:7265/health",
+      "http://frontend-blue:3000/health"
+    ],
+    "labels": {
+      "slot": "blue",
+      "env": "production"
+    }
+  }
+]

@@ -52,6 +52,10 @@ compose_app() {
   compose -f "$bluegreen_dir/docker-compose.app-$slot.yml" "$@"
 }
 
+compose_monitoring() {
+  compose -f "$bluegreen_dir/docker-compose.monitoring.yml" "$@"
+}
+
 check_infra_healthy() {
   local services=("pecus-postgres" "pecus-redis" "pecus-redis-frontend" "pecus-lexicalconverter")
   local all_healthy=true

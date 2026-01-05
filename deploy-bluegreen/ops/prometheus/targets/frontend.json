@@ -1,0 +1,10 @@
+[
+  {
+    "targets": ["frontend-blue:3000"],
+    "labels": {
+      "slot": "blue",
+      "env": "production",
+      "service": "frontend"
+    }
+  }
+]
