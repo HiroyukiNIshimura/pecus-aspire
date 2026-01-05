@@ -35,6 +35,12 @@ show_container_status "pecus-lexicalconverter"
 show_container_status "pecus-nginx"
 
 echo
+echo "--- monitoring ---"
+show_container_status "pecus-prometheus"
+show_container_status "pecus-node-exporter"
+show_container_status "pecus-blackbox-exporter"
+
+echo
 echo "--- app-blue ---"
 show_container_status "pecus-webapi-blue"
 show_container_status "pecus-frontend-blue"
