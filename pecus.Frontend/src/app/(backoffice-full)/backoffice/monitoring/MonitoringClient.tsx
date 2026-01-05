@@ -71,6 +71,37 @@ function formatBytes(bytes: number): string {
   return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
+function formatUptime(seconds: number): string {
+  if (seconds <= 0) return '-';
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (days > 0) {
+    return `${days}d ${hours}h`;
+  }
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+}
+
+function formatUptimeShort(seconds: number): string {
+  if (seconds <= 0) return '-';
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+
+  if (days > 0) {
+    return `${days}d${hours}h`;
+  }
+  if (hours > 0) {
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h${minutes}m`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}m`;
+}
+
 function getUsageColor(percent: number): string {
   if (percent >= 90) return 'text-error';
   if (percent >= 70) return 'text-warning';
@@ -120,9 +151,30 @@ function ResourceGauge({
 /**
  * コンパクトなサービス状況表示
  */
-function CompactServiceStatus({ services }: { services: ServiceStatus[] }) {
+function CompactServiceStatus({
+  services,
+  serviceUptimes,
+}: {
+  services: ServiceStatus[];
+  serviceUptimes?: Array<{ service: string; uptimeSeconds: number }>;
+}) {
   const healthy = services.filter((s) => s.health === 'up');
   const unhealthy = services.filter((s) => s.health !== 'up');
+
+  // サービス名とuptime のマッピング
+  const uptimeMap = new Map<string, number>();
+  for (const u of serviceUptimes ?? []) {
+    uptimeMap.set(u.service.toLowerCase(), u.uptimeSeconds);
+  }
+
+  // サービス名からuptimeを取得するヘルパー
+  const getUptime = (serviceName: string): number | undefined => {
+    const name = serviceName.toLowerCase();
+    if (name.includes('backend') || name.includes('webapi')) return uptimeMap.get('backend');
+    if (name.includes('frontend') || name.includes('next')) return uptimeMap.get('frontend');
+    if (name.includes('lexical')) return uptimeMap.get('lexicalconverter');
+    return undefined;
+  };
 
   return (
     <div className="card bg-base-200">
@@ -151,18 +203,24 @@ function CompactServiceStatus({ services }: { services: ServiceStatus[] }) {
           </div>
         )}
 
-        {/* 正常サービス一覧（コンパクト） */}
+        {/* 正常サービス一覧（コンパクト + 稼働時間） */}
         <div className="flex flex-wrap gap-2">
-          {healthy.map((s) => (
-            <div
-              key={`${s.job}-${s.instance}`}
-              className="flex items-center gap-1.5 px-2 py-1 bg-base-300 rounded text-xs"
-              title={`${s.instance} - 応答時間: ${formatDuration(s.lastScrapeDuration)}`}
-            >
-              <span className="icon-[mdi--check-circle] size-3.5 text-success" aria-hidden="true" />
-              <span>{s.name}</span>
-            </div>
-          ))}
+          {healthy.map((s) => {
+            const uptime = getUptime(s.name);
+            return (
+              <div
+                key={`${s.job}-${s.instance}`}
+                className="flex items-center gap-1.5 px-2 py-1 bg-base-300 rounded text-xs"
+                title={`${s.instance} - 応答時間: ${formatDuration(s.lastScrapeDuration)}`}
+              >
+                <span className="icon-[mdi--check-circle] size-3.5 text-success" aria-hidden="true" />
+                <span>{s.name}</span>
+                {uptime !== undefined && (
+                  <span className="text-base-content/50">({formatUptimeShort(uptime)})</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -483,12 +541,27 @@ export default function MonitoringClient({
                     {(!resources?.disk || resources.disk.length === 0) && (
                       <ResourceGauge title="ディスク /" icon="icon-[mdi--harddisk]" percent={0} detail="データなし" />
                     )}
+                    {/* サーバー稼働時間 */}
+                    <div className="card bg-base-200">
+                      <div className="card-body p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="icon-[mdi--clock-outline] size-5 text-base-content/70" aria-hidden="true" />
+                          <h3 className="font-semibold text-sm">サーバー稼働時間</h3>
+                        </div>
+                        <div className="flex items-end gap-2 mb-2">
+                          <span className="text-3xl font-bold text-info">
+                            {formatUptime(resources?.serverUptimeSeconds ?? 0)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-base-content/60 mt-1">最後の再起動から</p>
+                      </div>
+                    </div>
                   </div>
                 </section>
 
                 {/* サービス稼働状況（コンパクト） */}
                 <section className="mb-6">
-                  <CompactServiceStatus services={data.services} />
+                  <CompactServiceStatus services={data.services} serviceUptimes={resources?.serviceUptimes} />
                 </section>
 
                 {/* メトリクス推移グラフ */}

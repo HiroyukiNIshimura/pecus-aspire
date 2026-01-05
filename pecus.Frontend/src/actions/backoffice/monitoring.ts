@@ -89,6 +89,11 @@ export interface ServerResourceCurrent {
     usedBytes: number;
     totalBytes: number;
   }>;
+  serverUptimeSeconds: number;
+  serviceUptimes: Array<{
+    service: string;
+    uptimeSeconds: number;
+  }>;
   timestamp: string;
 }
 
@@ -407,13 +412,28 @@ export async function getServerResourceCurrent(): Promise<ApiResponse<ServerReso
     const diskMountPoints = (process.env.DISK_MOUNT_POINTS || '/').split(',').map((p) => p.trim());
     const diskMountPointsRegex = diskMountPoints.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
 
-    const [cpuRes, cpuCoresRes, memUsedRes, memTotalRes, diskAvailRes, diskTotalRes] = await Promise.all([
+    const [
+      cpuRes,
+      cpuCoresRes,
+      memUsedRes,
+      memTotalRes,
+      diskAvailRes,
+      diskTotalRes,
+      serverUptimeRes,
+      backendUptimeRes,
+      frontendUptimeRes,
+      lexicalUptimeRes,
+    ] = await Promise.all([
       fetchPrometheusInstant('100 - (avg(rate(node_cpu_seconds_total{job="node",mode="idle"}[5m])) * 100)'),
       fetchPrometheusInstant('count(node_cpu_seconds_total{job="node",mode="idle"})'),
       fetchPrometheusInstant('node_memory_MemTotal_bytes{job="node"} - node_memory_MemAvailable_bytes{job="node"}'),
       fetchPrometheusInstant('node_memory_MemTotal_bytes{job="node"}'),
       fetchPrometheusInstant(`node_filesystem_avail_bytes{job="node",mountpoint=~"${diskMountPointsRegex}"}`),
       fetchPrometheusInstant(`node_filesystem_size_bytes{job="node",mountpoint=~"${diskMountPointsRegex}"}`),
+      fetchPrometheusInstant('time() - node_boot_time_seconds{job="node"}'),
+      fetchPrometheusInstant('time() - process_start_time_seconds{job="backend"}'),
+      fetchPrometheusInstant('time() - nextjs_process_start_time_seconds'),
+      fetchPrometheusInstant('time() - lexicalconverter_process_start_time_seconds'),
     ]);
 
     // CPU
@@ -453,6 +473,32 @@ export async function getServerResourceCurrent(): Promise<ApiResponse<ServerReso
       }
     }
 
+    // サーバー稼働時間
+    const serverUptimeSeconds = serverUptimeRes?.data?.result?.[0]?.value?.[1]
+      ? Number.parseFloat(serverUptimeRes.data.result[0].value[1])
+      : 0;
+
+    // サービス稼働時間
+    const serviceUptimes: ServerResourceCurrent['serviceUptimes'] = [];
+    if (backendUptimeRes?.data?.result?.[0]?.value?.[1]) {
+      serviceUptimes.push({
+        service: 'Backend',
+        uptimeSeconds: Number.parseFloat(backendUptimeRes.data.result[0].value[1]),
+      });
+    }
+    if (frontendUptimeRes?.data?.result?.[0]?.value?.[1]) {
+      serviceUptimes.push({
+        service: 'Frontend',
+        uptimeSeconds: Number.parseFloat(frontendUptimeRes.data.result[0].value[1]),
+      });
+    }
+    if (lexicalUptimeRes?.data?.result?.[0]?.value?.[1]) {
+      serviceUptimes.push({
+        service: 'LexicalConverter',
+        uptimeSeconds: Number.parseFloat(lexicalUptimeRes.data.result[0].value[1]),
+      });
+    }
+
     return {
       success: true,
       data: {
@@ -466,6 +512,8 @@ export async function getServerResourceCurrent(): Promise<ApiResponse<ServerReso
           totalBytes: memTotalBytes,
         },
         disk: diskData,
+        serverUptimeSeconds,
+        serviceUptimes,
         timestamp: new Date().toISOString(),
       },
     };
