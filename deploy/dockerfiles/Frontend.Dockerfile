@@ -63,7 +63,7 @@ ENV NODE_ENV=production
 
 # Set timezone to JST
 ENV TZ=Asia/Tokyo
-RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN apk add --no-cache tzdata curl btop && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs
