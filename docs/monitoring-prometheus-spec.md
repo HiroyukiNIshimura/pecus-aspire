@@ -106,6 +106,25 @@ var response = await httpClient.GetAsync("http://prometheus:9090/api/v1/query?qu
 2. **インフラ定義**: `deploy-bluegreen/docker-compose.infra.yml` に Prometheus 関連コンテナを追加。
 3. **設定ファイル**: `deploy-bluegreen/ops/prometheus/prometheus.yml` を作成し、Blue/Green 両系をターゲットに設定。
 
+## 開発環境（Aspire）での対応
+フロントエンドでの可視化実装のため、開発環境でもPrometheusを稼働させる。
+
+1.  **AppHostへの追加**: `pecus.AppHost` に Prometheus コンテナを追加する。
+    ```csharp
+    // pecus.AppHost/Program.cs (イメージ)
+    var prometheus = builder.AddContainer("prometheus", "prom/prometheus")
+        .WithBindMount("../deploy-bluegreen/ops/prometheus/prometheus.dev.yml", "/etc/prometheus/prometheus.yml")
+        .WithHttpEndpoint(port: 9090, targetPort: 9090, name: "prometheus-api");
+
+    // フロントエンド等に参照を渡す
+    var frontend = builder.AddNpmApp("frontend", "../pecus.Frontend")
+        .WithEnvironment("PROMETHEUS_URL", prometheus.GetEndpoint("prometheus-api"));
+    ```
+2.  **開発用設定ファイル**: `deploy-bluegreen/ops/prometheus/prometheus.dev.yml` を作成。
+    -   Aspire環境では各サービスがホストマシンのポートで公開されるため、`host.docker.internal` を使用して参照する。
+    -   **注意**: Aspireはポートを動的に割り当てる場合があるため、固定ポート設定（`launchSettings.json`等）または環境変数での制御が必要になる場合がある。
+    -   簡易的には、`host.docker.internal:固定ポート` をターゲットに指定する。
+
 ## セキュリティ・運用
 - Prometheusの`ports`は外部公開しない。
 - docker-composeのネットワーク内で分離。
