@@ -123,13 +123,4 @@ EOF
 echo "[OK] blackbox.json 更新"
 
 echo "[INFO] 全ターゲットファイルを更新しました"
-
-# Prometheus リロード（起動中の場合）
-if docker ps --format '{{.Names}}' | grep -q '^pecus-prometheus$'; then
-  echo "[INFO] Prometheus 設定リロード..."
-  if curl -s -X POST "http://localhost:9090/-/reload" > /dev/null 2>&1; then
-    echo "[OK] Prometheus リロード完了"
-  else
-    echo "[WARN] Prometheus リロード失敗（コンテナ外からはアクセスできない場合があります）"
-  fi
-fi
+echo "[INFO] Prometheus は file_sd_config により 30 秒以内に新ターゲットを自動検出します"
