@@ -63,6 +63,7 @@ export interface MetricTimeSeries {
 
 export interface SystemMetrics {
   cpuUsage: MetricTimeSeries[];
+  systemCpuUsage: MetricTimeSeries[];
   memoryUsage: MetricTimeSeries[];
   processMemory: MetricTimeSeries[];
   httpRequestRate: MetricTimeSeries[];
@@ -256,6 +257,7 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
       lexicalMemRes,
       httpRateRes,
       systemMemRes,
+      systemCpuRes,
     ] = await Promise.all([
       fetchPrometheusRange('rate(dotnet_process_cpu_time_seconds_total{job="backend"}[5m]) * 100', start, end, step),
       fetchPrometheusRange(
@@ -280,6 +282,12 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
         end,
         step,
       ),
+      fetchPrometheusRange(
+        '100 - (avg(rate(node_cpu_seconds_total{job="node",mode="idle"}[5m])) * 100)',
+        start,
+        end,
+        step,
+      ),
     ]);
 
     const cpuUsage = [
@@ -298,6 +306,7 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
       success: true,
       data: {
         cpuUsage,
+        systemCpuUsage: parseRangeResponse(systemCpuRes, 'システムCPU使用率'),
         memoryUsage: parseRangeResponse(systemMemRes, 'システムメモリ使用率'),
         processMemory,
         httpRequestRate: parseRangeResponse(httpRateRes, 'HTTPリクエスト/秒'),

@@ -444,6 +444,12 @@ export default function MonitoringClient({ initialData, initialMetrics, fetchErr
                       <MetricsChart title="プロセスメモリ使用量" series={metrics?.processMemory ?? []} unit="MB" />
                       <MetricsChart title="HTTPリクエストレート" series={metrics?.httpRequestRate ?? []} unit="req/s" />
                       <MetricsChart
+                        title="システムCPU使用率"
+                        series={metrics?.systemCpuUsage ?? []}
+                        unit="%"
+                        yAxisDomain={[0, 100]}
+                      />
+                      <MetricsChart
                         title="システムメモリ使用率"
                         series={metrics?.memoryUsage ?? []}
                         unit="%"
