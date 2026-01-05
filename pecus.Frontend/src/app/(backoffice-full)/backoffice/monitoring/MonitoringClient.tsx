@@ -215,9 +215,7 @@ function CompactServiceStatus({
               >
                 <span className="icon-[mdi--check-circle] size-3.5 text-success" aria-hidden="true" />
                 <span>{s.name}</span>
-                {uptime !== undefined && (
-                  <span className="text-base-content/50">({formatUptimeShort(uptime)})</span>
-                )}
+                {uptime !== undefined && <span className="text-base-content/50">({formatUptimeShort(uptime)})</span>}
               </div>
             );
           })}
