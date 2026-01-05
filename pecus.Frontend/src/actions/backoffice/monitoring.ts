@@ -247,26 +247,40 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
     const start = end - hoursBack * 3600;
     const step = hoursBack <= 1 ? '15s' : hoursBack <= 6 ? '1m' : '5m';
 
-    const [backendCpuRes, frontendCpuRes, lexicalCpuRes, backendMemRes, frontendMemRes, lexicalMemRes, httpRateRes] =
-      await Promise.all([
-        fetchPrometheusRange('rate(dotnet_process_cpu_time_seconds_total{job="backend"}[5m]) * 100', start, end, step),
-        fetchPrometheusRange(
-          '(rate(nextjs_process_cpu_user_seconds_total[5m]) + rate(nextjs_process_cpu_system_seconds_total[5m])) * 100',
-          start,
-          end,
-          step,
-        ),
-        fetchPrometheusRange(
-          '(rate(lexicalconverter_process_cpu_user_seconds_total[5m]) + rate(lexicalconverter_process_cpu_system_seconds_total[5m])) * 100',
-          start,
-          end,
-          step,
-        ),
-        fetchPrometheusRange('dotnet_process_memory_working_set_bytes{job="backend"} / 1024 / 1024', start, end, step),
-        fetchPrometheusRange('nextjs_process_resident_memory_bytes / 1024 / 1024', start, end, step),
-        fetchPrometheusRange('lexicalconverter_process_resident_memory_bytes / 1024 / 1024', start, end, step),
-        fetchPrometheusRange('sum by (job) (rate(http_server_request_duration_seconds_count[5m]))', start, end, step),
-      ]);
+    const [
+      backendCpuRes,
+      frontendCpuRes,
+      lexicalCpuRes,
+      backendMemRes,
+      frontendMemRes,
+      lexicalMemRes,
+      httpRateRes,
+      systemMemRes,
+    ] = await Promise.all([
+      fetchPrometheusRange('rate(dotnet_process_cpu_time_seconds_total{job="backend"}[5m]) * 100', start, end, step),
+      fetchPrometheusRange(
+        '(rate(nextjs_process_cpu_user_seconds_total[5m]) + rate(nextjs_process_cpu_system_seconds_total[5m])) * 100',
+        start,
+        end,
+        step,
+      ),
+      fetchPrometheusRange(
+        '(rate(lexicalconverter_process_cpu_user_seconds_total[5m]) + rate(lexicalconverter_process_cpu_system_seconds_total[5m])) * 100',
+        start,
+        end,
+        step,
+      ),
+      fetchPrometheusRange('dotnet_process_memory_working_set_bytes{job="backend"} / 1024 / 1024', start, end, step),
+      fetchPrometheusRange('nextjs_process_resident_memory_bytes / 1024 / 1024', start, end, step),
+      fetchPrometheusRange('lexicalconverter_process_resident_memory_bytes / 1024 / 1024', start, end, step),
+      fetchPrometheusRange('sum by (job) (rate(http_server_request_duration_seconds_count[5m]))', start, end, step),
+      fetchPrometheusRange(
+        '100 - ((node_memory_MemAvailable_bytes{job="node"} / node_memory_MemTotal_bytes{job="node"}) * 100)',
+        start,
+        end,
+        step,
+      ),
+    ]);
 
     const cpuUsage = [
       ...parseRangeResponseWithJobOverride(backendCpuRes, 'CPU使用率', 'backend'),
@@ -284,7 +298,7 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
       success: true,
       data: {
         cpuUsage,
-        memoryUsage: [],
+        memoryUsage: parseRangeResponse(systemMemRes, 'システムメモリ使用率'),
         processMemory,
         httpRequestRate: parseRangeResponse(httpRateRes, 'HTTPリクエスト/秒'),
       },
