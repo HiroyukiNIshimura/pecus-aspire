@@ -5,9 +5,11 @@ import { useEffect, useState } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   getMonitoringStatus,
+  getServerResourceCurrent,
   getSystemMetrics,
   type MetricTimeSeries,
   type MonitoringStatus,
+  type ServerResourceCurrent,
   type ServiceStatus,
   type SystemMetrics,
 } from '@/actions/backoffice/monitoring';
@@ -21,6 +23,7 @@ import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
 interface MonitoringClientProps {
   initialData: MonitoringStatus | null;
   initialMetrics: SystemMetrics | null;
+  initialResources: ServerResourceCurrent | null;
   fetchError?: string | null;
 }
 
@@ -58,6 +61,112 @@ function formatLastScrape(isoString: string): string {
   if (diffSec < 60) return `${diffSec}秒前`;
   if (diffSec < 3600) return `${Math.floor(diffSec / 60)}分前`;
   return `${Math.floor(diffSec / 3600)}時間前`;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
+}
+
+function getUsageColor(percent: number): string {
+  if (percent >= 90) return 'text-error';
+  if (percent >= 70) return 'text-warning';
+  return 'text-success';
+}
+
+function getProgressColor(percent: number): string {
+  if (percent >= 90) return 'progress-error';
+  if (percent >= 70) return 'progress-warning';
+  return 'progress-success';
+}
+
+/**
+ * サーバーリソースゲージ（CPU/メモリ/ディスク）
+ */
+function ResourceGauge({
+  title,
+  icon,
+  percent,
+  detail,
+  subDetail,
+}: {
+  title: string;
+  icon: string;
+  percent: number;
+  detail: string;
+  subDetail?: string;
+}) {
+  return (
+    <div className="card bg-base-200">
+      <div className="card-body p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`${icon} size-5 text-base-content/70`} aria-hidden="true" />
+          <h3 className="font-semibold text-sm">{title}</h3>
+        </div>
+        <div className="flex items-end gap-2 mb-2">
+          <span className={`text-3xl font-bold ${getUsageColor(percent)}`}>{percent.toFixed(1)}%</span>
+        </div>
+        <progress className={`progress ${getProgressColor(percent)} w-full h-3`} value={percent} max={100} />
+        <p className="text-xs text-base-content/60 mt-1">{detail}</p>
+        {subDetail && <p className="text-xs text-base-content/40">{subDetail}</p>}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * コンパクトなサービス状況表示
+ */
+function CompactServiceStatus({ services }: { services: ServiceStatus[] }) {
+  const healthy = services.filter((s) => s.health === 'up');
+  const unhealthy = services.filter((s) => s.health !== 'up');
+
+  return (
+    <div className="card bg-base-200">
+      <div className="card-body p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm flex items-center gap-2">
+            <span className="icon-[mdi--server-network] size-5 text-base-content/70" aria-hidden="true" />
+            サービス稼働状況
+          </h3>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-success">{healthy.length} UP</span>
+            {unhealthy.length > 0 && <span className="text-error">{unhealthy.length} DOWN</span>}
+          </div>
+        </div>
+
+        {/* 異常があれば目立たせる */}
+        {unhealthy.length > 0 && (
+          <div className="mb-3 p-2 bg-error/10 rounded-lg">
+            {unhealthy.map((s) => (
+              <div key={`${s.job}-${s.instance}`} className="flex items-center gap-2 text-error text-sm">
+                <span className="icon-[mdi--alert-circle] size-4" aria-hidden="true" />
+                <span className="font-medium">{s.name}</span>
+                {s.lastError && <span className="text-xs opacity-70 truncate">- {s.lastError}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 正常サービス一覧（コンパクト） */}
+        <div className="flex flex-wrap gap-2">
+          {healthy.map((s) => (
+            <div
+              key={`${s.job}-${s.instance}`}
+              className="flex items-center gap-1.5 px-2 py-1 bg-base-300 rounded text-xs"
+              title={`${s.instance} - 応答時間: ${formatDuration(s.lastScrapeDuration)}`}
+            >
+              <span className="icon-[mdi--check-circle] size-3.5 text-success" aria-hidden="true" />
+              <span>{s.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ServiceCard({ service }: { service: ServiceStatus }) {
@@ -207,18 +316,25 @@ function MetricsChart({ title, series, unit, yAxisDomain = ['auto', 'auto'] }: M
 }
 
 type TimeRange = '1h' | '6h' | '24h';
+type MetricsTab = 'server' | 'process' | 'http';
 
-export default function MonitoringClient({ initialData, initialMetrics, fetchError }: MonitoringClientProps) {
+export default function MonitoringClient({
+  initialData,
+  initialMetrics,
+  initialResources,
+  fetchError,
+}: MonitoringClientProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUser = useCurrentUser();
   const [clientError, _setClientError] = useState<ApiErrorResponse | null>(fetchError ? JSON.parse(fetchError) : null);
   const [data, setData] = useState<MonitoringStatus | null>(initialData);
   const [metrics, setMetrics] = useState<SystemMetrics | null>(initialMetrics);
+  const [resources, setResources] = useState<ServerResourceCurrent | null>(initialResources);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
   const [isLoadingMetrics, setIsLoadingMetrics] = useState(false);
-  const [activeTab, setActiveTab] = useState<'status' | 'metrics'>('status');
+  const [metricsTab, setMetricsTab] = useState<MetricsTab>('server');
 
   const { showLoading } = useDelayedLoading();
 
@@ -228,11 +344,15 @@ export default function MonitoringClient({ initialData, initialMetrics, fetchErr
     }
   }, [clientError, router]);
 
+  // サービス状況とリソース現在値の自動更新（30秒）
   useEffect(() => {
     const interval = setInterval(async () => {
-      const result = await getMonitoringStatus();
-      if (result.success) {
-        setData(result.data);
+      const [statusResult, resourceResult] = await Promise.all([getMonitoringStatus(), getServerResourceCurrent()]);
+      if (statusResult.success) {
+        setData(statusResult.data);
+      }
+      if (resourceResult.success) {
+        setResources(resourceResult.data);
       }
     }, 30000);
 
@@ -242,15 +362,19 @@ export default function MonitoringClient({ initialData, initialMetrics, fetchErr
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const [statusResult, metricsResult] = await Promise.all([
+      const [statusResult, metricsResult, resourceResult] = await Promise.all([
         getMonitoringStatus(),
         getSystemMetrics(timeRange === '1h' ? 1 : timeRange === '6h' ? 6 : 24),
+        getServerResourceCurrent(),
       ]);
       if (statusResult.success) {
         setData(statusResult.data);
       }
       if (metricsResult.success) {
         setMetrics(metricsResult.data);
+      }
+      if (resourceResult.success) {
+        setResources(resourceResult.data);
       }
     } finally {
       setIsRefreshing(false);
@@ -270,10 +394,6 @@ export default function MonitoringClient({ initialData, initialMetrics, fetchErr
       setIsLoadingMetrics(false);
     }
   };
-
-  const healthyCount = data?.services.filter((s) => s.health === 'up').length ?? 0;
-  const unhealthyCount = data?.services.filter((s) => s.health !== 'up').length ?? 0;
-  const totalCount = data?.services.length ?? 0;
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -300,6 +420,11 @@ export default function MonitoringClient({ initialData, initialMetrics, fetchErr
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-bold">システム状況</h1>
               <div className="flex items-center gap-4">
+                {resources?.timestamp && (
+                  <span className="text-xs text-base-content/60">
+                    最終更新: {new Date(resources.timestamp).toLocaleTimeString('ja-JP')}
+                  </span>
+                )}
                 <button type="button" className="btn btn-ghost btn-sm" onClick={handleRefresh} disabled={isRefreshing}>
                   <span
                     className={`icon-[mdi--refresh] size-5 ${isRefreshing ? 'animate-spin' : ''}`}
@@ -327,84 +452,53 @@ export default function MonitoringClient({ initialData, initialMetrics, fetchErr
               </div>
             ) : (
               <>
-                <div className="stats shadow mb-6 w-full">
-                  <div className="stat">
-                    <div className="stat-figure text-success">
-                      <span className="icon-[mdi--check-circle] size-8" aria-hidden="true" />
-                    </div>
-                    <div className="stat-title">正常</div>
-                    <div className="stat-value text-success">{healthyCount}</div>
-                    <div className="stat-desc">サービス</div>
-                  </div>
-
-                  <div className="stat">
-                    <div className="stat-figure text-error">
-                      <span className="icon-[mdi--alert-circle] size-8" aria-hidden="true" />
-                    </div>
-                    <div className="stat-title">異常</div>
-                    <div className="stat-value text-error">{unhealthyCount}</div>
-                    <div className="stat-desc">サービス</div>
-                  </div>
-
-                  <div className="stat">
-                    <div className="stat-figure text-base-content">
-                      <span className="icon-[mdi--server-network] size-8" aria-hidden="true" />
-                    </div>
-                    <div className="stat-title">合計</div>
-                    <div className="stat-value">{totalCount}</div>
-                    <div className="stat-desc">監視対象</div>
-                  </div>
-
-                  <div className="stat">
-                    <div className="stat-title">最終更新</div>
-                    <div className="stat-value text-lg">
-                      {data.timestamp ? new Date(data.timestamp).toLocaleTimeString('ja-JP') : '-'}
-                    </div>
-                    <div className="stat-desc">30秒ごとに自動更新</div>
-                  </div>
-                </div>
-
-                <div role="tablist" className="tabs tabs-border mb-6">
-                  <button
-                    type="button"
-                    role="tab"
-                    className={`tab ${activeTab === 'status' ? 'tab-active' : ''}`}
-                    onClick={() => setActiveTab('status')}
-                  >
-                    <span className="icon-[mdi--server] size-4 mr-2" aria-hidden="true" />
-                    サービス状況
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    className={`tab ${activeTab === 'metrics' ? 'tab-active' : ''}`}
-                    onClick={() => setActiveTab('metrics')}
-                  >
-                    <span className="icon-[mdi--chart-line] size-4 mr-2" aria-hidden="true" />
-                    メトリクス推移
-                  </button>
-                </div>
-
-                {activeTab === 'status' && (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {data.services.map((service) => (
-                        <ServiceCard key={`${service.job}-${service.instance}`} service={service} />
-                      ))}
-                    </div>
-
-                    {data.services.length === 0 && (
-                      <div className="text-center py-12 text-base-content/60">
-                        <span className="icon-[mdi--server-off] size-16 opacity-50" aria-hidden="true" />
-                        <p className="mt-4">監視対象のサービスがありません</p>
-                      </div>
+                {/* サーバーリソース（最重要） */}
+                <section className="mb-6">
+                  <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <span className="icon-[mdi--server] size-5" aria-hidden="true" />
+                    サーバーリソース
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <ResourceGauge
+                      title="CPU 使用率"
+                      icon="icon-[mdi--chip]"
+                      percent={resources?.cpu.usagePercent ?? 0}
+                      detail={`${resources?.cpu.cores ?? 0} コア`}
+                    />
+                    <ResourceGauge
+                      title="メモリ使用率"
+                      icon="icon-[mdi--memory]"
+                      percent={resources?.memory.usagePercent ?? 0}
+                      detail={`${formatBytes(resources?.memory.usedBytes ?? 0)} / ${formatBytes(resources?.memory.totalBytes ?? 0)}`}
+                    />
+                    {(resources?.disk ?? []).map((d) => (
+                      <ResourceGauge
+                        key={d.mountpoint}
+                        title={`ディスク ${d.mountpoint}`}
+                        icon="icon-[mdi--harddisk]"
+                        percent={d.usagePercent}
+                        detail={`${formatBytes(d.usedBytes)} / ${formatBytes(d.totalBytes)}`}
+                      />
+                    ))}
+                    {(!resources?.disk || resources.disk.length === 0) && (
+                      <ResourceGauge title="ディスク /" icon="icon-[mdi--harddisk]" percent={0} detail="データなし" />
                     )}
-                  </>
-                )}
+                  </div>
+                </section>
 
-                {activeTab === 'metrics' && (
-                  <>
-                    <div className="flex items-center justify-between mb-4">
+                {/* サービス稼働状況（コンパクト） */}
+                <section className="mb-6">
+                  <CompactServiceStatus services={data.services} />
+                </section>
+
+                {/* メトリクス推移グラフ */}
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                      <span className="icon-[mdi--chart-line] size-5" aria-hidden="true" />
+                      リソース推移
+                    </h2>
+                    <div className="flex items-center gap-4">
                       <div className="join">
                         <button
                           type="button"
@@ -433,16 +527,38 @@ export default function MonitoringClient({ initialData, initialMetrics, fetchErr
                       </div>
                       {isLoadingMetrics && <span className="loading loading-spinner loading-sm" />}
                     </div>
+                  </div>
 
+                  {/* タブ切り替え */}
+                  <div role="tablist" className="tabs tabs-border mb-4">
+                    <button
+                      type="button"
+                      role="tab"
+                      className={`tab ${metricsTab === 'server' ? 'tab-active' : ''}`}
+                      onClick={() => setMetricsTab('server')}
+                    >
+                      サーバー
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      className={`tab ${metricsTab === 'process' ? 'tab-active' : ''}`}
+                      onClick={() => setMetricsTab('process')}
+                    >
+                      プロセス別
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      className={`tab ${metricsTab === 'http' ? 'tab-active' : ''}`}
+                      onClick={() => setMetricsTab('http')}
+                    >
+                      HTTP
+                    </button>
+                  </div>
+
+                  {metricsTab === 'server' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <MetricsChart
-                        title="CPU使用率（プロセス）"
-                        series={metrics?.cpuUsage ?? []}
-                        unit="%"
-                        yAxisDomain={[0, 'auto']}
-                      />
-                      <MetricsChart title="プロセスメモリ使用量" series={metrics?.processMemory ?? []} unit="MB" />
-                      <MetricsChart title="HTTPリクエストレート" series={metrics?.httpRequestRate ?? []} unit="req/s" />
                       <MetricsChart
                         title="システムCPU使用率"
                         series={metrics?.systemCpuUsage ?? []}
@@ -455,16 +571,40 @@ export default function MonitoringClient({ initialData, initialMetrics, fetchErr
                         unit="%"
                         yAxisDomain={[0, 100]}
                       />
+                      <MetricsChart
+                        title="ディスク使用率"
+                        series={metrics?.diskUsage ?? []}
+                        unit="%"
+                        yAxisDomain={[0, 100]}
+                      />
                     </div>
+                  )}
 
-                    {!metrics && (
-                      <div className="text-center py-12 text-base-content/60">
-                        <span className="icon-[mdi--chart-line-variant] size-16 opacity-50" aria-hidden="true" />
-                        <p className="mt-4">メトリクスデータを取得できませんでした</p>
-                      </div>
-                    )}
-                  </>
-                )}
+                  {metricsTab === 'process' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <MetricsChart
+                        title="CPU使用率（プロセス）"
+                        series={metrics?.cpuUsage ?? []}
+                        unit="%"
+                        yAxisDomain={[0, 'auto']}
+                      />
+                      <MetricsChart title="メモリ使用量（プロセス）" series={metrics?.processMemory ?? []} unit="MB" />
+                    </div>
+                  )}
+
+                  {metricsTab === 'http' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <MetricsChart title="HTTPリクエストレート" series={metrics?.httpRequestRate ?? []} unit="req/s" />
+                    </div>
+                  )}
+
+                  {!metrics && (
+                    <div className="text-center py-12 text-base-content/60">
+                      <span className="icon-[mdi--chart-line-variant] size-16 opacity-50" aria-hidden="true" />
+                      <p className="mt-4">メトリクスデータを取得できませんでした</p>
+                    </div>
+                  )}
+                </section>
               </>
             )}
           </div>

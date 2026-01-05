@@ -47,6 +47,7 @@
     "monitoring": {
       "_comment": "Prometheus 監視設定。enabled: false で設定ファイル生成をスキップ",
       "enabled": true,
+      "diskMountPoints": ["/"],
       "prometheus": {
         "port": 9090
       },

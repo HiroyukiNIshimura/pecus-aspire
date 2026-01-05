@@ -160,7 +160,8 @@ try
         var prometheusUrl = $"http://localhost:{prometheusPort}";
         frontendBuilder
             .WaitFor(prometheus)
-            .WithEnvironment("PROMETHEUS_URL", prometheusUrl);
+            .WithEnvironment("PROMETHEUS_URL", prometheusUrl)
+            .WithEnvironment("DISK_MOUNT_POINTS", "/");  // 開発環境は / のみ
     }
 
     builder.Build().Run();

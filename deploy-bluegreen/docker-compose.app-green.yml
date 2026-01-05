@@ -48,6 +48,7 @@ services:
       PECUS_API_URL: http://pecusapi-green:7265
       REDIS_URL: ${REDIS_URL:-redis://redis-frontend:6379}
       PROMETHEUS_URL: http://pecus-prometheus:9090
+      DISK_MOUNT_POINTS: ${DISK_MOUNT_POINTS:-/}
     # depends_on は ops スクリプトで制御（infra compose と分離するため）
     networks:
       - pecus-network
