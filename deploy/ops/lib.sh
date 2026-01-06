@@ -66,7 +66,7 @@ check_infra_healthy() {
   # Space separated list instead of array
   services="pecus-postgres pecus-redis pecus-redis-frontend pecus-lexicalconverter"
   all_healthy=true
-  
+
   for svc in $services; do
     running=$(docker inspect -f '{{.State.Running}}' "$svc" 2>/dev/null || echo "")
     if [ "$running" != "true" ]; then

@@ -25,7 +25,7 @@ sh monitoring-down.sh
 ```
 
 監視基盤（Prometheus / Exporters）のみを起動・停止します。
-`infra-up.sh` には監視基盤の起動が含まれますが、`infra-down.sh` はインフラのみを停止し監視基盤は停止しません。監視基盤を停止したい場合は `monitoring-down.sh` を使用してください。
+`infra-up.sh` はインフラのみを起動します。監視基盤も合わせて起動したい場合は、別途 `sh monitoring-up.sh` を実行してください。
 
 ### アプリ層停止
 
@@ -189,7 +189,7 @@ sh infra-up.sh
 ### バックアップファイルのパスが分からない
 
 ```
-grep DATA_PATH ../deploy-bluegreen/.env
+grep DATA_PATH ../deploy/.env
 ```
 
 で `DATA_PATH` を確認し、`${DATA_PATH}/backups/postgres/` 配下を指定。
