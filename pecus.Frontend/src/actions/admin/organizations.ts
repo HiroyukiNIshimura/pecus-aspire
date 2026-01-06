@@ -97,16 +97,20 @@ export async function updateOrganizationSetting(request: {
   } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
-      const payload = concurrencyError.payload ?? {};
-      const current = (payload as Record<string, unknown>).current as OrganizationSettingResponse | undefined;
+      const errorPayload = concurrencyError.payload ?? {};
+      // バックエンドは OrganizationResponse を返すので、Setting プロパティから取得
+      // JSON は camelCase (setting) または PascalCase (Setting) の可能性がある
+      const currentOrg = (errorPayload as Record<string, unknown>).current as Record<string, unknown> | undefined;
+      const currentSetting = (currentOrg?.setting ?? currentOrg?.Setting) as OrganizationSettingResponse | undefined;
+
       return {
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: current
+        latest: currentSetting
           ? {
               type: 'organizationSetting',
-              data: current,
+              data: currentSetting,
             }
           : undefined,
       } as ApiResponse<OrganizationSettingResponse>;

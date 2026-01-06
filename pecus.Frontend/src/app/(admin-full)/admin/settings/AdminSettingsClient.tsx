@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getAvailableModels, updateOrganizationSetting } from '@/actions/admin/organizations';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { Slider } from '@/components/common/filters/Slider';
 import type {
@@ -172,6 +173,11 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
   const [availableModels, setAvailableModels] = useState<AvailableModelResponse[]>([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [modelError, setModelError] = useState<string | null>(null);
+
+  // 競合状態管理
+  const [isConflict, setIsConflict] = useState(false);
+  const [conflictData, setConflictData] = useState<OrganizationSettingResponse | null>(null);
+
   const [formData, setFormData] = useState<OrganizationSettingInput>({
     taskOverdueThreshold: initialSetting.taskOverdueThreshold ?? 0,
     weeklyReportDeliveryDay: initialSetting.weeklyReportDeliveryDay ?? 0,
@@ -283,10 +289,15 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
             return;
           }
 
-          if (!result.success && result.error === 'conflict' && 'latest' in result && result.latest) {
-            const latest = result.latest.data as OrganizationSettingResponse;
-            syncWithResponse(latest);
-            notify.error(result.message || '他のユーザーが同時に更新しました。最新の設定を反映しました。');
+          if (!result.success && result.error === 'conflict') {
+            if ('latest' in result && result.latest) {
+              const latest = result.latest.data as OrganizationSettingResponse;
+              setConflictData(latest);
+              setIsConflict(true);
+            } else {
+              // latest が取得できなかった場合は通常のエラー表示
+              notify.error(result.message || '別のユーザーが同時に変更しました。ページを再読み込みしてください。');
+            }
             return;
           }
 
@@ -848,6 +859,65 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                   </div>
                 </div>
 
+                {/* 競合アラート */}
+                <ConflictAlert
+                  isConflict={isConflict}
+                  latestData={conflictData}
+                  onOverwrite={async (latestRowVersion) => {
+                    // 最新の rowVersion で直接 API を呼び出す
+                    setIsConflict(false);
+                    setConflictData(null);
+
+                    try {
+                      const result = await updateOrganizationSetting({
+                        taskOverdueThreshold: formData.taskOverdueThreshold,
+                        weeklyReportDeliveryDay: formData.weeklyReportDeliveryDay,
+                        mailFromAddress: formData.mailFromAddress ? String(formData.mailFromAddress) : null,
+                        mailFromName: formData.mailFromName ? String(formData.mailFromName) : null,
+                        generativeApiVendor: formData.generativeApiVendor,
+                        plan: formData.plan,
+                        helpNotificationTarget: formData.helpNotificationTarget ?? undefined,
+                        generativeApiKey:
+                          formData.generativeApiVendor === 'None' ? null : (formData.generativeApiKey ?? null),
+                        generativeApiModel:
+                          formData.generativeApiVendor === 'None' ? null : (formData.generativeApiModel ?? null),
+                        requireEstimateOnTaskCreation: formData.requireEstimateOnTaskCreation ?? false,
+                        enforcePredecessorCompletion: formData.enforcePredecessorCompletion ?? false,
+                        dashboardHelpCommentMaxCount: formData.dashboardHelpCommentMaxCount ?? 6,
+                        groupChatScope: formData.groupChatScope ?? undefined,
+                        defaultWorkspaceMode: formData.defaultWorkspaceMode ?? undefined,
+                        rowVersion: latestRowVersion,
+                      });
+
+                      if (result.success) {
+                        syncWithResponse(result.data);
+                        notify.success('組織設定を更新しました。');
+                      } else if (
+                        !result.success &&
+                        result.error === 'conflict' &&
+                        'latest' in result &&
+                        result.latest
+                      ) {
+                        const latest = result.latest.data as OrganizationSettingResponse;
+                        setConflictData(latest);
+                        setIsConflict(true);
+                      } else {
+                        notify.error(result.message || '組織設定の更新に失敗しました。');
+                      }
+                    } catch (error) {
+                      console.error('Failed to update organization setting:', error);
+                      notify.error('組織設定の更新中にエラーが発生しました。');
+                    }
+                  }}
+                  onDiscard={(latestData) => {
+                    // サーバーの最新データでフォームを更新（resetForm は不要）
+                    syncWithResponse(latestData);
+                    setIsConflict(false);
+                    setConflictData(null);
+                  }}
+                  isProcessing={isSubmitting}
+                />
+
                 <div className="flex justify-end gap-2">
                   <button
                     type="button"
@@ -860,7 +930,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                   >
                     リセット
                   </button>
-                  <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                  <button type="submit" className="btn btn-primary" disabled={isSubmitting || isConflict}>
                     {isSubmitting ? '更新中...' : '保存'}
                   </button>
                 </div>

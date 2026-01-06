@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getWorkspaceDetail, setWorkspaceSkills } from '@/actions/workspace';
+import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import MultiSelectDropdown from '@/components/common/filters/MultiSelectDropdown';
-import type { MasterSkillResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
+import type { MasterSkillResponse, WorkspaceDetailResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { Tooltip } from '../common/feedback/Tooltip';
 
@@ -32,6 +33,13 @@ export default function EditWorkspaceSkillsModal({
   // 初期スキルID（変更検出用）
   const [initialSkillIds, setInitialSkillIds] = useState<number[]>([]);
 
+  // 現在の rowVersion（競合時の再送信用）
+  const [currentRowVersion, setCurrentRowVersion] = useState<number>(workspace?.rowVersion ?? 0);
+
+  // 競合状態管理
+  const [isConflict, setIsConflict] = useState(false);
+  const [conflictData, setConflictData] = useState<WorkspaceDetailResponse | null>(null);
+
   // スキルが変更されたかどうか
   const skillsChanged =
     selectedSkillIds.length !== initialSkillIds.length || !selectedSkillIds.every((id) => initialSkillIds.includes(id));
@@ -42,7 +50,10 @@ export default function EditWorkspaceSkillsModal({
       const currentSkillIds = workspace.skills?.map((s) => s.id) || [];
       setSelectedSkillIds(currentSkillIds);
       setInitialSkillIds(currentSkillIds);
+      setCurrentRowVersion(workspace.rowVersion ?? 0);
       setServerError(null);
+      setIsConflict(false);
+      setConflictData(null);
     }
   }, [isOpen, workspace]);
 
@@ -52,6 +63,8 @@ export default function EditWorkspaceSkillsModal({
       setSelectedSkillIds([]);
       setInitialSkillIds([]);
       setServerError(null);
+      setIsConflict(false);
+      setConflictData(null);
     }
   }, [isOpen]);
 
@@ -61,14 +74,14 @@ export default function EditWorkspaceSkillsModal({
   };
 
   /** スキルを更新 */
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!workspace || !skillsChanged) return;
 
     setIsSubmitting(true);
     setServerError(null);
 
     try {
-      const result = await setWorkspaceSkills(workspace.id, selectedSkillIds, workspace.rowVersion);
+      const result = await setWorkspaceSkills(workspace.id, selectedSkillIds, currentRowVersion);
 
       if (result.success) {
         // 更新後にワークスペース詳細を再取得して最新のrowVersionを取得
@@ -93,11 +106,13 @@ export default function EditWorkspaceSkillsModal({
           onSuccess(updatedWorkspace);
           onClose();
         }
+      } else if (result.error === 'conflict' && 'latest' in result && result.latest) {
+        // 競合発生 - 選択肢を提示
+        const latest = result.latest.data as WorkspaceDetailResponse;
+        setConflictData(latest);
+        setIsConflict(true);
       } else {
-        const errorMessage =
-          result.error === 'conflict'
-            ? result.message || '別のユーザーが同時に更新しました。ページをリロードしてください。'
-            : result.message || 'スキルの更新に失敗しました。';
+        const errorMessage = result.message || 'スキルの更新に失敗しました。';
         setServerError(errorMessage);
         notify.error(errorMessage);
       }
@@ -109,7 +124,7 @@ export default function EditWorkspaceSkillsModal({
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [workspace, skillsChanged, selectedSkillIds, currentRowVersion, skills, notify, onSuccess, onClose]);
 
   // body スクロール制御
   useEffect(() => {
@@ -212,7 +227,7 @@ export default function EditWorkspaceSkillsModal({
               items={skills.map((s) => ({ id: s.id, name: s.name }))}
               selectedIds={selectedSkillIds}
               onSelectionChange={setSelectedSkillIds}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isConflict}
               placeholder="スキルを選択してください"
               emptyMessage="利用可能なスキルがありません"
               badgeColor="accent"
@@ -221,6 +236,70 @@ export default function EditWorkspaceSkillsModal({
               maxItems={50}
             />
           </div>
+
+          {/* 競合アラート */}
+          <ConflictAlert
+            isConflict={isConflict}
+            latestData={conflictData}
+            onOverwrite={async (latestRowVersion) => {
+              if (!workspace) return;
+
+              setIsConflict(false);
+              setConflictData(null);
+              setIsSubmitting(true);
+              setServerError(null);
+
+              try {
+                const result = await setWorkspaceSkills(workspace.id, selectedSkillIds, latestRowVersion);
+
+                if (result.success) {
+                  const detailResult = await getWorkspaceDetail(workspace.id);
+                  if (detailResult.success) {
+                    notify.success('スキルを更新しました。');
+                    onSuccess(detailResult.data);
+                    onClose();
+                  } else {
+                    const updatedWorkspace: WorkspaceFullDetailResponse = {
+                      ...workspace,
+                      skills: selectedSkillIds.map((id) => {
+                        const skill = skills.find((s) => s.id === id);
+                        return { id, name: skill?.name || '' };
+                      }),
+                    };
+                    notify.success('スキルを更新しました。');
+                    notify.error('最新情報の取得に失敗しました。ページをリロードしてください。');
+                    onSuccess(updatedWorkspace);
+                    onClose();
+                  }
+                } else if (result.error === 'conflict' && 'latest' in result && result.latest) {
+                  const latest = result.latest.data as WorkspaceDetailResponse;
+                  setConflictData(latest);
+                  setIsConflict(true);
+                } else {
+                  const errorMessage = result.message || 'スキルの更新に失敗しました。';
+                  setServerError(errorMessage);
+                  notify.error(errorMessage);
+                }
+              } catch (error) {
+                console.error('Failed to update skills:', error);
+                const errorMessage = 'スキルの更新中にエラーが発生しました。';
+                setServerError(errorMessage);
+                notify.error(errorMessage);
+              } finally {
+                setIsSubmitting(false);
+              }
+            }}
+            onDiscard={(latestData) => {
+              const latestSkillIds =
+                (latestData as unknown as WorkspaceFullDetailResponse).skills?.map((s) => s.id) || [];
+              setSelectedSkillIds(latestSkillIds);
+              setInitialSkillIds(latestSkillIds);
+              setCurrentRowVersion(latestData.rowVersion ?? 0);
+              setIsConflict(false);
+              setConflictData(null);
+            }}
+            isProcessing={isSubmitting}
+          />
 
           {/* ボタングループ */}
           <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
@@ -236,7 +315,7 @@ export default function EditWorkspaceSkillsModal({
               type="button"
               className="btn btn-primary"
               onClick={handleSubmit}
-              disabled={isSubmitting || !skillsChanged}
+              disabled={isSubmitting || !skillsChanged || isConflict}
             >
               {isSubmitting ? (
                 <>

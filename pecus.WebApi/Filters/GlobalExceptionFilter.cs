@@ -57,11 +57,13 @@ public class GlobalExceptionFilter : IExceptionFilter
             ex.ConflictedModel
         );
 
-        var response = new ConcurrencyErrorResponse<IConflictModel>
+        // object 型で返すことで、実際の型のプロパティがシリアライズされる
+        var response = new
         {
-            StatusCode = StatusCodes.Status409Conflict,
-            Message = ex.Message,
-            Current = ex.ConflictedModel as IConflictModel,
+            statusCode = StatusCodes.Status409Conflict,
+            message = ex.Message,
+            current = ex.ConflictedModel,
+            details = (string?)null,
         };
 
         return new ObjectResult(response)

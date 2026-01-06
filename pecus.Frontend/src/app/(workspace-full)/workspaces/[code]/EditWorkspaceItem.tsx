@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
+import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import TagInput from '@/components/common/forms/TagInput';
 import { PecusNotionLikeEditor, useExistingItemImageUploadHandler } from '@/components/editor';
 import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
@@ -57,6 +58,10 @@ export default function EditWorkspaceItem({
   // 手動フォーム検証とサブミット（useFormValidation ではなく、状態管理値を直接使用）
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+
+  // 競合状態管理
+  const [isConflict, setIsConflict] = useState(false);
+  const [conflictData, setConflictData] = useState<WorkspaceItemDetailResponse | null>(null);
 
   const shouldShowError = useCallback((fieldName: string) => !!fieldErrors[fieldName], [fieldErrors]);
 
@@ -123,11 +128,11 @@ export default function EditWorkspaceItem({
             onSave(fetchResult.data);
           }
           onClose();
-        } else if (updateResult.error === 'conflict') {
-          // 409 Conflict: 並行更新
-          notify.error(
-            updateResult.message || '別のユーザーが同時に変更しました。ページをリロードして再度操作してください。',
-          );
+        } else if (updateResult.error === 'conflict' && 'latest' in updateResult && updateResult.latest) {
+          // 409 Conflict: 並行更新 - 選択肢を提示
+          const latest = updateResult.latest.data as WorkspaceItemDetailResponse;
+          setConflictData(latest);
+          setIsConflict(true);
         } else {
           notify.error(updateResult.message || 'アイテムの更新に失敗しました。');
         }
@@ -362,12 +367,75 @@ export default function EditWorkspaceItem({
                   {/* rowVersion（隠しフィールド） */}
                   <input type="hidden" name="rowVersion" value={formData.rowVersion} />
 
+                  {/* 競合アラート */}
+                  <ConflictAlert
+                    isConflict={isConflict}
+                    latestData={conflictData}
+                    onOverwrite={async (latestRowVersion) => {
+                      setIsConflict(false);
+                      setConflictData(null);
+                      setIsSubmitting(true);
+
+                      try {
+                        const updateResult = await updateWorkspaceItem(latestItem.workspaceId || 0, latestItem.id, {
+                          subject: formData.subject,
+                          body: editorValue || null,
+                          isDraft: formData.isDraft,
+                          tagNames: tagNames,
+                          rowVersion: latestRowVersion,
+                        });
+
+                        if (updateResult.success) {
+                          notify.success('アイテムを更新しました。');
+                          const fetchResult = await fetchLatestWorkspaceItem(
+                            latestItem.workspaceId || 0,
+                            latestItem.id,
+                          );
+                          if (fetchResult.success && onSave) {
+                            onSave(fetchResult.data);
+                          }
+                          onClose();
+                        } else if (
+                          updateResult.error === 'conflict' &&
+                          'latest' in updateResult &&
+                          updateResult.latest
+                        ) {
+                          const latest = updateResult.latest.data as WorkspaceItemDetailResponse;
+                          setConflictData(latest);
+                          setIsConflict(true);
+                        } else {
+                          notify.error(updateResult.message || 'アイテムの更新に失敗しました。');
+                        }
+                      } catch (err: unknown) {
+                        console.error('アイテム更新中にエラーが発生しました:', err);
+                        notify.error('アイテムの更新中にエラーが発生しました。');
+                      } finally {
+                        setIsSubmitting(false);
+                      }
+                    }}
+                    onDiscard={(latestData) => {
+                      setFormData({
+                        subject: latestData.subject || '',
+                        isDraft: latestData.isDraft ?? false,
+                        rowVersion: latestData.rowVersion,
+                      });
+                      setEditorValue(latestData.body || '');
+                      setInitialEditorState(latestData.body || '');
+                      setEditorInitKey((k) => k + 1);
+                      setTagNames(latestData.tags?.map((t) => t.name).filter((name): name is string => !!name) || []);
+                      setLatestItem(latestData);
+                      setIsConflict(false);
+                      setConflictData(null);
+                    }}
+                    isProcessing={isSubmitting}
+                  />
+
                   {/* ボタングループ */}
                   <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
                     <button type="button" onClick={handleClose} className="btn btn-outline" disabled={isSubmitting}>
                       キャンセル
                     </button>
-                    <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                    <button type="submit" className="btn btn-primary" disabled={isSubmitting || isConflict}>
                       {isSubmitting ? (
                         <>
                           <span className="loading loading-spinner loading-sm"></span>

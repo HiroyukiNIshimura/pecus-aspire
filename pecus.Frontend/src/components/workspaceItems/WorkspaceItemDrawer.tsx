@@ -125,8 +125,7 @@ export default function WorkspaceItemDrawer({
       }
     } catch (err) {
       if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
-        // TODO: ConcurrencyErrorの場合の処理
-        setError('別のユーザーが同時に編集しました。ページをリロードしてください。');
+        setError('別のユーザーが先に更新しました。ページをリロードしてください。');
       } else {
         setError((err as ErrorResponse).message || errorMessage);
       }
@@ -243,7 +242,7 @@ export default function WorkspaceItemDrawer({
       }
     } catch (err) {
       if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
-        setError('別のユーザーが同時に編集しました。ページをリロードしてください。');
+        setError('別のユーザーが先に更新しました。ページをリロードしてください。');
       } else {
         setError((err as ErrorResponse).message || 'アーカイブ状態の更新に失敗しました。');
       }
@@ -361,7 +360,7 @@ export default function WorkspaceItemDrawer({
         <div className="flex-1 p-4 space-y-4">
           {/* エラーメッセージ */}
           {error && (
-            <div className="alert alert-soft alert-error">
+            <div className="alert alert-soft alert-warning">
               <span>{error}</span>
             </div>
           )}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { updateUserSetting } from '@/actions/profile';
+import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { Slider } from '@/components/common/filters/Slider';
 import type { FocusScorePriority, LandingPage, UserSettingResponse } from '@/connectors/api/pecus';
@@ -39,6 +40,10 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
     waitingTasksLimit: initialSettings.waitingTasksLimit ?? 10,
   });
 
+  // 競合状態管理
+  const [isConflict, setIsConflict] = useState(false);
+  const [conflictData, setConflictData] = useState<UserSettingResponse | null>(null);
+
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
       schema: userSettingSchema,
@@ -64,8 +69,8 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
 
           if (!result.success && result.error === 'conflict' && 'latest' in result && result.latest) {
             const latest = result.latest.data as UserSettingResponse;
-            syncWithResponse(latest);
-            notify.error(result.message || '他のユーザーが同時に更新しました。最新の設定を反映しました。');
+            setConflictData(latest);
+            setIsConflict(true);
             return;
           }
 
@@ -235,6 +240,59 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
+                {/* 競合アラート */}
+                <ConflictAlert
+                  isConflict={isConflict}
+                  latestData={conflictData}
+                  onOverwrite={async (latestRowVersion) => {
+                    // 最新の rowVersion で直接 API を呼び出す
+                    setIsConflict(false);
+                    setConflictData(null);
+
+                    try {
+                      const result = await updateUserSetting({
+                        canReceiveEmail: formData.canReceiveEmail,
+                        canReceiveRealtimeNotification: formData.canReceiveRealtimeNotification,
+                        timeZone: formData.timeZone,
+                        language: formData.language,
+                        landingPage: formData.landingPage as LandingPage | undefined,
+                        focusScorePriority: formData.focusScorePriority as FocusScorePriority | undefined,
+                        focusTasksLimit: formData.focusTasksLimit,
+                        waitingTasksLimit: formData.waitingTasksLimit,
+                        rowVersion: latestRowVersion,
+                      });
+
+                      if (result.success) {
+                        syncWithResponse(result.data);
+                        notify.success('設定を保存しました');
+                      } else if (
+                        !result.success &&
+                        result.error === 'conflict' &&
+                        'latest' in result &&
+                        result.latest
+                      ) {
+                        const latest = result.latest.data as UserSettingResponse;
+                        setConflictData(latest);
+                        setIsConflict(true);
+                      } else {
+                        notify.error(result.message || '保存に失敗しました');
+                      }
+                    } catch (error) {
+                      console.error('Settings update error:', error);
+                      notify.error('予期しないエラーが発生しました');
+                    }
+                  }}
+                  onDiscard={(latestData) => {
+                    // サーバーの最新データでフォームを更新（resetForm は不要）
+                    syncWithResponse(latestData);
+                    setIsConflict(false);
+                    setConflictData(null);
+                  }}
+                  isProcessing={isSubmitting}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   className="btn btn-outline"
@@ -246,7 +304,7 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
                 >
                   リセット
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting || isConflict}>
                   {isSubmitting ? '保存中...' : '保存'}
                 </button>
               </div>

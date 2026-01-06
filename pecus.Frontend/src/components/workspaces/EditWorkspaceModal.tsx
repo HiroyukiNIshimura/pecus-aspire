@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getWorkspaceDetail, updateWorkspace } from '@/actions/workspace';
+import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
@@ -26,6 +27,10 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
   const [isLoading, setIsLoading] = useState(false);
   const [workspaceDetail, setWorkspaceDetail] = useState<WorkspaceFullDetailResponse | null>(null);
 
+  // 競合状態管理
+  const [isConflict, setIsConflict] = useState(false);
+  const [conflictData, setConflictData] = useState<WorkspaceFullDetailResponse | null>(null);
+
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
       schema: updateWorkspaceSchema,
@@ -40,11 +45,15 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
         });
 
         if (!result.success) {
-          const errorMessage =
-            result.error === 'conflict'
-              ? result.message || '別のユーザーが同時に更新しました。'
-              : result.message || 'エラーが発生しました。';
-          setServerErrors([{ key: result.error === 'conflict' ? 0 : 1, message: errorMessage }]);
+          if (result.error === 'conflict' && 'latest' in result && result.latest) {
+            // 競合発生 - 選択肢を提示
+            const latest = result.latest.data as WorkspaceFullDetailResponse;
+            setConflictData(latest);
+            setIsConflict(true);
+            return;
+          }
+          const errorMessage = result.message || 'エラーが発生しました。';
+          setServerErrors([{ key: 1, message: errorMessage }]);
           notify.error(errorMessage);
           return;
         }
@@ -85,6 +94,8 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
       resetForm();
       setServerErrors([]);
       setWorkspaceDetail(null);
+      setIsConflict(false);
+      setConflictData(null);
     }
   }, [isOpen, resetForm]);
 
@@ -256,12 +267,64 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                 </div>
               </div>
 
+              {/* 競合アラート */}
+              <ConflictAlert
+                isConflict={isConflict}
+                latestData={conflictData}
+                onOverwrite={async (latestRowVersion) => {
+                  if (!workspaceDetail) return;
+
+                  setIsConflict(false);
+                  setConflictData(null);
+
+                  // フォームから現在の入力値を取得
+                  const formElement = formRef.current;
+                  if (!formElement) return;
+
+                  const formDataObj = new FormData(formElement);
+                  const name = formDataObj.get('name') as string;
+                  const description = formDataObj.get('description') as string;
+                  const genreIdStr = formDataObj.get('genreId') as string;
+                  const genreId = genreIdStr ? parseInt(genreIdStr, 10) : (workspaceDetail.genreId ?? 0);
+
+                  const result = await updateWorkspace(workspaceDetail.id, {
+                    name,
+                    description: description || undefined,
+                    genreId,
+                    rowVersion: latestRowVersion,
+                  });
+
+                  if (!result.success) {
+                    if (result.error === 'conflict' && 'latest' in result && result.latest) {
+                      const latest = result.latest.data as WorkspaceFullDetailResponse;
+                      setConflictData(latest);
+                      setIsConflict(true);
+                      return;
+                    }
+                    const errorMessage = result.message || 'エラーが発生しました。';
+                    setServerErrors([{ key: 1, message: errorMessage }]);
+                    notify.error(errorMessage);
+                    return;
+                  }
+
+                  onSuccess(result.data);
+                  onClose();
+                }}
+                onDiscard={(latestData) => {
+                  // サーバーの最新データでフォームを更新（resetForm は不要）
+                  setWorkspaceDetail(latestData);
+                  setIsConflict(false);
+                  setConflictData(null);
+                }}
+                isProcessing={isSubmitting}
+              />
+
               {/* ボタングループ */}
               <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
                 <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSubmitting}>
                   キャンセル
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting || isConflict}>
                   {isSubmitting ? (
                     <>
                       <span className="loading loading-spinner loading-sm"></span>
