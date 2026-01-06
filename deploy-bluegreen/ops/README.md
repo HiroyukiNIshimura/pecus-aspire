@@ -17,6 +17,16 @@ sh infra-up.sh
 sh infra-down.sh
 ```
 
+### 監視基盤起動/停止
+
+```
+sh monitoring-up.sh
+sh monitoring-down.sh
+```
+
+監視基盤（Prometheus / Exporters）のみを起動・停止します。
+`infra-up.sh` には監視基盤の起動が含まれますが、`infra-down.sh` はインフラのみを停止し監視基盤は停止しません。監視基盤を停止したい場合は `monitoring-down.sh` を使用してください。
+
 ### アプリ層停止
 
 ```
@@ -152,6 +162,15 @@ sh cleanup.sh --prune-images --prune-builder
 ```
 
 `yes` 入力で実行。
+
+### Prometheus ターゲット更新（内部用）
+
+```
+sh update-prometheus-targets.sh [slot]
+```
+
+Blue/Green 切り替え状況に合わせて Prometheus のターゲット設定（`ops/prometheus/targets/*.json`）を更新します。
+通常は `infra-up.sh` / `monitoring-up.sh` / `switch-node.sh` から自動的に呼び出されるため、手動実行は不要です。
 
 ## トラブルシューティング
 
