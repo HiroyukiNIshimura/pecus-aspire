@@ -22,4 +22,5 @@ fi
 echo "[$slot] Stopping app containers..."
 compose_app "$slot" down
 
+echo ""
 echo "[OK] App containers ($slot) stopped."

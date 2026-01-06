@@ -20,4 +20,5 @@ confirm_yes "This will stop ALL infra containers (DB, Redis, etc)"
 
 compose_infra down
 
+echo ""
 echo "[OK] Infra stopped."
