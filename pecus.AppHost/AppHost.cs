@@ -84,7 +84,7 @@ try
     Log.Information("Lexical proto path: {LexicalProtoPath}", lexicalProtoPath);
 
     // Prometheus 設定ファイルの絶対パスを取得
-    var prometheusBasePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "deploy-bluegreen", "ops", "prometheus"));
+    var prometheusBasePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "deploy", "ops", "prometheus"));
     var prometheusConfigPath = Path.Combine(prometheusBasePath, "prometheus.dev.yml");
     var prometheusTargetsPath = Path.Combine(prometheusBasePath, "targets-dev");
     Log.Information("Prometheus config path: {PrometheusConfigPath}", prometheusConfigPath);

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
+  getHangfireStatus,
   getMonitoringStatus,
   getServerResourceCurrent,
   getSystemMetrics,
@@ -16,6 +17,7 @@ import {
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import type { HangfireStatsResponse } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
@@ -117,6 +119,92 @@ function ResourceGauge({
         <progress className={`progress ${getProgressColor(percent)} w-full h-3`} value={percent} max={100} />
         <p className="text-xs text-base-content/60 mt-1">{detail}</p>
         {subDetail && <p className="text-xs text-base-content/40">{subDetail}</p>}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Hangfire バックグラウンドジョブの状況表示
+ */
+function BackgroundJobStatus({ stats }: { stats?: HangfireStatsResponse }) {
+  if (!stats) return null;
+
+  const failed = stats.failed ?? 0;
+  const processing = stats.processing ?? 0;
+  const enqueued = stats.enqueued ?? 0;
+  const scheduled = stats.scheduled ?? 0;
+
+  const hasFailures = failed > 0;
+
+  return (
+    <div className="card bg-base-200 h-full">
+      <div className="card-body p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm flex items-center gap-2">
+            <span className="icon-[mdi--cog-transfer] size-5 text-base-content/70" aria-hidden="true" />
+            バックグラウンドジョブ (Hangfire)
+          </h3>
+          {/* Hangfire Dashboard へのリンク（権限がある場合アクセス可能）- 本番環境では非表示 */}
+          {process.env.NODE_ENV !== 'production' && (
+            <a
+              href="https://localhost:17225/hangfire"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-xs btn-ghost gap-1"
+              title="デバッグ環境のみ"
+            >
+              Dashboard
+              <span className="icon-[mdi--open-in-new] size-3" />
+            </a>
+          )}
+        </div>
+
+        {/* 失敗ジョブがある場合の警告 */}
+        {hasFailures && (
+          <div className="alert alert-error alert-soft p-2 mb-3 text-sm flex items-center gap-2">
+            <span className="icon-[mdi--alert-circle] size-5 shrink-0" />
+            <span className="font-bold">{failed} 件のジョブが失敗しています</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {/* Failed */}
+          <div className={`stat p-2 bg-base-100 rounded-lg ${hasFailures ? 'border border-error/50' : ''}`}>
+            <div className="stat-title text-xs flex items-center gap-1">
+              <span className={`badge badge-xs ${hasFailures ? 'badge-error' : 'badge-ghost'}`} />
+              Failed
+            </div>
+            <div className={`stat-value text-lg ${hasFailures ? 'text-error' : ''}`}>{failed}</div>
+          </div>
+
+          {/* Processing */}
+          <div className="stat p-2 bg-base-100 rounded-lg">
+            <div className="stat-title text-xs flex items-center gap-1">
+              <span className="badge badge-xs badge-info" />
+              Processing
+            </div>
+            <div className="stat-value text-lg text-info">{processing}</div>
+          </div>
+
+          {/* Enqueued */}
+          <div className="stat p-2 bg-base-100 rounded-lg">
+            <div className="stat-title text-xs flex items-center gap-1">
+              <span className="badge badge-xs badge-warning" />
+              Enqueued
+            </div>
+            <div className="stat-value text-lg">{enqueued}</div>
+          </div>
+
+          {/* Scheduled */}
+          <div className="stat p-2 bg-base-100 rounded-lg">
+            <div className="stat-title text-xs flex items-center gap-1">
+              <span className="badge badge-xs badge-ghost" />
+              Scheduled
+            </div>
+            <div className="stat-value text-lg">{scheduled}</div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -320,6 +408,7 @@ export default function MonitoringClient({
   const currentUser = useCurrentUser();
   const [clientError, _setClientError] = useState<ApiErrorResponse | null>(fetchError ? JSON.parse(fetchError) : null);
   const [data, setData] = useState<MonitoringStatus | null>(initialData);
+  const [hangfireStats, setHangfireStats] = useState<HangfireStatsResponse | null>(null);
   const [metrics, setMetrics] = useState<SystemMetrics | null>(initialMetrics);
   const [resources, setResources] = useState<ServerResourceCurrent | null>(initialResources);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -338,25 +427,42 @@ export default function MonitoringClient({
   // サービス状況とリソース現在値の自動更新（30秒）
   useEffect(() => {
     const interval = setInterval(async () => {
-      const [statusResult, resourceResult] = await Promise.all([getMonitoringStatus(), getServerResourceCurrent()]);
+      const [statusResult, resourceResult, hangfireResult] = await Promise.all([
+        getMonitoringStatus(),
+        getServerResourceCurrent(),
+        getHangfireStatus(),
+      ]);
       if (statusResult.success) {
         setData(statusResult.data);
       }
       if (resourceResult.success) {
         setResources(resourceResult.data);
       }
+      if (hangfireResult.success) {
+        setHangfireStats(hangfireResult.data);
+      }
     }, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    // 初回マウント時にバックグラウンドジョブ統計を取得
+    getHangfireStatus().then((result) => {
+      if (result.success) {
+        setHangfireStats(result.data);
+      }
+    });
+  }, []);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const [statusResult, metricsResult, resourceResult] = await Promise.all([
+      const [statusResult, metricsResult, resourceResult, hangfireResult] = await Promise.all([
         getMonitoringStatus(),
         getSystemMetrics(timeRange === '1h' ? 1 : timeRange === '6h' ? 6 : 24),
         getServerResourceCurrent(),
+        getHangfireStatus(),
       ]);
       if (statusResult.success) {
         setData(statusResult.data);
@@ -366,6 +472,9 @@ export default function MonitoringClient({
       }
       if (resourceResult.success) {
         setResources(resourceResult.data);
+      }
+      if (hangfireResult.success) {
+        setHangfireStats(hangfireResult.data);
       }
     } finally {
       setIsRefreshing(false);
@@ -494,7 +603,10 @@ export default function MonitoringClient({
 
                 {/* サービス稼働状況（コンパクト） */}
                 <section className="mb-6">
-                  <CompactServiceStatus services={data.services} serviceUptimes={resources?.serviceUptimes} />
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <CompactServiceStatus services={data.services} serviceUptimes={resources?.serviceUptimes} />
+                    <BackgroundJobStatus stats={hangfireStats || undefined} />
+                  </div>
                 </section>
 
                 {/* メトリクス推移グラフ */}

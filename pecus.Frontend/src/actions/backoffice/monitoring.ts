@@ -232,9 +232,28 @@ async function fetchPrometheusRange(
   }
 }
 
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import type { HangfireStatsResponse } from '@/connectors/api/pecus';
+
 /**
- * Prometheus instant query API を呼び出す（現在値取得用）
+ * Server Action: Hangfire バックグラウンドジョブ統計を取得
  */
+export async function getHangfireStatus(): Promise<ApiResponse<HangfireStatsResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.monitoring.getApiBackendMonitoringHangfireStats();
+    return {
+      success: true,
+      data: response,
+    };
+  } catch (error) {
+    console.error('Failed to get Hangfire status:', error);
+    // バックエンドが起動していない場合などもあり得るので
+    // エラー時はnullを返すのではなく適切なエラーレスポンスを
+    return serverError('バックグラウンドジョブの状態取得に失敗しました');
+  }
+}
+
 async function fetchPrometheusInstant(query: string): Promise<PrometheusInstantResponse | null> {
   try {
     const params = new URLSearchParams({ query });
