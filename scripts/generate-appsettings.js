@@ -14,7 +14,6 @@
  *   - pecus.BackFire/appsettings.json
  *   - pecus.DbManager/appsettings.json
  *   - deploy/.env                      (Docker Compose 本番環境用、-P 指定時のみ)
- *   - deploy-bluegreen/.env            (Docker Compose 本番環境用（blue/green）、-P 指定時のみ)
  */
 
 const fs = require('fs');
@@ -226,7 +225,7 @@ function generate() {
 
   // 生成ファイル数をカウント
   const baseCount = 5; // AppHost, WebApi, BackFire, DbManager, Frontend .env.local
-  const dockerEnvCount = env === 'prod' ? 2 : 0; // deploy/.env, deploy-bluegreen/.env
+  const dockerEnvCount = env === 'prod' ? 2 : 0; // deploy/.env
   const totalCount = baseCount + dockerEnvCount;
 
   console.log(`\nDone! Generated ${totalCount} files.`);

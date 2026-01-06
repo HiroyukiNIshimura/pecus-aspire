@@ -77,3 +77,30 @@
 ---
 
 このドキュメントは自動生成です。詳細な運用手順や設計意図は各スクリプト・composeファイルのコメントも参照してください。
+
+
+---
+
+## 自動生成されるファイル一覧
+
+### 1. `scripts/generate-appsettings.js` により自動生成されるファイル
+
+- `deploy/.env`
+  本番用環境変数ファイル（`config/settings.base.prod.json` から生成。`-P` オプション時のみ）
+- `pecus.AppHost/appsettings.json`
+- `pecus.WebApi/appsettings.json`
+- `pecus.BackFire/appsettings.json`
+- `pecus.DbManager/appsettings.json`
+- `pecus.Frontend/.env.local`
+  Next.js用（開発・本番両方で生成）
+
+### 2. `ops/update-prometheus-targets.sh` により自動生成されるファイル
+
+- `deploy/ops/prometheus/targets/backend.json`
+- `deploy/ops/prometheus/targets/backfire.json`
+- `deploy/ops/prometheus/targets/frontend.json`
+
+（slotごとに内容が切り替わる監視ターゲット定義）
+
+### 3. その他
+- Dockerイメージのスナップショット（`snapshot-create.sh`）はファイルではなくイメージタグとして生成されます。
