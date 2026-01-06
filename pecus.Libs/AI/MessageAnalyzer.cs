@@ -34,16 +34,23 @@ public class MessageAnalyzer : IMessageAnalyzer
         - UrgencyScore: 緊急度（0=急ぎではない、100=今すぐ対応が必要）
         - GuidanceSeekingScore: 指示・ガイダンスを求めている度合い（0=求めていない、100=明確に次のアクションを求めている）
           - 「何をすればいい」「どうしたらいい」「次は何を」「教えてください」などを含む
+        - InformationSeekingScore: 情報・知識を求めている度合い（0=求めていない、100=強く知りたがっている）
+          - 「○○について知りたい」「○○がわからない」「○○の意味は？」「○○って何？」などを含む
+        - InformationTopic: 情報を求めている対象（○○の部分）を抽出。複数ある場合はカンマ区切り。ない場合はnull。
+          - 例: 「マイクロサービスについて知りたい」→ "マイクロサービス"
+          - 例: 「APIとRESTの違いがわからない」→ "API, REST, その違い"
         - PrimaryEmotion: 主な感情カテゴリ（例: "困惑", "不安", "怒り", "悲しみ", "喜び", "感謝", "中立" など）
         - Confidence: 分析の確信度（0=自信なし、100=非常に確信）
         - Summary: 分析結果の簡潔な説明（30文字以内の日本語）
 
         判定のヒント:
         - 「〜できない」「〜わからない」「どうすれば」「困った」「助けて」などは困っているサイン
+        - 「○○について知りたい」「○○がわからない」「○○って何？」「○○の意味は？」などは情報探索のサイン
         - 「ありがとう」「助かった」「嬉しい」などはポジティブなサイン
         - 「至急」「急ぎ」「すぐに」「今日中」などは緊急度が高いサイン
         - 「何をすればいい」「どうしたらいい」「次はどうすれば」「やり方を教えて」「手順を教えて」などは指示を求めているサイン
         - 質問形式で具体的なアクションや方法を尋ねている場合はGuidanceSeekingScoreを高くする
+        - 質問形式で知識や情報を尋ねている場合はInformationSeekingScoreを高くする
         - 絵文字や感嘆符の使い方も感情の手がかりになる
         - 複数の感情が混在する場合もある（例: 困っているが感謝もしている）
 
@@ -71,13 +78,15 @@ public class MessageAnalyzer : IMessageAnalyzer
             );
 
             _logger.LogDebug(
-                "Sentiment analysis completed: PrimaryEmotion={PrimaryEmotion}, Troubled={TroubledScore}, Negative={NegativeScore}, Positive={PositiveScore}, Urgency={UrgencyScore}, GuidanceSeeking={GuidanceSeekingScore}, Confidence={Confidence}",
+                "Sentiment analysis completed: PrimaryEmotion={PrimaryEmotion}, Troubled={TroubledScore}, Negative={NegativeScore}, Positive={PositiveScore}, Urgency={UrgencyScore}, GuidanceSeeking={GuidanceSeekingScore}, InformationSeeking={InformationSeekingScore}, InformationTopic={InformationTopic}, Confidence={Confidence}",
                 result.PrimaryEmotion,
                 result.TroubledScore,
                 result.NegativeScore,
                 result.PositiveScore,
                 result.UrgencyScore,
                 result.GuidanceSeekingScore,
+                result.InformationSeekingScore,
+                result.InformationTopic,
                 result.Confidence
             );
 
@@ -130,6 +139,16 @@ public class MessageAnalyzer : IMessageAnalyzer
         return result.IsSeekingGuidance;
     }
 
+    /// <inheritdoc />
+    public async Task<bool> IsSeekingInformationAsync(
+        IAiClient aiClient,
+        string message,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await AnalyzeAsync(aiClient, message, cancellationToken);
+        return result.IsSeekingInformation;
+    }
+
     /// <summary>
     /// 中立的なデフォルト結果を作成する
     /// </summary>
@@ -142,6 +161,7 @@ public class MessageAnalyzer : IMessageAnalyzer
             PositiveScore = 0,
             UrgencyScore = 0,
             GuidanceSeekingScore = 0,
+            InformationSeekingScore = 0,
             PrimaryEmotion = "中立",
             Confidence = summary == null ? 100 : 0,
             Summary = summary ?? "分析対象なし",

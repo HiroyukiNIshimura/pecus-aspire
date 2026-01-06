@@ -67,4 +67,16 @@ public interface IMessageAnalyzer
         IAiClient aiClient,
         string message,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// メッセージが情報・知識を求めている内容かどうかを簡易判定する
+    /// </summary>
+    /// <param name="aiClient">AIクライアント</param>
+    /// <param name="message">判定対象のメッセージ</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>情報・知識を求めている場合は true</returns>
+    Task<bool> IsSeekingInformationAsync(
+        IAiClient aiClient,
+        string message,
+        CancellationToken cancellationToken = default);
 }

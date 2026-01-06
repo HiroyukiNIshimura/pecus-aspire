@@ -35,6 +35,18 @@ public class MessageSentimentResult
     public int GuidanceSeekingScore { get; set; }
 
     /// <summary>
+    /// 情報・知識を求めている度合い (0-100)
+    /// 「○○について知りたい」「○○がわからない」など情報を求めている度合い
+    /// </summary>
+    public int InformationSeekingScore { get; set; }
+
+    /// <summary>
+    /// 情報を求めている対象（何について知りたいのか）
+    /// 複数ある場合はカンマ区切り。ない場合はnull。
+    /// </summary>
+    public string? InformationTopic { get; set; }
+
+    /// <summary>
     /// 検出された主な感情カテゴリ
     /// </summary>
     public string PrimaryEmotion { get; set; } = string.Empty;
@@ -73,6 +85,11 @@ public class MessageSentimentResult
     /// 指示・ガイダンスを求めているかどうか（GuidanceSeekingScore >= 50）
     /// </summary>
     public bool IsSeekingGuidance => GuidanceSeekingScore >= 50;
+
+    /// <summary>
+    /// 情報・知識を求めているかどうか（InformationSeekingScore >= 50）
+    /// </summary>
+    public bool IsSeekingInformation => InformationSeekingScore >= 50;
 
     /// <summary>
     /// 注意が必要かどうか（困っている or ネガティブ or 緊急）
