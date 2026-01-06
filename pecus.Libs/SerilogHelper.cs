@@ -35,8 +35,8 @@ public static class SerilogHelper
             logConfig = logConfig
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Debug)
+                // .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+                // .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Debug)
                 .MinimumLevel.Override("Aspire.Hosting.Dcp", LogEventLevel.Warning);
         }
         else if (environment == LogEnvironment.Production)
