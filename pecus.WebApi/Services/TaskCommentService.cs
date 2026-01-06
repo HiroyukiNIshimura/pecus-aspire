@@ -252,8 +252,8 @@ public class TaskCommentService
 
         comment.UpdatedAt = DateTimeOffset.UtcNow;
 
-        // 楽観的ロック用のRowVersionを設定
-        comment.RowVersion = request.RowVersion;
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(comment).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
         try
         {
@@ -342,8 +342,8 @@ public class TaskCommentService
         comment.DeletedAt = DateTime.UtcNow;
         comment.UpdatedAt = DateTimeOffset.UtcNow;
 
-        // 楽観的ロック用のRowVersionを設定
-        comment.RowVersion = request.RowVersion;
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(comment).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
         try
         {

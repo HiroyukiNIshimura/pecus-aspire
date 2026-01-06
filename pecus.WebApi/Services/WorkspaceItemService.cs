@@ -995,6 +995,9 @@ public class WorkspaceItemService
         item.UpdatedAt = DateTime.UtcNow;
         item.UpdatedByUserId = userId;
 
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(item).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
+
         try
         {
             await _context.SaveChangesAsync();
@@ -1170,6 +1173,9 @@ public class WorkspaceItemService
         item.UpdatedAt = DateTime.UtcNow;
         item.UpdatedByUserId = userId;
 
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(item).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
+
         try
         {
             await _context.SaveChangesAsync();
@@ -1321,9 +1327,11 @@ public class WorkspaceItemService
         try
         {
             item.AssigneeId = request.AssigneeId;
-            item.RowVersion = request.RowVersion;
             item.UpdatedAt = DateTime.UtcNow;
             item.UpdatedByUserId = userId;
+
+            // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+            _context.Entry(item).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
             await _context.SaveChangesAsync();
         }
@@ -1520,9 +1528,11 @@ public class WorkspaceItemService
 
         try
         {
-            item.RowVersion = request.RowVersion;
             item.UpdatedAt = DateTime.UtcNow;
             item.UpdatedByUserId = userId;
+
+            // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+            _context.Entry(item).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
             await _context.SaveChangesAsync();
         }
@@ -1931,7 +1941,9 @@ public class WorkspaceItemService
             // またはUpdatedBy/UpdatedAtを更新する
             item.UpdatedByUserId = userId;
             item.UpdatedAt = DateTimeOffset.UtcNow;
-            // RowVersionはDB側で自動更新されるが、EF Coreに更新を認識させる
+
+            // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+            _context.Entry(item).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();

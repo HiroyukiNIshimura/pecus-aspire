@@ -236,12 +236,6 @@ public class ProfileService
                 };
             }
 
-            // 楽観的ロック：クライアントのRowVersionと一致しない場合は競合として扱う
-            if (setting.RowVersion != request.RowVersion)
-            {
-                await RaiseSettingConflictException(userId);
-            }
-
             setting.CanReceiveEmail = request.CanReceiveEmail;
             setting.CanReceiveRealtimeNotification = request.CanReceiveRealtimeNotification;
             setting.TimeZone = request.TimeZone;
@@ -252,6 +246,9 @@ public class ProfileService
             setting.WaitingTasksLimit = request.WaitingTasksLimit;
             setting.UpdatedAt = DateTimeOffset.UtcNow;
             setting.UpdatedByUserId = userId;
+
+            // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+            _context.Entry(setting).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -275,15 +272,15 @@ public class ProfileService
                 RowVersion = setting.RowVersion,
             };
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateConcurrencyException)
         {
             await transaction.RollbackAsync();
             _logger.LogWarning(
-                "ユーザー設定更新失敗: 競合が発生しました。UserId: {UserId}, Error: {Error}",
-                userId,
-                ex.Message
+                "ユーザー設定更新失敗: 競合が発生しました。UserId: {UserId}",
+                userId
             );
-            throw;
+            await RaiseSettingConflictException(userId);
+            return null; // RaiseSettingConflictException が throw するため、ここには到達しない
         }
         catch (Exception ex)
         {
@@ -483,6 +480,9 @@ public class ProfileService
             user.UpdatedAt = DateTime.UtcNow;
             user.UpdatedByUserId = userId; // 自己変更
 
+            // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+            _context.Entry(user).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
+
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -566,11 +566,12 @@ public class ProfileService
 
             return true;
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateConcurrencyException)
         {
             await transaction.RollbackAsync();
-            _logger.LogWarning("プロフィール更新失敗: 競合が発生しました。UserId: {UserId}, Error: {Error}", userId, ex.Message);
-            throw;
+            _logger.LogWarning("プロフィール更新失敗: 競合が発生しました。UserId: {UserId}", userId);
+            await RaiseUserConflictException(userId);
+            return false; // RaiseUserConflictException が throw するため、ここには到達しない
         }
         catch (Exception ex)
         {
@@ -683,6 +684,20 @@ public class ProfileService
                 LandingPage = latestSetting.LandingPage,
                 RowVersion = latestSetting.RowVersion,
             }
+        );
+    }
+
+    private async Task RaiseUserConflictException(int userId)
+    {
+        var latestUser = await GetOwnProfileAsync(userId);
+        if (latestUser == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        throw new ConcurrencyException<UserDetailResponse>(
+            "別のユーザーが同時にプロフィールを変更しました。最新のプロフィールを取得して再度操作してください。",
+            latestUser
         );
     }
 

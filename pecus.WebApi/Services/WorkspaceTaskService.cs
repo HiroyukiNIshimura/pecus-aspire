@@ -608,8 +608,8 @@ public class WorkspaceTaskService
 
         task.UpdatedAt = DateTime.UtcNow;
 
-        // 楽観的ロック用のRowVersionを設定
-        task.RowVersion = request.RowVersion;
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(task).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
         try
         {

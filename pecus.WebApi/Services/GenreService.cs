@@ -179,6 +179,9 @@ public class GenreService
         genre.UpdatedByUserId = updatedByUserId;
         genre.UpdatedAt = DateTime.UtcNow;
 
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(genre).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
+
         try
         {
             await _context.SaveChangesAsync();

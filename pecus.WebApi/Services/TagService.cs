@@ -170,6 +170,9 @@ public class TagService
 
         _context.Tags.Update(tag);
 
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(tag).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
+
         try
         {
             await _context.SaveChangesAsync();

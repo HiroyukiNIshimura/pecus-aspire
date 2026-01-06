@@ -246,7 +246,9 @@ public class WorkspaceService
 
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
-        workspace.RowVersion = request.RowVersion;
+
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(workspace).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
         try
         {
@@ -319,7 +321,9 @@ public class WorkspaceService
         workspace.IsActive = false;
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
-        workspace.RowVersion = rowVersion;
+
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(workspace).Property(e => e.RowVersion).OriginalValue = rowVersion;
 
         try
         {
@@ -365,7 +369,9 @@ public class WorkspaceService
         workspace.IsActive = true;
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
-        workspace.RowVersion = rowVersion;
+
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(workspace).Property(e => e.RowVersion).OriginalValue = rowVersion;
 
         try
         {

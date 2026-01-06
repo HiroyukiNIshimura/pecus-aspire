@@ -150,13 +150,16 @@ public class SkillService
 
         _context.Skills.Update(skill);
 
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(skill).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
+
         try
         {
             await _context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
-            await _context.SaveChangesAsync();
+            await RaiseConflictException(skillId);
         }
 
         return skill;

@@ -1161,193 +1161,26 @@ public class ApplicationDbContext : DbContext
     /// <param name="modelBuilder">ModelBuilder</param>
     private static void ConfigureRowVersionForAllEntities(ModelBuilder modelBuilder)
     {
-        // User
-        modelBuilder
-            .Entity<User>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // UserSetting
-        modelBuilder
-            .Entity<UserSetting>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Role
-        modelBuilder
-            .Entity<Role>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Permission
-        modelBuilder
-            .Entity<Permission>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Organization
-        modelBuilder
-            .Entity<Organization>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // OrganizationSetting
-        modelBuilder
-            .Entity<OrganizationSetting>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Workspace
-        modelBuilder
-            .Entity<Workspace>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // WorkspaceItem
-        modelBuilder
-            .Entity<WorkspaceItem>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // WorkspaceItemAttachment
-        modelBuilder
-            .Entity<WorkspaceItemAttachment>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // WorkspaceItemRelation
-        modelBuilder
-            .Entity<WorkspaceItemRelation>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // WorkspaceTask
-        modelBuilder
-            .Entity<WorkspaceTask>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // TaskComment
-        modelBuilder
-            .Entity<TaskComment>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Tag
-        modelBuilder
-            .Entity<Tag>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Skill
-        modelBuilder
-            .Entity<Skill>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Genre
-        modelBuilder
-            .Entity<Genre>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // TaskType
-        modelBuilder
-            .Entity<TaskType>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Device
-        modelBuilder
-            .Entity<Device>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Activity
-        modelBuilder
-            .Entity<Activity>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // ChatRoom
-        modelBuilder
-            .Entity<ChatRoom>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // SystemNotification
-        modelBuilder
-            .Entity<SystemNotification>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
-
-        // Bot
-        modelBuilder
-            .Entity<Bot>()
-            .Property(e => e.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .ValueGeneratedOnAddOrUpdate()
-            .IsConcurrencyToken();
+        modelBuilder.Entity<User>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<UserSetting>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Role>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Permission>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Organization>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<OrganizationSetting>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Workspace>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<WorkspaceItem>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<WorkspaceItemAttachment>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<WorkspaceItemRelation>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<WorkspaceTask>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<TaskComment>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Tag>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Skill>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Genre>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<TaskType>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Device>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Activity>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ChatRoom>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<SystemNotification>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Bot>().Property(e => e.RowVersion).IsRowVersion();
     }
 }

@@ -345,6 +345,9 @@ public class OrganizationService
         organization.UpdatedAt = DateTime.UtcNow;
         organization.UpdatedByUserId = updatedByUserId;
 
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(organization).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
+
         try
         {
             await _context.SaveChangesAsync();
@@ -412,6 +415,9 @@ public class OrganizationService
         setting.DefaultWorkspaceMode = request.DefaultWorkspaceMode;
         setting.UpdatedAt = DateTimeOffset.UtcNow;
         setting.UpdatedByUserId = updatedByUserId;
+
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(setting).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
         try
         {
@@ -504,6 +510,9 @@ public class OrganizationService
         organization.UpdatedAt = DateTime.UtcNow;
         organization.UpdatedByUserId = updatedByUserId;
 
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(organization).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
+
         try
         {
             await _context.SaveChangesAsync();
@@ -574,6 +583,9 @@ public class OrganizationService
         organization.IsActive = request.IsActive;
         organization.UpdatedAt = DateTime.UtcNow;
         organization.UpdatedByUserId = updatedByUserId;
+
+        // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+        _context.Entry(organization).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
         try
         {
