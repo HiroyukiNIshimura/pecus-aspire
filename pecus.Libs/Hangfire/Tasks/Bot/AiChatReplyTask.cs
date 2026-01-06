@@ -7,6 +7,7 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Focus;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
+using Pecus.Libs.Information;
 using Pecus.Libs.Notifications;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
@@ -24,6 +25,7 @@ public class AiChatReplyTask
     private readonly IBotSelector? _botSelector;
     private readonly IMessageAnalyzer? _messageAnalyzer;
     private readonly IFocusTaskProvider? _focusTaskProvider;
+    private readonly IInformationSearchProvider? _informationSearchProvider;
 
     /// <summary>
     /// Bot typing がタイムアウトするまでの時間（秒）
@@ -47,6 +49,11 @@ public class AiChatReplyTask
     private const int GuidanceSeekingThreshold = 50;
 
     /// <summary>
+    /// 情報を求めているとみなす InformationSeekingScore の閾値
+    /// </summary>
+    private const int InformationSeekingThreshold = 50;
+
+    /// <summary>
     /// AiChatReplyTask のコンストラクタ
     /// </summary>
     public AiChatReplyTask(
@@ -56,7 +63,8 @@ public class AiChatReplyTask
         ILogger<AiChatReplyTask> logger,
         IBotSelector? botSelector = null,
         IMessageAnalyzer? messageAnalyzer = null,
-        IFocusTaskProvider? focusTaskProvider = null)
+        IFocusTaskProvider? focusTaskProvider = null,
+        IInformationSearchProvider? informationSearchProvider = null)
     {
         _context = context;
         _aiClientFactory = aiClientFactory;
@@ -65,6 +73,7 @@ public class AiChatReplyTask
         _botSelector = botSelector;
         _messageAnalyzer = messageAnalyzer;
         _focusTaskProvider = focusTaskProvider;
+        _informationSearchProvider = informationSearchProvider;
     }
 
     /// <summary>
@@ -598,7 +607,8 @@ public class AiChatReplyTask
 
     /// <summary>
     /// コンテキストに応じたメッセージ配列とロールを構築する
-    /// 指示を求めている場合はタスク情報を含め、そうでない場合は会話履歴を使用
+    /// 指示を求めている場合はタスク情報を含め、情報を求めている場合は関連情報を含め、
+    /// そうでない場合は会話履歴を使用
     /// </summary>
     private async Task<(List<(MessageRole Role, string Content)> Messages, RoleConfig Role)> BuildMessagesWithContextAsync(
         IAiClient aiClient,
@@ -610,19 +620,19 @@ public class AiChatReplyTask
     {
         var userNamePrompt = $"Userを示す二人称は、{senderUserName}さんです。";
 
-        // 指示を求めているかどうかを判定
-        var taskContext = await TryGetTaskContextAsync(aiClient, triggerContent, userId);
+        // メッセージを分析して適切なコンテキストを取得
+        var (context, role) = await TryGetContextAsync(aiClient, triggerContent, userId);
 
-        if (taskContext != null)
+        if (context != null)
         {
-            // 秘書モード: タスクリストをコンテキストに含めたシンプルな構成
+            // コンテキストモード: 取得した情報をコンテキストに含めたシンプルな構成
             var messages = new List<(MessageRole Role, string Content)>
             {
                 (MessageRole.System, userNamePrompt),
-                (MessageRole.System, taskContext),
+                (MessageRole.System, context),
                 (MessageRole.User, triggerContent)
             };
-            return (messages, RoleRandomizer.SecretaryRole);
+            return (messages, role);
         }
 
         // 通常モード: 会話履歴を使用
@@ -632,50 +642,155 @@ public class AiChatReplyTask
     }
 
     /// <summary>
-    /// 指示を求めている場合はタスクコンテキストを取得、そうでなければ null を返す
+    /// メッセージを分析し、適切なコンテキストとロールを取得する
     /// </summary>
-    private async Task<string?> TryGetTaskContextAsync(
+    private async Task<(string? Context, RoleConfig Role)> TryGetContextAsync(
         IAiClient aiClient,
         string triggerContent,
         int userId)
     {
-        if (_messageAnalyzer == null || _focusTaskProvider == null)
+        if (_messageAnalyzer == null)
         {
-            return null;
+            return (null, RoleRandomizer.GetRandomRole());
         }
 
         try
         {
             var sentimentResult = await _messageAnalyzer.AnalyzeAsync(aiClient, triggerContent);
 
-            if (sentimentResult.GuidanceSeekingScore < GuidanceSeekingThreshold)
+            // 情報を求めている場合（InformationSeekingScore が高い）
+            if (sentimentResult.InformationSeekingScore >= InformationSeekingThreshold)
             {
                 _logger.LogDebug(
-                    "Message not seeking guidance: GuidanceSeekingScore={Score}, Threshold={Threshold}",
-                    sentimentResult.GuidanceSeekingScore,
-                    GuidanceSeekingThreshold
+                    "Message is seeking information: InformationSeekingScore={Score}, Topic={Topic}",
+                    sentimentResult.InformationSeekingScore,
+                    sentimentResult.InformationTopic
+                );
+
+                var informationContext = await TryGetInformationContextAsync(
+                    userId,
+                    sentimentResult.InformationTopic
+                );
+
+                if (informationContext != null)
+                {
+                    return (informationContext, RoleRandomizer.SecretaryRole);
+                }
+            }
+
+            // 指示を求めている場合（GuidanceSeekingScore が高い）
+            if (sentimentResult.GuidanceSeekingScore >= GuidanceSeekingThreshold)
+            {
+                _logger.LogDebug(
+                    "Message is seeking guidance: GuidanceSeekingScore={Score}",
+                    sentimentResult.GuidanceSeekingScore
+                );
+
+                var taskContext = await TryGetTaskContextAsync(userId);
+
+                if (taskContext != null)
+                {
+                    return (taskContext, RoleRandomizer.SecretaryRole);
+                }
+            }
+
+            _logger.LogDebug(
+                "Message not seeking guidance or information: GuidanceSeekingScore={GuidanceScore}, InformationSeekingScore={InfoScore}",
+                sentimentResult.GuidanceSeekingScore,
+                sentimentResult.InformationSeekingScore
+            );
+
+            return (null, RoleRandomizer.GetRandomRole());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get context");
+            return (null, RoleRandomizer.GetRandomRole());
+        }
+    }
+
+    /// <summary>
+    /// 情報探索用のコンテキストを取得する
+    /// </summary>
+    private async Task<string?> TryGetInformationContextAsync(int userId, string? informationTopic)
+    {
+        if (string.IsNullOrWhiteSpace(informationTopic) || _informationSearchProvider == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var searchResult = await _informationSearchProvider.SearchAsync(
+                userId,
+                informationTopic,
+                limit: 5
+            );
+
+            if (searchResult.Items.Count == 0)
+            {
+                _logger.LogDebug(
+                    "No information found for topic: Topic={Topic}",
+                    informationTopic
                 );
                 return null;
             }
 
-            _logger.LogDebug(
-                "Message is seeking guidance, fetching task list: GuidanceSeekingScore={Score}",
-                sentimentResult.GuidanceSeekingScore
-            );
-
-            var taskResult = await _focusTaskProvider.GetFocusTasksAsync(
-                userId,
-                focusTasksLimit: 5,
-                waitingTasksLimit: 3
-            );
-
-            return BuildTaskContextPrompt(taskResult);
+            return BuildInformationContextPrompt(searchResult);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to get task context");
+            _logger.LogWarning(ex, "Failed to search information: Topic={Topic}", informationTopic);
             return null;
         }
+    }
+
+    /// <summary>
+    /// タスクコンテキストを取得する
+    /// </summary>
+    private async Task<string?> TryGetTaskContextAsync(int userId)
+    {
+        if (_focusTaskProvider == null)
+        {
+            return null;
+        }
+
+        var taskResult = await _focusTaskProvider.GetFocusTasksAsync(
+            userId,
+            focusTasksLimit: 5,
+            waitingTasksLimit: 3
+        );
+
+        return BuildTaskContextPrompt(taskResult);
+    }
+
+    /// <summary>
+    /// 情報検索結果からコンテキストプロンプトを生成する
+    /// </summary>
+    private static string BuildInformationContextPrompt(Information.Models.InformationSearchResult searchResult)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"【参考情報】「{searchResult.SearchTopic}」に関連するドキュメント:");
+        sb.AppendLine();
+
+        foreach (var item in searchResult.Items)
+        {
+            sb.AppendLine($"■ [{item.WorkspaceCode}#{item.ItemCode}] {item.Subject}");
+            if (!string.IsNullOrWhiteSpace(item.BodySnippet))
+            {
+                var snippet = item.BodySnippet.Length > 150
+                    ? item.BodySnippet[..150] + "..."
+                    : item.BodySnippet;
+                sb.AppendLine($"  概要: {snippet}");
+            }
+            sb.AppendLine();
+        }
+
+        sb.AppendLine("この情報を参考に、ユーザーの質問に答えてください。");
+        sb.AppendLine("ただし、情報をそのまま列挙するのではなく、自然な会話として回答してください。");
+        sb.AppendLine("参照元のドキュメントコード（[ワークスペースコード#アイテムコード]形式）を適宜含めてください。");
+
+        return sb.ToString();
     }
 
     /// <summary>

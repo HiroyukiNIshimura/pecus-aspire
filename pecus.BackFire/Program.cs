@@ -9,6 +9,7 @@ using Pecus.Libs.Hangfire.Tasks.Bot.Behaviors.Extensions;
 using Pecus.Libs.Hangfire.Tasks.Bot.Extensions;
 using Pecus.Libs.Hangfire.Tasks.Extensions;
 using Pecus.Libs.Hangfire.Tasks.Services;
+using Pecus.Libs.Information;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
@@ -66,6 +67,8 @@ builder.Services.AddBotSelector();
 builder.Services.AddBotBehaviors();
 // FocusTaskProvider の登録（やることリスト取得）
 builder.Services.AddScoped<IFocusTaskProvider, FocusTaskProvider>();
+// InformationSearchProvider の登録（情報検索）
+builder.Services.AddScoped<IInformationSearchProvider, InformationSearchProvider>();
 
 // Lexical Converter gRPC サービスの登録
 var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";
