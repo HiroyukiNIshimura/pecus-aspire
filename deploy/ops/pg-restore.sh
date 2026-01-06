@@ -1,34 +1,49 @@
-#!/usr/bin/env bash
-if [ -z "${BASH_VERSION:-}" ]; then
-  exec bash "$0" "$@"
-fi
+#!/bin/sh
+set -eu
 
-set -euo pipefail
+# Usage: ./pg-restore.sh [backup_file_name]
+# backup_file_name: e.g., backup_20240101_120000.sql.gz (inside backup volume)
+# If not provided, it will prompt or fail depending on implementation of restore-helper
 
-# usage: CONFIRM_RESTORE=YES ./pg-restore.sh /absolute/path/to/xxx.dump
-
-dump_file=${1-}
-if [[ -z "$dump_file" || ! -f "$dump_file" ]]; then
-  echo "使用方法: $0 /absolute/path/to/xxx.dump" >&2
-  exit 2
-fi
-
-if [[ "${CONFIRM_RESTORE-}" != "YES" ]]; then
-  echo "[エラー] リストアを拒否しました。続行するには CONFIRM_RESTORE=YES を設定してください。" >&2
-  exit 3
-fi
-
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 # shellcheck source=./lib.sh
-source "$script_dir/lib.sh"
+. "$script_dir/lib.sh"
 
 require_cmd docker
+
+target_file="${1:-}"
+
+if [ -z "$target_file" ]; then
+  # List available backups
+  echo "Available backups:"
+  compose \
+    -f "$bluegreen_dir/docker-compose.infra.yml" \
+    -f "$bluegreen_dir/docker-compose.restore-helper.yml" \
+    run --rm restore-helper ls -lh /backups
+  
+  echo ""
+  printf "Enter backup filename to restore: "
+  read -r target_file
+fi
+
+if [ -z "$target_file" ]; then
+  echo "[Error] No backup file specified." >&2
+  exit 1
+fi
+
+confirm_yes "Restore from $target_file? (Current DB will be overwritten)"
+
+echo "[Info] Stopping apps..."
+./app-down.sh -y
+
+echo "[Info] Restoring..."
+# Using Environment variable or Command argument depending on restore-helper implementation.
+# Assuming standard postgres restore: gunzip -c file | psql ...
+# Here we use a helper container.
 
 compose \
   -f "$bluegreen_dir/docker-compose.infra.yml" \
   -f "$bluegreen_dir/docker-compose.restore-helper.yml" \
-  run --rm \
-  -e RESTORE_DUMP="/dump/$(basename -- "$dump_file")" \
-  -v "$dump_file:/dump/$(basename -- "$dump_file"):ro" \
-  postgres-restore \
-  sh -lc 'set -eu; echo "[情報] リストア中: $RESTORE_DUMP"; pg_restore -h "${POSTGRES_HOST:-postgres}" -p "${POSTGRES_PORT:-5432}" -U "${POSTGRES_USER:-pecus}" -d "${POSTGRES_DB:-pecusdb}" --clean --if-exists "$RESTORE_DUMP"; echo "[OK] リストア完了"'
+  run --rm -e BACKUP_FILE="$target_file" restore-helper
+
+echo "[OK] Restore finished."

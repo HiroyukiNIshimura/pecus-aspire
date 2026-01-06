@@ -1,37 +1,16 @@
-#!/usr/bin/env bash
-# ============================================
-# 監視基盤（Prometheus, Exporters）の起動スクリプト
-#
-# 使用方法:
-#   ./monitoring-up.sh
-#
-# 起動するコンテナ:
-#   - pecus-prometheus
-#   - pecus-node-exporter
-#   - pecus-blackbox-exporter
-# ============================================
+#!/bin/sh
+set -eu
 
-if [ -z "${BASH_VERSION:-}" ]; then
-	exec bash "$0" "$@"
-fi
+# Start monitoring stack (Prometheus etc)
 
-set -euo pipefail
-
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 # shellcheck source=./lib.sh
-source "$script_dir/lib.sh"
+. "$script_dir/lib.sh"
 
 require_cmd docker
 
-echo "[INFO] Prometheus ターゲットファイルを更新..."
+echo "[Info] Updating Prometheus targets..."
 "$script_dir/update-prometheus-targets.sh"
 
-echo "[INFO] 監視基盤を起動..."
+echo "[Info] Starting Monitoring stack..."
 compose_monitoring up -d
-
-wait_health pecus-prometheus 120
-
-echo "[OK] 監視基盤起動完了"
-echo "  - pecus-prometheus"
-echo "  - pecus-node-exporter"
-echo "  - pecus-blackbox-exporter"

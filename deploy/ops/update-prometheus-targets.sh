@@ -1,45 +1,23 @@
-#!/usr/bin/env bash
-# ============================================
-# Prometheus ターゲットファイル更新スクリプト
-#
-# 使用方法:
-#   ./update-prometheus-targets.sh [slot]
-#
-# 引数:
-#   slot: アクティブスロット (blue|green)
-#         省略時は active_slot ファイルから読み取り
-#
-# 出力:
-#   ops/prometheus/targets/*.json
-# ============================================
+#!/bin/sh
+set -eu
 
-if [ -z "${BASH_VERSION:-}" ]; then
-	exec bash "$0" "$@"
-fi
+# Usage: ./update-prometheus-targets.sh [slot]
 
-set -euo pipefail
-
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 # shellcheck source=./lib.sh
-source "$script_dir/lib.sh"
+. "$script_dir/lib.sh"
 
 targets_dir="$script_dir/prometheus/targets"
-
-# ターゲットディレクトリ作成
 mkdir -p "$targets_dir"
 
-# アクティブスロット取得
 if [ -n "${1:-}" ]; then
   slot="$1"
 else
   slot="$(active_slot)"
 fi
 
-echo "[INFO] Prometheus ターゲット更新: アクティブスロット=$slot"
+echo "[Info] Updating Prometheus targets for slot: $slot"
 
-# ============================================
-# Backend ターゲット（アクティブスロットのみ）
-# ============================================
 cat > "$targets_dir/backend.json" <<EOF
 [
   {
@@ -52,75 +30,21 @@ cat > "$targets_dir/backend.json" <<EOF
   }
 ]
 EOF
-echo "[OK] backend.json 更新"
 
-# ============================================
-# Frontend ターゲット（アクティブスロットのみ）
-# ============================================
-cat > "$targets_dir/frontend.json" <<EOF
+cat > "$targets_dir/backfire.json" <<EOF
 [
   {
-    "targets": ["frontend-${slot}:3000"],
+    "targets": ["backfire-${slot}:8080"],
     "labels": {
       "slot": "${slot}",
       "env": "production",
-      "service": "frontend"
+      "service": "backfire"
     }
   }
 ]
 EOF
-echo "[OK] frontend.json 更新"
 
-# ============================================
-# インフラターゲット（LexicalConverter）
-# ============================================
-cat > "$targets_dir/infra.json" <<EOF
-[
-  {
-    "targets": ["lexicalconverter:9101"],
-    "labels": {
-      "env": "production",
-      "service": "lexicalconverter"
-    }
-  }
-]
-EOF
-echo "[OK] infra.json 更新"
+# Frontend doesn't expose metrics yet, but placeholder if needed
+# (Skipped for now)
 
-# ============================================
-# Node Exporter ターゲット
-# ============================================
-cat > "$targets_dir/node.json" <<EOF
-[
-  {
-    "targets": ["node-exporter:9100"],
-    "labels": {
-      "env": "production",
-      "service": "node-exporter"
-    }
-  }
-]
-EOF
-echo "[OK] node.json 更新"
-
-# ============================================
-# Blackbox（外形監視）ターゲット
-# ============================================
-cat > "$targets_dir/blackbox.json" <<EOF
-[
-  {
-    "targets": [
-      "http://pecusapi-${slot}:7265/health",
-      "http://frontend-${slot}:3000/health"
-    ],
-    "labels": {
-      "slot": "${slot}",
-      "env": "production"
-    }
-  }
-]
-EOF
-echo "[OK] blackbox.json 更新"
-
-echo "[INFO] 全ターゲットファイルを更新しました"
-echo "[INFO] Prometheus は file_sd_config により 30 秒以内に新ターゲットを自動検出します"
+echo "[OK] Updated targets in $targets_dir"

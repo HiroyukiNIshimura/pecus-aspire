@@ -1,22 +1,17 @@
-#!/bin/bash
-# ==============================================================================
-# monitoring-down.sh - 監視スタック(Prometheus)停止スクリプト
-# ==============================================================================
+#!/bin/sh
+set -eu
 
-if [ -z "${BASH_VERSION:-}" ]; then
-	exec bash "$0" "$@"
-fi
+# Stop monitoring stack
 
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/lib.sh"
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+# shellcheck source=./lib.sh
+. "$script_dir/lib.sh"
 
 echo "=========================================="
-echo " Monitoring Stack 停止"
+echo " Stopping Monitoring Stack"
 echo "=========================================="
 
 compose_monitoring down
 
 echo ""
-echo "✅ Monitoring スタックを停止しました"
+echo "[OK] Monitoring stack stopped."

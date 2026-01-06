@@ -1,29 +1,25 @@
-#!/usr/bin/env bash
-if [ -z "${BASH_VERSION:-}" ]; then
-  exec bash "$0" "$@"
-fi
+#!/bin/sh
+set -eu
 
-set -euo pipefail
+# Stop active slot app containers only
 
-# 稼働中のアクティブスロットのアプリ層のみを停止
-
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 # shellcheck source=./lib.sh
-source "$script_dir/lib.sh"
+. "$script_dir/lib.sh"
 
 require_cmd docker
 
 slot=$(active_slot)
-echo "アクティブスロット: $slot"
+echo "Active slot: $slot"
 
-# 確認
-# - 対話式: ./app-down.sh
-# - スキップ: ./app-down.sh -y
-if [[ "${1:-}" != "-y" ]]; then
-  confirm_yes "アクティブスロット($slot)のアプリ層を停止します。"
+# Usage: ./app-down.sh [-y] (skip confirm)
+arg1="${1:-}"  # POSIX sh: parameter expansion
+
+if [ "$arg1" != "-y" ]; then
+  confirm_yes "Stop app containers for slot ($slot)"
 fi
 
-echo "[$slot] アプリ層を停止中..."
+echo "[$slot] Stopping app containers..."
 compose_app "$slot" down
 
-echo "[OK] アプリ層($slot)を停止しました"
+echo "[OK] App containers ($slot) stopped."

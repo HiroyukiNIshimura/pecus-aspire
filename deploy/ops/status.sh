@@ -1,30 +1,29 @@
-#!/usr/bin/env bash
-if [ -z "${BASH_VERSION:-}" ]; then
-	exec bash "$0" "$@"
-fi
+#!/bin/sh
+set -eu
 
-set -euo pipefail
-
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 # shellcheck source=./lib.sh
-source "$script_dir/lib.sh"
+. "$script_dir/lib.sh"
 
 require_cmd docker
 
-slot="$(active_slot)"
-echo "アクティブスロット=$slot"
-echo
+slot=$(active_slot)
+echo "Active slot = $slot"
+echo ""
 
 show_container_status() {
-  local name="$1"
-  local running health
+  name="$1"
   running=$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null || echo "")
-  if [[ "$running" != "true" ]]; then
-    printf "  %-30s %s\n" "$name" "stopped"
-    return
+  
+  if [ "$running" != "true" ]; then
+    status="stopped"
+  else
+    health=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}}' "$name" 2>/dev/null || echo "-")
+    status="running ($health)"
   fi
-  health=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}}' "$name" 2>/dev/null || echo "-")
-  printf "  %-30s running (%s)\n" "$name" "$health"
+  
+  # POSIX printf format
+  printf "  %-30s %s\n" "$name" "$status"
 }
 
 echo "--- infra ---"
@@ -33,21 +32,22 @@ show_container_status "pecus-redis"
 show_container_status "pecus-redis-frontend"
 show_container_status "pecus-lexicalconverter"
 show_container_status "pecus-nginx"
+echo ""
 
-echo
-echo "--- monitoring ---"
-show_container_status "pecus-prometheus"
-show_container_status "pecus-node-exporter"
-show_container_status "pecus-blackbox-exporter"
-
-echo
 echo "--- app-blue ---"
 show_container_status "pecus-webapi-blue"
 show_container_status "pecus-frontend-blue"
 show_container_status "pecus-backfire-blue"
+echo ""
 
-echo
 echo "--- app-green ---"
 show_container_status "pecus-webapi-green"
 show_container_status "pecus-frontend-green"
 show_container_status "pecus-backfire-green"
+echo ""
+
+echo "--- monitoring ---"
+show_container_status "pecus-prometheus"
+show_container_status "pecus-node-exporter"
+show_container_status "pecus-blackbox-exporter"
+echo ""
