@@ -27,20 +27,6 @@ interface MonitoringClientProps {
   fetchError?: string | null;
 }
 
-function HealthBadge({ health }: { health: 'up' | 'down' | 'unknown' }) {
-  const styles = {
-    up: 'badge-success',
-    down: 'badge-error',
-    unknown: 'badge-warning',
-  };
-  const labels = {
-    up: 'UP',
-    down: 'DOWN',
-    unknown: '不明',
-  };
-  return <span className={`badge ${styles[health]}`}>{labels[health]}</span>;
-}
-
 function formatDuration(seconds: number): string {
   if (seconds < 0.001) {
     return `${(seconds * 1000000).toFixed(0)}µs`;
@@ -49,18 +35,6 @@ function formatDuration(seconds: number): string {
     return `${(seconds * 1000).toFixed(1)}ms`;
   }
   return `${seconds.toFixed(2)}s`;
-}
-
-function formatLastScrape(isoString: string): string {
-  if (!isoString) return '-';
-  const date = new Date(isoString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-
-  if (diffSec < 60) return `${diffSec}秒前`;
-  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}分前`;
-  return `${Math.floor(diffSec / 3600)}時間前`;
 }
 
 function formatBytes(bytes: number): string {
@@ -220,45 +194,6 @@ function CompactServiceStatus({
             );
           })}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ServiceCard({ service }: { service: ServiceStatus }) {
-  const isHealthy = service.health === 'up';
-
-  return (
-    <div className={`card bg-base-200 border-l-4 ${isHealthy ? 'border-l-success' : 'border-l-error'}`}>
-      <div className="card-body p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span
-              className={`icon-[mdi--server] size-8 ${isHealthy ? 'text-success' : 'text-error'}`}
-              aria-hidden="true"
-            />
-            <div>
-              <h3 className="font-bold text-base">{service.name}</h3>
-              <p className="text-xs text-base-content/60 font-mono">{service.instance}</p>
-            </div>
-          </div>
-          <HealthBadge health={service.health} />
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-          <div>
-            <span className="text-base-content/60">最終スクレイプ:</span>
-            <span className="ml-2">{formatLastScrape(service.lastScrape)}</span>
-          </div>
-          <div>
-            <span className="text-base-content/60">応答時間:</span>
-            <span className="ml-2">{formatDuration(service.lastScrapeDuration)}</span>
-          </div>
-        </div>
-
-        {service.lastError && (
-          <div className="mt-2 p-2 bg-error/10 rounded text-error text-xs font-mono break-all">{service.lastError}</div>
-        )}
       </div>
     </div>
   );
