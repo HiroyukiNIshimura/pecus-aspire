@@ -5,8 +5,9 @@ set -eu
 # backup_file_name: e.g., backup_20240101_120000.sql.gz (inside backup volume)
 # If not provided, it will prompt or fail depending on implementation of restore-helper
 
+# shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-# shellcheck source=./lib.sh
+# shellcheck disable=SC1091
 . "$script_dir/lib.sh"
 
 require_cmd docker
@@ -16,6 +17,7 @@ target_file="${1:-}"
 if [ -z "$target_file" ]; then
   # List available backups
   echo "Available backups:"
+  # shellcheck disable=SC2154
   compose \
     -f "$bluegreen_dir/docker-compose.infra.yml" \
     -f "$bluegreen_dir/docker-compose.restore-helper.yml" \

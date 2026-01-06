@@ -1,8 +1,9 @@
 #!/bin/sh
 set -eu
 
+# shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-# shellcheck source=./lib.sh
+# shellcheck disable=SC1091
 . "$script_dir/lib.sh"
 
 require_cmd docker
@@ -14,14 +15,14 @@ echo ""
 show_container_status() {
   name="$1"
   running=$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null || echo "")
-  
+
   if [ "$running" != "true" ]; then
     status="stopped"
   else
     health=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}}' "$name" 2>/dev/null || echo "-")
     status="running ($health)"
   fi
-  
+
   # POSIX printf format
   printf "  %-30s %s\n" "$name" "$status"
 }

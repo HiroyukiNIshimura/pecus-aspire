@@ -4,8 +4,9 @@ set -eu
 # Create docker image snapshot from current running containers (or specified tags)
 # This is useful for rollback if we don't have a registry.
 
+# shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-# shellcheck source=./lib.sh
+# shellcheck disable=SC1091
 . "$script_dir/lib.sh"
 
 require_cmd docker
@@ -21,11 +22,11 @@ images="coati-webapi-$slot:local coati-frontend-$slot:local coati-backfire-$slot
 for img in $images; do
   # e.g. coati-webapi-blue:local -> coati-webapi:snapshot-2024...
   base_name=$(echo "$img" | sed -E 's/-(blue|green):local//')
-  
+
   # Remove slot from base name to make snapshot independent of slot?
   # Actually, if we want to restore to any slot, we should just use generic names.
   # But currently images are tagged with slot suffix.
-  
+
   target_tag="${base_name}:snapshot-${tag_suffix}"
   latest_tag="${base_name}:snapshot-latest"
 

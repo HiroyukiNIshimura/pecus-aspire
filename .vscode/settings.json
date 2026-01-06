@@ -108,5 +108,9 @@
         "copilot/oswe-vscode-prime"
       ]
     }
-  }
+  },
+  "cSpell.words": [
+    "CDPATH",
+    "webapi"
+  ]
 }

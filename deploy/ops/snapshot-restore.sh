@@ -5,8 +5,9 @@ set -eu
 # Usage: ./snapshot-restore.sh [snapshot_suffix]
 # If suffix is omitted, "latest" is used.
 
+# shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-# shellcheck source=./lib.sh
+# shellcheck disable=SC1091
 . "$script_dir/lib.sh"
 
 require_cmd docker
@@ -25,7 +26,7 @@ services="coati-webapi coati-frontend coati-backfire"
 
 for svc in $services; do
   snapshot_img="$svc:snapshot-$suffix"
-  
+
   if ! docker image inspect "$snapshot_img" >/dev/null 2>&1; then
     echo "[Error] Snapshot image not found: $snapshot_img" >&2
     exit 1

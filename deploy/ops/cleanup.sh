@@ -7,8 +7,9 @@ set -eu
 # - Dangling images
 # - Builder cache
 
+# shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-# shellcheck source=./lib.sh
+# shellcheck disable=SC1091
 . "$script_dir/lib.sh"
 
 require_cmd docker
@@ -41,7 +42,7 @@ for img in $(docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null | gre
       continue
       ;;
   esac
-  
+
   # Check if image is used by any container (even stopped ones not caught above)
   img_id=$(docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep "^$img " | awk '{print $2}')
   if [ -n "$img_id" ]; then
