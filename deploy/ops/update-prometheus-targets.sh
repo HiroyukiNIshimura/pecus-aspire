@@ -45,7 +45,17 @@ cat > "$targets_dir/backfire.json" <<EOF
 ]
 EOF
 
-# Frontend doesn't expose metrics yet, but placeholder if needed
-# (Skipped for now)
+cat > "$targets_dir/frontend.json" <<EOF
+[
+  {
+    "targets": ["frontend-${slot}:3000"],
+    "labels": {
+      "slot": "${slot}",
+      "env": "production",
+      "service": "frontend"
+    }
+  }
+]
+EOF
 
 echo "[OK] Updated targets in $targets_dir"

@@ -1,1 +1,4 @@
 .env
+ops/prometheus/targets/backend.json
+ops/prometheus/targets/frontend.json
+ops/prometheus/targets/backfire.json
