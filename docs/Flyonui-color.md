@@ -4,7 +4,7 @@
 
 - **コンテキスト**: FlyonUI のセマンティックカラー使用ルール。
 - **重要ルール**:
-  - **セマンティックカラー**: `primary`, `secondary`, `accent`, `info`, `success`, `warning`, `error` を使用する。
+  - **セマンティックカラー**: ✅→`primary`, `secondary`, `accent`, `info`, `success`, `warning`, `error` を使用する。❌→`ghost`
   - **クラス名**: `bg-primary`, `text-primary`, `btn-primary` のように使用。
   - **禁止事項**: `ghost` はセマンティックカラーではない。
   - **コンテンツカラー**: 背景色の上には対応するコンテンツカラーを使用（例: `bg-primary` 上には `text-primary-content`）。
