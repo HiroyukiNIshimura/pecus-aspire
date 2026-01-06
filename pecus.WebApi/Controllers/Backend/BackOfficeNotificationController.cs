@@ -6,7 +6,7 @@ using Pecus.Models.Responses.BackOffice;
 using Pecus.Models.Responses.Common;
 using Pecus.Services;
 
-namespace Pecus.Controllers.Entrance;
+namespace Pecus.Controllers.Backend;
 
 /// <summary>
 /// バックオフィス用コントローラー（システム通知管理）

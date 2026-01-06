@@ -15,7 +15,7 @@ using Pecus.Models.Responses.BackOffice;
 using Pecus.Models.Responses.Common;
 using Pecus.Services;
 
-namespace Pecus.Controllers.Entrance;
+namespace Pecus.Controllers.Backend;
 
 /// <summary>
 /// バックオフィス用コントローラー（組織管理）
@@ -298,5 +298,47 @@ public class BackOfficeController : BaseBackendController
         );
 
         return TypedResults.Ok(new SuccessResponse { Message = "組織登録完了メールを再送しました。" });
+    }
+
+    /// <summary>
+    /// 組織に紐づくボット一覧を取得
+    /// </summary>
+    /// <param name="id">組織ID</param>
+    /// <response code="200">ボット一覧</response>
+    /// <response code="404">組織が見つかりません</response>
+    [HttpGet("{id:int}/bots")]
+    [ProducesResponseType(typeof(List<BackOfficeBotResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<Ok<List<BackOfficeBotResponse>>> GetOrganizationBots(int id)
+    {
+        var response = await _backOfficeOrganizationService.GetBotsByOrganizationIdAsync(id);
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// ボットのPersona/Constraintを更新
+    /// </summary>
+    /// <param name="id">組織ID</param>
+    /// <param name="botId">ボットID</param>
+    /// <param name="request">更新リクエスト</param>
+    /// <response code="200">更新後のボット情報</response>
+    /// <response code="404">ボットが見つかりません</response>
+    /// <response code="409">楽観ロック競合</response>
+    [HttpPut("{id:int}/bots/{botId:int}/persona")]
+    [ProducesResponseType(typeof(BackOfficeBotResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<Ok<BackOfficeBotResponse>> UpdateBotPersona(
+        int id,
+        int botId,
+        [FromBody] BackOfficeUpdateBotPersonaRequest request)
+    {
+        var response = await _backOfficeOrganizationService.UpdateBotPersonaAsync(botId, request);
+        return TypedResults.Ok(response);
     }
 }

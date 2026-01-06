@@ -2,7 +2,9 @@
 
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
+  BackOfficeBotResponse,
   BackOfficeOrganizationDetailResponse,
+  BackOfficeUpdateBotPersonaRequest,
   BackOfficeUpdateOrganizationRequest,
   CreateOrganizationRequest,
   OrganizationWithAdminResponse,
@@ -111,5 +113,43 @@ export async function resendOrganizationCreatedEmail(organizationId: number): Pr
   } catch (error) {
     console.error('Failed to resend organization created email:', error);
     return handleApiErrorForAction(error, { defaultMessage: '組織登録完了メールの再送に失敗しました' });
+  }
+}
+
+/**
+ * Server Action: BackOffice - 組織のボット一覧を取得
+ */
+export async function getBackOfficeOrganizationBots(
+  organizationId: number,
+): Promise<ApiResponse<BackOfficeBotResponse[]>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizationsBots(organizationId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch organization bots:', error);
+    return handleApiErrorForAction(error, { defaultMessage: 'ボット一覧の取得に失敗しました' });
+  }
+}
+
+/**
+ * Server Action: BackOffice - ボットのPersona/Constraintを更新
+ */
+export async function updateBackOfficeBotPersona(
+  organizationId: number,
+  botId: number,
+  request: BackOfficeUpdateBotPersonaRequest,
+): Promise<ApiResponse<BackOfficeBotResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.backOfficeOrganizations.putApiBackofficeOrganizationsBotsPersona(
+      organizationId,
+      botId,
+      request,
+    );
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to update bot persona:', error);
+    return handleApiErrorForAction(error, { defaultMessage: 'ボットの更新に失敗しました' });
   }
 }

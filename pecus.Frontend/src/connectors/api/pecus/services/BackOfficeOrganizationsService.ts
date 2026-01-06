@@ -2,8 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { BackOfficeBotResponse } from '../models/BackOfficeBotResponse';
 import type { BackOfficeDeleteOrganizationRequest } from '../models/BackOfficeDeleteOrganizationRequest';
 import type { BackOfficeOrganizationDetailResponse } from '../models/BackOfficeOrganizationDetailResponse';
+import type { BackOfficeUpdateBotPersonaRequest } from '../models/BackOfficeUpdateBotPersonaRequest';
 import type { BackOfficeUpdateOrganizationRequest } from '../models/BackOfficeUpdateOrganizationRequest';
 import type { CreateOrganizationRequest } from '../models/CreateOrganizationRequest';
 import type { OrganizationWithAdminResponse } from '../models/OrganizationWithAdminResponse';
@@ -160,6 +162,59 @@ export class BackOfficeOrganizationsService {
             errors: {
                 400: `管理者ユーザーは既にパスワードを設定済みです`,
                 404: `組織または管理者ユーザーが見つかりません`,
+            },
+        });
+    }
+    /**
+     * 組織に紐づくボット一覧を取得
+     * @param id 組織ID
+     * @returns BackOfficeBotResponse ボット一覧
+     * @throws ApiError
+     */
+    public static getApiBackofficeOrganizationsBots(
+        id: number,
+    ): CancelablePromise<Array<BackOfficeBotResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/backoffice/organizations/{id}/bots',
+            path: {
+                'id': id,
+            },
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
+                404: `組織が見つかりません`,
+            },
+        });
+    }
+    /**
+     * ボットのPersona/Constraintを更新
+     * @param id 組織ID
+     * @param botId ボットID
+     * @param requestBody 更新リクエスト
+     * @returns BackOfficeBotResponse 更新後のボット情報
+     * @throws ApiError
+     */
+    public static putApiBackofficeOrganizationsBotsPersona(
+        id: number,
+        botId: number,
+        requestBody: BackOfficeUpdateBotPersonaRequest,
+    ): CancelablePromise<BackOfficeBotResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/backoffice/organizations/{id}/bots/{botId}/persona',
+            path: {
+                'id': id,
+                'botId': botId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                401: `Unauthorized`,
+                403: `Forbidden`,
+                404: `ボットが見つかりません`,
+                409: `楽観ロック競合`,
             },
         });
     }

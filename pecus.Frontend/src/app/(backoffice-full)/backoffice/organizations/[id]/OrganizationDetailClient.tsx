@@ -9,6 +9,7 @@ import {
 } from '@/actions/backoffice/organizations';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
+import BotListSection from '@/components/backoffice/BotListSection';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import DeleteOrganizationModal from '@/components/common/overlays/DeleteOrganizationModal';
 import type { BackOfficeOrganizationDetailResponse } from '@/connectors/api/pecus';
@@ -344,6 +345,9 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                 </div>
               </div>
             )}
+
+            {/* ボット一覧セクション */}
+            {data && <BotListSection organizationId={data.id} />}
           </div>
         </main>
       </div>

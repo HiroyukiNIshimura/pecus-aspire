@@ -21,6 +21,7 @@ export type { AssignedTaskInfo } from './models/AssignedTaskInfo';
 export type { AssigneeTaskLoadResponse } from './models/AssigneeTaskLoadResponse';
 export type { AvailableModelResponse } from './models/AvailableModelResponse';
 export type { AvatarType } from './models/AvatarType';
+export type { BackOfficeBotResponse } from './models/BackOfficeBotResponse';
 export type { BackOfficeCreateNotificationRequest } from './models/BackOfficeCreateNotificationRequest';
 export type { BackOfficeDeleteNotificationRequest } from './models/BackOfficeDeleteNotificationRequest';
 export type { BackOfficeDeleteOrganizationRequest } from './models/BackOfficeDeleteOrganizationRequest';
@@ -28,8 +29,10 @@ export type { BackOfficeNotificationDetailResponse } from './models/BackOfficeNo
 export type { BackOfficeNotificationListItemResponse } from './models/BackOfficeNotificationListItemResponse';
 export type { BackOfficeOrganizationDetailResponse } from './models/BackOfficeOrganizationDetailResponse';
 export type { BackOfficeOrganizationListItemResponse } from './models/BackOfficeOrganizationListItemResponse';
+export type { BackOfficeUpdateBotPersonaRequest } from './models/BackOfficeUpdateBotPersonaRequest';
 export type { BackOfficeUpdateNotificationRequest } from './models/BackOfficeUpdateNotificationRequest';
 export type { BackOfficeUpdateOrganizationRequest } from './models/BackOfficeUpdateOrganizationRequest';
+export type { BotType } from './models/BotType';
 export type { ChatMessageItem } from './models/ChatMessageItem';
 export type { ChatMessageReplyItem } from './models/ChatMessageReplyItem';
 export type { ChatMessagesResponse } from './models/ChatMessagesResponse';

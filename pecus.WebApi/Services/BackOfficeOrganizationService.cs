@@ -26,6 +26,106 @@ public class BackOfficeOrganizationService
     }
 
     /// <summary>
+    /// 組織に紐づくボット一覧を取得
+    /// </summary>
+    public async Task<List<BackOfficeBotResponse>> GetBotsByOrganizationIdAsync(int organizationId)
+    {
+        var organization = await _context.Organizations
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == organizationId);
+
+        if (organization == null)
+        {
+            throw new NotFoundException("組織が見つかりません。");
+        }
+
+        var bots = await _context.Bots
+            .AsNoTracking()
+            .Where(b => b.OrganizationId == organizationId)
+            .OrderBy(b => b.Type)
+            .ThenBy(b => b.Name)
+            .Select(b => new BackOfficeBotResponse
+            {
+                Id = b.Id,
+                Name = b.Name,
+                Type = b.Type,
+                Persona = b.Persona,
+                Constraint = b.Constraint,
+                IconUrl = b.IconUrl,
+                CreatedAt = b.CreatedAt,
+                UpdatedAt = b.UpdatedAt,
+                RowVersion = b.RowVersion,
+            })
+            .ToListAsync();
+
+        return bots;
+    }
+
+    /// <summary>
+    /// ボットのPersona/Constraintを更新
+    /// </summary>
+    public async Task<BackOfficeBotResponse> UpdateBotPersonaAsync(
+        int botId,
+        BackOfficeUpdateBotPersonaRequest request)
+    {
+        var bot = await _context.Bots
+            .FirstOrDefaultAsync(b => b.Id == botId);
+
+        if (bot == null)
+        {
+            throw new NotFoundException("ボットが見つかりません。");
+        }
+
+        bot.Persona = request.Persona;
+        bot.Constraint = request.Constraint;
+        bot.UpdatedAt = DateTimeOffset.UtcNow;
+
+        _context.Entry(bot).Property(b => b.RowVersion).OriginalValue = request.RowVersion;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            var latestBot = await _context.Bots.FindAsync(botId);
+            var conflictedResponse = latestBot != null
+                ? new BackOfficeBotResponse
+                {
+                    Id = latestBot.Id,
+                    Name = latestBot.Name,
+                    Type = latestBot.Type,
+                    Persona = latestBot.Persona,
+                    Constraint = latestBot.Constraint,
+                    IconUrl = latestBot.IconUrl,
+                    CreatedAt = latestBot.CreatedAt,
+                    UpdatedAt = latestBot.UpdatedAt,
+                    RowVersion = latestBot.RowVersion,
+                }
+                : null;
+            throw new ConcurrencyException<BackOfficeBotResponse>(
+                "ボットは他のユーザーによって更新されました。最新のデータを再取得してください。",
+                conflictedResponse
+            );
+        }
+
+        _logger.LogInformation("ボットのPersona/Constraintを更新しました: BotId={BotId}", botId);
+
+        return new BackOfficeBotResponse
+        {
+            Id = bot.Id,
+            Name = bot.Name,
+            Type = bot.Type,
+            Persona = bot.Persona,
+            Constraint = bot.Constraint,
+            IconUrl = bot.IconUrl,
+            CreatedAt = bot.CreatedAt,
+            UpdatedAt = bot.UpdatedAt,
+            RowVersion = bot.RowVersion,
+        };
+    }
+
+    /// <summary>
     /// 組織一覧を取得
     /// </summary>
     public async Task<PagedResponse<BackOfficeOrganizationListItemResponse>> GetOrganizationsAsync(

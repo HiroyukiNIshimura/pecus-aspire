@@ -44,7 +44,8 @@ try
 {
     entity.Property1 = request.Property1;
     entity.Property2 = request.Property2;
-    entity.RowVersion = request.RowVersion; // 比較用に設定
+    // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
+    _context.Entry(entity).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
     await _context.SaveChangesAsync();
 }
 catch (DbUpdateConcurrencyException)
@@ -57,6 +58,8 @@ catch (DbUpdateConcurrencyException)
     );
 }
 ```
+
+**重要**: `entity.RowVersion = request.RowVersion` と書くと SET 句に含まれてしまいます。`xmin` はシステムカラムなので直接書き込めません。`OriginalValue` に設定することで、EF Core が WHERE 句に `xmin = @originalValue` を追加し、楽観ロックが機能します。
 
 #### パターンの特徴
 

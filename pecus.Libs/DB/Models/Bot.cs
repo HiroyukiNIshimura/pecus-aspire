@@ -64,4 +64,9 @@ public class Bot
     /// ボット作成時に自動生成される
     /// </summary>
     public ChatActor? ChatActor { get; set; }
+
+    /// <summary>
+    /// 楽観ロック用バージョン（PostgreSQL xmin）
+    /// </summary>
+    public uint RowVersion { get; set; }
 }
