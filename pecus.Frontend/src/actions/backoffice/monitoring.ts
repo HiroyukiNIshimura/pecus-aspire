@@ -68,6 +68,10 @@ export interface SystemMetrics {
   diskUsage: MetricTimeSeries[];
   processMemory: MetricTimeSeries[];
   httpRequestRate: MetricTimeSeries[];
+  httpErrorRate: MetricTimeSeries[];
+  httpResponseTimeP50: MetricTimeSeries[];
+  httpResponseTimeP95: MetricTimeSeries[];
+  httpResponseTimeP99: MetricTimeSeries[];
 }
 
 /**
@@ -343,6 +347,10 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
       systemMemRes,
       systemCpuRes,
       diskUsageRes,
+      httpErrorRateRes,
+      httpP50Res,
+      httpP95Res,
+      httpP99Res,
     ] = await Promise.all([
       fetchPrometheusRange('rate(dotnet_process_cpu_time_seconds_total{job="backend"}[5m]) * 100', start, end, step),
       fetchPrometheusRange(
@@ -375,6 +383,30 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
       ),
       fetchPrometheusRange(
         `100 - ((node_filesystem_avail_bytes{job="node",mountpoint=~"${diskMountPointsRegex}"} / node_filesystem_size_bytes{job="node",mountpoint=~"${diskMountPointsRegex}"}) * 100)`,
+        start,
+        end,
+        step,
+      ),
+      fetchPrometheusRange(
+        'sum by (job) (rate(http_server_request_duration_seconds_count{http_response_status_code=~"4..|5.."}[5m])) / sum by (job) (rate(http_server_request_duration_seconds_count[5m])) * 100',
+        start,
+        end,
+        step,
+      ),
+      fetchPrometheusRange(
+        'histogram_quantile(0.5, sum by (job, le) (rate(http_server_request_duration_seconds_bucket[5m]))) * 1000',
+        start,
+        end,
+        step,
+      ),
+      fetchPrometheusRange(
+        'histogram_quantile(0.95, sum by (job, le) (rate(http_server_request_duration_seconds_bucket[5m]))) * 1000',
+        start,
+        end,
+        step,
+      ),
+      fetchPrometheusRange(
+        'histogram_quantile(0.99, sum by (job, le) (rate(http_server_request_duration_seconds_bucket[5m]))) * 1000',
         start,
         end,
         step,
@@ -414,6 +446,10 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
         diskUsage,
         processMemory,
         httpRequestRate: parseRangeResponse(httpRateRes, 'HTTPリクエスト/秒'),
+        httpErrorRate: parseRangeResponse(httpErrorRateRes, 'HTTPエラーレート'),
+        httpResponseTimeP50: parseRangeResponse(httpP50Res, 'p50'),
+        httpResponseTimeP95: parseRangeResponseWithJobOverride(httpP95Res, 'レスポンスタイム', 'p95'),
+        httpResponseTimeP99: parseRangeResponseWithJobOverride(httpP99Res, 'レスポンスタイム', 'p99'),
       },
     };
   } catch (error) {

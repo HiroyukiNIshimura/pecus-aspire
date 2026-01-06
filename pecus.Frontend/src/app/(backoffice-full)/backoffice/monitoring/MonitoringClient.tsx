@@ -713,6 +713,22 @@ export default function MonitoringClient({
                   {metricsTab === 'http' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <MetricsChart title="HTTPリクエストレート" series={metrics?.httpRequestRate ?? []} unit="req/s" />
+                      <MetricsChart
+                        title="HTTPエラーレート"
+                        series={metrics?.httpErrorRate ?? []}
+                        unit="%"
+                        yAxisDomain={[0, 'auto']}
+                      />
+                      <MetricsChart
+                        title="レスポンスタイム (p50)"
+                        series={metrics?.httpResponseTimeP50 ?? []}
+                        unit="ms"
+                      />
+                      <MetricsChart
+                        title="レスポンスタイム (p95 / p99)"
+                        series={[...(metrics?.httpResponseTimeP95 ?? []), ...(metrics?.httpResponseTimeP99 ?? [])]}
+                        unit="ms"
+                      />
                     </div>
                   )}
 
