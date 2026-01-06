@@ -11,11 +11,11 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 confirm_yes "This will DROP database and LOST ALL DATA"
 
 echo "[Info] Stopping apps..."
-./app-down.sh -y
+sh ./app-down.sh -y
 
 echo "[Info] Running DbManager (Drop & Create)..."
 # Ensure infra is up (db needs to be running)
-./infra-up.sh
+sh ./infra-up.sh
 
 compose_migrate run --rm --build dbmanager
 

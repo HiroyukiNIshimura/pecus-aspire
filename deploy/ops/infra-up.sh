@@ -21,4 +21,4 @@ wait_running pecus-nginx 60
 echo "[OK] Infra started."
 
 echo "[Info] Updating Prometheus targets..."
-"$script_dir/update-prometheus-targets.sh"
+sh "$script_dir/update-prometheus-targets.sh"

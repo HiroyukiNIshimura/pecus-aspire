@@ -135,7 +135,7 @@ for img in $(docker images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null | gre
   case "$img" in
     *":snapshot-latest") continue ;;
   esac
-  
+
   img_id=$(docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep "^$img " | awk '{print $2}')
   if [ -n "$img_id" ] && ! docker ps -q --filter "ancestor=$img_id" 2>/dev/null | grep -q .; then
     docker rmi "$img" 2>/dev/null || true
@@ -149,6 +149,6 @@ docker images -f "dangling=true" -q 2>/dev/null | xargs -r docker rmi 2>/dev/nul
 docker builder prune -f 2>/dev/null || true
 
 echo "[Info] 9. Update Prometheus targets: $target" >&2
-"$script_dir/update-prometheus-targets.sh" "$target"
+sh "$script_dir/update-prometheus-targets.sh" "$target"
 
 echo "[OK] Switched to: $target"

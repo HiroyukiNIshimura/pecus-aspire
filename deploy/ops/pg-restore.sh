@@ -20,7 +20,7 @@ if [ -z "$target_file" ]; then
     -f "$bluegreen_dir/docker-compose.infra.yml" \
     -f "$bluegreen_dir/docker-compose.restore-helper.yml" \
     run --rm restore-helper ls -lh /backups
-  
+
   echo ""
   printf "Enter backup filename to restore: "
   read -r target_file
@@ -34,7 +34,7 @@ fi
 confirm_yes "Restore from $target_file? (Current DB will be overwritten)"
 
 echo "[Info] Stopping apps..."
-./app-down.sh -y
+sh ./app-down.sh -y
 
 echo "[Info] Restoring..."
 # Using Environment variable or Command argument depending on restore-helper implementation.

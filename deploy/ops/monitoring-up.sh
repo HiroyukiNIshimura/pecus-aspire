@@ -10,7 +10,7 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 require_cmd docker
 
 echo "[Info] Updating Prometheus targets..."
-"$script_dir/update-prometheus-targets.sh"
+sh "$script_dir/update-prometheus-targets.sh"
 
 echo "[Info] Starting Monitoring stack..."
 compose_monitoring up -d
