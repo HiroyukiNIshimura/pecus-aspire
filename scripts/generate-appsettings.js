@@ -294,10 +294,6 @@ function generateDockerEnv(infra, _shared, _projects) {
   const deployEnvPath = path.join(ROOT_DIR, 'deploy', '.env');
   fs.writeFileSync(deployEnvPath, lines.join('\n') + '\n');
   console.log('Generated:', deployEnvPath);
-
-  const blueGreenEnvPath = path.join(ROOT_DIR, 'deploy-bluegreen', '.env');
-  fs.writeFileSync(blueGreenEnvPath, lines.join('\n') + '\n');
-  console.log('Generated:', blueGreenEnvPath);
 }
 
 /**
