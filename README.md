@@ -305,6 +305,11 @@ dotnet ef migrations add MigrationName
 dotnet run
 ```
 
+### 補足
+**開発環境では以下のエンドポイントでHTMLメールデザイン確認可能**
+https://localhost:7265/api/dev/email-preview/index
+GET /api/dev/email-preview/index	テンプレート一覧をHTMLで表示（ブラウザ用インデックスページ）
+
 ### Hangfire タスク
 
 新しいバックグラウンドタスクを追加：
