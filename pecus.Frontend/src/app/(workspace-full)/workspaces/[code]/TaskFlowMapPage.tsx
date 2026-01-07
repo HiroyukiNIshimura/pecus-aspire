@@ -88,10 +88,10 @@ export default function TaskFlowMapPage({
   }, [onClose]);
 
   return (
-    <div className="card">
-      <div className="card-body">
+    <div className="card flex flex-col flex-1 min-h-0">
+      <div className="card-body flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* ヘッダー */}
-        <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-start justify-between gap-4 shrink-0">
           {/* 左側: タイトルとコミッター */}
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-bold flex items-center gap-2 flex-wrap">
@@ -132,8 +132,8 @@ export default function TaskFlowMapPage({
           </div>
         </div>
 
-        {/* コンテンツ */}
-        <div className="flex-1 min-h-0">
+        {/* コンテンツ（スクロール可能） */}
+        <div className="flex-1 min-h-0 overflow-y-auto mt-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <span className="loading loading-spinner loading-lg text-primary" />
