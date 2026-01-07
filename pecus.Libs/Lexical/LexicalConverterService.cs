@@ -1,3 +1,4 @@
+using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Pecus.Lexical.Grpc;
@@ -12,18 +13,21 @@ public class LexicalConverterService : ILexicalConverterService, IDisposable
     private readonly GrpcChannel _channel;
     private readonly LexicalConverter.LexicalConverterClient _client;
     private readonly ILogger<LexicalConverterService> _logger;
+    private readonly Metadata _authMetadata;
     private bool _disposed;
 
     /// <summary>
     /// LexicalConverterService のコンストラクタ
     /// </summary>
     /// <param name="grpcEndpoint">gRPC サービスのエンドポイント URL</param>
+    /// <param name="apiKey">gRPC 認証用 API キー</param>
     /// <param name="logger">ロガー</param>
-    public LexicalConverterService(string grpcEndpoint, ILogger<LexicalConverterService> logger)
+    public LexicalConverterService(string grpcEndpoint, string apiKey, ILogger<LexicalConverterService> logger)
     {
         _logger = logger;
         _channel = GrpcChannel.ForAddress(grpcEndpoint);
         _client = new LexicalConverter.LexicalConverterClient(_channel);
+        _authMetadata = new Metadata { { "x-api-key", apiKey } };
 
         _logger.LogInformation("LexicalConverterService initialized with endpoint: {Endpoint}", grpcEndpoint);
     }
@@ -63,7 +67,11 @@ public class LexicalConverterService : ILexicalConverterService, IDisposable
         try
         {
             var request = new MarkdownToLexicalRequest { Markdown = markdown };
-            var response = await _client.FromMarkdownAsync(request, cancellationToken: cancellationToken);
+            var response = await _client.FromMarkdownAsync(
+                request,
+                headers: _authMetadata,
+                cancellationToken: cancellationToken
+            );
 
             return new LexicalConvertResult
             {
@@ -113,9 +121,21 @@ public class LexicalConverterService : ILexicalConverterService, IDisposable
 
             ConvertResponse response = type switch
             {
-                ConvertType.Html => await _client.ToHtmlAsync(request, cancellationToken: cancellationToken),
-                ConvertType.Markdown => await _client.ToMarkdownAsync(request, cancellationToken: cancellationToken),
-                ConvertType.PlainText => await _client.ToPlainTextAsync(request, cancellationToken: cancellationToken),
+                ConvertType.Html => await _client.ToHtmlAsync(
+                    request,
+                    headers: _authMetadata,
+                    cancellationToken: cancellationToken
+                ),
+                ConvertType.Markdown => await _client.ToMarkdownAsync(
+                    request,
+                    headers: _authMetadata,
+                    cancellationToken: cancellationToken
+                ),
+                ConvertType.PlainText => await _client.ToPlainTextAsync(
+                    request,
+                    headers: _authMetadata,
+                    cancellationToken: cancellationToken
+                ),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
 

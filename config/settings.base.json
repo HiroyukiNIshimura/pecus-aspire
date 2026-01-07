@@ -62,7 +62,8 @@
 
   "_shared": {
     "LexicalConverter": {
-      "Endpoint": "http://localhost:5100"
+      "Endpoint": "http://localhost:5100",
+      "GrpcApiKey": "pecus-lexical-internal-key-change-in-production"
     },
     "Email": {
       "SmtpHost": "smtp.example.local",

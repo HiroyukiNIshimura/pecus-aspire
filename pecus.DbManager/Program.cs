@@ -55,10 +55,11 @@ builder.Services.AddScoped<DatabaseSeeder>();
 
 // Lexical Converter gRPC サービスの登録
 var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";
+var lexicalConverterApiKey = builder.Configuration["LexicalConverter:GrpcApiKey"] ?? "";
 builder.Services.AddSingleton<ILexicalConverterService>(sp =>
 {
     var logger = sp.GetRequiredService<ILogger<LexicalConverterService>>();
-    return new LexicalConverterService(lexicalConverterEndpoint, logger);
+    return new LexicalConverterService(lexicalConverterEndpoint, lexicalConverterApiKey, logger);
 });
 
 // OpenTelemetryの設定

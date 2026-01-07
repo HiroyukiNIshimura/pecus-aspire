@@ -1,5 +1,6 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
+import { GrpcApiKeyGuard } from './guards';
 // biome-ignore lint/style/useImportType: NestJS DI requires runtime class reference
 import { LexicalService } from './lexical.service';
 
@@ -20,6 +21,7 @@ export interface ConvertResponse {
 }
 
 @Controller()
+@UseGuards(GrpcApiKeyGuard)
 export class LexicalController {
   constructor(private readonly lexicalService: LexicalService) {}
 

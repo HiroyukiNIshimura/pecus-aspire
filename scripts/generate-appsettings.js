@@ -209,7 +209,10 @@ function generate() {
   console.log('Generated:', backfirePath);
 
   // pecus.DbManager/appsettings.json
-  const dbmanagerConfig = projects.dbmanager;
+  const dbmanagerConfig = {
+    ...projects.dbmanager,
+    LexicalConverter: _shared.LexicalConverter,
+  };
   const dbmanagerPath = path.join(ROOT_DIR, 'pecus.DbManager', 'appsettings.json');
   fs.writeFileSync(dbmanagerPath, JSON.stringify(dbmanagerConfig, null, 2) + '\n');
   console.log('Generated:', dbmanagerPath);
