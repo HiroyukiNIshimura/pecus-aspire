@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
+using Pecus.Libs.AI.Prompts;
+using Pecus.Libs.AI.Prompts.Notifications;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -15,25 +17,7 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 /// </summary>
 public class UpdateTaskTask : TaskNotificationTaskBase
 {
-    /// <summary>
-    /// AI メッセージ生成用のシステムプロンプト
-    /// </summary>
-    private const string MessageGenerationPrompt = """
-        あなたはチームのチャットルームに投稿するアシスタントです。
-        【重要】これは既存タスクの「更新」通知です。新規作成ではありません。
-        更新後のタスク内容を確認し、チームメンバーに対して簡潔に紹介するメッセージを生成してください。
-
-        要件:
-        - 100文字以内で簡潔にまとめる
-        - 「更新」「変更」などの表現を使う（「作成」「新規」は使わない）
-        - タスクの現在の状態（種類、優先度、期限、進捗など）を伝える
-        - 絵文字は使わない
-        - Markdownは使用しない
-        - 挨拶は不要
-
-        例: 「バグ修正タスクの優先度が高に更新されました。期限は12/25（残り3日）、進捗50%です。」
-        """;
-
+    private readonly TaskUpdatedPromptTemplate _promptTemplate = new();
     private readonly IAiClientFactory? _aiClientFactory;
     private readonly IBotSelector? _botSelector;
 
@@ -108,15 +92,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
             var priorityText = GetPriorityText(task.Priority);
             var dueDateText = GetDueDateText(task.DueDate);
 
-            var contentForAnalysis = $"""
-                タスク種類: {taskTypeName}
-                優先度: {priorityText}
-                期限: {dueDateText}
-                進捗率: {task.ProgressPercentage}%
-                完了: {(task.IsCompleted ? "はい" : "いいえ")}
-                破棄: {(task.IsDiscarded ? "はい" : "いいえ")}
-                内容: {task.Content}
-                """;
+            var contentForAnalysis = $"タスク種類: {taskTypeName}\n優先度: {priorityText}\n期限: {dueDateText}\n内容: {task.Content}";
 
             var bot = await _botSelector.SelectBotByContentAsync(
                 organizationId,
@@ -130,21 +106,26 @@ public class UpdateTaskTask : TaskNotificationTaskBase
                 return defaultMessage;
             }
 
-            // Bot のペルソナと行動指針を MessageGenerationPrompt と統合
+            // Bot のペルソナと行動指針を プロンプトテンプレート と統合
+            var promptInput = new TaskUpdatedPromptInput(
+                UserName: userName,
+                TaskTypeName: taskTypeName,
+                PriorityText: priorityText,
+                DueDateText: dueDateText,
+                ProgressPercentage: task.ProgressPercentage,
+                IsCompleted: task.IsCompleted,
+                IsDiscarded: task.IsDiscarded,
+                Content: task.Content
+            );
+            var prompt = _promptTemplate.Build(promptInput);
+
             var botPersonaPrompt = new SystemPromptBuilder()
                 .WithRawPersona(bot.Persona)
                 .WithRawConstraint(bot.Constraint)
                 .Build();
-            var fullSystemPrompt = $"{MessageGenerationPrompt}\n\n{botPersonaPrompt}";
+            var fullSystemPrompt = $"{prompt.SystemPrompt}\n\n{botPersonaPrompt}";
 
-            var userPrompt = $"以下の更新されたタスクについて紹介メッセージを生成してください:\n\n{contentForAnalysis}";
-            var generatedMessage = await aiClient.GenerateTextWithMessagesAsync(
-                [
-                    (MessageRole.System, $@"Userの一人称は「{userName}」さんです。"),
-                    (MessageRole.User, userPrompt)
-                ],
-                fullSystemPrompt
-            );
+            var generatedMessage = await aiClient.GenerateTextAsync(fullSystemPrompt, prompt.UserPrompt);
 
             if (string.IsNullOrWhiteSpace(generatedMessage))
             {

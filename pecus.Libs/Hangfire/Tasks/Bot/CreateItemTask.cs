@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
+using Pecus.Libs.AI.Prompts;
+using Pecus.Libs.AI.Prompts.Notifications;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -16,23 +18,7 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 /// </summary>
 public class CreateItemTask : ItemNotificationTaskBase
 {
-    /// <summary>
-    /// AI メッセージ生成用のシステムプロンプト
-    /// </summary>
-    private const string MessageGenerationPrompt = """
-        あなたはチームのチャットルームに投稿するアシスタントです。
-        新しく作成されたアイテム（タスクや課題）の内容を確認し、チームメンバーに対して簡潔に紹介するメッセージを生成してください。
-
-        要件:
-        - 100文字以内で簡潔にまとめる
-        - アイテムの要点を伝える
-        - 絵文字は使わない
-        - Markdownは使用しない
-        - 挨拶は不要
-
-        例: 「〇〇さんが、新規ユーザー登録フローの改善について検討が始まりました。UXの向上を目指します。」
-        """;
-
+    private readonly ItemCreatedPromptTemplate _promptTemplate = new();
     private readonly ILexicalConverterService? _lexicalConverterService;
     private readonly IAiClientFactory? _aiClientFactory;
     private readonly IBotSelector? _botSelector;
@@ -144,22 +130,22 @@ public class CreateItemTask : ItemNotificationTaskBase
                 return defaultMessage;
             }
 
-            // Bot のペルソナと行動指針を MessageGenerationPrompt と統合
+            // Bot のペルソナと行動指針を プロンプトテンプレート と統合
+            var promptInput = new ItemCreatedPromptInput(
+                UserName: updatedByUserName,
+                Subject: item.Subject,
+                BodyMarkdown: markdownBody
+            );
+            var prompt = _promptTemplate.Build(promptInput);
+
             var botPersonaPrompt = new SystemPromptBuilder()
                 .WithRawPersona(bot.Persona)
                 .WithRawConstraint(bot.Constraint)
                 .Build();
-            var fullSystemPrompt = $"{MessageGenerationPrompt}\n\n{botPersonaPrompt}";
+            var fullSystemPrompt = $"{prompt.SystemPrompt}\n\n{botPersonaPrompt}";
 
             // AI でメッセージを生成
-            var userPrompt = $"以下のアイテムについて紹介メッセージを生成してください:\n\n{contentForAnalysis}";
-            var generatedMessage = await aiClient.GenerateTextWithMessagesAsync(
-                [
-                    (MessageRole.System, $@"Userの一人称は「{updatedByUserName}」さんです。"),
-                    (MessageRole.User, userPrompt)
-                ],
-                fullSystemPrompt
-            );
+            var generatedMessage = await aiClient.GenerateTextAsync(fullSystemPrompt, prompt.UserPrompt);
 
             if (string.IsNullOrWhiteSpace(generatedMessage))
             {

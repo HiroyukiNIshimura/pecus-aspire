@@ -4,55 +4,20 @@ using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;
-using System.Text.Json.Serialization;
+using Pecus.Libs.Hangfire.Tasks.Services;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
-
-/// <summary>
-/// AIが解析した日付情報を表すレスポンスモデル
-/// </summary>
-public class ReminderDateResponse
-{
-    /// <summary>
-    /// 年（省略可能、nullの場合は未来として成り立つ年を推定）
-    /// </summary>
-    [JsonPropertyName("year")]
-    public int? Year { get; set; }
-
-    /// <summary>
-    /// 月（1-12）
-    /// </summary>
-    [JsonPropertyName("month")]
-    public int? Month { get; set; }
-
-    /// <summary>
-    /// 日（1-31）
-    /// </summary>
-    [JsonPropertyName("day")]
-    public int? Day { get; set; }
-}
 
 /// <summary>
 /// タスクコメントで リマインダーが投稿された際にAIで日付を解析し、リマインダーをスケジュールする Hangfire タスク
 /// </summary>
 public class TaskCommentReminderTask
 {
-    private const string DateExtractionPrompt = """
-        あなたはテキストから日付情報を抽出するアシスタントです。
-        ユーザーが入力したテキストから、リマインダーとして設定したい日付を抽出してください。
-
-        ルール:
-        - 日付情報が見つかった場合は、year, month, day をJSON形式で返してください
-        - 年が明示されていない場合は year を null にしてください
-        - 日付情報が見つからない場合や、日付として解釈できない場合は、month と day を null にしてください
-        - 「明日」「来週」などの相対的な表現は、具体的な日付に変換しないでください（null を返す）
-        - 必ず指定されたJSON形式で返してください
-        """;
-
     private static readonly TimeZoneInfo JstTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
 
     private readonly ApplicationDbContext _context;
     private readonly IAiClientFactory _aiClientFactory;
+    private readonly IDateExtractor _dateExtractor;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<TaskCommentReminderTask> _logger;
 
@@ -62,11 +27,13 @@ public class TaskCommentReminderTask
     public TaskCommentReminderTask(
         ApplicationDbContext context,
         IAiClientFactory aiClientFactory,
+        IDateExtractor dateExtractor,
         IBackgroundJobClient backgroundJobClient,
         ILogger<TaskCommentReminderTask> logger)
     {
         _context = context;
         _aiClientFactory = aiClientFactory;
+        _dateExtractor = dateExtractor;
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
     }
@@ -144,7 +111,7 @@ public class TaskCommentReminderTask
                 return;
             }
 
-            var dateResponse = await ExtractDateFromCommentAsync(aiClient, comment.Content);
+            var dateResponse = await _dateExtractor.ExtractDateAsync(aiClient, comment.Content);
 
             if (dateResponse == null || !dateResponse.Month.HasValue || !dateResponse.Day.HasValue)
             {
@@ -154,7 +121,7 @@ public class TaskCommentReminderTask
                 return;
             }
 
-            var reminderDate = ResolveReminderDate(dateResponse);
+            var reminderDate = _dateExtractor.ResolveFutureDate(dateResponse, JstTimeZone);
             if (reminderDate == null)
             {
                 _logger.LogDebug(
@@ -190,98 +157,6 @@ public class TaskCommentReminderTask
                 commentId);
 
             throw;
-        }
-    }
-
-    /// <summary>
-    /// AIを使用してコメントから日付情報を抽出する
-    /// </summary>
-    private async Task<ReminderDateResponse?> ExtractDateFromCommentAsync(IAiClient aiClient, string commentContent)
-    {
-        try
-        {
-            var response = await aiClient.GenerateJsonAsync<ReminderDateResponse>(
-                DateExtractionPrompt,
-                commentContent);
-
-            return response;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(
-                ex,
-                "Failed to extract date from comment using AI");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// 日付レスポンスから有効な未来の日付を解決する
-    /// </summary>
-    private static DateOnly? ResolveReminderDate(ReminderDateResponse dateResponse)
-    {
-        if (!dateResponse.Month.HasValue || !dateResponse.Day.HasValue)
-        {
-            return null;
-        }
-
-        var month = dateResponse.Month.Value;
-        var day = dateResponse.Day.Value;
-
-        if (month < 1 || month > 12 || day < 1 || day > 31)
-        {
-            return null;
-        }
-
-        var nowJst = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, JstTimeZone);
-        var todayJst = DateOnly.FromDateTime(nowJst);
-
-        int year;
-        if (dateResponse.Year.HasValue)
-        {
-            year = dateResponse.Year.Value;
-        }
-        else
-        {
-            year = todayJst.Year;
-            var candidateDate = CreateValidDate(year, month, day);
-            if (candidateDate == null || candidateDate.Value <= todayJst)
-            {
-                year = todayJst.Year + 1;
-            }
-        }
-
-        var reminderDate = CreateValidDate(year, month, day);
-        if (reminderDate == null)
-        {
-            return null;
-        }
-
-        if (reminderDate.Value <= todayJst)
-        {
-            return null;
-        }
-
-        return reminderDate;
-    }
-
-    /// <summary>
-    /// 有効な日付を作成する（無効な日付の場合はnull）
-    /// </summary>
-    private static DateOnly? CreateValidDate(int year, int month, int day)
-    {
-        try
-        {
-            var daysInMonth = DateTime.DaysInMonth(year, month);
-            if (day > daysInMonth)
-            {
-                return null;
-            }
-            return new DateOnly(year, month, day);
-        }
-        catch
-        {
-            return null;
         }
     }
 

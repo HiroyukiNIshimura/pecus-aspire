@@ -84,6 +84,8 @@ builder.Services.AddSingleton<ILexicalConverterService>(sp =>
 builder.Services.AddSingleton<SignalRNotificationPublisher>();
 // 類似タスク担当者推薦サービスの登録
 builder.Services.AddScoped<ITaskAssignmentSuggester, TaskAssignmentSuggester>();
+// 日付抽出サービスの登録
+builder.Services.AddScoped<IDateExtractor, DateExtractor>();
 
 // AI クライアントの登録（APIキーが設定されているプロバイダーのみ有効化）
 builder.Services.AddOpenAIClient(builder.Configuration);

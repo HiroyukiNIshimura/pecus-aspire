@@ -4,6 +4,8 @@ using DiffPlex.DiffBuilder.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
+using Pecus.Libs.AI.Prompts;
+using Pecus.Libs.AI.Prompts.Notifications;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -21,25 +23,6 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 public class UpdateItemTask : ItemNotificationTaskBase
 {
     /// <summary>
-    /// AI メッセージ生成用のシステムプロンプト
-    /// </summary>
-    private const string MessageGenerationPrompt = """
-        あなたはチームのチャットルームに投稿するアシスタントです。
-        アイテム（タスクや課題）の変更内容を確認し、チームメンバーに対して変更点を簡潔に紹介するメッセージを生成してください。
-
-        要件:
-        - 100文字以内で簡潔にまとめる
-        - 差分情報（追加・削除）から変更の要点を伝える
-        - 絵文字は使わない
-        - Markdownは使用しない
-        - 挨拶は不要
-
-        例: 「件名が『初期設計』から『詳細設計』に変更されました。フェーズが進んだようです。」
-        例: 「本文が更新され、実装方針の詳細が追記されました。」
-        例: 「期限と担当者に関する記述が追加されました。」
-        """;
-
-    /// <summary>
     /// 差分抽出時の最大行数
     /// </summary>
     private const int MaxDiffLines = 50;
@@ -49,6 +32,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
     /// </summary>
     private sealed record UpdateDetails(string? New, string? Old);
 
+    private readonly ItemUpdatedPromptTemplate _promptTemplate = new();
     private readonly ILexicalConverterService? _lexicalConverterService;
     private readonly IAiClientFactory? _aiClientFactory;
     private readonly IBotSelector? _botSelector;
@@ -185,21 +169,24 @@ public class UpdateItemTask : ItemNotificationTaskBase
                 return defaultMessage;
             }
 
-            // Bot のペルソナと行動指針を MessageGenerationPrompt と統合
+            // Bot のペルソナと行動指針を プロンプトテンプレート と統合
+            var diffSummary = !isSubjectChange ? ExtractDiff(oldContent ?? "", newContent) : null;
+            var promptInput = new ItemUpdatedPromptInput(
+                UserName: updatedByUserName,
+                NewContent: newContent,
+                OldContent: oldContent,
+                IsSubjectChange: isSubjectChange,
+                DiffSummary: diffSummary
+            );
+            var prompt = _promptTemplate.Build(promptInput);
+
             var botPersonaPrompt = new SystemPromptBuilder()
                 .WithRawPersona(bot.Persona)
                 .WithRawConstraint(bot.Constraint)
                 .Build();
-            var fullSystemPrompt = $"{MessageGenerationPrompt}\n\n{botPersonaPrompt}";
+            var fullSystemPrompt = $"{prompt.SystemPrompt}\n\n{botPersonaPrompt}";
 
-            var userPrompt = BuildUserPrompt(newContent, oldContent, isSubjectChange);
-            var generatedMessage = await aiClient.GenerateTextWithMessagesAsync(
-                [
-                    (MessageRole.System, $@"Userの一人称は「{updatedByUserName}」さんです。"),
-                    (MessageRole.User, userPrompt)
-                ],
-                fullSystemPrompt
-            );
+            var generatedMessage = await aiClient.GenerateTextAsync(fullSystemPrompt, prompt.UserPrompt);
 
             if (string.IsNullOrWhiteSpace(generatedMessage))
             {
@@ -251,33 +238,6 @@ public class UpdateItemTask : ItemNotificationTaskBase
 
         var result = await _lexicalConverterService.ToMarkdownAsync(lexicalJson);
         return result.Success ? result.Result : null;
-    }
-
-    /// <summary>
-    /// AI へのユーザープロンプトを生成する（差分ベース）
-    /// </summary>
-    private static string BuildUserPrompt(string newContent, string? oldContent, bool isSubjectChange)
-    {
-        var changeType = isSubjectChange ? "件名" : "本文";
-
-        if (string.IsNullOrWhiteSpace(oldContent))
-        {
-            return $"以下のアイテムの{changeType}が変更されました。変更内容を紹介するメッセージを生成してください:\n\n【変更後】\n{newContent}";
-        }
-
-        if (isSubjectChange)
-        {
-            return $"以下のアイテムの件名が変更されました。変更内容を紹介するメッセージを生成してください:\n\n【変更前】\n{oldContent}\n\n【変更後】\n{newContent}";
-        }
-
-        var diffText = ExtractDiff(oldContent, newContent);
-
-        if (string.IsNullOrWhiteSpace(diffText))
-        {
-            return $"以下のアイテムの{changeType}が変更されましたが、実質的なテキスト変更はありませんでした。フォーマットや軽微な調整が行われた可能性があります。";
-        }
-
-        return $"以下のアイテムの本文が変更されました。差分を元にチームに変更内容を紹介するメッセージを生成してください:\n\n{diffText}";
     }
 
     /// <summary>

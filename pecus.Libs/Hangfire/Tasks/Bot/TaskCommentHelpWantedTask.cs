@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
+using Pecus.Libs.AI.Prompts;
+using Pecus.Libs.AI.Prompts.Notifications;
 using Pecus.Libs.AI.Tools;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
@@ -17,6 +19,7 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 /// </summary>
 public class TaskCommentHelpWantedTask
 {
+    private readonly HelpWantedPromptTemplate _promptTemplate = new();
     private readonly ApplicationDbContext _context;
     private readonly SignalRNotificationPublisher _publisher;
     private readonly IAiClientFactory _aiClientFactory;
@@ -269,8 +272,12 @@ public class TaskCommentHelpWantedTask
 
         try
         {
-            var (systemPrompt, userPrompt) = BuildAiPrompt(userName, taskContent, commentContent);
-            var response = await aiClient.GenerateTextAsync(systemPrompt, userPrompt);
+            var prompt = _promptTemplate.Build(new HelpWantedPromptInput(
+                UserName: userName,
+                TaskContent: taskContent,
+                CommentContent: commentContent
+            ));
+            var response = await aiClient.GenerateTextAsync(prompt.SystemPrompt, prompt.UserPrompt);
 
             if (!string.IsNullOrWhiteSpace(response))
             {
@@ -372,35 +379,6 @@ public class TaskCommentHelpWantedTask
         }
 
         return string.Join("\n\n", parts);
-    }
-
-    /// <summary>
-    /// AI へのプロンプトを生成する
-    /// </summary>
-    private static (string SystemPrompt, string UserPrompt) BuildAiPrompt(
-        string userName,
-        string taskContent,
-        string commentContent)
-    {
-        var systemPrompt = $"""
-            あなたはチームのサポートBotです。
-            Userの一人称は「{userName}」さんです。
-            チームメンバーに助けを求めるメッセージを作成してください。
-
-            要件:
-            - メッセージは親しみやすく、協力を促すトーンで作成してください。
-            - 絵文字は使わない。
-            - Markdownは使用しない。
-            - 100文字以内で簡潔に作成してください。
-            - 挨拶は不要。
-            """;
-
-        var userPrompt = $"""
-            タスク: {taskContent}
-            ヘルプコメント内容: {commentContent}
-            """;
-
-        return (systemPrompt, userPrompt);
     }
 
     /// <summary>

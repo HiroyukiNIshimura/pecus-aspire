@@ -7,6 +7,33 @@
 - **結果マージ**: 複数ツールの結果は `---` 区切りでマージされる
 - **Function Calling対応**: `GetDefinition()` で JSON Schema 形式の定義を返す
 
+## AI 関連機能の分類
+
+`pecus.Libs/AI` 配下の機能は以下の3つに分類されます：
+
+| 分類 | 目的 | 配置場所 | 例 |
+|------|------|----------|-----|
+| **Tools** | AIに渡す情報を集める（コンテキスト収集） | `AI/Tools/` | `GetUserTasksTool`, `SearchInformationTool`, `SuggestSimilarTaskExpertsTool` |
+| **Prompts** | AIに渡すプロンプトを構築 | `AI/Prompts/` | `ItemCreatedPromptTemplate`, `TaskUpdatedPromptTemplate`, `HelpWantedPromptTemplate` |
+| **Services** | AIを使って判定/抽出/分析を行う | `Hangfire/Tasks/Services/` 等 | `TaskAssignmentSuggester`, `DateExtractor`, `MessageAnalyzer`, `BotSelector` |
+
+### 判断基準
+
+- **Tools**: 「AIに渡すコンテキストを集める」→ ✅ ツール化
+- **Prompts**: 「AIに渡すプロンプトを構築する」→ ✅ テンプレート化
+- **Services**: 「AIを使って何かを抽出/判定する」→ ❌ ツール化しない（専用サービスとして実装）
+
+### 例: SuggestSimilarTaskExpertsTool の構成
+
+```
+SuggestSimilarTaskExpertsTool (Tool)
+  └─ ITaskAssignmentSuggester (Service) を呼び出し
+       └─ AIを使って類似タスク担当者を判定
+  └─ 結果を「〇〇さんが経験してます」というコンテキストに変換
+```
+
+ツール自体の役割は「サービスの結果をAIに渡すコンテキスト（プロンプト文字列）に変換する」ことです。
+
 ## 概要
 
 AI Tools は MCP (Model Context Protocol) 的なデザインパターンを採用したツールベースのアーキテクチャです。
@@ -17,16 +44,29 @@ Bot がユーザーメッセージに応答する際、メッセージの感情�
 ```
 pecus.Libs/AI/
 ├── Extensions/
-│   └── AiToolsExtensions.cs        # DI 登録拡張メソッド
-└── Tools/
-    ├── IAiTool.cs                  # ツールの共通インターフェース
-    ├── AiToolContext.cs            # ツール実行コンテキスト
-    ├── AiToolResult.cs             # ツール実行結果
-    ├── AiToolDefinition.cs         # Function Calling 用定義
-    ├── AiToolExecutor.cs           # ツール実行オーケストレーター
+│   └── AiToolsExtensions.cs           # DI 登録拡張メソッド
+├── Prompts/                           # プロンプトテンプレート
+│   ├── IPromptTemplate.cs             # 共通インターフェース
+│   └── Notifications/                 # 通知系テンプレート
+│       ├── ItemCreatedPromptTemplate.cs
+│       ├── ItemUpdatedPromptTemplate.cs
+│       ├── TaskCreatedPromptTemplate.cs
+│       ├── TaskUpdatedPromptTemplate.cs
+│       └── HelpWantedPromptTemplate.cs
+└── Tools/                             # コンテキスト収集ツール
+    ├── IAiTool.cs                     # ツールの共通インターフェース
+    ├── AiToolContext.cs               # ツール実行コンテキスト
+    ├── AiToolResult.cs                # ツール実行結果
+    ├── AiToolDefinition.cs            # Function Calling 用定義
+    ├── AiToolExecutor.cs              # ツール実行オーケストレーター
     └── Implementations/
-        ├── GetUserTasksTool.cs     # タスク取得ツール
-        └── SearchInformationTool.cs # 情報検索ツール
+        ├── GetUserTasksTool.cs        # タスク取得ツール
+        ├── SearchInformationTool.cs   # 情報検索ツール
+        └── SuggestSimilarTaskExpertsTool.cs  # 類似タスク経験者提案
+
+pecus.Libs/Hangfire/Tasks/Services/    # AI活用サービス
+├── TaskAssignmentSuggester.cs         # 類似タスク担当者の推薦
+└── DateExtractor.cs                   # テキストからの日付抽出
 ```
 
 ## 新しいツールの追加方法
@@ -230,6 +270,26 @@ var anthropicTools = definitions.Select(d => d.ToAnthropicFormat()).ToList();
 |--------|------|-------------|
 | `get_user_tasks` | ユーザーのタスク一覧を取得 | GuidanceSeekingScore >= 50 |
 | `search_information` | ワークスペース内の情報を検索 | InformationSeekingScore >= 50 かつ InformationTopic あり |
+| `suggest_similar_task_experts` | 類似タスク経験者を提案 | 明示的呼び出しのみ（スコア常に0） |
+
+## 既存プロンプトテンプレート
+
+| テンプレート | 用途 | 使用箇所 |
+|-------------|------|----------|
+| `ItemCreatedPromptTemplate` | アイテム作成通知メッセージ生成 | `CreateItemTask` |
+| `ItemUpdatedPromptTemplate` | アイテム更新通知メッセージ生成 | `UpdateItemTask` |
+| `TaskCreatedPromptTemplate` | タスク作成通知メッセージ生成 | `CreateTaskTask` |
+| `TaskUpdatedPromptTemplate` | タスク更新通知メッセージ生成 | `UpdateTaskTask` |
+| `HelpWantedPromptTemplate` | HelpWanted通知メッセージ生成 | `TaskCommentHelpWantedTask` |
+
+## 既存 AI 活用サービス
+
+| サービス | 説明 | 使用箇所 |
+|----------|------|----------|
+| `ITaskAssignmentSuggester` | AIを使って類似タスクの担当者を判定 | `SuggestSimilarTaskExpertsTool` |
+| `IDateExtractor` | AIを使ってテキストから日付を抽出 | `TaskCommentReminderTask` |
+| `IMessageAnalyzer` | メッセージの感情分析 | `AiChatReplyTask`, `GroupChatReplyTask` |
+| `IBotSelector` | コンテンツに基づくBot選択 | 各通知タスク |
 
 ## 注意事項
 
@@ -237,3 +297,38 @@ var anthropicTools = definitions.Select(d => d.ToAnthropicFormat()).ToList();
 - `CalculateRelevanceScore()` は軽量に保つこと（DB アクセスなどは避ける）
 - `ExecuteAsync()` 内で例外が発生しても、他のツールの実行には影響しない
 - 複数ツールの結果は `---` 区切りでマージされる
+
+## 補足: なぜ MCP サーバーではなく内部実装か
+
+現時点では MCP (Model Context Protocol) サーバーを独立して構築せず、`pecus.BackFire` 内の内部実装としています。
+
+### 理由
+
+| 観点 | 内部実装のメリット |
+|------|-------------------|
+| **オーバーヘッド** | プロセス間通信・JSON-RPC のオーバーヘッドが不要 |
+| **インフラ** | 別サービスのデプロイ・監視が不要、Aspire 構成がシンプル |
+| **セキュリティ** | 認証済みコンテキスト内でのみ動作（下記参照） |
+| **将来対応** | `GetDefinition()` で JSON Schema をエクスポート可能、Function Calling 移行時も再利用可 |
+
+### セキュリティ面の考慮
+
+MCP サーバーを外部公開すると以下のリスクがある：
+
+- **認証・認可の複雑化**: 誰がアクセスしているか、どの組織・ユーザーの権限かを別途管理する必要がある
+- **データ漏洩リスク**: 組織を跨いだデータアクセス、プロンプトインジェクションによるデータ抽出
+- **AI 自律実行リスク**: 意図しないツールの連続呼び出し、パラメータ改ざん
+
+現在の内部実装では：
+
+- ツールは Hangfire タスク内で呼ばれ、`UserId` / `OrganizationId` が既に確定
+- ツール選択は C# 側の `CalculateRelevanceScore()` で制御（AI に選択権限なし）
+- データアクセスは `IFocusTaskProvider` / `IInformationSearchProvider` が権限制御
+
+### MCP サーバーが必要になるケース
+
+将来的に以下の要件が出た場合は、MCP サーバー化を検討：
+
+- Claude Desktop など外部クライアントからツールを使いたい
+- 複数アプリケーションで同じツールを共有したい
+- AI に自律的にツールを選択させたい（Function Calling 経由）
