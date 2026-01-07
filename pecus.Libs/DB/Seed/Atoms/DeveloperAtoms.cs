@@ -892,7 +892,8 @@ public class DeveloperAtoms : BaseSeedAtoms
         }
 
         var users = await _context.Users
-            .Where(u => !u.Roles.Any(r => r.Name == SystemRole.Admin))
+            .Where(u => !u.Roles.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice))
+            .Where(u => u.OrganizationId != _excludeOrganizationId)
             .ToListAsync();
 
         if (!users.Any())

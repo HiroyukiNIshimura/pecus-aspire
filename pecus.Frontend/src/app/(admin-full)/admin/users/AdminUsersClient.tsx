@@ -23,6 +23,11 @@ interface Skill {
   name: string;
 }
 
+interface UserRole {
+  id: number;
+  name: string;
+}
+
 interface User {
   id: number;
   username: string;
@@ -30,6 +35,7 @@ interface User {
   isActive: boolean;
   createdAt: string;
   skills?: Skill[];
+  roles?: UserRole[];
 }
 
 interface UserStatistics {
@@ -97,6 +103,7 @@ export default function AdminUsersClient() {
               isActive: user.isActive ?? true,
               createdAt: user.createdAt ?? new Date().toISOString(),
               skills: user.skills ?? [],
+              roles: user.roles ?? [],
             }));
             setUsers(mappedUsers);
             setCurrentPage(data.currentPage || 1);
@@ -165,6 +172,7 @@ export default function AdminUsersClient() {
             isActive: user.isActive ?? true,
             createdAt: user.createdAt ?? new Date().toISOString(),
             skills: user.skills ?? [],
+            roles: user.roles ?? [],
           }));
           setUsers(mappedUsers);
           setCurrentPage(data.currentPage || 1);
@@ -208,6 +216,7 @@ export default function AdminUsersClient() {
               isActive: user.isActive ?? true,
               createdAt: user.createdAt ?? new Date().toISOString(),
               skills: user.skills ?? [],
+              roles: user.roles ?? [],
             }));
             setUsers(mappedUsers);
             setCurrentPage(data.currentPage || 1);
@@ -264,6 +273,7 @@ export default function AdminUsersClient() {
               isActive: user.isActive ?? true,
               createdAt: user.createdAt ?? new Date().toISOString(),
               skills: user.skills ?? [],
+              roles: user.roles ?? [],
             }));
             setUsers(mappedUsers);
             setCurrentPage(data.currentPage || 1);
@@ -526,22 +536,26 @@ export default function AdminUsersClient() {
                             </td>
                             <td>{formatDate(user.createdAt)}</td>
                             <td>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline"
-                                  onClick={() => router.push(`/admin/users/edit/${user.id}`)}
-                                >
-                                  編集
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline btn-error"
-                                  onClick={() => handleDeleteClick(user)}
-                                >
-                                  削除
-                                </button>
-                              </div>
+                              {user.roles?.some((role) => role.name === 'BackOffice') ? (
+                                <span className="text-base-content/50 text-sm">-</span>
+                              ) : (
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline"
+                                    onClick={() => router.push(`/admin/users/edit/${user.id}`)}
+                                  >
+                                    編集
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline btn-error"
+                                    onClick={() => handleDeleteClick(user)}
+                                  >
+                                    削除
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         ))

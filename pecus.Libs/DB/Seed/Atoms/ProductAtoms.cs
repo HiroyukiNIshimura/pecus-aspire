@@ -86,8 +86,24 @@ public class ProductAtoms
                 throw new InvalidOperationException("Required role (BackOffice) not found.");
             }
 
+            var (systemBot, chatBot) = CreateBackOfficeBots(organization);
+            await _context.Bots.AddRangeAsync(new[] { systemBot, chatBot });
+            await _context.SaveChangesAsync();
+
             var users = CreateBackOfficeUsers(organization, backOfficeRole);
             await _context.Users.AddRangeAsync(users);
+            await _context.SaveChangesAsync();
+
+            var chatActors = CreateBackOfficeChatActors(organization, users, systemBot, chatBot);
+            await _context.ChatActors.AddRangeAsync(chatActors);
+            await _context.SaveChangesAsync();
+
+            var aiChatRooms = CreateBackOfficeAiChatRooms(organization, users);
+            await _context.ChatRooms.AddRangeAsync(aiChatRooms);
+            await _context.SaveChangesAsync();
+
+            var chatRoomMembers = CreateAiChatRoomMembers(aiChatRooms, chatActors, chatBot);
+            await _context.ChatRoomMembers.AddRangeAsync(chatRoomMembers);
             await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
@@ -130,6 +146,41 @@ public class ProductAtoms
         };
     }
 
+    private (Bot SystemBot, Bot ChatBot) CreateBackOfficeBots(Organization org)
+    {
+        var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
+        var systemBotConstraint = BotPersonaHelper.GetSystemBotConstraint();
+        var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
+        var chatBotConstraint = BotPersonaHelper.GetChatBotConstraint();
+
+        var systemBot = new Bot
+        {
+            OrganizationId = org.Id,
+            Type = BotType.SystemBot,
+            Name = "Butler Bot",
+            IconUrl = "/icons/bot/system.webp",
+            Persona = systemBotPersona,
+            Constraint = systemBotConstraint,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        var chatBot = new Bot
+        {
+            OrganizationId = org.Id,
+            Type = BotType.ChatBot,
+            Name = "Coati Bot",
+            IconUrl = "/icons/bot/chat.webp",
+            Persona = chatBotPersona,
+            Constraint = chatBotConstraint,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        return (systemBot, chatBot);
+    }
+
+
     private List<User> CreateBackOfficeUsers(Organization org, Role backOfficeRole)
     {
         var users = new List<User>();
@@ -155,6 +206,118 @@ public class ProductAtoms
 
         return users;
     }
+
+    private List<ChatActor> CreateBackOfficeChatActors(Organization org, List<User> users, Bot systemBot, Bot chatBot)
+    {
+        var chatActors = new List<ChatActor>();
+
+        foreach (var user in users)
+        {
+            var actor = new ChatActor
+            {
+                OrganizationId = org.Id,
+                ActorType = ChatActorType.User,
+                UserId = user.Id,
+                BotId = null,
+                DisplayName = user.Username,
+                AvatarType = user.AvatarType,
+                AvatarUrl = user.UserAvatarPath,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            chatActors.Add(actor);
+        }
+
+        var systemBotActor = new ChatActor
+        {
+            OrganizationId = org.Id,
+            ActorType = ChatActorType.Bot,
+            UserId = null,
+            BotId = systemBot.Id,
+            DisplayName = systemBot.Name,
+            AvatarType = null,
+            AvatarUrl = systemBot.IconUrl,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+        chatActors.Add(systemBotActor);
+
+        var chatBotActor = new ChatActor
+        {
+            OrganizationId = org.Id,
+            ActorType = ChatActorType.Bot,
+            UserId = null,
+            BotId = chatBot.Id,
+            DisplayName = chatBot.Name,
+            AvatarType = null,
+            AvatarUrl = chatBot.IconUrl,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+        chatActors.Add(chatBotActor);
+
+        return chatActors;
+    }
+
+    private List<ChatRoom> CreateBackOfficeAiChatRooms(
+        Organization org,
+        List<User> users)
+    {
+        var rooms = new List<ChatRoom>();
+
+        foreach (var user in users)
+        {
+            var room = new ChatRoom
+            {
+                OrganizationId = org.Id,
+                WorkspaceId = null,
+                Type = ChatRoomType.Ai,
+                Name = $"{user.Username}のAIチャット",
+                CreatedByUserId = user.Id,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            rooms.Add(room);
+        }
+
+        return rooms;
+    }
+
+    private List<ChatRoomMember> CreateAiChatRoomMembers(
+        List<ChatRoom> rooms,
+        List<ChatActor> chatActors,
+        Bot chatBot)
+    {
+        var members = new List<ChatRoomMember>();
+        var chatBotActor = chatActors.First(a => a.BotId == chatBot.Id);
+
+        foreach (var room in rooms)
+        {
+            if (room.Type != ChatRoomType.Ai) continue;
+
+            var userActor = chatActors.FirstOrDefault(a => a.UserId == room.CreatedByUserId);
+            if (userActor == null) continue;
+
+            members.Add(new ChatRoomMember
+            {
+                ChatRoomId = room.Id,
+                ChatActorId = userActor.Id,
+                Role = ChatRoomRole.Owner,
+                JoinedAt = DateTimeOffset.UtcNow
+            });
+
+            members.Add(new ChatRoomMember
+            {
+                ChatRoomId = room.Id,
+                ChatActorId = chatBotActor.Id,
+                Role = ChatRoomRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        return members;
+    }
+
 
     /// <summary>
     /// 権限のシードデータを投入

@@ -1,7 +1,6 @@
 import { getBackOfficeNotifications } from '@/actions/backoffice/notifications';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import type { PagedResponseOfBackOfficeNotificationListItemResponse } from '@/connectors/api/pecus';
 import NotificationsClient from './NotificationsClient';
 
 export const dynamic = 'force-dynamic';

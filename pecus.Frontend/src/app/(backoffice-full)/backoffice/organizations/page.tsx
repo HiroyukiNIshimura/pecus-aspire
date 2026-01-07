@@ -1,7 +1,6 @@
 import { getBackOfficeOrganizations } from '@/actions/backoffice/organizations';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import type { PagedResponseOfBackOfficeOrganizationListItemResponse } from '@/connectors/api/pecus';
 import OrganizationsClient from './OrganizationsClient';
 
 export const dynamic = 'force-dynamic';

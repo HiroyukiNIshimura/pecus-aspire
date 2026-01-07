@@ -17,7 +17,7 @@ export default function BackOfficeHeader({ userInfo, onToggleSidebar, loading = 
       loading={loading}
       showAdminLink={true}
       showBackOfficeLink={true}
-      showChat={true}
+      showChat={false}
     />
   );
 }
