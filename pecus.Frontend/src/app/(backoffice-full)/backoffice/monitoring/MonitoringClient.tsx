@@ -294,7 +294,30 @@ const SERVICE_DISPLAY_NAMES: Record<string, string> = {
   backend: 'Backend',
   frontend: 'Frontend',
   lexicalconverter: 'LexicalConverter',
+  node: 'node',
 };
+
+/**
+ * シリーズのキーを生成（job + instance の組み合わせ）
+ * 複数サーバー監視時にinstance で区別できるようにする
+ */
+function getSeriesKey(series: MetricTimeSeries): string {
+  const jobName = SERVICE_DISPLAY_NAMES[series.job] || series.job;
+
+  // instance が意味のある値なら追加（localhost系やunknownは省略）
+  if (
+    series.instance &&
+    series.instance !== 'unknown' &&
+    !series.instance.includes('localhost') &&
+    !series.instance.includes('127.0.0.1')
+  ) {
+    // instance から ":port" を除去して短くする
+    const shortInstance = series.instance.replace(/:\d+$/, '');
+    return `${jobName} (${shortInstance})`;
+  }
+
+  return jobName;
+}
 
 function formatChartTime(timestamp: number): string {
   const date = new Date(timestamp);
@@ -333,14 +356,14 @@ function MetricsChart({ title, series, unit, yAxisDomain = ['auto', 'auto'] }: M
   const chartData = timestamps.map((ts) => {
     const point: Record<string, number> = { timestamp: ts };
     for (const s of series) {
-      const key = SERVICE_DISPLAY_NAMES[s.job] || s.job;
+      const key = getSeriesKey(s);
       const dataPoint = s.data.find((d) => d.timestamp === ts);
       point[key] = dataPoint?.value ?? 0;
     }
     return point;
   });
 
-  const seriesKeys = Array.from(new Set(series.map((s) => SERVICE_DISPLAY_NAMES[s.job] || s.job)));
+  const seriesKeys = Array.from(new Set(series.map((s) => getSeriesKey(s))));
 
   return (
     <div className="card bg-base-200">

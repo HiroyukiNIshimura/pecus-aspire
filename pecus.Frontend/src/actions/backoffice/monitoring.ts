@@ -376,7 +376,7 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
         step,
       ),
       fetchPrometheusRange(
-        '100 - (avg(rate(node_cpu_seconds_total{job="node",mode="idle"}[5m])) * 100)',
+        '100 - (avg by (instance) (rate(node_cpu_seconds_total{job="node",mode="idle"}[5m])) * 100)',
         start,
         end,
         step,
