@@ -5,10 +5,11 @@ set -eu
 # 1. Update source (git pull)
 # 2. Build target image
 # 3. Deploy target (excluding BackFire)
-# 4. Stop other slot
-# 5. DB Migration
-# 6. Deploy target BackFire
-# 7. Nginx Switch
+# 4. Pre-build DB Migration image
+# 5. Stop other slot
+# 6. DB Migration
+# 7. Deploy target BackFire
+# 8. Nginx Switch
 
 # shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
@@ -88,26 +89,29 @@ compose_app "$target" up -d "pecusapi-$target" "frontend-$target"
 wait_health "pecus-webapi-$target" 300
 wait_running "pecus-frontend-$target" 120
 
-if [ "$other_running" = "true" ]; then
-  echo "[Info] 4. Stop old slot: $other" >&2
-  compose_app "$other" stop "pecusapi-$other" "frontend-$other" "backfire-$other" || true
-  compose_app "$other" rm -f "pecusapi-$other" "frontend-$other" "backfire-$other" || true
-else
-  echo "[Info] 4. Skip stopping old slot (not running): $other" >&2
-fi
-
-echo "[Info] 5. DB Migration" >&2
+echo "[Info] 4. Pre-build DB Migration image" >&2
 # Clean up potential leftover dbmanager
 if docker ps -a --format '{{.Names}}' | grep -q '^pecus-dbmanager$'; then
   docker rm -f pecus-dbmanager >/dev/null 2>&1 || true
 fi
-compose_migrate run --rm --build dbmanager
+compose_migrate build dbmanager
 
-echo "[Info] 6. Deploy target BackFire: $target" >&2
+if [ "$other_running" = "true" ]; then
+  echo "[Info] 5. Stop old slot: $other" >&2
+  compose_app "$other" stop "pecusapi-$other" "frontend-$other" "backfire-$other" || true
+  compose_app "$other" rm -f "pecusapi-$other" "frontend-$other" "backfire-$other" || true
+else
+  echo "[Info] 5. Skip stopping old slot (not running): $other" >&2
+fi
+
+echo "[Info] 6. DB Migration" >&2
+compose_migrate run --rm dbmanager
+
+echo "[Info] 7. Deploy target BackFire: $target" >&2
 compose_app "$target" up -d "backfire-$target"
 wait_running "pecus-backfire-$target" 120
 
-echo "[Info] 7. Switch Nginx: $target" >&2
+echo "[Info] 8. Switch Nginx: $target" >&2
 # shellcheck disable=SC2154
 conf="$bluegreen_dir/nginx/conf.d/00-active-slot.conf"
 cat >"$conf" <<EOF
@@ -121,7 +125,7 @@ EOF
 compose_infra exec -T nginx nginx -t
 compose_infra exec -T nginx nginx -s reload
 
-echo "[Info] 8. Cleanup unused pecus resources" >&2
+echo "[Info] 9. Cleanup unused pecus resources" >&2
 
 # Remove stopped pecus containers
 # shellcheck disable=SC2046
@@ -151,7 +155,7 @@ docker images -f "dangling=true" -q 2>/dev/null | xargs -r docker rmi 2>/dev/nul
 # Prune builder cache
 docker builder prune -f 2>/dev/null || true
 
-echo "[Info] 9. Update Prometheus targets: $target" >&2
+echo "[Info] 10. Update Prometheus targets: $target" >&2
 sh "$script_dir/update-prometheus-targets.sh" "$target"
 
 echo "[OK] Switched to: $target"
