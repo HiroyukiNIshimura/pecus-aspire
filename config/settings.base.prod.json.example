@@ -1,90 +1,86 @@
 {
-  "_comment": "本番環境用のオーバーライド設定。CI/CD で環境変数から生成するか、シークレット管理ツールから取得します。",
+  "_comment": "本番環境用のオーバーライド設定。このファイルをコピーして settings.base.prod.json を作成し、各値を本番環境に合わせて設定してください。",
 
   "_infrastructure": {
-    "_comment": "Docker/本番環境のインフラ設定",
-    "dataPath": "/var/pecus/data",
+    "_comment_1": "【必須】本番環境のパスと認証情報",
+    "dataPath": "/var/your-app/data",
+
     "postgres": {
+      "_comment": "【必須】本番用の強力なパスワードを設定",
       "user": "pecus",
-      "password": "CHANGE_ME_SECURE_PASSWORD",
+      "password": "CHANGE_ME_SECURE_PASSWORD_HERE",
       "db": "pecusdb"
     },
-    "ports": {
-      "webapi": 7265,
-      "frontend": 3000,
-      "lexicalConverter": 5100
-    },
+
     "urls": {
+      "_comment": "【必須】本番環境の公開URLを設定",
+      "allowDomain": "your-domain.com",
       "frontend": "https://your-domain.com",
-      "webapiPublic": "https://your-domain.com/backend",
-      "lexicalConverterInternal": "http://lexicalconverter:5100"
+      "webapiPublic": "https://your-domain.com/api",
+      "webapiInternal": "http://pecusapi:7265",
+      "lexicalConverter": "http://lexicalconverter:5100"
     },
-    "docker": {
-      "_comment": "Docker Compose 内部ホスト名（通常変更不要）",
-      "lexicalConverterHost": "lexicalconverter",
-      "postgresHost": "postgres",
-      "redisHost": "redis",
-      "redisFrontendHost": "redis-frontend",
-      "webapiHost": "pecusapi",
-      "frontendHost": "frontend"
-    },
+
     "monitoring": {
-      "_comment": "Prometheus 監視設定。本番環境では通常 enabled: true",
+      "_comment": "本番環境では監視を有効化推奨",
       "enabled": true,
-      "prometheus": {
-        "port": 9090
-      },
-      "nodeExporter": {
-        "port": 9100
-      },
-      "blackboxExporter": {
-        "port": 9115
-      }
+      "diskMountPoints": ["/", "/var/your-app/data"]
     }
   },
 
   "_shared": {
-    "Email": {
-      "SmtpHost": "",
-      "SmtpPort": 587,
-      "UseSsl": true,
-      "Username": "",
-      "Password": "",
-      "FromEmail": "",
-      "FromName": "Coati",
-      "SendMailInDevelopment": false
+    "LexicalConverter": {
+      "_comment": "【必須】本番用のAPIキーを設定（openssl rand -base64 16 等で生成）",
+      "GrpcApiKey": "CHANGE_ME_GENERATE_NEW_KEY"
     },
+
+    "Email": {
+      "_comment": "【必須】本番用のSMTP設定",
+      "SmtpHost": "smtp.your-provider.com",
+      "SmtpPort": 465,
+      "UseSsl": true,
+      "Username": "your-smtp-username",
+      "Password": "CHANGE_ME_SMTP_PASSWORD",
+      "FromEmail": "noreply@your-domain.com",
+      "FromName": "Your App Name"
+    },
+
     "DefaultAi": {
+      "_comment": "【必須】AI APIキーを設定",
       "Provider": "DeepSeek",
       "Model": "deepseek-chat",
-      "ApiKey": ""
+      "ApiKey": "CHANGE_ME_AI_API_KEY"
     }
   },
 
   "webapi": {
     "Pecus": {
       "Jwt": {
-        "IssuerSigningKey": "",
-        "ValidIssuer": "",
-        "ValidAudience": ""
+        "_comment": "【必須】本番用のJWT設定（IssuerSigningKeyは64文字以上のランダム文字列）",
+        "IssuerSigningKey": "CHANGE_ME_GENERATE_64_CHAR_RANDOM_STRING_HERE_USE_OPENSSL_RAND",
+        "ValidIssuer": "https://your-domain.com/",
+        "ValidAudience": "https://your-domain.com/"
       }
     },
     "Security": {
-      "AllowedFrontendUrls": []
+      "_comment": "【必須】許可するフロントエンドURLを設定",
+      "AllowedFrontendUrls": ["https://your-domain.com"]
     }
   },
 
   "dbmanager": {
     "BackOffice": {
+      "_comment": "【必須】管理者アカウントの本番用パスワードを設定",
       "Users": [
         {
-          "Email": "admin@backoffice.none",
-          "Username": "BackOffice Admin",
-          "Password": ""
+          "Email": "admin@your-domain.com",
+          "Username": "System Administrator",
+          "Password": "CHANGE_ME_ADMIN_PASSWORD"
         }
       ]
     },
     "DemoMode": {
+      "_comment": "本番環境ではデモモードを無効化",
       "Enabled": false
     }
   }

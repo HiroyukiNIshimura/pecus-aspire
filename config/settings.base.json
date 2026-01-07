@@ -33,7 +33,7 @@
       "allowDomain": "localhost",
       "frontend": "https://localhost:3000",
       "webapiPublic": "https://localhost:7265",
-      "lexicalConverterInternal": "http://localhost:5100"
+      "lexicalConverter": "http://localhost:5100"
     },
     "docker": {
       "_comment": "Docker Compose 内部ホスト名（本番用）",
@@ -62,7 +62,7 @@
 
   "_shared": {
     "LexicalConverter": {
-      "Endpoint": "http://localhost:5100",
+      "_comment": "URL は _infrastructure.urls.lexicalConverter で管理",
       "GrpcApiKey": "pecus-lexical-internal-key-change-in-production"
     },
     "Email": {

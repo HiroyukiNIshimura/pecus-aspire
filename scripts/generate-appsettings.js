@@ -175,10 +175,16 @@ function generate() {
 
   // pecus.WebApi/appsettings.json
   // _shared.Application を Pecus.Application にマージ
-  const { Application: sharedApplication, ...restShared } = _shared;
+  // _shared.LexicalConverter に URL を追加
+  const { Application: sharedApplication, LexicalConverter: sharedLexical, ...restShared } = _shared;
   const webapiConfig = {
     ...restShared,
     ...projects.webapi,
+    // LexicalConverter: URL は _infrastructure.urls から取得
+    LexicalConverter: {
+      Endpoint: _infrastructure.urls.lexicalConverter,
+      GrpcApiKey: sharedLexical.GrpcApiKey,
+    },
     Pecus: {
       ...projects.webapi.Pecus,
       Application: sharedApplication,
@@ -196,6 +202,11 @@ function generate() {
   const backfireConfig = {
     ...restShared,
     ...projects.backfire,
+    // LexicalConverter: URL は _infrastructure.urls から取得
+    LexicalConverter: {
+      Endpoint: _infrastructure.urls.lexicalConverter,
+      GrpcApiKey: sharedLexical.GrpcApiKey,
+    },
     Pecus: {
       Application: sharedApplication,
     },
@@ -209,9 +220,13 @@ function generate() {
   console.log('Generated:', backfirePath);
 
   // pecus.DbManager/appsettings.json
+  // LexicalConverter: URL は _infrastructure.urls から、その他は _shared から取得
   const dbmanagerConfig = {
     ...projects.dbmanager,
-    LexicalConverter: _shared.LexicalConverter,
+    LexicalConverter: {
+      Endpoint: _infrastructure.urls.lexicalConverter,
+      GrpcApiKey: _shared.LexicalConverter.GrpcApiKey,
+    },
   };
   const dbmanagerPath = path.join(ROOT_DIR, 'pecus.DbManager', 'appsettings.json');
   fs.writeFileSync(dbmanagerPath, JSON.stringify(dbmanagerConfig, null, 2) + '\n');
@@ -239,7 +254,6 @@ function generate() {
  */
 function generateDockerEnv(infra, _shared, _projects) {
   const docker = infra.docker || {};
-  const lexicalConverterPort = infra.ports.lexicalConverter || 5100;
   const nginxHttpPort = process.env.NGINX_HTTP_PORT || '80';
   const backupKeepDays = process.env.BACKUP_KEEP_DAYS || '14';
 
@@ -273,7 +287,7 @@ function generateDockerEnv(infra, _shared, _projects) {
     `REDIS_FRONTEND_PORT=${infra.redisFrontend.port}`,
     '',
     '# Docker internal hosts and URLs',
-    `LEXICAL_CONVERTER_URL=http://${docker.lexicalConverterHost || 'lexicalconverter'}:${lexicalConverterPort}`,
+    `LEXICAL_CONVERTER_URL=${infra.urls.lexicalConverter}`,
     `POSTGRES_HOST=${docker.postgresHost || 'postgres'}`,
     `REDIS_HOST=${docker.redisHost || 'redis'}`,
     `REDIS_FRONTEND_HOST=${docker.redisFrontendHost || 'redis-frontend'}`,

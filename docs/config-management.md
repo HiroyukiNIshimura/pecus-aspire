@@ -43,10 +43,16 @@ node scripts/generate-appsettings.js -P
   "_infrastructure": {
     "postgres": { "user": "pecus", "port": 5432, ... },
     "redis": { "port": 6379 },
-    "ports": { "webapi": 7265, "frontend": 3000, ... },
-    "urls": { "frontend": "https://localhost:3000", ... }
+    "ports": { "webapi": 7265, "frontend": 3000, "lexicalConverter": 5100, ... },
+    "urls": {
+      "frontend": "https://localhost:3000",
+      "webapiPublic": "https://localhost:7265",
+      "lexicalConverter": "http://localhost:5100"
+    },
+    "docker": { "postgresHost": "postgres", "lexicalConverterHost": "lexicalconverter", ... }
   },
   "_shared": {
+    "LexicalConverter": { "GrpcApiKey": "..." },
     "Email": { ... },
     "DefaultAi": { ... }
   },
@@ -58,9 +64,13 @@ node scripts/generate-appsettings.js -P
 
 | セクション | 用途 |
 |-----------|------|
-| `_infrastructure` | インフラ設定（DB、Redis、ポート、URL） |
-| `_shared` | 複数サービスで共有する設定 |
+| `_infrastructure.ports` | Aspire/ローカル開発用のポート番号 |
+| `_infrastructure.urls` | 各環境での完全な URL（本番は prod.json でオーバーライド） |
+| `_infrastructure.docker` | Docker Compose 内部ホスト名（deploy/.env 生成時のフォールバック用） |
+| `_shared` | 複数サービスで共有するアプリケーション設定（URL は含まない） |
 | `webapi` / `backfire` / `dbmanager` | 各サービス固有の設定 |
+
+**重要**: URL は `_infrastructure.urls` に集約し、`_shared` には API キーやタイムアウト等のアプリケーション設定のみを配置します。
 
 ## 環境別オーバーライド
 

@@ -22,6 +22,46 @@
     }
   },
 
+  "webapi": {
+    "_comment": "開発環境向けの設定（ページネーション、制限値を小さくしてテストしやすく）",
+    "Pecus": {
+      "Pagination": {
+        "_comment": "開発時はページサイズを小さくしてページネーションの動作確認がしやすい",
+        "DefaultPageSize": 5
+      },
+      "Limits": {
+        "_comment": "開発時は制限値を小さくして上限テストがしやすい",
+        "MaxTagsPerOrganization": 10,
+        "MaxSkillsPerOrganization": 10,
+        "MaxDocumentsPerWorkspace": 50
+      }
+    }
+  },
+
+  "backfire": {
+    "_comment": "開発環境向けのバッチ設定（バッチサイズを小さくしてデバッグしやすく）",
+    "RefreshTokenCleanup": {
+      "BatchSize": 10,
+      "OlderThanDays": 1
+    },
+    "DeviceCleanup": {
+      "BatchSize": 10,
+      "OlderThanDays": 1,
+      "VeryOldDays": 7
+    },
+    "EmailChangeTokenCleanup": {
+      "BatchSize": 10,
+      "OlderThanDays": 1
+    },
+    "ChatCleanup": {
+      "BatchSize": 10,
+      "System": { "OlderThanDays": 1 },
+      "Group": { "OlderThanDays": 1 },
+      "Dm": { "OlderThanDays": 1 },
+      "Ai": { "OlderThanDays": 1 }
+    }
+  },
+
   "dbmanager": {
     "BackOffice": {
       "Users": [
