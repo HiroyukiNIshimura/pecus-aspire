@@ -105,7 +105,7 @@
     "DefaultAi": {
       "Provider": "DeepSeek",
       "Model": "deepseek-chat",
-      "ApiKey": ""
+      "ApiKey": "CHANGE_ME_AI_API_KEY"
     },
     "Application": {
       "Name": "Coati",
@@ -254,7 +254,7 @@
         "PhoneNumber": "000-0000-0000",
         "Email": "admin@demo.coati.none",
         "GenerativeApiVendor": "DeepSeek",
-        "GenerativeApiKey": "",
+        "GenerativeApiKey": "CHANGE_ME_AI_API_KEY",
         "GenerativeApiModel": "deepseek-chat"
       },
       "Users": [
