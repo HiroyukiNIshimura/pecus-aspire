@@ -99,6 +99,26 @@ export default function ChatFullScreenClient({
     }
   }, [setUnreadCounts]);
 
+  // 画面がアクティブになった時（ルームから戻った時など）にデータを再取得
+  useEffect(() => {
+    // マウント時に最新データを取得（ルームから戻った場合に対応）
+    fetchRooms();
+    fetchUnreadCounts();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchRooms();
+        fetchUnreadCounts();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchRooms, fetchUnreadCounts]);
+
   // SignalR: 新メッセージ受信時にルーム一覧と未読数を更新
   const handleMessageReceived = useCallback(
     (payload: ChatMessageReceivedPayload) => {
