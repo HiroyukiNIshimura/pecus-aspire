@@ -2228,7 +2228,8 @@ __export(transformers_exports, {
   IMAGE: () => IMAGE,
   PLAYGROUND_TRANSFORMERS: () => PLAYGROUND_TRANSFORMERS,
   TABLE: () => TABLE,
-  TWEET: () => TWEET
+  TWEET: () => TWEET,
+  normalizeListIndentation: () => normalizeListIndentation
 });
 module.exports = __toCommonJS(transformers_exports);
 
@@ -19198,6 +19199,36 @@ var PLAYGROUND_TRANSFORMERS = [
   ...import_markdown.TEXT_FORMAT_TRANSFORMERS,
   ...import_markdown.TEXT_MATCH_TRANSFORMERS
 ];
+function normalizeListIndentation(markdown) {
+  const lines = markdown.split("\n");
+  const result = [];
+  let inCodeBlock = false;
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) {
+      inCodeBlock = !inCodeBlock;
+      result.push(line);
+      continue;
+    }
+    if (inCodeBlock) {
+      result.push(line);
+      continue;
+    }
+    const listMatch = line.match(/^(\s+)([-*+]|\d+\.)(\s+\[[ xX]?\])?\s/);
+    if (listMatch) {
+      const leadingSpaces = listMatch[1];
+      const spaceCount = (leadingSpaces.match(/ /g) || []).length;
+      const tabCount = (leadingSpaces.match(/\t/g) || []).length;
+      if (spaceCount > 0 && spaceCount % 2 === 0 && spaceCount % 4 !== 0) {
+        const indentLevel = Math.ceil(spaceCount / 2);
+        const newIndent = "	".repeat(tabCount) + "    ".repeat(indentLevel);
+        result.push(newIndent + line.slice(leadingSpaces.length));
+        continue;
+      }
+    }
+    result.push(line);
+  }
+  return result.join("\n");
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   EMOJI,
@@ -19206,6 +19237,7 @@ var PLAYGROUND_TRANSFORMERS = [
   IMAGE,
   PLAYGROUND_TRANSFORMERS,
   TABLE,
-  TWEET
+  TWEET,
+  normalizeListIndentation
 });
 //# sourceMappingURL=transformers.js.map

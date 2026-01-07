@@ -19225,6 +19225,36 @@ var PLAYGROUND_TRANSFORMERS = [
   ...TEXT_FORMAT_TRANSFORMERS,
   ...TEXT_MATCH_TRANSFORMERS
 ];
+function normalizeListIndentation(markdown) {
+  const lines = markdown.split("\n");
+  const result = [];
+  let inCodeBlock = false;
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) {
+      inCodeBlock = !inCodeBlock;
+      result.push(line);
+      continue;
+    }
+    if (inCodeBlock) {
+      result.push(line);
+      continue;
+    }
+    const listMatch = line.match(/^(\s+)([-*+]|\d+\.)(\s+\[[ xX]?\])?\s/);
+    if (listMatch) {
+      const leadingSpaces = listMatch[1];
+      const spaceCount = (leadingSpaces.match(/ /g) || []).length;
+      const tabCount = (leadingSpaces.match(/\t/g) || []).length;
+      if (spaceCount > 0 && spaceCount % 2 === 0 && spaceCount % 4 !== 0) {
+        const indentLevel = Math.ceil(spaceCount / 2);
+        const newIndent = "	".repeat(tabCount) + "    ".repeat(indentLevel);
+        result.push(newIndent + line.slice(leadingSpaces.length));
+        continue;
+      }
+    }
+    result.push(line);
+  }
+  return result.join("\n");
+}
 export {
   EMOJI,
   EQUATION,
@@ -19232,6 +19262,7 @@ export {
   IMAGE,
   PLAYGROUND_TRANSFORMERS,
   TABLE,
-  TWEET
+  TWEET,
+  normalizeListIndentation
 };
 //# sourceMappingURL=transformers.mjs.map

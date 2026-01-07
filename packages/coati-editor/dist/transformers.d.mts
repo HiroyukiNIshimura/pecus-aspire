@@ -15,5 +15,14 @@ declare const EQUATION: TextMatchTransformer;
 declare const TWEET: ElementTransformer;
 declare const TABLE: ElementTransformer;
 declare const PLAYGROUND_TRANSFORMERS: Array<Transformer>;
+/**
+ * リスト行の2スペースインデントを4スペースに正規化
+ * Lexicalのデフォルトは4スペース = 1インデントレベル
+ * コードブロック内は変換しない
+ *
+ * @param markdown - 入力Markdown文字列
+ * @returns リストインデントが正規化されたMarkdown文字列
+ */
+declare function normalizeListIndentation(markdown: string): string;
 
-export { EMOJI, EQUATION, HR, IMAGE, PLAYGROUND_TRANSFORMERS, TABLE, TWEET };
+export { EMOJI, EQUATION, HR, IMAGE, PLAYGROUND_TRANSFORMERS, TABLE, TWEET, normalizeListIndentation };

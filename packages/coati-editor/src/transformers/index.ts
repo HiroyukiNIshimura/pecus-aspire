@@ -9,6 +9,7 @@ export {
   EQUATION,
   HR,
   IMAGE,
+  normalizeListIndentation,
   PLAYGROUND_TRANSFORMERS,
   TABLE,
   TWEET,

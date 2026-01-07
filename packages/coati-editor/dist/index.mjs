@@ -10960,7 +10960,7 @@ function HorizontalRulePlugin() {
 init_LinkPlugin();
 
 // src/plugins/MarkdownPastePlugin/index.tsx
-import { $convertFromMarkdownString as $convertFromMarkdownString2 } from "@lexical/markdown";
+import { $convertFromMarkdownString as $convertFromMarkdownString3 } from "@lexical/markdown";
 import { useLexicalComposerContext as useLexicalComposerContext31 } from "@lexical/react/LexicalComposerContext";
 import {
   $createParagraphNode as $createParagraphNode9,
@@ -10971,7 +10971,7 @@ import {
 } from "lexical";
 import { useCallback as useCallback16, useEffect as useEffect32 } from "react";
 
-// src/plugins/MarkdownTransformers/index.ts
+// src/transformers/markdown-transformers.ts
 init_EquationNode();
 init_ImageNode2();
 import { $createHorizontalRuleNode as $createHorizontalRuleNode2, $isHorizontalRuleNode, HorizontalRuleNode } from "@lexical/extension";
@@ -27602,7 +27602,7 @@ var emoji_list_default = [
   }
 ];
 
-// src/plugins/MarkdownTransformers/index.ts
+// src/transformers/markdown-transformers.ts
 var HR = {
   dependencies: [HorizontalRuleNode],
   export: (node) => {
@@ -27818,6 +27818,278 @@ var PLAYGROUND_TRANSFORMERS = [
   ...TEXT_FORMAT_TRANSFORMERS,
   ...TEXT_MATCH_TRANSFORMERS
 ];
+function normalizeListIndentation(markdown) {
+  const lines = markdown.split("\n");
+  const result = [];
+  let inCodeBlock = false;
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) {
+      inCodeBlock = !inCodeBlock;
+      result.push(line);
+      continue;
+    }
+    if (inCodeBlock) {
+      result.push(line);
+      continue;
+    }
+    const listMatch = line.match(/^(\s+)([-*+]|\d+\.)(\s+\[[ xX]?\])?\s/);
+    if (listMatch) {
+      const leadingSpaces = listMatch[1];
+      const spaceCount = (leadingSpaces.match(/ /g) || []).length;
+      const tabCount = (leadingSpaces.match(/\t/g) || []).length;
+      if (spaceCount > 0 && spaceCount % 2 === 0 && spaceCount % 4 !== 0) {
+        const indentLevel = Math.ceil(spaceCount / 2);
+        const newIndent = "	".repeat(tabCount) + "    ".repeat(indentLevel);
+        result.push(newIndent + line.slice(leadingSpaces.length));
+        continue;
+      }
+    }
+    result.push(line);
+  }
+  return result.join("\n");
+}
+
+// src/plugins/MarkdownTransformers/index.ts
+init_EquationNode();
+init_ImageNode2();
+import { $createHorizontalRuleNode as $createHorizontalRuleNode3, $isHorizontalRuleNode as $isHorizontalRuleNode2, HorizontalRuleNode as HorizontalRuleNode2 } from "@lexical/extension";
+import {
+  $convertFromMarkdownString as $convertFromMarkdownString2,
+  $convertToMarkdownString as $convertToMarkdownString2,
+  CHECK_LIST as CHECK_LIST2,
+  ELEMENT_TRANSFORMERS as ELEMENT_TRANSFORMERS2,
+  MULTILINE_ELEMENT_TRANSFORMERS as MULTILINE_ELEMENT_TRANSFORMERS2,
+  TEXT_FORMAT_TRANSFORMERS as TEXT_FORMAT_TRANSFORMERS2,
+  TEXT_MATCH_TRANSFORMERS as TEXT_MATCH_TRANSFORMERS2
+} from "@lexical/markdown";
+import {
+  $createTableCellNode as $createTableCellNode2,
+  $createTableNode as $createTableNode2,
+  $createTableRowNode as $createTableRowNode2,
+  $isTableCellNode as $isTableCellNode2,
+  $isTableNode as $isTableNode2,
+  $isTableRowNode as $isTableRowNode2,
+  TableCellHeaderStates as TableCellHeaderStates2,
+  TableCellNode as TableCellNode3,
+  TableNode as TableNode3,
+  TableRowNode as TableRowNode3
+} from "@lexical/table";
+import { $createTextNode as $createTextNode3, $isParagraphNode as $isParagraphNode5, $isTextNode as $isTextNode4 } from "lexical";
+var HR2 = {
+  dependencies: [HorizontalRuleNode2],
+  export: (node) => {
+    return $isHorizontalRuleNode2(node) ? "***" : null;
+  },
+  regExp: /^(---|\*\*\*|___)\s?$/,
+  replace: (parentNode, _1, _2, isImport) => {
+    const line = $createHorizontalRuleNode3();
+    if (isImport || parentNode.getNextSibling() != null) {
+      parentNode.replace(line);
+    } else {
+      parentNode.insertBefore(line);
+    }
+    line.selectNext();
+  },
+  type: "element"
+};
+var IMAGE2 = {
+  dependencies: [ImageNode],
+  export: (node) => {
+    if (!$isImageNode(node)) {
+      return null;
+    }
+    return `![${node.getAltText()}](${node.getSrc()})`;
+  },
+  importRegExp: /!(?:\[([^[]*)\])(?:\(([^(]+)\))/,
+  regExp: /!(?:\[([^[]*)\])(?:\(([^(]+)\))$/,
+  replace: (textNode, match) => {
+    const [, altText, src] = match;
+    const imageNode = $createImageNode({
+      altText,
+      maxWidth: 800,
+      src
+    });
+    textNode.replace(imageNode);
+  },
+  trigger: ")",
+  type: "text-match"
+};
+var EMOJI2 = {
+  dependencies: [],
+  export: () => null,
+  importRegExp: /:([a-z0-9_]+):/,
+  regExp: /:([a-z0-9_]+):$/,
+  replace: (textNode, [, name]) => {
+    const emoji = emoji_list_default.find((e) => e.aliases.includes(name))?.emoji;
+    if (emoji) {
+      textNode.replace($createTextNode3(emoji));
+    }
+  },
+  trigger: ":",
+  type: "text-match"
+};
+var EQUATION2 = {
+  dependencies: [EquationNode],
+  export: (node) => {
+    if (!$isEquationNode(node)) {
+      return null;
+    }
+    return `$${node.getEquation()}$`;
+  },
+  importRegExp: /\$([^$]+?)\$/,
+  regExp: /\$([^$]+?)\$$/,
+  replace: (textNode, match) => {
+    const [, equation] = match;
+    const equationNode = $createEquationNode(equation, true);
+    textNode.replace(equationNode);
+  },
+  trigger: "$",
+  type: "text-match"
+};
+var TWEET2 = {
+  dependencies: [TweetNode],
+  export: (node) => {
+    if (!$isTweetNode(node)) {
+      return null;
+    }
+    return `<tweet id="${node.getId()}" />`;
+  },
+  regExp: /<tweet id="([^"]+?)"\s?\/>\s?$/,
+  replace: (textNode, _1, match) => {
+    const [, id] = match;
+    const tweetNode = $createTweetNode(id);
+    textNode.replace(tweetNode);
+  },
+  type: "element"
+};
+var TABLE_ROW_REG_EXP2 = /^(?:\|)(.+)(?:\|)\s?$/;
+var TABLE_ROW_DIVIDER_REG_EXP2 = /^(\| ?:?-*:? ?)+\|\s?$/;
+var TABLE2 = {
+  dependencies: [TableNode3, TableRowNode3, TableCellNode3],
+  export: (node) => {
+    if (!$isTableNode2(node)) {
+      return null;
+    }
+    const output = [];
+    for (const row of node.getChildren()) {
+      const rowOutput = [];
+      if (!$isTableRowNode2(row)) {
+        continue;
+      }
+      let isHeaderRow = false;
+      for (const cell of row.getChildren()) {
+        if ($isTableCellNode2(cell)) {
+          rowOutput.push($convertToMarkdownString2(PLAYGROUND_TRANSFORMERS2, cell).replace(/\n/g, "\\n").trim());
+          if (cell.__headerState === TableCellHeaderStates2.ROW) {
+            isHeaderRow = true;
+          }
+        }
+      }
+      output.push(`| ${rowOutput.join(" | ")} |`);
+      if (isHeaderRow) {
+        output.push(`| ${rowOutput.map((_) => "---").join(" | ")} |`);
+      }
+    }
+    return output.join("\n");
+  },
+  regExp: TABLE_ROW_REG_EXP2,
+  replace: (parentNode, _1, match) => {
+    if (TABLE_ROW_DIVIDER_REG_EXP2.test(match[0])) {
+      const table2 = parentNode.getPreviousSibling();
+      if (!table2 || !$isTableNode2(table2)) {
+        return;
+      }
+      const rows2 = table2.getChildren();
+      const lastRow = rows2[rows2.length - 1];
+      if (!lastRow || !$isTableRowNode2(lastRow)) {
+        return;
+      }
+      lastRow.getChildren().forEach((cell) => {
+        if (!$isTableCellNode2(cell)) {
+          return;
+        }
+        cell.setHeaderStyles(TableCellHeaderStates2.ROW, TableCellHeaderStates2.ROW);
+      });
+      parentNode.remove();
+      return;
+    }
+    const matchCells = mapToTableCells2(match[0]);
+    if (matchCells == null) {
+      return;
+    }
+    const rows = [matchCells];
+    let sibling = parentNode.getPreviousSibling();
+    let maxCells = matchCells.length;
+    while (sibling) {
+      if (!$isParagraphNode5(sibling)) {
+        break;
+      }
+      if (sibling.getChildrenSize() !== 1) {
+        break;
+      }
+      const firstChild = sibling.getFirstChild();
+      if (!$isTextNode4(firstChild)) {
+        break;
+      }
+      const cells = mapToTableCells2(firstChild.getTextContent());
+      if (cells == null) {
+        break;
+      }
+      maxCells = Math.max(maxCells, cells.length);
+      rows.unshift(cells);
+      const previousSibling2 = sibling.getPreviousSibling();
+      sibling.remove();
+      sibling = previousSibling2;
+    }
+    const table = $createTableNode2();
+    for (const cells of rows) {
+      const tableRow = $createTableRowNode2();
+      table.append(tableRow);
+      for (let i = 0; i < maxCells; i++) {
+        tableRow.append(i < cells.length ? cells[i] : $createTableCell2(""));
+      }
+    }
+    const previousSibling = parentNode.getPreviousSibling();
+    if ($isTableNode2(previousSibling) && getTableColumnsSize2(previousSibling) === maxCells) {
+      previousSibling.append(...table.getChildren());
+      parentNode.remove();
+    } else {
+      parentNode.replace(table);
+    }
+    table.selectEnd();
+  },
+  type: "element"
+};
+function getTableColumnsSize2(table) {
+  const row = table.getFirstChild();
+  return $isTableRowNode2(row) ? row.getChildrenSize() : 0;
+}
+var $createTableCell2 = (textContent) => {
+  textContent = textContent.replace(/\\n/g, "\n");
+  const cell = $createTableCellNode2(TableCellHeaderStates2.NO_STATUS);
+  $convertFromMarkdownString2(textContent, PLAYGROUND_TRANSFORMERS2, cell);
+  return cell;
+};
+var mapToTableCells2 = (textContent) => {
+  const match = textContent.match(TABLE_ROW_REG_EXP2);
+  if (!match || !match[1]) {
+    return null;
+  }
+  return match[1].split("|").map((text) => $createTableCell2(text));
+};
+var PLAYGROUND_TRANSFORMERS2 = [
+  TABLE2,
+  HR2,
+  IMAGE2,
+  EMOJI2,
+  EQUATION2,
+  TWEET2,
+  CHECK_LIST2,
+  ...ELEMENT_TRANSFORMERS2,
+  ...MULTILINE_ELEMENT_TRANSFORMERS2,
+  ...TEXT_FORMAT_TRANSFORMERS2,
+  ...TEXT_MATCH_TRANSFORMERS2
+];
 
 // src/plugins/MarkdownPastePlugin/index.tsx
 var MARKDOWN_PATTERNS = {
@@ -27915,7 +28187,7 @@ function MarkdownPastePlugin() {
         selection.removeText();
         const anchorNode = selection.anchor.getNode();
         const paragraphNode = $createParagraphNode9();
-        $convertFromMarkdownString2(plainText, PLAYGROUND_TRANSFORMERS, paragraphNode, true);
+        $convertFromMarkdownString3(normalizeListIndentation(plainText), PLAYGROUND_TRANSFORMERS2, paragraphNode, true);
         const children = paragraphNode.getChildren();
         if (children.length > 0) {
           const topLevelNode = anchorNode.getTopLevelElement();
@@ -27954,7 +28226,7 @@ function MarkdownPastePlugin() {
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { jsx as jsx47 } from "react/jsx-runtime";
 function MarkdownPlugin() {
-  return /* @__PURE__ */ jsx47(MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS });
+  return /* @__PURE__ */ jsx47(MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
 }
 
 // src/plugins/MaxLengthPlugin/index.tsx
@@ -28027,7 +28299,7 @@ import {
   $createParagraphNode as $createParagraphNode10,
   $getSelection as $getSelection16,
   $isRangeSelection as $isRangeSelection13,
-  $isTextNode as $isTextNode4,
+  $isTextNode as $isTextNode5,
   SKIP_DOM_SELECTION_TAG as SKIP_DOM_SELECTION_TAG2,
   SKIP_SELECTION_FOCUS_TAG
 } from "lexical";
@@ -28209,7 +28481,7 @@ var clearFormatting = (editor, skipRefocus = false) => {
         return;
       }
       nodes.forEach((node, idx) => {
-        if ($isTextNode4(node)) {
+        if ($isTextNode5(node)) {
           let textNode = node;
           if (idx === 0 && anchor.offset !== 0) {
             textNode = textNode.splitText(anchor.offset)[1] || textNode;
@@ -28218,7 +28490,7 @@ var clearFormatting = (editor, skipRefocus = false) => {
             textNode = textNode.splitText(focus.offset)[0] || textNode;
           }
           const extractedTextNode = extractedNodes[0];
-          if (nodes.length === 1 && $isTextNode4(extractedTextNode)) {
+          if (nodes.length === 1 && $isTextNode5(extractedTextNode)) {
             textNode = extractedTextNode;
           }
           if (textNode.__style !== "") {
@@ -28608,21 +28880,21 @@ import {
   $getTableRowIndexFromTableCellNode,
   $insertTableColumnAtSelection,
   $insertTableRowAtSelection,
-  $isTableCellNode as $isTableCellNode2,
+  $isTableCellNode as $isTableCellNode3,
   $isTableSelection as $isTableSelection2,
   $mergeCells,
   $unmergeCell,
   getTableElement,
   getTableObserverFromTableElement,
-  TableCellHeaderStates as TableCellHeaderStates2,
-  TableCellNode as TableCellNode3
+  TableCellHeaderStates as TableCellHeaderStates3,
+  TableCellNode as TableCellNode4
 } from "@lexical/table";
 import { mergeRegister as mergeRegister13 } from "@lexical/utils";
 import {
   $getSelection as $getSelection18,
   $isElementNode as $isElementNode4,
   $isRangeSelection as $isRangeSelection15,
-  $isTextNode as $isTextNode5,
+  $isTextNode as $isTextNode6,
   $setSelection as $setSelection7,
   COMMAND_PRIORITY_CRITICAL as COMMAND_PRIORITY_CRITICAL2,
   getDOMSelection as getDOMSelection3,
@@ -28649,7 +28921,7 @@ function $canUnmerge() {
 }
 function $selectLastDescendant(node) {
   const lastDescendant = node.getLastDescendant();
-  if ($isTextNode5(lastDescendant)) {
+  if ($isTextNode6(lastDescendant)) {
     lastDescendant.select();
   } else if ($isElementNode4(lastDescendant)) {
     lastDescendant.selectEnd();
@@ -28662,7 +28934,7 @@ function currentCellBackgroundColor(editor) {
     const selection = $getSelection18();
     if ($isRangeSelection15(selection) || $isTableSelection2(selection)) {
       const [cell] = $getNodeTriplet(selection.anchor);
-      if ($isTableCellNode2(cell)) {
+      if ($isTableCellNode3(cell)) {
         return cell.getBackgroundColor();
       }
     }
@@ -28689,7 +28961,7 @@ function TableActionMenu({
   const [backgroundColor, setBackgroundColor] = useState25(() => currentCellBackgroundColor(editor) || "");
   useEffect37(() => {
     return editor.registerMutationListener(
-      TableCellNode3,
+      TableCellNode4,
       (nodeMutations) => {
         const nodeUpdated = nodeMutations.get(tableCellNode.getKey()) === "updated";
         if (nodeUpdated) {
@@ -28771,7 +29043,7 @@ function TableActionMenu({
         return;
       }
       const nodes = selection.getNodes();
-      const tableCells = nodes.filter($isTableCellNode2);
+      const tableCells = nodes.filter($isTableCellNode3);
       const targetCell = $mergeCells(tableCells);
       if (targetCell) {
         $selectLastDescendant(targetCell);
@@ -28832,7 +29104,7 @@ function TableActionMenu({
       const tableRowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
       const [gridMap] = $computeTableMapSkipCellCheck(tableNode, null, null);
       const rowCells = /* @__PURE__ */ new Set();
-      const newStyle = tableCellNode.getHeaderStyles() ^ TableCellHeaderStates2.ROW;
+      const newStyle = tableCellNode.getHeaderStyles() ^ TableCellHeaderStates3.ROW;
       for (let col = 0; col < gridMap[tableRowIndex].length; col++) {
         const mapCell = gridMap[tableRowIndex][col];
         if (!mapCell?.cell) {
@@ -28840,7 +29112,7 @@ function TableActionMenu({
         }
         if (!rowCells.has(mapCell.cell)) {
           rowCells.add(mapCell.cell);
-          mapCell.cell.setHeaderStyles(newStyle, TableCellHeaderStates2.ROW);
+          mapCell.cell.setHeaderStyles(newStyle, TableCellHeaderStates3.ROW);
         }
       }
       clearTableSelection();
@@ -28853,7 +29125,7 @@ function TableActionMenu({
       const tableColumnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
       const [gridMap] = $computeTableMapSkipCellCheck(tableNode, null, null);
       const columnCells = /* @__PURE__ */ new Set();
-      const newStyle = tableCellNode.getHeaderStyles() ^ TableCellHeaderStates2.COLUMN;
+      const newStyle = tableCellNode.getHeaderStyles() ^ TableCellHeaderStates3.COLUMN;
       for (let row = 0; row < gridMap.length; row++) {
         const mapCell = gridMap[row][tableColumnIndex];
         if (!mapCell?.cell) {
@@ -28861,7 +29133,7 @@ function TableActionMenu({
         }
         if (!columnCells.has(mapCell.cell)) {
           columnCells.add(mapCell.cell);
-          mapCell.cell.setHeaderStyles(newStyle, TableCellHeaderStates2.COLUMN);
+          mapCell.cell.setHeaderStyles(newStyle, TableCellHeaderStates3.COLUMN);
         }
       }
       clearTableSelection();
@@ -28910,14 +29182,14 @@ function TableActionMenu({
         const selection = $getSelection18();
         if ($isRangeSelection15(selection) || $isTableSelection2(selection)) {
           const [cell] = $getNodeTriplet(selection.anchor);
-          if ($isTableCellNode2(cell)) {
+          if ($isTableCellNode3(cell)) {
             cell.setBackgroundColor(value);
           }
           if ($isTableSelection2(selection)) {
             const nodes = selection.getNodes();
             for (let i = 0; i < nodes.length; i++) {
               const node = nodes[i];
-              if ($isTableCellNode2(node)) {
+              if ($isTableCellNode3(node)) {
                 node.setBackgroundColor(value);
               }
             }
@@ -28932,14 +29204,14 @@ function TableActionMenu({
       const selection = $getSelection18();
       if ($isRangeSelection15(selection) || $isTableSelection2(selection)) {
         const [cell] = $getNodeTriplet(selection.anchor);
-        if ($isTableCellNode2(cell)) {
+        if ($isTableCellNode3(cell)) {
           cell.setVerticalAlign(value);
         }
         if ($isTableSelection2(selection)) {
           const nodes = selection.getNodes();
           for (let i = 0; i < nodes.length; i++) {
             const node = nodes[i];
-            if ($isTableCellNode2(node)) {
+            if ($isTableCellNode3(node)) {
               node.setVerticalAlign(value);
             }
           }
@@ -29147,7 +29419,7 @@ function TableActionMenu({
           /* @__PURE__ */ jsx48("button", { type: "button", className: "item", onClick: () => deleteTableAtSelection(), "data-test-id": "table-delete", children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Delete table" }) }),
           /* @__PURE__ */ jsx48("hr", {}),
           /* @__PURE__ */ jsx48("button", { type: "button", className: "item", onClick: () => toggleTableRowIsHeader(), "data-test-id": "table-row-header", children: /* @__PURE__ */ jsxs24("span", { className: "text", children: [
-            (tableCellNode.__headerState & TableCellHeaderStates2.ROW) === TableCellHeaderStates2.ROW ? "Remove" : "Add",
+            (tableCellNode.__headerState & TableCellHeaderStates3.ROW) === TableCellHeaderStates3.ROW ? "Remove" : "Add",
             " ",
             "row header"
           ] }) }),
@@ -29159,7 +29431,7 @@ function TableActionMenu({
               onClick: () => toggleTableColumnIsHeader(),
               "data-test-id": "table-column-header",
               children: /* @__PURE__ */ jsxs24("span", { className: "text", children: [
-                (tableCellNode.__headerState & TableCellHeaderStates2.COLUMN) === TableCellHeaderStates2.COLUMN ? "Remove" : "Add",
+                (tableCellNode.__headerState & TableCellHeaderStates3.COLUMN) === TableCellHeaderStates3.COLUMN ? "Remove" : "Add",
                 " ",
                 "column header"
               ] })
@@ -29233,7 +29505,7 @@ function TableCellActionMenuContainer({
       setTableMenuCellNode(tableCellNodeFromSelection);
     } else if ($isTableSelection2(selection)) {
       const anchorNode = $getTableCellNodeFromLexicalNode(selection.anchor.getNode());
-      if (!$isTableCellNode2(anchorNode)) {
+      if (!$isTableCellNode3(anchorNode)) {
         throw new Error("TableSelection anchorNode must be a TableCellNode");
       }
       const tableNode = $getTableNodeFromLexicalNodeOrThrow(anchorNode);
@@ -29346,11 +29618,11 @@ import {
   $computeTableMapSkipCellCheck as $computeTableMapSkipCellCheck2,
   $getTableNodeFromLexicalNodeOrThrow as $getTableNodeFromLexicalNodeOrThrow2,
   $getTableRowIndexFromTableCellNode as $getTableRowIndexFromTableCellNode2,
-  $isTableCellNode as $isTableCellNode3,
-  $isTableRowNode as $isTableRowNode2,
+  $isTableCellNode as $isTableCellNode4,
+  $isTableRowNode as $isTableRowNode3,
   getDOMCellFromTarget,
   getTableElement as getTableElement2,
-  TableNode as TableNode3
+  TableNode as TableNode4
 } from "@lexical/table";
 import { calculateZoomLevel as calculateZoomLevel4, mergeRegister as mergeRegister14 } from "@lexical/utils";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode5, isHTMLElement as isHTMLElement6, SKIP_SCROLL_INTO_VIEW_TAG } from "lexical";
@@ -29384,7 +29656,7 @@ function TableCellResizer({ editor }) {
   useEffect38(() => {
     const tableKeys = /* @__PURE__ */ new Set();
     return mergeRegister14(
-      editor.registerMutationListener(TableNode3, (nodeMutations) => {
+      editor.registerMutationListener(TableNode4, (nodeMutations) => {
         for (const [nodeKey, mutation] of nodeMutations) {
           if (mutation === "destroyed") {
             tableKeys.delete(nodeKey);
@@ -29394,7 +29666,7 @@ function TableCellResizer({ editor }) {
         }
         setHasTable(tableKeys.size > 0);
       }),
-      editor.registerNodeTransform(TableNode3, (tableNode) => {
+      editor.registerNodeTransform(TableNode4, (tableNode) => {
         if (tableNode.getColWidths()) {
           return tableNode;
         }
@@ -29491,7 +29763,7 @@ function TableCellResizer({ editor }) {
       editor.update(
         () => {
           const tableCellNode = $getNearestNodeFromDOMNode5(activeCell.elem);
-          if (!$isTableCellNode3(tableCellNode)) {
+          if (!$isTableCellNode4(tableCellNode)) {
             throw new Error("TableCellResizer: Table cell node not found.");
           }
           const tableNode = $getTableNodeFromLexicalNodeOrThrow2(tableCellNode);
@@ -29503,7 +29775,7 @@ function TableCellResizer({ editor }) {
             throw new Error("Expected table cell to be inside of table row.");
           }
           const tableRow = tableRows[tableRowIndex];
-          if (!$isTableRowNode2(tableRow)) {
+          if (!$isTableRowNode3(tableRow)) {
             throw new Error("Expected table row");
           }
           let height = tableRow.getHeight();
@@ -29536,7 +29808,7 @@ function TableCellResizer({ editor }) {
       editor.update(
         () => {
           const tableCellNode = $getNearestNodeFromDOMNode5(activeCell.elem);
-          if (!$isTableCellNode3(tableCellNode)) {
+          if (!$isTableCellNode4(tableCellNode)) {
             throw new Error("TableCellResizer: Table cell node not found.");
           }
           const tableNode = $getTableNodeFromLexicalNodeOrThrow2(tableCellNode);
@@ -29695,10 +29967,10 @@ import {
   $getTableRowIndexFromTableCellNode as $getTableRowIndexFromTableCellNode3,
   $insertTableColumnAtSelection as $insertTableColumnAtSelection2,
   $insertTableRowAtSelection as $insertTableRowAtSelection2,
-  $isTableCellNode as $isTableCellNode4,
-  $isTableNode as $isTableNode2,
+  $isTableCellNode as $isTableCellNode5,
+  $isTableNode as $isTableNode3,
   getTableElement as getTableElement3,
-  TableNode as TableNode4
+  TableNode as TableNode5
 } from "@lexical/table";
 import { $findMatchingParent as $findMatchingParent5, mergeRegister as mergeRegister15 } from "@lexical/utils";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode6, isHTMLElement as isHTMLElement7 } from "lexical";
@@ -29744,9 +30016,9 @@ function TableHoverActionsContainer({ anchorElem }) {
       editor.getEditorState().read(
         () => {
           const maybeTableCell = $getNearestNodeFromDOMNode6(tableDOMNode);
-          if ($isTableCellNode4(maybeTableCell)) {
-            const table = $findMatchingParent5(maybeTableCell, (node) => $isTableNode2(node));
-            if (!$isTableNode2(table)) {
+          if ($isTableCellNode5(maybeTableCell)) {
+            const table = $findMatchingParent5(maybeTableCell, (node) => $isTableNode3(node));
+            if (!$isTableNode3(table)) {
               return;
             }
             tableDOMElement = getTableElement3(table, editor.getElementByKey(table.getKey()));
@@ -29826,7 +30098,7 @@ function TableHoverActionsContainer({ anchorElem }) {
   useEffect39(() => {
     return mergeRegister15(
       editor.registerMutationListener(
-        TableNode4,
+        TableNode5,
         (mutations) => {
           editor.getEditorState().read(
             () => {
@@ -30050,7 +30322,7 @@ import { INSERT_EMBED_COMMAND as INSERT_EMBED_COMMAND2 } from "@lexical/react/Le
 import { INSERT_HORIZONTAL_RULE_COMMAND as INSERT_HORIZONTAL_RULE_COMMAND3 } from "@lexical/react/LexicalHorizontalRuleNode";
 import { $isHeadingNode as $isHeadingNode2 } from "@lexical/rich-text";
 import { $getSelectionStyleValueForProperty as $getSelectionStyleValueForProperty2, $isParentElementRTL, $patchStyleText as $patchStyleText3 } from "@lexical/selection";
-import { $isTableNode as $isTableNode3, $isTableSelection as $isTableSelection3 } from "@lexical/table";
+import { $isTableNode as $isTableNode4, $isTableSelection as $isTableSelection3 } from "@lexical/table";
 import {
   $findMatchingParent as $findMatchingParent6,
   $getNearestNodeOfType,
@@ -30808,8 +31080,8 @@ function ToolbarPlugin({
       const parent = node.getParent();
       const isLink = $isLinkNode5(parent) || $isLinkNode5(node);
       updateToolbarState("isLink", isLink);
-      const tableNode = $findMatchingParent6(node, $isTableNode3);
-      if ($isTableNode3(tableNode)) {
+      const tableNode = $findMatchingParent6(node, $isTableNode4);
+      if ($isTableNode4(tableNode)) {
         updateToolbarState("rootType", "table");
       } else {
         updateToolbarState("rootType", "root");
@@ -31635,7 +31907,7 @@ function Editor({ isFullscreen = false }) {
 
 // src/core/NotionLikeEditor.tsx
 import { $generateHtmlFromNodes as $generateHtmlFromNodes2 } from "@lexical/html";
-import { $convertFromMarkdownString as $convertFromMarkdownString4, $convertToMarkdownString as $convertToMarkdownString3, TRANSFORMERS } from "@lexical/markdown";
+import { $convertFromMarkdownString as $convertFromMarkdownString5, $convertToMarkdownString as $convertToMarkdownString4, TRANSFORMERS } from "@lexical/markdown";
 import { useLexicalComposerContext as useLexicalComposerContext43 } from "@lexical/react/LexicalComposerContext";
 import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
 import { $getRoot as $getRoot6, defineExtension } from "lexical";
@@ -31695,9 +31967,9 @@ import { AutoLinkNode, LinkNode as LinkNode2 } from "@lexical/link";
 import { ListItemNode, ListNode as ListNode2 } from "@lexical/list";
 import { MarkNode } from "@lexical/mark";
 import { OverflowNode } from "@lexical/overflow";
-import { HorizontalRuleNode as HorizontalRuleNode2 } from "@lexical/react/LexicalHorizontalRuleNode";
+import { HorizontalRuleNode as HorizontalRuleNode3 } from "@lexical/react/LexicalHorizontalRuleNode";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { TableCellNode as TableCellNode4, TableNode as TableNode5, TableRowNode as TableRowNode3 } from "@lexical/table";
+import { TableCellNode as TableCellNode5, TableNode as TableNode6, TableRowNode as TableRowNode4 } from "@lexical/table";
 init_DateTimeNode2();
 init_EmojiNode();
 init_EquationNode();
@@ -31711,9 +31983,9 @@ var NotionLikeEditorNodes = [
   ListItemNode,
   QuoteNode,
   CodeNode2,
-  TableNode5,
-  TableCellNode4,
-  TableRowNode3,
+  TableNode6,
+  TableCellNode5,
+  TableRowNode4,
   HashtagNode2,
   CodeHighlightNode,
   AutoLinkNode,
@@ -31726,7 +31998,7 @@ var NotionLikeEditorNodes = [
   EquationNode,
   AutocompleteNode,
   KeywordNode,
-  HorizontalRuleNode2,
+  HorizontalRuleNode3,
   TweetNode,
   YouTubeNode,
   FigmaNode,
@@ -31743,7 +32015,7 @@ var NotionLikeEditorNodes = [
 var NotionLikeEditorNodes_default = NotionLikeEditorNodes;
 
 // src/plugins/InsertMarkdownPlugin/index.tsx
-import { $convertFromMarkdownString as $convertFromMarkdownString3, $convertToMarkdownString as $convertToMarkdownString2 } from "@lexical/markdown";
+import { $convertFromMarkdownString as $convertFromMarkdownString4, $convertToMarkdownString as $convertToMarkdownString3 } from "@lexical/markdown";
 import { useLexicalComposerContext as useLexicalComposerContext41 } from "@lexical/react/LexicalComposerContext";
 import { $getRoot as $getRoot5, COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR11, createCommand as createCommand11 } from "lexical";
 import { useEffect as useEffect47 } from "react";
@@ -31758,13 +32030,13 @@ function InsertMarkdownPlugin() {
           return false;
         }
         editor.update(() => {
-          const currentMarkdown = $convertToMarkdownString2(PLAYGROUND_TRANSFORMERS);
+          const currentMarkdown = $convertToMarkdownString3(PLAYGROUND_TRANSFORMERS2);
           const combinedMarkdown = currentMarkdown.trim() ? `${currentMarkdown.trim()}
 
 ${markdown}` : markdown;
           const root = $getRoot5();
           root.clear();
-          $convertFromMarkdownString3(combinedMarkdown, PLAYGROUND_TRANSFORMERS);
+          $convertFromMarkdownString4(combinedMarkdown, PLAYGROUND_TRANSFORMERS2);
           const newLastChild = root.getLastChild();
           newLastChild?.selectEnd();
         });
@@ -31941,7 +32213,7 @@ init_NotionLikeEditorTheme2();
 
 // src/core/buildHTMLConfig.tsx
 import {
-  $isTextNode as $isTextNode6,
+  $isTextNode as $isTextNode7,
   isBlockDomNode,
   isHTMLElement as isHTMLElement8,
   ParagraphNode as ParagraphNode2,
@@ -31985,7 +32257,7 @@ function buildImportMap3() {
               ...output,
               forChild: (child, parent) => {
                 const textNode = forChild(child, parent);
-                if ($isTextNode6(textNode)) {
+                if ($isTextNode7(textNode)) {
                   textNode.setStyle(textNode.getStyle() + extraStyles);
                 }
                 return textNode;
@@ -32073,7 +32345,7 @@ function NotionLikeEditor({
   const app = useMemo19(
     () => defineExtension({
       $initialEditorState: initialEditorState ? initialEditorState : initialMarkdown ? () => {
-        $convertFromMarkdownString4(initialMarkdown, PLAYGROUND_TRANSFORMERS);
+        $convertFromMarkdownString5(initialMarkdown, PLAYGROUND_TRANSFORMERS2);
       } : void 0,
       html: buildHTMLConfig(),
       name: "pecus/NotionLikeEditor",
@@ -32109,7 +32381,7 @@ function NotionLikeEditor({
   const debouncedOnChangeMarkdown = useDebouncedCallback2((editorState) => {
     if (onChangeMarkdown) {
       editorState.read(() => {
-        const markdown = $convertToMarkdownString3(TRANSFORMERS);
+        const markdown = $convertToMarkdownString4(TRANSFORMERS);
         onChangeMarkdown(markdown);
       });
     }
@@ -32552,7 +32824,7 @@ export {
   NotionLikeViewer,
   NotionLikeViewerTheme_default as NotionLikeViewerTheme,
   PACKAGE_VERSION,
-  PLAYGROUND_TRANSFORMERS,
+  PLAYGROUND_TRANSFORMERS2 as PLAYGROUND_TRANSFORMERS,
   PageBreakNode,
   Select,
   SettingsContext,

@@ -2845,7 +2845,7 @@ function StickyComponent({
       positioning.isDragging = false;
       stickyContainer.classList.remove("dragging");
       editor.update(() => {
-        const node = (0, import_lexical54.$getNodeByKey)(nodeKey);
+        const node = (0, import_lexical55.$getNodeByKey)(nodeKey);
         if ($isStickyNode(node)) {
           node.setPosition(positioning.x, positioning.y);
         }
@@ -2856,7 +2856,7 @@ function StickyComponent({
   };
   const handleDelete = () => {
     editor.update(() => {
-      const node = (0, import_lexical54.$getNodeByKey)(nodeKey);
+      const node = (0, import_lexical55.$getNodeByKey)(nodeKey);
       if ($isStickyNode(node)) {
         node.remove();
       }
@@ -2864,7 +2864,7 @@ function StickyComponent({
   };
   const handleColorChange = () => {
     editor.update(() => {
-      const node = (0, import_lexical54.$getNodeByKey)(nodeKey);
+      const node = (0, import_lexical55.$getNodeByKey)(nodeKey);
       if ($isStickyNode(node)) {
         node.toggleColor();
       }
@@ -2929,7 +2929,7 @@ function StickyComponent({
   }
   return (0, import_react_dom10.createPortal)(stickyContent, portalContainer);
 }
-var import_LexicalComposerContext39, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils37, import_lexical54, import_react63, import_react_dom10, import_jsx_runtime53;
+var import_LexicalComposerContext39, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils37, import_lexical55, import_react63, import_react_dom10, import_jsx_runtime53;
 var init_StickyComponent = __esm({
   "src/nodes/StickyComponent.tsx"() {
     "use strict";
@@ -2939,7 +2939,7 @@ var init_StickyComponent = __esm({
     import_LexicalNestedComposer2 = require("@lexical/react/LexicalNestedComposer");
     import_LexicalPlainTextPlugin = require("@lexical/react/LexicalPlainTextPlugin");
     import_utils37 = require("@lexical/utils");
-    import_lexical54 = require("lexical");
+    import_lexical55 = require("lexical");
     import_react63 = require("react");
     import_react_dom10 = require("react-dom");
     init_SharedHistoryContext();
@@ -2957,15 +2957,15 @@ function $isStickyNode(node) {
 function $createStickyNode(xOffset, yOffset) {
   return new StickyNode(xOffset, yOffset, "yellow");
 }
-var import_lexical55, React5, import_jsx_runtime54, StickyComponent2, StickyNode;
+var import_lexical56, React5, import_jsx_runtime54, StickyComponent2, StickyNode;
 var init_StickyNode2 = __esm({
   "src/nodes/StickyNode.tsx"() {
     "use strict";
-    import_lexical55 = require("lexical");
+    import_lexical56 = require("lexical");
     React5 = __toESM(require("react"));
     import_jsx_runtime54 = require("react/jsx-runtime");
     StickyComponent2 = React5.lazy(() => Promise.resolve().then(() => (init_StickyComponent(), StickyComponent_exports)));
-    StickyNode = class _StickyNode extends import_lexical55.DecoratorNode {
+    StickyNode = class _StickyNode extends import_lexical56.DecoratorNode {
       __x;
       __y;
       __color;
@@ -2995,7 +2995,7 @@ var init_StickyNode2 = __esm({
         super(key);
         this.__x = x;
         this.__y = y2;
-        this.__caption = caption || (0, import_lexical55.createEditor)();
+        this.__caption = caption || (0, import_lexical56.createEditor)();
         this.__color = color;
       }
       exportJSON() {
@@ -3019,7 +3019,7 @@ var init_StickyNode2 = __esm({
         const writable = this.getWritable();
         writable.__x = x;
         writable.__y = y2;
-        (0, import_lexical55.$setSelection)(null);
+        (0, import_lexical56.$setSelection)(null);
       }
       toggleColor() {
         const writable = this.getWritable();
@@ -3124,7 +3124,7 @@ __export(src_exports, {
   NotionLikeViewer: () => NotionLikeViewer,
   NotionLikeViewerTheme: () => NotionLikeViewerTheme_default,
   PACKAGE_VERSION: () => PACKAGE_VERSION,
-  PLAYGROUND_TRANSFORMERS: () => PLAYGROUND_TRANSFORMERS,
+  PLAYGROUND_TRANSFORMERS: () => PLAYGROUND_TRANSFORMERS2,
   PageBreakNode: () => PageBreakNode,
   Select: () => Select,
   SettingsContext: () => SettingsContext,
@@ -10898,12 +10898,12 @@ function HorizontalRulePlugin() {
 init_LinkPlugin();
 
 // src/plugins/MarkdownPastePlugin/index.tsx
-var import_markdown2 = require("@lexical/markdown");
+var import_markdown3 = require("@lexical/markdown");
 var import_LexicalComposerContext31 = require("@lexical/react/LexicalComposerContext");
-var import_lexical43 = require("lexical");
+var import_lexical44 = require("lexical");
 var import_react53 = require("react");
 
-// src/plugins/MarkdownTransformers/index.ts
+// src/transformers/markdown-transformers.ts
 var import_extension2 = require("@lexical/extension");
 var import_markdown = require("@lexical/markdown");
 var import_table3 = require("@lexical/table");
@@ -27515,7 +27515,7 @@ var emoji_list_default = [
   }
 ];
 
-// src/plugins/MarkdownTransformers/index.ts
+// src/transformers/markdown-transformers.ts
 var HR = {
   dependencies: [import_extension2.HorizontalRuleNode],
   export: (node) => {
@@ -27731,6 +27731,259 @@ var PLAYGROUND_TRANSFORMERS = [
   ...import_markdown.TEXT_FORMAT_TRANSFORMERS,
   ...import_markdown.TEXT_MATCH_TRANSFORMERS
 ];
+function normalizeListIndentation(markdown) {
+  const lines = markdown.split("\n");
+  const result = [];
+  let inCodeBlock = false;
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) {
+      inCodeBlock = !inCodeBlock;
+      result.push(line);
+      continue;
+    }
+    if (inCodeBlock) {
+      result.push(line);
+      continue;
+    }
+    const listMatch = line.match(/^(\s+)([-*+]|\d+\.)(\s+\[[ xX]?\])?\s/);
+    if (listMatch) {
+      const leadingSpaces = listMatch[1];
+      const spaceCount = (leadingSpaces.match(/ /g) || []).length;
+      const tabCount = (leadingSpaces.match(/\t/g) || []).length;
+      if (spaceCount > 0 && spaceCount % 2 === 0 && spaceCount % 4 !== 0) {
+        const indentLevel = Math.ceil(spaceCount / 2);
+        const newIndent = "	".repeat(tabCount) + "    ".repeat(indentLevel);
+        result.push(newIndent + line.slice(leadingSpaces.length));
+        continue;
+      }
+    }
+    result.push(line);
+  }
+  return result.join("\n");
+}
+
+// src/plugins/MarkdownTransformers/index.ts
+var import_extension3 = require("@lexical/extension");
+var import_markdown2 = require("@lexical/markdown");
+var import_table4 = require("@lexical/table");
+var import_lexical43 = require("lexical");
+init_EquationNode();
+init_ImageNode2();
+var HR2 = {
+  dependencies: [import_extension3.HorizontalRuleNode],
+  export: (node) => {
+    return (0, import_extension3.$isHorizontalRuleNode)(node) ? "***" : null;
+  },
+  regExp: /^(---|\*\*\*|___)\s?$/,
+  replace: (parentNode, _1, _2, isImport) => {
+    const line = (0, import_extension3.$createHorizontalRuleNode)();
+    if (isImport || parentNode.getNextSibling() != null) {
+      parentNode.replace(line);
+    } else {
+      parentNode.insertBefore(line);
+    }
+    line.selectNext();
+  },
+  type: "element"
+};
+var IMAGE2 = {
+  dependencies: [ImageNode],
+  export: (node) => {
+    if (!$isImageNode(node)) {
+      return null;
+    }
+    return `![${node.getAltText()}](${node.getSrc()})`;
+  },
+  importRegExp: /!(?:\[([^[]*)\])(?:\(([^(]+)\))/,
+  regExp: /!(?:\[([^[]*)\])(?:\(([^(]+)\))$/,
+  replace: (textNode, match) => {
+    const [, altText, src] = match;
+    const imageNode = $createImageNode({
+      altText,
+      maxWidth: 800,
+      src
+    });
+    textNode.replace(imageNode);
+  },
+  trigger: ")",
+  type: "text-match"
+};
+var EMOJI2 = {
+  dependencies: [],
+  export: () => null,
+  importRegExp: /:([a-z0-9_]+):/,
+  regExp: /:([a-z0-9_]+):$/,
+  replace: (textNode, [, name]) => {
+    const emoji = emoji_list_default.find((e) => e.aliases.includes(name))?.emoji;
+    if (emoji) {
+      textNode.replace((0, import_lexical43.$createTextNode)(emoji));
+    }
+  },
+  trigger: ":",
+  type: "text-match"
+};
+var EQUATION2 = {
+  dependencies: [EquationNode],
+  export: (node) => {
+    if (!$isEquationNode(node)) {
+      return null;
+    }
+    return `$${node.getEquation()}$`;
+  },
+  importRegExp: /\$([^$]+?)\$/,
+  regExp: /\$([^$]+?)\$$/,
+  replace: (textNode, match) => {
+    const [, equation] = match;
+    const equationNode = $createEquationNode(equation, true);
+    textNode.replace(equationNode);
+  },
+  trigger: "$",
+  type: "text-match"
+};
+var TWEET2 = {
+  dependencies: [TweetNode],
+  export: (node) => {
+    if (!$isTweetNode(node)) {
+      return null;
+    }
+    return `<tweet id="${node.getId()}" />`;
+  },
+  regExp: /<tweet id="([^"]+?)"\s?\/>\s?$/,
+  replace: (textNode, _1, match) => {
+    const [, id] = match;
+    const tweetNode = $createTweetNode(id);
+    textNode.replace(tweetNode);
+  },
+  type: "element"
+};
+var TABLE_ROW_REG_EXP2 = /^(?:\|)(.+)(?:\|)\s?$/;
+var TABLE_ROW_DIVIDER_REG_EXP2 = /^(\| ?:?-*:? ?)+\|\s?$/;
+var TABLE2 = {
+  dependencies: [import_table4.TableNode, import_table4.TableRowNode, import_table4.TableCellNode],
+  export: (node) => {
+    if (!(0, import_table4.$isTableNode)(node)) {
+      return null;
+    }
+    const output = [];
+    for (const row of node.getChildren()) {
+      const rowOutput = [];
+      if (!(0, import_table4.$isTableRowNode)(row)) {
+        continue;
+      }
+      let isHeaderRow = false;
+      for (const cell of row.getChildren()) {
+        if ((0, import_table4.$isTableCellNode)(cell)) {
+          rowOutput.push((0, import_markdown2.$convertToMarkdownString)(PLAYGROUND_TRANSFORMERS2, cell).replace(/\n/g, "\\n").trim());
+          if (cell.__headerState === import_table4.TableCellHeaderStates.ROW) {
+            isHeaderRow = true;
+          }
+        }
+      }
+      output.push(`| ${rowOutput.join(" | ")} |`);
+      if (isHeaderRow) {
+        output.push(`| ${rowOutput.map((_) => "---").join(" | ")} |`);
+      }
+    }
+    return output.join("\n");
+  },
+  regExp: TABLE_ROW_REG_EXP2,
+  replace: (parentNode, _1, match) => {
+    if (TABLE_ROW_DIVIDER_REG_EXP2.test(match[0])) {
+      const table2 = parentNode.getPreviousSibling();
+      if (!table2 || !(0, import_table4.$isTableNode)(table2)) {
+        return;
+      }
+      const rows2 = table2.getChildren();
+      const lastRow = rows2[rows2.length - 1];
+      if (!lastRow || !(0, import_table4.$isTableRowNode)(lastRow)) {
+        return;
+      }
+      lastRow.getChildren().forEach((cell) => {
+        if (!(0, import_table4.$isTableCellNode)(cell)) {
+          return;
+        }
+        cell.setHeaderStyles(import_table4.TableCellHeaderStates.ROW, import_table4.TableCellHeaderStates.ROW);
+      });
+      parentNode.remove();
+      return;
+    }
+    const matchCells = mapToTableCells2(match[0]);
+    if (matchCells == null) {
+      return;
+    }
+    const rows = [matchCells];
+    let sibling = parentNode.getPreviousSibling();
+    let maxCells = matchCells.length;
+    while (sibling) {
+      if (!(0, import_lexical43.$isParagraphNode)(sibling)) {
+        break;
+      }
+      if (sibling.getChildrenSize() !== 1) {
+        break;
+      }
+      const firstChild = sibling.getFirstChild();
+      if (!(0, import_lexical43.$isTextNode)(firstChild)) {
+        break;
+      }
+      const cells = mapToTableCells2(firstChild.getTextContent());
+      if (cells == null) {
+        break;
+      }
+      maxCells = Math.max(maxCells, cells.length);
+      rows.unshift(cells);
+      const previousSibling2 = sibling.getPreviousSibling();
+      sibling.remove();
+      sibling = previousSibling2;
+    }
+    const table = (0, import_table4.$createTableNode)();
+    for (const cells of rows) {
+      const tableRow = (0, import_table4.$createTableRowNode)();
+      table.append(tableRow);
+      for (let i = 0; i < maxCells; i++) {
+        tableRow.append(i < cells.length ? cells[i] : $createTableCell2(""));
+      }
+    }
+    const previousSibling = parentNode.getPreviousSibling();
+    if ((0, import_table4.$isTableNode)(previousSibling) && getTableColumnsSize2(previousSibling) === maxCells) {
+      previousSibling.append(...table.getChildren());
+      parentNode.remove();
+    } else {
+      parentNode.replace(table);
+    }
+    table.selectEnd();
+  },
+  type: "element"
+};
+function getTableColumnsSize2(table) {
+  const row = table.getFirstChild();
+  return (0, import_table4.$isTableRowNode)(row) ? row.getChildrenSize() : 0;
+}
+var $createTableCell2 = (textContent) => {
+  textContent = textContent.replace(/\\n/g, "\n");
+  const cell = (0, import_table4.$createTableCellNode)(import_table4.TableCellHeaderStates.NO_STATUS);
+  (0, import_markdown2.$convertFromMarkdownString)(textContent, PLAYGROUND_TRANSFORMERS2, cell);
+  return cell;
+};
+var mapToTableCells2 = (textContent) => {
+  const match = textContent.match(TABLE_ROW_REG_EXP2);
+  if (!match || !match[1]) {
+    return null;
+  }
+  return match[1].split("|").map((text) => $createTableCell2(text));
+};
+var PLAYGROUND_TRANSFORMERS2 = [
+  TABLE2,
+  HR2,
+  IMAGE2,
+  EMOJI2,
+  EQUATION2,
+  TWEET2,
+  import_markdown2.CHECK_LIST,
+  ...import_markdown2.ELEMENT_TRANSFORMERS,
+  ...import_markdown2.MULTILINE_ELEMENT_TRANSFORMERS,
+  ...import_markdown2.TEXT_FORMAT_TRANSFORMERS,
+  ...import_markdown2.TEXT_MATCH_TRANSFORMERS
+];
 
 // src/plugins/MarkdownPastePlugin/index.tsx
 var MARKDOWN_PATTERNS = {
@@ -27821,14 +28074,14 @@ function MarkdownPastePlugin() {
       }
       event.preventDefault();
       editor.update(() => {
-        const selection = (0, import_lexical43.$getSelection)();
-        if (!(0, import_lexical43.$isRangeSelection)(selection)) {
+        const selection = (0, import_lexical44.$getSelection)();
+        if (!(0, import_lexical44.$isRangeSelection)(selection)) {
           return;
         }
         selection.removeText();
         const anchorNode = selection.anchor.getNode();
-        const paragraphNode = (0, import_lexical43.$createParagraphNode)();
-        (0, import_markdown2.$convertFromMarkdownString)(plainText, PLAYGROUND_TRANSFORMERS, paragraphNode, true);
+        const paragraphNode = (0, import_lexical44.$createParagraphNode)();
+        (0, import_markdown3.$convertFromMarkdownString)(normalizeListIndentation(plainText), PLAYGROUND_TRANSFORMERS2, paragraphNode, true);
         const children = paragraphNode.getChildren();
         if (children.length > 0) {
           const topLevelNode = anchorNode.getTopLevelElement();
@@ -27853,11 +28106,11 @@ function MarkdownPastePlugin() {
   );
   (0, import_react53.useEffect)(() => {
     return editor.registerCommand(
-      import_lexical43.PASTE_COMMAND,
+      import_lexical44.PASTE_COMMAND,
       (event) => {
         return handlePaste(event);
       },
-      import_lexical43.COMMAND_PRIORITY_HIGH
+      import_lexical44.COMMAND_PRIORITY_HIGH
     );
   }, [editor, handlePaste]);
   return null;
@@ -27867,22 +28120,22 @@ function MarkdownPastePlugin() {
 var import_LexicalMarkdownShortcutPlugin = require("@lexical/react/LexicalMarkdownShortcutPlugin");
 var import_jsx_runtime47 = require("react/jsx-runtime");
 function MarkdownPlugin() {
-  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(import_LexicalMarkdownShortcutPlugin.MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS });
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(import_LexicalMarkdownShortcutPlugin.MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
 }
 
 // src/plugins/MaxLengthPlugin/index.tsx
 var import_LexicalComposerContext32 = require("@lexical/react/LexicalComposerContext");
 var import_selection5 = require("@lexical/selection");
 var import_utils28 = require("@lexical/utils");
-var import_lexical44 = require("lexical");
+var import_lexical45 = require("lexical");
 var import_react54 = require("react");
 function MaxLengthPlugin({ maxLength }) {
   const [editor] = (0, import_LexicalComposerContext32.useLexicalComposerContext)();
   (0, import_react54.useEffect)(() => {
     let lastRestoredEditorState = null;
-    return editor.registerNodeTransform(import_lexical44.RootNode, (rootNode) => {
-      const selection = (0, import_lexical44.$getSelection)();
-      if (!(0, import_lexical44.$isRangeSelection)(selection) || !selection.isCollapsed()) {
+    return editor.registerNodeTransform(import_lexical45.RootNode, (rootNode) => {
+      const selection = (0, import_lexical45.$getSelection)();
+      if (!(0, import_lexical45.$isRangeSelection)(selection) || !selection.isCollapsed()) {
         return;
       }
       const prevEditorState = editor.getEditorState();
@@ -27910,7 +28163,7 @@ init_MentionsPlugin();
 
 // src/plugins/ShortcutsPlugin/index.tsx
 var import_link6 = require("@lexical/link");
-var import_lexical47 = require("lexical");
+var import_lexical48 = require("lexical");
 var import_react55 = require("react");
 init_url();
 
@@ -27920,9 +28173,9 @@ var import_list2 = require("@lexical/list");
 var import_LexicalDecoratorBlockNode4 = require("@lexical/react/LexicalDecoratorBlockNode");
 var import_rich_text4 = require("@lexical/rich-text");
 var import_selection6 = require("@lexical/selection");
-var import_table4 = require("@lexical/table");
+var import_table5 = require("@lexical/table");
 var import_utils29 = require("@lexical/utils");
-var import_lexical45 = require("lexical");
+var import_lexical46 = require("lexical");
 var calculateNextFontSize = (currentFontSize, updateType) => {
   if (!updateType) {
     return currentFontSize;
@@ -27989,10 +28242,10 @@ var updateFontSizeInSelection = (editor, newFontSize, updateType, skipRefocus) =
   };
   editor.update(() => {
     if (skipRefocus) {
-      (0, import_lexical45.$addUpdateTag)(import_lexical45.SKIP_DOM_SELECTION_TAG);
+      (0, import_lexical46.$addUpdateTag)(import_lexical46.SKIP_DOM_SELECTION_TAG);
     }
     if (editor.isEditable()) {
-      const selection = (0, import_lexical45.$getSelection)();
+      const selection = (0, import_lexical46.$getSelection)();
       if (selection !== null) {
         (0, import_selection6.$patchStyleText)(selection, {
           "font-size": newFontSize || getNextFontSize
@@ -28011,16 +28264,16 @@ var updateFontSize = (editor, updateType, inputValue, skipRefocus = false) => {
 };
 var formatParagraph = (editor) => {
   editor.update(() => {
-    (0, import_lexical45.$addUpdateTag)(import_lexical45.SKIP_SELECTION_FOCUS_TAG);
-    const selection = (0, import_lexical45.$getSelection)();
-    (0, import_selection6.$setBlocksType)(selection, () => (0, import_lexical45.$createParagraphNode)());
+    (0, import_lexical46.$addUpdateTag)(import_lexical46.SKIP_SELECTION_FOCUS_TAG);
+    const selection = (0, import_lexical46.$getSelection)();
+    (0, import_selection6.$setBlocksType)(selection, () => (0, import_lexical46.$createParagraphNode)());
   });
 };
 var formatHeading = (editor, blockType, headingSize) => {
   if (blockType !== headingSize) {
     editor.update(() => {
-      (0, import_lexical45.$addUpdateTag)(import_lexical45.SKIP_SELECTION_FOCUS_TAG);
-      const selection = (0, import_lexical45.$getSelection)();
+      (0, import_lexical46.$addUpdateTag)(import_lexical46.SKIP_SELECTION_FOCUS_TAG);
+      const selection = (0, import_lexical46.$getSelection)();
       (0, import_selection6.$setBlocksType)(selection, () => (0, import_rich_text4.$createHeadingNode)(headingSize));
     });
   }
@@ -28028,7 +28281,7 @@ var formatHeading = (editor, blockType, headingSize) => {
 var formatBulletList = (editor, blockType) => {
   if (blockType !== "bullet") {
     editor.update(() => {
-      (0, import_lexical45.$addUpdateTag)(import_lexical45.SKIP_SELECTION_FOCUS_TAG);
+      (0, import_lexical46.$addUpdateTag)(import_lexical46.SKIP_SELECTION_FOCUS_TAG);
       editor.dispatchCommand(import_list2.INSERT_UNORDERED_LIST_COMMAND, void 0);
     });
   } else {
@@ -28038,7 +28291,7 @@ var formatBulletList = (editor, blockType) => {
 var formatCheckList = (editor, blockType) => {
   if (blockType !== "check") {
     editor.update(() => {
-      (0, import_lexical45.$addUpdateTag)(import_lexical45.SKIP_SELECTION_FOCUS_TAG);
+      (0, import_lexical46.$addUpdateTag)(import_lexical46.SKIP_SELECTION_FOCUS_TAG);
       editor.dispatchCommand(import_list2.INSERT_CHECK_LIST_COMMAND, void 0);
     });
   } else {
@@ -28048,7 +28301,7 @@ var formatCheckList = (editor, blockType) => {
 var formatNumberedList = (editor, blockType) => {
   if (blockType !== "number") {
     editor.update(() => {
-      (0, import_lexical45.$addUpdateTag)(import_lexical45.SKIP_SELECTION_FOCUS_TAG);
+      (0, import_lexical46.$addUpdateTag)(import_lexical46.SKIP_SELECTION_FOCUS_TAG);
       editor.dispatchCommand(import_list2.INSERT_ORDERED_LIST_COMMAND, void 0);
     });
   } else {
@@ -28058,8 +28311,8 @@ var formatNumberedList = (editor, blockType) => {
 var formatQuote = (editor, blockType) => {
   if (blockType !== "quote") {
     editor.update(() => {
-      (0, import_lexical45.$addUpdateTag)(import_lexical45.SKIP_SELECTION_FOCUS_TAG);
-      const selection = (0, import_lexical45.$getSelection)();
+      (0, import_lexical46.$addUpdateTag)(import_lexical46.SKIP_SELECTION_FOCUS_TAG);
+      const selection = (0, import_lexical46.$getSelection)();
       (0, import_selection6.$setBlocksType)(selection, () => (0, import_rich_text4.$createQuoteNode)());
     });
   }
@@ -28067,19 +28320,19 @@ var formatQuote = (editor, blockType) => {
 var formatCode = (editor, blockType) => {
   if (blockType !== "code") {
     editor.update(() => {
-      (0, import_lexical45.$addUpdateTag)(import_lexical45.SKIP_SELECTION_FOCUS_TAG);
-      let selection = (0, import_lexical45.$getSelection)();
+      (0, import_lexical46.$addUpdateTag)(import_lexical46.SKIP_SELECTION_FOCUS_TAG);
+      let selection = (0, import_lexical46.$getSelection)();
       if (!selection) {
         return;
       }
-      if (!(0, import_lexical45.$isRangeSelection)(selection) || selection.isCollapsed()) {
+      if (!(0, import_lexical46.$isRangeSelection)(selection) || selection.isCollapsed()) {
         (0, import_selection6.$setBlocksType)(selection, () => (0, import_code7.$createCodeNode)());
       } else {
         const textContent = selection.getTextContent();
         const codeNode = (0, import_code7.$createCodeNode)();
         selection.insertNodes([codeNode]);
-        selection = (0, import_lexical45.$getSelection)();
-        if ((0, import_lexical45.$isRangeSelection)(selection)) {
+        selection = (0, import_lexical46.$getSelection)();
+        if ((0, import_lexical46.$isRangeSelection)(selection)) {
           selection.insertRawText(textContent);
         }
       }
@@ -28089,10 +28342,10 @@ var formatCode = (editor, blockType) => {
 var clearFormatting = (editor, skipRefocus = false) => {
   editor.update(() => {
     if (skipRefocus) {
-      (0, import_lexical45.$addUpdateTag)(import_lexical45.SKIP_DOM_SELECTION_TAG);
+      (0, import_lexical46.$addUpdateTag)(import_lexical46.SKIP_DOM_SELECTION_TAG);
     }
-    const selection = (0, import_lexical45.$getSelection)();
-    if ((0, import_lexical45.$isRangeSelection)(selection) || (0, import_table4.$isTableSelection)(selection)) {
+    const selection = (0, import_lexical46.$getSelection)();
+    if ((0, import_lexical46.$isRangeSelection)(selection) || (0, import_table5.$isTableSelection)(selection)) {
       const anchor = selection.anchor;
       const focus = selection.focus;
       const nodes = selection.getNodes();
@@ -28101,7 +28354,7 @@ var clearFormatting = (editor, skipRefocus = false) => {
         return;
       }
       nodes.forEach((node, idx) => {
-        if ((0, import_lexical45.$isTextNode)(node)) {
+        if ((0, import_lexical46.$isTextNode)(node)) {
           let textNode = node;
           if (idx === 0 && anchor.offset !== 0) {
             textNode = textNode.splitText(anchor.offset)[1] || textNode;
@@ -28110,7 +28363,7 @@ var clearFormatting = (editor, skipRefocus = false) => {
             textNode = textNode.splitText(focus.offset)[0] || textNode;
           }
           const extractedTextNode = extractedNodes[0];
-          if (nodes.length === 1 && (0, import_lexical45.$isTextNode)(extractedTextNode)) {
+          if (nodes.length === 1 && (0, import_lexical46.$isTextNode)(extractedTextNode)) {
             textNode = extractedTextNode;
           }
           if (textNode.__style !== "") {
@@ -28128,7 +28381,7 @@ var clearFormatting = (editor, skipRefocus = false) => {
           }
           node = textNode;
         } else if ((0, import_rich_text4.$isHeadingNode)(node) || (0, import_rich_text4.$isQuoteNode)(node)) {
-          node.replace((0, import_lexical45.$createParagraphNode)(), true);
+          node.replace((0, import_lexical46.$createParagraphNode)(), true);
         } else if ((0, import_LexicalDecoratorBlockNode4.$isDecoratorBlockNode)(node)) {
           node.setFormat("");
         }
@@ -28139,7 +28392,7 @@ var clearFormatting = (editor, skipRefocus = false) => {
 
 // src/plugins/ShortcutsPlugin/shortcuts.ts
 var import_utils30 = require("@lexical/utils");
-var import_lexical46 = require("lexical");
+var import_lexical47 = require("lexical");
 var SHORTCUTS = Object.freeze({
   // (Ctrl|⌘) + (Alt|Option) + <key> shortcuts
   NORMAL: import_utils30.IS_APPLE ? "\u2318+Opt+0" : "Ctrl+Alt+0",
@@ -28180,7 +28433,7 @@ var SHORTCUTS = Object.freeze({
 var CONTROL_OR_META = { ctrlKey: !import_utils30.IS_APPLE, metaKey: import_utils30.IS_APPLE };
 function isFormatParagraph(event) {
   const { code } = event;
-  return (code === "Numpad0" || code === "Digit0") && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, altKey: true });
+  return (code === "Numpad0" || code === "Digit0") && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, altKey: true });
 }
 function isFormatHeading(event) {
   const { code } = event;
@@ -28188,98 +28441,98 @@ function isFormatHeading(event) {
     return false;
   }
   const keyNumber = code[code.length - 1];
-  return ["1", "2", "3"].includes(keyNumber) && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, altKey: true });
+  return ["1", "2", "3"].includes(keyNumber) && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, altKey: true });
 }
 function isFormatNumberedList(event) {
   const { code } = event;
-  return (code === "Numpad7" || code === "Digit7") && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return (code === "Numpad7" || code === "Digit7") && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isFormatBulletList(event) {
   const { code } = event;
-  return (code === "Numpad8" || code === "Digit8") && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return (code === "Numpad8" || code === "Digit8") && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isFormatCheckList(event) {
   const { code } = event;
-  return (code === "Numpad9" || code === "Digit9") && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return (code === "Numpad9" || code === "Digit9") && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isFormatCode(event) {
   const { code } = event;
-  return code === "KeyC" && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, altKey: true });
+  return code === "KeyC" && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, altKey: true });
 }
 function isFormatQuote(event) {
   const { code } = event;
-  return code === "KeyQ" && (0, import_lexical46.isModifierMatch)(event, {
+  return code === "KeyQ" && (0, import_lexical47.isModifierMatch)(event, {
     ctrlKey: true,
     shiftKey: true
   });
 }
 function isLowercase(event) {
   const { code } = event;
-  return (code === "Numpad1" || code === "Digit1") && (0, import_lexical46.isModifierMatch)(event, { ctrlKey: true, shiftKey: true });
+  return (code === "Numpad1" || code === "Digit1") && (0, import_lexical47.isModifierMatch)(event, { ctrlKey: true, shiftKey: true });
 }
 function isUppercase(event) {
   const { code } = event;
-  return (code === "Numpad2" || code === "Digit2") && (0, import_lexical46.isModifierMatch)(event, { ctrlKey: true, shiftKey: true });
+  return (code === "Numpad2" || code === "Digit2") && (0, import_lexical47.isModifierMatch)(event, { ctrlKey: true, shiftKey: true });
 }
 function isCapitalize(event) {
   const { code } = event;
-  return (code === "Numpad3" || code === "Digit3") && (0, import_lexical46.isModifierMatch)(event, { ctrlKey: true, shiftKey: true });
+  return (code === "Numpad3" || code === "Digit3") && (0, import_lexical47.isModifierMatch)(event, { ctrlKey: true, shiftKey: true });
 }
 function isStrikeThrough(event) {
   const { code } = event;
-  return code === "KeyX" && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return code === "KeyX" && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isIndent(event) {
   const { code } = event;
-  return code === "BracketRight" && (0, import_lexical46.isModifierMatch)(event, CONTROL_OR_META);
+  return code === "BracketRight" && (0, import_lexical47.isModifierMatch)(event, CONTROL_OR_META);
 }
 function isOutdent(event) {
   const { code } = event;
-  return code === "BracketLeft" && (0, import_lexical46.isModifierMatch)(event, CONTROL_OR_META);
+  return code === "BracketLeft" && (0, import_lexical47.isModifierMatch)(event, CONTROL_OR_META);
 }
 function isCenterAlign(event) {
   const { code } = event;
-  return code === "KeyE" && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return code === "KeyE" && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isLeftAlign(event) {
   const { code } = event;
-  return code === "KeyL" && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return code === "KeyL" && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isRightAlign(event) {
   const { code } = event;
-  return code === "KeyR" && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return code === "KeyR" && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isJustifyAlign(event) {
   const { code } = event;
-  return code === "KeyJ" && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return code === "KeyJ" && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isSubscript(event) {
   const { code } = event;
-  return code === "Comma" && (0, import_lexical46.isModifierMatch)(event, CONTROL_OR_META);
+  return code === "Comma" && (0, import_lexical47.isModifierMatch)(event, CONTROL_OR_META);
 }
 function isSuperscript(event) {
   const { code } = event;
-  return code === "Period" && (0, import_lexical46.isModifierMatch)(event, CONTROL_OR_META);
+  return code === "Period" && (0, import_lexical47.isModifierMatch)(event, CONTROL_OR_META);
 }
 function isInsertCodeBlock(event) {
   const { code } = event;
-  return code === "KeyC" && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return code === "KeyC" && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isIncreaseFontSize(event) {
   const { code } = event;
-  return code === "Period" && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return code === "Period" && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isDecreaseFontSize(event) {
   const { code } = event;
-  return code === "Comma" && (0, import_lexical46.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
+  return code === "Comma" && (0, import_lexical47.isModifierMatch)(event, { ...CONTROL_OR_META, shiftKey: true });
 }
 function isClearFormatting(event) {
   const { code } = event;
-  return code === "Backslash" && (0, import_lexical46.isModifierMatch)(event, CONTROL_OR_META);
+  return code === "Backslash" && (0, import_lexical47.isModifierMatch)(event, CONTROL_OR_META);
 }
 function isInsertLink(event) {
   const { code } = event;
-  return code === "KeyK" && (0, import_lexical46.isModifierMatch)(event, CONTROL_OR_META);
+  return code === "KeyK" && (0, import_lexical47.isModifierMatch)(event, CONTROL_OR_META);
 }
 
 // src/plugins/ShortcutsPlugin/index.tsx
@@ -28290,7 +28543,7 @@ function ShortcutsPlugin({
   const { toolbarState } = useToolbarState();
   (0, import_react55.useEffect)(() => {
     const keyboardShortcutsHandler = (event) => {
-      if ((0, import_lexical47.isModifierMatch)(event, {})) {
+      if ((0, import_lexical48.isModifierMatch)(event, {})) {
         return false;
       } else if (isFormatParagraph(event)) {
         formatParagraph(editor);
@@ -28309,31 +28562,31 @@ function ShortcutsPlugin({
       } else if (isFormatQuote(event)) {
         formatQuote(editor, toolbarState.blockType);
       } else if (isStrikeThrough(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_TEXT_COMMAND, "strikethrough");
+        editor.dispatchCommand(import_lexical48.FORMAT_TEXT_COMMAND, "strikethrough");
       } else if (isLowercase(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_TEXT_COMMAND, "lowercase");
+        editor.dispatchCommand(import_lexical48.FORMAT_TEXT_COMMAND, "lowercase");
       } else if (isUppercase(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_TEXT_COMMAND, "uppercase");
+        editor.dispatchCommand(import_lexical48.FORMAT_TEXT_COMMAND, "uppercase");
       } else if (isCapitalize(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_TEXT_COMMAND, "capitalize");
+        editor.dispatchCommand(import_lexical48.FORMAT_TEXT_COMMAND, "capitalize");
       } else if (isIndent(event)) {
-        editor.dispatchCommand(import_lexical47.INDENT_CONTENT_COMMAND, void 0);
+        editor.dispatchCommand(import_lexical48.INDENT_CONTENT_COMMAND, void 0);
       } else if (isOutdent(event)) {
-        editor.dispatchCommand(import_lexical47.OUTDENT_CONTENT_COMMAND, void 0);
+        editor.dispatchCommand(import_lexical48.OUTDENT_CONTENT_COMMAND, void 0);
       } else if (isCenterAlign(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_ELEMENT_COMMAND, "center");
+        editor.dispatchCommand(import_lexical48.FORMAT_ELEMENT_COMMAND, "center");
       } else if (isLeftAlign(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_ELEMENT_COMMAND, "left");
+        editor.dispatchCommand(import_lexical48.FORMAT_ELEMENT_COMMAND, "left");
       } else if (isRightAlign(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_ELEMENT_COMMAND, "right");
+        editor.dispatchCommand(import_lexical48.FORMAT_ELEMENT_COMMAND, "right");
       } else if (isJustifyAlign(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_ELEMENT_COMMAND, "justify");
+        editor.dispatchCommand(import_lexical48.FORMAT_ELEMENT_COMMAND, "justify");
       } else if (isSubscript(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_TEXT_COMMAND, "subscript");
+        editor.dispatchCommand(import_lexical48.FORMAT_TEXT_COMMAND, "subscript");
       } else if (isSuperscript(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_TEXT_COMMAND, "superscript");
+        editor.dispatchCommand(import_lexical48.FORMAT_TEXT_COMMAND, "superscript");
       } else if (isInsertCodeBlock(event)) {
-        editor.dispatchCommand(import_lexical47.FORMAT_TEXT_COMMAND, "code");
+        editor.dispatchCommand(import_lexical48.FORMAT_TEXT_COMMAND, "code");
       } else if (isIncreaseFontSize(event)) {
         updateFontSize(editor, 1 /* increment */, toolbarState.fontSizeInputValue);
       } else if (isDecreaseFontSize(event)) {
@@ -28350,20 +28603,20 @@ function ShortcutsPlugin({
       event.preventDefault();
       return true;
     };
-    return editor.registerCommand(import_lexical47.KEY_DOWN_COMMAND, keyboardShortcutsHandler, import_lexical47.COMMAND_PRIORITY_NORMAL);
+    return editor.registerCommand(import_lexical48.KEY_DOWN_COMMAND, keyboardShortcutsHandler, import_lexical48.COMMAND_PRIORITY_NORMAL);
   }, [editor, toolbarState.isLink, toolbarState.blockType, toolbarState.fontSizeInputValue, setIsLinkEditMode]);
   return null;
 }
 
 // src/plugins/SpecialTextPlugin/index.ts
 var import_LexicalComposerContext33 = require("@lexical/react/LexicalComposerContext");
-var import_lexical49 = require("lexical");
+var import_lexical50 = require("lexical");
 var import_react56 = require("react");
 
 // src/nodes/SpecialTextNode.tsx
 var import_utils32 = require("@lexical/utils");
-var import_lexical48 = require("lexical");
-var SpecialTextNode = class _SpecialTextNode extends import_lexical48.TextNode {
+var import_lexical49 = require("lexical");
+var SpecialTextNode = class _SpecialTextNode extends import_lexical49.TextNode {
   static getType() {
     return "specialText";
   }
@@ -28395,7 +28648,7 @@ var SpecialTextNode = class _SpecialTextNode extends import_lexical48.TextNode {
   }
 };
 function $createSpecialTextNode(text = "") {
-  return (0, import_lexical48.$applyNodeReplacement)(new SpecialTextNode(text));
+  return (0, import_lexical49.$applyNodeReplacement)(new SpecialTextNode(text));
 }
 function $isSpecialTextNode(node) {
   return node instanceof SpecialTextNode;
@@ -28435,7 +28688,7 @@ function useTextTransformation(editor) {
     if (!editor.hasNodes([SpecialTextNode])) {
       throw new Error("SpecialTextPlugin: SpecialTextNode not registered on editor");
     }
-    return editor.registerNodeTransform(import_lexical49.TextNode, $textNodeTransform3);
+    return editor.registerNodeTransform(import_lexical50.TextNode, $textNodeTransform3);
   }, [editor]);
 }
 function SpecialTextPlugin() {
@@ -28446,7 +28699,7 @@ function SpecialTextPlugin() {
 
 // src/plugins/TabFocusPlugin/index.tsx
 var import_LexicalComposerContext34 = require("@lexical/react/LexicalComposerContext");
-var import_lexical50 = require("lexical");
+var import_lexical51 = require("lexical");
 var import_react57 = require("react");
 var TAB_TO_FOCUS_INTERVAL = 100;
 var lastTabKeyDownTimestamp = 0;
@@ -28470,17 +28723,17 @@ function TabFocusPlugin() {
       hasRegisteredKeyDownListener = true;
     }
     return editor.registerCommand(
-      import_lexical50.FOCUS_COMMAND,
+      import_lexical51.FOCUS_COMMAND,
       (event) => {
-        const selection = (0, import_lexical50.$getSelection)();
-        if ((0, import_lexical50.$isRangeSelection)(selection)) {
+        const selection = (0, import_lexical51.$getSelection)();
+        if ((0, import_lexical51.$isRangeSelection)(selection)) {
           if (lastTabKeyDownTimestamp + TAB_TO_FOCUS_INTERVAL > event.timeStamp) {
-            (0, import_lexical50.$setSelection)(selection.clone());
+            (0, import_lexical51.$setSelection)(selection.clone());
           }
         }
         return false;
       },
-      import_lexical50.COMMAND_PRIORITY_LOW
+      import_lexical51.COMMAND_PRIORITY_LOW
     );
   }, [editor]);
   return null;
@@ -28489,9 +28742,9 @@ function TabFocusPlugin() {
 // src/plugins/TableActionMenuPlugin/index.tsx
 var import_LexicalComposerContext35 = require("@lexical/react/LexicalComposerContext");
 var import_useLexicalEditable3 = require("@lexical/react/useLexicalEditable");
-var import_table5 = require("@lexical/table");
+var import_table6 = require("@lexical/table");
 var import_utils33 = require("@lexical/utils");
-var import_lexical51 = require("lexical");
+var import_lexical52 = require("lexical");
 var import_react58 = require("react");
 var import_react_dom7 = require("react-dom");
 var import_jsx_runtime48 = require("react/jsx-runtime");
@@ -28503,18 +28756,18 @@ function computeSelectionCount(selection) {
   };
 }
 function $canUnmerge() {
-  const selection = (0, import_lexical51.$getSelection)();
-  if ((0, import_lexical51.$isRangeSelection)(selection) && !selection.isCollapsed() || (0, import_table5.$isTableSelection)(selection) && !selection.anchor.is(selection.focus) || !(0, import_lexical51.$isRangeSelection)(selection) && !(0, import_table5.$isTableSelection)(selection)) {
+  const selection = (0, import_lexical52.$getSelection)();
+  if ((0, import_lexical52.$isRangeSelection)(selection) && !selection.isCollapsed() || (0, import_table6.$isTableSelection)(selection) && !selection.anchor.is(selection.focus) || !(0, import_lexical52.$isRangeSelection)(selection) && !(0, import_table6.$isTableSelection)(selection)) {
     return false;
   }
-  const [cell] = (0, import_table5.$getNodeTriplet)(selection.anchor);
+  const [cell] = (0, import_table6.$getNodeTriplet)(selection.anchor);
   return cell.__colSpan > 1 || cell.__rowSpan > 1;
 }
 function $selectLastDescendant(node) {
   const lastDescendant = node.getLastDescendant();
-  if ((0, import_lexical51.$isTextNode)(lastDescendant)) {
+  if ((0, import_lexical52.$isTextNode)(lastDescendant)) {
     lastDescendant.select();
-  } else if ((0, import_lexical51.$isElementNode)(lastDescendant)) {
+  } else if ((0, import_lexical52.$isElementNode)(lastDescendant)) {
     lastDescendant.selectEnd();
   } else if (lastDescendant !== null) {
     lastDescendant.selectNext();
@@ -28522,10 +28775,10 @@ function $selectLastDescendant(node) {
 }
 function currentCellBackgroundColor(editor) {
   return editor.getEditorState().read(() => {
-    const selection = (0, import_lexical51.$getSelection)();
-    if ((0, import_lexical51.$isRangeSelection)(selection) || (0, import_table5.$isTableSelection)(selection)) {
-      const [cell] = (0, import_table5.$getNodeTriplet)(selection.anchor);
-      if ((0, import_table5.$isTableCellNode)(cell)) {
+    const selection = (0, import_lexical52.$getSelection)();
+    if ((0, import_lexical52.$isRangeSelection)(selection) || (0, import_table6.$isTableSelection)(selection)) {
+      const [cell] = (0, import_table6.$getNodeTriplet)(selection.anchor);
+      if ((0, import_table6.$isTableCellNode)(cell)) {
         return cell.getBackgroundColor();
       }
     }
@@ -28552,7 +28805,7 @@ function TableActionMenu({
   const [backgroundColor, setBackgroundColor] = (0, import_react58.useState)(() => currentCellBackgroundColor(editor) || "");
   (0, import_react58.useEffect)(() => {
     return editor.registerMutationListener(
-      import_table5.TableCellNode,
+      import_table6.TableCellNode,
       (nodeMutations) => {
         const nodeUpdated = nodeMutations.get(tableCellNode.getKey()) === "updated";
         if (nodeUpdated) {
@@ -28567,8 +28820,8 @@ function TableActionMenu({
   }, [editor, tableCellNode]);
   (0, import_react58.useEffect)(() => {
     editor.getEditorState().read(() => {
-      const selection = (0, import_lexical51.$getSelection)();
-      if ((0, import_table5.$isTableSelection)(selection)) {
+      const selection = (0, import_lexical52.$getSelection)();
+      if ((0, import_table6.$isTableSelection)(selection)) {
         const currentSelectionCounts = computeSelectionCount(selection);
         updateSelectionCounts(computeSelectionCount(selection));
         setCanMergeCells(currentSelectionCounts.columns > 1 || currentSelectionCounts.rows > 1);
@@ -28602,7 +28855,7 @@ function TableActionMenu({
   }, [contextRef, editor]);
   (0, import_react58.useEffect)(() => {
     function handleClickOutside(event) {
-      if (dropDownRef.current != null && contextRef.current != null && (0, import_lexical51.isDOMNode)(event.target) && !dropDownRef.current.contains(event.target) && !contextRef.current.contains(event.target)) {
+      if (dropDownRef.current != null && contextRef.current != null && (0, import_lexical52.isDOMNode)(event.target) && !dropDownRef.current.contains(event.target) && !contextRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
     }
@@ -28612,30 +28865,30 @@ function TableActionMenu({
   const clearTableSelection = (0, import_react58.useCallback)(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
-        const tableNode = (0, import_table5.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
-        const tableElement = (0, import_table5.getTableElement)(tableNode, editor.getElementByKey(tableNode.getKey()));
+        const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+        const tableElement = (0, import_table6.getTableElement)(tableNode, editor.getElementByKey(tableNode.getKey()));
         if (tableElement === null) {
           throw new Error("TableActionMenu: Expected to find tableElement in DOM");
         }
-        const tableObserver = (0, import_table5.getTableObserverFromTableElement)(tableElement);
+        const tableObserver = (0, import_table6.getTableObserverFromTableElement)(tableElement);
         if (tableObserver !== null) {
           tableObserver.$clearHighlight();
         }
         tableNode.markDirty();
         updateTableCellNode(tableCellNode.getLatest());
       }
-      (0, import_lexical51.$setSelection)(null);
+      (0, import_lexical52.$setSelection)(null);
     });
   }, [editor, tableCellNode]);
   const mergeTableCellsAtSelection = () => {
     editor.update(() => {
-      const selection = (0, import_lexical51.$getSelection)();
-      if (!(0, import_table5.$isTableSelection)(selection)) {
+      const selection = (0, import_lexical52.$getSelection)();
+      if (!(0, import_table6.$isTableSelection)(selection)) {
         return;
       }
       const nodes = selection.getNodes();
-      const tableCells = nodes.filter(import_table5.$isTableCellNode);
-      const targetCell = (0, import_table5.$mergeCells)(tableCells);
+      const tableCells = nodes.filter(import_table6.$isTableCellNode);
+      const targetCell = (0, import_table6.$mergeCells)(tableCells);
       if (targetCell) {
         $selectLastDescendant(targetCell);
         onClose();
@@ -28644,14 +28897,14 @@ function TableActionMenu({
   };
   const unmergeTableCellsAtSelection = () => {
     editor.update(() => {
-      (0, import_table5.$unmergeCell)();
+      (0, import_table6.$unmergeCell)();
     });
   };
   const insertTableRowAtSelection = (0, import_react58.useCallback)(
     (shouldInsertAfter) => {
       editor.update(() => {
         for (let i = 0; i < selectionCounts.rows; i++) {
-          (0, import_table5.$insertTableRowAtSelection)(shouldInsertAfter);
+          (0, import_table6.$insertTableRowAtSelection)(shouldInsertAfter);
         }
         onClose();
       });
@@ -28662,7 +28915,7 @@ function TableActionMenu({
     (shouldInsertAfter) => {
       editor.update(() => {
         for (let i = 0; i < selectionCounts.columns; i++) {
-          (0, import_table5.$insertTableColumnAtSelection)(shouldInsertAfter);
+          (0, import_table6.$insertTableColumnAtSelection)(shouldInsertAfter);
         }
         onClose();
       });
@@ -28671,13 +28924,13 @@ function TableActionMenu({
   );
   const deleteTableRowAtSelection = (0, import_react58.useCallback)(() => {
     editor.update(() => {
-      (0, import_table5.$deleteTableRowAtSelection)();
+      (0, import_table6.$deleteTableRowAtSelection)();
       onClose();
     });
   }, [editor, onClose]);
   const deleteTableAtSelection = (0, import_react58.useCallback)(() => {
     editor.update(() => {
-      const tableNode = (0, import_table5.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+      const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
       tableNode.remove();
       clearTableSelection();
       onClose();
@@ -28685,17 +28938,17 @@ function TableActionMenu({
   }, [editor, tableCellNode, clearTableSelection, onClose]);
   const deleteTableColumnAtSelection = (0, import_react58.useCallback)(() => {
     editor.update(() => {
-      (0, import_table5.$deleteTableColumnAtSelection)();
+      (0, import_table6.$deleteTableColumnAtSelection)();
       onClose();
     });
   }, [editor, onClose]);
   const toggleTableRowIsHeader = (0, import_react58.useCallback)(() => {
     editor.update(() => {
-      const tableNode = (0, import_table5.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
-      const tableRowIndex = (0, import_table5.$getTableRowIndexFromTableCellNode)(tableCellNode);
-      const [gridMap] = (0, import_table5.$computeTableMapSkipCellCheck)(tableNode, null, null);
+      const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+      const tableRowIndex = (0, import_table6.$getTableRowIndexFromTableCellNode)(tableCellNode);
+      const [gridMap] = (0, import_table6.$computeTableMapSkipCellCheck)(tableNode, null, null);
       const rowCells = /* @__PURE__ */ new Set();
-      const newStyle = tableCellNode.getHeaderStyles() ^ import_table5.TableCellHeaderStates.ROW;
+      const newStyle = tableCellNode.getHeaderStyles() ^ import_table6.TableCellHeaderStates.ROW;
       for (let col = 0; col < gridMap[tableRowIndex].length; col++) {
         const mapCell = gridMap[tableRowIndex][col];
         if (!mapCell?.cell) {
@@ -28703,7 +28956,7 @@ function TableActionMenu({
         }
         if (!rowCells.has(mapCell.cell)) {
           rowCells.add(mapCell.cell);
-          mapCell.cell.setHeaderStyles(newStyle, import_table5.TableCellHeaderStates.ROW);
+          mapCell.cell.setHeaderStyles(newStyle, import_table6.TableCellHeaderStates.ROW);
         }
       }
       clearTableSelection();
@@ -28712,11 +28965,11 @@ function TableActionMenu({
   }, [editor, tableCellNode, clearTableSelection, onClose]);
   const toggleTableColumnIsHeader = (0, import_react58.useCallback)(() => {
     editor.update(() => {
-      const tableNode = (0, import_table5.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
-      const tableColumnIndex = (0, import_table5.$getTableColumnIndexFromTableCellNode)(tableCellNode);
-      const [gridMap] = (0, import_table5.$computeTableMapSkipCellCheck)(tableNode, null, null);
+      const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+      const tableColumnIndex = (0, import_table6.$getTableColumnIndexFromTableCellNode)(tableCellNode);
+      const [gridMap] = (0, import_table6.$computeTableMapSkipCellCheck)(tableNode, null, null);
       const columnCells = /* @__PURE__ */ new Set();
-      const newStyle = tableCellNode.getHeaderStyles() ^ import_table5.TableCellHeaderStates.COLUMN;
+      const newStyle = tableCellNode.getHeaderStyles() ^ import_table6.TableCellHeaderStates.COLUMN;
       for (let row = 0; row < gridMap.length; row++) {
         const mapCell = gridMap[row][tableColumnIndex];
         if (!mapCell?.cell) {
@@ -28724,7 +28977,7 @@ function TableActionMenu({
         }
         if (!columnCells.has(mapCell.cell)) {
           columnCells.add(mapCell.cell);
-          mapCell.cell.setHeaderStyles(newStyle, import_table5.TableCellHeaderStates.COLUMN);
+          mapCell.cell.setHeaderStyles(newStyle, import_table6.TableCellHeaderStates.COLUMN);
         }
       }
       clearTableSelection();
@@ -28734,7 +28987,7 @@ function TableActionMenu({
   const toggleRowStriping = (0, import_react58.useCallback)(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
-        const tableNode = (0, import_table5.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+        const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
         if (tableNode) {
           tableNode.setRowStriping(!tableNode.getRowStriping());
         }
@@ -28746,7 +28999,7 @@ function TableActionMenu({
   const toggleFirstRowFreeze = (0, import_react58.useCallback)(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
-        const tableNode = (0, import_table5.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+        const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
         if (tableNode) {
           tableNode.setFrozenRows(tableNode.getFrozenRows() === 0 ? 1 : 0);
         }
@@ -28758,7 +29011,7 @@ function TableActionMenu({
   const toggleFirstColumnFreeze = (0, import_react58.useCallback)(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
-        const tableNode = (0, import_table5.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+        const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
         if (tableNode) {
           tableNode.setFrozenColumns(tableNode.getFrozenColumns() === 0 ? 1 : 0);
         }
@@ -28770,17 +29023,17 @@ function TableActionMenu({
   const handleCellBackgroundColor = (0, import_react58.useCallback)(
     (value) => {
       editor.update(() => {
-        const selection = (0, import_lexical51.$getSelection)();
-        if ((0, import_lexical51.$isRangeSelection)(selection) || (0, import_table5.$isTableSelection)(selection)) {
-          const [cell] = (0, import_table5.$getNodeTriplet)(selection.anchor);
-          if ((0, import_table5.$isTableCellNode)(cell)) {
+        const selection = (0, import_lexical52.$getSelection)();
+        if ((0, import_lexical52.$isRangeSelection)(selection) || (0, import_table6.$isTableSelection)(selection)) {
+          const [cell] = (0, import_table6.$getNodeTriplet)(selection.anchor);
+          if ((0, import_table6.$isTableCellNode)(cell)) {
             cell.setBackgroundColor(value);
           }
-          if ((0, import_table5.$isTableSelection)(selection)) {
+          if ((0, import_table6.$isTableSelection)(selection)) {
             const nodes = selection.getNodes();
             for (let i = 0; i < nodes.length; i++) {
               const node = nodes[i];
-              if ((0, import_table5.$isTableCellNode)(node)) {
+              if ((0, import_table6.$isTableCellNode)(node)) {
                 node.setBackgroundColor(value);
               }
             }
@@ -28792,17 +29045,17 @@ function TableActionMenu({
   );
   const formatVerticalAlign = (value) => {
     editor.update(() => {
-      const selection = (0, import_lexical51.$getSelection)();
-      if ((0, import_lexical51.$isRangeSelection)(selection) || (0, import_table5.$isTableSelection)(selection)) {
-        const [cell] = (0, import_table5.$getNodeTriplet)(selection.anchor);
-        if ((0, import_table5.$isTableCellNode)(cell)) {
+      const selection = (0, import_lexical52.$getSelection)();
+      if ((0, import_lexical52.$isRangeSelection)(selection) || (0, import_table6.$isTableSelection)(selection)) {
+        const [cell] = (0, import_table6.$getNodeTriplet)(selection.anchor);
+        if ((0, import_table6.$isTableCellNode)(cell)) {
           cell.setVerticalAlign(value);
         }
-        if ((0, import_table5.$isTableSelection)(selection)) {
+        if ((0, import_table6.$isTableSelection)(selection)) {
           const nodes = selection.getNodes();
           for (let i = 0; i < nodes.length; i++) {
             const node = nodes[i];
-            if ((0, import_table5.$isTableCellNode)(node)) {
+            if ((0, import_table6.$isTableCellNode)(node)) {
               node.setVerticalAlign(value);
             }
           }
@@ -29010,7 +29263,7 @@ function TableActionMenu({
           /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("button", { type: "button", className: "item", onClick: () => deleteTableAtSelection(), "data-test-id": "table-delete", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Delete table" }) }),
           /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("hr", {}),
           /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("button", { type: "button", className: "item", onClick: () => toggleTableRowIsHeader(), "data-test-id": "table-row-header", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { className: "text", children: [
-            (tableCellNode.__headerState & import_table5.TableCellHeaderStates.ROW) === import_table5.TableCellHeaderStates.ROW ? "Remove" : "Add",
+            (tableCellNode.__headerState & import_table6.TableCellHeaderStates.ROW) === import_table6.TableCellHeaderStates.ROW ? "Remove" : "Add",
             " ",
             "row header"
           ] }) }),
@@ -29022,7 +29275,7 @@ function TableActionMenu({
               onClick: () => toggleTableColumnIsHeader(),
               "data-test-id": "table-column-header",
               children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { className: "text", children: [
-                (tableCellNode.__headerState & import_table5.TableCellHeaderStates.COLUMN) === import_table5.TableCellHeaderStates.COLUMN ? "Remove" : "Add",
+                (tableCellNode.__headerState & import_table6.TableCellHeaderStates.COLUMN) === import_table6.TableCellHeaderStates.COLUMN ? "Remove" : "Add",
                 " ",
                 "column header"
               ] })
@@ -29059,8 +29312,8 @@ function TableCellActionMenuContainer({
   }, []);
   const $moveMenu = (0, import_react58.useCallback)(() => {
     const menu = menuButtonRef.current;
-    const selection = (0, import_lexical51.$getSelection)();
-    const nativeSelection = (0, import_lexical51.getDOMSelection)(editor._window);
+    const selection = (0, import_lexical52.$getSelection)();
+    const nativeSelection = (0, import_lexical52.getDOMSelection)(editor._window);
     const activeElement = document.activeElement;
     function disable() {
       if (menu) {
@@ -29075,8 +29328,8 @@ function TableCellActionMenuContainer({
     const rootElement = editor.getRootElement();
     let tableObserver = null;
     let tableCellParentNodeDOM = null;
-    if ((0, import_lexical51.$isRangeSelection)(selection) && rootElement !== null && nativeSelection !== null && rootElement.contains(nativeSelection.anchorNode)) {
-      const tableCellNodeFromSelection = (0, import_table5.$getTableCellNodeFromLexicalNode)(selection.anchor.getNode());
+    if ((0, import_lexical52.$isRangeSelection)(selection) && rootElement !== null && nativeSelection !== null && rootElement.contains(nativeSelection.anchorNode)) {
+      const tableCellNodeFromSelection = (0, import_table6.$getTableCellNodeFromLexicalNode)(selection.anchor.getNode());
       if (tableCellNodeFromSelection == null) {
         return disable();
       }
@@ -29087,24 +29340,24 @@ function TableCellActionMenuContainer({
       if (checkTableCellOverflow(tableCellParentNodeDOM)) {
         return disable();
       }
-      const tableNode = (0, import_table5.$getTableNodeFromLexicalNodeOrThrow)(tableCellNodeFromSelection);
-      const tableElement = (0, import_table5.getTableElement)(tableNode, editor.getElementByKey(tableNode.getKey()));
+      const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNodeFromSelection);
+      const tableElement = (0, import_table6.getTableElement)(tableNode, editor.getElementByKey(tableNode.getKey()));
       if (tableElement === null) {
         throw new Error("TableActionMenu: Expected to find tableElement in DOM");
       }
-      tableObserver = (0, import_table5.getTableObserverFromTableElement)(tableElement);
+      tableObserver = (0, import_table6.getTableObserverFromTableElement)(tableElement);
       setTableMenuCellNode(tableCellNodeFromSelection);
-    } else if ((0, import_table5.$isTableSelection)(selection)) {
-      const anchorNode = (0, import_table5.$getTableCellNodeFromLexicalNode)(selection.anchor.getNode());
-      if (!(0, import_table5.$isTableCellNode)(anchorNode)) {
+    } else if ((0, import_table6.$isTableSelection)(selection)) {
+      const anchorNode = (0, import_table6.$getTableCellNodeFromLexicalNode)(selection.anchor.getNode());
+      if (!(0, import_table6.$isTableCellNode)(anchorNode)) {
         throw new Error("TableSelection anchorNode must be a TableCellNode");
       }
-      const tableNode = (0, import_table5.$getTableNodeFromLexicalNodeOrThrow)(anchorNode);
-      const tableElement = (0, import_table5.getTableElement)(tableNode, editor.getElementByKey(tableNode.getKey()));
+      const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(anchorNode);
+      const tableElement = (0, import_table6.getTableElement)(tableNode, editor.getElementByKey(tableNode.getKey()));
       if (tableElement === null) {
         throw new Error("TableActionMenu: Expected to find tableElement in DOM");
       }
-      tableObserver = (0, import_table5.getTableObserverFromTableElement)(tableElement);
+      tableObserver = (0, import_table6.getTableObserverFromTableElement)(tableElement);
       tableCellParentNodeDOM = editor.getElementByKey(anchorNode.getKey());
       if (tableCellParentNodeDOM === null) {
         return disable();
@@ -29143,7 +29396,7 @@ function TableCellActionMenuContainer({
     };
     return (0, import_utils33.mergeRegister)(
       editor.registerUpdateListener(delayedCallback),
-      editor.registerCommand(import_lexical51.SELECTION_CHANGE_COMMAND, delayedCallback, import_lexical51.COMMAND_PRIORITY_CRITICAL),
+      editor.registerCommand(import_lexical52.SELECTION_CHANGE_COMMAND, delayedCallback, import_lexical52.COMMAND_PRIORITY_CRITICAL),
       editor.registerRootListener((rootElement, prevRootElement) => {
         if (prevRootElement) {
           prevRootElement.removeEventListener("pointerup", delayedCallback);
@@ -29205,9 +29458,9 @@ function TableActionMenuPlugin({
 // src/plugins/TableCellResizer/index.tsx
 var import_LexicalComposerContext36 = require("@lexical/react/LexicalComposerContext");
 var import_useLexicalEditable4 = require("@lexical/react/useLexicalEditable");
-var import_table6 = require("@lexical/table");
+var import_table7 = require("@lexical/table");
 var import_utils34 = require("@lexical/utils");
-var import_lexical52 = require("lexical");
+var import_lexical53 = require("lexical");
 var import_react59 = require("react");
 var import_react_dom8 = require("react-dom");
 var import_jsx_runtime49 = require("react/jsx-runtime");
@@ -29232,7 +29485,7 @@ function TableCellResizer({ editor }) {
   (0, import_react59.useEffect)(() => {
     const tableKeys = /* @__PURE__ */ new Set();
     return (0, import_utils34.mergeRegister)(
-      editor.registerMutationListener(import_table6.TableNode, (nodeMutations) => {
+      editor.registerMutationListener(import_table7.TableNode, (nodeMutations) => {
         for (const [nodeKey, mutation] of nodeMutations) {
           if (mutation === "destroyed") {
             tableKeys.delete(nodeKey);
@@ -29242,7 +29495,7 @@ function TableCellResizer({ editor }) {
         }
         setHasTable(tableKeys.size > 0);
       }),
-      editor.registerNodeTransform(import_table6.TableNode, (tableNode) => {
+      editor.registerNodeTransform(import_table7.TableNode, (tableNode) => {
         if (tableNode.getColWidths()) {
           return tableNode;
         }
@@ -29259,7 +29512,7 @@ function TableCellResizer({ editor }) {
     }
     const onPointerMove = (event) => {
       const target = event.target;
-      if (!(0, import_lexical52.isHTMLElement)(target)) {
+      if (!(0, import_lexical53.isHTMLElement)(target)) {
         return;
       }
       if (draggingDirection) {
@@ -29276,16 +29529,16 @@ function TableCellResizer({ editor }) {
       }
       if (targetRef.current !== target) {
         targetRef.current = target;
-        const cell = (0, import_table6.getDOMCellFromTarget)(target);
+        const cell = (0, import_table7.getDOMCellFromTarget)(target);
         if (cell && activeCell !== cell) {
           editor.getEditorState().read(
             () => {
-              const tableCellNode = (0, import_lexical52.$getNearestNodeFromDOMNode)(cell.elem);
+              const tableCellNode = (0, import_lexical53.$getNearestNodeFromDOMNode)(cell.elem);
               if (!tableCellNode) {
                 throw new Error("TableCellResizer: Table cell node not found.");
               }
-              const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
-              const tableElement = (0, import_table6.getTableElement)(tableNode, editor.getElementByKey(tableNode.getKey()));
+              const tableNode = (0, import_table7.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+              const tableElement = (0, import_table7.getTableElement)(tableNode, editor.getElementByKey(tableNode.getKey()));
               if (!tableElement) {
                 throw new Error("TableCellResizer: Table element not found.");
               }
@@ -29338,12 +29591,12 @@ function TableCellResizer({ editor }) {
       }
       editor.update(
         () => {
-          const tableCellNode = (0, import_lexical52.$getNearestNodeFromDOMNode)(activeCell.elem);
-          if (!(0, import_table6.$isTableCellNode)(tableCellNode)) {
+          const tableCellNode = (0, import_lexical53.$getNearestNodeFromDOMNode)(activeCell.elem);
+          if (!(0, import_table7.$isTableCellNode)(tableCellNode)) {
             throw new Error("TableCellResizer: Table cell node not found.");
           }
-          const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
-          const baseRowIndex = (0, import_table6.$getTableRowIndexFromTableCellNode)(tableCellNode);
+          const tableNode = (0, import_table7.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+          const baseRowIndex = (0, import_table7.$getTableRowIndexFromTableCellNode)(tableCellNode);
           const tableRows = tableNode.getChildren();
           const isFullRowMerge = tableCellNode.getColSpan() === tableNode.getColumnCount();
           const tableRowIndex = isFullRowMerge ? baseRowIndex : baseRowIndex + tableCellNode.getRowSpan() - 1;
@@ -29351,7 +29604,7 @@ function TableCellResizer({ editor }) {
             throw new Error("Expected table cell to be inside of table row.");
           }
           const tableRow = tableRows[tableRowIndex];
-          if (!(0, import_table6.$isTableRowNode)(tableRow)) {
+          if (!(0, import_table7.$isTableRowNode)(tableRow)) {
             throw new Error("Expected table row");
           }
           let height = tableRow.getHeight();
@@ -29362,7 +29615,7 @@ function TableCellResizer({ editor }) {
           const newHeight = Math.max(height + heightChange, MIN_ROW_HEIGHT);
           tableRow.setHeight(newHeight);
         },
-        { tag: import_lexical52.SKIP_SCROLL_INTO_VIEW_TAG }
+        { tag: import_lexical53.SKIP_SCROLL_INTO_VIEW_TAG }
       );
     },
     [activeCell, editor, getCellNodeHeight]
@@ -29383,12 +29636,12 @@ function TableCellResizer({ editor }) {
       }
       editor.update(
         () => {
-          const tableCellNode = (0, import_lexical52.$getNearestNodeFromDOMNode)(activeCell.elem);
-          if (!(0, import_table6.$isTableCellNode)(tableCellNode)) {
+          const tableCellNode = (0, import_lexical53.$getNearestNodeFromDOMNode)(activeCell.elem);
+          if (!(0, import_table7.$isTableCellNode)(tableCellNode)) {
             throw new Error("TableCellResizer: Table cell node not found.");
           }
-          const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
-          const [tableMap] = (0, import_table6.$computeTableMapSkipCellCheck)(tableNode, null, null);
+          const tableNode = (0, import_table7.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
+          const [tableMap] = (0, import_table7.$computeTableMapSkipCellCheck)(tableNode, null, null);
           const columnIndex = getCellColumnIndex(tableCellNode, tableMap);
           if (columnIndex === void 0) {
             throw new Error("TableCellResizer: Table column not found.");
@@ -29406,7 +29659,7 @@ function TableCellResizer({ editor }) {
           newColWidths[columnIndex] = newWidth;
           tableNode.setColWidths(newColWidths);
         },
-        { tag: import_lexical52.SKIP_SCROLL_INTO_VIEW_TAG }
+        { tag: import_lexical53.SKIP_SCROLL_INTO_VIEW_TAG }
       );
     },
     [activeCell, editor, getCellColumnIndex]
@@ -29537,9 +29790,9 @@ function TableCellResizerPlugin() {
 // src/plugins/TableHoverActionsPlugin/index.tsx
 var import_LexicalComposerContext37 = require("@lexical/react/LexicalComposerContext");
 var import_useLexicalEditable5 = require("@lexical/react/useLexicalEditable");
-var import_table7 = require("@lexical/table");
+var import_table8 = require("@lexical/table");
 var import_utils35 = require("@lexical/utils");
-var import_lexical53 = require("lexical");
+var import_lexical54 = require("lexical");
 var import_react60 = require("react");
 var import_react_dom9 = require("react-dom");
 
@@ -29581,18 +29834,18 @@ function TableHoverActionsContainer({ anchorElem }) {
       let tableDOMElement = null;
       editor.getEditorState().read(
         () => {
-          const maybeTableCell = (0, import_lexical53.$getNearestNodeFromDOMNode)(tableDOMNode);
-          if ((0, import_table7.$isTableCellNode)(maybeTableCell)) {
-            const table = (0, import_utils35.$findMatchingParent)(maybeTableCell, (node) => (0, import_table7.$isTableNode)(node));
-            if (!(0, import_table7.$isTableNode)(table)) {
+          const maybeTableCell = (0, import_lexical54.$getNearestNodeFromDOMNode)(tableDOMNode);
+          if ((0, import_table8.$isTableCellNode)(maybeTableCell)) {
+            const table = (0, import_utils35.$findMatchingParent)(maybeTableCell, (node) => (0, import_table8.$isTableNode)(node));
+            if (!(0, import_table8.$isTableNode)(table)) {
               return;
             }
-            tableDOMElement = (0, import_table7.getTableElement)(table, editor.getElementByKey(table.getKey()));
+            tableDOMElement = (0, import_table8.getTableElement)(table, editor.getElementByKey(table.getKey()));
             if (tableDOMElement) {
               const rowCount = table.getChildrenSize();
               const colCount = table.getChildAtIndex(0)?.getChildrenSize();
-              const rowIndex = (0, import_table7.$getTableRowIndexFromTableCellNode)(maybeTableCell);
-              const colIndex = (0, import_table7.$getTableColumnIndexFromTableCellNode)(maybeTableCell);
+              const rowIndex = (0, import_table8.$getTableRowIndexFromTableCellNode)(maybeTableCell);
+              const colIndex = (0, import_table8.$getTableColumnIndexFromTableCellNode)(maybeTableCell);
               if (rowIndex === rowCount - 1) {
                 hoveredRowNode = maybeTableCell;
               } else if (colIndex === colCount - 1) {
@@ -29664,7 +29917,7 @@ function TableHoverActionsContainer({ anchorElem }) {
   (0, import_react60.useEffect)(() => {
     return (0, import_utils35.mergeRegister)(
       editor.registerMutationListener(
-        import_table7.TableNode,
+        import_table8.TableNode,
         (mutations) => {
           editor.getEditorState().read(
             () => {
@@ -29688,7 +29941,7 @@ function TableHoverActionsContainer({ anchorElem }) {
               if (resetObserver) {
                 tableResizeObserver.disconnect();
                 for (const tableKey of tableSetRef.current) {
-                  const { tableElement } = (0, import_table7.$getTableAndElementByKey)(tableKey);
+                  const { tableElement } = (0, import_table8.$getTableAndElementByKey)(tableKey);
                   tableResizeObserver.observe(tableElement);
                 }
                 setShouldListenMouseMove(tableSetRef.current.size > 0);
@@ -29704,13 +29957,13 @@ function TableHoverActionsContainer({ anchorElem }) {
   const insertAction = (insertRow) => {
     editor.update(() => {
       if (tableCellDOMNodeRef.current) {
-        const maybeTableNode = (0, import_lexical53.$getNearestNodeFromDOMNode)(tableCellDOMNodeRef.current);
+        const maybeTableNode = (0, import_lexical54.$getNearestNodeFromDOMNode)(tableCellDOMNodeRef.current);
         maybeTableNode?.selectEnd();
         if (insertRow) {
-          (0, import_table7.$insertTableRowAtSelection)();
+          (0, import_table8.$insertTableRowAtSelection)();
           setShownRow(false);
         } else {
-          (0, import_table7.$insertTableColumnAtSelection)();
+          (0, import_table8.$insertTableColumnAtSelection)();
           setShownColumn(false);
         }
       }
@@ -29743,7 +29996,7 @@ function TableHoverActionsContainer({ anchorElem }) {
 function getMouseInfo2(event, getTheme) {
   const target = event.target;
   const tableCellClass = getThemeSelector(getTheme, "tableCell");
-  if ((0, import_lexical53.isHTMLElement)(target)) {
+  if ((0, import_lexical54.isHTMLElement)(target)) {
     const tableDOMNode = target.closest(`td${tableCellClass}, th${tableCellClass}`);
     const isOutside = !(tableDOMNode || target.closest(`button${getThemeSelector(getTheme, "tableAddRows")}`) || target.closest(`button${getThemeSelector(getTheme, "tableAddColumns")}`) || target.closest("div.TableCellResizer__resizer"));
     return { isOutside, tableDOMNode };
@@ -29880,9 +30133,9 @@ var import_LexicalAutoEmbedPlugin3 = require("@lexical/react/LexicalAutoEmbedPlu
 var import_LexicalHorizontalRuleNode2 = require("@lexical/react/LexicalHorizontalRuleNode");
 var import_rich_text5 = require("@lexical/rich-text");
 var import_selection7 = require("@lexical/selection");
-var import_table8 = require("@lexical/table");
+var import_table9 = require("@lexical/table");
 var import_utils39 = require("@lexical/utils");
-var import_lexical56 = require("lexical");
+var import_lexical57 = require("lexical");
 var import_react64 = require("react");
 
 // src/context/FullscreenContext.tsx
@@ -30343,8 +30596,8 @@ function FontDropDown({
   const handleClick = (0, import_react64.useCallback)(
     (option) => {
       editor.update(() => {
-        (0, import_lexical56.$addUpdateTag)(import_lexical56.SKIP_SELECTION_FOCUS_TAG);
-        const selection = (0, import_lexical56.$getSelection)();
+        (0, import_lexical57.$addUpdateTag)(import_lexical57.SKIP_SELECTION_FOCUS_TAG);
+        const selection = (0, import_lexical57.$getSelection)();
         if (selection !== null) {
           (0, import_selection7.$patchStyleText)(selection, {
             [style]: option
@@ -30395,7 +30648,7 @@ function ElementFormatDropdown({
           DropDownItem,
           {
             onClick: () => {
-              editor.dispatchCommand(import_lexical56.FORMAT_ELEMENT_COMMAND, "left");
+              editor.dispatchCommand(import_lexical57.FORMAT_ELEMENT_COMMAND, "left");
             },
             className: "item wide",
             children: [
@@ -30411,7 +30664,7 @@ function ElementFormatDropdown({
           DropDownItem,
           {
             onClick: () => {
-              editor.dispatchCommand(import_lexical56.FORMAT_ELEMENT_COMMAND, "center");
+              editor.dispatchCommand(import_lexical57.FORMAT_ELEMENT_COMMAND, "center");
             },
             className: "item wide",
             children: [
@@ -30427,7 +30680,7 @@ function ElementFormatDropdown({
           DropDownItem,
           {
             onClick: () => {
-              editor.dispatchCommand(import_lexical56.FORMAT_ELEMENT_COMMAND, "right");
+              editor.dispatchCommand(import_lexical57.FORMAT_ELEMENT_COMMAND, "right");
             },
             className: "item wide",
             children: [
@@ -30443,7 +30696,7 @@ function ElementFormatDropdown({
           DropDownItem,
           {
             onClick: () => {
-              editor.dispatchCommand(import_lexical56.FORMAT_ELEMENT_COMMAND, "justify");
+              editor.dispatchCommand(import_lexical57.FORMAT_ELEMENT_COMMAND, "justify");
             },
             className: "item wide",
             children: [
@@ -30459,7 +30712,7 @@ function ElementFormatDropdown({
           DropDownItem,
           {
             onClick: () => {
-              editor.dispatchCommand(import_lexical56.FORMAT_ELEMENT_COMMAND, "start");
+              editor.dispatchCommand(import_lexical57.FORMAT_ELEMENT_COMMAND, "start");
             },
             className: "item wide",
             children: [
@@ -30472,7 +30725,7 @@ function ElementFormatDropdown({
           DropDownItem,
           {
             onClick: () => {
-              editor.dispatchCommand(import_lexical56.FORMAT_ELEMENT_COMMAND, "end");
+              editor.dispatchCommand(import_lexical57.FORMAT_ELEMENT_COMMAND, "end");
             },
             className: "item wide",
             children: [
@@ -30486,7 +30739,7 @@ function ElementFormatDropdown({
           DropDownItem,
           {
             onClick: () => {
-              editor.dispatchCommand(import_lexical56.OUTDENT_CONTENT_COMMAND, void 0);
+              editor.dispatchCommand(import_lexical57.OUTDENT_CONTENT_COMMAND, void 0);
             },
             className: "item wide",
             children: [
@@ -30502,7 +30755,7 @@ function ElementFormatDropdown({
           DropDownItem,
           {
             onClick: () => {
-              editor.dispatchCommand(import_lexical56.INDENT_CONTENT_COMMAND, void 0);
+              editor.dispatchCommand(import_lexical57.INDENT_CONTENT_COMMAND, void 0);
             },
             className: "item wide",
             children: [
@@ -30521,7 +30774,7 @@ function ElementFormatDropdown({
 function $findTopLevelElement(node) {
   let topLevelElement = node.getKey() === "root" ? node : (0, import_utils39.$findMatchingParent)(node, (e) => {
     const parent = e.getParent();
-    return parent !== null && (0, import_lexical56.$isRootOrShadowRoot)(parent);
+    return parent !== null && (0, import_lexical57.$isRootOrShadowRoot)(parent);
   });
   if (topLevelElement === null) {
     topLevelElement = node.getTopLevelElementOrThrow();
@@ -30556,12 +30809,12 @@ function ToolbarPlugin({
   const dispatchToolbarCommand = (command, payload = void 0, skipRefocus = false) => {
     activeEditor.update(() => {
       if (skipRefocus) {
-        (0, import_lexical56.$addUpdateTag)(import_lexical56.SKIP_DOM_SELECTION_TAG);
+        (0, import_lexical57.$addUpdateTag)(import_lexical57.SKIP_DOM_SELECTION_TAG);
       }
       activeEditor.dispatchCommand(command, payload);
     });
   };
-  const dispatchFormatTextCommand = (payload, skipRefocus = false) => dispatchToolbarCommand(import_lexical56.FORMAT_TEXT_COMMAND, payload, skipRefocus);
+  const dispatchFormatTextCommand = (payload, skipRefocus = false) => dispatchToolbarCommand(import_lexical57.FORMAT_TEXT_COMMAND, payload, skipRefocus);
   const $handleHeadingNode = (0, import_react64.useCallback)(
     (selectedElement) => {
       const type = (0, import_rich_text5.$isHeadingNode)(selectedElement) ? selectedElement.getTag() : selectedElement.getType();
@@ -30590,8 +30843,8 @@ function ToolbarPlugin({
     [updateToolbarState, isCodeHighlighted, isCodeShiki]
   );
   const $updateToolbar = (0, import_react64.useCallback)(() => {
-    const selection = (0, import_lexical56.$getSelection)();
-    if ((0, import_lexical56.$isRangeSelection)(selection)) {
+    const selection = (0, import_lexical57.$getSelection)();
+    if ((0, import_lexical57.$isRangeSelection)(selection)) {
       if (activeEditor !== editor && (0, import_utils39.$isEditorIsNestedEditor)(activeEditor)) {
         const rootElement = activeEditor.getRootElement();
         updateToolbarState(
@@ -30610,8 +30863,8 @@ function ToolbarPlugin({
       const parent = node.getParent();
       const isLink = (0, import_link7.$isLinkNode)(parent) || (0, import_link7.$isLinkNode)(node);
       updateToolbarState("isLink", isLink);
-      const tableNode = (0, import_utils39.$findMatchingParent)(node, import_table8.$isTableNode);
-      if ((0, import_table8.$isTableNode)(tableNode)) {
+      const tableNode = (0, import_utils39.$findMatchingParent)(node, import_table9.$isTableNode);
+      if ((0, import_table9.$isTableNode)(tableNode)) {
         updateToolbarState("rootType", "table");
       } else {
         updateToolbarState("rootType", "root");
@@ -30634,15 +30887,15 @@ function ToolbarPlugin({
       if ((0, import_link7.$isLinkNode)(parent)) {
         matchingParent = (0, import_utils39.$findMatchingParent)(
           node,
-          (parentNode) => (0, import_lexical56.$isElementNode)(parentNode) && !parentNode.isInline()
+          (parentNode) => (0, import_lexical57.$isElementNode)(parentNode) && !parentNode.isInline()
         );
       }
       updateToolbarState(
         "elementFormat",
-        (0, import_lexical56.$isElementNode)(matchingParent) ? matchingParent.getFormatType() : (0, import_lexical56.$isElementNode)(node) ? node.getFormatType() : parent?.getFormatType() || "left"
+        (0, import_lexical57.$isElementNode)(matchingParent) ? matchingParent.getFormatType() : (0, import_lexical57.$isElementNode)(node) ? node.getFormatType() : parent?.getFormatType() || "left"
       );
     }
-    if ((0, import_lexical56.$isRangeSelection)(selection) || (0, import_table8.$isTableSelection)(selection)) {
+    if ((0, import_lexical57.$isRangeSelection)(selection) || (0, import_table9.$isTableSelection)(selection)) {
       updateToolbarState("isBold", selection.hasFormat("bold"));
       updateToolbarState("isItalic", selection.hasFormat("italic"));
       updateToolbarState("isUnderline", selection.hasFormat("underline"));
@@ -30656,7 +30909,7 @@ function ToolbarPlugin({
       updateToolbarState("isUppercase", selection.hasFormat("uppercase"));
       updateToolbarState("isCapitalize", selection.hasFormat("capitalize"));
     }
-    if ((0, import_lexical56.$isNodeSelection)(selection)) {
+    if ((0, import_lexical57.$isNodeSelection)(selection)) {
       const nodes = selection.getNodes();
       for (const selectedNode of nodes) {
         const parentList = (0, import_utils39.$getNearestNodeOfType)(selectedNode, import_list3.ListNode);
@@ -30667,7 +30920,7 @@ function ToolbarPlugin({
           const selectedElement = $findTopLevelElement(selectedNode);
           $handleHeadingNode(selectedElement);
           $handleCodeNode(selectedElement);
-          if ((0, import_lexical56.$isElementNode)(selectedElement)) {
+          if ((0, import_lexical57.$isElementNode)(selectedElement)) {
             updateToolbarState("elementFormat", selectedElement.getFormatType());
           }
         }
@@ -30676,13 +30929,13 @@ function ToolbarPlugin({
   }, [activeEditor, editor, updateToolbarState, $handleHeadingNode, $handleCodeNode]);
   (0, import_react64.useEffect)(() => {
     return editor.registerCommand(
-      import_lexical56.SELECTION_CHANGE_COMMAND,
+      import_lexical57.SELECTION_CHANGE_COMMAND,
       (_payload, newEditor) => {
         setActiveEditor(newEditor);
         $updateToolbar();
         return false;
       },
-      import_lexical56.COMMAND_PRIORITY_CRITICAL
+      import_lexical57.COMMAND_PRIORITY_CRITICAL
     );
   }, [editor, $updateToolbar, setActiveEditor]);
   (0, import_react64.useEffect)(() => {
@@ -30707,20 +30960,20 @@ function ToolbarPlugin({
         );
       }),
       activeEditor.registerCommand(
-        import_lexical56.CAN_UNDO_COMMAND,
+        import_lexical57.CAN_UNDO_COMMAND,
         (payload) => {
           updateToolbarState("canUndo", payload);
           return false;
         },
-        import_lexical56.COMMAND_PRIORITY_CRITICAL
+        import_lexical57.COMMAND_PRIORITY_CRITICAL
       ),
       activeEditor.registerCommand(
-        import_lexical56.CAN_REDO_COMMAND,
+        import_lexical57.CAN_REDO_COMMAND,
         (payload) => {
           updateToolbarState("canRedo", payload);
           return false;
         },
-        import_lexical56.COMMAND_PRIORITY_CRITICAL
+        import_lexical57.COMMAND_PRIORITY_CRITICAL
       )
     );
   }, [$updateToolbar, activeEditor, editor, updateToolbarState]);
@@ -30729,14 +30982,14 @@ function ToolbarPlugin({
       activeEditor.update(
         () => {
           if (skipRefocus) {
-            (0, import_lexical56.$addUpdateTag)(import_lexical56.SKIP_DOM_SELECTION_TAG);
+            (0, import_lexical57.$addUpdateTag)(import_lexical57.SKIP_DOM_SELECTION_TAG);
           }
-          const selection = (0, import_lexical56.$getSelection)();
+          const selection = (0, import_lexical57.$getSelection)();
           if (selection !== null) {
             (0, import_selection7.$patchStyleText)(selection, styles);
           }
         },
-        skipHistoryStack ? { tag: import_lexical56.HISTORIC_TAG } : {}
+        skipHistoryStack ? { tag: import_lexical57.HISTORIC_TAG } : {}
       );
     },
     [activeEditor]
@@ -30765,9 +31018,9 @@ function ToolbarPlugin({
   const onCodeLanguageSelect = (0, import_react64.useCallback)(
     (value) => {
       activeEditor.update(() => {
-        (0, import_lexical56.$addUpdateTag)(import_lexical56.SKIP_SELECTION_FOCUS_TAG);
+        (0, import_lexical57.$addUpdateTag)(import_lexical57.SKIP_SELECTION_FOCUS_TAG);
         if (selectedElementKey !== null) {
-          const node = (0, import_lexical56.$getNodeByKey)(selectedElementKey);
+          const node = (0, import_lexical57.$getNodeByKey)(selectedElementKey);
           if ((0, import_code8.$isCodeNode)(node)) {
             node.setLanguage(value);
           }
@@ -30780,7 +31033,7 @@ function ToolbarPlugin({
     (value) => {
       activeEditor.update(() => {
         if (selectedElementKey !== null) {
-          const node = (0, import_lexical56.$getNodeByKey)(selectedElementKey);
+          const node = (0, import_lexical57.$getNodeByKey)(selectedElementKey);
           if ((0, import_code8.$isCodeNode)(node)) {
             node.setTheme(value);
           }
@@ -30796,7 +31049,7 @@ function ToolbarPlugin({
       "button",
       {
         disabled: !toolbarState.canUndo || !isEditable,
-        onClick: (e) => dispatchToolbarCommand(import_lexical56.UNDO_COMMAND, void 0, isKeyboardInput(e)),
+        onClick: (e) => dispatchToolbarCommand(import_lexical57.UNDO_COMMAND, void 0, isKeyboardInput(e)),
         title: import_utils39.IS_APPLE ? "Undo (\u2318Z)" : "Undo (Ctrl+Z)",
         type: "button",
         className: "toolbar-item spaced",
@@ -30808,7 +31061,7 @@ function ToolbarPlugin({
       "button",
       {
         disabled: !toolbarState.canRedo || !isEditable,
-        onClick: (e) => dispatchToolbarCommand(import_lexical56.REDO_COMMAND, void 0, isKeyboardInput(e)),
+        onClick: (e) => dispatchToolbarCommand(import_lexical57.REDO_COMMAND, void 0, isKeyboardInput(e)),
         title: import_utils39.IS_APPLE ? "Redo (\u21E7\u2318Z)" : "Redo (Ctrl+Y)",
         type: "button",
         className: "toolbar-item",
@@ -31205,8 +31458,8 @@ function ToolbarPlugin({
                 {
                   onClick: () => {
                     editor.update(() => {
-                      (0, import_lexical56.$addUpdateTag)(import_lexical56.SKIP_SELECTION_FOCUS_TAG);
-                      const root = (0, import_lexical56.$getRoot)();
+                      (0, import_lexical57.$addUpdateTag)(import_lexical57.SKIP_SELECTION_FOCUS_TAG);
+                      const root = (0, import_lexical57.$getRoot)();
                       let xOffset = 20;
                       let yOffset = 20;
                       const rootElement = editor.getRootElement();
@@ -31437,10 +31690,10 @@ function Editor({ isFullscreen = false }) {
 
 // src/core/NotionLikeEditor.tsx
 var import_html2 = require("@lexical/html");
-var import_markdown4 = require("@lexical/markdown");
+var import_markdown5 = require("@lexical/markdown");
 var import_LexicalComposerContext43 = require("@lexical/react/LexicalComposerContext");
 var import_LexicalExtensionComposer = require("@lexical/react/LexicalExtensionComposer");
-var import_lexical59 = require("lexical");
+var import_lexical60 = require("lexical");
 var import_react71 = require("react");
 var import_use_debounce2 = require("use-debounce");
 
@@ -31499,7 +31752,7 @@ var import_mark = require("@lexical/mark");
 var import_overflow = require("@lexical/overflow");
 var import_LexicalHorizontalRuleNode3 = require("@lexical/react/LexicalHorizontalRuleNode");
 var import_rich_text6 = require("@lexical/rich-text");
-var import_table9 = require("@lexical/table");
+var import_table10 = require("@lexical/table");
 init_DateTimeNode2();
 init_EmojiNode();
 init_EquationNode();
@@ -31513,9 +31766,9 @@ var NotionLikeEditorNodes = [
   import_list4.ListItemNode,
   import_rich_text6.QuoteNode,
   import_code9.CodeNode,
-  import_table9.TableNode,
-  import_table9.TableCellNode,
-  import_table9.TableRowNode,
+  import_table10.TableNode,
+  import_table10.TableCellNode,
+  import_table10.TableRowNode,
   import_hashtag2.HashtagNode,
   import_code9.CodeHighlightNode,
   import_link8.AutoLinkNode,
@@ -31545,11 +31798,11 @@ var NotionLikeEditorNodes = [
 var NotionLikeEditorNodes_default = NotionLikeEditorNodes;
 
 // src/plugins/InsertMarkdownPlugin/index.tsx
-var import_markdown3 = require("@lexical/markdown");
+var import_markdown4 = require("@lexical/markdown");
 var import_LexicalComposerContext41 = require("@lexical/react/LexicalComposerContext");
-var import_lexical57 = require("lexical");
+var import_lexical58 = require("lexical");
 var import_react67 = require("react");
-var INSERT_MARKDOWN_COMMAND = (0, import_lexical57.createCommand)("INSERT_MARKDOWN_COMMAND");
+var INSERT_MARKDOWN_COMMAND = (0, import_lexical58.createCommand)("INSERT_MARKDOWN_COMMAND");
 function InsertMarkdownPlugin() {
   const [editor] = (0, import_LexicalComposerContext41.useLexicalComposerContext)();
   (0, import_react67.useEffect)(() => {
@@ -31560,19 +31813,19 @@ function InsertMarkdownPlugin() {
           return false;
         }
         editor.update(() => {
-          const currentMarkdown = (0, import_markdown3.$convertToMarkdownString)(PLAYGROUND_TRANSFORMERS);
+          const currentMarkdown = (0, import_markdown4.$convertToMarkdownString)(PLAYGROUND_TRANSFORMERS2);
           const combinedMarkdown = currentMarkdown.trim() ? `${currentMarkdown.trim()}
 
 ${markdown}` : markdown;
-          const root = (0, import_lexical57.$getRoot)();
+          const root = (0, import_lexical58.$getRoot)();
           root.clear();
-          (0, import_markdown3.$convertFromMarkdownString)(combinedMarkdown, PLAYGROUND_TRANSFORMERS);
+          (0, import_markdown4.$convertFromMarkdownString)(combinedMarkdown, PLAYGROUND_TRANSFORMERS2);
           const newLastChild = root.getLastChild();
           newLastChild?.selectEnd();
         });
         return true;
       },
-      import_lexical57.COMMAND_PRIORITY_EDITOR
+      import_lexical58.COMMAND_PRIORITY_EDITOR
     );
   }, [editor]);
   return null;
@@ -31742,7 +31995,7 @@ function TypingPerfPlugin() {
 init_NotionLikeEditorTheme2();
 
 // src/core/buildHTMLConfig.tsx
-var import_lexical58 = require("lexical");
+var import_lexical59 = require("lexical");
 function getExtraStyles(element) {
   let extraStyles = "";
   const fontSize = parseAllowedFontSize(element.style.fontSize);
@@ -31761,7 +32014,7 @@ function getExtraStyles(element) {
 }
 function buildImportMap3() {
   const importMap = {};
-  for (const [tag, fn] of Object.entries(import_lexical58.TextNode.importDOM() || {})) {
+  for (const [tag, fn] of Object.entries(import_lexical59.TextNode.importDOM() || {})) {
     importMap[tag] = (importNode) => {
       const importer = fn(importNode);
       if (!importer) {
@@ -31781,7 +32034,7 @@ function buildImportMap3() {
               ...output,
               forChild: (child, parent) => {
                 const textNode = forChild(child, parent);
-                if ((0, import_lexical58.$isTextNode)(textNode)) {
+                if ((0, import_lexical59.$isTextNode)(textNode)) {
                   textNode.setStyle(textNode.getStyle() + extraStyles);
                 }
                 return textNode;
@@ -31798,10 +32051,10 @@ function buildImportMap3() {
 function buildExportMap() {
   return /* @__PURE__ */ new Map([
     [
-      import_lexical58.ParagraphNode,
+      import_lexical59.ParagraphNode,
       (editor, target) => {
         const output = target.exportDOM(editor);
-        if ((0, import_lexical58.isHTMLElement)(output.element) && output.element.tagName === "P") {
+        if ((0, import_lexical59.isHTMLElement)(output.element) && output.element.tagName === "P") {
           const after = output.after;
           return {
             ...output,
@@ -31809,9 +32062,9 @@ function buildExportMap() {
               if (after) {
                 generatedElement = after(generatedElement);
               }
-              if ((0, import_lexical58.isHTMLElement)(generatedElement) && generatedElement.tagName === "P") {
+              if ((0, import_lexical59.isHTMLElement)(generatedElement) && generatedElement.tagName === "P") {
                 for (const childNode of generatedElement.childNodes) {
-                  if ((0, import_lexical58.isBlockDomNode)(childNode)) {
+                  if ((0, import_lexical59.isBlockDomNode)(childNode)) {
                     const div = document.createElement("div");
                     div.setAttribute("role", "paragraph");
                     for (const attr of generatedElement.attributes) {
@@ -31867,9 +32120,9 @@ function NotionLikeEditor({
     [showToolbar, measureTypingPerf, autoFocus, isCodeShiki]
   );
   const app = (0, import_react71.useMemo)(
-    () => (0, import_lexical59.defineExtension)({
+    () => (0, import_lexical60.defineExtension)({
       $initialEditorState: initialEditorState ? initialEditorState : initialMarkdown ? () => {
-        (0, import_markdown4.$convertFromMarkdownString)(initialMarkdown, PLAYGROUND_TRANSFORMERS);
+        (0, import_markdown5.$convertFromMarkdownString)(initialMarkdown, PLAYGROUND_TRANSFORMERS2);
       } : void 0,
       html: buildHTMLConfig(),
       name: "pecus/NotionLikeEditor",
@@ -31888,7 +32141,7 @@ function NotionLikeEditor({
   const debouncedOnChangePlainText = (0, import_use_debounce2.useDebouncedCallback)((editorState) => {
     if (onChangePlainText) {
       editorState.read(() => {
-        const root = (0, import_lexical59.$getRoot)();
+        const root = (0, import_lexical60.$getRoot)();
         const plainText = root.getTextContent();
         onChangePlainText(plainText);
       });
@@ -31905,7 +32158,7 @@ function NotionLikeEditor({
   const debouncedOnChangeMarkdown = (0, import_use_debounce2.useDebouncedCallback)((editorState) => {
     if (onChangeMarkdown) {
       editorState.read(() => {
-        const markdown = (0, import_markdown4.$convertToMarkdownString)(import_markdown4.TRANSFORMERS);
+        const markdown = (0, import_markdown5.$convertToMarkdownString)(import_markdown5.TRANSFORMERS);
         onChangeMarkdown(markdown);
       });
     }
@@ -31973,7 +32226,7 @@ function EditorReadyPlugin({ onReady }) {
 
 // src/core/NotionLikeViewer.tsx
 var import_LexicalExtensionComposer2 = require("@lexical/react/LexicalExtensionComposer");
-var import_lexical60 = require("lexical");
+var import_lexical61 = require("lexical");
 var import_react73 = require("react");
 
 // src/themes/NotionLikeViewerTheme.ts
@@ -32200,7 +32453,7 @@ function NotionLikeViewer({
     [isCodeShiki]
   );
   const app = (0, import_react73.useMemo)(
-    () => (0, import_lexical60.defineExtension)({
+    () => (0, import_lexical61.defineExtension)({
       $initialEditorState: initialViewerState,
       html: buildHTMLConfig(),
       name: "pecus/NotionLikeViewer",

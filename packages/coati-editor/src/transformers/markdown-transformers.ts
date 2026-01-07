@@ -296,3 +296,59 @@ export const PLAYGROUND_TRANSFORMERS: Array<Transformer> = [
   ...TEXT_FORMAT_TRANSFORMERS,
   ...TEXT_MATCH_TRANSFORMERS,
 ];
+
+/**
+ * リスト行の2スペースインデントを4スペースに正規化
+ * Lexicalのデフォルトは4スペース = 1インデントレベル
+ * コードブロック内は変換しない
+ *
+ * ⚠️ 注意: この関数は以下のファイルにも同一実装が存在します。
+ * 修正時は両方を同期してください:
+ * - packages/coati-editor/src/transformers/markdown-transformers.ts（このファイル）
+ * - pecus.LexicalConverter/src/lexical/transformers/markdown-transformers.ts
+ *
+ * @param markdown - 入力Markdown文字列
+ * @returns リストインデントが正規化されたMarkdown文字列
+ */
+export function normalizeListIndentation(markdown: string): string {
+  const lines = markdown.split('\n');
+  const result: string[] = [];
+  let inCodeBlock = false;
+
+  for (const line of lines) {
+    // コードブロックの開始/終了を追跡
+    if (/^```/.test(line.trim())) {
+      inCodeBlock = !inCodeBlock;
+      result.push(line);
+      continue;
+    }
+
+    // コードブロック内は変換しない
+    if (inCodeBlock) {
+      result.push(line);
+      continue;
+    }
+
+    // リスト行のみを対象（リストマーカーが必要）
+    // - item, * item, + item, 1. item, - [ ] item, - [x] item
+    const listMatch = line.match(/^(\s+)([-*+]|\d+\.)(\s+\[[ xX]?\])?\s/);
+    if (listMatch) {
+      const leadingSpaces = listMatch[1];
+      // タブは除外してスペースのみカウント
+      const spaceCount = (leadingSpaces.match(/ /g) || []).length;
+      const tabCount = (leadingSpaces.match(/\t/g) || []).length;
+
+      if (spaceCount > 0 && spaceCount % 2 === 0 && spaceCount % 4 !== 0) {
+        // 2スペース単位（かつ4の倍数でない）→ 4スペース単位に変換
+        const indentLevel = Math.ceil(spaceCount / 2);
+        const newIndent = '\t'.repeat(tabCount) + '    '.repeat(indentLevel);
+        result.push(newIndent + line.slice(leadingSpaces.length));
+        continue;
+      }
+    }
+
+    result.push(line);
+  }
+
+  return result.join('\n');
+}

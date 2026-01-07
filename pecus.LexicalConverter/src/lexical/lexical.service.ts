@@ -13,7 +13,7 @@ import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { $getRoot, type Klass, type LexicalNode } from 'lexical';
 import { initializeDomEnvironment } from './dom-environment';
 import { CustomNodes } from './nodes';
-import { PLAYGROUND_TRANSFORMERS } from './transformers/markdown-transformers';
+import { normalizeListIndentation, PLAYGROUND_TRANSFORMERS } from './transformers/markdown-transformers';
 
 /** 変換結果 */
 export interface ConvertResult {
@@ -165,9 +165,12 @@ export class LexicalService implements OnModuleInit {
   fromMarkdown(markdown: string): ConvertResult {
     const editor = this.createEditor();
 
+    // 2スペースインデントを4スペースに正規化してからLexicalに変換
+    const normalizedMarkdown = normalizeListIndentation(markdown);
+
     editor.update(
       () => {
-        $convertFromMarkdownString(markdown, PLAYGROUND_TRANSFORMERS, undefined, true);
+        $convertFromMarkdownString(normalizedMarkdown, PLAYGROUND_TRANSFORMERS, undefined, true);
       },
       { discrete: true },
     );

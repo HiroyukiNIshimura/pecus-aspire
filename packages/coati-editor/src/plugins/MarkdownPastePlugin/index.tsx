@@ -19,6 +19,7 @@ import {
   PASTE_COMMAND,
 } from 'lexical';
 import { useCallback, useEffect } from 'react';
+import { normalizeListIndentation } from '../../transformers/markdown-transformers';
 import { PLAYGROUND_TRANSFORMERS } from '../MarkdownTransformers';
 
 /**
@@ -170,8 +171,8 @@ export default function MarkdownPastePlugin(): null {
         // $convertFromMarkdownString は対象ノードの子として変換結果を追加する
         const paragraphNode = $createParagraphNode();
 
-        // マークダウンを Lexical ノードに変換
-        $convertFromMarkdownString(plainText, PLAYGROUND_TRANSFORMERS, paragraphNode, true);
+        // マークダウンを Lexical ノードに変換（2スペースインデントを4スペースに正規化）
+        $convertFromMarkdownString(normalizeListIndentation(plainText), PLAYGROUND_TRANSFORMERS, paragraphNode, true);
 
         // 変換されたノードを現在の位置に挿入
         const children = paragraphNode.getChildren();
