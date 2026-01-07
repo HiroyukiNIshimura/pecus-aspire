@@ -1,10 +1,9 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { getTagDetail } from '@/actions/admin/tags';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+import FetchError from '@/components/common/feedback/FetchError';
+import ForbiddenError from '@/components/common/feedback/ForbiddenError';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { handleServerFetch } from '@/libs/serverFetch';
 import EditTagClient from './EditTagClient';
 
 export const dynamic = 'force-dynamic';
@@ -17,36 +16,26 @@ export default async function EditTagPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
-  let tagDetail = null;
-  let fetchError = null;
+  const api = createPecusApiClients();
+  const authResult = await handleServerFetch(() => api.profile.getApiProfile());
 
-  try {
-    const api = createPecusApiClients();
-
-    // 認証チェック（プロフィール取得）
-    await api.profile.getApiProfile();
-
-    const tagResult = await getTagDetail(tagId);
-    if (tagResult.success) {
-      tagDetail = tagResult.data;
-    } else {
-      fetchError = tagResult.error;
+  if (!authResult.success) {
+    if (authResult.error === 'forbidden') {
+      return <ForbiddenError backUrl="/admin/tags" backLabel="タグ一覧に戻る" />;
     }
-  } catch (error) {
-    console.error('EditTagPage: failed to fetch tag', error);
-
-    const noAuthError = detect401ValidationError(error);
-    // 認証エラーの場合はサインインページへリダイレクト
-    if (noAuthError) {
-      redirect('/signin');
-    }
-
-    fetchError = getUserSafeErrorMessage(error, 'データの取得中にエラーが発生しました。');
+    return <FetchError message={authResult.message} backUrl="/admin/tags" backLabel="タグ一覧に戻る" />;
   }
 
-  if (!tagDetail) {
-    notFound();
+  const tagResult = await getTagDetail(tagId);
+  if (!tagResult.success) {
+    if (tagResult.error === 'forbidden') {
+      return <ForbiddenError backUrl="/admin/tags" backLabel="タグ一覧に戻る" />;
+    }
+    if (tagResult.error === 'not_found') {
+      notFound();
+    }
+    return <FetchError message={tagResult.message} backUrl="/admin/tags" backLabel="タグ一覧に戻る" />;
   }
 
-  return <EditTagClient tagDetail={tagDetail} fetchError={fetchError} />;
+  return <EditTagClient tagDetail={tagResult.data} fetchError={null} />;
 }

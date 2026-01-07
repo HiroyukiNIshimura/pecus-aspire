@@ -1,30 +1,29 @@
-import { redirect } from 'next/navigation';
-import type { MonitoringStatus, ServerResourceCurrent, SystemMetrics } from '@/actions/backoffice/monitoring';
+import type { ServerResourceCurrent, SystemMetrics } from '@/actions/backoffice/monitoring';
 import { getMonitoringStatus, getServerResourceCurrent, getSystemMetrics } from '@/actions/backoffice/monitoring';
+import FetchError from '@/components/common/feedback/FetchError';
+import ForbiddenError from '@/components/common/feedback/ForbiddenError';
 import MonitoringClient from './MonitoringClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function MonitoringPage() {
-  let data: MonitoringStatus | null = null;
-  let metricsData: SystemMetrics | null = null;
-  let resourcesData: ServerResourceCurrent | null = null;
-  let fetchError: string | null = null;
-
   const [statusResult, metricsResult, resourcesResult] = await Promise.all([
     getMonitoringStatus(),
     getSystemMetrics(24),
     getServerResourceCurrent(),
   ]);
 
-  if (statusResult.success) {
-    data = statusResult.data;
-  } else {
+  if (!statusResult.success) {
     if (statusResult.error === 'forbidden') {
-      redirect('/');
+      return <ForbiddenError backUrl="/backoffice" backLabel="BackOfficeダッシュボードに戻る" />;
     }
-    fetchError = JSON.stringify({ message: statusResult.message, code: statusResult.error });
+    return (
+      <FetchError message={statusResult.message} backUrl="/backoffice" backLabel="BackOfficeダッシュボードに戻る" />
+    );
   }
+
+  let metricsData: SystemMetrics | null = null;
+  let resourcesData: ServerResourceCurrent | null = null;
 
   if (metricsResult.success) {
     metricsData = metricsResult.data;
@@ -36,10 +35,10 @@ export default async function MonitoringPage() {
 
   return (
     <MonitoringClient
-      initialData={data}
+      initialData={statusResult.data}
       initialMetrics={metricsData}
       initialResources={resourcesData}
-      fetchError={fetchError}
+      fetchError={null}
     />
   );
 }

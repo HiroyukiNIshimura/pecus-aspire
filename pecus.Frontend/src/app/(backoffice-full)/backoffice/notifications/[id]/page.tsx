@@ -1,6 +1,7 @@
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { getBackOfficeNotificationDetail } from '@/actions/backoffice/notifications';
-import type { BackOfficeNotificationDetailResponse } from '@/connectors/api/pecus';
+import FetchError from '@/components/common/feedback/FetchError';
+import ForbiddenError from '@/components/common/feedback/ForbiddenError';
 import NotificationDetailClient from './NotificationDetailClient';
 
 export const dynamic = 'force-dynamic';
@@ -13,22 +14,17 @@ export default async function NotificationDetailPage({ params }: PageProps) {
   const { id } = await params;
   const notificationId = Number.parseInt(id, 10);
 
-  let data: BackOfficeNotificationDetailResponse | null = null;
-  let fetchError: string | null = null;
-
   const result = await getBackOfficeNotificationDetail(notificationId);
 
-  if (result.success) {
-    data = result.data;
-  } else {
+  if (!result.success) {
     if (result.error === 'forbidden') {
-      redirect('/');
+      return <ForbiddenError backUrl="/backoffice/notifications" backLabel="お知らせ一覧に戻る" />;
     }
     if (result.error === 'not_found') {
-      redirect('/backoffice/notifications');
+      notFound();
     }
-    fetchError = JSON.stringify({ message: result.message, code: result.error });
+    return <FetchError message={result.message} backUrl="/backoffice/notifications" backLabel="お知らせ一覧に戻る" />;
   }
 
-  return <NotificationDetailClient initialData={data} fetchError={fetchError} />;
+  return <NotificationDetailClient initialData={result.data} fetchError={null} />;
 }

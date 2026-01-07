@@ -1,35 +1,22 @@
-import { redirect } from 'next/navigation';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
-import type { OrganizationResponse } from '@/connectors/api/pecus';
+import FetchError from '@/components/common/feedback/FetchError';
+import ForbiddenError from '@/components/common/feedback/ForbiddenError';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { handleServerFetch } from '@/libs/serverFetch';
 import AdminClient from './AdminClient';
 
 export const dynamic = 'force-dynamic';
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function AdminPage() {
-  let organization: OrganizationResponse | null = null;
-  let fetchError: string | null = null;
+  const api = createPecusApiClients();
+  const result = await handleServerFetch(() => api.adminOrganization.getApiAdminOrganization());
 
-  try {
-    const api = createPecusApiClients();
-
-    // 組織情報を取得
-    organization = await api.adminOrganization.getApiAdminOrganization();
-  } catch (error) {
-    console.error('AdminPage: failed to fetch organization', error);
-
-    const noAuthError = detect401ValidationError(error);
-    // 認証エラーの場合はサインインページへリダイレクト
-    if (noAuthError) {
-      redirect('/signin');
+  if (!result.success) {
+    if (result.error === 'forbidden') {
+      return <ForbiddenError backUrl="/" backLabel="ダッシュボードに戻る" />;
     }
-
-    fetchError = getUserSafeErrorMessage(error, 'データの取得に失敗しました');
+    return <FetchError message={result.message} backUrl="/" backLabel="ダッシュボードに戻る" />;
   }
 
-  return <AdminClient initialOrganization={organization} fetchError={fetchError} />;
+  return <AdminClient initialOrganization={result.data} fetchError={null} />;
 }

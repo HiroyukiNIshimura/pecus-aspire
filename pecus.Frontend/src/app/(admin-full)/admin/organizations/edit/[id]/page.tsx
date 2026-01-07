@@ -1,43 +1,34 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { getOrganizationDetail } from '@/actions/admin/organizations';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+import FetchError from '@/components/common/feedback/FetchError';
+import ForbiddenError from '@/components/common/feedback/ForbiddenError';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { handleServerFetch } from '@/libs/serverFetch';
 import EditOrganizationClient from './EditOrganizationClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditOrganizationPage() {
-  let organizationDetail = null;
-  let fetchError = null;
+  const api = createPecusApiClients();
+  const authResult = await handleServerFetch(() => api.profile.getApiProfile());
 
-  try {
-    const api = createPecusApiClients();
-
-    // 認証チェック（プロフィール取得）
-    await api.profile.getApiProfile();
-
-    const organizationResult = await getOrganizationDetail();
-    if (organizationResult.success) {
-      organizationDetail = organizationResult.data;
-    } else {
-      fetchError = organizationResult.error;
+  if (!authResult.success) {
+    if (authResult.error === 'forbidden') {
+      return <ForbiddenError backUrl="/admin" backLabel="管理画面に戻る" />;
     }
-  } catch (error) {
-    const noAuthError = detect401ValidationError(error);
-    // 認証エラーの場合はサインインページへリダイレクト
-    if (noAuthError) {
-      redirect('/signin');
-    }
-
-    fetchError = getUserSafeErrorMessage(error, 'データの取得中にエラーが発生しました。');
+    return <FetchError message={authResult.message} backUrl="/admin" backLabel="管理画面に戻る" />;
   }
 
-  if (!organizationDetail) {
-    notFound();
+  const organizationResult = await getOrganizationDetail();
+  if (!organizationResult.success) {
+    if (organizationResult.error === 'forbidden') {
+      return <ForbiddenError backUrl="/admin" backLabel="管理画面に戻る" />;
+    }
+    if (organizationResult.error === 'not_found') {
+      notFound();
+    }
+    return <FetchError message={organizationResult.message} backUrl="/admin" backLabel="管理画面に戻る" />;
   }
 
-  return <EditOrganizationClient organizationDetail={organizationDetail} fetchError={fetchError} />;
+  return <EditOrganizationClient organizationDetail={organizationResult.data} fetchError={null} />;
 }

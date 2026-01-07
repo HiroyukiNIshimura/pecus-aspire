@@ -5,15 +5,17 @@ import { useEffect, useState } from 'react';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import type { HangfireStatsResponse } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
 
 interface BackOfficeDashboardClientProps {
   fetchError?: string | null;
+  hangfireStats?: HangfireStatsResponse | null;
 }
 
-export default function BackOfficeDashboardClient({ fetchError }: BackOfficeDashboardClientProps) {
+export default function BackOfficeDashboardClient({ fetchError, hangfireStats }: BackOfficeDashboardClientProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUser = useCurrentUser();
@@ -84,7 +86,10 @@ export default function BackOfficeDashboardClient({ fetchError }: BackOfficeDash
                   </div>
                 </a>
 
-                <a href="/backoffice/monitoring" className="card bg-base-200 hover:bg-base-300 transition-colors">
+                <a
+                  href="/backoffice/monitoring"
+                  className="card bg-base-200 hover:bg-base-300 transition-colors relative"
+                >
                   <div className="card-body">
                     <div className="flex items-center gap-4">
                       <span className="icon-[mdi--chart-line] size-12 text-primary" aria-hidden="true" />
@@ -93,6 +98,12 @@ export default function BackOfficeDashboardClient({ fetchError }: BackOfficeDash
                         <p className="text-base-content/70">サービスの稼働状況を監視</p>
                       </div>
                     </div>
+                    {hangfireStats && (hangfireStats.failed ?? 0) > 0 && (
+                      <div className="absolute top-2 right-2 flex items-center gap-1 badge badge-error badge-sm">
+                        <span className="icon-[mdi--alert-circle] size-3" aria-hidden="true" />
+                        <span>Failed: {hangfireStats.failed}</span>
+                      </div>
+                    )}
                   </div>
                 </a>
               </div>

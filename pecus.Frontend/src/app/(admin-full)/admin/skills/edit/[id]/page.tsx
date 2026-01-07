@@ -1,10 +1,9 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { getSkillDetail } from '@/actions/admin/skills';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+import FetchError from '@/components/common/feedback/FetchError';
+import ForbiddenError from '@/components/common/feedback/ForbiddenError';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { handleServerFetch } from '@/libs/serverFetch';
 import EditSkillClient from './EditSkillClient';
 
 export const dynamic = 'force-dynamic';
@@ -17,34 +16,26 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  let skillDetail = null;
-  let fetchError = null;
+  const api = createPecusApiClients();
+  const authResult = await handleServerFetch(() => api.profile.getApiProfile());
 
-  try {
-    const api = createPecusApiClients();
-
-    // 認証チェック（プロフィール取得）
-    await api.profile.getApiProfile();
-
-    const skillResult = await getSkillDetail(skillId);
-    if (skillResult.success) {
-      skillDetail = skillResult.data;
-    } else {
-      fetchError = skillResult.error;
+  if (!authResult.success) {
+    if (authResult.error === 'forbidden') {
+      return <ForbiddenError backUrl="/admin/skills" backLabel="スキル一覧に戻る" />;
     }
-  } catch (error) {
-    const noAuthError = detect401ValidationError(error);
-    // 認証エラーの場合はサインインページへリダイレクト
-    if (noAuthError) {
-      redirect('/signin');
-    }
-
-    fetchError = getUserSafeErrorMessage(error, 'データの取得中にエラーが発生しました。');
+    return <FetchError message={authResult.message} backUrl="/admin/skills" backLabel="スキル一覧に戻る" />;
   }
 
-  if (!skillDetail) {
-    notFound();
+  const skillResult = await getSkillDetail(skillId);
+  if (!skillResult.success) {
+    if (skillResult.error === 'forbidden') {
+      return <ForbiddenError backUrl="/admin/skills" backLabel="スキル一覧に戻る" />;
+    }
+    if (skillResult.error === 'not_found') {
+      notFound();
+    }
+    return <FetchError message={skillResult.message} backUrl="/admin/skills" backLabel="スキル一覧に戻る" />;
   }
 
-  return <EditSkillClient skillDetail={skillDetail} fetchError={fetchError} />;
+  return <EditSkillClient skillDetail={skillResult.data} fetchError={null} />;
 }

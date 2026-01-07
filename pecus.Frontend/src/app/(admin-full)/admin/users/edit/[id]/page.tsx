@@ -1,13 +1,12 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { getAllRoles } from '@/actions/admin/role';
 import { getAllSkills } from '@/actions/admin/skills';
 import { getUserDetail } from '@/actions/admin/user';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+import FetchError from '@/components/common/feedback/FetchError';
+import ForbiddenError from '@/components/common/feedback/ForbiddenError';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { RoleResponse, SkillListItemResponse } from '@/connectors/api/pecus';
+import { handleServerFetch } from '@/libs/serverFetch';
 import EditUserClient from './EditUserClient';
 
 export const dynamic = 'force-dynamic';
@@ -20,48 +19,46 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     notFound();
   }
 
-  let userDetail = null;
-  let skills: SkillListItemResponse[] = [];
-  let roles: RoleResponse[] = [];
-  let fetchError: string | null = null;
+  const api = createPecusApiClients();
+  const authResult = await handleServerFetch(() => api.profile.getApiProfile());
 
-  try {
-    const api = createPecusApiClients();
-
-    // 認証チェック（プロフィール取得）
-    await api.profile.getApiProfile();
-
-    const userDetailResult = await getUserDetail(userId);
-    if (userDetailResult.success) {
-      userDetail = userDetailResult.data;
-    } else {
-      fetchError = userDetailResult.error;
+  if (!authResult.success) {
+    if (authResult.error === 'forbidden') {
+      return <ForbiddenError backUrl="/admin/users" backLabel="ユーザー一覧に戻る" />;
     }
-
-    const skillsResult = await getAllSkills(true);
-    if (skillsResult.success) {
-      skills = skillsResult.data || [];
-    }
-
-    const rolesResult = await getAllRoles();
-    if (rolesResult.success) {
-      roles = rolesResult.data || [];
-    }
-  } catch (error) {
-    const noAuthError = detect401ValidationError(error);
-    // 認証エラーの場合はサインインページへリダイレクト
-    if (noAuthError) {
-      redirect('/signin');
-    }
-
-    fetchError = getUserSafeErrorMessage(error, 'データの取得中にエラーが発生しました。');
+    return <FetchError message={authResult.message} backUrl="/admin/users" backLabel="ユーザー一覧に戻る" />;
   }
 
-  if (!userDetail) {
-    notFound();
+  const userDetailResult = await getUserDetail(userId);
+  if (!userDetailResult.success) {
+    if (userDetailResult.error === 'forbidden') {
+      return <ForbiddenError backUrl="/admin/users" backLabel="ユーザー一覧に戻る" />;
+    }
+    if (userDetailResult.error === 'not_found') {
+      notFound();
+    }
+    return <FetchError message={userDetailResult.message} backUrl="/admin/users" backLabel="ユーザー一覧に戻る" />;
+  }
+
+  let skills: SkillListItemResponse[] = [];
+  let roles: RoleResponse[] = [];
+
+  const skillsResult = await getAllSkills(true);
+  if (skillsResult.success) {
+    skills = skillsResult.data || [];
+  }
+
+  const rolesResult = await getAllRoles();
+  if (rolesResult.success) {
+    roles = rolesResult.data || [];
   }
 
   return (
-    <EditUserClient userDetail={userDetail} availableSkills={skills} availableRoles={roles} fetchError={fetchError} />
+    <EditUserClient
+      userDetail={userDetailResult.data}
+      availableSkills={skills}
+      availableRoles={roles}
+      fetchError={null}
+    />
   );
 }

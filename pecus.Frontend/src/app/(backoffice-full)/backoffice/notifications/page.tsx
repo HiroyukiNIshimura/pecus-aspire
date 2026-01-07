@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation';
 import { getBackOfficeNotifications } from '@/actions/backoffice/notifications';
+import FetchError from '@/components/common/feedback/FetchError';
+import ForbiddenError from '@/components/common/feedback/ForbiddenError';
 import type { PagedResponseOfBackOfficeNotificationListItemResponse } from '@/connectors/api/pecus';
 import NotificationsClient from './NotificationsClient';
 
@@ -14,19 +15,14 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
   const page = params.page ? Number.parseInt(params.page, 10) : 1;
   const includeDeleted = params.includeDeleted === 'true';
 
-  let data: PagedResponseOfBackOfficeNotificationListItemResponse | null = null;
-  let fetchError: string | null = null;
-
   const result = await getBackOfficeNotifications(page, 20, includeDeleted);
 
-  if (result.success) {
-    data = result.data;
-  } else {
+  if (!result.success) {
     if (result.error === 'forbidden') {
-      redirect('/');
+      return <ForbiddenError backUrl="/backoffice" backLabel="BackOfficeダッシュボードに戻る" />;
     }
-    fetchError = JSON.stringify({ message: result.message, code: result.error });
+    return <FetchError message={result.message} backUrl="/backoffice" backLabel="BackOfficeダッシュボードに戻る" />;
   }
 
-  return <NotificationsClient initialData={data} fetchError={fetchError} />;
+  return <NotificationsClient initialData={result.data} fetchError={null} />;
 }

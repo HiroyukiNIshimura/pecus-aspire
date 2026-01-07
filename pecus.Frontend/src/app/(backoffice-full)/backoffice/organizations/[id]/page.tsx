@@ -1,6 +1,7 @@
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { getBackOfficeOrganizationDetail } from '@/actions/backoffice/organizations';
-import type { BackOfficeOrganizationDetailResponse } from '@/connectors/api/pecus';
+import FetchError from '@/components/common/feedback/FetchError';
+import ForbiddenError from '@/components/common/feedback/ForbiddenError';
 import OrganizationDetailClient from './OrganizationDetailClient';
 
 export const dynamic = 'force-dynamic';
@@ -13,22 +14,17 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
   const { id } = await params;
   const organizationId = Number.parseInt(id, 10);
 
-  let data: BackOfficeOrganizationDetailResponse | null = null;
-  let fetchError: string | null = null;
-
   const result = await getBackOfficeOrganizationDetail(organizationId);
 
-  if (result.success) {
-    data = result.data;
-  } else {
+  if (!result.success) {
     if (result.error === 'forbidden') {
-      redirect('/');
+      return <ForbiddenError backUrl="/backoffice/organizations" backLabel="組織一覧に戻る" />;
     }
     if (result.error === 'not_found') {
-      redirect('/backoffice/organizations');
+      notFound();
     }
-    fetchError = JSON.stringify({ message: result.message, code: result.error });
+    return <FetchError message={result.message} backUrl="/backoffice/organizations" backLabel="組織一覧に戻る" />;
   }
 
-  return <OrganizationDetailClient initialData={data} fetchError={fetchError} />;
+  return <OrganizationDetailClient initialData={result.data} fetchError={null} />;
 }
