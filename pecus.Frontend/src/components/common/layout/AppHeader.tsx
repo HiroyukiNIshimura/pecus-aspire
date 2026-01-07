@@ -1,6 +1,5 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import ChatIconButton from '@/components/chat/ChatIconButton';
 import type { CurrentUserInfo } from '@/connectors/api/pecus';
 import HeaderLogo from '../navigation/HeaderLogo';
@@ -15,6 +14,7 @@ interface AppHeaderProps {
   loading?: boolean;
   showAdminLink?: boolean;
   showBackOfficeLink?: boolean;
+  showChat?: boolean;
   hideProfileMenu?: boolean;
   hideSettingsMenu?: boolean;
   onLogout?: () => void;
@@ -31,14 +31,11 @@ export default function AppHeader({
   loading = false,
   showAdminLink = true,
   showBackOfficeLink = false,
+  showChat = true,
   hideProfileMenu = false,
   hideSettingsMenu = false,
   onLogout,
 }: AppHeaderProps) {
-  const pathname = usePathname();
-  const isAdminPage = pathname?.startsWith('/admin');
-  const isBackOfficePage = pathname?.startsWith('/backoffice');
-
   return (
     <header className="sticky top-0 z-50 bg-base-100 shadow-sm border-b border-base-300">
       <nav className="navbar">
@@ -76,7 +73,7 @@ export default function AppHeader({
 
         <div className="navbar-end flex items-center gap-1">
           <ThemeToggle />
-          {!isAdminPage && !isBackOfficePage && <ChatIconButton />}
+          {showChat && <ChatIconButton />}
           <UserMenu
             userInfo={userInfo}
             hideProfileMenu={hideProfileMenu}

@@ -17,6 +17,7 @@ export default function AdminHeader({ userInfo, onToggleSidebar, loading = false
       loading={loading}
       showAdminLink={true}
       showBackOfficeLink={userInfo?.isBackOffice ?? false}
+      showChat={false}
     />
   );
 }

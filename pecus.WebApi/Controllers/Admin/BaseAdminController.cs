@@ -11,6 +11,7 @@ namespace Pecus.Controllers.Admin;
 /// Admin ロールを持つユーザーのみアクセスできます。
 /// 認証ユーザーの有効性チェックは自動的に実行されます。
 /// </remarks>
+//[Authorize(Roles = "Admin,BackOffice")]
 [Authorize(Roles = "Admin")]
 [Tags("Admin")]
 public abstract class BaseAdminController : BaseSecureController
