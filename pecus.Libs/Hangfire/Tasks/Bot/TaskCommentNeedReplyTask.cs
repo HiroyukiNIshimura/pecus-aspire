@@ -62,6 +62,7 @@ public class TaskCommentNeedReplyTask
                 .Include(c => c.WorkspaceTask)
                     .ThenInclude(t => t.AssignedUser)
                         .ThenInclude(u => u.ChatActor)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(c => c.Id == commentId);
 
             if (comment == null)

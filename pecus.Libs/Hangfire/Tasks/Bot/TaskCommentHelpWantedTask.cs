@@ -51,6 +51,7 @@ public class TaskCommentHelpWantedTask
                 .Include(c => c.WorkspaceTask)
                     .ThenInclude(t => t.WorkspaceItem)
                         .ThenInclude(i => i.Workspace)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(c => c.Id == commentId);
 
             if (comment == null)
