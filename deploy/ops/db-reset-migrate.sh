@@ -16,7 +16,7 @@ sh ./app-down.sh -y
 
 echo "[Info] Running DbManager (Drop & Create)..."
 # Ensure infra is up (db needs to be running)
-sh ./infra-up.sh
+sh ./infra-up.sh --no-build
 
 DB_RESET_MODE=true compose_migrate run --rm --build dbmanager
 

@@ -14,6 +14,7 @@
 
 ```
 sh infra-up.sh
+sh infra-up.sh --no-build   # ビルドせずに起動
 sh infra-down.sh
 ```
 

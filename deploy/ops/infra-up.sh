@@ -8,10 +8,27 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 
 require_cmd docker
 
+# Parse options
+build_flag="--build"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --no-build|-n)
+      build_flag=""
+      shift
+      ;;
+    *)
+      echo "[Error] Unknown option: $1" >&2
+      echo "Usage: $0 [--no-build|-n]" >&2
+      exit 1
+      ;;
+  esac
+done
+
 # Infra only: postgres/redis/redis-frontend/lexicalconverter/nginx
 
 echo "[Info] Starting Infra..."
-compose_infra up -d --build
+# shellcheck disable=SC2086
+compose_infra up -d $build_flag
 
 wait_health pecus-postgres 300
 wait_health pecus-redis 300
