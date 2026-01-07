@@ -69,6 +69,8 @@ builder.Services.AddBotBehaviors();
 builder.Services.AddScoped<IFocusTaskProvider, FocusTaskProvider>();
 // InformationSearchProvider の登録（情報検索）
 builder.Services.AddScoped<IInformationSearchProvider, InformationSearchProvider>();
+// AI Tools の登録（MCP的なツールベースアーキテクチャ）
+builder.Services.AddAiTools();
 
 // Lexical Converter gRPC サービスの登録
 var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";
