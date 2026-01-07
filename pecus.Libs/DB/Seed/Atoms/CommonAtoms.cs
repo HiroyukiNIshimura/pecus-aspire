@@ -328,6 +328,56 @@ public class CommonAtoms
     }
 
     /// <summary>
+    /// SeedConstants.ProductVision から Lexical JSON を作成する
+    /// </summary>
+    /// <returns>変換結果 (FileName: ドキュメント名, Body: Lexical JSON, RawBody: プレーンテキスト)、失敗時は null</returns>
+    public async Task<(string FileName, string Body, string RawBody)?> LoadProductVisionAsLexicalJsonAsync()
+    {
+        const string fileName = "プロダクトビジョン";
+        var markdown = SeedConstants.ProductVision;
+
+        if (string.IsNullOrWhiteSpace(markdown))
+        {
+            _logger.LogWarning("ProductVision is empty or null");
+            return null;
+        }
+
+        if (_lexicalConverterService == null)
+        {
+            _logger.LogWarning("LexicalConverterService is not available, using markdown as raw text for ProductVision");
+            return (
+                FileName: fileName,
+                Body: "{\"root\":{\"children\":[{\"children\":[],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"paragraph\",\"version\":1}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}",
+                RawBody: markdown
+            );
+        }
+
+        try
+        {
+            var convertResult = await _lexicalConverterService.FromMarkdownAsync(markdown);
+            if (!convertResult.Success)
+            {
+                _logger.LogWarning(
+                    "Failed to convert ProductVision to Lexical JSON: {Error}",
+                    convertResult.ErrorMessage
+                );
+                return null;
+            }
+
+            var plainTextResult = await _lexicalConverterService.ToPlainTextAsync(convertResult.Result);
+            var rawBody = plainTextResult.Success ? plainTextResult.Result : string.Empty;
+
+            _logger.LogDebug("Converted ProductVision to Lexical JSON ({Length} chars)", convertResult.Result.Length);
+            return (FileName: fileName, Body: convertResult.Result, RawBody: rawBody);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to process ProductVision markdown");
+            return null;
+        }
+    }
+
+    /// <summary>
     /// md ディレクトリ内の Markdown ファイルを読み込み、Lexical JSON に変換する
     /// </summary>
     /// <returns>変換結果のリスト (FileName: 拡張子なしファイル名, Body: Lexical JSON, RawBody: プレーンテキスト)</returns>

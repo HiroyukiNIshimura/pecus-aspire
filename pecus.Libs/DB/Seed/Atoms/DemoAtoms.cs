@@ -137,6 +137,12 @@ public class DemoAtoms
                 await CreateSampleProjectItemAsync(sampleProjectWorkspace, users);
             }
 
+            var documentProjectWorkspace = workspaces.FirstOrDefault(w => w.Name == "ドキュメントプロジェクト");
+            if (documentProjectWorkspace != null)
+            {
+                await CreateSampleDocumentItemAsync(documentProjectWorkspace, users);
+            }
+
             await transaction.CommitAsync();
             _logger.LogInformation("Demo data seeding completed successfully");
             return organization.Id;
@@ -486,6 +492,22 @@ public class DemoAtoms
         };
         workspaces.Add(sampleProjectWorkspace);
 
+        var documentProjectWorkspace = new Workspace
+        {
+            Name = "ドキュメントプロジェクト",
+            Code = CodeGenerator.GenerateWorkspaceCode(),
+            Description = manualDescriptions.Length > 0 ? manualDescriptions[0] : "ドキュメント管理用のワークスペースです。",
+            OrganizationId = org.Id,
+            GenreId = manualGenre?.Id,
+            Mode = WorkspaceMode.Document,
+            OwnerId = user1.Id,
+            CreatedByUserId = user1.Id,
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        workspaces.Add(documentProjectWorkspace);
+
         _logger.LogInformation("Created {Count} demo workspaces", workspaces.Count);
         return workspaces;
     }
@@ -619,10 +641,10 @@ public class DemoAtoms
             return;
         }
 
-        var bodyDataList = await _commonAtoms.LoadMarkdownFilesAsLexicalJsonAsync();
-        if (bodyDataList.Count == 0)
+        var bodyData = await _commonAtoms.LoadProductVisionAsLexicalJsonAsync();
+        if (bodyData == null)
         {
-            _logger.LogWarning("No markdown files found for sample project item");
+            _logger.LogWarning("Failed to load product vision markdown for sample project item");
             return;
         }
 
@@ -634,15 +656,14 @@ public class DemoAtoms
 #pragma warning restore EF1002
         workspace.ItemNumberSequenceName = sequenceName;
 
-        var bodyData = bodyDataList[0];
         var workspaceItem = new WorkspaceItem
         {
             WorkspaceId = workspace.Id,
             ItemNumber = 1,
             Code = "1",
-            Subject = bodyData.FileName,
-            Body = bodyData.Body,
-            RawBody = bodyData.RawBody,
+            Subject = bodyData.Value.FileName,
+            Body = bodyData.Value.Body,
+            RawBody = bodyData.Value.RawBody,
             OwnerId = user1.Id,
             AssigneeId = user2.Id,
             Priority = TaskPriority.Medium,
@@ -784,4 +805,82 @@ public class DemoAtoms
 
         _logger.LogInformation("Created {Count} task comments for sample project tasks", comments.Count);
     }
+
+    /// <summary>
+    /// ドキュメントプロジェクトワークスペースにアイテムを作成
+    /// </summary>
+    private async Task CreateSampleDocumentItemAsync(Workspace workspace, List<User> users)
+    {
+        var userOptions = _options.Users.Where(u => u.Role != "Admin").ToList();
+        if (userOptions.Count < 2)
+        {
+            _logger.LogWarning("Not enough non-admin users for sample project item");
+            return;
+        }
+
+        var user1 = users.FirstOrDefault(u => u.Email == userOptions[0].Email);
+        var user2 = users.FirstOrDefault(u => u.Email == userOptions[1].Email);
+        var adminUser = users.FirstOrDefault(u => _options.Users.Any(o => o.Role == "Admin" && o.Email == u.Email));
+
+        if (user1 == null || user2 == null || adminUser == null)
+        {
+            _logger.LogWarning("Required users not found for sample document item");
+            return;
+        }
+
+        var bodyDataList = await _commonAtoms.LoadMarkdownFilesAsLexicalJsonAsync();
+        if (bodyDataList.Count == 0)
+        {
+            _logger.LogWarning("No markdown files found for sample document item");
+            return;
+        }
+
+        var sequenceName = $"workspace_{workspace.Id}_item_seq";
+#pragma warning disable EF1002
+        await _context.Database.ExecuteSqlRawAsync(
+            $@"CREATE SEQUENCE IF NOT EXISTS ""{sequenceName}"" START WITH 1 INCREMENT BY 1"
+        );
+#pragma warning restore EF1002
+        workspace.ItemNumberSequenceName = sequenceName;
+
+        var workspaceItems = new List<WorkspaceItem>();
+        for (var i = 0; i < bodyDataList.Count; i++)
+        {
+            var bodyData = bodyDataList[i];
+            var itemNumber = i + 1;
+            var workspaceItem = new WorkspaceItem
+            {
+                WorkspaceId = workspace.Id,
+                ItemNumber = itemNumber,
+                Code = itemNumber.ToString(),
+                Subject = bodyData.FileName,
+                Body = bodyData.Body,
+                RawBody = bodyData.RawBody,
+                OwnerId = user1.Id,
+                AssigneeId = user2.Id,
+                Priority = TaskPriority.Medium,
+                DueDate = DateTime.UtcNow.AddDays(30),
+                IsArchived = false,
+                IsDraft = false,
+                CommitterId = adminUser.Id,
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            workspaceItems.Add(workspaceItem);
+        }
+
+        await _context.WorkspaceItems.AddRangeAsync(workspaceItems);
+        await _context.SaveChangesAsync();
+
+#pragma warning disable EF1002
+        await _context.Database.ExecuteSqlRawAsync(
+            $@"SELECT setval('""{sequenceName}""', {bodyDataList.Count}, true)"
+        );
+#pragma warning restore EF1002
+
+        _logger.LogInformation("Created {Count} sample document items in '{WorkspaceName}'", workspaceItems.Count, workspace.Name);
+
+    }
+
 }
