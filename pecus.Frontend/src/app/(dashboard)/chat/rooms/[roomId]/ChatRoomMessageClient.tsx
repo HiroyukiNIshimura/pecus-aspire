@@ -75,6 +75,18 @@ export default function ChatRoomMessageClient({
     };
   }, [room.id, joinChat, leaveChat]);
 
+  // 初期表示時に既読位置を更新
+  useEffect(() => {
+    // 最新メッセージIDで既読位置を更新
+    const latestMessage = initialMessages[initialMessages.length - 1];
+    if (latestMessage) {
+      updateReadPosition(room.id, undefined, latestMessage.id);
+    } else {
+      // メッセージがない場合も既読位置を更新（タイムスタンプのみ）
+      updateReadPosition(room.id);
+    }
+  }, [room.id, initialMessages]);
+
   // ルーム名を取得
   const getRoomName = () => {
     if (room.type === 'Dm') {
@@ -159,7 +171,7 @@ export default function ChatRoomMessageClient({
   useSignalREvent<ChatMessageReceivedPayload>('chat:message_received', handleMessageReceived);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-base-100">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-base-100">
       {/* ヘッダー */}
       <div className="flex items-center px-4 py-3 border-b border-base-300 bg-base-200 shrink-0">
         <button
