@@ -69,7 +69,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
     }
 
     /// <inheritdoc />
-    protected override async Task<string> BuildNotificationMessageAsync(
+    protected override async Task<(string Message, DB.Models.Bot? SelectedBot)> BuildNotificationMessageAsync(
         int organizationId,
         WorkspaceItem item,
         string updatedByUserName,
@@ -81,13 +81,13 @@ public class UpdateItemTask : ItemNotificationTaskBase
         if (_lexicalConverterService == null || _aiClientFactory == null || _botSelector == null)
         {
             Logger.LogDebug("LexicalConverterService, AiClientFactory or BotSelector is not available, using default message");
-            return defaultMessage;
+            return (defaultMessage, null);
         }
 
         if (string.IsNullOrWhiteSpace(details))
         {
             Logger.LogDebug("Details is empty, using default message");
-            return defaultMessage;
+            return (defaultMessage, null);
         }
 
         try
@@ -100,7 +100,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
             if (updateDetails == null)
             {
                 Logger.LogDebug("Failed to deserialize details, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             var isSubjectChange = !string.IsNullOrWhiteSpace(updateDetails.New);
@@ -119,7 +119,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
                 if (string.IsNullOrWhiteSpace(updateDetails.Old))
                 {
                     Logger.LogDebug("Both new and old content are empty, using default message");
-                    return defaultMessage;
+                    return (defaultMessage, null);
                 }
 
                 var newBodyMarkdown = await ConvertToMarkdownAsync(item.Body);
@@ -128,7 +128,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
                 if (newBodyMarkdown == null || oldBodyMarkdown == null)
                 {
                     Logger.LogDebug("Failed to convert body to Markdown, using default message");
-                    return defaultMessage;
+                    return (defaultMessage, null);
                 }
 
                 newContent = $"件名: {item.Subject}\n\n本文:\n{newBodyMarkdown}";
@@ -142,7 +142,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
                 string.IsNullOrEmpty(setting.GenerativeApiModel))
             {
                 Logger.LogDebug("AI settings not configured for organization, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             var aiClient = _aiClientFactory.CreateClient(
@@ -154,7 +154,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
             if (aiClient == null)
             {
                 Logger.LogDebug("Failed to create AI client, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             var bot = await _botSelector.SelectBotByContentAsync(
@@ -166,7 +166,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
             if (bot == null)
             {
                 Logger.LogDebug("Bot not found, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             // Bot のペルソナと行動指針を プロンプトテンプレート と統合
@@ -191,7 +191,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
             if (string.IsNullOrWhiteSpace(generatedMessage))
             {
                 Logger.LogDebug("AI generated empty message, using default message");
-                return defaultMessage;
+                return (defaultMessage, bot);
             }
 
             if (generatedMessage.Length > 100)
@@ -199,12 +199,12 @@ public class UpdateItemTask : ItemNotificationTaskBase
                 generatedMessage = generatedMessage[..97] + "...";
             }
 
-            return $"{defaultMessage}\n\n{generatedMessage}";
+            return ($"{defaultMessage}\n\n{generatedMessage}", bot);
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Failed to generate AI message for item update, using default message");
-            return defaultMessage;
+            return (defaultMessage, null);
         }
     }
 

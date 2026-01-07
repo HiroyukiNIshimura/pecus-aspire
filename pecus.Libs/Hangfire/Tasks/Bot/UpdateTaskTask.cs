@@ -50,7 +50,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
     }
 
     /// <inheritdoc />
-    protected override async Task<string> BuildNotificationMessageAsync(
+    protected override async Task<(string Message, DB.Models.Bot? SelectedBot)> BuildNotificationMessageAsync(
         int organizationId,
         WorkspaceTask task,
         string userName,
@@ -61,7 +61,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
         if (_aiClientFactory == null || _botSelector == null)
         {
             Logger.LogDebug("AiClientFactory or BotSelector is not available, using default message");
-            return defaultMessage;
+            return (defaultMessage, null);
         }
 
         try
@@ -73,7 +73,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
                 string.IsNullOrEmpty(setting.GenerativeApiModel))
             {
                 Logger.LogDebug("AI settings not configured for organization, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             var aiClient = _aiClientFactory.CreateClient(
@@ -85,7 +85,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
             if (aiClient == null)
             {
                 Logger.LogDebug("Failed to create AI client, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             var taskTypeName = task.TaskType?.Name ?? "タスク";
@@ -103,7 +103,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
             if (bot == null)
             {
                 Logger.LogDebug("Bot not found, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             // Bot のペルソナと行動指針を プロンプトテンプレート と統合
@@ -130,7 +130,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
             if (string.IsNullOrWhiteSpace(generatedMessage))
             {
                 Logger.LogDebug("AI generated empty message, using default message");
-                return defaultMessage;
+                return (defaultMessage, bot);
             }
 
             if (generatedMessage.Length > 100)
@@ -138,12 +138,12 @@ public class UpdateTaskTask : TaskNotificationTaskBase
                 generatedMessage = generatedMessage[..97] + "...";
             }
 
-            return $"{defaultMessage}\n\n{generatedMessage}";
+            return ($"{defaultMessage}\n\n{generatedMessage}", bot);
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Failed to generate AI message for task update, using default message");
-            return defaultMessage;
+            return (defaultMessage, null);
         }
     }
 

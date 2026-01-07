@@ -182,14 +182,14 @@ public abstract class TaskNotificationTaskBase
     /// <param name="task">タスク</param>
     /// <param name="userName">ユーザー名</param>
     /// <param name="workspaceCode">ワークスペースコード</param>
-    /// <returns>メッセージ内容</returns>
-    protected virtual Task<string> BuildNotificationMessageAsync(
+    /// <returns>メッセージ内容と選択されたBot（nullの場合はSystemBotを使用）</returns>
+    protected virtual Task<(string Message, DB.Models.Bot? SelectedBot)> BuildNotificationMessageAsync(
         int organizationId,
         WorkspaceTask task,
         string userName,
         string workspaceCode)
     {
-        return Task.FromResult(BuildNotificationMessage(organizationId, task, userName, workspaceCode));
+        return Task.FromResult((BuildNotificationMessage(organizationId, task, userName, workspaceCode), (DB.Models.Bot?)null));
     }
 
     /// <summary>
@@ -251,18 +251,29 @@ public abstract class TaskNotificationTaskBase
                 return;
             }
 
-            // SystemBot を取得
-            systemBot = await GetSystemBotAsync(organizationId);
+            // メッセージを作成（選択されたBotも取得）
+            var (messageContent, selectedBot) = await BuildNotificationMessageAsync(organizationId, task, userName, workspaceCode);
+
+            // 選択されたBotがあればそれを使用、なければSystemBotを使用
+            if (selectedBot?.ChatActor != null)
+            {
+                systemBot = selectedBot;
+            }
+            else
+            {
+                systemBot = await GetSystemBotAsync(organizationId);
+            }
+
             if (systemBot?.ChatActor == null)
             {
                 Logger.LogWarning(
-                    "SystemBot not found for organization: OrganizationId={OrganizationId}",
+                    "Bot not found for organization: OrganizationId={OrganizationId}",
                     organizationId
                 );
                 return;
             }
 
-            // SystemBot がルームのメンバーか確認し、メンバーでなければ追加
+            // Bot がルームのメンバーか確認し、メンバーでなければ追加
             await EnsureBotIsMemberAsync(room.Id, systemBot.ChatActor.Id);
 
             // 入力開始を通知
@@ -274,8 +285,7 @@ public abstract class TaskNotificationTaskBase
                 isTyping: true
             );
 
-            // メッセージを作成してグループチャットに送信
-            var messageContent = await BuildNotificationMessageAsync(organizationId, task, userName, workspaceCode);
+            // メッセージをグループチャットに送信
             await SendBotMessageAsync(organizationId, room, systemBot, messageContent);
 
             // 入力終了を通知

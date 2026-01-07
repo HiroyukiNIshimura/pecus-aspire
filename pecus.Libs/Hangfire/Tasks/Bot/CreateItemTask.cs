@@ -55,7 +55,7 @@ public class CreateItemTask : ItemNotificationTaskBase
     }
 
     /// <inheritdoc />
-    protected override async Task<string> BuildNotificationMessageAsync(
+    protected override async Task<(string Message, DB.Models.Bot? SelectedBot)> BuildNotificationMessageAsync(
         int organizationId,
         WorkspaceItem item,
         string updatedByUserName,
@@ -68,14 +68,14 @@ public class CreateItemTask : ItemNotificationTaskBase
         if (_lexicalConverterService == null || _aiClientFactory == null || _botSelector == null)
         {
             Logger.LogDebug("LexicalConverterService, AiClientFactory or BotSelector is not available, using default message");
-            return defaultMessage;
+            return (defaultMessage, null);
         }
 
         // 本文が空の場合は定型文を返す
         if (string.IsNullOrWhiteSpace(item.Body))
         {
             Logger.LogDebug("Item body is empty, using default message");
-            return defaultMessage;
+            return (defaultMessage, null);
         }
 
         try
@@ -85,7 +85,7 @@ public class CreateItemTask : ItemNotificationTaskBase
             if (!markdownResult.Success || string.IsNullOrWhiteSpace(markdownResult.Result))
             {
                 Logger.LogDebug("Failed to convert Lexical JSON to Markdown, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             var markdownBody = markdownResult.Result;
@@ -98,7 +98,7 @@ public class CreateItemTask : ItemNotificationTaskBase
                 string.IsNullOrEmpty(setting.GenerativeApiModel))
             {
                 Logger.LogDebug("AI settings not configured for organization, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             // AI クライアントを作成
@@ -111,7 +111,7 @@ public class CreateItemTask : ItemNotificationTaskBase
             if (aiClient == null)
             {
                 Logger.LogDebug("Failed to create AI client, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             // メッセージ内容を組み立て（件名 + 本文）
@@ -127,7 +127,7 @@ public class CreateItemTask : ItemNotificationTaskBase
             if (bot == null)
             {
                 Logger.LogDebug("Bot not found, using default message");
-                return defaultMessage;
+                return (defaultMessage, null);
             }
 
             // Bot のペルソナと行動指針を プロンプトテンプレート と統合
@@ -150,7 +150,7 @@ public class CreateItemTask : ItemNotificationTaskBase
             if (string.IsNullOrWhiteSpace(generatedMessage))
             {
                 Logger.LogDebug("AI generated empty message, using default message");
-                return defaultMessage;
+                return (defaultMessage, bot);
             }
 
             // 100文字を超える場合は切り詰め
@@ -160,12 +160,12 @@ public class CreateItemTask : ItemNotificationTaskBase
             }
 
             // 定型文 + AI 生成メッセージを返す
-            return $"{defaultMessage}\n\n{generatedMessage}";
+            return ($"{defaultMessage}\n\n{generatedMessage}", bot);
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Failed to generate AI message for item creation, using default message");
-            return defaultMessage;
+            return (defaultMessage, null);
         }
     }
 
