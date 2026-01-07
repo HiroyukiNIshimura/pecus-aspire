@@ -77,15 +77,22 @@ export default function ChatRoomMessageClient({
 
   // 初期表示時に既読位置を更新
   useEffect(() => {
-    // 最新メッセージIDで既読位置を更新
-    const latestMessage = initialMessages[initialMessages.length - 1];
-    if (latestMessage) {
-      updateReadPosition(room.id, undefined, latestMessage.id);
-    } else {
-      // メッセージがない場合も既読位置を更新（タイムスタンプのみ）
-      updateReadPosition(room.id);
-    }
-  }, [room.id, initialMessages]);
+    const updateRead = async () => {
+      // 最新メッセージIDで既読位置を更新
+      const latestMessage = messages[messages.length - 1];
+      if (latestMessage) {
+        console.log('[ChatRoomMessageClient] Updating read position with messageId:', latestMessage.id);
+        const result = await updateReadPosition(room.id, undefined, latestMessage.id);
+        console.log('[ChatRoomMessageClient] updateReadPosition result:', result);
+      } else {
+        // メッセージがない場合も既読位置を更新（タイムスタンプのみ）
+        console.log('[ChatRoomMessageClient] Updating read position without messageId');
+        await updateReadPosition(room.id);
+      }
+    };
+    updateRead();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room.id]); // 初回マウント時のみ実行
 
   // ルーム名を取得
   const getRoomName = () => {

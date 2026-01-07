@@ -115,7 +115,7 @@ export default function ChatMessageInput({
   const canSend = content.trim().length > 0 && !disabled;
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-base-300 p-3 bg-base-100 shrink-0">
+    <form onSubmit={handleSubmit} className="border-t border-base-300 p-3 pb-safe bg-base-100 shrink-0">
       <div className="flex items-end gap-2">
         {/* TODO: ファイル添付ボタン（Phase 3） */}
         {/* <button type="button" className="btn btn-ghost btn-sm btn-circle flex-shrink-0">

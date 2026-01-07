@@ -29,7 +29,7 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
   const isMobileChatPage = isChatPage && isMobile !== false;
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       {!isMobileChatPage && (
         <AppHeader
           userInfo={userInfo}
@@ -38,7 +38,7 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
         />
       )}
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar Menu */}
         {!isMobileChatPage && <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={userInfo?.isAdmin ?? false} />}
 
@@ -59,7 +59,7 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
         {/* Main Content */}
         <div
           className={`flex-1 bg-base-100 ${
-            isMobileChatPage ? 'flex flex-col overflow-hidden' : 'p-4 md:p-6 overflow-y-auto'
+            isMobileChatPage ? 'flex flex-col min-h-0 overflow-hidden' : 'p-4 md:p-6 overflow-y-auto'
           }`}
         >
           {children}

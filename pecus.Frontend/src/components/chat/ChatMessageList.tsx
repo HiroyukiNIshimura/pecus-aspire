@@ -92,7 +92,7 @@ export default function ChatMessageList({
   }
 
   return (
-    <div ref={containerRef} className="flex-1 overflow-y-auto px-4 py-2" onScroll={handleScroll}>
+    <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-2" onScroll={handleScroll}>
       {/* ローディング（過去メッセージ読み込み中） */}
       {loading && hasMore && (
         <div className="flex justify-center py-2">
