@@ -22,10 +22,9 @@ Bot 関連の Hangfire バックグラウンドタスクの一覧と概要。
 | `UpdateTaskTask` | タスク更新時にワークスペースグループチャットへ通知 | `WorkspaceTaskController.UpdateWorkspaceTask` |
 | `TaskCommentReminderTask` | リマインダーコメントから日付を AI 解析し、発火タスクをスケジュール | `TaskCommentController.CreateTaskComment` |
 | `TaskCommentReminderFireTask` | スケジュールされた日時にリマインダー DM を送信 | `TaskCommentReminderTask.ScheduleReminderAsync` |
-| `TaskCommentHelpWantedTask` | HelpWanted コメント時にワークスペースグループチャットへ通知 | `TaskCommentController.CreateTaskComment` |
+| `TaskCommentHelpWantedTask` | HelpWanted コメント時にワークスペースグループチャットへ通知（類似タスク経験者の提案を含む） | `TaskCommentController.CreateTaskComment` |
 | `TaskCommentNeedReplyTask` | NeedReply（回答依頼）コメント時に対象ユーザーへ DM 通知 | `TaskCommentController.CreateTaskComment` |
 | `TaskCommentUrgeTask` | Urge（督促）コメント時にタスク担当者へ DM 通知 | `TaskCommentController.CreateTaskComment` |
-| `SimilarTaskSuggestionTask` | 新規タスク作成時に類似タスク完了者を提案 | `TaskCommentController.CreateTaskComment` |
 
 ## タスク詳細
 
@@ -170,16 +169,6 @@ Bot 関連の Hangfire バックグラウンドタスクの一覧と概要。
 
 ---
 
-### SimilarTaskSuggestionTask
-
-**概要**: 新規タスク作成時（HelpWanted コメント時）に、類似タスクを完了した経験者を AI で分析し、タスク担当者へ DM で提案するタスク。
-
-**エンキュー条件**:
-- コメントタイプが `TaskCommentType.HelpWanted`
-- AI 機能が有効
-
-**メソッド**: `SuggestSimilarTaskAssigneesAsync(taskId)`
-
 ## 関連ファイル
 
 ### タスククラス
@@ -198,10 +187,9 @@ Bot 関連の Hangfire バックグラウンドタスクの一覧と概要。
 | `Bot/TaskNotificationTaskBase.cs` | タスク通知の基底クラス |
 | `Bot/TaskCommentReminderTask.cs` | リマインダースケジュールタスク |
 | `Bot/TaskCommentReminderFireTask.cs` | リマインダー発火タスク |
-| `Bot/TaskCommentHelpWantedTask.cs` | HelpWanted 通知タスク |
+| `Bot/TaskCommentHelpWantedTask.cs` | HelpWanted 通知タスク（類似タスク経験者提案を含む） |
 | `Bot/TaskCommentNeedReplyTask.cs` | NeedReply 通知タスク |
 | `Bot/TaskCommentUrgeTask.cs` | Urge 通知タスク |
-| `Bot/SimilarTaskSuggestionTask.cs` | 類似タスク担当者提案タスク |
 
 ### ユーティリティ
 
@@ -254,7 +242,6 @@ await Context.ChatRooms
 - `TaskCommentReminderFireTask.cs` - `SendBotMessageAsync`
 - `TaskCommentHelpWantedTask.cs` - `SendBotMessageAsync`
 - `TaskCommentUrgeTask.cs` - `SendBotMessageAsync`
-- `SimilarTaskSuggestionTask.cs` - `SendBotMessageAsync`
 
 #### 注意事項
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
+using Pecus.Libs.AI.Tools;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -12,12 +13,14 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 /// <summary>
 /// タスクコメントで HelpWanted が投稿された際にグループチャットへ通知する Hangfire タスク
 /// SystemBot がワークスペースグループチャットにメッセージを送信する
+/// 類似タスクの担当者候補も同時に提案する
 /// </summary>
 public class TaskCommentHelpWantedTask
 {
     private readonly ApplicationDbContext _context;
     private readonly SignalRNotificationPublisher _publisher;
     private readonly IAiClientFactory _aiClientFactory;
+    private readonly IAiToolExecutor _aiToolExecutor;
     private readonly ILogger<TaskCommentHelpWantedTask> _logger;
 
     /// <summary>
@@ -27,11 +30,13 @@ public class TaskCommentHelpWantedTask
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
         IAiClientFactory aiClientFactory,
+        IAiToolExecutor aiToolExecutor,
         ILogger<TaskCommentHelpWantedTask> logger)
     {
         _context = context;
         _publisher = publisher;
         _aiClientFactory = aiClientFactory;
+        _aiToolExecutor = aiToolExecutor;
         _logger = logger;
     }
 
@@ -188,6 +193,7 @@ public class TaskCommentHelpWantedTask
     /// <summary>
     /// 通知メッセージを生成する
     /// AI が有効な場合は AI でメッセージを生成、無効な場合は定型メッセージを返す
+    /// 類似タスクの担当者候補がいれば追加提案する
     /// </summary>
     private async Task<string> BuildMessageAsync(
         int organizationId,
@@ -208,12 +214,41 @@ public class TaskCommentHelpWantedTask
         var setting = await _context.OrganizationSettings
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
 
+        var aiMessage = await TryGenerateAiMessageAsync(
+            organizationId,
+            setting,
+            userName,
+            taskContent,
+            commentContent
+        );
+
+        var suggestionMessage = await TryGetSimilarTaskSuggestionAsync(
+            organizationId,
+            setting,
+            task.TaskTypeId,
+            taskContent,
+            comment.UserId
+        );
+
+        return BuildFinalMessage(defaultMessage, aiMessage, suggestionMessage);
+    }
+
+    /// <summary>
+    /// AI メッセージの生成を試行する
+    /// </summary>
+    private async Task<string?> TryGenerateAiMessageAsync(
+        int organizationId,
+        OrganizationSetting? setting,
+        string userName,
+        string taskContent,
+        string commentContent)
+    {
         if (setting == null ||
             setting.GenerativeApiVendor == GenerativeApiVendor.None ||
             string.IsNullOrEmpty(setting.GenerativeApiKey) ||
             string.IsNullOrEmpty(setting.GenerativeApiModel))
         {
-            return defaultMessage;
+            return null;
         }
 
         var aiClient = _aiClientFactory.CreateClient(
@@ -229,7 +264,7 @@ public class TaskCommentHelpWantedTask
                 setting.GenerativeApiVendor,
                 organizationId
             );
-            return defaultMessage;
+            return null;
         }
 
         try
@@ -243,19 +278,100 @@ public class TaskCommentHelpWantedTask
                 {
                     response = response[..97] + "...";
                 }
-                return $"{defaultMessage}\n\n{response}";
+                return response;
             }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(
                 ex,
-                "AI message generation failed, using default message: OrganizationId={OrganizationId}",
+                "AI message generation failed: OrganizationId={OrganizationId}",
                 organizationId
             );
         }
 
-        return defaultMessage;
+        return null;
+    }
+
+    /// <summary>
+    /// 類似タスクの担当者提案を取得する
+    /// </summary>
+    private async Task<string?> TryGetSimilarTaskSuggestionAsync(
+        int organizationId,
+        OrganizationSetting? setting,
+        int? taskTypeId,
+        string taskContent,
+        int userId)
+    {
+        if (setting == null ||
+            setting.GenerativeApiVendor == GenerativeApiVendor.None ||
+            string.IsNullOrEmpty(setting.GenerativeApiKey) ||
+            string.IsNullOrEmpty(setting.GenerativeApiModel))
+        {
+            return null;
+        }
+
+        try
+        {
+            var toolContext = new AiToolContext
+            {
+                UserId = userId,
+                FunctionArguments = new Dictionary<string, object>
+                {
+                    ["organizationId"] = organizationId,
+                    ["taskTypeId"] = taskTypeId ?? 0,
+                    ["taskContent"] = taskContent,
+                    ["excludeUserId"] = userId,
+                },
+            };
+
+            var result = await _aiToolExecutor.ExecuteByNameAsync(
+                "suggest_similar_task_experts",
+                toolContext
+            );
+
+            if (!string.IsNullOrWhiteSpace(result?.ContextPrompt))
+            {
+                return result.ContextPrompt;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Similar task suggestion failed: OrganizationId={OrganizationId}",
+                organizationId
+            );
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 最終メッセージを組み立てる
+    /// </summary>
+    private static string BuildFinalMessage(
+        string defaultMessage,
+        string? aiMessage,
+        string? suggestionMessage)
+    {
+        var parts = new List<string> { defaultMessage };
+
+        if (!string.IsNullOrWhiteSpace(aiMessage))
+        {
+            parts.Add(aiMessage);
+        }
+        else if (!string.IsNullOrWhiteSpace(suggestionMessage))
+        {
+            parts.Add("誰か助けてあげてください！");
+        }
+
+        if (!string.IsNullOrWhiteSpace(suggestionMessage))
+        {
+            parts.Add(suggestionMessage);
+        }
+
+        return string.Join("\n\n", parts);
     }
 
     /// <summary>

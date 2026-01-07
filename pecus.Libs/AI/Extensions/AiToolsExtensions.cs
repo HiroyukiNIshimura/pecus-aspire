@@ -19,6 +19,7 @@ public static class AiToolsExtensions
     {
         services.AddScoped<IAiTool, GetUserTasksTool>();
         services.AddScoped<IAiTool, SearchInformationTool>();
+        services.AddScoped<IAiTool, SuggestSimilarTaskExpertsTool>();
         services.AddScoped<IAiToolExecutor, AiToolExecutor>();
         return services;
     }

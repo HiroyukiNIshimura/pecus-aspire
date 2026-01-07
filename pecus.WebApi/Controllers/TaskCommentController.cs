@@ -190,14 +190,11 @@ public class TaskCommentController : BaseSecureController
             await SendHelpEmailAsync(workspaceId, itemId, taskId, comment);
 
             // AI機能が有効な場合のみ、Bot通知タスクをキュー
+            // HelpWanted 通知と類似タスク提案は TaskCommentHelpWantedTask で統合処理
             if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
             {
                 _backgroundJobClient.Enqueue<TaskCommentHelpWantedTask>(x =>
                     x.SendHelpWantedNotificationAsync(comment.Id)
-                );
-
-                _backgroundJobClient.Enqueue<SimilarTaskSuggestionTask>(x =>
-                    x.SuggestSimilarTaskAssigneesAsync(taskId)
                 );
 
                 _logger.LogDebug(
