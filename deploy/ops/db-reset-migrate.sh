@@ -18,6 +18,6 @@ echo "[Info] Running DbManager (Drop & Create)..."
 # Ensure infra is up (db needs to be running)
 sh ./infra-up.sh
 
-compose_migrate run --rm --build dbmanager
+DB_RESET_MODE=true compose_migrate run --rm --build dbmanager
 
 echo "[OK] DB Reset & Migrate finished."
