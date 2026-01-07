@@ -178,7 +178,7 @@ export default function ChatRoomMessageClient({
   useSignalREvent<ChatMessageReceivedPayload>('chat:message_received', handleMessageReceived);
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-base-100">
+    <div className="flex flex-col h-dvh bg-base-100">
       {/* ヘッダー */}
       <div className="flex items-center px-4 py-3 border-b border-base-300 bg-base-200 shrink-0">
         <button
@@ -192,17 +192,19 @@ export default function ChatRoomMessageClient({
         <h1 className="font-semibold text-lg truncate">{getRoomName()}</h1>
       </div>
 
-      {/* メッセージ一覧 */}
-      <ChatMessageList
-        messages={messages}
-        currentUserId={currentUserId}
-        loading={loadingMore}
-        hasMore={hasMore}
-        onLoadMore={loadMoreMessages}
-      />
-
-      {/* 入力欄 */}
+      {/* 入力欄（デバッグ: 上に配置） */}
       <ChatMessageInput onSend={handleSend} disabled={sending} />
+
+      {/* メッセージ一覧 */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <ChatMessageList
+          messages={messages}
+          currentUserId={currentUserId}
+          loading={loadingMore}
+          hasMore={hasMore}
+          onLoadMore={loadMoreMessages}
+        />
+      </div>
     </div>
   );
 }
