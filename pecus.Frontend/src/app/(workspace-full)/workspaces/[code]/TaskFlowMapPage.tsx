@@ -133,7 +133,8 @@ export default function TaskFlowMapPage({
         </div>
 
         {/* コンテンツ（スクロール可能） */}
-        <div className="flex-1 min-h-0 overflow-y-auto mt-4">
+        {/* モバイル時はドロワーハンドル（h-12 = 48px）の分だけ下部パディングを追加 */}
+        <div className="flex-1 min-h-0 overflow-y-auto mt-4 pb-14 lg:pb-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <span className="loading loading-spinner loading-lg text-primary" />
