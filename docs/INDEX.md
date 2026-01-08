@@ -26,6 +26,12 @@
 - [ui-writing-guidelines.md](./ui-writing-guidelines.md) — UI 文言・コピーの作法と例。
 - [use-infinite-scroll.md](./use-infinite-scroll.md) — 無限スクロール用カスタムフック（useInfiniteScroll）の使い方。
 - [workspace-viewer-permission.md](./workspace-viewer-permission.md) — ワークスペース Viewer 権限のフロントエンド実装ガイド（canEdit パターン）。
+- [ai-client-factory.md](./ai-client-factory.md) — AIクライアントファクトリーの利用ガイド。
+- [ai-tools-architecture.md](./ai-tools-architecture.md) — AIツールのアーキテクチャ設計と拡張方法。
+- [data-directory-structure.md](./data-directory-structure.md) — 永続データディレクトリ構成と運用ルール。
+- [deterministic-time-selector.md](./deterministic-time-selector.md) — 決定論的時刻ベースセレクターの設計とユースケース。
+- [monitoring-prometheus-spec.md](./monitoring-prometheus-spec.md) — Prometheus監視導入仕様と運用設計。
+- [ui-hint-components.md](./ui-hint-components.md) — ヒント・空状態コンポーネントのガイドライン。
 
 ### バックグラウンドタスク
 
@@ -33,26 +39,7 @@
 
 ### 仕様書 (docs/spec)
 
-- [activity-requirements.md](./spec/activity-requirements.md) — 活動要件と仕様のまとめ。
-- [auth-architecture-redesign.md](./spec/auth-architecture-redesign.md) — 認証／セッション設計の再設計案。
-- [backfire-signalr-notification.md](./spec/backfire-signalr-notification.md) — BackFire (Hangfire) から SignalR 通知を送信する仕組み（Redis Pub/Sub 経由）。
-- [chat-feature-design.md](./spec/chat-feature-design.md) — チャット機能の設計仕様。
-- [dashboard-statistics.md](./spec/dashboard-statistics.md) — ダッシュボード向け集計・統計設計。
-- [item-edit-status.md](./spec/item-edit-status.md) — アイテム編集ステータス管理の仕様。
-- [lexical-grpc-service.md](./spec/lexical-grpc-service.md) — Lexical gRPC サービスの設計・契約。
-- [mail-notifications.md](./spec/mail-notifications.md) — メール通知の設計とテンプレート運用方針。
-- [mail.md](./spec/mail.md) — メール送信基盤と実装ガイド。
-- [PRODUCT_VISION_PERSONAS_JA.md](./spec/PRODUCT_VISION_PERSONAS_JA.md) — プロダクトビジョンとペルソナ定義。
-- [redis-database-separation.md](./spec/redis-database-separation.md) — Redis と DB の分離設計・運用指針。
-- [signalr-implementation.md](./spec/signalr-implementation.md) — SignalR 実装の技術設計。
-- [signalr-presence.md](./spec/signalr-presence.md) — プレゼンス管理（接続状態）設計。
-- [skill-matching.md](./spec/skill-matching.md) — スキルマッチング機能のアルゴリズム設計。
-- [task-focus-recommendation.md](./spec/task-focus-recommendation.md) — タスク集中推薦機能の設計。
-- [task-ui-redesign.md](./spec/task-ui-redesign.md) — タスクUIの再設計仕様。
-- [user-onboarding.md](./spec/user-onboarding.md) — ユーザーオンボーディング（初回ガイド/チュートリアル）の設計。
-- [workspace-access-control.md](./spec/workspace-access-control.md) — **【重要】ワークスペースのアクセス制御方針（Viewer/Member/Owner 権限マトリクス、403 Forbidden）**。
-- [workspace-item-edit-permission.md](./spec/workspace-item-edit-permission.md) — アイテム編集権限の詳細。
-- [workspace-item-task-relationship.md](./spec/workspace-item-task-relationship.md) — アイテムとタスクの関係性設計。
+- 仕様書・設計ドキュメントの一覧は [spec/INDEX.md](./spec/INDEX.md) を参照してください。
 
 更新履歴:
 
