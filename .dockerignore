@@ -1,5 +1,5 @@
 # ============================================
-# Frontend Docker Build - .dockerignore
+# Docker Build - .dockerignore
 # ============================================
 
 # Git
@@ -18,18 +18,9 @@ docs/
 *.md
 !README.md
 
-# Backend projects (not needed for Frontend build)
-pecus.AppHost/
-pecus.BackFire/
-pecus.DbManager/
-pecus.Libs/
-pecus.WebApi/
-pecus.sln
-*.csproj
-*.cs
-
-# Deploy scripts (not needed inside container)
-deploy/
+# Deploy scripts (Dockerfile は必要なので ops のみ除外)
+deploy/ops/
+deploy/proxy-nginx/nginx/
 
 # Test files
 **/*.test.ts
@@ -55,6 +46,10 @@ packages/*/node_modules/
 
 # Root node_modules (npm workspace)
 node_modules/
+
+# .NET build artifacts
+**/bin/
+**/obj/
 
 # Environment files (injected at runtime)
 **/.env
