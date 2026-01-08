@@ -832,7 +832,7 @@ export default function MonitoringClient({
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {availableServices.map((service, index) => (
+                          {availableServices.map((service) => (
                             <label
                               key={service}
                               className="flex items-center gap-1.5 px-2 py-1 bg-base-100 rounded cursor-pointer hover:bg-base-300 transition-colors"
