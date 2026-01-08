@@ -1,0 +1,72 @@
+# ============================================
+# Frontend Docker Build - .dockerignore
+# ============================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE / Editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Backend projects (not needed for Frontend build)
+pecus.AppHost/
+pecus.BackFire/
+pecus.DbManager/
+pecus.Libs/
+pecus.WebApi/
+pecus.sln
+*.csproj
+*.cs
+
+# Deploy scripts (not needed inside container)
+deploy/
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/__tests__/
+
+# Frontend build artifacts (will be created during build)
+pecus.Frontend/build/
+pecus.Frontend/.next/
+pecus.Frontend/node_modules/
+
+# Editor package - exclude source, keep only dist
+packages/coati-editor/src/
+packages/coati-editor/node_modules/
+packages/coati-editor/*.ts
+packages/coati-editor/*.tsx
+packages/coati-editor/tsconfig*.json
+
+# Other packages (if any)
+packages/*/node_modules/
+
+# Environment files (injected at runtime)
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs
+**/logs/
+**/*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+**/.turbo/
+**/.cache/
+**/coverage/

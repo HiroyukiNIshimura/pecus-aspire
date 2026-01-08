@@ -1,7 +1,9 @@
 #!/bin/sh
 set -eu
 
+# shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+# shellcheck disable=SC1007
 root_dir=$(CDPATH= cd -- "$script_dir/.." && pwd -P)
 
 # nginx コンテナ内から内部DNSで到達性を確認
@@ -15,13 +17,13 @@ check_http_code() {
   # Using wget in sh (alpine) or curl if available. Alpine Nginx usually has wget.
   # wget -q -S -O /dev/null prints headers to stderr.
   # awk parses the HTTP status line.
-  
+
   # Note: complex piping inside docker exec needs escaping or shell wrapping
   cmd="wget -q -S -O /dev/null '$url' 2>&1 | grep 'HTTP/' | tail -n 1 | awk '{print \$2}'"
-  
+
   # Run command inside nginx container
   code=$(docker compose -f "$root_dir/docker-compose.infra.yml" exec -T nginx sh -c "$cmd" || echo "")
-  
+
   # Trim newlines
   code=$(echo "$code" | tr -d '\r\n')
 
@@ -29,7 +31,7 @@ check_http_code() {
     echo "[NG] $name: no http status from $url (Connection failed?)" >&2
     return 1
   fi
-  
+
   echo "[OK] $name: $url => $code"
   echo "$code"
 }
@@ -48,8 +50,8 @@ check_front() {
   # 200/301/302 allowed
   code=$(check_http_code "http://frontend-$slot:3000/" "front-$slot")
   case "$code" in
-    200|301|302|307|308) 
-      return 0 
+    200|301|302|307|308)
+      return 0
       ;;
     *)
       echo "[Fail] Frontend check failed for $slot (Got $code)" >&2
@@ -74,7 +76,7 @@ for s in $slots; do
   else
     echo "[Skip] api-$s not running"
   fi
-  
+
   if [ "$(docker inspect -f '{{.State.Running}}' "pecus-frontend-$s" 2>/dev/null)" = "true" ]; then
     check_front "$s"
   else
