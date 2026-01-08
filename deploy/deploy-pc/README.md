@@ -63,9 +63,20 @@ sudo ./setup-docker-daemon.sh
 4. ヘルスチェック完了後、トラフィックを切り替え（`switch-node.sh --no-build`）
 5. 旧アクティブノードを停止
 
+### レジストリ内のタグ一覧確認
+
+```bash
+./list-tags.sh
+```
+
+ビルドPCのレジストリにある全イメージ・タグを表示します。デプロイ可能なバージョンを確認できます。
+
 ### 特定バージョンのデプロイ
 
 ```bash
+# タグ一覧を確認
+./list-tags.sh
+
 # 特定のバージョンタグを指定
 ./pull-and-deploy.sh 20260108214353
 ```
@@ -120,6 +131,7 @@ deploy-pc/
 ├── README.md                   # このファイル
 ├── setup-docker-daemon.sh      # Docker daemon 設定
 ├── pull-and-deploy.sh          # プル & デプロイ
+├── list-tags.sh                # タグ一覧表示
 ├── .env.example                # 環境変数テンプレート
 └── .env                        # 環境変数（git ignore）
 ```

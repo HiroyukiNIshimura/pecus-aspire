@@ -65,6 +65,14 @@ REGISTRY_PORT=5000
 ./build-and-push.sh pecus-webapi pecus-frontend
 ```
 
+### レジストリ内のタグ一覧確認
+
+```bash
+./list-tags.sh
+```
+
+ビルド済みのイメージとタグを確認できます。デプロイ前のバージョン確認に便利です。
+
 ### 古いイメージのクリーンアップ
 
 ```bash
@@ -122,6 +130,7 @@ build-pc/
 ├── README.md                   # このファイル
 ├── setup-registry.sh           # レジストリ初期構築
 ├── build-and-push.sh           # ビルド & プッシュ
+├── list-tags.sh                # タグ一覧表示
 ├── cleanup-old-images.sh       # 古いイメージ削除
 ├── .env.example                # 環境変数テンプレート
 └── .env                        # 環境変数（git ignore）

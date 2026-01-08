@@ -42,6 +42,19 @@ echo "バージョン: $VERSION"
 echo "対象サービス: $SERVICES"
 echo ""
 
+# Step 0: Git pull で最新ソースコードを取得
+echo "📥 最新ソースコードを取得中..."
+if [ -d "$PROJECT_ROOT/.git" ]; then
+    if git -C "$PROJECT_ROOT" pull; then
+        echo "✅ Git pull 完了"
+    else
+        echo "⚠️  Git pull に失敗しました。続行します..."
+    fi
+else
+    echo "⚠️  .git ディレクトリが見つかりません。Git pull をスキップします。"
+fi
+echo ""
+
 # ビルド結果の記録
 SUCCESS_SERVICES=""
 FAILED_SERVICES=""
