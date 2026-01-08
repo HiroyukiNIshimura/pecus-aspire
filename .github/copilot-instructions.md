@@ -21,16 +21,15 @@
 - RowVersion は PostgreSQL の `xmin` を `uint RowVersion` として扱う（フロントは number） — 実装参照: `pecus.Libs/DB/ApplicationDbContext.cs`
 - 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す。
 - フロントは SSR-first。ミューテーションは `Server Actions`（`src/actions/`）を使い、直接フロントから `pecus.WebApi` を叩かない。
-- フロント UI は Tailwind CSS と `FlyonUI` を利用しています。絶対にFlyonUIのデザインを壊さないでください。**daisyUIは使用しない。** **アイコンは"@iconify/tailwind4" https://iconify.design/ を使用する**
+- フロント UI は Tailwind CSS と `FlyonUI` をベース利用しています。絶対にFlyonUIのデザインを壊さないでください。**daisyUIは使用しない。** **アイコンは"@iconify/tailwind4" https://iconify.design/ を使用する**
 - セッション/トークン: Cookie には `sessionId` のみ保存（`httpOnly: true`）。トークンは Redis に保持し、`ServerSessionManager`（`src/libs/serverSession.ts`）経由で取得。詳細は `docs/spec/auth-architecture-redesign.md` 参照。
 - 自動生成クライアント: `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts` は自動生成物 → 編集禁止。生成スクリプト: `pecus.Frontend/scripts/generate-pecus-api-client.js`。
-- 主要コマンド（必ず確認）: `dotnet build pecus.sln` / `dotnet run --project pecus.AppHost`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
+- 主要コマンド（必ず確認）: `dotnet format pecus.sln` / `dotnet build pecus.sln`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
 - 禁止事項（必守）: 横断変更の無断実施、フロントからの API 直叩き、自動生成物の手動編集、コントローラーでのトランザクション開始。
 - C#: 原則「1ファイル=1クラス」。関連する複数の enum/record は1ファイル可。
 - フロントエンドのAPIクライアントの生成はエージェントには実行を禁止する。**生成スクリプトの実行は人間の開発者のみが行うため必ず作業を中断すること。**
 - バックエンド・フロントエンド共に修正が必要になった場合は、バックエンド→フロントエンドの順で修正を行い、バックエンドの変更が完了し動作確認が取れた後にフロントエンドの修正を行うこと。
 - コードコメントに連番を振らないこと（例: // 1. ～、// 2. ～、等）
-- **たった１行の数式だってノーベル賞取れるんだぜ！その気概を持ってコードを生成すること！**
 
 ## 統一方針（簡潔版）
 - コントローラー/戻り値: MVC コントローラー＋`HttpResults`（`Ok<T>`, `Created<T>`, `NoContent`）。`IActionResult`/`ActionResult<T>`は不使用。複数成功のみ`Results<...>`を使用。エラーは例外→`GlobalExceptionFilter`。
@@ -107,7 +106,7 @@
 - **コードやUIのリファクタリング時に業務ロジックを絶対に変更しない**変更が必要な場合は必ず報告し確認をとること（実装プラン上の最優先）
 - **ページコンポーネントで h-screen / min-h-screen 禁止**（`flex-1` を使用。詳細は `docs/layout-template.md` 参照）
 - **レイアウト構造を変更する前に必ず `docs/layout-template.md` を確認すること**
-- **サービス間の直接参照禁止**
+- **サービス間の直接参照禁止**（C#：共通ライブラリはLibs、Nodejs共通ライブラリはpackagesへ）
 - **型宣言の重複定義禁止**（DTO/リクエスト・レスポンス型は必ず単一ソースで管理）
 - **API直叩き禁止**（フロントエンドからWebApiへ直接fetch禁止。Server Actions/Next.js API Routes経由のみ許可）
 - **クライアント側でAPI呼び出し禁止**（SSRで初期データ取得、CSRはUIのみ）
