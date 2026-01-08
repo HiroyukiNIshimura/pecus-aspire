@@ -11,19 +11,20 @@ public static class SystemNotificationJobScheduler
     /// <summary>
     /// システム通知配信ジョブを設定します
     /// </summary>
+    /// <param name="recurringJobManager">Hangfire定期ジョブマネージャー</param>
     /// <param name="configuration">設定</param>
-    public static void ConfigureSystemNotificationJob(IConfiguration configuration)
+    public static void ConfigureSystemNotificationJob(IRecurringJobManager recurringJobManager, IConfiguration configuration)
     {
         var settings = configuration.GetSection("SystemNotification")
             .Get<SystemNotificationSettings>() ?? new SystemNotificationSettings();
 
         if (!settings.Enabled)
         {
-            RecurringJob.RemoveIfExists("SystemNotificationDelivery");
+            recurringJobManager.RemoveIfExists("SystemNotificationDelivery");
             return;
         }
 
-        RecurringJob.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.SystemNotificationDeliveryTask>(
+        recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.SystemNotificationDeliveryTask>(
             "SystemNotificationDelivery",
             task => task.ProcessPendingNotificationsAsync(),
             settings.CronExpression

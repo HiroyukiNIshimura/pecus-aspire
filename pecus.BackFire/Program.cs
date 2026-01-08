@@ -141,13 +141,16 @@ if (app.Environment.IsDevelopment())
     );
 }
 
+// Hangfire定期ジョブマネージャーを取得
+var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+
 // クリーンアップジョブの設定
-CleanupJobScheduler.ConfigureCleanupJobs(builder.Configuration);
+CleanupJobScheduler.ConfigureCleanupJobs(recurringJobManager, builder.Configuration);
 
 // 週間レポートジョブの設定
-WeeklyReportJobScheduler.ConfigureWeeklyReportJob(builder.Configuration);
+WeeklyReportJobScheduler.ConfigureWeeklyReportJob(recurringJobManager, builder.Configuration);
 
 // システム通知配信ジョブの設定（DBベース）
-SystemNotificationJobScheduler.ConfigureSystemNotificationJob(builder.Configuration);
+SystemNotificationJobScheduler.ConfigureSystemNotificationJob(recurringJobManager, builder.Configuration);
 
 app.Run();

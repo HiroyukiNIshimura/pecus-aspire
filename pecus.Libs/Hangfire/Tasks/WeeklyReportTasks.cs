@@ -21,6 +21,7 @@ public class WeeklyReportTasks
     private readonly WeeklyReportDataCollector _dataCollector;
     private readonly IEmailService _emailService;
     private readonly FrontendUrlResolver _frontendUrlResolver;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
     /// <summary>
     /// コンストラクタ
@@ -30,18 +31,21 @@ public class WeeklyReportTasks
     /// <param name="dataCollector">データ収集サービス</param>
     /// <param name="emailService">メール送信サービス</param>
     /// <param name="frontendUrlResolver">フロントエンドURL解決</param>
+    /// <param name="backgroundJobClient">Hangfireバックグラウンドジョブクライアント</param>
     public WeeklyReportTasks(
         ILogger<WeeklyReportTasks> logger,
         ApplicationDbContext dbContext,
         WeeklyReportDataCollector dataCollector,
         IEmailService emailService,
-        FrontendUrlResolver frontendUrlResolver)
+        FrontendUrlResolver frontendUrlResolver,
+        IBackgroundJobClient backgroundJobClient)
     {
         _logger = logger;
         _dbContext = dbContext;
         _dataCollector = dataCollector;
         _emailService = emailService;
         _frontendUrlResolver = frontendUrlResolver;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     /// <summary>
@@ -75,9 +79,9 @@ public class WeeklyReportTasks
                 continue;
             }
 
-            //ジョブの中でジョブを追加する」パターン（ファンアウト/バッチ処理）
+            // ジョブの中でジョブを追加する」パターン（ファンアウト/バッチ処理）
             // 組織ごとにレポート生成ジョブをキュー
-            BackgroundJob.Enqueue<WeeklyReportTasks>(
+            _backgroundJobClient.Enqueue<WeeklyReportTasks>(
                 task => task.GenerateAndSendWeeklyReportAsync(org.Organization!));
         }
     }

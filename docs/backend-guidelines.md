@@ -59,7 +59,7 @@ DbContext（`pecus.Libs/DB/ApplicationDbContext.cs`）:
 - `EmailTasks.cs`: MailKit + RazorLight を使ったメール送信タスク（テンプレート送信、添付、バルク等）
 
 クライアント（`pecus.WebApi`）:
-- `BackgroundJob.Enqueue<HangfireTasks>(x => x.Method(...))` でジョブをキューへ追加
+- `IBackgroundJobClient` を DI 経由で注入し、`_backgroundJobClient.Enqueue<HangfireTasks>(x => x.Method(...))` でジョブをキューへ追加
 - タスククラスは DI 登録され、Hangfire は DI 経由で依存性を解決します
 - 開発時は `/hangfire` ダッシュボードを公開（`AllowAllDashboardAuthorizationFilter`）
 
@@ -68,7 +68,8 @@ DbContext（`pecus.Libs/DB/ApplicationDbContext.cs`）:
 - DI 登録されたタスククラスを解決して実行します
 
 重要点:
-- `BackgroundJob.Enqueue<T>()` では型パラメータを使ってシリアライズ互換性を保つこと
+- **静的API（`BackgroundJob.Enqueue`, `RecurringJob.AddOrUpdate`）は使用禁止**。必ず DI 経由の `IBackgroundJobClient` / `IRecurringJobManager` を使用すること
+- `Enqueue<T>()` では型パラメータを使ってシリアライズ互換性を保つこと
 - タスククラスは WebApi 側と BackFire 側の両方で DI 登録すること
 - ループ内のラムダでループ変数を直接捕捉せず、ローカルコピーを作ること（クロージャ問題）
 

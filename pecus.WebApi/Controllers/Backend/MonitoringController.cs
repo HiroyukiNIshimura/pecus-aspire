@@ -13,14 +13,17 @@ namespace Pecus.Controllers.Backend;
 public class MonitoringController : BaseBackendController
 {
     private readonly ILogger<MonitoringController> _logger;
+    private readonly JobStorage _jobStorage;
 
     public MonitoringController(
         ILogger<MonitoringController> logger,
         ILogger<BaseBackendController> baseLogger,
-        ProfileService profileService)
+        ProfileService profileService,
+        JobStorage jobStorage)
         : base(profileService, baseLogger)
     {
         _logger = logger;
+        _jobStorage = jobStorage;
     }
 
     /// <summary>
@@ -33,7 +36,7 @@ public class MonitoringController : BaseBackendController
     {
         try
         {
-            var monitoringApi = JobStorage.Current.GetMonitoringApi();
+            var monitoringApi = _jobStorage.GetMonitoringApi();
             var stats = monitoringApi.GetStatistics();
             var servers = monitoringApi.Servers();
 

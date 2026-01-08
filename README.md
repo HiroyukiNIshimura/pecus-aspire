@@ -316,7 +316,9 @@ GET /api/dev/email-preview/index	テンプレート一覧をHTMLで表示（ブ�
 
 1. `pecus.Libs/Hangfire/Tasks/` でタスククラスを定義
 2. WebApi と BackFire の両方で DI 登録
-3. `BackgroundJob.Enqueue<TaskClass>(x => x.Method(...))` で実行
+3. `IBackgroundJobClient` を DI 経由で注入し、`_backgroundJobClient.Enqueue<TaskClass>(x => x.Method(...))` で実行
+
+※ 静的API（`BackgroundJob.Enqueue`, `RecurringJob.AddOrUpdate`）は使用禁止。必ず DI 経由の `IBackgroundJobClient` / `IRecurringJobManager` を使用すること。
 
 ## ⚡ パフォーマンス最適化
 
