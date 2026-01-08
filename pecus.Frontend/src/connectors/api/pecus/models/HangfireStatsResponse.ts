@@ -34,5 +34,13 @@ export type HangfireStatsResponse = {
      * 再試行ジョブ数
      */
     recurring?: number;
+    /**
+     * サーバー数
+     */
+    serverCount?: number;
+    /**
+     * ワーカー数
+     */
+    workerCount?: number;
 };
 

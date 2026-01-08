@@ -39,4 +39,14 @@ public record HangfireStatsResponse
     ///     再試行ジョブ数
     /// </summary>
     public long Recurring { get; init; }
+
+    /// <summary>
+    ///  サーバー数
+    /// </summary>
+    public int ServerCount { get; init; }
+
+    /// <summary>
+    ///   ワーカー数
+    /// </summary>
+    public int WorkerCount { get; init; }
 }

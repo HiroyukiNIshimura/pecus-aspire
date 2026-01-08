@@ -35,6 +35,7 @@ public class MonitoringController : BaseBackendController
         {
             var monitoringApi = JobStorage.Current.GetMonitoringApi();
             var stats = monitoringApi.GetStatistics();
+            var servers = monitoringApi.Servers();
 
             var response = new HangfireStatsResponse
             {
@@ -44,7 +45,9 @@ public class MonitoringController : BaseBackendController
                 Scheduled = stats.Scheduled,
                 Succeeded = stats.Succeeded,
                 Deleted = stats.Deleted,
-                Recurring = stats.Recurring
+                Recurring = stats.Recurring,
+                ServerCount = servers.Count,
+                WorkerCount = servers.Sum(s => s.WorkersCount)
             };
 
             return Ok(response);

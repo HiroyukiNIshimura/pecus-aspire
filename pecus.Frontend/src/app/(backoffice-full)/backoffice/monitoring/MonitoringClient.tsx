@@ -134,6 +134,8 @@ function BackgroundJobStatus({ stats }: { stats?: HangfireStatsResponse }) {
   const processing = stats.processing ?? 0;
   const enqueued = stats.enqueued ?? 0;
   const scheduled = stats.scheduled ?? 0;
+  const serverCount = stats.serverCount ?? 0;
+  const workerCount = stats.workerCount ?? 0;
 
   const hasFailures = failed > 0;
 
@@ -158,6 +160,18 @@ function BackgroundJobStatus({ stats }: { stats?: HangfireStatsResponse }) {
               <span className="icon-[mdi--open-in-new] size-3" />
             </a>
           )}
+        </div>
+
+        {/* サーバー数・ワーカー数の表示 */}
+        <div className="flex gap-4 mb-2 text-xs text-base-content/60">
+          <div className="flex items-center gap-1">
+            <span className="icon-[mdi--server] size-4" aria-hidden="true" />
+            サーバー: <span className="font-bold">{serverCount}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="icon-[mdi--account-cog] size-4" aria-hidden="true" />
+            ワーカー: <span className="font-bold">{workerCount}</span>
+          </div>
         </div>
 
         {/* 失敗ジョブがある場合の警告 */}

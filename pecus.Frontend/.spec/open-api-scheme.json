@@ -15799,6 +15799,16 @@
             "type": "integer",
             "description": "再試行ジョブ数",
             "format": "int64"
+          },
+          "serverCount": {
+            "type": "integer",
+            "description": "サーバー数",
+            "format": "int32"
+          },
+          "workerCount": {
+            "type": "integer",
+            "description": "ワーカー数",
+            "format": "int32"
           }
         },
         "description": "Hangfireの統計情報レスポンス"
