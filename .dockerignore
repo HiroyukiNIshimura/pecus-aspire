@@ -20,7 +20,7 @@ docs/
 
 # Deploy scripts (Dockerfile は必要なので ops のみ除外)
 deploy/ops/
-deploy/bluegreen/nginx/
+deploy/proxy-nginx/
 
 # Test files
 **/*.test.ts
