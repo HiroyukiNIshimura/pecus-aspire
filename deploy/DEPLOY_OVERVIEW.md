@@ -35,14 +35,43 @@
 - **nginx/**: 内部向けNginx設定（Blue/Green切替専用、外部公開しない）
 - **proxy-nginx/**: 外部公開用Nginx設定（TLS終端、内部nginxへのリバースプロキシ）
 
+### 5. build-pc/
+- ビルド専用PC用スクリプト群（ビルドPC分離アーキテクチャ）
+- **setup-registry.sh**: プライベートレジストリコンテナの初期構築
+- **build-and-push.sh**: イメージビルド & レジストリへプッシュ
+- **cleanup-old-images.sh**: 古いイメージタグの削除
+- **.env.example**: 環境変数テンプレート
+
+### 6. deploy-pc/
+- デプロイ専用PC用スクリプト群（ビルドPC分離アーキテクチャ）
+- **setup-docker-daemon.sh**: Docker daemon 設定（insecure-registries 追加）
+- **pull-and-deploy.sh**: イメージプル & Blue-Greenデプロイ実行
+- **.env.example**: 環境変数テンプレート
+
 ---
 
 ## Blue/Greenデプロイ運用フロー（概要）
+
+### 通常デプロイ（1台構成）
 1. `infra-up.sh` でインフラ層起動
 2. `switch-node.sh blue|green` で新バージョンをデプロイ
 3. `status.sh` で稼働状況確認
 4. 必要に応じ `snapshot-create.sh` でイメージ退避
 5. 切替後、`infra-down.sh`/`app-down.sh` で不要な層を停止
+
+### ビルドPC分離構成でのデプロイ
+
+**ビルドPC側:**
+1. `cd deploy/build-pc`
+2. `./setup-registry.sh`（初回のみ）
+3. `./build-and-push.sh` でイメージビルド & プッシュ
+
+**デプロイPC側:**
+1. `cd deploy/deploy-pc`
+2. `./setup-docker-daemon.sh`（初回のみ、sudo 必要）
+3. `./pull-and-deploy.sh` でイメージプル & デプロイ
+   - 内部で `switch-node.sh --no-build` を実行
+4. `cd ../ops && ./status.sh` で稼働状況確認
 
 ---
 
@@ -63,7 +92,7 @@
 - `ops/infra-up.sh` ... インフラ層起動
 - `ops/infra-down.sh` ... インフラ層停止
 - `ops/app-down.sh` ... アプリ層停止
-- `ops/switch-node.sh` ... Blue/Green切替
+- `ops/switch-node.sh` ... Blue/Green切替（`--no-build` オプションでビルドスキップ可能）
 - `ops/pg-backup.sh` ... DBバックアップ
 - `ops/pg-restore.sh` ... DBリストア
 - `ops/snapshot-create.sh` ... イメージスナップショット
