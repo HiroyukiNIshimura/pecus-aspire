@@ -116,6 +116,7 @@ echo ""
 if [ $DELETED_COUNT -gt 0 ]; then
     echo "ℹ️  ガベージコレクションを実行してストレージを解放してください:"
     echo "   docker exec pecus-registry bin/registry garbage-collect /etc/docker/registry/config.yml"
+    echo "ガベージコレクション実行中はレジストリが一時的に応答しなくなる場合があります。"
     echo ""
 fi
 

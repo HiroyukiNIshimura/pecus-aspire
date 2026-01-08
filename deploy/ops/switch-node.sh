@@ -10,15 +10,36 @@ set -eu
 # 6. DB Migration
 # 7. Deploy target BackFire
 # 8. Nginx Switch
+#
+# Options:
+#   --no-build  Skip git pull and build steps (use pre-built images)
 
 # shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 # shellcheck disable=SC1091
 . "$script_dir/lib.sh"
 
-slot="${1:-}"
-if [ "$slot" != "blue" ] && [ "$slot" != "green" ]; then
-  echo "Usage: $0 {blue|green}" >&2
+# オプション解析
+NO_BUILD=false
+slot=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --no-build)
+      NO_BUILD=true
+      ;;
+    blue|green)
+      slot="$arg"
+      ;;
+    *)
+      echo "Usage: $0 {blue|green} [--no-build]" >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [ -z "$slot" ]; then
+  echo "Usage: $0 {blue|green} [--no-build]" >&2
   exit 2
 fi
 
@@ -69,9 +90,13 @@ fi
 
 echo "[Info] Current=$current Target=$target" >&2
 
-echo "[Info] 1. Git pull" >&2
-# shellcheck disable=SC2154
-git -C "$repo_root" pull
+if [ "$NO_BUILD" = "false" ]; then
+  echo "[Info] 1. Git pull" >&2
+  # shellcheck disable=SC2154
+  git -C "$repo_root" pull
+else
+  echo "[Info] 1. Git pull (SKIPPED: --no-build)" >&2
+fi
 
 echo ""
 printf "[Confirm] Proceed with deployment? (yes/no) [no]: "
@@ -84,20 +109,28 @@ fi
 # 設定ファイル生成
 ensure_env_file
 
-echo "[Info] 2. Build target: $target" >&2
-compose_app "$target" build "pecusapi-$target" "frontend-$target" "backfire-$target"
+if [ "$NO_BUILD" = "false" ]; then
+  echo "[Info] 2. Build target: $target" >&2
+  compose_app "$target" build "pecusapi-$target" "frontend-$target" "backfire-$target"
+else
+  echo "[Info] 2. Build target (SKIPPED: --no-build)" >&2
+fi
 
 echo "[Info] 3. Deploy target (excluding BackFire): $target" >&2
 compose_app "$target" up -d "pecusapi-$target" "frontend-$target"
 wait_health "pecus-webapi-$target" 300
 wait_running "pecus-frontend-$target" 120
 
-echo "[Info] 4. Pre-build DB Migration image" >&2
-# Clean up potential leftover dbmanager
-if docker ps -a --format '{{.Names}}' | grep -q '^pecus-dbmanager$'; then
-  docker rm -f pecus-dbmanager >/dev/null 2>&1 || true
+if [ "$NO_BUILD" = "false" ]; then
+  echo "[Info] 4. Pre-build DB Migration image" >&2
+  # Clean up potential leftover dbmanager
+  if docker ps -a --format '{{.Names}}' | grep -q '^pecus-dbmanager$'; then
+    docker rm -f pecus-dbmanager >/dev/null 2>&1 || true
+  fi
+  compose_migrate build dbmanager
+else
+  echo "[Info] 4. Pre-build DB Migration image (SKIPPED: --no-build)" >&2
 fi
-compose_migrate build dbmanager
 
 if [ "$other_running" = "true" ]; then
   echo "[Info] 5. Stop old slot: $other" >&2
