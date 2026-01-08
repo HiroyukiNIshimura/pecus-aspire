@@ -13,7 +13,9 @@ if [ -z "${script_dir:-}" ]; then
   exit 1
 fi
 
+# shellcheck disable=SC1007
 bluegreen_dir=$(CDPATH= cd -- "$script_dir/.." && pwd -P)
+# shellcheck disable=SC1007
 repo_root=$(CDPATH= cd -- "$bluegreen_dir/.." && pwd -P)
 
 require_cmd() {
@@ -25,16 +27,10 @@ require_cmd() {
 }
 
 ensure_env_file() {
-  env_path="$bluegreen_dir/.env"
-  if [ -f "$env_path" ]; then
-    return 0
-  fi
-
-  echo "[Warn] $env_path not found. Generating with scripts/generate-appsettings.js (-P)..." >&2
-
   require_cmd node
   node "$repo_root/scripts/generate-appsettings.js" -P
 
+  env_path="$bluegreen_dir/.env"
   if [ ! -f "$env_path" ]; then
     echo "[Error] Failed to generate $env_path" >&2
     exit 1
