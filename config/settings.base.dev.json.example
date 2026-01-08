@@ -12,6 +12,10 @@
   },
 
   "_shared": {
+    "LexicalConverter": {
+      "_comment": "URL は _infrastructure.urls.lexicalConverter で管理",
+      "GrpcApiKey": "pecus-lexical-internal-key-change-in-production"
+    },
     "Email": {
       "Username": "dev@example.local",
       "Password": "your-smtp-password",
