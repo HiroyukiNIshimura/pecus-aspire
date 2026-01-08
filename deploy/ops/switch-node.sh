@@ -81,6 +81,9 @@ if [ "$confirm" != "yes" ]; then
   exit 0
 fi
 
+# 設定ファイル生成
+ensure_env_file
+
 echo "[Info] 2. Build target: $target" >&2
 compose_app "$target" build "pecusapi-$target" "frontend-$target" "backfire-$target"
 
