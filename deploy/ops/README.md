@@ -4,7 +4,6 @@
 
 ## 事前準備
 
-- `deploy/.env` が無い場合、各スクリプト実行時に `scripts/generate-appsettings.js -P` を呼び出して生成します
 - 破壊的操作は `yes/no` 確認が必要です（デフォルト no）
 - 実行は `sh xxx.sh` または `./xxx.sh` どちらでも可（bash にフォールバックします）
 

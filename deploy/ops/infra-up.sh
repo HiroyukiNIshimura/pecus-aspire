@@ -24,6 +24,9 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+# 設定ファイル生成
+ensure_env_file
+
 # Infra only: postgres/redis/redis-frontend/lexicalconverter/nginx
 
 echo "[Info] Starting Infra..."
