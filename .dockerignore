@@ -53,6 +53,9 @@ packages/coati-editor/tsconfig*.json
 # Other packages (if any)
 packages/*/node_modules/
 
+# Root node_modules (npm workspace)
+node_modules/
+
 # Environment files (injected at runtime)
 **/.env
 **/.env.*
