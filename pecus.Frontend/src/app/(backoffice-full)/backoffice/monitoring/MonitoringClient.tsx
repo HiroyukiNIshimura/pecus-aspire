@@ -303,6 +303,26 @@ function CompactServiceStatus({
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
 
+/**
+ * サービス数に応じて色を動的に生成する
+ * 固定色を優先的に使い、足りない場合はHSLで均等に生成
+ */
+function generateServiceColors(count: number): string[] {
+  if (count <= CHART_COLORS.length) {
+    return CHART_COLORS.slice(0, count);
+  }
+
+  const colors = [...CHART_COLORS];
+  const additionalCount = count - CHART_COLORS.length;
+
+  for (let i = 0; i < additionalCount; i++) {
+    const hue = (360 / additionalCount) * i + 30;
+    colors.push(`hsl(${hue}, 70%, 50%)`);
+  }
+
+  return colors;
+}
+
 const SERVICE_DISPLAY_NAMES: Record<string, string> = {
   prometheus: 'Prometheus',
   backend: 'Backend',
@@ -343,9 +363,10 @@ interface MetricsChartProps {
   series: MetricTimeSeries[];
   unit: string;
   yAxisDomain?: [number | 'auto', number | 'auto'];
+  colorMap?: Map<string, string>;
 }
 
-function MetricsChart({ title, series, unit, yAxisDomain = ['auto', 'auto'] }: MetricsChartProps) {
+function MetricsChart({ title, series, unit, yAxisDomain = ['auto', 'auto'], colorMap }: MetricsChartProps) {
   if (series.length === 0) {
     return (
       <div className="card bg-base-200">
@@ -417,7 +438,7 @@ function MetricsChart({ title, series, unit, yAxisDomain = ['auto', 'auto'] }: M
                   key={key}
                   type="monotone"
                   dataKey={key}
-                  stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                  stroke={colorMap?.get(key) ?? CHART_COLORS[i % CHART_COLORS.length]}
                   strokeWidth={2}
                   dot={false}
                   name={key}
@@ -433,6 +454,20 @@ function MetricsChart({ title, series, unit, yAxisDomain = ['auto', 'auto'] }: M
 
 type TimeRange = '1h' | '6h' | '24h';
 type MetricsTab = 'server' | 'process' | 'http';
+
+/**
+ * 利用可能なサービス一覧を取得するヘルパー
+ */
+function getAvailableServices(metrics: SystemMetrics | null): string[] {
+  const services = new Set<string>();
+  for (const s of metrics?.cpuUsage ?? []) {
+    services.add(getSeriesKey(s));
+  }
+  for (const s of metrics?.processMemory ?? []) {
+    services.add(getSeriesKey(s));
+  }
+  return Array.from(services).sort();
+}
 
 export default function MonitoringClient({
   initialData,
@@ -452,8 +487,54 @@ export default function MonitoringClient({
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
   const [isLoadingMetrics, setIsLoadingMetrics] = useState(false);
   const [metricsTab, setMetricsTab] = useState<MetricsTab>('server');
+  const [selectedServices, setSelectedServices] = useState<Set<string>>(new Set());
+  const [isServiceSelectionInitialized, setIsServiceSelectionInitialized] = useState(false);
 
   const { showLoading } = useDelayedLoading();
+
+  const availableServices = getAvailableServices(metrics);
+
+  // サービス名と色の対応を固定（availableServicesの順序に基づく、動的に色を生成）
+  const serviceColorMap = new Map<string, string>();
+  const colors = generateServiceColors(availableServices.length);
+  for (let i = 0; i < availableServices.length; i++) {
+    serviceColorMap.set(availableServices[i], colors[i]);
+  }
+
+  // メトリクスが更新されたら選択状態を初期化（初回のみ全選択）
+  useEffect(() => {
+    const services = getAvailableServices(metrics);
+    if (services.length > 0 && !isServiceSelectionInitialized) {
+      setSelectedServices(new Set(services));
+      setIsServiceSelectionInitialized(true);
+    }
+  }, [metrics, isServiceSelectionInitialized]);
+
+  const handleServiceToggle = (service: string) => {
+    setSelectedServices((prev) => {
+      const next = new Set(prev);
+      if (next.has(service)) {
+        next.delete(service);
+      } else {
+        next.add(service);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAllServices = () => {
+    setSelectedServices(new Set(availableServices));
+  };
+
+  const handleDeselectAllServices = () => {
+    setSelectedServices(new Set());
+  };
+
+  // 選択されたサービスでシリーズをフィルタリング
+  const filterSeriesBySelectedServices = (series: MetricTimeSeries[]): MetricTimeSeries[] => {
+    if (selectedServices.size === 0) return [];
+    return series.filter((s) => selectedServices.has(getSeriesKey(s)));
+  };
 
   useEffect(() => {
     if (clientError && isAuthenticationError(clientError)) {
@@ -736,15 +817,57 @@ export default function MonitoringClient({
                   )}
 
                   {metricsTab === 'process' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <MetricsChart
-                        title="CPU使用率（サービス）"
-                        series={metrics?.cpuUsage ?? []}
-                        unit="%"
-                        yAxisDomain={[0, 'auto']}
-                      />
-                      <MetricsChart title="メモリ使用量（サービス）" series={metrics?.processMemory ?? []} unit="MB" />
-                    </div>
+                    <>
+                      {/* サービスフィルター */}
+                      <div className="mb-4 p-3 bg-base-200 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">表示するサービス</span>
+                          <div className="flex gap-2">
+                            <button type="button" className="btn btn-xs btn-ghost" onClick={handleSelectAllServices}>
+                              全選択
+                            </button>
+                            <button type="button" className="btn btn-xs btn-ghost" onClick={handleDeselectAllServices}>
+                              全解除
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {availableServices.map((service, index) => (
+                            <label
+                              key={service}
+                              className="flex items-center gap-1.5 px-2 py-1 bg-base-100 rounded cursor-pointer hover:bg-base-300 transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                className="checkbox checkbox-xs"
+                                checked={selectedServices.has(service)}
+                                onChange={() => handleServiceToggle(service)}
+                              />
+                              <span
+                                className="w-2.5 h-2.5 rounded-full"
+                                style={{ backgroundColor: serviceColorMap.get(service) }}
+                              />
+                              <span className="text-sm">{service}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <MetricsChart
+                          title="CPU使用率（サービス）"
+                          series={filterSeriesBySelectedServices(metrics?.cpuUsage ?? [])}
+                          unit="%"
+                          yAxisDomain={[0, 'auto']}
+                          colorMap={serviceColorMap}
+                        />
+                        <MetricsChart
+                          title="メモリ使用量（サービス）"
+                          series={filterSeriesBySelectedServices(metrics?.processMemory ?? [])}
+                          unit="MB"
+                          colorMap={serviceColorMap}
+                        />
+                      </div>
+                    </>
                   )}
 
                   {metricsTab === 'http' && (
