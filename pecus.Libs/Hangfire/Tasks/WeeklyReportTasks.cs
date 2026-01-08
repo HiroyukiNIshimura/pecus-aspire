@@ -2,6 +2,7 @@ using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
@@ -60,7 +61,7 @@ public class WeeklyReportTasks
         // 今日が配信日の組織を取得（WeeklyReportDeliveryDay > 0 かつ今日の曜日と一致）
         var targetOrganizations = await _dbContext.OrganizationSettings
             .Where(os => os.WeeklyReportDeliveryDay == deliveryDay)
-            .Select(os => new { os.OrganizationId, os.Organization!.Name })
+            .Include(os => os.Organization)
             .ToListAsync();
 
         _logger.LogInformation("WeeklyReport: Found {Count} organizations for delivery today (day={Day})",
@@ -68,19 +69,25 @@ public class WeeklyReportTasks
 
         foreach (var org in targetOrganizations)
         {
+            if (org.Organization?.IsDemo == true)
+            {
+                _logger.LogDebug("デモ組織のためメール送信をスキップしました。OrganizationId: {OrganizationId}", org.Organization.Id);
+                continue;
+            }
+
             // 組織ごとにレポート生成ジョブをキュー
             BackgroundJob.Enqueue<WeeklyReportTasks>(
-                task => task.GenerateAndSendWeeklyReportAsync(org.OrganizationId, org.Name));
+                task => task.GenerateAndSendWeeklyReportAsync(org.Organization!));
         }
     }
 
     /// <summary>
     /// 組織単位: レポートを生成してメール送信
     /// </summary>
-    public async Task GenerateAndSendWeeklyReportAsync(int organizationId, string organizationName)
+    public async Task GenerateAndSendWeeklyReportAsync(Organization organization)
     {
         _logger.LogInformation("WeeklyReport: Generating report for organization {OrgId} ({OrgName})",
-            organizationId, organizationName);
+            organization.Id, organization.Name);
 
         // フロントエンドURLを取得
         var dashboardBaseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
@@ -92,10 +99,10 @@ public class WeeklyReportTasks
             var (weekStart, weekEnd) = WeeklyReportDataCollector.GetLastWeekDateRange(today);
 
             // 配信対象ユーザーを取得（Owner または Member、Viewer 除外）
-            var targetUsers = await _dataCollector.GetDeliveryTargetUsersAsync(organizationId);
+            var targetUsers = await _dataCollector.GetDeliveryTargetUsersAsync(organization.Id);
 
             _logger.LogInformation("WeeklyReport: Found {Count} target users for organization {OrgId}",
-                targetUsers.Count, organizationId);
+                targetUsers.Count, organization.Id);
 
             var successCount = 0;
             var failCount = 0;
@@ -106,8 +113,8 @@ public class WeeklyReportTasks
                 {
                     // ユーザーごとのレポートデータを収集
                     var reportData = await _dataCollector.CollectUserReportDataAsync(
-                        organizationId,
-                        organizationName,
+                        organization.Id,
+                        organization.Name,
                         user.UserId,
                         user.UserName,
                         user.Email,
@@ -128,7 +135,7 @@ public class WeeklyReportTasks
                     };
 
                     // メール送信
-                    var subject = $"[Coati] 週間レポート: {organizationName}（{weekStart:yyyy/MM/dd}週）";
+                    var subject = $"[Coati] 週間レポート: {organization.Name}（{weekStart:yyyy/MM/dd}週）";
                     await _emailService.SendTemplatedEmailAsync(user.Email, subject, emailModel);
 
                     successCount++;
@@ -142,11 +149,11 @@ public class WeeklyReportTasks
             }
 
             _logger.LogInformation("WeeklyReport: Completed for organization {OrgId}. Success={Success}, Failed={Failed}",
-                organizationId, successCount, failCount);
+                organization.Id, successCount, failCount);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "WeeklyReport: Failed to generate report for organization {OrgId}", organizationId);
+            _logger.LogError(ex, "WeeklyReport: Failed to generate report for organization {OrgId}", organization.Id);
             throw;
         }
     }

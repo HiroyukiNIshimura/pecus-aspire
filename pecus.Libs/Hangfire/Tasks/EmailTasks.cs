@@ -67,8 +67,18 @@ public class EmailTasks
 
         if (organization.IsDemo)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "デモ組織のためメール送信をスキップしました。OrganizationId: {OrganizationId}, To: {To}",
+                organizationId,
+                to
+            );
+            return;
+        }
+
+        if (to.EndsWith(".none"))
+        {
+            _logger.LogDebug(
+                "宛先がダミーアドレスのためメール送信をスキップしました。OrganizationId: {OrganizationId}, To: {To}",
                 organizationId,
                 to
             );
