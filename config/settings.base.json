@@ -175,6 +175,8 @@
   },
 
   "backfire": {
+    "_comment": "WorkerPerCore は Hangfire サーバーのワーカー数を CPU コア数に乗算する値です。WorkerPerCore * CPUコア数 = ワーカー数が運用する際の組織数を下回らないよう設定するのが望ましいです。",
+    "WorkerPerCore": 3,
     "Logging": {
       "LogLevel": {
         "Default": "Information",
@@ -182,7 +184,6 @@
         "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
       }
     },
-    "WorkerCount": 3,
     "RefreshTokenCleanup": {
       "BatchSize": 1000,
       "OlderThanDays": 30,

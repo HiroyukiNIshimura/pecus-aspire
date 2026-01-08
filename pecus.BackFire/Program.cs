@@ -121,10 +121,10 @@ builder.Services.AddHangfire(
 JobStorage.Current = redisStorage;
 
 // appsettings.jsonのWorkerCount値を取得（なければ2）
-var workerCount = builder.Configuration.GetValue<int?>("WorkerCount") ?? 2;
+var workerCountPerCore = builder.Configuration.GetValue<int?>("WorkerPerCore") ?? 2;
 builder.Services.AddHangfireServer((config) =>
 {
-    config.WorkerCount = Environment.ProcessorCount * workerCount;
+    config.WorkerCount = Environment.ProcessorCount * workerCountPerCore;
 });
 
 var app = builder.Build();

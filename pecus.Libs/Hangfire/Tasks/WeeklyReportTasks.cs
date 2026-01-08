@@ -75,6 +75,7 @@ public class WeeklyReportTasks
                 continue;
             }
 
+            //ジョブの中でジョブを追加する」パターン（ファンアウト/バッチ処理）
             // 組織ごとにレポート生成ジョブをキュー
             BackgroundJob.Enqueue<WeeklyReportTasks>(
                 task => task.GenerateAndSendWeeklyReportAsync(org.Organization!));
