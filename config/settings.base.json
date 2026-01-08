@@ -182,6 +182,7 @@
         "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
       }
     },
+    "WorkerCount": 3,
     "RefreshTokenCleanup": {
       "BatchSize": 1000,
       "OlderThanDays": 30,
