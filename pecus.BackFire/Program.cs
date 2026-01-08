@@ -120,8 +120,8 @@ builder.Services.AddHangfire(
 // JobStorage.Current を設定（RecurringJob 静的メソッド用）
 JobStorage.Current = redisStorage;
 
-// appsettings.jsonのWorkerCount値を取得（なければ5）
-var workerCount = builder.Configuration.GetValue<int?>("WorkerCount") ?? 3;
+// appsettings.jsonのWorkerCount値を取得（なければ2）
+var workerCount = builder.Configuration.GetValue<int?>("WorkerCount") ?? 2;
 builder.Services.AddHangfireServer((config) =>
 {
     config.WorkerCount = Environment.ProcessorCount * workerCount;
