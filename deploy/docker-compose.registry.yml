@@ -1,0 +1,23 @@
+services:
+  registry:
+    image: registry:2
+    container_name: pecus-registry
+    restart: always
+    ports:
+      - "${REGISTRY_PORT:-5000}:5000"
+    volumes:
+      - ${REGISTRY_DATA_DIR:-./data/registry}:/var/lib/registry
+    environment:
+      # イメージ削除を有効化
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+      # ログレベル
+      REGISTRY_LOG_LEVEL: info
+      # ストレージドライバー設定
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+    networks:
+      - pecus-registry-network
+
+networks:
+  pecus-registry-network:
+    name: pecus-registry-network
+    driver: bridge
