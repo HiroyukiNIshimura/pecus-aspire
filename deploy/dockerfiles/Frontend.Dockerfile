@@ -26,17 +26,11 @@ COPY pecus.Frontend/package.json ./pecus.Frontend/
 RUN npm ci --workspace=pecus.Frontend
 
 # ============================================
-# Build stage
+# Build stage - deps を直接継承してコピーを削減
 # ============================================
-FROM base AS builder
-WORKDIR /app
+FROM deps AS builder
 
-# 依存関係をコピー
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages ./packages
-COPY --from=deps /app/pecus.Frontend/node_modules ./pecus.Frontend/node_modules
-
-# Frontend のソースをコピー
+# Frontend のソースをコピー（node_modules は deps から継承済み）
 COPY pecus.Frontend/ ./pecus.Frontend/
 
 # Build arguments for public env vars

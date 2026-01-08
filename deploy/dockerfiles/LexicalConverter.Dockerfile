@@ -26,17 +26,11 @@ COPY pecus.LexicalConverter/package.json ./pecus.LexicalConverter/
 RUN npm ci --workspace=pecus.LexicalConverter
 
 # ============================================
-# Build stage
+# Build stage - deps を直接継承してコピーを削減
 # ============================================
-FROM base AS build
-WORKDIR /app
+FROM deps AS build
 
-# 依存関係をコピー
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages ./packages
-COPY --from=deps /app/pecus.LexicalConverter/node_modules ./pecus.LexicalConverter/node_modules
-
-# LexicalConverter のソースをコピー
+# LexicalConverter のソースをコピー（node_modules は deps から継承済み）
 COPY pecus.LexicalConverter/ ./pecus.LexicalConverter/
 
 WORKDIR /app/pecus.LexicalConverter
