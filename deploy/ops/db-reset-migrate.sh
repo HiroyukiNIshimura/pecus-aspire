@@ -30,9 +30,6 @@ echo "[Info] Running DbManager (Drop & Create)..."
 # Ensure infra is up (db needs to be running)
 sh ./infra-up.sh --no-build
 
-# shellcheck disable=SC2086
-DB_RESET_MODE=true compose_migrate run --rm $BUILD_FLAG dbmanager
-
 # Clean up uploads directory
 echo "[Info] Cleaning up uploads directory..."
 if [ -d "$DATA_PATH/uploads" ]; then
@@ -41,5 +38,8 @@ if [ -d "$DATA_PATH/uploads" ]; then
 else
   echo "[Warn] Uploads directory not found: $DATA_PATH/uploads"
 fi
+
+# shellcheck disable=SC2086
+DB_RESET_MODE=true compose_migrate run --rm $BUILD_FLAG dbmanager
 
 echo "[OK] DB Reset & Migrate finished."
