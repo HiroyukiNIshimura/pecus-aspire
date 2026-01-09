@@ -97,7 +97,7 @@ export default function TaskFlowMap({ data, onTaskClick, canEditTask }: TaskFlow
             <div className="stat-figure text-info">
               <span className="icon-[mdi--timer-outline] w-6 h-6" aria-hidden="true" />
             </div>
-            <div className="stat-title text-xs">合計期間</div>
+            <div className="stat-title text-xs">合計期間（残）</div>
             <div className="stat-value text-xl text-info">{formatDuration(totalDuration)}</div>
           </div>
         )}
