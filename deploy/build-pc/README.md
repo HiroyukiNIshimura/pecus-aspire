@@ -9,8 +9,10 @@
 ## 前提条件
 
 - Docker および Docker Compose がインストールされていること
+- Node.js がインストールされていること（appsettings.json 生成に必要）
 - ソースコードリポジトリがクローン済みであること
 - 十分なディスク容量（イメージビルド + レジストリストレージ）
+- `config/settings.base.prod.json` が設定されていること（本番用設定）
 
 ---
 
@@ -55,9 +57,13 @@ REGISTRY_PORT=5000
 ```
 
 このスクリプトは以下を実行します:
-1. 全サービス（WebApi, Frontend, BackFire, DbManager, LexicalConverter）をビルド
-2. バージョンタグ（`YYYYMMDDHHMMSS`）と `latest` タグでレジストリにプッシュ
-3. ビルド結果のサマリーを表示
+1. Git pull で最新ソースコードを取得
+2. `appsettings.json` を本番設定で生成（`config/settings.base.prod.json` を使用）
+3. 全サービス（WebApi, Frontend, BackFire, DbManager, LexicalConverter）をビルド
+4. バージョンタグ（`YYYYMMDDHHMMSS`）と `latest` タグでレジストリにプッシュ
+5. ビルド結果のサマリーを表示
+
+> **Note**: `appsettings.json` は `.gitignore` で除外されているため、スクリプトが自動生成します。
 
 ### 特定サービスのみビルド
 

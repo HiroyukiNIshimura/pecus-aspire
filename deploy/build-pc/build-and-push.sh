@@ -55,6 +55,21 @@ else
 fi
 echo ""
 
+# Step 1: appsettings.json を生成（.gitignore で除外されているため）
+echo "⚙️  appsettings.json を生成中..."
+if [ -f "$PROJECT_ROOT/scripts/generate-appsettings.js" ]; then
+    if node "$PROJECT_ROOT/scripts/generate-appsettings.js" -P; then
+        echo "✅ appsettings.json 生成完了（本番設定）"
+    else
+        echo "❌ appsettings.json の生成に失敗しました"
+        exit 1
+    fi
+else
+    echo "❌ generate-appsettings.js が見つかりません"
+    exit 1
+fi
+echo ""
+
 # ビルド結果の記録
 SUCCESS_SERVICES=""
 FAILED_SERVICES=""
