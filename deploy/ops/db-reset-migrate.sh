@@ -28,7 +28,7 @@ sh ./app-down.sh -y
 
 echo "[Info] Running DbManager (Drop & Create)..."
 # Ensure infra is up (db needs to be running)
-sh ./infra-up.sh --no-build
+sh ./infra-up.sh
 
 # Clean up uploads directory
 echo "[Info] Cleaning up uploads directory..."
