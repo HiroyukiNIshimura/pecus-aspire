@@ -135,6 +135,15 @@ public class SearchInformationTool : IAiTool
         foreach (var item in searchResult.Items)
         {
             sb.AppendLine($"■ [{item.WorkspaceCode}#{item.ItemCode}] {item.Subject}");
+            sb.AppendLine($"  作成者: {item.OwnerName}");
+            if (!string.IsNullOrWhiteSpace(item.AssigneeName))
+            {
+                sb.AppendLine($"  担当者: {item.AssigneeName}");
+            }
+            if (!string.IsNullOrWhiteSpace(item.CommitterName))
+            {
+                sb.AppendLine($"  コミッター: {item.CommitterName}");
+            }
             if (!string.IsNullOrWhiteSpace(item.BodySnippet))
             {
                 var snippet = item.BodySnippet.Length > 150

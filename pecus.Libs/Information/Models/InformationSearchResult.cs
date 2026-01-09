@@ -52,6 +52,21 @@ public class InformationSearchItem
     public string? BodySnippet { get; set; }
 
     /// <summary>
+    /// 作成者名
+    /// </summary>
+    public string OwnerName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 担当者名（NULL可）
+    /// </summary>
+    public string? AssigneeName { get; set; }
+
+    /// <summary>
+    /// コミッター名（NULL可）
+    /// </summary>
+    public string? CommitterName { get; set; }
+
+    /// <summary>
     /// 検索スコア（pgroonga のスコア）
     /// </summary>
     public double Score { get; set; }

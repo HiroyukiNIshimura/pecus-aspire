@@ -81,9 +81,13 @@ public class InformationSearchProvider : IInformationSearchProvider
                    sub.""Code"" AS ""ItemCode"",
                    sub.""Subject"",
                    LEFT(sub.""RawBody"", {MaxSnippetLength}) AS ""BodySnippet"",
+                   owner.""Username"" AS ""OwnerName"",
+                   assignee.""Username"" AS ""AssigneeName"",
+                   committer.""Username"" AS ""CommitterName"",
                    sub.score AS ""Score""
             FROM (
                 SELECT DISTINCT ON (wi.""Id"") wi.""Id"", wi.""WorkspaceId"", wi.""Code"", wi.""Subject"", wi.""RawBody"",
+                       wi.""OwnerId"", wi.""AssigneeId"", wi.""CommitterId"",
                        pgroonga_score(wi.tableoid, wi.ctid) AS score
                 FROM ""WorkspaceItems"" wi
                 LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
@@ -95,6 +99,9 @@ public class InformationSearchProvider : IInformationSearchProvider
                 ORDER BY wi.""Id"", pgroonga_score(wi.tableoid, wi.ctid) DESC
             ) sub
             INNER JOIN ""Workspaces"" w ON sub.""WorkspaceId"" = w.""Id""
+            INNER JOIN ""Users"" owner ON sub.""OwnerId"" = owner.""Id""
+            LEFT JOIN ""Users"" assignee ON sub.""AssigneeId"" = assignee.""Id""
+            LEFT JOIN ""Users"" committer ON sub.""CommitterId"" = committer.""Id""
             ORDER BY sub.score DESC
             LIMIT {{1}}";
 
