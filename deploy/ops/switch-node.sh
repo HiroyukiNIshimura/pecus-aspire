@@ -117,7 +117,11 @@ else
 fi
 
 echo "[Info] 3. Deploy target (excluding BackFire): $target" >&2
-compose_app "$target" up -d "pecusapi-$target" "frontend-$target"
+if [ "$NO_BUILD" = "false" ]; then
+  compose_app "$target" up -d "pecusapi-$target" "frontend-$target"
+else
+  compose_app "$target" up -d --no-build "pecusapi-$target" "frontend-$target"
+fi
 wait_health "pecus-webapi-$target" 300
 wait_running "pecus-frontend-$target" 120
 
@@ -144,7 +148,11 @@ echo "[Info] 6. DB Migration" >&2
 compose_migrate run --rm dbmanager
 
 echo "[Info] 7. Deploy target BackFire: $target" >&2
-compose_app "$target" up -d "backfire-$target"
+if [ "$NO_BUILD" = "false" ]; then
+  compose_app "$target" up -d "backfire-$target"
+else
+  compose_app "$target" up -d --no-build "backfire-$target"
+fi
 wait_running "pecus-backfire-$target" 120
 
 echo "[Info] 8. Switch Nginx: $target" >&2
