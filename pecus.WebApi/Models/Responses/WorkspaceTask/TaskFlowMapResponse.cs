@@ -10,7 +10,8 @@ namespace Pecus.Models.Responses.WorkspaceTask;
 public class TaskFlowMapResponse
 {
     /// <summary>
-    /// クリティカルパス（最長の依存チェーン）
+    /// クリティカルパス（合計所要期間が最長の依存チェーン）
+    /// 期間は各タスクの StartDate（なければ前タスクの DueDate、最初のタスクなら CreatedAt）から DueDate までの日数を合計して算出
     /// </summary>
     [Required]
     public required List<TaskFlowNode> CriticalPath { get; set; }
@@ -178,6 +179,13 @@ public class TaskFlowNode
     /// </summary>
     [Required]
     public required int SuccessorCount { get; set; }
+
+    /// <summary>
+    /// 所要期間（日数）
+    /// StartDate（なければ前タスクのDueDate、最初のタスクならCreatedAt）からDueDateまでの期間
+    /// 完了・破棄済みの場合はnull
+    /// </summary>
+    public decimal? DurationDays { get; set; }
 }
 
 /// <summary>

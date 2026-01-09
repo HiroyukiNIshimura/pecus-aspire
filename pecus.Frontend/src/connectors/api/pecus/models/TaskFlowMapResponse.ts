@@ -10,7 +10,8 @@ import type { TaskFlowSummary } from './TaskFlowSummary';
  */
 export type TaskFlowMapResponse = {
     /**
-     * クリティカルパス（最長の依存チェーン）
+     * クリティカルパス（合計所要期間が最長の依存チェーン）
+     * 期間は各タスクの StartDate（なければ前タスクの DueDate、最初のタスクなら CreatedAt）から DueDate までの日数を合計して算出
      */
     criticalPath: Array<TaskFlowNode>;
     /**

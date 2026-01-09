@@ -74,5 +74,11 @@ export type TaskFlowNode = {
      * 後続タスク数
      */
     successorCount: number;
+    /**
+     * 所要期間（日数）
+     * StartDate（なければ前タスクのDueDate、最初のタスクならCreatedAt）からDueDateまでの期間
+     * 完了・破棄済みの場合はnull
+     */
+    durationDays?: number | null;
 };
 

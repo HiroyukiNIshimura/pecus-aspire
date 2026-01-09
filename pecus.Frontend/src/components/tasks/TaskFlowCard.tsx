@@ -13,6 +13,38 @@ interface TaskFlowCardProps {
 }
 
 /**
+ * 期限の緊急度を取得
+ */
+function getDueDateUrgency(dueDate: string | null | undefined): {
+  className: string;
+  iconClassName: string;
+  isUrgent: boolean;
+} {
+  if (!dueDate) {
+    return { className: 'text-base-content/60', iconClassName: 'text-base-content/40', isUrgent: false };
+  }
+
+  const now = new Date();
+  const due = new Date(dueDate);
+  const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    // 期限切れ
+    return { className: 'text-error font-semibold', iconClassName: 'text-error', isUrgent: true };
+  }
+  if (diffDays <= 3) {
+    // 3日以内
+    return { className: 'text-warning font-semibold', iconClassName: 'text-warning', isUrgent: true };
+  }
+  if (diffDays <= 7) {
+    // 7日以内
+    return { className: 'text-info', iconClassName: 'text-info', isUrgent: false };
+  }
+  // それ以外
+  return { className: 'text-base-content/60', iconClassName: 'text-base-content/40', isUrgent: false };
+}
+
+/**
  * 優先度のバッジを取得
  */
 function getPriorityBadge(priority?: TaskPriority | null) {
@@ -95,7 +127,7 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
 
   return (
     <div
-      className={`rounded-lg bg-base-100 border border-base-content/25 shadow-sm transition-all ${
+      className={`rounded-lg bg-base-100 border border-base-content/25 shadow-sm transition-all h-full ${
         !task.canStart && !isInactive ? 'border-l-4 border-l-warning' : ''
       } ${task.successorCount > 0 && task.canStart && !isInactive ? 'border-l-4 border-l-error' : ''} ${blurClass} ${clickableClass}`}
       onClick={clickable ? onClick : undefined}
@@ -112,7 +144,7 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
           : undefined
       }
     >
-      <div className="p-2 flex flex-col gap-1.5">
+      <div className="p-2 flex flex-col gap-1.5 h-full">
         {/* ヘッダー: ステータス・バッジ */}
         <div className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-1.5">
@@ -134,7 +166,7 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
         </div>
 
         {/* タスク内容 */}
-        <p className="text-xs line-clamp-2 leading-tight" title={task.content}>
+        <p className="text-xs line-clamp-2 leading-tight flex-1" title={task.content}>
           {task.content}
         </p>
 
@@ -151,8 +183,8 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
           max="100"
         />
 
-        {/* フッター: 担当者 */}
-        <div className="flex items-center justify-between text-xs text-base-content/60">
+        {/* フッター: 担当者・期限 */}
+        <div className="flex items-center justify-between text-xs text-base-content/60 mt-auto">
           {task.assignedUserId ? (
             <UserAvatar
               userName={task.assignedUsername}
@@ -163,7 +195,16 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
           ) : (
             <span className="text-base-content/30 text-xs">未割当</span>
           )}
-          {task.dueDate && <span className="text-xs">{formatShortDate(task.dueDate)}</span>}
+          {task.dueDate &&
+            (() => {
+              const urgency = getDueDateUrgency(task.dueDate);
+              return (
+                <span className={`flex items-center gap-0.5 text-sm ${urgency.className}`}>
+                  <span className={`icon-[mdi--calendar] w-3.5 h-3.5 ${urgency.iconClassName}`} aria-hidden="true" />
+                  {formatShortDate(task.dueDate)}
+                </span>
+              );
+            })()}
         </div>
       </div>
     </div>

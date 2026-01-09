@@ -1682,18 +1682,30 @@ public class WorkspaceTaskService
             .GroupBy(t => t.PredecessorTaskId!.Value)
             .ToDictionary(g => g.Key, g => g.Count());
 
-        // 依存チェーンを構築
-        var chains = BuildDependencyChains(tasks, taskMap, successorCounts);
+        // 依存チェーンを構築（WorkspaceTask のリストとして）
+        var taskChains = BuildDependencyChains(tasks, taskMap);
 
-        // クリティカルパス（最長チェーン）を特定
-        var criticalPath = chains.OrderByDescending(c => c.Count).FirstOrDefault() ?? new List<TaskFlowNode>();
-        var otherChains = chains.Where(c => c != criticalPath).ToList();
+        // 各チェーンの期間を計算し、最長期間のチェーンをクリティカルパスとして特定
+        var chainsWithDuration = taskChains
+            .Select(chain => new { Chain = chain, Duration = CalculateChainDuration(chain) })
+            .OrderByDescending(x => x.Duration)
+            .ThenByDescending(x => x.Chain.Count) // 同じ期間ならタスク数で判定
+            .ToList();
+
+        var criticalPathTasks = chainsWithDuration.FirstOrDefault()?.Chain ?? new List<WorkspaceTask>();
+        var otherChainTasks = chainsWithDuration.Skip(1).Select(x => x.Chain).ToList();
+
+        // WorkspaceTask → TaskFlowNode に変換（期間計算付き）
+        var criticalPath = ConvertChainToNodes(criticalPathTasks, taskMap, successorCounts);
+        var otherChains = otherChainTasks
+            .Select(chain => ConvertChainToNodes(chain, taskMap, successorCounts))
+            .ToList();
 
         // 独立タスク（どのチェーンにも含まれないタスク）を特定
-        var chainTaskIds = chains.SelectMany(c => c.Select(n => n.Id)).ToHashSet();
+        var chainTaskIds = taskChains.SelectMany(c => c.Select(t => t.Id)).ToHashSet();
         var independentTasks = tasks
             .Where(t => !chainTaskIds.Contains(t.Id))
-            .Select(t => BuildTaskFlowNode(t, taskMap, successorCounts))
+            .Select(t => BuildTaskFlowNodeWithDuration(t, taskMap, successorCounts, null))
             .ToList();
 
         // サマリを計算
@@ -1709,13 +1721,48 @@ public class WorkspaceTaskService
     }
 
     /// <summary>
+    /// チェーンの合計所要期間（日数）を計算
+    /// - StartDate があれば使用
+    /// - なければ前タスクの DueDate を使用
+    /// - 最初のタスクで StartDate がなければ CreatedAt を使用
+    /// </summary>
+    private static decimal CalculateChainDuration(List<WorkspaceTask> chain)
+    {
+        if (chain.Count == 0) return 0;
+
+        decimal totalDays = 0;
+        DateTimeOffset? previousDueDate = null;
+
+        foreach (var task in chain)
+        {
+            // 完了・破棄済みは期間に含めない（ただし previousDueDate は更新）
+            if (task.IsCompleted || task.IsDiscarded)
+            {
+                previousDueDate = task.DueDate;
+                continue;
+            }
+
+            // 開始日の決定
+            var startDate = task.StartDate          // 1. 設定された StartDate
+                ?? previousDueDate                   // 2. 前タスクの DueDate
+                ?? task.CreatedAt;                   // 3. 最初のタスクなら CreatedAt
+
+            var duration = (task.DueDate - startDate).TotalDays;
+            totalDays += (decimal)Math.Max(0, duration);
+
+            previousDueDate = task.DueDate;
+        }
+
+        return totalDays;
+    }
+
+    /// <summary>
     /// 依存チェーンを構築
     /// 分岐がある場合は、各末端までの完全なパスを別々のチェーンとして返す
     /// </summary>
-    private List<List<TaskFlowNode>> BuildDependencyChains(
+    private static List<List<WorkspaceTask>> BuildDependencyChains(
         List<WorkspaceTask> tasks,
-        Dictionary<int, WorkspaceTask> taskMap,
-        Dictionary<int, int> successorCounts
+        Dictionary<int, WorkspaceTask> taskMap
     )
     {
         // 後続タスクのマップを構築（親タスクID → 子タスクのリスト）
@@ -1724,7 +1771,7 @@ public class WorkspaceTaskService
             .GroupBy(t => t.PredecessorTaskId!.Value)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        var allPaths = new List<List<TaskFlowNode>>();
+        var allPaths = new List<List<WorkspaceTask>>();
 
         // 先行タスクを持たないタスク（チェーンの起点）を特定
         var rootTasks = tasks.Where(t => !t.PredecessorTaskId.HasValue).ToList();
@@ -1732,7 +1779,7 @@ public class WorkspaceTaskService
         // 後続タスクを持つルートタスクからすべてのパスを探索
         foreach (var rootTask in rootTasks.Where(t => successorMap.ContainsKey(t.Id)))
         {
-            var paths = FindAllPathsFromRoot(rootTask, taskMap, successorCounts, successorMap);
+            var paths = FindAllPathsFromRoot(rootTask, successorMap);
             allPaths.AddRange(paths);
         }
 
@@ -1743,7 +1790,7 @@ public class WorkspaceTaskService
 
         foreach (var orphanRoot in orphanRoots)
         {
-            var paths = FindAllPathsFromRoot(orphanRoot, taskMap, successorCounts, successorMap);
+            var paths = FindAllPathsFromRoot(orphanRoot, successorMap);
             allPaths.AddRange(paths);
         }
 
@@ -1753,19 +1800,17 @@ public class WorkspaceTaskService
     /// <summary>
     /// ルートタスクからすべての末端までのパスを探索（DFS）
     /// </summary>
-    private List<List<TaskFlowNode>> FindAllPathsFromRoot(
+    private static List<List<WorkspaceTask>> FindAllPathsFromRoot(
         WorkspaceTask rootTask,
-        Dictionary<int, WorkspaceTask> taskMap,
-        Dictionary<int, int> successorCounts,
         Dictionary<int, List<WorkspaceTask>> successorMap
     )
     {
-        var allPaths = new List<List<TaskFlowNode>>();
-        var currentPath = new List<TaskFlowNode>();
+        var allPaths = new List<List<WorkspaceTask>>();
+        var currentPath = new List<WorkspaceTask>();
 
         void Dfs(WorkspaceTask task)
         {
-            currentPath.Add(BuildTaskFlowNode(task, taskMap, successorCounts));
+            currentPath.Add(task);
 
             // 後続タスクがあるか確認
             if (successorMap.TryGetValue(task.Id, out var successors) && successors.Count > 0)
@@ -1779,7 +1824,7 @@ public class WorkspaceTaskService
             else
             {
                 // 末端に到達したら、現在のパスを保存
-                allPaths.Add(new List<TaskFlowNode>(currentPath));
+                allPaths.Add(new List<WorkspaceTask>(currentPath));
             }
 
             // バックトラック
@@ -1845,6 +1890,98 @@ public class WorkspaceTaskService
             PredecessorTaskId = task.PredecessorTaskId,
             PredecessorTask = predecessorInfo,
             SuccessorCount = successorCounts.GetValueOrDefault(task.Id, 0),
+            DurationDays = null, // 期間なしバージョン
+        };
+    }
+
+    /// <summary>
+    /// チェーンをTaskFlowNodeのリストに変換（期間計算付き）
+    /// </summary>
+    private static List<TaskFlowNode> ConvertChainToNodes(
+        List<WorkspaceTask> chain,
+        Dictionary<int, WorkspaceTask> taskMap,
+        Dictionary<int, int> successorCounts
+    )
+    {
+        var result = new List<TaskFlowNode>();
+        DateTimeOffset? previousDueDate = null;
+
+        foreach (var task in chain)
+        {
+            var node = BuildTaskFlowNodeWithDuration(task, taskMap, successorCounts, previousDueDate);
+            result.Add(node);
+            previousDueDate = task.DueDate;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// TaskFlowNodeを構築（期間計算付き）
+    /// </summary>
+    private static TaskFlowNode BuildTaskFlowNodeWithDuration(
+        WorkspaceTask task,
+        Dictionary<int, WorkspaceTask> taskMap,
+        Dictionary<int, int> successorCounts,
+        DateTimeOffset? previousDueDate
+    )
+    {
+        // 先行タスク情報を取得
+        TaskFlowPredecessorInfo? predecessorInfo = null;
+        if (task.PredecessorTaskId.HasValue && taskMap.TryGetValue(task.PredecessorTaskId.Value, out var predecessorTask))
+        {
+            predecessorInfo = new TaskFlowPredecessorInfo
+            {
+                Id = predecessorTask.Id,
+                Sequence = predecessorTask.Sequence,
+                Content = predecessorTask.Content,
+                IsCompleted = predecessorTask.IsCompleted,
+            };
+        }
+
+        // 着手可能かどうかを判定
+        var canStart = !task.IsCompleted && !task.IsDiscarded &&
+            (!task.PredecessorTaskId.HasValue ||
+             (taskMap.TryGetValue(task.PredecessorTaskId.Value, out var pred) && pred.IsCompleted));
+
+        // 期間を計算（完了・破棄済みはnull）
+        decimal? durationDays = null;
+        if (!task.IsCompleted && !task.IsDiscarded)
+        {
+            var startDate = task.StartDate ?? previousDueDate ?? task.CreatedAt;
+            var duration = (task.DueDate - startDate).TotalDays;
+            durationDays = (decimal)Math.Max(0, duration);
+        }
+
+        return new TaskFlowNode
+        {
+            Id = task.Id,
+            Sequence = task.Sequence,
+            Content = task.Content,
+            TaskTypeId = task.TaskTypeId,
+            TaskTypeName = task.TaskType?.Name,
+            TaskTypeIcon = task.TaskType?.Icon,
+            Priority = task.Priority,
+            DueDate = task.DueDate,
+            ProgressPercentage = task.ProgressPercentage,
+            IsCompleted = task.IsCompleted,
+            IsDiscarded = task.IsDiscarded,
+            AssignedUserId = task.AssignedUserId,
+            AssignedUsername = task.AssignedUser?.Username,
+            AssignedAvatarUrl = task.AssignedUser != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: task.AssignedUser.AvatarType,
+                    userId: task.AssignedUser.Id,
+                    username: task.AssignedUser.Username,
+                    email: task.AssignedUser.Email,
+                    avatarPath: task.AssignedUser.UserAvatarPath
+                )
+                : null,
+            CanStart = canStart,
+            PredecessorTaskId = task.PredecessorTaskId,
+            PredecessorTask = predecessorInfo,
+            SuccessorCount = successorCounts.GetValueOrDefault(task.Id, 0),
+            DurationDays = durationDays,
         };
     }
 
