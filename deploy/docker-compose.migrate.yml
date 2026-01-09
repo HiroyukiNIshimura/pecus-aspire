@@ -9,6 +9,7 @@ services:
       dockerfile: deploy/dockerfiles/DbManager.Dockerfile
     image: coati-dbmanager:local
     container_name: pecus-dbmanager
+    user: "1001:1001"
     restart: "no"
     environment:
       ASPNETCORE_ENVIRONMENT: Production

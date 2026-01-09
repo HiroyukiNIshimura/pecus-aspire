@@ -8,6 +8,7 @@ services:
       dockerfile: deploy/dockerfiles/WebApi.Dockerfile
     image: coati-webapi-green:local
     container_name: pecus-webapi-green
+    user: "1001:1001"
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
@@ -62,6 +63,7 @@ services:
       dockerfile: deploy/dockerfiles/BackFire.Dockerfile
     image: coati-backfire-green:local
     container_name: pecus-backfire-green
+    user: "1001:1001"
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production

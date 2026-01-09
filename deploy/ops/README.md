@@ -93,13 +93,15 @@ sh logs.sh green
 ### DB リセット + マイグレーション（破壊的）
 
 ```
-sh db-reset-migrate.sh
+sh db-reset-migrate.sh              # レジストリのイメージを使用（デフォルト）
+sh db-reset-migrate.sh --build      # ローカルでビルド
 ```
 
 `yes` 入力で実行。非対話で実行する場合:
 
 ```
 sh db-reset-migrate.sh -y
+sh db-reset-migrate.sh -y --build   # ローカルビルド + 確認スキップ
 ```
 
 ### バックアップ
