@@ -531,6 +531,13 @@ public class ProductAtoms
             },
             new Genre
             {
+                Name = "ブログ",
+                Description = "ブログ記事や投稿",
+                Icon = "blog",
+                DisplayOrder = 9,
+            },
+            new Genre
+            {
                 Name = "その他・個人メモ",
                 Description = "メモ、ToDoリスト、連絡・通知文書",
                 Icon = "general",

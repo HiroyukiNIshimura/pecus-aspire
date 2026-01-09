@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#8B5CF6"/>
+  <!-- ブログ記事カード -->
+  <rect x="12" y="16" width="40" height="32" rx="3" fill="white"/>
+  <!-- 記事タイトル -->
+  <rect x="18" y="22" width="28" height="3" rx="1.5" fill="#8B5CF6"/>
+  <!-- テキストライン -->
+  <rect x="18" y="29" width="28" height="2" rx="1" fill="#C4B5FD"/>
+  <rect x="18" y="34" width="28" height="2" rx="1" fill="#C4B5FD"/>
+  <rect x="18" y="39" width="20" height="2" rx="1" fill="#C4B5FD"/>
+  <!-- 吹き出しアイコン（ブログのシンボル） -->
+  <circle cx="50" cy="16" r="8" fill="#A78BFA"/>
+  <path d="M46 16L49 16M54 16L51 16M50 12L50 14M50 18L50 20" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M50 24L48 20L52 20Z" fill="#A78BFA"/>
+</svg>
