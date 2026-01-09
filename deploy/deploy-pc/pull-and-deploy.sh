@@ -41,8 +41,8 @@ echo ""
 # Step 0: ビルドPCから設定ファイルを取得
 echo "📡 ビルドPCから設定ファイルを取得しています..."
 mkdir -p "$REPO_ROOT/config"
-SCP_SRC="${BUILD_PC_USER}@${BUILD_PC_IP}:${BUILD_PC_PROJECT_PATH}/config"
-if scp "${SCP_SRC}/settings.base.json" "${SCP_SRC}/settings.base.prod.json" "$REPO_ROOT/config/" 2>/dev/null; then
+SCP_SRC="${BUILD_PC_USER}@${BUILD_PC_IP}:${BUILD_PC_PROJECT_PATH}/config/{settings.base.json,settings.base.prod.json}"
+if scp "$SCP_SRC" "$REPO_ROOT/config/" 2>/dev/null; then
     echo "   ✅ 設定ファイルを取得しました"
 else
     echo "   ❌ 設定ファイルの取得に失敗しました"
