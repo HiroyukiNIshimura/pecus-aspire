@@ -105,7 +105,34 @@ if [ $PULL_FAILED_COUNT -gt 0 ]; then
     exit 1
 fi
 
-# Step 3: switch-node.sh でデプロイ実行（--no-build オプション使用）
+# Step 3: プルしたイメージにローカルタグを付与
+echo "🏷️  イメージにローカルタグを付与しています..."
+
+# サービス名とcomposeで使用するイメージ名のマッピング
+tag_image() {
+    src="$REGISTRY/$1:$VERSION"
+    dst="$2"
+    if docker tag "$src" "$dst"; then
+        echo "   ✅ $dst"
+    else
+        echo "   ❌ Failed to tag: $dst"
+        return 1
+    fi
+}
+
+# Blue/Green 両方にタグ付け（どちらにデプロイするか分からないので）
+tag_image "pecus-webapi" "coati-webapi-blue:local"
+tag_image "pecus-webapi" "coati-webapi-green:local"
+tag_image "pecus-frontend" "coati-frontend-blue:local"
+tag_image "pecus-frontend" "coati-frontend-green:local"
+tag_image "pecus-backfire" "coati-backfire-blue:local"
+tag_image "pecus-backfire" "coati-backfire-green:local"
+tag_image "pecus-dbmanager" "coati-dbmanager:local"
+tag_image "lexicalconverter" "coati-lexicalconverter:local"
+
+echo ""
+
+# Step 4: switch-node.sh でデプロイ実行（--no-build オプション使用）
 echo "🚀 $TARGET_SLOT スロットへデプロイ中..."
 echo ""
 
