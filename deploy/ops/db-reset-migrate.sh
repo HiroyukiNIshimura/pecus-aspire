@@ -12,7 +12,9 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 . "$script_dir/lib.sh"
 
 # Parse arguments
-BUILD_FLAG="--no-build"
+# Note: docker compose run does not support --no-build flag
+# If image exists, it will be used without building
+BUILD_FLAG=""
 for arg in "$@"; do
   case "$arg" in
     --build)
