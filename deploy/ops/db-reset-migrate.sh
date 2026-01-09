@@ -12,7 +12,7 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 . "$script_dir/lib.sh"
 
 # Parse arguments
-BUILD_FLAG=""
+BUILD_FLAG="--no-build"
 for arg in "$@"; do
   case "$arg" in
     --build)

@@ -12,7 +12,7 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 require_cmd docker
 
 # Parse options
-build_flag=""
+build_flag="--no-build"
 while [ $# -gt 0 ]; do
   case "$1" in
     --build)
