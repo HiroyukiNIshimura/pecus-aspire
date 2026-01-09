@@ -29,6 +29,7 @@ done
 
 # 設定ファイル生成
 ensure_env_file
+ensure_active_slot_conf
 
 # Infra only: postgres/redis/redis-frontend/lexicalconverter/nginx
 

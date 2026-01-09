@@ -158,6 +158,9 @@ pecus.DbManager/appsettings.json
 # Generated deploy/.env (from config/settings.base.prod.json)
 deploy/.env
 
+# Generated nginx active slot config (by ops/lib.sh or ops/switch-node.sh)
+deploy/nginx/conf.d/00-active-slot.conf
+
 # Local environment override (each developer manages locally)
 config/settings.base.dev.json
 
