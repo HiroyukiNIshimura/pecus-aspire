@@ -153,12 +153,6 @@ public class CreateItemTask : ItemNotificationTaskBase
                 return (defaultMessage, bot);
             }
 
-            // 100文字を超える場合は切り詰め
-            if (generatedMessage.Length > 100)
-            {
-                generatedMessage = generatedMessage[..97] + "...";
-            }
-
             // 定型文 + AI 生成メッセージを返す
             return ($"{defaultMessage}\n\n{generatedMessage}", bot);
         }
