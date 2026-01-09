@@ -67,6 +67,10 @@ export interface SystemMetrics {
   memoryUsage: MetricTimeSeries[];
   diskUsage: MetricTimeSeries[];
   processMemory: MetricTimeSeries[];
+  gcHeapGen0: MetricTimeSeries[];
+  gcHeapGen1: MetricTimeSeries[];
+  gcHeapGen2: MetricTimeSeries[];
+  gcHeapLoh: MetricTimeSeries[];
   httpRequestRate: MetricTimeSeries[];
   httpErrorRate: MetricTimeSeries[];
   httpResponseTimeP50: MetricTimeSeries[];
@@ -351,6 +355,10 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
       httpP50Res,
       httpP95Res,
       httpP99Res,
+      gcGen0Res,
+      gcGen1Res,
+      gcGen2Res,
+      gcLohRes,
     ] = await Promise.all([
       fetchPrometheusRange('rate(dotnet_process_cpu_time_seconds_total{job="backend"}[5m]) * 100', start, end, step),
       fetchPrometheusRange(
@@ -411,6 +419,30 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
         end,
         step,
       ),
+      fetchPrometheusRange(
+        'dotnet_gc_last_collection_heap_size_bytes{job="backend",gc_heap_generation="gen0"} / 1024 / 1024',
+        start,
+        end,
+        step,
+      ),
+      fetchPrometheusRange(
+        'dotnet_gc_last_collection_heap_size_bytes{job="backend",gc_heap_generation="gen1"} / 1024 / 1024',
+        start,
+        end,
+        step,
+      ),
+      fetchPrometheusRange(
+        'dotnet_gc_last_collection_heap_size_bytes{job="backend",gc_heap_generation="gen2"} / 1024 / 1024',
+        start,
+        end,
+        step,
+      ),
+      fetchPrometheusRange(
+        'dotnet_gc_last_collection_heap_size_bytes{job="backend",gc_heap_generation="loh"} / 1024 / 1024',
+        start,
+        end,
+        step,
+      ),
     ]);
 
     const cpuUsage = [
@@ -445,6 +477,10 @@ export async function getSystemMetrics(hoursBack = 24): Promise<ApiResponse<Syst
         memoryUsage: parseRangeResponse(systemMemRes, 'システムメモリ使用率'),
         diskUsage,
         processMemory,
+        gcHeapGen0: parseRangeResponseWithJobOverride(gcGen0Res, 'GC Heap', 'Gen0'),
+        gcHeapGen1: parseRangeResponseWithJobOverride(gcGen1Res, 'GC Heap', 'Gen1'),
+        gcHeapGen2: parseRangeResponseWithJobOverride(gcGen2Res, 'GC Heap', 'Gen2'),
+        gcHeapLoh: parseRangeResponseWithJobOverride(gcLohRes, 'GC Heap', 'LOH'),
         httpRequestRate: parseRangeResponse(httpRateRes, 'HTTPリクエスト/秒'),
         httpErrorRate: parseRangeResponse(httpErrorRateRes, 'HTTPエラーレート'),
         httpResponseTimeP50: parseRangeResponse(httpP50Res, 'p50'),

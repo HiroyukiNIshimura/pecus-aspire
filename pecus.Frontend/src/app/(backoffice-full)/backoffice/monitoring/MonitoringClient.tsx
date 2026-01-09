@@ -867,6 +867,29 @@ export default function MonitoringClient({
                           colorMap={serviceColorMap}
                         />
                       </div>
+
+                      {/* GC ヒープサイズ（世代別） */}
+                      <div className="mt-4">
+                        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                          <span className="icon-[mdi--memory] size-4 text-base-content/70" aria-hidden="true" />
+                          .NET GC ヒープサイズ（世代別）
+                          <span className="text-xs text-base-content/50 font-normal">
+                            - Gen2/LOH の増加はメモリリークの可能性
+                          </span>
+                        </h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          <MetricsChart
+                            title="GC Heap Gen0 / Gen1"
+                            series={[...(metrics?.gcHeapGen0 ?? []), ...(metrics?.gcHeapGen1 ?? [])]}
+                            unit="MB"
+                          />
+                          <MetricsChart
+                            title="GC Heap Gen2 / LOH"
+                            series={[...(metrics?.gcHeapGen2 ?? []), ...(metrics?.gcHeapLoh ?? [])]}
+                            unit="MB"
+                          />
+                        </div>
+                      </div>
                     </>
                   )}
 

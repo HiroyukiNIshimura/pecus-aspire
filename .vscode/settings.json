@@ -42,7 +42,6 @@
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
-  "chat.useClaudeSkills": false,
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {
       "file": "copilot-commit-message-instructions.md",
@@ -112,5 +111,6 @@
   "cSpell.words": [
     "CDPATH",
     "webapi"
-  ]
+  ],
+  "chat.useAgentSkills": false
 }

@@ -430,25 +430,4 @@ app.MapControllers();
 app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapDefaultEndpoints();
 
-#if DEBUG || true  // 一時的に本番でも有効化
-app.MapGet("/debug/memory", () =>
-{
-    var before = GC.GetTotalMemory(false) / 1024 / 1024;
-    GC.Collect(2, GCCollectionMode.Aggressive, true, true);
-    GC.WaitForPendingFinalizers();
-    GC.Collect(2, GCCollectionMode.Aggressive, true, true);
-    var after = GC.GetTotalMemory(true) / 1024 / 1024;
-
-    return Results.Ok(new
-    {
-        BeforeMB = before,
-        AfterMB = after,
-        FreedMB = before - after,
-        Gen0 = GC.CollectionCount(0),
-        Gen1 = GC.CollectionCount(1),
-        Gen2 = GC.CollectionCount(2)
-    });
-});
-#endif
-
 app.Run();
