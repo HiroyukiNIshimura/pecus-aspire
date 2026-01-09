@@ -12,8 +12,8 @@
 ### インフラ起動/終了
 
 ```
-sh infra-up.sh
-sh infra-up.sh --no-build   # ビルドせずに起動
+sh infra-up.sh              # レジストリのイメージを使用（デフォルト）
+sh infra-up.sh --build      # ローカルでビルド
 sh infra-down.sh
 ```
 
