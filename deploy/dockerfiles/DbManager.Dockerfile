@@ -48,6 +48,9 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
+# Copy appsettings.json (pre-configured on build PC)
+COPY pecus.DbManager/appsettings.json ./appsettings.json
+
 # Set timezone to JST
 ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone

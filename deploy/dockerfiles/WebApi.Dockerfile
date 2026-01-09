@@ -50,6 +50,9 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
+# Copy appsettings.json (pre-configured on build PC)
+COPY pecus.WebApi/appsettings.json ./appsettings.json
+
 # Copy mail templates from source
 COPY --from=build /src/pecus.Libs/Mail/Templates ./Mail/Templates
 
