@@ -33,7 +33,7 @@ export default function TaskFlowChain({ tasks, onTaskClick, canEditTask }: TaskF
                   height="20"
                   viewBox="0 0 32 20"
                   fill="none"
-                  className="text-base-content/50"
+                  className={task.hasDueDateConflict ? 'text-warning' : 'text-base-content/50'}
                   aria-hidden="true"
                 >
                   <line x1="0" y1="10" x2="24" y2="10" stroke="currentColor" strokeWidth="2" />

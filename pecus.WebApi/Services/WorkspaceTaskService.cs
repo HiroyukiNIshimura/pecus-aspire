@@ -1946,11 +1946,18 @@ public class WorkspaceTaskService
 
         // 期間を計算（完了・破棄済みはnull）
         decimal? durationDays = null;
+        var hasDueDateConflict = false;
         if (!task.IsCompleted && !task.IsDiscarded)
         {
             var startDate = task.StartDate ?? previousDueDate ?? task.CreatedAt;
             var duration = (task.DueDate - startDate).TotalDays;
             durationDays = (decimal)Math.Max(0, duration);
+
+            // 先行タスクの期限日が自タスクの期限日より後の場合はコンフリクト
+            if (previousDueDate.HasValue && previousDueDate.Value > task.DueDate)
+            {
+                hasDueDateConflict = true;
+            }
         }
 
         return new TaskFlowNode
@@ -1982,6 +1989,7 @@ public class WorkspaceTaskService
             PredecessorTask = predecessorInfo,
             SuccessorCount = successorCounts.GetValueOrDefault(task.Id, 0),
             DurationDays = durationDays,
+            HasDueDateConflict = hasDueDateConflict,
         };
     }
 

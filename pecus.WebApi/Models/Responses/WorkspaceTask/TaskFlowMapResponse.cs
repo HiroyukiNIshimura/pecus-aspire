@@ -186,6 +186,12 @@ public class TaskFlowNode
     /// 完了・破棄済みの場合はnull
     /// </summary>
     public decimal? DurationDays { get; set; }
+
+    /// <summary>
+    /// 先行タスクとの期限日コンフリクトがあるか
+    /// 先行タスクの期限日が自タスクの期限日より後の場合にtrue
+    /// </summary>
+    public bool HasDueDateConflict { get; set; }
 }
 
 /// <summary>

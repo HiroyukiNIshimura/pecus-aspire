@@ -195,16 +195,25 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
           ) : (
             <span className="text-base-content/30 text-xs">未割当</span>
           )}
-          {task.dueDate &&
-            (() => {
-              const urgency = getDueDateUrgency(task.dueDate);
-              return (
-                <span className={`flex items-center gap-0.5 text-sm ${urgency.className}`}>
-                  <span className={`icon-[mdi--calendar] w-3.5 h-3.5 ${urgency.iconClassName}`} aria-hidden="true" />
-                  {formatShortDate(task.dueDate)}
-                </span>
-              );
-            })()}
+          <div className="flex items-center gap-1">
+            {task.hasDueDateConflict && (
+              <span
+                className="icon-[mdi--alert] w-4 h-4 text-warning"
+                aria-label="先行タスクより期限が早い"
+                title="先行タスクの期限日より早い期限が設定されています"
+              />
+            )}
+            {task.dueDate &&
+              (() => {
+                const urgency = getDueDateUrgency(task.dueDate);
+                return (
+                  <span className={`flex items-center gap-0.5 text-sm ${urgency.className}`}>
+                    <span className={`icon-[mdi--calendar] w-3.5 h-3.5 ${urgency.iconClassName}`} aria-hidden="true" />
+                    {formatShortDate(task.dueDate)}
+                  </span>
+                );
+              })()}
+          </div>
         </div>
       </div>
     </div>

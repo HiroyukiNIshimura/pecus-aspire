@@ -229,6 +229,29 @@ export default function WorkspaceTaskDetailPage({
     return false;
   }, [predecessorTaskId, predecessorTaskOptions, task?.predecessorTask, task?.predecessorTaskId]);
 
+  // 先行タスクと期限日の整合性チェック（警告用）
+  const predecessorDueDateWarning = useMemo(() => {
+    if (!predecessorTaskId || !dueDate) return null;
+
+    const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predecessorTaskId);
+    if (!selectedPredecessor || !selectedPredecessor.dueDate) return null;
+
+    const taskDueDate = new Date(dueDate);
+    const predecessorDueDate = new Date(selectedPredecessor.dueDate);
+
+    // 先行タスクの期限日がこのタスクの期限日より後の場合
+    if (predecessorDueDate > taskDueDate) {
+      const predecessorDueDateStr = predecessorDueDate.toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+      return `先行タスク「T-${selectedPredecessor.sequence}」の期限日（${predecessorDueDateStr}）が、このタスクの期限日よりも後に設定されています。先行タスクが完了する前に期限日が到来する可能性があります。`;
+    }
+
+    return null;
+  }, [predecessorTaskId, dueDate, predecessorTaskOptions]);
+
   const effectiveCurrentUserId = currentUser?.id ?? 0;
   effectiveCurrentUserIdRef.current = effectiveCurrentUserId;
 
@@ -1246,6 +1269,17 @@ export default function WorkspaceTaskDetailPage({
                         </option>
                       ))}
                     </select>
+                    {predecessorDueDateWarning && (
+                      <div className="label">
+                        <span className="label-text-alt text-warning flex items-start gap-1">
+                          <span
+                            className="icon-[mdi--alert-circle-outline] size-4 shrink-0 mt-0.5"
+                            aria-hidden="true"
+                          />
+                          <span>{predecessorDueDateWarning}</span>
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* 工数（予定・実績）を横並び */}

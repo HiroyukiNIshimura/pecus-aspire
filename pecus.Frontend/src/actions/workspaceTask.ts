@@ -238,6 +238,7 @@ export interface PredecessorTaskOption {
   sequence: number;
   content: string;
   isCompleted: boolean;
+  dueDate: string | null;
 }
 
 /**
@@ -269,6 +270,7 @@ export async function getPredecessorTaskOptions(
         sequence: t.sequence || 0,
         content: t.content || '',
         isCompleted: t.isCompleted || false,
+        dueDate: t.dueDate || null,
       }));
 
     return { success: true, data: tasks };

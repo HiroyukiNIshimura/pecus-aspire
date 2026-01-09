@@ -19353,6 +19353,10 @@
             "description": "所要期間（日数）\nStartDate（なければ前タスクのDueDate、最初のタスクならCreatedAt）からDueDateまでの期間\n完了・破棄済みの場合はnull",
             "format": "double",
             "nullable": true
+          },
+          "hasDueDateConflict": {
+            "type": "boolean",
+            "description": "先行タスクとの期限日コンフリクトがあるか\n先行タスクの期限日が自タスクの期限日より後の場合にtrue"
           }
         },
         "description": "タスクフローマップのノード（個別タスク）"
