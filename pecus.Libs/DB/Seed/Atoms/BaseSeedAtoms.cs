@@ -39,6 +39,10 @@ public abstract class BaseSeedAtoms
     /// 除外する組織ID（BackOffice組織など）
     /// </summary>
     protected long _excludeOrganizationId;
+    /// <summary>
+    /// シード対象の組織IDリスト（SeedOrganizationsAsyncで設定される）
+    /// </summary>
+    protected List<int> _targetOrganizationIds = [];
 
     /// <summary>
     /// Constructor

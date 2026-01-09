@@ -94,13 +94,16 @@ public class LoadTestAtoms : BaseSeedAtoms
     }
 
     /// <summary>
-    /// 組織のシードデータを投入
+    /// 組織のシードデータを投入し、対象組織IDリストを設定
     /// </summary>
     public async Task SeedOrganizationsAsync()
     {
         var dataVolume = GetDataVolume();
-        var existingCount = await _context.Organizations.CountAsync(o => o.Id != _excludeOrganizationId && !o.IsDemo);
-        if (existingCount == 0)
+        var existingOrgs = await _context.Organizations
+            .Where(o => o.Id != _excludeOrganizationId && !o.IsDemo)
+            .ToListAsync();
+
+        if (existingOrgs.Count == 0)
         {
             var organizations = new List<Organization>();
 
@@ -123,6 +126,13 @@ public class LoadTestAtoms : BaseSeedAtoms
             _context.Organizations.AddRange(organizations);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} organizations", organizations.Count);
+
+            _targetOrganizationIds = organizations.Select(o => o.Id).ToList();
+        }
+        else
+        {
+            _targetOrganizationIds = existingOrgs.Select(o => o.Id).ToList();
+            _logger.LogInformation("Using {Count} existing target organizations", _targetOrganizationIds.Count);
         }
     }
 
@@ -133,12 +143,17 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedUsersAsync()
     {
-        // admin ユーザーを作成（Adminロールを持つユーザーが存在しない場合）
-        if (!await _context.Users.AnyAsync(u => u.Roles.Any(r => r.Name == SystemRole.Admin)))
+        // 対象組織にAdminロールを持つユーザーが存在しない場合に作成
+        var hasAdminInTargetOrgs = await _context.Users
+            .AnyAsync(u => u.OrganizationId != null
+                && _targetOrganizationIds.Contains(u.OrganizationId.Value)
+                && u.Roles.Any(r => r.Name == SystemRole.Admin));
+
+        if (!hasAdminInTargetOrgs)
         {
             var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.Admin);
             var organization = await _context.Organizations
-                .Where(o => o.Id != _excludeOrganizationId && !o.IsDemo)
+                .Where(o => _targetOrganizationIds.Contains(o.Id))
                 .OrderBy(o => o.Id)
                 .FirstOrDefaultAsync();
 
@@ -192,16 +207,20 @@ public class LoadTestAtoms : BaseSeedAtoms
         }
 
         var dataVolume = GetDataVolume();
-        var organizations = await _context.Organizations
-            .Where(o => o.Id != _excludeOrganizationId && !o.IsDemo)
-            .ToListAsync();
-        var targetUserCount = organizations.Count * dataVolume.UsersPerOrganization;
-        var existingUserCount = await _context.Users.CountAsync(u => u.Roles.All(r => r.Name == SystemRole.User));
+        var targetUserCount = _targetOrganizationIds.Count * dataVolume.UsersPerOrganization;
+
+        // 対象組織に所属するユーザー数をカウント
+        var existingUserCount = await _context.Users
+            .CountAsync(u => u.OrganizationId != null
+                && _targetOrganizationIds.Contains(u.OrganizationId.Value));
         var usersToCreate = targetUserCount - existingUserCount;
 
         if (usersToCreate > 0)
         {
             var userRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == SystemRole.User);
+            var organizations = await _context.Organizations
+                .Where(o => _targetOrganizationIds.Contains(o.Id))
+                .ToListAsync();
 
             if (organizations.Any())
             {
@@ -290,16 +309,16 @@ public class LoadTestAtoms : BaseSeedAtoms
     public async Task SeedWorkspacesAsync()
     {
         var dataVolume = GetDataVolume();
-        if (!await _context.Workspaces.AnyAsync(w => w.Organization != null && w.OrganizationId != _excludeOrganizationId && !w.Organization!.IsDemo))
+        if (!await _context.Workspaces.AnyAsync(w => _targetOrganizationIds.Contains(w.OrganizationId)))
         {
             var organizations = await _context.Organizations
-                .Where(o => o.Id != _excludeOrganizationId && !o.IsDemo)
+                .Where(o => _targetOrganizationIds.Contains(o.Id))
                 .ToListAsync();
             var genres = await _context.Genres.ToListAsync();
 
             // 組織ごとのアクティブなユーザーを事前に取得（オーナー候補）
             var usersByOrganization = await _context.Users
-                .Where(u => u.OrganizationId != null && u.OrganizationId != _excludeOrganizationId && u.IsActive && u.Organization != null && !u.Organization.IsDemo)
+                .Where(u => u.OrganizationId != null && _targetOrganizationIds.Contains(u.OrganizationId.Value) && u.IsActive)
                 .GroupBy(u => u.OrganizationId!.Value)
                 .ToDictionaryAsync(g => g.Key, g => g.ToList());
 
@@ -791,7 +810,7 @@ public class LoadTestAtoms : BaseSeedAtoms
 
         var users = await _context.Users
             .Where(u => !u.Roles.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice))
-            .Where(u => u.OrganizationId != _excludeOrganizationId)
+            .Where(u => u.OrganizationId != null && _targetOrganizationIds.Contains(u.OrganizationId.Value))
             .ToListAsync();
 
         if (!users.Any())
@@ -870,12 +889,12 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedWorkspaceItemsAsync()
     {
-        var hasNonDemoItems = await _context.WorkspaceItems
-            .AnyAsync(wi => wi.Workspace!.Organization != null && !wi.Workspace!.Organization!.IsDemo);
-        if (!hasNonDemoItems)
+        var hasItems = await _context.WorkspaceItems
+            .AnyAsync(wi => _targetOrganizationIds.Contains(wi.Workspace!.OrganizationId));
+        if (!hasItems)
         {
             var workspaces = await _context.Workspaces
-                .Where(w => w.Organization != null && !w.Organization!.IsDemo)
+                .Where(w => _targetOrganizationIds.Contains(w.OrganizationId))
                 .ToListAsync();
 
             if (!workspaces.Any())
@@ -1025,12 +1044,12 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedWorkspaceItemRelationsAsync()
     {
-        var hasNonDemoRelations = await _context.WorkspaceItemRelations
-            .AnyAsync(r => r.FromItem!.Workspace!.Organization != null && !r.FromItem!.Workspace!.Organization!.IsDemo);
-        if (!hasNonDemoRelations)
+        var hasRelations = await _context.WorkspaceItemRelations
+            .AnyAsync(r => _targetOrganizationIds.Contains(r.FromItem!.Workspace!.OrganizationId));
+        if (!hasRelations)
         {
             var workspaces = await _context.Workspaces
-                .Where(w => w.Organization != null && !w.Organization!.IsDemo)
+                .Where(w => _targetOrganizationIds.Contains(w.OrganizationId))
                 .ToListAsync();
 
             if (!workspaces.Any())
@@ -1129,16 +1148,16 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedWorkspaceTasksAsync()
     {
-        var hasNonDemoTasks = await _context.WorkspaceTasks
-            .AnyAsync(t => t.Workspace!.Organization != null && !t.Workspace!.Organization!.IsDemo);
-        if (hasNonDemoTasks)
+        var hasTasks = await _context.WorkspaceTasks
+            .AnyAsync(t => _targetOrganizationIds.Contains(t.Workspace!.OrganizationId));
+        if (hasTasks)
         {
             _logger.LogInformation("Workspace tasks already exist, skipping seeding");
             return;
         }
 
         var workspaceItems = await _context.WorkspaceItems
-            .Where(wi => wi.Workspace!.Organization != null && !wi.Workspace!.Organization!.IsDemo)
+            .Where(wi => _targetOrganizationIds.Contains(wi.Workspace!.OrganizationId))
             .Select(wi => new { wi.Id, wi.WorkspaceId })
             .ToListAsync();
 
@@ -1340,17 +1359,17 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedTaskCommentsAsync()
     {
-        // TaskCommentsが既に存在する場合はスキップ（Demo組織を除外）
-        var hasNonDemoComments = await _context.TaskComments
-            .AnyAsync(c => c.WorkspaceTask.Workspace!.Organization != null && !c.WorkspaceTask.Workspace!.Organization!.IsDemo);
-        if (hasNonDemoComments)
+        // TaskCommentsが既に存在する場合はスキップ
+        var hasComments = await _context.TaskComments
+            .AnyAsync(c => _targetOrganizationIds.Contains(c.WorkspaceTask.Workspace!.OrganizationId));
+        if (hasComments)
         {
             _logger.LogInformation("Task comments already seeded, skipping");
             return;
         }
 
         var workspaceTasks = await _context.WorkspaceTasks
-            .Where(wt => wt.Workspace!.Organization != null && !wt.Workspace!.Organization!.IsDemo)
+            .Where(wt => _targetOrganizationIds.Contains(wt.Workspace!.OrganizationId))
             .Select(wt => new { wt.Id, wt.WorkspaceId })
             .ToListAsync();
 
@@ -1433,16 +1452,16 @@ public class LoadTestAtoms : BaseSeedAtoms
     /// </summary>
     public async Task SeedActivitiesAsync()
     {
-        var hasNonDemoActivities = await _context.Activities
-            .AnyAsync(a => a.Workspace!.Organization != null && !a.Workspace!.Organization!.IsDemo);
-        if (hasNonDemoActivities)
+        var hasActivities = await _context.Activities
+            .AnyAsync(a => _targetOrganizationIds.Contains(a.Workspace!.OrganizationId));
+        if (hasActivities)
         {
             _logger.LogInformation("Activities already seeded, skipping");
             return;
         }
 
         var items = await _context.WorkspaceItems
-            .Where(wi => wi.Workspace!.Organization != null && !wi.Workspace!.Organization!.IsDemo)
+            .Where(wi => _targetOrganizationIds.Contains(wi.Workspace!.OrganizationId))
             .Select(wi => new { wi.Id, wi.WorkspaceId, wi.CreatedAt })
             .ToListAsync();
 
