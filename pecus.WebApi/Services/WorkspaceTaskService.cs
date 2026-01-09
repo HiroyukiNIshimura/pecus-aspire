@@ -1743,17 +1743,65 @@ public class WorkspaceTaskService
             }
 
             // 開始日の決定
-            var startDate = task.StartDate          // 1. 設定された StartDate
-                ?? previousDueDate                   // 2. 前タスクの DueDate
-                ?? task.CreatedAt;                   // 3. 最初のタスクなら CreatedAt
+            var startDate = task.StartDate          // 設定された StartDate
+                ?? previousDueDate                   // 前タスクの DueDate
+                ?? task.CreatedAt;                   // 最初のタスクなら CreatedAt
 
-            var duration = (task.DueDate - startDate).TotalDays;
+            double duration;
+            if (task.EstimatedHours.HasValue && task.EstimatedHours.Value > 0)
+            {
+                // 推定工数がある場合、8時間労働日で換算
+                duration = (double)task.EstimatedHours.Value / 8.0;
+            }
+            else
+            {
+                // 推定工数がない場合、営業日（土日除外）で計算
+                duration = CalculateBusinessDays(startDate, task.DueDate);
+            }
+
             totalDays += (decimal)Math.Max(0, duration);
 
             previousDueDate = task.DueDate;
         }
 
         return totalDays;
+    }
+
+    /// <summary>
+    /// 2つの日付間の営業日数を計算（土日を除外）
+    /// </summary>
+    /// <param name="startDate">開始日</param>
+    /// <param name="endDate">終了日</param>
+    /// <returns>営業日数</returns>
+    private static double CalculateBusinessDays(DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        if (endDate <= startDate)
+        {
+            return 0;
+        }
+
+        var start = startDate.Date;
+        var end = endDate.Date;
+
+        var totalDays = (int)(end - start).TotalDays;
+        var fullWeeks = totalDays / 7;
+        var remainingDays = totalDays % 7;
+
+        // 完全な週の営業日（週5日）
+        var businessDays = fullWeeks * 5;
+
+        // 残りの日数をチェック
+        var currentDay = start.AddDays(fullWeeks * 7);
+        for (var i = 0; i < remainingDays; i++)
+        {
+            if (currentDay.DayOfWeek != DayOfWeek.Saturday && currentDay.DayOfWeek != DayOfWeek.Sunday)
+            {
+                businessDays++;
+            }
+            currentDay = currentDay.AddDays(1);
+        }
+
+        return businessDays;
     }
 
     /// <summary>
@@ -1950,7 +1998,18 @@ public class WorkspaceTaskService
         if (!task.IsCompleted && !task.IsDiscarded)
         {
             var startDate = task.StartDate ?? previousDueDate ?? task.CreatedAt;
-            var duration = (task.DueDate - startDate).TotalDays;
+
+            double duration;
+            if (task.EstimatedHours.HasValue && task.EstimatedHours.Value > 0)
+            {
+                // 推定工数がある場合、8時間労働日で換算
+                duration = (double)task.EstimatedHours.Value / 8.0;
+            }
+            else
+            {
+                // 推定工数がない場合、営業日（土日除外）で計算
+                duration = CalculateBusinessDays(startDate, task.DueDate);
+            }
             durationDays = (decimal)Math.Max(0, duration);
 
             // 先行タスクの期限日が自タスクの期限日より後の場合はコンフリクト
