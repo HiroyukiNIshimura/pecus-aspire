@@ -324,7 +324,12 @@ namespace Pecus.Libs
                 tokenList.RemoveAt(0);
             }
 
-            cache.Set(userKey, tokenList, TimeSpan.FromDays(1));
+            cache.Set(userKey, tokenList, new MemoryCacheEntryOptions
+            {
+                Size = 1,
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
+                Priority = CacheItemPriority.Low
+            });
         }
 
         /// <summary>

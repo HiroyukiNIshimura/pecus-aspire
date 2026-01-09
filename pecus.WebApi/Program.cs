@@ -92,7 +92,11 @@ if (builder.Environment.IsDevelopment())
 
 // Redisキャッシュの登録
 builder.AddRedisClient("redis");
-builder.Services.AddMemoryCache(); // 分散キャッシュとして
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 10000;          // 最大エントリ数
+    options.CompactionPercentage = 0.25; // 制限超過時に25%を圧縮
+});
 
 // SignalR + Redis バックプレーンの登録
 // Aspire 経由で Redis 接続文字列を取得
