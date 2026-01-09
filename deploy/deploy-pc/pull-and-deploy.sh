@@ -10,6 +10,7 @@ set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEPLOY_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$DEPLOY_DIR/.." && pwd)"
 OPS_DIR="$DEPLOY_DIR/ops"
 
 # 環境変数の読み込み
@@ -23,6 +24,8 @@ fi
 
 REGISTRY="${BUILD_PC_IP}:${REGISTRY_PORT:-5000}"
 VERSION="${1:-latest}"
+BUILD_PC_USER="${BUILD_PC_USER:-coati}"
+BUILD_PC_PROJECT_PATH="${BUILD_PC_PROJECT_PATH:-/var/docker/coati/pecus-aspire}"
 
 # 全サービスの定義（空白区切り）
 ALL_SERVICES="pecus-webapi pecus-frontend pecus-backfire pecus-dbmanager lexicalconverter"
@@ -35,7 +38,33 @@ echo "レジストリ: $REGISTRY"
 echo "バージョン: $VERSION"
 echo ""
 
-# Step 1: 現在のアクティブスロット判定
+# Step 0: ビルドPCから設定ファイルを取得
+echo "📡 ビルドPCから設定ファイルを取得しています..."
+mkdir -p "$REPO_ROOT/config"
+SCP_SRC="${BUILD_PC_USER}@${BUILD_PC_IP}:${BUILD_PC_PROJECT_PATH}/config"
+if scp "${SCP_SRC}/settings.base.json" "${SCP_SRC}/settings.base.prod.json" "$REPO_ROOT/config/" 2>/dev/null; then
+    echo "   ✅ 設定ファイルを取得しました"
+else
+    echo "   ❌ 設定ファイルの取得に失敗しました"
+    echo "   トラブルシューティング:"
+    echo "     1. SSH接続確認: ssh ${BUILD_PC_USER}@${BUILD_PC_IP}"
+    echo "     2. ファイル存在確認: ls ${BUILD_PC_PROJECT_PATH}/config/"
+    exit 1
+fi
+echo ""
+
+# Step 1: 設定ファイルから deploy/.env を生成
+echo "⚙️  deploy/.env を生成しています..."
+if [ -f "$REPO_ROOT/scripts/generate-appsettings.js" ]; then
+    node "$REPO_ROOT/scripts/generate-appsettings.js" -P
+    echo ""
+else
+    echo "⚠️  scripts/generate-appsettings.js が見つかりません。"
+    echo "   deploy/.env が最新であることを確認してください。"
+    echo ""
+fi
+
+# Step 2: 現在のアクティブスロット判定
 echo "🔍 現在のアクティブスロットを確認中..."
 if [ -f "$OPS_DIR/lib.sh" ]; then
     # lib.sh が期待する script_dir 変数を定義
@@ -64,7 +93,7 @@ fi
 echo "📦 デプロイ先: $TARGET_SLOT"
 echo ""
 
-# Step 2: イメージのプル
+# Step 3: イメージのプル
 echo "🚀 イメージをプルしています..."
 PULL_SUCCESS_COUNT=0
 PULL_FAILED_COUNT=0
@@ -105,7 +134,7 @@ if [ $PULL_FAILED_COUNT -gt 0 ]; then
     exit 1
 fi
 
-# Step 3: プルしたイメージにローカルタグを付与
+# Step 4: プルしたイメージにローカルタグを付与
 echo "🏷️  イメージにローカルタグを付与しています..."
 
 # サービス名とcomposeで使用するイメージ名のマッピング
@@ -132,7 +161,7 @@ tag_image "lexicalconverter" "coati-lexicalconverter:local"
 
 echo ""
 
-# Step 4: switch-node.sh でデプロイ実行（--no-build オプション使用）
+# Step 5: switch-node.sh でデプロイ実行（--no-build オプション使用）
 echo "🚀 $TARGET_SLOT スロットへデプロイ中..."
 echo ""
 
