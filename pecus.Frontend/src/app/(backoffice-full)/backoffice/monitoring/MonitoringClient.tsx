@@ -469,6 +469,26 @@ function getAvailableServices(metrics: SystemMetrics | null): string[] {
   return Array.from(services).sort();
 }
 
+/**
+ * GCメトリクスの利用可能なサービス一覧を取得するヘルパー
+ */
+function getAvailableGcServices(metrics: SystemMetrics | null): string[] {
+  const services = new Set<string>();
+  for (const s of metrics?.gcHeapGen0 ?? []) {
+    services.add(getSeriesKey(s));
+  }
+  for (const s of metrics?.gcHeapGen1 ?? []) {
+    services.add(getSeriesKey(s));
+  }
+  for (const s of metrics?.gcHeapGen2 ?? []) {
+    services.add(getSeriesKey(s));
+  }
+  for (const s of metrics?.gcHeapLoh ?? []) {
+    services.add(getSeriesKey(s));
+  }
+  return Array.from(services).sort();
+}
+
 export default function MonitoringClient({
   initialData,
   initialMetrics,
@@ -489,10 +509,13 @@ export default function MonitoringClient({
   const [metricsTab, setMetricsTab] = useState<MetricsTab>('server');
   const [selectedServices, setSelectedServices] = useState<Set<string>>(new Set());
   const [isServiceSelectionInitialized, setIsServiceSelectionInitialized] = useState(false);
+  const [selectedGcServices, setSelectedGcServices] = useState<Set<string>>(new Set());
+  const [isGcServiceSelectionInitialized, setIsGcServiceSelectionInitialized] = useState(false);
 
   const { showLoading } = useDelayedLoading();
 
   const availableServices = getAvailableServices(metrics);
+  const availableGcServices = getAvailableGcServices(metrics);
 
   // サービス名と色の対応を固定（availableServicesの順序に基づく、動的に色を生成）
   const serviceColorMap = new Map<string, string>();
@@ -509,6 +532,15 @@ export default function MonitoringClient({
       setIsServiceSelectionInitialized(true);
     }
   }, [metrics, isServiceSelectionInitialized]);
+
+  // GCメトリクスの選択状態を初期化（初回のみ全選択）
+  useEffect(() => {
+    const services = getAvailableGcServices(metrics);
+    if (services.length > 0 && !isGcServiceSelectionInitialized) {
+      setSelectedGcServices(new Set(services));
+      setIsGcServiceSelectionInitialized(true);
+    }
+  }, [metrics, isGcServiceSelectionInitialized]);
 
   const handleServiceToggle = (service: string) => {
     setSelectedServices((prev) => {
@@ -530,10 +562,36 @@ export default function MonitoringClient({
     setSelectedServices(new Set());
   };
 
+  const handleGcServiceToggle = (service: string) => {
+    setSelectedGcServices((prev) => {
+      const next = new Set(prev);
+      if (next.has(service)) {
+        next.delete(service);
+      } else {
+        next.add(service);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAllGcServices = () => {
+    setSelectedGcServices(new Set(availableGcServices));
+  };
+
+  const handleDeselectAllGcServices = () => {
+    setSelectedGcServices(new Set());
+  };
+
   // 選択されたサービスでシリーズをフィルタリング
   const filterSeriesBySelectedServices = (series: MetricTimeSeries[]): MetricTimeSeries[] => {
     if (selectedServices.size === 0) return [];
     return series.filter((s) => selectedServices.has(getSeriesKey(s)));
+  };
+
+  // 選択されたGCサービスでシリーズをフィルタリング
+  const filterSeriesBySelectedGcServices = (series: MetricTimeSeries[]): MetricTimeSeries[] => {
+    if (selectedGcServices.size === 0) return [];
+    return series.filter((s) => selectedGcServices.has(getSeriesKey(s)));
   };
 
   useEffect(() => {
@@ -821,7 +879,7 @@ export default function MonitoringClient({
                       {/* サービスフィルター */}
                       <div className="mb-4 p-3 bg-base-200 rounded-lg">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">表示するサービス</span>
+                          <span className="text-xs text-base-content/60">表示するサービス</span>
                           <div className="flex gap-2">
                             <button type="button" className="btn btn-xs btn-ghost" onClick={handleSelectAllServices}>
                               全選択
@@ -877,15 +935,65 @@ export default function MonitoringClient({
                             - Gen2/LOH の増加はメモリリークの可能性
                           </span>
                         </h3>
+                        {/* GC用サービスフィルター */}
+                        {availableGcServices.length > 1 && (
+                          <div className="mb-3 p-2 bg-base-200 rounded-lg">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs text-base-content/60">表示するサービス</span>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  className="btn btn-xs btn-ghost"
+                                  onClick={handleSelectAllGcServices}
+                                >
+                                  全選択
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-xs btn-ghost"
+                                  onClick={handleDeselectAllGcServices}
+                                >
+                                  全解除
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {availableGcServices.map((service, i) => (
+                                <label
+                                  key={service}
+                                  className="flex items-center gap-1.5 px-2 py-1 bg-base-100 rounded cursor-pointer hover:bg-base-300 transition-colors"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="checkbox checkbox-xs"
+                                    checked={selectedGcServices.has(service)}
+                                    onChange={() => handleGcServiceToggle(service)}
+                                  />
+                                  <span
+                                    className="w-2.5 h-2.5 rounded-full"
+                                    style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                                  />
+                                  <span className="text-sm">{service}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                           <MetricsChart
                             title="GC Heap Gen0 / Gen1"
-                            series={[...(metrics?.gcHeapGen0 ?? []), ...(metrics?.gcHeapGen1 ?? [])]}
+                            series={[
+                              ...filterSeriesBySelectedGcServices(metrics?.gcHeapGen0 ?? []),
+                              ...filterSeriesBySelectedGcServices(metrics?.gcHeapGen1 ?? []),
+                            ]}
                             unit="MB"
                           />
                           <MetricsChart
                             title="GC Heap Gen2 / LOH"
-                            series={[...(metrics?.gcHeapGen2 ?? []), ...(metrics?.gcHeapLoh ?? [])]}
+                            series={[
+                              ...filterSeriesBySelectedGcServices(metrics?.gcHeapGen2 ?? []),
+                              ...filterSeriesBySelectedGcServices(metrics?.gcHeapLoh ?? []),
+                            ]}
                             unit="MB"
                           />
                         </div>
