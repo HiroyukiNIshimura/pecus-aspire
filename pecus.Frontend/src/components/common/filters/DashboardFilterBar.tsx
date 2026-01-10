@@ -55,7 +55,7 @@ function FilterButton({ label, count, isActive, onClick, colorClass, iconClass }
       <span className="text-sm font-medium">{label}</span>
       <span
         className={`
-        text-sm font-bold min-w-[1.5rem] text-center
+        text-sm font-bold min-w-6 text-center
         ${isDisabled ? 'text-base-content/30' : isActive ? 'text-white/90' : colorClass.replace('bg-', 'text-')}
       `}
       >
