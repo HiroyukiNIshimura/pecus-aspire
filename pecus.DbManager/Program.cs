@@ -5,6 +5,7 @@ using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Seed;
 using Pecus.Libs.DB.Seed.Atoms;
+using Pecus.Libs.DB.Services;
 using Pecus.Libs.Lexical;
 
 #if DEBUG
@@ -50,6 +51,7 @@ builder.Services.AddScoped<CommonAtoms>();
 builder.Services.AddScoped<ProductAtoms>();
 builder.Services.AddScoped<DeveloperAtoms>();
 builder.Services.AddScoped<LoadTestAtoms>();
+builder.Services.AddScoped<OrganizationDeletionService>();
 builder.Services.AddScoped<DemoAtoms>();
 builder.Services.AddScoped<DatabaseSeeder>();
 

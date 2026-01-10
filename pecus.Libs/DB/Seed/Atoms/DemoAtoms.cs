@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Pecus.Libs.AI;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.DB.Services;
 using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
 
@@ -18,24 +19,23 @@ public class DemoAtoms
     private readonly ILogger<DemoAtoms> _logger;
     private readonly DemoModeOptions _options;
     private readonly CommonAtoms _commonAtoms;
+    private readonly OrganizationDeletionService _organizationDeletionService;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="logger"></param>
-    /// <param name="options"></param>
-    /// <param name="commonAtoms"></param>
     public DemoAtoms(
         ApplicationDbContext context,
         ILogger<DemoAtoms> logger,
         IOptions<DemoModeOptions> options,
-        CommonAtoms commonAtoms)
+        CommonAtoms commonAtoms,
+        OrganizationDeletionService organizationDeletionService)
     {
         _context = context;
         _logger = logger;
         _options = options.Value;
         _commonAtoms = commonAtoms;
+        _organizationDeletionService = organizationDeletionService;
     }
 
     /// <summary>
@@ -64,12 +64,14 @@ public class DemoAtoms
     /// <returns>作成または取得されたデモ組織のID</returns>
     private async Task<long> SeedDemoDataAsync()
     {
-        var existingOrg = await _context.Organizations.FirstOrDefaultAsync(o => o.Code == _options.Organization.Code);
+        var existingOrg = await _context.Organizations
+            .Include(o => o.Users)
+            .FirstOrDefaultAsync(o => o.Code == _options.Organization.Code);
+
         if (existingOrg != null)
         {
-            _logger.LogInformation("Demo organization already exists, updating bots if needed...");
-            await UpdateDemoBotsAsync(existingOrg);
-            return existingOrg.Id;
+            _logger.LogInformation("Demo organization already exists, deleting and recreating...");
+            await DeleteDemoOrganizationAsync(existingOrg);
         }
 
         await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -155,42 +157,12 @@ public class DemoAtoms
         }
     }
 
-    private async Task UpdateDemoBotsAsync(Organization org)
+    /// <summary>
+    /// デモ組織と関連データを削除
+    /// </summary>
+    private async Task DeleteDemoOrganizationAsync(Organization org)
     {
-        var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
-        var systemBotConstraint = BotPersonaHelper.GetSystemBotConstraint();
-        var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
-        var chatBotConstraint = BotPersonaHelper.GetChatBotConstraint();
-
-        var existingSystemBot = await _context.Bots
-            .FirstOrDefaultAsync(b => b.OrganizationId == org.Id && b.Type == BotType.SystemBot);
-        var existingChatBot = await _context.Bots
-            .FirstOrDefaultAsync(b => b.OrganizationId == org.Id && b.Type == BotType.ChatBot);
-
-        var updated = false;
-
-        if (existingSystemBot != null)
-        {
-            existingSystemBot.Persona = systemBotPersona;
-            existingSystemBot.Constraint = systemBotConstraint;
-            existingSystemBot.UpdatedAt = DateTimeOffset.UtcNow;
-            updated = true;
-            _logger.LogInformation("Demo SystemBot Persona/Constraint updated: {Name}", existingSystemBot.Name);
-        }
-
-        if (existingChatBot != null)
-        {
-            existingChatBot.Persona = chatBotPersona;
-            existingChatBot.Constraint = chatBotConstraint;
-            existingChatBot.UpdatedAt = DateTimeOffset.UtcNow;
-            updated = true;
-            _logger.LogInformation("Demo ChatBot Persona/Constraint updated: {Name}", existingChatBot.Name);
-        }
-
-        if (updated)
-        {
-            await _context.SaveChangesAsync();
-        }
+        await _organizationDeletionService.DeleteOrganizationWithRelatedDataAsync(org.Id);
     }
 
     private Organization CreateDemoOrganization()

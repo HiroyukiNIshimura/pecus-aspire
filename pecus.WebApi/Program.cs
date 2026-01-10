@@ -10,6 +10,7 @@ using Pecus.Hubs;
 using Pecus.Libs;
 using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Services;
 using Pecus.Libs.Focus;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Hangfire.Tasks.Bot;
@@ -119,6 +120,9 @@ builder.Services.AddSignalR(options =>
 
 // ヘルパーの登録
 builder.Services.AddScoped<OrganizationAccessHelper>();
+
+// Libs の共通サービスの登録
+builder.Services.AddScoped<OrganizationDeletionService>();
 
 // サービスの登録
 builder.Services.AddScoped<UserService>();
