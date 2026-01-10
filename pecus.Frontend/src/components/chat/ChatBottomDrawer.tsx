@@ -57,7 +57,7 @@ export default function ChatBottomDrawer({
       {/* ヘッダー */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-base-300 bg-base-200">
         <h2 className="font-semibold text-base">チャット</h2>
-        <button type="button" onClick={closeDrawer} className="btn btn-ghost btn-sm btn-circle" aria-label="閉じる">
+        <button type="button" onClick={closeDrawer} className="btn btn-secondary btn-sm btn-circle" aria-label="閉じる">
           <span className="icon-[tabler--x] size-5" aria-hidden="true" />
         </button>
       </div>

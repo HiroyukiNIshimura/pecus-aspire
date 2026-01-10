@@ -122,7 +122,7 @@ export default function DmUserSearchModal({
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 border-b border-base-300 shrink-0">
           <h2 className="text-lg font-bold">ユーザーを検索</h2>
-          <button type="button" className="btn btn-sm btn-circle btn-ghost" aria-label="閉じる" onClick={onClose}>
+          <button type="button" className="btn btn-sm btn-circle btn-secondary" aria-label="閉じる" onClick={onClose}>
             <span className="icon-[tabler--x] size-5" aria-hidden="true" />
           </button>
         </div>

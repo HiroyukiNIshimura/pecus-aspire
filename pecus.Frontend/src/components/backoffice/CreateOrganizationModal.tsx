@@ -353,7 +353,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
         </div>
 
         <div className="flex justify-end gap-2 p-4 sm:p-6 border-t border-base-300 shrink-0">
-          <button type="button" className="btn btn-ghost" onClick={handleClose} disabled={isSubmitting}>
+          <button type="button" className="btn btn-secondary" onClick={handleClose} disabled={isSubmitting}>
             キャンセル
           </button>
           <button

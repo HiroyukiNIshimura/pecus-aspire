@@ -158,7 +158,7 @@ export default function DocumentTreeSidebar({
 
     return (
       <div
-        className={`flex items-center p-2 rounded cursor-pointer hover:bg-base-300 transition-colors ${
+        className={`flex items-center p-2 rounded cursor-pointer hover:bg-base-content/10 transition-colors ${
           isSelected ? 'bg-primary/10 text-primary font-semibold' : ''
         }`}
         style={{ paddingLeft: `${indent + 8}px` }}
@@ -205,7 +205,7 @@ export default function DocumentTreeSidebar({
       <div className="flex flex-col items-center justify-center h-full p-4 text-center">
         <span className="icon-[mdi--alert-circle-outline] w-8 h-8 text-error mb-2" aria-hidden="true" />
         <p className="text-sm text-base-content/70">{error}</p>
-        <button type="button" className="btn btn-sm btn-ghost mt-2" onClick={() => loadDocumentTree()}>
+        <button type="button" className="btn btn-sm btn-secondary mt-2" onClick={() => loadDocumentTree()}>
           再試行
         </button>
       </div>

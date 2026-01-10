@@ -171,7 +171,7 @@ export default function ItemAttachmentModal({
               添付ファイル
               {attachments.length > 0 && <span className="badge badge-secondary badge-sm">{attachments.length}</span>}
             </h2>
-            <button type="button" onClick={onClose} className="btn btn-sm btn-circle btn-ghost" aria-label="閉じる">
+            <button type="button" onClick={onClose} className="btn btn-sm btn-circle btn-secondary" aria-label="閉じる">
               <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>

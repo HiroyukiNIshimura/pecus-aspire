@@ -158,7 +158,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                     <div className="flex gap-2">
                       {!isEditing ? (
                         <>
-                          <a href="/backoffice/organizations" className="btn btn-ghost btn-sm">
+                          <a href="/backoffice/organizations" className="btn btn-secondary btn-sm">
                             <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
                             戻る
                           </a>
@@ -179,7 +179,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                         <>
                           <button
                             type="button"
-                            className="btn btn-ghost btn-sm"
+                            className="btn btn-secondary btn-sm"
                             onClick={() => setIsEditing(false)}
                             disabled={isPending}
                           >
@@ -273,7 +273,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                         {data.isDemo ? (
                           <span className="badge badge-warning">デモ</span>
                         ) : (
-                          <span className="badge badge-ghost">通常</span>
+                          <span className="badge badge-secondary">通常</span>
                         )}
                       </div>
                     </div>

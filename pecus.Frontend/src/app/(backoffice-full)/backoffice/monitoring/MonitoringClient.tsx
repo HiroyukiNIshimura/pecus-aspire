@@ -153,7 +153,7 @@ function BackgroundJobStatus({ stats }: { stats?: HangfireStatsResponse }) {
               href="https://localhost:17225/hangfire"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-xs btn-ghost gap-1"
+              className="btn btn-xs btn-secondary gap-1"
               title="デバッグ環境のみ"
             >
               Dashboard
@@ -186,7 +186,7 @@ function BackgroundJobStatus({ stats }: { stats?: HangfireStatsResponse }) {
           {/* Failed */}
           <div className={`stat p-2 bg-base-100 rounded-lg ${hasFailures ? 'border border-error/50' : ''}`}>
             <div className="stat-title text-xs flex items-center gap-1">
-              <span className={`badge badge-xs ${hasFailures ? 'badge-error' : 'badge-ghost'}`} />
+              <span className={`badge badge-xs ${hasFailures ? 'badge-error' : 'badge-secondary'}`} />
               Failed
             </div>
             <div className={`stat-value text-lg ${hasFailures ? 'text-error' : ''}`}>{failed}</div>
@@ -213,7 +213,7 @@ function BackgroundJobStatus({ stats }: { stats?: HangfireStatsResponse }) {
           {/* Scheduled */}
           <div className="stat p-2 bg-base-100 rounded-lg">
             <div className="stat-title text-xs flex items-center gap-1">
-              <span className="badge badge-xs badge-ghost" />
+              <span className="badge badge-xs badge-secondary" />
               Scheduled
             </div>
             <div className="stat-value text-lg">{scheduled}</div>
@@ -701,7 +701,12 @@ export default function MonitoringClient({
                     最終更新: {new Date(resources.timestamp).toLocaleTimeString('ja-JP')}
                   </span>
                 )}
-                <button type="button" className="btn btn-ghost btn-sm" onClick={handleRefresh} disabled={isRefreshing}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                >
                   <span
                     className={`icon-[mdi--refresh] size-5 ${isRefreshing ? 'animate-spin' : ''}`}
                     aria-hidden="true"
@@ -796,7 +801,7 @@ export default function MonitoringClient({
                       <div className="join">
                         <button
                           type="button"
-                          className={`join-item btn btn-sm ${timeRange === '1h' ? 'btn-primary' : 'btn-ghost'}`}
+                          className={`join-item btn btn-sm ${timeRange === '1h' ? 'btn-primary' : 'btn-secondary'}`}
                           onClick={() => handleTimeRangeChange('1h')}
                           disabled={isLoadingMetrics}
                         >
@@ -804,7 +809,7 @@ export default function MonitoringClient({
                         </button>
                         <button
                           type="button"
-                          className={`join-item btn btn-sm ${timeRange === '6h' ? 'btn-primary' : 'btn-ghost'}`}
+                          className={`join-item btn btn-sm ${timeRange === '6h' ? 'btn-primary' : 'btn-secondary'}`}
                           onClick={() => handleTimeRangeChange('6h')}
                           disabled={isLoadingMetrics}
                         >
@@ -812,7 +817,7 @@ export default function MonitoringClient({
                         </button>
                         <button
                           type="button"
-                          className={`join-item btn btn-sm ${timeRange === '24h' ? 'btn-primary' : 'btn-ghost'}`}
+                          className={`join-item btn btn-sm ${timeRange === '24h' ? 'btn-primary' : 'btn-secondary'}`}
                           onClick={() => handleTimeRangeChange('24h')}
                           disabled={isLoadingMetrics}
                         >
@@ -881,10 +886,18 @@ export default function MonitoringClient({
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs text-base-content/60">表示するサービス</span>
                           <div className="flex gap-2">
-                            <button type="button" className="btn btn-xs btn-ghost" onClick={handleSelectAllServices}>
+                            <button
+                              type="button"
+                              className="btn btn-xs btn-secondary"
+                              onClick={handleSelectAllServices}
+                            >
                               全選択
                             </button>
-                            <button type="button" className="btn btn-xs btn-ghost" onClick={handleDeselectAllServices}>
+                            <button
+                              type="button"
+                              className="btn btn-xs btn-secondary"
+                              onClick={handleDeselectAllServices}
+                            >
                               全解除
                             </button>
                           </div>
@@ -943,14 +956,14 @@ export default function MonitoringClient({
                               <div className="flex gap-2">
                                 <button
                                   type="button"
-                                  className="btn btn-xs btn-ghost"
+                                  className="btn btn-xs btn-secondary"
                                   onClick={handleSelectAllGcServices}
                                 >
                                   全選択
                                 </button>
                                 <button
                                   type="button"
-                                  className="btn btn-xs btn-ghost"
+                                  className="btn btn-xs btn-secondary"
                                   onClick={handleDeselectAllGcServices}
                                 >
                                   全解除

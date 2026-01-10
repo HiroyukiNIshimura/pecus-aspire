@@ -373,12 +373,12 @@ const WorkspaceTasks = ({
 
   // ヘッダー部分の共通コンポーネント
   const renderHeader = () => (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
       <div className="flex items-center gap-4">
         <h3 className="text-lg font-bold">タスク{totalCount > 0 ? ` (${totalCount})` : ''}</h3>
         {/* コミッター表示 */}
-        <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
-          <span className="text-base-content/50">コミッター:</span>
+        <div className="flex items-center gap-2 text-sm text-base-content/70 sm:border-l sm:border-base-300 sm:pl-4">
+          <span className="text-base-content/50 hidden sm:inline">コミッター:</span>
           {itemCommitterName ? (
             <UserAvatar
               userName={itemCommitterName}
@@ -400,11 +400,11 @@ const WorkspaceTasks = ({
           title="タスクフローマップを表示"
         >
           <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
-          フロー
+          <span className="hidden sm:inline">フロー</span>
         </button>
         <button
           type="button"
-          className="btn btn-outline btn-primary btn-sm"
+          className="btn btn-outline btn-primary btn-sm gap-1"
           onClick={() => {
             if (!canEdit) {
               notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
@@ -414,7 +414,7 @@ const WorkspaceTasks = ({
           }}
         >
           <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
-          タスク追加
+          <span className="hidden sm:inline">タスク追加</span>
         </button>
       </div>
     </div>

@@ -148,7 +148,7 @@ export default function ChatFullScreenClient({
         <button
           type="button"
           onClick={() => router.back()}
-          className="btn btn-ghost btn-sm btn-circle mr-2"
+          className="btn btn-secondary btn-sm btn-circle mr-2"
           aria-label="戻る"
         >
           <span className="icon-[tabler--arrow-left] size-5" aria-hidden="true" />

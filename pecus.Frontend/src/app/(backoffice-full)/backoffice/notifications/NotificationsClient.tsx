@@ -96,7 +96,7 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
       return <span className="badge badge-success">配信済み</span>;
     }
     if (!item.publishAt) {
-      return <span className="badge badge-ghost">未設定</span>;
+      return <span className="badge badge-secondary">未設定</span>;
     }
     const now = new Date();
     const publishAt = new Date(item.publishAt);
@@ -145,7 +145,7 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
               <div className="alert alert-soft alert-error mb-4">
                 <span className="icon-[mdi--alert-circle] size-5" aria-hidden="true" />
                 <span>{clientError.message || `エラーコード: ${clientError.code}`}</span>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setClientError(null)}>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setClientError(null)}>
                   <span className="icon-[mdi--close] size-4" aria-hidden="true" />
                 </button>
               </div>
@@ -170,7 +170,9 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
                     <tr key={item.id} className={item.isDeleted ? 'opacity-50' : ''}>
                       <td>{item.id}</td>
                       <td>
-                        <span className={`badge ${notificationTypeBadgeClass[item.type || 'Info'] || 'badge-ghost'}`}>
+                        <span
+                          className={`badge ${notificationTypeBadgeClass[item.type || 'Info'] || 'badge-secondary'}`}
+                        >
                           {notificationTypeLabels[item.type || 'Info'] || item.type}
                         </span>
                       </td>
@@ -180,7 +182,10 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
                       <td>{getStatusBadge(item)}</td>
                       <td className="text-sm text-base-content/70">{item.createdByUserName || '-'}</td>
                       <td>
-                        <a href={`/backoffice/notifications/${item.id}`} className="btn btn-ghost btn-sm btn-square">
+                        <a
+                          href={`/backoffice/notifications/${item.id}`}
+                          className="btn btn-secondary btn-sm btn-square"
+                        >
                           <span className="icon-[mdi--dots-vertical] size-5" aria-hidden="true" />
                           <span className="sr-only">詳細を見る</span>
                         </a>

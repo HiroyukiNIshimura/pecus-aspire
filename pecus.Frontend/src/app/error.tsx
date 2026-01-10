@@ -44,7 +44,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           <button type="button" onClick={() => reset()} className="btn btn-primary btn-sm">
             もう一度試す
           </button>
-          <Link href="/" className="btn btn-ghost btn-sm">
+          <Link href="/" className="btn btn-secondary btn-sm">
             ホームに戻る
           </Link>
         </div>
