@@ -125,8 +125,8 @@ function TableOfContentsList({ tableOfContents }: { tableOfContents: Array<Table
           if (index === 0) {
             return (
               <div className="normal-heading-wrapper" key={key}>
-                {/** biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
-                {/** biome-ignore lint/a11y/useSemanticElements: <explanation> */}
+                {/** biome-ignore lint/a11y/useKeyWithClickEvents: false positive */}
+                {/** biome-ignore lint/a11y/useSemanticElements: false positive */}
                 <div className="first-heading" onClick={() => scrollToNode(key, index)} role="button" tabIndex={0}>
                   {`${text}`.length > 20 ? `${text.substring(0, 20)}...` : text}
                 </div>
@@ -139,8 +139,8 @@ function TableOfContentsList({ tableOfContents }: { tableOfContents: Array<Table
                 className={`normal-heading-wrapper ${selectedKey === key ? 'selected-heading-wrapper' : ''}`}
                 key={key}
               >
-                {/** biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
-                {/** biome-ignore lint/a11y/useSemanticElements: <explanation> */}
+                {/** biome-ignore lint/a11y/useKeyWithClickEvents: false positive */}
+                {/** biome-ignore lint/a11y/useSemanticElements: false positive */}
                 <div onClick={() => scrollToNode(key, index)} role="button" className={indent(tag)} tabIndex={0}>
                   <li
                     className={`normal-heading ${selectedKey === key ? 'selected-heading' : ''}
