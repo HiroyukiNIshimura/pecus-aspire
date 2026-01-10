@@ -8,13 +8,11 @@ namespace Pecus.Libs.DB.Services;
 /// サブクエリを使用してメモリ効率を改善し、バッチ削除で大量データに対応
 /// </summary>
 /// <remarks>
-/// このサービスは大規模データ（数万〜数十万件）向けです。
 /// 特徴:
 /// - IDリストをメモリに保持せずサブクエリで処理
 /// - バッチ削除で長時間ロックを回避
 /// - 進捗ログを出力
 ///
-/// Hangfire ジョブからの利用を想定しています。
 /// </remarks>
 public class BatchOrganizationDeletionService
 {
