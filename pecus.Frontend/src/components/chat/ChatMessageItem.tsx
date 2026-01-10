@@ -142,7 +142,7 @@ export default function ChatMessageItemComponent({
         <div className="max-w-4/5">
           <MessageContent
             content={content}
-            className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none wrap-break-word whitespace-pre-wrap [&_a]:text-primary-content [&_a]:underline"
+            className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none wrap-break-word whitespace-pre-wrap [&_a]:text-primary-content [&_a]:underline [&_a:hover]:text-info-content"
           />
           <div className="flex items-center justify-end gap-2 mt-1">
             <span className="text-xs text-base-content/50">{createdAt && formatRelativeTime(createdAt)}</span>
