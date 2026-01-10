@@ -56,7 +56,7 @@ echo "📥 最新ソースコードを取得中..."
 if [ -d "$PROJECT_ROOT/.git" ]; then
     if git -C "$PROJECT_ROOT" pull; then
         echo "✅ Git pull 完了"
-        
+
         # スクリプト自身が更新されたかチェック
         if [ -n "$SCRIPT_HASH_BEFORE" ]; then
             SCRIPT_HASH_AFTER=""
@@ -65,7 +65,7 @@ if [ -d "$PROJECT_ROOT/.git" ]; then
             elif command -v md5 > /dev/null 2>&1; then
                 SCRIPT_HASH_AFTER=$(md5 -q "$SCRIPT_PATH")
             fi
-            
+
             if [ "$SCRIPT_HASH_BEFORE" != "$SCRIPT_HASH_AFTER" ]; then
                 echo ""
                 echo "⚠️  このスクリプト自身が更新されました。"
