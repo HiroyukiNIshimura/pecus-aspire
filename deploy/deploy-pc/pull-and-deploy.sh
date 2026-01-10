@@ -1,6 +1,5 @@
 #!/bin/sh
 set -eu
-
 # ================================================================================
 # イメージプル & デプロイスクリプト
 # ================================================================================
@@ -27,6 +26,15 @@ VERSION="${1:-latest}"
 BUILD_PC_USER="${BUILD_PC_USER:-coati}"
 BUILD_PC_PROJECT_PATH="${BUILD_PC_PROJECT_PATH:-/var/docker/coati/pecus-aspire}"
 
+# スクリプト自身のパスとハッシュ（自己更新検出用）
+SCRIPT_PATH="$SCRIPT_DIR/pull-and-deploy.sh"
+SCRIPT_HASH_BEFORE=""
+if command -v md5sum > /dev/null 2>&1; then
+    SCRIPT_HASH_BEFORE=$(md5sum "$SCRIPT_PATH" | cut -d' ' -f1)
+elif command -v md5 > /dev/null 2>&1; then
+    SCRIPT_HASH_BEFORE=$(md5 -q "$SCRIPT_PATH")
+fi
+
 # 全サービスの定義（空白区切り）
 ALL_SERVICES="pecus-webapi pecus-frontend pecus-backfire pecus-dbmanager lexicalconverter"
 
@@ -38,7 +46,38 @@ echo "レジストリ: $REGISTRY"
 echo "バージョン: $VERSION"
 echo ""
 
-# Step 0: ビルドPCから設定ファイルを取得
+# Step 0: Git pull で最新スクリプトを取得
+echo "📥 最新スクリプトを取得中..."
+if [ -d "$REPO_ROOT/.git" ]; then
+    if git -C "$REPO_ROOT" pull; then
+        echo "✅ Git pull 完了"
+
+        # スクリプト自身が更新されたかチェック
+        if [ -n "$SCRIPT_HASH_BEFORE" ]; then
+            SCRIPT_HASH_AFTER=""
+            if command -v md5sum > /dev/null 2>&1; then
+                SCRIPT_HASH_AFTER=$(md5sum "$SCRIPT_PATH" | cut -d' ' -f1)
+            elif command -v md5 > /dev/null 2>&1; then
+                SCRIPT_HASH_AFTER=$(md5 -q "$SCRIPT_PATH")
+            fi
+
+            if [ "$SCRIPT_HASH_BEFORE" != "$SCRIPT_HASH_AFTER" ]; then
+                echo ""
+                echo "⚠️  このスクリプト自身が更新されました。"
+                echo "   最新版で再実行してください:"
+                echo "   $0 $*"
+                exit 0
+            fi
+        fi
+    else
+        echo "⚠️  Git pull に失敗しました。続行します..."
+    fi
+else
+    echo "⚠️  .git ディレクトリが見つかりません。Git pull をスキップします。"
+fi
+echo ""
+
+# Step 1: ビルドPCから設定ファイルを取得
 echo "📡 ビルドPCから設定ファイルを取得しています..."
 mkdir -p "$REPO_ROOT/config"
 # ssh + tar で1回の接続で複数ファイルを転送
@@ -55,7 +94,7 @@ else
 fi
 echo ""
 
-# Step 1: 設定ファイルから deploy/.env を生成
+# Step 2: 設定ファイルから deploy/.env を生成
 echo "⚙️  deploy/.env を生成しています..."
 if [ -f "$REPO_ROOT/scripts/generate-appsettings.js" ]; then
     node "$REPO_ROOT/scripts/generate-appsettings.js" -P
@@ -66,7 +105,7 @@ else
     echo ""
 fi
 
-# Step 2: 現在のアクティブスロット判定
+# Step 3: 現在のアクティブスロット判定
 echo "🔍 現在のアクティブスロットを確認中..."
 if [ -f "$OPS_DIR/lib.sh" ]; then
     # lib.sh が期待する script_dir 変数を定義
@@ -95,7 +134,7 @@ fi
 echo "📦 デプロイ先: $TARGET_SLOT"
 echo ""
 
-# Step 3: イメージのプル
+# Step 4: イメージのプル
 echo "🚀 イメージをプルしています..."
 PULL_SUCCESS_COUNT=0
 PULL_FAILED_COUNT=0
@@ -136,7 +175,7 @@ if [ $PULL_FAILED_COUNT -gt 0 ]; then
     exit 1
 fi
 
-# Step 4: プルしたイメージにローカルタグを付与
+# Step 5: プルしたイメージにローカルタグを付与
 echo "🏷️  イメージにローカルタグを付与しています..."
 
 # サービス名とcomposeで使用するイメージ名のマッピング
@@ -163,7 +202,7 @@ tag_image "lexicalconverter" "coati-lexicalconverter:local"
 
 echo ""
 
-# Step 5: switch-node.sh でデプロイ実行（--no-build オプション使用）
+# Step 6: switch-node.sh でデプロイ実行（--no-build オプション使用）
 echo "🚀 $TARGET_SLOT スロットへデプロイ中..."
 echo ""
 
