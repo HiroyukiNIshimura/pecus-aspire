@@ -115,8 +115,28 @@ for SERVICE in $SERVICES; do
         continue
     fi
 
+    # ビルド引数を構築（pecus-frontend のみ NEXT_PUBLIC_API_URL が必要）
+    BUILD_ARGS=""
+    if [ "$SERVICE" = "pecus-frontend" ]; then
+        # deploy/.env から NEXT_PUBLIC_API_URL を取得（generate-appsettings.js -P で生成済み）
+        DEPLOY_ENV="$PROJECT_ROOT/deploy/.env"
+        if [ -f "$DEPLOY_ENV" ]; then
+            NEXT_PUBLIC_API_URL=$(grep -E '^NEXT_PUBLIC_API_URL=' "$DEPLOY_ENV" | cut -d'=' -f2-)
+            if [ -n "$NEXT_PUBLIC_API_URL" ]; then
+                BUILD_ARGS="--build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL"
+                echo "📌 NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL"
+            else
+                echo "⚠️  NEXT_PUBLIC_API_URL が deploy/.env に設定されていません"
+            fi
+        else
+            echo "⚠️  deploy/.env が見つかりません（generate-appsettings.js -P を実行してください）"
+        fi
+    fi
+
     # イメージのビルド
+    # shellcheck disable=SC2086
     if docker build \
+        $BUILD_ARGS \
         -t "$REGISTRY/$SERVICE:$VERSION" \
         -t "$REGISTRY/$SERVICE:latest" \
         -f "$DOCKERFILE" \
