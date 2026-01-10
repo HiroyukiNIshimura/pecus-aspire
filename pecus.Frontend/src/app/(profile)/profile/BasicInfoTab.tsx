@@ -149,6 +149,14 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
 
       if (uploadResult.success) {
         setUploadedFileUrl(uploadResult.data?.fileUrl || null);
+        // アップロードによりDBのユーザーレコードが更新されるため、最新のRowVersionで更新
+        // これにより後続のプロファイル更新時の競合エラーを防止
+        if (uploadResult.data?.rowVersion !== undefined) {
+          onUpdate({
+            ...user,
+            rowVersion: uploadResult.data.rowVersion,
+          });
+        }
         notify.success('画像をアップロードしました。アバターは基本情報更新後に反映されます。');
       } else {
         notify.error(uploadResult.message || 'アップロードに失敗しました');

@@ -187,24 +187,14 @@ public class AnthropicClient : IAnthropicClient, IAiClient
         string? persona = null,
         CancellationToken cancellationToken = default)
     {
-        var systemPrompt = """
-            あなたはビジネス文書作成のアシスタントです。
-            与えられたタイトルと補足情報から、適切な本文テンプレートをMarkdown形式で作成してください。
+        var template = new Prompts.Common.MarkdownFromTitlePromptTemplate();
+        var input = new Prompts.Common.MarkdownFromTitleInput(title, additionalContext);
 
-            ルール:
-            - 簡潔で分かりやすい文章を心がける
-            - 必要に応じて見出し（##, ###）、箇条書き、表を使用する
-            - 最初の行はタイトルの見出し（#）から始めない（タイトルは別途表示されるため）
-            - 日本語で記述する
-            - 補足情報が提供された場合は、その内容に特化した回答を行う
-            - 最適解ではなく、あくまで参考例として提供する
-            """;
-
-        var userPrompt = string.IsNullOrEmpty(additionalContext)
-            ? $"タイトル: {title}"
-            : $"タイトル: {title}\n\n補足情報: {additionalContext}";
-
-        return await GenerateTextAsync(systemPrompt, userPrompt, persona, cancellationToken);
+        return await GenerateTextAsync(
+            template.BuildSystemPrompt(input),
+            template.BuildUserPrompt(input),
+            persona,
+            cancellationToken);
     }
 
     /// <inheritdoc />
@@ -215,12 +205,7 @@ public class AnthropicClient : IAnthropicClient, IAiClient
         CancellationToken cancellationToken = default) where T : class
     {
         // システムプロンプトにJSON指示を追加
-        var jsonSystemPrompt = $"""
-            {systemPrompt}
-
-            必ずJSON形式で回答してください。マークダウンのコードブロック（```json など）は使用しないでください。
-            純粋なJSONのみを返してください。
-            """;
+        var jsonSystemPrompt = Prompts.Common.JsonPromptHelper.AppendJsonInstruction(systemPrompt);
 
         // ペルソナとjsonSystemPromptを結合
         var combinedSystemPrompt = string.IsNullOrEmpty(persona)

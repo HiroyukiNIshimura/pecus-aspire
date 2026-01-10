@@ -15435,6 +15435,12 @@
             "type": "string",
             "description": "メッセージ",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "更新後のRowVersion（楽観的ロック用）",
+            "format": "uint32",
+            "nullable": true
           }
         },
         "description": "ファイルアップロードレスポンス"

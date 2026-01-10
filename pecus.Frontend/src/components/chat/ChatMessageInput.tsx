@@ -117,11 +117,6 @@ export default function ChatMessageInput({
   return (
     <form onSubmit={handleSubmit} className="border-t border-base-300 p-3 pb-safe bg-base-100 shrink-0">
       <div className="flex items-end gap-2">
-        {/* TODO: ファイル添付ボタン（Phase 3） */}
-        {/* <button type="button" className="btn btn-ghost btn-sm btn-circle flex-shrink-0">
-          <span className="icon-[tabler--paperclip] size-5" aria-hidden="true" />
-        </button> */}
-
         {/* 入力欄 */}
         <textarea
           ref={textareaRef}

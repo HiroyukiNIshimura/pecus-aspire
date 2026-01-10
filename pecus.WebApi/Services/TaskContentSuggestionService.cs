@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs.AI;
+using Pecus.Libs.AI.Prompts.Notifications;
 using Pecus.Libs.DB;
 using Pecus.Libs.Lexical;
 
@@ -136,37 +137,17 @@ public class TaskContentSuggestionService
         string? workspaceContext,
         CancellationToken cancellationToken)
     {
-        var systemPrompt = """
-            あなたはタスク管理のアシスタントです。
-            与えられたアイテム情報（件名・本文）とタスクタイプから、具体的で実行可能なタスク内容を提案してください。
+        var template = new TaskContentSuggestionPromptTemplate();
+        var input = new TaskContentSuggestionInput(
+            itemSubject,
+            itemBodyMarkdown,
+            taskTypeName,
+            workspaceContext
+        );
 
-            ルール:
-            - プレーンテキストで回答する（Markdownは使用しない）
-            - 簡潔で具体的な内容にする（1〜3文程度）
-            - タスクタイプに適した動詞で始める
-            - 達成可能で測定可能な内容にする
-            - 日本語で記述する
-            - 最適解ではなく、あくまで参考例として提供する
-            """;
+        var systemPrompt = template.BuildSystemPrompt(input);
+        var userPrompt = template.BuildUserPrompt(input);
 
-        var userPromptBuilder = new System.Text.StringBuilder();
-        userPromptBuilder.AppendLine($"アイテム件名: {itemSubject}");
-
-        if (!string.IsNullOrWhiteSpace(itemBodyMarkdown))
-        {
-            var truncatedBody = itemBodyMarkdown.Length > 2000
-                ? itemBodyMarkdown[..2000] + "..."
-                : itemBodyMarkdown;
-            userPromptBuilder.AppendLine($"アイテム本文（Markdown）: {truncatedBody}");
-        }
-
-        userPromptBuilder.AppendLine($"タスクタイプ: {taskTypeName}");
-
-        if (!string.IsNullOrWhiteSpace(workspaceContext))
-        {
-            userPromptBuilder.AppendLine($"コンテキスト: {workspaceContext}");
-        }
-
-        return await aiClient.GenerateTextAsync(systemPrompt, userPromptBuilder.ToString(), persona: null, cancellationToken);
+        return await aiClient.GenerateTextAsync(systemPrompt, userPrompt, persona: null, cancellationToken);
     }
 }

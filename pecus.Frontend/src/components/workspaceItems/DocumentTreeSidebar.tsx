@@ -159,7 +159,7 @@ export default function DocumentTreeSidebar({
     return (
       <div
         className={`flex items-center p-2 rounded cursor-pointer hover:bg-base-content/10 transition-colors ${
-          isSelected ? 'bg-primary text-primary-content font-semibold' : ''
+          isSelected ? 'bg-primary/10 text-primary font-semibold' : ''
         }`}
         style={{ paddingLeft: `${indent + 8}px` }}
         onClick={() => onItemSelect?.(Number(node.id), item?.code || '')}
@@ -184,9 +184,7 @@ export default function DocumentTreeSidebar({
         )}
         <div className="flex-1 truncate flex items-center gap-2">
           <span className="icon-[mdi--file-document-outline] w-4 h-4 flex-shrink-0 opacity-70" aria-hidden="true" />
-          <span className={`text-xs flex-shrink-0 ${isSelected ? 'text-primary-content/70' : 'text-base-content/50'}`}>
-            #{item?.code}
-          </span>
+          <span className="text-xs text-base-content/50 flex-shrink-0">#{item?.code}</span>
           <span className="truncate">{node.text}</span>
         </div>
         {item?.isDraft && <span className="badge badge-xs badge-secondary ml-2">Draft</span>}
@@ -207,7 +205,7 @@ export default function DocumentTreeSidebar({
       <div className="flex flex-col items-center justify-center h-full p-4 text-center">
         <span className="icon-[mdi--alert-circle-outline] w-8 h-8 text-error mb-2" aria-hidden="true" />
         <p className="text-sm text-base-content/70">{error}</p>
-        <button type="button" className="btn btn-sm btn-ghost mt-2" onClick={() => loadDocumentTree()}>
+        <button type="button" className="btn btn-sm btn-secondary mt-2" onClick={() => loadDocumentTree()}>
           再試行
         </button>
       </div>
@@ -242,7 +240,7 @@ export default function DocumentTreeSidebar({
               root: 'h-full flex-1',
               container: 'h-full',
               draggingSource: 'opacity-50',
-              dropTarget: 'bg-primary/10',
+              dropTarget: 'bg-primary/20',
             }}
             sort={false}
             insertDroppableFirst={false}

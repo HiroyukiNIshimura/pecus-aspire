@@ -46,7 +46,7 @@ export default function ArchiveConfirmModal({
           </h2>
           <button
             type="button"
-            className="btn btn-sm btn-circle btn-ghost"
+            className="btn btn-sm btn-circle btn-secondary"
             aria-label="閉じる"
             onClick={onClose}
             disabled={isSubmitting}
@@ -101,7 +101,7 @@ export default function ArchiveConfirmModal({
 
         {/* フッター */}
         <div className="flex justify-end p-4 border-t border-base-300">
-          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={isSubmitting}>
+          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSubmitting}>
             キャンセル
           </button>
         </div>

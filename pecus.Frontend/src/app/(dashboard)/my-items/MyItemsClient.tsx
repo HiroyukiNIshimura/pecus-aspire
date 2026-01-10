@@ -389,7 +389,7 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                           <button
                             type="button"
                             onClick={handleClearWorkspaceFilter}
-                            className="btn btn-xs btn-ghost text-base-content/50 hover:text-error"
+                            className="btn btn-xs btn-secondary text-base-content/50 hover:text-error"
                           >
                             クリア
                           </button>

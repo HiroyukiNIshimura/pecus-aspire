@@ -27,9 +27,9 @@ public class UploadsCleanupTasks
     /// アップロードフォルダのクリーンアップを実行します。
     /// - temp フォルダの古いファイル/フォルダを削除
     /// - 存在しないユーザーのアバターフォルダを削除
-    /// - 存在しないジャンルのアイコンフォルダを削除
     /// - 存在しないワークスペースアイテムのフォルダを削除
     /// - 存在しないワークスペースのフォルダを削除
+    /// - 存在しない組織のフォルダを削除
     /// </summary>
     /// <param name="uploadsBasePath">アップロードフォルダのベースパス</param>
     /// <param name="tempRetentionHours">tempフォルダ内のファイルを保持する時間（デフォルト: 24時間）</param>
@@ -46,14 +46,14 @@ public class UploadsCleanupTasks
         // 2. アバターフォルダのクリーンアップ（存在しないユーザー）
         totalDeleted += await CleanupAvatarFoldersAsync(uploadsBasePath);
 
-        // 3. ジャンルフォルダのクリーンアップ（存在しないジャンル）
-        totalDeleted += await CleanupGenreFoldersAsync(uploadsBasePath);
-
-        // 4. ワークスペースアイテムフォルダのクリーンアップ
+        // 3. ワークスペースアイテムフォルダのクリーンアップ
         totalDeleted += await CleanupWorkspaceItemFoldersAsync(uploadsBasePath);
 
-        // 5. ワークスペースフォルダのクリーンアップ
+        // 4. ワークスペースフォルダのクリーンアップ
         totalDeleted += await CleanupWorkspaceFoldersAsync(uploadsBasePath);
+
+        // 5. 組織フォルダのクリーンアップ（存在しない組織）
+        totalDeleted += await CleanupOrganizationFoldersAsync(uploadsBasePath);
 
         _logger.LogInformation("Uploads cleanup completed. totalDeleted={Total}", totalDeleted);
     }
@@ -123,11 +123,17 @@ public class UploadsCleanupTasks
 
     /// <summary>
     /// 存在しないユーザーのアバターフォルダを削除します
-    /// uploads/[orgId]/avatar/[userId] 形式
+    /// uploads/organizations/[orgId]/avatar/[userId] 形式
     /// </summary>
     private async Task<int> CleanupAvatarFoldersAsync(string uploadsBasePath)
     {
         var deletedCount = 0;
+        var organizationsPath = Path.Combine(uploadsBasePath, "organizations");
+
+        if (!Directory.Exists(organizationsPath))
+        {
+            return 0;
+        }
 
         try
         {
@@ -137,11 +143,11 @@ public class UploadsCleanupTasks
                 .ToHashSetAsync();
 
             // 組織フォルダを走査
-            foreach (var orgDir in Directory.GetDirectories(uploadsBasePath))
+            foreach (var orgDir in Directory.GetDirectories(organizationsPath))
             {
                 var orgDirName = Path.GetFileName(orgDir);
-                // 「workspaces」と「temp」は除外
-                if (orgDirName == "workspaces" || orgDirName == "temp")
+                // 数値として解釈できないフォルダはスキップ
+                if (!int.TryParse(orgDirName, out _))
                 {
                     continue;
                 }
@@ -176,66 +182,6 @@ public class UploadsCleanupTasks
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to cleanup avatar folders");
-        }
-
-        return deletedCount;
-    }
-
-    /// <summary>
-    /// 存在しないジャンルのアイコンフォルダを削除します
-    /// uploads/[orgId]/genre/[genreId] 形式
-    /// </summary>
-    private async Task<int> CleanupGenreFoldersAsync(string uploadsBasePath)
-    {
-        var deletedCount = 0;
-
-        try
-        {
-            // 全ジャンルIDを取得
-            var existingGenreIds = await _context.Genres
-                .Select(g => g.Id)
-                .ToHashSetAsync();
-
-            // 組織フォルダを走査
-            foreach (var orgDir in Directory.GetDirectories(uploadsBasePath))
-            {
-                var orgDirName = Path.GetFileName(orgDir);
-                // 「workspaces」と「temp」は除外
-                if (orgDirName == "workspaces" || orgDirName == "temp")
-                {
-                    continue;
-                }
-
-                var genrePath = Path.Combine(orgDir, "genre");
-                if (!Directory.Exists(genrePath))
-                {
-                    continue;
-                }
-
-                foreach (var genreDir in Directory.GetDirectories(genrePath))
-                {
-                    var genreDirName = Path.GetFileName(genreDir);
-                    if (int.TryParse(genreDirName, out var genreId) && !existingGenreIds.Contains(genreId))
-                    {
-                        try
-                        {
-                            Directory.Delete(genreDir, recursive: true);
-                            deletedCount++;
-                            _logger.LogInformation("Deleted orphaned genre folder for genreId={GenreId}: {Path}", genreId, genreDir);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Failed to delete genre folder: {Path}", genreDir);
-                        }
-                    }
-                }
-            }
-
-            _logger.LogInformation("Genre folder cleanup completed. deletedCount={Count}", deletedCount);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to cleanup genre folders");
         }
 
         return deletedCount;
@@ -344,6 +290,57 @@ public class UploadsCleanupTasks
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to cleanup workspace folders");
+        }
+
+        return deletedCount;
+    }
+
+    /// <summary>
+    /// 存在しない組織のフォルダを削除します
+    /// uploads/organizations/[orgId] 形式
+    /// </summary>
+    private async Task<int> CleanupOrganizationFoldersAsync(string uploadsBasePath)
+    {
+        var deletedCount = 0;
+        var organizationsPath = Path.Combine(uploadsBasePath, "organizations");
+
+        if (!Directory.Exists(organizationsPath))
+        {
+            return 0;
+        }
+
+        try
+        {
+            // 全組織IDを取得
+            var existingOrgIds = await _context.Organizations
+                .Select(o => o.Id)
+                .ToHashSetAsync();
+
+            foreach (var orgDir in Directory.GetDirectories(organizationsPath))
+            {
+                var orgDirName = Path.GetFileName(orgDir);
+
+                // 数値として解釈できるフォルダ名のみが組織フォルダ
+                if (int.TryParse(orgDirName, out var orgId) && !existingOrgIds.Contains(orgId))
+                {
+                    try
+                    {
+                        Directory.Delete(orgDir, recursive: true);
+                        deletedCount++;
+                        _logger.LogInformation("Deleted orphaned organization folder for orgId={OrgId}: {Path}", orgId, orgDir);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to delete organization folder: {Path}", orgDir);
+                    }
+                }
+            }
+
+            _logger.LogInformation("Organization folder cleanup completed. deletedCount={Count}", deletedCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to cleanup organization folders");
         }
 
         return deletedCount;

@@ -122,7 +122,7 @@ export default function DmUserSearchModal({
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 border-b border-base-300 shrink-0">
           <h2 className="text-lg font-bold">ユーザーを検索</h2>
-          <button type="button" className="btn btn-sm btn-circle btn-ghost" aria-label="閉じる" onClick={onClose}>
+          <button type="button" className="btn btn-sm btn-circle btn-secondary" aria-label="閉じる" onClick={onClose}>
             <span className="icon-[tabler--x] size-5" aria-hidden="true" />
           </button>
         </div>
@@ -174,8 +174,8 @@ export default function DmUserSearchModal({
                 {user.identityIconUrl ? (
                   <img src={user.identityIconUrl} alt="" className="size-10 rounded-full object-cover" />
                 ) : (
-                  <div className="size-10 rounded-full bg-base-300 flex items-center justify-center">
-                    <span className="icon-[tabler--user] size-5 text-base-content/50" aria-hidden="true" />
+                  <div className="size-10 rounded-full bg-neutral flex items-center justify-center">
+                    <span className="icon-[tabler--user] size-5 text-neutral-content" aria-hidden="true" />
                   </div>
                 )}
               </div>

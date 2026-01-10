@@ -368,10 +368,13 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
 
     // 検索クエリ変更時のハンドラー
     const handleSearch = useCallback(
-      (query: string) => {
+      async (query: string) => {
         setSearchQuery(query);
+        // refも即座に更新（loadMoreItemsがuseEffect実行前に呼ばれた場合に備えて）
+        searchQueryRef.current = query;
+        // refreshItems完了後にresetを呼ぶ（hasMoreが更新されてからObserverを再初期化するため）
+        await refreshItemsRef.current(undefined, query);
         resetInfiniteScroll();
-        refreshItemsRef.current(undefined, query);
       },
       [resetInfiniteScroll],
     );
@@ -387,11 +390,12 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
 
     // フィルター適用ハンドラー
     const handleApplyFilters = useCallback(
-      (newFilters: WorkspaceItemFilters) => {
+      async (newFilters: WorkspaceItemFilters) => {
         setFilters(newFilters);
-        resetInfiniteScroll();
+        filtersRef.current = newFilters;
         // フィルターを適用してアイテムを再取得する
-        refreshItemsRef.current(undefined, undefined, newFilters);
+        await refreshItemsRef.current(undefined, undefined, newFilters);
+        resetInfiniteScroll();
       },
       [resetInfiniteScroll],
     );

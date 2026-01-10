@@ -134,14 +134,17 @@ export default function OrganizationsClient({ initialData, fetchError }: Organiz
                             {org.isDemo ? (
                               <span className="badge badge-warning">デモ</span>
                             ) : (
-                              <span className="badge badge-ghost">-</span>
+                              <span className="badge badge-secondary">-</span>
                             )}
                           </td>
                           <td className="text-sm text-base-content/70">
                             {org.createdAt ? formatDate(org.createdAt) : '-'}
                           </td>
                           <td>
-                            <a href={`/backoffice/organizations/${org.id}`} className="btn btn-ghost btn-sm btn-square">
+                            <a
+                              href={`/backoffice/organizations/${org.id}`}
+                              className="btn btn-secondary btn-sm btn-square"
+                            >
                               <span className="icon-[mdi--dots-vertical] size-5" aria-hidden="true" />
                               <span className="sr-only">詳細を見る</span>
                             </a>

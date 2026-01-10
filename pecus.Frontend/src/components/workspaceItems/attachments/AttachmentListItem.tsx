@@ -152,7 +152,7 @@ export default function AttachmentListItem({ attachment, onDelete, canDelete, do
         <button
           type="button"
           onClick={handleDeleteClick}
-          className="btn btn-ghost btn-xs text-error opacity-0 group-hover:opacity-100 transition-opacity"
+          className="btn btn-secondary btn-xs text-error opacity-0 group-hover:opacity-100 transition-opacity"
           aria-label={`${attachment.fileName}を削除`}
         >
           <span className="icon-[mdi--trash-can-outline] size-4" aria-hidden="true" />

@@ -33,7 +33,12 @@ export default function AttachmentUploadProgress({ fileName, progress, onCancel 
         <p className="text-xs text-base-content/60 mt-1">アップロード中... {clampedProgress}%</p>
       </div>
       {onCancel && (
-        <button type="button" onClick={onCancel} className="btn btn-ghost btn-xs" aria-label="アップロードをキャンセル">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="btn btn-secondary btn-xs"
+          aria-label="アップロードをキャンセル"
+        >
           <span className="icon-[mdi--close] size-4" aria-hidden="true" />
         </button>
       )}

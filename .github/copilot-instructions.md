@@ -1,70 +1,78 @@
 ## Pecus Aspire — AI エージェント最小指示書
 
 メタ情報
-- 版: v1.2
-- 更新日: 2025-12-06
+- 版: v1.3
+- 更新日: 2026-01-10
 - 文書責任: Pecus Aspire Maintainers
 
-## 短い要約（エージェント向け / 20行以内・必読）
+## 短い要約（エージェント向け / 必読）
 
-このプロジェクトのコードは全てエージェントが自律的に生成しています。 エージェントは以下の重要ポイントを必ず理解し、遵守してください。
-エージェントはユーザーからの指示を受けた場合でも、以下のルールに反する変更を行わないでください。
-エージェントはできないことを「できない」と正直に回答してください。
+このプロジェクトのコードは全てエージェントが自律的に生成しています。以下のルールに反する変更は禁止です。できないことは正直に「できない」と回答してください。
 
-~~最優先事項~~
-このアプリは一般公開され世界中のネットカフェなどでも使われるアプリです。日本の業務アプリ常識のようなダサいセキュリティロジックやリトライによる一意情報の生成、排他制御、UI/UXを絶対に提案・実装しないでください。グローバルスタンダードを意識してください。
+### 最優先事項
+このアプリは一般公開されグローバルに使用されます。日本の業務アプリ常識のようなダサいセキュリティロジック、リトライによる一意情報の生成、排他制御、UI/UX を絶対に提案・実装しないでください。
 
-- 開発コード： `pecus`、アプリケーション名： `Coati`
+### プロジェクト基本情報
+- 開発コード: `pecus`、アプリケーション名: `Coati`
 - エントリ: `pecus.AppHost/AppHost.cs`（Aspire がサービスの起動順・依存を管理）
 - 主要プロジェクト: `pecus.WebApi`, `pecus.BackFire`, `pecus.DbManager`, `pecus.Libs`, `pecus.Frontend`
-- 全てのプロジェクトで、カレンダー、時間、通貨、言語などグローバリゼーションを考慮してください。（カレンダーと言語に関しては現在はjaのみをスコープとする）
-- RowVersion は PostgreSQL の `xmin` を `uint RowVersion` として扱う（フロントは number） — 実装参照: `pecus.Libs/DB/ApplicationDbContext.cs`
-- 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す。
-- フロントは SSR-first。ミューテーションは `Server Actions`（`src/actions/`）を使い、直接フロントから `pecus.WebApi` を叩かない。
-- フロント UI は Tailwind CSS と `FlyonUI` をベース利用しています。絶対にFlyonUIのデザインを壊さないでください。**daisyUIは使用しない。** **アイコンは"@iconify/tailwind4" https://iconify.design/ を使用する**
-- セッション/トークン: Cookie には `sessionId` のみ保存（`httpOnly: true`）。トークンは Redis に保持し、`ServerSessionManager`（`src/libs/serverSession.ts`）経由で取得。詳細は `docs/spec/auth-architecture-redesign.md` 参照。
-- 自動生成クライアント: `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts` は自動生成物 → 編集禁止。生成スクリプト: `pecus.Frontend/scripts/generate-pecus-api-client.js`。
-- 主要コマンド（必ず確認）: `dotnet format pecus.sln` / `dotnet build pecus.sln`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
-- 禁止事項（必守）: 横断変更の無断実施、フロントからの API 直叩き、自動生成物の手動編集、コントローラーでのトランザクション開始。
-- C#: 原則「1ファイル=1クラス」。関連する複数の enum/record は1ファイル可。
-- フロントエンドのAPIクライアントの生成はエージェントには実行を禁止する。**生成スクリプトの実行は人間の開発者のみが行うため必ず作業を中断すること。**
-- バックエンド・フロントエンド共に修正が必要になった場合は、バックエンド→フロントエンドの順で修正を行い、バックエンドの変更が完了し動作確認が取れた後にフロントエンドの修正を行うこと。
-- コードコメントに連番を振らないこと（例: // 1. ～、// 2. ～、等）
-- シェルスクリプトはPOSIX準拠で記述し、/bin/shで実行可能にすること。
+- 技術スタック: .NET 10 / EF Core 10 / .NET Aspire 13.1 / Next.js 16.1 / React 19.2 / Tailwind CSS 4.1 / FlyonUI 2.4
 
-## 統一方針（簡潔版）
-- コントローラー/戻り値: MVC コントローラー＋`HttpResults`（`Ok<T>`, `Created<T>`, `NoContent`）。`IActionResult`/`ActionResult<T>`は不使用。複数成功のみ`Results<...>`を使用。エラーは例外→`GlobalExceptionFilter`。
-- フロント API 呼び出し: 読取は SSR(Server Component)で、変更は Server Actions で、いずれも `createPecusApiClients()` 経由。ブラウザ直 fetch と SA/SSR からの WebApi 直 fetch は禁止（例外: リフレッシュ API のみ循環回避で直 fetch 可）。
-- 競合制御: UPDATE 時の `DbUpdateConcurrencyException` を catch→`FindAsync()` で最新再取得→`ConcurrencyException<T>` 再スローで統一。DTO は `RowVersion: uint` 必須。
-- 生成物/CI: 自動生成物は `.gitignore` 管理・手動編集禁止。CI は生成スクリプト未実行の検知を重視。
-- 認証/トークン: Cookie には `sessionId` のみ（`httpOnly:true`, `sameSite:'strict'`）。SSR/SA は `ServerSessionManager` で取得。トークンは Redis に保持され、`getAccessToken()` 呼び出し時に自動リフレッシュ。
-- バージョン表記: 「.NET 10」「EF Core 10」「.NET Aspire x.y」を分離して記載。
+### 絶対禁止事項
+- **API クライアント生成（`npm run full:api`）の実行禁止** — 人間の開発者のみが実行。必ず作業を中断して報告
+- **フロントからの WebApi 直 fetch 禁止** — Server Actions / API Routes 経由のみ許可
+- **自動生成ファイルの手動編集禁止** — `PecusApiClient.generated.ts` 等
+- **コントローラーでのトランザクション開始禁止** — サービス層で `BeginTransactionAsync` を使用
+- **横断変更の無断実施禁止** — 複数プロジェクトを触る場合は承認を得る
+- **リファクタリング時の業務ロジック変更禁止** — 変更が必要な場合は報告
+
+### 重要なパターン
+- **RowVersion**: PostgreSQL `xmin` → C# `uint` → フロント `number`。実装参照: `pecus.Libs/DB/ApplicationDbContext.cs`
+- **競合処理**: `DbUpdateConcurrencyException` を catch → `FindAsync()` で再取得 → `ConcurrencyException<T>` をスロー
+- **フロント**: SSR-first。読み取りは Server Component、書き込みは Server Actions（`src/actions/`）
+- **UI**: Tailwind CSS + FlyonUI。**daisyUI は禁止**。アイコンは `@iconify/tailwind4`
+- **セッション**: Cookie に `sessionId` のみ（`httpOnly: true`）。トークンは Redis。`ServerSessionManager` 経由で取得
+- **C#**: 原則「1ファイル=1クラス」。関連する複数の enum/record は1ファイル可
+- **修正順序**: バックエンド → フロントエンドの順。バックエンド完了後にフロントエンド修正
+- **コードコメント**: 連番禁止（例: // 1. ～）
+- **シェルスクリプト**: POSIX準拠、`/bin/sh` で実行可能
+
+## 統一方針
+
+### バックエンド (C# / .NET)
+- **コントローラー**: MVC コントローラー + `HttpResults`（`Ok<T>`, `Created<T>`, `NoContent`）。`IActionResult`/`ActionResult<T>` は不使用
+- **例外処理**: 例外をスローして `GlobalExceptionFilter` に任せる。コントローラーで try-catch しない
+- **競合制御**: `DbUpdateConcurrencyException` → `FindAsync()` → `ConcurrencyException<T>`。DTO は `RowVersion: uint` 必須
+- **トランザクション**: サービス層で `BeginTransactionAsync`。コントローラーでは禁止
+- **DTO**: 検証属性（`[Required]`, `[MaxLength]`）必須。Enum は nullable 推奨、`HasDefaultValue()` 禁止
+- **Hangfire**: DI 経由の `IBackgroundJobClient` を使用。静的 API（`BackgroundJob.Enqueue`）は禁止
+
+### フロントエンド (Next.js / TypeScript)
+- **API アクセス**: 読み取り → SSR（Server Component）、変更 → Server Actions。いずれも `createPecusApiClients()` 経由
+- **禁止**: ブラウザから WebApi 直 fetch、SA/SSR から直 fetch（リフレッシュ API のみ例外）
+- **トークン**: `ServerSessionManager.getValidAccessToken()` が自動リフレッシュを実行
+- **UI 禁止事項**: Tailwind 任意値（`z-[10]`, `w-[200px]`）、`h-screen`/`min-h-screen`（`flex-1` を使用）
+- **自動生成**: `PecusApiClient.generated.ts` は編集禁止。Git 管理外
+
+### SSR / Client Component 使い分け
+- **Server Component**: 静的UI、初期データ取得（マスタデータ）、レイアウト
+- **Client Component**: `useState`/`useEffect`/`onClick` が必要な場合のみ。末端コンポーネントとして切り出す
+- **アンチパターン**: `page.tsx` 全体を `"use client"` にすること、トランザクションデータを SSR で取得すること
 
 ## 参照ドキュメント
 
 詳細な実装ガイドラインは以下のドキュメントを参照してください。
 **各ドキュメントの冒頭にある「AI エージェント向け要約（必読）」を必ず確認し、ルールを遵守してください。**
 
-- **プロジェクトのビジョン**: `docs/spec/PRODUCT_VISION_PERSONAS_JA.md`
-  - このアプリケーションの目的、ターゲットユーザー、成功指標、MVP 機能セット等
-- **フロントエンド詳細**: `docs/frontend-guidelines.md`
-  - アーキテクチャ、APIアクセスルール、SSR、バリデーション、エラーハンドリング等
-- **SSR設計ガイドライン**: `docs/ssr-design-guidelines.md`
-  - Server/Client Component の使い分け、初期データ取得パターン、アンチパターン回避
-- **Tailwind任意値禁止**: `docs/tailwind-arbitrary-values.md`
-  - `z-[10]` 等の角括弧構文は禁止。定義済みクラスまたは config 拡張を使用
-- **モーダルダイアログテンプレート**: `docs/modal-dialog-template.md`
-  - FlyonUI モーダル実装の必須パターン、アクセシビリティ、エラー表示位置
-- **【必読】レイアウトテンプレート**: `docs/layout-template.md`
-  - ページコンポーネントで `h-screen` / `min-h-screen` は禁止。`flex-1` を使用すること
-  - スクロールは `overflow-y-auto` で制御。フッターが常に表示されるレイアウト設計
-- **バックエンド詳細**: `docs/backend-guidelines.md`
-  - Aspire構成、DB設計、マイグレーション、コントローラ設計、EF Core最適化等
-- **例外処理**: `docs/global-exception-handling.md`
-- **DB同時実行制御**: `docs/db-concurrency.md`
-- **アプリ全体設定**: `docs/app-settings-provider.md`
-  - 組織設定・ユーザー設定のContext配布、`useIsAiEnabled()` 等のHook利用方法
-- **その他**: 認証、権限、UI規定などの特定トピックは `docs/` または `docs/spec/` ディレクトリ内のドキュメントを参照してください。
+| カテゴリ | ドキュメント | 重要度 |
+|---------|-------------|--------|
+| **ビジョン** | `docs/spec/PRODUCT_VISION_PERSONAS_JA.md` | 必読 |
+| **フロントエンド** | `docs/frontend-guidelines.md`, `docs/ssr-design-guidelines.md` | 必読 |
+| **レイアウト** | `docs/layout-template.md` | 必読（変更前に必ず確認） |
+| **バックエンド** | `docs/backend-guidelines.md`, `docs/global-exception-handling.md` | 必読 |
+| **DB** | `docs/db-concurrency.md` | 必読 |
+| **UI** | `docs/tailwind-arbitrary-values.md`, `docs/modal-dialog-template.md` | 必読 |
+| **設定** | `docs/app-settings-provider.md` | 参照 |
 
 ## 開発フロー／コマンド
 
@@ -82,13 +90,14 @@
 
 ## すぐ参照すべきファイル（ショートリスト）
 
-- `pecus.AppHost/AppHost.cs` — サービス起動順 / 依存解決（Aspire の登録例）
-- `pecus.Libs/DB/ApplicationDbContext.cs` — `ConfigureRowVersionForAllEntities`（PostgreSQL `xmin` のマッピング）
-- `pecus.WebApi/Filters/GlobalExceptionFilter.cs` — `HandleConcurrencyException`（IConcurrencyException → HTTP 409 へ変換）
-- `pecus.WebApi/Exceptions/ConcurrencyException.cs` — `ConcurrencyException<T>` の定義（ConflictedModel を含む）
-- `pecus.WebApi/Models/Requests/*` — リクエスト DTO 例（更新リクエストに `RowVersion` を含める）
-- `pecus.Frontend/src/libs/serverSession.ts` — `ServerSessionManager`（Redis ベースのセッション管理）
-- `pecus.Frontend/scripts/generate-pecus-api-client.js` — API クライアント生成スクリプト（生成物は編集禁止）
+| ファイル | 説明 |
+|---------|------|
+| `pecus.AppHost/AppHost.cs` | Aspire サービス起動順・依存解決 |
+| `pecus.Libs/DB/ApplicationDbContext.cs` | PostgreSQL `xmin` → `uint` マッピング |
+| `pecus.WebApi/Filters/GlobalExceptionFilter.cs` | 例外 → HTTP ステータス変換 |
+| `pecus.WebApi/Exceptions/ConcurrencyException.cs` | 競合例外定義 |
+| `pecus.Frontend/src/libs/serverSession.ts` | Redis セッション管理 |
+| `pecus.Frontend/src/actions/` | Server Actions 実装例 |
 
 ## 作業時のチェックリスト（短い）
 
@@ -118,3 +127,4 @@
 - **アクセシビリティ/HTML属性の未設定禁止**（button type, label for, alt, required, className等）
 - **複数プロジェクト横断変更は必ず目的・影響・差分を明示し、承認を得ること**
 - **型安全・検証属性の未設定禁止**（必須項目は必ず検証属性を付与）
+- **CSSセマンティックカラー**❌-ghost, ✅-secondary

@@ -181,14 +181,14 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
                 <div className="card-body">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <span className={`badge ${notificationTypeBadgeClass[data.type || 'Info'] || 'badge-ghost'}`}>
+                      <span className={`badge ${notificationTypeBadgeClass[data.type || 'Info'] || 'badge-secondary'}`}>
                         {notificationTypeLabels[data.type || 'Info'] || data.type}
                       </span>
                       {getStatusBadge()}
                     </div>
                     <div className="flex gap-2">
                       {!isEditing && (
-                        <a href="/backoffice/notifications" className="btn btn-ghost btn-sm">
+                        <a href="/backoffice/notifications" className="btn btn-secondary btn-sm">
                           <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
                           戻る
                         </a>
@@ -207,7 +207,11 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
                       )}
                       {isEditing && (
                         <>
-                          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setIsEditing(false)}>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => setIsEditing(false)}
+                          >
                             キャンセル
                           </button>
                           <button type="button" className="btn btn-primary btn-sm" onClick={handleSave}>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi;
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Services;
 
@@ -66,9 +67,11 @@ public class FileUploadController : BaseSecureController
         );
 
         // アバターの場合、ユーザー情報を更新（WebP変換後のファイル名を保存）
+        uint? rowVersion = null;
         if (request.FileType == FileType.Avatar && request.ResourceId == CurrentUserId)
         {
-            await UpdateUserAvatarAsync(CurrentUserId, filePath);
+            var updatedUser = await UpdateUserAvatarAsync(CurrentUserId, filePath);
+            rowVersion = updatedUser?.RowVersion;
         }
 
         var response = new FileUploadResponse
@@ -79,6 +82,7 @@ public class FileUploadController : BaseSecureController
             ContentType = request.File.ContentType,
             UploadedAt = DateTime.UtcNow,
             Message = "ファイルのアップロードに成功しました。",
+            RowVersion = rowVersion,
         };
 
         return TypedResults.Ok(response);
@@ -87,14 +91,15 @@ public class FileUploadController : BaseSecureController
     /// <summary>
     /// ユーザーのアバター情報を更新
     /// </summary>
-    private async Task UpdateUserAvatarAsync(int userId, string filePath)
+    /// <returns>更新後のユーザー情報（RowVersion取得用）</returns>
+    private async Task<User?> UpdateUserAvatarAsync(int userId, string filePath)
     {
         // ファイル名を取得（UserAvatarPathにはファイル名のみを保存）
         var fileName = Path.GetFileName(filePath);
 
         // ユーザーのアバター情報をデータベースに更新
         // AvatarType は "UserAvatar" で固定
-        await _userService.UpdateUserAvatarAsync(
+        return await _userService.UpdateUserAvatarAsync(
             userId,
             avatarType: AvatarType.UserAvatar,
             userAvatarPath: fileName,

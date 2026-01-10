@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.DB.Services;
 using Pecus.Models.Requests.BackOffice;
 using Pecus.Models.Responses.BackOffice;
 using Pecus.Models.Responses.Common;
@@ -16,13 +17,16 @@ public class BackOfficeOrganizationService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<BackOfficeOrganizationService> _logger;
+    private readonly BatchOrganizationDeletionService _organizationDeletionService;
 
     public BackOfficeOrganizationService(
         ApplicationDbContext context,
-        ILogger<BackOfficeOrganizationService> logger)
+        ILogger<BackOfficeOrganizationService> logger,
+        BatchOrganizationDeletionService organizationDeletionService)
     {
         _context = context;
         _logger = logger;
+        _organizationDeletionService = organizationDeletionService;
     }
 
     /// <summary>
@@ -284,193 +288,13 @@ public class BackOfficeOrganizationService
             throw new BadRequestException("確認用の組織コードが一致しません。");
         }
 
-        using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            var workspaceIds = await _context.Workspaces
-                .Where(w => w.OrganizationId == id)
-                .Select(w => w.Id)
-                .ToListAsync();
-
-            var chatRoomIds = await _context.ChatRooms
-                .Where(r => r.OrganizationId == id)
-                .Select(r => r.Id)
-                .ToListAsync();
-
-            var userIds = await _context.Users
-                .Where(u => u.OrganizationId == id)
-                .Select(u => u.Id)
-                .ToListAsync();
-
-            var botIds = await _context.Bots
-                .Where(b => b.OrganizationId == id)
-                .Select(b => b.Id)
-                .ToListAsync();
-
-            if (chatRoomIds.Count > 0)
-            {
-                await _context.ChatMessages
-                    .Where(m => chatRoomIds.Contains(m.ChatRoomId))
-                    .ExecuteDeleteAsync();
-
-                await _context.ChatRoomMembers
-                    .Where(m => chatRoomIds.Contains(m.ChatRoomId))
-                    .ExecuteDeleteAsync();
-            }
-
-            await _context.ChatRooms
-                .Where(r => r.OrganizationId == id)
-                .ExecuteDeleteAsync();
-
-            if (userIds.Count > 0)
-            {
-                await _context.ChatActors
-                    .Where(a => userIds.Contains(a.UserId!.Value))
-                    .ExecuteDeleteAsync();
-            }
-
-            if (botIds.Count > 0)
-            {
-                await _context.ChatActors
-                    .Where(a => botIds.Contains(a.BotId!.Value))
-                    .ExecuteDeleteAsync();
-            }
-
-            await _context.Bots
-                .Where(b => b.OrganizationId == id)
-                .ExecuteDeleteAsync();
-
-            if (workspaceIds.Count > 0)
-            {
-                await _context.Activities
-                    .Where(a => workspaceIds.Contains(a.WorkspaceId))
-                    .ExecuteDeleteAsync();
-
-                var taskIds = await _context.WorkspaceTasks
-                    .Where(t => workspaceIds.Contains(t.WorkspaceId))
-                    .Select(t => t.Id)
-                    .ToListAsync();
-
-                if (taskIds.Count > 0)
-                {
-                    await _context.TaskComments
-                        .Where(c => taskIds.Contains(c.WorkspaceTaskId))
-                        .ExecuteDeleteAsync();
-                }
-
-                await _context.WorkspaceTasks
-                    .Where(t => workspaceIds.Contains(t.WorkspaceId))
-                    .ExecuteDeleteAsync();
-
-                var itemIds = await _context.WorkspaceItems
-                    .Where(i => workspaceIds.Contains(i.WorkspaceId))
-                    .Select(i => i.Id)
-                    .ToListAsync();
-
-                if (itemIds.Count > 0)
-                {
-                    await _context.WorkspaceItemAttachments
-                        .Where(a => itemIds.Contains(a.WorkspaceItemId))
-                        .ExecuteDeleteAsync();
-
-                    await _context.WorkspaceItemRelations
-                        .Where(r => itemIds.Contains(r.FromItemId) || itemIds.Contains(r.ToItemId))
-                        .ExecuteDeleteAsync();
-
-                    await _context.WorkspaceItemTags
-                        .Where(t => itemIds.Contains(t.WorkspaceItemId))
-                        .ExecuteDeleteAsync();
-
-                    await _context.WorkspaceItemPins
-                        .Where(p => itemIds.Contains(p.WorkspaceItemId))
-                        .ExecuteDeleteAsync();
-                }
-
-                await _context.WorkspaceItems
-                    .Where(i => workspaceIds.Contains(i.WorkspaceId))
-                    .ExecuteDeleteAsync();
-
-                await _context.WorkspaceSkills
-                    .Where(s => workspaceIds.Contains(s.WorkspaceId))
-                    .ExecuteDeleteAsync();
-
-                await _context.WorkspaceUsers
-                    .Where(u => workspaceIds.Contains(u.WorkspaceId))
-                    .ExecuteDeleteAsync();
-            }
-
-            await _context.Workspaces
-                .Where(w => w.OrganizationId == id)
-                .ExecuteDeleteAsync();
-
-            if (userIds.Count > 0)
-            {
-                await _context.UserSkills
-                    .Where(s => userIds.Contains(s.UserId))
-                    .ExecuteDeleteAsync();
-
-                await _context.UserSettings
-                    .Where(s => userIds.Contains(s.UserId))
-                    .ExecuteDeleteAsync();
-
-                await _context.RefreshTokens
-                    .Where(t => userIds.Contains(t.UserId))
-                    .ExecuteDeleteAsync();
-
-                await _context.Devices
-                    .Where(d => userIds.Contains(d.UserId))
-                    .ExecuteDeleteAsync();
-
-                await _context.EmailChangeTokens
-                    .Where(t => userIds.Contains(t.UserId))
-                    .ExecuteDeleteAsync();
-            }
-
-            await _context.Tags
-                .Where(t => t.OrganizationId == id)
-                .ExecuteDeleteAsync();
-
-            await _context.Skills
-                .Where(s => s.OrganizationId == id)
-                .ExecuteDeleteAsync();
-
-            // WorkspaceItemRelations は CreatedByUserId で Users を参照しているため、
-            // Users 削除前に組織に属するユーザーが作成した全てのリレーションを削除
-            if (userIds.Count > 0)
-            {
-                await _context.WorkspaceItemRelations
-                    .Where(r => userIds.Contains(r.CreatedByUserId))
-                    .ExecuteDeleteAsync();
-            }
-
-            await _context.Users
-                .Where(u => u.OrganizationId == id)
-                .ExecuteDeleteAsync();
-
-            await _context.OrganizationSettings
-                .Where(s => s.OrganizationId == id)
-                .ExecuteDeleteAsync();
-
-            _context.Organizations.Remove(organization);
-            await _context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-
-            _logger.LogWarning(
-                "組織を物理削除しました: OrganizationId={OrganizationId}, OrganizationName={OrganizationName}",
-                id,
-                organization.Name);
+            await _organizationDeletionService.DeleteOrganizationWithRelatedDataAsync(id);
         }
         catch (DbUpdateConcurrencyException)
         {
-            await transaction.RollbackAsync();
             throw new BadRequestException("組織は他のユーザーによって更新されました。");
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            _logger.LogError(ex, "組織の削除に失敗しました: OrganizationId={OrganizationId}", id);
-            throw;
         }
     }
 

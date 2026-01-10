@@ -111,7 +111,7 @@ export default function BotListSection({ organizationId }: BotListSectionProps) 
           <h3 className="card-title text-lg">
             <span className="icon-[mdi--robot-outline] w-5 h-5" aria-hidden="true" />
             ボット一覧
-            <span className="badge badge-ghost badge-sm ml-2">{bots.length}件</span>
+            <span className="badge badge-secondary badge-sm ml-2">{bots.length}件</span>
           </h3>
 
           {bots.length === 0 ? (
@@ -147,7 +147,7 @@ export default function BotListSection({ organizationId }: BotListSectionProps) 
                       <td>
                         <button
                           type="button"
-                          className="btn btn-ghost btn-sm"
+                          className="btn btn-secondary btn-sm"
                           onClick={() => handleEditClick(bot)}
                           disabled={isPending}
                           aria-label={`${bot.name}を編集`}

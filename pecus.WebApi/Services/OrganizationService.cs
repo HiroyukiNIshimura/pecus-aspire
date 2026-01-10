@@ -526,45 +526,6 @@ public class OrganizationService
     }
 
     /// <summary>
-    /// 組織を削除
-    /// </summary>
-    public async Task<bool> DeleteOrganizationAsync(
-        int organizationId,
-        DeleteOrganizationRequest request
-    )
-    {
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            var organization = await _context
-                .Organizations.Include(o => o.Users)
-                .FirstOrDefaultAsync(o => o.Id == organizationId);
-
-            if (organization == null)
-            {
-                return false;
-            }
-
-            // 所属ユーザーも一緒に削除
-            if (organization.Users.Any())
-            {
-                _context.Users.RemoveRange(organization.Users);
-            }
-
-            _context.Organizations.Remove(organization);
-            await _context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-            return true;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-    }
-
-    /// <summary>
     /// 組織のアクティブ状態を設定
     /// </summary>
     public async Task<bool> SetOrganizationActiveStatusAsync(

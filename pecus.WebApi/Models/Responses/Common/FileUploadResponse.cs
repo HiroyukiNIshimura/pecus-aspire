@@ -34,4 +34,12 @@ public class FileUploadResponse
     /// メッセージ
     /// </summary>
     public string? Message { get; set; }
+
+    /// <summary>
+    /// 更新後のRowVersion（楽観的ロック用）
+    /// </summary>
+    /// <remarks>
+    /// アバターアップロード時など、ユーザーレコードが更新された場合に最新のRowVersionを返す
+    /// </remarks>
+    public uint? RowVersion { get; set; }
 }

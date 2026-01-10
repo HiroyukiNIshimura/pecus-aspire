@@ -47,7 +47,7 @@ export default function FetchError({
               もう一度試す
             </button>
           )}
-          <Link href={backUrl} className="btn btn-ghost btn-sm">
+          <Link href={backUrl} className="btn btn-secondary btn-sm">
             {backLabel}
           </Link>
         </div>
