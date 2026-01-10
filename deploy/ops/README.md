@@ -130,30 +130,35 @@ CONFIRM_RESTORE=YES sh pg-restore.sh /var/docker/coati/data/backups/postgres/pec
 sh snapshot-create.sh
 ```
 
-現在稼働中の DB と Docker イメージをセットでスナップショットとして保存します（1世代のみ保持）。
+現在稼働中の Docker イメージをスナップショットとして保存します。
 
-- 保存先: `${DATA_PATH}/snapshot/`
+- 対象イメージ: `coati-webapi`, `coati-frontend`, `coati-backfire`, `coati-dbmanager`
+- 保存形式: `<service>:snapshot-YYYYMMDD-HHMMSS` および `<service>:snapshot-latest`
 - 処理内容:
-  1. 既存スナップショットを削除
-  2. DBバックアップを実行
-  3. 現在のアクティブスロットのイメージに `snapshot-latest` タグを付与
-  4. メタデータ（作成日時、gitコミット、スロット情報）を保存
+  1. 現在のアクティブスロットのイメージを検出
+  2. ローカルビルド（`*:local`）またはレジストリ経由（`registry:5000/*`）どちらにも対応
+  3. タイムスタンプ付きタグと `snapshot-latest` タグを作成
 
 ### スナップショットリストア（破壊的）
 
 ```
-sh snapshot-restore.sh
+sh snapshot-restore.sh              # snapshot-latest を復元
+sh snapshot-restore.sh 20260110-123456   # 特定バージョンを復元
 ```
 
-スナップショットから DB とイメージを復元し、非アクティブスロットに展開します。
+スナップショットからイメージを復元し、ローカルタグ（`*:local`）として展開します。
 
-- 処理フロー:
-  1. 非アクティブスロットを停止
-  2. スナップショットイメージを復元
-  3. DBリストア
-  4. 非アクティブスロットを起動
-  5. Nginx を切り替え
-  6. 旧スロットを停止
+- 対象イメージ: `coati-webapi`, `coati-frontend`, `coati-backfire`, `coati-dbmanager`
+- 処理内容:
+  1. スナップショットイメージを確認
+  2. 各イメージを `*-blue:local` / `*-green:local` にタグ付け（dbmanager は `*:local`）
+  3. 復元後は `switch-node.sh <slot> --no-build` で起動
+
+**復元後の起動例:**
+```
+sh snapshot-restore.sh
+sh switch-node.sh blue --no-build
+```
 
 ### クリーンアップ
 

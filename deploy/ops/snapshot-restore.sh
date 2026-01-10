@@ -15,14 +15,8 @@ require_cmd docker
 suffix="${1:-latest}"
 echo "Restoring from snapshot: $suffix"
 
-# We need to restore to both blue and green? Or just current active?
-# The switch-node.sh builds image from source.
-# This restore script is only for emergency image rollback without rebuild.
-
-# Restore to local tags
-# coati-webapi:snapshot-XXX -> coati-webapi-blue:local AND coati-webapi-green:local
-
-services="coati-webapi coati-frontend coati-backfire"
+# Include dbmanager for migration rollback
+services="coati-webapi coati-frontend coati-backfire coati-dbmanager"
 
 for svc in $services; do
   snapshot_img="$svc:snapshot-$suffix"
@@ -33,8 +27,15 @@ for svc in $services; do
   fi
 
   echo "Restoring $svc..."
-  docker tag "$snapshot_img" "${svc}-blue:local"
-  docker tag "$snapshot_img" "${svc}-green:local"
+
+  if [ "$svc" = "coati-dbmanager" ]; then
+    # dbmanager has no slot suffix
+    docker tag "$snapshot_img" "${svc}:local"
+  else
+    # Restore to both slots
+    docker tag "$snapshot_img" "${svc}-blue:local"
+    docker tag "$snapshot_img" "${svc}-green:local"
+  fi
 done
 
-echo "[OK] Images restored. You can now restart containers."
+echo "[OK] Images restored. You can now restart containers with --no-build."
