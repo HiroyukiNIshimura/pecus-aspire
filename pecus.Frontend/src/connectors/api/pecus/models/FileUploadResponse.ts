@@ -30,5 +30,9 @@ export type FileUploadResponse = {
      * メッセージ
      */
     message?: string | null;
+    /**
+     * 更新後のRowVersion（楽観的ロック用）
+     */
+    rowVersion?: number | null;
 };
 

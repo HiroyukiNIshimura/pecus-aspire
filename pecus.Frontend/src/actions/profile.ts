@@ -259,7 +259,7 @@ export async function uploadAvatarFile(fileData: {
 }): Promise<
   | {
       success: true;
-      data: { fileUrl?: string; fileSize: number; contentType?: string };
+      data: { fileUrl?: string; fileSize: number; contentType?: string; rowVersion?: number };
     }
   | { success: false; error: string; message: string }
 > {
@@ -300,13 +300,17 @@ export async function uploadAvatarFile(fileData: {
         fileUrl: response.data.fileUrl ?? undefined,
         fileSize: response.data.fileSize ?? 0,
         contentType: response.data.contentType ?? undefined,
+        rowVersion: response.data.rowVersion ?? undefined,
       },
     };
   } catch (error) {
     console.error('Failed to upload avatar file:', error);
-    return handleApiErrorForAction<{ fileUrl?: string; fileSize: number; contentType?: string }>(error, {
-      defaultMessage: 'アップロードに失敗しました',
-    });
+    return handleApiErrorForAction<{ fileUrl?: string; fileSize: number; contentType?: string; rowVersion?: number }>(
+      error,
+      {
+        defaultMessage: 'アップロードに失敗しました',
+      },
+    );
   }
 }
 
