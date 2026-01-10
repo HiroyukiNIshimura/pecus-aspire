@@ -70,7 +70,7 @@ function LeftAlignedMessage({
           <div className="text-xs text-base-content/70 mb-1">{displayName}</div>
           <MessageContent
             content={content}
-            className="bg-base-300 text-base-content px-3 py-2 rounded-lg rounded-tl-none wrap-break-word whitespace-pre-wrap"
+            className="bg-neutral text-neutral-content px-3 py-2 rounded-lg rounded-tl-none wrap-break-word whitespace-pre-wrap [&_a]:text-info [&_a]:underline"
           />
           <Timestamp createdAt={createdAt} />
         </div>
@@ -82,9 +82,9 @@ function LeftAlignedMessage({
 /** アバター設定マップ */
 const AVATAR_CONFIGS = {
   system: {
-    bgClass: 'bg-base-300',
+    bgClass: 'bg-neutral',
     iconClass: 'icon-[tabler--settings-automation]',
-    iconColorClass: 'text-base-content/70',
+    iconColorClass: 'text-neutral-content',
   },
   ai: {
     bgClass: 'bg-secondary',
@@ -92,9 +92,9 @@ const AVATAR_CONFIGS = {
     iconColorClass: 'text-secondary-content',
   },
   user: {
-    bgClass: 'bg-base-300',
+    bgClass: 'bg-neutral',
     iconClass: 'icon-[tabler--user]',
-    iconColorClass: 'text-base-content/70',
+    iconColorClass: 'text-neutral-content',
   },
 } as const;
 
@@ -142,7 +142,7 @@ export default function ChatMessageItemComponent({
         <div className="max-w-4/5">
           <MessageContent
             content={content}
-            className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none wrap-break-word whitespace-pre-wrap"
+            className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none wrap-break-word whitespace-pre-wrap [&_a]:text-primary-content [&_a]:underline"
           />
           <div className="flex items-center justify-end gap-2 mt-1">
             <span className="text-xs text-base-content/50">{createdAt && formatRelativeTime(createdAt)}</span>

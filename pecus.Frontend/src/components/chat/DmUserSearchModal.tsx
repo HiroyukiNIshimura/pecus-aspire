@@ -174,8 +174,8 @@ export default function DmUserSearchModal({
                 {user.identityIconUrl ? (
                   <img src={user.identityIconUrl} alt="" className="size-10 rounded-full object-cover" />
                 ) : (
-                  <div className="size-10 rounded-full bg-base-300 flex items-center justify-center">
-                    <span className="icon-[tabler--user] size-5 text-base-content/50" aria-hidden="true" />
+                  <div className="size-10 rounded-full bg-neutral flex items-center justify-center">
+                    <span className="icon-[tabler--user] size-5 text-neutral-content" aria-hidden="true" />
                   </div>
                 )}
               </div>

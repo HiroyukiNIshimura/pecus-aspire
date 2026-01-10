@@ -64,7 +64,7 @@ export default function ChatRoomListItem({ room, isSelected = false, onClick }: 
     >
       <div className="flex items-start gap-3">
         {/* アイコン */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-base-300 flex items-center justify-center">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-neutral flex items-center justify-center">
           {room.type === 'Dm' && room.otherUser?.identityIconUrl ? (
             <img
               src={room.otherUser.identityIconUrl}
@@ -72,7 +72,7 @@ export default function ChatRoomListItem({ room, isSelected = false, onClick }: 
               className="w-10 h-10 rounded-full"
             />
           ) : (
-            <span className={`${getRoomIcon()} size-5 text-base-content/70`} aria-hidden="true" />
+            <span className={`${getRoomIcon()} size-5 text-neutral-content`} aria-hidden="true" />
           )}
         </div>
 
