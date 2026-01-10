@@ -17,12 +17,12 @@ public class BackOfficeOrganizationService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<BackOfficeOrganizationService> _logger;
-    private readonly OrganizationDeletionService _organizationDeletionService;
+    private readonly BatchOrganizationDeletionService _organizationDeletionService;
 
     public BackOfficeOrganizationService(
         ApplicationDbContext context,
         ILogger<BackOfficeOrganizationService> logger,
-        OrganizationDeletionService organizationDeletionService)
+        BatchOrganizationDeletionService organizationDeletionService)
     {
         _context = context;
         _logger = logger;

@@ -122,7 +122,7 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddScoped<OrganizationAccessHelper>();
 
 // Libs の共通サービスの登録
-builder.Services.AddScoped<OrganizationDeletionService>();
+builder.Services.AddScoped<BatchOrganizationDeletionService>();
 
 // サービスの登録
 builder.Services.AddScoped<UserService>();

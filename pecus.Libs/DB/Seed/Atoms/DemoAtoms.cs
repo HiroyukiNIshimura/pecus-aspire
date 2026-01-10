@@ -19,7 +19,7 @@ public class DemoAtoms
     private readonly ILogger<DemoAtoms> _logger;
     private readonly DemoModeOptions _options;
     private readonly CommonAtoms _commonAtoms;
-    private readonly OrganizationDeletionService _organizationDeletionService;
+    private readonly BatchOrganizationDeletionService _organizationDeletionService;
 
     /// <summary>
     /// Constructor
@@ -29,7 +29,7 @@ public class DemoAtoms
         ILogger<DemoAtoms> logger,
         IOptions<DemoModeOptions> options,
         CommonAtoms commonAtoms,
-        OrganizationDeletionService organizationDeletionService)
+        BatchOrganizationDeletionService organizationDeletionService)
     {
         _context = context;
         _logger = logger;
