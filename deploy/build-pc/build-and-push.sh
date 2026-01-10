@@ -23,6 +23,15 @@ fi
 REGISTRY="${REGISTRY_HOST:-localhost}:${REGISTRY_PORT:-5000}"
 VERSION=$(date +%Y%m%d%H%M%S)
 
+# スクリプト自身のパスとハッシュ（自己更新検出用）
+SCRIPT_PATH="$SCRIPT_DIR/build-and-push.sh"
+SCRIPT_HASH_BEFORE=""
+if command -v md5sum > /dev/null 2>&1; then
+    SCRIPT_HASH_BEFORE=$(md5sum "$SCRIPT_PATH" | cut -d' ' -f1)
+elif command -v md5 > /dev/null 2>&1; then
+    SCRIPT_HASH_BEFORE=$(md5 -q "$SCRIPT_PATH")
+fi
+
 # 全サービスの定義（空白区切り）
 ALL_SERVICES="pecus-webapi pecus-frontend pecus-backfire pecus-dbmanager lexicalconverter"
 
@@ -47,6 +56,24 @@ echo "📥 最新ソースコードを取得中..."
 if [ -d "$PROJECT_ROOT/.git" ]; then
     if git -C "$PROJECT_ROOT" pull; then
         echo "✅ Git pull 完了"
+        
+        # スクリプト自身が更新されたかチェック
+        if [ -n "$SCRIPT_HASH_BEFORE" ]; then
+            SCRIPT_HASH_AFTER=""
+            if command -v md5sum > /dev/null 2>&1; then
+                SCRIPT_HASH_AFTER=$(md5sum "$SCRIPT_PATH" | cut -d' ' -f1)
+            elif command -v md5 > /dev/null 2>&1; then
+                SCRIPT_HASH_AFTER=$(md5 -q "$SCRIPT_PATH")
+            fi
+            
+            if [ "$SCRIPT_HASH_BEFORE" != "$SCRIPT_HASH_AFTER" ]; then
+                echo ""
+                echo "⚠️  このスクリプト自身が更新されました。"
+                echo "   最新版で再実行してください:"
+                echo "   $0 $*"
+                exit 0
+            fi
+        fi
     else
         echo "⚠️  Git pull に失敗しました。続行します..."
     fi
