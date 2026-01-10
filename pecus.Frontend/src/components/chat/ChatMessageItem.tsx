@@ -70,7 +70,7 @@ function LeftAlignedMessage({
           <div className="text-xs text-base-content/70 mb-1">{displayName}</div>
           <MessageContent
             content={content}
-            className="bg-neutral text-neutral-content px-3 py-2 rounded-lg rounded-tl-none wrap-break-word whitespace-pre-wrap [&_a]:text-info [&_a]:underline"
+            className="bg-neutral text-neutral-content px-3 py-2 rounded-lg rounded-tl-none wrap-break-word whitespace-pre-wrap [&_a]:text-primary [&_a]:underline [&_a:hover]:text-info-content"
           />
           <Timestamp createdAt={createdAt} />
         </div>
