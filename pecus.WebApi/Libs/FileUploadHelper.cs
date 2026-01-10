@@ -46,9 +46,10 @@ public static class FileUploadHelper
         var fileHash = GenerateUniqueFileHash();
         var fileName = $"{fileHash}{fileExtension}";
 
-        // /[組織ID]/[ファイルの種類]/[リソースのID]/[ファイル名]
+        // /organizations/[組織ID]/[ファイルの種類]/[リソースのID]/[ファイル名]
         return Path.Combine(
             storagePath,
+            "organizations",
             organizationId.ToString(),
             fileType,
             resourceId.ToString(),

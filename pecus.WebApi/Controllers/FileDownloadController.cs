@@ -40,6 +40,7 @@ public class FileDownloadController : BaseSecureController
         var uploadsPath = _config.FileUpload.StoragePath;
         var filePath = Path.Combine(
             uploadsPath,
+            "organizations",
             CurrentOrganizationId.ToString(),
             request.FileType.ToString().ToLowerInvariant(),
             request.ResourceId.ToString(),
@@ -100,6 +101,7 @@ public class FileDownloadController : BaseSecureController
         var uploadsPath = _config.FileUpload.StoragePath;
         var filePath = Path.Combine(
             uploadsPath,
+            "organizations",
             CurrentOrganizationId.ToString(),
             request.FileType.GetDisplayName().ToLowerInvariant(),
             request.ResourceId.ToString(),
