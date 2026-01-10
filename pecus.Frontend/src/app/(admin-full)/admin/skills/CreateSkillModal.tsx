@@ -73,7 +73,7 @@ export default function CreateSkillModal({ isOpen, onClose, onSuccess }: CreateS
           </h2>
           <button
             type="button"
-            className="btn btn-sm btn-circle"
+            className="btn btn-sm btn-secondary btn-circle"
             onClick={onClose}
             disabled={isSubmitting}
             aria-label="閉じる"

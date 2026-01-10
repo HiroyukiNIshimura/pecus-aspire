@@ -157,7 +157,7 @@ export default function ItemPresence({
             </div>
           ))}
           {activeUsers.length > 3 && (
-            <div className="w-5 h-5 rounded-full bg-base-300 flex items-center justify-center text-[10px] font-bold border border-base-100">
+            <div className="w-5 h-5 rounded-full bg-base-300 flex items-center justify-center text-[10px] font-bold border border-base-100 text-base-content">
               +{activeUsers.length - 3}
             </div>
           )}
@@ -216,7 +216,7 @@ export default function ItemPresence({
 
         {hiddenCount > 0 && (
           <div
-            className="w-7 h-7 rounded-full bg-base-300 flex items-center justify-center text-xs font-bold shadow-sm border-2 border-base-100"
+            className="w-7 h-7 rounded-full bg-base-300 flex items-center justify-center text-xs font-bold shadow-sm border-2 border-base-100 text-base-content"
             title={`他 ${hiddenCount} 人`}
           >
             +{hiddenCount}

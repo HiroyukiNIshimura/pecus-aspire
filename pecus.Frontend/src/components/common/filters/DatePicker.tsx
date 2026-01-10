@@ -134,7 +134,7 @@ export default function DatePicker({
       {showClearButton && (
         <button
           type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 btn btn-xs btn-circle"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 btn btn-xs btn-secondary btn-circle"
           onClick={handleClear}
           aria-label="日付をクリア"
         >

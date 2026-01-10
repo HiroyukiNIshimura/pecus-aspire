@@ -293,7 +293,7 @@ export default function WorkspaceItemFilterDrawer({
             <h3 className="text-lg font-bold">詳細フィルター</h3>
             {activeFilterCount > 0 && <span className="badge badge-primary badge-sm">{activeFilterCount}</span>}
           </div>
-          <button type="button" className="btn btn-circle btn-sm" aria-label="閉じる" onClick={onClose}>
+          <button type="button" className="btn btn-secondary btn-circle btn-sm" aria-label="閉じる" onClick={onClose}>
             ✕
           </button>
         </div>

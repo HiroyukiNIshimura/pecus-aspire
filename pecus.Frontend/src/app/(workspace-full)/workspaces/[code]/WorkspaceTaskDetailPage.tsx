@@ -948,7 +948,7 @@ export default function WorkspaceTaskDetailPage({
             {isModal ? (
               <button
                 type="button"
-                className="btn btn-sm btn-circle"
+                className="btn btn-sm btn-secondary btn-circle"
                 onClick={onClose}
                 disabled={isSubmitting}
                 aria-label="閉じる"
@@ -998,7 +998,12 @@ export default function WorkspaceTaskDetailPage({
                           <span className="icon-[mdi--information] w-5 h-5" aria-hidden="true" />
                           <span>{taskEditStatus.editor?.userName ?? '誰か'} さんが編集中です</span>
                         </div>
-                        <button type="button" onClick={onClose} className="btn btn-sm btn-circle" aria-label="閉じる">
+                        <button
+                          type="button"
+                          onClick={onClose}
+                          className="btn btn-sm btn-secondary btn-circle"
+                          aria-label="閉じる"
+                        >
                           <span className="icon-[mdi--close] w-5 h-5" aria-hidden="true" />
                         </button>
                       </div>
@@ -1089,7 +1094,7 @@ export default function WorkspaceTaskDetailPage({
                         <span className="text-sm truncate flex-1">{selectedAssignee.username}</span>
                         <button
                           type="button"
-                          className="p-1 hover:bg-base-300 rounded transition-colors flex-shrink-0"
+                          className="p-1 hover:bg-base-content/10 rounded transition-colors flex-shrink-0"
                           onClick={handleClearAssignee}
                           aria-label="選択解除"
                           disabled={isFormDisabled}

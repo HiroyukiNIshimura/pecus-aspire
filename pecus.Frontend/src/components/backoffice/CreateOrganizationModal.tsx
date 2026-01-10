@@ -149,7 +149,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
           </div>
           <button
             type="button"
-            className="btn btn-sm btn-circle"
+            className="btn btn-sm btn-secondary btn-circle"
             onClick={handleClose}
             disabled={isSubmitting}
             aria-label="閉じる"

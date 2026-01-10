@@ -1026,7 +1026,7 @@ export default function WorkspaceDetailClient({
         <div className="relative flex-shrink-0">
           <button
             type="button"
-            className="btn btn-sm"
+            className="btn btn-sm btn-secondary"
             onClick={(e) => {
               e.stopPropagation();
               handleActionMenuToggle();
@@ -1526,7 +1526,7 @@ export default function WorkspaceDetailClient({
           <button
             type="button"
             onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
-            className="w-full h-12 flex items-center justify-center gap-2 bg-base-200 hover:bg-base-300 transition-colors"
+            className="w-full h-12 flex items-center justify-center gap-2 bg-base-200 hover:bg-base-content/10 transition-colors"
             aria-label={mobileDrawerOpen ? 'アイテム一覧を閉じる' : 'アイテム一覧を開く'}
           >
             <div className="w-12 h-1 bg-base-content/30 rounded-full"></div>

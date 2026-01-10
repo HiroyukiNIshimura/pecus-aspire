@@ -62,7 +62,10 @@ export default function BackOfficeDashboardClient({ fetchError, hangfireStats }:
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <a href="/backoffice/organizations" className="card bg-base-200 hover:bg-base-300 transition-colors">
+                <a
+                  href="/backoffice/organizations"
+                  className="card bg-base-200 hover:bg-base-content/10 transition-colors"
+                >
                   <div className="card-body">
                     <div className="flex items-center gap-4">
                       <span className="icon-[mdi--office-building-outline] size-12 text-primary" aria-hidden="true" />
@@ -74,7 +77,10 @@ export default function BackOfficeDashboardClient({ fetchError, hangfireStats }:
                   </div>
                 </a>
 
-                <a href="/backoffice/notifications" className="card bg-base-200 hover:bg-base-300 transition-colors">
+                <a
+                  href="/backoffice/notifications"
+                  className="card bg-base-200 hover:bg-base-content/10 transition-colors"
+                >
                   <div className="card-body">
                     <div className="flex items-center gap-4">
                       <span className="icon-[mdi--bell-outline] size-12 text-primary" aria-hidden="true" />
@@ -88,7 +94,7 @@ export default function BackOfficeDashboardClient({ fetchError, hangfireStats }:
 
                 <a
                   href="/backoffice/monitoring"
-                  className="card bg-base-200 hover:bg-base-300 transition-colors relative"
+                  className="card bg-base-200 hover:bg-base-content/10 transition-colors relative"
                 >
                   <div className="card-body">
                     <div className="flex items-center gap-4">

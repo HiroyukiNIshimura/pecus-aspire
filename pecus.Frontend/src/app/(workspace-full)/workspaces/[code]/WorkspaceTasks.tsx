@@ -558,7 +558,7 @@ const WorkspaceTasks = ({
               <span className="text-xs truncate flex-1">{selectedAssignee.username}</span>
               <button
                 type="button"
-                className="p-0.5 hover:bg-base-300 rounded transition-colors flex-shrink-0"
+                className="p-0.5 hover:bg-base-content/10 rounded transition-colors flex-shrink-0"
                 onClick={handleClearAssignee}
                 aria-label="選択解除"
               >

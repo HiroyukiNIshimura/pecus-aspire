@@ -73,7 +73,12 @@ export default function RemoveMemberModal({ isOpen, userName, email, onClose, on
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
           <h2 className="text-xl sm:text-2xl font-bold text-error">メンバーを削除しますか？</h2>
-          <button type="button" className="btn btn-sm btn-circle" onClick={handleClose} aria-label="閉じる">
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary btn-circle"
+            onClick={handleClose}
+            aria-label="閉じる"
+          >
             <span className="icon-[mdi--close] size-5" aria-hidden="true" />
           </button>
         </div>

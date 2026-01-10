@@ -153,7 +153,7 @@ export default function EditWorkspaceSkillsModal({
           </h2>
           <button
             type="button"
-            className="btn btn-sm btn-circle"
+            className="btn btn-sm btn-secondary btn-circle"
             onClick={onClose}
             disabled={isSubmitting}
             aria-label="閉じる"
@@ -304,7 +304,7 @@ export default function EditWorkspaceSkillsModal({
           {/* ボタングループ */}
           <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
             {skillsChanged && (
-              <button type="button" className="btn btn-default" onClick={handleReset} disabled={isSubmitting}>
+              <button type="button" className="btn btn-secondary" onClick={handleReset} disabled={isSubmitting}>
                 リセット
               </button>
             )}

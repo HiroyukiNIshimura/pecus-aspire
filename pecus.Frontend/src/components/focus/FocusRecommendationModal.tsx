@@ -66,7 +66,7 @@ export default function FocusRecommendationModal({ isOpen, onClose }: FocusRecom
             </h2>
             <button
               type="button"
-              className="btn btn-sm btn-circle"
+              className="btn btn-sm btn-secondary btn-circle"
               onClick={handleClose}
               disabled={loading}
               aria-label="閉じる"

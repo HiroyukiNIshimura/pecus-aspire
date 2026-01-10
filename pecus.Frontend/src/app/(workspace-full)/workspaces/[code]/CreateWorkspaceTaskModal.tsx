@@ -430,7 +430,7 @@ export default function CreateWorkspaceTaskModal({
           </h2>
           <button
             type="button"
-            className="btn btn-sm btn-circle"
+            className="btn btn-sm btn-secondary btn-circle"
             onClick={onClose}
             disabled={isSubmitting}
             aria-label="閉じる"
@@ -519,7 +519,7 @@ export default function CreateWorkspaceTaskModal({
                   <span className="text-sm truncate flex-1">{selectedAssignee.username}</span>
                   <button
                     type="button"
-                    className="p-1 hover:bg-base-300 rounded transition-colors flex-shrink-0"
+                    className="p-1 hover:bg-base-content/10 rounded transition-colors flex-shrink-0"
                     onClick={handleClearAssignee}
                     aria-label="選択解除"
                     disabled={isSubmitting}

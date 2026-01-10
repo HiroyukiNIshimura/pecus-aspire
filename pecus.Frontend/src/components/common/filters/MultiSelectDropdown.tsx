@@ -184,7 +184,7 @@ export default function MultiSelectDropdown({
                 <button
                   type="button"
                   onClick={() => toggleItem(itemId)}
-                  className="btn btn-xs no-animation"
+                  className="btn btn-xs btn-secondary btn-circle"
                   aria-label={`${item?.name}を削除`}
                   disabled={disabled}
                 >

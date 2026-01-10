@@ -155,7 +155,7 @@ export default function WorkspacePresence({
       <div className="flex flex-row-reverse items-end gap-1">
         {hiddenCount > 0 && (
           <div
-            className="w-10 h-10 rounded-full bg-base-300 flex items-center justify-center text-xs font-bold shadow-lg border-2 border-base-100"
+            className="w-10 h-10 rounded-full bg-base-300 flex items-center justify-center text-xs font-bold shadow-lg border-2 border-base-100 text-base-content"
             title={`他 ${hiddenCount} 人`}
           >
             +{hiddenCount}

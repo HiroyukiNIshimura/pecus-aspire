@@ -127,7 +127,7 @@ export default function AttachmentListItem({ attachment, onDelete, canDelete, do
 
   // 通常表示
   return (
-    <div className="flex items-center gap-3 p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors group">
+    <div className="flex items-center gap-3 p-3 bg-base-200 rounded-lg hover:bg-base-content/10 transition-colors group">
       {/* ファイルタイプアイコン */}
       <span className={`${iconClass} size-6 ${colorClass} shrink-0`} aria-hidden="true" />
 

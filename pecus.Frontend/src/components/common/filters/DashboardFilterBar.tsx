@@ -47,7 +47,7 @@ function FilterButton({ label, count, isActive, onClick, colorClass, iconClass }
             ? 'bg-base-200/50 text-base-content/30 cursor-not-allowed'
             : isActive
               ? `${colorClass} text-white shadow-md`
-              : 'bg-base-200 hover:bg-base-300 text-base-content'
+              : 'bg-base-200 hover:bg-base-content/10 text-base-content'
         }
       `}
     >

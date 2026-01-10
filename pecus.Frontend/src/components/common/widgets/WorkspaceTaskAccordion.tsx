@@ -361,7 +361,7 @@ export default function WorkspaceTaskAccordion({
         return (
           <div key={workspace.listIndex} className="card bg-base-200">
             {/* ワークスペースヘッダー */}
-            <div className="card-body p-3 sm:p-4 hover:bg-base-300 transition-colors rounded-t-2xl">
+            <div className="card-body p-3 sm:p-4 hover:bg-base-content/5 transition-colors rounded-t-2xl">
               <div className="flex items-start sm:items-center justify-between gap-2">
                 {/* クリック可能なメイン部分 */}
                 <button
@@ -460,7 +460,7 @@ export default function WorkspaceTaskAccordion({
                           {/* 期限日ヘッダー */}
                           <button
                             type="button"
-                            className="card-body p-3 cursor-pointer hover:bg-base-200 transition-colors rounded-t-2xl w-full text-left"
+                            className="card-body p-3 cursor-pointer hover:bg-base-content/5 transition-colors rounded-t-2xl w-full text-left"
                             onClick={() => handleDueDateToggle(workspace.workspaceId, dueDateKey)}
                           >
                             <div className="flex items-center justify-between">

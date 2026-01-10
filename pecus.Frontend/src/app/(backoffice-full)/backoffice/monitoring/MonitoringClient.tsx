@@ -286,7 +286,7 @@ function CompactServiceStatus({
             return (
               <div
                 key={`${s.job}-${s.instance}`}
-                className="flex items-center gap-1.5 px-2 py-1 bg-base-300 rounded text-xs"
+                className="flex items-center gap-1.5 px-2 py-1 bg-base-200 rounded text-xs text-base-content"
                 title={`${s.instance} - 応答時間: ${formatDuration(s.lastScrapeDuration)}`}
               >
                 <span className="icon-[mdi--check-circle] size-3.5 text-success" aria-hidden="true" />
@@ -906,7 +906,7 @@ export default function MonitoringClient({
                           {availableServices.map((service) => (
                             <label
                               key={service}
-                              className="flex items-center gap-1.5 px-2 py-1 bg-base-100 rounded cursor-pointer hover:bg-base-300 transition-colors"
+                              className="flex items-center gap-1.5 px-2 py-1 bg-base-100 rounded cursor-pointer hover:bg-base-content/10 transition-colors"
                             >
                               <input
                                 type="checkbox"
@@ -974,7 +974,7 @@ export default function MonitoringClient({
                               {availableGcServices.map((service, i) => (
                                 <label
                                   key={service}
-                                  className="flex items-center gap-1.5 px-2 py-1 bg-base-100 rounded cursor-pointer hover:bg-base-300 transition-colors"
+                                  className="flex items-center gap-1.5 px-2 py-1 bg-base-100 rounded cursor-pointer hover:bg-base-content/10 transition-colors"
                                 >
                                   <input
                                     type="checkbox"

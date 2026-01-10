@@ -82,7 +82,7 @@ export default function DeleteNotificationModal({
           </div>
           <button
             type="button"
-            className="btn btn-sm btn-circle"
+            className="btn btn-sm btn-secondary btn-circle"
             onClick={handleClose}
             disabled={isDeleting}
             aria-label="閉じる"

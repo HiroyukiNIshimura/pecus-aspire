@@ -401,7 +401,7 @@ export default function TaskCommentSection({
       <div className="flex items-center gap-2 p-3 border-b border-base-300 flex-shrink-0">
         <span className="icon-[mdi--message-outline] text-primary w-5 h-5" aria-hidden="true" />
         <span className="font-bold">コメント</span>
-        <span className="badge badge-neutral badge-sm">{totalCount}件</span>
+        <span className="badge badge-secondary badge-sm">{totalCount}件</span>
       </div>
 
       {/* コメント一覧 */}

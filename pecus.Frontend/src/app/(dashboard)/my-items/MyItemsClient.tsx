@@ -496,7 +496,7 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
               <button
                 type="button"
                 onClick={handleArchiveToggle}
-                className={`btn btn-sm gap-1 ${showArchived ? 'btn-warning' : 'btn-default'}`}
+                className={`btn btn-sm gap-1 ${showArchived ? 'btn-warning' : 'btn-secondary'}`}
                 title={showArchived ? 'アーカイブ済みを表示中' : 'アーカイブ済みを表示'}
               >
                 <span className="icon-[mdi--archive-outline] size-4" aria-hidden="true" />

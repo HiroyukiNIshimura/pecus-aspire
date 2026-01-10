@@ -1,22 +1,36 @@
 /* Tagify スタイルのカスタマイズ（FlyonUI テーマ対応） */
 
-/* タグのスタイル */
+/* タグのスタイル（ライトモード） */
 .tagify__tag {
   --tag-bg: color-mix(in oklab, var(--color-accent) 70%, var(--color-base-100));
-  --tag-text-color: var(--color-accent-content);
+  --tag-text-color: var(--color-base-content);
   --tag-hover: color-mix(in oklab, var(--color-accent) 85%, var(--color-base-100));
-  --tag-remove-bg: color-mix(in oklab, var(--color-accent-content) 15%, transparent);
-  --tag-remove-btn-color: var(--color-accent-content);
+  --tag-remove-bg: color-mix(in oklab, var(--color-base-content) 15%, transparent);
+  --tag-remove-btn-color: var(--color-base-content);
+  --tag-text-color--edit: var(--color-base-content);
   --tag-pad: 0.25rem 0.625rem;
   border-radius: var(--rounded-badge, 1.9rem);
   font-weight: 500;
   font-size: 0.875rem;
 }
 
-/* タグ削除ボタン */
+/* タグのスタイル（ダークモード） */
+[data-theme="dark"] .tagify__tag {
+  --tag-text-color: var(--color-accent-content);
+  --tag-remove-btn-color: var(--color-accent-content);
+  --tag-text-color--edit: var(--color-accent-content);
+  --tag-remove-bg: color-mix(in oklab, var(--color-accent-content) 15%, transparent);
+}
+
+/* タグ削除ボタン（ライトモード） */
 .tagify__tag__removeBtn {
-  color: var(--color-accent-content);
+  color: var(--color-base-content);
   opacity: 0.8;
+}
+
+/* タグ削除ボタン（ダークモード） */
+[data-theme="dark"] .tagify__tag__removeBtn {
+  color: var(--color-accent-content);
 }
 
 .tagify__tag__removeBtn:hover {
