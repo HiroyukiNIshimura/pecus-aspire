@@ -51,11 +51,11 @@ export default function ChatBottomDrawer({
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-40 bg-base-100 border-t border-base-300 shadow-lg transition-transform duration-300 ease-out"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-base-100 border-t-2 border-base-content/20 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out"
       style={{ height: '50vh', minHeight: '300px', maxHeight: '600px' }}
     >
       {/* ヘッダー */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-base-300 bg-base-200">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-base-content/10 bg-base-200">
         <h2 className="font-semibold text-base">チャット</h2>
         <button type="button" onClick={closeDrawer} className="btn btn-secondary btn-sm btn-circle" aria-label="閉じる">
           <span className="icon-[tabler--x] size-5" aria-hidden="true" />
@@ -65,7 +65,7 @@ export default function ChatBottomDrawer({
       {/* コンテンツエリア */}
       <div className="flex h-[calc(100%-48px)]">
         {/* 左: ルーム一覧 */}
-        <div className="w-80 border-r border-base-300 flex-shrink-0">
+        <div className="w-80 border-r border-base-content/10 flex-shrink-0">
           <ChatRoomList rooms={rooms} loading={loading} onRoomCreated={onRoomCreated} />
         </div>
 
