@@ -2747,13 +2747,13 @@ var StickyComponent_exports = {};
 __export(StickyComponent_exports, {
   default: () => StickyComponent
 });
-import { useLexicalComposerContext as useLexicalComposerContext39 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext40 } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary as LexicalErrorBoundary2 } from "@lexical/react/LexicalErrorBoundary";
 import { LexicalNestedComposer as LexicalNestedComposer2 } from "@lexical/react/LexicalNestedComposer";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { calculateZoomLevel as calculateZoomLevel5 } from "@lexical/utils";
 import { $getNodeByKey as $getNodeByKey7 } from "lexical";
-import { useEffect as useEffect42, useLayoutEffect, useRef as useRef19, useState as useState30 } from "react";
+import { useEffect as useEffect43, useLayoutEffect, useRef as useRef19, useState as useState30 } from "react";
 import { createPortal as createPortal12 } from "react-dom";
 import { jsx as jsx53, jsxs as jsxs28 } from "react/jsx-runtime";
 function positionSticky(stickyElem, positioning) {
@@ -2768,7 +2768,7 @@ function StickyComponent({
   color,
   caption
 }) {
-  const [editor] = useLexicalComposerContext39();
+  const [editor] = useLexicalComposerContext40();
   const stickyContainerRef = useRef19(null);
   const [portalContainer, setPortalContainer] = useState30(null);
   const positioningRef = useRef19({
@@ -2779,7 +2779,7 @@ function StickyComponent({
     x: 0,
     y: 0
   });
-  useEffect42(() => {
+  useEffect43(() => {
     const rootElement = editor.getRootElement();
     if (rootElement) {
       const scrollerContainer = rootElement.closest(".editor-scroller");
@@ -2790,7 +2790,7 @@ function StickyComponent({
       }
     }
   }, [editor]);
-  useEffect42(() => {
+  useEffect43(() => {
     const stickyContainer = stickyContainerRef.current;
     if (!stickyContainer) return;
     const stopFlyonuiEvents = (e) => {
@@ -2803,7 +2803,7 @@ function StickyComponent({
       stickyContainer.removeEventListener("focusout", stopFlyonuiEvents);
     };
   }, []);
-  useEffect42(() => {
+  useEffect43(() => {
     const position = positioningRef.current;
     position.x = x;
     position.y = y2;
@@ -2857,7 +2857,7 @@ function StickyComponent({
       removeRootListener();
     };
   }, [editor]);
-  useEffect42(() => {
+  useEffect43(() => {
     const stickyContainer = stickyContainerRef.current;
     if (stickyContainer !== null) {
       setTimeout(() => {
@@ -3088,7 +3088,7 @@ import { CharacterLimitPlugin } from "@lexical/react/LexicalCharacterLimitPlugin
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 import { ClearEditorPlugin } from "@lexical/react/LexicalClearEditorPlugin";
 import { ClickableLinkPlugin } from "@lexical/react/LexicalClickableLinkPlugin";
-import { useLexicalComposerContext as useLexicalComposerContext40 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext41 } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary as LexicalErrorBoundary3 } from "@lexical/react/LexicalErrorBoundary";
 import { HashtagPlugin as HashtagPlugin2 } from "@lexical/react/LexicalHashtagPlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
@@ -3099,7 +3099,7 @@ import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin
 import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
 import { useLexicalEditable as useLexicalEditable6 } from "@lexical/react/useLexicalEditable";
 import { CAN_USE_DOM } from "@lexical/utils";
-import { useEffect as useEffect45, useState as useState33 } from "react";
+import { useEffect as useEffect46, useState as useState33 } from "react";
 
 // src/context/SettingsContext.tsx
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
@@ -10182,10 +10182,69 @@ function FloatingLinkEditorPlugin({
   return useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsLinkEditMode);
 }
 
+// src/plugins/FragmentLinkPlugin/index.tsx
+import { useLexicalComposerContext as useLexicalComposerContext29 } from "@lexical/react/LexicalComposerContext";
+import { $isHeadingNode } from "@lexical/rich-text";
+import { $getRoot as $getRoot4 } from "lexical";
+import { useEffect as useEffect30 } from "react";
+function generateSlug(text) {
+  return text.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}\-]/gu, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+function normalizeText(text) {
+  return text.toLowerCase().trim();
+}
+function FragmentLinkPlugin() {
+  const [editor] = useLexicalComposerContext29();
+  useEffect30(() => {
+    const rootElement = editor.getRootElement();
+    if (!rootElement) {
+      return;
+    }
+    const handleClick = (event) => {
+      const target = event.target;
+      const anchor = target.closest("a");
+      if (!anchor) {
+        return;
+      }
+      const href = anchor.getAttribute("href");
+      if (!href || !href.startsWith("#")) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const targetFragment = decodeURIComponent(href.slice(1));
+      const targetSlug = generateSlug(targetFragment);
+      const targetNormalized = normalizeText(targetFragment);
+      editor.getEditorState().read(() => {
+        const root = $getRoot4();
+        for (const child of root.getChildren()) {
+          if ($isHeadingNode(child)) {
+            const headingText = child.getTextContent();
+            const headingSlug = generateSlug(headingText);
+            const headingNormalized = normalizeText(headingText);
+            if (headingSlug === targetSlug || headingNormalized === targetNormalized || headingNormalized.includes(targetNormalized) || targetNormalized.includes(headingNormalized)) {
+              const domElement = editor.getElementByKey(child.getKey());
+              if (domElement) {
+                domElement.scrollIntoView({ behavior: "smooth", block: "start" });
+                return;
+              }
+            }
+          }
+        }
+      });
+    };
+    rootElement.addEventListener("click", handleClick, true);
+    return () => {
+      rootElement.removeEventListener("click", handleClick, true);
+    };
+  }, [editor]);
+  return null;
+}
+
 // src/plugins/FloatingTextFormatToolbarPlugin/index.tsx
 import { $isCodeHighlightNode } from "@lexical/code";
 import { $isLinkNode as $isLinkNode4, TOGGLE_LINK_COMMAND as TOGGLE_LINK_COMMAND4 } from "@lexical/link";
-import { useLexicalComposerContext as useLexicalComposerContext29 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext30 } from "@lexical/react/LexicalComposerContext";
 import { $getSelectionStyleValueForProperty, $patchStyleText } from "@lexical/selection";
 import { mergeRegister as mergeRegister12 } from "@lexical/utils";
 import {
@@ -10198,7 +10257,7 @@ import {
   getDOMSelection as getDOMSelection2,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND4
 } from "lexical";
-import { useCallback as useCallback15, useEffect as useEffect30, useRef as useRef14, useState as useState24 } from "react";
+import { useCallback as useCallback15, useEffect as useEffect31, useRef as useRef14, useState as useState24 } from "react";
 import { createPortal as createPortal8 } from "react-dom";
 
 // src/ui/ColorPicker.tsx
@@ -10583,7 +10642,7 @@ function TextFormatFloatingToolbar({
       }
     }
   }
-  useEffect30(() => {
+  useEffect31(() => {
     if (popupCharStylesEditorRef?.current) {
       document.addEventListener("mousemove", mouseMoveListener);
       document.addEventListener("mouseup", mouseUpListener);
@@ -10606,7 +10665,7 @@ function TextFormatFloatingToolbar({
       setFloatingElemPosition(rangeRect, popupCharStylesEditorElem, anchorElem, isLink);
     }
   }, [editor, anchorElem, isLink]);
-  useEffect30(() => {
+  useEffect31(() => {
     const scrollerElem = anchorElem.parentElement;
     const update = () => {
       editor.getEditorState().read(() => {
@@ -10624,7 +10683,7 @@ function TextFormatFloatingToolbar({
       }
     };
   }, [editor, $updateTextFormatFloatingToolbar, anchorElem]);
-  useEffect30(() => {
+  useEffect31(() => {
     editor.getEditorState().read(() => {
       $updateTextFormatFloatingToolbar();
     });
@@ -10873,13 +10932,13 @@ function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
       }
     });
   }, [editor]);
-  useEffect30(() => {
+  useEffect31(() => {
     document.addEventListener("selectionchange", updatePopup);
     return () => {
       document.removeEventListener("selectionchange", updatePopup);
     };
   }, [updatePopup]);
-  useEffect30(() => {
+  useEffect31(() => {
     return mergeRegister12(
       editor.registerUpdateListener(() => {
         updatePopup();
@@ -10923,19 +10982,19 @@ function FloatingTextFormatToolbarPlugin({
   anchorElem = document.body,
   setIsLinkEditMode
 }) {
-  const [editor] = useLexicalComposerContext29();
+  const [editor] = useLexicalComposerContext30();
   return useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode);
 }
 
 // src/plugins/HorizontalRulePlugin/index.tsx
 import { $createHorizontalRuleNode, INSERT_HORIZONTAL_RULE_COMMAND as INSERT_HORIZONTAL_RULE_COMMAND2 } from "@lexical/extension";
-import { useLexicalComposerContext as useLexicalComposerContext30 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext31 } from "@lexical/react/LexicalComposerContext";
 import { $insertNodeToNearestRoot as $insertNodeToNearestRoot7 } from "@lexical/utils";
 import { $getSelection as $getSelection13, $isRangeSelection as $isRangeSelection10, COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR10 } from "lexical";
-import { useEffect as useEffect31 } from "react";
+import { useEffect as useEffect32 } from "react";
 function HorizontalRulePlugin() {
-  const [editor] = useLexicalComposerContext30();
-  useEffect31(() => {
+  const [editor] = useLexicalComposerContext31();
+  useEffect32(() => {
     return editor.registerCommand(
       INSERT_HORIZONTAL_RULE_COMMAND2,
       (_type) => {
@@ -10961,7 +11020,7 @@ init_LinkPlugin();
 
 // src/plugins/MarkdownPastePlugin/index.tsx
 import { $convertFromMarkdownString as $convertFromMarkdownString3 } from "@lexical/markdown";
-import { useLexicalComposerContext as useLexicalComposerContext31 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext32 } from "@lexical/react/LexicalComposerContext";
 import {
   $createParagraphNode as $createParagraphNode9,
   $getSelection as $getSelection14,
@@ -10969,7 +11028,7 @@ import {
   COMMAND_PRIORITY_HIGH as COMMAND_PRIORITY_HIGH6,
   PASTE_COMMAND as PASTE_COMMAND2
 } from "lexical";
-import { useCallback as useCallback16, useEffect as useEffect32 } from "react";
+import { useCallback as useCallback16, useEffect as useEffect33 } from "react";
 
 // src/transformers/markdown-transformers.ts
 init_EquationNode();
@@ -28168,7 +28227,7 @@ function getPlainTextFromClipboard(event) {
   return clipboardData.getData("text/plain");
 }
 function MarkdownPastePlugin() {
-  const [editor] = useLexicalComposerContext31();
+  const [editor] = useLexicalComposerContext32();
   const handlePaste = useCallback16(
     (event) => {
       const plainText = getPlainTextFromClipboard(event);
@@ -28210,7 +28269,7 @@ function MarkdownPastePlugin() {
     },
     [editor]
   );
-  useEffect32(() => {
+  useEffect33(() => {
     return editor.registerCommand(
       PASTE_COMMAND2,
       (event) => {
@@ -28230,14 +28289,14 @@ function MarkdownPlugin() {
 }
 
 // src/plugins/MaxLengthPlugin/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext32 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext33 } from "@lexical/react/LexicalComposerContext";
 import { $trimTextContentFromAnchor } from "@lexical/selection";
 import { $restoreEditorState } from "@lexical/utils";
 import { $getSelection as $getSelection15, $isRangeSelection as $isRangeSelection12, RootNode as RootNode2 } from "lexical";
-import { useEffect as useEffect33 } from "react";
+import { useEffect as useEffect34 } from "react";
 function MaxLengthPlugin({ maxLength }) {
-  const [editor] = useLexicalComposerContext32();
-  useEffect33(() => {
+  const [editor] = useLexicalComposerContext33();
+  useEffect34(() => {
     let lastRestoredEditorState = null;
     return editor.registerNodeTransform(RootNode2, (rootNode) => {
       const selection = $getSelection15();
@@ -28278,7 +28337,7 @@ import {
   KEY_DOWN_COMMAND,
   OUTDENT_CONTENT_COMMAND
 } from "lexical";
-import { useEffect as useEffect34 } from "react";
+import { useEffect as useEffect35 } from "react";
 init_url();
 
 // src/plugins/ToolbarPlugin/utils.ts
@@ -28288,7 +28347,7 @@ import { $isDecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode"
 import {
   $createHeadingNode as $createHeadingNode2,
   $createQuoteNode as $createQuoteNode2,
-  $isHeadingNode,
+  $isHeadingNode as $isHeadingNode2,
   $isQuoteNode
 } from "@lexical/rich-text";
 import { $patchStyleText as $patchStyleText2, $setBlocksType as $setBlocksType2 } from "@lexical/selection";
@@ -28507,7 +28566,7 @@ var clearFormatting = (editor, skipRefocus = false) => {
             nearestBlockElement.setIndent(0);
           }
           node = textNode;
-        } else if ($isHeadingNode(node) || $isQuoteNode(node)) {
+        } else if ($isHeadingNode2(node) || $isQuoteNode(node)) {
           node.replace($createParagraphNode10(), true);
         } else if ($isDecoratorBlockNode(node)) {
           node.setFormat("");
@@ -28668,7 +28727,7 @@ function ShortcutsPlugin({
   setIsLinkEditMode
 }) {
   const { toolbarState } = useToolbarState();
-  useEffect34(() => {
+  useEffect35(() => {
     const keyboardShortcutsHandler = (event) => {
       if (isModifierMatch2(event, {})) {
         return false;
@@ -28736,9 +28795,9 @@ function ShortcutsPlugin({
 }
 
 // src/plugins/SpecialTextPlugin/index.ts
-import { useLexicalComposerContext as useLexicalComposerContext33 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext34 } from "@lexical/react/LexicalComposerContext";
 import { TextNode as TextNode9 } from "lexical";
-import { useEffect as useEffect35 } from "react";
+import { useEffect as useEffect36 } from "react";
 
 // src/nodes/SpecialTextNode.tsx
 import { addClassNamesToElement as addClassNamesToElement3 } from "@lexical/utils";
@@ -28811,7 +28870,7 @@ function $textNodeTransform3(node) {
   }
 }
 function useTextTransformation(editor) {
-  useEffect35(() => {
+  useEffect36(() => {
     if (!editor.hasNodes([SpecialTextNode])) {
       throw new Error("SpecialTextPlugin: SpecialTextNode not registered on editor");
     }
@@ -28819,15 +28878,15 @@ function useTextTransformation(editor) {
   }, [editor]);
 }
 function SpecialTextPlugin() {
-  const [editor] = useLexicalComposerContext33();
+  const [editor] = useLexicalComposerContext34();
   useTextTransformation(editor);
   return null;
 }
 
 // src/plugins/TabFocusPlugin/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext34 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext35 } from "@lexical/react/LexicalComposerContext";
 import { $getSelection as $getSelection17, $isRangeSelection as $isRangeSelection14, $setSelection as $setSelection6, COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW11, FOCUS_COMMAND } from "lexical";
-import { useEffect as useEffect36 } from "react";
+import { useEffect as useEffect37 } from "react";
 var TAB_TO_FOCUS_INTERVAL = 100;
 var lastTabKeyDownTimestamp = 0;
 var hasRegisteredKeyDownListener = false;
@@ -28843,8 +28902,8 @@ function registerKeyTimeStampTracker() {
   );
 }
 function TabFocusPlugin() {
-  const [editor] = useLexicalComposerContext34();
-  useEffect36(() => {
+  const [editor] = useLexicalComposerContext35();
+  useEffect37(() => {
     if (!hasRegisteredKeyDownListener) {
       registerKeyTimeStampTracker();
       hasRegisteredKeyDownListener = true;
@@ -28867,7 +28926,7 @@ function TabFocusPlugin() {
 }
 
 // src/plugins/TableActionMenuPlugin/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext35 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext36 } from "@lexical/react/LexicalComposerContext";
 import { useLexicalEditable as useLexicalEditable3 } from "@lexical/react/useLexicalEditable";
 import {
   $computeTableMapSkipCellCheck,
@@ -28901,7 +28960,7 @@ import {
   isDOMNode as isDOMNode3,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND5
 } from "lexical";
-import { useCallback as useCallback17, useEffect as useEffect37, useRef as useRef15, useState as useState25 } from "react";
+import { useCallback as useCallback17, useEffect as useEffect38, useRef as useRef15, useState as useState25 } from "react";
 import { createPortal as createPortal9 } from "react-dom";
 import { Fragment as Fragment15, jsx as jsx48, jsxs as jsxs24 } from "react/jsx-runtime";
 function computeSelectionCount(selection) {
@@ -28949,7 +29008,7 @@ function TableActionMenu({
   cellMerge,
   showColorPickerModal
 }) {
-  const [editor] = useLexicalComposerContext35();
+  const [editor] = useLexicalComposerContext36();
   const dropDownRef = useRef15(null);
   const [tableCellNode, updateTableCellNode] = useState25(_tableCellNode);
   const [selectionCounts, updateSelectionCounts] = useState25({
@@ -28959,7 +29018,7 @@ function TableActionMenu({
   const [canMergeCells, setCanMergeCells] = useState25(false);
   const [canUnmergeCell, setCanUnmergeCell] = useState25(false);
   const [backgroundColor, setBackgroundColor] = useState25(() => currentCellBackgroundColor(editor) || "");
-  useEffect37(() => {
+  useEffect38(() => {
     return editor.registerMutationListener(
       TableCellNode4,
       (nodeMutations) => {
@@ -28974,7 +29033,7 @@ function TableActionMenu({
       { skipInitialization: true }
     );
   }, [editor, tableCellNode]);
-  useEffect37(() => {
+  useEffect38(() => {
     editor.getEditorState().read(() => {
       const selection = $getSelection18();
       if ($isTableSelection2(selection)) {
@@ -28985,7 +29044,7 @@ function TableActionMenu({
       setCanUnmergeCell($canUnmerge());
     });
   }, [editor]);
-  useEffect37(() => {
+  useEffect38(() => {
     const menuButtonElement = contextRef.current;
     const dropDownElement = dropDownRef.current;
     const rootElement = editor.getRootElement();
@@ -29009,7 +29068,7 @@ function TableActionMenu({
       dropDownElement.style.top = `${topPosition}px`;
     }
   }, [contextRef, editor]);
-  useEffect37(() => {
+  useEffect38(() => {
     function handleClickOutside(event) {
       if (dropDownRef.current != null && contextRef.current != null && isDOMNode3(event.target) && !dropDownRef.current.contains(event.target) && !contextRef.current.contains(event.target)) {
         setIsMenuOpen(false);
@@ -29447,7 +29506,7 @@ function TableCellActionMenuContainer({
   anchorElem,
   cellMerge
 }) {
-  const [editor] = useLexicalComposerContext35();
+  const [editor] = useLexicalComposerContext36();
   const menuButtonRef = useRef15(null);
   const menuRootRef = useRef15(null);
   const [isMenuOpen, setIsMenuOpen] = useState25(false);
@@ -29538,7 +29597,7 @@ function TableCellActionMenuContainer({
       menu.style.transform = `translate(${left}px, ${top}px)`;
     }
   }, [editor, anchorElem, checkTableCellOverflow]);
-  useEffect37(() => {
+  useEffect38(() => {
     let timeoutId;
     const callback = () => {
       timeoutId = void 0;
@@ -29566,7 +29625,7 @@ function TableCellActionMenuContainer({
     );
   });
   const prevTableCellDOM = useRef15(tableCellNode);
-  useEffect37(() => {
+  useEffect38(() => {
     if (prevTableCellDOM.current !== tableCellNode) {
       setIsMenuOpen(false);
     }
@@ -29612,7 +29671,7 @@ function TableActionMenuPlugin({
 }
 
 // src/plugins/TableCellResizer/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext36 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext37 } from "@lexical/react/LexicalComposerContext";
 import { useLexicalEditable as useLexicalEditable4 } from "@lexical/react/useLexicalEditable";
 import {
   $computeTableMapSkipCellCheck as $computeTableMapSkipCellCheck2,
@@ -29628,7 +29687,7 @@ import { calculateZoomLevel as calculateZoomLevel4, mergeRegister as mergeRegist
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode5, isHTMLElement as isHTMLElement6, SKIP_SCROLL_INTO_VIEW_TAG } from "lexical";
 import {
   useCallback as useCallback18,
-  useEffect as useEffect38,
+  useEffect as useEffect39,
   useMemo as useMemo16,
   useRef as useRef16,
   useState as useState26
@@ -29653,7 +29712,7 @@ function TableCellResizer({ editor }) {
     pointerStartPosRef.current = null;
     tableRectRef.current = null;
   }, []);
-  useEffect38(() => {
+  useEffect39(() => {
     const tableKeys = /* @__PURE__ */ new Set();
     return mergeRegister14(
       editor.registerMutationListener(TableNode4, (nodeMutations) => {
@@ -29677,7 +29736,7 @@ function TableCellResizer({ editor }) {
       })
     );
   }, [editor]);
-  useEffect38(() => {
+  useEffect39(() => {
     if (!hasTable) {
       return;
     }
@@ -29950,7 +30009,7 @@ function TableCellResizer({ editor }) {
   ] }) });
 }
 function TableCellResizerPlugin() {
-  const [editor] = useLexicalComposerContext36();
+  const [editor] = useLexicalComposerContext37();
   const isEditable = useLexicalEditable4();
   return useMemo16(
     () => isEditable ? createPortal10(/* @__PURE__ */ jsx49(TableCellResizer, { editor }), document.body) : null,
@@ -29959,7 +30018,7 @@ function TableCellResizerPlugin() {
 }
 
 // src/plugins/TableHoverActionsPlugin/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext37 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext38 } from "@lexical/react/LexicalComposerContext";
 import { useLexicalEditable as useLexicalEditable5 } from "@lexical/react/useLexicalEditable";
 import {
   $getTableAndElementByKey,
@@ -29974,7 +30033,7 @@ import {
 } from "@lexical/table";
 import { $findMatchingParent as $findMatchingParent5, mergeRegister as mergeRegister15 } from "@lexical/utils";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode6, isHTMLElement as isHTMLElement7 } from "lexical";
-import { useEffect as useEffect39, useMemo as useMemo17, useRef as useRef17, useState as useState27 } from "react";
+import { useEffect as useEffect40, useMemo as useMemo17, useRef as useRef17, useState as useState27 } from "react";
 import { createPortal as createPortal11 } from "react-dom";
 
 // src/utils/getThemeSelector.ts
@@ -29990,7 +30049,7 @@ function getThemeSelector(getTheme, name) {
 import { Fragment as Fragment17, jsx as jsx50, jsxs as jsxs26 } from "react/jsx-runtime";
 var BUTTON_WIDTH_PX = 20;
 function TableHoverActionsContainer({ anchorElem }) {
-  const [editor, { getTheme }] = useLexicalComposerContext37();
+  const [editor, { getTheme }] = useLexicalComposerContext38();
   const isEditable = useLexicalEditable5();
   const [isShownRow, setShownRow] = useState27(false);
   const [isShownColumn, setShownColumn] = useState27(false);
@@ -30083,7 +30142,7 @@ function TableHoverActionsContainer({ anchorElem }) {
       setShownColumn(false);
     });
   }, []);
-  useEffect39(() => {
+  useEffect40(() => {
     if (!shouldListenMouseMove) {
       return;
     }
@@ -30095,7 +30154,7 @@ function TableHoverActionsContainer({ anchorElem }) {
       document.removeEventListener("mousemove", debouncedOnMouseMove);
     };
   }, [shouldListenMouseMove, debouncedOnMouseMove]);
-  useEffect39(() => {
+  useEffect40(() => {
     return mergeRegister15(
       editor.registerMutationListener(
         TableNode5,
@@ -30193,9 +30252,9 @@ function TableHoverActionsPlugin({
 }
 
 // src/plugins/TableOfContentsPlugin/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext38 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext39 } from "@lexical/react/LexicalComposerContext";
 import { TableOfContentsPlugin as LexicalTableOfContentsPlugin } from "@lexical/react/LexicalTableOfContentsPlugin";
-import { useEffect as useEffect40, useRef as useRef18, useState as useState28 } from "react";
+import { useEffect as useEffect41, useRef as useRef18, useState as useState28 } from "react";
 import { jsx as jsx51, jsxs as jsxs27 } from "react/jsx-runtime";
 var MARGIN_ABOVE_EDITOR = 624;
 var HEADING_WIDTH = 9;
@@ -30221,7 +30280,7 @@ function isHeadingBelowTheTopOfThePage(element) {
 function TableOfContentsList({ tableOfContents }) {
   const [selectedKey, setSelectedKey] = useState28("");
   const selectedIndex = useRef18(0);
-  const [editor] = useLexicalComposerContext38();
+  const [editor] = useLexicalComposerContext39();
   function scrollToNode(key, currIndex) {
     editor.getEditorState().read(() => {
       const domElement = editor.getElementByKey(key);
@@ -30232,7 +30291,7 @@ function TableOfContentsList({ tableOfContents }) {
       }
     });
   }
-  useEffect40(() => {
+  useEffect41(() => {
     function scrollCallback() {
       if (tableOfContents.length !== 0 && selectedIndex.current < tableOfContents.length - 1) {
         let currentHeading = editor.getElementByKey(tableOfContents[selectedIndex.current][0]);
@@ -30320,7 +30379,7 @@ import { $isLinkNode as $isLinkNode5, TOGGLE_LINK_COMMAND as TOGGLE_LINK_COMMAND
 import { $isListNode, ListNode } from "@lexical/list";
 import { INSERT_EMBED_COMMAND as INSERT_EMBED_COMMAND2 } from "@lexical/react/LexicalAutoEmbedPlugin";
 import { INSERT_HORIZONTAL_RULE_COMMAND as INSERT_HORIZONTAL_RULE_COMMAND3 } from "@lexical/react/LexicalHorizontalRuleNode";
-import { $isHeadingNode as $isHeadingNode2 } from "@lexical/rich-text";
+import { $isHeadingNode as $isHeadingNode3 } from "@lexical/rich-text";
 import { $getSelectionStyleValueForProperty as $getSelectionStyleValueForProperty2, $isParentElementRTL, $patchStyleText as $patchStyleText3 } from "@lexical/selection";
 import { $isTableNode as $isTableNode4, $isTableSelection as $isTableSelection3 } from "@lexical/table";
 import {
@@ -30333,7 +30392,7 @@ import {
 import {
   $addUpdateTag as $addUpdateTag3,
   $getNodeByKey as $getNodeByKey8,
-  $getRoot as $getRoot4,
+  $getRoot as $getRoot5,
   $getSelection as $getSelection19,
   $isElementNode as $isElementNode5,
   $isNodeSelection as $isNodeSelection6,
@@ -30353,10 +30412,10 @@ import {
   SKIP_SELECTION_FOCUS_TAG as SKIP_SELECTION_FOCUS_TAG2,
   UNDO_COMMAND
 } from "lexical";
-import { useCallback as useCallback20, useEffect as useEffect44, useState as useState32 } from "react";
+import { useCallback as useCallback20, useEffect as useEffect45, useState as useState32 } from "react";
 
 // src/context/FullscreenContext.tsx
-import { createContext as createContext9, useCallback as useCallback19, useContext as useContext9, useEffect as useEffect41, useMemo as useMemo18, useState as useState29 } from "react";
+import { createContext as createContext9, useCallback as useCallback19, useContext as useContext9, useEffect as useEffect42, useMemo as useMemo18, useState as useState29 } from "react";
 import { jsx as jsx52 } from "react/jsx-runtime";
 var FullscreenContext = createContext9(void 0);
 function FullscreenProvider({ children }) {
@@ -30367,7 +30426,7 @@ function FullscreenProvider({ children }) {
   const exitFullscreen = useCallback19(() => {
     setIsFullscreen(false);
   }, []);
-  useEffect41(() => {
+  useEffect42(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && isFullscreen) {
         setIsFullscreen(false);
@@ -31034,7 +31093,7 @@ function ToolbarPlugin({
   const dispatchFormatTextCommand = (payload, skipRefocus = false) => dispatchToolbarCommand(FORMAT_TEXT_COMMAND3, payload, skipRefocus);
   const $handleHeadingNode = useCallback20(
     (selectedElement) => {
-      const type = $isHeadingNode2(selectedElement) ? selectedElement.getTag() : selectedElement.getType();
+      const type = $isHeadingNode3(selectedElement) ? selectedElement.getTag() : selectedElement.getType();
       if (type in blockTypeToBlockName) {
         updateToolbarState("blockType", type);
       }
@@ -31144,7 +31203,7 @@ function ToolbarPlugin({
       }
     }
   }, [activeEditor, editor, updateToolbarState, $handleHeadingNode, $handleCodeNode]);
-  useEffect44(() => {
+  useEffect45(() => {
     return editor.registerCommand(
       SELECTION_CHANGE_COMMAND6,
       (_payload, newEditor) => {
@@ -31155,7 +31214,7 @@ function ToolbarPlugin({
       COMMAND_PRIORITY_CRITICAL3
     );
   }, [editor, $updateToolbar, setActiveEditor]);
-  useEffect44(() => {
+  useEffect45(() => {
     activeEditor.getEditorState().read(
       () => {
         $updateToolbar();
@@ -31163,7 +31222,7 @@ function ToolbarPlugin({
       { editor: activeEditor }
     );
   }, [activeEditor, $updateToolbar]);
-  useEffect44(() => {
+  useEffect45(() => {
     return mergeRegister16(
       editor.registerEditableListener((editable) => {
         setIsEditable(editable);
@@ -31676,7 +31735,7 @@ function ToolbarPlugin({
                   onClick: () => {
                     editor.update(() => {
                       $addUpdateTag3(SKIP_SELECTION_FOCUS_TAG2);
-                      const root = $getRoot4();
+                      const root = $getRoot5();
                       let xOffset = 20;
                       let yOffset = 20;
                       const rootElement = editor.getRootElement();
@@ -31797,7 +31856,7 @@ function Editor({ isFullscreen = false }) {
   const placeholder = "\u6587\u7AE0\u3092\u5165\u529B\u3059\u308B\u524D\u306B\u662F\u975E\u300C/\u300D\u3092\u5165\u529B\u3057\u3066\u307F\u3066\u304F\u3060\u3055\u3044\u3002";
   const [floatingAnchorElem, setFloatingAnchorElem] = useState33(null);
   const [isSmallWidthViewport, setIsSmallWidthViewport] = useState33(false);
-  const [editor] = useLexicalComposerContext40();
+  const [editor] = useLexicalComposerContext41();
   const [activeEditor, setActiveEditor] = useState33(editor);
   const [isLinkEditMode, setIsLinkEditMode] = useState33(false);
   const onRef = (_floatingAnchorElem) => {
@@ -31805,7 +31864,7 @@ function Editor({ isFullscreen = false }) {
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
-  useEffect45(() => {
+  useEffect46(() => {
     const updateViewPortWidth = () => {
       const isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
@@ -31872,6 +31931,7 @@ function Editor({ isFullscreen = false }) {
       /* @__PURE__ */ jsx57(YouTubePlugin, {}),
       /* @__PURE__ */ jsx57(FigmaPlugin, {}),
       /* @__PURE__ */ jsx57(ClickableLinkPlugin, { disabled: isEditable }),
+      /* @__PURE__ */ jsx57(FragmentLinkPlugin, {}),
       /* @__PURE__ */ jsx57(HorizontalRulePlugin, {}),
       /* @__PURE__ */ jsx57(EquationsPlugin, {}),
       /* @__PURE__ */ jsx57(TabFocusPlugin, {}),
@@ -31908,14 +31968,14 @@ function Editor({ isFullscreen = false }) {
 // src/core/NotionLikeEditor.tsx
 import { $generateHtmlFromNodes as $generateHtmlFromNodes2 } from "@lexical/html";
 import { $convertFromMarkdownString as $convertFromMarkdownString5, $convertToMarkdownString as $convertToMarkdownString4, TRANSFORMERS } from "@lexical/markdown";
-import { useLexicalComposerContext as useLexicalComposerContext43 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext44 } from "@lexical/react/LexicalComposerContext";
 import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
-import { $getRoot as $getRoot6, defineExtension } from "lexical";
-import { useCallback as useCallback23, useEffect as useEffect51, useMemo as useMemo19 } from "react";
+import { $getRoot as $getRoot7, defineExtension } from "lexical";
+import { useCallback as useCallback23, useEffect as useEffect52, useMemo as useMemo19 } from "react";
 import { useDebouncedCallback as useDebouncedCallback2 } from "use-debounce";
 
 // src/context/FlashMessageContext.tsx
-import { createContext as createContext10, useCallback as useCallback21, useContext as useContext10, useEffect as useEffect46, useState as useState34 } from "react";
+import { createContext as createContext10, useCallback as useCallback21, useContext as useContext10, useEffect as useEffect47, useState as useState34 } from "react";
 
 // src/ui/FlashMessage.tsx
 import { createPortal as createPortal13 } from "react-dom";
@@ -31938,7 +31998,7 @@ var FlashMessageContext = ({ children }) => {
     (message, duration) => setProps(message ? { duration, message } : INITIAL_STATE),
     []
   );
-  useEffect46(() => {
+  useEffect47(() => {
     if (props.message) {
       const timeoutId = setTimeout(() => setProps(INITIAL_STATE), props.duration ?? DEFAULT_DURATION);
       return () => clearTimeout(timeoutId);
@@ -32016,13 +32076,13 @@ var NotionLikeEditorNodes_default = NotionLikeEditorNodes;
 
 // src/plugins/InsertMarkdownPlugin/index.tsx
 import { $convertFromMarkdownString as $convertFromMarkdownString4, $convertToMarkdownString as $convertToMarkdownString3 } from "@lexical/markdown";
-import { useLexicalComposerContext as useLexicalComposerContext41 } from "@lexical/react/LexicalComposerContext";
-import { $getRoot as $getRoot5, COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR11, createCommand as createCommand11 } from "lexical";
-import { useEffect as useEffect47 } from "react";
+import { useLexicalComposerContext as useLexicalComposerContext42 } from "@lexical/react/LexicalComposerContext";
+import { $getRoot as $getRoot6, COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR11, createCommand as createCommand11 } from "lexical";
+import { useEffect as useEffect48 } from "react";
 var INSERT_MARKDOWN_COMMAND = createCommand11("INSERT_MARKDOWN_COMMAND");
 function InsertMarkdownPlugin() {
-  const [editor] = useLexicalComposerContext41();
-  useEffect47(() => {
+  const [editor] = useLexicalComposerContext42();
+  useEffect48(() => {
     return editor.registerCommand(
       INSERT_MARKDOWN_COMMAND,
       (markdown) => {
@@ -32034,7 +32094,7 @@ function InsertMarkdownPlugin() {
           const combinedMarkdown = currentMarkdown.trim() ? `${currentMarkdown.trim()}
 
 ${markdown}` : markdown;
-          const root = $getRoot5();
+          const root = $getRoot6();
           root.clear();
           $convertFromMarkdownString4(combinedMarkdown, PLAYGROUND_TRANSFORMERS2);
           const newLastChild = root.getLastChild();
@@ -32049,15 +32109,15 @@ ${markdown}` : markdown;
 }
 
 // src/plugins/OnChangePlugin/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext42 } from "@lexical/react/LexicalComposerContext";
-import { useEffect as useEffect48 } from "react";
+import { useLexicalComposerContext as useLexicalComposerContext43 } from "@lexical/react/LexicalComposerContext";
+import { useEffect as useEffect49 } from "react";
 function OnChangePlugin({
   onChange,
   ignoreHistoryMergeTagChange = true,
   ignoreSelectionChange = true
 }) {
-  const [editor] = useLexicalComposerContext42();
-  useEffect48(() => {
+  const [editor] = useLexicalComposerContext43();
+  useEffect49(() => {
     return editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }) => {
       if (ignoreSelectionChange && dirtyElements.size === 0 && dirtyLeaves.size === 0 || ignoreHistoryMergeTagChange && tags.has("history-merge")) {
         return;
@@ -32069,10 +32129,10 @@ function OnChangePlugin({
 }
 
 // src/plugins/TypingPerfPlugin/index.ts
-import { useEffect as useEffect50 } from "react";
+import { useEffect as useEffect51 } from "react";
 
 // src/hooks/useReport.ts
-import { useCallback as useCallback22, useEffect as useEffect49, useRef as useRef20 } from "react";
+import { useCallback as useCallback22, useEffect as useEffect50, useRef as useRef20 } from "react";
 var getElement = () => {
   let element = document.getElementById("report-container");
   if (element === null) {
@@ -32104,7 +32164,7 @@ function useReport() {
       document.body.removeChild(getElement());
     }
   }, []);
-  useEffect49(() => {
+  useEffect50(() => {
     return cleanup;
   }, [cleanup]);
   return useCallback22(
@@ -32142,7 +32202,7 @@ var validInputTypes = /* @__PURE__ */ new Set([
 ]);
 function TypingPerfPlugin() {
   const report = useReport();
-  useEffect50(() => {
+  useEffect51(() => {
     let start = 0;
     let timerId;
     let keyPressTimerId;
@@ -32364,7 +32424,7 @@ function NotionLikeEditor({
   const debouncedOnChangePlainText = useDebouncedCallback2((editorState) => {
     if (onChangePlainText) {
       editorState.read(() => {
-        const root = $getRoot6();
+        const root = $getRoot7();
         const plainText = root.getTextContent();
         onChangePlainText(plainText);
       });
@@ -32440,8 +32500,8 @@ function EditorContainer({
   ] }) }) }) }) }) }) }) }) }) });
 }
 function EditorReadyPlugin({ onReady }) {
-  const [editor] = useLexicalComposerContext43();
-  useEffect51(() => {
+  const [editor] = useLexicalComposerContext44();
+  useEffect52(() => {
     onReady(editor);
   }, [editor, onReady]);
   return null;
@@ -32582,7 +32642,7 @@ import { RichTextPlugin as RichTextPlugin3 } from "@lexical/react/LexicalRichTex
 import { TabIndentationPlugin as TabIndentationPlugin2 } from "@lexical/react/LexicalTabIndentationPlugin";
 import { TablePlugin as TablePlugin2 } from "@lexical/react/LexicalTablePlugin";
 import { CAN_USE_DOM as CAN_USE_DOM2 } from "@lexical/utils";
-import { useEffect as useEffect52, useState as useState35 } from "react";
+import { useEffect as useEffect53, useState as useState35 } from "react";
 init_LinkPlugin();
 import { jsx as jsx61, jsxs as jsxs34 } from "react/jsx-runtime";
 function Viewer() {
@@ -32607,7 +32667,7 @@ function Viewer() {
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
-  useEffect52(() => {
+  useEffect53(() => {
     const updateViewPortWidth = () => {
       const isNextSmallWidthViewport = CAN_USE_DOM2 && window.matchMedia("(max-width: 1025px)").matches;
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
@@ -32648,6 +32708,7 @@ function Viewer() {
     /* @__PURE__ */ jsx61(YouTubePlugin, {}),
     /* @__PURE__ */ jsx61(FigmaPlugin, {}),
     /* @__PURE__ */ jsx61(ClickableLinkPlugin2, { disabled: false }),
+    /* @__PURE__ */ jsx61(FragmentLinkPlugin, {}),
     /* @__PURE__ */ jsx61(HorizontalRulePlugin, {}),
     /* @__PURE__ */ jsx61(EquationsPlugin, {}),
     /* @__PURE__ */ jsx61(TabFocusPlugin, {}),
@@ -32804,6 +32865,7 @@ export {
   FileInput,
   FlashMessage,
   FlashMessageContext,
+  FragmentLinkPlugin,
   FullscreenProvider,
   HorizontalRulePlugin,
   INSERT_MARKDOWN_COMMAND,

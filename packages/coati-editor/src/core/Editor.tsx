@@ -45,6 +45,7 @@ import EmojisPlugin from '../plugins/EmojisPlugin';
 import EquationsPlugin from '../plugins/EquationsPlugin';
 import FigmaPlugin from '../plugins/FigmaPlugin';
 import FloatingLinkEditorPlugin from '../plugins/FloatingLinkEditorPlugin';
+import FragmentLinkPlugin from '../plugins/FragmentLinkPlugin';
 import FloatingTextFormatToolbarPlugin from '../plugins/FloatingTextFormatToolbarPlugin';
 import { HorizontalRulePlugin } from '../plugins/HorizontalRulePlugin';
 import ImagesPlugin from '../plugins/ImagesPlugin';
@@ -175,6 +176,7 @@ export default function Editor({ isFullscreen = false }: { isFullscreen?: boolea
         <YouTubePlugin />
         <FigmaPlugin />
         <ClickableLinkPlugin disabled={isEditable} />
+        <FragmentLinkPlugin />
         <HorizontalRulePlugin />
         <EquationsPlugin />
         <TabFocusPlugin />

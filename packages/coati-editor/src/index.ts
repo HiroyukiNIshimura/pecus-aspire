@@ -67,6 +67,7 @@ export { HorizontalRulePlugin } from './plugins/HorizontalRulePlugin';
 export { default as ImagesPlugin } from './plugins/ImagesPlugin';
 export { TableContext } from './plugins/TablePlugin';
 export { PLAYGROUND_TRANSFORMERS } from './plugins/MarkdownTransformers';
+export { default as FragmentLinkPlugin } from './plugins/FragmentLinkPlugin';
 
 // ノード配列
 export { default as NotionLikeEditorNodes } from './nodes/NotionLikeEditorNodes';

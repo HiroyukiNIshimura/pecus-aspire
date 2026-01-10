@@ -834,6 +834,8 @@ declare function TableContext({ children }: {
 
 declare const PLAYGROUND_TRANSFORMERS: Array<Transformer>;
 
+declare function FragmentLinkPlugin(): JSX.Element | null;
+
 /**
  * @coati/editor - Coatiエディタパッケージ
  *
@@ -842,4 +844,4 @@ declare const PLAYGROUND_TRANSFORMERS: Array<Transformer>;
 
 declare const PACKAGE_VERSION = "0.1.0";
 
-export { Button, ColorPicker, type ComponentPickerOptionConfig, ComponentPickerProvider, LexicalContentEditable as ContentEditable, type CoreEditorProps, DialogActions, DialogButtonsList, DropDown, DropDownItem, DropdownColorPicker, Editor, type EditorChangeCallbacks, type EditorContext, type EditorSettings, _default$1 as EquationEditor, type ExtraOptionsProvider, FileInput, FlashMessage, FlashMessageContext, FullscreenProvider, HorizontalRulePlugin, INSERT_MARKDOWN_COMMAND, ImageResizer, type ImageUploadHandler, ImageUploadProvider, type ImageUploadResult, ImagesPlugin, KatexEquationAlterer, KatexRenderer, Modal, NotionLikeEditor, theme$2 as NotionLikeEditorTheme, NotionLikeViewer, theme$1 as NotionLikeViewerTheme, PACKAGE_VERSION, PLAYGROUND_TRANSFORMERS, type PecusEditorProps, Select, SettingsContext, SharedHistoryContext, type ShowFlashMessage, theme as StickyEditorTheme, Switch, TableContext, TextInput, ToolbarContext, Viewer, blockTypeToBlockName, _default as emojiList, getSelectedNode, joinClasses, sanitizeUrl, useComponentPickerContext, useFlashMessageContext, useFullscreen, useImageUpload, useModal, useReport, useSettings, useSharedHistoryContext, useToolbarState, validateUrl };
+export { Button, ColorPicker, type ComponentPickerOptionConfig, ComponentPickerProvider, LexicalContentEditable as ContentEditable, type CoreEditorProps, DialogActions, DialogButtonsList, DropDown, DropDownItem, DropdownColorPicker, Editor, type EditorChangeCallbacks, type EditorContext, type EditorSettings, _default$1 as EquationEditor, type ExtraOptionsProvider, FileInput, FlashMessage, FlashMessageContext, FragmentLinkPlugin, FullscreenProvider, HorizontalRulePlugin, INSERT_MARKDOWN_COMMAND, ImageResizer, type ImageUploadHandler, ImageUploadProvider, type ImageUploadResult, ImagesPlugin, KatexEquationAlterer, KatexRenderer, Modal, NotionLikeEditor, theme$2 as NotionLikeEditorTheme, NotionLikeViewer, theme$1 as NotionLikeViewerTheme, PACKAGE_VERSION, PLAYGROUND_TRANSFORMERS, type PecusEditorProps, Select, SettingsContext, SharedHistoryContext, type ShowFlashMessage, theme as StickyEditorTheme, Switch, TableContext, TextInput, ToolbarContext, Viewer, blockTypeToBlockName, _default as emojiList, getSelectedNode, joinClasses, sanitizeUrl, useComponentPickerContext, useFlashMessageContext, useFullscreen, useImageUpload, useModal, useReport, useSettings, useSharedHistoryContext, useToolbarState, validateUrl };

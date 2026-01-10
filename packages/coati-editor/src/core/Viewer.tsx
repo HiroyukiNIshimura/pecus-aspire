@@ -26,6 +26,7 @@ import CodeHighlightShikiPlugin from '../plugins/CodeHighlightShikiPlugin';
 import CollapsiblePlugin from '../plugins/CollapsiblePlugin';
 import EquationsPlugin from '../plugins/EquationsPlugin';
 import FigmaPlugin from '../plugins/FigmaPlugin';
+import FragmentLinkPlugin from '../plugins/FragmentLinkPlugin';
 import { HorizontalRulePlugin } from '../plugins/HorizontalRulePlugin';
 import ImagesPlugin from '../plugins/ImagesPlugin';
 import { LayoutPlugin } from '../plugins/LayoutPlugin/LayoutPlugin';
@@ -107,6 +108,7 @@ export default function Viewer() {
       <YouTubePlugin />
       <FigmaPlugin />
       <ClickableLinkPlugin disabled={false} />
+      <FragmentLinkPlugin />
       <HorizontalRulePlugin />
       <EquationsPlugin />
       <TabFocusPlugin />

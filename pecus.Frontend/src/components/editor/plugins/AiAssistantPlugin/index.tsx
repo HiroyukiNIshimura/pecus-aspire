@@ -181,11 +181,15 @@ export default function AiAssistantPlugin(): JSX.Element | null {
   const handleSubmit = useCallback(
     async (userPrompt: string) => {
       let markdownWithCursor = '';
+      let insertPosition = 0;
 
       editor.getEditorState().read(() => {
         const selection = $getSelection();
+        const markdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
+
         if (!$isRangeSelection(selection)) {
-          markdownWithCursor = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
+          markdownWithCursor = markdown + CURSOR_MARKER;
+          insertPosition = markdown.length;
           return;
         }
 
@@ -193,10 +197,8 @@ export default function AiAssistantPlugin(): JSX.Element | null {
         const anchorNode = anchor.getNode();
         const anchorOffset = anchor.offset;
 
-        const markdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
         const lines = markdown.split('\n');
-
-        let insertPosition = 0;
+        let currentPosition = 0;
         let found = false;
 
         const textContent = anchorNode.getTextContent();
@@ -206,7 +208,7 @@ export default function AiAssistantPlugin(): JSX.Element | null {
           const line = lines[i];
 
           if (line.includes(beforeCursor) || (beforeCursor === '' && line === '')) {
-            const lineStart = markdown.indexOf(line, insertPosition);
+            const lineStart = markdown.indexOf(line, currentPosition);
             if (lineStart !== -1) {
               const posInLine = beforeCursor ? line.indexOf(beforeCursor) + beforeCursor.length : 0;
               insertPosition = lineStart + posInLine;
@@ -215,7 +217,7 @@ export default function AiAssistantPlugin(): JSX.Element | null {
           }
 
           if (!found) {
-            insertPosition += line.length + 1;
+            currentPosition += line.length + 1;
           }
         }
 
@@ -232,6 +234,8 @@ export default function AiAssistantPlugin(): JSX.Element | null {
         userPrompt,
       });
 
+      const savedInsertPosition = insertPosition;
+
       editor.update(
         () => {
           let textToInsert: string;
@@ -244,19 +248,29 @@ export default function AiAssistantPlugin(): JSX.Element | null {
           // 現在のコンテンツをMarkdownとして取得
           const currentMarkdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
 
-          // 現在のコンテンツと生成されたテキストを結合
-          const combinedMarkdown = currentMarkdown.trim()
-            ? `${currentMarkdown.trim()}\n\n${textToInsert}`
-            : textToInsert;
+          // カーソル位置にテキストを挿入
+          const newMarkdown =
+            currentMarkdown.slice(0, savedInsertPosition) + textToInsert + currentMarkdown.slice(savedInsertPosition);
 
-          // ルートをクリアして結合したマークダウンを変換
+          // ルートをクリアして新しいマークダウンを変換
           const root = $getRoot();
           root.clear();
-          $convertFromMarkdownString(combinedMarkdown, PLAYGROUND_TRANSFORMERS);
+          $convertFromMarkdownString(newMarkdown, PLAYGROUND_TRANSFORMERS);
 
-          // 最後のノードを選択
-          const newLastChild = root.getLastChild();
-          newLastChild?.selectEnd();
+          // 挿入したテキストの末尾にカーソルを移動
+          const newCursorPosition = savedInsertPosition + textToInsert.length;
+          let charCount = 0;
+          const children = root.getAllTextNodes();
+
+          for (const textNode of children) {
+            const nodeLength = textNode.getTextContentSize();
+            if (charCount + nodeLength >= newCursorPosition) {
+              const offset = newCursorPosition - charCount;
+              textNode.select(offset, offset);
+              break;
+            }
+            charCount += nodeLength;
+          }
         },
         { skipTransforms: true },
       );
