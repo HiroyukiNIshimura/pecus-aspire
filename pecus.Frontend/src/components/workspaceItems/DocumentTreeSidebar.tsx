@@ -158,8 +158,8 @@ export default function DocumentTreeSidebar({
 
     return (
       <div
-        className={`flex items-center p-2 rounded cursor-pointer hover:bg-base-300 transition-colors ${
-          isSelected ? 'bg-primary/10 text-primary font-semibold' : ''
+        className={`flex items-center p-2 rounded cursor-pointer hover:bg-base-content/10 transition-colors ${
+          isSelected ? 'bg-primary text-primary-content font-semibold' : ''
         }`}
         style={{ paddingLeft: `${indent + 8}px` }}
         onClick={() => onItemSelect?.(Number(node.id), item?.code || '')}
@@ -184,7 +184,9 @@ export default function DocumentTreeSidebar({
         )}
         <div className="flex-1 truncate flex items-center gap-2">
           <span className="icon-[mdi--file-document-outline] w-4 h-4 flex-shrink-0 opacity-70" aria-hidden="true" />
-          <span className="text-xs text-base-content/50 flex-shrink-0">#{item?.code}</span>
+          <span className={`text-xs flex-shrink-0 ${isSelected ? 'text-primary-content/70' : 'text-base-content/50'}`}>
+            #{item?.code}
+          </span>
           <span className="truncate">{node.text}</span>
         </div>
         {item?.isDraft && <span className="badge badge-xs badge-secondary ml-2">Draft</span>}
@@ -240,7 +242,7 @@ export default function DocumentTreeSidebar({
               root: 'h-full flex-1',
               container: 'h-full',
               draggingSource: 'opacity-50',
-              dropTarget: 'bg-primary/20',
+              dropTarget: 'bg-primary/10',
             }}
             sort={false}
             insertDroppableFirst={false}
