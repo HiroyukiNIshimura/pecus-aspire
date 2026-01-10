@@ -108,10 +108,15 @@ export function useInfiniteScroll({
   // ローディング状態を ref でも保持（重複リクエスト防止）
   const isLoadingRef = useRef(false);
 
+  // リセットカウンター（Observer 再初期化用）
+  const [resetCount, setResetCount] = useState(0);
+
   // リセット関数
   const reset = useCallback(() => {
     setIsLoading(false);
     isLoadingRef.current = false;
+    // リセットカウンターを更新して Observer を再初期化
+    setResetCount((prev) => prev + 1);
   }, []);
 
   // Observer のコールバック
@@ -163,7 +168,7 @@ export function useInfiniteScroll({
       observerRef.current?.disconnect();
       observerRef.current = null;
     };
-  }, [disabled, scrollContainerRef, rootMargin, threshold, handleIntersect]);
+  }, [disabled, scrollContainerRef, rootMargin, threshold, handleIntersect, resetCount]);
 
   // センチネル要素の ref コールバック
   const sentinelRef = useCallback((node: HTMLElement | null) => {
