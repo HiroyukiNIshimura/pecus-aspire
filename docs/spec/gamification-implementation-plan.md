@@ -73,9 +73,8 @@ public enum AchievementCategory
 {
     WorkStyle = 1,      // 働き方（暁の開拓者、週末の聖域）
     Productivity = 2,   // 生産性（Inbox Zero、タスク料理人）
-    Communication = 3,  // コミュニケーション（光速のレスポンダー）
-    AI = 4,             // AI活用（AI使いの弟子）
-    TeamPlay = 5        // チームプレイ（沈黙の守護者）
+    AI = 3,             // AI活用（AI使いの弟子）
+    TeamPlay = 4        // チームプレイ（沈黙の守護者）
 }
 ```
 
@@ -127,12 +126,26 @@ pecus.Libs/
     ├── AchievementStrategyRegistry.cs    # Strategy登録・DI
     └── Strategies/
         ├── EarlyBirdStrategy.cs          # 暁の開拓者
+        ├── NightOwlStrategy.cs           # 夜更かしの棟
         ├── InboxZeroStrategy.cs          # Inbox Zero
         ├── TaskChefStrategy.cs           # タスク料理人
-        ├── SonicReplyStrategy.cs         # 光速のレスポンダー
+        ├── DeadlineMasterStrategy.cs     # 期限厳守の達人
+        ├── EstimationWizardStrategy.cs   # 見積もりの魔術師
+        ├── SpeedStarStrategy.cs          # スピードスター
+        ├── HelpingHandStrategy.cs        # 助っ人参上
+        ├── PriorityHunterStrategy.cs     # 高優先度ハンター
+        ├── DocumenterStrategy.cs         # ドキュメンター
+        ├── StreakMasterStrategy.cs       # 連続達成
+        ├── CenturyStrategy.cs            # 百人力
+        ├── MultitaskerStrategy.cs        # マルチタスカー
+        ├── ConnectorStrategy.cs          # コネクター
+        ├── CommentatorStrategy.cs        # コメンテーター
         ├── AiApprenticeStrategy.cs       # AI使いの弟子
         ├── WeekendGuardianStrategy.cs    # 週末の聖域
-        └── UnsungHeroStrategy.cs         # 沈黙の守護者
+        ├── UnsungHeroStrategy.cs         # 沈黙の守護者
+        ├── VeteranStrategy.cs            # 古参ユーザー
+        ├── ThousandTasksStrategy.cs      # 千本ノック
+        └── PerfectWeekStrategy.cs        # パーフェクトウィーク
 ```
 
 #### インターフェース設計
@@ -387,7 +400,7 @@ src/actions/achievements/
 ### Week 3-4: Strategy パターン & バッチ
 
 6. [ ] IAchievementStrategy インターフェース定義
-7. [ ] 容易な実績のStrategy実装（EarlyBird, InboxZero, TaskChef）
+7. [ ] 容易な実績のStrategy実装（EarlyBird, NightOwl, InboxZero, TaskChef, DeadlineMaster, EstimationWizard, SpeedStar, HelpingHand, PriorityHunter, Documenter, Veteran）
 8. [ ] AchievementEvaluator実装
 9. [ ] AchievementEvaluationTask実装
 10. [ ] RecurringJob登録
@@ -414,8 +427,8 @@ src/actions/achievements/
 
 ### Week 9: AI連携 & 中高難易度Strategy
 
-22. [ ] 中難易度Strategy実装（SonicReply, AiApprentice）
-23. [ ] 高難易度Strategy実装（WeekendGuardian, UnsungHero）
+22. [ ] 中難易度Strategy実装（AiApprentice, StreakMaster, Century, Multitasker, Connector, Commentator, WeekendGuardian, ThousandTasks, PerfectWeek）
+23. [ ] 高難易度Strategy実装（UnsungHero）
 24. [ ] シークレットバッジのAI判定実装
 
 ### Week 10: テスト & リリース準備
