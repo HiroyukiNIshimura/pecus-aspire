@@ -22,6 +22,11 @@ public class UpdateTaskTask : TaskNotificationTaskBase
     private readonly IBotSelector? _botSelector;
 
     /// <summary>
+    /// 現在処理中の変更情報（一時保持用）
+    /// </summary>
+    private TaskUpdateChanges? _currentChanges;
+
+    /// <summary>
     /// UpdateTaskTask のコンストラクタ
     /// </summary>
     public UpdateTaskTask(
@@ -115,7 +120,8 @@ public class UpdateTaskTask : TaskNotificationTaskBase
                 ProgressPercentage: task.ProgressPercentage,
                 IsCompleted: task.IsCompleted,
                 IsDiscarded: task.IsDiscarded,
-                Content: task.Content
+                Content: task.Content,
+                Changes: _currentChanges
             );
             var prompt = _promptTemplate.Build(promptInput);
 
@@ -151,9 +157,18 @@ public class UpdateTaskTask : TaskNotificationTaskBase
     /// タスク更新時のメッセージ通知を実行する
     /// </summary>
     /// <param name="taskId">更新されたタスクのID</param>
-    public async Task NotifyTaskUpdatedAsync(int taskId)
+    /// <param name="changes">タスクの変更情報（オプション）</param>
+    public async Task NotifyTaskUpdatedAsync(int taskId, TaskUpdateChanges? changes = null)
     {
-        await ExecuteNotificationAsync(taskId);
+        _currentChanges = changes;
+        try
+        {
+            await ExecuteNotificationAsync(taskId);
+        }
+        finally
+        {
+            _currentChanges = null;
+        }
     }
 
     /// <summary>

@@ -19,4 +19,9 @@ public class WorkspaceTaskResponse
     /// ワークスペースタスク情報
     /// </summary>
     public WorkspaceTaskDetailResponse? WorkspaceTask { get; set; }
+
+    /// <summary>
+    /// 変更前のワークスペースタスク情報
+    /// </summary>
+    public WorkspaceTaskDetailResponse? PreviousWorkspaceTask { get; set; }
 }

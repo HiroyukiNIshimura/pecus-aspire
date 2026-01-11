@@ -442,9 +442,10 @@ public class WorkspaceTaskService
     /// <param name="taskId">タスクID</param>
     /// <param name="request">更新リクエスト</param>
     /// <param name="currentUserId">操作ユーザーID</param>
-    /// <returns>更新されたタスクとコメント情報のタプル</returns>
+    /// <returns>更新されたタスク、変更前のタスク、コメント情報のタプル</returns>
     public async Task<(
         WorkspaceTask Task,
+        WorkspaceTaskDetailResponse PreviousTask,
         int CommentCount,
         Dictionary<TaskCommentType, int> CommentTypeCounts
     )> UpdateWorkspaceTaskAsync(
@@ -469,6 +470,9 @@ public class WorkspaceTaskService
         {
             throw new NotFoundException("タスクが見つかりません。");
         }
+
+        // 変更前のタスク情報をDTOとして保持（コメント数は更新APIでは不要なので0）
+        var previousTaskDto = BuildTaskDetailResponse(task);
 
         // アクティビティ記録用のスナップショット
         var snapshot = new
@@ -696,7 +700,7 @@ public class WorkspaceTaskService
         var commentTypeCounts = commentTypeCountsByTask.GetValueOrDefault(taskId, new Dictionary<TaskCommentType, int>());
         var commentCount = SumCommentCounts(commentTypeCounts);
 
-        return (task, commentCount, commentTypeCounts);
+        return (task, previousTaskDto, commentCount, commentTypeCounts);
     }
 
     /// <summary>

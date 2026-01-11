@@ -308,7 +308,7 @@ public class WorkspaceTaskController : BaseSecureController
         // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
         await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
 
-        var (task, commentCount, commentTypeCounts) = await _workspaceTaskService.UpdateWorkspaceTaskAsync(
+        var (task, previousTask, commentCount, commentTypeCounts) = await _workspaceTaskService.UpdateWorkspaceTaskAsync(
             workspaceId,
             itemId,
             taskId,
@@ -316,20 +316,45 @@ public class WorkspaceTaskController : BaseSecureController
             CurrentUserId
         );
 
-        // タスク完了または破棄時にメール送信
-        if (request.IsCompleted == true || request.IsDiscarded == true)
+        if (previousTask != null)
         {
-            await SendTaskCompletedEmailAsync(task.Id, request.IsDiscarded == true);
-        }
+            // タスク完了または破棄時にメール送信
+            if ((previousTask.IsCompleted != task.IsCompleted) || (previousTask.IsDiscarded != task.IsDiscarded))
+            {
+                await SendTaskCompletedEmailAsync(task.Id, request.IsDiscarded == true);
+            }
 
-        // AI機能が有効な場合のみ、ワークスペースタスク更新通知をバックグラウンドジョブで実行
-        if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
-        {
-            _backgroundJobClient.Enqueue<UpdateTaskTask>(x =>
-                           x.NotifyTaskUpdatedAsync(
-                              task.Id
-                           )
-                       );
+            // AI機能が有効な場合のみ、ワークスペースタスク更新通知をバックグラウンドジョブで実行
+            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+            {
+                if ((previousTask.IsCompleted != task.IsCompleted) || (previousTask.IsDiscarded != task.IsDiscarded))
+                {
+                }
+                else
+                {
+                    var changes = TaskUpdateChanges.FromComparison(
+                        requestPriority: request.Priority,
+                        requestStartDate: request.StartDate,
+                        requestDueDate: request.DueDate,
+                        requestEstimatedHours: request.EstimatedHours,
+                        requestProgressPercentage: request.ProgressPercentage,
+                        requestAssignedUserId: request.AssignedUserId,
+                        previousPriority: previousTask.Priority,
+                        previousStartDate: previousTask.StartDate,
+                        previousDueDate: previousTask.DueDate,
+                        previousEstimatedHours: previousTask.EstimatedHours,
+                        previousProgressPercentage: previousTask.ProgressPercentage,
+                        previousAssignedUserId: previousTask.AssignedUserId
+                    );
+
+                    if (changes.HasAnyChanges)
+                    {
+                        _backgroundJobClient.Enqueue<UpdateTaskTask>(x =>
+                            x.NotifyTaskUpdatedAsync(task.Id, changes)
+                        );
+                    }
+                }
+            }
         }
 
         var response = new WorkspaceTaskResponse
@@ -337,6 +362,7 @@ public class WorkspaceTaskController : BaseSecureController
             Success = true,
             Message = "タスクを更新しました。",
             WorkspaceTask = BuildTaskDetailResponse(task, commentCount: commentCount, commentTypeCounts: commentTypeCounts),
+            PreviousWorkspaceTask = previousTask,
         };
 
         return TypedResults.Ok(response);

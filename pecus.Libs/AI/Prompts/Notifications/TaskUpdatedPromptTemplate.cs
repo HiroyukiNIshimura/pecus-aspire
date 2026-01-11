@@ -1,3 +1,5 @@
+using Pecus.Libs.Hangfire.Tasks.Bot;
+
 namespace Pecus.Libs.AI.Prompts.Notifications;
 
 /// <summary>
@@ -11,6 +13,7 @@ namespace Pecus.Libs.AI.Prompts.Notifications;
 /// <param name="IsCompleted">完了フラグ</param>
 /// <param name="IsDiscarded">破棄フラグ</param>
 /// <param name="Content">タスク内容</param>
+/// <param name="Changes">変更情報（オプション）</param>
 public record TaskUpdatedPromptInput(
     string UserName,
     string TaskTypeName,
@@ -19,7 +22,8 @@ public record TaskUpdatedPromptInput(
     int ProgressPercentage,
     bool IsCompleted,
     bool IsDiscarded,
-    string? Content
+    string? Content,
+    TaskUpdateChanges? Changes = null
 );
 
 /// <summary>
@@ -51,6 +55,8 @@ public class TaskUpdatedPromptTemplate : IPromptTemplate<TaskUpdatedPromptInput>
     /// <inheritdoc />
     public string BuildUserPrompt(TaskUpdatedPromptInput input)
     {
+        var changeDetails = BuildChangeDetails(input.Changes);
+
         return $"""
             以下の更新されたタスクについて紹介メッセージを生成してください:
 
@@ -61,6 +67,82 @@ public class TaskUpdatedPromptTemplate : IPromptTemplate<TaskUpdatedPromptInput>
             完了: {(input.IsCompleted ? "はい" : "いいえ")}
             破棄: {(input.IsDiscarded ? "はい" : "いいえ")}
             内容: {input.Content ?? "（未記入）"}
+            {changeDetails}
             """;
+    }
+
+    /// <summary>
+    /// 変更内容の詳細テキストを生成する
+    /// </summary>
+    private static string BuildChangeDetails(TaskUpdateChanges? changes)
+    {
+        if (changes == null || !changes.HasAnyChanges)
+        {
+            return string.Empty;
+        }
+
+        var details = new List<string>();
+
+        if (changes.PriorityChanged)
+        {
+            var prev = GetPriorityText(changes.PreviousPriority);
+            var next = GetPriorityText(changes.NewPriority);
+            details.Add($"優先度: {prev} → {next}");
+        }
+
+        if (changes.StartDateChanged)
+        {
+            var prev = changes.PreviousStartDate?.ToString("yyyy/MM/dd") ?? "未設定";
+            var next = changes.NewStartDate?.ToString("yyyy/MM/dd") ?? "未設定";
+            details.Add($"開始日: {prev} → {next}");
+        }
+
+        if (changes.DueDateChanged)
+        {
+            var prev = changes.PreviousDueDate.ToString("yyyy/MM/dd");
+            var next = changes.NewDueDate.ToString("yyyy/MM/dd");
+            details.Add($"期限: {prev} → {next}");
+        }
+
+        if (changes.EstimatedHoursChanged)
+        {
+            var prev = changes.PreviousEstimatedHours?.ToString("0.#") ?? "未設定";
+            var next = changes.NewEstimatedHours?.ToString("0.#") ?? "未設定";
+            details.Add($"予定工数: {prev}h → {next}h");
+        }
+
+        if (changes.ProgressPercentageChanged)
+        {
+            var prev = changes.PreviousProgressPercentage?.ToString() ?? "0";
+            var next = changes.NewProgressPercentage?.ToString() ?? "0";
+            details.Add($"進捗: {prev}% → {next}%");
+        }
+
+        if (changes.AssignedUserIdChanged)
+        {
+            details.Add("担当者が変更されました");
+        }
+
+        if (details.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return $"\n変更内容:\n{string.Join("\n", details)}";
+    }
+
+    /// <summary>
+    /// 優先度のテキストを取得する
+    /// </summary>
+    private static string GetPriorityText(DB.Models.Enums.TaskPriority? priority)
+    {
+        return priority switch
+        {
+            DB.Models.Enums.TaskPriority.Low => "低",
+            DB.Models.Enums.TaskPriority.Medium => "中",
+            DB.Models.Enums.TaskPriority.High => "高",
+            DB.Models.Enums.TaskPriority.Critical => "緊急",
+            _ => "中"
+        };
     }
 }
