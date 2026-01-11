@@ -311,7 +311,10 @@ export const PLAYGROUND_TRANSFORMERS: Array<Transformer> = [
  * @returns リストインデントが正規化されたMarkdown文字列
  */
 export function normalizeListIndentation(markdown: string): string {
-  const lines = markdown.split('\n');
+  // 改行コードを LF に統一 (CRLF → LF, CR → LF)
+  const normalizedMarkdown = markdown.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  const lines = normalizedMarkdown.split('\n');
   const result: string[] = [];
   let inCodeBlock = false;
 

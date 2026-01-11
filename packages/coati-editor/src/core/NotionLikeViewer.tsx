@@ -40,7 +40,7 @@ export interface NotionLikeViewerProps {
 
 export default function NotionLikeViewer({
   initialViewerState,
-  isCodeShiki = false,
+  isCodeShiki = true,
   customLinkMatchers,
 }: NotionLikeViewerProps) {
   // Props から settings を構築

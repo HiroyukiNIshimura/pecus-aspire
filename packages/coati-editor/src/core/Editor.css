@@ -1369,7 +1369,7 @@ i.bold {
 .notion-like-editor .toolbar {
   display: flex;
   margin-bottom: 1px;
-  background: var(--color-gray-300);
+  background: #9ca3af; /* gray-400: ライト/ダーク両対応 */
   padding: 4px;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -1393,12 +1393,12 @@ i.bold {
 }
 
 .notion-like-editor .toolbar::-webkit-scrollbar-thumb {
-  background: var(--color-gray-500);
+  background: #6b7280; /* gray-500 */
   border-radius: 2px;
 }
 
 .notion-like-editor .toolbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gray-600);
+  background: #4b5563; /* gray-600 */
 }
 
 /* 全画面モード時はツールバーの角丸を外す */
@@ -1472,9 +1472,9 @@ i.bold {
 .notion-like-editor .toolbar-item.font-size-input {
     font-weight: bold;
     font-size: 14px;
-    color: var(--color-gray-900);
+    color: #f3f4f6; /* gray-100: 白系テキスト */
     border-radius: 5px;
-    border-color: grey;
+    border-color: #9ca3af;
     height: 15px;
     padding: 2px 4px;
     text-align: center;
@@ -1491,7 +1491,7 @@ i.bold {
   height: 20px;
   text-align: left;
   padding-right: 10px;
-  color: var(--color-gray-900);
+  color: #f3f4f6; /* gray-100: 白系テキスト */
 }
 
 .notion-like-editor .toolbar .toolbar-item .icon {

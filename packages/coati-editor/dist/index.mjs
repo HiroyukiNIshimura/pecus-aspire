@@ -10,19 +10,19 @@ var __export = (target, all) => {
 
 // src/context/SharedHistoryContext.tsx
 import { createEmptyHistoryState } from "@lexical/react/LexicalHistoryPlugin";
-import { createContext as createContext2, useContext as useContext2, useMemo as useMemo2 } from "react";
-import { jsx as jsx2 } from "react/jsx-runtime";
-var Context2, SharedHistoryContext, useSharedHistoryContext;
+import { createContext as createContext6, useContext as useContext6, useMemo as useMemo4 } from "react";
+import { jsx as jsx7 } from "react/jsx-runtime";
+var Context3, SharedHistoryContext, useSharedHistoryContext;
 var init_SharedHistoryContext = __esm({
   "src/context/SharedHistoryContext.tsx"() {
     "use strict";
-    Context2 = createContext2({});
+    Context3 = createContext6({});
     SharedHistoryContext = ({ children }) => {
-      const historyContext = useMemo2(() => ({ historyState: createEmptyHistoryState() }), []);
-      return /* @__PURE__ */ jsx2(Context2.Provider, { value: historyContext, children });
+      const historyContext = useMemo4(() => ({ historyState: createEmptyHistoryState() }), []);
+      return /* @__PURE__ */ jsx7(Context3.Provider, { value: historyContext, children });
     };
     useSharedHistoryContext = () => {
-      return useContext2(Context2);
+      return useContext6(Context3);
     };
   }
 });
@@ -56,18 +56,18 @@ import { useLexicalComposerContext as useLexicalComposerContext10 } from "@lexic
 import { useLexicalNodeSelection } from "@lexical/react/useLexicalNodeSelection";
 import { setHours, setMinutes } from "date-fns";
 import { $getNodeByKey as $getNodeByKey2 } from "lexical";
-import { useEffect as useEffect12, useRef as useRef4, useState as useState9 } from "react";
+import { useEffect as useEffect14, useRef as useRef4, useState as useState11 } from "react";
 import { DayPicker } from "react-day-picker";
-import { jsx as jsx18, jsxs as jsxs6 } from "react/jsx-runtime";
+import { jsx as jsx22, jsxs as jsxs7 } from "react/jsx-runtime";
 function DateTimeComponent({
   dateTime,
   nodeKey
 }) {
   const [editor] = useLexicalComposerContext10();
-  const [isOpen, setIsOpen] = useState9(false);
+  const [isOpen, setIsOpen] = useState11(false);
   const ref = useRef4(null);
-  const [selected, setSelected] = useState9(dateTime);
-  const [includeTime, setIncludeTime] = useState9(() => {
+  const [selected, setSelected] = useState11(dateTime);
+  const [includeTime, setIncludeTime] = useState11(() => {
     if (dateTime === void 0) {
       return false;
     }
@@ -75,7 +75,7 @@ function DateTimeComponent({
     const minutes = dateTime?.getMinutes();
     return hours !== 0 || minutes !== 0;
   });
-  const [timeValue, setTimeValue] = useState9(() => {
+  const [timeValue, setTimeValue] = useState11(() => {
     if (dateTime === void 0) {
       return "00:00";
     }
@@ -107,7 +107,7 @@ function DateTimeComponent({
   const role = useRole(context, { role: "dialog" });
   const dismiss = useDismiss(context);
   const { getFloatingProps } = useInteractions([role, dismiss]);
-  useEffect12(() => {
+  useEffect14(() => {
     const dateTimePillRef = ref.current;
     function onClick(e) {
       e.preventDefault();
@@ -179,7 +179,7 @@ function DateTimeComponent({
     month: "long",
     day: "numeric"
   };
-  return /* @__PURE__ */ jsxs6(
+  return /* @__PURE__ */ jsxs7(
     "div",
     {
       className: `dateTimePill ${isNodeSelected ? "selected" : ""}`,
@@ -187,14 +187,14 @@ function DateTimeComponent({
       style: { cursor: "pointer", width: "fit-content" },
       children: [
         dateTime?.toLocaleDateString(void 0, options) + (includeTime ? ` ${timeValue}` : "") || "Invalid Date",
-        isOpen && /* @__PURE__ */ jsx18(FloatingPortal, { children: /* @__PURE__ */ jsx18(
+        isOpen && /* @__PURE__ */ jsx22(FloatingPortal, { children: /* @__PURE__ */ jsx22(
           FloatingOverlay,
           {
             lockScroll: true,
             style: {
               zIndex: 2e3
             },
-            children: /* @__PURE__ */ jsx18(FloatingFocusManager, { context, initialFocus: -1, children: /* @__PURE__ */ jsxs6(
+            children: /* @__PURE__ */ jsx22(FloatingFocusManager, { context, initialFocus: -1, children: /* @__PURE__ */ jsxs7(
               "div",
               {
                 className: "notion-like-editor dateTimePicker",
@@ -205,12 +205,12 @@ function DateTimeComponent({
                 },
                 ...getFloatingProps(),
                 children: [
-                  /* @__PURE__ */ jsx18(DayPicker, { mode: "single", selected, onSelect: handleDaySelect }),
-                  /* @__PURE__ */ jsx18("div", { className: "includeTime", children: /* @__PURE__ */ jsxs6("label", { htmlFor: "includeTime", style: { display: "inline-flex", alignItems: "center", gap: "6px" }, children: [
-                    /* @__PURE__ */ jsx18("input", { id: "includeTime", type: "checkbox", checked: includeTime, onChange: handleCheckboxChange }),
-                    /* @__PURE__ */ jsx18("span", { children: "Include time" })
+                  /* @__PURE__ */ jsx22(DayPicker, { mode: "single", selected, onSelect: handleDaySelect }),
+                  /* @__PURE__ */ jsx22("div", { className: "includeTime", children: /* @__PURE__ */ jsxs7("label", { htmlFor: "includeTime", style: { display: "inline-flex", alignItems: "center", gap: "6px" }, children: [
+                    /* @__PURE__ */ jsx22("input", { id: "includeTime", type: "checkbox", checked: includeTime, onChange: handleCheckboxChange }),
+                    /* @__PURE__ */ jsx22("span", { children: "Include time" })
                   ] }) }),
-                  includeTime && /* @__PURE__ */ jsx18(
+                  includeTime && /* @__PURE__ */ jsx22(
                     "input",
                     {
                       id: "time",
@@ -225,7 +225,7 @@ function DateTimeComponent({
                       }
                     }
                   ),
-                  /* @__PURE__ */ jsx18("p", { style: { fontSize: "12px", color: "#666", marginTop: "8px" }, children: userTimeZone })
+                  /* @__PURE__ */ jsx22("p", { style: { fontSize: "12px", color: "#666", marginTop: "8px" }, children: userTimeZone })
                 ]
               }
             ) })
@@ -254,7 +254,7 @@ import {
   DecoratorNode
 } from "lexical";
 import * as React from "react";
-import { jsx as jsx19 } from "react/jsx-runtime";
+import { jsx as jsx23 } from "react/jsx-runtime";
 function $convertDateTimeElement(domNode) {
   const dateTimeValue = domNode.getAttribute("data-lexical-datetime");
   if (dateTimeValue) {
@@ -339,7 +339,7 @@ var init_DateTimeNode2 = __esm({
         return true;
       }
       decorate() {
-        return /* @__PURE__ */ jsx19(DateTimeComponent2, { dateTime: this.getDateTime(), nodeKey: this.__key });
+        return /* @__PURE__ */ jsx23(DateTimeComponent2, { dateTime: this.getDateTime(), nodeKey: this.__key });
       }
     };
   }
@@ -427,14 +427,14 @@ var init_EquationEditor = __esm({
 // src/ui/EquationEditor.tsx
 import { isHTMLElement as isHTMLElement3 } from "lexical";
 import { forwardRef } from "react";
-import { jsx as jsx20, jsxs as jsxs7 } from "react/jsx-runtime";
+import { jsx as jsx24, jsxs as jsxs8 } from "react/jsx-runtime";
 function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
   const onChange = (event) => {
     setEquation(event.target.value);
   };
-  return inline && isHTMLElement3(forwardedRef) ? /* @__PURE__ */ jsxs7("span", { className: "EquationEditor_inputBackground", children: [
-    /* @__PURE__ */ jsx20("span", { className: "EquationEditor_dollarSign", children: "$" }),
-    /* @__PURE__ */ jsx20(
+  return inline && isHTMLElement3(forwardedRef) ? /* @__PURE__ */ jsxs8("span", { className: "EquationEditor_inputBackground", children: [
+    /* @__PURE__ */ jsx24("span", { className: "EquationEditor_dollarSign", children: "$" }),
+    /* @__PURE__ */ jsx24(
       "input",
       {
         className: "EquationEditor_inlineEditor",
@@ -443,10 +443,10 @@ function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
         ref: forwardedRef
       }
     ),
-    /* @__PURE__ */ jsx20("span", { className: "EquationEditor_dollarSign", children: "$" })
-  ] }) : /* @__PURE__ */ jsxs7("div", { className: "EquationEditor_inputBackground", children: [
-    /* @__PURE__ */ jsx20("span", { className: "EquationEditor_dollarSign", children: "$$\n" }),
-    /* @__PURE__ */ jsx20(
+    /* @__PURE__ */ jsx24("span", { className: "EquationEditor_dollarSign", children: "$" })
+  ] }) : /* @__PURE__ */ jsxs8("div", { className: "EquationEditor_inputBackground", children: [
+    /* @__PURE__ */ jsx24("span", { className: "EquationEditor_dollarSign", children: "$$\n" }),
+    /* @__PURE__ */ jsx24(
       "textarea",
       {
         className: "EquationEditor_blockEditor",
@@ -455,7 +455,7 @@ function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
         ref: forwardedRef
       }
     ),
-    /* @__PURE__ */ jsx20("span", { className: "EquationEditor_dollarSign", children: "\n$$" })
+    /* @__PURE__ */ jsx24("span", { className: "EquationEditor_dollarSign", children: "\n$$" })
   ] });
 }
 var EquationEditor_default;
@@ -469,15 +469,15 @@ var init_EquationEditor2 = __esm({
 
 // src/ui/KatexRenderer.tsx
 import katex from "katex";
-import { useEffect as useEffect14, useRef as useRef5 } from "react";
-import { Fragment as Fragment4, jsx as jsx21, jsxs as jsxs8 } from "react/jsx-runtime";
+import { useEffect as useEffect16, useRef as useRef5 } from "react";
+import { Fragment as Fragment4, jsx as jsx25, jsxs as jsxs9 } from "react/jsx-runtime";
 function KatexRenderer({
   equation,
   inline,
   onDoubleClick
 }) {
   const katexElementRef = useRef5(null);
-  useEffect14(() => {
+  useEffect16(() => {
     const katexElement = katexElementRef.current;
     if (katexElement !== null) {
       katex.render(equation, katexElement, {
@@ -495,8 +495,8 @@ function KatexRenderer({
     // We use an empty image tag either side to ensure Android doesn't try and compose from the
     // inner text from Katex. There didn't seem to be any other way of making this work,
     // without having a physical space.
-    /* @__PURE__ */ jsxs8(Fragment4, { children: [
-      /* @__PURE__ */ jsx21(
+    /* @__PURE__ */ jsxs9(Fragment4, { children: [
+      /* @__PURE__ */ jsx25(
         "img",
         {
           src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
@@ -505,8 +505,8 @@ function KatexRenderer({
           alt: ""
         }
       ),
-      /* @__PURE__ */ jsx21("span", { role: "button", tabIndex: -1, onDoubleClick, ref: katexElementRef }),
-      /* @__PURE__ */ jsx21(
+      /* @__PURE__ */ jsx25("span", { role: "button", tabIndex: -1, onDoubleClick, ref: katexElementRef }),
+      /* @__PURE__ */ jsx25(
         "img",
         {
           src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
@@ -540,15 +540,15 @@ import {
   KEY_ESCAPE_COMMAND,
   SELECTION_CHANGE_COMMAND
 } from "lexical";
-import { useCallback as useCallback6, useEffect as useEffect15, useRef as useRef6, useState as useState10 } from "react";
-import { Fragment as Fragment5, jsx as jsx22 } from "react/jsx-runtime";
+import { useCallback as useCallback8, useEffect as useEffect17, useRef as useRef6, useState as useState12 } from "react";
+import { Fragment as Fragment5, jsx as jsx26 } from "react/jsx-runtime";
 function EquationComponent({ equation, inline, nodeKey }) {
   const [editor] = useLexicalComposerContext12();
   const isEditable = useLexicalEditable();
-  const [equationValue, setEquationValue] = useState10(equation);
-  const [showEquationEditor, setShowEquationEditor] = useState10(false);
+  const [equationValue, setEquationValue] = useState12(equation);
+  const [showEquationEditor, setShowEquationEditor] = useState12(false);
   const inputRef = useRef6(null);
-  const onHide = useCallback6(
+  const onHide = useCallback8(
     (restoreSelection) => {
       setShowEquationEditor(false);
       editor.update(() => {
@@ -563,12 +563,12 @@ function EquationComponent({ equation, inline, nodeKey }) {
     },
     [editor, equationValue, nodeKey]
   );
-  useEffect15(() => {
+  useEffect17(() => {
     if (!showEquationEditor && equationValue !== equation) {
       setEquationValue(equation);
     }
   }, [showEquationEditor, equation, equationValue]);
-  useEffect15(() => {
+  useEffect17(() => {
     if (!isEditable) {
       return;
     }
@@ -612,7 +612,7 @@ function EquationComponent({ equation, inline, nodeKey }) {
       });
     }
   }, [editor, nodeKey, onHide, showEquationEditor, isEditable]);
-  return /* @__PURE__ */ jsx22(Fragment5, { children: showEquationEditor && isEditable ? /* @__PURE__ */ jsx22(EquationEditor_default, { equation: equationValue, setEquation: setEquationValue, inline, ref: inputRef }) : /* @__PURE__ */ jsx22(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ jsx22(
+  return /* @__PURE__ */ jsx26(Fragment5, { children: showEquationEditor && isEditable ? /* @__PURE__ */ jsx26(EquationEditor_default, { equation: equationValue, setEquation: setEquationValue, inline, ref: inputRef }) : /* @__PURE__ */ jsx26(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ jsx26(
     KatexRenderer,
     {
       equation: equationValue,
@@ -639,7 +639,7 @@ var init_EquationComponent = __esm({
 import katex2 from "katex";
 import { $applyNodeReplacement, DecoratorNode as DecoratorNode2 } from "lexical";
 import * as React2 from "react";
-import { jsx as jsx23 } from "react/jsx-runtime";
+import { jsx as jsx27 } from "react/jsx-runtime";
 function $convertEquationElement(domNode) {
   let equation = domNode.getAttribute("data-lexical-equation");
   const inline = domNode.getAttribute("data-lexical-inline") === "true";
@@ -743,7 +743,7 @@ var init_EquationNode = __esm({
         writable.__equation = equation;
       }
       decorate() {
-        return /* @__PURE__ */ jsx23(EquationComponent2, { equation: this.__equation, inline: this.__inline, nodeKey: this.__key });
+        return /* @__PURE__ */ jsx27(EquationComponent2, { equation: this.__equation, inline: this.__inline, nodeKey: this.__key });
       }
     };
   }
@@ -865,7 +865,7 @@ var init_image_broken = __esm({
 // src/plugins/EmojisPlugin/index.ts
 import { useLexicalComposerContext as useLexicalComposerContext15 } from "@lexical/react/LexicalComposerContext";
 import { TextNode as TextNode4 } from "lexical";
-import { useEffect as useEffect17 } from "react";
+import { useEffect as useEffect19 } from "react";
 function $findAndTransformEmoji(node) {
   const text = node.getTextContent();
   for (let i = 0; i < text.length; i++) {
@@ -895,7 +895,7 @@ function $textNodeTransform(node) {
   }
 }
 function useEmojis(editor) {
-  useEffect17(() => {
+  useEffect19(() => {
     if (!editor.hasNodes([EmojiNode])) {
       throw new Error("EmojisPlugin: EmojiNode not registered on editor");
     }
@@ -949,9 +949,9 @@ var init_url = __esm({
 
 // src/plugins/LinkPlugin/index.tsx
 import { LinkPlugin as LexicalLinkPlugin } from "@lexical/react/LexicalLinkPlugin";
-import { jsx as jsx27 } from "react/jsx-runtime";
+import { jsx as jsx30 } from "react/jsx-runtime";
 function LinkPlugin({ hasLinkAttributes = false }) {
-  return /* @__PURE__ */ jsx27(
+  return /* @__PURE__ */ jsx30(
     LexicalLinkPlugin,
     {
       validateUrl,
@@ -1068,12 +1068,12 @@ import {
   LexicalTypeaheadMenuPlugin,
   useBasicTypeaheadTriggerMatch
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
-import { useCallback as useCallback9, useEffect as useEffect18, useMemo as useMemo9, useState as useState12 } from "react";
+import { useCallback as useCallback11, useEffect as useEffect20, useMemo as useMemo10, useState as useState14 } from "react";
 import * as ReactDOM from "react-dom";
-import { jsx as jsx28, jsxs as jsxs10 } from "react/jsx-runtime";
+import { jsx as jsx31, jsxs as jsxs11 } from "react/jsx-runtime";
 function useMentionLookupService(mentionString) {
-  const [results, setResults] = useState12([]);
-  useEffect18(() => {
+  const [results, setResults] = useState14([]);
+  useEffect20(() => {
     const cachedResults = mentionsCache.get(mentionString);
     if (mentionString == null) {
       setResults([]);
@@ -1125,7 +1125,7 @@ function MentionsTypeaheadMenuItem({
   if (isSelected) {
     className += " selected";
   }
-  return /* @__PURE__ */ jsxs10(
+  return /* @__PURE__ */ jsxs11(
     "li",
     {
       tabIndex: -1,
@@ -1137,7 +1137,7 @@ function MentionsTypeaheadMenuItem({
       onClick,
       children: [
         option.picture,
-        /* @__PURE__ */ jsx28("span", { className: "text", children: option.name })
+        /* @__PURE__ */ jsx31("span", { className: "text", children: option.name })
       ]
     },
     option.key
@@ -1145,16 +1145,16 @@ function MentionsTypeaheadMenuItem({
 }
 function NewMentionsPlugin() {
   const [editor] = useLexicalComposerContext16();
-  const [queryString, setQueryString] = useState12(null);
+  const [queryString, setQueryString] = useState14(null);
   const results = useMentionLookupService(queryString);
   const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch("/", {
     minLength: 0
   });
-  const options = useMemo9(
-    () => results.map((result) => new MentionTypeaheadOption(result, /* @__PURE__ */ jsx28("i", { className: "icon user" }))).slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
+  const options = useMemo10(
+    () => results.map((result) => new MentionTypeaheadOption(result, /* @__PURE__ */ jsx31("i", { className: "icon user" }))).slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
     [results]
   );
-  const onSelectOption = useCallback9(
+  const onSelectOption = useCallback11(
     (selectedOption, nodeToReplace, closeMenu) => {
       editor.update(() => {
         const mentionNode = $createMentionNode(selectedOption.name);
@@ -1167,7 +1167,7 @@ function NewMentionsPlugin() {
     },
     [editor]
   );
-  const checkForMentionMatch = useCallback9(
+  const checkForMentionMatch = useCallback11(
     (text) => {
       const slashMatch = checkForSlashTriggerMatch(text, editor);
       if (slashMatch !== null) {
@@ -1177,7 +1177,7 @@ function NewMentionsPlugin() {
     },
     [checkForSlashTriggerMatch, editor]
   );
-  return /* @__PURE__ */ jsx28(
+  return /* @__PURE__ */ jsx31(
     LexicalTypeaheadMenuPlugin,
     {
       onQueryChange: setQueryString,
@@ -1185,7 +1185,7 @@ function NewMentionsPlugin() {
       triggerFn: checkForMentionMatch,
       options,
       menuRenderFn: (anchorElementRef, { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }) => anchorElementRef.current && results.length ? ReactDOM.createPortal(
-        /* @__PURE__ */ jsx28("div", { className: "notion-like-editor typeahead-popover mentions-menu", children: /* @__PURE__ */ jsx28("ul", { children: options.map((option, i) => /* @__PURE__ */ jsx28(
+        /* @__PURE__ */ jsx31("div", { className: "notion-like-editor typeahead-popover mentions-menu", children: /* @__PURE__ */ jsx31("ul", { children: options.map((option, i) => /* @__PURE__ */ jsx31(
           MentionsTypeaheadMenuItem,
           {
             index: i,
@@ -1664,14 +1664,14 @@ var init_ContentEditable = __esm({
 
 // src/ui/ContentEditable.tsx
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { jsx as jsx29 } from "react/jsx-runtime";
+import { jsx as jsx32 } from "react/jsx-runtime";
 function LexicalContentEditable({ className, placeholder, placeholderClassName }) {
-  return /* @__PURE__ */ jsx29(
+  return /* @__PURE__ */ jsx32(
     ContentEditable,
     {
       className: className ?? "ContentEditable__root",
       "aria-placeholder": placeholder,
-      placeholder: /* @__PURE__ */ jsx29("div", { className: placeholderClassName ?? "ContentEditable__placeholder", children: placeholder })
+      placeholder: /* @__PURE__ */ jsx32("div", { className: placeholderClassName ?? "ContentEditable__placeholder", children: placeholder })
     }
   );
 }
@@ -1685,7 +1685,7 @@ var init_ContentEditable2 = __esm({
 // src/ui/ImageResizer.tsx
 import { calculateZoomLevel } from "@lexical/utils";
 import { useRef as useRef7 } from "react";
-import { jsx as jsx30, jsxs as jsxs11 } from "react/jsx-runtime";
+import { jsx as jsx33, jsxs as jsxs12 } from "react/jsx-runtime";
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
@@ -1827,8 +1827,8 @@ function ImageResizer({
       document.removeEventListener("pointerup", handlePointerUp);
     }
   };
-  return /* @__PURE__ */ jsxs11("div", { ref: controlWrapperRef, children: [
-    !showCaption && captionsEnabled && /* @__PURE__ */ jsx30(
+  return /* @__PURE__ */ jsxs12("div", { ref: controlWrapperRef, children: [
+    !showCaption && captionsEnabled && /* @__PURE__ */ jsx33(
       "button",
       {
         type: "button",
@@ -1840,7 +1840,7 @@ function ImageResizer({
         children: "Add Caption"
       }
     ),
-    /* @__PURE__ */ jsx30(
+    /* @__PURE__ */ jsx33(
       "div",
       {
         className: "image-resizer image-resizer-n",
@@ -1849,7 +1849,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx30(
+    /* @__PURE__ */ jsx33(
       "div",
       {
         className: "image-resizer image-resizer-ne",
@@ -1858,7 +1858,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx30(
+    /* @__PURE__ */ jsx33(
       "div",
       {
         className: "image-resizer image-resizer-e",
@@ -1867,7 +1867,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx30(
+    /* @__PURE__ */ jsx33(
       "div",
       {
         className: "image-resizer image-resizer-se",
@@ -1876,7 +1876,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx30(
+    /* @__PURE__ */ jsx33(
       "div",
       {
         className: "image-resizer image-resizer-s",
@@ -1885,7 +1885,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx30(
+    /* @__PURE__ */ jsx33(
       "div",
       {
         className: "image-resizer image-resizer-sw",
@@ -1894,7 +1894,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx30(
+    /* @__PURE__ */ jsx33(
       "div",
       {
         className: "image-resizer image-resizer-w",
@@ -1903,7 +1903,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx30(
+    /* @__PURE__ */ jsx33(
       "div",
       {
         className: "image-resizer image-resizer-nw",
@@ -1958,11 +1958,11 @@ import {
   KEY_ESCAPE_COMMAND as KEY_ESCAPE_COMMAND2,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND2
 } from "lexical";
-import { Suspense, useCallback as useCallback10, useEffect as useEffect19, useMemo as useMemo10, useRef as useRef8, useState as useState13 } from "react";
-import { jsx as jsx31, jsxs as jsxs12 } from "react/jsx-runtime";
+import { Suspense, useCallback as useCallback12, useEffect as useEffect21, useMemo as useMemo11, useRef as useRef8, useState as useState15 } from "react";
+import { jsx as jsx34, jsxs as jsxs13 } from "react/jsx-runtime";
 function DisableCaptionOnBlur({ setShowCaption }) {
   const [editor] = useLexicalComposerContext17();
-  useEffect19(
+  useEffect21(
     () => editor.registerCommand(
       BLUR_COMMAND,
       () => {
@@ -2014,13 +2014,13 @@ function LazyImage({
 }) {
   const isSVGImage = isSVG(src);
   const status = useSuspenseImage(src);
-  useEffect19(() => {
+  useEffect21(() => {
     if (status.error) {
       onError();
     }
   }, [status.error, onError]);
   if (status.error) {
-    return /* @__PURE__ */ jsx31(BrokenImage, {});
+    return /* @__PURE__ */ jsx34(BrokenImage, {});
   }
   const calculateDimensions = () => {
     if (!isSVGImage) {
@@ -2052,7 +2052,7 @@ function LazyImage({
     };
   };
   const imageStyle = calculateDimensions();
-  return /* @__PURE__ */ jsx31(
+  return /* @__PURE__ */ jsx34(
     "img",
     {
       className: className || void 0,
@@ -2066,7 +2066,7 @@ function LazyImage({
   );
 }
 function BrokenImage() {
-  return /* @__PURE__ */ jsx31(
+  return /* @__PURE__ */ jsx34(
     "img",
     {
       src: image_broken_default,
@@ -2097,19 +2097,19 @@ function ImageComponent({
   const imageRef = useRef8(null);
   const buttonRef = useRef8(null);
   const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection2(nodeKey);
-  const [isResizing, setIsResizing] = useState13(false);
+  const [isResizing, setIsResizing] = useState15(false);
   const [editor] = useLexicalComposerContext17();
   const activeEditorRef = useRef8(null);
-  const [isLoadError, setIsLoadError] = useState13(false);
+  const [isLoadError, setIsLoadError] = useState15(false);
   const isEditable = useLexicalEditable2();
-  const isInNodeSelection = useMemo10(
+  const isInNodeSelection = useMemo11(
     () => isSelected && editor.getEditorState().read(() => {
       const selection = $getSelection5();
       return $isNodeSelection2(selection) && selection.has(nodeKey);
     }),
     [editor, isSelected, nodeKey]
   );
-  const $onEnter = useCallback10(
+  const $onEnter = useCallback12(
     (event) => {
       const latestSelection = $getSelection5();
       const buttonElem = buttonRef.current;
@@ -2129,7 +2129,7 @@ function ImageComponent({
     },
     [caption, nodeKey, showCaption]
   );
-  const $onEscape = useCallback10(
+  const $onEscape = useCallback12(
     (event) => {
       if (activeEditorRef.current === caption || buttonRef.current === event.target) {
         $setSelection3(null);
@@ -2146,7 +2146,7 @@ function ImageComponent({
     },
     [caption, editor, setSelected]
   );
-  const onClick = useCallback10(
+  const onClick = useCallback12(
     (payload) => {
       const event = payload;
       if (isResizing) {
@@ -2165,7 +2165,7 @@ function ImageComponent({
     },
     [isResizing, isSelected, setSelected, clearSelection]
   );
-  const onRightClick = useCallback10(
+  const onRightClick = useCallback12(
     (event) => {
       editor.getEditorState().read(() => {
         const latestSelection = $getSelection5();
@@ -2177,7 +2177,7 @@ function ImageComponent({
     },
     [editor]
   );
-  useEffect19(() => {
+  useEffect21(() => {
     return mergeRegister5(
       editor.registerCommand(
         SELECTION_CHANGE_COMMAND2,
@@ -2200,7 +2200,7 @@ function ImageComponent({
       )
     );
   }, [editor]);
-  useEffect19(() => {
+  useEffect21(() => {
     let rootCleanup = noop;
     return mergeRegister5(
       editor.registerCommand(CLICK_COMMAND, onClick, COMMAND_PRIORITY_LOW3),
@@ -2250,8 +2250,8 @@ function ImageComponent({
   useSharedHistoryContext();
   const draggable = isInNodeSelection && !isResizing;
   const isFocused = (isSelected || isResizing) && isEditable;
-  return /* @__PURE__ */ jsxs12(Suspense, { fallback: null, children: [
-    /* @__PURE__ */ jsx31("div", { draggable, children: isLoadError ? /* @__PURE__ */ jsx31(BrokenImage, {}) : /* @__PURE__ */ jsx31(
+  return /* @__PURE__ */ jsxs13(Suspense, { fallback: null, children: [
+    /* @__PURE__ */ jsx34("div", { draggable, children: isLoadError ? /* @__PURE__ */ jsx34(BrokenImage, {}) : /* @__PURE__ */ jsx34(
       LazyImage,
       {
         className: isFocused ? `focused ${isInNodeSelection ? "draggable" : ""}` : null,
@@ -2264,16 +2264,16 @@ function ImageComponent({
         onError: () => setIsLoadError(true)
       }
     ) }),
-    showCaption && /* @__PURE__ */ jsx31("div", { className: "image-caption-container", children: /* @__PURE__ */ jsxs12(LexicalNestedComposer, { initialEditor: caption, children: [
-      /* @__PURE__ */ jsx31(DisableCaptionOnBlur, { setShowCaption }),
-      /* @__PURE__ */ jsx31(NewMentionsPlugin, {}),
-      /* @__PURE__ */ jsx31(LinkPlugin, {}),
-      /* @__PURE__ */ jsx31(EmojisPlugin, {}),
-      /* @__PURE__ */ jsx31(HashtagPlugin, {}),
-      /* @__PURE__ */ jsx31(
+    showCaption && /* @__PURE__ */ jsx34("div", { className: "image-caption-container", children: /* @__PURE__ */ jsxs13(LexicalNestedComposer, { initialEditor: caption, children: [
+      /* @__PURE__ */ jsx34(DisableCaptionOnBlur, { setShowCaption }),
+      /* @__PURE__ */ jsx34(NewMentionsPlugin, {}),
+      /* @__PURE__ */ jsx34(LinkPlugin, {}),
+      /* @__PURE__ */ jsx34(EmojisPlugin, {}),
+      /* @__PURE__ */ jsx34(HashtagPlugin, {}),
+      /* @__PURE__ */ jsx34(
         RichTextPlugin,
         {
-          contentEditable: /* @__PURE__ */ jsx31(
+          contentEditable: /* @__PURE__ */ jsx34(
             LexicalContentEditable,
             {
               placeholder: "Enter a caption...",
@@ -2285,7 +2285,7 @@ function ImageComponent({
         }
       )
     ] }) }),
-    resizable && isInNodeSelection && isFocused && /* @__PURE__ */ jsx31(
+    resizable && isInNodeSelection && isFocused && /* @__PURE__ */ jsx34(
       ImageResizer,
       {
         showCaption,
@@ -2344,7 +2344,7 @@ import {
   TextNode as TextNode6
 } from "lexical";
 import * as React3 from "react";
-import { jsx as jsx32 } from "react/jsx-runtime";
+import { jsx as jsx35 } from "react/jsx-runtime";
 function isGoogleDocCheckboxImg(img2) {
   return img2.parentElement != null && img2.parentElement.tagName === "LI" && img2.previousSibling === null && img2.getAttribute("aria-roledescription") === "checkbox";
 }
@@ -2563,7 +2563,7 @@ var init_ImageNode2 = __esm({
         return this.__altText;
       }
       decorate() {
-        return /* @__PURE__ */ jsx32(
+        return /* @__PURE__ */ jsx35(
           ImageComponent2,
           {
             src: this.__src,
@@ -2753,9 +2753,9 @@ import { LexicalNestedComposer as LexicalNestedComposer2 } from "@lexical/react/
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { calculateZoomLevel as calculateZoomLevel5 } from "@lexical/utils";
 import { $getNodeByKey as $getNodeByKey7 } from "lexical";
-import { useEffect as useEffect43, useLayoutEffect, useRef as useRef19, useState as useState30 } from "react";
-import { createPortal as createPortal12 } from "react-dom";
-import { jsx as jsx53, jsxs as jsxs28 } from "react/jsx-runtime";
+import { useEffect as useEffect44, useLayoutEffect, useRef as useRef19, useState as useState31 } from "react";
+import { createPortal as createPortal13 } from "react-dom";
+import { jsx as jsx55, jsxs as jsxs29 } from "react/jsx-runtime";
 function positionSticky(stickyElem, positioning) {
   const style = stickyElem.style;
   style.top = `${positioning.y}px`;
@@ -2770,7 +2770,7 @@ function StickyComponent({
 }) {
   const [editor] = useLexicalComposerContext40();
   const stickyContainerRef = useRef19(null);
-  const [portalContainer, setPortalContainer] = useState30(null);
+  const [portalContainer, setPortalContainer] = useState31(null);
   const positioningRef = useRef19({
     isDragging: false,
     offsetX: 0,
@@ -2779,7 +2779,7 @@ function StickyComponent({
     x: 0,
     y: 0
   });
-  useEffect43(() => {
+  useEffect44(() => {
     const rootElement = editor.getRootElement();
     if (rootElement) {
       const scrollerContainer = rootElement.closest(".editor-scroller");
@@ -2790,7 +2790,7 @@ function StickyComponent({
       }
     }
   }, [editor]);
-  useEffect43(() => {
+  useEffect44(() => {
     const stickyContainer = stickyContainerRef.current;
     if (!stickyContainer) return;
     const stopFlyonuiEvents = (e) => {
@@ -2803,7 +2803,7 @@ function StickyComponent({
       stickyContainer.removeEventListener("focusout", stopFlyonuiEvents);
     };
   }, []);
-  useEffect43(() => {
+  useEffect44(() => {
     const position = positioningRef.current;
     position.x = x;
     position.y = y2;
@@ -2857,7 +2857,7 @@ function StickyComponent({
       removeRootListener();
     };
   }, [editor]);
-  useEffect43(() => {
+  useEffect44(() => {
     const stickyContainer = stickyContainerRef.current;
     if (stickyContainer !== null) {
       setTimeout(() => {
@@ -2919,7 +2919,7 @@ function StickyComponent({
     });
   };
   useSharedHistoryContext();
-  const stickyContent = /* @__PURE__ */ jsx53("div", { ref: stickyContainerRef, className: "sticky-note-container", children: /* @__PURE__ */ jsxs28(
+  const stickyContent = /* @__PURE__ */ jsx55("div", { ref: stickyContainerRef, className: "sticky-note-container", children: /* @__PURE__ */ jsxs29(
     "div",
     {
       className: `sticky-note ${color}`,
@@ -2943,8 +2943,8 @@ function StickyComponent({
         }
       },
       children: [
-        /* @__PURE__ */ jsx53("button", { type: "button", onClick: handleDelete, className: "delete", "aria-label": "Delete sticky note", title: "Delete", children: "X" }),
-        /* @__PURE__ */ jsx53(
+        /* @__PURE__ */ jsx55("button", { type: "button", onClick: handleDelete, className: "delete", "aria-label": "Delete sticky note", title: "Delete", children: "X" }),
+        /* @__PURE__ */ jsx55(
           "button",
           {
             type: "button",
@@ -2952,13 +2952,13 @@ function StickyComponent({
             className: "color",
             "aria-label": "Change sticky note color",
             title: "Color",
-            children: /* @__PURE__ */ jsx53("i", { className: "bucket" })
+            children: /* @__PURE__ */ jsx55("i", { className: "bucket" })
           }
         ),
-        /* @__PURE__ */ jsx53(LexicalNestedComposer2, { initialEditor: caption, initialTheme: StickyEditorTheme_default, children: /* @__PURE__ */ jsx53(
+        /* @__PURE__ */ jsx55(LexicalNestedComposer2, { initialEditor: caption, initialTheme: StickyEditorTheme_default, children: /* @__PURE__ */ jsx55(
           PlainTextPlugin,
           {
-            contentEditable: /* @__PURE__ */ jsx53(
+            contentEditable: /* @__PURE__ */ jsx55(
               LexicalContentEditable,
               {
                 placeholder: "What's up?",
@@ -2975,7 +2975,7 @@ function StickyComponent({
   if (!portalContainer) {
     return null;
   }
-  return createPortal12(stickyContent, portalContainer);
+  return createPortal13(stickyContent, portalContainer);
 }
 var init_StickyComponent = __esm({
   "src/nodes/StickyComponent.tsx"() {
@@ -2991,7 +2991,7 @@ var init_StickyComponent = __esm({
 // src/nodes/StickyNode.tsx
 import { $setSelection as $setSelection8, createEditor as createEditor2, DecoratorNode as DecoratorNode5 } from "lexical";
 import * as React5 from "react";
-import { jsx as jsx54 } from "react/jsx-runtime";
+import { jsx as jsx56 } from "react/jsx-runtime";
 function $isStickyNode(node) {
   return node instanceof StickyNode;
 }
@@ -3064,7 +3064,7 @@ var init_StickyNode2 = __esm({
         writable.__color = writable.__color === "pink" ? "yellow" : "pink";
       }
       decorate(_editor, _config) {
-        return /* @__PURE__ */ jsx54(
+        return /* @__PURE__ */ jsx56(
           StickyComponent2,
           {
             color: this.__color,
@@ -3082,27 +3082,123 @@ var init_StickyNode2 = __esm({
   }
 });
 
-// src/core/Editor.tsx
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
-import { CharacterLimitPlugin } from "@lexical/react/LexicalCharacterLimitPlugin";
-import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
-import { ClearEditorPlugin } from "@lexical/react/LexicalClearEditorPlugin";
-import { ClickableLinkPlugin } from "@lexical/react/LexicalClickableLinkPlugin";
-import { useLexicalComposerContext as useLexicalComposerContext41 } from "@lexical/react/LexicalComposerContext";
-import { LexicalErrorBoundary as LexicalErrorBoundary3 } from "@lexical/react/LexicalErrorBoundary";
-import { HashtagPlugin as HashtagPlugin2 } from "@lexical/react/LexicalHashtagPlugin";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { RichTextPlugin as RichTextPlugin2 } from "@lexical/react/LexicalRichTextPlugin";
-import { SelectionAlwaysOnDisplay } from "@lexical/react/LexicalSelectionAlwaysOnDisplay";
-import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
-import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
-import { useLexicalEditable as useLexicalEditable6 } from "@lexical/react/useLexicalEditable";
-import { CAN_USE_DOM } from "@lexical/utils";
-import { useEffect as useEffect46, useState as useState33 } from "react";
+// src/context/ComponentPickerContext.tsx
+import { createContext, useContext } from "react";
+import { jsx } from "react/jsx-runtime";
+var ComponentPickerContext = createContext({});
+function ComponentPickerProvider({
+  children,
+  extraOptions
+}) {
+  return /* @__PURE__ */ jsx(ComponentPickerContext.Provider, { value: { extraOptions }, children });
+}
+function useComponentPickerContext() {
+  return useContext(ComponentPickerContext);
+}
+
+// src/context/FlashMessageContext.tsx
+import { createContext as createContext2, useCallback, useContext as useContext2, useEffect, useState } from "react";
+
+// src/ui/FlashMessage.tsx
+import { createPortal } from "react-dom";
+import { jsx as jsx2 } from "react/jsx-runtime";
+function FlashMessage({ children }) {
+  return createPortal(
+    /* @__PURE__ */ jsx2("div", { className: "notion-like-editor FlashMessage__overlay", role: "dialog", children: /* @__PURE__ */ jsx2("p", { className: "notion-like-editor FlashMessage__alert", role: "alert", children }) }),
+    document.body
+  );
+}
+
+// src/context/FlashMessageContext.tsx
+import { jsx as jsx3, jsxs } from "react/jsx-runtime";
+var Context = createContext2(void 0);
+var INITIAL_STATE = {};
+var DEFAULT_DURATION = 1e3;
+var FlashMessageContext = ({ children }) => {
+  const [props, setProps] = useState(INITIAL_STATE);
+  const showFlashMessage = useCallback(
+    (message, duration) => setProps(message ? { duration, message } : INITIAL_STATE),
+    []
+  );
+  useEffect(() => {
+    if (props.message) {
+      const timeoutId = setTimeout(() => setProps(INITIAL_STATE), props.duration ?? DEFAULT_DURATION);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [props]);
+  return /* @__PURE__ */ jsxs(Context.Provider, { value: showFlashMessage, children: [
+    children,
+    props.message && /* @__PURE__ */ jsx3(FlashMessage, { children: props.message })
+  ] });
+};
+var useFlashMessageContext = () => {
+  const ctx = useContext2(Context);
+  if (!ctx) {
+    throw new Error("Missing FlashMessageContext");
+  }
+  return ctx;
+};
+
+// src/context/FullscreenContext.tsx
+import { createContext as createContext3, useCallback as useCallback2, useContext as useContext3, useEffect as useEffect2, useMemo, useState as useState2 } from "react";
+import { jsx as jsx4 } from "react/jsx-runtime";
+var FullscreenContext = createContext3(void 0);
+function FullscreenProvider({ children }) {
+  const [isFullscreen, setIsFullscreen] = useState2(false);
+  const toggleFullscreen = useCallback2(() => {
+    setIsFullscreen((prev) => !prev);
+  }, []);
+  const exitFullscreen = useCallback2(() => {
+    setIsFullscreen(false);
+  }, []);
+  useEffect2(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    if (isFullscreen) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFullscreen]);
+  const value = useMemo(
+    () => ({
+      isFullscreen,
+      toggleFullscreen,
+      exitFullscreen
+    }),
+    [isFullscreen, toggleFullscreen, exitFullscreen]
+  );
+  return /* @__PURE__ */ jsx4(FullscreenContext.Provider, { value, children });
+}
+function useFullscreen() {
+  const context = useContext3(FullscreenContext);
+  if (context === void 0) {
+    throw new Error("useFullscreen must be used within a FullscreenProvider");
+  }
+  return context;
+}
+
+// src/context/ImageUploadContext.tsx
+import { createContext as createContext4, useContext as useContext4, useMemo as useMemo2 } from "react";
+import { jsx as jsx5 } from "react/jsx-runtime";
+var ImageUploadContext = createContext4({
+  handler: null
+});
+function useImageUpload() {
+  const context = useContext4(ImageUploadContext);
+  return context.handler;
+}
+function ImageUploadProvider({ children, handler }) {
+  const value = useMemo2(() => ({ handler }), [handler]);
+  return /* @__PURE__ */ jsx5(ImageUploadContext.Provider, { value, children });
+}
 
 // src/context/SettingsContext.tsx
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext as createContext5, useCallback as useCallback3, useContext as useContext5, useMemo as useMemo3, useState as useState3 } from "react";
 
 // src/core/appSettings.ts
 var DEFAULT_SETTINGS = {
@@ -3136,8 +3232,8 @@ var INITIAL_SETTINGS = {
 };
 
 // src/context/SettingsContext.tsx
-import { jsx } from "react/jsx-runtime";
-var Context = createContext({
+import { jsx as jsx6 } from "react/jsx-runtime";
+var Context2 = createContext5({
   setOption: (_name, _value) => {
     return;
   },
@@ -3147,24 +3243,24 @@ var SettingsContext = ({
   children,
   initialSettings
 }) => {
-  const [settings, setSettings] = useState(() => ({
+  const [settings, setSettings] = useState3(() => ({
     ...INITIAL_SETTINGS,
     ...initialSettings
   }));
-  const setOption = useCallback((setting, value) => {
+  const setOption = useCallback3((setting, value) => {
     setSettings((options) => ({
       ...options,
       [setting]: value
     }));
     setURLParam(setting, value);
   }, []);
-  const contextValue = useMemo(() => {
+  const contextValue = useMemo3(() => {
     return { setOption, settings };
   }, [setOption, settings]);
-  return /* @__PURE__ */ jsx(Context.Provider, { value: contextValue, children });
+  return /* @__PURE__ */ jsx6(Context2.Provider, { value: contextValue, children });
 };
 var useSettings = () => {
-  return useContext(Context);
+  return useContext5(Context2);
 };
 function setURLParam(param, value) {
   const url = new URL(window.location.href);
@@ -3178,31 +3274,12 @@ function setURLParam(param, value) {
   window.history.pushState(null, "", url.toString());
 }
 
-// src/core/Editor.tsx
+// src/index.ts
 init_SharedHistoryContext();
 
-// src/plugins/AutocompletePlugin/index.tsx
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $isAtNodeEnd } from "@lexical/selection";
-import { mergeRegister } from "@lexical/utils";
-import {
-  $addUpdateTag,
-  $createTextNode,
-  $getNodeByKey,
-  $getSelection,
-  $isRangeSelection,
-  $isTextNode,
-  $setSelection,
-  COMMAND_PRIORITY_LOW,
-  HISTORY_MERGE_TAG,
-  KEY_ARROW_RIGHT_COMMAND,
-  KEY_TAB_COMMAND
-} from "lexical";
-import { useCallback as useCallback3, useEffect as useEffect2 } from "react";
-
 // src/context/ToolbarContext.tsx
-import { createContext as createContext3, useCallback as useCallback2, useContext as useContext3, useEffect, useMemo as useMemo3, useState as useState2 } from "react";
-import { jsx as jsx3 } from "react/jsx-runtime";
+import { createContext as createContext7, useCallback as useCallback4, useContext as useContext7, useEffect as useEffect3, useMemo as useMemo5, useState as useState4 } from "react";
+import { jsx as jsx8 } from "react/jsx-runtime";
 var MIN_ALLOWED_FONT_SIZE = 8;
 var MAX_ALLOWED_FONT_SIZE = 72;
 var DEFAULT_FONT_SIZE = 15;
@@ -3251,34 +3328,73 @@ var INITIAL_TOOLBAR_STATE = {
   rootType: "root",
   listStartNumber: null
 };
-var Context3 = createContext3(void 0);
+var Context4 = createContext7(void 0);
 var ToolbarContext = ({ children }) => {
-  const [toolbarState, setToolbarState] = useState2(INITIAL_TOOLBAR_STATE);
+  const [toolbarState, setToolbarState] = useState4(INITIAL_TOOLBAR_STATE);
   const selectionFontSize = toolbarState.fontSize;
-  const updateToolbarState = useCallback2((key, value) => {
+  const updateToolbarState = useCallback4((key, value) => {
     setToolbarState((prev) => ({
       ...prev,
       [key]: value
     }));
   }, []);
-  useEffect(() => {
+  useEffect3(() => {
     updateToolbarState("fontSizeInputValue", selectionFontSize.slice(0, -2));
   }, [selectionFontSize, updateToolbarState]);
-  const contextValue = useMemo3(() => {
+  const contextValue = useMemo5(() => {
     return {
       toolbarState,
       updateToolbarState
     };
   }, [toolbarState, updateToolbarState]);
-  return /* @__PURE__ */ jsx3(Context3.Provider, { value: contextValue, children });
+  return /* @__PURE__ */ jsx8(Context4.Provider, { value: contextValue, children });
 };
 var useToolbarState = () => {
-  const context = useContext3(Context3);
+  const context = useContext7(Context4);
   if (context === void 0) {
     throw new Error("useToolbarState must be used within a ToolbarProvider");
   }
   return context;
 };
+
+// src/core/Editor.tsx
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import { CharacterLimitPlugin } from "@lexical/react/LexicalCharacterLimitPlugin";
+import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
+import { ClearEditorPlugin } from "@lexical/react/LexicalClearEditorPlugin";
+import { ClickableLinkPlugin } from "@lexical/react/LexicalClickableLinkPlugin";
+import { useLexicalComposerContext as useLexicalComposerContext41 } from "@lexical/react/LexicalComposerContext";
+import { LexicalErrorBoundary as LexicalErrorBoundary3 } from "@lexical/react/LexicalErrorBoundary";
+import { HashtagPlugin as HashtagPlugin2 } from "@lexical/react/LexicalHashtagPlugin";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { RichTextPlugin as RichTextPlugin2 } from "@lexical/react/LexicalRichTextPlugin";
+import { SelectionAlwaysOnDisplay } from "@lexical/react/LexicalSelectionAlwaysOnDisplay";
+import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
+import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
+import { useLexicalEditable as useLexicalEditable6 } from "@lexical/react/useLexicalEditable";
+import { CAN_USE_DOM } from "@lexical/utils";
+import { useEffect as useEffect47, useState as useState34 } from "react";
+init_SharedHistoryContext();
+
+// src/plugins/AutocompletePlugin/index.tsx
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $isAtNodeEnd } from "@lexical/selection";
+import { mergeRegister } from "@lexical/utils";
+import {
+  $addUpdateTag,
+  $createTextNode,
+  $getNodeByKey,
+  $getSelection,
+  $isRangeSelection,
+  $isTextNode,
+  $setSelection,
+  COMMAND_PRIORITY_LOW,
+  HISTORY_MERGE_TAG,
+  KEY_ARROW_RIGHT_COMMAND,
+  KEY_TAB_COMMAND
+} from "lexical";
+import { useCallback as useCallback5, useEffect as useEffect4 } from "react";
 
 // src/nodes/AutocompleteNode.tsx
 import { TextNode } from "lexical";
@@ -3433,7 +3549,7 @@ function $search(selection) {
   return [true, word.reverse().join("")];
 }
 function useQuery() {
-  return useCallback3((searchText) => {
+  return useCallback5((searchText) => {
     const server = new AutocompleteServer();
     console.time("query");
     const response = server.query(searchText);
@@ -3450,7 +3566,7 @@ function AutocompletePlugin() {
   const [editor] = useLexicalComposerContext();
   const query = useQuery();
   const { toolbarState } = useToolbarState();
-  useEffect2(() => {
+  useEffect4(() => {
     let autocompleteNodeKey = null;
     let lastMatch = null;
     let lastSuggestion = null;
@@ -5859,16 +5975,16 @@ import {
   URL_MATCHER
 } from "@lexical/react/LexicalAutoEmbedPlugin";
 import { useLexicalComposerContext as useLexicalComposerContext5 } from "@lexical/react/LexicalComposerContext";
-import { useMemo as useMemo5, useState as useState5 } from "react";
+import { useMemo as useMemo7, useState as useState7 } from "react";
 
 // src/hooks/useModal.tsx
-import { useCallback as useCallback4, useMemo as useMemo4, useState as useState3 } from "react";
+import { useCallback as useCallback6, useMemo as useMemo6, useState as useState5 } from "react";
 
 // src/ui/Modal.tsx
 import { isDOMNode } from "lexical";
-import { useEffect as useEffect3, useRef } from "react";
-import { createPortal } from "react-dom";
-import { Fragment, jsx as jsx4, jsxs } from "react/jsx-runtime";
+import { useEffect as useEffect5, useRef } from "react";
+import { createPortal as createPortal2 } from "react-dom";
+import { Fragment, jsx as jsx9, jsxs as jsxs2 } from "react/jsx-runtime";
 function PortalImpl({
   onClose,
   children,
@@ -5876,12 +5992,12 @@ function PortalImpl({
   closeOnClickOutside
 }) {
   const modalRef = useRef(null);
-  useEffect3(() => {
+  useEffect5(() => {
     if (modalRef.current !== null) {
       modalRef.current.focus();
     }
   }, []);
-  useEffect3(() => {
+  useEffect5(() => {
     let modalOverlayElement = null;
     const handler = (event) => {
       if (event.key === "Escape") {
@@ -5909,20 +6025,20 @@ function PortalImpl({
       }
     };
   }, [closeOnClickOutside, onClose]);
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx4("div", { className: "notion-like-editor notion-like-modal-overlay fixed inset-0 bg-black/50 z-50", role: "dialog" }),
-    /* @__PURE__ */ jsx4(
+  return /* @__PURE__ */ jsxs2(Fragment, { children: [
+    /* @__PURE__ */ jsx9("div", { className: "notion-like-editor notion-like-modal-overlay fixed inset-0 bg-black/50 z-50", role: "dialog" }),
+    /* @__PURE__ */ jsx9(
       "div",
       {
         className: "notion-like-editor notion-like-modal-content fixed inset-0 z-60 flex items-center justify-center p-4",
         tabIndex: -1,
         ref: modalRef,
-        children: /* @__PURE__ */ jsxs("div", { className: "bg-base-100 rounded-lg shadow-xl max-h-[90vh] overflow-y-auto", children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between p-6 border-b border-base-300", children: [
-            /* @__PURE__ */ jsx4("h2", { className: "text-2xl font-bold flex items-center gap-2", children: title }),
-            /* @__PURE__ */ jsx4("button", { type: "button", className: "btn btn-sm btn-circle ms-2", onClick: onClose, "aria-label": "\u9589\u3058\u308B", children: /* @__PURE__ */ jsx4("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" }) })
+        children: /* @__PURE__ */ jsxs2("div", { className: "bg-base-100 rounded-lg shadow-xl max-h-[90vh] overflow-y-auto", children: [
+          /* @__PURE__ */ jsxs2("div", { className: "flex items-center justify-between p-6 border-b border-base-300", children: [
+            /* @__PURE__ */ jsx9("h2", { className: "text-2xl font-bold flex items-center gap-2", children: title }),
+            /* @__PURE__ */ jsx9("button", { type: "button", className: "btn btn-sm btn-circle ms-2", onClick: onClose, "aria-label": "\u9589\u3058\u308B", children: /* @__PURE__ */ jsx9("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" }) })
           ] }),
-          /* @__PURE__ */ jsx4("div", { className: "p-6", children })
+          /* @__PURE__ */ jsx9("div", { className: "p-6", children })
         ] })
       }
     )
@@ -5934,27 +6050,27 @@ function Modal({
   title,
   closeOnClickOutside = false
 }) {
-  return createPortal(
-    /* @__PURE__ */ jsx4(PortalImpl, { onClose, title, closeOnClickOutside, children }),
+  return createPortal2(
+    /* @__PURE__ */ jsx9(PortalImpl, { onClose, title, closeOnClickOutside, children }),
     document.body
   );
 }
 
 // src/hooks/useModal.tsx
-import { jsx as jsx5 } from "react/jsx-runtime";
+import { jsx as jsx10 } from "react/jsx-runtime";
 function useModal() {
-  const [modalContent, setModalContent] = useState3(null);
-  const onClose = useCallback4(() => {
+  const [modalContent, setModalContent] = useState5(null);
+  const onClose = useCallback6(() => {
     setModalContent(null);
   }, []);
-  const modal = useMemo4(() => {
+  const modal = useMemo6(() => {
     if (modalContent === null) {
       return null;
     }
     const { title, content, closeOnClickOutside } = modalContent;
-    return /* @__PURE__ */ jsx5(Modal, { onClose, title, closeOnClickOutside, children: content });
+    return /* @__PURE__ */ jsx10(Modal, { onClose, title, closeOnClickOutside, children: content });
   }, [modalContent, onClose]);
-  const showModal = useCallback4(
+  const showModal = useCallback6(
     (title, getContent, closeOnClickOutside = false) => {
       setModalContent({
         closeOnClickOutside,
@@ -5973,7 +6089,7 @@ function joinClasses(...args) {
 }
 
 // src/ui/Button.tsx
-import { jsx as jsx6 } from "react/jsx-runtime";
+import { jsx as jsx11 } from "react/jsx-runtime";
 function Button({
   "data-test-id": dataTestId,
   children,
@@ -5983,7 +6099,7 @@ function Button({
   small,
   title
 }) {
-  return /* @__PURE__ */ jsx6(
+  return /* @__PURE__ */ jsx11(
     "button",
     {
       type: "button",
@@ -5999,26 +6115,26 @@ function Button({
 }
 
 // src/ui/Dialog.tsx
-import { jsx as jsx7 } from "react/jsx-runtime";
+import { jsx as jsx12 } from "react/jsx-runtime";
 function DialogButtonsList({ children }) {
-  return /* @__PURE__ */ jsx7("div", { className: "DialogButtonsList", children });
+  return /* @__PURE__ */ jsx12("div", { className: "DialogButtonsList", children });
 }
 function DialogActions({ "data-test-id": dataTestId, children }) {
-  return /* @__PURE__ */ jsx7("div", { className: "DialogActions", "data-test-id": dataTestId, children });
+  return /* @__PURE__ */ jsx12("div", { className: "DialogActions", "data-test-id": dataTestId, children });
 }
 
 // src/plugins/FigmaPlugin/index.tsx
 import { useLexicalComposerContext as useLexicalComposerContext2 } from "@lexical/react/LexicalComposerContext";
 import { $insertNodeToNearestRoot } from "@lexical/utils";
 import { COMMAND_PRIORITY_EDITOR, createCommand } from "lexical";
-import { useEffect as useEffect4 } from "react";
+import { useEffect as useEffect6 } from "react";
 
 // src/nodes/FigmaNode.tsx
 import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode";
-import { jsx as jsx8 } from "react/jsx-runtime";
+import { jsx as jsx13 } from "react/jsx-runtime";
 function FigmaComponent({ className, format, nodeKey, documentID }) {
-  return /* @__PURE__ */ jsx8(BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ jsx8(
+  return /* @__PURE__ */ jsx13(BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ jsx13(
     "iframe",
     {
       width: "560",
@@ -6064,7 +6180,7 @@ var FigmaNode = class _FigmaNode extends DecoratorBlockNode {
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ jsx8(FigmaComponent, { className, format: this.__format, nodeKey: this.getKey(), documentID: this.__id });
+    return /* @__PURE__ */ jsx13(FigmaComponent, { className, format: this.__format, nodeKey: this.getKey(), documentID: this.__id });
   }
 };
 function $createFigmaNode(documentID) {
@@ -6078,7 +6194,7 @@ function $isFigmaNode(node) {
 var INSERT_FIGMA_COMMAND = createCommand("INSERT_FIGMA_COMMAND");
 function FigmaPlugin() {
   const [editor] = useLexicalComposerContext2();
-  useEffect4(() => {
+  useEffect6(() => {
     if (!editor.hasNodes([FigmaNode])) {
       throw new Error("FigmaPlugin: FigmaNode not registered on editor");
     }
@@ -6099,13 +6215,13 @@ function FigmaPlugin() {
 import { useLexicalComposerContext as useLexicalComposerContext3 } from "@lexical/react/LexicalComposerContext";
 import { $insertNodeToNearestRoot as $insertNodeToNearestRoot2 } from "@lexical/utils";
 import { COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR2, createCommand as createCommand2 } from "lexical";
-import { useEffect as useEffect6 } from "react";
+import { useEffect as useEffect8 } from "react";
 
 // src/nodes/TweetNode.tsx
 import { BlockWithAlignableContents as BlockWithAlignableContents2 } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode as DecoratorBlockNode2 } from "@lexical/react/LexicalDecoratorBlockNode";
-import { useCallback as useCallback5, useEffect as useEffect5, useRef as useRef2, useState as useState4 } from "react";
-import { jsx as jsx9, jsxs as jsxs2 } from "react/jsx-runtime";
+import { useCallback as useCallback7, useEffect as useEffect7, useRef as useRef2, useState as useState6 } from "react";
+import { jsx as jsx14, jsxs as jsxs3 } from "react/jsx-runtime";
 var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
 function $convertTweetElement(domNode) {
   const id = domNode.getAttribute("data-lexical-tweet-id");
@@ -6127,8 +6243,8 @@ function TweetComponent({
 }) {
   const containerRef = useRef2(null);
   const previousTweetIDRef = useRef2("");
-  const [isTweetLoading, setIsTweetLoading] = useState4(false);
-  const createTweet = useCallback5(async () => {
+  const [isTweetLoading, setIsTweetLoading] = useState6(false);
+  const createTweet = useCallback7(async () => {
     try {
       await window.twttr.widgets.createTweet(tweetID, containerRef.current);
       setIsTweetLoading(false);
@@ -6142,7 +6258,7 @@ function TweetComponent({
       }
     }
   }, [onError, onLoad, tweetID]);
-  useEffect5(() => {
+  useEffect7(() => {
     if (tweetID !== previousTweetIDRef.current) {
       setIsTweetLoading(true);
       if (isTwitterScriptLoading) {
@@ -6162,9 +6278,9 @@ function TweetComponent({
       }
     }
   }, [createTweet, onError, tweetID]);
-  return /* @__PURE__ */ jsxs2(BlockWithAlignableContents2, { className, format, nodeKey, children: [
+  return /* @__PURE__ */ jsxs3(BlockWithAlignableContents2, { className, format, nodeKey, children: [
     isTweetLoading ? loadingComponent : null,
-    /* @__PURE__ */ jsx9("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
+    /* @__PURE__ */ jsx14("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
   ] });
 }
 var TweetNode = class _TweetNode extends DecoratorBlockNode2 {
@@ -6220,7 +6336,7 @@ var TweetNode = class _TweetNode extends DecoratorBlockNode2 {
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ jsx9(
+    return /* @__PURE__ */ jsx14(
       TweetComponent,
       {
         className,
@@ -6243,7 +6359,7 @@ function $isTweetNode(node) {
 var INSERT_TWEET_COMMAND = createCommand2("INSERT_TWEET_COMMAND");
 function TwitterPlugin() {
   const [editor] = useLexicalComposerContext3();
-  useEffect6(() => {
+  useEffect8(() => {
     if (!editor.hasNodes([TweetNode])) {
       throw new Error("TwitterPlugin: TweetNode not registered on editor");
     }
@@ -6264,14 +6380,14 @@ function TwitterPlugin() {
 import { useLexicalComposerContext as useLexicalComposerContext4 } from "@lexical/react/LexicalComposerContext";
 import { $insertNodeToNearestRoot as $insertNodeToNearestRoot3 } from "@lexical/utils";
 import { COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR3, createCommand as createCommand3 } from "lexical";
-import { useEffect as useEffect7 } from "react";
+import { useEffect as useEffect9 } from "react";
 
 // src/nodes/YouTubeNode.tsx
 import { BlockWithAlignableContents as BlockWithAlignableContents3 } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode as DecoratorBlockNode3 } from "@lexical/react/LexicalDecoratorBlockNode";
-import { jsx as jsx10 } from "react/jsx-runtime";
+import { jsx as jsx15 } from "react/jsx-runtime";
 function YouTubeComponent({ className, format, nodeKey, videoID }) {
-  return /* @__PURE__ */ jsx10(BlockWithAlignableContents3, { className, format, nodeKey, children: /* @__PURE__ */ jsx10(
+  return /* @__PURE__ */ jsx15(BlockWithAlignableContents3, { className, format, nodeKey, children: /* @__PURE__ */ jsx15(
     "iframe",
     {
       width: "560",
@@ -6356,7 +6472,7 @@ var YouTubeNode = class _YouTubeNode extends DecoratorBlockNode3 {
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ jsx10(YouTubeComponent, { className, format: this.__format, nodeKey: this.getKey(), videoID: this.__id });
+    return /* @__PURE__ */ jsx15(YouTubeComponent, { className, format: this.__format, nodeKey: this.getKey(), videoID: this.__id });
   }
 };
 function $createYouTubeNode(videoID) {
@@ -6370,7 +6486,7 @@ function $isYouTubeNode(node) {
 var INSERT_YOUTUBE_COMMAND = createCommand3("INSERT_YOUTUBE_COMMAND");
 function YouTubePlugin() {
   const [editor] = useLexicalComposerContext4();
-  useEffect7(() => {
+  useEffect9(() => {
     if (!editor.hasNodes([YouTubeNode])) {
       throw new Error("YouTubePlugin: YouTubeNode not registered on editor");
     }
@@ -6388,12 +6504,12 @@ function YouTubePlugin() {
 }
 
 // src/plugins/AutoEmbedPlugin/index.tsx
-import { Fragment as Fragment2, jsx as jsx11, jsxs as jsxs3 } from "react/jsx-runtime";
+import { Fragment as Fragment2, jsx as jsx16, jsxs as jsxs4 } from "react/jsx-runtime";
 var YoutubeEmbedConfig = {
   contentName: "Youtube Video",
   exampleUrl: "https://www.youtube.com/watch?v=jNQXAC9IVRw",
   // Icon for display.
-  icon: /* @__PURE__ */ jsx11("i", { className: "icon youtube" }),
+  icon: /* @__PURE__ */ jsx16("i", { className: "icon youtube" }),
   insertNode: (editor, result) => {
     editor.dispatchCommand(INSERT_YOUTUBE_COMMAND, result.id);
   },
@@ -6417,7 +6533,7 @@ var TwitterEmbedConfig = {
   contentName: "X(Tweet)",
   exampleUrl: "https://x.com/jack/status/20",
   // Icon for display.
-  icon: /* @__PURE__ */ jsx11("i", { className: "icon x" }),
+  icon: /* @__PURE__ */ jsx16("i", { className: "icon x" }),
   // Create the Lexical embed node from the url data.
   insertNode: (editor, result) => {
     editor.dispatchCommand(INSERT_TWEET_COMMAND, result.id);
@@ -6440,7 +6556,7 @@ var TwitterEmbedConfig = {
 var FigmaEmbedConfig = {
   contentName: "Figma Document",
   exampleUrl: "https://www.figma.com/file/LKQ4FJ4bTnCSjedbRpk931/Sample-File",
-  icon: /* @__PURE__ */ jsx11("i", { className: "icon figma" }),
+  icon: /* @__PURE__ */ jsx16("i", { className: "icon figma" }),
   insertNode: (editor, result) => {
     editor.dispatchCommand(INSERT_FIGMA_COMMAND, result.id);
   },
@@ -6472,10 +6588,10 @@ function AutoEmbedDialog({
   embedConfig,
   onClose
 }) {
-  const [text, setText] = useState5("");
+  const [text, setText] = useState7("");
   const [editor] = useLexicalComposerContext5();
-  const [embedResult, setEmbedResult] = useState5(null);
-  const validateText = useMemo5(
+  const [embedResult, setEmbedResult] = useState7(null);
+  const validateText = useMemo7(
     () => debounce((inputText) => {
       const urlMatch = URL_MATCHER.exec(inputText);
       if (embedConfig != null && inputText != null && urlMatch != null) {
@@ -6494,8 +6610,8 @@ function AutoEmbedDialog({
       onClose();
     }
   };
-  return /* @__PURE__ */ jsxs3("div", { style: { width: "100%", maxWidth: "600px" }, children: [
-    /* @__PURE__ */ jsx11("div", { className: "Input__wrapper", children: /* @__PURE__ */ jsx11(
+  return /* @__PURE__ */ jsxs4("div", { style: { width: "100%", maxWidth: "600px" }, children: [
+    /* @__PURE__ */ jsx16("div", { className: "Input__wrapper", children: /* @__PURE__ */ jsx16(
       "input",
       {
         type: "text",
@@ -6510,13 +6626,13 @@ function AutoEmbedDialog({
         }
       }
     ) }),
-    /* @__PURE__ */ jsx11(DialogActions, { children: /* @__PURE__ */ jsx11(Button, { disabled: !embedResult, onClick, "data-test-id": `${embedConfig.type}-embed-modal-submit-btn`, children: "Embed" }) })
+    /* @__PURE__ */ jsx16(DialogActions, { children: /* @__PURE__ */ jsx16(Button, { disabled: !embedResult, onClick, "data-test-id": `${embedConfig.type}-embed-modal-submit-btn`, children: "Embed" }) })
   ] });
 }
 function AutoEmbedPlugin() {
   const [modal, showModal] = useModal();
   const openEmbedModal = (embedConfig) => {
-    showModal(`Embed ${embedConfig.contentName}`, (onClose) => /* @__PURE__ */ jsx11(AutoEmbedDialog, { embedConfig, onClose }));
+    showModal(`Embed ${embedConfig.contentName}`, (onClose) => /* @__PURE__ */ jsx16(AutoEmbedDialog, { embedConfig, onClose }));
   };
   const getMenuOptions = (activeEmbedConfig, embedFn, dismissFn) => {
     return [
@@ -6528,9 +6644,9 @@ function AutoEmbedPlugin() {
       })
     ];
   };
-  return /* @__PURE__ */ jsxs3(Fragment2, { children: [
+  return /* @__PURE__ */ jsxs4(Fragment2, { children: [
     modal,
-    /* @__PURE__ */ jsx11(
+    /* @__PURE__ */ jsx16(
       LexicalAutoEmbedPlugin,
       {
         embedConfigs: EmbedConfigs,
@@ -6546,25 +6662,25 @@ function AutoEmbedPlugin() {
 
 // src/plugins/AutoLinkPlugin/index.tsx
 import { AutoLinkPlugin, createLinkMatcherWithRegExp } from "@lexical/react/LexicalAutoLinkPlugin";
-import { useMemo as useMemo7 } from "react";
+import { useMemo as useMemo9 } from "react";
 
 // src/context/AutoLinkContext.tsx
-import { createContext as createContext4, useContext as useContext4, useMemo as useMemo6 } from "react";
-import { jsx as jsx12 } from "react/jsx-runtime";
-var AutoLinkContext = createContext4({
+import { createContext as createContext8, useContext as useContext8, useMemo as useMemo8 } from "react";
+import { jsx as jsx17 } from "react/jsx-runtime";
+var AutoLinkContext = createContext8({
   customMatchers: []
 });
 function useCustomLinkMatchers() {
-  const context = useContext4(AutoLinkContext);
+  const context = useContext8(AutoLinkContext);
   return context.customMatchers;
 }
 function AutoLinkProvider({ children, customMatchers = [] }) {
-  const value = useMemo6(() => ({ customMatchers }), [customMatchers]);
-  return /* @__PURE__ */ jsx12(AutoLinkContext.Provider, { value, children });
+  const value = useMemo8(() => ({ customMatchers }), [customMatchers]);
+  return /* @__PURE__ */ jsx17(AutoLinkContext.Provider, { value, children });
 }
 
 // src/plugins/AutoLinkPlugin/index.tsx
-import { jsx as jsx13 } from "react/jsx-runtime";
+import { jsx as jsx18 } from "react/jsx-runtime";
 var URL_REGEX = /((https?:\/\/(www\.)?)|(www\.))((localhost(:\d+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)(?<![-.+():%])/;
 var EMAIL_REGEX = /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
 var BASE_MATCHERS = [
@@ -6577,26 +6693,26 @@ var BASE_MATCHERS = [
 ];
 function LexicalAutoLinkPlugin() {
   const customMatchers = useCustomLinkMatchers();
-  const matchers = useMemo7(() => {
+  const matchers = useMemo9(() => {
     if (customMatchers.length === 0) {
       return BASE_MATCHERS;
     }
     return [...BASE_MATCHERS, ...customMatchers];
   }, [customMatchers]);
-  return /* @__PURE__ */ jsx13(AutoLinkPlugin, { matchers });
+  return /* @__PURE__ */ jsx18(AutoLinkPlugin, { matchers });
 }
 
 // src/plugins/CodeActionMenuPlugin/index.tsx
 import { $isCodeNode as $isCodeNode3, CodeNode, normalizeCodeLang } from "@lexical/code";
 import { useLexicalComposerContext as useLexicalComposerContext6 } from "@lexical/react/LexicalComposerContext";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode3, isHTMLElement } from "lexical";
-import { useEffect as useEffect8, useRef as useRef3, useState as useState8 } from "react";
-import { createPortal as createPortal2 } from "react-dom";
+import { useEffect as useEffect10, useRef as useRef3, useState as useState10 } from "react";
+import { createPortal as createPortal3 } from "react-dom";
 
 // src/plugins/CodeActionMenuPlugin/components/CopyButton/index.tsx
 import { $isCodeNode } from "@lexical/code";
 import { $getNearestNodeFromDOMNode, $getSelection as $getSelection2, $setSelection as $setSelection2 } from "lexical";
-import { useState as useState6 } from "react";
+import { useState as useState8 } from "react";
 
 // src/plugins/CodeActionMenuPlugin/utils.ts
 import { useDebouncedCallback } from "use-debounce";
@@ -6605,9 +6721,9 @@ function useDebounce(fn, ms, maxWait) {
 }
 
 // src/plugins/CodeActionMenuPlugin/components/CopyButton/index.tsx
-import { jsx as jsx14 } from "react/jsx-runtime";
+import { jsx as jsx19 } from "react/jsx-runtime";
 function CopyButton({ editor, getCodeDOMNode }) {
-  const [isCopyCompleted, setCopyCompleted] = useState6(false);
+  const [isCopyCompleted, setCopyCompleted] = useState8(false);
   const removeSuccessIcon = useDebounce(() => {
     setCopyCompleted(false);
   }, 1e3);
@@ -6633,14 +6749,14 @@ function CopyButton({ editor, getCodeDOMNode }) {
       console.error("Failed to copy: ", err);
     }
   }
-  return /* @__PURE__ */ jsx14("button", { type: "button", className: "menu-item", onClick: handleClick, "aria-label": "copy", children: isCopyCompleted ? /* @__PURE__ */ jsx14("i", { className: "format success" }) : /* @__PURE__ */ jsx14("i", { className: "format copy" }) });
+  return /* @__PURE__ */ jsx19("button", { type: "button", className: "menu-item", onClick: handleClick, "aria-label": "copy", children: isCopyCompleted ? /* @__PURE__ */ jsx19("i", { className: "format success" }) : /* @__PURE__ */ jsx19("i", { className: "format copy" }) });
 }
 
 // src/plugins/CodeActionMenuPlugin/components/PrettierButton/index.tsx
 import { $isCodeNode as $isCodeNode2 } from "@lexical/code";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode2 } from "lexical";
-import { useState as useState7 } from "react";
-import { jsx as jsx15, jsxs as jsxs4 } from "react/jsx-runtime";
+import { useState as useState9 } from "react";
+import { jsx as jsx20, jsxs as jsxs5 } from "react/jsx-runtime";
 var PRETTIER_PARSER_MODULES = {
   css: [() => import("prettier/parser-postcss")],
   html: [() => import("prettier/parser-html")],
@@ -6676,8 +6792,8 @@ function getPrettierOptions(lang) {
   return options;
 }
 function PrettierButton({ lang, editor, getCodeDOMNode }) {
-  const [syntaxError, setSyntaxError] = useState7("");
-  const [tipsVisible, setTipsVisible] = useState7(false);
+  const [syntaxError, setSyntaxError] = useState9("");
+  const [tipsVisible, setTipsVisible] = useState9(false);
   async function handleClick() {
     const codeDOMNode = getCodeDOMNode();
     if (!codeDOMNode) {
@@ -6731,8 +6847,8 @@ function PrettierButton({ lang, editor, getCodeDOMNode }) {
       setTipsVisible(false);
     }
   }
-  return /* @__PURE__ */ jsxs4("div", { className: "prettier-wrapper", children: [
-    /* @__PURE__ */ jsx15(
+  return /* @__PURE__ */ jsxs5("div", { className: "prettier-wrapper", children: [
+    /* @__PURE__ */ jsx20(
       "button",
       {
         type: "button",
@@ -6741,15 +6857,15 @@ function PrettierButton({ lang, editor, getCodeDOMNode }) {
         onMouseEnter: handleMouseEnter,
         onMouseLeave: handleMouseLeave,
         "aria-label": "prettier",
-        children: syntaxError ? /* @__PURE__ */ jsx15("i", { className: "format prettier-error" }) : /* @__PURE__ */ jsx15("i", { className: "format prettier" })
+        children: syntaxError ? /* @__PURE__ */ jsx20("i", { className: "format prettier-error" }) : /* @__PURE__ */ jsx20("i", { className: "format prettier" })
       }
     ),
-    tipsVisible ? /* @__PURE__ */ jsx15("pre", { className: "code-error-tips", children: syntaxError }) : null
+    tipsVisible ? /* @__PURE__ */ jsx20("pre", { className: "code-error-tips", children: syntaxError }) : null
   ] });
 }
 
 // src/plugins/CodeActionMenuPlugin/index.tsx
-import { Fragment as Fragment3, jsx as jsx16, jsxs as jsxs5 } from "react/jsx-runtime";
+import { Fragment as Fragment3, jsx as jsx21, jsxs as jsxs6 } from "react/jsx-runtime";
 var CODE_PADDING = 8;
 var SUPPORTED_LANGUAGES = [
   { value: "", label: "Plain Text" },
@@ -6778,10 +6894,10 @@ function CodeActionMenuContainer({
   showOnlyCopy = false
 }) {
   const [editor] = useLexicalComposerContext6();
-  const [lang, setLang] = useState8("");
-  const [isShown, setShown] = useState8(false);
-  const [shouldListenMouseMove, setShouldListenMouseMove] = useState8(false);
-  const [position, setPosition] = useState8({
+  const [lang, setLang] = useState10("");
+  const [isShown, setShown] = useState10(false);
+  const [shouldListenMouseMove, setShouldListenMouseMove] = useState10(false);
+  const [position, setPosition] = useState10({
     right: "0",
     top: "0"
   });
@@ -6824,7 +6940,7 @@ function CodeActionMenuContainer({
     50,
     1e3
   );
-  useEffect8(() => {
+  useEffect10(() => {
     if (!shouldListenMouseMove) {
       return;
     }
@@ -6835,7 +6951,7 @@ function CodeActionMenuContainer({
       document.removeEventListener("mousemove", debouncedOnMouseMove);
     };
   }, [shouldListenMouseMove, debouncedOnMouseMove]);
-  useEffect8(() => {
+  useEffect10(() => {
     return editor.registerMutationListener(
       CodeNode,
       (mutations) => {
@@ -6872,19 +6988,19 @@ function CodeActionMenuContainer({
       }
     });
   };
-  return /* @__PURE__ */ jsx16(Fragment3, { children: isShown ? /* @__PURE__ */ jsxs5("div", { className: "notion-like-editor code-action-menu-container", style: { ...position }, children: [
-    !showOnlyCopy && /* @__PURE__ */ jsx16(
+  return /* @__PURE__ */ jsx21(Fragment3, { children: isShown ? /* @__PURE__ */ jsxs6("div", { className: "notion-like-editor code-action-menu-container", style: { ...position }, children: [
+    !showOnlyCopy && /* @__PURE__ */ jsx21(
       "select",
       {
         className: "select select-xs max-w-sm",
         value: lang,
         onChange: handleLanguageChange,
         "aria-label": "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u8A00\u8A9E\u3092\u9078\u629E",
-        children: SUPPORTED_LANGUAGES.map((language) => /* @__PURE__ */ jsx16("option", { value: language.value, children: language.label }, language.value))
+        children: SUPPORTED_LANGUAGES.map((language) => /* @__PURE__ */ jsx21("option", { value: language.value, children: language.label }, language.value))
       }
     ),
-    /* @__PURE__ */ jsx16(CopyButton, { editor, getCodeDOMNode }),
-    !showOnlyCopy && canBePrettier(normalizedLang) ? /* @__PURE__ */ jsx16(PrettierButton, { editor, getCodeDOMNode, lang: normalizedLang }) : null
+    /* @__PURE__ */ jsx21(CopyButton, { editor, getCodeDOMNode }),
+    !showOnlyCopy && canBePrettier(normalizedLang) ? /* @__PURE__ */ jsx21(PrettierButton, { editor, getCodeDOMNode, lang: normalizedLang }) : null
   ] }) : null });
 }
 function getMouseInfo(event) {
@@ -6901,16 +7017,16 @@ function CodeActionMenuPlugin({
   anchorElem = document.body,
   showOnlyCopy = false
 }) {
-  return createPortal2(/* @__PURE__ */ jsx16(CodeActionMenuContainer, { anchorElem, showOnlyCopy }), anchorElem);
+  return createPortal3(/* @__PURE__ */ jsx21(CodeActionMenuContainer, { anchorElem, showOnlyCopy }), anchorElem);
 }
 
 // src/plugins/CodeHighlightPrismPlugin/index.ts
 import { registerCodeHighlighting } from "@lexical/code";
 import { useLexicalComposerContext as useLexicalComposerContext7 } from "@lexical/react/LexicalComposerContext";
-import { useEffect as useEffect9 } from "react";
+import { useEffect as useEffect11 } from "react";
 function CodeHighlightPrismPlugin() {
   const [editor] = useLexicalComposerContext7();
-  useEffect9(() => {
+  useEffect11(() => {
     return registerCodeHighlighting(editor);
   }, [editor]);
   return null;
@@ -6919,10 +7035,10 @@ function CodeHighlightPrismPlugin() {
 // src/plugins/CodeHighlightShikiPlugin/index.ts
 import { registerCodeHighlighting as registerCodeHighlighting2 } from "@lexical/code-shiki";
 import { useLexicalComposerContext as useLexicalComposerContext8 } from "@lexical/react/LexicalComposerContext";
-import { useEffect as useEffect10 } from "react";
+import { useEffect as useEffect12 } from "react";
 function CodeHighlightShikiPlugin() {
   const [editor] = useLexicalComposerContext8();
-  useEffect10(() => {
+  useEffect12(() => {
     return registerCodeHighlighting2(editor);
   }, [editor]);
   return null;
@@ -6943,7 +7059,7 @@ import {
   KEY_ARROW_RIGHT_COMMAND as KEY_ARROW_RIGHT_COMMAND2,
   KEY_ARROW_UP_COMMAND
 } from "lexical";
-import { useEffect as useEffect11 } from "react";
+import { useEffect as useEffect13 } from "react";
 
 // src/plugins/CollapsiblePlugin/CollapsibleContainerNode.ts
 import { IS_CHROME } from "@lexical/utils";
@@ -7252,7 +7368,7 @@ function $isCollapsibleTitleNode(node) {
 var INSERT_COLLAPSIBLE_COMMAND = createCommand4("INSERT_COLLAPSIBLE_COMMAND");
 function CollapsiblePlugin() {
   const [editor] = useLexicalComposerContext9();
-  useEffect11(() => {
+  useEffect13(() => {
     if (!editor.hasNodes([CollapsibleContainerNode, CollapsibleTitleNode, CollapsibleContentNode])) {
       throw new Error(
         "CollapsiblePlugin: CollapsibleContainerNode, CollapsibleTitleNode, or CollapsibleContentNode not registered on editor"
@@ -7395,22 +7511,8 @@ import {
   $isRangeSelection as $isRangeSelection6,
   FORMAT_ELEMENT_COMMAND
 } from "lexical";
-import { useCallback as useCallback12, useMemo as useMemo13, useState as useState20 } from "react";
+import { useCallback as useCallback14, useMemo as useMemo14, useState as useState22 } from "react";
 import * as ReactDOM2 from "react-dom";
-
-// src/context/ComponentPickerContext.tsx
-import { createContext as createContext5, useContext as useContext5 } from "react";
-import { jsx as jsx17 } from "react/jsx-runtime";
-var ComponentPickerContext = createContext5({});
-function ComponentPickerProvider({
-  children,
-  extraOptions
-}) {
-  return /* @__PURE__ */ jsx17(ComponentPickerContext.Provider, { value: { extraOptions }, children });
-}
-function useComponentPickerContext() {
-  return useContext5(ComponentPickerContext);
-}
 
 // src/plugins/DateTimePlugin/index.tsx
 init_DateTimeNode2();
@@ -7423,11 +7525,11 @@ import {
   COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR4,
   createCommand as createCommand5
 } from "lexical";
-import { useEffect as useEffect13 } from "react";
+import { useEffect as useEffect15 } from "react";
 var INSERT_DATETIME_COMMAND = createCommand5("INSERT_DATETIME_COMMAND");
 function DateTimePlugin() {
   const [editor] = useLexicalComposerContext11();
-  useEffect13(() => {
+  useEffect15(() => {
     if (!editor.hasNodes([DateTimeNode])) {
       throw new Error("DateTimePlugin: DateTimeNode not registered on editor");
     }
@@ -7462,31 +7564,31 @@ import {
   COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR5,
   createCommand as createCommand6
 } from "lexical";
-import { useCallback as useCallback8, useEffect as useEffect16 } from "react";
+import { useCallback as useCallback10, useEffect as useEffect18 } from "react";
 
 // src/ui/KatexEquationAlterer.tsx
 init_react_error_boundary();
 import { useLexicalComposerContext as useLexicalComposerContext13 } from "@lexical/react/LexicalComposerContext";
-import { useCallback as useCallback7, useState as useState11 } from "react";
+import { useCallback as useCallback9, useState as useState13 } from "react";
 init_KatexRenderer();
-import { Fragment as Fragment6, jsx as jsx24, jsxs as jsxs9 } from "react/jsx-runtime";
+import { Fragment as Fragment6, jsx as jsx28, jsxs as jsxs10 } from "react/jsx-runtime";
 function KatexEquationAlterer({ onConfirm, initialEquation = "" }) {
   const [editor] = useLexicalComposerContext13();
-  const [equation, setEquation] = useState11(initialEquation);
-  const [inline, setInline] = useState11(true);
-  const onClick = useCallback7(() => {
+  const [equation, setEquation] = useState13(initialEquation);
+  const [inline, setInline] = useState13(true);
+  const onClick = useCallback9(() => {
     onConfirm(equation, inline);
   }, [onConfirm, equation, inline]);
-  const onCheckboxChange = useCallback7(() => {
+  const onCheckboxChange = useCallback9(() => {
     setInline(!inline);
   }, [inline]);
-  return /* @__PURE__ */ jsxs9(Fragment6, { children: [
-    /* @__PURE__ */ jsxs9("div", { className: "KatexEquationAlterer_defaultRow", children: [
+  return /* @__PURE__ */ jsxs10(Fragment6, { children: [
+    /* @__PURE__ */ jsxs10("div", { className: "KatexEquationAlterer_defaultRow", children: [
       "Inline",
-      /* @__PURE__ */ jsx24("input", { type: "checkbox", checked: inline, onChange: onCheckboxChange })
+      /* @__PURE__ */ jsx28("input", { type: "checkbox", checked: inline, onChange: onCheckboxChange })
     ] }),
-    /* @__PURE__ */ jsx24("div", { className: "KatexEquationAlterer_defaultRow", children: "Equation " }),
-    /* @__PURE__ */ jsx24("div", { className: "KatexEquationAlterer_centerRow", children: inline ? /* @__PURE__ */ jsx24(
+    /* @__PURE__ */ jsx28("div", { className: "KatexEquationAlterer_defaultRow", children: "Equation " }),
+    /* @__PURE__ */ jsx28("div", { className: "KatexEquationAlterer_centerRow", children: inline ? /* @__PURE__ */ jsx28(
       "input",
       {
         onChange: (event) => {
@@ -7495,7 +7597,7 @@ function KatexEquationAlterer({ onConfirm, initialEquation = "" }) {
         value: equation,
         className: "KatexEquationAlterer_textArea"
       }
-    ) : /* @__PURE__ */ jsx24(
+    ) : /* @__PURE__ */ jsx28(
       "textarea",
       {
         onChange: (event) => {
@@ -7505,20 +7607,20 @@ function KatexEquationAlterer({ onConfirm, initialEquation = "" }) {
         className: "KatexEquationAlterer_textArea"
       }
     ) }),
-    /* @__PURE__ */ jsx24("div", { className: "KatexEquationAlterer_defaultRow", children: "Visualization " }),
-    /* @__PURE__ */ jsx24("div", { className: "KatexEquationAlterer_centerRow", children: /* @__PURE__ */ jsx24(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ jsx24(KatexRenderer, { equation, inline: false, onDoubleClick: () => null }) }) }),
-    /* @__PURE__ */ jsx24("div", { className: "KatexEquationAlterer_dialogActions", children: /* @__PURE__ */ jsx24(Button, { onClick, children: "Confirm" }) })
+    /* @__PURE__ */ jsx28("div", { className: "KatexEquationAlterer_defaultRow", children: "Visualization " }),
+    /* @__PURE__ */ jsx28("div", { className: "KatexEquationAlterer_centerRow", children: /* @__PURE__ */ jsx28(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ jsx28(KatexRenderer, { equation, inline: false, onDoubleClick: () => null }) }) }),
+    /* @__PURE__ */ jsx28("div", { className: "KatexEquationAlterer_dialogActions", children: /* @__PURE__ */ jsx28(Button, { onClick, children: "Confirm" }) })
   ] });
 }
 
 // src/plugins/EquationsPlugin/index.tsx
-import { jsx as jsx25 } from "react/jsx-runtime";
+import { jsx as jsx29 } from "react/jsx-runtime";
 var INSERT_EQUATION_COMMAND = createCommand6("INSERT_EQUATION_COMMAND");
 function InsertEquationDialog({
   activeEditor,
   onClose
 }) {
-  const onEquationConfirm = useCallback8(
+  const onEquationConfirm = useCallback10(
     (equation, inline) => {
       activeEditor.dispatchCommand(INSERT_EQUATION_COMMAND, {
         equation,
@@ -7528,11 +7630,11 @@ function InsertEquationDialog({
     },
     [activeEditor, onClose]
   );
-  return /* @__PURE__ */ jsx25(KatexEquationAlterer, { onConfirm: onEquationConfirm });
+  return /* @__PURE__ */ jsx29(KatexEquationAlterer, { onConfirm: onEquationConfirm });
 }
 function EquationsPlugin() {
   const [editor] = useLexicalComposerContext14();
-  useEffect16(() => {
+  useEffect18(() => {
     if (!editor.hasNodes([EquationNode])) {
       throw new Error("EquationsPlugins: EquationsNode not registered on editor");
     }
@@ -7575,37 +7677,20 @@ import {
   getDOMSelectionFromTarget,
   isHTMLElement as isHTMLElement4
 } from "lexical";
-import { useEffect as useEffect20, useRef as useRef9, useState as useState16 } from "react";
-
-// src/context/ImageUploadContext.tsx
-import { createContext as createContext6, useContext as useContext6, useMemo as useMemo8 } from "react";
-import { jsx as jsx26 } from "react/jsx-runtime";
-var ImageUploadContext = createContext6({
-  handler: null
-});
-function useImageUpload() {
-  const context = useContext6(ImageUploadContext);
-  return context.handler;
-}
-function ImageUploadProvider({ children, handler }) {
-  const value = useMemo8(() => ({ handler }), [handler]);
-  return /* @__PURE__ */ jsx26(ImageUploadContext.Provider, { value, children });
-}
-
-// src/plugins/ImagesPlugin/index.tsx
+import { useEffect as useEffect22, useRef as useRef9, useState as useState18 } from "react";
 init_ImageNode2();
 
 // src/ui/FileInput.tsx
-import { useState as useState14 } from "react";
-import { jsx as jsx33, jsxs as jsxs13 } from "react/jsx-runtime";
+import { useState as useState16 } from "react";
+import { jsx as jsx36, jsxs as jsxs14 } from "react/jsx-runtime";
 function generateId(label) {
   return `input-${label.replace(/\s+/g, "-").toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 function FileInput({ accept, label, onChange, "data-test-id": dataTestId }) {
-  const [inputId] = useState14(generateId(label));
-  return /* @__PURE__ */ jsxs13("div", { className: "Input__wrapper", children: [
-    /* @__PURE__ */ jsx33("label", { className: "Input__label", htmlFor: inputId, children: label }),
-    /* @__PURE__ */ jsx33(
+  const [inputId] = useState16(generateId(label));
+  return /* @__PURE__ */ jsxs14("div", { className: "Input__wrapper", children: [
+    /* @__PURE__ */ jsx36("label", { className: "Input__label", htmlFor: inputId, children: label }),
+    /* @__PURE__ */ jsx36(
       "input",
       {
         id: inputId,
@@ -7620,8 +7705,8 @@ function FileInput({ accept, label, onChange, "data-test-id": dataTestId }) {
 }
 
 // src/ui/TextInput.tsx
-import { useState as useState15 } from "react";
-import { jsx as jsx34, jsxs as jsxs14 } from "react/jsx-runtime";
+import { useState as useState17 } from "react";
+import { jsx as jsx37, jsxs as jsxs15 } from "react/jsx-runtime";
 function generateId2(label) {
   return `input-${label.replace(/\s+/g, "-").toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
 }
@@ -7633,10 +7718,10 @@ function TextInput({
   "data-test-id": dataTestId,
   type = "text"
 }) {
-  const [inputId, _setInputId] = useState15(generateId2(label));
-  return /* @__PURE__ */ jsxs14("div", { className: "Input__wrapper", children: [
-    /* @__PURE__ */ jsx34("label", { className: "Input__label", htmlFor: inputId, children: label }),
-    /* @__PURE__ */ jsx34(
+  const [inputId, _setInputId] = useState17(generateId2(label));
+  return /* @__PURE__ */ jsxs15("div", { className: "Input__wrapper", children: [
+    /* @__PURE__ */ jsx37("label", { className: "Input__label", htmlFor: inputId, children: label }),
+    /* @__PURE__ */ jsx37(
       "input",
       {
         id: inputId,
@@ -7654,14 +7739,14 @@ function TextInput({
 }
 
 // src/plugins/ImagesPlugin/index.tsx
-import { Fragment as Fragment7, jsx as jsx35, jsxs as jsxs15 } from "react/jsx-runtime";
+import { Fragment as Fragment7, jsx as jsx38, jsxs as jsxs16 } from "react/jsx-runtime";
 var INSERT_IMAGE_COMMAND = createCommand8("INSERT_IMAGE_COMMAND");
 function InsertImageUriDialogBody({ onClick }) {
-  const [src, setSrc] = useState16("");
-  const [altText, setAltText] = useState16("");
+  const [src, setSrc] = useState18("");
+  const [altText, setAltText] = useState18("");
   const isDisabled = src === "";
-  return /* @__PURE__ */ jsxs15(Fragment7, { children: [
-    /* @__PURE__ */ jsx35(
+  return /* @__PURE__ */ jsxs16(Fragment7, { children: [
+    /* @__PURE__ */ jsx38(
       TextInput,
       {
         label: "Image URL",
@@ -7671,7 +7756,7 @@ function InsertImageUriDialogBody({ onClick }) {
         "data-test-id": "image-modal-url-input"
       }
     ),
-    /* @__PURE__ */ jsx35(
+    /* @__PURE__ */ jsx38(
       TextInput,
       {
         label: "Alt Text",
@@ -7681,16 +7766,16 @@ function InsertImageUriDialogBody({ onClick }) {
         "data-test-id": "image-modal-alt-text-input"
       }
     ),
-    /* @__PURE__ */ jsx35(DialogActions, { children: /* @__PURE__ */ jsx35(Button, { "data-test-id": "image-modal-confirm-btn", disabled: isDisabled, onClick: () => onClick({ altText, src }), children: "Confirm" }) })
+    /* @__PURE__ */ jsx38(DialogActions, { children: /* @__PURE__ */ jsx38(Button, { "data-test-id": "image-modal-confirm-btn", disabled: isDisabled, onClick: () => onClick({ altText, src }), children: "Confirm" }) })
   ] });
 }
 function InsertImageUploadedDialogBody({ onClick }) {
   const imageUploadHandler = useImageUpload();
-  const [altText, setAltText] = useState16("");
-  const [isUploading, setIsUploading] = useState16(false);
-  const [uploadError, setUploadError] = useState16(null);
-  const [selectedFile, setSelectedFile] = useState16(null);
-  const [previewSrc, setPreviewSrc] = useState16("");
+  const [altText, setAltText] = useState18("");
+  const [isUploading, setIsUploading] = useState18(false);
+  const [uploadError, setUploadError] = useState18(null);
+  const [selectedFile, setSelectedFile] = useState18(null);
+  const [previewSrc, setPreviewSrc] = useState18("");
   const isDisabled = !selectedFile || isUploading;
   const canUpload = imageUploadHandler !== null;
   const handleFileSelect = (files) => {
@@ -7731,8 +7816,8 @@ function InsertImageUploadedDialogBody({ onClick }) {
       setIsUploading(false);
     }
   };
-  return /* @__PURE__ */ jsxs15(Fragment7, { children: [
-    /* @__PURE__ */ jsx35(
+  return /* @__PURE__ */ jsxs16(Fragment7, { children: [
+    /* @__PURE__ */ jsx38(
       FileInput,
       {
         label: "Image Upload",
@@ -7741,7 +7826,7 @@ function InsertImageUploadedDialogBody({ onClick }) {
         "data-test-id": "image-modal-file-upload"
       }
     ),
-    /* @__PURE__ */ jsx35(
+    /* @__PURE__ */ jsx38(
       TextInput,
       {
         label: "Alt Text",
@@ -7751,18 +7836,18 @@ function InsertImageUploadedDialogBody({ onClick }) {
         "data-test-id": "image-modal-alt-text-input"
       }
     ),
-    uploadError && /* @__PURE__ */ jsx35("div", { className: "text-error text-sm mt-2", children: uploadError }),
-    !canUpload && selectedFile && /* @__PURE__ */ jsx35("div", { className: "text-warning text-sm mt-2", children: "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u30CF\u30F3\u30C9\u30E9\u30FC\u304C\u672A\u8A2D\u5B9A\u306E\u305F\u3081\u3001\u30ED\u30FC\u30AB\u30EB\u30D7\u30EC\u30D3\u30E5\u30FC\u30E2\u30FC\u30C9\u3067\u52D5\u4F5C\u3057\u307E\u3059" }),
-    /* @__PURE__ */ jsx35(DialogActions, { children: /* @__PURE__ */ jsx35(Button, { "data-test-id": "image-modal-file-upload-btn", disabled: isDisabled, onClick: handleConfirm, children: isUploading ? "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D..." : "Confirm" }) })
+    uploadError && /* @__PURE__ */ jsx38("div", { className: "text-error text-sm mt-2", children: uploadError }),
+    !canUpload && selectedFile && /* @__PURE__ */ jsx38("div", { className: "text-warning text-sm mt-2", children: "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u30CF\u30F3\u30C9\u30E9\u30FC\u304C\u672A\u8A2D\u5B9A\u306E\u305F\u3081\u3001\u30ED\u30FC\u30AB\u30EB\u30D7\u30EC\u30D3\u30E5\u30FC\u30E2\u30FC\u30C9\u3067\u52D5\u4F5C\u3057\u307E\u3059" }),
+    /* @__PURE__ */ jsx38(DialogActions, { children: /* @__PURE__ */ jsx38(Button, { "data-test-id": "image-modal-file-upload-btn", disabled: isDisabled, onClick: handleConfirm, children: isUploading ? "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D..." : "Confirm" }) })
   ] });
 }
 function InsertImageDialog({
   activeEditor,
   onClose
 }) {
-  const [mode, setMode] = useState16(null);
+  const [mode, setMode] = useState18(null);
   const hasModifier = useRef9(false);
-  useEffect20(() => {
+  useEffect22(() => {
     hasModifier.current = false;
     const handler = (e) => {
       hasModifier.current = e.altKey;
@@ -7776,18 +7861,18 @@ function InsertImageDialog({
     activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, payload);
     onClose();
   };
-  return /* @__PURE__ */ jsxs15(Fragment7, { children: [
-    !mode && /* @__PURE__ */ jsxs15(DialogButtonsList, { children: [
-      /* @__PURE__ */ jsx35(Button, { "data-test-id": "image-modal-option-url", onClick: () => setMode("url"), children: "URL" }),
-      /* @__PURE__ */ jsx35(Button, { "data-test-id": "image-modal-option-file", onClick: () => setMode("file"), children: "File" })
+  return /* @__PURE__ */ jsxs16(Fragment7, { children: [
+    !mode && /* @__PURE__ */ jsxs16(DialogButtonsList, { children: [
+      /* @__PURE__ */ jsx38(Button, { "data-test-id": "image-modal-option-url", onClick: () => setMode("url"), children: "URL" }),
+      /* @__PURE__ */ jsx38(Button, { "data-test-id": "image-modal-option-file", onClick: () => setMode("file"), children: "File" })
     ] }),
-    mode === "url" && /* @__PURE__ */ jsx35(InsertImageUriDialogBody, { onClick }),
-    mode === "file" && /* @__PURE__ */ jsx35(InsertImageUploadedDialogBody, { onClick })
+    mode === "url" && /* @__PURE__ */ jsx38(InsertImageUriDialogBody, { onClick }),
+    mode === "file" && /* @__PURE__ */ jsx38(InsertImageUploadedDialogBody, { onClick })
   ] });
 }
 function ImagesPlugin() {
   const [editor] = useLexicalComposerContext18();
-  useEffect20(() => {
+  useEffect22(() => {
     if (!editor.hasNodes([ImageNode])) {
       throw new Error("ImagesPlugin: ImageNode not registered on editor");
     }
@@ -7955,13 +8040,13 @@ function getDragSelection(event) {
 }
 
 // src/plugins/LayoutPlugin/InsertLayoutDialog.tsx
-import { useState as useState18 } from "react";
+import { useState as useState20 } from "react";
 
 // src/ui/DropDown.tsx
 import { isDOMNode as isDOMNode2 } from "lexical";
 import * as React4 from "react";
-import { useCallback as useCallback11, useEffect as useEffect21, useMemo as useMemo11, useRef as useRef10, useState as useState17 } from "react";
-import { createPortal as createPortal4 } from "react-dom";
+import { useCallback as useCallback13, useEffect as useEffect23, useMemo as useMemo12, useRef as useRef10, useState as useState19 } from "react";
+import { createPortal as createPortal5 } from "react-dom";
 
 // src/utils/focusUtils.ts
 var findFirstFocusableDescendant = (startElement) => {
@@ -7982,7 +8067,7 @@ var isKeyboardInput = (event) => {
 };
 
 // src/ui/DropDown.tsx
-import { Fragment as Fragment8, jsx as jsx36, jsxs as jsxs16 } from "react/jsx-runtime";
+import { Fragment as Fragment8, jsx as jsx39, jsxs as jsxs17 } from "react/jsx-runtime";
 var DropDownContext = React4.createContext(null);
 var dropDownPadding = 4;
 function DropDownItem({
@@ -7997,12 +8082,12 @@ function DropDownItem({
     throw new Error("DropDownItem must be used within a DropDown");
   }
   const { registerItem } = dropDownContext;
-  useEffect21(() => {
+  useEffect23(() => {
     if (ref?.current) {
       registerItem(ref);
     }
   }, [registerItem]);
-  return /* @__PURE__ */ jsx36("button", { className, onClick, ref, title, type: "button", children });
+  return /* @__PURE__ */ jsx39("button", { className, onClick, ref, title, type: "button", children });
 }
 function DropDownItems({
   children,
@@ -8010,9 +8095,9 @@ function DropDownItems({
   onClose,
   autofocus
 }) {
-  const [items, setItems] = useState17();
-  const [highlightedItem, setHighlightedItem] = useState17();
-  const registerItem = useCallback11((itemRef) => {
+  const [items, setItems] = useState19();
+  const [highlightedItem, setHighlightedItem] = useState19();
+  const registerItem = useCallback13((itemRef) => {
     setItems((prev) => prev ? [...prev, itemRef] : [itemRef]);
   }, []);
   const handleKeyDown = (event) => {
@@ -8045,13 +8130,13 @@ function DropDownItems({
       });
     }
   };
-  const contextValue = useMemo11(
+  const contextValue = useMemo12(
     () => ({
       registerItem
     }),
     [registerItem]
   );
-  useEffect21(() => {
+  useEffect23(() => {
     if (items && !highlightedItem) {
       setHighlightedItem(items[0]);
     }
@@ -8059,12 +8144,12 @@ function DropDownItems({
       highlightedItem.current.focus();
     }
   }, [items, highlightedItem]);
-  useEffect21(() => {
+  useEffect23(() => {
     if (autofocus && dropDownRef.current) {
       focusNearestDescendant(dropDownRef.current);
     }
   }, [autofocus, dropDownRef]);
-  return /* @__PURE__ */ jsx36(DropDownContext.Provider, { value: contextValue, children: /* @__PURE__ */ jsx36("div", { className: "notion-like-editor nle-dropdown", ref: dropDownRef, onKeyDown: handleKeyDown, children }) });
+  return /* @__PURE__ */ jsx39(DropDownContext.Provider, { value: contextValue, children: /* @__PURE__ */ jsx39("div", { className: "notion-like-editor nle-dropdown", ref: dropDownRef, onKeyDown: handleKeyDown, children }) });
 }
 function DropDown({
   disabled = false,
@@ -8077,15 +8162,15 @@ function DropDown({
 }) {
   const dropDownRef = useRef10(null);
   const buttonRef = useRef10(null);
-  const [showDropDown, setShowDropDown] = useState17(false);
-  const [shouldAutofocus, setShouldAutofocus] = useState17(false);
+  const [showDropDown, setShowDropDown] = useState19(false);
+  const [shouldAutofocus, setShouldAutofocus] = useState19(false);
   const handleClose = () => {
     setShowDropDown(false);
     if (buttonRef?.current) {
       buttonRef.current.focus();
     }
   };
-  useEffect21(() => {
+  useEffect23(() => {
     const button = buttonRef.current;
     const dropDown = dropDownRef.current;
     if (showDropDown && button !== null && dropDown !== null) {
@@ -8094,7 +8179,7 @@ function DropDown({
       dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
     }
   }, [showDropDown]);
-  useEffect21(() => {
+  useEffect23(() => {
     const button = buttonRef.current;
     if (button !== null && showDropDown) {
       const handle = (event) => {
@@ -8119,7 +8204,7 @@ function DropDown({
       };
     }
   }, [showDropDown, stopCloseOnClickSelf]);
-  useEffect21(() => {
+  useEffect23(() => {
     const handleButtonPositionUpdate = () => {
       if (showDropDown) {
         const button = buttonRef.current;
@@ -8142,8 +8227,8 @@ function DropDown({
     setShowDropDown(!showDropDown);
     setShouldAutofocus(isKeyboardInput(e));
   };
-  return /* @__PURE__ */ jsxs16(Fragment8, { children: [
-    /* @__PURE__ */ jsxs16(
+  return /* @__PURE__ */ jsxs17(Fragment8, { children: [
+    /* @__PURE__ */ jsxs17(
       "button",
       {
         type: "button",
@@ -8153,14 +8238,14 @@ function DropDown({
         onClick: handleOnClick,
         ref: buttonRef,
         children: [
-          buttonIconClassName && /* @__PURE__ */ jsx36("span", { className: buttonIconClassName }),
-          buttonLabel && /* @__PURE__ */ jsx36("span", { className: "text dropdown-button-text", children: buttonLabel }),
-          /* @__PURE__ */ jsx36("i", { className: "chevron-down" })
+          buttonIconClassName && /* @__PURE__ */ jsx39("span", { className: buttonIconClassName }),
+          buttonLabel && /* @__PURE__ */ jsx39("span", { className: "text dropdown-button-text", children: buttonLabel }),
+          /* @__PURE__ */ jsx39("i", { className: "chevron-down" })
         ]
       }
     ),
-    showDropDown && createPortal4(
-      /* @__PURE__ */ jsx36(DropDownItems, { dropDownRef, onClose: handleClose, autofocus: shouldAutofocus, children }),
+    showDropDown && createPortal5(
+      /* @__PURE__ */ jsx39(DropDownItems, { dropDownRef, onClose: handleClose, autofocus: shouldAutofocus, children }),
       document.body
     )
   ] });
@@ -8182,7 +8267,7 @@ import {
   KEY_ARROW_RIGHT_COMMAND as KEY_ARROW_RIGHT_COMMAND3,
   KEY_ARROW_UP_COMMAND as KEY_ARROW_UP_COMMAND2
 } from "lexical";
-import { useEffect as useEffect22 } from "react";
+import { useEffect as useEffect24 } from "react";
 
 // src/nodes/LayoutContainerNode.ts
 import { addClassNamesToElement } from "@lexical/utils";
@@ -8346,7 +8431,7 @@ var INSERT_LAYOUT_COMMAND = createCommand9();
 var UPDATE_LAYOUT_COMMAND = createCommand9();
 function LayoutPlugin() {
   const [editor] = useLexicalComposerContext19();
-  useEffect22(() => {
+  useEffect24(() => {
     if (!editor.hasNodes([LayoutContainerNode, LayoutItemNode])) {
       throw new Error("LayoutPlugin: LayoutContainerNode, or LayoutItemNode not registered on editor");
     }
@@ -8467,7 +8552,7 @@ function getItemsCountFromTemplate(template) {
 }
 
 // src/plugins/LayoutPlugin/InsertLayoutDialog.tsx
-import { Fragment as Fragment9, jsx as jsx37, jsxs as jsxs17 } from "react/jsx-runtime";
+import { Fragment as Fragment9, jsx as jsx40, jsxs as jsxs18 } from "react/jsx-runtime";
 var LAYOUTS = [
   { label: "2 columns (equal width)", value: "1fr 1fr" },
   { label: "2 columns (25% - 75%)", value: "1fr 3fr" },
@@ -8479,15 +8564,15 @@ function InsertLayoutDialog({
   activeEditor,
   onClose
 }) {
-  const [layout, setLayout] = useState18(LAYOUTS[0].value);
+  const [layout, setLayout] = useState20(LAYOUTS[0].value);
   const buttonLabel = LAYOUTS.find((item) => item.value === layout)?.label;
   const onClick = () => {
     activeEditor.dispatchCommand(INSERT_LAYOUT_COMMAND, layout);
     onClose();
   };
-  return /* @__PURE__ */ jsxs17(Fragment9, { children: [
-    /* @__PURE__ */ jsx37(DropDown, { buttonClassName: "toolbar-item dialog-dropdown", buttonLabel, children: LAYOUTS.map(({ label, value }) => /* @__PURE__ */ jsx37(DropDownItem, { className: "item", onClick: () => setLayout(value), children: /* @__PURE__ */ jsx37("span", { className: "text", children: label }) }, value)) }),
-    /* @__PURE__ */ jsx37("div", { className: "flex justify-end mt-2", children: /* @__PURE__ */ jsx37(Button, { onClick, children: "Insert" }) })
+  return /* @__PURE__ */ jsxs18(Fragment9, { children: [
+    /* @__PURE__ */ jsx40(DropDown, { buttonClassName: "toolbar-item dialog-dropdown", buttonLabel, children: LAYOUTS.map(({ label, value }) => /* @__PURE__ */ jsx40(DropDownItem, { className: "item", onClick: () => setLayout(value), children: /* @__PURE__ */ jsx40("span", { className: "text", children: label }) }, value)) }),
+    /* @__PURE__ */ jsx40("div", { className: "flex justify-end mt-2", children: /* @__PURE__ */ jsx40(Button, { onClick, children: "Insert" }) })
   ] });
 }
 
@@ -8495,7 +8580,7 @@ function InsertLayoutDialog({
 import { useLexicalComposerContext as useLexicalComposerContext21 } from "@lexical/react/LexicalComposerContext";
 import { $insertNodeToNearestRoot as $insertNodeToNearestRoot6, mergeRegister as mergeRegister9 } from "@lexical/utils";
 import { $getSelection as $getSelection8, $isRangeSelection as $isRangeSelection5, COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR9, createCommand as createCommand10 } from "lexical";
-import { useEffect as useEffect24 } from "react";
+import { useEffect as useEffect26 } from "react";
 
 // src/nodes/PageBreakNode/index.tsx
 import { useLexicalComposerContext as useLexicalComposerContext20 } from "@lexical/react/LexicalComposerContext";
@@ -8507,12 +8592,12 @@ import {
   COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW6,
   DecoratorNode as DecoratorNode4
 } from "lexical";
-import { useEffect as useEffect23 } from "react";
-import { jsx as jsx38 } from "react/jsx-runtime";
+import { useEffect as useEffect25 } from "react";
+import { jsx as jsx41 } from "react/jsx-runtime";
 function PageBreakComponent({ nodeKey }) {
   const [editor] = useLexicalComposerContext20();
   const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection3(nodeKey);
-  useEffect23(() => {
+  useEffect25(() => {
     return mergeRegister8(
       editor.registerCommand(
         CLICK_COMMAND2,
@@ -8531,7 +8616,7 @@ function PageBreakComponent({ nodeKey }) {
       )
     );
   }, [clearSelection, editor, isSelected, nodeKey, setSelected]);
-  useEffect23(() => {
+  useEffect25(() => {
     const pbElem = editor.getElementByKey(nodeKey);
     if (pbElem !== null) {
       pbElem.className = isSelected ? "selected" : "";
@@ -8579,7 +8664,7 @@ var PageBreakNode = class _PageBreakNode extends DecoratorNode4 {
     return false;
   }
   decorate() {
-    return /* @__PURE__ */ jsx38(PageBreakComponent, { nodeKey: this.__key });
+    return /* @__PURE__ */ jsx41(PageBreakComponent, { nodeKey: this.__key });
   }
 };
 function $convertPageBreakElement() {
@@ -8596,7 +8681,7 @@ function $isPageBreakNode(node) {
 var INSERT_PAGE_BREAK = createCommand10();
 function PageBreakPlugin() {
   const [editor] = useLexicalComposerContext21();
-  useEffect24(() => {
+  useEffect26(() => {
     if (!editor.hasNodes([PageBreakNode])) {
       throw new Error("PageBreakPlugin: PageBreakNode is not registered on editor");
     }
@@ -8625,23 +8710,23 @@ function PageBreakPlugin() {
 // src/plugins/TablePlugin.tsx
 import { useLexicalComposerContext as useLexicalComposerContext22 } from "@lexical/react/LexicalComposerContext";
 import { INSERT_TABLE_COMMAND, TableCellNode, TableNode, TableRowNode } from "@lexical/table";
-import { createContext as createContext8, useContext as useContext8, useEffect as useEffect25, useMemo as useMemo12, useState as useState19 } from "react";
-import { Fragment as Fragment10, jsx as jsx39, jsxs as jsxs18 } from "react/jsx-runtime";
-var CellContext = createContext8({
+import { createContext as createContext10, useContext as useContext10, useEffect as useEffect27, useMemo as useMemo13, useState as useState21 } from "react";
+import { Fragment as Fragment10, jsx as jsx42, jsxs as jsxs19 } from "react/jsx-runtime";
+var CellContext = createContext10({
   cellEditorConfig: null,
   cellEditorPlugins: null,
   set: () => {
   }
 });
 function TableContext({ children }) {
-  const [contextValue, setContextValue] = useState19({
+  const [contextValue, setContextValue] = useState21({
     cellEditorConfig: null,
     cellEditorPlugins: null
   });
-  return /* @__PURE__ */ jsx39(
+  return /* @__PURE__ */ jsx42(
     CellContext.Provider,
     {
-      value: useMemo12(
+      value: useMemo13(
         () => ({
           cellEditorConfig: contextValue.cellEditorConfig,
           cellEditorPlugins: contextValue.cellEditorPlugins,
@@ -8659,10 +8744,10 @@ function InsertTableDialog({
   activeEditor,
   onClose
 }) {
-  const [rows, setRows] = useState19("5");
-  const [columns, setColumns] = useState19("5");
-  const [isDisabled, setIsDisabled] = useState19(true);
-  useEffect25(() => {
+  const [rows, setRows] = useState21("5");
+  const [columns, setColumns] = useState21("5");
+  const [isDisabled, setIsDisabled] = useState21(true);
+  useEffect27(() => {
     const row = Number(rows);
     const column = Number(columns);
     if (row && row > 0 && row <= 500 && column && column > 0 && column <= 50) {
@@ -8678,8 +8763,8 @@ function InsertTableDialog({
     });
     onClose();
   };
-  return /* @__PURE__ */ jsxs18(Fragment10, { children: [
-    /* @__PURE__ */ jsx39(
+  return /* @__PURE__ */ jsxs19(Fragment10, { children: [
+    /* @__PURE__ */ jsx42(
       TextInput,
       {
         placeholder: "# of rows (1-500)",
@@ -8690,7 +8775,7 @@ function InsertTableDialog({
         type: "number"
       }
     ),
-    /* @__PURE__ */ jsx39(
+    /* @__PURE__ */ jsx42(
       TextInput,
       {
         placeholder: "# of columns (1-50)",
@@ -8701,12 +8786,12 @@ function InsertTableDialog({
         type: "number"
       }
     ),
-    /* @__PURE__ */ jsx39(DialogActions, { "data-test-id": "table-model-confirm-insert", children: /* @__PURE__ */ jsx39(Button, { disabled: isDisabled, onClick, children: "Confirm" }) })
+    /* @__PURE__ */ jsx42(DialogActions, { "data-test-id": "table-model-confirm-insert", children: /* @__PURE__ */ jsx42(Button, { disabled: isDisabled, onClick, children: "Confirm" }) })
   ] });
 }
 
 // src/plugins/ComponentPickerPlugin/index.tsx
-import { Fragment as Fragment11, jsx as jsx40, jsxs as jsxs19 } from "react/jsx-runtime";
+import { Fragment as Fragment11, jsx as jsx43, jsxs as jsxs20 } from "react/jsx-runtime";
 var ComponentPickerOption = class extends MenuOption2 {
   // What shows up in the editor
   title;
@@ -8738,7 +8823,7 @@ function ComponentPickerMenuItem({
   if (isSelected) {
     className = "selected";
   }
-  return /* @__PURE__ */ jsxs19(
+  return /* @__PURE__ */ jsxs20(
     "li",
     {
       tabIndex: -1,
@@ -8755,7 +8840,7 @@ function ComponentPickerMenuItem({
       },
       children: [
         option.icon,
-        /* @__PURE__ */ jsx40("span", { className: "text", children: option.title })
+        /* @__PURE__ */ jsx43("span", { className: "text", children: option.title })
       ]
     }
   );
@@ -8772,7 +8857,7 @@ function getDynamicOptions(editor, queryString) {
     options.push(
       ...colOptions.map(
         (columns) => new ComponentPickerOption(`${rows}x${columns} Table`, {
-          icon: /* @__PURE__ */ jsx40("i", { className: "icon table" }),
+          icon: /* @__PURE__ */ jsx43("i", { className: "icon table" }),
           keywords: ["table"],
           onSelect: () => editor.dispatchCommand(INSERT_TABLE_COMMAND2, { columns, rows })
         })
@@ -8784,7 +8869,7 @@ function getDynamicOptions(editor, queryString) {
 function getBaseOptions(editor, showModal) {
   return [
     new ComponentPickerOption("Paragraph", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon paragraph" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon paragraph" }),
       keywords: ["normal", "paragraph", "p", "text"],
       onSelect: () => editor.update(() => {
         const selection = $getSelection9();
@@ -8795,7 +8880,7 @@ function getBaseOptions(editor, showModal) {
     }),
     ...[1, 2, 3].map(
       (n) => new ComponentPickerOption(`Heading ${n}`, {
-        icon: /* @__PURE__ */ jsx40("i", { className: `icon h${n}` }),
+        icon: /* @__PURE__ */ jsx43("i", { className: `icon h${n}` }),
         keywords: ["heading", "header", `h${n}`],
         onSelect: () => editor.update(() => {
           const selection = $getSelection9();
@@ -8806,27 +8891,27 @@ function getBaseOptions(editor, showModal) {
       })
     ),
     new ComponentPickerOption("Table", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon table" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon table" }),
       keywords: ["table", "grid", "spreadsheet", "rows", "columns"],
-      onSelect: () => showModal("Insert Table", (onClose) => /* @__PURE__ */ jsx40(InsertTableDialog, { activeEditor: editor, onClose }))
+      onSelect: () => showModal("Insert Table", (onClose) => /* @__PURE__ */ jsx43(InsertTableDialog, { activeEditor: editor, onClose }))
     }),
     new ComponentPickerOption("Numbered List", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon number" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon number" }),
       keywords: ["numbered list", "ordered list", "ol"],
       onSelect: () => editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, void 0)
     }),
     new ComponentPickerOption("Bulleted List", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon bullet" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon bullet" }),
       keywords: ["bulleted list", "unordered list", "ul"],
       onSelect: () => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, void 0)
     }),
     new ComponentPickerOption("Check List", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon check" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon check" }),
       keywords: ["check list", "todo list"],
       onSelect: () => editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, void 0)
     }),
     new ComponentPickerOption("Quote", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon quote" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon quote" }),
       keywords: ["block quote"],
       onSelect: () => editor.update(() => {
         const selection = $getSelection9();
@@ -8836,7 +8921,7 @@ function getBaseOptions(editor, showModal) {
       })
     }),
     new ComponentPickerOption("Code", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon code" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon code" }),
       keywords: ["javascript", "python", "js", "codeblock"],
       onSelect: () => editor.update(() => {
         const selection = $getSelection9();
@@ -8853,12 +8938,12 @@ function getBaseOptions(editor, showModal) {
       })
     }),
     new ComponentPickerOption("Divider", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon horizontal-rule" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon horizontal-rule" }),
       keywords: ["horizontal rule", "divider", "hr"],
       onSelect: () => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, void 0)
     }),
     new ComponentPickerOption("Page Break", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon page-break" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon page-break" }),
       keywords: ["page break", "divider"],
       onSelect: () => editor.dispatchCommand(INSERT_PAGE_BREAK, void 0)
     }),
@@ -8870,7 +8955,7 @@ function getBaseOptions(editor, showModal) {
       })
     ),
     new ComponentPickerOption("Date", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon calendar" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon calendar" }),
       keywords: ["date", "calendar", "time"],
       onSelect: () => {
         const dateTime = /* @__PURE__ */ new Date();
@@ -8879,7 +8964,7 @@ function getBaseOptions(editor, showModal) {
       }
     }),
     new ComponentPickerOption("Today", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon calendar" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon calendar" }),
       keywords: ["date", "calendar", "time", "today"],
       onSelect: () => {
         const dateTime = /* @__PURE__ */ new Date();
@@ -8888,7 +8973,7 @@ function getBaseOptions(editor, showModal) {
       }
     }),
     new ComponentPickerOption("Tomorrow", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon calendar" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon calendar" }),
       keywords: ["date", "calendar", "time", "tomorrow"],
       onSelect: () => {
         const dateTime = /* @__PURE__ */ new Date();
@@ -8898,7 +8983,7 @@ function getBaseOptions(editor, showModal) {
       }
     }),
     new ComponentPickerOption("Yesterday", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon calendar" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon calendar" }),
       keywords: ["date", "calendar", "time", "yesterday"],
       onSelect: () => {
         const dateTime = /* @__PURE__ */ new Date();
@@ -8908,28 +8993,28 @@ function getBaseOptions(editor, showModal) {
       }
     }),
     new ComponentPickerOption("Equation", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon equation" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon equation" }),
       keywords: ["equation", "latex", "math"],
-      onSelect: () => showModal("Insert Equation", (onClose) => /* @__PURE__ */ jsx40(InsertEquationDialog, { activeEditor: editor, onClose }))
+      onSelect: () => showModal("Insert Equation", (onClose) => /* @__PURE__ */ jsx43(InsertEquationDialog, { activeEditor: editor, onClose }))
     }),
     new ComponentPickerOption("Image", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon image" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon image" }),
       keywords: ["image", "photo", "picture", "file"],
-      onSelect: () => showModal("Insert Image", (onClose) => /* @__PURE__ */ jsx40(InsertImageDialog, { activeEditor: editor, onClose }))
+      onSelect: () => showModal("Insert Image", (onClose) => /* @__PURE__ */ jsx43(InsertImageDialog, { activeEditor: editor, onClose }))
     }),
     new ComponentPickerOption("Collapsible", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon caret-right" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon caret-right" }),
       keywords: ["collapse", "collapsible", "toggle"],
       onSelect: () => editor.dispatchCommand(INSERT_COLLAPSIBLE_COMMAND, void 0)
     }),
     new ComponentPickerOption("Columns Layout", {
-      icon: /* @__PURE__ */ jsx40("i", { className: "icon columns" }),
+      icon: /* @__PURE__ */ jsx43("i", { className: "icon columns" }),
       keywords: ["columns", "layout", "grid"],
-      onSelect: () => showModal("Insert Columns Layout", (onClose) => /* @__PURE__ */ jsx40(InsertLayoutDialog, { activeEditor: editor, onClose }))
+      onSelect: () => showModal("Insert Columns Layout", (onClose) => /* @__PURE__ */ jsx43(InsertLayoutDialog, { activeEditor: editor, onClose }))
     }),
     ...["left", "center", "right", "justify"].map(
       (alignment) => new ComponentPickerOption(`Align ${alignment}`, {
-        icon: /* @__PURE__ */ jsx40("i", { className: `icon ${alignment}-align` }),
+        icon: /* @__PURE__ */ jsx43("i", { className: `icon ${alignment}-align` }),
         keywords: ["align", "justify", alignment],
         onSelect: () => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, alignment)
       })
@@ -8941,14 +9026,14 @@ function ComponentPickerMenuPlugin({
 } = {}) {
   const [editor] = useLexicalComposerContext23();
   const [modal, showModal] = useModal();
-  const [queryString, setQueryString] = useState20(null);
+  const [queryString, setQueryString] = useState22(null);
   const { extraOptions: contextExtraOptions } = useComponentPickerContext();
   const extraOptions = propsExtraOptions ?? contextExtraOptions;
   const checkForTriggerMatch = useBasicTypeaheadTriggerMatch2("/", {
     allowWhitespace: true,
     minLength: 0
   });
-  const options = useMemo13(() => {
+  const options = useMemo14(() => {
     const baseOptions = getBaseOptions(editor, showModal);
     const extraOptionConfigs = extraOptions?.(editor) ?? [];
     const extraPickerOptions = extraOptionConfigs.map(
@@ -8971,7 +9056,7 @@ function ComponentPickerMenuPlugin({
       )
     ];
   }, [editor, queryString, showModal, extraOptions]);
-  const onSelectOption = useCallback12(
+  const onSelectOption = useCallback14(
     (selectedOption, nodeToRemove, closeMenu, matchingString) => {
       editor.update(() => {
         nodeToRemove?.remove();
@@ -8981,9 +9066,9 @@ function ComponentPickerMenuPlugin({
     },
     [editor]
   );
-  return /* @__PURE__ */ jsxs19(Fragment11, { children: [
+  return /* @__PURE__ */ jsxs20(Fragment11, { children: [
     modal,
-    /* @__PURE__ */ jsx40(
+    /* @__PURE__ */ jsx43(
       LexicalTypeaheadMenuPlugin2,
       {
         onQueryChange: setQueryString,
@@ -8991,7 +9076,7 @@ function ComponentPickerMenuPlugin({
         triggerFn: checkForTriggerMatch,
         options,
         menuRenderFn: (anchorElementRef, { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }) => anchorElementRef.current && options.length ? ReactDOM2.createPortal(
-          /* @__PURE__ */ jsx40("div", { className: "notion-like-editor typeahead-popover component-picker-menu", children: /* @__PURE__ */ jsx40("ul", { children: options.map((option, i) => /* @__PURE__ */ jsx40(
+          /* @__PURE__ */ jsx43("div", { className: "notion-like-editor typeahead-popover component-picker-menu", children: /* @__PURE__ */ jsx43("ul", { children: options.map((option, i) => /* @__PURE__ */ jsx43(
             ComponentPickerMenuItem,
             {
               index: i,
@@ -9031,11 +9116,11 @@ import {
   CUT_COMMAND,
   PASTE_COMMAND
 } from "lexical";
-import { useMemo as useMemo14 } from "react";
-import { jsx as jsx41 } from "react/jsx-runtime";
+import { useMemo as useMemo15 } from "react";
+import { jsx as jsx44 } from "react/jsx-runtime";
 function ContextMenuPlugin() {
   const [editor] = useLexicalComposerContext24();
-  const items = useMemo14(() => {
+  const items = useMemo15(() => {
     return [
       new NodeContextMenuOption(`Remove Link`, {
         $onSelect: () => {
@@ -9043,7 +9128,7 @@ function ContextMenuPlugin() {
         },
         $showOn: (node) => $isLinkNode2(node.getParent()),
         disabled: false,
-        icon: /* @__PURE__ */ jsx41("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon" })
+        icon: /* @__PURE__ */ jsx44("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon" })
       }),
       new NodeContextMenuSeparator({
         $showOn: (node) => $isLinkNode2(node.getParent())
@@ -9053,14 +9138,14 @@ function ContextMenuPlugin() {
           editor.dispatchCommand(CUT_COMMAND, null);
         },
         disabled: false,
-        icon: /* @__PURE__ */ jsx41("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon page-break" })
+        icon: /* @__PURE__ */ jsx44("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon page-break" })
       }),
       new NodeContextMenuOption(`Copy`, {
         $onSelect: () => {
           editor.dispatchCommand(COPY_COMMAND, null);
         },
         disabled: false,
-        icon: /* @__PURE__ */ jsx41("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon copy" })
+        icon: /* @__PURE__ */ jsx44("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon copy" })
       }),
       new NodeContextMenuOption(`Paste`, {
         $onSelect: () => {
@@ -9087,7 +9172,7 @@ function ContextMenuPlugin() {
           });
         },
         disabled: false,
-        icon: /* @__PURE__ */ jsx41("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon paste" })
+        icon: /* @__PURE__ */ jsx44("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon paste" })
       }),
       new NodeContextMenuOption(`Paste as Plain Text`, {
         $onSelect: () => {
@@ -9110,7 +9195,7 @@ function ContextMenuPlugin() {
           });
         },
         disabled: false,
-        icon: /* @__PURE__ */ jsx41("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon" })
+        icon: /* @__PURE__ */ jsx44("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon" })
       }),
       new NodeContextMenuSeparator(),
       new NodeContextMenuOption(`Delete Node`, {
@@ -9130,11 +9215,11 @@ function ContextMenuPlugin() {
           }
         },
         disabled: false,
-        icon: /* @__PURE__ */ jsx41("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon clear" })
+        icon: /* @__PURE__ */ jsx44("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon clear" })
       })
     ];
   }, [editor]);
-  return /* @__PURE__ */ jsx41(
+  return /* @__PURE__ */ jsx44(
     NodeContextMenuPlugin,
     {
       className: "NotionLikeEditorTheme__contextMenu",
@@ -9150,12 +9235,12 @@ import { useLexicalComposerContext as useLexicalComposerContext25 } from "@lexic
 import { DRAG_DROP_PASTE } from "@lexical/rich-text";
 import { isMimeType, mediaFileReader } from "@lexical/utils";
 import { COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW7 } from "lexical";
-import { useEffect as useEffect26 } from "react";
+import { useEffect as useEffect28 } from "react";
 var ACCEPTABLE_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
 function DragDropPaste() {
   const [editor] = useLexicalComposerContext25();
   const imageUploadHandler = useImageUpload();
-  useEffect26(() => {
+  useEffect28(() => {
     return editor.registerCommand(
       DRAG_DROP_PASTE,
       (files) => {
@@ -9210,8 +9295,8 @@ import {
   DRAGOVER_COMMAND as DRAGOVER_COMMAND2,
   DROP_COMMAND as DROP_COMMAND2
 } from "lexical";
-import { useCallback as useCallback13, useEffect as useEffect27, useRef as useRef11, useState as useState21 } from "react";
-import { createPortal as createPortal6 } from "react-dom";
+import { useCallback as useCallback15, useEffect as useEffect29, useRef as useRef11, useState as useState23 } from "react";
+import { createPortal as createPortal7 } from "react-dom";
 
 // src/plugins/DraggableBlockPlugin/point.ts
 var Point = class {
@@ -9337,7 +9422,7 @@ var Rectangle = class _Rectangle {
 };
 
 // src/plugins/DraggableBlockPlugin/index.tsx
-import { Fragment as Fragment12, jsx as jsx42, jsxs as jsxs20 } from "react/jsx-runtime";
+import { Fragment as Fragment12, jsx as jsx45, jsxs as jsxs21 } from "react/jsx-runtime";
 var SPACE = 4;
 var TARGET_LINE_HALF_HEIGHT = 2;
 var DRAG_DATA_FORMAT = "application/x-lexical-drag-block";
@@ -9487,8 +9572,8 @@ function hideTargetLine(targetLineElem) {
 function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEditable, menuComponent, targetLineComponent, isOnMenu2, onElementChanged) {
   const scrollerElem = anchorElem.parentElement;
   const isDraggingBlockRef = useRef11(false);
-  const [draggableBlockElem, setDraggableBlockElemState] = useState21(null);
-  const setDraggableBlockElem = useCallback13(
+  const [draggableBlockElem, setDraggableBlockElemState] = useState23(null);
+  const setDraggableBlockElem = useCallback15(
     (elem) => {
       setDraggableBlockElemState(elem);
       if (onElementChanged) {
@@ -9497,7 +9582,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
     },
     [onElementChanged]
   );
-  useEffect27(() => {
+  useEffect29(() => {
     function onMouseMove(event) {
       const target = event.target;
       if (!isHTMLElement5(target)) {
@@ -9524,12 +9609,12 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
       }
     };
   }, [scrollerElem, anchorElem, editor, isOnMenu2, setDraggableBlockElem]);
-  useEffect27(() => {
+  useEffect29(() => {
     if (menuRef.current) {
       setMenuPosition(draggableBlockElem, menuRef.current, anchorElem);
     }
   }, [anchorElem, draggableBlockElem, menuRef]);
-  useEffect27(() => {
+  useEffect29(() => {
     function onDragover(event) {
       if (!isDraggingBlockRef.current) {
         return false;
@@ -9630,9 +9715,9 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
     isDraggingBlockRef.current = false;
     hideTargetLine(targetLineRef.current);
   }
-  return createPortal6(
-    /* @__PURE__ */ jsxs20(Fragment12, { children: [
-      /* @__PURE__ */ jsx42("div", { draggable: true, onDragStart, onDragEnd, children: isEditable && menuComponent }),
+  return createPortal7(
+    /* @__PURE__ */ jsxs21(Fragment12, { children: [
+      /* @__PURE__ */ jsx45("div", { draggable: true, onDragStart, onDragEnd, children: isEditable && menuComponent }),
       targetLineComponent
     ] }),
     anchorElem
@@ -9670,7 +9755,7 @@ function DraggableBlockPlugin({
   const [editor] = useLexicalComposerContext26();
   const menuRef = useRef11(null);
   const targetLineRef = useRef11(null);
-  const [draggableElement, setDraggableElement] = useState21(null);
+  const [draggableElement, setDraggableElement] = useState23(null);
   function insertBlock(e) {
     if (!draggableElement || !editor) {
       return;
@@ -9689,17 +9774,17 @@ function DraggableBlockPlugin({
       pNode.select();
     });
   }
-  return /* @__PURE__ */ jsx42(
+  return /* @__PURE__ */ jsx45(
     DraggableBlockPlugin_EXPERIMENTAL,
     {
       anchorElem,
       menuRef,
       targetLineRef,
-      menuComponent: /* @__PURE__ */ jsxs20("div", { ref: menuRef, className: "icon draggable-block-menu", children: [
-        /* @__PURE__ */ jsx42("button", { type: "button", title: "Click to add below", className: "icon icon-plus", onClick: insertBlock }),
-        /* @__PURE__ */ jsx42("div", { className: "icon" })
+      menuComponent: /* @__PURE__ */ jsxs21("div", { ref: menuRef, className: "icon draggable-block-menu", children: [
+        /* @__PURE__ */ jsx45("button", { type: "button", title: "Click to add below", className: "icon icon-plus", onClick: insertBlock }),
+        /* @__PURE__ */ jsx45("div", { className: "icon" })
       ] }),
-      targetLineComponent: /* @__PURE__ */ jsx42("div", { ref: targetLineRef, className: "draggable-block-target-line" }),
+      targetLineComponent: /* @__PURE__ */ jsx45("div", { ref: targetLineRef, className: "draggable-block-target-line" }),
       isOnMenu,
       onElementChanged: setDraggableElement
     }
@@ -9710,7 +9795,7 @@ function DraggableBlockPlugin({
 init_EmojiNode();
 import { useLexicalComposerContext as useLexicalComposerContext27 } from "@lexical/react/LexicalComposerContext";
 import { TextNode as TextNode7 } from "lexical";
-import { useEffect as useEffect28 } from "react";
+import { useEffect as useEffect30 } from "react";
 var emojis2 = /* @__PURE__ */ new Map([
   [":)", ["emoji happysmile", "\u{1F642}"]],
   [":D", ["emoji veryhappysmile", "\u{1F600}"]],
@@ -9746,7 +9831,7 @@ function $textNodeTransform2(node) {
   }
 }
 function useEmojis2(editor) {
-  useEffect28(() => {
+  useEffect30(() => {
     if (!editor.hasNodes([EmojiNode])) {
       throw new Error("EmojisPlugin: EmojiNode not registered on editor");
     }
@@ -9779,8 +9864,8 @@ import {
   KEY_ESCAPE_COMMAND as KEY_ESCAPE_COMMAND3,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND3
 } from "lexical";
-import { useCallback as useCallback14, useEffect as useEffect29, useRef as useRef12, useState as useState22 } from "react";
-import { createPortal as createPortal7 } from "react-dom";
+import { useCallback as useCallback16, useEffect as useEffect31, useRef as useRef12, useState as useState24 } from "react";
+import { createPortal as createPortal8 } from "react-dom";
 
 // src/utils/getSelectedNode.ts
 import { $isAtNodeEnd as $isAtNodeEnd2 } from "@lexical/selection";
@@ -9829,7 +9914,7 @@ function setFloatingElemPositionForLinkEditor(targetRect, floatingElem, anchorEl
 
 // src/plugins/FloatingLinkEditorPlugin/index.tsx
 init_url();
-import { Fragment as Fragment13, jsx as jsx43, jsxs as jsxs21 } from "react/jsx-runtime";
+import { Fragment as Fragment13, jsx as jsx46, jsxs as jsxs22 } from "react/jsx-runtime";
 function preventDefault(event) {
   event.preventDefault();
 }
@@ -9843,10 +9928,10 @@ function FloatingLinkEditor({
 }) {
   const editorRef = useRef12(null);
   const inputRef = useRef12(null);
-  const [linkUrl, setLinkUrl] = useState22("");
-  const [editedLinkUrl, setEditedLinkUrl] = useState22("https://");
-  const [lastSelection, setLastSelection] = useState22(null);
-  const $updateLinkEditor = useCallback14(() => {
+  const [linkUrl, setLinkUrl] = useState24("");
+  const [editedLinkUrl, setEditedLinkUrl] = useState24("https://");
+  const [lastSelection, setLastSelection] = useState24(null);
+  const $updateLinkEditor = useCallback16(() => {
     const selection = $getSelection11();
     if ($isRangeSelection8(selection)) {
       const node = getSelectedNode(selection);
@@ -9913,7 +9998,7 @@ function FloatingLinkEditor({
     }
     return true;
   }, [anchorElem, editor, setIsLinkEditMode, isLinkEditMode, linkUrl]);
-  useEffect29(() => {
+  useEffect31(() => {
     const scrollerElem = anchorElem.parentElement;
     const update = () => {
       editor.getEditorState().read(() => {
@@ -9931,7 +10016,7 @@ function FloatingLinkEditor({
       }
     };
   }, [anchorElem.parentElement, editor, $updateLinkEditor]);
-  useEffect29(() => {
+  useEffect31(() => {
     return mergeRegister11(
       editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
@@ -9959,17 +10044,17 @@ function FloatingLinkEditor({
       )
     );
   }, [editor, $updateLinkEditor, setIsLink, isLink]);
-  useEffect29(() => {
+  useEffect31(() => {
     editor.getEditorState().read(() => {
       $updateLinkEditor();
     });
   }, [editor, $updateLinkEditor]);
-  useEffect29(() => {
+  useEffect31(() => {
     if (isLinkEditMode && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isLinkEditMode]);
-  useEffect29(() => {
+  useEffect31(() => {
     const editorElement = editorRef.current;
     if (editorElement === null) {
       return;
@@ -10017,8 +10102,8 @@ function FloatingLinkEditor({
       setIsLinkEditMode(false);
     }
   };
-  return /* @__PURE__ */ jsx43("div", { ref: editorRef, className: "notion-like-editor link-editor", children: !isLink ? null : isLinkEditMode ? /* @__PURE__ */ jsxs21(Fragment13, { children: [
-    /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsx46("div", { ref: editorRef, className: "notion-like-editor link-editor", children: !isLink ? null : isLinkEditMode ? /* @__PURE__ */ jsxs22(Fragment13, { children: [
+    /* @__PURE__ */ jsx46(
       "input",
       {
         ref: inputRef,
@@ -10032,8 +10117,8 @@ function FloatingLinkEditor({
         }
       }
     ),
-    /* @__PURE__ */ jsxs21("div", { children: [
-      /* @__PURE__ */ jsx43(
+    /* @__PURE__ */ jsxs22("div", { children: [
+      /* @__PURE__ */ jsx46(
         "button",
         {
           type: "button",
@@ -10045,7 +10130,7 @@ function FloatingLinkEditor({
           }
         }
       ),
-      /* @__PURE__ */ jsx43(
+      /* @__PURE__ */ jsx46(
         "button",
         {
           type: "button",
@@ -10056,9 +10141,9 @@ function FloatingLinkEditor({
         }
       )
     ] })
-  ] }) : /* @__PURE__ */ jsxs21("div", { className: "link-view", children: [
-    /* @__PURE__ */ jsx43("a", { href: sanitizeUrl(linkUrl), target: "_blank", rel: "noopener noreferrer", children: linkUrl }),
-    /* @__PURE__ */ jsx43(
+  ] }) : /* @__PURE__ */ jsxs22("div", { className: "link-view", children: [
+    /* @__PURE__ */ jsx46("a", { href: sanitizeUrl(linkUrl), target: "_blank", rel: "noopener noreferrer", children: linkUrl }),
+    /* @__PURE__ */ jsx46(
       "button",
       {
         type: "button",
@@ -10072,7 +10157,7 @@ function FloatingLinkEditor({
         }
       }
     ),
-    /* @__PURE__ */ jsx43(
+    /* @__PURE__ */ jsx46(
       "button",
       {
         type: "button",
@@ -10087,9 +10172,9 @@ function FloatingLinkEditor({
   ] }) });
 }
 function useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsLinkEditMode) {
-  const [activeEditor, setActiveEditor] = useState22(editor);
-  const [isLink, setIsLink] = useState22(false);
-  useEffect29(() => {
+  const [activeEditor, setActiveEditor] = useState24(editor);
+  const [isLink, setIsLink] = useState24(false);
+  useEffect31(() => {
     function $updateToolbar() {
       const selection = $getSelection11();
       if ($isRangeSelection8(selection)) {
@@ -10158,8 +10243,8 @@ function useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsL
       )
     );
   }, [editor]);
-  return createPortal7(
-    /* @__PURE__ */ jsx43(
+  return createPortal8(
+    /* @__PURE__ */ jsx46(
       FloatingLinkEditor,
       {
         editor: activeEditor,
@@ -10182,69 +10267,10 @@ function FloatingLinkEditorPlugin({
   return useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsLinkEditMode);
 }
 
-// src/plugins/FragmentLinkPlugin/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext29 } from "@lexical/react/LexicalComposerContext";
-import { $isHeadingNode } from "@lexical/rich-text";
-import { $getRoot as $getRoot4 } from "lexical";
-import { useEffect as useEffect30 } from "react";
-function generateSlug(text) {
-  return text.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}\-]/gu, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
-}
-function normalizeText(text) {
-  return text.toLowerCase().trim();
-}
-function FragmentLinkPlugin() {
-  const [editor] = useLexicalComposerContext29();
-  useEffect30(() => {
-    const rootElement = editor.getRootElement();
-    if (!rootElement) {
-      return;
-    }
-    const handleClick = (event) => {
-      const target = event.target;
-      const anchor = target.closest("a");
-      if (!anchor) {
-        return;
-      }
-      const href = anchor.getAttribute("href");
-      if (!href || !href.startsWith("#")) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      const targetFragment = decodeURIComponent(href.slice(1));
-      const targetSlug = generateSlug(targetFragment);
-      const targetNormalized = normalizeText(targetFragment);
-      editor.getEditorState().read(() => {
-        const root = $getRoot4();
-        for (const child of root.getChildren()) {
-          if ($isHeadingNode(child)) {
-            const headingText = child.getTextContent();
-            const headingSlug = generateSlug(headingText);
-            const headingNormalized = normalizeText(headingText);
-            if (headingSlug === targetSlug || headingNormalized === targetNormalized || headingNormalized.includes(targetNormalized) || targetNormalized.includes(headingNormalized)) {
-              const domElement = editor.getElementByKey(child.getKey());
-              if (domElement) {
-                domElement.scrollIntoView({ behavior: "smooth", block: "start" });
-                return;
-              }
-            }
-          }
-        }
-      });
-    };
-    rootElement.addEventListener("click", handleClick, true);
-    return () => {
-      rootElement.removeEventListener("click", handleClick, true);
-    };
-  }, [editor]);
-  return null;
-}
-
 // src/plugins/FloatingTextFormatToolbarPlugin/index.tsx
 import { $isCodeHighlightNode } from "@lexical/code";
 import { $isLinkNode as $isLinkNode4, TOGGLE_LINK_COMMAND as TOGGLE_LINK_COMMAND4 } from "@lexical/link";
-import { useLexicalComposerContext as useLexicalComposerContext30 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext29 } from "@lexical/react/LexicalComposerContext";
 import { $getSelectionStyleValueForProperty, $patchStyleText } from "@lexical/selection";
 import { mergeRegister as mergeRegister12 } from "@lexical/utils";
 import {
@@ -10257,13 +10283,13 @@ import {
   getDOMSelection as getDOMSelection2,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND4
 } from "lexical";
-import { useCallback as useCallback15, useEffect as useEffect31, useRef as useRef14, useState as useState24 } from "react";
-import { createPortal as createPortal8 } from "react-dom";
+import { useCallback as useCallback17, useEffect as useEffect32, useRef as useRef14, useState as useState26 } from "react";
+import { createPortal as createPortal9 } from "react-dom";
 
 // src/ui/ColorPicker.tsx
 import { calculateZoomLevel as calculateZoomLevel3 } from "@lexical/utils";
-import { useMemo as useMemo15, useRef as useRef13, useState as useState23 } from "react";
-import { jsx as jsx44, jsxs as jsxs22 } from "react/jsx-runtime";
+import { useMemo as useMemo16, useRef as useRef13, useState as useState25 } from "react";
+import { jsx as jsx47, jsxs as jsxs23 } from "react/jsx-runtime";
 var skipAddingToHistoryStack = false;
 function parseAllowedColor(input) {
   return /^rgb\(\d+, \d+, \d+\)$/.test(input) ? input : "";
@@ -10288,17 +10314,17 @@ var basicColors = [
 var WIDTH = 214;
 var HEIGHT = 150;
 function ColorPicker({ color, onChange }) {
-  const [selfColor, setSelfColor] = useState23(transformColor("hex", color));
-  const [inputColor, setInputColor] = useState23(transformColor("hex", color).hex);
+  const [selfColor, setSelfColor] = useState25(transformColor("hex", color));
+  const [inputColor, setInputColor] = useState25(transformColor("hex", color).hex);
   const innerDivRef = useRef13(null);
-  const saturationPosition = useMemo15(
+  const saturationPosition = useMemo16(
     () => ({
       x: selfColor.hsv.s / 100 * WIDTH,
       y: (100 - selfColor.hsv.v) / 100 * HEIGHT
     }),
     [selfColor.hsv.s, selfColor.hsv.v]
   );
-  const huePosition = useMemo15(
+  const huePosition = useMemo16(
     () => ({
       x: selfColor.hsv.h / 360 * WIDTH
     }),
@@ -10341,9 +10367,9 @@ function ColorPicker({ color, onChange }) {
     setInputColor(newColor.hex);
     emitOnChange(newColor.hex, isKeyboardInput(e));
   };
-  return /* @__PURE__ */ jsxs22("div", { className: "color-picker-wrapper", style: { width: WIDTH }, ref: innerDivRef, children: [
-    /* @__PURE__ */ jsx44(TextInput, { label: "Hex", onChange: onSetHex, value: inputColor }),
-    /* @__PURE__ */ jsx44("div", { className: "color-picker-basic-color", children: basicColors.map((basicColor) => /* @__PURE__ */ jsx44(
+  return /* @__PURE__ */ jsxs23("div", { className: "color-picker-wrapper", style: { width: WIDTH }, ref: innerDivRef, children: [
+    /* @__PURE__ */ jsx47(TextInput, { label: "Hex", onChange: onSetHex, value: inputColor }),
+    /* @__PURE__ */ jsx47("div", { className: "color-picker-basic-color", children: basicColors.map((basicColor) => /* @__PURE__ */ jsx47(
       "button",
       {
         type: "button",
@@ -10353,13 +10379,13 @@ function ColorPicker({ color, onChange }) {
       },
       basicColor
     )) }),
-    /* @__PURE__ */ jsx44(
+    /* @__PURE__ */ jsx47(
       MoveWrapper,
       {
         className: "color-picker-saturation",
         style: { backgroundColor: `hsl(${selfColor.hsv.h}, 100%, 50%)` },
         onChange: onMoveSaturation,
-        children: /* @__PURE__ */ jsx44(
+        children: /* @__PURE__ */ jsx47(
           "div",
           {
             className: "color-picker-saturation_cursor",
@@ -10372,7 +10398,7 @@ function ColorPicker({ color, onChange }) {
         )
       }
     ),
-    /* @__PURE__ */ jsx44(MoveWrapper, { className: "color-picker-hue", onChange: onMoveHue, children: /* @__PURE__ */ jsx44(
+    /* @__PURE__ */ jsx47(MoveWrapper, { className: "color-picker-hue", onChange: onMoveHue, children: /* @__PURE__ */ jsx47(
       "div",
       {
         className: "color-picker-hue_cursor",
@@ -10382,7 +10408,7 @@ function ColorPicker({ color, onChange }) {
         }
       }
     ) }),
-    /* @__PURE__ */ jsx44("div", { className: "color-picker-color", style: { backgroundColor: selfColor.hex } })
+    /* @__PURE__ */ jsx47("div", { className: "color-picker-color", style: { backgroundColor: selfColor.hex } })
   ] });
 }
 function MoveWrapper({ className, style, onChange, children }) {
@@ -10420,7 +10446,7 @@ function MoveWrapper({ className, style, onChange, children }) {
     document.addEventListener("mousemove", onMouseMove, false);
     document.addEventListener("mouseup", onMouseUp, false);
   };
-  return /* @__PURE__ */ jsx44("div", { ref: divRef, className, style, onMouseDown, children });
+  return /* @__PURE__ */ jsx47("div", { ref: divRef, className, style, onMouseDown, children });
 }
 function clamp2(value, max, min) {
   return value > max ? max : value < min ? min : value;
@@ -10501,7 +10527,7 @@ function transformColor(format, color) {
 }
 
 // src/ui/DropdownColorPicker.tsx
-import { jsx as jsx45 } from "react/jsx-runtime";
+import { jsx as jsx48 } from "react/jsx-runtime";
 function DropdownColorPicker({
   disabled = false,
   stopCloseOnClickSelf = true,
@@ -10509,7 +10535,7 @@ function DropdownColorPicker({
   onChange,
   ...rest
 }) {
-  return /* @__PURE__ */ jsx45(DropDown, { ...rest, disabled, stopCloseOnClickSelf, children: /* @__PURE__ */ jsx45(ColorPicker, { color, onChange }) });
+  return /* @__PURE__ */ jsx48(DropDown, { ...rest, disabled, stopCloseOnClickSelf, children: /* @__PURE__ */ jsx48(ColorPicker, { color, onChange }) });
 }
 
 // src/utils/getDOMRangeRect.ts
@@ -10571,7 +10597,7 @@ function setFloatingElemPosition(targetRect, floatingElem, anchorElem, isLink = 
 }
 
 // src/plugins/FloatingTextFormatToolbarPlugin/index.tsx
-import { Fragment as Fragment14, jsx as jsx46, jsxs as jsxs23 } from "react/jsx-runtime";
+import { Fragment as Fragment14, jsx as jsx49, jsxs as jsxs24 } from "react/jsx-runtime";
 function TextFormatFloatingToolbar({
   editor,
   anchorElem,
@@ -10591,7 +10617,7 @@ function TextFormatFloatingToolbar({
   setIsLinkEditMode
 }) {
   const popupCharStylesEditorRef = useRef14(null);
-  const insertLink = useCallback15(() => {
+  const insertLink = useCallback17(() => {
     if (!isLink) {
       setIsLinkEditMode(true);
       editor.dispatchCommand(TOGGLE_LINK_COMMAND4, "https://");
@@ -10600,7 +10626,7 @@ function TextFormatFloatingToolbar({
       editor.dispatchCommand(TOGGLE_LINK_COMMAND4, null);
     }
   }, [editor, isLink, setIsLinkEditMode]);
-  const applyStyleText = useCallback15(
+  const applyStyleText = useCallback17(
     (styles) => {
       editor.update(() => {
         const selection = $getSelection12();
@@ -10611,13 +10637,13 @@ function TextFormatFloatingToolbar({
     },
     [editor]
   );
-  const onFontColorSelect = useCallback15(
+  const onFontColorSelect = useCallback17(
     (value) => {
       applyStyleText({ color: value });
     },
     [applyStyleText]
   );
-  const onBgColorSelect = useCallback15(
+  const onBgColorSelect = useCallback17(
     (value) => {
       applyStyleText({ "background-color": value });
     },
@@ -10642,7 +10668,7 @@ function TextFormatFloatingToolbar({
       }
     }
   }
-  useEffect31(() => {
+  useEffect32(() => {
     if (popupCharStylesEditorRef?.current) {
       document.addEventListener("mousemove", mouseMoveListener);
       document.addEventListener("mouseup", mouseUpListener);
@@ -10652,7 +10678,7 @@ function TextFormatFloatingToolbar({
       };
     }
   }, [mouseMoveListener, mouseUpListener]);
-  const $updateTextFormatFloatingToolbar = useCallback15(() => {
+  const $updateTextFormatFloatingToolbar = useCallback17(() => {
     const selection = $getSelection12();
     const popupCharStylesEditorElem = popupCharStylesEditorRef.current;
     const nativeSelection = getDOMSelection2(editor._window);
@@ -10665,7 +10691,7 @@ function TextFormatFloatingToolbar({
       setFloatingElemPosition(rangeRect, popupCharStylesEditorElem, anchorElem, isLink);
     }
   }, [editor, anchorElem, isLink]);
-  useEffect31(() => {
+  useEffect32(() => {
     const scrollerElem = anchorElem.parentElement;
     const update = () => {
       editor.getEditorState().read(() => {
@@ -10683,7 +10709,7 @@ function TextFormatFloatingToolbar({
       }
     };
   }, [editor, $updateTextFormatFloatingToolbar, anchorElem]);
-  useEffect31(() => {
+  useEffect32(() => {
     editor.getEditorState().read(() => {
       $updateTextFormatFloatingToolbar();
     });
@@ -10703,8 +10729,8 @@ function TextFormatFloatingToolbar({
       )
     );
   }, [editor, $updateTextFormatFloatingToolbar]);
-  return /* @__PURE__ */ jsx46("div", { ref: popupCharStylesEditorRef, className: "notion-like-editor floating-text-format-popup", children: editor.isEditable() && /* @__PURE__ */ jsxs23(Fragment14, { children: [
-    /* @__PURE__ */ jsx46(
+  return /* @__PURE__ */ jsx49("div", { ref: popupCharStylesEditorRef, className: "notion-like-editor floating-text-format-popup", children: editor.isEditable() && /* @__PURE__ */ jsxs24(Fragment14, { children: [
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10714,10 +10740,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isBold ? "active" : ""}`,
         title: "Bold",
         "aria-label": "Format text as bold",
-        children: /* @__PURE__ */ jsx46("i", { className: "format bold" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format bold" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10727,10 +10753,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isItalic ? "active" : ""}`,
         title: "Italic",
         "aria-label": "Format text as italics",
-        children: /* @__PURE__ */ jsx46("i", { className: "format italic" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format italic" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10740,10 +10766,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isUnderline ? "active" : ""}`,
         title: "Underline",
         "aria-label": "Format text to underlined",
-        children: /* @__PURE__ */ jsx46("i", { className: "format underline" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format underline" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10753,10 +10779,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isStrikethrough ? "active" : ""}`,
         title: "Strikethrough",
         "aria-label": "Format text with a strikethrough",
-        children: /* @__PURE__ */ jsx46("i", { className: "format strikethrough" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format strikethrough" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10766,10 +10792,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isSubscript2 ? "active" : ""}`,
         title: "Subscript",
         "aria-label": "Format Subscript",
-        children: /* @__PURE__ */ jsx46("i", { className: "format subscript" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format subscript" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10779,10 +10805,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isSuperscript2 ? "active" : ""}`,
         title: "Superscript",
         "aria-label": "Format Superscript",
-        children: /* @__PURE__ */ jsx46("i", { className: "format superscript" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format superscript" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10792,10 +10818,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isUppercase2 ? "active" : ""}`,
         title: "Uppercase",
         "aria-label": "Format text to uppercase",
-        children: /* @__PURE__ */ jsx46("i", { className: "format uppercase" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format uppercase" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10805,10 +10831,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isLowercase2 ? "active" : ""}`,
         title: "Lowercase",
         "aria-label": "Format text to lowercase",
-        children: /* @__PURE__ */ jsx46("i", { className: "format lowercase" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format lowercase" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10818,10 +10844,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isCapitalize2 ? "active" : ""}`,
         title: "Capitalize",
         "aria-label": "Format text to capitalize",
-        children: /* @__PURE__ */ jsx46("i", { className: "format capitalize" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format capitalize" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10831,10 +10857,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isCode ? "active" : ""}`,
         title: "Insert code block",
         "aria-label": "Insert code block",
-        children: /* @__PURE__ */ jsx46("i", { className: "format code" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format code" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       "button",
       {
         type: "button",
@@ -10842,10 +10868,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isLink ? "active" : ""}`,
         title: "Insert link",
         "aria-label": "Insert link",
-        children: /* @__PURE__ */ jsx46("i", { className: "format link" })
+        children: /* @__PURE__ */ jsx49("i", { className: "format link" })
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       DropdownColorPicker,
       {
         disabled: false,
@@ -10857,7 +10883,7 @@ function TextFormatFloatingToolbar({
         title: "text color"
       }
     ),
-    /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsx49(
       DropdownColorPicker,
       {
         disabled: false,
@@ -10872,21 +10898,21 @@ function TextFormatFloatingToolbar({
   ] }) });
 }
 function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
-  const [isText, setIsText] = useState24(false);
-  const [isLink, setIsLink] = useState24(false);
-  const [isBold, setIsBold] = useState24(false);
-  const [isItalic, setIsItalic] = useState24(false);
-  const [isUnderline, setIsUnderline] = useState24(false);
-  const [isUppercase2, setIsUppercase] = useState24(false);
-  const [isLowercase2, setIsLowercase] = useState24(false);
-  const [isCapitalize2, setIsCapitalize] = useState24(false);
-  const [isStrikethrough, setIsStrikethrough] = useState24(false);
-  const [isSubscript2, setIsSubscript] = useState24(false);
-  const [isSuperscript2, setIsSuperscript] = useState24(false);
-  const [isCode, setIsCode] = useState24(false);
-  const [fontColor, setFontColor] = useState24("#000");
-  const [bgColor, setBgColor] = useState24("#fff");
-  const updatePopup = useCallback15(() => {
+  const [isText, setIsText] = useState26(false);
+  const [isLink, setIsLink] = useState26(false);
+  const [isBold, setIsBold] = useState26(false);
+  const [isItalic, setIsItalic] = useState26(false);
+  const [isUnderline, setIsUnderline] = useState26(false);
+  const [isUppercase2, setIsUppercase] = useState26(false);
+  const [isLowercase2, setIsLowercase] = useState26(false);
+  const [isCapitalize2, setIsCapitalize] = useState26(false);
+  const [isStrikethrough, setIsStrikethrough] = useState26(false);
+  const [isSubscript2, setIsSubscript] = useState26(false);
+  const [isSuperscript2, setIsSuperscript] = useState26(false);
+  const [isCode, setIsCode] = useState26(false);
+  const [fontColor, setFontColor] = useState26("#000");
+  const [bgColor, setBgColor] = useState26("#fff");
+  const updatePopup = useCallback17(() => {
     editor.getEditorState().read(() => {
       if (editor.isComposing()) {
         return;
@@ -10932,13 +10958,13 @@ function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
       }
     });
   }, [editor]);
-  useEffect31(() => {
+  useEffect32(() => {
     document.addEventListener("selectionchange", updatePopup);
     return () => {
       document.removeEventListener("selectionchange", updatePopup);
     };
   }, [updatePopup]);
-  useEffect31(() => {
+  useEffect32(() => {
     return mergeRegister12(
       editor.registerUpdateListener(() => {
         updatePopup();
@@ -10953,8 +10979,8 @@ function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
   if (!isText) {
     return null;
   }
-  return createPortal8(
-    /* @__PURE__ */ jsx46(
+  return createPortal9(
+    /* @__PURE__ */ jsx49(
       TextFormatFloatingToolbar,
       {
         editor,
@@ -10982,8 +11008,67 @@ function FloatingTextFormatToolbarPlugin({
   anchorElem = document.body,
   setIsLinkEditMode
 }) {
-  const [editor] = useLexicalComposerContext30();
+  const [editor] = useLexicalComposerContext29();
   return useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode);
+}
+
+// src/plugins/FragmentLinkPlugin/index.tsx
+import { useLexicalComposerContext as useLexicalComposerContext30 } from "@lexical/react/LexicalComposerContext";
+import { $isHeadingNode } from "@lexical/rich-text";
+import { $getRoot as $getRoot4 } from "lexical";
+import { useEffect as useEffect33 } from "react";
+function generateSlug(text) {
+  return text.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}-]/gu, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+function normalizeText(text) {
+  return text.toLowerCase().trim();
+}
+function FragmentLinkPlugin() {
+  const [editor] = useLexicalComposerContext30();
+  useEffect33(() => {
+    const rootElement = editor.getRootElement();
+    if (!rootElement) {
+      return;
+    }
+    const handleClick = (event) => {
+      const target = event.target;
+      const anchor = target.closest("a");
+      if (!anchor) {
+        return;
+      }
+      const href = anchor.getAttribute("href");
+      if (!href || !href.startsWith("#")) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const targetFragment = decodeURIComponent(href.slice(1));
+      const targetSlug = generateSlug(targetFragment);
+      const targetNormalized = normalizeText(targetFragment);
+      editor.getEditorState().read(() => {
+        const root = $getRoot4();
+        for (const child of root.getChildren()) {
+          if ($isHeadingNode(child)) {
+            const headingText = child.getTextContent();
+            const headingSlug = generateSlug(headingText);
+            const headingNormalized = normalizeText(headingText);
+            if (headingSlug === targetSlug || headingNormalized === targetNormalized || headingNormalized.includes(targetNormalized) || targetNormalized.includes(headingNormalized)) {
+              const domElement = editor.getElementByKey(child.getKey());
+              if (domElement) {
+                domElement.scrollIntoView({ behavior: "smooth", block: "start" });
+                return;
+              }
+            }
+          }
+        }
+      });
+    };
+    rootElement.addEventListener("click", handleClick, true);
+    return () => {
+      rootElement.removeEventListener("click", handleClick, true);
+    };
+  }, [editor]);
+  return null;
 }
 
 // src/plugins/HorizontalRulePlugin/index.tsx
@@ -10991,10 +11076,10 @@ import { $createHorizontalRuleNode, INSERT_HORIZONTAL_RULE_COMMAND as INSERT_HOR
 import { useLexicalComposerContext as useLexicalComposerContext31 } from "@lexical/react/LexicalComposerContext";
 import { $insertNodeToNearestRoot as $insertNodeToNearestRoot7 } from "@lexical/utils";
 import { $getSelection as $getSelection13, $isRangeSelection as $isRangeSelection10, COMMAND_PRIORITY_EDITOR as COMMAND_PRIORITY_EDITOR10 } from "lexical";
-import { useEffect as useEffect32 } from "react";
+import { useEffect as useEffect34 } from "react";
 function HorizontalRulePlugin() {
   const [editor] = useLexicalComposerContext31();
-  useEffect32(() => {
+  useEffect34(() => {
     return editor.registerCommand(
       INSERT_HORIZONTAL_RULE_COMMAND2,
       (_type) => {
@@ -11028,7 +11113,7 @@ import {
   COMMAND_PRIORITY_HIGH as COMMAND_PRIORITY_HIGH6,
   PASTE_COMMAND as PASTE_COMMAND2
 } from "lexical";
-import { useCallback as useCallback16, useEffect as useEffect33 } from "react";
+import { useCallback as useCallback18, useEffect as useEffect35 } from "react";
 
 // src/transformers/markdown-transformers.ts
 init_EquationNode();
@@ -27878,7 +27963,8 @@ var PLAYGROUND_TRANSFORMERS = [
   ...TEXT_MATCH_TRANSFORMERS
 ];
 function normalizeListIndentation(markdown) {
-  const lines = markdown.split("\n");
+  const normalizedMarkdown = markdown.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = normalizedMarkdown.split("\n");
   const result = [];
   let inCodeBlock = false;
   for (const line of lines) {
@@ -28217,18 +28303,27 @@ function getPlainTextFromClipboard(event) {
   if (!clipboardData) {
     return null;
   }
+  const plainText = clipboardData.getData("text/plain");
+  if (!plainText || plainText.trim().length === 0) {
+    return null;
+  }
   const htmlData = clipboardData.getData("text/html");
   if (htmlData && htmlData.trim().length > 0) {
-    const isSimpleHtml = /<(meta|span|div|p|br)[^>]*>/i.test(htmlData) && !/<(table|img|a|ul|ol|li|h[1-6])[^>]*>/i.test(htmlData);
-    if (!isSimpleHtml) {
-      return null;
+    const hasCodeElements = /<(pre|code)[^>]*>/i.test(htmlData);
+    if (hasCodeElements) {
+      return plainText;
     }
+    const isSimpleHtml = /<(meta|span|div|p|br)[^>]*>/i.test(htmlData) && !/<(table|img|a|ul|ol|li|h[1-6])[^>]*>/i.test(htmlData);
+    if (isSimpleHtml) {
+      return plainText;
+    }
+    return null;
   }
-  return clipboardData.getData("text/plain");
+  return plainText;
 }
 function MarkdownPastePlugin() {
   const [editor] = useLexicalComposerContext32();
-  const handlePaste = useCallback16(
+  const handlePaste = useCallback18(
     (event) => {
       const plainText = getPlainTextFromClipboard(event);
       if (!plainText) {
@@ -28246,7 +28341,13 @@ function MarkdownPastePlugin() {
         selection.removeText();
         const anchorNode = selection.anchor.getNode();
         const paragraphNode = $createParagraphNode9();
-        $convertFromMarkdownString3(normalizeListIndentation(plainText), PLAYGROUND_TRANSFORMERS2, paragraphNode, true);
+        const normalizedText = plainText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+        $convertFromMarkdownString3(
+          normalizeListIndentation(normalizedText),
+          PLAYGROUND_TRANSFORMERS2,
+          paragraphNode,
+          true
+        );
         const children = paragraphNode.getChildren();
         if (children.length > 0) {
           const topLevelNode = anchorNode.getTopLevelElement();
@@ -28269,7 +28370,7 @@ function MarkdownPastePlugin() {
     },
     [editor]
   );
-  useEffect33(() => {
+  useEffect35(() => {
     return editor.registerCommand(
       PASTE_COMMAND2,
       (event) => {
@@ -28283,9 +28384,9 @@ function MarkdownPastePlugin() {
 
 // src/plugins/MarkdownShortcutPlugin/index.tsx
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
-import { jsx as jsx47 } from "react/jsx-runtime";
+import { jsx as jsx50 } from "react/jsx-runtime";
 function MarkdownPlugin() {
-  return /* @__PURE__ */ jsx47(MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
+  return /* @__PURE__ */ jsx50(MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
 }
 
 // src/plugins/MaxLengthPlugin/index.tsx
@@ -28293,10 +28394,10 @@ import { useLexicalComposerContext as useLexicalComposerContext33 } from "@lexic
 import { $trimTextContentFromAnchor } from "@lexical/selection";
 import { $restoreEditorState } from "@lexical/utils";
 import { $getSelection as $getSelection15, $isRangeSelection as $isRangeSelection12, RootNode as RootNode2 } from "lexical";
-import { useEffect as useEffect34 } from "react";
+import { useEffect as useEffect36 } from "react";
 function MaxLengthPlugin({ maxLength }) {
   const [editor] = useLexicalComposerContext33();
-  useEffect34(() => {
+  useEffect36(() => {
     let lastRestoredEditorState = null;
     return editor.registerNodeTransform(RootNode2, (rootNode) => {
       const selection = $getSelection15();
@@ -28337,7 +28438,7 @@ import {
   KEY_DOWN_COMMAND,
   OUTDENT_CONTENT_COMMAND
 } from "lexical";
-import { useEffect as useEffect35 } from "react";
+import { useEffect as useEffect37 } from "react";
 init_url();
 
 // src/plugins/ToolbarPlugin/utils.ts
@@ -28727,7 +28828,7 @@ function ShortcutsPlugin({
   setIsLinkEditMode
 }) {
   const { toolbarState } = useToolbarState();
-  useEffect35(() => {
+  useEffect37(() => {
     const keyboardShortcutsHandler = (event) => {
       if (isModifierMatch2(event, {})) {
         return false;
@@ -28797,7 +28898,7 @@ function ShortcutsPlugin({
 // src/plugins/SpecialTextPlugin/index.ts
 import { useLexicalComposerContext as useLexicalComposerContext34 } from "@lexical/react/LexicalComposerContext";
 import { TextNode as TextNode9 } from "lexical";
-import { useEffect as useEffect36 } from "react";
+import { useEffect as useEffect38 } from "react";
 
 // src/nodes/SpecialTextNode.tsx
 import { addClassNamesToElement as addClassNamesToElement3 } from "@lexical/utils";
@@ -28870,7 +28971,7 @@ function $textNodeTransform3(node) {
   }
 }
 function useTextTransformation(editor) {
-  useEffect36(() => {
+  useEffect38(() => {
     if (!editor.hasNodes([SpecialTextNode])) {
       throw new Error("SpecialTextPlugin: SpecialTextNode not registered on editor");
     }
@@ -28886,7 +28987,7 @@ function SpecialTextPlugin() {
 // src/plugins/TabFocusPlugin/index.tsx
 import { useLexicalComposerContext as useLexicalComposerContext35 } from "@lexical/react/LexicalComposerContext";
 import { $getSelection as $getSelection17, $isRangeSelection as $isRangeSelection14, $setSelection as $setSelection6, COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW11, FOCUS_COMMAND } from "lexical";
-import { useEffect as useEffect37 } from "react";
+import { useEffect as useEffect39 } from "react";
 var TAB_TO_FOCUS_INTERVAL = 100;
 var lastTabKeyDownTimestamp = 0;
 var hasRegisteredKeyDownListener = false;
@@ -28903,7 +29004,7 @@ function registerKeyTimeStampTracker() {
 }
 function TabFocusPlugin() {
   const [editor] = useLexicalComposerContext35();
-  useEffect37(() => {
+  useEffect39(() => {
     if (!hasRegisteredKeyDownListener) {
       registerKeyTimeStampTracker();
       hasRegisteredKeyDownListener = true;
@@ -28960,9 +29061,9 @@ import {
   isDOMNode as isDOMNode3,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND5
 } from "lexical";
-import { useCallback as useCallback17, useEffect as useEffect38, useRef as useRef15, useState as useState25 } from "react";
-import { createPortal as createPortal9 } from "react-dom";
-import { Fragment as Fragment15, jsx as jsx48, jsxs as jsxs24 } from "react/jsx-runtime";
+import { useCallback as useCallback19, useEffect as useEffect40, useRef as useRef15, useState as useState27 } from "react";
+import { createPortal as createPortal10 } from "react-dom";
+import { Fragment as Fragment15, jsx as jsx51, jsxs as jsxs25 } from "react/jsx-runtime";
 function computeSelectionCount(selection) {
   const selectionShape = selection.getShape();
   return {
@@ -29010,15 +29111,15 @@ function TableActionMenu({
 }) {
   const [editor] = useLexicalComposerContext36();
   const dropDownRef = useRef15(null);
-  const [tableCellNode, updateTableCellNode] = useState25(_tableCellNode);
-  const [selectionCounts, updateSelectionCounts] = useState25({
+  const [tableCellNode, updateTableCellNode] = useState27(_tableCellNode);
+  const [selectionCounts, updateSelectionCounts] = useState27({
     columns: 1,
     rows: 1
   });
-  const [canMergeCells, setCanMergeCells] = useState25(false);
-  const [canUnmergeCell, setCanUnmergeCell] = useState25(false);
-  const [backgroundColor, setBackgroundColor] = useState25(() => currentCellBackgroundColor(editor) || "");
-  useEffect38(() => {
+  const [canMergeCells, setCanMergeCells] = useState27(false);
+  const [canUnmergeCell, setCanUnmergeCell] = useState27(false);
+  const [backgroundColor, setBackgroundColor] = useState27(() => currentCellBackgroundColor(editor) || "");
+  useEffect40(() => {
     return editor.registerMutationListener(
       TableCellNode4,
       (nodeMutations) => {
@@ -29033,7 +29134,7 @@ function TableActionMenu({
       { skipInitialization: true }
     );
   }, [editor, tableCellNode]);
-  useEffect38(() => {
+  useEffect40(() => {
     editor.getEditorState().read(() => {
       const selection = $getSelection18();
       if ($isTableSelection2(selection)) {
@@ -29044,7 +29145,7 @@ function TableActionMenu({
       setCanUnmergeCell($canUnmerge());
     });
   }, [editor]);
-  useEffect38(() => {
+  useEffect40(() => {
     const menuButtonElement = contextRef.current;
     const dropDownElement = dropDownRef.current;
     const rootElement = editor.getRootElement();
@@ -29068,7 +29169,7 @@ function TableActionMenu({
       dropDownElement.style.top = `${topPosition}px`;
     }
   }, [contextRef, editor]);
-  useEffect38(() => {
+  useEffect40(() => {
     function handleClickOutside(event) {
       if (dropDownRef.current != null && contextRef.current != null && isDOMNode3(event.target) && !dropDownRef.current.contains(event.target) && !contextRef.current.contains(event.target)) {
         setIsMenuOpen(false);
@@ -29077,7 +29178,7 @@ function TableActionMenu({
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
   }, [setIsMenuOpen, contextRef]);
-  const clearTableSelection = useCallback17(() => {
+  const clearTableSelection = useCallback19(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
         const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
@@ -29115,7 +29216,7 @@ function TableActionMenu({
       $unmergeCell();
     });
   };
-  const insertTableRowAtSelection = useCallback17(
+  const insertTableRowAtSelection = useCallback19(
     (shouldInsertAfter) => {
       editor.update(() => {
         for (let i = 0; i < selectionCounts.rows; i++) {
@@ -29126,7 +29227,7 @@ function TableActionMenu({
     },
     [editor, onClose, selectionCounts.rows]
   );
-  const insertTableColumnAtSelection = useCallback17(
+  const insertTableColumnAtSelection = useCallback19(
     (shouldInsertAfter) => {
       editor.update(() => {
         for (let i = 0; i < selectionCounts.columns; i++) {
@@ -29137,13 +29238,13 @@ function TableActionMenu({
     },
     [editor, onClose, selectionCounts.columns]
   );
-  const deleteTableRowAtSelection = useCallback17(() => {
+  const deleteTableRowAtSelection = useCallback19(() => {
     editor.update(() => {
       $deleteTableRowAtSelection();
       onClose();
     });
   }, [editor, onClose]);
-  const deleteTableAtSelection = useCallback17(() => {
+  const deleteTableAtSelection = useCallback19(() => {
     editor.update(() => {
       const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       tableNode.remove();
@@ -29151,13 +29252,13 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const deleteTableColumnAtSelection = useCallback17(() => {
+  const deleteTableColumnAtSelection = useCallback19(() => {
     editor.update(() => {
       $deleteTableColumnAtSelection();
       onClose();
     });
   }, [editor, onClose]);
-  const toggleTableRowIsHeader = useCallback17(() => {
+  const toggleTableRowIsHeader = useCallback19(() => {
     editor.update(() => {
       const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       const tableRowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
@@ -29178,7 +29279,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const toggleTableColumnIsHeader = useCallback17(() => {
+  const toggleTableColumnIsHeader = useCallback19(() => {
     editor.update(() => {
       const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       const tableColumnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
@@ -29199,7 +29300,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const toggleRowStriping = useCallback17(() => {
+  const toggleRowStriping = useCallback19(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
         const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
@@ -29211,7 +29312,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const toggleFirstRowFreeze = useCallback17(() => {
+  const toggleFirstRowFreeze = useCallback19(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
         const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
@@ -29223,7 +29324,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const toggleFirstColumnFreeze = useCallback17(() => {
+  const toggleFirstColumnFreeze = useCallback19(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
         const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
@@ -29235,7 +29336,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const handleCellBackgroundColor = useCallback17(
+  const handleCellBackgroundColor = useCallback19(
     (value) => {
       editor.update(() => {
         const selection = $getSelection18();
@@ -29281,32 +29382,32 @@ function TableActionMenu({
   let mergeCellButton = null;
   if (cellMerge) {
     if (canMergeCells) {
-      mergeCellButton = /* @__PURE__ */ jsx48(
+      mergeCellButton = /* @__PURE__ */ jsx51(
         "button",
         {
           type: "button",
           className: "item",
           onClick: () => mergeTableCellsAtSelection(),
           "data-test-id": "table-merge-cells",
-          children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Merge cells" })
+          children: /* @__PURE__ */ jsx51("span", { className: "text", children: "Merge cells" })
         }
       );
     } else if (canUnmergeCell) {
-      mergeCellButton = /* @__PURE__ */ jsx48(
+      mergeCellButton = /* @__PURE__ */ jsx51(
         "button",
         {
           type: "button",
           className: "item",
           onClick: () => unmergeTableCellsAtSelection(),
           "data-test-id": "table-unmerge-cells",
-          children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Unmerge cells" })
+          children: /* @__PURE__ */ jsx51("span", { className: "text", children: "Unmerge cells" })
         }
       );
     }
   }
-  return createPortal9(
+  return createPortal10(
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    /* @__PURE__ */ jsxs24(
+    /* @__PURE__ */ jsxs25(
       "div",
       {
         className: "notion-like-editor nle-dropdown",
@@ -29316,180 +29417,180 @@ function TableActionMenu({
         },
         children: [
           mergeCellButton,
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
-              onClick: () => showColorPickerModal("Cell background color", () => /* @__PURE__ */ jsx48(ColorPicker, { color: backgroundColor, onChange: handleCellBackgroundColor })),
+              onClick: () => showColorPickerModal("Cell background color", () => /* @__PURE__ */ jsx51(ColorPicker, { color: backgroundColor, onChange: handleCellBackgroundColor })),
               "data-test-id": "table-background-color",
-              children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Background color" })
+              children: /* @__PURE__ */ jsx51("span", { className: "text", children: "Background color" })
             }
           ),
-          /* @__PURE__ */ jsx48("button", { type: "button", className: "item", onClick: () => toggleRowStriping(), "data-test-id": "table-row-striping", children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Toggle Row Striping" }) }),
-          /* @__PURE__ */ jsxs24(
+          /* @__PURE__ */ jsx51("button", { type: "button", className: "item", onClick: () => toggleRowStriping(), "data-test-id": "table-row-striping", children: /* @__PURE__ */ jsx51("span", { className: "text", children: "Toggle Row Striping" }) }),
+          /* @__PURE__ */ jsxs25(
             DropDown,
             {
               buttonLabel: "Vertical Align",
               buttonClassName: "item",
               buttonAriaLabel: "Formatting options for vertical alignment",
               children: [
-                /* @__PURE__ */ jsx48(
+                /* @__PURE__ */ jsx51(
                   DropDownItem,
                   {
                     onClick: () => {
                       formatVerticalAlign("top");
                     },
                     className: "item wide",
-                    children: /* @__PURE__ */ jsxs24("div", { className: "icon-text-container", children: [
-                      /* @__PURE__ */ jsx48("i", { className: "icon vertical-top" }),
-                      /* @__PURE__ */ jsx48("span", { className: "text", children: "Top Align" })
+                    children: /* @__PURE__ */ jsxs25("div", { className: "icon-text-container", children: [
+                      /* @__PURE__ */ jsx51("i", { className: "icon vertical-top" }),
+                      /* @__PURE__ */ jsx51("span", { className: "text", children: "Top Align" })
                     ] })
                   }
                 ),
-                /* @__PURE__ */ jsx48(
+                /* @__PURE__ */ jsx51(
                   DropDownItem,
                   {
                     onClick: () => {
                       formatVerticalAlign("middle");
                     },
                     className: "item wide",
-                    children: /* @__PURE__ */ jsxs24("div", { className: "icon-text-container", children: [
-                      /* @__PURE__ */ jsx48("i", { className: "icon vertical-middle" }),
-                      /* @__PURE__ */ jsx48("span", { className: "text", children: "Middle Align" })
+                    children: /* @__PURE__ */ jsxs25("div", { className: "icon-text-container", children: [
+                      /* @__PURE__ */ jsx51("i", { className: "icon vertical-middle" }),
+                      /* @__PURE__ */ jsx51("span", { className: "text", children: "Middle Align" })
                     ] })
                   }
                 ),
-                /* @__PURE__ */ jsx48(
+                /* @__PURE__ */ jsx51(
                   DropDownItem,
                   {
                     onClick: () => {
                       formatVerticalAlign("bottom");
                     },
                     className: "item wide",
-                    children: /* @__PURE__ */ jsxs24("div", { className: "icon-text-container", children: [
-                      /* @__PURE__ */ jsx48("i", { className: "icon vertical-bottom" }),
-                      /* @__PURE__ */ jsx48("span", { className: "text", children: "Bottom Align" })
+                    children: /* @__PURE__ */ jsxs25("div", { className: "icon-text-container", children: [
+                      /* @__PURE__ */ jsx51("i", { className: "icon vertical-bottom" }),
+                      /* @__PURE__ */ jsx51("span", { className: "text", children: "Bottom Align" })
                     ] })
                   }
                 )
               ]
             }
           ),
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => toggleFirstRowFreeze(),
               "data-test-id": "table-freeze-first-row",
-              children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Toggle First Row Freeze" })
+              children: /* @__PURE__ */ jsx51("span", { className: "text", children: "Toggle First Row Freeze" })
             }
           ),
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => toggleFirstColumnFreeze(),
               "data-test-id": "table-freeze-first-column",
-              children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Toggle First Column Freeze" })
+              children: /* @__PURE__ */ jsx51("span", { className: "text", children: "Toggle First Column Freeze" })
             }
           ),
-          /* @__PURE__ */ jsx48("hr", {}),
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51("hr", {}),
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => insertTableRowAtSelection(false),
               "data-test-id": "table-insert-row-above",
-              children: /* @__PURE__ */ jsxs24("span", { className: "text", children: [
+              children: /* @__PURE__ */ jsxs25("span", { className: "text", children: [
                 "Insert ",
                 selectionCounts.rows === 1 ? "row" : `${selectionCounts.rows} rows`,
                 " above"
               ] })
             }
           ),
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => insertTableRowAtSelection(true),
               "data-test-id": "table-insert-row-below",
-              children: /* @__PURE__ */ jsxs24("span", { className: "text", children: [
+              children: /* @__PURE__ */ jsxs25("span", { className: "text", children: [
                 "Insert ",
                 selectionCounts.rows === 1 ? "row" : `${selectionCounts.rows} rows`,
                 " below"
               ] })
             }
           ),
-          /* @__PURE__ */ jsx48("hr", {}),
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51("hr", {}),
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => insertTableColumnAtSelection(false),
               "data-test-id": "table-insert-column-before",
-              children: /* @__PURE__ */ jsxs24("span", { className: "text", children: [
+              children: /* @__PURE__ */ jsxs25("span", { className: "text", children: [
                 "Insert ",
                 selectionCounts.columns === 1 ? "column" : `${selectionCounts.columns} columns`,
                 " left"
               ] })
             }
           ),
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => insertTableColumnAtSelection(true),
               "data-test-id": "table-insert-column-after",
-              children: /* @__PURE__ */ jsxs24("span", { className: "text", children: [
+              children: /* @__PURE__ */ jsxs25("span", { className: "text", children: [
                 "Insert ",
                 selectionCounts.columns === 1 ? "column" : `${selectionCounts.columns} columns`,
                 " right"
               ] })
             }
           ),
-          /* @__PURE__ */ jsx48("hr", {}),
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51("hr", {}),
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => deleteTableColumnAtSelection(),
               "data-test-id": "table-delete-columns",
-              children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Delete column" })
+              children: /* @__PURE__ */ jsx51("span", { className: "text", children: "Delete column" })
             }
           ),
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => deleteTableRowAtSelection(),
               "data-test-id": "table-delete-rows",
-              children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Delete row" })
+              children: /* @__PURE__ */ jsx51("span", { className: "text", children: "Delete row" })
             }
           ),
-          /* @__PURE__ */ jsx48("button", { type: "button", className: "item", onClick: () => deleteTableAtSelection(), "data-test-id": "table-delete", children: /* @__PURE__ */ jsx48("span", { className: "text", children: "Delete table" }) }),
-          /* @__PURE__ */ jsx48("hr", {}),
-          /* @__PURE__ */ jsx48("button", { type: "button", className: "item", onClick: () => toggleTableRowIsHeader(), "data-test-id": "table-row-header", children: /* @__PURE__ */ jsxs24("span", { className: "text", children: [
+          /* @__PURE__ */ jsx51("button", { type: "button", className: "item", onClick: () => deleteTableAtSelection(), "data-test-id": "table-delete", children: /* @__PURE__ */ jsx51("span", { className: "text", children: "Delete table" }) }),
+          /* @__PURE__ */ jsx51("hr", {}),
+          /* @__PURE__ */ jsx51("button", { type: "button", className: "item", onClick: () => toggleTableRowIsHeader(), "data-test-id": "table-row-header", children: /* @__PURE__ */ jsxs25("span", { className: "text", children: [
             (tableCellNode.__headerState & TableCellHeaderStates3.ROW) === TableCellHeaderStates3.ROW ? "Remove" : "Add",
             " ",
             "row header"
           ] }) }),
-          /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx51(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => toggleTableColumnIsHeader(),
               "data-test-id": "table-column-header",
-              children: /* @__PURE__ */ jsxs24("span", { className: "text", children: [
+              children: /* @__PURE__ */ jsxs25("span", { className: "text", children: [
                 (tableCellNode.__headerState & TableCellHeaderStates3.COLUMN) === TableCellHeaderStates3.COLUMN ? "Remove" : "Add",
                 " ",
                 "column header"
@@ -29509,10 +29610,10 @@ function TableCellActionMenuContainer({
   const [editor] = useLexicalComposerContext36();
   const menuButtonRef = useRef15(null);
   const menuRootRef = useRef15(null);
-  const [isMenuOpen, setIsMenuOpen] = useState25(false);
-  const [tableCellNode, setTableMenuCellNode] = useState25(null);
+  const [isMenuOpen, setIsMenuOpen] = useState27(false);
+  const [tableCellNode, setTableMenuCellNode] = useState27(null);
   const [colorPickerModal, showColorPickerModal] = useModal();
-  const checkTableCellOverflow = useCallback17((tableCellParentNodeDOM) => {
+  const checkTableCellOverflow = useCallback19((tableCellParentNodeDOM) => {
     const scrollableContainer = tableCellParentNodeDOM.closest(".NotionLikeEditorTheme__tableScrollableWrapper");
     if (scrollableContainer) {
       const containerRect = scrollableContainer.getBoundingClientRect();
@@ -29525,7 +29626,7 @@ function TableCellActionMenuContainer({
     }
     return false;
   }, []);
-  const $moveMenu = useCallback17(() => {
+  const $moveMenu = useCallback19(() => {
     const menu = menuButtonRef.current;
     const selection = $getSelection18();
     const nativeSelection = getDOMSelection3(editor._window);
@@ -29597,7 +29698,7 @@ function TableCellActionMenuContainer({
       menu.style.transform = `translate(${left}px, ${top}px)`;
     }
   }, [editor, anchorElem, checkTableCellOverflow]);
-  useEffect38(() => {
+  useEffect40(() => {
     let timeoutId;
     const callback = () => {
       timeoutId = void 0;
@@ -29625,14 +29726,14 @@ function TableCellActionMenuContainer({
     );
   });
   const prevTableCellDOM = useRef15(tableCellNode);
-  useEffect38(() => {
+  useEffect40(() => {
     if (prevTableCellDOM.current !== tableCellNode) {
       setIsMenuOpen(false);
     }
     prevTableCellDOM.current = tableCellNode;
   }, [tableCellNode]);
-  return /* @__PURE__ */ jsx48("div", { className: "table-cell-action-button-container", ref: menuButtonRef, children: tableCellNode != null && /* @__PURE__ */ jsxs24(Fragment15, { children: [
-    /* @__PURE__ */ jsx48(
+  return /* @__PURE__ */ jsx51("div", { className: "table-cell-action-button-container", ref: menuButtonRef, children: tableCellNode != null && /* @__PURE__ */ jsxs25(Fragment15, { children: [
+    /* @__PURE__ */ jsx51(
       "button",
       {
         type: "button",
@@ -29642,11 +29743,11 @@ function TableCellActionMenuContainer({
           setIsMenuOpen(!isMenuOpen);
         },
         ref: menuRootRef,
-        children: /* @__PURE__ */ jsx48("i", { className: "chevron-down" })
+        children: /* @__PURE__ */ jsx51("i", { className: "chevron-down" })
       }
     ),
     colorPickerModal,
-    isMenuOpen && /* @__PURE__ */ jsx48(
+    isMenuOpen && /* @__PURE__ */ jsx51(
       TableActionMenu,
       {
         contextRef: menuRootRef,
@@ -29664,8 +29765,8 @@ function TableActionMenuPlugin({
   cellMerge = false
 }) {
   const isEditable = useLexicalEditable3();
-  return createPortal9(
-    isEditable ? /* @__PURE__ */ jsx48(TableCellActionMenuContainer, { anchorElem, cellMerge }) : null,
+  return createPortal10(
+    isEditable ? /* @__PURE__ */ jsx51(TableCellActionMenuContainer, { anchorElem, cellMerge }) : null,
     anchorElem
   );
 }
@@ -29686,33 +29787,33 @@ import {
 import { calculateZoomLevel as calculateZoomLevel4, mergeRegister as mergeRegister14 } from "@lexical/utils";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode5, isHTMLElement as isHTMLElement6, SKIP_SCROLL_INTO_VIEW_TAG } from "lexical";
 import {
-  useCallback as useCallback18,
-  useEffect as useEffect39,
-  useMemo as useMemo16,
+  useCallback as useCallback20,
+  useEffect as useEffect41,
+  useMemo as useMemo17,
   useRef as useRef16,
-  useState as useState26
+  useState as useState28
 } from "react";
-import { createPortal as createPortal10 } from "react-dom";
-import { Fragment as Fragment16, jsx as jsx49, jsxs as jsxs25 } from "react/jsx-runtime";
+import { createPortal as createPortal11 } from "react-dom";
+import { Fragment as Fragment16, jsx as jsx52, jsxs as jsxs26 } from "react/jsx-runtime";
 var MIN_ROW_HEIGHT = 33;
 var MIN_COLUMN_WIDTH = 92;
 function TableCellResizer({ editor }) {
   const targetRef = useRef16(null);
   const resizerRef = useRef16(null);
   const tableRectRef = useRef16(null);
-  const [hasTable, setHasTable] = useState26(false);
+  const [hasTable, setHasTable] = useState28(false);
   const pointerStartPosRef = useRef16(null);
-  const [pointerCurrentPos, updatePointerCurrentPos] = useState26(null);
-  const [activeCell, updateActiveCell] = useState26(null);
-  const [draggingDirection, updateDraggingDirection] = useState26(null);
-  const resetState = useCallback18(() => {
+  const [pointerCurrentPos, updatePointerCurrentPos] = useState28(null);
+  const [activeCell, updateActiveCell] = useState28(null);
+  const [draggingDirection, updateDraggingDirection] = useState28(null);
+  const resetState = useCallback20(() => {
     updateActiveCell(null);
     targetRef.current = null;
     updateDraggingDirection(null);
     pointerStartPosRef.current = null;
     tableRectRef.current = null;
   }, []);
-  useEffect39(() => {
+  useEffect41(() => {
     const tableKeys = /* @__PURE__ */ new Set();
     return mergeRegister14(
       editor.registerMutationListener(TableNode4, (nodeMutations) => {
@@ -29736,7 +29837,7 @@ function TableCellResizer({ editor }) {
       })
     );
   }, [editor]);
-  useEffect39(() => {
+  useEffect41(() => {
     if (!hasTable) {
       return;
     }
@@ -29814,7 +29915,7 @@ function TableCellResizer({ editor }) {
     const domCellNode = activeEditor.getElementByKey(cell.getKey());
     return domCellNode?.clientHeight;
   };
-  const updateRowHeight = useCallback18(
+  const updateRowHeight = useCallback20(
     (heightChange) => {
       if (!activeCell) {
         throw new Error("TableCellResizer: Expected active cell.");
@@ -29859,7 +29960,7 @@ function TableCellResizer({ editor }) {
       }
     }
   };
-  const updateColumnWidth = useCallback18(
+  const updateColumnWidth = useCallback20(
     (widthChange) => {
       if (!activeCell) {
         throw new Error("TableCellResizer: Expected active cell.");
@@ -29894,7 +29995,7 @@ function TableCellResizer({ editor }) {
     },
     [activeCell, editor, getCellColumnIndex]
   );
-  const pointerUpHandler = useCallback18(
+  const pointerUpHandler = useCallback20(
     (direction) => {
       const handler = (event) => {
         event.preventDefault();
@@ -29923,7 +30024,7 @@ function TableCellResizer({ editor }) {
     },
     [activeCell, resetState, updateColumnWidth, updateRowHeight, isHeightChanging]
   );
-  const toggleResize = useCallback18(
+  const toggleResize = useCallback20(
     (direction) => (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -29940,7 +30041,7 @@ function TableCellResizer({ editor }) {
     },
     [activeCell, pointerUpHandler]
   );
-  const getResizers = useCallback18(() => {
+  const getResizers = useCallback20(() => {
     if (activeCell) {
       const { height, width, top, left } = activeCell.elem.getBoundingClientRect();
       const zoom = calculateZoomLevel4(activeCell.elem);
@@ -29989,8 +30090,8 @@ function TableCellResizer({ editor }) {
     };
   }, [activeCell, draggingDirection, pointerCurrentPos, isHeightChanging]);
   const resizerStyles = getResizers();
-  return /* @__PURE__ */ jsx49("div", { ref: resizerRef, className: "notion-like-editor table-cell-resizer-container", children: activeCell != null && /* @__PURE__ */ jsxs25(Fragment16, { children: [
-    /* @__PURE__ */ jsx49(
+  return /* @__PURE__ */ jsx52("div", { ref: resizerRef, className: "notion-like-editor table-cell-resizer-container", children: activeCell != null && /* @__PURE__ */ jsxs26(Fragment16, { children: [
+    /* @__PURE__ */ jsx52(
       "div",
       {
         className: "TableCellResizer__resizer TableCellResizer__ui",
@@ -29998,7 +30099,7 @@ function TableCellResizer({ editor }) {
         onPointerDown: toggleResize("right")
       }
     ),
-    /* @__PURE__ */ jsx49(
+    /* @__PURE__ */ jsx52(
       "div",
       {
         className: "TableCellResizer__resizer TableCellResizer__ui",
@@ -30011,8 +30112,8 @@ function TableCellResizer({ editor }) {
 function TableCellResizerPlugin() {
   const [editor] = useLexicalComposerContext37();
   const isEditable = useLexicalEditable4();
-  return useMemo16(
-    () => isEditable ? createPortal10(/* @__PURE__ */ jsx49(TableCellResizer, { editor }), document.body) : null,
+  return useMemo17(
+    () => isEditable ? createPortal11(/* @__PURE__ */ jsx52(TableCellResizer, { editor }), document.body) : null,
     [editor, isEditable]
   );
 }
@@ -30033,8 +30134,8 @@ import {
 } from "@lexical/table";
 import { $findMatchingParent as $findMatchingParent5, mergeRegister as mergeRegister15 } from "@lexical/utils";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode6, isHTMLElement as isHTMLElement7 } from "lexical";
-import { useEffect as useEffect40, useMemo as useMemo17, useRef as useRef17, useState as useState27 } from "react";
-import { createPortal as createPortal11 } from "react-dom";
+import { useEffect as useEffect42, useMemo as useMemo18, useRef as useRef17, useState as useState29 } from "react";
+import { createPortal as createPortal12 } from "react-dom";
 
 // src/utils/getThemeSelector.ts
 function getThemeSelector(getTheme, name) {
@@ -30046,15 +30147,15 @@ function getThemeSelector(getTheme, name) {
 }
 
 // src/plugins/TableHoverActionsPlugin/index.tsx
-import { Fragment as Fragment17, jsx as jsx50, jsxs as jsxs26 } from "react/jsx-runtime";
+import { Fragment as Fragment17, jsx as jsx53, jsxs as jsxs27 } from "react/jsx-runtime";
 var BUTTON_WIDTH_PX = 20;
 function TableHoverActionsContainer({ anchorElem }) {
   const [editor, { getTheme }] = useLexicalComposerContext38();
   const isEditable = useLexicalEditable5();
-  const [isShownRow, setShownRow] = useState27(false);
-  const [isShownColumn, setShownColumn] = useState27(false);
-  const [shouldListenMouseMove, setShouldListenMouseMove] = useState27(false);
-  const [position, setPosition] = useState27({});
+  const [isShownRow, setShownRow] = useState29(false);
+  const [isShownColumn, setShownColumn] = useState29(false);
+  const [shouldListenMouseMove, setShouldListenMouseMove] = useState29(false);
+  const [position, setPosition] = useState29({});
   const tableSetRef = useRef17(/* @__PURE__ */ new Set());
   const tableCellDOMNodeRef = useRef17(null);
   const debouncedOnMouseMove = useDebounce(
@@ -30136,13 +30237,13 @@ function TableHoverActionsContainer({ anchorElem }) {
     50,
     250
   );
-  const tableResizeObserver = useMemo17(() => {
+  const tableResizeObserver = useMemo18(() => {
     return new ResizeObserver(() => {
       setShownRow(false);
       setShownColumn(false);
     });
   }, []);
-  useEffect40(() => {
+  useEffect42(() => {
     if (!shouldListenMouseMove) {
       return;
     }
@@ -30154,7 +30255,7 @@ function TableHoverActionsContainer({ anchorElem }) {
       document.removeEventListener("mousemove", debouncedOnMouseMove);
     };
   }, [shouldListenMouseMove, debouncedOnMouseMove]);
-  useEffect40(() => {
+  useEffect42(() => {
     return mergeRegister15(
       editor.registerMutationListener(
         TableNode5,
@@ -30212,8 +30313,8 @@ function TableHoverActionsContainer({ anchorElem }) {
   if (!isEditable) {
     return null;
   }
-  return /* @__PURE__ */ jsxs26(Fragment17, { children: [
-    isShownRow && /* @__PURE__ */ jsx50(
+  return /* @__PURE__ */ jsxs27(Fragment17, { children: [
+    isShownRow && /* @__PURE__ */ jsx53(
       "button",
       {
         type: "button",
@@ -30222,7 +30323,7 @@ function TableHoverActionsContainer({ anchorElem }) {
         onClick: () => insertAction(true)
       }
     ),
-    isShownColumn && /* @__PURE__ */ jsx50(
+    isShownColumn && /* @__PURE__ */ jsx53(
       "button",
       {
         type: "button",
@@ -30248,14 +30349,14 @@ function TableHoverActionsPlugin({
   anchorElem = document.body
 }) {
   const isEditable = useLexicalEditable5();
-  return isEditable ? createPortal11(/* @__PURE__ */ jsx50(TableHoverActionsContainer, { anchorElem }), anchorElem) : null;
+  return isEditable ? createPortal12(/* @__PURE__ */ jsx53(TableHoverActionsContainer, { anchorElem }), anchorElem) : null;
 }
 
 // src/plugins/TableOfContentsPlugin/index.tsx
 import { useLexicalComposerContext as useLexicalComposerContext39 } from "@lexical/react/LexicalComposerContext";
 import { TableOfContentsPlugin as LexicalTableOfContentsPlugin } from "@lexical/react/LexicalTableOfContentsPlugin";
-import { useEffect as useEffect41, useRef as useRef18, useState as useState28 } from "react";
-import { jsx as jsx51, jsxs as jsxs27 } from "react/jsx-runtime";
+import { useEffect as useEffect43, useRef as useRef18, useState as useState30 } from "react";
+import { jsx as jsx54, jsxs as jsxs28 } from "react/jsx-runtime";
 var MARGIN_ABOVE_EDITOR = 624;
 var HEADING_WIDTH = 9;
 function indent(tagName) {
@@ -30278,7 +30379,7 @@ function isHeadingBelowTheTopOfThePage(element) {
   return elementYPosition >= MARGIN_ABOVE_EDITOR + HEADING_WIDTH;
 }
 function TableOfContentsList({ tableOfContents }) {
-  const [selectedKey, setSelectedKey] = useState28("");
+  const [selectedKey, setSelectedKey] = useState30("");
   const selectedIndex = useRef18(0);
   const [editor] = useLexicalComposerContext39();
   function scrollToNode(key, currIndex) {
@@ -30291,7 +30392,7 @@ function TableOfContentsList({ tableOfContents }) {
       }
     });
   }
-  useEffect41(() => {
+  useEffect43(() => {
     function scrollCallback() {
       if (tableOfContents.length !== 0 && selectedIndex.current < tableOfContents.length - 1) {
         let currentHeading = editor.getElementByKey(tableOfContents[selectedIndex.current][0]);
@@ -30333,18 +30434,18 @@ function TableOfContentsList({ tableOfContents }) {
     document.addEventListener("scroll", onScroll);
     return () => document.removeEventListener("scroll", onScroll);
   }, [tableOfContents, editor]);
-  return /* @__PURE__ */ jsx51("div", { className: "table-of-contents", children: /* @__PURE__ */ jsx51("ul", { className: "headings", children: tableOfContents.map(([key, text, tag], index) => {
+  return /* @__PURE__ */ jsx54("div", { className: "table-of-contents", children: /* @__PURE__ */ jsx54("ul", { className: "headings", children: tableOfContents.map(([key, text, tag], index) => {
     if (index === 0) {
-      return /* @__PURE__ */ jsxs27("div", { className: "normal-heading-wrapper", children: [
-        /* @__PURE__ */ jsx51("div", { className: "first-heading", onClick: () => scrollToNode(key, index), role: "button", tabIndex: 0, children: `${text}`.length > 20 ? `${text.substring(0, 20)}...` : text }),
-        /* @__PURE__ */ jsx51("br", {})
+      return /* @__PURE__ */ jsxs28("div", { className: "normal-heading-wrapper", children: [
+        /* @__PURE__ */ jsx54("div", { className: "first-heading", onClick: () => scrollToNode(key, index), role: "button", tabIndex: 0, children: `${text}`.length > 20 ? `${text.substring(0, 20)}...` : text }),
+        /* @__PURE__ */ jsx54("br", {})
       ] }, key);
     } else {
-      return /* @__PURE__ */ jsx51(
+      return /* @__PURE__ */ jsx54(
         "div",
         {
           className: `normal-heading-wrapper ${selectedKey === key ? "selected-heading-wrapper" : ""}`,
-          children: /* @__PURE__ */ jsx51("div", { onClick: () => scrollToNode(key, index), role: "button", className: indent(tag), tabIndex: 0, children: /* @__PURE__ */ jsx51(
+          children: /* @__PURE__ */ jsx54("div", { onClick: () => scrollToNode(key, index), role: "button", className: indent(tag), tabIndex: 0, children: /* @__PURE__ */ jsx54(
             "li",
             {
               className: `normal-heading ${selectedKey === key ? "selected-heading" : ""}
@@ -30359,8 +30460,8 @@ function TableOfContentsList({ tableOfContents }) {
   }) }) });
 }
 function TableOfContentsPlugin() {
-  return /* @__PURE__ */ jsx51(LexicalTableOfContentsPlugin, { children: (tableOfContents) => {
-    return /* @__PURE__ */ jsx51(TableOfContentsList, { tableOfContents });
+  return /* @__PURE__ */ jsx54(LexicalTableOfContentsPlugin, { children: (tableOfContents) => {
+    return /* @__PURE__ */ jsx54(TableOfContentsList, { tableOfContents });
   } });
 }
 
@@ -30412,58 +30513,13 @@ import {
   SKIP_SELECTION_FOCUS_TAG as SKIP_SELECTION_FOCUS_TAG2,
   UNDO_COMMAND
 } from "lexical";
-import { useCallback as useCallback20, useEffect as useEffect45, useState as useState32 } from "react";
-
-// src/context/FullscreenContext.tsx
-import { createContext as createContext9, useCallback as useCallback19, useContext as useContext9, useEffect as useEffect42, useMemo as useMemo18, useState as useState29 } from "react";
-import { jsx as jsx52 } from "react/jsx-runtime";
-var FullscreenContext = createContext9(void 0);
-function FullscreenProvider({ children }) {
-  const [isFullscreen, setIsFullscreen] = useState29(false);
-  const toggleFullscreen = useCallback19(() => {
-    setIsFullscreen((prev) => !prev);
-  }, []);
-  const exitFullscreen = useCallback19(() => {
-    setIsFullscreen(false);
-  }, []);
-  useEffect42(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape" && isFullscreen) {
-        setIsFullscreen(false);
-      }
-    };
-    if (isFullscreen) {
-      document.addEventListener("keydown", handleKeyDown);
-    }
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isFullscreen]);
-  const value = useMemo18(
-    () => ({
-      isFullscreen,
-      toggleFullscreen,
-      exitFullscreen
-    }),
-    [isFullscreen, toggleFullscreen, exitFullscreen]
-  );
-  return /* @__PURE__ */ jsx52(FullscreenContext.Provider, { value, children });
-}
-function useFullscreen() {
-  const context = useContext9(FullscreenContext);
-  if (context === void 0) {
-    throw new Error("useFullscreen must be used within a FullscreenProvider");
-  }
-  return context;
-}
-
-// src/plugins/ToolbarPlugin/index.tsx
+import { useCallback as useCallback21, useEffect as useEffect46, useState as useState33 } from "react";
 init_StickyNode2();
 init_url();
 
 // src/plugins/ToolbarPlugin/fontSize.tsx
 import * as React6 from "react";
-import { Fragment as Fragment18, jsx as jsx55, jsxs as jsxs29 } from "react/jsx-runtime";
+import { Fragment as Fragment18, jsx as jsx57, jsxs as jsxs30 } from "react/jsx-runtime";
 function parseFontSize(input) {
   const match = input.match(/^(\d+(?:\.\d+)?)(px|pt)$/);
   return match ? [Number(match[1]), match[2]] : null;
@@ -30540,8 +30596,8 @@ function FontSize({
   React6.useEffect(() => {
     setInputValue(selectionFontSize);
   }, [selectionFontSize]);
-  return /* @__PURE__ */ jsxs29(Fragment18, { children: [
-    /* @__PURE__ */ jsx55(
+  return /* @__PURE__ */ jsxs30(Fragment18, { children: [
+    /* @__PURE__ */ jsx57(
       "button",
       {
         type: "button",
@@ -30552,10 +30608,10 @@ function FontSize({
         className: "toolbar-item font-decrement",
         "aria-label": "Decrease font size",
         title: `Decrease font size (${SHORTCUTS.DECREASE_FONT_SIZE})`,
-        children: /* @__PURE__ */ jsx55("i", { className: "format minus-icon" })
+        children: /* @__PURE__ */ jsx57("i", { className: "format minus-icon" })
       }
     ),
-    /* @__PURE__ */ jsx55(
+    /* @__PURE__ */ jsx57(
       "input",
       {
         type: "number",
@@ -30571,7 +30627,7 @@ function FontSize({
         onBlur: handleInputBlur
       }
     ),
-    /* @__PURE__ */ jsx55(
+    /* @__PURE__ */ jsx57(
       "button",
       {
         type: "button",
@@ -30582,14 +30638,14 @@ function FontSize({
         className: "toolbar-item font-increment",
         "aria-label": "Increase font size",
         title: `Increase font size (${SHORTCUTS.INCREASE_FONT_SIZE})`,
-        children: /* @__PURE__ */ jsx55("i", { className: "format add-icon" })
+        children: /* @__PURE__ */ jsx57("i", { className: "format add-icon" })
       }
     )
   ] });
 }
 
 // src/plugins/ToolbarPlugin/index.tsx
-import { Fragment as Fragment19, jsx as jsx56, jsxs as jsxs30 } from "react/jsx-runtime";
+import { Fragment as Fragment19, jsx as jsx58, jsxs as jsxs31 } from "react/jsx-runtime";
 var CODE_LANGUAGE_OPTIONS_PRISM = getCodeLanguageOptionsPrism().filter(
   (option) => [
     "c",
@@ -30721,7 +30777,7 @@ function BlockFormatDropDown({
   blockType,
   disabled = false
 }) {
-  return /* @__PURE__ */ jsxs30(
+  return /* @__PURE__ */ jsxs31(
     DropDown,
     {
       disabled,
@@ -30730,129 +30786,129 @@ function BlockFormatDropDown({
       buttonLabel: blockTypeToBlockName[blockType],
       buttonAriaLabel: "Formatting options for text style",
       children: [
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "paragraph")}`,
             onClick: () => formatParagraph(editor),
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon paragraph" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Normal" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon paragraph" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Normal" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.NORMAL })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.NORMAL })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "h1")}`,
             onClick: () => formatHeading(editor, blockType, "h1"),
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon h1" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Heading 1" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon h1" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Heading 1" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.HEADING1 })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.HEADING1 })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "h2")}`,
             onClick: () => formatHeading(editor, blockType, "h2"),
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon h2" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Heading 2" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon h2" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Heading 2" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.HEADING2 })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.HEADING2 })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "h3")}`,
             onClick: () => formatHeading(editor, blockType, "h3"),
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon h3" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Heading 3" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon h3" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Heading 3" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.HEADING3 })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.HEADING3 })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "number")}`,
             onClick: () => formatNumberedList(editor, blockType),
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon numbered-list" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Numbered List" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon numbered-list" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Numbered List" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.NUMBERED_LIST })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.NUMBERED_LIST })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "bullet")}`,
             onClick: () => formatBulletList(editor, blockType),
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon bullet-list" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Bullet List" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon bullet-list" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Bullet List" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.BULLET_LIST })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.BULLET_LIST })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "check")}`,
             onClick: () => formatCheckList(editor, blockType),
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon check-list" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Check List" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon check-list" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Check List" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.CHECK_LIST })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.CHECK_LIST })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "quote")}`,
             onClick: () => formatQuote(editor, blockType),
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon quote" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Quote" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon quote" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Quote" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.QUOTE })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.QUOTE })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "code")}`,
             onClick: () => formatCode(editor, blockType),
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon code" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Code Block" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon code" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Code Block" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.CODE_BLOCK })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.CODE_BLOCK })
             ]
           }
         )
@@ -30861,7 +30917,7 @@ function BlockFormatDropDown({
   );
 }
 function Divider() {
-  return /* @__PURE__ */ jsx56("div", { className: "divider" });
+  return /* @__PURE__ */ jsx58("div", { className: "divider" });
 }
 function FontDropDown({
   editor,
@@ -30869,7 +30925,7 @@ function FontDropDown({
   style,
   disabled = false
 }) {
-  const handleClick = useCallback20(
+  const handleClick = useCallback21(
     (option) => {
       editor.update(() => {
         $addUpdateTag3(SKIP_SELECTION_FOCUS_TAG2);
@@ -30884,7 +30940,7 @@ function FontDropDown({
     [editor, style]
   );
   const buttonAriaLabel = style === "font-family" ? "Formatting options for font family" : "Formatting options for font size";
-  return /* @__PURE__ */ jsx56(
+  return /* @__PURE__ */ jsx58(
     DropDown,
     {
       disabled,
@@ -30892,12 +30948,12 @@ function FontDropDown({
       buttonLabel: value,
       buttonIconClassName: style === "font-family" ? "icon block-type font-family" : "",
       buttonAriaLabel,
-      children: (style === "font-family" ? FONT_FAMILY_OPTIONS : FONT_SIZE_OPTIONS).map(([option, text]) => /* @__PURE__ */ jsx56(
+      children: (style === "font-family" ? FONT_FAMILY_OPTIONS : FONT_SIZE_OPTIONS).map(([option, text]) => /* @__PURE__ */ jsx58(
         DropDownItem,
         {
           className: `item ${dropDownActiveClass(value === option)} ${style === "font-size" ? "fontsize-item" : ""}`,
           onClick: () => handleClick(option),
-          children: /* @__PURE__ */ jsx56("span", { className: "text", children: text })
+          children: /* @__PURE__ */ jsx58("span", { className: "text", children: text })
         },
         option
       ))
@@ -30911,7 +30967,7 @@ function ElementFormatDropdown({
   disabled = false
 }) {
   const formatOption = ELEMENT_FORMAT_OPTIONS[value || "left"];
-  return /* @__PURE__ */ jsxs30(
+  return /* @__PURE__ */ jsxs31(
     DropDown,
     {
       disabled,
@@ -30920,7 +30976,7 @@ function ElementFormatDropdown({
       buttonClassName: "toolbar-item spaced alignment",
       buttonAriaLabel: "Formatting options for text alignment",
       children: [
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             onClick: () => {
@@ -30928,15 +30984,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon left-align" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Left Align" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon left-align" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Left Align" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.LEFT_ALIGN })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.LEFT_ALIGN })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             onClick: () => {
@@ -30944,15 +31000,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon center-align" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Center Align" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon center-align" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Center Align" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.CENTER_ALIGN })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.CENTER_ALIGN })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             onClick: () => {
@@ -30960,15 +31016,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon right-align" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Right Align" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon right-align" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Right Align" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.RIGHT_ALIGN })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.RIGHT_ALIGN })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             onClick: () => {
@@ -30976,15 +31032,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon justify-align" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Justify Align" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon justify-align" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Justify Align" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.JUSTIFY_ALIGN })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.JUSTIFY_ALIGN })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             onClick: () => {
@@ -30992,12 +31048,12 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ jsx56("i", { className: `icon ${isRTL ? ELEMENT_FORMAT_OPTIONS.start.iconRTL : ELEMENT_FORMAT_OPTIONS.start.icon}` }),
-              /* @__PURE__ */ jsx56("span", { className: "text", children: "Start Align" })
+              /* @__PURE__ */ jsx58("i", { className: `icon ${isRTL ? ELEMENT_FORMAT_OPTIONS.start.iconRTL : ELEMENT_FORMAT_OPTIONS.start.icon}` }),
+              /* @__PURE__ */ jsx58("span", { className: "text", children: "Start Align" })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             onClick: () => {
@@ -31005,13 +31061,13 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ jsx56("i", { className: `icon ${isRTL ? ELEMENT_FORMAT_OPTIONS.end.iconRTL : ELEMENT_FORMAT_OPTIONS.end.icon}` }),
-              /* @__PURE__ */ jsx56("span", { className: "text", children: "End Align" })
+              /* @__PURE__ */ jsx58("i", { className: `icon ${isRTL ? ELEMENT_FORMAT_OPTIONS.end.iconRTL : ELEMENT_FORMAT_OPTIONS.end.icon}` }),
+              /* @__PURE__ */ jsx58("span", { className: "text", children: "End Align" })
             ]
           }
         ),
-        /* @__PURE__ */ jsx56(Divider, {}),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsx58(Divider, {}),
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             onClick: () => {
@@ -31019,15 +31075,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: `icon ${isRTL ? "indent" : "outdent"}` }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Outdent" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: `icon ${isRTL ? "indent" : "outdent"}` }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Outdent" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.OUTDENT })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.OUTDENT })
             ]
           }
         ),
-        /* @__PURE__ */ jsxs30(
+        /* @__PURE__ */ jsxs31(
           DropDownItem,
           {
             onClick: () => {
@@ -31035,11 +31091,11 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ jsx56("i", { className: `icon ${isRTL ? "outdent" : "indent"}` }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Indent" })
+              /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ jsx58("i", { className: `icon ${isRTL ? "outdent" : "indent"}` }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Indent" })
               ] }),
-              /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.INDENT })
+              /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.INDENT })
             ]
           }
         )
@@ -31077,9 +31133,9 @@ function ToolbarPlugin({
   setActiveEditor,
   setIsLinkEditMode
 }) {
-  const [selectedElementKey, setSelectedElementKey] = useState32(null);
+  const [selectedElementKey, setSelectedElementKey] = useState33(null);
   const [modal, showModal] = useModal();
-  const [isEditable, setIsEditable] = useState32(() => editor.isEditable());
+  const [isEditable, setIsEditable] = useState33(() => editor.isEditable());
   const { toolbarState, updateToolbarState } = useToolbarState();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const dispatchToolbarCommand = (command, payload = void 0, skipRefocus = false) => {
@@ -31091,7 +31147,7 @@ function ToolbarPlugin({
     });
   };
   const dispatchFormatTextCommand = (payload, skipRefocus = false) => dispatchToolbarCommand(FORMAT_TEXT_COMMAND3, payload, skipRefocus);
-  const $handleHeadingNode = useCallback20(
+  const $handleHeadingNode = useCallback21(
     (selectedElement) => {
       const type = $isHeadingNode3(selectedElement) ? selectedElement.getTag() : selectedElement.getType();
       if (type in blockTypeToBlockName) {
@@ -31103,7 +31159,7 @@ function ToolbarPlugin({
   const {
     settings: { isCodeHighlighted, isCodeShiki }
   } = useSettings();
-  const $handleCodeNode = useCallback20(
+  const $handleCodeNode = useCallback21(
     (element) => {
       if ($isCodeNode4(element)) {
         const language = element.getLanguage();
@@ -31118,7 +31174,7 @@ function ToolbarPlugin({
     },
     [updateToolbarState, isCodeHighlighted, isCodeShiki]
   );
-  const $updateToolbar = useCallback20(() => {
+  const $updateToolbar = useCallback21(() => {
     const selection = $getSelection19();
     if ($isRangeSelection16(selection)) {
       if (activeEditor !== editor && $isEditorIsNestedEditor(activeEditor)) {
@@ -31203,7 +31259,7 @@ function ToolbarPlugin({
       }
     }
   }, [activeEditor, editor, updateToolbarState, $handleHeadingNode, $handleCodeNode]);
-  useEffect45(() => {
+  useEffect46(() => {
     return editor.registerCommand(
       SELECTION_CHANGE_COMMAND6,
       (_payload, newEditor) => {
@@ -31214,7 +31270,7 @@ function ToolbarPlugin({
       COMMAND_PRIORITY_CRITICAL3
     );
   }, [editor, $updateToolbar, setActiveEditor]);
-  useEffect45(() => {
+  useEffect46(() => {
     activeEditor.getEditorState().read(
       () => {
         $updateToolbar();
@@ -31222,7 +31278,7 @@ function ToolbarPlugin({
       { editor: activeEditor }
     );
   }, [activeEditor, $updateToolbar]);
-  useEffect45(() => {
+  useEffect46(() => {
     return mergeRegister16(
       editor.registerEditableListener((editable) => {
         setIsEditable(editable);
@@ -31253,7 +31309,7 @@ function ToolbarPlugin({
       )
     );
   }, [$updateToolbar, activeEditor, editor, updateToolbarState]);
-  const applyStyleText = useCallback20(
+  const applyStyleText = useCallback21(
     (styles, skipHistoryStack, skipRefocus = false) => {
       activeEditor.update(
         () => {
@@ -31270,19 +31326,19 @@ function ToolbarPlugin({
     },
     [activeEditor]
   );
-  const onFontColorSelect = useCallback20(
+  const onFontColorSelect = useCallback21(
     (value, skipHistoryStack, skipRefocus) => {
       applyStyleText({ color: value }, skipHistoryStack, skipRefocus);
     },
     [applyStyleText]
   );
-  const onBgColorSelect = useCallback20(
+  const onBgColorSelect = useCallback21(
     (value, skipHistoryStack, skipRefocus) => {
       applyStyleText({ "background-color": value }, skipHistoryStack, skipRefocus);
     },
     [applyStyleText]
   );
-  const insertLink = useCallback20(() => {
+  const insertLink = useCallback21(() => {
     if (!toolbarState.isLink) {
       setIsLinkEditMode(true);
       activeEditor.dispatchCommand(TOGGLE_LINK_COMMAND6, sanitizeUrl("https://"));
@@ -31291,7 +31347,7 @@ function ToolbarPlugin({
       activeEditor.dispatchCommand(TOGGLE_LINK_COMMAND6, null);
     }
   }, [activeEditor, setIsLinkEditMode, toolbarState.isLink]);
-  const onCodeLanguageSelect = useCallback20(
+  const onCodeLanguageSelect = useCallback21(
     (value) => {
       activeEditor.update(() => {
         $addUpdateTag3(SKIP_SELECTION_FOCUS_TAG2);
@@ -31305,7 +31361,7 @@ function ToolbarPlugin({
     },
     [activeEditor, selectedElementKey]
   );
-  const onCodeThemeSelect = useCallback20(
+  const onCodeThemeSelect = useCallback21(
     (value) => {
       activeEditor.update(() => {
         if (selectedElementKey !== null) {
@@ -31320,8 +31376,8 @@ function ToolbarPlugin({
   );
   const canViewerSeeInsertDropdown = !toolbarState.isImageCaption;
   const canViewerSeeInsertCodeButton = !toolbarState.isImageCaption;
-  return /* @__PURE__ */ jsxs30("div", { className: "toolbar", children: [
-    /* @__PURE__ */ jsx56(
+  return /* @__PURE__ */ jsxs31("div", { className: "toolbar", children: [
+    /* @__PURE__ */ jsx58(
       "button",
       {
         disabled: !toolbarState.canUndo || !isEditable,
@@ -31330,10 +31386,10 @@ function ToolbarPlugin({
         type: "button",
         className: "toolbar-item spaced",
         "aria-label": "Undo",
-        children: /* @__PURE__ */ jsx56("i", { className: "format undo" })
+        children: /* @__PURE__ */ jsx58("i", { className: "format undo" })
       }
     ),
-    /* @__PURE__ */ jsx56(
+    /* @__PURE__ */ jsx58(
       "button",
       {
         disabled: !toolbarState.canRedo || !isEditable,
@@ -31342,16 +31398,16 @@ function ToolbarPlugin({
         type: "button",
         className: "toolbar-item",
         "aria-label": "Redo",
-        children: /* @__PURE__ */ jsx56("i", { className: "format redo" })
+        children: /* @__PURE__ */ jsx58("i", { className: "format redo" })
       }
     ),
-    /* @__PURE__ */ jsx56(Divider, {}),
-    toolbarState.blockType in blockTypeToBlockName && activeEditor === editor && /* @__PURE__ */ jsxs30(Fragment19, { children: [
-      /* @__PURE__ */ jsx56(BlockFormatDropDown, { disabled: !isEditable, blockType: toolbarState.blockType, editor: activeEditor }),
-      /* @__PURE__ */ jsx56(Divider, {})
+    /* @__PURE__ */ jsx58(Divider, {}),
+    toolbarState.blockType in blockTypeToBlockName && activeEditor === editor && /* @__PURE__ */ jsxs31(Fragment19, { children: [
+      /* @__PURE__ */ jsx58(BlockFormatDropDown, { disabled: !isEditable, blockType: toolbarState.blockType, editor: activeEditor }),
+      /* @__PURE__ */ jsx58(Divider, {})
     ] }),
-    toolbarState.blockType === "code" && isCodeHighlighted ? /* @__PURE__ */ jsxs30(Fragment19, { children: [
-      !isCodeShiki && /* @__PURE__ */ jsx56(
+    toolbarState.blockType === "code" && isCodeHighlighted ? /* @__PURE__ */ jsxs31(Fragment19, { children: [
+      !isCodeShiki && /* @__PURE__ */ jsx58(
         DropDown,
         {
           disabled: !isEditable,
@@ -31361,20 +31417,20 @@ function ToolbarPlugin({
           ) || ["", ""])[1],
           buttonAriaLabel: "Select language",
           children: CODE_LANGUAGE_OPTIONS_PRISM.map(([value, name]) => {
-            return /* @__PURE__ */ jsx56(
+            return /* @__PURE__ */ jsx58(
               DropDownItem,
               {
                 className: `item ${dropDownActiveClass(value === toolbarState.codeLanguage)}`,
                 onClick: () => onCodeLanguageSelect(value),
-                children: /* @__PURE__ */ jsx56("span", { className: "text", children: name })
+                children: /* @__PURE__ */ jsx58("span", { className: "text", children: name })
               },
               value
             );
           })
         }
       ),
-      isCodeShiki && /* @__PURE__ */ jsxs30(Fragment19, { children: [
-        /* @__PURE__ */ jsx56(
+      isCodeShiki && /* @__PURE__ */ jsxs31(Fragment19, { children: [
+        /* @__PURE__ */ jsx58(
           DropDown,
           {
             disabled: !isEditable,
@@ -31384,19 +31440,19 @@ function ToolbarPlugin({
             ) || ["", ""])[1],
             buttonAriaLabel: "Select language",
             children: CODE_LANGUAGE_OPTIONS_SHIKI.map(([value, name]) => {
-              return /* @__PURE__ */ jsx56(
+              return /* @__PURE__ */ jsx58(
                 DropDownItem,
                 {
                   className: `item ${dropDownActiveClass(value === toolbarState.codeLanguage)}`,
                   onClick: () => onCodeLanguageSelect(value),
-                  children: /* @__PURE__ */ jsx56("span", { className: "text", children: name })
+                  children: /* @__PURE__ */ jsx58("span", { className: "text", children: name })
                 },
                 value
               );
             })
           }
         ),
-        /* @__PURE__ */ jsx56(
+        /* @__PURE__ */ jsx58(
           DropDown,
           {
             disabled: !isEditable,
@@ -31404,12 +31460,12 @@ function ToolbarPlugin({
             buttonLabel: (CODE_THEME_OPTIONS_SHIKI.find((opt) => opt[0] === toolbarState.codeTheme) || ["", ""])[1],
             buttonAriaLabel: "Select theme",
             children: CODE_THEME_OPTIONS_SHIKI.map(([value, name]) => {
-              return /* @__PURE__ */ jsx56(
+              return /* @__PURE__ */ jsx58(
                 DropDownItem,
                 {
                   className: `item ${dropDownActiveClass(value === toolbarState.codeTheme)}`,
                   onClick: () => onCodeThemeSelect(value),
-                  children: /* @__PURE__ */ jsx56("span", { className: "text", children: name })
+                  children: /* @__PURE__ */ jsx58("span", { className: "text", children: name })
                 },
                 value
               );
@@ -31417,8 +31473,8 @@ function ToolbarPlugin({
           }
         )
       ] })
-    ] }) : /* @__PURE__ */ jsxs30(Fragment19, { children: [
-      /* @__PURE__ */ jsx56(
+    ] }) : /* @__PURE__ */ jsxs31(Fragment19, { children: [
+      /* @__PURE__ */ jsx58(
         FontDropDown,
         {
           disabled: !isEditable,
@@ -31427,8 +31483,8 @@ function ToolbarPlugin({
           editor: activeEditor
         }
       ),
-      /* @__PURE__ */ jsx56(Divider, {}),
-      /* @__PURE__ */ jsx56(
+      /* @__PURE__ */ jsx58(Divider, {}),
+      /* @__PURE__ */ jsx58(
         FontSize,
         {
           selectionFontSize: parseFontSizeForToolbar(toolbarState.fontSize).slice(0, -2),
@@ -31436,8 +31492,8 @@ function ToolbarPlugin({
           disabled: !isEditable
         }
       ),
-      /* @__PURE__ */ jsx56(Divider, {}),
-      /* @__PURE__ */ jsx56(
+      /* @__PURE__ */ jsx58(Divider, {}),
+      /* @__PURE__ */ jsx58(
         "button",
         {
           disabled: !isEditable,
@@ -31446,10 +31502,10 @@ function ToolbarPlugin({
           title: `Bold (${SHORTCUTS.BOLD})`,
           type: "button",
           "aria-label": `Format text as bold. Shortcut: ${SHORTCUTS.BOLD}`,
-          children: /* @__PURE__ */ jsx56("i", { className: "format bold" })
+          children: /* @__PURE__ */ jsx58("i", { className: "format bold" })
         }
       ),
-      /* @__PURE__ */ jsx56(
+      /* @__PURE__ */ jsx58(
         "button",
         {
           disabled: !isEditable,
@@ -31458,10 +31514,10 @@ function ToolbarPlugin({
           title: `Italic (${SHORTCUTS.ITALIC})`,
           type: "button",
           "aria-label": `Format text as italics. Shortcut: ${SHORTCUTS.ITALIC}`,
-          children: /* @__PURE__ */ jsx56("i", { className: "format italic" })
+          children: /* @__PURE__ */ jsx58("i", { className: "format italic" })
         }
       ),
-      /* @__PURE__ */ jsx56(
+      /* @__PURE__ */ jsx58(
         "button",
         {
           disabled: !isEditable,
@@ -31470,10 +31526,10 @@ function ToolbarPlugin({
           title: `Underline (${SHORTCUTS.UNDERLINE})`,
           type: "button",
           "aria-label": `Format text to underlined. Shortcut: ${SHORTCUTS.UNDERLINE}`,
-          children: /* @__PURE__ */ jsx56("i", { className: "format underline" })
+          children: /* @__PURE__ */ jsx58("i", { className: "format underline" })
         }
       ),
-      canViewerSeeInsertCodeButton && /* @__PURE__ */ jsx56(
+      canViewerSeeInsertCodeButton && /* @__PURE__ */ jsx58(
         "button",
         {
           disabled: !isEditable,
@@ -31482,10 +31538,10 @@ function ToolbarPlugin({
           title: `Insert code block (${SHORTCUTS.INSERT_CODE_BLOCK})`,
           type: "button",
           "aria-label": "Insert code block",
-          children: /* @__PURE__ */ jsx56("i", { className: "format code" })
+          children: /* @__PURE__ */ jsx58("i", { className: "format code" })
         }
       ),
-      /* @__PURE__ */ jsx56(
+      /* @__PURE__ */ jsx58(
         "button",
         {
           disabled: !isEditable,
@@ -31494,10 +31550,10 @@ function ToolbarPlugin({
           "aria-label": "Insert link",
           title: `Insert link (${SHORTCUTS.INSERT_LINK})`,
           type: "button",
-          children: /* @__PURE__ */ jsx56("i", { className: "format link" })
+          children: /* @__PURE__ */ jsx58("i", { className: "format link" })
         }
       ),
-      /* @__PURE__ */ jsx56(
+      /* @__PURE__ */ jsx58(
         DropdownColorPicker,
         {
           disabled: !isEditable,
@@ -31509,7 +31565,7 @@ function ToolbarPlugin({
           title: "text color"
         }
       ),
-      /* @__PURE__ */ jsx56(
+      /* @__PURE__ */ jsx58(
         DropdownColorPicker,
         {
           disabled: !isEditable,
@@ -31521,7 +31577,7 @@ function ToolbarPlugin({
           title: "bg color"
         }
       ),
-      /* @__PURE__ */ jsxs30(
+      /* @__PURE__ */ jsxs31(
         DropDown,
         {
           disabled: !isEditable,
@@ -31530,7 +31586,7 @@ function ToolbarPlugin({
           buttonAriaLabel: "Formatting options for additional text styles",
           buttonIconClassName: "icon dropdown-more",
           children: [
-            /* @__PURE__ */ jsxs30(
+            /* @__PURE__ */ jsxs31(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("lowercase", isKeyboardInput(e)),
@@ -31538,15 +31594,15 @@ function ToolbarPlugin({
                 title: "Lowercase",
                 "aria-label": "Format text to lowercase",
                 children: [
-                  /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon lowercase" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Lowercase" })
+                  /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ jsx58("i", { className: "icon lowercase" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Lowercase" })
                   ] }),
-                  /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.LOWERCASE })
+                  /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.LOWERCASE })
                 ]
               }
             ),
-            /* @__PURE__ */ jsxs30(
+            /* @__PURE__ */ jsxs31(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("uppercase", isKeyboardInput(e)),
@@ -31554,15 +31610,15 @@ function ToolbarPlugin({
                 title: "Uppercase",
                 "aria-label": "Format text to uppercase",
                 children: [
-                  /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon uppercase" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Uppercase" })
+                  /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ jsx58("i", { className: "icon uppercase" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Uppercase" })
                   ] }),
-                  /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.UPPERCASE })
+                  /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.UPPERCASE })
                 ]
               }
             ),
-            /* @__PURE__ */ jsxs30(
+            /* @__PURE__ */ jsxs31(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("capitalize", isKeyboardInput(e)),
@@ -31570,15 +31626,15 @@ function ToolbarPlugin({
                 title: "Capitalize",
                 "aria-label": "Format text to capitalize",
                 children: [
-                  /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon capitalize" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Capitalize" })
+                  /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ jsx58("i", { className: "icon capitalize" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Capitalize" })
                   ] }),
-                  /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.CAPITALIZE })
+                  /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.CAPITALIZE })
                 ]
               }
             ),
-            /* @__PURE__ */ jsxs30(
+            /* @__PURE__ */ jsxs31(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("strikethrough", isKeyboardInput(e)),
@@ -31586,15 +31642,15 @@ function ToolbarPlugin({
                 title: "Strikethrough",
                 "aria-label": "Format text with a strikethrough",
                 children: [
-                  /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon strikethrough" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Strikethrough" })
+                  /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ jsx58("i", { className: "icon strikethrough" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Strikethrough" })
                   ] }),
-                  /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.STRIKETHROUGH })
+                  /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.STRIKETHROUGH })
                 ]
               }
             ),
-            /* @__PURE__ */ jsxs30(
+            /* @__PURE__ */ jsxs31(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("subscript", isKeyboardInput(e)),
@@ -31602,15 +31658,15 @@ function ToolbarPlugin({
                 title: "Subscript",
                 "aria-label": "Format text with a subscript",
                 children: [
-                  /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon subscript" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Subscript" })
+                  /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ jsx58("i", { className: "icon subscript" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Subscript" })
                   ] }),
-                  /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.SUBSCRIPT })
+                  /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.SUBSCRIPT })
                 ]
               }
             ),
-            /* @__PURE__ */ jsxs30(
+            /* @__PURE__ */ jsxs31(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("superscript", isKeyboardInput(e)),
@@ -31618,28 +31674,28 @@ function ToolbarPlugin({
                 title: "Superscript",
                 "aria-label": "Format text with a superscript",
                 children: [
-                  /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon superscript" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Superscript" })
+                  /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ jsx58("i", { className: "icon superscript" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Superscript" })
                   ] }),
-                  /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.SUPERSCRIPT })
+                  /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.SUPERSCRIPT })
                 ]
               }
             ),
-            /* @__PURE__ */ jsx56(
+            /* @__PURE__ */ jsx58(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("highlight", isKeyboardInput(e)),
                 className: `item wide ${dropDownActiveClass(toolbarState.isHighlight)}`,
                 title: "Highlight",
                 "aria-label": "Format text with a highlight",
-                children: /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                  /* @__PURE__ */ jsx56("i", { className: "icon highlight" }),
-                  /* @__PURE__ */ jsx56("span", { className: "text", children: "Highlight" })
+                children: /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                  /* @__PURE__ */ jsx58("i", { className: "icon highlight" }),
+                  /* @__PURE__ */ jsx58("span", { className: "text", children: "Highlight" })
                 ] })
               }
             ),
-            /* @__PURE__ */ jsxs30(
+            /* @__PURE__ */ jsxs31(
               DropDownItem,
               {
                 onClick: (e) => clearFormatting(activeEditor, isKeyboardInput(e)),
@@ -31647,20 +31703,20 @@ function ToolbarPlugin({
                 title: "Clear text formatting",
                 "aria-label": "Clear all text formatting",
                 children: [
-                  /* @__PURE__ */ jsxs30("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon clear" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Clear Formatting" })
+                  /* @__PURE__ */ jsxs31("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ jsx58("i", { className: "icon clear" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Clear Formatting" })
                   ] }),
-                  /* @__PURE__ */ jsx56("span", { className: "shortcut", children: SHORTCUTS.CLEAR_FORMATTING })
+                  /* @__PURE__ */ jsx58("span", { className: "shortcut", children: SHORTCUTS.CLEAR_FORMATTING })
                 ]
               }
             )
           ]
         }
       ),
-      canViewerSeeInsertDropdown && /* @__PURE__ */ jsxs30(Fragment19, { children: [
-        /* @__PURE__ */ jsx56(Divider, {}),
-        /* @__PURE__ */ jsxs30(
+      canViewerSeeInsertDropdown && /* @__PURE__ */ jsxs31(Fragment19, { children: [
+        /* @__PURE__ */ jsx58(Divider, {}),
+        /* @__PURE__ */ jsxs31(
           DropDown,
           {
             disabled: !isEditable,
@@ -31669,67 +31725,67 @@ function ToolbarPlugin({
             buttonAriaLabel: "Insert specialized editor node",
             buttonIconClassName: "icon plus",
             children: [
-              /* @__PURE__ */ jsxs30(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_HORIZONTAL_RULE_COMMAND3), className: "item", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon horizontal-rule" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Horizontal Rule" })
+              /* @__PURE__ */ jsxs31(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_HORIZONTAL_RULE_COMMAND3), className: "item", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon horizontal-rule" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Horizontal Rule" })
               ] }),
-              /* @__PURE__ */ jsxs30(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_PAGE_BREAK), className: "item", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon page-break" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Page Break" })
+              /* @__PURE__ */ jsxs31(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_PAGE_BREAK), className: "item", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon page-break" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Page Break" })
               ] }),
-              /* @__PURE__ */ jsxs30(
+              /* @__PURE__ */ jsxs31(
                 DropDownItem,
                 {
                   onClick: () => {
-                    showModal("Insert Image", (onClose) => /* @__PURE__ */ jsx56(InsertImageDialog, { activeEditor, onClose }));
+                    showModal("Insert Image", (onClose) => /* @__PURE__ */ jsx58(InsertImageDialog, { activeEditor, onClose }));
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon image" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Image" })
+                    /* @__PURE__ */ jsx58("i", { className: "icon image" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Image" })
                   ]
                 }
               ),
-              /* @__PURE__ */ jsxs30(
+              /* @__PURE__ */ jsxs31(
                 DropDownItem,
                 {
                   onClick: () => {
-                    showModal("Insert Table", (onClose) => /* @__PURE__ */ jsx56(InsertTableDialog, { activeEditor, onClose }));
+                    showModal("Insert Table", (onClose) => /* @__PURE__ */ jsx58(InsertTableDialog, { activeEditor, onClose }));
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon table" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Table" })
+                    /* @__PURE__ */ jsx58("i", { className: "icon table" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Table" })
                   ]
                 }
               ),
-              /* @__PURE__ */ jsxs30(
+              /* @__PURE__ */ jsxs31(
                 DropDownItem,
                 {
                   onClick: () => {
-                    showModal("Insert Columns Layout", (onClose) => /* @__PURE__ */ jsx56(InsertLayoutDialog, { activeEditor, onClose }));
+                    showModal("Insert Columns Layout", (onClose) => /* @__PURE__ */ jsx58(InsertLayoutDialog, { activeEditor, onClose }));
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon columns" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Columns Layout" })
+                    /* @__PURE__ */ jsx58("i", { className: "icon columns" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Columns Layout" })
                   ]
                 }
               ),
-              /* @__PURE__ */ jsxs30(
+              /* @__PURE__ */ jsxs31(
                 DropDownItem,
                 {
                   onClick: () => {
-                    showModal("Insert Equation", (onClose) => /* @__PURE__ */ jsx56(InsertEquationDialog, { activeEditor, onClose }));
+                    showModal("Insert Equation", (onClose) => /* @__PURE__ */ jsx58(InsertEquationDialog, { activeEditor, onClose }));
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon equation" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Equation" })
+                    /* @__PURE__ */ jsx58("i", { className: "icon equation" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Equation" })
                   ]
                 }
               ),
-              /* @__PURE__ */ jsxs30(
+              /* @__PURE__ */ jsxs31(
                 DropDownItem,
                 {
                   onClick: () => {
@@ -31756,16 +31812,16 @@ function ToolbarPlugin({
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon sticky" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Sticky Note" })
+                    /* @__PURE__ */ jsx58("i", { className: "icon sticky" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Sticky Note" })
                   ]
                 }
               ),
-              /* @__PURE__ */ jsxs30(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_COLLAPSIBLE_COMMAND), className: "item", children: [
-                /* @__PURE__ */ jsx56("i", { className: "icon caret-right" }),
-                /* @__PURE__ */ jsx56("span", { className: "text", children: "Collapsible container" })
+              /* @__PURE__ */ jsxs31(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_COLLAPSIBLE_COMMAND), className: "item", children: [
+                /* @__PURE__ */ jsx58("i", { className: "icon caret-right" }),
+                /* @__PURE__ */ jsx58("span", { className: "text", children: "Collapsible container" })
               ] }),
-              /* @__PURE__ */ jsxs30(
+              /* @__PURE__ */ jsxs31(
                 DropDownItem,
                 {
                   onClick: () => {
@@ -31777,19 +31833,19 @@ function ToolbarPlugin({
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ jsx56("i", { className: "icon calendar" }),
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: "Date" })
+                    /* @__PURE__ */ jsx58("i", { className: "icon calendar" }),
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: "Date" })
                   ]
                 }
               ),
-              EmbedConfigs.map((embedConfig) => /* @__PURE__ */ jsxs30(
+              EmbedConfigs.map((embedConfig) => /* @__PURE__ */ jsxs31(
                 DropDownItem,
                 {
                   onClick: () => dispatchToolbarCommand(INSERT_EMBED_COMMAND2, embedConfig.type),
                   className: "item",
                   children: [
                     embedConfig.icon,
-                    /* @__PURE__ */ jsx56("span", { className: "text", children: embedConfig.contentName })
+                    /* @__PURE__ */ jsx58("span", { className: "text", children: embedConfig.contentName })
                   ]
                 },
                 embedConfig.type
@@ -31799,8 +31855,8 @@ function ToolbarPlugin({
         )
       ] })
     ] }),
-    /* @__PURE__ */ jsx56(Divider, {}),
-    /* @__PURE__ */ jsx56(
+    /* @__PURE__ */ jsx58(Divider, {}),
+    /* @__PURE__ */ jsx58(
       ElementFormatDropdown,
       {
         disabled: !isEditable,
@@ -31809,8 +31865,8 @@ function ToolbarPlugin({
         isRTL: toolbarState.isRTL
       }
     ),
-    /* @__PURE__ */ jsx56(Divider, {}),
-    /* @__PURE__ */ jsx56(
+    /* @__PURE__ */ jsx58(Divider, {}),
+    /* @__PURE__ */ jsx58(
       "button",
       {
         type: "button",
@@ -31818,7 +31874,7 @@ function ToolbarPlugin({
         className: "toolbar-item spaced",
         "aria-label": isFullscreen ? "\u5168\u753B\u9762\u30E2\u30FC\u30C9\u3092\u7D42\u4E86" : "\u5168\u753B\u9762\u30E2\u30FC\u30C9",
         title: isFullscreen ? "\u5168\u753B\u9762\u30E2\u30FC\u30C9\u3092\u7D42\u4E86 (Esc)" : "\u5168\u753B\u9762\u30E2\u30FC\u30C9",
-        children: /* @__PURE__ */ jsx56("i", { className: `format ${isFullscreen ? "fullscreen-exit" : "fullscreen"}` })
+        children: /* @__PURE__ */ jsx58("i", { className: `format ${isFullscreen ? "fullscreen-exit" : "fullscreen"}` })
       }
     ),
     modal
@@ -31827,7 +31883,7 @@ function ToolbarPlugin({
 
 // src/core/Editor.tsx
 init_ContentEditable2();
-import { Fragment as Fragment20, jsx as jsx57, jsxs as jsxs31 } from "react/jsx-runtime";
+import { Fragment as Fragment20, jsx as jsx59, jsxs as jsxs32 } from "react/jsx-runtime";
 function Editor({ isFullscreen = false }) {
   const { historyState } = useSharedHistoryContext();
   const {
@@ -31854,17 +31910,17 @@ function Editor({ isFullscreen = false }) {
   } = useSettings();
   const isEditable = useLexicalEditable6();
   const placeholder = "\u6587\u7AE0\u3092\u5165\u529B\u3059\u308B\u524D\u306B\u662F\u975E\u300C/\u300D\u3092\u5165\u529B\u3057\u3066\u307F\u3066\u304F\u3060\u3055\u3044\u3002";
-  const [floatingAnchorElem, setFloatingAnchorElem] = useState33(null);
-  const [isSmallWidthViewport, setIsSmallWidthViewport] = useState33(false);
+  const [floatingAnchorElem, setFloatingAnchorElem] = useState34(null);
+  const [isSmallWidthViewport, setIsSmallWidthViewport] = useState34(false);
   const [editor] = useLexicalComposerContext41();
-  const [activeEditor, setActiveEditor] = useState33(editor);
-  const [isLinkEditMode, setIsLinkEditMode] = useState33(false);
+  const [activeEditor, setActiveEditor] = useState34(editor);
+  const [isLinkEditMode, setIsLinkEditMode] = useState34(false);
   const onRef = (_floatingAnchorElem) => {
     if (_floatingAnchorElem !== null) {
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
-  useEffect46(() => {
+  useEffect47(() => {
     const updateViewPortWidth = () => {
       const isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
@@ -31877,8 +31933,8 @@ function Editor({ isFullscreen = false }) {
       window.removeEventListener("resize", updateViewPortWidth);
     };
   }, [isSmallWidthViewport]);
-  return /* @__PURE__ */ jsxs31(Fragment20, { children: [
-    showToolbar && /* @__PURE__ */ jsx57(
+  return /* @__PURE__ */ jsxs32(Fragment20, { children: [
+    showToolbar && /* @__PURE__ */ jsx59(
       ToolbarPlugin,
       {
         editor,
@@ -31887,35 +31943,35 @@ function Editor({ isFullscreen = false }) {
         setIsLinkEditMode
       }
     ),
-    showToolbar && /* @__PURE__ */ jsx57(ShortcutsPlugin, { editor: activeEditor, setIsLinkEditMode }),
-    /* @__PURE__ */ jsxs31("div", { className: `editor-container ${isFullscreen ? "flex-1 overflow-auto" : ""}`, children: [
-      isMaxLength && /* @__PURE__ */ jsx57(MaxLengthPlugin, { maxLength: 30 }),
-      /* @__PURE__ */ jsx57(DragDropPaste, {}),
-      autoFocus && /* @__PURE__ */ jsx57(AutoFocusPlugin, {}),
-      selectionAlwaysOnDisplay && /* @__PURE__ */ jsx57(SelectionAlwaysOnDisplay, {}),
-      /* @__PURE__ */ jsx57(ClearEditorPlugin, {}),
-      /* @__PURE__ */ jsx57(ComponentPickerMenuPlugin, {}),
-      /* @__PURE__ */ jsx57(EmojisPlugin2, {}),
-      /* @__PURE__ */ jsx57(AutoEmbedPlugin, {}),
-      /* @__PURE__ */ jsx57(NewMentionsPlugin, {}),
-      /* @__PURE__ */ jsx57(EmojisPlugin, {}),
-      /* @__PURE__ */ jsx57(HashtagPlugin2, {}),
-      /* @__PURE__ */ jsx57(LexicalAutoLinkPlugin, {}),
-      /* @__PURE__ */ jsx57(DateTimePlugin, {}),
-      /* @__PURE__ */ jsx57(HistoryPlugin, { externalHistoryState: historyState }),
-      /* @__PURE__ */ jsx57(
+    showToolbar && /* @__PURE__ */ jsx59(ShortcutsPlugin, { editor: activeEditor, setIsLinkEditMode }),
+    /* @__PURE__ */ jsxs32("div", { className: `editor-container ${isFullscreen ? "flex-1 overflow-auto" : ""}`, children: [
+      isMaxLength && /* @__PURE__ */ jsx59(MaxLengthPlugin, { maxLength: 30 }),
+      /* @__PURE__ */ jsx59(DragDropPaste, {}),
+      autoFocus && /* @__PURE__ */ jsx59(AutoFocusPlugin, {}),
+      selectionAlwaysOnDisplay && /* @__PURE__ */ jsx59(SelectionAlwaysOnDisplay, {}),
+      /* @__PURE__ */ jsx59(ClearEditorPlugin, {}),
+      /* @__PURE__ */ jsx59(ComponentPickerMenuPlugin, {}),
+      /* @__PURE__ */ jsx59(EmojisPlugin2, {}),
+      /* @__PURE__ */ jsx59(AutoEmbedPlugin, {}),
+      /* @__PURE__ */ jsx59(NewMentionsPlugin, {}),
+      /* @__PURE__ */ jsx59(EmojisPlugin, {}),
+      /* @__PURE__ */ jsx59(HashtagPlugin2, {}),
+      /* @__PURE__ */ jsx59(LexicalAutoLinkPlugin, {}),
+      /* @__PURE__ */ jsx59(DateTimePlugin, {}),
+      /* @__PURE__ */ jsx59(HistoryPlugin, { externalHistoryState: historyState }),
+      /* @__PURE__ */ jsx59(
         RichTextPlugin2,
         {
-          contentEditable: /* @__PURE__ */ jsx57("div", { className: "editor-scroller", children: /* @__PURE__ */ jsx57("div", { className: "editor", ref: onRef, children: /* @__PURE__ */ jsx57(LexicalContentEditable, { placeholder, placeholderClassName: "editor-placeholder" }) }) }),
+          contentEditable: /* @__PURE__ */ jsx59("div", { className: "editor-scroller", children: /* @__PURE__ */ jsx59("div", { className: "editor", ref: onRef, children: /* @__PURE__ */ jsx59(LexicalContentEditable, { placeholder, placeholderClassName: "editor-placeholder" }) }) }),
           ErrorBoundary: LexicalErrorBoundary3
         }
       ),
-      /* @__PURE__ */ jsx57(MarkdownPlugin, {}),
-      /* @__PURE__ */ jsx57(MarkdownPastePlugin, {}),
-      isCodeHighlighted && (isCodeShiki ? /* @__PURE__ */ jsx57(CodeHighlightShikiPlugin, {}) : /* @__PURE__ */ jsx57(CodeHighlightPrismPlugin, {})),
-      /* @__PURE__ */ jsx57(ListPlugin, { hasStrictIndent: listStrictIndent }),
-      /* @__PURE__ */ jsx57(CheckListPlugin, {}),
-      /* @__PURE__ */ jsx57(
+      /* @__PURE__ */ jsx59(MarkdownPlugin, {}),
+      /* @__PURE__ */ jsx59(MarkdownPastePlugin, {}),
+      isCodeHighlighted && (isCodeShiki ? /* @__PURE__ */ jsx59(CodeHighlightShikiPlugin, {}) : /* @__PURE__ */ jsx59(CodeHighlightPrismPlugin, {})),
+      /* @__PURE__ */ jsx59(ListPlugin, { hasStrictIndent: listStrictIndent }),
+      /* @__PURE__ */ jsx59(CheckListPlugin, {}),
+      /* @__PURE__ */ jsx59(
         TablePlugin,
         {
           hasCellMerge: tableCellMerge,
@@ -31924,23 +31980,23 @@ function Editor({ isFullscreen = false }) {
           hasTabHandler
         }
       ),
-      /* @__PURE__ */ jsx57(TableCellResizerPlugin, {}),
-      /* @__PURE__ */ jsx57(ImagesPlugin, {}),
-      /* @__PURE__ */ jsx57(LinkPlugin, { hasLinkAttributes }),
-      /* @__PURE__ */ jsx57(TwitterPlugin, {}),
-      /* @__PURE__ */ jsx57(YouTubePlugin, {}),
-      /* @__PURE__ */ jsx57(FigmaPlugin, {}),
-      /* @__PURE__ */ jsx57(ClickableLinkPlugin, { disabled: isEditable }),
-      /* @__PURE__ */ jsx57(FragmentLinkPlugin, {}),
-      /* @__PURE__ */ jsx57(HorizontalRulePlugin, {}),
-      /* @__PURE__ */ jsx57(EquationsPlugin, {}),
-      /* @__PURE__ */ jsx57(TabFocusPlugin, {}),
-      /* @__PURE__ */ jsx57(TabIndentationPlugin, { maxIndent: 7 }),
-      /* @__PURE__ */ jsx57(CollapsiblePlugin, {}),
-      /* @__PURE__ */ jsx57(PageBreakPlugin, {}),
-      /* @__PURE__ */ jsx57(LayoutPlugin, {}),
-      floatingAnchorElem && /* @__PURE__ */ jsxs31(Fragment20, { children: [
-        /* @__PURE__ */ jsx57(
+      /* @__PURE__ */ jsx59(TableCellResizerPlugin, {}),
+      /* @__PURE__ */ jsx59(ImagesPlugin, {}),
+      /* @__PURE__ */ jsx59(LinkPlugin, { hasLinkAttributes }),
+      /* @__PURE__ */ jsx59(TwitterPlugin, {}),
+      /* @__PURE__ */ jsx59(YouTubePlugin, {}),
+      /* @__PURE__ */ jsx59(FigmaPlugin, {}),
+      /* @__PURE__ */ jsx59(ClickableLinkPlugin, { disabled: isEditable }),
+      /* @__PURE__ */ jsx59(FragmentLinkPlugin, {}),
+      /* @__PURE__ */ jsx59(HorizontalRulePlugin, {}),
+      /* @__PURE__ */ jsx59(EquationsPlugin, {}),
+      /* @__PURE__ */ jsx59(TabFocusPlugin, {}),
+      /* @__PURE__ */ jsx59(TabIndentationPlugin, { maxIndent: 7 }),
+      /* @__PURE__ */ jsx59(CollapsiblePlugin, {}),
+      /* @__PURE__ */ jsx59(PageBreakPlugin, {}),
+      /* @__PURE__ */ jsx59(LayoutPlugin, {}),
+      floatingAnchorElem && /* @__PURE__ */ jsxs32(Fragment20, { children: [
+        /* @__PURE__ */ jsx59(
           FloatingLinkEditorPlugin,
           {
             anchorElem: floatingAnchorElem,
@@ -31948,19 +32004,19 @@ function Editor({ isFullscreen = false }) {
             setIsLinkEditMode
           }
         ),
-        /* @__PURE__ */ jsx57(TableActionMenuPlugin, { anchorElem: floatingAnchorElem, cellMerge: true })
+        /* @__PURE__ */ jsx59(TableActionMenuPlugin, { anchorElem: floatingAnchorElem, cellMerge: true })
       ] }),
-      floatingAnchorElem && !isSmallWidthViewport && /* @__PURE__ */ jsxs31(Fragment20, { children: [
-        /* @__PURE__ */ jsx57(DraggableBlockPlugin, { anchorElem: floatingAnchorElem }),
-        /* @__PURE__ */ jsx57(CodeActionMenuPlugin, { anchorElem: floatingAnchorElem }),
-        /* @__PURE__ */ jsx57(TableHoverActionsPlugin, { anchorElem: floatingAnchorElem }),
-        /* @__PURE__ */ jsx57(FloatingTextFormatToolbarPlugin, { anchorElem: floatingAnchorElem, setIsLinkEditMode })
+      floatingAnchorElem && !isSmallWidthViewport && /* @__PURE__ */ jsxs32(Fragment20, { children: [
+        /* @__PURE__ */ jsx59(DraggableBlockPlugin, { anchorElem: floatingAnchorElem }),
+        /* @__PURE__ */ jsx59(CodeActionMenuPlugin, { anchorElem: floatingAnchorElem }),
+        /* @__PURE__ */ jsx59(TableHoverActionsPlugin, { anchorElem: floatingAnchorElem }),
+        /* @__PURE__ */ jsx59(FloatingTextFormatToolbarPlugin, { anchorElem: floatingAnchorElem, setIsLinkEditMode })
       ] }),
-      (isCharLimit || isCharLimitUtf8) && /* @__PURE__ */ jsx57(CharacterLimitPlugin, { charset: isCharLimit ? "UTF-16" : "UTF-8", maxLength: 5 }),
-      isAutocomplete && /* @__PURE__ */ jsx57(AutocompletePlugin, {}),
-      /* @__PURE__ */ jsx57("div", { children: showTableOfContents && /* @__PURE__ */ jsx57(TableOfContentsPlugin, {}) }),
-      shouldUseLexicalContextMenu && /* @__PURE__ */ jsx57(ContextMenuPlugin, {}),
-      shouldAllowHighlightingWithBrackets && /* @__PURE__ */ jsx57(SpecialTextPlugin, {})
+      (isCharLimit || isCharLimitUtf8) && /* @__PURE__ */ jsx59(CharacterLimitPlugin, { charset: isCharLimit ? "UTF-16" : "UTF-8", maxLength: 5 }),
+      isAutocomplete && /* @__PURE__ */ jsx59(AutocompletePlugin, {}),
+      /* @__PURE__ */ jsx59("div", { children: showTableOfContents && /* @__PURE__ */ jsx59(TableOfContentsPlugin, {}) }),
+      shouldUseLexicalContextMenu && /* @__PURE__ */ jsx59(ContextMenuPlugin, {}),
+      shouldAllowHighlightingWithBrackets && /* @__PURE__ */ jsx59(SpecialTextPlugin, {})
     ] })
   ] });
 }
@@ -31973,51 +32029,6 @@ import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionCompose
 import { $getRoot as $getRoot7, defineExtension } from "lexical";
 import { useCallback as useCallback23, useEffect as useEffect52, useMemo as useMemo19 } from "react";
 import { useDebouncedCallback as useDebouncedCallback2 } from "use-debounce";
-
-// src/context/FlashMessageContext.tsx
-import { createContext as createContext10, useCallback as useCallback21, useContext as useContext10, useEffect as useEffect47, useState as useState34 } from "react";
-
-// src/ui/FlashMessage.tsx
-import { createPortal as createPortal13 } from "react-dom";
-import { jsx as jsx58 } from "react/jsx-runtime";
-function FlashMessage({ children }) {
-  return createPortal13(
-    /* @__PURE__ */ jsx58("div", { className: "notion-like-editor FlashMessage__overlay", role: "dialog", children: /* @__PURE__ */ jsx58("p", { className: "notion-like-editor FlashMessage__alert", role: "alert", children }) }),
-    document.body
-  );
-}
-
-// src/context/FlashMessageContext.tsx
-import { jsx as jsx59, jsxs as jsxs32 } from "react/jsx-runtime";
-var Context4 = createContext10(void 0);
-var INITIAL_STATE = {};
-var DEFAULT_DURATION = 1e3;
-var FlashMessageContext = ({ children }) => {
-  const [props, setProps] = useState34(INITIAL_STATE);
-  const showFlashMessage = useCallback21(
-    (message, duration) => setProps(message ? { duration, message } : INITIAL_STATE),
-    []
-  );
-  useEffect47(() => {
-    if (props.message) {
-      const timeoutId = setTimeout(() => setProps(INITIAL_STATE), props.duration ?? DEFAULT_DURATION);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [props]);
-  return /* @__PURE__ */ jsxs32(Context4.Provider, { value: showFlashMessage, children: [
-    children,
-    props.message && /* @__PURE__ */ jsx59(FlashMessage, { children: props.message })
-  ] });
-};
-var useFlashMessageContext = () => {
-  const ctx = useContext10(Context4);
-  if (!ctx) {
-    throw new Error("Missing FlashMessageContext");
-  }
-  return ctx;
-};
-
-// src/core/NotionLikeEditor.tsx
 init_SharedHistoryContext();
 
 // src/nodes/NotionLikeEditorNodes.ts
@@ -32385,7 +32396,7 @@ function NotionLikeEditor({
   onChangeHtml,
   onChangeMarkdown,
   debounceMs = 300,
-  isCodeShiki = false,
+  isCodeShiki = true,
   imageUploadHandler,
   customLinkMatchers,
   onEditorReady,
@@ -32726,7 +32737,7 @@ function Viewer() {
 import { jsx as jsx62 } from "react/jsx-runtime";
 function NotionLikeViewer({
   initialViewerState,
-  isCodeShiki = false,
+  isCodeShiki = true,
   customLinkMatchers
 }) {
   const settings = useMemo20(
@@ -32751,8 +32762,21 @@ function NotionLikeViewer({
   return /* @__PURE__ */ jsx62("div", { className: "notion-like-editor", children: /* @__PURE__ */ jsx62(SettingsContext, { initialSettings: settings, children: /* @__PURE__ */ jsx62(AutoLinkProvider, { customMatchers: customLinkMatchers, children: /* @__PURE__ */ jsx62(LexicalExtensionComposer2, { extension: app, contentEditable: null, children: /* @__PURE__ */ jsx62(TableContext, { children: /* @__PURE__ */ jsx62("div", { className: "viewer-shell", children: /* @__PURE__ */ jsx62(Viewer, {}) }) }) }) }) }) });
 }
 
+// src/nodes/index.ts
+init_DateTimeNode2();
+init_EmojiNode();
+init_EquationNode();
+init_EquationComponent();
+init_ImageNode2();
+init_ImageComponent();
+init_KeywordNode();
+init_MentionNode();
+init_StickyNode2();
+init_StickyComponent();
+
 // src/index.ts
-init_SharedHistoryContext();
+init_NotionLikeEditorTheme2();
+init_StickyEditorTheme2();
 init_ContentEditable2();
 init_EquationEditor2();
 init_ImageResizer();
@@ -32790,22 +32814,6 @@ function Switch({
 
 // src/index.ts
 init_url();
-init_NotionLikeEditorTheme2();
-init_StickyEditorTheme2();
-
-// src/nodes/index.ts
-init_DateTimeNode2();
-init_EmojiNode();
-init_EquationNode();
-init_EquationComponent();
-init_ImageNode2();
-init_ImageComponent();
-init_KeywordNode();
-init_MentionNode();
-init_StickyNode2();
-init_StickyComponent();
-
-// src/index.ts
 var PACKAGE_VERSION = "0.1.0";
 export {
   $createAutocompleteNode,

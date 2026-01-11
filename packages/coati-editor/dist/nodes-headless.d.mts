@@ -1,73 +1,7 @@
 import * as lexical from 'lexical';
-import { LexicalEditor, NodeKey, DecoratorNode, Spread, SerializedEditor, SerializedLexicalNode, LexicalUpdateJSON, DOMExportOutput, DOMConversionMap, EditorConfig, LexicalNode, Klass, TextNode, SerializedTextNode, ElementNode, RangeSelection, SerializedElementNode, StateConfigValue, StateValueOrUpdater, ElementFormatType } from 'lexical';
+import { TextNode, Spread, SerializedTextNode, NodeKey, EditorConfig, LexicalEditor, DOMExportOutput, ElementNode, RangeSelection, DOMConversionMap, SerializedElementNode, LexicalNode, DecoratorNode, StateConfigValue, StateValueOrUpdater, SerializedLexicalNode, ElementFormatType, SerializedEditor, LexicalUpdateJSON, Klass } from 'lexical';
 import { JSX } from 'react';
 import { DecoratorBlockNode, SerializedDecoratorBlockNode } from '@lexical/react/LexicalDecoratorBlockNode';
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-interface ImagePayload {
-    altText: string;
-    caption?: LexicalEditor;
-    height?: number;
-    key?: NodeKey;
-    maxWidth?: number;
-    showCaption?: boolean;
-    src: string;
-    width?: number;
-    captionsEnabled?: boolean;
-}
-type SerializedImageNode = Spread<{
-    altText: string;
-    caption: SerializedEditor;
-    height?: number;
-    maxWidth: number;
-    showCaption: boolean;
-    src: string;
-    width?: number;
-}, SerializedLexicalNode>;
-declare class ImageNode extends DecoratorNode<JSX.Element> {
-    __src: string;
-    __altText: string;
-    __width: 'inherit' | number;
-    __height: 'inherit' | number;
-    __maxWidth: number;
-    __showCaption: boolean;
-    __caption: LexicalEditor;
-    __captionsEnabled: boolean;
-    static getType(): string;
-    static clone(node: ImageNode): ImageNode;
-    static importJSON(serializedNode: SerializedImageNode): ImageNode;
-    updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedImageNode>): this;
-    exportDOM(): DOMExportOutput;
-    static importDOM(): DOMConversionMap | null;
-    constructor(src: string, altText: string, maxWidth: number, width?: 'inherit' | number, height?: 'inherit' | number, showCaption?: boolean, caption?: LexicalEditor, captionsEnabled?: boolean, key?: NodeKey);
-    exportJSON(): SerializedImageNode;
-    setWidthAndHeight(width: 'inherit' | number, height: 'inherit' | number): void;
-    setShowCaption(showCaption: boolean): void;
-    createDOM(config: EditorConfig): HTMLElement;
-    updateDOM(): false;
-    getSrc(): string;
-    getAltText(): string;
-    decorate(): JSX.Element;
-}
-declare function $createImageNode({ altText, height, maxWidth, captionsEnabled, src, width, showCaption, caption, key, }: ImagePayload): ImageNode;
-declare function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode;
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-declare const NotionLikeEditorNodes: Array<Klass<LexicalNode>>;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -275,6 +209,62 @@ declare class FigmaNode extends DecoratorBlockNode {
 }
 declare function $createFigmaNode(documentID: string): FigmaNode;
 declare function $isFigmaNode(node: FigmaNode | LexicalNode | null | undefined): node is FigmaNode;
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+
+interface ImagePayload {
+    altText: string;
+    caption?: LexicalEditor;
+    height?: number;
+    key?: NodeKey;
+    maxWidth?: number;
+    showCaption?: boolean;
+    src: string;
+    width?: number;
+    captionsEnabled?: boolean;
+}
+type SerializedImageNode = Spread<{
+    altText: string;
+    caption: SerializedEditor;
+    height?: number;
+    maxWidth: number;
+    showCaption: boolean;
+    src: string;
+    width?: number;
+}, SerializedLexicalNode>;
+declare class ImageNode extends DecoratorNode<JSX.Element> {
+    __src: string;
+    __altText: string;
+    __width: 'inherit' | number;
+    __height: 'inherit' | number;
+    __maxWidth: number;
+    __showCaption: boolean;
+    __caption: LexicalEditor;
+    __captionsEnabled: boolean;
+    static getType(): string;
+    static clone(node: ImageNode): ImageNode;
+    static importJSON(serializedNode: SerializedImageNode): ImageNode;
+    updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedImageNode>): this;
+    exportDOM(): DOMExportOutput;
+    static importDOM(): DOMConversionMap | null;
+    constructor(src: string, altText: string, maxWidth: number, width?: 'inherit' | number, height?: 'inherit' | number, showCaption?: boolean, caption?: LexicalEditor, captionsEnabled?: boolean, key?: NodeKey);
+    exportJSON(): SerializedImageNode;
+    setWidthAndHeight(width: 'inherit' | number, height: 'inherit' | number): void;
+    setShowCaption(showCaption: boolean): void;
+    createDOM(config: EditorConfig): HTMLElement;
+    updateDOM(): false;
+    getSrc(): string;
+    getAltText(): string;
+    decorate(): JSX.Element;
+}
+declare function $createImageNode({ altText, height, maxWidth, captionsEnabled, src, width, showCaption, caption, key, }: ImagePayload): ImageNode;
+declare function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -522,5 +512,15 @@ declare class YouTubeNode extends DecoratorBlockNode {
 }
 declare function $createYouTubeNode(videoID: string): YouTubeNode;
 declare function $isYouTubeNode(node: YouTubeNode | LexicalNode | null | undefined): node is YouTubeNode;
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+
+declare const NotionLikeEditorNodes: Array<Klass<LexicalNode>>;
 
 export { $createAutocompleteNode, $createCollapsibleContainerNode, $createCollapsibleContentNode, $createCollapsibleTitleNode, $createDateTimeNode, $createEmojiNode, $createEquationNode, $createFigmaNode, $createImageNode, $createKeywordNode, $createLayoutContainerNode, $createLayoutItemNode, $createMentionNode, $createPageBreakNode, $createSpecialTextNode, $createStickyNode, $createTweetNode, $createYouTubeNode, $isCollapsibleContainerNode, $isCollapsibleContentNode, $isCollapsibleTitleNode, $isDateTimeNode, $isEmojiNode, $isEquationNode, $isFigmaNode, $isImageNode, $isKeywordNode, $isLayoutContainerNode, $isLayoutItemNode, $isMentionNode, $isPageBreakNode, $isSpecialTextNode, $isStickyNode, $isTweetNode, $isYouTubeNode, AutocompleteNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, DateTimeNode, EmojiNode, EquationNode, FigmaNode, ImageNode, type ImagePayload, KeywordNode, LayoutContainerNode, LayoutItemNode, MentionNode, NotionLikeEditorNodes, PageBreakNode, type SerializedImageNode, SpecialTextNode, StickyNode, TweetNode, YouTubeNode };

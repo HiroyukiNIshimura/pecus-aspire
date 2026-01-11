@@ -17,10 +17,7 @@ import { $getRoot, defineExtension } from 'lexical';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { AutoLinkProvider, type LinkMatcher } from '../context/AutoLinkContext';
-import {
-  ComponentPickerProvider,
-  type ExtraOptionsProvider,
-} from '../context/ComponentPickerContext';
+import { ComponentPickerProvider, type ExtraOptionsProvider } from '../context/ComponentPickerContext';
 import { FlashMessageContext } from '../context/FlashMessageContext';
 import { FullscreenProvider, useFullscreen } from '../context/FullscreenContext';
 import { type ImageUploadHandler, ImageUploadProvider } from '../context/ImageUploadContext';
@@ -147,7 +144,7 @@ export default function NotionLikeEditor({
   onChangeHtml,
   onChangeMarkdown,
   debounceMs = 300,
-  isCodeShiki = false,
+  isCodeShiki = true,
   imageUploadHandler,
   customLinkMatchers,
   onEditorReady,

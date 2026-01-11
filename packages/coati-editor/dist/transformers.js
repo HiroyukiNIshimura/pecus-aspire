@@ -19200,7 +19200,8 @@ var PLAYGROUND_TRANSFORMERS = [
   ...import_markdown.TEXT_MATCH_TRANSFORMERS
 ];
 function normalizeListIndentation(markdown) {
-  const lines = markdown.split("\n");
+  const normalizedMarkdown = markdown.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = normalizedMarkdown.split("\n");
   const result = [];
   let inCodeBlock = false;
   for (const line of lines) {

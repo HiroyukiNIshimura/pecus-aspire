@@ -111,6 +111,7 @@ function isLikelyMarkdown(text: string): boolean {
 
 /**
  * ClipboardEvent からプレーンテキストを取得
+ * マークダウンテキストのペーストを優先するため、HTMLデータの有無を判断する
  */
 function getPlainTextFromClipboard(event: ClipboardEvent): string | null {
   const clipboardData = event.clipboardData;
@@ -118,19 +119,33 @@ function getPlainTextFromClipboard(event: ClipboardEvent): string | null {
     return null;
   }
 
-  // HTML がある場合は通常のペースト処理に任せる（Word/リッチテキストからのコピーなど）
-  const htmlData = clipboardData.getData('text/html');
-  if (htmlData && htmlData.trim().length > 0) {
-    // ただし、HTML が単純なプレーンテキストラッパーの場合はプレーンテキストを優先
-    // 例: <meta charset="utf-8"><span>...</span> のようなシンプルな構造
-    const isSimpleHtml =
-      /<(meta|span|div|p|br)[^>]*>/i.test(htmlData) && !/<(table|img|a|ul|ol|li|h[1-6])[^>]*>/i.test(htmlData);
-    if (!isSimpleHtml) {
-      return null;
-    }
+  const plainText = clipboardData.getData('text/plain');
+  if (!plainText || plainText.trim().length === 0) {
+    return null;
   }
 
-  return clipboardData.getData('text/plain');
+  // HTML がある場合の判定
+  const htmlData = clipboardData.getData('text/html');
+  if (htmlData && htmlData.trim().length > 0) {
+    // VS Code、ターミナル、テキストエディタからのコピーは HTML に <pre> や <code> が含まれる
+    // これらはプレーンテキストを優先すべきケース
+    const hasCodeElements = /<(pre|code)[^>]*>/i.test(htmlData);
+    if (hasCodeElements) {
+      return plainText;
+    }
+
+    // 単純な HTML ラッパー（meta, span, div, p, br のみ）の場合はプレーンテキストを優先
+    const isSimpleHtml =
+      /<(meta|span|div|p|br)[^>]*>/i.test(htmlData) && !/<(table|img|a|ul|ol|li|h[1-6])[^>]*>/i.test(htmlData);
+    if (isSimpleHtml) {
+      return plainText;
+    }
+
+    // リッチな HTML（Word, Google Docs 等）の場合は通常のペースト処理に任せる
+    return null;
+  }
+
+  return plainText;
 }
 
 export default function MarkdownPastePlugin(): null {
@@ -171,8 +186,15 @@ export default function MarkdownPastePlugin(): null {
         // $convertFromMarkdownString は対象ノードの子として変換結果を追加する
         const paragraphNode = $createParagraphNode();
 
-        // マークダウンを Lexical ノードに変換（2スペースインデントを4スペースに正規化）
-        $convertFromMarkdownString(normalizeListIndentation(plainText), PLAYGROUND_TRANSFORMERS, paragraphNode, true);
+        // マークダウンを Lexical ノードに変換
+        // 改行コード正規化 (CRLF/CR → LF) + 2スペースインデントを4スペースに正規化
+        const normalizedText = plainText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        $convertFromMarkdownString(
+          normalizeListIndentation(normalizedText),
+          PLAYGROUND_TRANSFORMERS,
+          paragraphNode,
+          true,
+        );
 
         // 変換されたノードを現在の位置に挿入
         const children = paragraphNode.getChildren();

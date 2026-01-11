@@ -1,5 +1,26 @@
 @import "https://fonts.googleapis.com/css?family=Reenie+Beanie";
 
+/* src/ui/FlashMessage.css */
+.FlashMessage__overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  pointer-events: none;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+}
+.FlashMessage__alert {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px;
+  font-size: 1.5rem;
+  border-radius: 1em;
+  padding: 0.5em 1.5em;
+}
+
 /* src/ui/Dialog.css */
 .DialogActions {
   display: flex;
@@ -2718,7 +2739,7 @@ i.icon.plus {
 .notion-like-editor .toolbar {
   display: flex;
   margin-bottom: 1px;
-  background: var(--color-gray-300);
+  background: #9ca3af;
   padding: 4px;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -2738,11 +2759,11 @@ i.icon.plus {
   background: transparent;
 }
 .notion-like-editor .toolbar::-webkit-scrollbar-thumb {
-  background: var(--color-gray-500);
+  background: #6b7280;
   border-radius: 2px;
 }
 .notion-like-editor .toolbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gray-600);
+  background: #4b5563;
 }
 .notion-like-editor.fixed .toolbar {
   border-top-left-radius: 0;
@@ -2802,9 +2823,9 @@ i.icon.plus {
 .notion-like-editor .toolbar-item.font-size-input {
   font-weight: bold;
   font-size: 14px;
-  color: var(--color-gray-900);
+  color: #f3f4f6;
   border-radius: 5px;
-  border-color: grey;
+  border-color: #9ca3af;
   height: 15px;
   padding: 2px 4px;
   text-align: center;
@@ -2821,7 +2842,7 @@ i.icon.plus {
   height: 20px;
   text-align: left;
   padding-right: 10px;
-  color: var(--color-gray-900);
+  color: #f3f4f6;
 }
 .notion-like-editor .toolbar .toolbar-item .icon {
   display: flex;
@@ -3048,27 +3069,6 @@ i.icon.plus {
 }
 .notion-like-editor .dateTimePill:hover {
   background: color-mix(in oklab, var(--color-success, var(--color-neutral)) 90%, #000) !important;
-}
-
-/* src/ui/FlashMessage.css */
-.FlashMessage__overlay {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  pointer-events: none;
-  top: 0px;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-}
-.FlashMessage__alert {
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 20px;
-  font-size: 1.5rem;
-  border-radius: 1em;
-  padding: 0.5em 1.5em;
 }
 
 /* src/themes/NotionLikeViewerTheme.css */

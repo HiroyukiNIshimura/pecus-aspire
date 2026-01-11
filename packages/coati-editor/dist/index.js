@@ -31,20 +31,20 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/context/SharedHistoryContext.tsx
-var import_LexicalHistoryPlugin, import_react2, import_jsx_runtime2, Context2, SharedHistoryContext, useSharedHistoryContext;
+var import_LexicalHistoryPlugin, import_react6, import_jsx_runtime7, Context3, SharedHistoryContext, useSharedHistoryContext;
 var init_SharedHistoryContext = __esm({
   "src/context/SharedHistoryContext.tsx"() {
     "use strict";
     import_LexicalHistoryPlugin = require("@lexical/react/LexicalHistoryPlugin");
-    import_react2 = require("react");
-    import_jsx_runtime2 = require("react/jsx-runtime");
-    Context2 = (0, import_react2.createContext)({});
+    import_react6 = require("react");
+    import_jsx_runtime7 = require("react/jsx-runtime");
+    Context3 = (0, import_react6.createContext)({});
     SharedHistoryContext = ({ children }) => {
-      const historyContext = (0, import_react2.useMemo)(() => ({ historyState: (0, import_LexicalHistoryPlugin.createEmptyHistoryState)() }), []);
-      return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Context2.Provider, { value: historyContext, children });
+      const historyContext = (0, import_react6.useMemo)(() => ({ historyState: (0, import_LexicalHistoryPlugin.createEmptyHistoryState)() }), []);
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Context3.Provider, { value: historyContext, children });
     };
     useSharedHistoryContext = () => {
-      return (0, import_react2.useContext)(Context2);
+      return (0, import_react6.useContext)(Context3);
     };
   }
 });
@@ -65,10 +65,10 @@ function DateTimeComponent({
   nodeKey
 }) {
   const [editor] = (0, import_LexicalComposerContext10.useLexicalComposerContext)();
-  const [isOpen, setIsOpen] = (0, import_react22.useState)(false);
-  const ref = (0, import_react22.useRef)(null);
-  const [selected, setSelected] = (0, import_react22.useState)(dateTime);
-  const [includeTime, setIncludeTime] = (0, import_react22.useState)(() => {
+  const [isOpen, setIsOpen] = (0, import_react25.useState)(false);
+  const ref = (0, import_react25.useRef)(null);
+  const [selected, setSelected] = (0, import_react25.useState)(dateTime);
+  const [includeTime, setIncludeTime] = (0, import_react25.useState)(() => {
     if (dateTime === void 0) {
       return false;
     }
@@ -76,7 +76,7 @@ function DateTimeComponent({
     const minutes = dateTime?.getMinutes();
     return hours !== 0 || minutes !== 0;
   });
-  const [timeValue, setTimeValue] = (0, import_react22.useState)(() => {
+  const [timeValue, setTimeValue] = (0, import_react25.useState)(() => {
     if (dateTime === void 0) {
       return "00:00";
     }
@@ -88,27 +88,27 @@ function DateTimeComponent({
     return "00:00";
   });
   const [isNodeSelected, _setNodeSelected, _clearNodeSelection] = (0, import_useLexicalNodeSelection.useLexicalNodeSelection)(nodeKey);
-  const { refs, floatingStyles, context } = (0, import_react21.useFloating)({
+  const { refs, floatingStyles, context } = (0, import_react24.useFloating)({
     elements: {
       reference: ref.current
     },
     middleware: [
-      (0, import_react21.offset)(5),
-      (0, import_react21.flip)({
+      (0, import_react24.offset)(5),
+      (0, import_react24.flip)({
         fallbackPlacements: ["top-start"]
       }),
-      (0, import_react21.shift)({ padding: 10 })
+      (0, import_react24.shift)({ padding: 10 })
     ],
     onOpenChange: setIsOpen,
     open: isOpen,
     placement: "bottom-start",
     strategy: "fixed",
-    whileElementsMounted: import_react21.autoUpdate
+    whileElementsMounted: import_react24.autoUpdate
   });
-  const role = (0, import_react21.useRole)(context, { role: "dialog" });
-  const dismiss = (0, import_react21.useDismiss)(context);
-  const { getFloatingProps } = (0, import_react21.useInteractions)([role, dismiss]);
-  (0, import_react22.useEffect)(() => {
+  const role = (0, import_react24.useRole)(context, { role: "dialog" });
+  const dismiss = (0, import_react24.useDismiss)(context);
+  const { getFloatingProps } = (0, import_react24.useInteractions)([role, dismiss]);
+  (0, import_react25.useEffect)(() => {
     const dateTimePillRef = ref.current;
     function onClick(e) {
       e.preventDefault();
@@ -180,7 +180,7 @@ function DateTimeComponent({
     month: "long",
     day: "numeric"
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
     "div",
     {
       className: `dateTimePill ${isNodeSelected ? "selected" : ""}`,
@@ -188,14 +188,14 @@ function DateTimeComponent({
       style: { cursor: "pointer", width: "fit-content" },
       children: [
         dateTime?.toLocaleDateString(void 0, options) + (includeTime ? ` ${timeValue}` : "") || "Invalid Date",
-        isOpen && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react21.FloatingPortal, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
-          import_react21.FloatingOverlay,
+        isOpen && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_react24.FloatingPortal, { children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+          import_react24.FloatingOverlay,
           {
             lockScroll: true,
             style: {
               zIndex: 2e3
             },
-            children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react21.FloatingFocusManager, { context, initialFocus: -1, children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_react24.FloatingFocusManager, { context, initialFocus: -1, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
               "div",
               {
                 className: "notion-like-editor dateTimePicker",
@@ -206,12 +206,12 @@ function DateTimeComponent({
                 },
                 ...getFloatingProps(),
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react_day_picker.DayPicker, { mode: "single", selected, onSelect: handleDaySelect }),
-                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "includeTime", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("label", { htmlFor: "includeTime", style: { display: "inline-flex", alignItems: "center", gap: "6px" }, children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("input", { id: "includeTime", type: "checkbox", checked: includeTime, onChange: handleCheckboxChange }),
-                    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { children: "Include time" })
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_react_day_picker.DayPicker, { mode: "single", selected, onSelect: handleDaySelect }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "includeTime", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("label", { htmlFor: "includeTime", style: { display: "inline-flex", alignItems: "center", gap: "6px" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("input", { id: "includeTime", type: "checkbox", checked: includeTime, onChange: handleCheckboxChange }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: "Include time" })
                   ] }) }),
-                  includeTime && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+                  includeTime && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       id: "time",
@@ -226,7 +226,7 @@ function DateTimeComponent({
                       }
                     }
                   ),
-                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { style: { fontSize: "12px", color: "#666", marginTop: "8px" }, children: userTimeZone })
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { style: { fontSize: "12px", color: "#666", marginTop: "8px" }, children: userTimeZone })
                 ]
               }
             ) })
@@ -236,21 +236,21 @@ function DateTimeComponent({
     }
   );
 }
-var import_style, import_react21, import_LexicalComposerContext10, import_useLexicalNodeSelection, import_date_fns, import_lexical14, import_react22, import_react_day_picker, import_jsx_runtime18, userTimeZone;
+var import_style, import_react24, import_LexicalComposerContext10, import_useLexicalNodeSelection, import_date_fns, import_lexical14, import_react25, import_react_day_picker, import_jsx_runtime22, userTimeZone;
 var init_DateTimeComponent = __esm({
   "src/nodes/DateTimeNode/DateTimeComponent.tsx"() {
     "use strict";
     import_style = require("react-day-picker/style.css");
     init_DateTimeNode();
-    import_react21 = require("@floating-ui/react");
+    import_react24 = require("@floating-ui/react");
     import_LexicalComposerContext10 = require("@lexical/react/LexicalComposerContext");
     import_useLexicalNodeSelection = require("@lexical/react/useLexicalNodeSelection");
     import_date_fns = require("date-fns");
     import_lexical14 = require("lexical");
-    import_react22 = require("react");
+    import_react25 = require("react");
     import_react_day_picker = require("react-day-picker");
     init_DateTimeNode2();
-    import_jsx_runtime18 = require("react/jsx-runtime");
+    import_jsx_runtime22 = require("react/jsx-runtime");
     userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   }
 });
@@ -280,13 +280,13 @@ function $createDateTimeNode(dateTime) {
 function $isDateTimeNode(node) {
   return node instanceof DateTimeNode;
 }
-var import_lexical15, React, import_jsx_runtime19, DateTimeComponent2, getDateTimeText, dateTimeState, DateTimeNode;
+var import_lexical15, React, import_jsx_runtime23, DateTimeComponent2, getDateTimeText, dateTimeState, DateTimeNode;
 var init_DateTimeNode2 = __esm({
   "src/nodes/DateTimeNode/DateTimeNode.tsx"() {
     "use strict";
     import_lexical15 = require("lexical");
     React = __toESM(require("react"));
-    import_jsx_runtime19 = require("react/jsx-runtime");
+    import_jsx_runtime23 = require("react/jsx-runtime");
     DateTimeComponent2 = React.lazy(() => Promise.resolve().then(() => (init_DateTimeComponent(), DateTimeComponent_exports)));
     getDateTimeText = (dateTime) => {
       if (dateTime === void 0) {
@@ -343,7 +343,7 @@ var init_DateTimeNode2 = __esm({
         return true;
       }
       decorate() {
-        return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(DateTimeComponent2, { dateTime: this.getDateTime(), nodeKey: this.__key });
+        return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DateTimeComponent2, { dateTime: this.getDateTime(), nodeKey: this.__key });
       }
     };
   }
@@ -353,18 +353,18 @@ var init_DateTimeNode2 = __esm({
 function C(r = [], t = []) {
   return r.length !== t.length || r.some((e, o) => !Object.is(e, t[o]));
 }
-var import_react24, h, c, m;
+var import_react27, h, c, m;
 var init_react_error_boundary = __esm({
   "../../node_modules/react-error-boundary/dist/react-error-boundary.js"() {
     "use strict";
     "use client";
-    import_react24 = require("react");
-    h = (0, import_react24.createContext)(null);
+    import_react27 = require("react");
+    h = (0, import_react27.createContext)(null);
     c = {
       didCatch: false,
       error: null
     };
-    m = class extends import_react24.Component {
+    m = class extends import_react27.Component {
       constructor(t) {
         super(t), this.resetErrorBoundary = this.resetErrorBoundary.bind(this), this.state = c;
       }
@@ -400,13 +400,13 @@ var init_react_error_boundary = __esm({
           if (typeof e == "function")
             i = e(u);
           else if (o)
-            i = (0, import_react24.createElement)(o, u);
+            i = (0, import_react27.createElement)(o, u);
           else if (n !== void 0)
             i = n;
           else
             throw a;
         }
-        return (0, import_react24.createElement)(
+        return (0, import_react27.createElement)(
           h.Provider,
           {
             value: {
@@ -433,9 +433,9 @@ function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
   const onChange = (event) => {
     setEquation(event.target.value);
   };
-  return inline && (0, import_lexical17.isHTMLElement)(forwardedRef) ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "EquationEditor_inputBackground", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "EquationEditor_dollarSign", children: "$" }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+  return inline && (0, import_lexical17.isHTMLElement)(forwardedRef) ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "EquationEditor_inputBackground", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "EquationEditor_dollarSign", children: "$" }),
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
       "input",
       {
         className: "EquationEditor_inlineEditor",
@@ -444,10 +444,10 @@ function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
         ref: forwardedRef
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "EquationEditor_dollarSign", children: "$" })
-  ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "EquationEditor_inputBackground", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "EquationEditor_dollarSign", children: "$$\n" }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "EquationEditor_dollarSign", children: "$" })
+  ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "EquationEditor_inputBackground", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "EquationEditor_dollarSign", children: "$$\n" }),
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
       "textarea",
       {
         className: "EquationEditor_blockEditor",
@@ -456,18 +456,18 @@ function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
         ref: forwardedRef
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "EquationEditor_dollarSign", children: "\n$$" })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "EquationEditor_dollarSign", children: "\n$$" })
   ] });
 }
-var import_lexical17, import_react25, import_jsx_runtime20, EquationEditor_default;
+var import_lexical17, import_react28, import_jsx_runtime24, EquationEditor_default;
 var init_EquationEditor2 = __esm({
   "src/ui/EquationEditor.tsx"() {
     "use strict";
     init_EquationEditor();
     import_lexical17 = require("lexical");
-    import_react25 = require("react");
-    import_jsx_runtime20 = require("react/jsx-runtime");
-    EquationEditor_default = (0, import_react25.forwardRef)(EquationEditor);
+    import_react28 = require("react");
+    import_jsx_runtime24 = require("react/jsx-runtime");
+    EquationEditor_default = (0, import_react28.forwardRef)(EquationEditor);
   }
 });
 
@@ -477,8 +477,8 @@ function KatexRenderer({
   inline,
   onDoubleClick
 }) {
-  const katexElementRef = (0, import_react26.useRef)(null);
-  (0, import_react26.useEffect)(() => {
+  const katexElementRef = (0, import_react29.useRef)(null);
+  (0, import_react29.useEffect)(() => {
     const katexElement = katexElementRef.current;
     if (katexElement !== null) {
       import_katex.default.render(equation, katexElement, {
@@ -496,8 +496,8 @@ function KatexRenderer({
     // We use an empty image tag either side to ensure Android doesn't try and compose from the
     // inner text from Katex. There didn't seem to be any other way of making this work,
     // without having a physical space.
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
         "img",
         {
           src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
@@ -506,8 +506,8 @@ function KatexRenderer({
           alt: ""
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { role: "button", tabIndex: -1, onDoubleClick, ref: katexElementRef }),
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { role: "button", tabIndex: -1, onDoubleClick, ref: katexElementRef }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
         "img",
         {
           src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
@@ -519,13 +519,13 @@ function KatexRenderer({
     ] })
   );
 }
-var import_katex, import_react26, import_jsx_runtime21;
+var import_katex, import_react29, import_jsx_runtime25;
 var init_KatexRenderer = __esm({
   "src/ui/KatexRenderer.tsx"() {
     "use strict";
     import_katex = __toESM(require("katex"));
-    import_react26 = require("react");
-    import_jsx_runtime21 = require("react/jsx-runtime");
+    import_react29 = require("react");
+    import_jsx_runtime25 = require("react/jsx-runtime");
   }
 });
 
@@ -537,10 +537,10 @@ __export(EquationComponent_exports, {
 function EquationComponent({ equation, inline, nodeKey }) {
   const [editor] = (0, import_LexicalComposerContext12.useLexicalComposerContext)();
   const isEditable = (0, import_useLexicalEditable.useLexicalEditable)();
-  const [equationValue, setEquationValue] = (0, import_react27.useState)(equation);
-  const [showEquationEditor, setShowEquationEditor] = (0, import_react27.useState)(false);
-  const inputRef = (0, import_react27.useRef)(null);
-  const onHide = (0, import_react27.useCallback)(
+  const [equationValue, setEquationValue] = (0, import_react30.useState)(equation);
+  const [showEquationEditor, setShowEquationEditor] = (0, import_react30.useState)(false);
+  const inputRef = (0, import_react30.useRef)(null);
+  const onHide = (0, import_react30.useCallback)(
     (restoreSelection) => {
       setShowEquationEditor(false);
       editor.update(() => {
@@ -555,12 +555,12 @@ function EquationComponent({ equation, inline, nodeKey }) {
     },
     [editor, equationValue, nodeKey]
   );
-  (0, import_react27.useEffect)(() => {
+  (0, import_react30.useEffect)(() => {
     if (!showEquationEditor && equationValue !== equation) {
       setEquationValue(equation);
     }
   }, [showEquationEditor, equation, equationValue]);
-  (0, import_react27.useEffect)(() => {
+  (0, import_react30.useEffect)(() => {
     if (!isEditable) {
       return;
     }
@@ -604,7 +604,7 @@ function EquationComponent({ equation, inline, nodeKey }) {
       });
     }
   }, [editor, nodeKey, onHide, showEquationEditor, isEditable]);
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_jsx_runtime22.Fragment, { children: showEquationEditor && isEditable ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(EquationEditor_default, { equation: equationValue, setEquation: setEquationValue, inline, ref: inputRef }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_jsx_runtime26.Fragment, { children: showEquationEditor && isEditable ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(EquationEditor_default, { equation: equationValue, setEquation: setEquationValue, inline, ref: inputRef }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
     KatexRenderer,
     {
       equation: equationValue,
@@ -617,7 +617,7 @@ function EquationComponent({ equation, inline, nodeKey }) {
     }
   ) }) });
 }
-var import_LexicalComposerContext12, import_useLexicalEditable, import_utils12, import_lexical18, import_react27, import_jsx_runtime22;
+var import_LexicalComposerContext12, import_useLexicalEditable, import_utils12, import_lexical18, import_react30, import_jsx_runtime26;
 var init_EquationComponent = __esm({
   "src/nodes/EquationComponent.tsx"() {
     "use strict";
@@ -625,12 +625,12 @@ var init_EquationComponent = __esm({
     import_useLexicalEditable = require("@lexical/react/useLexicalEditable");
     import_utils12 = require("@lexical/utils");
     import_lexical18 = require("lexical");
-    import_react27 = require("react");
+    import_react30 = require("react");
     init_react_error_boundary();
     init_EquationEditor2();
     init_KatexRenderer();
     init_EquationNode();
-    import_jsx_runtime22 = require("react/jsx-runtime");
+    import_jsx_runtime26 = require("react/jsx-runtime");
   }
 });
 
@@ -652,14 +652,14 @@ function $createEquationNode(equation = "", inline = false) {
 function $isEquationNode(node) {
   return node instanceof EquationNode;
 }
-var import_katex2, import_lexical19, React2, import_jsx_runtime23, EquationComponent2, EquationNode;
+var import_katex2, import_lexical19, React2, import_jsx_runtime27, EquationComponent2, EquationNode;
 var init_EquationNode = __esm({
   "src/nodes/EquationNode.tsx"() {
     "use strict";
     import_katex2 = __toESM(require("katex"));
     import_lexical19 = require("lexical");
     React2 = __toESM(require("react"));
-    import_jsx_runtime23 = require("react/jsx-runtime");
+    import_jsx_runtime27 = require("react/jsx-runtime");
     EquationComponent2 = React2.lazy(() => Promise.resolve().then(() => (init_EquationComponent(), EquationComponent_exports)));
     EquationNode = class _EquationNode extends import_lexical19.DecoratorNode {
       __equation;
@@ -742,7 +742,7 @@ var init_EquationNode = __esm({
         writable.__equation = equation;
       }
       decorate() {
-        return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(EquationComponent2, { equation: this.__equation, inline: this.__inline, nodeKey: this.__key });
+        return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(EquationComponent2, { equation: this.__equation, inline: this.__inline, nodeKey: this.__key });
       }
     };
   }
@@ -891,7 +891,7 @@ function $textNodeTransform(node) {
   }
 }
 function useEmojis(editor) {
-  (0, import_react31.useEffect)(() => {
+  (0, import_react33.useEffect)(() => {
     if (!editor.hasNodes([EmojiNode])) {
       throw new Error("EmojisPlugin: EmojiNode not registered on editor");
     }
@@ -903,13 +903,13 @@ function EmojisPlugin() {
   useEmojis(editor);
   return null;
 }
-var import_LexicalComposerContext15, import_lexical23, import_react31, emojis;
+var import_LexicalComposerContext15, import_lexical23, import_react33, emojis;
 var init_EmojisPlugin = __esm({
   "src/plugins/EmojisPlugin/index.ts"() {
     "use strict";
     import_LexicalComposerContext15 = require("@lexical/react/LexicalComposerContext");
     import_lexical23 = require("lexical");
-    import_react31 = require("react");
+    import_react33 = require("react");
     init_EmojiNode();
     emojis = /* @__PURE__ */ new Map([
       [":)", ["emoji happysmile", "\u{1F642}"]],
@@ -948,7 +948,7 @@ var init_url = __esm({
 
 // src/plugins/LinkPlugin/index.tsx
 function LinkPlugin({ hasLinkAttributes = false }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
     import_LexicalLinkPlugin.LinkPlugin,
     {
       validateUrl,
@@ -959,13 +959,13 @@ function LinkPlugin({ hasLinkAttributes = false }) {
     }
   );
 }
-var import_LexicalLinkPlugin, import_jsx_runtime27;
+var import_LexicalLinkPlugin, import_jsx_runtime30;
 var init_LinkPlugin = __esm({
   "src/plugins/LinkPlugin/index.tsx"() {
     "use strict";
     import_LexicalLinkPlugin = require("@lexical/react/LexicalLinkPlugin");
     init_url();
-    import_jsx_runtime27 = require("react/jsx-runtime");
+    import_jsx_runtime30 = require("react/jsx-runtime");
   }
 });
 
@@ -1060,8 +1060,8 @@ var init_MentionNode = __esm({
 
 // src/plugins/MentionsPlugin/index.tsx
 function useMentionLookupService(mentionString) {
-  const [results, setResults] = (0, import_react32.useState)([]);
-  (0, import_react32.useEffect)(() => {
+  const [results, setResults] = (0, import_react34.useState)([]);
+  (0, import_react34.useEffect)(() => {
     const cachedResults = mentionsCache.get(mentionString);
     if (mentionString == null) {
       setResults([]);
@@ -1113,7 +1113,7 @@ function MentionsTypeaheadMenuItem({
   if (isSelected) {
     className += " selected";
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
     "li",
     {
       tabIndex: -1,
@@ -1125,7 +1125,7 @@ function MentionsTypeaheadMenuItem({
       onClick,
       children: [
         option.picture,
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "text", children: option.name })
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "text", children: option.name })
       ]
     },
     option.key
@@ -1133,16 +1133,16 @@ function MentionsTypeaheadMenuItem({
 }
 function NewMentionsPlugin() {
   const [editor] = (0, import_LexicalComposerContext16.useLexicalComposerContext)();
-  const [queryString, setQueryString] = (0, import_react32.useState)(null);
+  const [queryString, setQueryString] = (0, import_react34.useState)(null);
   const results = useMentionLookupService(queryString);
   const checkForSlashTriggerMatch = (0, import_LexicalTypeaheadMenuPlugin.useBasicTypeaheadTriggerMatch)("/", {
     minLength: 0
   });
-  const options = (0, import_react32.useMemo)(
-    () => results.map((result) => new MentionTypeaheadOption(result, /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("i", { className: "icon user" }))).slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
+  const options = (0, import_react34.useMemo)(
+    () => results.map((result) => new MentionTypeaheadOption(result, /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("i", { className: "icon user" }))).slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
     [results]
   );
-  const onSelectOption = (0, import_react32.useCallback)(
+  const onSelectOption = (0, import_react34.useCallback)(
     (selectedOption, nodeToReplace, closeMenu) => {
       editor.update(() => {
         const mentionNode = $createMentionNode(selectedOption.name);
@@ -1155,7 +1155,7 @@ function NewMentionsPlugin() {
     },
     [editor]
   );
-  const checkForMentionMatch = (0, import_react32.useCallback)(
+  const checkForMentionMatch = (0, import_react34.useCallback)(
     (text) => {
       const slashMatch = checkForSlashTriggerMatch(text, editor);
       if (slashMatch !== null) {
@@ -1165,7 +1165,7 @@ function NewMentionsPlugin() {
     },
     [checkForSlashTriggerMatch, editor]
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
     import_LexicalTypeaheadMenuPlugin.LexicalTypeaheadMenuPlugin,
     {
       onQueryChange: setQueryString,
@@ -1173,7 +1173,7 @@ function NewMentionsPlugin() {
       triggerFn: checkForMentionMatch,
       options,
       menuRenderFn: (anchorElementRef, { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }) => anchorElementRef.current && results.length ? ReactDOM.createPortal(
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "notion-like-editor typeahead-popover mentions-menu", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("ul", { children: options.map((option, i) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "notion-like-editor typeahead-popover mentions-menu", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("ul", { children: options.map((option, i) => /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
           MentionsTypeaheadMenuItem,
           {
             index: i,
@@ -1194,17 +1194,17 @@ function NewMentionsPlugin() {
     }
   );
 }
-var import_LexicalComposerContext16, import_LexicalNodeMenuPlugin, import_LexicalTypeaheadMenuPlugin, import_react32, ReactDOM, import_jsx_runtime28, PUNCTUATION, NAME, DocumentMentionsRegex, PUNC, TRIGGERS, VALID_CHARS, VALID_JOINS, LENGTH_LIMIT, AtSignMentionsRegex, ALIAS_LENGTH_LIMIT, AtSignMentionsRegexAliasRegex, SUGGESTION_LIST_LENGTH_LIMIT, mentionsCache, dummyMentionsData, dummyLookupService, MentionTypeaheadOption;
+var import_LexicalComposerContext16, import_LexicalNodeMenuPlugin, import_LexicalTypeaheadMenuPlugin, import_react34, ReactDOM, import_jsx_runtime31, PUNCTUATION, NAME, DocumentMentionsRegex, PUNC, TRIGGERS, VALID_CHARS, VALID_JOINS, LENGTH_LIMIT, AtSignMentionsRegex, ALIAS_LENGTH_LIMIT, AtSignMentionsRegexAliasRegex, SUGGESTION_LIST_LENGTH_LIMIT, mentionsCache, dummyMentionsData, dummyLookupService, MentionTypeaheadOption;
 var init_MentionsPlugin = __esm({
   "src/plugins/MentionsPlugin/index.tsx"() {
     "use strict";
     import_LexicalComposerContext16 = require("@lexical/react/LexicalComposerContext");
     import_LexicalNodeMenuPlugin = require("@lexical/react/LexicalNodeMenuPlugin");
     import_LexicalTypeaheadMenuPlugin = require("@lexical/react/LexicalTypeaheadMenuPlugin");
-    import_react32 = require("react");
+    import_react34 = require("react");
     ReactDOM = __toESM(require("react-dom"));
     init_MentionNode();
-    import_jsx_runtime28 = require("react/jsx-runtime");
+    import_jsx_runtime31 = require("react/jsx-runtime");
     PUNCTUATION = `\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%'"~=<>_:;`;
     NAME = `\\b[A-Z][^\\s${PUNCTUATION}]`;
     DocumentMentionsRegex = {
@@ -1658,22 +1658,22 @@ var init_ContentEditable = __esm({
 
 // src/ui/ContentEditable.tsx
 function LexicalContentEditable({ className, placeholder, placeholderClassName }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
     import_LexicalContentEditable.ContentEditable,
     {
       className: className ?? "ContentEditable__root",
       "aria-placeholder": placeholder,
-      placeholder: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: placeholderClassName ?? "ContentEditable__placeholder", children: placeholder })
+      placeholder: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: placeholderClassName ?? "ContentEditable__placeholder", children: placeholder })
     }
   );
 }
-var import_LexicalContentEditable, import_jsx_runtime29;
+var import_LexicalContentEditable, import_jsx_runtime32;
 var init_ContentEditable2 = __esm({
   "src/ui/ContentEditable.tsx"() {
     "use strict";
     init_ContentEditable();
     import_LexicalContentEditable = require("@lexical/react/LexicalContentEditable");
-    import_jsx_runtime29 = require("react/jsx-runtime");
+    import_jsx_runtime32 = require("react/jsx-runtime");
   }
 });
 
@@ -1692,12 +1692,12 @@ function ImageResizer({
   setShowCaption,
   captionsEnabled
 }) {
-  const controlWrapperRef = (0, import_react33.useRef)(null);
-  const userSelect = (0, import_react33.useRef)({
+  const controlWrapperRef = (0, import_react35.useRef)(null);
+  const userSelect = (0, import_react35.useRef)({
     priority: "",
     value: "default"
   });
-  const positioningRef = (0, import_react33.useRef)({
+  const positioningRef = (0, import_react35.useRef)({
     currentHeight: 0,
     currentWidth: 0,
     direction: 0,
@@ -1819,8 +1819,8 @@ function ImageResizer({
       document.removeEventListener("pointerup", handlePointerUp);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { ref: controlWrapperRef, children: [
-    !showCaption && captionsEnabled && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { ref: controlWrapperRef, children: [
+    !showCaption && captionsEnabled && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "button",
       {
         type: "button",
@@ -1832,7 +1832,7 @@ function ImageResizer({
         children: "Add Caption"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "div",
       {
         className: "image-resizer image-resizer-n",
@@ -1841,7 +1841,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "div",
       {
         className: "image-resizer image-resizer-ne",
@@ -1850,7 +1850,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "div",
       {
         className: "image-resizer image-resizer-e",
@@ -1859,7 +1859,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "div",
       {
         className: "image-resizer image-resizer-se",
@@ -1868,7 +1868,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "div",
       {
         className: "image-resizer image-resizer-s",
@@ -1877,7 +1877,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "div",
       {
         className: "image-resizer image-resizer-sw",
@@ -1886,7 +1886,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "div",
       {
         className: "image-resizer image-resizer-w",
@@ -1895,7 +1895,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "div",
       {
         className: "image-resizer image-resizer-nw",
@@ -1906,13 +1906,13 @@ function ImageResizer({
     )
   ] });
 }
-var import_utils14, import_react33, import_jsx_runtime30, Direction;
+var import_utils14, import_react35, import_jsx_runtime33, Direction;
 var init_ImageResizer = __esm({
   "src/ui/ImageResizer.tsx"() {
     "use strict";
     import_utils14 = require("@lexical/utils");
-    import_react33 = require("react");
-    import_jsx_runtime30 = require("react/jsx-runtime");
+    import_react35 = require("react");
+    import_jsx_runtime33 = require("react/jsx-runtime");
     Direction = {
       east: 1 << 0,
       north: 1 << 3,
@@ -1930,7 +1930,7 @@ __export(ImageComponent_exports, {
 });
 function DisableCaptionOnBlur({ setShowCaption }) {
   const [editor] = (0, import_LexicalComposerContext17.useLexicalComposerContext)();
-  (0, import_react34.useEffect)(
+  (0, import_react36.useEffect)(
     () => editor.registerCommand(
       import_lexical25.BLUR_COMMAND,
       () => {
@@ -1982,13 +1982,13 @@ function LazyImage({
 }) {
   const isSVGImage = isSVG(src);
   const status = useSuspenseImage(src);
-  (0, import_react34.useEffect)(() => {
+  (0, import_react36.useEffect)(() => {
     if (status.error) {
       onError();
     }
   }, [status.error, onError]);
   if (status.error) {
-    return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(BrokenImage, {});
+    return /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(BrokenImage, {});
   }
   const calculateDimensions = () => {
     if (!isSVGImage) {
@@ -2020,7 +2020,7 @@ function LazyImage({
     };
   };
   const imageStyle = calculateDimensions();
-  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
     "img",
     {
       className: className || void 0,
@@ -2034,7 +2034,7 @@ function LazyImage({
   );
 }
 function BrokenImage() {
-  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
     "img",
     {
       src: image_broken_default,
@@ -2062,22 +2062,22 @@ function ImageComponent({
   caption,
   captionsEnabled
 }) {
-  const imageRef = (0, import_react34.useRef)(null);
-  const buttonRef = (0, import_react34.useRef)(null);
+  const imageRef = (0, import_react36.useRef)(null);
+  const buttonRef = (0, import_react36.useRef)(null);
   const [isSelected, setSelected, clearSelection] = (0, import_useLexicalNodeSelection2.useLexicalNodeSelection)(nodeKey);
-  const [isResizing, setIsResizing] = (0, import_react34.useState)(false);
+  const [isResizing, setIsResizing] = (0, import_react36.useState)(false);
   const [editor] = (0, import_LexicalComposerContext17.useLexicalComposerContext)();
-  const activeEditorRef = (0, import_react34.useRef)(null);
-  const [isLoadError, setIsLoadError] = (0, import_react34.useState)(false);
+  const activeEditorRef = (0, import_react36.useRef)(null);
+  const [isLoadError, setIsLoadError] = (0, import_react36.useState)(false);
   const isEditable = (0, import_useLexicalEditable2.useLexicalEditable)();
-  const isInNodeSelection = (0, import_react34.useMemo)(
+  const isInNodeSelection = (0, import_react36.useMemo)(
     () => isSelected && editor.getEditorState().read(() => {
       const selection = (0, import_lexical25.$getSelection)();
       return (0, import_lexical25.$isNodeSelection)(selection) && selection.has(nodeKey);
     }),
     [editor, isSelected, nodeKey]
   );
-  const $onEnter = (0, import_react34.useCallback)(
+  const $onEnter = (0, import_react36.useCallback)(
     (event) => {
       const latestSelection = (0, import_lexical25.$getSelection)();
       const buttonElem = buttonRef.current;
@@ -2097,7 +2097,7 @@ function ImageComponent({
     },
     [caption, nodeKey, showCaption]
   );
-  const $onEscape = (0, import_react34.useCallback)(
+  const $onEscape = (0, import_react36.useCallback)(
     (event) => {
       if (activeEditorRef.current === caption || buttonRef.current === event.target) {
         (0, import_lexical25.$setSelection)(null);
@@ -2114,7 +2114,7 @@ function ImageComponent({
     },
     [caption, editor, setSelected]
   );
-  const onClick = (0, import_react34.useCallback)(
+  const onClick = (0, import_react36.useCallback)(
     (payload) => {
       const event = payload;
       if (isResizing) {
@@ -2133,7 +2133,7 @@ function ImageComponent({
     },
     [isResizing, isSelected, setSelected, clearSelection]
   );
-  const onRightClick = (0, import_react34.useCallback)(
+  const onRightClick = (0, import_react36.useCallback)(
     (event) => {
       editor.getEditorState().read(() => {
         const latestSelection = (0, import_lexical25.$getSelection)();
@@ -2145,7 +2145,7 @@ function ImageComponent({
     },
     [editor]
   );
-  (0, import_react34.useEffect)(() => {
+  (0, import_react36.useEffect)(() => {
     return (0, import_utils15.mergeRegister)(
       editor.registerCommand(
         import_lexical25.SELECTION_CHANGE_COMMAND,
@@ -2168,7 +2168,7 @@ function ImageComponent({
       )
     );
   }, [editor]);
-  (0, import_react34.useEffect)(() => {
+  (0, import_react36.useEffect)(() => {
     let rootCleanup = noop;
     return (0, import_utils15.mergeRegister)(
       editor.registerCommand(import_lexical25.CLICK_COMMAND, onClick, import_lexical25.COMMAND_PRIORITY_LOW),
@@ -2218,8 +2218,8 @@ function ImageComponent({
   useSharedHistoryContext();
   const draggable = isInNodeSelection && !isResizing;
   const isFocused = (isSelected || isResizing) && isEditable;
-  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(import_react34.Suspense, { fallback: null, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { draggable, children: isLoadError ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(BrokenImage, {}) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react36.Suspense, { fallback: null, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { draggable, children: isLoadError ? /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(BrokenImage, {}) : /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
       LazyImage,
       {
         className: isFocused ? `focused ${isInNodeSelection ? "draggable" : ""}` : null,
@@ -2232,16 +2232,16 @@ function ImageComponent({
         onError: () => setIsLoadError(true)
       }
     ) }),
-    showCaption && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "image-caption-container", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(import_LexicalNestedComposer.LexicalNestedComposer, { initialEditor: caption, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DisableCaptionOnBlur, { setShowCaption }),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(NewMentionsPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(LinkPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(EmojisPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(import_LexicalHashtagPlugin.HashtagPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+    showCaption && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "image-caption-container", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_LexicalNestedComposer.LexicalNestedComposer, { initialEditor: caption, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(DisableCaptionOnBlur, { setShowCaption }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(NewMentionsPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(LinkPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(EmojisPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_LexicalHashtagPlugin.HashtagPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
         import_LexicalRichTextPlugin.RichTextPlugin,
         {
-          contentEditable: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+          contentEditable: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
             LexicalContentEditable,
             {
               placeholder: "Enter a caption...",
@@ -2253,7 +2253,7 @@ function ImageComponent({
         }
       )
     ] }) }),
-    resizable && isInNodeSelection && isFocused && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+    resizable && isInNodeSelection && isFocused && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
       ImageResizer,
       {
         showCaption,
@@ -2269,7 +2269,7 @@ function ImageComponent({
     )
   ] });
 }
-var import_LexicalComposerContext17, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection2, import_utils15, import_lexical25, import_react34, import_jsx_runtime31, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
+var import_LexicalComposerContext17, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection2, import_utils15, import_lexical25, import_react36, import_jsx_runtime34, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
 var init_ImageComponent = __esm({
   "src/nodes/ImageComponent.tsx"() {
     "use strict";
@@ -2283,7 +2283,7 @@ var init_ImageComponent = __esm({
     import_useLexicalNodeSelection2 = require("@lexical/react/useLexicalNodeSelection");
     import_utils15 = require("@lexical/utils");
     import_lexical25 = require("lexical");
-    import_react34 = require("react");
+    import_react36 = require("react");
     init_SharedHistoryContext();
     init_image_broken();
     init_EmojisPlugin();
@@ -2292,7 +2292,7 @@ var init_ImageComponent = __esm({
     init_ContentEditable2();
     init_ImageResizer();
     init_ImageNode2();
-    import_jsx_runtime31 = require("react/jsx-runtime");
+    import_jsx_runtime34 = require("react/jsx-runtime");
     imageCache = /* @__PURE__ */ new Map();
     RIGHT_CLICK_IMAGE_COMMAND = (0, import_lexical25.createCommand)("RIGHT_CLICK_IMAGE_COMMAND");
   }
@@ -2338,7 +2338,7 @@ function $createImageNode({
 function $isImageNode(node) {
   return node instanceof ImageNode;
 }
-var import_clipboard, import_hashtag, import_html, import_link, import_lexical26, React3, import_jsx_runtime32, ImageComponent2, ImageNode;
+var import_clipboard, import_hashtag, import_html, import_link, import_lexical26, React3, import_jsx_runtime35, ImageComponent2, ImageNode;
 var init_ImageNode2 = __esm({
   "src/nodes/ImageNode.tsx"() {
     "use strict";
@@ -2350,7 +2350,7 @@ var init_ImageNode2 = __esm({
     React3 = __toESM(require("react"));
     init_EmojiNode();
     init_KeywordNode();
-    import_jsx_runtime32 = require("react/jsx-runtime");
+    import_jsx_runtime35 = require("react/jsx-runtime");
     ImageComponent2 = React3.lazy(() => Promise.resolve().then(() => (init_ImageComponent(), ImageComponent_exports)));
     ImageNode = class _ImageNode extends import_lexical26.DecoratorNode {
       __src;
@@ -2524,7 +2524,7 @@ var init_ImageNode2 = __esm({
         return this.__altText;
       }
       decorate() {
-        return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+        return /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
           ImageComponent2,
           {
             src: this.__src,
@@ -2721,9 +2721,9 @@ function StickyComponent({
   caption
 }) {
   const [editor] = (0, import_LexicalComposerContext40.useLexicalComposerContext)();
-  const stickyContainerRef = (0, import_react64.useRef)(null);
-  const [portalContainer, setPortalContainer] = (0, import_react64.useState)(null);
-  const positioningRef = (0, import_react64.useRef)({
+  const stickyContainerRef = (0, import_react65.useRef)(null);
+  const [portalContainer, setPortalContainer] = (0, import_react65.useState)(null);
+  const positioningRef = (0, import_react65.useRef)({
     isDragging: false,
     offsetX: 0,
     offsetY: 0,
@@ -2731,7 +2731,7 @@ function StickyComponent({
     x: 0,
     y: 0
   });
-  (0, import_react64.useEffect)(() => {
+  (0, import_react65.useEffect)(() => {
     const rootElement = editor.getRootElement();
     if (rootElement) {
       const scrollerContainer = rootElement.closest(".editor-scroller");
@@ -2742,7 +2742,7 @@ function StickyComponent({
       }
     }
   }, [editor]);
-  (0, import_react64.useEffect)(() => {
+  (0, import_react65.useEffect)(() => {
     const stickyContainer = stickyContainerRef.current;
     if (!stickyContainer) return;
     const stopFlyonuiEvents = (e) => {
@@ -2755,7 +2755,7 @@ function StickyComponent({
       stickyContainer.removeEventListener("focusout", stopFlyonuiEvents);
     };
   }, []);
-  (0, import_react64.useEffect)(() => {
+  (0, import_react65.useEffect)(() => {
     const position = positioningRef.current;
     position.x = x;
     position.y = y2;
@@ -2764,7 +2764,7 @@ function StickyComponent({
       positionSticky(stickyContainer, position);
     }
   }, [x, y2]);
-  (0, import_react64.useLayoutEffect)(() => {
+  (0, import_react65.useLayoutEffect)(() => {
     const position = positioningRef.current;
     const resizeObserver = new ResizeObserver((entries) => {
       for (let i = 0; i < entries.length; i++) {
@@ -2809,7 +2809,7 @@ function StickyComponent({
       removeRootListener();
     };
   }, [editor]);
-  (0, import_react64.useEffect)(() => {
+  (0, import_react65.useEffect)(() => {
     const stickyContainer = stickyContainerRef.current;
     if (stickyContainer !== null) {
       setTimeout(() => {
@@ -2871,7 +2871,7 @@ function StickyComponent({
     });
   };
   useSharedHistoryContext();
-  const stickyContent = /* @__PURE__ */ (0, import_jsx_runtime53.jsx)("div", { ref: stickyContainerRef, className: "sticky-note-container", children: /* @__PURE__ */ (0, import_jsx_runtime53.jsxs)(
+  const stickyContent = /* @__PURE__ */ (0, import_jsx_runtime55.jsx)("div", { ref: stickyContainerRef, className: "sticky-note-container", children: /* @__PURE__ */ (0, import_jsx_runtime55.jsxs)(
     "div",
     {
       className: `sticky-note ${color}`,
@@ -2895,8 +2895,8 @@ function StickyComponent({
         }
       },
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime53.jsx)("button", { type: "button", onClick: handleDelete, className: "delete", "aria-label": "Delete sticky note", title: "Delete", children: "X" }),
-        /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime55.jsx)("button", { type: "button", onClick: handleDelete, className: "delete", "aria-label": "Delete sticky note", title: "Delete", children: "X" }),
+        /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
           "button",
           {
             type: "button",
@@ -2904,13 +2904,13 @@ function StickyComponent({
             className: "color",
             "aria-label": "Change sticky note color",
             title: "Color",
-            children: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)("i", { className: "bucket" })
+            children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)("i", { className: "bucket" })
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_LexicalNestedComposer2.LexicalNestedComposer, { initialEditor: caption, initialTheme: StickyEditorTheme_default, children: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(import_LexicalNestedComposer2.LexicalNestedComposer, { initialEditor: caption, initialTheme: StickyEditorTheme_default, children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
           import_LexicalPlainTextPlugin.PlainTextPlugin,
           {
-            contentEditable: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(
+            contentEditable: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
               LexicalContentEditable,
               {
                 placeholder: "What's up?",
@@ -2927,9 +2927,9 @@ function StickyComponent({
   if (!portalContainer) {
     return null;
   }
-  return (0, import_react_dom10.createPortal)(stickyContent, portalContainer);
+  return (0, import_react_dom11.createPortal)(stickyContent, portalContainer);
 }
-var import_LexicalComposerContext40, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils37, import_lexical56, import_react64, import_react_dom10, import_jsx_runtime53;
+var import_LexicalComposerContext40, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils37, import_lexical56, import_react65, import_react_dom11, import_jsx_runtime55;
 var init_StickyComponent = __esm({
   "src/nodes/StickyComponent.tsx"() {
     "use strict";
@@ -2940,13 +2940,13 @@ var init_StickyComponent = __esm({
     import_LexicalPlainTextPlugin = require("@lexical/react/LexicalPlainTextPlugin");
     import_utils37 = require("@lexical/utils");
     import_lexical56 = require("lexical");
-    import_react64 = require("react");
-    import_react_dom10 = require("react-dom");
+    import_react65 = require("react");
+    import_react_dom11 = require("react-dom");
     init_SharedHistoryContext();
     init_StickyEditorTheme2();
     init_ContentEditable2();
     init_StickyNode2();
-    import_jsx_runtime53 = require("react/jsx-runtime");
+    import_jsx_runtime55 = require("react/jsx-runtime");
   }
 });
 
@@ -2957,13 +2957,13 @@ function $isStickyNode(node) {
 function $createStickyNode(xOffset, yOffset) {
   return new StickyNode(xOffset, yOffset, "yellow");
 }
-var import_lexical57, React5, import_jsx_runtime54, StickyComponent2, StickyNode;
+var import_lexical57, React5, import_jsx_runtime56, StickyComponent2, StickyNode;
 var init_StickyNode2 = __esm({
   "src/nodes/StickyNode.tsx"() {
     "use strict";
     import_lexical57 = require("lexical");
     React5 = __toESM(require("react"));
-    import_jsx_runtime54 = require("react/jsx-runtime");
+    import_jsx_runtime56 = require("react/jsx-runtime");
     StickyComponent2 = React5.lazy(() => Promise.resolve().then(() => (init_StickyComponent(), StickyComponent_exports)));
     StickyNode = class _StickyNode extends import_lexical57.DecoratorNode {
       __x;
@@ -3026,7 +3026,7 @@ var init_StickyNode2 = __esm({
         writable.__color = writable.__color === "pink" ? "yellow" : "pink";
       }
       decorate(_editor, _config) {
-        return /* @__PURE__ */ (0, import_jsx_runtime54.jsx)(
+        return /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
           StickyComponent2,
           {
             color: this.__color,
@@ -3158,27 +3158,123 @@ __export(src_exports, {
 });
 module.exports = __toCommonJS(src_exports);
 
-// src/core/Editor.tsx
-var import_LexicalAutoFocusPlugin = require("@lexical/react/LexicalAutoFocusPlugin");
-var import_LexicalCharacterLimitPlugin = require("@lexical/react/LexicalCharacterLimitPlugin");
-var import_LexicalCheckListPlugin = require("@lexical/react/LexicalCheckListPlugin");
-var import_LexicalClearEditorPlugin = require("@lexical/react/LexicalClearEditorPlugin");
-var import_LexicalClickableLinkPlugin = require("@lexical/react/LexicalClickableLinkPlugin");
-var import_LexicalComposerContext41 = require("@lexical/react/LexicalComposerContext");
-var import_LexicalErrorBoundary3 = require("@lexical/react/LexicalErrorBoundary");
-var import_LexicalHashtagPlugin2 = require("@lexical/react/LexicalHashtagPlugin");
-var import_LexicalHistoryPlugin2 = require("@lexical/react/LexicalHistoryPlugin");
-var import_LexicalListPlugin = require("@lexical/react/LexicalListPlugin");
-var import_LexicalRichTextPlugin2 = require("@lexical/react/LexicalRichTextPlugin");
-var import_LexicalSelectionAlwaysOnDisplay = require("@lexical/react/LexicalSelectionAlwaysOnDisplay");
-var import_LexicalTabIndentationPlugin = require("@lexical/react/LexicalTabIndentationPlugin");
-var import_LexicalTablePlugin = require("@lexical/react/LexicalTablePlugin");
-var import_useLexicalEditable6 = require("@lexical/react/useLexicalEditable");
-var import_utils41 = require("@lexical/utils");
-var import_react66 = require("react");
+// src/context/ComponentPickerContext.tsx
+var import_react = require("react");
+var import_jsx_runtime = require("react/jsx-runtime");
+var ComponentPickerContext = (0, import_react.createContext)({});
+function ComponentPickerProvider({
+  children,
+  extraOptions
+}) {
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ComponentPickerContext.Provider, { value: { extraOptions }, children });
+}
+function useComponentPickerContext() {
+  return (0, import_react.useContext)(ComponentPickerContext);
+}
+
+// src/context/FlashMessageContext.tsx
+var import_react2 = require("react");
+
+// src/ui/FlashMessage.tsx
+var import_react_dom = require("react-dom");
+var import_jsx_runtime2 = require("react/jsx-runtime");
+function FlashMessage({ children }) {
+  return (0, import_react_dom.createPortal)(
+    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "notion-like-editor FlashMessage__overlay", role: "dialog", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "notion-like-editor FlashMessage__alert", role: "alert", children }) }),
+    document.body
+  );
+}
+
+// src/context/FlashMessageContext.tsx
+var import_jsx_runtime3 = require("react/jsx-runtime");
+var Context = (0, import_react2.createContext)(void 0);
+var INITIAL_STATE = {};
+var DEFAULT_DURATION = 1e3;
+var FlashMessageContext = ({ children }) => {
+  const [props, setProps] = (0, import_react2.useState)(INITIAL_STATE);
+  const showFlashMessage = (0, import_react2.useCallback)(
+    (message, duration) => setProps(message ? { duration, message } : INITIAL_STATE),
+    []
+  );
+  (0, import_react2.useEffect)(() => {
+    if (props.message) {
+      const timeoutId = setTimeout(() => setProps(INITIAL_STATE), props.duration ?? DEFAULT_DURATION);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [props]);
+  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(Context.Provider, { value: showFlashMessage, children: [
+    children,
+    props.message && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(FlashMessage, { children: props.message })
+  ] });
+};
+var useFlashMessageContext = () => {
+  const ctx = (0, import_react2.useContext)(Context);
+  if (!ctx) {
+    throw new Error("Missing FlashMessageContext");
+  }
+  return ctx;
+};
+
+// src/context/FullscreenContext.tsx
+var import_react3 = require("react");
+var import_jsx_runtime4 = require("react/jsx-runtime");
+var FullscreenContext = (0, import_react3.createContext)(void 0);
+function FullscreenProvider({ children }) {
+  const [isFullscreen, setIsFullscreen] = (0, import_react3.useState)(false);
+  const toggleFullscreen = (0, import_react3.useCallback)(() => {
+    setIsFullscreen((prev) => !prev);
+  }, []);
+  const exitFullscreen = (0, import_react3.useCallback)(() => {
+    setIsFullscreen(false);
+  }, []);
+  (0, import_react3.useEffect)(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    if (isFullscreen) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFullscreen]);
+  const value = (0, import_react3.useMemo)(
+    () => ({
+      isFullscreen,
+      toggleFullscreen,
+      exitFullscreen
+    }),
+    [isFullscreen, toggleFullscreen, exitFullscreen]
+  );
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(FullscreenContext.Provider, { value, children });
+}
+function useFullscreen() {
+  const context = (0, import_react3.useContext)(FullscreenContext);
+  if (context === void 0) {
+    throw new Error("useFullscreen must be used within a FullscreenProvider");
+  }
+  return context;
+}
+
+// src/context/ImageUploadContext.tsx
+var import_react4 = require("react");
+var import_jsx_runtime5 = require("react/jsx-runtime");
+var ImageUploadContext = (0, import_react4.createContext)({
+  handler: null
+});
+function useImageUpload() {
+  const context = (0, import_react4.useContext)(ImageUploadContext);
+  return context.handler;
+}
+function ImageUploadProvider({ children, handler }) {
+  const value = (0, import_react4.useMemo)(() => ({ handler }), [handler]);
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ImageUploadContext.Provider, { value, children });
+}
 
 // src/context/SettingsContext.tsx
-var import_react = require("react");
+var import_react5 = require("react");
 
 // src/core/appSettings.ts
 var DEFAULT_SETTINGS = {
@@ -3212,8 +3308,8 @@ var INITIAL_SETTINGS = {
 };
 
 // src/context/SettingsContext.tsx
-var import_jsx_runtime = require("react/jsx-runtime");
-var Context = (0, import_react.createContext)({
+var import_jsx_runtime6 = require("react/jsx-runtime");
+var Context2 = (0, import_react5.createContext)({
   setOption: (_name, _value) => {
     return;
   },
@@ -3223,24 +3319,24 @@ var SettingsContext = ({
   children,
   initialSettings
 }) => {
-  const [settings, setSettings] = (0, import_react.useState)(() => ({
+  const [settings, setSettings] = (0, import_react5.useState)(() => ({
     ...INITIAL_SETTINGS,
     ...initialSettings
   }));
-  const setOption = (0, import_react.useCallback)((setting, value) => {
+  const setOption = (0, import_react5.useCallback)((setting, value) => {
     setSettings((options) => ({
       ...options,
       [setting]: value
     }));
     setURLParam(setting, value);
   }, []);
-  const contextValue = (0, import_react.useMemo)(() => {
+  const contextValue = (0, import_react5.useMemo)(() => {
     return { setOption, settings };
   }, [setOption, settings]);
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Context.Provider, { value: contextValue, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Context2.Provider, { value: contextValue, children });
 };
 var useSettings = () => {
-  return (0, import_react.useContext)(Context);
+  return (0, import_react5.useContext)(Context2);
 };
 function setURLParam(param, value) {
   const url = new URL(window.location.href);
@@ -3254,19 +3350,12 @@ function setURLParam(param, value) {
   window.history.pushState(null, "", url.toString());
 }
 
-// src/core/Editor.tsx
+// src/index.ts
 init_SharedHistoryContext();
 
-// src/plugins/AutocompletePlugin/index.tsx
-var import_LexicalComposerContext = require("@lexical/react/LexicalComposerContext");
-var import_selection = require("@lexical/selection");
-var import_utils = require("@lexical/utils");
-var import_lexical2 = require("lexical");
-var import_react4 = require("react");
-
 // src/context/ToolbarContext.tsx
-var import_react3 = require("react");
-var import_jsx_runtime3 = require("react/jsx-runtime");
+var import_react7 = require("react");
+var import_jsx_runtime8 = require("react/jsx-runtime");
 var MIN_ALLOWED_FONT_SIZE = 8;
 var MAX_ALLOWED_FONT_SIZE = 72;
 var DEFAULT_FONT_SIZE = 15;
@@ -3315,34 +3404,61 @@ var INITIAL_TOOLBAR_STATE = {
   rootType: "root",
   listStartNumber: null
 };
-var Context3 = (0, import_react3.createContext)(void 0);
+var Context4 = (0, import_react7.createContext)(void 0);
 var ToolbarContext = ({ children }) => {
-  const [toolbarState, setToolbarState] = (0, import_react3.useState)(INITIAL_TOOLBAR_STATE);
+  const [toolbarState, setToolbarState] = (0, import_react7.useState)(INITIAL_TOOLBAR_STATE);
   const selectionFontSize = toolbarState.fontSize;
-  const updateToolbarState = (0, import_react3.useCallback)((key, value) => {
+  const updateToolbarState = (0, import_react7.useCallback)((key, value) => {
     setToolbarState((prev) => ({
       ...prev,
       [key]: value
     }));
   }, []);
-  (0, import_react3.useEffect)(() => {
+  (0, import_react7.useEffect)(() => {
     updateToolbarState("fontSizeInputValue", selectionFontSize.slice(0, -2));
   }, [selectionFontSize, updateToolbarState]);
-  const contextValue = (0, import_react3.useMemo)(() => {
+  const contextValue = (0, import_react7.useMemo)(() => {
     return {
       toolbarState,
       updateToolbarState
     };
   }, [toolbarState, updateToolbarState]);
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(Context3.Provider, { value: contextValue, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Context4.Provider, { value: contextValue, children });
 };
 var useToolbarState = () => {
-  const context = (0, import_react3.useContext)(Context3);
+  const context = (0, import_react7.useContext)(Context4);
   if (context === void 0) {
     throw new Error("useToolbarState must be used within a ToolbarProvider");
   }
   return context;
 };
+
+// src/core/Editor.tsx
+var import_LexicalAutoFocusPlugin = require("@lexical/react/LexicalAutoFocusPlugin");
+var import_LexicalCharacterLimitPlugin = require("@lexical/react/LexicalCharacterLimitPlugin");
+var import_LexicalCheckListPlugin = require("@lexical/react/LexicalCheckListPlugin");
+var import_LexicalClearEditorPlugin = require("@lexical/react/LexicalClearEditorPlugin");
+var import_LexicalClickableLinkPlugin = require("@lexical/react/LexicalClickableLinkPlugin");
+var import_LexicalComposerContext41 = require("@lexical/react/LexicalComposerContext");
+var import_LexicalErrorBoundary3 = require("@lexical/react/LexicalErrorBoundary");
+var import_LexicalHashtagPlugin2 = require("@lexical/react/LexicalHashtagPlugin");
+var import_LexicalHistoryPlugin2 = require("@lexical/react/LexicalHistoryPlugin");
+var import_LexicalListPlugin = require("@lexical/react/LexicalListPlugin");
+var import_LexicalRichTextPlugin2 = require("@lexical/react/LexicalRichTextPlugin");
+var import_LexicalSelectionAlwaysOnDisplay = require("@lexical/react/LexicalSelectionAlwaysOnDisplay");
+var import_LexicalTabIndentationPlugin = require("@lexical/react/LexicalTabIndentationPlugin");
+var import_LexicalTablePlugin = require("@lexical/react/LexicalTablePlugin");
+var import_useLexicalEditable6 = require("@lexical/react/useLexicalEditable");
+var import_utils41 = require("@lexical/utils");
+var import_react67 = require("react");
+init_SharedHistoryContext();
+
+// src/plugins/AutocompletePlugin/index.tsx
+var import_LexicalComposerContext = require("@lexical/react/LexicalComposerContext");
+var import_selection = require("@lexical/selection");
+var import_utils = require("@lexical/utils");
+var import_lexical2 = require("lexical");
+var import_react8 = require("react");
 
 // src/nodes/AutocompleteNode.tsx
 var import_lexical = require("lexical");
@@ -3497,7 +3613,7 @@ function $search(selection) {
   return [true, word.reverse().join("")];
 }
 function useQuery() {
-  return (0, import_react4.useCallback)((searchText) => {
+  return (0, import_react8.useCallback)((searchText) => {
     const server = new AutocompleteServer();
     console.time("query");
     const response = server.query(searchText);
@@ -3514,7 +3630,7 @@ function AutocompletePlugin() {
   const [editor] = (0, import_LexicalComposerContext.useLexicalComposerContext)();
   const query = useQuery();
   const { toolbarState } = useToolbarState();
-  (0, import_react4.useEffect)(() => {
+  (0, import_react8.useEffect)(() => {
     let autocompleteNodeKey = null;
     let lastMatch = null;
     let lastSuggestion = null;
@@ -5919,29 +6035,29 @@ var DICTIONARY = [
 // src/plugins/AutoEmbedPlugin/index.tsx
 var import_LexicalAutoEmbedPlugin = require("@lexical/react/LexicalAutoEmbedPlugin");
 var import_LexicalComposerContext5 = require("@lexical/react/LexicalComposerContext");
-var import_react11 = require("react");
+var import_react15 = require("react");
 
 // src/hooks/useModal.tsx
-var import_react6 = require("react");
+var import_react10 = require("react");
 
 // src/ui/Modal.tsx
 var import_lexical3 = require("lexical");
-var import_react5 = require("react");
-var import_react_dom = require("react-dom");
-var import_jsx_runtime4 = require("react/jsx-runtime");
+var import_react9 = require("react");
+var import_react_dom2 = require("react-dom");
+var import_jsx_runtime9 = require("react/jsx-runtime");
 function PortalImpl({
   onClose,
   children,
   title,
   closeOnClickOutside
 }) {
-  const modalRef = (0, import_react5.useRef)(null);
-  (0, import_react5.useEffect)(() => {
+  const modalRef = (0, import_react9.useRef)(null);
+  (0, import_react9.useEffect)(() => {
     if (modalRef.current !== null) {
       modalRef.current.focus();
     }
   }, []);
-  (0, import_react5.useEffect)(() => {
+  (0, import_react9.useEffect)(() => {
     let modalOverlayElement = null;
     const handler = (event) => {
       if (event.key === "Escape") {
@@ -5969,20 +6085,20 @@ function PortalImpl({
       }
     };
   }, [closeOnClickOutside, onClose]);
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_jsx_runtime4.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "notion-like-editor notion-like-modal-overlay fixed inset-0 bg-black/50 z-50", role: "dialog" }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "notion-like-editor notion-like-modal-overlay fixed inset-0 bg-black/50 z-50", role: "dialog" }),
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
       "div",
       {
         className: "notion-like-editor notion-like-modal-content fixed inset-0 z-60 flex items-center justify-center p-4",
         tabIndex: -1,
         ref: modalRef,
-        children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "bg-base-100 rounded-lg shadow-xl max-h-[90vh] overflow-y-auto", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex items-center justify-between p-6 border-b border-base-300", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("h2", { className: "text-2xl font-bold flex items-center gap-2", children: title }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { type: "button", className: "btn btn-sm btn-circle ms-2", onClick: onClose, "aria-label": "\u9589\u3058\u308B", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" }) })
+        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "bg-base-100 rounded-lg shadow-xl max-h-[90vh] overflow-y-auto", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "flex items-center justify-between p-6 border-b border-base-300", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h2", { className: "text-2xl font-bold flex items-center gap-2", children: title }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("button", { type: "button", className: "btn btn-sm btn-circle ms-2", onClick: onClose, "aria-label": "\u9589\u3058\u308B", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "p-6", children })
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "p-6", children })
         ] })
       }
     )
@@ -5994,27 +6110,27 @@ function Modal({
   title,
   closeOnClickOutside = false
 }) {
-  return (0, import_react_dom.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(PortalImpl, { onClose, title, closeOnClickOutside, children }),
+  return (0, import_react_dom2.createPortal)(
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(PortalImpl, { onClose, title, closeOnClickOutside, children }),
     document.body
   );
 }
 
 // src/hooks/useModal.tsx
-var import_jsx_runtime5 = require("react/jsx-runtime");
+var import_jsx_runtime10 = require("react/jsx-runtime");
 function useModal() {
-  const [modalContent, setModalContent] = (0, import_react6.useState)(null);
-  const onClose = (0, import_react6.useCallback)(() => {
+  const [modalContent, setModalContent] = (0, import_react10.useState)(null);
+  const onClose = (0, import_react10.useCallback)(() => {
     setModalContent(null);
   }, []);
-  const modal = (0, import_react6.useMemo)(() => {
+  const modal = (0, import_react10.useMemo)(() => {
     if (modalContent === null) {
       return null;
     }
     const { title, content, closeOnClickOutside } = modalContent;
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Modal, { onClose, title, closeOnClickOutside, children: content });
+    return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Modal, { onClose, title, closeOnClickOutside, children: content });
   }, [modalContent, onClose]);
-  const showModal = (0, import_react6.useCallback)(
+  const showModal = (0, import_react10.useCallback)(
     (title, getContent, closeOnClickOutside = false) => {
       setModalContent({
         closeOnClickOutside,
@@ -6033,7 +6149,7 @@ function joinClasses(...args) {
 }
 
 // src/ui/Button.tsx
-var import_jsx_runtime6 = require("react/jsx-runtime");
+var import_jsx_runtime11 = require("react/jsx-runtime");
 function Button({
   "data-test-id": dataTestId,
   children,
@@ -6043,7 +6159,7 @@ function Button({
   small,
   title
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
     "button",
     {
       type: "button",
@@ -6059,26 +6175,26 @@ function Button({
 }
 
 // src/ui/Dialog.tsx
-var import_jsx_runtime7 = require("react/jsx-runtime");
+var import_jsx_runtime12 = require("react/jsx-runtime");
 function DialogButtonsList({ children }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "DialogButtonsList", children });
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "DialogButtonsList", children });
 }
 function DialogActions({ "data-test-id": dataTestId, children }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "DialogActions", "data-test-id": dataTestId, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "DialogActions", "data-test-id": dataTestId, children });
 }
 
 // src/plugins/FigmaPlugin/index.tsx
 var import_LexicalComposerContext2 = require("@lexical/react/LexicalComposerContext");
 var import_utils2 = require("@lexical/utils");
 var import_lexical4 = require("lexical");
-var import_react7 = require("react");
+var import_react11 = require("react");
 
 // src/nodes/FigmaNode.tsx
 var import_LexicalBlockWithAlignableContents = require("@lexical/react/LexicalBlockWithAlignableContents");
 var import_LexicalDecoratorBlockNode = require("@lexical/react/LexicalDecoratorBlockNode");
-var import_jsx_runtime8 = require("react/jsx-runtime");
+var import_jsx_runtime13 = require("react/jsx-runtime");
 function FigmaComponent({ className, format, nodeKey, documentID }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_LexicalBlockWithAlignableContents.BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_LexicalBlockWithAlignableContents.BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
     "iframe",
     {
       width: "560",
@@ -6124,7 +6240,7 @@ var FigmaNode = class _FigmaNode extends import_LexicalDecoratorBlockNode.Decora
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(FigmaComponent, { className, format: this.__format, nodeKey: this.getKey(), documentID: this.__id });
+    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(FigmaComponent, { className, format: this.__format, nodeKey: this.getKey(), documentID: this.__id });
   }
 };
 function $createFigmaNode(documentID) {
@@ -6138,7 +6254,7 @@ function $isFigmaNode(node) {
 var INSERT_FIGMA_COMMAND = (0, import_lexical4.createCommand)("INSERT_FIGMA_COMMAND");
 function FigmaPlugin() {
   const [editor] = (0, import_LexicalComposerContext2.useLexicalComposerContext)();
-  (0, import_react7.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     if (!editor.hasNodes([FigmaNode])) {
       throw new Error("FigmaPlugin: FigmaNode not registered on editor");
     }
@@ -6159,13 +6275,13 @@ function FigmaPlugin() {
 var import_LexicalComposerContext3 = require("@lexical/react/LexicalComposerContext");
 var import_utils3 = require("@lexical/utils");
 var import_lexical5 = require("lexical");
-var import_react9 = require("react");
+var import_react13 = require("react");
 
 // src/nodes/TweetNode.tsx
 var import_LexicalBlockWithAlignableContents2 = require("@lexical/react/LexicalBlockWithAlignableContents");
 var import_LexicalDecoratorBlockNode2 = require("@lexical/react/LexicalDecoratorBlockNode");
-var import_react8 = require("react");
-var import_jsx_runtime9 = require("react/jsx-runtime");
+var import_react12 = require("react");
+var import_jsx_runtime14 = require("react/jsx-runtime");
 var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
 function $convertTweetElement(domNode) {
   const id = domNode.getAttribute("data-lexical-tweet-id");
@@ -6185,10 +6301,10 @@ function TweetComponent({
   onLoad,
   tweetID
 }) {
-  const containerRef = (0, import_react8.useRef)(null);
-  const previousTweetIDRef = (0, import_react8.useRef)("");
-  const [isTweetLoading, setIsTweetLoading] = (0, import_react8.useState)(false);
-  const createTweet = (0, import_react8.useCallback)(async () => {
+  const containerRef = (0, import_react12.useRef)(null);
+  const previousTweetIDRef = (0, import_react12.useRef)("");
+  const [isTweetLoading, setIsTweetLoading] = (0, import_react12.useState)(false);
+  const createTweet = (0, import_react12.useCallback)(async () => {
     try {
       await window.twttr.widgets.createTweet(tweetID, containerRef.current);
       setIsTweetLoading(false);
@@ -6202,7 +6318,7 @@ function TweetComponent({
       }
     }
   }, [onError, onLoad, tweetID]);
-  (0, import_react8.useEffect)(() => {
+  (0, import_react12.useEffect)(() => {
     if (tweetID !== previousTweetIDRef.current) {
       setIsTweetLoading(true);
       if (isTwitterScriptLoading) {
@@ -6222,9 +6338,9 @@ function TweetComponent({
       }
     }
   }, [createTweet, onError, tweetID]);
-  return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_LexicalBlockWithAlignableContents2.BlockWithAlignableContents, { className, format, nodeKey, children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_LexicalBlockWithAlignableContents2.BlockWithAlignableContents, { className, format, nodeKey, children: [
     isTweetLoading ? loadingComponent : null,
-    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
+    /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
   ] });
 }
 var TweetNode = class _TweetNode extends import_LexicalDecoratorBlockNode2.DecoratorBlockNode {
@@ -6280,7 +6396,7 @@ var TweetNode = class _TweetNode extends import_LexicalDecoratorBlockNode2.Decor
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
       TweetComponent,
       {
         className,
@@ -6303,7 +6419,7 @@ function $isTweetNode(node) {
 var INSERT_TWEET_COMMAND = (0, import_lexical5.createCommand)("INSERT_TWEET_COMMAND");
 function TwitterPlugin() {
   const [editor] = (0, import_LexicalComposerContext3.useLexicalComposerContext)();
-  (0, import_react9.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (!editor.hasNodes([TweetNode])) {
       throw new Error("TwitterPlugin: TweetNode not registered on editor");
     }
@@ -6324,14 +6440,14 @@ function TwitterPlugin() {
 var import_LexicalComposerContext4 = require("@lexical/react/LexicalComposerContext");
 var import_utils4 = require("@lexical/utils");
 var import_lexical6 = require("lexical");
-var import_react10 = require("react");
+var import_react14 = require("react");
 
 // src/nodes/YouTubeNode.tsx
 var import_LexicalBlockWithAlignableContents3 = require("@lexical/react/LexicalBlockWithAlignableContents");
 var import_LexicalDecoratorBlockNode3 = require("@lexical/react/LexicalDecoratorBlockNode");
-var import_jsx_runtime10 = require("react/jsx-runtime");
+var import_jsx_runtime15 = require("react/jsx-runtime");
 function YouTubeComponent({ className, format, nodeKey, videoID }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_LexicalBlockWithAlignableContents3.BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_LexicalBlockWithAlignableContents3.BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
     "iframe",
     {
       width: "560",
@@ -6416,7 +6532,7 @@ var YouTubeNode = class _YouTubeNode extends import_LexicalDecoratorBlockNode3.D
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(YouTubeComponent, { className, format: this.__format, nodeKey: this.getKey(), videoID: this.__id });
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(YouTubeComponent, { className, format: this.__format, nodeKey: this.getKey(), videoID: this.__id });
   }
 };
 function $createYouTubeNode(videoID) {
@@ -6430,7 +6546,7 @@ function $isYouTubeNode(node) {
 var INSERT_YOUTUBE_COMMAND = (0, import_lexical6.createCommand)("INSERT_YOUTUBE_COMMAND");
 function YouTubePlugin() {
   const [editor] = (0, import_LexicalComposerContext4.useLexicalComposerContext)();
-  (0, import_react10.useEffect)(() => {
+  (0, import_react14.useEffect)(() => {
     if (!editor.hasNodes([YouTubeNode])) {
       throw new Error("YouTubePlugin: YouTubeNode not registered on editor");
     }
@@ -6448,12 +6564,12 @@ function YouTubePlugin() {
 }
 
 // src/plugins/AutoEmbedPlugin/index.tsx
-var import_jsx_runtime11 = require("react/jsx-runtime");
+var import_jsx_runtime16 = require("react/jsx-runtime");
 var YoutubeEmbedConfig = {
   contentName: "Youtube Video",
   exampleUrl: "https://www.youtube.com/watch?v=jNQXAC9IVRw",
   // Icon for display.
-  icon: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("i", { className: "icon youtube" }),
+  icon: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("i", { className: "icon youtube" }),
   insertNode: (editor, result) => {
     editor.dispatchCommand(INSERT_YOUTUBE_COMMAND, result.id);
   },
@@ -6477,7 +6593,7 @@ var TwitterEmbedConfig = {
   contentName: "X(Tweet)",
   exampleUrl: "https://x.com/jack/status/20",
   // Icon for display.
-  icon: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("i", { className: "icon x" }),
+  icon: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("i", { className: "icon x" }),
   // Create the Lexical embed node from the url data.
   insertNode: (editor, result) => {
     editor.dispatchCommand(INSERT_TWEET_COMMAND, result.id);
@@ -6500,7 +6616,7 @@ var TwitterEmbedConfig = {
 var FigmaEmbedConfig = {
   contentName: "Figma Document",
   exampleUrl: "https://www.figma.com/file/LKQ4FJ4bTnCSjedbRpk931/Sample-File",
-  icon: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("i", { className: "icon figma" }),
+  icon: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("i", { className: "icon figma" }),
   insertNode: (editor, result) => {
     editor.dispatchCommand(INSERT_FIGMA_COMMAND, result.id);
   },
@@ -6532,10 +6648,10 @@ function AutoEmbedDialog({
   embedConfig,
   onClose
 }) {
-  const [text, setText] = (0, import_react11.useState)("");
+  const [text, setText] = (0, import_react15.useState)("");
   const [editor] = (0, import_LexicalComposerContext5.useLexicalComposerContext)();
-  const [embedResult, setEmbedResult] = (0, import_react11.useState)(null);
-  const validateText = (0, import_react11.useMemo)(
+  const [embedResult, setEmbedResult] = (0, import_react15.useState)(null);
+  const validateText = (0, import_react15.useMemo)(
     () => debounce((inputText) => {
       const urlMatch = import_LexicalAutoEmbedPlugin.URL_MATCHER.exec(inputText);
       if (embedConfig != null && inputText != null && urlMatch != null) {
@@ -6554,8 +6670,8 @@ function AutoEmbedDialog({
       onClose();
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { style: { width: "100%", maxWidth: "600px" }, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "Input__wrapper", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { style: { width: "100%", maxWidth: "600px" }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "Input__wrapper", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
       "input",
       {
         type: "text",
@@ -6570,13 +6686,13 @@ function AutoEmbedDialog({
         }
       }
     ) }),
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(DialogActions, { children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Button, { disabled: !embedResult, onClick, "data-test-id": `${embedConfig.type}-embed-modal-submit-btn`, children: "Embed" }) })
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(DialogActions, { children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Button, { disabled: !embedResult, onClick, "data-test-id": `${embedConfig.type}-embed-modal-submit-btn`, children: "Embed" }) })
   ] });
 }
 function AutoEmbedPlugin() {
   const [modal, showModal] = useModal();
   const openEmbedModal = (embedConfig) => {
-    showModal(`Embed ${embedConfig.contentName}`, (onClose) => /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(AutoEmbedDialog, { embedConfig, onClose }));
+    showModal(`Embed ${embedConfig.contentName}`, (onClose) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(AutoEmbedDialog, { embedConfig, onClose }));
   };
   const getMenuOptions = (activeEmbedConfig, embedFn, dismissFn) => {
     return [
@@ -6588,9 +6704,9 @@ function AutoEmbedPlugin() {
       })
     ];
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(import_jsx_runtime11.Fragment, { children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(import_jsx_runtime16.Fragment, { children: [
     modal,
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
       import_LexicalAutoEmbedPlugin.LexicalAutoEmbedPlugin,
       {
         embedConfigs: EmbedConfigs,
@@ -6606,25 +6722,25 @@ function AutoEmbedPlugin() {
 
 // src/plugins/AutoLinkPlugin/index.tsx
 var import_LexicalAutoLinkPlugin = require("@lexical/react/LexicalAutoLinkPlugin");
-var import_react13 = require("react");
+var import_react17 = require("react");
 
 // src/context/AutoLinkContext.tsx
-var import_react12 = require("react");
-var import_jsx_runtime12 = require("react/jsx-runtime");
-var AutoLinkContext = (0, import_react12.createContext)({
+var import_react16 = require("react");
+var import_jsx_runtime17 = require("react/jsx-runtime");
+var AutoLinkContext = (0, import_react16.createContext)({
   customMatchers: []
 });
 function useCustomLinkMatchers() {
-  const context = (0, import_react12.useContext)(AutoLinkContext);
+  const context = (0, import_react16.useContext)(AutoLinkContext);
   return context.customMatchers;
 }
 function AutoLinkProvider({ children, customMatchers = [] }) {
-  const value = (0, import_react12.useMemo)(() => ({ customMatchers }), [customMatchers]);
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(AutoLinkContext.Provider, { value, children });
+  const value = (0, import_react16.useMemo)(() => ({ customMatchers }), [customMatchers]);
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(AutoLinkContext.Provider, { value, children });
 }
 
 // src/plugins/AutoLinkPlugin/index.tsx
-var import_jsx_runtime13 = require("react/jsx-runtime");
+var import_jsx_runtime18 = require("react/jsx-runtime");
 var URL_REGEX = /((https?:\/\/(www\.)?)|(www\.))((localhost(:\d+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)(?<![-.+():%])/;
 var EMAIL_REGEX = /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
 var BASE_MATCHERS = [
@@ -6637,26 +6753,26 @@ var BASE_MATCHERS = [
 ];
 function LexicalAutoLinkPlugin() {
   const customMatchers = useCustomLinkMatchers();
-  const matchers = (0, import_react13.useMemo)(() => {
+  const matchers = (0, import_react17.useMemo)(() => {
     if (customMatchers.length === 0) {
       return BASE_MATCHERS;
     }
     return [...BASE_MATCHERS, ...customMatchers];
   }, [customMatchers]);
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_LexicalAutoLinkPlugin.AutoLinkPlugin, { matchers });
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_LexicalAutoLinkPlugin.AutoLinkPlugin, { matchers });
 }
 
 // src/plugins/CodeActionMenuPlugin/index.tsx
 var import_code3 = require("@lexical/code");
 var import_LexicalComposerContext6 = require("@lexical/react/LexicalComposerContext");
 var import_lexical9 = require("lexical");
-var import_react16 = require("react");
-var import_react_dom2 = require("react-dom");
+var import_react20 = require("react");
+var import_react_dom3 = require("react-dom");
 
 // src/plugins/CodeActionMenuPlugin/components/CopyButton/index.tsx
 var import_code = require("@lexical/code");
 var import_lexical7 = require("lexical");
-var import_react14 = require("react");
+var import_react18 = require("react");
 
 // src/plugins/CodeActionMenuPlugin/utils.ts
 var import_use_debounce = require("use-debounce");
@@ -6665,9 +6781,9 @@ function useDebounce(fn, ms, maxWait) {
 }
 
 // src/plugins/CodeActionMenuPlugin/components/CopyButton/index.tsx
-var import_jsx_runtime14 = require("react/jsx-runtime");
+var import_jsx_runtime19 = require("react/jsx-runtime");
 function CopyButton({ editor, getCodeDOMNode }) {
-  const [isCopyCompleted, setCopyCompleted] = (0, import_react14.useState)(false);
+  const [isCopyCompleted, setCopyCompleted] = (0, import_react18.useState)(false);
   const removeSuccessIcon = useDebounce(() => {
     setCopyCompleted(false);
   }, 1e3);
@@ -6693,14 +6809,14 @@ function CopyButton({ editor, getCodeDOMNode }) {
       console.error("Failed to copy: ", err);
     }
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("button", { type: "button", className: "menu-item", onClick: handleClick, "aria-label": "copy", children: isCopyCompleted ? /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("i", { className: "format success" }) : /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("i", { className: "format copy" }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { type: "button", className: "menu-item", onClick: handleClick, "aria-label": "copy", children: isCopyCompleted ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("i", { className: "format success" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("i", { className: "format copy" }) });
 }
 
 // src/plugins/CodeActionMenuPlugin/components/PrettierButton/index.tsx
 var import_code2 = require("@lexical/code");
 var import_lexical8 = require("lexical");
-var import_react15 = require("react");
-var import_jsx_runtime15 = require("react/jsx-runtime");
+var import_react19 = require("react");
+var import_jsx_runtime20 = require("react/jsx-runtime");
 var PRETTIER_PARSER_MODULES = {
   css: [() => import("prettier/parser-postcss")],
   html: [() => import("prettier/parser-html")],
@@ -6736,8 +6852,8 @@ function getPrettierOptions(lang) {
   return options;
 }
 function PrettierButton({ lang, editor, getCodeDOMNode }) {
-  const [syntaxError, setSyntaxError] = (0, import_react15.useState)("");
-  const [tipsVisible, setTipsVisible] = (0, import_react15.useState)(false);
+  const [syntaxError, setSyntaxError] = (0, import_react19.useState)("");
+  const [tipsVisible, setTipsVisible] = (0, import_react19.useState)(false);
   async function handleClick() {
     const codeDOMNode = getCodeDOMNode();
     if (!codeDOMNode) {
@@ -6791,8 +6907,8 @@ function PrettierButton({ lang, editor, getCodeDOMNode }) {
       setTipsVisible(false);
     }
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "prettier-wrapper", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "prettier-wrapper", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
       "button",
       {
         type: "button",
@@ -6801,15 +6917,15 @@ function PrettierButton({ lang, editor, getCodeDOMNode }) {
         onMouseEnter: handleMouseEnter,
         onMouseLeave: handleMouseLeave,
         "aria-label": "prettier",
-        children: syntaxError ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("i", { className: "format prettier-error" }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("i", { className: "format prettier" })
+        children: syntaxError ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("i", { className: "format prettier-error" }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("i", { className: "format prettier" })
       }
     ),
-    tipsVisible ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("pre", { className: "code-error-tips", children: syntaxError }) : null
+    tipsVisible ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("pre", { className: "code-error-tips", children: syntaxError }) : null
   ] });
 }
 
 // src/plugins/CodeActionMenuPlugin/index.tsx
-var import_jsx_runtime16 = require("react/jsx-runtime");
+var import_jsx_runtime21 = require("react/jsx-runtime");
 var CODE_PADDING = 8;
 var SUPPORTED_LANGUAGES = [
   { value: "", label: "Plain Text" },
@@ -6838,15 +6954,15 @@ function CodeActionMenuContainer({
   showOnlyCopy = false
 }) {
   const [editor] = (0, import_LexicalComposerContext6.useLexicalComposerContext)();
-  const [lang, setLang] = (0, import_react16.useState)("");
-  const [isShown, setShown] = (0, import_react16.useState)(false);
-  const [shouldListenMouseMove, setShouldListenMouseMove] = (0, import_react16.useState)(false);
-  const [position, setPosition] = (0, import_react16.useState)({
+  const [lang, setLang] = (0, import_react20.useState)("");
+  const [isShown, setShown] = (0, import_react20.useState)(false);
+  const [shouldListenMouseMove, setShouldListenMouseMove] = (0, import_react20.useState)(false);
+  const [position, setPosition] = (0, import_react20.useState)({
     right: "0",
     top: "0"
   });
-  const codeSetRef = (0, import_react16.useRef)(/* @__PURE__ */ new Set());
-  const codeDOMNodeRef = (0, import_react16.useRef)(null);
+  const codeSetRef = (0, import_react20.useRef)(/* @__PURE__ */ new Set());
+  const codeDOMNodeRef = (0, import_react20.useRef)(null);
   function getCodeDOMNode() {
     return codeDOMNodeRef.current;
   }
@@ -6884,7 +7000,7 @@ function CodeActionMenuContainer({
     50,
     1e3
   );
-  (0, import_react16.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     if (!shouldListenMouseMove) {
       return;
     }
@@ -6895,7 +7011,7 @@ function CodeActionMenuContainer({
       document.removeEventListener("mousemove", debouncedOnMouseMove);
     };
   }, [shouldListenMouseMove, debouncedOnMouseMove]);
-  (0, import_react16.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     return editor.registerMutationListener(
       import_code3.CodeNode,
       (mutations) => {
@@ -6932,19 +7048,19 @@ function CodeActionMenuContainer({
       }
     });
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_jsx_runtime16.Fragment, { children: isShown ? /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "notion-like-editor code-action-menu-container", style: { ...position }, children: [
-    !showOnlyCopy && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_jsx_runtime21.Fragment, { children: isShown ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "notion-like-editor code-action-menu-container", style: { ...position }, children: [
+    !showOnlyCopy && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
       "select",
       {
         className: "select select-xs max-w-sm",
         value: lang,
         onChange: handleLanguageChange,
         "aria-label": "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u8A00\u8A9E\u3092\u9078\u629E",
-        children: SUPPORTED_LANGUAGES.map((language) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("option", { value: language.value, children: language.label }, language.value))
+        children: SUPPORTED_LANGUAGES.map((language) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value: language.value, children: language.label }, language.value))
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(CopyButton, { editor, getCodeDOMNode }),
-    !showOnlyCopy && canBePrettier(normalizedLang) ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(PrettierButton, { editor, getCodeDOMNode, lang: normalizedLang }) : null
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(CopyButton, { editor, getCodeDOMNode }),
+    !showOnlyCopy && canBePrettier(normalizedLang) ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(PrettierButton, { editor, getCodeDOMNode, lang: normalizedLang }) : null
   ] }) : null });
 }
 function getMouseInfo(event) {
@@ -6961,16 +7077,16 @@ function CodeActionMenuPlugin({
   anchorElem = document.body,
   showOnlyCopy = false
 }) {
-  return (0, import_react_dom2.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime16.jsx)(CodeActionMenuContainer, { anchorElem, showOnlyCopy }), anchorElem);
+  return (0, import_react_dom3.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime21.jsx)(CodeActionMenuContainer, { anchorElem, showOnlyCopy }), anchorElem);
 }
 
 // src/plugins/CodeHighlightPrismPlugin/index.ts
 var import_code4 = require("@lexical/code");
 var import_LexicalComposerContext7 = require("@lexical/react/LexicalComposerContext");
-var import_react17 = require("react");
+var import_react21 = require("react");
 function CodeHighlightPrismPlugin() {
   const [editor] = (0, import_LexicalComposerContext7.useLexicalComposerContext)();
-  (0, import_react17.useEffect)(() => {
+  (0, import_react21.useEffect)(() => {
     return (0, import_code4.registerCodeHighlighting)(editor);
   }, [editor]);
   return null;
@@ -6979,10 +7095,10 @@ function CodeHighlightPrismPlugin() {
 // src/plugins/CodeHighlightShikiPlugin/index.ts
 var import_code_shiki = require("@lexical/code-shiki");
 var import_LexicalComposerContext8 = require("@lexical/react/LexicalComposerContext");
-var import_react18 = require("react");
+var import_react22 = require("react");
 function CodeHighlightShikiPlugin() {
   const [editor] = (0, import_LexicalComposerContext8.useLexicalComposerContext)();
-  (0, import_react18.useEffect)(() => {
+  (0, import_react22.useEffect)(() => {
     return (0, import_code_shiki.registerCodeHighlighting)(editor);
   }, [editor]);
   return null;
@@ -6992,7 +7108,7 @@ function CodeHighlightShikiPlugin() {
 var import_LexicalComposerContext9 = require("@lexical/react/LexicalComposerContext");
 var import_utils10 = require("@lexical/utils");
 var import_lexical13 = require("lexical");
-var import_react19 = require("react");
+var import_react23 = require("react");
 
 // src/plugins/CollapsiblePlugin/CollapsibleContainerNode.ts
 var import_utils7 = require("@lexical/utils");
@@ -7288,7 +7404,7 @@ function $isCollapsibleTitleNode(node) {
 var INSERT_COLLAPSIBLE_COMMAND = (0, import_lexical13.createCommand)("INSERT_COLLAPSIBLE_COMMAND");
 function CollapsiblePlugin() {
   const [editor] = (0, import_LexicalComposerContext9.useLexicalComposerContext)();
-  (0, import_react19.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     if (!editor.hasNodes([CollapsibleContainerNode, CollapsibleTitleNode, CollapsibleContentNode])) {
       throw new Error(
         "CollapsiblePlugin: CollapsibleContainerNode, CollapsibleTitleNode, or CollapsibleContentNode not registered on editor"
@@ -7422,33 +7538,19 @@ var import_rich_text = require("@lexical/rich-text");
 var import_selection2 = require("@lexical/selection");
 var import_table2 = require("@lexical/table");
 var import_lexical34 = require("lexical");
-var import_react44 = require("react");
+var import_react46 = require("react");
 var ReactDOM2 = __toESM(require("react-dom"));
-
-// src/context/ComponentPickerContext.tsx
-var import_react20 = require("react");
-var import_jsx_runtime17 = require("react/jsx-runtime");
-var ComponentPickerContext = (0, import_react20.createContext)({});
-function ComponentPickerProvider({
-  children,
-  extraOptions
-}) {
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(ComponentPickerContext.Provider, { value: { extraOptions }, children });
-}
-function useComponentPickerContext() {
-  return (0, import_react20.useContext)(ComponentPickerContext);
-}
 
 // src/plugins/DateTimePlugin/index.tsx
 var import_LexicalComposerContext11 = require("@lexical/react/LexicalComposerContext");
 var import_utils11 = require("@lexical/utils");
 var import_lexical16 = require("lexical");
-var import_react23 = require("react");
+var import_react26 = require("react");
 init_DateTimeNode2();
 var INSERT_DATETIME_COMMAND = (0, import_lexical16.createCommand)("INSERT_DATETIME_COMMAND");
 function DateTimePlugin() {
   const [editor] = (0, import_LexicalComposerContext11.useLexicalComposerContext)();
-  (0, import_react23.useEffect)(() => {
+  (0, import_react26.useEffect)(() => {
     if (!editor.hasNodes([DateTimeNode])) {
       throw new Error("DateTimePlugin: DateTimeNode not registered on editor");
     }
@@ -7476,32 +7578,32 @@ var import_katex3 = require("katex/dist/katex.css");
 var import_LexicalComposerContext14 = require("@lexical/react/LexicalComposerContext");
 var import_utils13 = require("@lexical/utils");
 var import_lexical20 = require("lexical");
-var import_react29 = require("react");
+var import_react32 = require("react");
 init_EquationNode();
 
 // src/ui/KatexEquationAlterer.tsx
 var import_LexicalComposerContext13 = require("@lexical/react/LexicalComposerContext");
-var import_react28 = require("react");
+var import_react31 = require("react");
 init_react_error_boundary();
 init_KatexRenderer();
-var import_jsx_runtime24 = require("react/jsx-runtime");
+var import_jsx_runtime28 = require("react/jsx-runtime");
 function KatexEquationAlterer({ onConfirm, initialEquation = "" }) {
   const [editor] = (0, import_LexicalComposerContext13.useLexicalComposerContext)();
-  const [equation, setEquation] = (0, import_react28.useState)(initialEquation);
-  const [inline, setInline] = (0, import_react28.useState)(true);
-  const onClick = (0, import_react28.useCallback)(() => {
+  const [equation, setEquation] = (0, import_react31.useState)(initialEquation);
+  const [inline, setInline] = (0, import_react31.useState)(true);
+  const onClick = (0, import_react31.useCallback)(() => {
     onConfirm(equation, inline);
   }, [onConfirm, equation, inline]);
-  const onCheckboxChange = (0, import_react28.useCallback)(() => {
+  const onCheckboxChange = (0, import_react31.useCallback)(() => {
     setInline(!inline);
   }, [inline]);
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "KatexEquationAlterer_defaultRow", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "KatexEquationAlterer_defaultRow", children: [
       "Inline",
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("input", { type: "checkbox", checked: inline, onChange: onCheckboxChange })
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("input", { type: "checkbox", checked: inline, onChange: onCheckboxChange })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "KatexEquationAlterer_defaultRow", children: "Equation " }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "KatexEquationAlterer_centerRow", children: inline ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "KatexEquationAlterer_defaultRow", children: "Equation " }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "KatexEquationAlterer_centerRow", children: inline ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
       "input",
       {
         onChange: (event) => {
@@ -7510,7 +7612,7 @@ function KatexEquationAlterer({ onConfirm, initialEquation = "" }) {
         value: equation,
         className: "KatexEquationAlterer_textArea"
       }
-    ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+    ) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
       "textarea",
       {
         onChange: (event) => {
@@ -7520,20 +7622,20 @@ function KatexEquationAlterer({ onConfirm, initialEquation = "" }) {
         className: "KatexEquationAlterer_textArea"
       }
     ) }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "KatexEquationAlterer_defaultRow", children: "Visualization " }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "KatexEquationAlterer_centerRow", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(KatexRenderer, { equation, inline: false, onDoubleClick: () => null }) }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "KatexEquationAlterer_dialogActions", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Button, { onClick, children: "Confirm" }) })
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "KatexEquationAlterer_defaultRow", children: "Visualization " }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "KatexEquationAlterer_centerRow", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(KatexRenderer, { equation, inline: false, onDoubleClick: () => null }) }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "KatexEquationAlterer_dialogActions", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Button, { onClick, children: "Confirm" }) })
   ] });
 }
 
 // src/plugins/EquationsPlugin/index.tsx
-var import_jsx_runtime25 = require("react/jsx-runtime");
+var import_jsx_runtime29 = require("react/jsx-runtime");
 var INSERT_EQUATION_COMMAND = (0, import_lexical20.createCommand)("INSERT_EQUATION_COMMAND");
 function InsertEquationDialog({
   activeEditor,
   onClose
 }) {
-  const onEquationConfirm = (0, import_react29.useCallback)(
+  const onEquationConfirm = (0, import_react32.useCallback)(
     (equation, inline) => {
       activeEditor.dispatchCommand(INSERT_EQUATION_COMMAND, {
         equation,
@@ -7543,11 +7645,11 @@ function InsertEquationDialog({
     },
     [activeEditor, onClose]
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(KatexEquationAlterer, { onConfirm: onEquationConfirm });
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(KatexEquationAlterer, { onConfirm: onEquationConfirm });
 }
 function EquationsPlugin() {
   const [editor] = (0, import_LexicalComposerContext14.useLexicalComposerContext)();
-  (0, import_react29.useEffect)(() => {
+  (0, import_react32.useEffect)(() => {
     if (!editor.hasNodes([EquationNode])) {
       throw new Error("EquationsPlugins: EquationsNode not registered on editor");
     }
@@ -7573,37 +7675,20 @@ var import_link2 = require("@lexical/link");
 var import_LexicalComposerContext18 = require("@lexical/react/LexicalComposerContext");
 var import_utils16 = require("@lexical/utils");
 var import_lexical27 = require("lexical");
-var import_react37 = require("react");
-
-// src/context/ImageUploadContext.tsx
-var import_react30 = require("react");
-var import_jsx_runtime26 = require("react/jsx-runtime");
-var ImageUploadContext = (0, import_react30.createContext)({
-  handler: null
-});
-function useImageUpload() {
-  const context = (0, import_react30.useContext)(ImageUploadContext);
-  return context.handler;
-}
-function ImageUploadProvider({ children, handler }) {
-  const value = (0, import_react30.useMemo)(() => ({ handler }), [handler]);
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ImageUploadContext.Provider, { value, children });
-}
-
-// src/plugins/ImagesPlugin/index.tsx
+var import_react39 = require("react");
 init_ImageNode2();
 
 // src/ui/FileInput.tsx
-var import_react35 = require("react");
-var import_jsx_runtime33 = require("react/jsx-runtime");
+var import_react37 = require("react");
+var import_jsx_runtime36 = require("react/jsx-runtime");
 function generateId(label) {
   return `input-${label.replace(/\s+/g, "-").toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 function FileInput({ accept, label, onChange, "data-test-id": dataTestId }) {
-  const [inputId] = (0, import_react35.useState)(generateId(label));
-  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "Input__wrapper", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("label", { className: "Input__label", htmlFor: inputId, children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+  const [inputId] = (0, import_react37.useState)(generateId(label));
+  return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "Input__wrapper", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("label", { className: "Input__label", htmlFor: inputId, children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
       "input",
       {
         id: inputId,
@@ -7618,8 +7703,8 @@ function FileInput({ accept, label, onChange, "data-test-id": dataTestId }) {
 }
 
 // src/ui/TextInput.tsx
-var import_react36 = require("react");
-var import_jsx_runtime34 = require("react/jsx-runtime");
+var import_react38 = require("react");
+var import_jsx_runtime37 = require("react/jsx-runtime");
 function generateId2(label) {
   return `input-${label.replace(/\s+/g, "-").toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
 }
@@ -7631,10 +7716,10 @@ function TextInput({
   "data-test-id": dataTestId,
   type = "text"
 }) {
-  const [inputId, _setInputId] = (0, import_react36.useState)(generateId2(label));
-  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "Input__wrapper", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("label", { className: "Input__label", htmlFor: inputId, children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+  const [inputId, _setInputId] = (0, import_react38.useState)(generateId2(label));
+  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "Input__wrapper", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { className: "Input__label", htmlFor: inputId, children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
       "input",
       {
         id: inputId,
@@ -7652,14 +7737,14 @@ function TextInput({
 }
 
 // src/plugins/ImagesPlugin/index.tsx
-var import_jsx_runtime35 = require("react/jsx-runtime");
+var import_jsx_runtime38 = require("react/jsx-runtime");
 var INSERT_IMAGE_COMMAND = (0, import_lexical27.createCommand)("INSERT_IMAGE_COMMAND");
 function InsertImageUriDialogBody({ onClick }) {
-  const [src, setSrc] = (0, import_react37.useState)("");
-  const [altText, setAltText] = (0, import_react37.useState)("");
+  const [src, setSrc] = (0, import_react39.useState)("");
+  const [altText, setAltText] = (0, import_react39.useState)("");
   const isDisabled = src === "";
-  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(import_jsx_runtime35.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
       TextInput,
       {
         label: "Image URL",
@@ -7669,7 +7754,7 @@ function InsertImageUriDialogBody({ onClick }) {
         "data-test-id": "image-modal-url-input"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
       TextInput,
       {
         label: "Alt Text",
@@ -7679,16 +7764,16 @@ function InsertImageUriDialogBody({ onClick }) {
         "data-test-id": "image-modal-alt-text-input"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(DialogActions, { children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Button, { "data-test-id": "image-modal-confirm-btn", disabled: isDisabled, onClick: () => onClick({ altText, src }), children: "Confirm" }) })
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(DialogActions, { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Button, { "data-test-id": "image-modal-confirm-btn", disabled: isDisabled, onClick: () => onClick({ altText, src }), children: "Confirm" }) })
   ] });
 }
 function InsertImageUploadedDialogBody({ onClick }) {
   const imageUploadHandler = useImageUpload();
-  const [altText, setAltText] = (0, import_react37.useState)("");
-  const [isUploading, setIsUploading] = (0, import_react37.useState)(false);
-  const [uploadError, setUploadError] = (0, import_react37.useState)(null);
-  const [selectedFile, setSelectedFile] = (0, import_react37.useState)(null);
-  const [previewSrc, setPreviewSrc] = (0, import_react37.useState)("");
+  const [altText, setAltText] = (0, import_react39.useState)("");
+  const [isUploading, setIsUploading] = (0, import_react39.useState)(false);
+  const [uploadError, setUploadError] = (0, import_react39.useState)(null);
+  const [selectedFile, setSelectedFile] = (0, import_react39.useState)(null);
+  const [previewSrc, setPreviewSrc] = (0, import_react39.useState)("");
   const isDisabled = !selectedFile || isUploading;
   const canUpload = imageUploadHandler !== null;
   const handleFileSelect = (files) => {
@@ -7729,8 +7814,8 @@ function InsertImageUploadedDialogBody({ onClick }) {
       setIsUploading(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(import_jsx_runtime35.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
       FileInput,
       {
         label: "Image Upload",
@@ -7739,7 +7824,7 @@ function InsertImageUploadedDialogBody({ onClick }) {
         "data-test-id": "image-modal-file-upload"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
       TextInput,
       {
         label: "Alt Text",
@@ -7749,18 +7834,18 @@ function InsertImageUploadedDialogBody({ onClick }) {
         "data-test-id": "image-modal-alt-text-input"
       }
     ),
-    uploadError && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "text-error text-sm mt-2", children: uploadError }),
-    !canUpload && selectedFile && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "text-warning text-sm mt-2", children: "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u30CF\u30F3\u30C9\u30E9\u30FC\u304C\u672A\u8A2D\u5B9A\u306E\u305F\u3081\u3001\u30ED\u30FC\u30AB\u30EB\u30D7\u30EC\u30D3\u30E5\u30FC\u30E2\u30FC\u30C9\u3067\u52D5\u4F5C\u3057\u307E\u3059" }),
-    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(DialogActions, { children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Button, { "data-test-id": "image-modal-file-upload-btn", disabled: isDisabled, onClick: handleConfirm, children: isUploading ? "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D..." : "Confirm" }) })
+    uploadError && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "text-error text-sm mt-2", children: uploadError }),
+    !canUpload && selectedFile && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "text-warning text-sm mt-2", children: "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u30CF\u30F3\u30C9\u30E9\u30FC\u304C\u672A\u8A2D\u5B9A\u306E\u305F\u3081\u3001\u30ED\u30FC\u30AB\u30EB\u30D7\u30EC\u30D3\u30E5\u30FC\u30E2\u30FC\u30C9\u3067\u52D5\u4F5C\u3057\u307E\u3059" }),
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(DialogActions, { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Button, { "data-test-id": "image-modal-file-upload-btn", disabled: isDisabled, onClick: handleConfirm, children: isUploading ? "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D..." : "Confirm" }) })
   ] });
 }
 function InsertImageDialog({
   activeEditor,
   onClose
 }) {
-  const [mode, setMode] = (0, import_react37.useState)(null);
-  const hasModifier = (0, import_react37.useRef)(false);
-  (0, import_react37.useEffect)(() => {
+  const [mode, setMode] = (0, import_react39.useState)(null);
+  const hasModifier = (0, import_react39.useRef)(false);
+  (0, import_react39.useEffect)(() => {
     hasModifier.current = false;
     const handler = (e) => {
       hasModifier.current = e.altKey;
@@ -7774,18 +7859,18 @@ function InsertImageDialog({
     activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, payload);
     onClose();
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(import_jsx_runtime35.Fragment, { children: [
-    !mode && /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(DialogButtonsList, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Button, { "data-test-id": "image-modal-option-url", onClick: () => setMode("url"), children: "URL" }),
-      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Button, { "data-test-id": "image-modal-option-file", onClick: () => setMode("file"), children: "File" })
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
+    !mode && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(DialogButtonsList, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Button, { "data-test-id": "image-modal-option-url", onClick: () => setMode("url"), children: "URL" }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(Button, { "data-test-id": "image-modal-option-file", onClick: () => setMode("file"), children: "File" })
     ] }),
-    mode === "url" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(InsertImageUriDialogBody, { onClick }),
-    mode === "file" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(InsertImageUploadedDialogBody, { onClick })
+    mode === "url" && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(InsertImageUriDialogBody, { onClick }),
+    mode === "file" && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(InsertImageUploadedDialogBody, { onClick })
   ] });
 }
 function ImagesPlugin() {
   const [editor] = (0, import_LexicalComposerContext18.useLexicalComposerContext)();
-  (0, import_react37.useEffect)(() => {
+  (0, import_react39.useEffect)(() => {
     if (!editor.hasNodes([ImageNode])) {
       throw new Error("ImagesPlugin: ImageNode not registered on editor");
     }
@@ -7953,13 +8038,13 @@ function getDragSelection(event) {
 }
 
 // src/plugins/LayoutPlugin/InsertLayoutDialog.tsx
-var import_react40 = require("react");
+var import_react42 = require("react");
 
 // src/ui/DropDown.tsx
 var import_lexical28 = require("lexical");
 var React4 = __toESM(require("react"));
-var import_react38 = require("react");
-var import_react_dom3 = require("react-dom");
+var import_react40 = require("react");
+var import_react_dom4 = require("react-dom");
 
 // src/utils/focusUtils.ts
 var findFirstFocusableDescendant = (startElement) => {
@@ -7980,7 +8065,7 @@ var isKeyboardInput = (event) => {
 };
 
 // src/ui/DropDown.tsx
-var import_jsx_runtime36 = require("react/jsx-runtime");
+var import_jsx_runtime39 = require("react/jsx-runtime");
 var DropDownContext = React4.createContext(null);
 var dropDownPadding = 4;
 function DropDownItem({
@@ -7989,18 +8074,18 @@ function DropDownItem({
   onClick,
   title
 }) {
-  const ref = (0, import_react38.useRef)(null);
+  const ref = (0, import_react40.useRef)(null);
   const dropDownContext = React4.useContext(DropDownContext);
   if (dropDownContext === null) {
     throw new Error("DropDownItem must be used within a DropDown");
   }
   const { registerItem } = dropDownContext;
-  (0, import_react38.useEffect)(() => {
+  (0, import_react40.useEffect)(() => {
     if (ref?.current) {
       registerItem(ref);
     }
   }, [registerItem]);
-  return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("button", { className, onClick, ref, title, type: "button", children });
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("button", { className, onClick, ref, title, type: "button", children });
 }
 function DropDownItems({
   children,
@@ -8008,9 +8093,9 @@ function DropDownItems({
   onClose,
   autofocus
 }) {
-  const [items, setItems] = (0, import_react38.useState)();
-  const [highlightedItem, setHighlightedItem] = (0, import_react38.useState)();
-  const registerItem = (0, import_react38.useCallback)((itemRef) => {
+  const [items, setItems] = (0, import_react40.useState)();
+  const [highlightedItem, setHighlightedItem] = (0, import_react40.useState)();
+  const registerItem = (0, import_react40.useCallback)((itemRef) => {
     setItems((prev) => prev ? [...prev, itemRef] : [itemRef]);
   }, []);
   const handleKeyDown = (event) => {
@@ -8043,13 +8128,13 @@ function DropDownItems({
       });
     }
   };
-  const contextValue = (0, import_react38.useMemo)(
+  const contextValue = (0, import_react40.useMemo)(
     () => ({
       registerItem
     }),
     [registerItem]
   );
-  (0, import_react38.useEffect)(() => {
+  (0, import_react40.useEffect)(() => {
     if (items && !highlightedItem) {
       setHighlightedItem(items[0]);
     }
@@ -8057,12 +8142,12 @@ function DropDownItems({
       highlightedItem.current.focus();
     }
   }, [items, highlightedItem]);
-  (0, import_react38.useEffect)(() => {
+  (0, import_react40.useEffect)(() => {
     if (autofocus && dropDownRef.current) {
       focusNearestDescendant(dropDownRef.current);
     }
   }, [autofocus, dropDownRef]);
-  return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(DropDownContext.Provider, { value: contextValue, children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "notion-like-editor nle-dropdown", ref: dropDownRef, onKeyDown: handleKeyDown, children }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(DropDownContext.Provider, { value: contextValue, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "notion-like-editor nle-dropdown", ref: dropDownRef, onKeyDown: handleKeyDown, children }) });
 }
 function DropDown({
   disabled = false,
@@ -8073,17 +8158,17 @@ function DropDown({
   children,
   stopCloseOnClickSelf
 }) {
-  const dropDownRef = (0, import_react38.useRef)(null);
-  const buttonRef = (0, import_react38.useRef)(null);
-  const [showDropDown, setShowDropDown] = (0, import_react38.useState)(false);
-  const [shouldAutofocus, setShouldAutofocus] = (0, import_react38.useState)(false);
+  const dropDownRef = (0, import_react40.useRef)(null);
+  const buttonRef = (0, import_react40.useRef)(null);
+  const [showDropDown, setShowDropDown] = (0, import_react40.useState)(false);
+  const [shouldAutofocus, setShouldAutofocus] = (0, import_react40.useState)(false);
   const handleClose = () => {
     setShowDropDown(false);
     if (buttonRef?.current) {
       buttonRef.current.focus();
     }
   };
-  (0, import_react38.useEffect)(() => {
+  (0, import_react40.useEffect)(() => {
     const button = buttonRef.current;
     const dropDown = dropDownRef.current;
     if (showDropDown && button !== null && dropDown !== null) {
@@ -8092,7 +8177,7 @@ function DropDown({
       dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
     }
   }, [showDropDown]);
-  (0, import_react38.useEffect)(() => {
+  (0, import_react40.useEffect)(() => {
     const button = buttonRef.current;
     if (button !== null && showDropDown) {
       const handle = (event) => {
@@ -8117,7 +8202,7 @@ function DropDown({
       };
     }
   }, [showDropDown, stopCloseOnClickSelf]);
-  (0, import_react38.useEffect)(() => {
+  (0, import_react40.useEffect)(() => {
     const handleButtonPositionUpdate = () => {
       if (showDropDown) {
         const button = buttonRef.current;
@@ -8140,8 +8225,8 @@ function DropDown({
     setShowDropDown(!showDropDown);
     setShouldAutofocus(isKeyboardInput(e));
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(import_jsx_runtime36.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_jsx_runtime39.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(
       "button",
       {
         type: "button",
@@ -8151,14 +8236,14 @@ function DropDown({
         onClick: handleOnClick,
         ref: buttonRef,
         children: [
-          buttonIconClassName && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: buttonIconClassName }),
-          buttonLabel && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: "text dropdown-button-text", children: buttonLabel }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("i", { className: "chevron-down" })
+          buttonIconClassName && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: buttonIconClassName }),
+          buttonLabel && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "text dropdown-button-text", children: buttonLabel }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("i", { className: "chevron-down" })
         ]
       }
     ),
-    showDropDown && (0, import_react_dom3.createPortal)(
-      /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(DropDownItems, { dropDownRef, onClose: handleClose, autofocus: shouldAutofocus, children }),
+    showDropDown && (0, import_react_dom4.createPortal)(
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(DropDownItems, { dropDownRef, onClose: handleClose, autofocus: shouldAutofocus, children }),
       document.body
     )
   ] });
@@ -8168,7 +8253,7 @@ function DropDown({
 var import_LexicalComposerContext19 = require("@lexical/react/LexicalComposerContext");
 var import_utils19 = require("@lexical/utils");
 var import_lexical31 = require("lexical");
-var import_react39 = require("react");
+var import_react41 = require("react");
 
 // src/nodes/LayoutContainerNode.ts
 var import_utils17 = require("@lexical/utils");
@@ -8332,7 +8417,7 @@ var INSERT_LAYOUT_COMMAND = (0, import_lexical31.createCommand)();
 var UPDATE_LAYOUT_COMMAND = (0, import_lexical31.createCommand)();
 function LayoutPlugin() {
   const [editor] = (0, import_LexicalComposerContext19.useLexicalComposerContext)();
-  (0, import_react39.useEffect)(() => {
+  (0, import_react41.useEffect)(() => {
     if (!editor.hasNodes([LayoutContainerNode, LayoutItemNode])) {
       throw new Error("LayoutPlugin: LayoutContainerNode, or LayoutItemNode not registered on editor");
     }
@@ -8453,7 +8538,7 @@ function getItemsCountFromTemplate(template) {
 }
 
 // src/plugins/LayoutPlugin/InsertLayoutDialog.tsx
-var import_jsx_runtime37 = require("react/jsx-runtime");
+var import_jsx_runtime40 = require("react/jsx-runtime");
 var LAYOUTS = [
   { label: "2 columns (equal width)", value: "1fr 1fr" },
   { label: "2 columns (25% - 75%)", value: "1fr 3fr" },
@@ -8465,15 +8550,15 @@ function InsertLayoutDialog({
   activeEditor,
   onClose
 }) {
-  const [layout, setLayout] = (0, import_react40.useState)(LAYOUTS[0].value);
+  const [layout, setLayout] = (0, import_react42.useState)(LAYOUTS[0].value);
   const buttonLabel = LAYOUTS.find((item) => item.value === layout)?.label;
   const onClick = () => {
     activeEditor.dispatchCommand(INSERT_LAYOUT_COMMAND, layout);
     onClose();
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(import_jsx_runtime37.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(DropDown, { buttonClassName: "toolbar-item dialog-dropdown", buttonLabel, children: LAYOUTS.map(({ label, value }) => /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(DropDownItem, { className: "item", onClick: () => setLayout(value), children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "text", children: label }) }, value)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "flex justify-end mt-2", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Button, { onClick, children: "Insert" }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_jsx_runtime40.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(DropDown, { buttonClassName: "toolbar-item dialog-dropdown", buttonLabel, children: LAYOUTS.map(({ label, value }) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(DropDownItem, { className: "item", onClick: () => setLayout(value), children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text", children: label }) }, value)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "flex justify-end mt-2", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Button, { onClick, children: "Insert" }) })
   ] });
 }
 
@@ -8481,19 +8566,19 @@ function InsertLayoutDialog({
 var import_LexicalComposerContext21 = require("@lexical/react/LexicalComposerContext");
 var import_utils21 = require("@lexical/utils");
 var import_lexical33 = require("lexical");
-var import_react42 = require("react");
+var import_react44 = require("react");
 
 // src/nodes/PageBreakNode/index.tsx
 var import_LexicalComposerContext20 = require("@lexical/react/LexicalComposerContext");
 var import_useLexicalNodeSelection3 = require("@lexical/react/useLexicalNodeSelection");
 var import_utils20 = require("@lexical/utils");
 var import_lexical32 = require("lexical");
-var import_react41 = require("react");
-var import_jsx_runtime38 = require("react/jsx-runtime");
+var import_react43 = require("react");
+var import_jsx_runtime41 = require("react/jsx-runtime");
 function PageBreakComponent({ nodeKey }) {
   const [editor] = (0, import_LexicalComposerContext20.useLexicalComposerContext)();
   const [isSelected, setSelected, clearSelection] = (0, import_useLexicalNodeSelection3.useLexicalNodeSelection)(nodeKey);
-  (0, import_react41.useEffect)(() => {
+  (0, import_react43.useEffect)(() => {
     return (0, import_utils20.mergeRegister)(
       editor.registerCommand(
         import_lexical32.CLICK_COMMAND,
@@ -8512,7 +8597,7 @@ function PageBreakComponent({ nodeKey }) {
       )
     );
   }, [clearSelection, editor, isSelected, nodeKey, setSelected]);
-  (0, import_react41.useEffect)(() => {
+  (0, import_react43.useEffect)(() => {
     const pbElem = editor.getElementByKey(nodeKey);
     if (pbElem !== null) {
       pbElem.className = isSelected ? "selected" : "";
@@ -8560,7 +8645,7 @@ var PageBreakNode = class _PageBreakNode extends import_lexical32.DecoratorNode 
     return false;
   }
   decorate() {
-    return /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(PageBreakComponent, { nodeKey: this.__key });
+    return /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(PageBreakComponent, { nodeKey: this.__key });
   }
 };
 function $convertPageBreakElement() {
@@ -8577,7 +8662,7 @@ function $isPageBreakNode(node) {
 var INSERT_PAGE_BREAK = (0, import_lexical33.createCommand)();
 function PageBreakPlugin() {
   const [editor] = (0, import_LexicalComposerContext21.useLexicalComposerContext)();
-  (0, import_react42.useEffect)(() => {
+  (0, import_react44.useEffect)(() => {
     if (!editor.hasNodes([PageBreakNode])) {
       throw new Error("PageBreakPlugin: PageBreakNode is not registered on editor");
     }
@@ -8606,23 +8691,23 @@ function PageBreakPlugin() {
 // src/plugins/TablePlugin.tsx
 var import_LexicalComposerContext22 = require("@lexical/react/LexicalComposerContext");
 var import_table = require("@lexical/table");
-var import_react43 = require("react");
-var import_jsx_runtime39 = require("react/jsx-runtime");
-var CellContext = (0, import_react43.createContext)({
+var import_react45 = require("react");
+var import_jsx_runtime42 = require("react/jsx-runtime");
+var CellContext = (0, import_react45.createContext)({
   cellEditorConfig: null,
   cellEditorPlugins: null,
   set: () => {
   }
 });
 function TableContext({ children }) {
-  const [contextValue, setContextValue] = (0, import_react43.useState)({
+  const [contextValue, setContextValue] = (0, import_react45.useState)({
     cellEditorConfig: null,
     cellEditorPlugins: null
   });
-  return /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
     CellContext.Provider,
     {
-      value: (0, import_react43.useMemo)(
+      value: (0, import_react45.useMemo)(
         () => ({
           cellEditorConfig: contextValue.cellEditorConfig,
           cellEditorPlugins: contextValue.cellEditorPlugins,
@@ -8640,10 +8725,10 @@ function InsertTableDialog({
   activeEditor,
   onClose
 }) {
-  const [rows, setRows] = (0, import_react43.useState)("5");
-  const [columns, setColumns] = (0, import_react43.useState)("5");
-  const [isDisabled, setIsDisabled] = (0, import_react43.useState)(true);
-  (0, import_react43.useEffect)(() => {
+  const [rows, setRows] = (0, import_react45.useState)("5");
+  const [columns, setColumns] = (0, import_react45.useState)("5");
+  const [isDisabled, setIsDisabled] = (0, import_react45.useState)(true);
+  (0, import_react45.useEffect)(() => {
     const row = Number(rows);
     const column = Number(columns);
     if (row && row > 0 && row <= 500 && column && column > 0 && column <= 50) {
@@ -8659,8 +8744,8 @@ function InsertTableDialog({
     });
     onClose();
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_jsx_runtime39.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(import_jsx_runtime42.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
       TextInput,
       {
         placeholder: "# of rows (1-500)",
@@ -8671,7 +8756,7 @@ function InsertTableDialog({
         type: "number"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
       TextInput,
       {
         placeholder: "# of columns (1-50)",
@@ -8682,12 +8767,12 @@ function InsertTableDialog({
         type: "number"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(DialogActions, { "data-test-id": "table-model-confirm-insert", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Button, { disabled: isDisabled, onClick, children: "Confirm" }) })
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(DialogActions, { "data-test-id": "table-model-confirm-insert", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Button, { disabled: isDisabled, onClick, children: "Confirm" }) })
   ] });
 }
 
 // src/plugins/ComponentPickerPlugin/index.tsx
-var import_jsx_runtime40 = require("react/jsx-runtime");
+var import_jsx_runtime43 = require("react/jsx-runtime");
 var ComponentPickerOption = class extends import_LexicalTypeaheadMenuPlugin2.MenuOption {
   // What shows up in the editor
   title;
@@ -8719,7 +8804,7 @@ function ComponentPickerMenuItem({
   if (isSelected) {
     className = "selected";
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(
     "li",
     {
       tabIndex: -1,
@@ -8736,7 +8821,7 @@ function ComponentPickerMenuItem({
       },
       children: [
         option.icon,
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text", children: option.title })
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: "text", children: option.title })
       ]
     }
   );
@@ -8753,7 +8838,7 @@ function getDynamicOptions(editor, queryString) {
     options.push(
       ...colOptions.map(
         (columns) => new ComponentPickerOption(`${rows}x${columns} Table`, {
-          icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon table" }),
+          icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon table" }),
           keywords: ["table"],
           onSelect: () => editor.dispatchCommand(import_table2.INSERT_TABLE_COMMAND, { columns, rows })
         })
@@ -8765,7 +8850,7 @@ function getDynamicOptions(editor, queryString) {
 function getBaseOptions(editor, showModal) {
   return [
     new ComponentPickerOption("Paragraph", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon paragraph" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon paragraph" }),
       keywords: ["normal", "paragraph", "p", "text"],
       onSelect: () => editor.update(() => {
         const selection = (0, import_lexical34.$getSelection)();
@@ -8776,7 +8861,7 @@ function getBaseOptions(editor, showModal) {
     }),
     ...[1, 2, 3].map(
       (n) => new ComponentPickerOption(`Heading ${n}`, {
-        icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: `icon h${n}` }),
+        icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: `icon h${n}` }),
         keywords: ["heading", "header", `h${n}`],
         onSelect: () => editor.update(() => {
           const selection = (0, import_lexical34.$getSelection)();
@@ -8787,27 +8872,27 @@ function getBaseOptions(editor, showModal) {
       })
     ),
     new ComponentPickerOption("Table", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon table" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon table" }),
       keywords: ["table", "grid", "spreadsheet", "rows", "columns"],
-      onSelect: () => showModal("Insert Table", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(InsertTableDialog, { activeEditor: editor, onClose }))
+      onSelect: () => showModal("Insert Table", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(InsertTableDialog, { activeEditor: editor, onClose }))
     }),
     new ComponentPickerOption("Numbered List", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon number" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon number" }),
       keywords: ["numbered list", "ordered list", "ol"],
       onSelect: () => editor.dispatchCommand(import_list.INSERT_ORDERED_LIST_COMMAND, void 0)
     }),
     new ComponentPickerOption("Bulleted List", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon bullet" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon bullet" }),
       keywords: ["bulleted list", "unordered list", "ul"],
       onSelect: () => editor.dispatchCommand(import_list.INSERT_UNORDERED_LIST_COMMAND, void 0)
     }),
     new ComponentPickerOption("Check List", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon check" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon check" }),
       keywords: ["check list", "todo list"],
       onSelect: () => editor.dispatchCommand(import_list.INSERT_CHECK_LIST_COMMAND, void 0)
     }),
     new ComponentPickerOption("Quote", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon quote" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon quote" }),
       keywords: ["block quote"],
       onSelect: () => editor.update(() => {
         const selection = (0, import_lexical34.$getSelection)();
@@ -8817,7 +8902,7 @@ function getBaseOptions(editor, showModal) {
       })
     }),
     new ComponentPickerOption("Code", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon code" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon code" }),
       keywords: ["javascript", "python", "js", "codeblock"],
       onSelect: () => editor.update(() => {
         const selection = (0, import_lexical34.$getSelection)();
@@ -8834,12 +8919,12 @@ function getBaseOptions(editor, showModal) {
       })
     }),
     new ComponentPickerOption("Divider", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon horizontal-rule" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon horizontal-rule" }),
       keywords: ["horizontal rule", "divider", "hr"],
       onSelect: () => editor.dispatchCommand(import_LexicalHorizontalRuleNode.INSERT_HORIZONTAL_RULE_COMMAND, void 0)
     }),
     new ComponentPickerOption("Page Break", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon page-break" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon page-break" }),
       keywords: ["page break", "divider"],
       onSelect: () => editor.dispatchCommand(INSERT_PAGE_BREAK, void 0)
     }),
@@ -8851,7 +8936,7 @@ function getBaseOptions(editor, showModal) {
       })
     ),
     new ComponentPickerOption("Date", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon calendar" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon calendar" }),
       keywords: ["date", "calendar", "time"],
       onSelect: () => {
         const dateTime = /* @__PURE__ */ new Date();
@@ -8860,7 +8945,7 @@ function getBaseOptions(editor, showModal) {
       }
     }),
     new ComponentPickerOption("Today", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon calendar" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon calendar" }),
       keywords: ["date", "calendar", "time", "today"],
       onSelect: () => {
         const dateTime = /* @__PURE__ */ new Date();
@@ -8869,7 +8954,7 @@ function getBaseOptions(editor, showModal) {
       }
     }),
     new ComponentPickerOption("Tomorrow", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon calendar" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon calendar" }),
       keywords: ["date", "calendar", "time", "tomorrow"],
       onSelect: () => {
         const dateTime = /* @__PURE__ */ new Date();
@@ -8879,7 +8964,7 @@ function getBaseOptions(editor, showModal) {
       }
     }),
     new ComponentPickerOption("Yesterday", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon calendar" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon calendar" }),
       keywords: ["date", "calendar", "time", "yesterday"],
       onSelect: () => {
         const dateTime = /* @__PURE__ */ new Date();
@@ -8889,28 +8974,28 @@ function getBaseOptions(editor, showModal) {
       }
     }),
     new ComponentPickerOption("Equation", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon equation" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon equation" }),
       keywords: ["equation", "latex", "math"],
-      onSelect: () => showModal("Insert Equation", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(InsertEquationDialog, { activeEditor: editor, onClose }))
+      onSelect: () => showModal("Insert Equation", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(InsertEquationDialog, { activeEditor: editor, onClose }))
     }),
     new ComponentPickerOption("Image", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon image" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon image" }),
       keywords: ["image", "photo", "picture", "file"],
-      onSelect: () => showModal("Insert Image", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(InsertImageDialog, { activeEditor: editor, onClose }))
+      onSelect: () => showModal("Insert Image", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(InsertImageDialog, { activeEditor: editor, onClose }))
     }),
     new ComponentPickerOption("Collapsible", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon caret-right" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon caret-right" }),
       keywords: ["collapse", "collapsible", "toggle"],
       onSelect: () => editor.dispatchCommand(INSERT_COLLAPSIBLE_COMMAND, void 0)
     }),
     new ComponentPickerOption("Columns Layout", {
-      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: "icon columns" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: "icon columns" }),
       keywords: ["columns", "layout", "grid"],
-      onSelect: () => showModal("Insert Columns Layout", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(InsertLayoutDialog, { activeEditor: editor, onClose }))
+      onSelect: () => showModal("Insert Columns Layout", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(InsertLayoutDialog, { activeEditor: editor, onClose }))
     }),
     ...["left", "center", "right", "justify"].map(
       (alignment) => new ComponentPickerOption(`Align ${alignment}`, {
-        icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("i", { className: `icon ${alignment}-align` }),
+        icon: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("i", { className: `icon ${alignment}-align` }),
         keywords: ["align", "justify", alignment],
         onSelect: () => editor.dispatchCommand(import_lexical34.FORMAT_ELEMENT_COMMAND, alignment)
       })
@@ -8922,14 +9007,14 @@ function ComponentPickerMenuPlugin({
 } = {}) {
   const [editor] = (0, import_LexicalComposerContext23.useLexicalComposerContext)();
   const [modal, showModal] = useModal();
-  const [queryString, setQueryString] = (0, import_react44.useState)(null);
+  const [queryString, setQueryString] = (0, import_react46.useState)(null);
   const { extraOptions: contextExtraOptions } = useComponentPickerContext();
   const extraOptions = propsExtraOptions ?? contextExtraOptions;
   const checkForTriggerMatch = (0, import_LexicalTypeaheadMenuPlugin2.useBasicTypeaheadTriggerMatch)("/", {
     allowWhitespace: true,
     minLength: 0
   });
-  const options = (0, import_react44.useMemo)(() => {
+  const options = (0, import_react46.useMemo)(() => {
     const baseOptions = getBaseOptions(editor, showModal);
     const extraOptionConfigs = extraOptions?.(editor) ?? [];
     const extraPickerOptions = extraOptionConfigs.map(
@@ -8952,7 +9037,7 @@ function ComponentPickerMenuPlugin({
       )
     ];
   }, [editor, queryString, showModal, extraOptions]);
-  const onSelectOption = (0, import_react44.useCallback)(
+  const onSelectOption = (0, import_react46.useCallback)(
     (selectedOption, nodeToRemove, closeMenu, matchingString) => {
       editor.update(() => {
         nodeToRemove?.remove();
@@ -8962,9 +9047,9 @@ function ComponentPickerMenuPlugin({
     },
     [editor]
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_jsx_runtime40.Fragment, { children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_jsx_runtime43.Fragment, { children: [
     modal,
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
       import_LexicalTypeaheadMenuPlugin2.LexicalTypeaheadMenuPlugin,
       {
         onQueryChange: setQueryString,
@@ -8972,7 +9057,7 @@ function ComponentPickerMenuPlugin({
         triggerFn: checkForTriggerMatch,
         options,
         menuRenderFn: (anchorElementRef, { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }) => anchorElementRef.current && options.length ? ReactDOM2.createPortal(
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "notion-like-editor typeahead-popover component-picker-menu", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("ul", { children: options.map((option, i) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "notion-like-editor typeahead-popover component-picker-menu", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("ul", { children: options.map((option, i) => /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
             ComponentPickerMenuItem,
             {
               index: i,
@@ -9000,11 +9085,11 @@ var import_link3 = require("@lexical/link");
 var import_LexicalComposerContext24 = require("@lexical/react/LexicalComposerContext");
 var import_LexicalNodeContextMenuPlugin = require("@lexical/react/LexicalNodeContextMenuPlugin");
 var import_lexical35 = require("lexical");
-var import_react45 = require("react");
-var import_jsx_runtime41 = require("react/jsx-runtime");
+var import_react47 = require("react");
+var import_jsx_runtime44 = require("react/jsx-runtime");
 function ContextMenuPlugin() {
   const [editor] = (0, import_LexicalComposerContext24.useLexicalComposerContext)();
-  const items = (0, import_react45.useMemo)(() => {
+  const items = (0, import_react47.useMemo)(() => {
     return [
       new import_LexicalNodeContextMenuPlugin.NodeContextMenuOption(`Remove Link`, {
         $onSelect: () => {
@@ -9012,7 +9097,7 @@ function ContextMenuPlugin() {
         },
         $showOn: (node) => (0, import_link3.$isLinkNode)(node.getParent()),
         disabled: false,
-        icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon" })
+        icon: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon" })
       }),
       new import_LexicalNodeContextMenuPlugin.NodeContextMenuSeparator({
         $showOn: (node) => (0, import_link3.$isLinkNode)(node.getParent())
@@ -9022,14 +9107,14 @@ function ContextMenuPlugin() {
           editor.dispatchCommand(import_lexical35.CUT_COMMAND, null);
         },
         disabled: false,
-        icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon page-break" })
+        icon: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon page-break" })
       }),
       new import_LexicalNodeContextMenuPlugin.NodeContextMenuOption(`Copy`, {
         $onSelect: () => {
           editor.dispatchCommand(import_lexical35.COPY_COMMAND, null);
         },
         disabled: false,
-        icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon copy" })
+        icon: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon copy" })
       }),
       new import_LexicalNodeContextMenuPlugin.NodeContextMenuOption(`Paste`, {
         $onSelect: () => {
@@ -9056,7 +9141,7 @@ function ContextMenuPlugin() {
           });
         },
         disabled: false,
-        icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon paste" })
+        icon: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon paste" })
       }),
       new import_LexicalNodeContextMenuPlugin.NodeContextMenuOption(`Paste as Plain Text`, {
         $onSelect: () => {
@@ -9079,7 +9164,7 @@ function ContextMenuPlugin() {
           });
         },
         disabled: false,
-        icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon" })
+        icon: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon" })
       }),
       new import_LexicalNodeContextMenuPlugin.NodeContextMenuSeparator(),
       new import_LexicalNodeContextMenuPlugin.NodeContextMenuOption(`Delete Node`, {
@@ -9099,11 +9184,11 @@ function ContextMenuPlugin() {
           }
         },
         disabled: false,
-        icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon clear" })
+        icon: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("i", { className: "NotionLikeEditorTheme__contextMenuItemIcon clear" })
       })
     ];
   }, [editor]);
-  return /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
     import_LexicalNodeContextMenuPlugin.NodeContextMenuPlugin,
     {
       className: "NotionLikeEditorTheme__contextMenu",
@@ -9119,12 +9204,12 @@ var import_LexicalComposerContext25 = require("@lexical/react/LexicalComposerCon
 var import_rich_text2 = require("@lexical/rich-text");
 var import_utils22 = require("@lexical/utils");
 var import_lexical36 = require("lexical");
-var import_react46 = require("react");
+var import_react48 = require("react");
 var ACCEPTABLE_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
 function DragDropPaste() {
   const [editor] = (0, import_LexicalComposerContext25.useLexicalComposerContext)();
   const imageUploadHandler = useImageUpload();
-  (0, import_react46.useEffect)(() => {
+  (0, import_react48.useEffect)(() => {
     return editor.registerCommand(
       import_rich_text2.DRAG_DROP_PASTE,
       (files) => {
@@ -9170,8 +9255,8 @@ var import_LexicalComposerContext26 = require("@lexical/react/LexicalComposerCon
 var import_rich_text3 = require("@lexical/rich-text");
 var import_utils23 = require("@lexical/utils");
 var import_lexical37 = require("lexical");
-var import_react47 = require("react");
-var import_react_dom4 = require("react-dom");
+var import_react49 = require("react");
+var import_react_dom5 = require("react-dom");
 
 // src/plugins/DraggableBlockPlugin/point.ts
 var Point = class {
@@ -9297,7 +9382,7 @@ var Rectangle = class _Rectangle {
 };
 
 // src/plugins/DraggableBlockPlugin/index.tsx
-var import_jsx_runtime42 = require("react/jsx-runtime");
+var import_jsx_runtime45 = require("react/jsx-runtime");
 var SPACE = 4;
 var TARGET_LINE_HALF_HEIGHT = 2;
 var DRAG_DATA_FORMAT = "application/x-lexical-drag-block";
@@ -9446,9 +9531,9 @@ function hideTargetLine(targetLineElem) {
 }
 function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEditable, menuComponent, targetLineComponent, isOnMenu2, onElementChanged) {
   const scrollerElem = anchorElem.parentElement;
-  const isDraggingBlockRef = (0, import_react47.useRef)(false);
-  const [draggableBlockElem, setDraggableBlockElemState] = (0, import_react47.useState)(null);
-  const setDraggableBlockElem = (0, import_react47.useCallback)(
+  const isDraggingBlockRef = (0, import_react49.useRef)(false);
+  const [draggableBlockElem, setDraggableBlockElemState] = (0, import_react49.useState)(null);
+  const setDraggableBlockElem = (0, import_react49.useCallback)(
     (elem) => {
       setDraggableBlockElemState(elem);
       if (onElementChanged) {
@@ -9457,7 +9542,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
     },
     [onElementChanged]
   );
-  (0, import_react47.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     function onMouseMove(event) {
       const target = event.target;
       if (!(0, import_utils23.isHTMLElement)(target)) {
@@ -9484,12 +9569,12 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
       }
     };
   }, [scrollerElem, anchorElem, editor, isOnMenu2, setDraggableBlockElem]);
-  (0, import_react47.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (menuRef.current) {
       setMenuPosition(draggableBlockElem, menuRef.current, anchorElem);
     }
   }, [anchorElem, draggableBlockElem, menuRef]);
-  (0, import_react47.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     function onDragover(event) {
       if (!isDraggingBlockRef.current) {
         return false;
@@ -9590,9 +9675,9 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
     isDraggingBlockRef.current = false;
     hideTargetLine(targetLineRef.current);
   }
-  return (0, import_react_dom4.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(import_jsx_runtime42.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { draggable: true, onDragStart, onDragEnd, children: isEditable && menuComponent }),
+  return (0, import_react_dom5.createPortal)(
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(import_jsx_runtime45.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { draggable: true, onDragStart, onDragEnd, children: isEditable && menuComponent }),
       targetLineComponent
     ] }),
     anchorElem
@@ -9628,9 +9713,9 @@ function DraggableBlockPlugin({
   anchorElem = document.body
 }) {
   const [editor] = (0, import_LexicalComposerContext26.useLexicalComposerContext)();
-  const menuRef = (0, import_react47.useRef)(null);
-  const targetLineRef = (0, import_react47.useRef)(null);
-  const [draggableElement, setDraggableElement] = (0, import_react47.useState)(null);
+  const menuRef = (0, import_react49.useRef)(null);
+  const targetLineRef = (0, import_react49.useRef)(null);
+  const [draggableElement, setDraggableElement] = (0, import_react49.useState)(null);
   function insertBlock(e) {
     if (!draggableElement || !editor) {
       return;
@@ -9649,17 +9734,17 @@ function DraggableBlockPlugin({
       pNode.select();
     });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
     DraggableBlockPlugin_EXPERIMENTAL,
     {
       anchorElem,
       menuRef,
       targetLineRef,
-      menuComponent: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { ref: menuRef, className: "icon draggable-block-menu", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("button", { type: "button", title: "Click to add below", className: "icon icon-plus", onClick: insertBlock }),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "icon" })
+      menuComponent: /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { ref: menuRef, className: "icon draggable-block-menu", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("button", { type: "button", title: "Click to add below", className: "icon icon-plus", onClick: insertBlock }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "icon" })
       ] }),
-      targetLineComponent: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { ref: targetLineRef, className: "draggable-block-target-line" }),
+      targetLineComponent: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { ref: targetLineRef, className: "draggable-block-target-line" }),
       isOnMenu,
       onElementChanged: setDraggableElement
     }
@@ -9669,7 +9754,7 @@ function DraggableBlockPlugin({
 // src/plugins/EmojiPickerPlugin/index.tsx
 var import_LexicalComposerContext27 = require("@lexical/react/LexicalComposerContext");
 var import_lexical38 = require("lexical");
-var import_react48 = require("react");
+var import_react50 = require("react");
 init_EmojiNode();
 var emojis2 = /* @__PURE__ */ new Map([
   [":)", ["emoji happysmile", "\u{1F642}"]],
@@ -9706,7 +9791,7 @@ function $textNodeTransform2(node) {
   }
 }
 function useEmojis2(editor) {
-  (0, import_react48.useEffect)(() => {
+  (0, import_react50.useEffect)(() => {
     if (!editor.hasNodes([EmojiNode])) {
       throw new Error("EmojisPlugin: EmojiNode not registered on editor");
     }
@@ -9727,8 +9812,8 @@ var import_link4 = require("@lexical/link");
 var import_LexicalComposerContext28 = require("@lexical/react/LexicalComposerContext");
 var import_utils24 = require("@lexical/utils");
 var import_lexical39 = require("lexical");
-var import_react49 = require("react");
-var import_react_dom5 = require("react-dom");
+var import_react51 = require("react");
+var import_react_dom6 = require("react-dom");
 
 // src/utils/getSelectedNode.ts
 var import_selection3 = require("@lexical/selection");
@@ -9777,7 +9862,7 @@ function setFloatingElemPositionForLinkEditor(targetRect, floatingElem, anchorEl
 
 // src/plugins/FloatingLinkEditorPlugin/index.tsx
 init_url();
-var import_jsx_runtime43 = require("react/jsx-runtime");
+var import_jsx_runtime46 = require("react/jsx-runtime");
 function preventDefault(event) {
   event.preventDefault();
 }
@@ -9789,12 +9874,12 @@ function FloatingLinkEditor({
   isLinkEditMode,
   setIsLinkEditMode
 }) {
-  const editorRef = (0, import_react49.useRef)(null);
-  const inputRef = (0, import_react49.useRef)(null);
-  const [linkUrl, setLinkUrl] = (0, import_react49.useState)("");
-  const [editedLinkUrl, setEditedLinkUrl] = (0, import_react49.useState)("https://");
-  const [lastSelection, setLastSelection] = (0, import_react49.useState)(null);
-  const $updateLinkEditor = (0, import_react49.useCallback)(() => {
+  const editorRef = (0, import_react51.useRef)(null);
+  const inputRef = (0, import_react51.useRef)(null);
+  const [linkUrl, setLinkUrl] = (0, import_react51.useState)("");
+  const [editedLinkUrl, setEditedLinkUrl] = (0, import_react51.useState)("https://");
+  const [lastSelection, setLastSelection] = (0, import_react51.useState)(null);
+  const $updateLinkEditor = (0, import_react51.useCallback)(() => {
     const selection = (0, import_lexical39.$getSelection)();
     if ((0, import_lexical39.$isRangeSelection)(selection)) {
       const node = getSelectedNode(selection);
@@ -9861,7 +9946,7 @@ function FloatingLinkEditor({
     }
     return true;
   }, [anchorElem, editor, setIsLinkEditMode, isLinkEditMode, linkUrl]);
-  (0, import_react49.useEffect)(() => {
+  (0, import_react51.useEffect)(() => {
     const scrollerElem = anchorElem.parentElement;
     const update = () => {
       editor.getEditorState().read(() => {
@@ -9879,7 +9964,7 @@ function FloatingLinkEditor({
       }
     };
   }, [anchorElem.parentElement, editor, $updateLinkEditor]);
-  (0, import_react49.useEffect)(() => {
+  (0, import_react51.useEffect)(() => {
     return (0, import_utils24.mergeRegister)(
       editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
@@ -9907,17 +9992,17 @@ function FloatingLinkEditor({
       )
     );
   }, [editor, $updateLinkEditor, setIsLink, isLink]);
-  (0, import_react49.useEffect)(() => {
+  (0, import_react51.useEffect)(() => {
     editor.getEditorState().read(() => {
       $updateLinkEditor();
     });
   }, [editor, $updateLinkEditor]);
-  (0, import_react49.useEffect)(() => {
+  (0, import_react51.useEffect)(() => {
     if (isLinkEditMode && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isLinkEditMode]);
-  (0, import_react49.useEffect)(() => {
+  (0, import_react51.useEffect)(() => {
     const editorElement = editorRef.current;
     if (editorElement === null) {
       return;
@@ -9965,8 +10050,8 @@ function FloatingLinkEditor({
       setIsLinkEditMode(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { ref: editorRef, className: "notion-like-editor link-editor", children: !isLink ? null : isLinkEditMode ? /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_jsx_runtime43.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("div", { ref: editorRef, className: "notion-like-editor link-editor", children: !isLink ? null : isLinkEditMode ? /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(import_jsx_runtime46.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
       "input",
       {
         ref: inputRef,
@@ -9980,8 +10065,8 @@ function FloatingLinkEditor({
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
         "button",
         {
           type: "button",
@@ -9993,7 +10078,7 @@ function FloatingLinkEditor({
           }
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
         "button",
         {
           type: "button",
@@ -10004,9 +10089,9 @@ function FloatingLinkEditor({
         }
       )
     ] })
-  ] }) : /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "link-view", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("a", { href: sanitizeUrl(linkUrl), target: "_blank", rel: "noopener noreferrer", children: linkUrl }),
-    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
+  ] }) : /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "link-view", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("a", { href: sanitizeUrl(linkUrl), target: "_blank", rel: "noopener noreferrer", children: linkUrl }),
+    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
       "button",
       {
         type: "button",
@@ -10020,7 +10105,7 @@ function FloatingLinkEditor({
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
       "button",
       {
         type: "button",
@@ -10035,9 +10120,9 @@ function FloatingLinkEditor({
   ] }) });
 }
 function useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsLinkEditMode) {
-  const [activeEditor, setActiveEditor] = (0, import_react49.useState)(editor);
-  const [isLink, setIsLink] = (0, import_react49.useState)(false);
-  (0, import_react49.useEffect)(() => {
+  const [activeEditor, setActiveEditor] = (0, import_react51.useState)(editor);
+  const [isLink, setIsLink] = (0, import_react51.useState)(false);
+  (0, import_react51.useEffect)(() => {
     function $updateToolbar() {
       const selection = (0, import_lexical39.$getSelection)();
       if ((0, import_lexical39.$isRangeSelection)(selection)) {
@@ -10106,8 +10191,8 @@ function useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsL
       )
     );
   }, [editor]);
-  return (0, import_react_dom5.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
+  return (0, import_react_dom6.createPortal)(
+    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
       FloatingLinkEditor,
       {
         editor: activeEditor,
@@ -10130,79 +10215,20 @@ function FloatingLinkEditorPlugin({
   return useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsLinkEditMode);
 }
 
-// src/plugins/FragmentLinkPlugin/index.tsx
-var import_LexicalComposerContext29 = require("@lexical/react/LexicalComposerContext");
-var import_rich_text4 = require("@lexical/rich-text");
-var import_lexical40 = require("lexical");
-var import_react50 = require("react");
-function generateSlug(text) {
-  return text.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}\-]/gu, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
-}
-function normalizeText(text) {
-  return text.toLowerCase().trim();
-}
-function FragmentLinkPlugin() {
-  const [editor] = (0, import_LexicalComposerContext29.useLexicalComposerContext)();
-  (0, import_react50.useEffect)(() => {
-    const rootElement = editor.getRootElement();
-    if (!rootElement) {
-      return;
-    }
-    const handleClick = (event) => {
-      const target = event.target;
-      const anchor = target.closest("a");
-      if (!anchor) {
-        return;
-      }
-      const href = anchor.getAttribute("href");
-      if (!href || !href.startsWith("#")) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      const targetFragment = decodeURIComponent(href.slice(1));
-      const targetSlug = generateSlug(targetFragment);
-      const targetNormalized = normalizeText(targetFragment);
-      editor.getEditorState().read(() => {
-        const root = (0, import_lexical40.$getRoot)();
-        for (const child of root.getChildren()) {
-          if ((0, import_rich_text4.$isHeadingNode)(child)) {
-            const headingText = child.getTextContent();
-            const headingSlug = generateSlug(headingText);
-            const headingNormalized = normalizeText(headingText);
-            if (headingSlug === targetSlug || headingNormalized === targetNormalized || headingNormalized.includes(targetNormalized) || targetNormalized.includes(headingNormalized)) {
-              const domElement = editor.getElementByKey(child.getKey());
-              if (domElement) {
-                domElement.scrollIntoView({ behavior: "smooth", block: "start" });
-                return;
-              }
-            }
-          }
-        }
-      });
-    };
-    rootElement.addEventListener("click", handleClick, true);
-    return () => {
-      rootElement.removeEventListener("click", handleClick, true);
-    };
-  }, [editor]);
-  return null;
-}
-
 // src/plugins/FloatingTextFormatToolbarPlugin/index.tsx
 var import_code6 = require("@lexical/code");
 var import_link5 = require("@lexical/link");
-var import_LexicalComposerContext30 = require("@lexical/react/LexicalComposerContext");
+var import_LexicalComposerContext29 = require("@lexical/react/LexicalComposerContext");
 var import_selection4 = require("@lexical/selection");
 var import_utils26 = require("@lexical/utils");
-var import_lexical41 = require("lexical");
-var import_react52 = require("react");
-var import_react_dom6 = require("react-dom");
+var import_lexical40 = require("lexical");
+var import_react53 = require("react");
+var import_react_dom7 = require("react-dom");
 
 // src/ui/ColorPicker.tsx
 var import_utils25 = require("@lexical/utils");
-var import_react51 = require("react");
-var import_jsx_runtime44 = require("react/jsx-runtime");
+var import_react52 = require("react");
+var import_jsx_runtime47 = require("react/jsx-runtime");
 var skipAddingToHistoryStack = false;
 function parseAllowedColor(input) {
   return /^rgb\(\d+, \d+, \d+\)$/.test(input) ? input : "";
@@ -10227,17 +10253,17 @@ var basicColors = [
 var WIDTH = 214;
 var HEIGHT = 150;
 function ColorPicker({ color, onChange }) {
-  const [selfColor, setSelfColor] = (0, import_react51.useState)(transformColor("hex", color));
-  const [inputColor, setInputColor] = (0, import_react51.useState)(transformColor("hex", color).hex);
-  const innerDivRef = (0, import_react51.useRef)(null);
-  const saturationPosition = (0, import_react51.useMemo)(
+  const [selfColor, setSelfColor] = (0, import_react52.useState)(transformColor("hex", color));
+  const [inputColor, setInputColor] = (0, import_react52.useState)(transformColor("hex", color).hex);
+  const innerDivRef = (0, import_react52.useRef)(null);
+  const saturationPosition = (0, import_react52.useMemo)(
     () => ({
       x: selfColor.hsv.s / 100 * WIDTH,
       y: (100 - selfColor.hsv.v) / 100 * HEIGHT
     }),
     [selfColor.hsv.s, selfColor.hsv.v]
   );
-  const huePosition = (0, import_react51.useMemo)(
+  const huePosition = (0, import_react52.useMemo)(
     () => ({
       x: selfColor.hsv.h / 360 * WIDTH
     }),
@@ -10280,9 +10306,9 @@ function ColorPicker({ color, onChange }) {
     setInputColor(newColor.hex);
     emitOnChange(newColor.hex, isKeyboardInput(e));
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "color-picker-wrapper", style: { width: WIDTH }, ref: innerDivRef, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(TextInput, { label: "Hex", onChange: onSetHex, value: inputColor }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "color-picker-basic-color", children: basicColors.map((basicColor) => /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "color-picker-wrapper", style: { width: WIDTH }, ref: innerDivRef, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(TextInput, { label: "Hex", onChange: onSetHex, value: inputColor }),
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "color-picker-basic-color", children: basicColors.map((basicColor) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
       "button",
       {
         type: "button",
@@ -10292,13 +10318,13 @@ function ColorPicker({ color, onChange }) {
       },
       basicColor
     )) }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
       MoveWrapper,
       {
         className: "color-picker-saturation",
         style: { backgroundColor: `hsl(${selfColor.hsv.h}, 100%, 50%)` },
         onChange: onMoveSaturation,
-        children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
           "div",
           {
             className: "color-picker-saturation_cursor",
@@ -10311,7 +10337,7 @@ function ColorPicker({ color, onChange }) {
         )
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(MoveWrapper, { className: "color-picker-hue", onChange: onMoveHue, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(MoveWrapper, { className: "color-picker-hue", onChange: onMoveHue, children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
       "div",
       {
         className: "color-picker-hue_cursor",
@@ -10321,12 +10347,12 @@ function ColorPicker({ color, onChange }) {
         }
       }
     ) }),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { className: "color-picker-color", style: { backgroundColor: selfColor.hex } })
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "color-picker-color", style: { backgroundColor: selfColor.hex } })
   ] });
 }
 function MoveWrapper({ className, style, onChange, children }) {
-  const divRef = (0, import_react51.useRef)(null);
-  const draggedRef = (0, import_react51.useRef)(false);
+  const divRef = (0, import_react52.useRef)(null);
+  const draggedRef = (0, import_react52.useRef)(false);
   const move = (e) => {
     if (divRef.current) {
       const { current: div } = divRef;
@@ -10359,7 +10385,7 @@ function MoveWrapper({ className, style, onChange, children }) {
     document.addEventListener("mousemove", onMouseMove, false);
     document.addEventListener("mouseup", onMouseUp, false);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("div", { ref: divRef, className, style, onMouseDown, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { ref: divRef, className, style, onMouseDown, children });
 }
 function clamp2(value, max, min) {
   return value > max ? max : value < min ? min : value;
@@ -10440,7 +10466,7 @@ function transformColor(format, color) {
 }
 
 // src/ui/DropdownColorPicker.tsx
-var import_jsx_runtime45 = require("react/jsx-runtime");
+var import_jsx_runtime48 = require("react/jsx-runtime");
 function DropdownColorPicker({
   disabled = false,
   stopCloseOnClickSelf = true,
@@ -10448,7 +10474,7 @@ function DropdownColorPicker({
   onChange,
   ...rest
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(DropDown, { ...rest, disabled, stopCloseOnClickSelf, children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(ColorPicker, { color, onChange }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(DropDown, { ...rest, disabled, stopCloseOnClickSelf, children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(ColorPicker, { color, onChange }) });
 }
 
 // src/utils/getDOMRangeRect.ts
@@ -10510,7 +10536,7 @@ function setFloatingElemPosition(targetRect, floatingElem, anchorElem, isLink = 
 }
 
 // src/plugins/FloatingTextFormatToolbarPlugin/index.tsx
-var import_jsx_runtime46 = require("react/jsx-runtime");
+var import_jsx_runtime49 = require("react/jsx-runtime");
 function TextFormatFloatingToolbar({
   editor,
   anchorElem,
@@ -10529,8 +10555,8 @@ function TextFormatFloatingToolbar({
   bgColor,
   setIsLinkEditMode
 }) {
-  const popupCharStylesEditorRef = (0, import_react52.useRef)(null);
-  const insertLink = (0, import_react52.useCallback)(() => {
+  const popupCharStylesEditorRef = (0, import_react53.useRef)(null);
+  const insertLink = (0, import_react53.useCallback)(() => {
     if (!isLink) {
       setIsLinkEditMode(true);
       editor.dispatchCommand(import_link5.TOGGLE_LINK_COMMAND, "https://");
@@ -10539,10 +10565,10 @@ function TextFormatFloatingToolbar({
       editor.dispatchCommand(import_link5.TOGGLE_LINK_COMMAND, null);
     }
   }, [editor, isLink, setIsLinkEditMode]);
-  const applyStyleText = (0, import_react52.useCallback)(
+  const applyStyleText = (0, import_react53.useCallback)(
     (styles) => {
       editor.update(() => {
-        const selection = (0, import_lexical41.$getSelection)();
+        const selection = (0, import_lexical40.$getSelection)();
         if (selection !== null) {
           (0, import_selection4.$patchStyleText)(selection, styles);
         }
@@ -10550,13 +10576,13 @@ function TextFormatFloatingToolbar({
     },
     [editor]
   );
-  const onFontColorSelect = (0, import_react52.useCallback)(
+  const onFontColorSelect = (0, import_react53.useCallback)(
     (value) => {
       applyStyleText({ color: value });
     },
     [applyStyleText]
   );
-  const onBgColorSelect = (0, import_react52.useCallback)(
+  const onBgColorSelect = (0, import_react53.useCallback)(
     (value) => {
       applyStyleText({ "background-color": value });
     },
@@ -10581,7 +10607,7 @@ function TextFormatFloatingToolbar({
       }
     }
   }
-  (0, import_react52.useEffect)(() => {
+  (0, import_react53.useEffect)(() => {
     if (popupCharStylesEditorRef?.current) {
       document.addEventListener("mousemove", mouseMoveListener);
       document.addEventListener("mouseup", mouseUpListener);
@@ -10591,10 +10617,10 @@ function TextFormatFloatingToolbar({
       };
     }
   }, [mouseMoveListener, mouseUpListener]);
-  const $updateTextFormatFloatingToolbar = (0, import_react52.useCallback)(() => {
-    const selection = (0, import_lexical41.$getSelection)();
+  const $updateTextFormatFloatingToolbar = (0, import_react53.useCallback)(() => {
+    const selection = (0, import_lexical40.$getSelection)();
     const popupCharStylesEditorElem = popupCharStylesEditorRef.current;
-    const nativeSelection = (0, import_lexical41.getDOMSelection)(editor._window);
+    const nativeSelection = (0, import_lexical40.getDOMSelection)(editor._window);
     if (popupCharStylesEditorElem === null) {
       return;
     }
@@ -10604,7 +10630,7 @@ function TextFormatFloatingToolbar({
       setFloatingElemPosition(rangeRect, popupCharStylesEditorElem, anchorElem, isLink);
     }
   }, [editor, anchorElem, isLink]);
-  (0, import_react52.useEffect)(() => {
+  (0, import_react53.useEffect)(() => {
     const scrollerElem = anchorElem.parentElement;
     const update = () => {
       editor.getEditorState().read(() => {
@@ -10622,7 +10648,7 @@ function TextFormatFloatingToolbar({
       }
     };
   }, [editor, $updateTextFormatFloatingToolbar, anchorElem]);
-  (0, import_react52.useEffect)(() => {
+  (0, import_react53.useEffect)(() => {
     editor.getEditorState().read(() => {
       $updateTextFormatFloatingToolbar();
     });
@@ -10633,147 +10659,147 @@ function TextFormatFloatingToolbar({
         });
       }),
       editor.registerCommand(
-        import_lexical41.SELECTION_CHANGE_COMMAND,
+        import_lexical40.SELECTION_CHANGE_COMMAND,
         () => {
           $updateTextFormatFloatingToolbar();
           return false;
         },
-        import_lexical41.COMMAND_PRIORITY_LOW
+        import_lexical40.COMMAND_PRIORITY_LOW
       )
     );
   }, [editor, $updateTextFormatFloatingToolbar]);
-  return /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("div", { ref: popupCharStylesEditorRef, className: "notion-like-editor floating-text-format-popup", children: editor.isEditable() && /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(import_jsx_runtime46.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { ref: popupCharStylesEditorRef, className: "notion-like-editor floating-text-format-popup", children: editor.isEditable() && /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)(import_jsx_runtime49.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "bold");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "bold");
         },
         className: `popup-item spaced ${isBold ? "active" : ""}`,
         title: "Bold",
         "aria-label": "Format text as bold",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format bold" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format bold" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "italic");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "italic");
         },
         className: `popup-item spaced ${isItalic ? "active" : ""}`,
         title: "Italic",
         "aria-label": "Format text as italics",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format italic" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format italic" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "underline");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "underline");
         },
         className: `popup-item spaced ${isUnderline ? "active" : ""}`,
         title: "Underline",
         "aria-label": "Format text to underlined",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format underline" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format underline" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "strikethrough");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "strikethrough");
         },
         className: `popup-item spaced ${isStrikethrough ? "active" : ""}`,
         title: "Strikethrough",
         "aria-label": "Format text with a strikethrough",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format strikethrough" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format strikethrough" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "subscript");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "subscript");
         },
         className: `popup-item spaced ${isSubscript2 ? "active" : ""}`,
         title: "Subscript",
         "aria-label": "Format Subscript",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format subscript" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format subscript" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "superscript");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "superscript");
         },
         className: `popup-item spaced ${isSuperscript2 ? "active" : ""}`,
         title: "Superscript",
         "aria-label": "Format Superscript",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format superscript" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format superscript" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "uppercase");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "uppercase");
         },
         className: `popup-item spaced ${isUppercase2 ? "active" : ""}`,
         title: "Uppercase",
         "aria-label": "Format text to uppercase",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format uppercase" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format uppercase" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "lowercase");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "lowercase");
         },
         className: `popup-item spaced ${isLowercase2 ? "active" : ""}`,
         title: "Lowercase",
         "aria-label": "Format text to lowercase",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format lowercase" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format lowercase" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "capitalize");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "capitalize");
         },
         className: `popup-item spaced ${isCapitalize2 ? "active" : ""}`,
         title: "Capitalize",
         "aria-label": "Format text to capitalize",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format capitalize" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format capitalize" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
         onClick: () => {
-          editor.dispatchCommand(import_lexical41.FORMAT_TEXT_COMMAND, "code");
+          editor.dispatchCommand(import_lexical40.FORMAT_TEXT_COMMAND, "code");
         },
         className: `popup-item spaced ${isCode ? "active" : ""}`,
         title: "Insert code block",
         "aria-label": "Insert code block",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format code" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format code" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       "button",
       {
         type: "button",
@@ -10781,10 +10807,10 @@ function TextFormatFloatingToolbar({
         className: `popup-item spaced ${isLink ? "active" : ""}`,
         title: "Insert link",
         "aria-label": "Insert link",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("i", { className: "format link" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("i", { className: "format link" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       DropdownColorPicker,
       {
         disabled: false,
@@ -10796,7 +10822,7 @@ function TextFormatFloatingToolbar({
         title: "text color"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       DropdownColorPicker,
       {
         disabled: false,
@@ -10811,33 +10837,33 @@ function TextFormatFloatingToolbar({
   ] }) });
 }
 function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
-  const [isText, setIsText] = (0, import_react52.useState)(false);
-  const [isLink, setIsLink] = (0, import_react52.useState)(false);
-  const [isBold, setIsBold] = (0, import_react52.useState)(false);
-  const [isItalic, setIsItalic] = (0, import_react52.useState)(false);
-  const [isUnderline, setIsUnderline] = (0, import_react52.useState)(false);
-  const [isUppercase2, setIsUppercase] = (0, import_react52.useState)(false);
-  const [isLowercase2, setIsLowercase] = (0, import_react52.useState)(false);
-  const [isCapitalize2, setIsCapitalize] = (0, import_react52.useState)(false);
-  const [isStrikethrough, setIsStrikethrough] = (0, import_react52.useState)(false);
-  const [isSubscript2, setIsSubscript] = (0, import_react52.useState)(false);
-  const [isSuperscript2, setIsSuperscript] = (0, import_react52.useState)(false);
-  const [isCode, setIsCode] = (0, import_react52.useState)(false);
-  const [fontColor, setFontColor] = (0, import_react52.useState)("#000");
-  const [bgColor, setBgColor] = (0, import_react52.useState)("#fff");
-  const updatePopup = (0, import_react52.useCallback)(() => {
+  const [isText, setIsText] = (0, import_react53.useState)(false);
+  const [isLink, setIsLink] = (0, import_react53.useState)(false);
+  const [isBold, setIsBold] = (0, import_react53.useState)(false);
+  const [isItalic, setIsItalic] = (0, import_react53.useState)(false);
+  const [isUnderline, setIsUnderline] = (0, import_react53.useState)(false);
+  const [isUppercase2, setIsUppercase] = (0, import_react53.useState)(false);
+  const [isLowercase2, setIsLowercase] = (0, import_react53.useState)(false);
+  const [isCapitalize2, setIsCapitalize] = (0, import_react53.useState)(false);
+  const [isStrikethrough, setIsStrikethrough] = (0, import_react53.useState)(false);
+  const [isSubscript2, setIsSubscript] = (0, import_react53.useState)(false);
+  const [isSuperscript2, setIsSuperscript] = (0, import_react53.useState)(false);
+  const [isCode, setIsCode] = (0, import_react53.useState)(false);
+  const [fontColor, setFontColor] = (0, import_react53.useState)("#000");
+  const [bgColor, setBgColor] = (0, import_react53.useState)("#fff");
+  const updatePopup = (0, import_react53.useCallback)(() => {
     editor.getEditorState().read(() => {
       if (editor.isComposing()) {
         return;
       }
-      const selection = (0, import_lexical41.$getSelection)();
-      const nativeSelection = (0, import_lexical41.getDOMSelection)(editor._window);
+      const selection = (0, import_lexical40.$getSelection)();
+      const nativeSelection = (0, import_lexical40.getDOMSelection)(editor._window);
       const rootElement = editor.getRootElement();
-      if (nativeSelection !== null && (!(0, import_lexical41.$isRangeSelection)(selection) || rootElement === null || !rootElement.contains(nativeSelection.anchorNode))) {
+      if (nativeSelection !== null && (!(0, import_lexical40.$isRangeSelection)(selection) || rootElement === null || !rootElement.contains(nativeSelection.anchorNode))) {
         setIsText(false);
         return;
       }
-      if (!(0, import_lexical41.$isRangeSelection)(selection)) {
+      if (!(0, import_lexical40.$isRangeSelection)(selection)) {
         return;
       }
       const node = getSelectedNode(selection);
@@ -10860,7 +10886,7 @@ function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
       setFontColor((0, import_selection4.$getSelectionStyleValueForProperty)(selection, "color", "#000"));
       setBgColor((0, import_selection4.$getSelectionStyleValueForProperty)(selection, "background-color", "#fff"));
       if (!(0, import_code6.$isCodeHighlightNode)(selection.anchor.getNode()) && selection.getTextContent() !== "") {
-        setIsText((0, import_lexical41.$isTextNode)(node) || (0, import_lexical41.$isParagraphNode)(node));
+        setIsText((0, import_lexical40.$isTextNode)(node) || (0, import_lexical40.$isParagraphNode)(node));
       } else {
         setIsText(false);
       }
@@ -10871,13 +10897,13 @@ function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
       }
     });
   }, [editor]);
-  (0, import_react52.useEffect)(() => {
+  (0, import_react53.useEffect)(() => {
     document.addEventListener("selectionchange", updatePopup);
     return () => {
       document.removeEventListener("selectionchange", updatePopup);
     };
   }, [updatePopup]);
-  (0, import_react52.useEffect)(() => {
+  (0, import_react53.useEffect)(() => {
     return (0, import_utils26.mergeRegister)(
       editor.registerUpdateListener(() => {
         updatePopup();
@@ -10892,8 +10918,8 @@ function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
   if (!isText) {
     return null;
   }
-  return (0, import_react_dom6.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+  return (0, import_react_dom7.createPortal)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
       TextFormatFloatingToolbar,
       {
         editor,
@@ -10921,8 +10947,67 @@ function FloatingTextFormatToolbarPlugin({
   anchorElem = document.body,
   setIsLinkEditMode
 }) {
-  const [editor] = (0, import_LexicalComposerContext30.useLexicalComposerContext)();
+  const [editor] = (0, import_LexicalComposerContext29.useLexicalComposerContext)();
   return useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode);
+}
+
+// src/plugins/FragmentLinkPlugin/index.tsx
+var import_LexicalComposerContext30 = require("@lexical/react/LexicalComposerContext");
+var import_rich_text4 = require("@lexical/rich-text");
+var import_lexical41 = require("lexical");
+var import_react54 = require("react");
+function generateSlug(text) {
+  return text.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}-]/gu, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+function normalizeText(text) {
+  return text.toLowerCase().trim();
+}
+function FragmentLinkPlugin() {
+  const [editor] = (0, import_LexicalComposerContext30.useLexicalComposerContext)();
+  (0, import_react54.useEffect)(() => {
+    const rootElement = editor.getRootElement();
+    if (!rootElement) {
+      return;
+    }
+    const handleClick = (event) => {
+      const target = event.target;
+      const anchor = target.closest("a");
+      if (!anchor) {
+        return;
+      }
+      const href = anchor.getAttribute("href");
+      if (!href || !href.startsWith("#")) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const targetFragment = decodeURIComponent(href.slice(1));
+      const targetSlug = generateSlug(targetFragment);
+      const targetNormalized = normalizeText(targetFragment);
+      editor.getEditorState().read(() => {
+        const root = (0, import_lexical41.$getRoot)();
+        for (const child of root.getChildren()) {
+          if ((0, import_rich_text4.$isHeadingNode)(child)) {
+            const headingText = child.getTextContent();
+            const headingSlug = generateSlug(headingText);
+            const headingNormalized = normalizeText(headingText);
+            if (headingSlug === targetSlug || headingNormalized === targetNormalized || headingNormalized.includes(targetNormalized) || targetNormalized.includes(headingNormalized)) {
+              const domElement = editor.getElementByKey(child.getKey());
+              if (domElement) {
+                domElement.scrollIntoView({ behavior: "smooth", block: "start" });
+                return;
+              }
+            }
+          }
+        }
+      });
+    };
+    rootElement.addEventListener("click", handleClick, true);
+    return () => {
+      rootElement.removeEventListener("click", handleClick, true);
+    };
+  }, [editor]);
+  return null;
 }
 
 // src/plugins/HorizontalRulePlugin/index.tsx
@@ -10930,10 +11015,10 @@ var import_extension = require("@lexical/extension");
 var import_LexicalComposerContext31 = require("@lexical/react/LexicalComposerContext");
 var import_utils27 = require("@lexical/utils");
 var import_lexical42 = require("lexical");
-var import_react53 = require("react");
+var import_react55 = require("react");
 function HorizontalRulePlugin() {
   const [editor] = (0, import_LexicalComposerContext31.useLexicalComposerContext)();
-  (0, import_react53.useEffect)(() => {
+  (0, import_react55.useEffect)(() => {
     return editor.registerCommand(
       import_extension.INSERT_HORIZONTAL_RULE_COMMAND,
       (_type) => {
@@ -10961,7 +11046,7 @@ init_LinkPlugin();
 var import_markdown3 = require("@lexical/markdown");
 var import_LexicalComposerContext32 = require("@lexical/react/LexicalComposerContext");
 var import_lexical45 = require("lexical");
-var import_react54 = require("react");
+var import_react56 = require("react");
 
 // src/transformers/markdown-transformers.ts
 var import_extension2 = require("@lexical/extension");
@@ -27792,7 +27877,8 @@ var PLAYGROUND_TRANSFORMERS = [
   ...import_markdown.TEXT_MATCH_TRANSFORMERS
 ];
 function normalizeListIndentation(markdown) {
-  const lines = markdown.split("\n");
+  const normalizedMarkdown = markdown.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = normalizedMarkdown.split("\n");
   const result = [];
   let inCodeBlock = false;
   for (const line of lines) {
@@ -28112,18 +28198,27 @@ function getPlainTextFromClipboard(event) {
   if (!clipboardData) {
     return null;
   }
+  const plainText = clipboardData.getData("text/plain");
+  if (!plainText || plainText.trim().length === 0) {
+    return null;
+  }
   const htmlData = clipboardData.getData("text/html");
   if (htmlData && htmlData.trim().length > 0) {
-    const isSimpleHtml = /<(meta|span|div|p|br)[^>]*>/i.test(htmlData) && !/<(table|img|a|ul|ol|li|h[1-6])[^>]*>/i.test(htmlData);
-    if (!isSimpleHtml) {
-      return null;
+    const hasCodeElements = /<(pre|code)[^>]*>/i.test(htmlData);
+    if (hasCodeElements) {
+      return plainText;
     }
+    const isSimpleHtml = /<(meta|span|div|p|br)[^>]*>/i.test(htmlData) && !/<(table|img|a|ul|ol|li|h[1-6])[^>]*>/i.test(htmlData);
+    if (isSimpleHtml) {
+      return plainText;
+    }
+    return null;
   }
-  return clipboardData.getData("text/plain");
+  return plainText;
 }
 function MarkdownPastePlugin() {
   const [editor] = (0, import_LexicalComposerContext32.useLexicalComposerContext)();
-  const handlePaste = (0, import_react54.useCallback)(
+  const handlePaste = (0, import_react56.useCallback)(
     (event) => {
       const plainText = getPlainTextFromClipboard(event);
       if (!plainText) {
@@ -28141,7 +28236,13 @@ function MarkdownPastePlugin() {
         selection.removeText();
         const anchorNode = selection.anchor.getNode();
         const paragraphNode = (0, import_lexical45.$createParagraphNode)();
-        (0, import_markdown3.$convertFromMarkdownString)(normalizeListIndentation(plainText), PLAYGROUND_TRANSFORMERS2, paragraphNode, true);
+        const normalizedText = plainText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+        (0, import_markdown3.$convertFromMarkdownString)(
+          normalizeListIndentation(normalizedText),
+          PLAYGROUND_TRANSFORMERS2,
+          paragraphNode,
+          true
+        );
         const children = paragraphNode.getChildren();
         if (children.length > 0) {
           const topLevelNode = anchorNode.getTopLevelElement();
@@ -28164,7 +28265,7 @@ function MarkdownPastePlugin() {
     },
     [editor]
   );
-  (0, import_react54.useEffect)(() => {
+  (0, import_react56.useEffect)(() => {
     return editor.registerCommand(
       import_lexical45.PASTE_COMMAND,
       (event) => {
@@ -28178,9 +28279,9 @@ function MarkdownPastePlugin() {
 
 // src/plugins/MarkdownShortcutPlugin/index.tsx
 var import_LexicalMarkdownShortcutPlugin = require("@lexical/react/LexicalMarkdownShortcutPlugin");
-var import_jsx_runtime47 = require("react/jsx-runtime");
+var import_jsx_runtime50 = require("react/jsx-runtime");
 function MarkdownPlugin() {
-  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(import_LexicalMarkdownShortcutPlugin.MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
+  return /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(import_LexicalMarkdownShortcutPlugin.MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
 }
 
 // src/plugins/MaxLengthPlugin/index.tsx
@@ -28188,10 +28289,10 @@ var import_LexicalComposerContext33 = require("@lexical/react/LexicalComposerCon
 var import_selection5 = require("@lexical/selection");
 var import_utils28 = require("@lexical/utils");
 var import_lexical46 = require("lexical");
-var import_react55 = require("react");
+var import_react57 = require("react");
 function MaxLengthPlugin({ maxLength }) {
   const [editor] = (0, import_LexicalComposerContext33.useLexicalComposerContext)();
-  (0, import_react55.useEffect)(() => {
+  (0, import_react57.useEffect)(() => {
     let lastRestoredEditorState = null;
     return editor.registerNodeTransform(import_lexical46.RootNode, (rootNode) => {
       const selection = (0, import_lexical46.$getSelection)();
@@ -28224,7 +28325,7 @@ init_MentionsPlugin();
 // src/plugins/ShortcutsPlugin/index.tsx
 var import_link6 = require("@lexical/link");
 var import_lexical49 = require("lexical");
-var import_react56 = require("react");
+var import_react58 = require("react");
 init_url();
 
 // src/plugins/ToolbarPlugin/utils.ts
@@ -28601,7 +28702,7 @@ function ShortcutsPlugin({
   setIsLinkEditMode
 }) {
   const { toolbarState } = useToolbarState();
-  (0, import_react56.useEffect)(() => {
+  (0, import_react58.useEffect)(() => {
     const keyboardShortcutsHandler = (event) => {
       if ((0, import_lexical49.isModifierMatch)(event, {})) {
         return false;
@@ -28671,7 +28772,7 @@ function ShortcutsPlugin({
 // src/plugins/SpecialTextPlugin/index.ts
 var import_LexicalComposerContext34 = require("@lexical/react/LexicalComposerContext");
 var import_lexical51 = require("lexical");
-var import_react57 = require("react");
+var import_react59 = require("react");
 
 // src/nodes/SpecialTextNode.tsx
 var import_utils32 = require("@lexical/utils");
@@ -28744,7 +28845,7 @@ function $textNodeTransform3(node) {
   }
 }
 function useTextTransformation(editor) {
-  (0, import_react57.useEffect)(() => {
+  (0, import_react59.useEffect)(() => {
     if (!editor.hasNodes([SpecialTextNode])) {
       throw new Error("SpecialTextPlugin: SpecialTextNode not registered on editor");
     }
@@ -28760,7 +28861,7 @@ function SpecialTextPlugin() {
 // src/plugins/TabFocusPlugin/index.tsx
 var import_LexicalComposerContext35 = require("@lexical/react/LexicalComposerContext");
 var import_lexical52 = require("lexical");
-var import_react58 = require("react");
+var import_react60 = require("react");
 var TAB_TO_FOCUS_INTERVAL = 100;
 var lastTabKeyDownTimestamp = 0;
 var hasRegisteredKeyDownListener = false;
@@ -28777,7 +28878,7 @@ function registerKeyTimeStampTracker() {
 }
 function TabFocusPlugin() {
   const [editor] = (0, import_LexicalComposerContext35.useLexicalComposerContext)();
-  (0, import_react58.useEffect)(() => {
+  (0, import_react60.useEffect)(() => {
     if (!hasRegisteredKeyDownListener) {
       registerKeyTimeStampTracker();
       hasRegisteredKeyDownListener = true;
@@ -28805,9 +28906,9 @@ var import_useLexicalEditable3 = require("@lexical/react/useLexicalEditable");
 var import_table6 = require("@lexical/table");
 var import_utils33 = require("@lexical/utils");
 var import_lexical53 = require("lexical");
-var import_react59 = require("react");
-var import_react_dom7 = require("react-dom");
-var import_jsx_runtime48 = require("react/jsx-runtime");
+var import_react61 = require("react");
+var import_react_dom8 = require("react-dom");
+var import_jsx_runtime51 = require("react/jsx-runtime");
 function computeSelectionCount(selection) {
   const selectionShape = selection.getShape();
   return {
@@ -28854,16 +28955,16 @@ function TableActionMenu({
   showColorPickerModal
 }) {
   const [editor] = (0, import_LexicalComposerContext36.useLexicalComposerContext)();
-  const dropDownRef = (0, import_react59.useRef)(null);
-  const [tableCellNode, updateTableCellNode] = (0, import_react59.useState)(_tableCellNode);
-  const [selectionCounts, updateSelectionCounts] = (0, import_react59.useState)({
+  const dropDownRef = (0, import_react61.useRef)(null);
+  const [tableCellNode, updateTableCellNode] = (0, import_react61.useState)(_tableCellNode);
+  const [selectionCounts, updateSelectionCounts] = (0, import_react61.useState)({
     columns: 1,
     rows: 1
   });
-  const [canMergeCells, setCanMergeCells] = (0, import_react59.useState)(false);
-  const [canUnmergeCell, setCanUnmergeCell] = (0, import_react59.useState)(false);
-  const [backgroundColor, setBackgroundColor] = (0, import_react59.useState)(() => currentCellBackgroundColor(editor) || "");
-  (0, import_react59.useEffect)(() => {
+  const [canMergeCells, setCanMergeCells] = (0, import_react61.useState)(false);
+  const [canUnmergeCell, setCanUnmergeCell] = (0, import_react61.useState)(false);
+  const [backgroundColor, setBackgroundColor] = (0, import_react61.useState)(() => currentCellBackgroundColor(editor) || "");
+  (0, import_react61.useEffect)(() => {
     return editor.registerMutationListener(
       import_table6.TableCellNode,
       (nodeMutations) => {
@@ -28878,7 +28979,7 @@ function TableActionMenu({
       { skipInitialization: true }
     );
   }, [editor, tableCellNode]);
-  (0, import_react59.useEffect)(() => {
+  (0, import_react61.useEffect)(() => {
     editor.getEditorState().read(() => {
       const selection = (0, import_lexical53.$getSelection)();
       if ((0, import_table6.$isTableSelection)(selection)) {
@@ -28889,7 +28990,7 @@ function TableActionMenu({
       setCanUnmergeCell($canUnmerge());
     });
   }, [editor]);
-  (0, import_react59.useEffect)(() => {
+  (0, import_react61.useEffect)(() => {
     const menuButtonElement = contextRef.current;
     const dropDownElement = dropDownRef.current;
     const rootElement = editor.getRootElement();
@@ -28913,7 +29014,7 @@ function TableActionMenu({
       dropDownElement.style.top = `${topPosition}px`;
     }
   }, [contextRef, editor]);
-  (0, import_react59.useEffect)(() => {
+  (0, import_react61.useEffect)(() => {
     function handleClickOutside(event) {
       if (dropDownRef.current != null && contextRef.current != null && (0, import_lexical53.isDOMNode)(event.target) && !dropDownRef.current.contains(event.target) && !contextRef.current.contains(event.target)) {
         setIsMenuOpen(false);
@@ -28922,7 +29023,7 @@ function TableActionMenu({
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
   }, [setIsMenuOpen, contextRef]);
-  const clearTableSelection = (0, import_react59.useCallback)(() => {
+  const clearTableSelection = (0, import_react61.useCallback)(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
         const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
@@ -28960,7 +29061,7 @@ function TableActionMenu({
       (0, import_table6.$unmergeCell)();
     });
   };
-  const insertTableRowAtSelection = (0, import_react59.useCallback)(
+  const insertTableRowAtSelection = (0, import_react61.useCallback)(
     (shouldInsertAfter) => {
       editor.update(() => {
         for (let i = 0; i < selectionCounts.rows; i++) {
@@ -28971,7 +29072,7 @@ function TableActionMenu({
     },
     [editor, onClose, selectionCounts.rows]
   );
-  const insertTableColumnAtSelection = (0, import_react59.useCallback)(
+  const insertTableColumnAtSelection = (0, import_react61.useCallback)(
     (shouldInsertAfter) => {
       editor.update(() => {
         for (let i = 0; i < selectionCounts.columns; i++) {
@@ -28982,13 +29083,13 @@ function TableActionMenu({
     },
     [editor, onClose, selectionCounts.columns]
   );
-  const deleteTableRowAtSelection = (0, import_react59.useCallback)(() => {
+  const deleteTableRowAtSelection = (0, import_react61.useCallback)(() => {
     editor.update(() => {
       (0, import_table6.$deleteTableRowAtSelection)();
       onClose();
     });
   }, [editor, onClose]);
-  const deleteTableAtSelection = (0, import_react59.useCallback)(() => {
+  const deleteTableAtSelection = (0, import_react61.useCallback)(() => {
     editor.update(() => {
       const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
       tableNode.remove();
@@ -28996,13 +29097,13 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const deleteTableColumnAtSelection = (0, import_react59.useCallback)(() => {
+  const deleteTableColumnAtSelection = (0, import_react61.useCallback)(() => {
     editor.update(() => {
       (0, import_table6.$deleteTableColumnAtSelection)();
       onClose();
     });
   }, [editor, onClose]);
-  const toggleTableRowIsHeader = (0, import_react59.useCallback)(() => {
+  const toggleTableRowIsHeader = (0, import_react61.useCallback)(() => {
     editor.update(() => {
       const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
       const tableRowIndex = (0, import_table6.$getTableRowIndexFromTableCellNode)(tableCellNode);
@@ -29023,7 +29124,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const toggleTableColumnIsHeader = (0, import_react59.useCallback)(() => {
+  const toggleTableColumnIsHeader = (0, import_react61.useCallback)(() => {
     editor.update(() => {
       const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
       const tableColumnIndex = (0, import_table6.$getTableColumnIndexFromTableCellNode)(tableCellNode);
@@ -29044,7 +29145,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const toggleRowStriping = (0, import_react59.useCallback)(() => {
+  const toggleRowStriping = (0, import_react61.useCallback)(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
         const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
@@ -29056,7 +29157,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const toggleFirstRowFreeze = (0, import_react59.useCallback)(() => {
+  const toggleFirstRowFreeze = (0, import_react61.useCallback)(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
         const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
@@ -29068,7 +29169,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const toggleFirstColumnFreeze = (0, import_react59.useCallback)(() => {
+  const toggleFirstColumnFreeze = (0, import_react61.useCallback)(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
         const tableNode = (0, import_table6.$getTableNodeFromLexicalNodeOrThrow)(tableCellNode);
@@ -29080,7 +29181,7 @@ function TableActionMenu({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  const handleCellBackgroundColor = (0, import_react59.useCallback)(
+  const handleCellBackgroundColor = (0, import_react61.useCallback)(
     (value) => {
       editor.update(() => {
         const selection = (0, import_lexical53.$getSelection)();
@@ -29126,32 +29227,32 @@ function TableActionMenu({
   let mergeCellButton = null;
   if (cellMerge) {
     if (canMergeCells) {
-      mergeCellButton = /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+      mergeCellButton = /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
         "button",
         {
           type: "button",
           className: "item",
           onClick: () => mergeTableCellsAtSelection(),
           "data-test-id": "table-merge-cells",
-          children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Merge cells" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Merge cells" })
         }
       );
     } else if (canUnmergeCell) {
-      mergeCellButton = /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+      mergeCellButton = /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
         "button",
         {
           type: "button",
           className: "item",
           onClick: () => unmergeTableCellsAtSelection(),
           "data-test-id": "table-unmerge-cells",
-          children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Unmerge cells" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Unmerge cells" })
         }
       );
     }
   }
-  return (0, import_react_dom7.createPortal)(
+  return (0, import_react_dom8.createPortal)(
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(
       "div",
       {
         className: "notion-like-editor nle-dropdown",
@@ -29161,180 +29262,180 @@ function TableActionMenu({
         },
         children: [
           mergeCellButton,
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
-              onClick: () => showColorPickerModal("Cell background color", () => /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(ColorPicker, { color: backgroundColor, onChange: handleCellBackgroundColor })),
+              onClick: () => showColorPickerModal("Cell background color", () => /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(ColorPicker, { color: backgroundColor, onChange: handleCellBackgroundColor })),
               "data-test-id": "table-background-color",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Background color" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Background color" })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("button", { type: "button", className: "item", onClick: () => toggleRowStriping(), "data-test-id": "table-row-striping", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Toggle Row Striping" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("button", { type: "button", className: "item", onClick: () => toggleRowStriping(), "data-test-id": "table-row-striping", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Toggle Row Striping" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(
             DropDown,
             {
               buttonLabel: "Vertical Align",
               buttonClassName: "item",
               buttonAriaLabel: "Formatting options for vertical alignment",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
                   DropDownItem,
                   {
                     onClick: () => {
                       formatVerticalAlign("top");
                     },
                     className: "item wide",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "icon-text-container", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("i", { className: "icon vertical-top" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Top Align" })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "icon-text-container", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("i", { className: "icon vertical-top" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Top Align" })
                     ] })
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
                   DropDownItem,
                   {
                     onClick: () => {
                       formatVerticalAlign("middle");
                     },
                     className: "item wide",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "icon-text-container", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("i", { className: "icon vertical-middle" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Middle Align" })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "icon-text-container", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("i", { className: "icon vertical-middle" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Middle Align" })
                     ] })
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
                   DropDownItem,
                   {
                     onClick: () => {
                       formatVerticalAlign("bottom");
                     },
                     className: "item wide",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "icon-text-container", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("i", { className: "icon vertical-bottom" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Bottom Align" })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "icon-text-container", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("i", { className: "icon vertical-bottom" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Bottom Align" })
                     ] })
                   }
                 )
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => toggleFirstRowFreeze(),
               "data-test-id": "table-freeze-first-row",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Toggle First Row Freeze" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Toggle First Row Freeze" })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => toggleFirstColumnFreeze(),
               "data-test-id": "table-freeze-first-column",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Toggle First Column Freeze" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Toggle First Column Freeze" })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("hr", {}),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("hr", {}),
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => insertTableRowAtSelection(false),
               "data-test-id": "table-insert-row-above",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { className: "text", children: [
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("span", { className: "text", children: [
                 "Insert ",
                 selectionCounts.rows === 1 ? "row" : `${selectionCounts.rows} rows`,
                 " above"
               ] })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => insertTableRowAtSelection(true),
               "data-test-id": "table-insert-row-below",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { className: "text", children: [
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("span", { className: "text", children: [
                 "Insert ",
                 selectionCounts.rows === 1 ? "row" : `${selectionCounts.rows} rows`,
                 " below"
               ] })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("hr", {}),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("hr", {}),
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => insertTableColumnAtSelection(false),
               "data-test-id": "table-insert-column-before",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { className: "text", children: [
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("span", { className: "text", children: [
                 "Insert ",
                 selectionCounts.columns === 1 ? "column" : `${selectionCounts.columns} columns`,
                 " left"
               ] })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => insertTableColumnAtSelection(true),
               "data-test-id": "table-insert-column-after",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { className: "text", children: [
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("span", { className: "text", children: [
                 "Insert ",
                 selectionCounts.columns === 1 ? "column" : `${selectionCounts.columns} columns`,
                 " right"
               ] })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("hr", {}),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("hr", {}),
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => deleteTableColumnAtSelection(),
               "data-test-id": "table-delete-columns",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Delete column" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Delete column" })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => deleteTableRowAtSelection(),
               "data-test-id": "table-delete-rows",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Delete row" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Delete row" })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("button", { type: "button", className: "item", onClick: () => deleteTableAtSelection(), "data-test-id": "table-delete", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text", children: "Delete table" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("hr", {}),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("button", { type: "button", className: "item", onClick: () => toggleTableRowIsHeader(), "data-test-id": "table-row-header", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { className: "text", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("button", { type: "button", className: "item", onClick: () => deleteTableAtSelection(), "data-test-id": "table-delete", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text", children: "Delete table" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("hr", {}),
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("button", { type: "button", className: "item", onClick: () => toggleTableRowIsHeader(), "data-test-id": "table-row-header", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("span", { className: "text", children: [
             (tableCellNode.__headerState & import_table6.TableCellHeaderStates.ROW) === import_table6.TableCellHeaderStates.ROW ? "Remove" : "Add",
             " ",
             "row header"
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
             "button",
             {
               type: "button",
               className: "item",
               onClick: () => toggleTableColumnIsHeader(),
               "data-test-id": "table-column-header",
-              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { className: "text", children: [
+              children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("span", { className: "text", children: [
                 (tableCellNode.__headerState & import_table6.TableCellHeaderStates.COLUMN) === import_table6.TableCellHeaderStates.COLUMN ? "Remove" : "Add",
                 " ",
                 "column header"
@@ -29352,12 +29453,12 @@ function TableCellActionMenuContainer({
   cellMerge
 }) {
   const [editor] = (0, import_LexicalComposerContext36.useLexicalComposerContext)();
-  const menuButtonRef = (0, import_react59.useRef)(null);
-  const menuRootRef = (0, import_react59.useRef)(null);
-  const [isMenuOpen, setIsMenuOpen] = (0, import_react59.useState)(false);
-  const [tableCellNode, setTableMenuCellNode] = (0, import_react59.useState)(null);
+  const menuButtonRef = (0, import_react61.useRef)(null);
+  const menuRootRef = (0, import_react61.useRef)(null);
+  const [isMenuOpen, setIsMenuOpen] = (0, import_react61.useState)(false);
+  const [tableCellNode, setTableMenuCellNode] = (0, import_react61.useState)(null);
   const [colorPickerModal, showColorPickerModal] = useModal();
-  const checkTableCellOverflow = (0, import_react59.useCallback)((tableCellParentNodeDOM) => {
+  const checkTableCellOverflow = (0, import_react61.useCallback)((tableCellParentNodeDOM) => {
     const scrollableContainer = tableCellParentNodeDOM.closest(".NotionLikeEditorTheme__tableScrollableWrapper");
     if (scrollableContainer) {
       const containerRect = scrollableContainer.getBoundingClientRect();
@@ -29370,7 +29471,7 @@ function TableCellActionMenuContainer({
     }
     return false;
   }, []);
-  const $moveMenu = (0, import_react59.useCallback)(() => {
+  const $moveMenu = (0, import_react61.useCallback)(() => {
     const menu = menuButtonRef.current;
     const selection = (0, import_lexical53.$getSelection)();
     const nativeSelection = (0, import_lexical53.getDOMSelection)(editor._window);
@@ -29442,7 +29543,7 @@ function TableCellActionMenuContainer({
       menu.style.transform = `translate(${left}px, ${top}px)`;
     }
   }, [editor, anchorElem, checkTableCellOverflow]);
-  (0, import_react59.useEffect)(() => {
+  (0, import_react61.useEffect)(() => {
     let timeoutId;
     const callback = () => {
       timeoutId = void 0;
@@ -29469,15 +29570,15 @@ function TableCellActionMenuContainer({
       () => clearTimeout(timeoutId)
     );
   });
-  const prevTableCellDOM = (0, import_react59.useRef)(tableCellNode);
-  (0, import_react59.useEffect)(() => {
+  const prevTableCellDOM = (0, import_react61.useRef)(tableCellNode);
+  (0, import_react61.useEffect)(() => {
     if (prevTableCellDOM.current !== tableCellNode) {
       setIsMenuOpen(false);
     }
     prevTableCellDOM.current = tableCellNode;
   }, [tableCellNode]);
-  return /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "table-cell-action-button-container", ref: menuButtonRef, children: tableCellNode != null && /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(import_jsx_runtime48.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "table-cell-action-button-container", ref: menuButtonRef, children: tableCellNode != null && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(import_jsx_runtime51.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
       "button",
       {
         type: "button",
@@ -29487,11 +29588,11 @@ function TableCellActionMenuContainer({
           setIsMenuOpen(!isMenuOpen);
         },
         ref: menuRootRef,
-        children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("i", { className: "chevron-down" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("i", { className: "chevron-down" })
       }
     ),
     colorPickerModal,
-    isMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+    isMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
       TableActionMenu,
       {
         contextRef: menuRootRef,
@@ -29509,8 +29610,8 @@ function TableActionMenuPlugin({
   cellMerge = false
 }) {
   const isEditable = (0, import_useLexicalEditable3.useLexicalEditable)();
-  return (0, import_react_dom7.createPortal)(
-    isEditable ? /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(TableCellActionMenuContainer, { anchorElem, cellMerge }) : null,
+  return (0, import_react_dom8.createPortal)(
+    isEditable ? /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(TableCellActionMenuContainer, { anchorElem, cellMerge }) : null,
     anchorElem
   );
 }
@@ -29521,28 +29622,28 @@ var import_useLexicalEditable4 = require("@lexical/react/useLexicalEditable");
 var import_table7 = require("@lexical/table");
 var import_utils34 = require("@lexical/utils");
 var import_lexical54 = require("lexical");
-var import_react60 = require("react");
-var import_react_dom8 = require("react-dom");
-var import_jsx_runtime49 = require("react/jsx-runtime");
+var import_react62 = require("react");
+var import_react_dom9 = require("react-dom");
+var import_jsx_runtime52 = require("react/jsx-runtime");
 var MIN_ROW_HEIGHT = 33;
 var MIN_COLUMN_WIDTH = 92;
 function TableCellResizer({ editor }) {
-  const targetRef = (0, import_react60.useRef)(null);
-  const resizerRef = (0, import_react60.useRef)(null);
-  const tableRectRef = (0, import_react60.useRef)(null);
-  const [hasTable, setHasTable] = (0, import_react60.useState)(false);
-  const pointerStartPosRef = (0, import_react60.useRef)(null);
-  const [pointerCurrentPos, updatePointerCurrentPos] = (0, import_react60.useState)(null);
-  const [activeCell, updateActiveCell] = (0, import_react60.useState)(null);
-  const [draggingDirection, updateDraggingDirection] = (0, import_react60.useState)(null);
-  const resetState = (0, import_react60.useCallback)(() => {
+  const targetRef = (0, import_react62.useRef)(null);
+  const resizerRef = (0, import_react62.useRef)(null);
+  const tableRectRef = (0, import_react62.useRef)(null);
+  const [hasTable, setHasTable] = (0, import_react62.useState)(false);
+  const pointerStartPosRef = (0, import_react62.useRef)(null);
+  const [pointerCurrentPos, updatePointerCurrentPos] = (0, import_react62.useState)(null);
+  const [activeCell, updateActiveCell] = (0, import_react62.useState)(null);
+  const [draggingDirection, updateDraggingDirection] = (0, import_react62.useState)(null);
+  const resetState = (0, import_react62.useCallback)(() => {
     updateActiveCell(null);
     targetRef.current = null;
     updateDraggingDirection(null);
     pointerStartPosRef.current = null;
     tableRectRef.current = null;
   }, []);
-  (0, import_react60.useEffect)(() => {
+  (0, import_react62.useEffect)(() => {
     const tableKeys = /* @__PURE__ */ new Set();
     return (0, import_utils34.mergeRegister)(
       editor.registerMutationListener(import_table7.TableNode, (nodeMutations) => {
@@ -29566,7 +29667,7 @@ function TableCellResizer({ editor }) {
       })
     );
   }, [editor]);
-  (0, import_react60.useEffect)(() => {
+  (0, import_react62.useEffect)(() => {
     if (!hasTable) {
       return;
     }
@@ -29644,7 +29745,7 @@ function TableCellResizer({ editor }) {
     const domCellNode = activeEditor.getElementByKey(cell.getKey());
     return domCellNode?.clientHeight;
   };
-  const updateRowHeight = (0, import_react60.useCallback)(
+  const updateRowHeight = (0, import_react62.useCallback)(
     (heightChange) => {
       if (!activeCell) {
         throw new Error("TableCellResizer: Expected active cell.");
@@ -29689,7 +29790,7 @@ function TableCellResizer({ editor }) {
       }
     }
   };
-  const updateColumnWidth = (0, import_react60.useCallback)(
+  const updateColumnWidth = (0, import_react62.useCallback)(
     (widthChange) => {
       if (!activeCell) {
         throw new Error("TableCellResizer: Expected active cell.");
@@ -29724,7 +29825,7 @@ function TableCellResizer({ editor }) {
     },
     [activeCell, editor, getCellColumnIndex]
   );
-  const pointerUpHandler = (0, import_react60.useCallback)(
+  const pointerUpHandler = (0, import_react62.useCallback)(
     (direction) => {
       const handler = (event) => {
         event.preventDefault();
@@ -29753,7 +29854,7 @@ function TableCellResizer({ editor }) {
     },
     [activeCell, resetState, updateColumnWidth, updateRowHeight, isHeightChanging]
   );
-  const toggleResize = (0, import_react60.useCallback)(
+  const toggleResize = (0, import_react62.useCallback)(
     (direction) => (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -29770,7 +29871,7 @@ function TableCellResizer({ editor }) {
     },
     [activeCell, pointerUpHandler]
   );
-  const getResizers = (0, import_react60.useCallback)(() => {
+  const getResizers = (0, import_react62.useCallback)(() => {
     if (activeCell) {
       const { height, width, top, left } = activeCell.elem.getBoundingClientRect();
       const zoom = (0, import_utils34.calculateZoomLevel)(activeCell.elem);
@@ -29819,8 +29920,8 @@ function TableCellResizer({ editor }) {
     };
   }, [activeCell, draggingDirection, pointerCurrentPos, isHeightChanging]);
   const resizerStyles = getResizers();
-  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { ref: resizerRef, className: "notion-like-editor table-cell-resizer-container", children: activeCell != null && /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)(import_jsx_runtime49.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { ref: resizerRef, className: "notion-like-editor table-cell-resizer-container", children: activeCell != null && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(import_jsx_runtime52.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
       "div",
       {
         className: "TableCellResizer__resizer TableCellResizer__ui",
@@ -29828,7 +29929,7 @@ function TableCellResizer({ editor }) {
         onPointerDown: toggleResize("right")
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
       "div",
       {
         className: "TableCellResizer__resizer TableCellResizer__ui",
@@ -29841,8 +29942,8 @@ function TableCellResizer({ editor }) {
 function TableCellResizerPlugin() {
   const [editor] = (0, import_LexicalComposerContext37.useLexicalComposerContext)();
   const isEditable = (0, import_useLexicalEditable4.useLexicalEditable)();
-  return (0, import_react60.useMemo)(
-    () => isEditable ? (0, import_react_dom8.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime49.jsx)(TableCellResizer, { editor }), document.body) : null,
+  return (0, import_react62.useMemo)(
+    () => isEditable ? (0, import_react_dom9.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime52.jsx)(TableCellResizer, { editor }), document.body) : null,
     [editor, isEditable]
   );
 }
@@ -29853,8 +29954,8 @@ var import_useLexicalEditable5 = require("@lexical/react/useLexicalEditable");
 var import_table8 = require("@lexical/table");
 var import_utils35 = require("@lexical/utils");
 var import_lexical55 = require("lexical");
-var import_react61 = require("react");
-var import_react_dom9 = require("react-dom");
+var import_react63 = require("react");
+var import_react_dom10 = require("react-dom");
 
 // src/utils/getThemeSelector.ts
 function getThemeSelector(getTheme, name) {
@@ -29866,17 +29967,17 @@ function getThemeSelector(getTheme, name) {
 }
 
 // src/plugins/TableHoverActionsPlugin/index.tsx
-var import_jsx_runtime50 = require("react/jsx-runtime");
+var import_jsx_runtime53 = require("react/jsx-runtime");
 var BUTTON_WIDTH_PX = 20;
 function TableHoverActionsContainer({ anchorElem }) {
   const [editor, { getTheme }] = (0, import_LexicalComposerContext38.useLexicalComposerContext)();
   const isEditable = (0, import_useLexicalEditable5.useLexicalEditable)();
-  const [isShownRow, setShownRow] = (0, import_react61.useState)(false);
-  const [isShownColumn, setShownColumn] = (0, import_react61.useState)(false);
-  const [shouldListenMouseMove, setShouldListenMouseMove] = (0, import_react61.useState)(false);
-  const [position, setPosition] = (0, import_react61.useState)({});
-  const tableSetRef = (0, import_react61.useRef)(/* @__PURE__ */ new Set());
-  const tableCellDOMNodeRef = (0, import_react61.useRef)(null);
+  const [isShownRow, setShownRow] = (0, import_react63.useState)(false);
+  const [isShownColumn, setShownColumn] = (0, import_react63.useState)(false);
+  const [shouldListenMouseMove, setShouldListenMouseMove] = (0, import_react63.useState)(false);
+  const [position, setPosition] = (0, import_react63.useState)({});
+  const tableSetRef = (0, import_react63.useRef)(/* @__PURE__ */ new Set());
+  const tableCellDOMNodeRef = (0, import_react63.useRef)(null);
   const debouncedOnMouseMove = useDebounce(
     (event) => {
       const { isOutside, tableDOMNode } = getMouseInfo2(event, getTheme);
@@ -29956,13 +30057,13 @@ function TableHoverActionsContainer({ anchorElem }) {
     50,
     250
   );
-  const tableResizeObserver = (0, import_react61.useMemo)(() => {
+  const tableResizeObserver = (0, import_react63.useMemo)(() => {
     return new ResizeObserver(() => {
       setShownRow(false);
       setShownColumn(false);
     });
   }, []);
-  (0, import_react61.useEffect)(() => {
+  (0, import_react63.useEffect)(() => {
     if (!shouldListenMouseMove) {
       return;
     }
@@ -29974,7 +30075,7 @@ function TableHoverActionsContainer({ anchorElem }) {
       document.removeEventListener("mousemove", debouncedOnMouseMove);
     };
   }, [shouldListenMouseMove, debouncedOnMouseMove]);
-  (0, import_react61.useEffect)(() => {
+  (0, import_react63.useEffect)(() => {
     return (0, import_utils35.mergeRegister)(
       editor.registerMutationListener(
         import_table8.TableNode,
@@ -30032,8 +30133,8 @@ function TableHoverActionsContainer({ anchorElem }) {
   if (!isEditable) {
     return null;
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(import_jsx_runtime50.Fragment, { children: [
-    isShownRow && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime53.jsxs)(import_jsx_runtime53.Fragment, { children: [
+    isShownRow && /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(
       "button",
       {
         type: "button",
@@ -30042,7 +30143,7 @@ function TableHoverActionsContainer({ anchorElem }) {
         onClick: () => insertAction(true)
       }
     ),
-    isShownColumn && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
+    isShownColumn && /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(
       "button",
       {
         type: "button",
@@ -30068,14 +30169,14 @@ function TableHoverActionsPlugin({
   anchorElem = document.body
 }) {
   const isEditable = (0, import_useLexicalEditable5.useLexicalEditable)();
-  return isEditable ? (0, import_react_dom9.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime50.jsx)(TableHoverActionsContainer, { anchorElem }), anchorElem) : null;
+  return isEditable ? (0, import_react_dom10.createPortal)(/* @__PURE__ */ (0, import_jsx_runtime53.jsx)(TableHoverActionsContainer, { anchorElem }), anchorElem) : null;
 }
 
 // src/plugins/TableOfContentsPlugin/index.tsx
 var import_LexicalComposerContext39 = require("@lexical/react/LexicalComposerContext");
 var import_LexicalTableOfContentsPlugin = require("@lexical/react/LexicalTableOfContentsPlugin");
-var import_react62 = require("react");
-var import_jsx_runtime51 = require("react/jsx-runtime");
+var import_react64 = require("react");
+var import_jsx_runtime54 = require("react/jsx-runtime");
 var MARGIN_ABOVE_EDITOR = 624;
 var HEADING_WIDTH = 9;
 function indent(tagName) {
@@ -30098,8 +30199,8 @@ function isHeadingBelowTheTopOfThePage(element) {
   return elementYPosition >= MARGIN_ABOVE_EDITOR + HEADING_WIDTH;
 }
 function TableOfContentsList({ tableOfContents }) {
-  const [selectedKey, setSelectedKey] = (0, import_react62.useState)("");
-  const selectedIndex = (0, import_react62.useRef)(0);
+  const [selectedKey, setSelectedKey] = (0, import_react64.useState)("");
+  const selectedIndex = (0, import_react64.useRef)(0);
   const [editor] = (0, import_LexicalComposerContext39.useLexicalComposerContext)();
   function scrollToNode(key, currIndex) {
     editor.getEditorState().read(() => {
@@ -30111,7 +30212,7 @@ function TableOfContentsList({ tableOfContents }) {
       }
     });
   }
-  (0, import_react62.useEffect)(() => {
+  (0, import_react64.useEffect)(() => {
     function scrollCallback() {
       if (tableOfContents.length !== 0 && selectedIndex.current < tableOfContents.length - 1) {
         let currentHeading = editor.getElementByKey(tableOfContents[selectedIndex.current][0]);
@@ -30153,18 +30254,18 @@ function TableOfContentsList({ tableOfContents }) {
     document.addEventListener("scroll", onScroll);
     return () => document.removeEventListener("scroll", onScroll);
   }, [tableOfContents, editor]);
-  return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "table-of-contents", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("ul", { className: "headings", children: tableOfContents.map(([key, text, tag], index) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime54.jsx)("div", { className: "table-of-contents", children: /* @__PURE__ */ (0, import_jsx_runtime54.jsx)("ul", { className: "headings", children: tableOfContents.map(([key, text, tag], index) => {
     if (index === 0) {
-      return /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "normal-heading-wrapper", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "first-heading", onClick: () => scrollToNode(key, index), role: "button", tabIndex: 0, children: `${text}`.length > 20 ? `${text.substring(0, 20)}...` : text }),
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("br", {})
+      return /* @__PURE__ */ (0, import_jsx_runtime54.jsxs)("div", { className: "normal-heading-wrapper", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime54.jsx)("div", { className: "first-heading", onClick: () => scrollToNode(key, index), role: "button", tabIndex: 0, children: `${text}`.length > 20 ? `${text.substring(0, 20)}...` : text }),
+        /* @__PURE__ */ (0, import_jsx_runtime54.jsx)("br", {})
       ] }, key);
     } else {
-      return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime54.jsx)(
         "div",
         {
           className: `normal-heading-wrapper ${selectedKey === key ? "selected-heading-wrapper" : ""}`,
-          children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { onClick: () => scrollToNode(key, index), role: "button", className: indent(tag), tabIndex: 0, children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+          children: /* @__PURE__ */ (0, import_jsx_runtime54.jsx)("div", { onClick: () => scrollToNode(key, index), role: "button", className: indent(tag), tabIndex: 0, children: /* @__PURE__ */ (0, import_jsx_runtime54.jsx)(
             "li",
             {
               className: `normal-heading ${selectedKey === key ? "selected-heading" : ""}
@@ -30179,8 +30280,8 @@ function TableOfContentsList({ tableOfContents }) {
   }) }) });
 }
 function TableOfContentsPlugin() {
-  return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(import_LexicalTableOfContentsPlugin.TableOfContentsPlugin, { children: (tableOfContents) => {
-    return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(TableOfContentsList, { tableOfContents });
+  return /* @__PURE__ */ (0, import_jsx_runtime54.jsx)(import_LexicalTableOfContentsPlugin.TableOfContentsPlugin, { children: (tableOfContents) => {
+    return /* @__PURE__ */ (0, import_jsx_runtime54.jsx)(TableOfContentsList, { tableOfContents });
   } });
 }
 
@@ -30196,58 +30297,13 @@ var import_selection7 = require("@lexical/selection");
 var import_table9 = require("@lexical/table");
 var import_utils39 = require("@lexical/utils");
 var import_lexical58 = require("lexical");
-var import_react65 = require("react");
-
-// src/context/FullscreenContext.tsx
-var import_react63 = require("react");
-var import_jsx_runtime52 = require("react/jsx-runtime");
-var FullscreenContext = (0, import_react63.createContext)(void 0);
-function FullscreenProvider({ children }) {
-  const [isFullscreen, setIsFullscreen] = (0, import_react63.useState)(false);
-  const toggleFullscreen = (0, import_react63.useCallback)(() => {
-    setIsFullscreen((prev) => !prev);
-  }, []);
-  const exitFullscreen = (0, import_react63.useCallback)(() => {
-    setIsFullscreen(false);
-  }, []);
-  (0, import_react63.useEffect)(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape" && isFullscreen) {
-        setIsFullscreen(false);
-      }
-    };
-    if (isFullscreen) {
-      document.addEventListener("keydown", handleKeyDown);
-    }
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isFullscreen]);
-  const value = (0, import_react63.useMemo)(
-    () => ({
-      isFullscreen,
-      toggleFullscreen,
-      exitFullscreen
-    }),
-    [isFullscreen, toggleFullscreen, exitFullscreen]
-  );
-  return /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(FullscreenContext.Provider, { value, children });
-}
-function useFullscreen() {
-  const context = (0, import_react63.useContext)(FullscreenContext);
-  if (context === void 0) {
-    throw new Error("useFullscreen must be used within a FullscreenProvider");
-  }
-  return context;
-}
-
-// src/plugins/ToolbarPlugin/index.tsx
+var import_react66 = require("react");
 init_StickyNode2();
 init_url();
 
 // src/plugins/ToolbarPlugin/fontSize.tsx
 var React6 = __toESM(require("react"));
-var import_jsx_runtime55 = require("react/jsx-runtime");
+var import_jsx_runtime57 = require("react/jsx-runtime");
 function parseFontSize(input) {
   const match = input.match(/^(\d+(?:\.\d+)?)(px|pt)$/);
   return match ? [Number(match[1]), match[2]] : null;
@@ -30324,8 +30380,8 @@ function FontSize({
   React6.useEffect(() => {
     setInputValue(selectionFontSize);
   }, [selectionFontSize]);
-  return /* @__PURE__ */ (0, import_jsx_runtime55.jsxs)(import_jsx_runtime55.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime57.jsxs)(import_jsx_runtime57.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(
       "button",
       {
         type: "button",
@@ -30336,10 +30392,10 @@ function FontSize({
         className: "toolbar-item font-decrement",
         "aria-label": "Decrease font size",
         title: `Decrease font size (${SHORTCUTS.DECREASE_FONT_SIZE})`,
-        children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)("i", { className: "format minus-icon" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime57.jsx)("i", { className: "format minus-icon" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(
       "input",
       {
         type: "number",
@@ -30355,7 +30411,7 @@ function FontSize({
         onBlur: handleInputBlur
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime55.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(
       "button",
       {
         type: "button",
@@ -30366,14 +30422,14 @@ function FontSize({
         className: "toolbar-item font-increment",
         "aria-label": "Increase font size",
         title: `Increase font size (${SHORTCUTS.INCREASE_FONT_SIZE})`,
-        children: /* @__PURE__ */ (0, import_jsx_runtime55.jsx)("i", { className: "format add-icon" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime57.jsx)("i", { className: "format add-icon" })
       }
     )
   ] });
 }
 
 // src/plugins/ToolbarPlugin/index.tsx
-var import_jsx_runtime56 = require("react/jsx-runtime");
+var import_jsx_runtime58 = require("react/jsx-runtime");
 var CODE_LANGUAGE_OPTIONS_PRISM = (0, import_code8.getCodeLanguageOptions)().filter(
   (option) => [
     "c",
@@ -30505,7 +30561,7 @@ function BlockFormatDropDown({
   blockType,
   disabled = false
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
     DropDown,
     {
       disabled,
@@ -30514,129 +30570,129 @@ function BlockFormatDropDown({
       buttonLabel: blockTypeToBlockName[blockType],
       buttonAriaLabel: "Formatting options for text style",
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "paragraph")}`,
             onClick: () => formatParagraph(editor),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon paragraph" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Normal" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon paragraph" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Normal" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.NORMAL })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.NORMAL })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "h1")}`,
             onClick: () => formatHeading(editor, blockType, "h1"),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon h1" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Heading 1" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon h1" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Heading 1" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.HEADING1 })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.HEADING1 })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "h2")}`,
             onClick: () => formatHeading(editor, blockType, "h2"),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon h2" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Heading 2" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon h2" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Heading 2" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.HEADING2 })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.HEADING2 })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "h3")}`,
             onClick: () => formatHeading(editor, blockType, "h3"),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon h3" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Heading 3" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon h3" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Heading 3" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.HEADING3 })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.HEADING3 })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "number")}`,
             onClick: () => formatNumberedList(editor, blockType),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon numbered-list" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Numbered List" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon numbered-list" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Numbered List" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.NUMBERED_LIST })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.NUMBERED_LIST })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "bullet")}`,
             onClick: () => formatBulletList(editor, blockType),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon bullet-list" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Bullet List" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon bullet-list" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Bullet List" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.BULLET_LIST })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.BULLET_LIST })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "check")}`,
             onClick: () => formatCheckList(editor, blockType),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon check-list" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Check List" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon check-list" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Check List" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.CHECK_LIST })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.CHECK_LIST })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "quote")}`,
             onClick: () => formatQuote(editor, blockType),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon quote" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Quote" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon quote" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Quote" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.QUOTE })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.QUOTE })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             className: `item wide ${dropDownActiveClass(blockType === "code")}`,
             onClick: () => formatCode(editor, blockType),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon code" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Code Block" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon code" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Code Block" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.CODE_BLOCK })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.CODE_BLOCK })
             ]
           }
         )
@@ -30645,7 +30701,7 @@ function BlockFormatDropDown({
   );
 }
 function Divider() {
-  return /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("div", { className: "divider" });
+  return /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("div", { className: "divider" });
 }
 function FontDropDown({
   editor,
@@ -30653,7 +30709,7 @@ function FontDropDown({
   style,
   disabled = false
 }) {
-  const handleClick = (0, import_react65.useCallback)(
+  const handleClick = (0, import_react66.useCallback)(
     (option) => {
       editor.update(() => {
         (0, import_lexical58.$addUpdateTag)(import_lexical58.SKIP_SELECTION_FOCUS_TAG);
@@ -30668,7 +30724,7 @@ function FontDropDown({
     [editor, style]
   );
   const buttonAriaLabel = style === "font-family" ? "Formatting options for font family" : "Formatting options for font size";
-  return /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
     DropDown,
     {
       disabled,
@@ -30676,12 +30732,12 @@ function FontDropDown({
       buttonLabel: value,
       buttonIconClassName: style === "font-family" ? "icon block-type font-family" : "",
       buttonAriaLabel,
-      children: (style === "font-family" ? FONT_FAMILY_OPTIONS : FONT_SIZE_OPTIONS).map(([option, text]) => /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      children: (style === "font-family" ? FONT_FAMILY_OPTIONS : FONT_SIZE_OPTIONS).map(([option, text]) => /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         DropDownItem,
         {
           className: `item ${dropDownActiveClass(value === option)} ${style === "font-size" ? "fontsize-item" : ""}`,
           onClick: () => handleClick(option),
-          children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: text })
+          children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: text })
         },
         option
       ))
@@ -30695,7 +30751,7 @@ function ElementFormatDropdown({
   disabled = false
 }) {
   const formatOption = ELEMENT_FORMAT_OPTIONS[value || "left"];
-  return /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
     DropDown,
     {
       disabled,
@@ -30704,7 +30760,7 @@ function ElementFormatDropdown({
       buttonClassName: "toolbar-item spaced alignment",
       buttonAriaLabel: "Formatting options for text alignment",
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             onClick: () => {
@@ -30712,15 +30768,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon left-align" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Left Align" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon left-align" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Left Align" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.LEFT_ALIGN })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.LEFT_ALIGN })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             onClick: () => {
@@ -30728,15 +30784,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon center-align" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Center Align" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon center-align" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Center Align" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.CENTER_ALIGN })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.CENTER_ALIGN })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             onClick: () => {
@@ -30744,15 +30800,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon right-align" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Right Align" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon right-align" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Right Align" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.RIGHT_ALIGN })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.RIGHT_ALIGN })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             onClick: () => {
@@ -30760,15 +30816,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon justify-align" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Justify Align" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon justify-align" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Justify Align" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.JUSTIFY_ALIGN })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.JUSTIFY_ALIGN })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             onClick: () => {
@@ -30776,12 +30832,12 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: `icon ${isRTL ? ELEMENT_FORMAT_OPTIONS.start.iconRTL : ELEMENT_FORMAT_OPTIONS.start.icon}` }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Start Align" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: `icon ${isRTL ? ELEMENT_FORMAT_OPTIONS.start.iconRTL : ELEMENT_FORMAT_OPTIONS.start.icon}` }),
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Start Align" })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             onClick: () => {
@@ -30789,13 +30845,13 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: `icon ${isRTL ? ELEMENT_FORMAT_OPTIONS.end.iconRTL : ELEMENT_FORMAT_OPTIONS.end.icon}` }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "End Align" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: `icon ${isRTL ? ELEMENT_FORMAT_OPTIONS.end.iconRTL : ELEMENT_FORMAT_OPTIONS.end.icon}` }),
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "End Align" })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(Divider, {}),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(Divider, {}),
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             onClick: () => {
@@ -30803,15 +30859,15 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: `icon ${isRTL ? "indent" : "outdent"}` }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Outdent" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: `icon ${isRTL ? "indent" : "outdent"}` }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Outdent" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.OUTDENT })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.OUTDENT })
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDownItem,
           {
             onClick: () => {
@@ -30819,11 +30875,11 @@ function ElementFormatDropdown({
             },
             className: "item wide",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: `icon ${isRTL ? "outdent" : "indent"}` }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Indent" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: `icon ${isRTL ? "outdent" : "indent"}` }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Indent" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.INDENT })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.INDENT })
             ]
           }
         )
@@ -30861,9 +30917,9 @@ function ToolbarPlugin({
   setActiveEditor,
   setIsLinkEditMode
 }) {
-  const [selectedElementKey, setSelectedElementKey] = (0, import_react65.useState)(null);
+  const [selectedElementKey, setSelectedElementKey] = (0, import_react66.useState)(null);
   const [modal, showModal] = useModal();
-  const [isEditable, setIsEditable] = (0, import_react65.useState)(() => editor.isEditable());
+  const [isEditable, setIsEditable] = (0, import_react66.useState)(() => editor.isEditable());
   const { toolbarState, updateToolbarState } = useToolbarState();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const dispatchToolbarCommand = (command, payload = void 0, skipRefocus = false) => {
@@ -30875,7 +30931,7 @@ function ToolbarPlugin({
     });
   };
   const dispatchFormatTextCommand = (payload, skipRefocus = false) => dispatchToolbarCommand(import_lexical58.FORMAT_TEXT_COMMAND, payload, skipRefocus);
-  const $handleHeadingNode = (0, import_react65.useCallback)(
+  const $handleHeadingNode = (0, import_react66.useCallback)(
     (selectedElement) => {
       const type = (0, import_rich_text6.$isHeadingNode)(selectedElement) ? selectedElement.getTag() : selectedElement.getType();
       if (type in blockTypeToBlockName) {
@@ -30887,7 +30943,7 @@ function ToolbarPlugin({
   const {
     settings: { isCodeHighlighted, isCodeShiki }
   } = useSettings();
-  const $handleCodeNode = (0, import_react65.useCallback)(
+  const $handleCodeNode = (0, import_react66.useCallback)(
     (element) => {
       if ((0, import_code8.$isCodeNode)(element)) {
         const language = element.getLanguage();
@@ -30902,7 +30958,7 @@ function ToolbarPlugin({
     },
     [updateToolbarState, isCodeHighlighted, isCodeShiki]
   );
-  const $updateToolbar = (0, import_react65.useCallback)(() => {
+  const $updateToolbar = (0, import_react66.useCallback)(() => {
     const selection = (0, import_lexical58.$getSelection)();
     if ((0, import_lexical58.$isRangeSelection)(selection)) {
       if (activeEditor !== editor && (0, import_utils39.$isEditorIsNestedEditor)(activeEditor)) {
@@ -30987,7 +31043,7 @@ function ToolbarPlugin({
       }
     }
   }, [activeEditor, editor, updateToolbarState, $handleHeadingNode, $handleCodeNode]);
-  (0, import_react65.useEffect)(() => {
+  (0, import_react66.useEffect)(() => {
     return editor.registerCommand(
       import_lexical58.SELECTION_CHANGE_COMMAND,
       (_payload, newEditor) => {
@@ -30998,7 +31054,7 @@ function ToolbarPlugin({
       import_lexical58.COMMAND_PRIORITY_CRITICAL
     );
   }, [editor, $updateToolbar, setActiveEditor]);
-  (0, import_react65.useEffect)(() => {
+  (0, import_react66.useEffect)(() => {
     activeEditor.getEditorState().read(
       () => {
         $updateToolbar();
@@ -31006,7 +31062,7 @@ function ToolbarPlugin({
       { editor: activeEditor }
     );
   }, [activeEditor, $updateToolbar]);
-  (0, import_react65.useEffect)(() => {
+  (0, import_react66.useEffect)(() => {
     return (0, import_utils39.mergeRegister)(
       editor.registerEditableListener((editable) => {
         setIsEditable(editable);
@@ -31037,7 +31093,7 @@ function ToolbarPlugin({
       )
     );
   }, [$updateToolbar, activeEditor, editor, updateToolbarState]);
-  const applyStyleText = (0, import_react65.useCallback)(
+  const applyStyleText = (0, import_react66.useCallback)(
     (styles, skipHistoryStack, skipRefocus = false) => {
       activeEditor.update(
         () => {
@@ -31054,19 +31110,19 @@ function ToolbarPlugin({
     },
     [activeEditor]
   );
-  const onFontColorSelect = (0, import_react65.useCallback)(
+  const onFontColorSelect = (0, import_react66.useCallback)(
     (value, skipHistoryStack, skipRefocus) => {
       applyStyleText({ color: value }, skipHistoryStack, skipRefocus);
     },
     [applyStyleText]
   );
-  const onBgColorSelect = (0, import_react65.useCallback)(
+  const onBgColorSelect = (0, import_react66.useCallback)(
     (value, skipHistoryStack, skipRefocus) => {
       applyStyleText({ "background-color": value }, skipHistoryStack, skipRefocus);
     },
     [applyStyleText]
   );
-  const insertLink = (0, import_react65.useCallback)(() => {
+  const insertLink = (0, import_react66.useCallback)(() => {
     if (!toolbarState.isLink) {
       setIsLinkEditMode(true);
       activeEditor.dispatchCommand(import_link7.TOGGLE_LINK_COMMAND, sanitizeUrl("https://"));
@@ -31075,7 +31131,7 @@ function ToolbarPlugin({
       activeEditor.dispatchCommand(import_link7.TOGGLE_LINK_COMMAND, null);
     }
   }, [activeEditor, setIsLinkEditMode, toolbarState.isLink]);
-  const onCodeLanguageSelect = (0, import_react65.useCallback)(
+  const onCodeLanguageSelect = (0, import_react66.useCallback)(
     (value) => {
       activeEditor.update(() => {
         (0, import_lexical58.$addUpdateTag)(import_lexical58.SKIP_SELECTION_FOCUS_TAG);
@@ -31089,7 +31145,7 @@ function ToolbarPlugin({
     },
     [activeEditor, selectedElementKey]
   );
-  const onCodeThemeSelect = (0, import_react65.useCallback)(
+  const onCodeThemeSelect = (0, import_react66.useCallback)(
     (value) => {
       activeEditor.update(() => {
         if (selectedElementKey !== null) {
@@ -31104,8 +31160,8 @@ function ToolbarPlugin({
   );
   const canViewerSeeInsertDropdown = !toolbarState.isImageCaption;
   const canViewerSeeInsertCodeButton = !toolbarState.isImageCaption;
-  return /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "toolbar", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "toolbar", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
       "button",
       {
         disabled: !toolbarState.canUndo || !isEditable,
@@ -31114,10 +31170,10 @@ function ToolbarPlugin({
         type: "button",
         className: "toolbar-item spaced",
         "aria-label": "Undo",
-        children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "format undo" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "format undo" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
       "button",
       {
         disabled: !toolbarState.canRedo || !isEditable,
@@ -31126,16 +31182,16 @@ function ToolbarPlugin({
         type: "button",
         className: "toolbar-item",
         "aria-label": "Redo",
-        children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "format redo" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "format redo" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(Divider, {}),
-    toolbarState.blockType in blockTypeToBlockName && activeEditor === editor && /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(import_jsx_runtime56.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(BlockFormatDropDown, { disabled: !isEditable, blockType: toolbarState.blockType, editor: activeEditor }),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(Divider, {})
+    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(Divider, {}),
+    toolbarState.blockType in blockTypeToBlockName && activeEditor === editor && /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(import_jsx_runtime58.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(BlockFormatDropDown, { disabled: !isEditable, blockType: toolbarState.blockType, editor: activeEditor }),
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(Divider, {})
     ] }),
-    toolbarState.blockType === "code" && isCodeHighlighted ? /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(import_jsx_runtime56.Fragment, { children: [
-      !isCodeShiki && /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+    toolbarState.blockType === "code" && isCodeHighlighted ? /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(import_jsx_runtime58.Fragment, { children: [
+      !isCodeShiki && /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         DropDown,
         {
           disabled: !isEditable,
@@ -31145,20 +31201,20 @@ function ToolbarPlugin({
           ) || ["", ""])[1],
           buttonAriaLabel: "Select language",
           children: CODE_LANGUAGE_OPTIONS_PRISM.map(([value, name]) => {
-            return /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+            return /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
               DropDownItem,
               {
                 className: `item ${dropDownActiveClass(value === toolbarState.codeLanguage)}`,
                 onClick: () => onCodeLanguageSelect(value),
-                children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: name })
+                children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: name })
               },
               value
             );
           })
         }
       ),
-      isCodeShiki && /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(import_jsx_runtime56.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      isCodeShiki && /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(import_jsx_runtime58.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
           DropDown,
           {
             disabled: !isEditable,
@@ -31168,19 +31224,19 @@ function ToolbarPlugin({
             ) || ["", ""])[1],
             buttonAriaLabel: "Select language",
             children: CODE_LANGUAGE_OPTIONS_SHIKI.map(([value, name]) => {
-              return /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+              return /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
                 DropDownItem,
                 {
                   className: `item ${dropDownActiveClass(value === toolbarState.codeLanguage)}`,
                   onClick: () => onCodeLanguageSelect(value),
-                  children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: name })
+                  children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: name })
                 },
                 value
               );
             })
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
           DropDown,
           {
             disabled: !isEditable,
@@ -31188,12 +31244,12 @@ function ToolbarPlugin({
             buttonLabel: (CODE_THEME_OPTIONS_SHIKI.find((opt) => opt[0] === toolbarState.codeTheme) || ["", ""])[1],
             buttonAriaLabel: "Select theme",
             children: CODE_THEME_OPTIONS_SHIKI.map(([value, name]) => {
-              return /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+              return /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
                 DropDownItem,
                 {
                   className: `item ${dropDownActiveClass(value === toolbarState.codeTheme)}`,
                   onClick: () => onCodeThemeSelect(value),
-                  children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: name })
+                  children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: name })
                 },
                 value
               );
@@ -31201,8 +31257,8 @@ function ToolbarPlugin({
           }
         )
       ] })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(import_jsx_runtime56.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(import_jsx_runtime58.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         FontDropDown,
         {
           disabled: !isEditable,
@@ -31211,8 +31267,8 @@ function ToolbarPlugin({
           editor: activeEditor
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         FontSize,
         {
           selectionFontSize: parseFontSizeForToolbar(toolbarState.fontSize).slice(0, -2),
@@ -31220,8 +31276,8 @@ function ToolbarPlugin({
           disabled: !isEditable
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         "button",
         {
           disabled: !isEditable,
@@ -31230,10 +31286,10 @@ function ToolbarPlugin({
           title: `Bold (${SHORTCUTS.BOLD})`,
           type: "button",
           "aria-label": `Format text as bold. Shortcut: ${SHORTCUTS.BOLD}`,
-          children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "format bold" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "format bold" })
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         "button",
         {
           disabled: !isEditable,
@@ -31242,10 +31298,10 @@ function ToolbarPlugin({
           title: `Italic (${SHORTCUTS.ITALIC})`,
           type: "button",
           "aria-label": `Format text as italics. Shortcut: ${SHORTCUTS.ITALIC}`,
-          children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "format italic" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "format italic" })
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         "button",
         {
           disabled: !isEditable,
@@ -31254,10 +31310,10 @@ function ToolbarPlugin({
           title: `Underline (${SHORTCUTS.UNDERLINE})`,
           type: "button",
           "aria-label": `Format text to underlined. Shortcut: ${SHORTCUTS.UNDERLINE}`,
-          children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "format underline" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "format underline" })
         }
       ),
-      canViewerSeeInsertCodeButton && /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      canViewerSeeInsertCodeButton && /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         "button",
         {
           disabled: !isEditable,
@@ -31266,10 +31322,10 @@ function ToolbarPlugin({
           title: `Insert code block (${SHORTCUTS.INSERT_CODE_BLOCK})`,
           type: "button",
           "aria-label": "Insert code block",
-          children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "format code" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "format code" })
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         "button",
         {
           disabled: !isEditable,
@@ -31278,10 +31334,10 @@ function ToolbarPlugin({
           "aria-label": "Insert link",
           title: `Insert link (${SHORTCUTS.INSERT_LINK})`,
           type: "button",
-          children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "format link" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "format link" })
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         DropdownColorPicker,
         {
           disabled: !isEditable,
@@ -31293,7 +31349,7 @@ function ToolbarPlugin({
           title: "text color"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
         DropdownColorPicker,
         {
           disabled: !isEditable,
@@ -31305,7 +31361,7 @@ function ToolbarPlugin({
           title: "bg color"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
         DropDown,
         {
           disabled: !isEditable,
@@ -31314,7 +31370,7 @@ function ToolbarPlugin({
           buttonAriaLabel: "Formatting options for additional text styles",
           buttonIconClassName: "icon dropdown-more",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("lowercase", isKeyboardInput(e)),
@@ -31322,15 +31378,15 @@ function ToolbarPlugin({
                 title: "Lowercase",
                 "aria-label": "Format text to lowercase",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon lowercase" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Lowercase" })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon lowercase" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Lowercase" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.LOWERCASE })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.LOWERCASE })
                 ]
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("uppercase", isKeyboardInput(e)),
@@ -31338,15 +31394,15 @@ function ToolbarPlugin({
                 title: "Uppercase",
                 "aria-label": "Format text to uppercase",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon uppercase" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Uppercase" })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon uppercase" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Uppercase" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.UPPERCASE })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.UPPERCASE })
                 ]
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("capitalize", isKeyboardInput(e)),
@@ -31354,15 +31410,15 @@ function ToolbarPlugin({
                 title: "Capitalize",
                 "aria-label": "Format text to capitalize",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon capitalize" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Capitalize" })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon capitalize" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Capitalize" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.CAPITALIZE })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.CAPITALIZE })
                 ]
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("strikethrough", isKeyboardInput(e)),
@@ -31370,15 +31426,15 @@ function ToolbarPlugin({
                 title: "Strikethrough",
                 "aria-label": "Format text with a strikethrough",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon strikethrough" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Strikethrough" })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon strikethrough" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Strikethrough" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.STRIKETHROUGH })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.STRIKETHROUGH })
                 ]
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("subscript", isKeyboardInput(e)),
@@ -31386,15 +31442,15 @@ function ToolbarPlugin({
                 title: "Subscript",
                 "aria-label": "Format text with a subscript",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon subscript" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Subscript" })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon subscript" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Subscript" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.SUBSCRIPT })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.SUBSCRIPT })
                 ]
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("superscript", isKeyboardInput(e)),
@@ -31402,28 +31458,28 @@ function ToolbarPlugin({
                 title: "Superscript",
                 "aria-label": "Format text with a superscript",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon superscript" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Superscript" })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon superscript" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Superscript" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.SUPERSCRIPT })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.SUPERSCRIPT })
                 ]
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
               DropDownItem,
               {
                 onClick: (e) => dispatchFormatTextCommand("highlight", isKeyboardInput(e)),
                 className: `item wide ${dropDownActiveClass(toolbarState.isHighlight)}`,
                 title: "Highlight",
                 "aria-label": "Format text with a highlight",
-                children: /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon highlight" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Highlight" })
+                children: /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon highlight" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Highlight" })
                 ] })
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
               DropDownItem,
               {
                 onClick: (e) => clearFormatting(activeEditor, isKeyboardInput(e)),
@@ -31431,20 +31487,20 @@ function ToolbarPlugin({
                 title: "Clear text formatting",
                 "aria-label": "Clear all text formatting",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)("div", { className: "icon-text-container", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon clear" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Clear Formatting" })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)("div", { className: "icon-text-container", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon clear" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Clear Formatting" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "shortcut", children: SHORTCUTS.CLEAR_FORMATTING })
+                  /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "shortcut", children: SHORTCUTS.CLEAR_FORMATTING })
                 ]
               }
             )
           ]
         }
       ),
-      canViewerSeeInsertDropdown && /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(import_jsx_runtime56.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(Divider, {}),
-        /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+      canViewerSeeInsertDropdown && /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(import_jsx_runtime58.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(Divider, {}),
+        /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
           DropDown,
           {
             disabled: !isEditable,
@@ -31453,67 +31509,67 @@ function ToolbarPlugin({
             buttonAriaLabel: "Insert specialized editor node",
             buttonIconClassName: "icon plus",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(DropDownItem, { onClick: () => dispatchToolbarCommand(import_LexicalHorizontalRuleNode2.INSERT_HORIZONTAL_RULE_COMMAND), className: "item", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon horizontal-rule" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Horizontal Rule" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(DropDownItem, { onClick: () => dispatchToolbarCommand(import_LexicalHorizontalRuleNode2.INSERT_HORIZONTAL_RULE_COMMAND), className: "item", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon horizontal-rule" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Horizontal Rule" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_PAGE_BREAK), className: "item", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon page-break" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Page Break" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_PAGE_BREAK), className: "item", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon page-break" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Page Break" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
                 DropDownItem,
                 {
                   onClick: () => {
-                    showModal("Insert Image", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(InsertImageDialog, { activeEditor, onClose }));
+                    showModal("Insert Image", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(InsertImageDialog, { activeEditor, onClose }));
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon image" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Image" })
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon image" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Image" })
                   ]
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
                 DropDownItem,
                 {
                   onClick: () => {
-                    showModal("Insert Table", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(InsertTableDialog, { activeEditor, onClose }));
+                    showModal("Insert Table", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(InsertTableDialog, { activeEditor, onClose }));
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon table" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Table" })
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon table" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Table" })
                   ]
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
                 DropDownItem,
                 {
                   onClick: () => {
-                    showModal("Insert Columns Layout", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(InsertLayoutDialog, { activeEditor, onClose }));
+                    showModal("Insert Columns Layout", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(InsertLayoutDialog, { activeEditor, onClose }));
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon columns" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Columns Layout" })
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon columns" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Columns Layout" })
                   ]
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
                 DropDownItem,
                 {
                   onClick: () => {
-                    showModal("Insert Equation", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(InsertEquationDialog, { activeEditor, onClose }));
+                    showModal("Insert Equation", (onClose) => /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(InsertEquationDialog, { activeEditor, onClose }));
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon equation" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Equation" })
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon equation" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Equation" })
                   ]
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
                 DropDownItem,
                 {
                   onClick: () => {
@@ -31540,16 +31596,16 @@ function ToolbarPlugin({
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon sticky" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Sticky Note" })
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon sticky" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Sticky Note" })
                   ]
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_COLLAPSIBLE_COMMAND), className: "item", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon caret-right" }),
-                /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Collapsible container" })
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(DropDownItem, { onClick: () => dispatchToolbarCommand(INSERT_COLLAPSIBLE_COMMAND), className: "item", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon caret-right" }),
+                /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Collapsible container" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+              /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
                 DropDownItem,
                 {
                   onClick: () => {
@@ -31561,19 +31617,19 @@ function ToolbarPlugin({
                   },
                   className: "item",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: "icon calendar" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: "Date" })
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: "icon calendar" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: "Date" })
                   ]
                 }
               ),
-              EmbedConfigs.map((embedConfig) => /* @__PURE__ */ (0, import_jsx_runtime56.jsxs)(
+              EmbedConfigs.map((embedConfig) => /* @__PURE__ */ (0, import_jsx_runtime58.jsxs)(
                 DropDownItem,
                 {
                   onClick: () => dispatchToolbarCommand(import_LexicalAutoEmbedPlugin3.INSERT_EMBED_COMMAND, embedConfig.type),
                   className: "item",
                   children: [
                     embedConfig.icon,
-                    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("span", { className: "text", children: embedConfig.contentName })
+                    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("span", { className: "text", children: embedConfig.contentName })
                   ]
                 },
                 embedConfig.type
@@ -31583,8 +31639,8 @@ function ToolbarPlugin({
         )
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
       ElementFormatDropdown,
       {
         disabled: !isEditable,
@@ -31593,8 +31649,8 @@ function ToolbarPlugin({
         isRTL: toolbarState.isRTL
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime56.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)(
       "button",
       {
         type: "button",
@@ -31602,7 +31658,7 @@ function ToolbarPlugin({
         className: "toolbar-item spaced",
         "aria-label": isFullscreen ? "\u5168\u753B\u9762\u30E2\u30FC\u30C9\u3092\u7D42\u4E86" : "\u5168\u753B\u9762\u30E2\u30FC\u30C9",
         title: isFullscreen ? "\u5168\u753B\u9762\u30E2\u30FC\u30C9\u3092\u7D42\u4E86 (Esc)" : "\u5168\u753B\u9762\u30E2\u30FC\u30C9",
-        children: /* @__PURE__ */ (0, import_jsx_runtime56.jsx)("i", { className: `format ${isFullscreen ? "fullscreen-exit" : "fullscreen"}` })
+        children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("i", { className: `format ${isFullscreen ? "fullscreen-exit" : "fullscreen"}` })
       }
     ),
     modal
@@ -31611,7 +31667,7 @@ function ToolbarPlugin({
 
 // src/core/Editor.tsx
 init_ContentEditable2();
-var import_jsx_runtime57 = require("react/jsx-runtime");
+var import_jsx_runtime59 = require("react/jsx-runtime");
 function Editor({ isFullscreen = false }) {
   const { historyState } = useSharedHistoryContext();
   const {
@@ -31638,17 +31694,17 @@ function Editor({ isFullscreen = false }) {
   } = useSettings();
   const isEditable = (0, import_useLexicalEditable6.useLexicalEditable)();
   const placeholder = "\u6587\u7AE0\u3092\u5165\u529B\u3059\u308B\u524D\u306B\u662F\u975E\u300C/\u300D\u3092\u5165\u529B\u3057\u3066\u307F\u3066\u304F\u3060\u3055\u3044\u3002";
-  const [floatingAnchorElem, setFloatingAnchorElem] = (0, import_react66.useState)(null);
-  const [isSmallWidthViewport, setIsSmallWidthViewport] = (0, import_react66.useState)(false);
+  const [floatingAnchorElem, setFloatingAnchorElem] = (0, import_react67.useState)(null);
+  const [isSmallWidthViewport, setIsSmallWidthViewport] = (0, import_react67.useState)(false);
   const [editor] = (0, import_LexicalComposerContext41.useLexicalComposerContext)();
-  const [activeEditor, setActiveEditor] = (0, import_react66.useState)(editor);
-  const [isLinkEditMode, setIsLinkEditMode] = (0, import_react66.useState)(false);
+  const [activeEditor, setActiveEditor] = (0, import_react67.useState)(editor);
+  const [isLinkEditMode, setIsLinkEditMode] = (0, import_react67.useState)(false);
   const onRef = (_floatingAnchorElem) => {
     if (_floatingAnchorElem !== null) {
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
-  (0, import_react66.useEffect)(() => {
+  (0, import_react67.useEffect)(() => {
     const updateViewPortWidth = () => {
       const isNextSmallWidthViewport = import_utils41.CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
@@ -31661,8 +31717,8 @@ function Editor({ isFullscreen = false }) {
       window.removeEventListener("resize", updateViewPortWidth);
     };
   }, [isSmallWidthViewport]);
-  return /* @__PURE__ */ (0, import_jsx_runtime57.jsxs)(import_jsx_runtime57.Fragment, { children: [
-    showToolbar && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime59.jsxs)(import_jsx_runtime59.Fragment, { children: [
+    showToolbar && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(
       ToolbarPlugin,
       {
         editor,
@@ -31671,35 +31727,35 @@ function Editor({ isFullscreen = false }) {
         setIsLinkEditMode
       }
     ),
-    showToolbar && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(ShortcutsPlugin, { editor: activeEditor, setIsLinkEditMode }),
-    /* @__PURE__ */ (0, import_jsx_runtime57.jsxs)("div", { className: `editor-container ${isFullscreen ? "flex-1 overflow-auto" : ""}`, children: [
-      isMaxLength && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(MaxLengthPlugin, { maxLength: 30 }),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(DragDropPaste, {}),
-      autoFocus && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalAutoFocusPlugin.AutoFocusPlugin, {}),
-      selectionAlwaysOnDisplay && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalSelectionAlwaysOnDisplay.SelectionAlwaysOnDisplay, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalClearEditorPlugin.ClearEditorPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(ComponentPickerMenuPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(EmojisPlugin2, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(AutoEmbedPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(NewMentionsPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(EmojisPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalHashtagPlugin2.HashtagPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(LexicalAutoLinkPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(DateTimePlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalHistoryPlugin2.HistoryPlugin, { externalHistoryState: historyState }),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(
+    showToolbar && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(ShortcutsPlugin, { editor: activeEditor, setIsLinkEditMode }),
+    /* @__PURE__ */ (0, import_jsx_runtime59.jsxs)("div", { className: `editor-container ${isFullscreen ? "flex-1 overflow-auto" : ""}`, children: [
+      isMaxLength && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(MaxLengthPlugin, { maxLength: 30 }),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(DragDropPaste, {}),
+      autoFocus && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalAutoFocusPlugin.AutoFocusPlugin, {}),
+      selectionAlwaysOnDisplay && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalSelectionAlwaysOnDisplay.SelectionAlwaysOnDisplay, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalClearEditorPlugin.ClearEditorPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(ComponentPickerMenuPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(EmojisPlugin2, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(AutoEmbedPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(NewMentionsPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(EmojisPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalHashtagPlugin2.HashtagPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(LexicalAutoLinkPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(DateTimePlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalHistoryPlugin2.HistoryPlugin, { externalHistoryState: historyState }),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(
         import_LexicalRichTextPlugin2.RichTextPlugin,
         {
-          contentEditable: /* @__PURE__ */ (0, import_jsx_runtime57.jsx)("div", { className: "editor-scroller", children: /* @__PURE__ */ (0, import_jsx_runtime57.jsx)("div", { className: "editor", ref: onRef, children: /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(LexicalContentEditable, { placeholder, placeholderClassName: "editor-placeholder" }) }) }),
+          contentEditable: /* @__PURE__ */ (0, import_jsx_runtime59.jsx)("div", { className: "editor-scroller", children: /* @__PURE__ */ (0, import_jsx_runtime59.jsx)("div", { className: "editor", ref: onRef, children: /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(LexicalContentEditable, { placeholder, placeholderClassName: "editor-placeholder" }) }) }),
           ErrorBoundary: import_LexicalErrorBoundary3.LexicalErrorBoundary
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(MarkdownPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(MarkdownPastePlugin, {}),
-      isCodeHighlighted && (isCodeShiki ? /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(CodeHighlightShikiPlugin, {}) : /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(CodeHighlightPrismPlugin, {})),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalListPlugin.ListPlugin, { hasStrictIndent: listStrictIndent }),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalCheckListPlugin.CheckListPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(MarkdownPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(MarkdownPastePlugin, {}),
+      isCodeHighlighted && (isCodeShiki ? /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(CodeHighlightShikiPlugin, {}) : /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(CodeHighlightPrismPlugin, {})),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalListPlugin.ListPlugin, { hasStrictIndent: listStrictIndent }),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalCheckListPlugin.CheckListPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(
         import_LexicalTablePlugin.TablePlugin,
         {
           hasCellMerge: tableCellMerge,
@@ -31708,23 +31764,23 @@ function Editor({ isFullscreen = false }) {
           hasTabHandler
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(TableCellResizerPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(ImagesPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(LinkPlugin, { hasLinkAttributes }),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(TwitterPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(YouTubePlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(FigmaPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalClickableLinkPlugin.ClickableLinkPlugin, { disabled: isEditable }),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(FragmentLinkPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(HorizontalRulePlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(EquationsPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(TabFocusPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalTabIndentationPlugin.TabIndentationPlugin, { maxIndent: 7 }),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(CollapsiblePlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(PageBreakPlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(LayoutPlugin, {}),
-      floatingAnchorElem && /* @__PURE__ */ (0, import_jsx_runtime57.jsxs)(import_jsx_runtime57.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(TableCellResizerPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(ImagesPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(LinkPlugin, { hasLinkAttributes }),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(TwitterPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(YouTubePlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(FigmaPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalClickableLinkPlugin.ClickableLinkPlugin, { disabled: isEditable }),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(FragmentLinkPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(HorizontalRulePlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(EquationsPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(TabFocusPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalTabIndentationPlugin.TabIndentationPlugin, { maxIndent: 7 }),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(CollapsiblePlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(PageBreakPlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(LayoutPlugin, {}),
+      floatingAnchorElem && /* @__PURE__ */ (0, import_jsx_runtime59.jsxs)(import_jsx_runtime59.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(
           FloatingLinkEditorPlugin,
           {
             anchorElem: floatingAnchorElem,
@@ -31732,19 +31788,19 @@ function Editor({ isFullscreen = false }) {
             setIsLinkEditMode
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(TableActionMenuPlugin, { anchorElem: floatingAnchorElem, cellMerge: true })
+        /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(TableActionMenuPlugin, { anchorElem: floatingAnchorElem, cellMerge: true })
       ] }),
-      floatingAnchorElem && !isSmallWidthViewport && /* @__PURE__ */ (0, import_jsx_runtime57.jsxs)(import_jsx_runtime57.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(DraggableBlockPlugin, { anchorElem: floatingAnchorElem }),
-        /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(CodeActionMenuPlugin, { anchorElem: floatingAnchorElem }),
-        /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(TableHoverActionsPlugin, { anchorElem: floatingAnchorElem }),
-        /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(FloatingTextFormatToolbarPlugin, { anchorElem: floatingAnchorElem, setIsLinkEditMode })
+      floatingAnchorElem && !isSmallWidthViewport && /* @__PURE__ */ (0, import_jsx_runtime59.jsxs)(import_jsx_runtime59.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(DraggableBlockPlugin, { anchorElem: floatingAnchorElem }),
+        /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(CodeActionMenuPlugin, { anchorElem: floatingAnchorElem }),
+        /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(TableHoverActionsPlugin, { anchorElem: floatingAnchorElem }),
+        /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(FloatingTextFormatToolbarPlugin, { anchorElem: floatingAnchorElem, setIsLinkEditMode })
       ] }),
-      (isCharLimit || isCharLimitUtf8) && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(import_LexicalCharacterLimitPlugin.CharacterLimitPlugin, { charset: isCharLimit ? "UTF-16" : "UTF-8", maxLength: 5 }),
-      isAutocomplete && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(AutocompletePlugin, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime57.jsx)("div", { children: showTableOfContents && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(TableOfContentsPlugin, {}) }),
-      shouldUseLexicalContextMenu && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(ContextMenuPlugin, {}),
-      shouldAllowHighlightingWithBrackets && /* @__PURE__ */ (0, import_jsx_runtime57.jsx)(SpecialTextPlugin, {})
+      (isCharLimit || isCharLimitUtf8) && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(import_LexicalCharacterLimitPlugin.CharacterLimitPlugin, { charset: isCharLimit ? "UTF-16" : "UTF-8", maxLength: 5 }),
+      isAutocomplete && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(AutocompletePlugin, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime59.jsx)("div", { children: showTableOfContents && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(TableOfContentsPlugin, {}) }),
+      shouldUseLexicalContextMenu && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(ContextMenuPlugin, {}),
+      shouldAllowHighlightingWithBrackets && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(SpecialTextPlugin, {})
     ] })
   ] });
 }
@@ -31757,51 +31813,6 @@ var import_LexicalExtensionComposer = require("@lexical/react/LexicalExtensionCo
 var import_lexical61 = require("lexical");
 var import_react72 = require("react");
 var import_use_debounce2 = require("use-debounce");
-
-// src/context/FlashMessageContext.tsx
-var import_react67 = require("react");
-
-// src/ui/FlashMessage.tsx
-var import_react_dom11 = require("react-dom");
-var import_jsx_runtime58 = require("react/jsx-runtime");
-function FlashMessage({ children }) {
-  return (0, import_react_dom11.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("div", { className: "notion-like-editor FlashMessage__overlay", role: "dialog", children: /* @__PURE__ */ (0, import_jsx_runtime58.jsx)("p", { className: "notion-like-editor FlashMessage__alert", role: "alert", children }) }),
-    document.body
-  );
-}
-
-// src/context/FlashMessageContext.tsx
-var import_jsx_runtime59 = require("react/jsx-runtime");
-var Context4 = (0, import_react67.createContext)(void 0);
-var INITIAL_STATE = {};
-var DEFAULT_DURATION = 1e3;
-var FlashMessageContext = ({ children }) => {
-  const [props, setProps] = (0, import_react67.useState)(INITIAL_STATE);
-  const showFlashMessage = (0, import_react67.useCallback)(
-    (message, duration) => setProps(message ? { duration, message } : INITIAL_STATE),
-    []
-  );
-  (0, import_react67.useEffect)(() => {
-    if (props.message) {
-      const timeoutId = setTimeout(() => setProps(INITIAL_STATE), props.duration ?? DEFAULT_DURATION);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [props]);
-  return /* @__PURE__ */ (0, import_jsx_runtime59.jsxs)(Context4.Provider, { value: showFlashMessage, children: [
-    children,
-    props.message && /* @__PURE__ */ (0, import_jsx_runtime59.jsx)(FlashMessage, { children: props.message })
-  ] });
-};
-var useFlashMessageContext = () => {
-  const ctx = (0, import_react67.useContext)(Context4);
-  if (!ctx) {
-    throw new Error("Missing FlashMessageContext");
-  }
-  return ctx;
-};
-
-// src/core/NotionLikeEditor.tsx
 init_SharedHistoryContext();
 
 // src/nodes/NotionLikeEditorNodes.ts
@@ -32163,7 +32174,7 @@ function NotionLikeEditor({
   onChangeHtml,
   onChangeMarkdown,
   debounceMs = 300,
-  isCodeShiki = false,
+  isCodeShiki = true,
   imageUploadHandler,
   customLinkMatchers,
   onEditorReady,
@@ -32504,7 +32515,7 @@ function Viewer() {
 var import_jsx_runtime62 = require("react/jsx-runtime");
 function NotionLikeViewer({
   initialViewerState,
-  isCodeShiki = false,
+  isCodeShiki = true,
   customLinkMatchers
 }) {
   const settings = (0, import_react74.useMemo)(
@@ -32529,8 +32540,21 @@ function NotionLikeViewer({
   return /* @__PURE__ */ (0, import_jsx_runtime62.jsx)("div", { className: "notion-like-editor", children: /* @__PURE__ */ (0, import_jsx_runtime62.jsx)(SettingsContext, { initialSettings: settings, children: /* @__PURE__ */ (0, import_jsx_runtime62.jsx)(AutoLinkProvider, { customMatchers: customLinkMatchers, children: /* @__PURE__ */ (0, import_jsx_runtime62.jsx)(import_LexicalExtensionComposer2.LexicalExtensionComposer, { extension: app, contentEditable: null, children: /* @__PURE__ */ (0, import_jsx_runtime62.jsx)(TableContext, { children: /* @__PURE__ */ (0, import_jsx_runtime62.jsx)("div", { className: "viewer-shell", children: /* @__PURE__ */ (0, import_jsx_runtime62.jsx)(Viewer, {}) }) }) }) }) }) });
 }
 
+// src/nodes/index.ts
+init_DateTimeNode2();
+init_EmojiNode();
+init_EquationNode();
+init_EquationComponent();
+init_ImageNode2();
+init_ImageComponent();
+init_KeywordNode();
+init_MentionNode();
+init_StickyNode2();
+init_StickyComponent();
+
 // src/index.ts
-init_SharedHistoryContext();
+init_NotionLikeEditorTheme2();
+init_StickyEditorTheme2();
 init_ContentEditable2();
 init_EquationEditor2();
 init_ImageResizer();
@@ -32568,22 +32592,6 @@ function Switch({
 
 // src/index.ts
 init_url();
-init_NotionLikeEditorTheme2();
-init_StickyEditorTheme2();
-
-// src/nodes/index.ts
-init_DateTimeNode2();
-init_EmojiNode();
-init_EquationNode();
-init_EquationComponent();
-init_ImageNode2();
-init_ImageComponent();
-init_KeywordNode();
-init_MentionNode();
-init_StickyNode2();
-init_StickyComponent();
-
-// src/index.ts
 var PACKAGE_VERSION = "0.1.0";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
