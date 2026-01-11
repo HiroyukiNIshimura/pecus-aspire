@@ -89,6 +89,20 @@ REGISTRY_PORT=5000
 ./cleanup-old-images.sh
 ```
 
+### ガベージコレクション
+
+マニフェスト削除後、ストレージを実際に解放するにはガベージコレクションが必要です。
+
+```bash
+# 基本的なガベージコレクション
+./garbage-collect.sh
+
+# 孤立タグ（404になるタグ）も削除する場合
+./garbage-collect.sh --delete-orphan-tags
+```
+
+> **Note**: ガベージコレクション中はレジストリへのプッシュが一時的に失敗する可能性があります。ビルド中の実行は避けてください。
+
 ---
 
 ## トラブルシューティング
@@ -138,6 +152,7 @@ build-pc/
 ├── build-and-push.sh           # ビルド & プッシュ
 ├── list-tags.sh                # タグ一覧表示
 ├── cleanup-old-images.sh       # 古いイメージ削除
+├── garbage-collect.sh          # ガベージコレクション
 ├── .env.example                # 環境変数テンプレート
 └── .env                        # 環境変数（git ignore）
 ```
@@ -160,4 +175,4 @@ build-pc/
 
 ---
 
-*最終更新: 2026-01-08*
+*最終更新: 2026-01-11*

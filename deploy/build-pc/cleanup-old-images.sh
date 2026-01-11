@@ -79,12 +79,20 @@ for REPO in $REPOSITORIES; do
             if [ "$TAG_DATE" -le "$CUTOFF_DATE" ]; then
                 echo "   🗑️  Deleting: $TAG ($TAG_DATE <= $CUTOFF_DATE)"
 
-                # マニフェストダイジェストを取得
-                MANIFEST_RESPONSE=$(curl -s -I -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                # マニフェストダイジェストを取得（複数形式に対応）
+                MANIFEST_RESPONSE=$(curl -s -I \
+                    -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                    -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+                    -H "Accept: application/vnd.docker.distribution.manifest.list.v2+json" \
+                    -H "Accept: application/vnd.oci.image.index.v1+json" \
                     "http://$REGISTRY/v2/$REPO/manifests/$TAG" 2>&1)
+                HTTP_STATUS=$(echo "$MANIFEST_RESPONSE" | head -1 | awk '{print $2}')
                 DIGEST=$(echo "$MANIFEST_RESPONSE" | grep -i "Docker-Content-Digest" | awk '{print $2}' | tr -d '\r\n')
 
-                if [ -n "$DIGEST" ]; then
+                if [ "$HTTP_STATUS" = "404" ]; then
+                    echo "      ℹ️  マニフェスト未存在（既に削除済み/孤立タグ）"
+                    DELETED_COUNT=$((DELETED_COUNT + 1))
+                elif [ -n "$DIGEST" ]; then
                     # マニフェストを削除
                     DELETE_RESPONSE=$(curl -s -w "%{http_code}" -X DELETE "http://$REGISTRY/v2/$REPO/manifests/$DIGEST")
                     HTTP_CODE=$(echo "$DELETE_RESPONSE" | tail -c 4)
@@ -93,13 +101,9 @@ for REPO in $REPOSITORIES; do
                         DELETED_COUNT=$((DELETED_COUNT + 1))
                     else
                         echo "      ⚠️  削除失敗 (HTTP $HTTP_CODE)"
-                        echo "         レジストリで削除が有効か確認してください:"
-                        echo "         REGISTRY_STORAGE_DELETE_ENABLED=true"
                     fi
                 else
-                    echo "      ⚠️  ダイジェスト取得失敗"
-                    echo "         レスポンスヘッダー確認:"
-                    echo "$MANIFEST_RESPONSE" | head -5 | sed 's/^/         /'
+                    echo "      ⚠️  ダイジェスト取得失敗 (HTTP $HTTP_STATUS)"
                 fi
             else
                 echo "   ✅ Kept: $TAG ($TAG_DATE >= $CUTOFF_DATE)"
