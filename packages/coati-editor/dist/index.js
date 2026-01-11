@@ -6927,28 +6927,30 @@ function PrettierButton({ lang, editor, getCodeDOMNode }) {
 // src/plugins/CodeActionMenuPlugin/index.tsx
 var import_jsx_runtime21 = require("react/jsx-runtime");
 var CODE_PADDING = 8;
-var SUPPORTED_LANGUAGES = [
-  { value: "", label: "Plain Text" },
-  { value: "c", label: "C" },
-  { value: "cpp", label: "C++" },
-  { value: "css", label: "CSS" },
-  { value: "html", label: "HTML" },
-  { value: "java", label: "Java" },
-  { value: "javascript", label: "JavaScript" },
-  { value: "js", label: "JS" },
-  { value: "json", label: "JSON" },
-  { value: "markdown", label: "Markdown" },
-  { value: "objc", label: "Objective-C" },
-  { value: "php", label: "PHP" },
-  { value: "powershell", label: "PowerShell" },
-  { value: "python", label: "Python" },
-  { value: "py", label: "Python" },
-  { value: "rust", label: "Rust" },
-  { value: "sql", label: "SQL" },
-  { value: "swift", label: "Swift" },
-  { value: "typescript", label: "TypeScript" },
-  { value: "xml", label: "XML" }
-];
+var SUPPORTED_LANGUAGES = (0, import_code3.getCodeLanguageOptions)().filter(
+  (option) => [
+    "c",
+    "clike",
+    "cpp",
+    "css",
+    "html",
+    "java",
+    "js",
+    "javascript",
+    "markdown",
+    "objc",
+    "objective-c",
+    "plain",
+    "powershell",
+    "py",
+    "python",
+    "rust",
+    "sql",
+    "swift",
+    "typescript",
+    "xml"
+  ].includes(option[0])
+);
 function CodeActionMenuContainer({
   anchorElem,
   showOnlyCopy = false
@@ -7056,7 +7058,7 @@ function CodeActionMenuContainer({
         value: lang,
         onChange: handleLanguageChange,
         "aria-label": "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u8A00\u8A9E\u3092\u9078\u629E",
-        children: SUPPORTED_LANGUAGES.map((language) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value: language.value, children: language.label }, language.value))
+        children: SUPPORTED_LANGUAGES.map(([value, name]) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value, children: name }, value))
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(CopyButton, { editor, getCodeDOMNode }),
@@ -7066,7 +7068,7 @@ function CodeActionMenuContainer({
 function getMouseInfo(event) {
   const target = event.target;
   if ((0, import_lexical9.isHTMLElement)(target)) {
-    const codeDOMNode = target.closest("code.NotionLikeEditorTheme__code");
+    const codeDOMNode = target.closest("code.NotionLikeEditorTheme__code") || target.closest("code.NotionLikeViewerTheme__code");
     const isOutside = !(codeDOMNode || target.closest("div.code-action-menu-container"));
     return { codeDOMNode, isOutside };
   } else {

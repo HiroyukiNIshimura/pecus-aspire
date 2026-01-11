@@ -6703,7 +6703,7 @@ function LexicalAutoLinkPlugin() {
 }
 
 // src/plugins/CodeActionMenuPlugin/index.tsx
-import { $isCodeNode as $isCodeNode3, CodeNode, normalizeCodeLang } from "@lexical/code";
+import { $isCodeNode as $isCodeNode3, CodeNode, getCodeLanguageOptions, normalizeCodeLang } from "@lexical/code";
 import { useLexicalComposerContext as useLexicalComposerContext6 } from "@lexical/react/LexicalComposerContext";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode3, isHTMLElement } from "lexical";
 import { useEffect as useEffect10, useRef as useRef3, useState as useState10 } from "react";
@@ -6867,28 +6867,30 @@ function PrettierButton({ lang, editor, getCodeDOMNode }) {
 // src/plugins/CodeActionMenuPlugin/index.tsx
 import { Fragment as Fragment3, jsx as jsx21, jsxs as jsxs6 } from "react/jsx-runtime";
 var CODE_PADDING = 8;
-var SUPPORTED_LANGUAGES = [
-  { value: "", label: "Plain Text" },
-  { value: "c", label: "C" },
-  { value: "cpp", label: "C++" },
-  { value: "css", label: "CSS" },
-  { value: "html", label: "HTML" },
-  { value: "java", label: "Java" },
-  { value: "javascript", label: "JavaScript" },
-  { value: "js", label: "JS" },
-  { value: "json", label: "JSON" },
-  { value: "markdown", label: "Markdown" },
-  { value: "objc", label: "Objective-C" },
-  { value: "php", label: "PHP" },
-  { value: "powershell", label: "PowerShell" },
-  { value: "python", label: "Python" },
-  { value: "py", label: "Python" },
-  { value: "rust", label: "Rust" },
-  { value: "sql", label: "SQL" },
-  { value: "swift", label: "Swift" },
-  { value: "typescript", label: "TypeScript" },
-  { value: "xml", label: "XML" }
-];
+var SUPPORTED_LANGUAGES = getCodeLanguageOptions().filter(
+  (option) => [
+    "c",
+    "clike",
+    "cpp",
+    "css",
+    "html",
+    "java",
+    "js",
+    "javascript",
+    "markdown",
+    "objc",
+    "objective-c",
+    "plain",
+    "powershell",
+    "py",
+    "python",
+    "rust",
+    "sql",
+    "swift",
+    "typescript",
+    "xml"
+  ].includes(option[0])
+);
 function CodeActionMenuContainer({
   anchorElem,
   showOnlyCopy = false
@@ -6996,7 +6998,7 @@ function CodeActionMenuContainer({
         value: lang,
         onChange: handleLanguageChange,
         "aria-label": "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u8A00\u8A9E\u3092\u9078\u629E",
-        children: SUPPORTED_LANGUAGES.map((language) => /* @__PURE__ */ jsx21("option", { value: language.value, children: language.label }, language.value))
+        children: SUPPORTED_LANGUAGES.map(([value, name]) => /* @__PURE__ */ jsx21("option", { value, children: name }, value))
       }
     ),
     /* @__PURE__ */ jsx21(CopyButton, { editor, getCodeDOMNode }),
@@ -7006,7 +7008,7 @@ function CodeActionMenuContainer({
 function getMouseInfo(event) {
   const target = event.target;
   if (isHTMLElement(target)) {
-    const codeDOMNode = target.closest("code.NotionLikeEditorTheme__code");
+    const codeDOMNode = target.closest("code.NotionLikeEditorTheme__code") || target.closest("code.NotionLikeViewerTheme__code");
     const isOutside = !(codeDOMNode || target.closest("div.code-action-menu-container"));
     return { codeDOMNode, isOutside };
   } else {

@@ -1467,6 +1467,7 @@ i.bold {
 
 .notion-like-editor .toolbar .code-language {
   width: 150px;
+  color: #d9e1ef; /* gray-100: 白系テキスト */
 }
 
 .notion-like-editor .toolbar-item.font-size-input {
@@ -1491,7 +1492,7 @@ i.bold {
   height: 20px;
   text-align: left;
   padding-right: 10px;
-  color: #f3f4f6; /* gray-100: 白系テキスト */
+  color: #d9e1ef; /* gray-100: 白系テキスト */
 }
 
 .notion-like-editor .toolbar .toolbar-item .icon {

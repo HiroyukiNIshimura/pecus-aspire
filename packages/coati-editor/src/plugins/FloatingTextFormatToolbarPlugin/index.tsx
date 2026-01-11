@@ -139,6 +139,7 @@ function TextFormatFloatingToolbar({
         document.removeEventListener('mouseup', mouseUpListener);
       };
     }
+  // biome-ignore lint/correctness/useExhaustiveDependencies: functions are stable within component scope
   }, [mouseMoveListener, mouseUpListener]);
 
   const $updateTextFormatFloatingToolbar = useCallback(() => {

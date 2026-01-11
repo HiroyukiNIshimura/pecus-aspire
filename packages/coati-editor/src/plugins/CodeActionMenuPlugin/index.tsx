@@ -10,7 +10,7 @@ import type { JSX } from 'react';
 
 import './index.css';
 
-import { $isCodeNode, CodeNode, normalizeCodeLang } from '@lexical/code';
+import { $isCodeNode, CodeNode, getCodeLanguageOptions, normalizeCodeLang } from '@lexical/code';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $getNearestNodeFromDOMNode, isHTMLElement } from 'lexical';
 import type * as React from 'react';
@@ -23,29 +23,31 @@ import { useDebounce } from './utils';
 
 const CODE_PADDING = 8;
 
-// サポートする言語リスト（Lexical Code Pluginでサポートされている言語）
-const SUPPORTED_LANGUAGES = [
-  { value: '', label: 'Plain Text' },
-  { value: 'c', label: 'C' },
-  { value: 'cpp', label: 'C++' },
-  { value: 'css', label: 'CSS' },
-  { value: 'html', label: 'HTML' },
-  { value: 'java', label: 'Java' },
-  { value: 'javascript', label: 'JavaScript' },
-  { value: 'js', label: 'JS' },
-  { value: 'json', label: 'JSON' },
-  { value: 'markdown', label: 'Markdown' },
-  { value: 'objc', label: 'Objective-C' },
-  { value: 'php', label: 'PHP' },
-  { value: 'powershell', label: 'PowerShell' },
-  { value: 'python', label: 'Python' },
-  { value: 'py', label: 'Python' },
-  { value: 'rust', label: 'Rust' },
-  { value: 'sql', label: 'SQL' },
-  { value: 'swift', label: 'Swift' },
-  { value: 'typescript', label: 'TypeScript' },
-  { value: 'xml', label: 'XML' },
-];
+// サポートする言語リスト（@lexical/code からフィルタリング）
+const SUPPORTED_LANGUAGES: [string, string][] = getCodeLanguageOptions().filter((option) =>
+  [
+    'c',
+    'clike',
+    'cpp',
+    'css',
+    'html',
+    'java',
+    'js',
+    'javascript',
+    'markdown',
+    'objc',
+    'objective-c',
+    'plain',
+    'powershell',
+    'py',
+    'python',
+    'rust',
+    'sql',
+    'swift',
+    'typescript',
+    'xml',
+  ].includes(option[0]),
+);
 
 interface Position {
   top: string;
@@ -183,9 +185,9 @@ function CodeActionMenuContainer({
               onChange={handleLanguageChange}
               aria-label="コードブロックの言語を選択"
             >
-              {SUPPORTED_LANGUAGES.map((language) => (
-                <option key={language.value} value={language.value}>
-                  {language.label}
+              {SUPPORTED_LANGUAGES.map(([value, name]) => (
+                <option key={value} value={value}>
+                  {name}
                 </option>
               ))}
             </select>
@@ -207,7 +209,10 @@ function getMouseInfo(event: MouseEvent): {
   const target = event.target;
 
   if (isHTMLElement(target)) {
-    const codeDOMNode = target.closest<HTMLElement>('code.NotionLikeEditorTheme__code');
+    // Editor と Viewer 両方のテーマに対応
+    const codeDOMNode =
+      target.closest<HTMLElement>('code.NotionLikeEditorTheme__code') ||
+      target.closest<HTMLElement>('code.NotionLikeViewerTheme__code');
     const isOutside = !(codeDOMNode || target.closest<HTMLElement>('div.code-action-menu-container'));
 
     return { codeDOMNode, isOutside };

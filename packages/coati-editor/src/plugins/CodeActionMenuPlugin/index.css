@@ -38,10 +38,15 @@
 .code-action-menu-container button.menu-item i.format {
   height: 16px;
   width: 16px;
-  opacity: 0.6;
   display: flex;
-  color: var(--color-base-content);
   background-size: contain;
+  /* グレーのアイコン表示 */
+  filter: invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%) contrast(90%);
+}
+
+.code-action-menu-container button.menu-item i.format.success {
+  /* 成功アイコンは落ち着いた緑で表示 */
+  filter: invert(40%) sepia(50%) saturate(500%) hue-rotate(100deg) brightness(80%) contrast(85%);
 }
 
 .code-action-menu-container button.menu-item:hover {
