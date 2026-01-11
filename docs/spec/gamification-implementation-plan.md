@@ -2,6 +2,22 @@
 
 最終更新: 2026-01-11
 
+## 実装進捗サマリー
+
+| Phase | 項目 | 状態 |
+|-------|------|------|
+| 1 | DB設計 & Entity | ✅ 完了 |
+| 1 | Strategyパターン基盤 | ✅ 完了 |
+| 1 | 全Strategy実装（28個） | ✅ 完了 |
+| 1 | 組織/ユーザー設定追加 | ✅ 完了 |
+| 1 | Hangfireバッチ | ✅ 完了 |
+| 2 | API実装 | ⬜ 未着手 |
+| 2 | Piggyback通知 | ⬜ 未着手 |
+| 3 | フロントエンド | ⬜ 未着手 |
+| 4 | AI連携 | ⬜ 未着手 |
+
+---
+
 ## 概要
 
 本ドキュメントは [task-motivation-ideas.md](task-motivation-ideas.md) の要件を実装に落とし込むための計画書です。
@@ -134,7 +150,7 @@ pecus.Libs/
         ├── DeadlineMasterStrategy.cs     # 期限厳守の達人
         ├── EstimationWizardStrategy.cs   # 見積もりの魔術師
         ├── SpeedStarStrategy.cs          # スピードスター
-        ├── HelpingHandStrategy.cs        # 助っ人参上
+        ├── BestSupportingStrategy.cs     # 名バイプレイヤー
         ├── PriorityHunterStrategy.cs     # 高優先度ハンター
         ├── DocumenterStrategy.cs         # ドキュメンター
         ├── StreakMasterStrategy.cs       # 連続達成
@@ -419,19 +435,19 @@ src/actions/achievements/
 
 ### Week 1-2: DB & バックエンド基盤
 
-1. [ ] Entity作成（AchievementMaster, UserAchievement）
-2. [ ] Enum定義（AchievementDifficulty, AchievementCategory, BadgeVisibility）
-3. [ ] OrganizationSetting, UserSetting への項目追加
-4. [ ] DbContext登録 & Migration実行
-5. [ ] Seed データ投入（初期実績マスタ）
+1. [x] Entity作成（AchievementMaster, UserAchievement）
+2. [x] Enum定義（AchievementDifficulty, AchievementCategory, BadgeVisibility）
+3. [x] OrganizationSetting, UserSetting への項目追加
+4. [x] DbContext登録 & Migration実行
+5. [x] Seed データ投入（初期実績マスタ 28件）
 
 ### Week 3-4: Strategy パターン & バッチ
 
-6. [ ] IAchievementStrategy インターフェース定義
-7. [ ] 容易な実績のStrategy実装（EarlyBird, NightOwl, InboxZero, TaskChef, DeadlineMaster, EstimationWizard, SpeedStar, HelpingHand, PriorityHunter, Documenter, Veteran）
-8. [ ] AchievementEvaluator実装
-9. [ ] AchievementEvaluationTask実装
-10. [ ] RecurringJob登録
+6. [x] IAchievementStrategy インターフェース定義
+7. [x] 全Strategy実装（28個: EarlyBird, NightOwl, WeekendGuardian, Veteran, InboxZero, TaskChef, DeadlineMaster, EstimationWizard, SpeedStar, PriorityHunter, Documenter, StreakMaster, Century, Multitasker, Connector, ThousandTasks, PerfectWeek, AiApprentice, BestSupporting, Commentator, UnsungHero, Savior, FirstTry, Learner, SteadyHand, PromiseKeeper, AheadOfSchedule, EvidenceKeeper）
+8. [x] AchievementEvaluator実装
+9. [x] AchievementEvaluationTask実装（Hangfireタスク）
+10. [x] RecurringJob登録
 
 ### Week 5: API実装
 
@@ -455,9 +471,9 @@ src/actions/achievements/
 
 ### Week 9: AI連携 & 中高難易度Strategy
 
-22. [ ] 中難易度Strategy実装（AiApprentice, StreakMaster, Century, Multitasker, Connector, Commentator, WeekendGuardian, ThousandTasks, PerfectWeek）
-23. [ ] Activity拡張後バッジのStrategy実装（Savior, SteadyHand, FirstTry, Learner, PromiseKeeper, AheadOfSchedule, EvidenceKeeper）
-24. [ ] 高難易度Strategy実装（UnsungHero）
+22. [x] 中難易度Strategy実装（AiApprentice, StreakMaster, Century, Multitasker, Connector, Commentator, WeekendGuardian, ThousandTasks, PerfectWeek） → Week 3-4で完了
+23. [x] Activity拡張後バッジのStrategy実装（Savior, SteadyHand, FirstTry, Learner, PromiseKeeper, AheadOfSchedule, EvidenceKeeper） → Week 3-4で完了
+24. [x] 高難易度Strategy実装（UnsungHero） → Week 3-4で完了
 25. [ ] シークレットバッジのAI判定実装
 
 ### Week 10: テスト & リリース準備

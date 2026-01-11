@@ -2,6 +2,7 @@ using Hangfire;
 using Pecus.BackFire;
 using Pecus.BackFire.Services;
 using Pecus.Libs;
+using Pecus.Libs.Achievements;
 using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
 using Pecus.Libs.Focus;
@@ -99,6 +100,9 @@ builder.Services.AddAiClientFactory();
 // Hangfireタスクの登録
 builder.Services.AddHangfireTasks();
 
+// 実績システムのサービス登録
+builder.Services.AddAchievementServices();
+
 // 週間レポート関連サービスの登録
 builder.Services.AddWeeklyReportServices();
 
@@ -152,5 +156,8 @@ WeeklyReportJobScheduler.ConfigureWeeklyReportJob(recurringJobManager, builder.C
 
 // システム通知配信ジョブの設定（DBベース）
 SystemNotificationJobScheduler.ConfigureSystemNotificationJob(recurringJobManager, builder.Configuration);
+
+// 実績判定ジョブの設定（毎日AM3:00 UTC）
+AchievementJobScheduler.ConfigureAchievementJob(recurringJobManager, builder.Configuration);
 
 app.Run();
