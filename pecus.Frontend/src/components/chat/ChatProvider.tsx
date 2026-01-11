@@ -146,12 +146,10 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
       // 未読数を再取得
       console.log('[ChatProvider] Fetching unread counts...');
       fetchUnreadCounts();
-      // ドロワーが開いていればルーム一覧も更新
-      if (isDrawerOpen) {
-        fetchRooms();
-      }
+      // ルーム一覧も更新（新規ルームが作成された場合に対応）
+      fetchRooms();
     },
-    [currentUserId, fetchUnreadCounts, fetchRooms, isDrawerOpen],
+    [currentUserId, fetchUnreadCounts, fetchRooms],
   );
 
   useSignalREvent<ChatUnreadUpdatedPayload>('chat:unread_updated', handleUnreadUpdated);

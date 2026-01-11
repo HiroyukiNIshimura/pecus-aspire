@@ -361,13 +361,13 @@ public class ChatRoomService
             throw new NotFoundException("ユーザーのチャットアクターが見つかりません。");
         }
 
-        // 既存の AI ルームを検索
+        // 既存の AI ルームを検索（CreatedByUserId で検索）
         var existingRoom = await _context
             .ChatRooms.Include(r => r.Members)
             .FirstOrDefaultAsync(r =>
                 r.OrganizationId == organizationId
                 && r.Type == ChatRoomType.Ai
-                && r.Members.Any(m => m.ChatActor.UserId == userId)
+                && r.CreatedByUserId == userId
             );
 
         if (existingRoom != null)

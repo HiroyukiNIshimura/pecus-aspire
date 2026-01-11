@@ -61,6 +61,14 @@ public class ChatController : BaseSecureController
             type
         );
 
+        _logger.LogDebug(
+            "GetRooms: UserId={UserId}, OrganizationId={OrganizationId}, Type={Type}, RoomCount={RoomCount}, RoomIds={RoomIds}",
+            CurrentUserId,
+            CurrentOrganizationId,
+            type,
+            rooms.Count,
+            string.Join(",", rooms.Select(r => $"{r.Id}({r.Type})")));
+
         // GroupChatScope に応じてグループルームをフィルタリング
         var organization = await _organizationService.GetOrganizationByIdAsync(CurrentOrganizationId);
         var groupChatScope = organization?.Setting?.GroupChatScope ?? GroupChatScope.Workspace;

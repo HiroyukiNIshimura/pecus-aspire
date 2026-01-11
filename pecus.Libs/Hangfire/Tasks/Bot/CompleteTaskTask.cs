@@ -305,12 +305,13 @@ public class CompleteTaskTask
             return null;
         }
 
+        // CreatedByUserId で検索（ChatRoomService.GetOrCreateAiRoomAsync と同じ条件）
         var existingRoom = await _context.ChatRooms
             .Include(r => r.Members)
             .FirstOrDefaultAsync(r =>
                 r.OrganizationId == organizationId &&
                 r.Type == ChatRoomType.Ai &&
-                r.Members.Any(m => m.ChatActorId == targetUser.ChatActor.Id));
+                r.CreatedByUserId == targetUserId);
 
         if (existingRoom != null)
         {
