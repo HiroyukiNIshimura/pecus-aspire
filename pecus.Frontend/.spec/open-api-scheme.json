@@ -12515,7 +12515,10 @@
           "DueDateChanged",
           "TaskAdded",
           "TaskCompleted",
-          "TaskDiscarded"
+          "TaskDiscarded",
+          "TaskAssigneeChanged",
+          "TaskReopened",
+          "TaskDueDateChanged"
         ],
         "type": "string",
         "description": "アクティビティのアクション種類を表す列挙型"
@@ -22053,6 +22056,16 @@
             "description": "メッセージ"
           },
           "workspaceTask": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
+              }
+            ]
+          },
+          "previousWorkspaceTask": {
             "oneOf": [
               {
                 "nullable": true

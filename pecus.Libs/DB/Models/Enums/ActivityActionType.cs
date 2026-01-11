@@ -69,5 +69,17 @@ public enum ActivityActionType
     /// <summary>
     /// タスク破棄
     /// </summary>
-    TaskDiscarded
+    TaskDiscarded,
+    /// <summary>
+    /// タスク担当者変更
+    /// </summary>
+    TaskAssigneeChanged,
+    /// <summary>
+    /// タスク再開（差し戻し）
+    /// </summary>
+    TaskReopened,
+    /// <summary>
+    /// タスク期限変更
+    /// </summary>
+    TaskDueDateChanged
 }

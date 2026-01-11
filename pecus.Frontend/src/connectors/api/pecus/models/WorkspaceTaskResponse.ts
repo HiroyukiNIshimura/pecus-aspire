@@ -16,5 +16,6 @@ export type WorkspaceTaskResponse = {
      */
     message?: string;
     workspaceTask?: WorkspaceTaskDetailResponse;
+    previousWorkspaceTask?: WorkspaceTaskDetailResponse;
 };
 

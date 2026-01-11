@@ -203,6 +203,73 @@ public static class ActivityDetailsBuilder
     }
 
     /// <summary>
+    /// タスク担当者変更用の Details を生成
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <param name="content">タスク内容</param>
+    /// <param name="oldAssigneeName">変更前の担当者名（null = 未割当）</param>
+    /// <param name="oldAssigneeId">変更前の担当者ID（null = 未割当）</param>
+    /// <param name="newAssigneeName">変更後の担当者名（null = 未割当）</param>
+    /// <param name="newAssigneeId">変更後の担当者ID（null = 未割当）</param>
+    /// <returns>変更があればJSON文字列、変更がなければnull</returns>
+    public static string? BuildTaskAssigneeChangedDetails(
+        int taskId,
+        string content,
+        string? oldAssigneeName,
+        int? oldAssigneeId,
+        string? newAssigneeName,
+        int? newAssigneeId)
+    {
+        if (oldAssigneeId == newAssigneeId) return null;
+
+        return JsonSerializer.Serialize(new
+        {
+            taskId,
+            content,
+            oldAssignee = oldAssigneeName,
+            oldAssigneeId,
+            newAssignee = newAssigneeName,
+            newAssigneeId
+        }, JsonOptions);
+    }
+
+    /// <summary>
+    /// タスク再開（差し戻し）用の Details を生成
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <param name="content">タスク内容</param>
+    /// <param name="assigneeName">担当者名</param>
+    /// <param name="reopenedByName">再開操作したユーザー名</param>
+    public static string BuildTaskReopenedDetails(int taskId, string content, string? assigneeName, string reopenedByName)
+    {
+        return JsonSerializer.Serialize(new
+        {
+            taskId,
+            content,
+            assignee = assigneeName,
+            reopenedBy = reopenedByName
+        }, JsonOptions);
+    }
+
+    /// <summary>
+    /// タスク期限変更用の Details を生成
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <param name="content">タスク内容</param>
+    /// <param name="oldDueDate">変更前の期限</param>
+    /// <param name="newDueDate">変更後の期限</param>
+    public static string BuildTaskDueDateChangedDetails(int taskId, string content, DateTimeOffset oldDueDate, DateTimeOffset newDueDate)
+    {
+        return JsonSerializer.Serialize(new
+        {
+            taskId,
+            content,
+            old = oldDueDate,
+            @new = newDueDate
+        }, JsonOptions);
+    }
+
+    /// <summary>
     /// 優先度の日本語ラベルを取得
     /// </summary>
     private static string? GetPriorityLabel(TaskPriority? priority)

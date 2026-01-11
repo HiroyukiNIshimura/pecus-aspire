@@ -480,7 +480,9 @@ public class WorkspaceTaskService
             IsCompleted = task.IsCompleted,
             IsDiscarded = task.IsDiscarded,
             Content = task.Content,
-            AssigneeName = task.AssignedUser?.Username
+            AssignedUserId = task.AssignedUserId,
+            AssigneeName = task.AssignedUser?.Username,
+            DueDate = task.DueDate
         };
 
         // 他ユーザーの編集中は更新を拒否
@@ -678,6 +680,66 @@ public class WorkspaceTaskService
             );
             _backgroundJobClient.Enqueue<ActivityTasks>(x =>
                 x.RecordActivityAsync(workspaceId, itemId, currentUserId, ActivityActionType.TaskDiscarded, taskDiscardedDetails)
+            );
+        }
+
+        // アクティビティ記録: タスク担当者変更
+        if (snapshot.AssignedUserId != task.AssignedUserId)
+        {
+            // 新しい担当者名を取得（AssignedUserがロード済みならそれを使う、なければ取得）
+            string? newAssigneeName = task.AssignedUser?.Username;
+            if (newAssigneeName == null && task.AssignedUserId != 0)
+            {
+                var newAssignee = await _context.Users.FindAsync(task.AssignedUserId);
+                newAssigneeName = newAssignee?.Username;
+            }
+
+            var taskAssigneeChangedDetails = ActivityDetailsBuilder.BuildTaskAssigneeChangedDetails(
+                task.Id,
+                snapshot.Content,
+                snapshot.AssigneeName,
+                snapshot.AssignedUserId == 0 ? null : snapshot.AssignedUserId,
+                newAssigneeName,
+                task.AssignedUserId == 0 ? null : task.AssignedUserId
+            );
+
+            if (taskAssigneeChangedDetails != null)
+            {
+                _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+                    x.RecordActivityAsync(workspaceId, itemId, currentUserId, ActivityActionType.TaskAssigneeChanged, taskAssigneeChangedDetails)
+                );
+            }
+        }
+
+        // アクティビティ記録: タスク再開（完了→未完了に戻された場合のみ）
+        if (snapshot.IsCompleted && !task.IsCompleted)
+        {
+            // 操作ユーザー名を取得
+            var currentUser = await _context.Users.FindAsync(currentUserId);
+            var reopenedByName = currentUser?.Username ?? "不明";
+
+            var taskReopenedDetails = ActivityDetailsBuilder.BuildTaskReopenedDetails(
+                task.Id,
+                snapshot.Content,
+                snapshot.AssigneeName,
+                reopenedByName
+            );
+            _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+                x.RecordActivityAsync(workspaceId, itemId, currentUserId, ActivityActionType.TaskReopened, taskReopenedDetails)
+            );
+        }
+
+        // アクティビティ記録: タスク期限変更
+        if (snapshot.DueDate != task.DueDate)
+        {
+            var taskDueDateChangedDetails = ActivityDetailsBuilder.BuildTaskDueDateChangedDetails(
+                task.Id,
+                snapshot.Content,
+                snapshot.DueDate,
+                task.DueDate
+            );
+            _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+                x.RecordActivityAsync(workspaceId, itemId, currentUserId, ActivityActionType.TaskDueDateChanged, taskDueDateChangedDetails)
             );
         }
 

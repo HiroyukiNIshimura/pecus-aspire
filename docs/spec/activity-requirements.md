@@ -40,6 +40,8 @@
 | `TaskAdded` | タスク追加 | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中" }` | タスク作成時 |
 | `TaskCompleted` | タスク完了 | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中", "completedBy": "鈴木" }` | IsCompleted = true 時 |
 | `TaskDiscarded` | タスク破棄 | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中", "discardedBy": "鈴木" }` | IsDiscarded = true 時 |
+| `TaskAssigneeChanged` | タスク担当者変更 | `{ "taskId": 1, "content": "スクリーンショット撮影", "oldAssignee": "田中", "oldAssigneeId": 1, "newAssignee": "鈴木", "newAssigneeId": 2 }` | タスク担当者変更時 |
+| `TaskReopened` | タスク再開（差し戻し） | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中", "reopenedBy": "鈴木" }` | IsCompleted = false に戻された時 |
 
 ### タスク関連アクションについて
 
@@ -52,8 +54,10 @@
 | `TaskAdded` | タスク追加 | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中" }` | タスク作成時 |
 | `TaskCompleted` | タスク完了 | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中", "completedBy": "鈴木" }` | IsCompleted = true 時 |
 | `TaskDiscarded` | タスク破棄 | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中", "discardedBy": "鈴木" }` | IsDiscarded = true 時 |
+| `TaskAssigneeChanged` | タスク担当者変更 | `{ "taskId": 1, "content": "スクリーンショット撮影", "oldAssignee": "田中", "oldAssigneeId": 1, "newAssignee": "鈴木", "newAssigneeId": 2 }` | タスク担当者変更時 |
+| `TaskReopened` | タスク再開（差し戻し） | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中", "reopenedBy": "鈴木" }` | IsCompleted = false に戻された時 |
 
-※ `completedBy` / `discardedBy` は操作したユーザー。担当者本人の場合もあればコミッターの場合もある。
+※ `completedBy` / `discardedBy` / `reopenedBy` は操作したユーザー。担当者本人の場合もあればコミッターの場合もある。
 
 **変更検出の仕組み:**
 - `ActivityTasks.CreateChangeDetails<T>(oldValue, newValue)` が `EqualityComparer<T>.Default` で新旧値を比較
@@ -121,9 +125,94 @@ public enum ActivityActionType
     DraftChanged,
     CommitterChanged,
     PriorityChanged,
-    DueDateChanged
+    DueDateChanged,
+    TaskAdded,
+    TaskCompleted,
+    TaskDiscarded,
+    TaskAssigneeChanged,
+    TaskReopened
 }
 ```
+
+## ゲーミフィケーション向けデータ分析
+
+Activityデータを活用して、ユーザーの行動パターンを分析し、実績バッジの判定に使用します。
+
+### DueDateChanged の方向分析
+
+期限変更の履歴から「期限を守る姿勢」を評価します。
+
+```csharp
+// Details の old/new を比較して方向を判定
+var oldDate = DateTimeOffset.Parse(details["old"]);
+var newDate = DateTimeOffset.Parse(details["new"]);
+var direction = newDate > oldDate ? "extended" : "shortened";
+```
+
+| 分析項目 | 説明 | バッジ例 |
+|---------|------|---------|
+| 期限延長回数 | 期限を後ろにずらした回数 | 「約束の人」: 期限延長0回で10件完了 |
+| 期限短縮回数 | 期限を前倒しにした回数 | 「前倒しマスター」: 期限短縮後に完了を5件達成 |
+
+### FileAdded の集計
+
+ファイル添付の習慣から「証拠を残す」姿勢を評価します。
+
+```csharp
+// 完了タスクのうち、FileAdded がある割合を計算
+var tasksWithFiles = activities
+    .Where(a => a.ActionType == ActivityActionType.FileAdded)
+    .Select(a => a.ItemId)
+    .Distinct();
+var completedTasks = activities
+    .Where(a => a.ActionType == ActivityActionType.TaskCompleted);
+var attachmentRate = (double)tasksWithFiles.Count() / completedTasks.Count();
+```
+
+| 分析項目 | 説明 | バッジ例 |
+|---------|------|---------|
+| 添付率 | 完了タスクのうちファイル添付があるタスクの割合 | 「証拠を残す人」: 添付率80%以上で10件完了 |
+
+### TaskAssigneeChanged の分析
+
+タスク担当者の変更履歴から「引き継ぎパターン」を評価します。
+
+```csharp
+// 自分に引き継がれたタスクを完了したか
+var reassignedToMe = activities
+    .Where(a => a.ActionType == ActivityActionType.TaskAssigneeChanged)
+    .Where(a => details["newAssigneeId"] == currentUserId);
+var completedAfterReassign = reassignedToMe
+    .Where(r => activities.Any(c =>
+        c.ActionType == ActivityActionType.TaskCompleted &&
+        c.ItemId == r.ItemId &&
+        c.CreatedAt > r.CreatedAt));
+```
+
+| 分析項目 | 説明 | バッジ例 |
+|---------|------|---------|
+| 救世主回数 | 他者から引き継いで完了したタスク数 | 「救世主」: 引き継ぎタスクを5件完了 |
+| 安定性 | 担当変更なしで完了したタスクの割合 | 「安定の担当者」: 担当変更なしで20件完了 |
+
+### TaskReopened の分析
+
+タスクの差し戻し（再開）履歴から「品質」を評価します。
+
+```csharp
+// 完了後に差し戻されなかったタスクの割合
+var completedTasks = activities
+    .Where(a => a.ActionType == ActivityActionType.TaskCompleted);
+var reopenedTasks = activities
+    .Where(a => a.ActionType == ActivityActionType.TaskReopened)
+    .Select(a => a.ItemId);
+var firstTryCompletions = completedTasks
+    .Where(c => !reopenedTasks.Contains(c.ItemId));
+```
+
+| 分析項目 | 説明 | バッジ例 |
+|---------|------|---------|
+| 一発完了率 | 差し戻しなしで完了したタスクの割合 | 「一発完了」: 一発完了率90%以上で20件達成 |
+| 学習曲線 | 差し戻し後に再完了したタスク数 | 「学習者」: 差し戻し後の再完了10件 |
 
 ## SignalR通知との関係
 

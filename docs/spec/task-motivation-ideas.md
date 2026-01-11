@@ -147,3 +147,17 @@ Pecus Aspire では「作業量」だけでなく「良い働き方（スタン�
 | **「千本ノック」 (Thousand Tasks)** | 累計1000件のタスク完了。Activityテーブル | 超ヘビーユーザー称賛。 | 中 (累計カウント) |
 | **「パーフェクトウィーク」 (Perfect Week)** | 1週間で担当タスクを全て期限内完了（最低5件）。WorkspaceTaskテーブル | 完璧な週の達成感。 | 中 (週単位の集計) |
 
+### 🔮 Activity拡張後（新ActionType実装後）
+
+以下のバッジは、Activityテーブルに `TaskAssigneeChanged`（担当者変更）、`TaskReopened`（差し戻し）を追加した後に実装可能です。詳細は [activity-requirements.md](activity-requirements.md) の「ゲーミフィケーション向けデータ分析」セクションを参照。
+
+| バッジ名 | 条件 | 意図 | 実装難易度 |
+|---|---|---|---|
+| **「救世主」 (Savior)** | 他者から引き継いだタスク（TaskAssigneeChanged）を5件完了。Activityテーブル | 困っている仲間を助ける姿勢を称賛。 | 中 (担当者変更履歴の分析) |
+| **「安定の担当者」 (Steady Hand)** | 担当者変更なしで完了したタスクを20件達成。Activityテーブル | 最初から最後まで責任を持つ姿勢を評価。 | 中 (担当者変更履歴の分析) |
+| **「一発完了」 (First Try)** | 差し戻し（TaskReopened）なしで完了したタスクの割合が90%以上（最低20件）。Activityテーブル | 品質の高い仕事を称賛。 | 中 (差し戻し履歴の分析) |
+| **「学習者」 (Learner)** | 差し戻し後に再完了したタスクを10件達成。Activityテーブル | 失敗から学ぶ姿勢を評価。 | 中 (差し戻し履歴の分析) |
+| **「約束の人」 (Promise Keeper)** | 期限延長（DueDateChanged で new > old）なしで10件完了。Activityテーブル | 約束を守り抜く信頼性を称賛。 | 中 (期限変更履歴の分析) |
+| **「前倒しマスター」 (Ahead of Schedule)** | 期限を短縮（DueDateChanged で new < old）した後に完了を5件達成。Activityテーブル | 余裕を持って前倒しで進める姿勢を評価。 | 中 (期限変更履歴の分析) |
+| **「証拠を残す人」 (Evidence Keeper)** | 完了タスクの80%以上にファイル添付（FileAdded）がある（最低10件）。Activityテーブル | ドキュメント・証跡を残す習慣を称賛。 | 中 (ファイル添付履歴の集計) |
+
