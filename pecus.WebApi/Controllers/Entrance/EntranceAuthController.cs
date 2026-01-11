@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Libs.Hangfire.Tasks;
-using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Services;
 

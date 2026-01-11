@@ -1,6 +1,5 @@
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Resilience;
 using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Provider.Gemini;
 

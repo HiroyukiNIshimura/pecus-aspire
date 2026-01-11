@@ -1,6 +1,5 @@
-using Pecus.Libs.AI;
+﻿using Pecus.Libs.AI;
 using Pecus.Libs.AI.Models;
-using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Utils;

@@ -1,6 +1,4 @@
-using Pecus.Libs.DB.Models.Enums;
-
-namespace Pecus.Libs.DB.Seed;
+﻿namespace Pecus.Libs.DB.Seed;
 
 /// <summary>
 /// BackOfficeの初期設定オプション

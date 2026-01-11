@@ -1,9 +1,7 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Pecus.Controllers.Backend;
 using Pecus.Models.Requests.BackOffice;
 using Pecus.Models.Responses.BackOffice;
-using Pecus.Models.Responses.Common;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Backend;

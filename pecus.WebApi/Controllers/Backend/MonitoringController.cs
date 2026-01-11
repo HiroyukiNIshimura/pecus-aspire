@@ -1,5 +1,4 @@
-using Hangfire;
-using Microsoft.AspNetCore.Authorization;
+﻿using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using pecus.WebApi.Models.Responses;
 using Pecus.Services;

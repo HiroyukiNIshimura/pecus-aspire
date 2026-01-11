@@ -1,10 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Focus;
 using Pecus.Libs.Focus.Models;
 using Pecus.Models.Responses.Focus;
-using Pecus.Models.Responses.WorkspaceTask;
 
 namespace Pecus.Services;
 

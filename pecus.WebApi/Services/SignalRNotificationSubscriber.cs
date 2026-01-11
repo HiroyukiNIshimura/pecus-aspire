@@ -1,7 +1,5 @@
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Pecus.Hubs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;

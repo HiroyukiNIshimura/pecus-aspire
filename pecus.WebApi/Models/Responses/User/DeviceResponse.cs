@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace Pecus.Models.Responses.User;
+﻿namespace Pecus.Models.Responses.User;
 
 /// <summary>
 /// デバイス情報レスポンス

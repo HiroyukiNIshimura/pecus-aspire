@@ -1,5 +1,4 @@
-using Pecus.Libs.DB.Models.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.Chat;
 

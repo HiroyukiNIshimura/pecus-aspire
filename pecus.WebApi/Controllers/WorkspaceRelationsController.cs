@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Pecus.Exceptions;
-using Pecus.Libs;
 using Pecus.Services;
 using Pecus.WebApi.Models.Requests;
-using Pecus.WebApi.Models.Responses;
 
 namespace Pecus.Controllers;
 

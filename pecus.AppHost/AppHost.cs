@@ -1,7 +1,5 @@
-using Pecus.Libs;
+﻿using Pecus.Libs;
 using Serilog;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 // Serilogの初期化（pecus.Libsの共通設定を使用）
 

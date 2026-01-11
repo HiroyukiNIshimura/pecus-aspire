@@ -1,4 +1,4 @@
-using Hangfire;
+﻿using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
@@ -7,7 +7,6 @@ using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Libs.WeeklyReport;
-using Pecus.Libs.WeeklyReport.Models;
 
 namespace Pecus.Libs.Hangfire.Tasks;
 

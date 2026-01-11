@@ -1,5 +1,4 @@
-using Pecus.Libs.DB.Models.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using Pecus.Libs.DB.Models.Enums;
 using System.Text.Json.Serialization;
 
 namespace Pecus.WebApi.Models.Responses;

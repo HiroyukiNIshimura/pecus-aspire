@@ -5,9 +5,6 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Utils;
-using Pecus.Models.Requests.Organization;
-using Pecus.Models.Responses.Common;
-using Pecus.Models.Responses.Organization;
 
 namespace Pecus.Services;
 

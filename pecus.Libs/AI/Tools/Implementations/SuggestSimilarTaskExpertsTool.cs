@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Pecus.Libs.AI.Tools;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.Hangfire.Tasks.Services;

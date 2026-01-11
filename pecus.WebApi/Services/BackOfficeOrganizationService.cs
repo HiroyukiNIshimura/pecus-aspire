@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
@@ -6,7 +6,6 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.DB.Services;
 using Pecus.Models.Requests.BackOffice;
 using Pecus.Models.Responses.BackOffice;
-using Pecus.Models.Responses.Common;
 
 namespace Pecus.Services;
 

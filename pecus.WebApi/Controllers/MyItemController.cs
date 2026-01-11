@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Models.Config;
-using Pecus.Models.Enums;
 using Pecus.Services;
 
 namespace Pecus.Controllers;

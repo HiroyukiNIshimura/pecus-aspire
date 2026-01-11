@@ -1,4 +1,4 @@
-using MailKit.Net.Smtp;
+﻿using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -7,7 +7,6 @@ using MimeKit;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Models;
 using Pecus.Libs.Mail.Templates;
-using System.Net;
 
 namespace Pecus.Libs.Mail.Services;
 

@@ -10,7 +10,6 @@ using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Services;
-using System.Collections.Generic;
 
 namespace Pecus.Controllers;
 

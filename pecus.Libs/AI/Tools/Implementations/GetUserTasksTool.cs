@@ -1,5 +1,4 @@
-using Pecus.Libs.DB.Models.Enums;
-using Pecus.Libs.Focus;
+﻿using Pecus.Libs.Focus;
 using Pecus.Libs.Focus.Models;
 
 namespace Pecus.Libs.AI.Tools.Implementations;

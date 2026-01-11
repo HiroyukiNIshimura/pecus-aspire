@@ -1,13 +1,10 @@
-using Bogus.Extensions;
+﻿using Bogus.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Pecus.Libs.AI;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
-using Pecus.Libs.Lexical;
 using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
-using System.Reflection;
 
 namespace Pecus.Libs.DB.Seed.Atoms;
 

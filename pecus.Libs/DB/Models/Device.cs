@@ -1,5 +1,4 @@
 ﻿using Pecus.Libs.DB.Models.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Pecus.Libs.DB.Models;
 

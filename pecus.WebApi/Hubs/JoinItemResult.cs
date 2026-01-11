@@ -1,6 +1,4 @@
-using Pecus.Services;
-
-namespace Pecus.Hubs;
+﻿namespace Pecus.Hubs;
 
 /// <summary>
 /// JoinItem の戻り値。プレゼンスユーザー一覧と編集状態を含む。

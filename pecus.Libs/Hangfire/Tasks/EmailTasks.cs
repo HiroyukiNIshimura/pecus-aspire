@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
-using Pecus.Libs.Mail.Models;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates;
 
