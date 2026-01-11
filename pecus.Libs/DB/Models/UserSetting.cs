@@ -66,6 +66,11 @@ public class UserSetting
     public int WaitingTasksLimit { get; set; } = 5;
 
     /// <summary>
+    /// バッジの公開範囲（nullの場合は組織設定に従う）
+    /// </summary>
+    public BadgeVisibility? BadgeVisibility { get; set; }
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }

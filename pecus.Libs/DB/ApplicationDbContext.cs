@@ -172,6 +172,16 @@ public class ApplicationDbContext : DbContext
     public DbSet<SystemNotification> SystemNotifications { get; set; }
 
     /// <summary>
+    /// 実績マスタテーブル
+    /// </summary>
+    public DbSet<AchievementMaster> AchievementMasters { get; set; }
+
+    /// <summary>
+    /// ユーザー実績テーブル
+    /// </summary>
+    public DbSet<UserAchievement> UserAchievements { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -1151,6 +1161,61 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => new { e.IsProcessed, e.IsDeleted, e.PublishAt });
         });
 
+        // AchievementMaster エンティティの設定
+        modelBuilder.Entity<AchievementMaster>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.NameEn).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.DescriptionEn).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.IconPath).HasMaxLength(500);
+
+            // Code はシステム内でユニーク
+            entity.HasIndex(e => e.Code).IsUnique();
+            // カテゴリ別・ソート順での取得用
+            entity.HasIndex(e => new { e.Category, e.SortOrder });
+            // 有効なバッジの取得用
+            entity.HasIndex(e => e.IsActive);
+        });
+
+        // UserAchievement エンティティの設定
+        modelBuilder.Entity<UserAchievement>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // User とのリレーション
+            entity
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // AchievementMaster とのリレーション
+            entity
+                .HasOne(e => e.AchievementMaster)
+                .WithMany(a => a.UserAchievements)
+                .HasForeignKey(e => e.AchievementMasterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Organization とのリレーション（検索効率化用）
+            entity
+                .HasOne(e => e.Organization)
+                .WithMany()
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 同一ユーザーが同じ実績を重複獲得できないようにする
+            entity.HasIndex(e => new { e.UserId, e.AchievementMasterId }).IsUnique();
+            // 未通知実績の取得用
+            entity.HasIndex(e => new { e.UserId, e.IsNotified });
+            // 組織別の実績取得用
+            entity.HasIndex(e => e.OrganizationId);
+            // メインバッジの取得用
+            entity.HasIndex(e => new { e.UserId, e.IsMainBadge });
+        });
+
         // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）
         ConfigureRowVersionForAllEntities(modelBuilder);
     }
@@ -1182,5 +1247,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ChatRoom>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<SystemNotification>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<Bot>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<AchievementMaster>().Property(e => e.RowVersion).IsRowVersion();
     }
 }

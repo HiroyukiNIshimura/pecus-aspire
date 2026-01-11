@@ -74,7 +74,9 @@ public enum AchievementCategory
     WorkStyle = 1,      // 働き方（暁の開拓者、週末の聖域）
     Productivity = 2,   // 生産性（Inbox Zero、タスク料理人）
     AI = 3,             // AI活用（AI使いの弟子）
-    TeamPlay = 4        // チームプレイ（沈黙の守護者）
+    TeamPlay = 4,       // チームプレイ（沈黙の守護者、救世主）
+    Quality = 5,        // 品質（一発完了、学習者）
+    Reliability = 6     // 信頼性（安定の担当者、約束の人、前倒しマスター、証拠を残す人）
 }
 ```
 
@@ -145,7 +147,14 @@ pecus.Libs/
         ├── UnsungHeroStrategy.cs         # 沈黙の守護者
         ├── VeteranStrategy.cs            # 古参ユーザー
         ├── ThousandTasksStrategy.cs      # 千本ノック
-        └── PerfectWeekStrategy.cs        # パーフェクトウィーク
+        ├── PerfectWeekStrategy.cs        # パーフェクトウィーク
+        ├── SaviorStrategy.cs             # 救世主（Activity拡張後）
+        ├── SteadyHandStrategy.cs         # 安定の担当者（Activity拡張後）
+        ├── FirstTryStrategy.cs           # 一発完了（Activity拡張後）
+        ├── LearnerStrategy.cs            # 学習者（Activity拡張後）
+        ├── PromiseKeeperStrategy.cs      # 約束の人（Activity拡張後）
+        ├── AheadOfScheduleStrategy.cs    # 前倒しマスター（Activity拡張後）
+        └── EvidenceKeeperStrategy.cs     # 証拠を残す人（Activity拡張後）
 ```
 
 #### インターフェース設計
@@ -182,6 +191,25 @@ public class EarlyBirdStrategy : IAchievementStrategy
     private const int RequiredCount = 5;
 
     public async Task<IEnumerable<int>> EvaluateAsync(...) { ... }
+}
+```
+
+```csharp
+// 例: SaviorStrategy（Activity拡張後バッジ）
+public class SaviorStrategy : IAchievementStrategy
+{
+    public string AchievementCode => "SAVIOR";
+
+    // 他者から引き継いだタスク（TaskAssigneeChanged）を5件完了
+    private const int RequiredCount = 5;
+
+    public async Task<IEnumerable<int>> EvaluateAsync(...)
+    {
+        // 1. Activityから TaskAssigneeChanged を取得
+        // 2. 変更後の担当者（=評価対象ユーザー）でグループ化
+        // 3. そのタスクが完了（TaskCompleted）しているかを確認
+        // 4. RequiredCount以上完了しているユーザーを抽出
+    }
 }
 ```
 
@@ -428,15 +456,16 @@ src/actions/achievements/
 ### Week 9: AI連携 & 中高難易度Strategy
 
 22. [ ] 中難易度Strategy実装（AiApprentice, StreakMaster, Century, Multitasker, Connector, Commentator, WeekendGuardian, ThousandTasks, PerfectWeek）
-23. [ ] 高難易度Strategy実装（UnsungHero）
-24. [ ] シークレットバッジのAI判定実装
+23. [ ] Activity拡張後バッジのStrategy実装（Savior, SteadyHand, FirstTry, Learner, PromiseKeeper, AheadOfSchedule, EvidenceKeeper）
+24. [ ] 高難易度Strategy実装（UnsungHero）
+25. [ ] シークレットバッジのAI判定実装
 
 ### Week 10: テスト & リリース準備
 
-25. [ ] 単体テスト作成
-26. [ ] 統合テスト作成
-27. [ ] ドキュメント更新
-28. [ ] リリース
+26. [ ] 単体テスト作成
+27. [ ] 統合テスト作成
+28. [ ] ドキュメント更新
+29. [ ] リリース
 
 ---
 

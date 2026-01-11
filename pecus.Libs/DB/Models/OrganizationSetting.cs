@@ -96,6 +96,21 @@ public class OrganizationSetting
     public WorkspaceMode? DefaultWorkspaceMode { get; set; }
 
     /// <summary>
+    /// Gamification機能の有効/無効
+    /// </summary>
+    public bool GamificationEnabled { get; set; } = true;
+
+    /// <summary>
+    /// バッジの公開範囲（デフォルト: Private）
+    /// </summary>
+    public BadgeVisibility GamificationBadgeVisibility { get; set; } = BadgeVisibility.Private;
+
+    /// <summary>
+    /// ユーザーがバッジ公開範囲を変更可能か
+    /// </summary>
+    public bool GamificationAllowUserOverride { get; set; } = true;
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }
