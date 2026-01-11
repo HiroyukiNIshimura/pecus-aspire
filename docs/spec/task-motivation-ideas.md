@@ -1,4 +1,4 @@
-# Pecus Aspire — タスク達成モチベーション向上アイディア集
+# Pecus Aspire — タスク達成モチベーション向上アイディア集（Gamification）
 
 最終更新: 2026-01-11
 
