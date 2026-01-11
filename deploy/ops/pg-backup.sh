@@ -17,3 +17,7 @@ compose \
   run --rm pgbackup
 
 echo "[OK] Backup finished."
+echo "${DATA_PATH}/backups/postgres/ にバックアップファイルが保存されました。"
+echo ""
+echo "[Info] Backup files:"
+ls -lh "${DATA_PATH}/backups/postgres/"
