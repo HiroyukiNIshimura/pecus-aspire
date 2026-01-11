@@ -193,10 +193,8 @@
 }
 
 /* Shiki dual themes: dark mode 時に CSS 変数で色を切り替え */
-[data-theme="dark"] .NotionLikeEditorTheme__code,
 [data-theme="dark"] .NotionLikeEditorTheme__code span {
   color: var(--shiki-dark) !important;
-  background-color: var(--shiki-dark-bg, var(--color-base-100)) !important;
 }
 
 .NotionLikeEditorTheme__code:before {

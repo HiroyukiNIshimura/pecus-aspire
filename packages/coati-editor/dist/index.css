@@ -1047,10 +1047,8 @@
   position: relative;
   tab-size: 2;
 }
-[data-theme=dark] .NotionLikeEditorTheme__code,
 [data-theme=dark] .NotionLikeEditorTheme__code span {
   color: var(--shiki-dark) !important;
-  background-color: var(--shiki-dark-bg, var(--color-base-100)) !important;
 }
 .NotionLikeEditorTheme__code:before {
   content: attr(data-gutter);
@@ -3142,10 +3140,8 @@ i.icon.plus {
   position: relative;
   tab-size: 2;
 }
-[data-theme=dark] .NotionLikeViewerTheme__code,
 [data-theme=dark] .NotionLikeViewerTheme__code span {
   color: var(--shiki-dark) !important;
-  background-color: var(--shiki-dark-bg, var(--color-base-200)) !important;
 }
 .NotionLikeViewerTheme__code:before {
   content: attr(data-gutter);

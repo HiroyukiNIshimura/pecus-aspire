@@ -48,6 +48,13 @@
 			"command": "cd packages/coati-editor && npm run build",
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "build coati-editor",
+			"type": "shell",
+			"command": "cd packages/coati-editor && npm run build",
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }
