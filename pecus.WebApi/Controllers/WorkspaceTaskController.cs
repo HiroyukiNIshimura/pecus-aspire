@@ -327,10 +327,11 @@ public class WorkspaceTaskController : BaseSecureController
             // AI機能が有効な場合のみ、ワークスペースタスク更新通知をバックグラウンドジョブで実行
             if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
             {
-                if ((previousTask.IsCompleted != task.IsCompleted))
+                if (previousTask.IsCompleted != task.IsCompleted && task.IsCompleted)
                 {
-                    //TODO ここにタスク達成の通知ジョブを追加
-                    //通知は担当者のDM宛
+                    _backgroundJobClient.Enqueue<CompleteTaskTask>(x =>
+                        x.NotifyTaskCompletedAsync(task.Id)
+                    );
                 }
                 else
                 {
