@@ -46,6 +46,7 @@ public class ProductAtoms
         await SeedRolesAsync();
         await SeedGenresAsync();
         await SeedTaskTypesAsync();
+        await SeedAchievementMastersAsync();
 
         var backOfficeOrgId = await SeedBackOfficeDataAsync();
 
@@ -672,5 +673,461 @@ public class ProductAtoms
             await _context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} task types", newTaskTypes.Count);
         }
+    }
+
+    /// <summary>
+    /// 実績マスタのシードデータを投入（毎回削除→再投入）
+    /// </summary>
+    private async Task SeedAchievementMastersAsync()
+    {
+        _logger.LogInformation("Seeding achievement masters (delete and re-insert)...");
+
+        var existingMasters = await _context.AchievementMasters.ToListAsync();
+        if (existingMasters.Any())
+        {
+            _context.AchievementMasters.RemoveRange(existingMasters);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Deleted {Count} existing achievement masters", existingMasters.Count);
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var achievements = new[]
+        {
+            // WorkStyle カテゴリ
+            new AchievementMaster
+            {
+                Code = "EARLY_BIRD",
+                Name = "暁の開拓者",
+                NameEn = "Early Bird",
+                Description = "早朝（6:00-8:00）にタスクを5件完了",
+                DescriptionEn = "Complete 5 tasks in the early morning (6:00-8:00)",
+                IconPath = "early_bird.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.WorkStyle,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 1,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "NIGHT_OWL",
+                Name = "夜更かしの棟",
+                NameEn = "Night Owl",
+                Description = "深夜（22:00-2:00）にタスクを5件完了",
+                DescriptionEn = "Complete 5 tasks late at night (22:00-2:00)",
+                IconPath = "night_owl.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.WorkStyle,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 2,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "WEEKEND_GUARDIAN",
+                Name = "週末の聖域",
+                NameEn = "Weekend Guardian",
+                Description = "金曜夜〜月曜朝まで完全オフ（Activity & ChatMessage が0件）",
+                DescriptionEn = "Take a complete break from Friday night to Monday morning (no Activity & ChatMessage)",
+                IconPath = "weekend_guardian.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.WorkStyle,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 3,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "VETERAN",
+                Name = "古参ユーザー",
+                NameEn = "Veteran",
+                Description = "アカウント作成から1年経過",
+                DescriptionEn = "One year since account creation",
+                IconPath = "veteran.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.WorkStyle,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 4,
+                CreatedAt = now
+            },
+
+            // Productivity カテゴリ
+            new AchievementMaster
+            {
+                Code = "INBOX_ZERO",
+                Name = "Inbox Zero",
+                NameEn = "Zen Master",
+                Description = "担当タスクを未完了なしの状態にする",
+                DescriptionEn = "Clear all assigned tasks to zero incomplete",
+                IconPath = "inbox_zero.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 10,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "TASK_CHEF",
+                Name = "タスク料理人",
+                NameEn = "Task Chef",
+                Description = "詳細なDescriptionやチェックリストを活用してタスクを完了",
+                DescriptionEn = "Complete tasks with detailed descriptions and checklists",
+                IconPath = "task_chef.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 11,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "DEADLINE_MASTER",
+                Name = "期限厳守の達人",
+                NameEn = "Deadline Master",
+                Description = "直近10件のタスクをすべて期限内に完了",
+                DescriptionEn = "Complete the last 10 tasks within their deadlines",
+                IconPath = "deadline_master.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 12,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "ESTIMATION_WIZARD",
+                Name = "見積もりの魔術師",
+                NameEn = "Estimation Wizard",
+                Description = "見積もり工数と実績工数の誤差が±20%以内のタスクを5件以上完了",
+                DescriptionEn = "Complete 5+ tasks with estimation accuracy within ±20%",
+                IconPath = "estimation_wizard.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 13,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "SPEED_STAR",
+                Name = "スピードスター",
+                NameEn = "Speed Star",
+                Description = "タスク作成から24時間以内に完了を5件達成",
+                DescriptionEn = "Complete 5 tasks within 24 hours of creation",
+                IconPath = "speed_star.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 14,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "PRIORITY_HUNTER",
+                Name = "高優先度ハンター",
+                NameEn = "Priority Hunter",
+                Description = "優先度Highのタスクを5件連続で完了",
+                DescriptionEn = "Complete 5 high-priority tasks in a row",
+                IconPath = "priority_hunter.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 15,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "DOCUMENTER",
+                Name = "ドキュメンター",
+                NameEn = "Documenter",
+                Description = "詳細なBody（500文字以上）を持つアイテムを作成",
+                DescriptionEn = "Create an item with a detailed body (500+ characters)",
+                IconPath = "documenter.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 16,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "STREAK_MASTER",
+                Name = "連続達成",
+                NameEn = "Streak Master",
+                Description = "7日連続でタスクを完了",
+                DescriptionEn = "Complete tasks for 7 consecutive days",
+                IconPath = "streak_master.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 17,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "CENTURY",
+                Name = "百人力",
+                NameEn = "Century",
+                Description = "累計100件のタスク完了",
+                DescriptionEn = "Complete 100 tasks in total",
+                IconPath = "century.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 18,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "MULTITASKER",
+                Name = "マルチタスカー",
+                NameEn = "Multitasker",
+                Description = "1日に3つ以上のワークスペースでタスク完了",
+                DescriptionEn = "Complete tasks in 3+ workspaces in a single day",
+                IconPath = "multitasker.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 19,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "CONNECTOR",
+                Name = "コネクター",
+                NameEn = "Connector",
+                Description = "アイテム間の関連を10件以上作成",
+                DescriptionEn = "Create 10+ relations between items",
+                IconPath = "connector.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 20,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "THOUSAND_TASKS",
+                Name = "千本ノック",
+                NameEn = "Thousand Tasks",
+                Description = "累計1000件のタスク完了",
+                DescriptionEn = "Complete 1000 tasks in total",
+                IconPath = "thousand_tasks.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 21,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "PERFECT_WEEK",
+                Name = "パーフェクトウィーク",
+                NameEn = "Perfect Week",
+                Description = "1週間で担当タスクを全て期限内完了（最低5件）",
+                DescriptionEn = "Complete all assigned tasks within deadline in a week (minimum 5)",
+                IconPath = "perfect_week.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 22,
+                CreatedAt = now
+            },
+
+            // AI カテゴリ
+            new AchievementMaster
+            {
+                Code = "AI_APPRENTICE",
+                Name = "AI使いの弟子",
+                NameEn = "AI Apprentice",
+                Description = "AIエージェントに相談・依頼を行う",
+                DescriptionEn = "Consult or request assistance from the AI agent",
+                IconPath = "ai_apprentice.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.AI,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 30,
+                CreatedAt = now
+            },
+
+            // TeamPlay カテゴリ
+            new AchievementMaster
+            {
+                Code = "BEST_SUPPORTING",
+                Name = "名バイプレイヤー",
+                NameEn = "Best Supporting",
+                Description = "コミッターとして担当者以外のタスクを5件完了",
+                DescriptionEn = "Complete 5 tasks as a committer (not the assignee)",
+                IconPath = "best_supporting.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.TeamPlay,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 40,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "COMMENTATOR",
+                Name = "コメンテーター",
+                NameEn = "Commentator",
+                Description = "タスクコメントで進捗報告を20件以上投稿",
+                DescriptionEn = "Post 20+ progress comments on tasks",
+                IconPath = "commentator.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.TeamPlay,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 41,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "UNSUNG_HERO",
+                Name = "沈黙の守護者",
+                NameEn = "Unsung Hero",
+                Description = "他人のタスクのブロッカーを迅速に解消",
+                DescriptionEn = "Quickly resolve blockers for others' tasks",
+                IconPath = "unsung_hero.webp",
+                Difficulty = AchievementDifficulty.Hard,
+                Category = AchievementCategory.TeamPlay,
+                IsSecret = true,
+                IsActive = true,
+                SortOrder = 42,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "SAVIOR",
+                Name = "救世主",
+                NameEn = "Savior",
+                Description = "他者から引き継いだタスクを5件完了",
+                DescriptionEn = "Complete 5 tasks inherited from others",
+                IconPath = "savior.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.TeamPlay,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 43,
+                CreatedAt = now
+            },
+
+            // Quality カテゴリ
+            new AchievementMaster
+            {
+                Code = "FIRST_TRY",
+                Name = "一発完了",
+                NameEn = "First Try",
+                Description = "差し戻しなしで完了したタスクの割合が90%以上（最低20件）",
+                DescriptionEn = "Complete 90%+ tasks without rework (minimum 20)",
+                IconPath = "first_try.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Quality,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 50,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "LEARNER",
+                Name = "学習者",
+                NameEn = "Learner",
+                Description = "差し戻し後に再完了したタスクを10件達成",
+                DescriptionEn = "Complete 10 tasks after rework",
+                IconPath = "learner.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Quality,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 51,
+                CreatedAt = now
+            },
+
+            // Reliability カテゴリ
+            new AchievementMaster
+            {
+                Code = "STEADY_HAND",
+                Name = "安定の担当者",
+                NameEn = "Steady Hand",
+                Description = "担当者変更なしで完了したタスクを20件達成",
+                DescriptionEn = "Complete 20 tasks without assignee change",
+                IconPath = "steady_hand.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Reliability,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 60,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "PROMISE_KEEPER",
+                Name = "約束の人",
+                NameEn = "Promise Keeper",
+                Description = "期限延長なしで10件完了",
+                DescriptionEn = "Complete 10 tasks without deadline extension",
+                IconPath = "promise_keeper.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Reliability,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 61,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "AHEAD_OF_SCHEDULE",
+                Name = "前倒しマスター",
+                NameEn = "Ahead of Schedule",
+                Description = "期限を短縮した後に完了を5件達成",
+                DescriptionEn = "Complete 5 tasks after shortening the deadline",
+                IconPath = "ahead_of_schedule.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Reliability,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 62,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "EVIDENCE_KEEPER",
+                Name = "証拠を残す人",
+                NameEn = "Evidence Keeper",
+                Description = "完了タスクの80%以上にファイル添付がある（最低10件）",
+                DescriptionEn = "Attach files to 80%+ of completed tasks (minimum 10)",
+                IconPath = "evidence_keeper.webp",
+                Difficulty = AchievementDifficulty.Medium,
+                Category = AchievementCategory.Reliability,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 63,
+                CreatedAt = now
+            },
+        };
+
+        await _context.AchievementMasters.AddRangeAsync(achievements);
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Added {Count} achievement masters", achievements.Length);
     }
 }
