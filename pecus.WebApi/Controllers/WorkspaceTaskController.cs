@@ -327,8 +327,10 @@ public class WorkspaceTaskController : BaseSecureController
             // AI機能が有効な場合のみ、ワークスペースタスク更新通知をバックグラウンドジョブで実行
             if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
             {
-                if ((previousTask.IsCompleted != task.IsCompleted) || (previousTask.IsDiscarded != task.IsDiscarded))
+                if ((previousTask.IsCompleted != task.IsCompleted))
                 {
+                    //TODO ここにタスク達成の通知ジョブを追加
+                    //通知は担当者のDM宛
                 }
                 else
                 {
@@ -339,12 +341,14 @@ public class WorkspaceTaskController : BaseSecureController
                         requestEstimatedHours: request.EstimatedHours,
                         requestProgressPercentage: request.ProgressPercentage,
                         requestAssignedUserId: request.AssignedUserId,
+                        requestIsDiscarded: request.IsDiscarded == true,
                         previousPriority: previousTask.Priority,
                         previousStartDate: previousTask.StartDate,
                         previousDueDate: previousTask.DueDate,
                         previousEstimatedHours: previousTask.EstimatedHours,
                         previousProgressPercentage: previousTask.ProgressPercentage,
-                        previousAssignedUserId: previousTask.AssignedUserId
+                        previousAssignedUserId: previousTask.AssignedUserId,
+                        previousIsDiscarded: previousTask.IsDiscarded
                     );
 
                     if (changes.HasAnyChanges)

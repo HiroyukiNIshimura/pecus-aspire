@@ -23,6 +23,9 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 /// <param name="AssignedUserIdChanged">担当者が変更されたか</param>
 /// <param name="PreviousAssignedUserId">変更前の担当者ID</param>
 /// <param name="NewAssignedUserId">変更後の担当者ID</param>
+/// <param name="IsDiscardedChanged">破棄状態が変更されたか</param>
+/// <param name="PreviousIsDiscarded">変更前の破棄状態</param>
+/// <param name="NewIsDiscarded">変更後の破棄状態</param>
 public record TaskUpdateChanges(
     bool PriorityChanged,
     TaskPriority? PreviousPriority,
@@ -41,7 +44,10 @@ public record TaskUpdateChanges(
     int? NewProgressPercentage,
     bool AssignedUserIdChanged,
     int? PreviousAssignedUserId,
-    int? NewAssignedUserId
+    int? NewAssignedUserId,
+    bool IsDiscardedChanged,
+    bool PreviousIsDiscarded,
+    bool NewIsDiscarded
 )
 {
     /// <summary>
@@ -53,7 +59,8 @@ public record TaskUpdateChanges(
         DueDateChanged ||
         EstimatedHoursChanged ||
         ProgressPercentageChanged ||
-        AssignedUserIdChanged;
+        AssignedUserIdChanged ||
+        IsDiscardedChanged;
 
     /// <summary>
     /// 変更情報をリクエストと前回の状態から生成する
@@ -64,12 +71,14 @@ public record TaskUpdateChanges(
     /// <param name="requestEstimatedHours">リクエストの予定工数</param>
     /// <param name="requestProgressPercentage">リクエストの進捗率</param>
     /// <param name="requestAssignedUserId">リクエストの担当者ID</param>
+    /// <param name="requestIsDiscarded">リクエストの破棄状態</param>
     /// <param name="previousPriority">変更前の優先度</param>
     /// <param name="previousStartDate">変更前の開始日</param>
     /// <param name="previousDueDate">変更前の期限日</param>
     /// <param name="previousEstimatedHours">変更前の予定工数</param>
     /// <param name="previousProgressPercentage">変更前の進捗率</param>
     /// <param name="previousAssignedUserId">変更前の担当者ID</param>
+    /// <param name="previousIsDiscarded">変更前の破棄状態</param>
     /// <returns>変更情報</returns>
     public static TaskUpdateChanges FromComparison(
         TaskPriority? requestPriority,
@@ -78,12 +87,14 @@ public record TaskUpdateChanges(
         decimal? requestEstimatedHours,
         int? requestProgressPercentage,
         int? requestAssignedUserId,
+        bool requestIsDiscarded,
         TaskPriority? previousPriority,
         DateTimeOffset? previousStartDate,
         DateTimeOffset previousDueDate,
         decimal? previousEstimatedHours,
         int? previousProgressPercentage,
-        int? previousAssignedUserId
+        int? previousAssignedUserId,
+        bool previousIsDiscarded
     )
     {
         return new TaskUpdateChanges(
@@ -104,7 +115,10 @@ public record TaskUpdateChanges(
             NewProgressPercentage: requestProgressPercentage,
             AssignedUserIdChanged: requestAssignedUserId != previousAssignedUserId,
             PreviousAssignedUserId: previousAssignedUserId,
-            NewAssignedUserId: requestAssignedUserId
+            NewAssignedUserId: requestAssignedUserId,
+            IsDiscardedChanged: requestIsDiscarded != previousIsDiscarded,
+            PreviousIsDiscarded: previousIsDiscarded,
+            NewIsDiscarded: requestIsDiscarded
         );
     }
 }

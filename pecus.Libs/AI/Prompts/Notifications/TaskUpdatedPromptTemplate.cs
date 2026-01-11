@@ -123,6 +123,18 @@ public class TaskUpdatedPromptTemplate : IPromptTemplate<TaskUpdatedPromptInput>
             details.Add("担当者が変更されました");
         }
 
+        if (changes.IsDiscardedChanged)
+        {
+            if (changes.NewIsDiscarded)
+            {
+                details.Add("タスクが破棄されました");
+            }
+            else
+            {
+                details.Add("タスクの破棄が取り消されました");
+            }
+        }
+
         if (details.Count == 0)
         {
             return string.Empty;
