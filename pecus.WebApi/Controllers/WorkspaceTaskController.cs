@@ -333,31 +333,31 @@ public class WorkspaceTaskController : BaseSecureController
                         x.NotifyTaskCompletedAsync(task.Id)
                     );
                 }
-                else
-                {
-                    var changes = TaskUpdateChanges.FromComparison(
-                        requestPriority: request.Priority,
-                        requestStartDate: request.StartDate,
-                        requestDueDate: request.DueDate,
-                        requestEstimatedHours: request.EstimatedHours,
-                        requestProgressPercentage: request.ProgressPercentage,
-                        requestAssignedUserId: request.AssignedUserId,
-                        requestIsDiscarded: request.IsDiscarded == true,
-                        previousPriority: previousTask.Priority,
-                        previousStartDate: previousTask.StartDate,
-                        previousDueDate: previousTask.DueDate,
-                        previousEstimatedHours: previousTask.EstimatedHours,
-                        previousProgressPercentage: previousTask.ProgressPercentage,
-                        previousAssignedUserId: previousTask.AssignedUserId,
-                        previousIsDiscarded: previousTask.IsDiscarded
-                    );
 
-                    if (changes.HasAnyChanges)
-                    {
-                        _backgroundJobClient.Enqueue<UpdateTaskTask>(x =>
-                            x.NotifyTaskUpdatedAsync(task.Id, changes)
-                        );
-                    }
+                var changes = TaskUpdateChanges.FromComparison(
+                    requestPriority: request.Priority,
+                    requestStartDate: request.StartDate,
+                    requestDueDate: request.DueDate,
+                    requestEstimatedHours: request.EstimatedHours,
+                    requestProgressPercentage: request.ProgressPercentage,
+                    requestAssignedUserId: request.AssignedUserId,
+                    requestIsDiscarded: request.IsDiscarded == true,
+                    requestIsCompleted: request.IsCompleted == true,
+                    previousPriority: previousTask.Priority,
+                    previousStartDate: previousTask.StartDate,
+                    previousDueDate: previousTask.DueDate,
+                    previousEstimatedHours: previousTask.EstimatedHours,
+                    previousProgressPercentage: previousTask.ProgressPercentage,
+                    previousAssignedUserId: previousTask.AssignedUserId,
+                    previousIsDiscarded: previousTask.IsDiscarded,
+                    previousIsCompleted: previousTask.IsCompleted
+                );
+
+                if (changes.HasAnyChanges)
+                {
+                    _backgroundJobClient.Enqueue<UpdateTaskTask>(x =>
+                        x.NotifyTaskUpdatedAsync(task.Id, changes)
+                    );
                 }
             }
         }

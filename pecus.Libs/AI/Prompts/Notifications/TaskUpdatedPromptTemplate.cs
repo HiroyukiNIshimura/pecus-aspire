@@ -135,6 +135,18 @@ public class TaskUpdatedPromptTemplate : IPromptTemplate<TaskUpdatedPromptInput>
             }
         }
 
+        if (changes.IsCompletedChanged)
+        {
+            if (changes.NewIsCompleted)
+            {
+                details.Add("タスクが完了しました");
+            }
+            else
+            {
+                details.Add("タスクの完了が取り消されました");
+            }
+        }
+
         if (details.Count == 0)
         {
             return string.Empty;
