@@ -151,6 +151,41 @@ public interface IAchievementStrategy
 }
 ```
 
+#### 閾値（条件パラメータ）の管理方針
+
+**方針: Strategy内ハードコード**
+
+実績の判定条件（閾値）は各Strategyクラス内にハードコードする。
+
+```csharp
+// 例: EarlyBirdStrategy
+public class EarlyBirdStrategy : IAchievementStrategy
+{
+    public string AchievementCode => "EARLY_BIRD";
+
+    // 閾値はコード内で明示（コード = 仕様書）
+    private static readonly TimeOnly StartTime = new(6, 0);
+    private static readonly TimeOnly EndTime = new(8, 0);
+    private const int RequiredCount = 5;
+
+    public async Task<IEnumerable<int>> EvaluateAsync(...) { ... }
+}
+```
+
+**理由:**
+1. **コードが仕様書になる** — 条件が複合的（時間帯 AND 回数 AND 連続日数など）で、JSONでは表現しにくい
+2. **型安全** — コンパイル時に検証可能
+3. **変更追跡** — PRレビューで閾値変更が追跡可能
+4. **テスト容易** — 単体テストで閾値の妥当性を検証できる
+5. **YAGNI** — 組織別カスタマイズは現時点で不要。必要になった時点で設定ファイル化を検討
+
+**AchievementMasterの責務:**
+| 責務 | 管理場所 |
+|------|----------|
+| 表示情報（名前、説明、アイコン） | AchievementMaster（DB） |
+| 判定ロジック＆閾値 | Strategy（コード） |
+| 有効/無効の切り替え | AchievementMaster.IsActive（DB） |
+
 ### 1.5 Hangfire 夜間バッチ
 
 #### AchievementEvaluationTask
