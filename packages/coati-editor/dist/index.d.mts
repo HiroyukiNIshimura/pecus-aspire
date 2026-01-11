@@ -95,6 +95,7 @@ declare function ImageUploadProvider({ children, handler }: ImageUploadProviderP
  */
 declare const DEFAULT_SETTINGS: {
     readonly autoFocus: true;
+    readonly codeShikiTheme: "github-light";
     readonly disableBeforeInput: false;
     readonly emptyEditor: false;
     readonly hasLinkAttributes: false;
@@ -120,6 +121,10 @@ declare const DEFAULT_SETTINGS: {
     readonly tableHorizontalScroll: true;
 };
 type SettingName = keyof typeof DEFAULT_SETTINGS;
+type Settings = {
+    -readonly [K in keyof typeof DEFAULT_SETTINGS]: (typeof DEFAULT_SETTINGS)[K] extends boolean ? boolean : (typeof DEFAULT_SETTINGS)[K] extends string ? string : (typeof DEFAULT_SETTINGS)[K];
+};
+type SettingValue<K extends SettingName> = Settings[K];
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -130,12 +135,12 @@ type SettingName = keyof typeof DEFAULT_SETTINGS;
  */
 
 type SettingsContextShape = {
-    setOption: (name: SettingName, value: boolean) => void;
-    settings: Record<SettingName, boolean>;
+    setOption: <K extends SettingName>(name: K, value: SettingValue<K>) => void;
+    settings: Settings;
 };
 declare const SettingsContext: ({ children, initialSettings, }: {
     children: ReactNode;
-    initialSettings?: Partial<Record<SettingName, boolean>>;
+    initialSettings?: Partial<Settings>;
 }) => JSX.Element;
 declare const useSettings: () => SettingsContextShape;
 
@@ -288,6 +293,11 @@ interface NotionLikeEditorProps {
      */
     isCodeShiki?: boolean;
     /**
+     * Shikiコードハイライトのテーマ
+     * @default 'github-light'
+     */
+    codeShikiTheme?: string;
+    /**
      * 画像アップロードハンドラー
      * 指定しない場合はローカルプレビューモードで動作（アップロードなし）
      */
@@ -315,7 +325,7 @@ interface NotionLikeEditorProps {
      */
     extraComponentPickerOptions?: ExtraOptionsProvider;
 }
-declare function NotionLikeEditor({ showToolbar, autoFocus, measureTypingPerf, initialEditorState, initialMarkdown, onChange, onChangePlainText, onChangeHtml, onChangeMarkdown, debounceMs, isCodeShiki, imageUploadHandler, customLinkMatchers, onEditorReady, extraPlugins, extraComponentPickerOptions, }: NotionLikeEditorProps): react_jsx_runtime.JSX.Element;
+declare function NotionLikeEditor({ showToolbar, autoFocus, measureTypingPerf, initialEditorState, initialMarkdown, onChange, onChangePlainText, onChangeHtml, onChangeMarkdown, debounceMs, isCodeShiki, codeShikiTheme, imageUploadHandler, customLinkMatchers, onEditorReady, extraPlugins, extraComponentPickerOptions, }: NotionLikeEditorProps): react_jsx_runtime.JSX.Element;
 
 interface NotionLikeViewerProps {
     /**
@@ -327,12 +337,17 @@ interface NotionLikeViewerProps {
      */
     isCodeShiki?: boolean;
     /**
+     * Shikiコードハイライトのテーマ
+     * @default 'github-light'
+     */
+    codeShikiTheme?: string;
+    /**
      * カスタムのAutoLink Matcher配列
      * URLやメールアドレスの基本Matcherに追加される
      */
     customLinkMatchers?: LinkMatcher[];
 }
-declare function NotionLikeViewer({ initialViewerState, isCodeShiki, customLinkMatchers, }: NotionLikeViewerProps): react_jsx_runtime.JSX.Element;
+declare function NotionLikeViewer({ initialViewerState, isCodeShiki, codeShikiTheme, customLinkMatchers, }: NotionLikeViewerProps): react_jsx_runtime.JSX.Element;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -844,4 +859,4 @@ declare function validateUrl(url: string): boolean;
 
 declare const PACKAGE_VERSION = "0.1.0";
 
-export { Button, ColorPicker, type ComponentPickerOptionConfig, ComponentPickerProvider, LexicalContentEditable as ContentEditable, type CoreEditorProps, DialogActions, DialogButtonsList, DropDown, DropDownItem, DropdownColorPicker, Editor, type EditorChangeCallbacks, type EditorContext, type EditorSettings, _default$1 as EquationEditor, type ExtraOptionsProvider, FileInput, FlashMessage, FlashMessageContext, FragmentLinkPlugin, FullscreenProvider, HorizontalRulePlugin, INSERT_MARKDOWN_COMMAND, ImageResizer, type ImageUploadHandler, ImageUploadProvider, type ImageUploadResult, ImagesPlugin, KatexEquationAlterer, KatexRenderer, Modal, NotionLikeEditor, theme$2 as NotionLikeEditorTheme, NotionLikeViewer, theme$1 as NotionLikeViewerTheme, PACKAGE_VERSION, PLAYGROUND_TRANSFORMERS, type PecusEditorProps, Select, SettingsContext, SharedHistoryContext, type ShowFlashMessage, theme as StickyEditorTheme, Switch, TableContext, TextInput, ToolbarContext, Viewer, blockTypeToBlockName, _default as emojiList, getSelectedNode, joinClasses, sanitizeUrl, useComponentPickerContext, useFlashMessageContext, useFullscreen, useImageUpload, useModal, useReport, useSettings, useSharedHistoryContext, useToolbarState, validateUrl };
+export { Button, ColorPicker, type ComponentPickerOptionConfig, ComponentPickerProvider, LexicalContentEditable as ContentEditable, type CoreEditorProps, DialogActions, DialogButtonsList, DropDown, DropDownItem, DropdownColorPicker, Editor, type EditorChangeCallbacks, type EditorContext, type EditorSettings, _default$1 as EquationEditor, type ExtraOptionsProvider, FileInput, FlashMessage, FlashMessageContext, FragmentLinkPlugin, FullscreenProvider, HorizontalRulePlugin, INSERT_MARKDOWN_COMMAND, ImageResizer, type ImageUploadHandler, ImageUploadProvider, type ImageUploadResult, ImagesPlugin, KatexEquationAlterer, KatexRenderer, Modal, NotionLikeEditor, type NotionLikeEditorProps, theme$2 as NotionLikeEditorTheme, NotionLikeViewer, type NotionLikeViewerProps, theme$1 as NotionLikeViewerTheme, PACKAGE_VERSION, PLAYGROUND_TRANSFORMERS, type PecusEditorProps, Select, SettingsContext, SharedHistoryContext, type ShowFlashMessage, theme as StickyEditorTheme, Switch, TableContext, TextInput, ToolbarContext, Viewer, blockTypeToBlockName, _default as emojiList, getSelectedNode, joinClasses, sanitizeUrl, useComponentPickerContext, useFlashMessageContext, useFullscreen, useImageUpload, useModal, useReport, useSettings, useSharedHistoryContext, useToolbarState, validateUrl };

@@ -17,7 +17,14 @@ export { SettingsContext, useSettings } from './context/SettingsContext';
 export { SharedHistoryContext, useSharedHistoryContext } from './context/SharedHistoryContext';
 export { blockTypeToBlockName, ToolbarContext, useToolbarState } from './context/ToolbarContext';
 // コアエディタコンポーネント
-export { Editor, NotionLikeEditor, NotionLikeViewer, Viewer } from './core';
+export {
+  Editor,
+  NotionLikeEditor,
+  type NotionLikeEditorProps,
+  NotionLikeViewer,
+  type NotionLikeViewerProps,
+  Viewer,
+} from './core';
 // Hooks
 export { default as useModal } from './hooks/useModal';
 export { default as useReport } from './hooks/useReport';

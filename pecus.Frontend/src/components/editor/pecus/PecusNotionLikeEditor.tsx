@@ -10,6 +10,7 @@
 import type { CoreEditorProps, ExtraOptionsProvider } from '@coati/editor';
 import { NotionLikeEditor } from '@coati/editor';
 import { useCallback } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 import { useIsAiEnabled } from '@/providers/AppSettingsProvider';
 import AiAssistantPlugin, { INSERT_AI_ASSISTANT_COMMAND } from '../plugins/AiAssistantPlugin';
 
@@ -23,6 +24,8 @@ export type NotionLikeEditorProps = CoreEditorProps;
  */
 export default function PecusNotionLikeEditor(props: NotionLikeEditorProps) {
   const isAiEnabled = useIsAiEnabled();
+  const { resolvedTheme } = useTheme();
+  const codeShikiTheme = resolvedTheme === 'dark' ? 'github-dark' : 'github-light';
 
   const extraComponentPickerOptions: ExtraOptionsProvider = useCallback(
     (editor) => {
@@ -46,6 +49,7 @@ export default function PecusNotionLikeEditor(props: NotionLikeEditorProps) {
   return (
     <NotionLikeEditor
       {...props}
+      codeShikiTheme={codeShikiTheme}
       extraPlugins={isAiEnabled && <AiAssistantPlugin />}
       extraComponentPickerOptions={extraComponentPickerOptions}
     />

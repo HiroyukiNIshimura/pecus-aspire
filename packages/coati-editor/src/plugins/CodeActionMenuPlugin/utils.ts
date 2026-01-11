@@ -7,6 +7,6 @@
  */
 import { useDebouncedCallback } from 'use-debounce';
 
-export function useDebounce<T extends (...args: never[]) => void>(fn: T, ms: number, maxWait?: number) {
+export function useDebounce<T extends (...args: Parameters<T>) => ReturnType<T>>(fn: T, ms: number, maxWait?: number) {
   return useDebouncedCallback(fn, ms, { maxWait });
 }

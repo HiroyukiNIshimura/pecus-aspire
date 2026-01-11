@@ -8,6 +8,7 @@
 
 export const DEFAULT_SETTINGS = {
   autoFocus: true,
+  codeShikiTheme: 'github-light',
   disableBeforeInput: false,
   emptyEditor: false,
   hasLinkAttributes: false,
@@ -33,11 +34,20 @@ export const DEFAULT_SETTINGS = {
   tableHorizontalScroll: true,
 } as const;
 
-// These are mutated in setupEnv
-export const INITIAL_SETTINGS: Record<SettingName, boolean> = {
-  ...DEFAULT_SETTINGS,
-};
-
 export type SettingName = keyof typeof DEFAULT_SETTINGS;
 
-export type Settings = typeof INITIAL_SETTINGS;
+// Mutable version of DEFAULT_SETTINGS type for runtime use
+export type Settings = {
+  -readonly [K in keyof typeof DEFAULT_SETTINGS]: (typeof DEFAULT_SETTINGS)[K] extends boolean
+    ? boolean
+    : (typeof DEFAULT_SETTINGS)[K] extends string
+      ? string
+      : (typeof DEFAULT_SETTINGS)[K];
+};
+
+export type SettingValue<K extends SettingName> = Settings[K];
+
+// These are mutated in setupEnv
+export const INITIAL_SETTINGS: Settings = {
+  ...DEFAULT_SETTINGS,
+};

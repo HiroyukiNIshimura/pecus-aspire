@@ -6,6 +6,6 @@
  */
 
 export { default as Editor } from './Editor';
-export { default as NotionLikeEditor } from './NotionLikeEditor';
-export { default as NotionLikeViewer } from './NotionLikeViewer';
+export { default as NotionLikeEditor, type NotionLikeEditorProps } from './NotionLikeEditor';
+export { default as NotionLikeViewer, type NotionLikeViewerProps } from './NotionLikeViewer';
 export { default as Viewer } from './Viewer';

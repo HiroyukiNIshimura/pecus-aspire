@@ -56,7 +56,7 @@ import { useLexicalComposerContext as useLexicalComposerContext10 } from "@lexic
 import { useLexicalNodeSelection } from "@lexical/react/useLexicalNodeSelection";
 import { setHours, setMinutes } from "date-fns";
 import { $getNodeByKey as $getNodeByKey2 } from "lexical";
-import { useEffect as useEffect14, useRef as useRef4, useState as useState11 } from "react";
+import { useEffect as useEffect14, useRef as useRef5, useState as useState11 } from "react";
 import { DayPicker } from "react-day-picker";
 import { jsx as jsx22, jsxs as jsxs7 } from "react/jsx-runtime";
 function DateTimeComponent({
@@ -65,7 +65,7 @@ function DateTimeComponent({
 }) {
   const [editor] = useLexicalComposerContext10();
   const [isOpen, setIsOpen] = useState11(false);
-  const ref = useRef4(null);
+  const ref = useRef5(null);
   const [selected, setSelected] = useState11(dateTime);
   const [includeTime, setIncludeTime] = useState11(() => {
     if (dateTime === void 0) {
@@ -469,14 +469,14 @@ var init_EquationEditor2 = __esm({
 
 // src/ui/KatexRenderer.tsx
 import katex from "katex";
-import { useEffect as useEffect16, useRef as useRef5 } from "react";
+import { useEffect as useEffect16, useRef as useRef6 } from "react";
 import { Fragment as Fragment4, jsx as jsx25, jsxs as jsxs9 } from "react/jsx-runtime";
 function KatexRenderer({
   equation,
   inline,
   onDoubleClick
 }) {
-  const katexElementRef = useRef5(null);
+  const katexElementRef = useRef6(null);
   useEffect16(() => {
     const katexElement = katexElementRef.current;
     if (katexElement !== null) {
@@ -540,14 +540,14 @@ import {
   KEY_ESCAPE_COMMAND,
   SELECTION_CHANGE_COMMAND
 } from "lexical";
-import { useCallback as useCallback8, useEffect as useEffect17, useRef as useRef6, useState as useState12 } from "react";
+import { useCallback as useCallback8, useEffect as useEffect17, useRef as useRef7, useState as useState12 } from "react";
 import { Fragment as Fragment5, jsx as jsx26 } from "react/jsx-runtime";
 function EquationComponent({ equation, inline, nodeKey }) {
   const [editor] = useLexicalComposerContext12();
   const isEditable = useLexicalEditable();
   const [equationValue, setEquationValue] = useState12(equation);
   const [showEquationEditor, setShowEquationEditor] = useState12(false);
-  const inputRef = useRef6(null);
+  const inputRef = useRef7(null);
   const onHide = useCallback8(
     (restoreSelection) => {
       setShowEquationEditor(false);
@@ -1068,7 +1068,7 @@ import {
   LexicalTypeaheadMenuPlugin,
   useBasicTypeaheadTriggerMatch
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
-import { useCallback as useCallback11, useEffect as useEffect20, useMemo as useMemo10, useState as useState14 } from "react";
+import { useCallback as useCallback11, useEffect as useEffect20, useMemo as useMemo11, useState as useState14 } from "react";
 import * as ReactDOM from "react-dom";
 import { jsx as jsx31, jsxs as jsxs11 } from "react/jsx-runtime";
 function useMentionLookupService(mentionString) {
@@ -1150,7 +1150,7 @@ function NewMentionsPlugin() {
   const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch("/", {
     minLength: 0
   });
-  const options = useMemo10(
+  const options = useMemo11(
     () => results.map((result) => new MentionTypeaheadOption(result, /* @__PURE__ */ jsx31("i", { className: "icon user" }))).slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
     [results]
   );
@@ -1684,7 +1684,7 @@ var init_ContentEditable2 = __esm({
 
 // src/ui/ImageResizer.tsx
 import { calculateZoomLevel } from "@lexical/utils";
-import { useRef as useRef7 } from "react";
+import { useRef as useRef8 } from "react";
 import { jsx as jsx33, jsxs as jsxs12 } from "react/jsx-runtime";
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -1700,12 +1700,12 @@ function ImageResizer({
   setShowCaption,
   captionsEnabled
 }) {
-  const controlWrapperRef = useRef7(null);
-  const userSelect = useRef7({
+  const controlWrapperRef = useRef8(null);
+  const userSelect = useRef8({
     priority: "",
     value: "default"
   });
-  const positioningRef = useRef7({
+  const positioningRef = useRef8({
     currentHeight: 0,
     currentWidth: 0,
     direction: 0,
@@ -1958,7 +1958,7 @@ import {
   KEY_ESCAPE_COMMAND as KEY_ESCAPE_COMMAND2,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND2
 } from "lexical";
-import { Suspense, useCallback as useCallback12, useEffect as useEffect21, useMemo as useMemo11, useRef as useRef8, useState as useState15 } from "react";
+import { Suspense, useCallback as useCallback12, useEffect as useEffect21, useMemo as useMemo12, useRef as useRef9, useState as useState15 } from "react";
 import { jsx as jsx34, jsxs as jsxs13 } from "react/jsx-runtime";
 function DisableCaptionOnBlur({ setShowCaption }) {
   const [editor] = useLexicalComposerContext17();
@@ -2094,15 +2094,15 @@ function ImageComponent({
   caption,
   captionsEnabled
 }) {
-  const imageRef = useRef8(null);
-  const buttonRef = useRef8(null);
+  const imageRef = useRef9(null);
+  const buttonRef = useRef9(null);
   const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection2(nodeKey);
   const [isResizing, setIsResizing] = useState15(false);
   const [editor] = useLexicalComposerContext17();
-  const activeEditorRef = useRef8(null);
+  const activeEditorRef = useRef9(null);
   const [isLoadError, setIsLoadError] = useState15(false);
   const isEditable = useLexicalEditable2();
-  const isInNodeSelection = useMemo11(
+  const isInNodeSelection = useMemo12(
     () => isSelected && editor.getEditorState().read(() => {
       const selection = $getSelection5();
       return $isNodeSelection2(selection) && selection.has(nodeKey);
@@ -2753,7 +2753,7 @@ import { LexicalNestedComposer as LexicalNestedComposer2 } from "@lexical/react/
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { calculateZoomLevel as calculateZoomLevel5 } from "@lexical/utils";
 import { $getNodeByKey as $getNodeByKey7 } from "lexical";
-import { useEffect as useEffect44, useLayoutEffect, useRef as useRef19, useState as useState31 } from "react";
+import { useEffect as useEffect44, useLayoutEffect, useRef as useRef20, useState as useState31 } from "react";
 import { createPortal as createPortal13 } from "react-dom";
 import { jsx as jsx55, jsxs as jsxs29 } from "react/jsx-runtime";
 function positionSticky(stickyElem, positioning) {
@@ -2769,9 +2769,9 @@ function StickyComponent({
   caption
 }) {
   const [editor] = useLexicalComposerContext40();
-  const stickyContainerRef = useRef19(null);
+  const stickyContainerRef = useRef20(null);
   const [portalContainer, setPortalContainer] = useState31(null);
-  const positioningRef = useRef19({
+  const positioningRef = useRef20({
     isDragging: false,
     offsetX: 0,
     offsetY: 0,
@@ -3203,6 +3203,7 @@ import { createContext as createContext5, useCallback as useCallback3, useContex
 // src/core/appSettings.ts
 var DEFAULT_SETTINGS = {
   autoFocus: true,
+  codeShikiTheme: "github-light",
   disableBeforeInput: false,
   emptyEditor: false,
   hasLinkAttributes: false,
@@ -7035,14 +7036,39 @@ function CodeHighlightPrismPlugin() {
 }
 
 // src/plugins/CodeHighlightShikiPlugin/index.ts
-import { registerCodeHighlighting as registerCodeHighlighting2 } from "@lexical/code-shiki";
+import { $isCodeNode as $isCodeNode4 } from "@lexical/code";
+import { registerCodeHighlighting as registerCodeHighlighting2, ShikiTokenizer } from "@lexical/code-shiki";
 import { useLexicalComposerContext as useLexicalComposerContext8 } from "@lexical/react/LexicalComposerContext";
-import { useEffect as useEffect12 } from "react";
+import { $dfs } from "@lexical/utils";
+import { useEffect as useEffect12, useMemo as useMemo10, useRef as useRef4 } from "react";
 function CodeHighlightShikiPlugin() {
   const [editor] = useLexicalComposerContext8();
+  const {
+    settings: { codeShikiTheme }
+  } = useSettings();
+  const prevThemeRef = useRef4(codeShikiTheme);
+  const tokenizer = useMemo10(
+    () => ({
+      ...ShikiTokenizer,
+      defaultTheme: codeShikiTheme
+    }),
+    [codeShikiTheme]
+  );
   useEffect12(() => {
-    return registerCodeHighlighting2(editor);
-  }, [editor]);
+    if (prevThemeRef.current !== codeShikiTheme) {
+      prevThemeRef.current = codeShikiTheme;
+      editor.update(() => {
+        for (const { node } of $dfs()) {
+          if ($isCodeNode4(node)) {
+            node.setTheme(codeShikiTheme);
+          }
+        }
+      });
+    }
+  }, [editor, codeShikiTheme]);
+  useEffect12(() => {
+    return registerCodeHighlighting2(editor, tokenizer);
+  }, [editor, tokenizer]);
   return null;
 }
 
@@ -7513,7 +7539,7 @@ import {
   $isRangeSelection as $isRangeSelection6,
   FORMAT_ELEMENT_COMMAND
 } from "lexical";
-import { useCallback as useCallback14, useMemo as useMemo14, useState as useState22 } from "react";
+import { useCallback as useCallback14, useMemo as useMemo15, useState as useState22 } from "react";
 import * as ReactDOM2 from "react-dom";
 
 // src/plugins/DateTimePlugin/index.tsx
@@ -7679,7 +7705,7 @@ import {
   getDOMSelectionFromTarget,
   isHTMLElement as isHTMLElement4
 } from "lexical";
-import { useEffect as useEffect22, useRef as useRef9, useState as useState18 } from "react";
+import { useEffect as useEffect22, useRef as useRef10, useState as useState18 } from "react";
 init_ImageNode2();
 
 // src/ui/FileInput.tsx
@@ -7848,7 +7874,7 @@ function InsertImageDialog({
   onClose
 }) {
   const [mode, setMode] = useState18(null);
-  const hasModifier = useRef9(false);
+  const hasModifier = useRef10(false);
   useEffect22(() => {
     hasModifier.current = false;
     const handler = (e) => {
@@ -8047,7 +8073,7 @@ import { useState as useState20 } from "react";
 // src/ui/DropDown.tsx
 import { isDOMNode as isDOMNode2 } from "lexical";
 import * as React4 from "react";
-import { useCallback as useCallback13, useEffect as useEffect23, useMemo as useMemo12, useRef as useRef10, useState as useState19 } from "react";
+import { useCallback as useCallback13, useEffect as useEffect23, useMemo as useMemo13, useRef as useRef11, useState as useState19 } from "react";
 import { createPortal as createPortal5 } from "react-dom";
 
 // src/utils/focusUtils.ts
@@ -8078,7 +8104,7 @@ function DropDownItem({
   onClick,
   title
 }) {
-  const ref = useRef10(null);
+  const ref = useRef11(null);
   const dropDownContext = React4.useContext(DropDownContext);
   if (dropDownContext === null) {
     throw new Error("DropDownItem must be used within a DropDown");
@@ -8132,7 +8158,7 @@ function DropDownItems({
       });
     }
   };
-  const contextValue = useMemo12(
+  const contextValue = useMemo13(
     () => ({
       registerItem
     }),
@@ -8162,8 +8188,8 @@ function DropDown({
   children,
   stopCloseOnClickSelf
 }) {
-  const dropDownRef = useRef10(null);
-  const buttonRef = useRef10(null);
+  const dropDownRef = useRef11(null);
+  const buttonRef = useRef11(null);
   const [showDropDown, setShowDropDown] = useState19(false);
   const [shouldAutofocus, setShouldAutofocus] = useState19(false);
   const handleClose = () => {
@@ -8712,7 +8738,7 @@ function PageBreakPlugin() {
 // src/plugins/TablePlugin.tsx
 import { useLexicalComposerContext as useLexicalComposerContext22 } from "@lexical/react/LexicalComposerContext";
 import { INSERT_TABLE_COMMAND, TableCellNode, TableNode, TableRowNode } from "@lexical/table";
-import { createContext as createContext10, useContext as useContext10, useEffect as useEffect27, useMemo as useMemo13, useState as useState21 } from "react";
+import { createContext as createContext10, useContext as useContext10, useEffect as useEffect27, useMemo as useMemo14, useState as useState21 } from "react";
 import { Fragment as Fragment10, jsx as jsx42, jsxs as jsxs19 } from "react/jsx-runtime";
 var CellContext = createContext10({
   cellEditorConfig: null,
@@ -8728,7 +8754,7 @@ function TableContext({ children }) {
   return /* @__PURE__ */ jsx42(
     CellContext.Provider,
     {
-      value: useMemo13(
+      value: useMemo14(
         () => ({
           cellEditorConfig: contextValue.cellEditorConfig,
           cellEditorPlugins: contextValue.cellEditorPlugins,
@@ -9035,7 +9061,7 @@ function ComponentPickerMenuPlugin({
     allowWhitespace: true,
     minLength: 0
   });
-  const options = useMemo14(() => {
+  const options = useMemo15(() => {
     const baseOptions = getBaseOptions(editor, showModal);
     const extraOptionConfigs = extraOptions?.(editor) ?? [];
     const extraPickerOptions = extraOptionConfigs.map(
@@ -9118,11 +9144,11 @@ import {
   CUT_COMMAND,
   PASTE_COMMAND
 } from "lexical";
-import { useMemo as useMemo15 } from "react";
+import { useMemo as useMemo16 } from "react";
 import { jsx as jsx44 } from "react/jsx-runtime";
 function ContextMenuPlugin() {
   const [editor] = useLexicalComposerContext24();
-  const items = useMemo15(() => {
+  const items = useMemo16(() => {
     return [
       new NodeContextMenuOption(`Remove Link`, {
         $onSelect: () => {
@@ -9297,7 +9323,7 @@ import {
   DRAGOVER_COMMAND as DRAGOVER_COMMAND2,
   DROP_COMMAND as DROP_COMMAND2
 } from "lexical";
-import { useCallback as useCallback15, useEffect as useEffect29, useRef as useRef11, useState as useState23 } from "react";
+import { useCallback as useCallback15, useEffect as useEffect29, useRef as useRef12, useState as useState23 } from "react";
 import { createPortal as createPortal7 } from "react-dom";
 
 // src/plugins/DraggableBlockPlugin/point.ts
@@ -9573,7 +9599,7 @@ function hideTargetLine(targetLineElem) {
 }
 function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEditable, menuComponent, targetLineComponent, isOnMenu2, onElementChanged) {
   const scrollerElem = anchorElem.parentElement;
-  const isDraggingBlockRef = useRef11(false);
+  const isDraggingBlockRef = useRef12(false);
   const [draggableBlockElem, setDraggableBlockElemState] = useState23(null);
   const setDraggableBlockElem = useCallback15(
     (elem) => {
@@ -9755,8 +9781,8 @@ function DraggableBlockPlugin({
   anchorElem = document.body
 }) {
   const [editor] = useLexicalComposerContext26();
-  const menuRef = useRef11(null);
-  const targetLineRef = useRef11(null);
+  const menuRef = useRef12(null);
+  const targetLineRef = useRef12(null);
   const [draggableElement, setDraggableElement] = useState23(null);
   function insertBlock(e) {
     if (!draggableElement || !editor) {
@@ -9866,7 +9892,7 @@ import {
   KEY_ESCAPE_COMMAND as KEY_ESCAPE_COMMAND3,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND3
 } from "lexical";
-import { useCallback as useCallback16, useEffect as useEffect31, useRef as useRef12, useState as useState24 } from "react";
+import { useCallback as useCallback16, useEffect as useEffect31, useRef as useRef13, useState as useState24 } from "react";
 import { createPortal as createPortal8 } from "react-dom";
 
 // src/utils/getSelectedNode.ts
@@ -9928,8 +9954,8 @@ function FloatingLinkEditor({
   isLinkEditMode,
   setIsLinkEditMode
 }) {
-  const editorRef = useRef12(null);
-  const inputRef = useRef12(null);
+  const editorRef = useRef13(null);
+  const inputRef = useRef13(null);
   const [linkUrl, setLinkUrl] = useState24("");
   const [editedLinkUrl, setEditedLinkUrl] = useState24("https://");
   const [lastSelection, setLastSelection] = useState24(null);
@@ -10285,12 +10311,12 @@ import {
   getDOMSelection as getDOMSelection2,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND4
 } from "lexical";
-import { useCallback as useCallback17, useEffect as useEffect32, useRef as useRef14, useState as useState26 } from "react";
+import { useCallback as useCallback17, useEffect as useEffect32, useRef as useRef15, useState as useState26 } from "react";
 import { createPortal as createPortal9 } from "react-dom";
 
 // src/ui/ColorPicker.tsx
 import { calculateZoomLevel as calculateZoomLevel3 } from "@lexical/utils";
-import { useMemo as useMemo16, useRef as useRef13, useState as useState25 } from "react";
+import { useMemo as useMemo17, useRef as useRef14, useState as useState25 } from "react";
 import { jsx as jsx47, jsxs as jsxs23 } from "react/jsx-runtime";
 var skipAddingToHistoryStack = false;
 function parseAllowedColor(input) {
@@ -10318,15 +10344,15 @@ var HEIGHT = 150;
 function ColorPicker({ color, onChange }) {
   const [selfColor, setSelfColor] = useState25(transformColor("hex", color));
   const [inputColor, setInputColor] = useState25(transformColor("hex", color).hex);
-  const innerDivRef = useRef13(null);
-  const saturationPosition = useMemo16(
+  const innerDivRef = useRef14(null);
+  const saturationPosition = useMemo17(
     () => ({
       x: selfColor.hsv.s / 100 * WIDTH,
       y: (100 - selfColor.hsv.v) / 100 * HEIGHT
     }),
     [selfColor.hsv.s, selfColor.hsv.v]
   );
-  const huePosition = useMemo16(
+  const huePosition = useMemo17(
     () => ({
       x: selfColor.hsv.h / 360 * WIDTH
     }),
@@ -10414,8 +10440,8 @@ function ColorPicker({ color, onChange }) {
   ] });
 }
 function MoveWrapper({ className, style, onChange, children }) {
-  const divRef = useRef13(null);
-  const draggedRef = useRef13(false);
+  const divRef = useRef14(null);
+  const draggedRef = useRef14(false);
   const move = (e) => {
     if (divRef.current) {
       const { current: div } = divRef;
@@ -10618,7 +10644,7 @@ function TextFormatFloatingToolbar({
   bgColor,
   setIsLinkEditMode
 }) {
-  const popupCharStylesEditorRef = useRef14(null);
+  const popupCharStylesEditorRef = useRef15(null);
   const insertLink = useCallback17(() => {
     if (!isLink) {
       setIsLinkEditMode(true);
@@ -29063,7 +29089,7 @@ import {
   isDOMNode as isDOMNode3,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND5
 } from "lexical";
-import { useCallback as useCallback19, useEffect as useEffect40, useRef as useRef15, useState as useState27 } from "react";
+import { useCallback as useCallback19, useEffect as useEffect40, useRef as useRef16, useState as useState27 } from "react";
 import { createPortal as createPortal10 } from "react-dom";
 import { Fragment as Fragment15, jsx as jsx51, jsxs as jsxs25 } from "react/jsx-runtime";
 function computeSelectionCount(selection) {
@@ -29112,7 +29138,7 @@ function TableActionMenu({
   showColorPickerModal
 }) {
   const [editor] = useLexicalComposerContext36();
-  const dropDownRef = useRef15(null);
+  const dropDownRef = useRef16(null);
   const [tableCellNode, updateTableCellNode] = useState27(_tableCellNode);
   const [selectionCounts, updateSelectionCounts] = useState27({
     columns: 1,
@@ -29610,8 +29636,8 @@ function TableCellActionMenuContainer({
   cellMerge
 }) {
   const [editor] = useLexicalComposerContext36();
-  const menuButtonRef = useRef15(null);
-  const menuRootRef = useRef15(null);
+  const menuButtonRef = useRef16(null);
+  const menuRootRef = useRef16(null);
   const [isMenuOpen, setIsMenuOpen] = useState27(false);
   const [tableCellNode, setTableMenuCellNode] = useState27(null);
   const [colorPickerModal, showColorPickerModal] = useModal();
@@ -29727,7 +29753,7 @@ function TableCellActionMenuContainer({
       () => clearTimeout(timeoutId)
     );
   });
-  const prevTableCellDOM = useRef15(tableCellNode);
+  const prevTableCellDOM = useRef16(tableCellNode);
   useEffect40(() => {
     if (prevTableCellDOM.current !== tableCellNode) {
       setIsMenuOpen(false);
@@ -29791,8 +29817,8 @@ import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode5, isHTMLElemen
 import {
   useCallback as useCallback20,
   useEffect as useEffect41,
-  useMemo as useMemo17,
-  useRef as useRef16,
+  useMemo as useMemo18,
+  useRef as useRef17,
   useState as useState28
 } from "react";
 import { createPortal as createPortal11 } from "react-dom";
@@ -29800,11 +29826,11 @@ import { Fragment as Fragment16, jsx as jsx52, jsxs as jsxs26 } from "react/jsx-
 var MIN_ROW_HEIGHT = 33;
 var MIN_COLUMN_WIDTH = 92;
 function TableCellResizer({ editor }) {
-  const targetRef = useRef16(null);
-  const resizerRef = useRef16(null);
-  const tableRectRef = useRef16(null);
+  const targetRef = useRef17(null);
+  const resizerRef = useRef17(null);
+  const tableRectRef = useRef17(null);
   const [hasTable, setHasTable] = useState28(false);
-  const pointerStartPosRef = useRef16(null);
+  const pointerStartPosRef = useRef17(null);
   const [pointerCurrentPos, updatePointerCurrentPos] = useState28(null);
   const [activeCell, updateActiveCell] = useState28(null);
   const [draggingDirection, updateDraggingDirection] = useState28(null);
@@ -30114,7 +30140,7 @@ function TableCellResizer({ editor }) {
 function TableCellResizerPlugin() {
   const [editor] = useLexicalComposerContext37();
   const isEditable = useLexicalEditable4();
-  return useMemo17(
+  return useMemo18(
     () => isEditable ? createPortal11(/* @__PURE__ */ jsx52(TableCellResizer, { editor }), document.body) : null,
     [editor, isEditable]
   );
@@ -30136,7 +30162,7 @@ import {
 } from "@lexical/table";
 import { $findMatchingParent as $findMatchingParent5, mergeRegister as mergeRegister15 } from "@lexical/utils";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode6, isHTMLElement as isHTMLElement7 } from "lexical";
-import { useEffect as useEffect42, useMemo as useMemo18, useRef as useRef17, useState as useState29 } from "react";
+import { useEffect as useEffect42, useMemo as useMemo19, useRef as useRef18, useState as useState29 } from "react";
 import { createPortal as createPortal12 } from "react-dom";
 
 // src/utils/getThemeSelector.ts
@@ -30158,8 +30184,8 @@ function TableHoverActionsContainer({ anchorElem }) {
   const [isShownColumn, setShownColumn] = useState29(false);
   const [shouldListenMouseMove, setShouldListenMouseMove] = useState29(false);
   const [position, setPosition] = useState29({});
-  const tableSetRef = useRef17(/* @__PURE__ */ new Set());
-  const tableCellDOMNodeRef = useRef17(null);
+  const tableSetRef = useRef18(/* @__PURE__ */ new Set());
+  const tableCellDOMNodeRef = useRef18(null);
   const debouncedOnMouseMove = useDebounce(
     (event) => {
       const { isOutside, tableDOMNode } = getMouseInfo2(event, getTheme);
@@ -30239,7 +30265,7 @@ function TableHoverActionsContainer({ anchorElem }) {
     50,
     250
   );
-  const tableResizeObserver = useMemo18(() => {
+  const tableResizeObserver = useMemo19(() => {
     return new ResizeObserver(() => {
       setShownRow(false);
       setShownColumn(false);
@@ -30357,7 +30383,7 @@ function TableHoverActionsPlugin({
 // src/plugins/TableOfContentsPlugin/index.tsx
 import { useLexicalComposerContext as useLexicalComposerContext39 } from "@lexical/react/LexicalComposerContext";
 import { TableOfContentsPlugin as LexicalTableOfContentsPlugin } from "@lexical/react/LexicalTableOfContentsPlugin";
-import { useEffect as useEffect43, useRef as useRef18, useState as useState30 } from "react";
+import { useEffect as useEffect43, useRef as useRef19, useState as useState30 } from "react";
 import { jsx as jsx54, jsxs as jsxs28 } from "react/jsx-runtime";
 var MARGIN_ABOVE_EDITOR = 624;
 var HEADING_WIDTH = 9;
@@ -30382,7 +30408,7 @@ function isHeadingBelowTheTopOfThePage(element) {
 }
 function TableOfContentsList({ tableOfContents }) {
   const [selectedKey, setSelectedKey] = useState30("");
-  const selectedIndex = useRef18(0);
+  const selectedIndex = useRef19(0);
   const [editor] = useLexicalComposerContext39();
   function scrollToNode(key, currIndex) {
     editor.getEditorState().read(() => {
@@ -30469,7 +30495,7 @@ function TableOfContentsPlugin() {
 
 // src/plugins/ToolbarPlugin/index.tsx
 import {
-  $isCodeNode as $isCodeNode4,
+  $isCodeNode as $isCodeNode5,
   getCodeLanguageOptions as getCodeLanguageOptionsPrism,
   normalizeCodeLanguage as normalizeCodeLanguagePrism
 } from "@lexical/code";
@@ -31163,7 +31189,7 @@ function ToolbarPlugin({
   } = useSettings();
   const $handleCodeNode = useCallback21(
     (element) => {
-      if ($isCodeNode4(element)) {
+      if ($isCodeNode5(element)) {
         const language = element.getLanguage();
         updateToolbarState(
           "codeLanguage",
@@ -31355,7 +31381,7 @@ function ToolbarPlugin({
         $addUpdateTag3(SKIP_SELECTION_FOCUS_TAG2);
         if (selectedElementKey !== null) {
           const node = $getNodeByKey8(selectedElementKey);
-          if ($isCodeNode4(node)) {
+          if ($isCodeNode5(node)) {
             node.setLanguage(value);
           }
         }
@@ -31368,7 +31394,7 @@ function ToolbarPlugin({
       activeEditor.update(() => {
         if (selectedElementKey !== null) {
           const node = $getNodeByKey8(selectedElementKey);
-          if ($isCodeNode4(node)) {
+          if ($isCodeNode5(node)) {
             node.setTheme(value);
           }
         }
@@ -32029,7 +32055,7 @@ import { $convertFromMarkdownString as $convertFromMarkdownString5, $convertToMa
 import { useLexicalComposerContext as useLexicalComposerContext44 } from "@lexical/react/LexicalComposerContext";
 import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
 import { $getRoot as $getRoot7, defineExtension } from "lexical";
-import { useCallback as useCallback23, useEffect as useEffect52, useMemo as useMemo19 } from "react";
+import { useCallback as useCallback23, useEffect as useEffect52, useMemo as useMemo20 } from "react";
 import { useDebouncedCallback as useDebouncedCallback2 } from "use-debounce";
 init_SharedHistoryContext();
 
@@ -32145,7 +32171,7 @@ function OnChangePlugin({
 import { useEffect as useEffect51 } from "react";
 
 // src/hooks/useReport.ts
-import { useCallback as useCallback22, useEffect as useEffect50, useRef as useRef20 } from "react";
+import { useCallback as useCallback22, useEffect as useEffect50, useRef as useRef21 } from "react";
 var getElement = () => {
   let element = document.getElementById("report-container");
   if (element === null) {
@@ -32167,7 +32193,7 @@ var getElement = () => {
   return element;
 };
 function useReport() {
-  const timer = useRef20(null);
+  const timer = useRef21(null);
   const cleanup = useCallback22(() => {
     if (timer.current !== null) {
       clearTimeout(timer.current);
@@ -32399,23 +32425,25 @@ function NotionLikeEditor({
   onChangeMarkdown,
   debounceMs = 300,
   isCodeShiki = true,
+  codeShikiTheme = "github-light",
   imageUploadHandler,
   customLinkMatchers,
   onEditorReady,
   extraPlugins,
   extraComponentPickerOptions
 }) {
-  const settings = useMemo19(
+  const settings = useMemo20(
     () => ({
       ...INITIAL_SETTINGS,
       showToolbar,
       autoFocus,
       measureTypingPerf,
-      isCodeShiki
+      isCodeShiki,
+      codeShikiTheme
     }),
-    [showToolbar, measureTypingPerf, autoFocus, isCodeShiki]
+    [showToolbar, measureTypingPerf, autoFocus, isCodeShiki, codeShikiTheme]
   );
-  const app = useMemo19(
+  const app = useMemo20(
     () => defineExtension({
       $initialEditorState: initialEditorState ? initialEditorState : initialMarkdown ? () => {
         $convertFromMarkdownString5(initialMarkdown, PLAYGROUND_TRANSFORMERS2);
@@ -32523,7 +32551,7 @@ function EditorReadyPlugin({ onReady }) {
 // src/core/NotionLikeViewer.tsx
 import { LexicalExtensionComposer as LexicalExtensionComposer2 } from "@lexical/react/LexicalExtensionComposer";
 import { defineExtension as defineExtension2 } from "lexical";
-import { useMemo as useMemo20 } from "react";
+import { useMemo as useMemo21 } from "react";
 
 // src/themes/NotionLikeViewerTheme.ts
 init_NotionLikeEditorTheme();
@@ -32740,16 +32768,18 @@ import { jsx as jsx62 } from "react/jsx-runtime";
 function NotionLikeViewer({
   initialViewerState,
   isCodeShiki = true,
+  codeShikiTheme = "github-light",
   customLinkMatchers
 }) {
-  const settings = useMemo20(
+  const settings = useMemo21(
     () => ({
       ...INITIAL_SETTINGS,
-      isCodeShiki
+      isCodeShiki,
+      codeShikiTheme
     }),
-    [isCodeShiki]
+    [isCodeShiki, codeShikiTheme]
   );
-  const app = useMemo20(
+  const app = useMemo21(
     () => defineExtension2({
       $initialEditorState: initialViewerState,
       html: buildHTMLConfig(),
@@ -32799,7 +32829,7 @@ function Select({ children, label, className, ...other }) {
 }
 
 // src/ui/Switch.tsx
-import { useMemo as useMemo21 } from "react";
+import { useMemo as useMemo22 } from "react";
 import { jsx as jsx64, jsxs as jsxs36 } from "react/jsx-runtime";
 function Switch({
   checked,
@@ -32807,7 +32837,7 @@ function Switch({
   text,
   id
 }) {
-  const buttonId = useMemo21(() => `id_${Math.floor(Math.random() * 1e4)}`, []);
+  const buttonId = useMemo22(() => `id_${Math.floor(Math.random() * 1e4)}`, []);
   return /* @__PURE__ */ jsxs36("div", { className: "switch", id, children: [
     /* @__PURE__ */ jsx64("label", { htmlFor: buttonId, children: text }),
     /* @__PURE__ */ jsx64("button", { type: "button", role: "switch", "aria-checked": checked, id: buttonId, onClick, children: /* @__PURE__ */ jsx64("span", {}) })

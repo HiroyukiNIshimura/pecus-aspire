@@ -7,11 +7,10 @@
  */
 'use client';
 
-import { NotionLikeViewer } from '@coati/editor';
+import { type NotionLikeViewerProps as CoatiViewerProps, NotionLikeViewer } from '@coati/editor';
+import { useTheme } from '@/hooks/useTheme';
 
-// NotionLikeViewerのPropsは@coati/editorからの型を再利用
-// 現在のインターフェースは@coati/editor/src/core/NotionLikeViewer.tsxに定義
-export interface NotionLikeViewerProps {
+export interface NotionLikeViewerProps extends Omit<CoatiViewerProps, 'codeShikiTheme'> {
   /** エディタに読み込む初期マークダウン */
   initialMarkdown?: string;
   /** AIアシスタントを有効にするか */
@@ -23,7 +22,11 @@ export interface NotionLikeViewerProps {
 /**
  * Pecus固有のNotionLikeViewer
  *
- * @coati/editor のNotionLikeViewer をそのまま再エクスポート。
- * 将来的にPecus固有の機能を追加する場合は、ここで拡張します。
+ * @coati/editor のNotionLikeViewer にアプリテーマ連動のコードハイライトテーマを追加。
  */
-export default NotionLikeViewer;
+export default function PecusNotionLikeViewer(props: NotionLikeViewerProps) {
+  const { resolvedTheme } = useTheme();
+  const codeShikiTheme = resolvedTheme === 'dark' ? 'github-dark' : 'github-light';
+
+  return <NotionLikeViewer {...props} codeShikiTheme={codeShikiTheme} />;
+}

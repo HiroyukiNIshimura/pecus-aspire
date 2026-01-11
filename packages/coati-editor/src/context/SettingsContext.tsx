@@ -9,17 +9,17 @@
 import type * as React from 'react';
 import type { JSX } from 'react';
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
-import type { SettingName } from '../core/appSettings';
+import type { SettingName, Settings, SettingValue } from '../core/appSettings';
 
 import { DEFAULT_SETTINGS, INITIAL_SETTINGS } from '../core/appSettings';
 
 type SettingsContextShape = {
-  setOption: (name: SettingName, value: boolean) => void;
-  settings: Record<SettingName, boolean>;
+  setOption: <K extends SettingName>(name: K, value: SettingValue<K>) => void;
+  settings: Settings;
 };
 
-const Context: React.Context<SettingsContextShape> = createContext({
-  setOption: (_name: SettingName, _value: boolean) => {
+const Context: React.Context<SettingsContextShape> = createContext<SettingsContextShape>({
+  setOption: <K extends SettingName>(_name: K, _value: SettingValue<K>) => {
     return;
   },
   settings: INITIAL_SETTINGS,
@@ -30,14 +30,14 @@ export const SettingsContext = ({
   initialSettings,
 }: {
   children: ReactNode;
-  initialSettings?: Partial<Record<SettingName, boolean>>;
+  initialSettings?: Partial<Settings>;
 }): JSX.Element => {
-  const [settings, setSettings] = useState(() => ({
+  const [settings, setSettings] = useState<Settings>(() => ({
     ...INITIAL_SETTINGS,
     ...initialSettings,
   }));
 
-  const setOption = useCallback((setting: SettingName, value: boolean) => {
+  const setOption = useCallback(<K extends SettingName>(setting: K, value: SettingValue<K>) => {
     setSettings((options) => ({
       ...options,
       [setting]: value,
@@ -56,7 +56,7 @@ export const useSettings = (): SettingsContextShape => {
   return useContext(Context);
 };
 
-function setURLParam(param: SettingName, value: null | boolean) {
+function setURLParam<K extends SettingName>(param: K, value: SettingValue<K> | null) {
   const url = new URL(window.location.href);
   const params = new URLSearchParams(url.search);
   if (value !== DEFAULT_SETTINGS[param]) {
