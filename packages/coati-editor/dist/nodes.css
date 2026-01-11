@@ -373,7 +373,7 @@
   }
 }
 .NotionLikeEditorTheme__code {
-  background-color: var(--color-base-100);
+  background-color: var(--color-base-100) !important;
   font-family:
     Menlo,
     Consolas,
@@ -393,7 +393,7 @@
 .NotionLikeEditorTheme__code:before {
   content: attr(data-gutter);
   position: absolute;
-  background-color: var(--color-base-100);
+  background-color: var(--color-base-100) !important;
   left: 0;
   top: 0;
   border-right: 1px solid var(--color-base-300);
