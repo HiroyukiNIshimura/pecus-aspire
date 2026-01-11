@@ -32,12 +32,6 @@ export interface NotionLikeViewerProps {
   isCodeShiki?: boolean;
 
   /**
-   * Shikiコードハイライトのテーマ
-   * @default 'github-light'
-   */
-  codeShikiTheme?: string;
-
-  /**
    * カスタムのAutoLink Matcher配列
    * URLやメールアドレスの基本Matcherに追加される
    */
@@ -47,7 +41,6 @@ export interface NotionLikeViewerProps {
 export default function NotionLikeViewer({
   initialViewerState,
   isCodeShiki = true,
-  codeShikiTheme = 'github-light',
   customLinkMatchers,
 }: NotionLikeViewerProps) {
   // Props から settings を構築
@@ -55,9 +48,8 @@ export default function NotionLikeViewer({
     () => ({
       ...INITIAL_SETTINGS,
       isCodeShiki,
-      codeShikiTheme,
     }),
-    [isCodeShiki, codeShikiTheme],
+    [isCodeShiki],
   );
 
   const app = useMemo(

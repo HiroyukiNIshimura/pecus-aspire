@@ -1,11 +1,53 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "generate-appsettings",
-      "type": "shell",
-      "command": "node scripts/generate-appsettings.js -D",
-      "problemMatcher": []
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "generate-appsettings",
+			"type": "shell",
+			"command": "node scripts/generate-appsettings.js -D",
+			"problemMatcher": []
+		},
+		{
+			"label": "build coati-editor",
+			"type": "shell",
+			"command": "cd packages/coati-editor && npm run build",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "lint frontend",
+			"type": "shell",
+			"command": "cd pecus.Frontend && npm run lint && npx tsc --noEmit",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "build coati-editor",
+			"type": "shell",
+			"command": "cd packages/coati-editor && npm run build",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "build coati-editor",
+			"type": "shell",
+			"command": "cd packages/coati-editor && npm run build",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "build coati-editor",
+			"type": "shell",
+			"command": "cd packages/coati-editor && npm run build",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "build coati-editor",
+			"type": "shell",
+			"command": "cd packages/coati-editor && npm run build",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
 }

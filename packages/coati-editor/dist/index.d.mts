@@ -95,7 +95,6 @@ declare function ImageUploadProvider({ children, handler }: ImageUploadProviderP
  */
 declare const DEFAULT_SETTINGS: {
     readonly autoFocus: true;
-    readonly codeShikiTheme: "github-light";
     readonly disableBeforeInput: false;
     readonly emptyEditor: false;
     readonly hasLinkAttributes: false;
@@ -293,11 +292,6 @@ interface NotionLikeEditorProps {
      */
     isCodeShiki?: boolean;
     /**
-     * Shikiコードハイライトのテーマ
-     * @default 'github-light'
-     */
-    codeShikiTheme?: string;
-    /**
      * 画像アップロードハンドラー
      * 指定しない場合はローカルプレビューモードで動作（アップロードなし）
      */
@@ -325,7 +319,7 @@ interface NotionLikeEditorProps {
      */
     extraComponentPickerOptions?: ExtraOptionsProvider;
 }
-declare function NotionLikeEditor({ showToolbar, autoFocus, measureTypingPerf, initialEditorState, initialMarkdown, onChange, onChangePlainText, onChangeHtml, onChangeMarkdown, debounceMs, isCodeShiki, codeShikiTheme, imageUploadHandler, customLinkMatchers, onEditorReady, extraPlugins, extraComponentPickerOptions, }: NotionLikeEditorProps): react_jsx_runtime.JSX.Element;
+declare function NotionLikeEditor({ showToolbar, autoFocus, measureTypingPerf, initialEditorState, initialMarkdown, onChange, onChangePlainText, onChangeHtml, onChangeMarkdown, debounceMs, isCodeShiki, imageUploadHandler, customLinkMatchers, onEditorReady, extraPlugins, extraComponentPickerOptions, }: NotionLikeEditorProps): react_jsx_runtime.JSX.Element;
 
 interface NotionLikeViewerProps {
     /**
@@ -337,17 +331,12 @@ interface NotionLikeViewerProps {
      */
     isCodeShiki?: boolean;
     /**
-     * Shikiコードハイライトのテーマ
-     * @default 'github-light'
-     */
-    codeShikiTheme?: string;
-    /**
      * カスタムのAutoLink Matcher配列
      * URLやメールアドレスの基本Matcherに追加される
      */
     customLinkMatchers?: LinkMatcher[];
 }
-declare function NotionLikeViewer({ initialViewerState, isCodeShiki, codeShikiTheme, customLinkMatchers, }: NotionLikeViewerProps): react_jsx_runtime.JSX.Element;
+declare function NotionLikeViewer({ initialViewerState, isCodeShiki, customLinkMatchers, }: NotionLikeViewerProps): react_jsx_runtime.JSX.Element;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.

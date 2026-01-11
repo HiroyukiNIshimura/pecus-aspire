@@ -8,7 +8,6 @@
 
 export const DEFAULT_SETTINGS = {
   autoFocus: true,
-  codeShikiTheme: 'github-light',
   disableBeforeInput: false,
   emptyEditor: false,
   hasLinkAttributes: false,

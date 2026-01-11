@@ -101,12 +101,6 @@ export interface NotionLikeEditorProps {
   isCodeShiki?: boolean;
 
   /**
-   * Shikiコードハイライトのテーマ
-   * @default 'github-light'
-   */
-  codeShikiTheme?: string;
-
-  /**
    * 画像アップロードハンドラー
    * 指定しない場合はローカルプレビューモードで動作（アップロードなし）
    */
@@ -151,7 +145,6 @@ export default function NotionLikeEditor({
   onChangeMarkdown,
   debounceMs = 300,
   isCodeShiki = true,
-  codeShikiTheme = 'github-light',
   imageUploadHandler,
   customLinkMatchers,
   onEditorReady,
@@ -166,9 +159,8 @@ export default function NotionLikeEditor({
       autoFocus,
       measureTypingPerf,
       isCodeShiki,
-      codeShikiTheme,
     }),
-    [showToolbar, measureTypingPerf, autoFocus, isCodeShiki, codeShikiTheme],
+    [showToolbar, measureTypingPerf, autoFocus, isCodeShiki],
   );
 
   const app = useMemo(

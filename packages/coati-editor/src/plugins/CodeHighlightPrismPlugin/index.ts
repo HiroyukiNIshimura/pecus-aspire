@@ -9,13 +9,22 @@
 import { registerCodeHighlighting } from '@lexical/code';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import type { JSX } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function CodeHighlightPrismPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    return registerCodeHighlighting(editor);
+    // 初回レンダリング後に登録を遅延させてUIブロッキングを軽減
+    const timeoutId = setTimeout(() => {
+      cleanupRef.current = registerCodeHighlighting(editor);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      cleanupRef.current?.();
+    };
   }, [editor]);
 
   return null;
