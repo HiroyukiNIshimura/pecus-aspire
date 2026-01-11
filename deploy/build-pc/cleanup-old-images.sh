@@ -80,17 +80,26 @@ for REPO in $REPOSITORIES; do
                 echo "   🗑️  Deleting: $TAG ($TAG_DATE <= $CUTOFF_DATE)"
 
                 # マニフェストダイジェストを取得
-                DIGEST=$(curl -s -I -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-                    "http://$REGISTRY/v2/$REPO/manifests/$TAG" | \
-                    grep -i "Docker-Content-Digest" | awk '{print $2}' | tr -d '\r')
+                MANIFEST_RESPONSE=$(curl -s -I -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                    "http://$REGISTRY/v2/$REPO/manifests/$TAG" 2>&1)
+                DIGEST=$(echo "$MANIFEST_RESPONSE" | grep -i "Docker-Content-Digest" | awk '{print $2}' | tr -d '\r\n')
 
                 if [ -n "$DIGEST" ]; then
                     # マニフェストを削除
-                    curl -s -X DELETE "http://$REGISTRY/v2/$REPO/manifests/$DIGEST" > /dev/null
-                    echo "      ✅ Deleted"
-                    DELETED_COUNT=$((DELETED_COUNT + 1))
+                    DELETE_RESPONSE=$(curl -s -w "%{http_code}" -X DELETE "http://$REGISTRY/v2/$REPO/manifests/$DIGEST")
+                    HTTP_CODE=$(echo "$DELETE_RESPONSE" | tail -c 4)
+                    if [ "$HTTP_CODE" = "202" ]; then
+                        echo "      ✅ Deleted"
+                        DELETED_COUNT=$((DELETED_COUNT + 1))
+                    else
+                        echo "      ⚠️  削除失敗 (HTTP $HTTP_CODE)"
+                        echo "         レジストリで削除が有効か確認してください:"
+                        echo "         REGISTRY_STORAGE_DELETE_ENABLED=true"
+                    fi
                 else
                     echo "      ⚠️  ダイジェスト取得失敗"
+                    echo "         レスポンスヘッダー確認:"
+                    echo "$MANIFEST_RESPONSE" | head -5 | sed 's/^/         /'
                 fi
             else
                 echo "   ✅ Kept: $TAG ($TAG_DATE >= $CUTOFF_DATE)"
