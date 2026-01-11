@@ -6,47 +6,36 @@
  *
  */
 
-import { $isCodeNode } from '@lexical/code';
 import { registerCodeHighlighting, ShikiTokenizer, type Tokenizer } from '@lexical/code-shiki';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $dfs } from '@lexical/utils';
 import type { JSX } from 'react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useSettings } from '../../context/SettingsContext';
 
+/**
+ * Shiki による構文ハイライトプラグイン
+ *
+ * 注意: テーマは初期化時に一度だけ適用されます。
+ * CodeNode はテーマ情報を EditorState に保存するため、
+ * 動的にテーマを切り替えるにはエディタを再マウントする必要があります。
+ */
 export default function CodeHighlightShikiPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
   const {
     settings: { codeShikiTheme },
   } = useSettings();
-  const prevThemeRef = useRef(codeShikiTheme);
 
-  const tokenizer: Tokenizer = useMemo(
-    () => ({
+  // 初期テーマを固定（動的変更は無限ループを引き起こすため）
+  const initialThemeRef = useRef(codeShikiTheme);
+
+  useEffect(() => {
+    const tokenizer: Tokenizer = {
       ...ShikiTokenizer,
-      defaultTheme: codeShikiTheme,
-    }),
-    [codeShikiTheme],
-  );
-
-  // テーマが変更されたら、すべての CodeNode のテーマを更新
-  useEffect(() => {
-    if (prevThemeRef.current !== codeShikiTheme) {
-      prevThemeRef.current = codeShikiTheme;
-      editor.update(() => {
-        for (const { node } of $dfs()) {
-          if ($isCodeNode(node)) {
-            node.setTheme(codeShikiTheme);
-          }
-        }
-      });
-    }
-  }, [editor, codeShikiTheme]);
-
-  useEffect(() => {
+      defaultTheme: initialThemeRef.current,
+    };
     return registerCodeHighlighting(editor, tokenizer);
-  }, [editor, tokenizer]);
+  }, [editor]);
 
   return null;
 }

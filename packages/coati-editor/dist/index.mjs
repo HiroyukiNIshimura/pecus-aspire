@@ -1068,7 +1068,7 @@ import {
   LexicalTypeaheadMenuPlugin,
   useBasicTypeaheadTriggerMatch
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
-import { useCallback as useCallback11, useEffect as useEffect20, useMemo as useMemo11, useState as useState14 } from "react";
+import { useCallback as useCallback11, useEffect as useEffect20, useMemo as useMemo10, useState as useState14 } from "react";
 import * as ReactDOM from "react-dom";
 import { jsx as jsx31, jsxs as jsxs11 } from "react/jsx-runtime";
 function useMentionLookupService(mentionString) {
@@ -1150,7 +1150,7 @@ function NewMentionsPlugin() {
   const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch("/", {
     minLength: 0
   });
-  const options = useMemo11(
+  const options = useMemo10(
     () => results.map((result) => new MentionTypeaheadOption(result, /* @__PURE__ */ jsx31("i", { className: "icon user" }))).slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
     [results]
   );
@@ -1958,7 +1958,7 @@ import {
   KEY_ESCAPE_COMMAND as KEY_ESCAPE_COMMAND2,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND2
 } from "lexical";
-import { Suspense, useCallback as useCallback12, useEffect as useEffect21, useMemo as useMemo12, useRef as useRef9, useState as useState15 } from "react";
+import { Suspense, useCallback as useCallback12, useEffect as useEffect21, useMemo as useMemo11, useRef as useRef9, useState as useState15 } from "react";
 import { jsx as jsx34, jsxs as jsxs13 } from "react/jsx-runtime";
 function DisableCaptionOnBlur({ setShowCaption }) {
   const [editor] = useLexicalComposerContext17();
@@ -2102,7 +2102,7 @@ function ImageComponent({
   const activeEditorRef = useRef9(null);
   const [isLoadError, setIsLoadError] = useState15(false);
   const isEditable = useLexicalEditable2();
-  const isInNodeSelection = useMemo12(
+  const isInNodeSelection = useMemo11(
     () => isSelected && editor.getEditorState().read(() => {
       const selection = $getSelection5();
       return $isNodeSelection2(selection) && selection.has(nodeKey);
@@ -7036,39 +7036,22 @@ function CodeHighlightPrismPlugin() {
 }
 
 // src/plugins/CodeHighlightShikiPlugin/index.ts
-import { $isCodeNode as $isCodeNode4 } from "@lexical/code";
 import { registerCodeHighlighting as registerCodeHighlighting2, ShikiTokenizer } from "@lexical/code-shiki";
 import { useLexicalComposerContext as useLexicalComposerContext8 } from "@lexical/react/LexicalComposerContext";
-import { $dfs } from "@lexical/utils";
-import { useEffect as useEffect12, useMemo as useMemo10, useRef as useRef4 } from "react";
+import { useEffect as useEffect12, useRef as useRef4 } from "react";
 function CodeHighlightShikiPlugin() {
   const [editor] = useLexicalComposerContext8();
   const {
     settings: { codeShikiTheme }
   } = useSettings();
-  const prevThemeRef = useRef4(codeShikiTheme);
-  const tokenizer = useMemo10(
-    () => ({
+  const initialThemeRef = useRef4(codeShikiTheme);
+  useEffect12(() => {
+    const tokenizer = {
       ...ShikiTokenizer,
-      defaultTheme: codeShikiTheme
-    }),
-    [codeShikiTheme]
-  );
-  useEffect12(() => {
-    if (prevThemeRef.current !== codeShikiTheme) {
-      prevThemeRef.current = codeShikiTheme;
-      editor.update(() => {
-        for (const { node } of $dfs()) {
-          if ($isCodeNode4(node)) {
-            node.setTheme(codeShikiTheme);
-          }
-        }
-      });
-    }
-  }, [editor, codeShikiTheme]);
-  useEffect12(() => {
+      defaultTheme: initialThemeRef.current
+    };
     return registerCodeHighlighting2(editor, tokenizer);
-  }, [editor, tokenizer]);
+  }, [editor]);
   return null;
 }
 
@@ -7539,7 +7522,7 @@ import {
   $isRangeSelection as $isRangeSelection6,
   FORMAT_ELEMENT_COMMAND
 } from "lexical";
-import { useCallback as useCallback14, useMemo as useMemo15, useState as useState22 } from "react";
+import { useCallback as useCallback14, useMemo as useMemo14, useState as useState22 } from "react";
 import * as ReactDOM2 from "react-dom";
 
 // src/plugins/DateTimePlugin/index.tsx
@@ -8073,7 +8056,7 @@ import { useState as useState20 } from "react";
 // src/ui/DropDown.tsx
 import { isDOMNode as isDOMNode2 } from "lexical";
 import * as React4 from "react";
-import { useCallback as useCallback13, useEffect as useEffect23, useMemo as useMemo13, useRef as useRef11, useState as useState19 } from "react";
+import { useCallback as useCallback13, useEffect as useEffect23, useMemo as useMemo12, useRef as useRef11, useState as useState19 } from "react";
 import { createPortal as createPortal5 } from "react-dom";
 
 // src/utils/focusUtils.ts
@@ -8158,7 +8141,7 @@ function DropDownItems({
       });
     }
   };
-  const contextValue = useMemo13(
+  const contextValue = useMemo12(
     () => ({
       registerItem
     }),
@@ -8738,7 +8721,7 @@ function PageBreakPlugin() {
 // src/plugins/TablePlugin.tsx
 import { useLexicalComposerContext as useLexicalComposerContext22 } from "@lexical/react/LexicalComposerContext";
 import { INSERT_TABLE_COMMAND, TableCellNode, TableNode, TableRowNode } from "@lexical/table";
-import { createContext as createContext10, useContext as useContext10, useEffect as useEffect27, useMemo as useMemo14, useState as useState21 } from "react";
+import { createContext as createContext10, useContext as useContext10, useEffect as useEffect27, useMemo as useMemo13, useState as useState21 } from "react";
 import { Fragment as Fragment10, jsx as jsx42, jsxs as jsxs19 } from "react/jsx-runtime";
 var CellContext = createContext10({
   cellEditorConfig: null,
@@ -8754,7 +8737,7 @@ function TableContext({ children }) {
   return /* @__PURE__ */ jsx42(
     CellContext.Provider,
     {
-      value: useMemo14(
+      value: useMemo13(
         () => ({
           cellEditorConfig: contextValue.cellEditorConfig,
           cellEditorPlugins: contextValue.cellEditorPlugins,
@@ -9061,7 +9044,7 @@ function ComponentPickerMenuPlugin({
     allowWhitespace: true,
     minLength: 0
   });
-  const options = useMemo15(() => {
+  const options = useMemo14(() => {
     const baseOptions = getBaseOptions(editor, showModal);
     const extraOptionConfigs = extraOptions?.(editor) ?? [];
     const extraPickerOptions = extraOptionConfigs.map(
@@ -9144,11 +9127,11 @@ import {
   CUT_COMMAND,
   PASTE_COMMAND
 } from "lexical";
-import { useMemo as useMemo16 } from "react";
+import { useMemo as useMemo15 } from "react";
 import { jsx as jsx44 } from "react/jsx-runtime";
 function ContextMenuPlugin() {
   const [editor] = useLexicalComposerContext24();
-  const items = useMemo16(() => {
+  const items = useMemo15(() => {
     return [
       new NodeContextMenuOption(`Remove Link`, {
         $onSelect: () => {
@@ -10316,7 +10299,7 @@ import { createPortal as createPortal9 } from "react-dom";
 
 // src/ui/ColorPicker.tsx
 import { calculateZoomLevel as calculateZoomLevel3 } from "@lexical/utils";
-import { useMemo as useMemo17, useRef as useRef14, useState as useState25 } from "react";
+import { useMemo as useMemo16, useRef as useRef14, useState as useState25 } from "react";
 import { jsx as jsx47, jsxs as jsxs23 } from "react/jsx-runtime";
 var skipAddingToHistoryStack = false;
 function parseAllowedColor(input) {
@@ -10345,14 +10328,14 @@ function ColorPicker({ color, onChange }) {
   const [selfColor, setSelfColor] = useState25(transformColor("hex", color));
   const [inputColor, setInputColor] = useState25(transformColor("hex", color).hex);
   const innerDivRef = useRef14(null);
-  const saturationPosition = useMemo17(
+  const saturationPosition = useMemo16(
     () => ({
       x: selfColor.hsv.s / 100 * WIDTH,
       y: (100 - selfColor.hsv.v) / 100 * HEIGHT
     }),
     [selfColor.hsv.s, selfColor.hsv.v]
   );
-  const huePosition = useMemo17(
+  const huePosition = useMemo16(
     () => ({
       x: selfColor.hsv.h / 360 * WIDTH
     }),
@@ -29817,7 +29800,7 @@ import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode5, isHTMLElemen
 import {
   useCallback as useCallback20,
   useEffect as useEffect41,
-  useMemo as useMemo18,
+  useMemo as useMemo17,
   useRef as useRef17,
   useState as useState28
 } from "react";
@@ -30140,7 +30123,7 @@ function TableCellResizer({ editor }) {
 function TableCellResizerPlugin() {
   const [editor] = useLexicalComposerContext37();
   const isEditable = useLexicalEditable4();
-  return useMemo18(
+  return useMemo17(
     () => isEditable ? createPortal11(/* @__PURE__ */ jsx52(TableCellResizer, { editor }), document.body) : null,
     [editor, isEditable]
   );
@@ -30162,7 +30145,7 @@ import {
 } from "@lexical/table";
 import { $findMatchingParent as $findMatchingParent5, mergeRegister as mergeRegister15 } from "@lexical/utils";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode6, isHTMLElement as isHTMLElement7 } from "lexical";
-import { useEffect as useEffect42, useMemo as useMemo19, useRef as useRef18, useState as useState29 } from "react";
+import { useEffect as useEffect42, useMemo as useMemo18, useRef as useRef18, useState as useState29 } from "react";
 import { createPortal as createPortal12 } from "react-dom";
 
 // src/utils/getThemeSelector.ts
@@ -30265,7 +30248,7 @@ function TableHoverActionsContainer({ anchorElem }) {
     50,
     250
   );
-  const tableResizeObserver = useMemo19(() => {
+  const tableResizeObserver = useMemo18(() => {
     return new ResizeObserver(() => {
       setShownRow(false);
       setShownColumn(false);
@@ -30495,7 +30478,7 @@ function TableOfContentsPlugin() {
 
 // src/plugins/ToolbarPlugin/index.tsx
 import {
-  $isCodeNode as $isCodeNode5,
+  $isCodeNode as $isCodeNode4,
   getCodeLanguageOptions as getCodeLanguageOptionsPrism,
   normalizeCodeLanguage as normalizeCodeLanguagePrism
 } from "@lexical/code";
@@ -31189,7 +31172,7 @@ function ToolbarPlugin({
   } = useSettings();
   const $handleCodeNode = useCallback21(
     (element) => {
-      if ($isCodeNode5(element)) {
+      if ($isCodeNode4(element)) {
         const language = element.getLanguage();
         updateToolbarState(
           "codeLanguage",
@@ -31381,7 +31364,7 @@ function ToolbarPlugin({
         $addUpdateTag3(SKIP_SELECTION_FOCUS_TAG2);
         if (selectedElementKey !== null) {
           const node = $getNodeByKey8(selectedElementKey);
-          if ($isCodeNode5(node)) {
+          if ($isCodeNode4(node)) {
             node.setLanguage(value);
           }
         }
@@ -31394,7 +31377,7 @@ function ToolbarPlugin({
       activeEditor.update(() => {
         if (selectedElementKey !== null) {
           const node = $getNodeByKey8(selectedElementKey);
-          if ($isCodeNode5(node)) {
+          if ($isCodeNode4(node)) {
             node.setTheme(value);
           }
         }
@@ -32055,7 +32038,7 @@ import { $convertFromMarkdownString as $convertFromMarkdownString5, $convertToMa
 import { useLexicalComposerContext as useLexicalComposerContext44 } from "@lexical/react/LexicalComposerContext";
 import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
 import { $getRoot as $getRoot7, defineExtension } from "lexical";
-import { useCallback as useCallback23, useEffect as useEffect52, useMemo as useMemo20 } from "react";
+import { useCallback as useCallback23, useEffect as useEffect52, useMemo as useMemo19 } from "react";
 import { useDebouncedCallback as useDebouncedCallback2 } from "use-debounce";
 init_SharedHistoryContext();
 
@@ -32432,7 +32415,7 @@ function NotionLikeEditor({
   extraPlugins,
   extraComponentPickerOptions
 }) {
-  const settings = useMemo20(
+  const settings = useMemo19(
     () => ({
       ...INITIAL_SETTINGS,
       showToolbar,
@@ -32443,7 +32426,7 @@ function NotionLikeEditor({
     }),
     [showToolbar, measureTypingPerf, autoFocus, isCodeShiki, codeShikiTheme]
   );
-  const app = useMemo20(
+  const app = useMemo19(
     () => defineExtension({
       $initialEditorState: initialEditorState ? initialEditorState : initialMarkdown ? () => {
         $convertFromMarkdownString5(initialMarkdown, PLAYGROUND_TRANSFORMERS2);
@@ -32551,7 +32534,7 @@ function EditorReadyPlugin({ onReady }) {
 // src/core/NotionLikeViewer.tsx
 import { LexicalExtensionComposer as LexicalExtensionComposer2 } from "@lexical/react/LexicalExtensionComposer";
 import { defineExtension as defineExtension2 } from "lexical";
-import { useMemo as useMemo21 } from "react";
+import { useMemo as useMemo20 } from "react";
 
 // src/themes/NotionLikeViewerTheme.ts
 init_NotionLikeEditorTheme();
@@ -32771,7 +32754,7 @@ function NotionLikeViewer({
   codeShikiTheme = "github-light",
   customLinkMatchers
 }) {
-  const settings = useMemo21(
+  const settings = useMemo20(
     () => ({
       ...INITIAL_SETTINGS,
       isCodeShiki,
@@ -32779,7 +32762,7 @@ function NotionLikeViewer({
     }),
     [isCodeShiki, codeShikiTheme]
   );
-  const app = useMemo21(
+  const app = useMemo20(
     () => defineExtension2({
       $initialEditorState: initialViewerState,
       html: buildHTMLConfig(),
@@ -32829,7 +32812,7 @@ function Select({ children, label, className, ...other }) {
 }
 
 // src/ui/Switch.tsx
-import { useMemo as useMemo22 } from "react";
+import { useMemo as useMemo21 } from "react";
 import { jsx as jsx64, jsxs as jsxs36 } from "react/jsx-runtime";
 function Switch({
   checked,
@@ -32837,7 +32820,7 @@ function Switch({
   text,
   id
 }) {
-  const buttonId = useMemo22(() => `id_${Math.floor(Math.random() * 1e4)}`, []);
+  const buttonId = useMemo21(() => `id_${Math.floor(Math.random() * 1e4)}`, []);
   return /* @__PURE__ */ jsxs36("div", { className: "switch", id, children: [
     /* @__PURE__ */ jsx64("label", { htmlFor: buttonId, children: text }),
     /* @__PURE__ */ jsx64("button", { type: "button", role: "switch", "aria-checked": checked, id: buttonId, onClick, children: /* @__PURE__ */ jsx64("span", {}) })

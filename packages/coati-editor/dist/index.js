@@ -565,7 +565,7 @@ function EquationComponent({ equation, inline, nodeKey }) {
       return;
     }
     if (showEquationEditor) {
-      return (0, import_utils13.mergeRegister)(
+      return (0, import_utils12.mergeRegister)(
         editor.registerCommand(
           import_lexical18.SELECTION_CHANGE_COMMAND,
           (_payload) => {
@@ -617,13 +617,13 @@ function EquationComponent({ equation, inline, nodeKey }) {
     }
   ) }) });
 }
-var import_LexicalComposerContext12, import_useLexicalEditable, import_utils13, import_lexical18, import_react30, import_jsx_runtime26;
+var import_LexicalComposerContext12, import_useLexicalEditable, import_utils12, import_lexical18, import_react30, import_jsx_runtime26;
 var init_EquationComponent = __esm({
   "src/nodes/EquationComponent.tsx"() {
     "use strict";
     import_LexicalComposerContext12 = require("@lexical/react/LexicalComposerContext");
     import_useLexicalEditable = require("@lexical/react/useLexicalEditable");
-    import_utils13 = require("@lexical/utils");
+    import_utils12 = require("@lexical/utils");
     import_lexical18 = require("lexical");
     import_react30 = require("react");
     init_react_error_boundary();
@@ -1746,7 +1746,7 @@ function ImageResizer({
     if (image !== null && controlWrapper !== null) {
       event.preventDefault();
       const { width, height } = image.getBoundingClientRect();
-      const zoom = (0, import_utils15.calculateZoomLevel)(image);
+      const zoom = (0, import_utils14.calculateZoomLevel)(image);
       const positioning = positioningRef.current;
       positioning.startWidth = width;
       positioning.startHeight = height;
@@ -1772,7 +1772,7 @@ function ImageResizer({
     const isHorizontal = positioning.direction & (Direction.east | Direction.west);
     const isVertical = positioning.direction & (Direction.south | Direction.north);
     if (image !== null && positioning.isResizing) {
-      const zoom = (0, import_utils15.calculateZoomLevel)(image);
+      const zoom = (0, import_utils14.calculateZoomLevel)(image);
       if (isHorizontal && isVertical) {
         let diff = Math.floor(positioning.startX - event.clientX / zoom);
         diff = positioning.direction & Direction.east ? -diff : diff;
@@ -1906,11 +1906,11 @@ function ImageResizer({
     )
   ] });
 }
-var import_utils15, import_react35, import_jsx_runtime33, Direction;
+var import_utils14, import_react35, import_jsx_runtime33, Direction;
 var init_ImageResizer = __esm({
   "src/ui/ImageResizer.tsx"() {
     "use strict";
-    import_utils15 = require("@lexical/utils");
+    import_utils14 = require("@lexical/utils");
     import_react35 = require("react");
     import_jsx_runtime33 = require("react/jsx-runtime");
     Direction = {
@@ -2146,7 +2146,7 @@ function ImageComponent({
     [editor]
   );
   (0, import_react36.useEffect)(() => {
-    return (0, import_utils16.mergeRegister)(
+    return (0, import_utils15.mergeRegister)(
       editor.registerCommand(
         import_lexical25.SELECTION_CHANGE_COMMAND,
         (_, activeEditor) => {
@@ -2170,7 +2170,7 @@ function ImageComponent({
   }, [editor]);
   (0, import_react36.useEffect)(() => {
     let rootCleanup = noop;
-    return (0, import_utils16.mergeRegister)(
+    return (0, import_utils15.mergeRegister)(
       editor.registerCommand(import_lexical25.CLICK_COMMAND, onClick, import_lexical25.COMMAND_PRIORITY_LOW),
       editor.registerCommand(RIGHT_CLICK_IMAGE_COMMAND, onClick, import_lexical25.COMMAND_PRIORITY_LOW),
       editor.registerCommand(import_lexical25.KEY_ENTER_COMMAND, $onEnter, import_lexical25.COMMAND_PRIORITY_LOW),
@@ -2269,7 +2269,7 @@ function ImageComponent({
     )
   ] });
 }
-var import_LexicalComposerContext17, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection2, import_utils16, import_lexical25, import_react36, import_jsx_runtime34, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
+var import_LexicalComposerContext17, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection2, import_utils15, import_lexical25, import_react36, import_jsx_runtime34, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
 var init_ImageComponent = __esm({
   "src/nodes/ImageComponent.tsx"() {
     "use strict";
@@ -2281,7 +2281,7 @@ var init_ImageComponent = __esm({
     import_LexicalRichTextPlugin = require("@lexical/react/LexicalRichTextPlugin");
     import_useLexicalEditable2 = require("@lexical/react/useLexicalEditable");
     import_useLexicalNodeSelection2 = require("@lexical/react/useLexicalNodeSelection");
-    import_utils16 = require("@lexical/utils");
+    import_utils15 = require("@lexical/utils");
     import_lexical25 = require("lexical");
     import_react36 = require("react");
     init_SharedHistoryContext();
@@ -2821,7 +2821,7 @@ function StickyComponent({
     const stickyContainer = stickyContainerRef.current;
     const positioning = positioningRef.current;
     const rootElementRect = positioning.rootElementRect;
-    const zoom = (0, import_utils38.calculateZoomLevel)(stickyContainer);
+    const zoom = (0, import_utils37.calculateZoomLevel)(stickyContainer);
     if (stickyContainer !== null && positioning.isDragging && rootElementRect !== null && portalContainer !== null) {
       const portalRect = portalContainer.getBoundingClientRect();
       let newX = (event.clientX - portalRect.left) / zoom - positioning.offsetX;
@@ -2884,7 +2884,7 @@ function StickyComponent({
         const positioning = positioningRef.current;
         if (stickContainer !== null && portalContainer !== null) {
           const portalRect = portalContainer.getBoundingClientRect();
-          const zoom = (0, import_utils38.calculateZoomLevel)(stickContainer);
+          const zoom = (0, import_utils37.calculateZoomLevel)(stickContainer);
           positioning.offsetX = (event.clientX - portalRect.left) / zoom - positioning.x;
           positioning.offsetY = (event.clientY - portalRect.top) / zoom - positioning.y;
           positioning.isDragging = true;
@@ -2929,7 +2929,7 @@ function StickyComponent({
   }
   return (0, import_react_dom11.createPortal)(stickyContent, portalContainer);
 }
-var import_LexicalComposerContext40, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils38, import_lexical56, import_react65, import_react_dom11, import_jsx_runtime55;
+var import_LexicalComposerContext40, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils37, import_lexical56, import_react65, import_react_dom11, import_jsx_runtime55;
 var init_StickyComponent = __esm({
   "src/nodes/StickyComponent.tsx"() {
     "use strict";
@@ -2938,7 +2938,7 @@ var init_StickyComponent = __esm({
     import_LexicalErrorBoundary2 = require("@lexical/react/LexicalErrorBoundary");
     import_LexicalNestedComposer2 = require("@lexical/react/LexicalNestedComposer");
     import_LexicalPlainTextPlugin = require("@lexical/react/LexicalPlainTextPlugin");
-    import_utils38 = require("@lexical/utils");
+    import_utils37 = require("@lexical/utils");
     import_lexical56 = require("lexical");
     import_react65 = require("react");
     import_react_dom11 = require("react-dom");
@@ -3450,7 +3450,7 @@ var import_LexicalSelectionAlwaysOnDisplay = require("@lexical/react/LexicalSele
 var import_LexicalTabIndentationPlugin = require("@lexical/react/LexicalTabIndentationPlugin");
 var import_LexicalTablePlugin = require("@lexical/react/LexicalTablePlugin");
 var import_useLexicalEditable6 = require("@lexical/react/useLexicalEditable");
-var import_utils42 = require("@lexical/utils");
+var import_utils41 = require("@lexical/utils");
 var import_react67 = require("react");
 init_SharedHistoryContext();
 
@@ -7096,50 +7096,33 @@ function CodeHighlightPrismPlugin() {
 }
 
 // src/plugins/CodeHighlightShikiPlugin/index.ts
-var import_code5 = require("@lexical/code");
 var import_code_shiki = require("@lexical/code-shiki");
 var import_LexicalComposerContext8 = require("@lexical/react/LexicalComposerContext");
-var import_utils7 = require("@lexical/utils");
 var import_react22 = require("react");
 function CodeHighlightShikiPlugin() {
   const [editor] = (0, import_LexicalComposerContext8.useLexicalComposerContext)();
   const {
     settings: { codeShikiTheme }
   } = useSettings();
-  const prevThemeRef = (0, import_react22.useRef)(codeShikiTheme);
-  const tokenizer = (0, import_react22.useMemo)(
-    () => ({
+  const initialThemeRef = (0, import_react22.useRef)(codeShikiTheme);
+  (0, import_react22.useEffect)(() => {
+    const tokenizer = {
       ...import_code_shiki.ShikiTokenizer,
-      defaultTheme: codeShikiTheme
-    }),
-    [codeShikiTheme]
-  );
-  (0, import_react22.useEffect)(() => {
-    if (prevThemeRef.current !== codeShikiTheme) {
-      prevThemeRef.current = codeShikiTheme;
-      editor.update(() => {
-        for (const { node } of (0, import_utils7.$dfs)()) {
-          if ((0, import_code5.$isCodeNode)(node)) {
-            node.setTheme(codeShikiTheme);
-          }
-        }
-      });
-    }
-  }, [editor, codeShikiTheme]);
-  (0, import_react22.useEffect)(() => {
+      defaultTheme: initialThemeRef.current
+    };
     return (0, import_code_shiki.registerCodeHighlighting)(editor, tokenizer);
-  }, [editor, tokenizer]);
+  }, [editor]);
   return null;
 }
 
 // src/plugins/CollapsiblePlugin/index.ts
 var import_LexicalComposerContext9 = require("@lexical/react/LexicalComposerContext");
-var import_utils11 = require("@lexical/utils");
+var import_utils10 = require("@lexical/utils");
 var import_lexical13 = require("lexical");
 var import_react23 = require("react");
 
 // src/plugins/CollapsiblePlugin/CollapsibleContainerNode.ts
-var import_utils8 = require("@lexical/utils");
+var import_utils7 = require("@lexical/utils");
 var import_lexical10 = require("lexical");
 
 // src/plugins/CollapsiblePlugin/CollapsibleUtils.ts
@@ -7190,7 +7173,7 @@ var CollapsibleContainerNode = class _CollapsibleContainerNode extends import_le
   }
   createDOM(_config, editor) {
     let dom;
-    if (import_utils8.IS_CHROME) {
+    if (import_utils7.IS_CHROME) {
       dom = document.createElement("div");
       dom.setAttribute("open", "");
     } else {
@@ -7210,7 +7193,7 @@ var CollapsibleContainerNode = class _CollapsibleContainerNode extends import_le
   updateDOM(prevNode, dom) {
     const currentOpen = this.__open;
     if (prevNode.__open !== currentOpen) {
-      if (import_utils8.IS_CHROME) {
+      if (import_utils7.IS_CHROME) {
         const contentDom = dom.children[1];
         if (!(0, import_lexical10.isHTMLElement)(contentDom)) {
           throw new Error("Expected contentDom to be an HTMLElement");
@@ -7272,7 +7255,7 @@ function $isCollapsibleContainerNode(node) {
 }
 
 // src/plugins/CollapsiblePlugin/CollapsibleContentNode.ts
-var import_utils9 = require("@lexical/utils");
+var import_utils8 = require("@lexical/utils");
 var import_lexical11 = require("lexical");
 function $convertCollapsibleContentElement(_domNode) {
   const node = $createCollapsibleContentNode();
@@ -7290,7 +7273,7 @@ var CollapsibleContentNode = class _CollapsibleContentNode extends import_lexica
   createDOM(_config, editor) {
     const dom = document.createElement("div");
     dom.classList.add("Collapsible__content");
-    if (import_utils9.IS_CHROME) {
+    if (import_utils8.IS_CHROME) {
       editor.getEditorState().read(() => {
         const containerNode = this.getParentOrThrow();
         if (!$isCollapsibleContainerNode(containerNode)) {
@@ -7351,7 +7334,7 @@ function $isCollapsibleContentNode(node) {
 }
 
 // src/plugins/CollapsiblePlugin/CollapsibleTitleNode.ts
-var import_utils10 = require("@lexical/utils");
+var import_utils9 = require("@lexical/utils");
 var import_lexical12 = require("lexical");
 function $convertSummaryElement(_domNode) {
   const node = $createCollapsibleTitleNode();
@@ -7380,7 +7363,7 @@ var CollapsibleTitleNode = class extends import_lexical12.ElementNode {
   createDOM(_config, editor) {
     const dom = document.createElement("summary");
     dom.classList.add("Collapsible__title");
-    if (import_utils10.IS_CHROME) {
+    if (import_utils9.IS_CHROME) {
       dom.addEventListener("click", () => {
         editor.update(() => {
           const collapsibleContainer = this.getLatest().getParentOrThrow();
@@ -7441,7 +7424,7 @@ function CollapsiblePlugin() {
     const $onEscapeUp = () => {
       const selection = (0, import_lexical13.$getSelection)();
       if ((0, import_lexical13.$isRangeSelection)(selection) && selection.isCollapsed() && selection.anchor.offset === 0) {
-        const container = (0, import_utils11.$findMatchingParent)(selection.anchor.getNode(), $isCollapsibleContainerNode);
+        const container = (0, import_utils10.$findMatchingParent)(selection.anchor.getNode(), $isCollapsibleContainerNode);
         if ($isCollapsibleContainerNode(container)) {
           const parent = container.getParent();
           if (parent !== null && parent.getFirstChild() === container && selection.anchor.key === container.getFirstDescendant()?.getKey()) {
@@ -7454,7 +7437,7 @@ function CollapsiblePlugin() {
     const $onEscapeDown = () => {
       const selection = (0, import_lexical13.$getSelection)();
       if ((0, import_lexical13.$isRangeSelection)(selection) && selection.isCollapsed()) {
-        const container = (0, import_utils11.$findMatchingParent)(selection.anchor.getNode(), $isCollapsibleContainerNode);
+        const container = (0, import_utils10.$findMatchingParent)(selection.anchor.getNode(), $isCollapsibleContainerNode);
         if ($isCollapsibleContainerNode(container)) {
           const parent = container.getParent();
           if (parent !== null && parent.getLastChild() === container) {
@@ -7468,7 +7451,7 @@ function CollapsiblePlugin() {
       }
       return false;
     };
-    return (0, import_utils11.mergeRegister)(
+    return (0, import_utils10.mergeRegister)(
       // Structure enforcing transformers for each node type. In case nesting structure is not
       // "Container > Title + Content" it'll unwrap nodes and convert it back
       // to regular content.
@@ -7516,7 +7499,7 @@ function CollapsiblePlugin() {
         () => {
           const selection = (0, import_lexical13.$getSelection)();
           if ((0, import_lexical13.$isRangeSelection)(selection)) {
-            const titleNode = (0, import_utils11.$findMatchingParent)(selection.anchor.getNode(), (node) => $isCollapsibleTitleNode(node));
+            const titleNode = (0, import_utils10.$findMatchingParent)(selection.anchor.getNode(), (node) => $isCollapsibleTitleNode(node));
             if ($isCollapsibleTitleNode(titleNode)) {
               const container = titleNode.getParent();
               if (container && $isCollapsibleContainerNode(container)) {
@@ -7538,7 +7521,7 @@ function CollapsiblePlugin() {
           editor.update(() => {
             const title = $createCollapsibleTitleNode();
             const paragraph = (0, import_lexical13.$createParagraphNode)();
-            (0, import_utils11.$insertNodeToNearestRoot)(
+            (0, import_utils10.$insertNodeToNearestRoot)(
               $createCollapsibleContainerNode(true).append(
                 title.append(paragraph),
                 $createCollapsibleContentNode().append((0, import_lexical13.$createParagraphNode)())
@@ -7556,7 +7539,7 @@ function CollapsiblePlugin() {
 }
 
 // src/plugins/ComponentPickerPlugin/index.tsx
-var import_code6 = require("@lexical/code");
+var import_code5 = require("@lexical/code");
 var import_list = require("@lexical/list");
 var import_LexicalAutoEmbedPlugin2 = require("@lexical/react/LexicalAutoEmbedPlugin");
 var import_LexicalComposerContext23 = require("@lexical/react/LexicalComposerContext");
@@ -7571,7 +7554,7 @@ var ReactDOM2 = __toESM(require("react-dom"));
 
 // src/plugins/DateTimePlugin/index.tsx
 var import_LexicalComposerContext11 = require("@lexical/react/LexicalComposerContext");
-var import_utils12 = require("@lexical/utils");
+var import_utils11 = require("@lexical/utils");
 var import_lexical16 = require("lexical");
 var import_react26 = require("react");
 init_DateTimeNode2();
@@ -7582,7 +7565,7 @@ function DateTimePlugin() {
     if (!editor.hasNodes([DateTimeNode])) {
       throw new Error("DateTimePlugin: DateTimeNode not registered on editor");
     }
-    return (0, import_utils12.mergeRegister)(
+    return (0, import_utils11.mergeRegister)(
       editor.registerCommand(
         INSERT_DATETIME_COMMAND,
         (payload) => {
@@ -7590,7 +7573,7 @@ function DateTimePlugin() {
           const dateTimeNode = $createDateTimeNode(dateTime);
           (0, import_lexical16.$insertNodes)([dateTimeNode]);
           if ((0, import_lexical16.$isRootOrShadowRoot)(dateTimeNode.getParentOrThrow())) {
-            (0, import_utils12.$wrapNodeInElement)(dateTimeNode, import_lexical16.$createParagraphNode).selectEnd();
+            (0, import_utils11.$wrapNodeInElement)(dateTimeNode, import_lexical16.$createParagraphNode).selectEnd();
           }
           return true;
         },
@@ -7604,7 +7587,7 @@ function DateTimePlugin() {
 // src/plugins/EquationsPlugin/index.tsx
 var import_katex3 = require("katex/dist/katex.css");
 var import_LexicalComposerContext14 = require("@lexical/react/LexicalComposerContext");
-var import_utils14 = require("@lexical/utils");
+var import_utils13 = require("@lexical/utils");
 var import_lexical20 = require("lexical");
 var import_react32 = require("react");
 init_EquationNode();
@@ -7688,7 +7671,7 @@ function EquationsPlugin() {
         const equationNode = $createEquationNode(equation, inline);
         (0, import_lexical20.$insertNodes)([equationNode]);
         if ((0, import_lexical20.$isRootOrShadowRoot)(equationNode.getParentOrThrow())) {
-          (0, import_utils14.$wrapNodeInElement)(equationNode, import_lexical20.$createParagraphNode).selectEnd();
+          (0, import_utils13.$wrapNodeInElement)(equationNode, import_lexical20.$createParagraphNode).selectEnd();
         }
         return true;
       },
@@ -7701,7 +7684,7 @@ function EquationsPlugin() {
 // src/plugins/ImagesPlugin/index.tsx
 var import_link2 = require("@lexical/link");
 var import_LexicalComposerContext18 = require("@lexical/react/LexicalComposerContext");
-var import_utils17 = require("@lexical/utils");
+var import_utils16 = require("@lexical/utils");
 var import_lexical27 = require("lexical");
 var import_react39 = require("react");
 init_ImageNode2();
@@ -7902,14 +7885,14 @@ function ImagesPlugin() {
     if (!editor.hasNodes([ImageNode])) {
       throw new Error("ImagesPlugin: ImageNode not registered on editor");
     }
-    return (0, import_utils17.mergeRegister)(
+    return (0, import_utils16.mergeRegister)(
       editor.registerCommand(
         INSERT_IMAGE_COMMAND,
         (payload) => {
           const imageNode = $createImageNode(payload);
           (0, import_lexical27.$insertNodes)([imageNode]);
           if ((0, import_lexical27.$isRootOrShadowRoot)(imageNode.getParentOrThrow())) {
-            (0, import_utils17.$wrapNodeInElement)(imageNode, import_lexical27.$createParagraphNode).selectEnd();
+            (0, import_utils16.$wrapNodeInElement)(imageNode, import_lexical27.$createParagraphNode).selectEnd();
           }
           return true;
         },
@@ -8000,7 +7983,7 @@ function $onDrop(event, editor) {
   if (!data) {
     return false;
   }
-  const existingLink = (0, import_utils17.$findMatchingParent)(
+  const existingLink = (0, import_utils16.$findMatchingParent)(
     node,
     (parent) => !(0, import_link2.$isAutoLinkNode)(parent) && (0, import_link2.$isLinkNode)(parent)
   );
@@ -8279,12 +8262,12 @@ function DropDown({
 
 // src/plugins/LayoutPlugin/LayoutPlugin.tsx
 var import_LexicalComposerContext19 = require("@lexical/react/LexicalComposerContext");
-var import_utils20 = require("@lexical/utils");
+var import_utils19 = require("@lexical/utils");
 var import_lexical31 = require("lexical");
 var import_react41 = require("react");
 
 // src/nodes/LayoutContainerNode.ts
-var import_utils18 = require("@lexical/utils");
+var import_utils17 = require("@lexical/utils");
 var import_lexical29 = require("lexical");
 function $convertLayoutContainerElement(domNode) {
   const styleAttributes = window.getComputedStyle(domNode);
@@ -8311,7 +8294,7 @@ var LayoutContainerNode = class _LayoutContainerNode extends import_lexical29.El
     const dom = document.createElement("div");
     dom.style.gridTemplateColumns = this.__templateColumns;
     if (typeof config.theme.layoutContainer === "string") {
-      (0, import_utils18.addClassNamesToElement)(dom, config.theme.layoutContainer);
+      (0, import_utils17.addClassNamesToElement)(dom, config.theme.layoutContainer);
     }
     return dom;
   }
@@ -8375,7 +8358,7 @@ function $isLayoutContainerNode(node) {
 }
 
 // src/nodes/LayoutItemNode.ts
-var import_utils19 = require("@lexical/utils");
+var import_utils18 = require("@lexical/utils");
 var import_lexical30 = require("lexical");
 function $convertLayoutItemElement() {
   return { node: $createLayoutItemNode() };
@@ -8398,7 +8381,7 @@ var LayoutItemNode = class _LayoutItemNode extends import_lexical30.ElementNode 
     const dom = document.createElement("div");
     dom.setAttribute("data-lexical-layout-item", "true");
     if (typeof config.theme.layoutItem === "string") {
-      (0, import_utils19.addClassNamesToElement)(dom, config.theme.layoutItem);
+      (0, import_utils18.addClassNamesToElement)(dom, config.theme.layoutItem);
     }
     return dom;
   }
@@ -8452,7 +8435,7 @@ function LayoutPlugin() {
     const $onEscape = (before) => {
       const selection = (0, import_lexical31.$getSelection)();
       if ((0, import_lexical31.$isRangeSelection)(selection) && selection.isCollapsed() && selection.anchor.offset === 0) {
-        const container = (0, import_utils20.$findMatchingParent)(selection.anchor.getNode(), $isLayoutContainerNode);
+        const container = (0, import_utils19.$findMatchingParent)(selection.anchor.getNode(), $isLayoutContainerNode);
         if ($isLayoutContainerNode(container)) {
           const parent = container.getParent();
           const child = parent && (before ? parent.getFirstChild() : parent?.getLastChild());
@@ -8485,7 +8468,7 @@ function LayoutPlugin() {
       }
       return false;
     };
-    return (0, import_utils20.mergeRegister)(
+    return (0, import_utils19.mergeRegister)(
       // When layout is the last child pressing down/right arrow will insert paragraph
       // below it to allow adding more content. It's similar what $insertBlockNode
       // (mainly for decorators), except it'll always be possible to continue adding
@@ -8507,7 +8490,7 @@ function LayoutPlugin() {
             for (let i = 0; i < itemsCount; i++) {
               container.append($createLayoutItemNode().append((0, import_lexical31.$createParagraphNode)()));
             }
-            (0, import_utils20.$insertNodeToNearestRoot)(container);
+            (0, import_utils19.$insertNodeToNearestRoot)(container);
             container.selectStart();
           });
           return true;
@@ -8592,14 +8575,14 @@ function InsertLayoutDialog({
 
 // src/plugins/PageBreakPlugin/index.tsx
 var import_LexicalComposerContext21 = require("@lexical/react/LexicalComposerContext");
-var import_utils22 = require("@lexical/utils");
+var import_utils21 = require("@lexical/utils");
 var import_lexical33 = require("lexical");
 var import_react44 = require("react");
 
 // src/nodes/PageBreakNode/index.tsx
 var import_LexicalComposerContext20 = require("@lexical/react/LexicalComposerContext");
 var import_useLexicalNodeSelection3 = require("@lexical/react/useLexicalNodeSelection");
-var import_utils21 = require("@lexical/utils");
+var import_utils20 = require("@lexical/utils");
 var import_lexical32 = require("lexical");
 var import_react43 = require("react");
 var import_jsx_runtime41 = require("react/jsx-runtime");
@@ -8607,7 +8590,7 @@ function PageBreakComponent({ nodeKey }) {
   const [editor] = (0, import_LexicalComposerContext20.useLexicalComposerContext)();
   const [isSelected, setSelected, clearSelection] = (0, import_useLexicalNodeSelection3.useLexicalNodeSelection)(nodeKey);
   (0, import_react43.useEffect)(() => {
-    return (0, import_utils21.mergeRegister)(
+    return (0, import_utils20.mergeRegister)(
       editor.registerCommand(
         import_lexical32.CLICK_COMMAND,
         (event) => {
@@ -8694,7 +8677,7 @@ function PageBreakPlugin() {
     if (!editor.hasNodes([PageBreakNode])) {
       throw new Error("PageBreakPlugin: PageBreakNode is not registered on editor");
     }
-    return (0, import_utils22.mergeRegister)(
+    return (0, import_utils21.mergeRegister)(
       editor.registerCommand(
         INSERT_PAGE_BREAK,
         () => {
@@ -8705,7 +8688,7 @@ function PageBreakPlugin() {
           const focusNode = selection.focus.getNode();
           if (focusNode !== null) {
             const pgBreak = $createPageBreakNode();
-            (0, import_utils22.$insertNodeToNearestRoot)(pgBreak);
+            (0, import_utils21.$insertNodeToNearestRoot)(pgBreak);
           }
           return true;
         },
@@ -8936,10 +8919,10 @@ function getBaseOptions(editor, showModal) {
         const selection = (0, import_lexical34.$getSelection)();
         if ((0, import_lexical34.$isRangeSelection)(selection)) {
           if (selection.isCollapsed()) {
-            (0, import_selection2.$setBlocksType)(selection, () => (0, import_code6.$createCodeNode)());
+            (0, import_selection2.$setBlocksType)(selection, () => (0, import_code5.$createCodeNode)());
           } else {
             const textContent = selection.getTextContent();
-            const codeNode = (0, import_code6.$createCodeNode)();
+            const codeNode = (0, import_code5.$createCodeNode)();
             selection.insertNodes([codeNode]);
             selection.insertRawText(textContent);
           }
@@ -9230,7 +9213,7 @@ function ContextMenuPlugin() {
 // src/plugins/DragDropPastePlugin/index.ts
 var import_LexicalComposerContext25 = require("@lexical/react/LexicalComposerContext");
 var import_rich_text2 = require("@lexical/rich-text");
-var import_utils23 = require("@lexical/utils");
+var import_utils22 = require("@lexical/utils");
 var import_lexical36 = require("lexical");
 var import_react48 = require("react");
 var ACCEPTABLE_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
@@ -9242,9 +9225,9 @@ function DragDropPaste() {
       import_rich_text2.DRAG_DROP_PASTE,
       (files) => {
         (async () => {
-          const filesResult = await (0, import_utils23.mediaFileReader)(files, [ACCEPTABLE_IMAGE_TYPES].flat());
+          const filesResult = await (0, import_utils22.mediaFileReader)(files, [ACCEPTABLE_IMAGE_TYPES].flat());
           for (const { file, result } of filesResult) {
-            if ((0, import_utils23.isMimeType)(file, ACCEPTABLE_IMAGE_TYPES)) {
+            if ((0, import_utils22.isMimeType)(file, ACCEPTABLE_IMAGE_TYPES)) {
               if (imageUploadHandler) {
                 try {
                   const uploadResult = await imageUploadHandler.uploadImage(file);
@@ -9281,7 +9264,7 @@ function DragDropPaste() {
 // src/plugins/DraggableBlockPlugin/index.tsx
 var import_LexicalComposerContext26 = require("@lexical/react/LexicalComposerContext");
 var import_rich_text3 = require("@lexical/rich-text");
-var import_utils24 = require("@lexical/utils");
+var import_utils23 = require("@lexical/utils");
 var import_lexical37 = require("lexical");
 var import_react49 = require("react");
 var import_react_dom5 = require("react-dom");
@@ -9455,8 +9438,8 @@ function getBlockElement(anchorElem, editor, event, useEdgeAsDefault = false) {
         lastNode != null ? lastNode.getBoundingClientRect() : void 0
       ];
       if (firstNodeRect && lastNodeRect) {
-        const firstNodeZoom = (0, import_utils24.calculateZoomLevel)(firstNode);
-        const lastNodeZoom = (0, import_utils24.calculateZoomLevel)(lastNode);
+        const firstNodeZoom = (0, import_utils23.calculateZoomLevel)(firstNode);
+        const lastNodeZoom = (0, import_utils23.calculateZoomLevel)(lastNode);
         if (event.y / firstNodeZoom < firstNodeRect.top) {
           blockElem = firstNode;
         } else if (event.y / lastNodeZoom > lastNodeRect.bottom) {
@@ -9475,7 +9458,7 @@ function getBlockElement(anchorElem, editor, event, useEdgeAsDefault = false) {
       if (elem === null) {
         break;
       }
-      const zoom = (0, import_utils24.calculateZoomLevel)(elem);
+      const zoom = (0, import_utils23.calculateZoomLevel)(elem);
       const point = new Point(event.x / zoom, event.y / zoom);
       const domRect = Rectangle.fromDOM(elem);
       const { marginTop, marginBottom } = getCollapsedMargins(elem);
@@ -9573,7 +9556,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
   (0, import_react49.useEffect)(() => {
     function onMouseMove(event) {
       const target = event.target;
-      if (!(0, import_utils24.isHTMLElement)(target)) {
+      if (!(0, import_utils23.isHTMLElement)(target)) {
         setDraggableBlockElem(null);
         return;
       }
@@ -9612,7 +9595,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
         return false;
       }
       const { pageY, target } = event;
-      if (!(0, import_utils24.isHTMLElement)(target)) {
+      if (!(0, import_utils23.isHTMLElement)(target)) {
         return false;
       }
       const targetBlockElem = getBlockElement(anchorElem, editor, event, true);
@@ -9620,7 +9603,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
       if (targetBlockElem === null || targetLineElem === null) {
         return false;
       }
-      setTargetLine(targetLineElem, targetBlockElem, pageY / (0, import_utils24.calculateZoomLevel)(target), anchorElem);
+      setTargetLine(targetLineElem, targetBlockElem, pageY / (0, import_utils23.calculateZoomLevel)(target), anchorElem);
       event.preventDefault();
       return true;
     }
@@ -9638,7 +9621,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
       if (!draggedNode) {
         return false;
       }
-      if (!(0, import_utils24.isHTMLElement)(target)) {
+      if (!(0, import_utils23.isHTMLElement)(target)) {
         return false;
       }
       const targetBlockElem = getBlockElement(anchorElem, editor, event, true);
@@ -9653,7 +9636,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
         return true;
       }
       const targetBlockElemTop = targetBlockElem.getBoundingClientRect().top;
-      if (pageY / (0, import_utils24.calculateZoomLevel)(target) >= targetBlockElemTop) {
+      if (pageY / (0, import_utils23.calculateZoomLevel)(target) >= targetBlockElemTop) {
         targetNode.insertAfter(draggedNode);
       } else {
         targetNode.insertBefore(draggedNode);
@@ -9661,7 +9644,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
       setDraggableBlockElem(null);
       return true;
     }
-    return (0, import_utils24.mergeRegister)(
+    return (0, import_utils23.mergeRegister)(
       editor.registerCommand(
         import_lexical37.DRAGOVER_COMMAND,
         (event) => {
@@ -9838,7 +9821,7 @@ init_EmojisPlugin();
 // src/plugins/FloatingLinkEditorPlugin/index.tsx
 var import_link4 = require("@lexical/link");
 var import_LexicalComposerContext28 = require("@lexical/react/LexicalComposerContext");
-var import_utils25 = require("@lexical/utils");
+var import_utils24 = require("@lexical/utils");
 var import_lexical39 = require("lexical");
 var import_react51 = require("react");
 var import_react_dom6 = require("react-dom");
@@ -9911,7 +9894,7 @@ function FloatingLinkEditor({
     const selection = (0, import_lexical39.$getSelection)();
     if ((0, import_lexical39.$isRangeSelection)(selection)) {
       const node = getSelectedNode(selection);
-      const linkParent = (0, import_utils25.$findMatchingParent)(node, import_link4.$isLinkNode);
+      const linkParent = (0, import_utils24.$findMatchingParent)(node, import_link4.$isLinkNode);
       if (linkParent) {
         setLinkUrl(linkParent.getURL());
       } else if ((0, import_link4.$isLinkNode)(node)) {
@@ -9993,7 +9976,7 @@ function FloatingLinkEditor({
     };
   }, [anchorElem.parentElement, editor, $updateLinkEditor]);
   (0, import_react51.useEffect)(() => {
-    return (0, import_utils25.mergeRegister)(
+    return (0, import_utils24.mergeRegister)(
       editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
           $updateLinkEditor();
@@ -10155,15 +10138,15 @@ function useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsL
       const selection = (0, import_lexical39.$getSelection)();
       if ((0, import_lexical39.$isRangeSelection)(selection)) {
         const focusNode = getSelectedNode(selection);
-        const focusLinkNode = (0, import_utils25.$findMatchingParent)(focusNode, import_link4.$isLinkNode);
-        const focusAutoLinkNode = (0, import_utils25.$findMatchingParent)(focusNode, import_link4.$isAutoLinkNode);
+        const focusLinkNode = (0, import_utils24.$findMatchingParent)(focusNode, import_link4.$isLinkNode);
+        const focusAutoLinkNode = (0, import_utils24.$findMatchingParent)(focusNode, import_link4.$isAutoLinkNode);
         if (!(focusLinkNode || focusAutoLinkNode)) {
           setIsLink(false);
           return;
         }
         const badNode = selection.getNodes().filter((node) => !(0, import_lexical39.$isLineBreakNode)(node)).find((node) => {
-          const linkNode = (0, import_utils25.$findMatchingParent)(node, import_link4.$isLinkNode);
-          const autoLinkNode = (0, import_utils25.$findMatchingParent)(node, import_link4.$isAutoLinkNode);
+          const linkNode = (0, import_utils24.$findMatchingParent)(node, import_link4.$isLinkNode);
+          const autoLinkNode = (0, import_utils24.$findMatchingParent)(node, import_link4.$isAutoLinkNode);
           return focusLinkNode && !focusLinkNode.is(linkNode) || linkNode && !linkNode.is(focusLinkNode) || focusAutoLinkNode && !focusAutoLinkNode.is(autoLinkNode) || autoLinkNode && (!autoLinkNode.is(focusAutoLinkNode) || autoLinkNode.getIsUnlinked());
         });
         if (!badNode) {
@@ -10186,7 +10169,7 @@ function useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsL
         }
       }
     }
-    return (0, import_utils25.mergeRegister)(
+    return (0, import_utils24.mergeRegister)(
       editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
           $updateToolbar();
@@ -10207,7 +10190,7 @@ function useFloatingLinkEditorToolbar(editor, anchorElem, isLinkEditMode, setIsL
           const selection = (0, import_lexical39.$getSelection)();
           if ((0, import_lexical39.$isRangeSelection)(selection)) {
             const node = getSelectedNode(selection);
-            const linkNode = (0, import_utils25.$findMatchingParent)(node, import_link4.$isLinkNode);
+            const linkNode = (0, import_utils24.$findMatchingParent)(node, import_link4.$isLinkNode);
             if ((0, import_link4.$isLinkNode)(linkNode) && (payload.metaKey || payload.ctrlKey)) {
               window.open(linkNode.getURL(), "_blank");
               return true;
@@ -10244,17 +10227,17 @@ function FloatingLinkEditorPlugin({
 }
 
 // src/plugins/FloatingTextFormatToolbarPlugin/index.tsx
-var import_code7 = require("@lexical/code");
+var import_code6 = require("@lexical/code");
 var import_link5 = require("@lexical/link");
 var import_LexicalComposerContext29 = require("@lexical/react/LexicalComposerContext");
 var import_selection4 = require("@lexical/selection");
-var import_utils27 = require("@lexical/utils");
+var import_utils26 = require("@lexical/utils");
 var import_lexical40 = require("lexical");
 var import_react53 = require("react");
 var import_react_dom7 = require("react-dom");
 
 // src/ui/ColorPicker.tsx
-var import_utils26 = require("@lexical/utils");
+var import_utils25 = require("@lexical/utils");
 var import_react52 = require("react");
 var import_jsx_runtime47 = require("react/jsx-runtime");
 var skipAddingToHistoryStack = false;
@@ -10385,7 +10368,7 @@ function MoveWrapper({ className, style, onChange, children }) {
     if (divRef.current) {
       const { current: div } = divRef;
       const { width, height, left, top } = div.getBoundingClientRect();
-      const zoom = (0, import_utils26.calculateZoomLevel)(div);
+      const zoom = (0, import_utils25.calculateZoomLevel)(div);
       const x = clamp2(e.clientX / zoom - left, width, 0);
       const y2 = clamp2(e.clientY / zoom - top, height, 0);
       onChange({ x, y: y2 });
@@ -10680,7 +10663,7 @@ function TextFormatFloatingToolbar({
     editor.getEditorState().read(() => {
       $updateTextFormatFloatingToolbar();
     });
-    return (0, import_utils27.mergeRegister)(
+    return (0, import_utils26.mergeRegister)(
       editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
           $updateTextFormatFloatingToolbar();
@@ -10913,7 +10896,7 @@ function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
       }
       setFontColor((0, import_selection4.$getSelectionStyleValueForProperty)(selection, "color", "#000"));
       setBgColor((0, import_selection4.$getSelectionStyleValueForProperty)(selection, "background-color", "#fff"));
-      if (!(0, import_code7.$isCodeHighlightNode)(selection.anchor.getNode()) && selection.getTextContent() !== "") {
+      if (!(0, import_code6.$isCodeHighlightNode)(selection.anchor.getNode()) && selection.getTextContent() !== "") {
         setIsText((0, import_lexical40.$isTextNode)(node) || (0, import_lexical40.$isParagraphNode)(node));
       } else {
         setIsText(false);
@@ -10932,7 +10915,7 @@ function useFloatingTextFormatToolbar(editor, anchorElem, setIsLinkEditMode) {
     };
   }, [updatePopup]);
   (0, import_react53.useEffect)(() => {
-    return (0, import_utils27.mergeRegister)(
+    return (0, import_utils26.mergeRegister)(
       editor.registerUpdateListener(() => {
         updatePopup();
       }),
@@ -11041,7 +11024,7 @@ function FragmentLinkPlugin() {
 // src/plugins/HorizontalRulePlugin/index.tsx
 var import_extension = require("@lexical/extension");
 var import_LexicalComposerContext31 = require("@lexical/react/LexicalComposerContext");
-var import_utils28 = require("@lexical/utils");
+var import_utils27 = require("@lexical/utils");
 var import_lexical42 = require("lexical");
 var import_react55 = require("react");
 function HorizontalRulePlugin() {
@@ -11057,7 +11040,7 @@ function HorizontalRulePlugin() {
         const focusNode = selection.focus.getNode();
         if (focusNode !== null) {
           const horizontalRuleNode = (0, import_extension.$createHorizontalRuleNode)();
-          (0, import_utils28.$insertNodeToNearestRoot)(horizontalRuleNode);
+          (0, import_utils27.$insertNodeToNearestRoot)(horizontalRuleNode);
         }
         return true;
       },
@@ -28315,7 +28298,7 @@ function MarkdownPlugin() {
 // src/plugins/MaxLengthPlugin/index.tsx
 var import_LexicalComposerContext33 = require("@lexical/react/LexicalComposerContext");
 var import_selection5 = require("@lexical/selection");
-var import_utils29 = require("@lexical/utils");
+var import_utils28 = require("@lexical/utils");
 var import_lexical46 = require("lexical");
 var import_react57 = require("react");
 function MaxLengthPlugin({ maxLength }) {
@@ -28336,7 +28319,7 @@ function MaxLengthPlugin({ maxLength }) {
         if (delCount > 0) {
           if (prevTextContentSize === maxLength && lastRestoredEditorState !== prevEditorState) {
             lastRestoredEditorState = prevEditorState;
-            (0, import_utils29.$restoreEditorState)(editor, prevEditorState);
+            (0, import_utils28.$restoreEditorState)(editor, prevEditorState);
           } else {
             (0, import_selection5.$trimTextContentFromAnchor)(editor, anchor, delCount);
           }
@@ -28357,13 +28340,13 @@ var import_react58 = require("react");
 init_url();
 
 // src/plugins/ToolbarPlugin/utils.ts
-var import_code8 = require("@lexical/code");
+var import_code7 = require("@lexical/code");
 var import_list2 = require("@lexical/list");
 var import_LexicalDecoratorBlockNode4 = require("@lexical/react/LexicalDecoratorBlockNode");
 var import_rich_text5 = require("@lexical/rich-text");
 var import_selection6 = require("@lexical/selection");
 var import_table5 = require("@lexical/table");
-var import_utils30 = require("@lexical/utils");
+var import_utils29 = require("@lexical/utils");
 var import_lexical47 = require("lexical");
 var calculateNextFontSize = (currentFontSize, updateType) => {
   if (!updateType) {
@@ -28515,10 +28498,10 @@ var formatCode = (editor, blockType) => {
         return;
       }
       if (!(0, import_lexical47.$isRangeSelection)(selection) || selection.isCollapsed()) {
-        (0, import_selection6.$setBlocksType)(selection, () => (0, import_code8.$createCodeNode)());
+        (0, import_selection6.$setBlocksType)(selection, () => (0, import_code7.$createCodeNode)());
       } else {
         const textContent = selection.getTextContent();
-        const codeNode = (0, import_code8.$createCodeNode)();
+        const codeNode = (0, import_code7.$createCodeNode)();
         selection.insertNodes([codeNode]);
         selection = (0, import_lexical47.$getSelection)();
         if ((0, import_lexical47.$isRangeSelection)(selection)) {
@@ -28561,7 +28544,7 @@ var clearFormatting = (editor, skipRefocus = false) => {
           if (textNode.__format !== 0) {
             textNode.setFormat(0);
           }
-          const nearestBlockElement = (0, import_utils30.$getNearestBlockElementAncestorOrThrow)(textNode);
+          const nearestBlockElement = (0, import_utils29.$getNearestBlockElementAncestorOrThrow)(textNode);
           if (nearestBlockElement.__format !== 0) {
             nearestBlockElement.setFormat("");
           }
@@ -28580,46 +28563,46 @@ var clearFormatting = (editor, skipRefocus = false) => {
 };
 
 // src/plugins/ShortcutsPlugin/shortcuts.ts
-var import_utils31 = require("@lexical/utils");
+var import_utils30 = require("@lexical/utils");
 var import_lexical48 = require("lexical");
 var SHORTCUTS = Object.freeze({
   // (Ctrl|⌘) + (Alt|Option) + <key> shortcuts
-  NORMAL: import_utils31.IS_APPLE ? "\u2318+Opt+0" : "Ctrl+Alt+0",
-  HEADING1: import_utils31.IS_APPLE ? "\u2318+Opt+1" : "Ctrl+Alt+1",
-  HEADING2: import_utils31.IS_APPLE ? "\u2318+Opt+2" : "Ctrl+Alt+2",
-  HEADING3: import_utils31.IS_APPLE ? "\u2318+Opt+3" : "Ctrl+Alt+3",
-  NUMBERED_LIST: import_utils31.IS_APPLE ? "\u2318+Shift+7" : "Ctrl+Shift+7",
-  BULLET_LIST: import_utils31.IS_APPLE ? "\u2318+Shift+8" : "Ctrl+Shift+8",
-  CHECK_LIST: import_utils31.IS_APPLE ? "\u2318+Shift+9" : "Ctrl+Shift+9",
-  CODE_BLOCK: import_utils31.IS_APPLE ? "\u2318+Opt+C" : "Ctrl+Alt+C",
-  QUOTE: import_utils31.IS_APPLE ? "\u2303+Shift+Q" : "Ctrl+Shift+Q",
-  ADD_COMMENT: import_utils31.IS_APPLE ? "\u2318+Opt+M" : "Ctrl+Alt+M",
+  NORMAL: import_utils30.IS_APPLE ? "\u2318+Opt+0" : "Ctrl+Alt+0",
+  HEADING1: import_utils30.IS_APPLE ? "\u2318+Opt+1" : "Ctrl+Alt+1",
+  HEADING2: import_utils30.IS_APPLE ? "\u2318+Opt+2" : "Ctrl+Alt+2",
+  HEADING3: import_utils30.IS_APPLE ? "\u2318+Opt+3" : "Ctrl+Alt+3",
+  NUMBERED_LIST: import_utils30.IS_APPLE ? "\u2318+Shift+7" : "Ctrl+Shift+7",
+  BULLET_LIST: import_utils30.IS_APPLE ? "\u2318+Shift+8" : "Ctrl+Shift+8",
+  CHECK_LIST: import_utils30.IS_APPLE ? "\u2318+Shift+9" : "Ctrl+Shift+9",
+  CODE_BLOCK: import_utils30.IS_APPLE ? "\u2318+Opt+C" : "Ctrl+Alt+C",
+  QUOTE: import_utils30.IS_APPLE ? "\u2303+Shift+Q" : "Ctrl+Shift+Q",
+  ADD_COMMENT: import_utils30.IS_APPLE ? "\u2318+Opt+M" : "Ctrl+Alt+M",
   // (Ctrl|⌘) + Shift + <key> shortcuts
-  INCREASE_FONT_SIZE: import_utils31.IS_APPLE ? "\u2318+Shift+." : "Ctrl+Shift+.",
-  DECREASE_FONT_SIZE: import_utils31.IS_APPLE ? "\u2318+Shift+," : "Ctrl+Shift+,",
-  INSERT_CODE_BLOCK: import_utils31.IS_APPLE ? "\u2318+Shift+C" : "Ctrl+Shift+C",
-  STRIKETHROUGH: import_utils31.IS_APPLE ? "\u2318+Shift+X" : "Ctrl+Shift+X",
-  LOWERCASE: import_utils31.IS_APPLE ? "\u2303+Shift+1" : "Ctrl+Shift+1",
-  UPPERCASE: import_utils31.IS_APPLE ? "\u2303+Shift+2" : "Ctrl+Shift+2",
-  CAPITALIZE: import_utils31.IS_APPLE ? "\u2303+Shift+3" : "Ctrl+Shift+3",
-  CENTER_ALIGN: import_utils31.IS_APPLE ? "\u2318+Shift+E" : "Ctrl+Shift+E",
-  JUSTIFY_ALIGN: import_utils31.IS_APPLE ? "\u2318+Shift+J" : "Ctrl+Shift+J",
-  LEFT_ALIGN: import_utils31.IS_APPLE ? "\u2318+Shift+L" : "Ctrl+Shift+L",
-  RIGHT_ALIGN: import_utils31.IS_APPLE ? "\u2318+Shift+R" : "Ctrl+Shift+R",
+  INCREASE_FONT_SIZE: import_utils30.IS_APPLE ? "\u2318+Shift+." : "Ctrl+Shift+.",
+  DECREASE_FONT_SIZE: import_utils30.IS_APPLE ? "\u2318+Shift+," : "Ctrl+Shift+,",
+  INSERT_CODE_BLOCK: import_utils30.IS_APPLE ? "\u2318+Shift+C" : "Ctrl+Shift+C",
+  STRIKETHROUGH: import_utils30.IS_APPLE ? "\u2318+Shift+X" : "Ctrl+Shift+X",
+  LOWERCASE: import_utils30.IS_APPLE ? "\u2303+Shift+1" : "Ctrl+Shift+1",
+  UPPERCASE: import_utils30.IS_APPLE ? "\u2303+Shift+2" : "Ctrl+Shift+2",
+  CAPITALIZE: import_utils30.IS_APPLE ? "\u2303+Shift+3" : "Ctrl+Shift+3",
+  CENTER_ALIGN: import_utils30.IS_APPLE ? "\u2318+Shift+E" : "Ctrl+Shift+E",
+  JUSTIFY_ALIGN: import_utils30.IS_APPLE ? "\u2318+Shift+J" : "Ctrl+Shift+J",
+  LEFT_ALIGN: import_utils30.IS_APPLE ? "\u2318+Shift+L" : "Ctrl+Shift+L",
+  RIGHT_ALIGN: import_utils30.IS_APPLE ? "\u2318+Shift+R" : "Ctrl+Shift+R",
   // (Ctrl|⌘) + <key> shortcuts
-  SUBSCRIPT: import_utils31.IS_APPLE ? "\u2318+," : "Ctrl+,",
-  SUPERSCRIPT: import_utils31.IS_APPLE ? "\u2318+." : "Ctrl+.",
-  INDENT: import_utils31.IS_APPLE ? "\u2318+]" : "Ctrl+]",
-  OUTDENT: import_utils31.IS_APPLE ? "\u2318+[" : "Ctrl+[",
-  CLEAR_FORMATTING: import_utils31.IS_APPLE ? "\u2318+\\" : "Ctrl+\\",
-  REDO: import_utils31.IS_APPLE ? "\u2318+Shift+Z" : "Ctrl+Y",
-  UNDO: import_utils31.IS_APPLE ? "\u2318+Z" : "Ctrl+Z",
-  BOLD: import_utils31.IS_APPLE ? "\u2318+B" : "Ctrl+B",
-  ITALIC: import_utils31.IS_APPLE ? "\u2318+I" : "Ctrl+I",
-  UNDERLINE: import_utils31.IS_APPLE ? "\u2318+U" : "Ctrl+U",
-  INSERT_LINK: import_utils31.IS_APPLE ? "\u2318+K" : "Ctrl+K"
+  SUBSCRIPT: import_utils30.IS_APPLE ? "\u2318+," : "Ctrl+,",
+  SUPERSCRIPT: import_utils30.IS_APPLE ? "\u2318+." : "Ctrl+.",
+  INDENT: import_utils30.IS_APPLE ? "\u2318+]" : "Ctrl+]",
+  OUTDENT: import_utils30.IS_APPLE ? "\u2318+[" : "Ctrl+[",
+  CLEAR_FORMATTING: import_utils30.IS_APPLE ? "\u2318+\\" : "Ctrl+\\",
+  REDO: import_utils30.IS_APPLE ? "\u2318+Shift+Z" : "Ctrl+Y",
+  UNDO: import_utils30.IS_APPLE ? "\u2318+Z" : "Ctrl+Z",
+  BOLD: import_utils30.IS_APPLE ? "\u2318+B" : "Ctrl+B",
+  ITALIC: import_utils30.IS_APPLE ? "\u2318+I" : "Ctrl+I",
+  UNDERLINE: import_utils30.IS_APPLE ? "\u2318+U" : "Ctrl+U",
+  INSERT_LINK: import_utils30.IS_APPLE ? "\u2318+K" : "Ctrl+K"
 });
-var CONTROL_OR_META = { ctrlKey: !import_utils31.IS_APPLE, metaKey: import_utils31.IS_APPLE };
+var CONTROL_OR_META = { ctrlKey: !import_utils30.IS_APPLE, metaKey: import_utils30.IS_APPLE };
 function isFormatParagraph(event) {
   const { code } = event;
   return (code === "Numpad0" || code === "Digit0") && (0, import_lexical48.isModifierMatch)(event, { ...CONTROL_OR_META, altKey: true });
@@ -28803,7 +28786,7 @@ var import_lexical51 = require("lexical");
 var import_react59 = require("react");
 
 // src/nodes/SpecialTextNode.tsx
-var import_utils33 = require("@lexical/utils");
+var import_utils32 = require("@lexical/utils");
 var import_lexical50 = require("lexical");
 var SpecialTextNode = class _SpecialTextNode extends import_lexical50.TextNode {
   static getType() {
@@ -28814,7 +28797,7 @@ var SpecialTextNode = class _SpecialTextNode extends import_lexical50.TextNode {
   }
   createDOM(config) {
     const dom = document.createElement("span");
-    (0, import_utils33.addClassNamesToElement)(dom, config.theme.specialText);
+    (0, import_utils32.addClassNamesToElement)(dom, config.theme.specialText);
     dom.textContent = this.getTextContent();
     return dom;
   }
@@ -28823,7 +28806,7 @@ var SpecialTextNode = class _SpecialTextNode extends import_lexical50.TextNode {
       const strippedText = this.__text.substring(1, this.__text.length - 1);
       dom.textContent = strippedText;
     }
-    (0, import_utils33.addClassNamesToElement)(dom, config.theme.specialText);
+    (0, import_utils32.addClassNamesToElement)(dom, config.theme.specialText);
     return false;
   }
   static importJSON(serializedNode) {
@@ -28932,7 +28915,7 @@ function TabFocusPlugin() {
 var import_LexicalComposerContext36 = require("@lexical/react/LexicalComposerContext");
 var import_useLexicalEditable3 = require("@lexical/react/useLexicalEditable");
 var import_table6 = require("@lexical/table");
-var import_utils34 = require("@lexical/utils");
+var import_utils33 = require("@lexical/utils");
 var import_lexical53 = require("lexical");
 var import_react61 = require("react");
 var import_react_dom8 = require("react-dom");
@@ -29583,7 +29566,7 @@ function TableCellActionMenuContainer({
       }
       return false;
     };
-    return (0, import_utils34.mergeRegister)(
+    return (0, import_utils33.mergeRegister)(
       editor.registerUpdateListener(delayedCallback),
       editor.registerCommand(import_lexical53.SELECTION_CHANGE_COMMAND, delayedCallback, import_lexical53.COMMAND_PRIORITY_CRITICAL),
       editor.registerRootListener((rootElement, prevRootElement) => {
@@ -29648,7 +29631,7 @@ function TableActionMenuPlugin({
 var import_LexicalComposerContext37 = require("@lexical/react/LexicalComposerContext");
 var import_useLexicalEditable4 = require("@lexical/react/useLexicalEditable");
 var import_table7 = require("@lexical/table");
-var import_utils35 = require("@lexical/utils");
+var import_utils34 = require("@lexical/utils");
 var import_lexical54 = require("lexical");
 var import_react62 = require("react");
 var import_react_dom9 = require("react-dom");
@@ -29673,7 +29656,7 @@ function TableCellResizer({ editor }) {
   }, []);
   (0, import_react62.useEffect)(() => {
     const tableKeys = /* @__PURE__ */ new Set();
-    return (0, import_utils35.mergeRegister)(
+    return (0, import_utils34.mergeRegister)(
       editor.registerMutationListener(import_table7.TableNode, (nodeMutations) => {
         for (const [nodeKey, mutation] of nodeMutations) {
           if (mutation === "destroyed") {
@@ -29866,7 +29849,7 @@ function TableCellResizer({ editor }) {
           if (activeCell === null) {
             return;
           }
-          const zoom = (0, import_utils35.calculateZoomLevel)(event.target);
+          const zoom = (0, import_utils34.calculateZoomLevel)(event.target);
           if (isHeightChanging(direction)) {
             const heightChange = (event.clientY - y2) / zoom;
             updateRowHeight(heightChange);
@@ -29902,7 +29885,7 @@ function TableCellResizer({ editor }) {
   const getResizers = (0, import_react62.useCallback)(() => {
     if (activeCell) {
       const { height, width, top, left } = activeCell.elem.getBoundingClientRect();
-      const zoom = (0, import_utils35.calculateZoomLevel)(activeCell.elem);
+      const zoom = (0, import_utils34.calculateZoomLevel)(activeCell.elem);
       const zoneWidth = 16;
       const styles = {
         bottom: {
@@ -29980,7 +29963,7 @@ function TableCellResizerPlugin() {
 var import_LexicalComposerContext38 = require("@lexical/react/LexicalComposerContext");
 var import_useLexicalEditable5 = require("@lexical/react/useLexicalEditable");
 var import_table8 = require("@lexical/table");
-var import_utils36 = require("@lexical/utils");
+var import_utils35 = require("@lexical/utils");
 var import_lexical55 = require("lexical");
 var import_react63 = require("react");
 var import_react_dom10 = require("react-dom");
@@ -30025,7 +30008,7 @@ function TableHoverActionsContainer({ anchorElem }) {
         () => {
           const maybeTableCell = (0, import_lexical55.$getNearestNodeFromDOMNode)(tableDOMNode);
           if ((0, import_table8.$isTableCellNode)(maybeTableCell)) {
-            const table = (0, import_utils36.$findMatchingParent)(maybeTableCell, (node) => (0, import_table8.$isTableNode)(node));
+            const table = (0, import_utils35.$findMatchingParent)(maybeTableCell, (node) => (0, import_table8.$isTableNode)(node));
             if (!(0, import_table8.$isTableNode)(table)) {
               return;
             }
@@ -30104,7 +30087,7 @@ function TableHoverActionsContainer({ anchorElem }) {
     };
   }, [shouldListenMouseMove, debouncedOnMouseMove]);
   (0, import_react63.useEffect)(() => {
-    return (0, import_utils36.mergeRegister)(
+    return (0, import_utils35.mergeRegister)(
       editor.registerMutationListener(
         import_table8.TableNode,
         (mutations) => {
@@ -30314,7 +30297,7 @@ function TableOfContentsPlugin() {
 }
 
 // src/plugins/ToolbarPlugin/index.tsx
-var import_code9 = require("@lexical/code");
+var import_code8 = require("@lexical/code");
 var import_code_shiki2 = require("@lexical/code-shiki");
 var import_link7 = require("@lexical/link");
 var import_list3 = require("@lexical/list");
@@ -30323,7 +30306,7 @@ var import_LexicalHorizontalRuleNode2 = require("@lexical/react/LexicalHorizonta
 var import_rich_text6 = require("@lexical/rich-text");
 var import_selection7 = require("@lexical/selection");
 var import_table9 = require("@lexical/table");
-var import_utils40 = require("@lexical/utils");
+var import_utils39 = require("@lexical/utils");
 var import_lexical58 = require("lexical");
 var import_react66 = require("react");
 init_StickyNode2();
@@ -30458,7 +30441,7 @@ function FontSize({
 
 // src/plugins/ToolbarPlugin/index.tsx
 var import_jsx_runtime58 = require("react/jsx-runtime");
-var CODE_LANGUAGE_OPTIONS_PRISM = (0, import_code9.getCodeLanguageOptions)().filter(
+var CODE_LANGUAGE_OPTIONS_PRISM = (0, import_code8.getCodeLanguageOptions)().filter(
   (option) => [
     "c",
     "clike",
@@ -30916,7 +30899,7 @@ function ElementFormatDropdown({
   );
 }
 function $findTopLevelElement(node) {
-  let topLevelElement = node.getKey() === "root" ? node : (0, import_utils40.$findMatchingParent)(node, (e) => {
+  let topLevelElement = node.getKey() === "root" ? node : (0, import_utils39.$findMatchingParent)(node, (e) => {
     const parent = e.getParent();
     return parent !== null && (0, import_lexical58.$isRootOrShadowRoot)(parent);
   });
@@ -30973,11 +30956,11 @@ function ToolbarPlugin({
   } = useSettings();
   const $handleCodeNode = (0, import_react66.useCallback)(
     (element) => {
-      if ((0, import_code9.$isCodeNode)(element)) {
+      if ((0, import_code8.$isCodeNode)(element)) {
         const language = element.getLanguage();
         updateToolbarState(
           "codeLanguage",
-          language ? isCodeHighlighted && (isCodeShiki ? (0, import_code_shiki2.normalizeCodeLanguage)(language) : (0, import_code9.normalizeCodeLanguage)(language)) || language : ""
+          language ? isCodeHighlighted && (isCodeShiki ? (0, import_code_shiki2.normalizeCodeLanguage)(language) : (0, import_code8.normalizeCodeLanguage)(language)) || language : ""
         );
         const theme4 = element.getTheme();
         updateToolbarState("codeTheme", theme4 || "");
@@ -30989,7 +30972,7 @@ function ToolbarPlugin({
   const $updateToolbar = (0, import_react66.useCallback)(() => {
     const selection = (0, import_lexical58.$getSelection)();
     if ((0, import_lexical58.$isRangeSelection)(selection)) {
-      if (activeEditor !== editor && (0, import_utils40.$isEditorIsNestedEditor)(activeEditor)) {
+      if (activeEditor !== editor && (0, import_utils39.$isEditorIsNestedEditor)(activeEditor)) {
         const rootElement = activeEditor.getRootElement();
         updateToolbarState(
           "isImageCaption",
@@ -31007,7 +30990,7 @@ function ToolbarPlugin({
       const parent = node.getParent();
       const isLink = (0, import_link7.$isLinkNode)(parent) || (0, import_link7.$isLinkNode)(node);
       updateToolbarState("isLink", isLink);
-      const tableNode = (0, import_utils40.$findMatchingParent)(node, import_table9.$isTableNode);
+      const tableNode = (0, import_utils39.$findMatchingParent)(node, import_table9.$isTableNode);
       if ((0, import_table9.$isTableNode)(tableNode)) {
         updateToolbarState("rootType", "table");
       } else {
@@ -31016,7 +30999,7 @@ function ToolbarPlugin({
       if (elementDOM !== null) {
         setSelectedElementKey(elementKey);
         if ((0, import_list3.$isListNode)(element)) {
-          const parentList = (0, import_utils40.$getNearestNodeOfType)(anchorNode, import_list3.ListNode);
+          const parentList = (0, import_utils39.$getNearestNodeOfType)(anchorNode, import_list3.ListNode);
           const type = parentList ? parentList.getListType() : element.getListType();
           updateToolbarState("blockType", type);
         } else {
@@ -31029,7 +31012,7 @@ function ToolbarPlugin({
       updateToolbarState("fontFamily", (0, import_selection7.$getSelectionStyleValueForProperty)(selection, "font-family", "Arial"));
       let matchingParent;
       if ((0, import_link7.$isLinkNode)(parent)) {
-        matchingParent = (0, import_utils40.$findMatchingParent)(
+        matchingParent = (0, import_utils39.$findMatchingParent)(
           node,
           (parentNode) => (0, import_lexical58.$isElementNode)(parentNode) && !parentNode.isInline()
         );
@@ -31056,7 +31039,7 @@ function ToolbarPlugin({
     if ((0, import_lexical58.$isNodeSelection)(selection)) {
       const nodes = selection.getNodes();
       for (const selectedNode of nodes) {
-        const parentList = (0, import_utils40.$getNearestNodeOfType)(selectedNode, import_list3.ListNode);
+        const parentList = (0, import_utils39.$getNearestNodeOfType)(selectedNode, import_list3.ListNode);
         if (parentList) {
           const type = parentList.getListType();
           updateToolbarState("blockType", type);
@@ -31091,7 +31074,7 @@ function ToolbarPlugin({
     );
   }, [activeEditor, $updateToolbar]);
   (0, import_react66.useEffect)(() => {
-    return (0, import_utils40.mergeRegister)(
+    return (0, import_utils39.mergeRegister)(
       editor.registerEditableListener((editable) => {
         setIsEditable(editable);
       }),
@@ -31165,7 +31148,7 @@ function ToolbarPlugin({
         (0, import_lexical58.$addUpdateTag)(import_lexical58.SKIP_SELECTION_FOCUS_TAG);
         if (selectedElementKey !== null) {
           const node = (0, import_lexical58.$getNodeByKey)(selectedElementKey);
-          if ((0, import_code9.$isCodeNode)(node)) {
+          if ((0, import_code8.$isCodeNode)(node)) {
             node.setLanguage(value);
           }
         }
@@ -31178,7 +31161,7 @@ function ToolbarPlugin({
       activeEditor.update(() => {
         if (selectedElementKey !== null) {
           const node = (0, import_lexical58.$getNodeByKey)(selectedElementKey);
-          if ((0, import_code9.$isCodeNode)(node)) {
+          if ((0, import_code8.$isCodeNode)(node)) {
             node.setTheme(value);
           }
         }
@@ -31194,7 +31177,7 @@ function ToolbarPlugin({
       {
         disabled: !toolbarState.canUndo || !isEditable,
         onClick: (e) => dispatchToolbarCommand(import_lexical58.UNDO_COMMAND, void 0, isKeyboardInput(e)),
-        title: import_utils40.IS_APPLE ? "Undo (\u2318Z)" : "Undo (Ctrl+Z)",
+        title: import_utils39.IS_APPLE ? "Undo (\u2318Z)" : "Undo (Ctrl+Z)",
         type: "button",
         className: "toolbar-item spaced",
         "aria-label": "Undo",
@@ -31206,7 +31189,7 @@ function ToolbarPlugin({
       {
         disabled: !toolbarState.canRedo || !isEditable,
         onClick: (e) => dispatchToolbarCommand(import_lexical58.REDO_COMMAND, void 0, isKeyboardInput(e)),
-        title: import_utils40.IS_APPLE ? "Redo (\u21E7\u2318Z)" : "Redo (Ctrl+Y)",
+        title: import_utils39.IS_APPLE ? "Redo (\u21E7\u2318Z)" : "Redo (Ctrl+Y)",
         type: "button",
         className: "toolbar-item",
         "aria-label": "Redo",
@@ -31225,7 +31208,7 @@ function ToolbarPlugin({
           disabled: !isEditable,
           buttonClassName: "toolbar-item code-language",
           buttonLabel: (CODE_LANGUAGE_OPTIONS_PRISM.find(
-            (opt) => opt[0] === (0, import_code9.normalizeCodeLanguage)(toolbarState.codeLanguage)
+            (opt) => opt[0] === (0, import_code8.normalizeCodeLanguage)(toolbarState.codeLanguage)
           ) || ["", ""])[1],
           buttonAriaLabel: "Select language",
           children: CODE_LANGUAGE_OPTIONS_PRISM.map(([value, name]) => {
@@ -31734,7 +31717,7 @@ function Editor({ isFullscreen = false }) {
   };
   (0, import_react67.useEffect)(() => {
     const updateViewPortWidth = () => {
-      const isNextSmallWidthViewport = import_utils42.CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
+      const isNextSmallWidthViewport = import_utils41.CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
         setIsSmallWidthViewport(isNextSmallWidthViewport);
       }
@@ -31844,7 +31827,7 @@ var import_use_debounce2 = require("use-debounce");
 init_SharedHistoryContext();
 
 // src/nodes/NotionLikeEditorNodes.ts
-var import_code10 = require("@lexical/code");
+var import_code9 = require("@lexical/code");
 var import_hashtag2 = require("@lexical/hashtag");
 var import_link8 = require("@lexical/link");
 var import_list4 = require("@lexical/list");
@@ -31865,12 +31848,12 @@ var NotionLikeEditorNodes = [
   import_list4.ListNode,
   import_list4.ListItemNode,
   import_rich_text7.QuoteNode,
-  import_code10.CodeNode,
+  import_code9.CodeNode,
   import_table10.TableNode,
   import_table10.TableCellNode,
   import_table10.TableRowNode,
   import_hashtag2.HashtagNode,
-  import_code10.CodeHighlightNode,
+  import_code9.CodeHighlightNode,
   import_link8.AutoLinkNode,
   import_link8.LinkNode,
   import_overflow.OverflowNode,
@@ -32460,7 +32443,7 @@ var import_LexicalListPlugin2 = require("@lexical/react/LexicalListPlugin");
 var import_LexicalRichTextPlugin3 = require("@lexical/react/LexicalRichTextPlugin");
 var import_LexicalTabIndentationPlugin2 = require("@lexical/react/LexicalTabIndentationPlugin");
 var import_LexicalTablePlugin2 = require("@lexical/react/LexicalTablePlugin");
-var import_utils43 = require("@lexical/utils");
+var import_utils42 = require("@lexical/utils");
 var import_react73 = require("react");
 init_LinkPlugin();
 var import_jsx_runtime61 = require("react/jsx-runtime");
@@ -32488,7 +32471,7 @@ function Viewer() {
   };
   (0, import_react73.useEffect)(() => {
     const updateViewPortWidth = () => {
-      const isNextSmallWidthViewport = import_utils43.CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
+      const isNextSmallWidthViewport = import_utils42.CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
         setIsSmallWidthViewport(isNextSmallWidthViewport);
       }
