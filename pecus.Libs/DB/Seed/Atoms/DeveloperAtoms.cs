@@ -11,7 +11,7 @@ namespace Pecus.Libs.DB.Seed.Atoms;
 /// <summary>
 /// 開発者向けのシードデータ生成
 /// </summary>
-public class DeveloperAtoms : BaseSeedAtoms
+public partial class DeveloperAtoms : BaseSeedAtoms
 {
     /// <summary>
     ///  Constructor
@@ -79,6 +79,9 @@ public class DeveloperAtoms : BaseSeedAtoms
             await SeedWorkspaceTasksAsync();
             await SeedTaskCommentsAsync();
             await SeedActivitiesAsync();
+
+            // Achievement 関連のテストデータ投入
+            await SeedAchievementTestDataAsync();
         }
         finally
         {
@@ -1627,5 +1630,4 @@ public class DeveloperAtoms : BaseSeedAtoms
 
         _logger.LogInformation("Added {Count} activities in total", totalActivitiesAdded);
     }
-
 }

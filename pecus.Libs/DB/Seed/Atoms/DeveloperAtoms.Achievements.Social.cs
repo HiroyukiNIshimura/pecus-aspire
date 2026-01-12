@@ -1,0 +1,441 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Pecus.Libs.DB.Models.Enums;
+
+namespace Pecus.Libs.DB.Seed.Atoms;
+
+/// <summary>
+/// Achievement テストデータ - ソーシャル系
+/// PromiseKeeper, Savior, TaskChef, Connector, BestSupporting, Commentator, Documenter, EvidenceKeeper, AiApprentice, Learner, UnsungHero
+/// </summary>
+public partial class DeveloperAtoms
+{
+    /// <summary>
+    /// PromiseKeeper（約束の人）テストデータ
+    /// 条件: 期限変更なしで完了したタスクが20件以上
+    /// 参照: PromiseKeeperStrategy.cs
+    /// </summary>
+    private async Task SeedPromiseKeeperTestDataAsync()
+    {
+        // ===== 判定条件（PromiseKeeperStrategy と同じ値） =====
+        const int RequiredCount = 20;
+        // 判定式: TaskDueDateChanged Activity がない && IsCompleted, Count >= 20
+
+        // Note: 期限変更がないタスクを判定するには Activity 履歴が必要。
+        // テストデータはFirstTryで作成済みのリオープン Activity とは逆のパターン。
+        // ここでは説明のみ記載
+        _logger.LogInformation(
+            "PromiseKeeper: Requires {Required}+ completed tasks without DueDateChanged activity (data-dependent)",
+            RequiredCount);
+    }
+
+    /// <summary>
+    /// Savior（救世主）テストデータ
+    /// 条件: リオープンされたタスクを完了した
+    /// 参照: SaviorStrategy.cs
+    /// </summary>
+    private async Task SeedSaviorTestDataAsync()
+    {
+        // ===== 判定条件（SaviorStrategy と同じ値） =====
+        // 判定式: TaskReopened Activity があり、その後 TaskCompleted Activity がある
+
+        // Note: FirstTry テストデータで TaskReopened を追加済み。
+        // その後に TaskCompleted があれば Savior 達成となる
+        _logger.LogInformation(
+            "Savior: Requires completing a task that was reopened (uses FirstTry test data)");
+    }
+
+    /// <summary>
+    /// TaskChef（タスク料理人）テストデータ
+    /// 条件: 1日で5件以上のタスクを作成した
+    /// 参照: TaskChefStrategy.cs
+    /// </summary>
+    private async Task SeedTaskChefTestDataAsync()
+    {
+        // ===== 判定条件（TaskChefStrategy と同じ値） =====
+        const int RequiredCount = 5;
+        const string TimeZoneId = "Asia/Tokyo";
+        // 判定式: 同一日（JST）に CreatedAt があるタスク数 >= 5
+
+        var tz = TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
+        var today = DateTime.Today;
+
+        var tasksByCreator = await _context.WorkspaceTasks
+            .Where(t => _targetOrganizationIds.Contains(t.OrganizationId))
+            .GroupBy(t => t.CreatedByUserId)
+            .Where(g => g.Count() >= 10)
+            .OrderBy(g => g.Key)
+            .Skip(14)
+            .Take(2)
+            .Select(g => new { UserId = g.Key, Tasks = g.OrderBy(t => t.Id).Take(10).ToList() })
+            .ToListAsync();
+
+        if (tasksByCreator.Count < 2)
+        {
+            _logger.LogWarning("TaskChef: Not enough users with 10+ created tasks for test data");
+            return;
+        }
+
+        // ===== 条件を満たすユーザー（1人目: 5件が同一日に作成） =====
+        var qualifyUser = tasksByCreator[0];
+        for (int i = 0; i < qualifyUser.Tasks.Count; i++)
+        {
+            var task = qualifyUser.Tasks[i];
+            if (i < 5)
+            {
+                // 5件: 今日作成 → 同一日に5件 → true
+                task.CreatedAt = ToJstUtc(today, hour: 9 + i, minute: 0, tz);
+            }
+            else
+            {
+                // 残り: 昨日以前に作成 → カウント外
+                task.CreatedAt = ToJstUtc(today.AddDays(-i), hour: 10, minute: 0, tz);
+            }
+        }
+
+        // ===== 条件を満たさないユーザー（2人目: 4件のみ同一日に作成） =====
+        var nonQualifyUser = tasksByCreator[1];
+        for (int i = 0; i < nonQualifyUser.Tasks.Count; i++)
+        {
+            var task = nonQualifyUser.Tasks[i];
+            if (i < 4)
+            {
+                // 4件: 今日作成 → RequiredCount(5) に満たない
+                task.CreatedAt = ToJstUtc(today, hour: 9 + i, minute: 0, tz);
+            }
+            else
+            {
+                // 残り: 別の日に作成
+                task.CreatedAt = ToJstUtc(today.AddDays(-i), hour: 10, minute: 0, tz);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "TaskChef: User1 created {Required}+ tasks in one day (qualify), User2 created {Less} tasks (non-qualify)",
+            RequiredCount, RequiredCount - 1);
+    }
+
+    /// <summary>
+    /// Connector（コネクター）テストデータ
+    /// 条件: 5つ以上のワークスペースに参加している
+    /// 参照: ConnectorStrategy.cs
+    /// </summary>
+    private async Task SeedConnectorTestDataAsync()
+    {
+        // ===== 判定条件（ConnectorStrategy と同じ値） =====
+        const int RequiredCount = 5;
+        // 判定式: WorkspaceUser の数 >= 5
+
+        var users = await _context.Users
+            .Where(u => u.OrganizationId != null && _targetOrganizationIds.Contains(u.OrganizationId.Value))
+            .Where(u => u.IsActive)
+            .OrderBy(u => u.Id)
+            .Skip(4)
+            .Take(2)
+            .ToListAsync();
+
+        if (users.Count < 2)
+        {
+            _logger.LogWarning("Connector: Not enough users for test data");
+            return;
+        }
+
+        var workspaces = await _context.Workspaces
+            .Where(w => _targetOrganizationIds.Contains(w.OrganizationId))
+            .OrderBy(w => w.Id)
+            .Take(6)
+            .ToListAsync();
+
+        if (workspaces.Count < 6)
+        {
+            _logger.LogWarning("Connector: Not enough workspaces for test data");
+            return;
+        }
+
+        // 既存のWorkspaceUserを取得
+        var existingWorkspaceUsers = await _context.WorkspaceUsers
+            .Where(wu => users.Select(u => u.Id).Contains(wu.UserId))
+            .ToListAsync();
+
+        // ===== 条件を満たすユーザー（1人目: 5つのワークスペースに参加） =====
+        for (int i = 0; i < 5; i++)
+        {
+            if (!existingWorkspaceUsers.Any(wu => wu.UserId == users[0].Id && wu.WorkspaceId == workspaces[i].Id))
+            {
+                _context.WorkspaceUsers.Add(new DB.Models.WorkspaceUser
+                {
+                    WorkspaceId = workspaces[i].Id,
+                    UserId = users[0].Id,
+                    WorkspaceRole = WorkspaceRole.Viewer,
+                    JoinedAt = DateTimeOffset.UtcNow
+                });
+            }
+        }
+
+        // ===== 条件を満たさないユーザー（2人目: 4つのワークスペースに参加） =====
+        for (int i = 0; i < 4; i++)
+        {
+            if (!existingWorkspaceUsers.Any(wu => wu.UserId == users[1].Id && wu.WorkspaceId == workspaces[i].Id))
+            {
+                _context.WorkspaceUsers.Add(new DB.Models.WorkspaceUser
+                {
+                    WorkspaceId = workspaces[i].Id,
+                    UserId = users[1].Id,
+                    WorkspaceRole = WorkspaceRole.Viewer,
+                    JoinedAt = DateTimeOffset.UtcNow
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "Connector: User1 joined {Required}+ workspaces (qualify), User2 joined {Less} workspaces (non-qualify)",
+            RequiredCount, RequiredCount - 1);
+    }
+
+    /// <summary>
+    /// BestSupporting（名バイプレイヤー）テストデータ
+    /// 条件: 他のユーザーが作成したタスクを50件完了した
+    /// 参照: BestSupportingStrategy.cs
+    /// </summary>
+    private async Task SeedBestSupportingTestDataAsync()
+    {
+        // ===== 判定条件（BestSupportingStrategy と同じ値） =====
+        const int RequiredCount = 50;
+        // 判定式: AssignedUserId != CreatedByUserId && IsCompleted, Count >= 50
+
+        // Note: 50件は大量なのでテスト環境では困難。説明のみ記載
+        _logger.LogInformation(
+            "BestSupporting: Requires {Required}+ completed tasks created by others (data-dependent)",
+            RequiredCount);
+    }
+
+    /// <summary>
+    /// Commentator（コメンテーター）テストデータ
+    /// 条件: タスクにコメントを50件投稿した
+    /// 参照: CommentatorStrategy.cs
+    /// </summary>
+    private async Task SeedCommentatorTestDataAsync()
+    {
+        // ===== 判定条件（CommentatorStrategy と同じ値） =====
+        const int RequiredCount = 50;
+        // 判定式: TaskComments.Count >= 50
+
+        // Note: 50件は大量なのでテスト環境では困難。説明のみ記載
+        _logger.LogInformation(
+            "Commentator: Requires {Required}+ task comments (data-dependent)",
+            RequiredCount);
+    }
+
+    /// <summary>
+    /// Documenter（ドキュメンター）テストデータ
+    /// 条件: コメント付きでタスクを20件完了した
+    /// 参照: DocumenterStrategy.cs
+    /// </summary>
+    private async Task SeedDocumenterTestDataAsync()
+    {
+        // ===== 判定条件（DocumenterStrategy と同じ値） =====
+        const int RequiredCount = 20;
+        // 判定式: TaskComments がある && IsCompleted, Count >= 20
+
+        var tasks = await _context.WorkspaceTasks
+            .Where(t => _targetOrganizationIds.Contains(t.OrganizationId))
+            .Where(t => t.IsCompleted)
+            .OrderBy(t => t.Id)
+            .Skip(100)
+            .Take(25)
+            .ToListAsync();
+
+        if (tasks.Count < 25)
+        {
+            _logger.LogWarning("Documenter: Not enough completed tasks for test data");
+            return;
+        }
+
+        var users = await _context.Users
+            .Where(u => u.OrganizationId != null && _targetOrganizationIds.Contains(u.OrganizationId.Value))
+            .Where(u => u.IsActive)
+            .OrderBy(u => u.Id)
+            .Take(2)
+            .ToListAsync();
+
+        if (users.Count < 2)
+        {
+            _logger.LogWarning("Documenter: Not enough users for test data");
+            return;
+        }
+
+        // ===== 条件を満たすユーザー（1人目: 20件のタスクにコメント） =====
+        for (int i = 0; i < 20; i++)
+        {
+            var task = tasks[i];
+            task.AssignedUserId = users[0].Id;
+            _context.TaskComments.Add(new DB.Models.TaskComment
+            {
+                WorkspaceTaskId = task.Id,
+                UserId = users[0].Id,
+                Content = $"Test comment for Documenter achievement {i + 1}",
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        // ===== 条件を満たさないユーザー（2人目: 19件のタスクにコメント） =====
+        for (int i = 20; i < 25; i++)
+        {
+            var task = tasks[i];
+            task.AssignedUserId = users[1].Id;
+            if (i < 24)
+            {
+                _context.TaskComments.Add(new DB.Models.TaskComment
+                {
+                    WorkspaceTaskId = task.Id,
+                    UserId = users[1].Id,
+                    Content = $"Test comment for non-qualify {i - 19}",
+                    CreatedAt = DateTimeOffset.UtcNow
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "Documenter: User1 has {Required}+ tasks with comments (qualify), User2 has {Less} tasks (non-qualify)",
+            RequiredCount, RequiredCount - 1);
+    }
+
+    /// <summary>
+    /// EvidenceKeeper（証拠を残す人）テストデータ
+    /// 条件: ファイル添付付きでタスクを完了した回数が20件以上
+    /// 参照: EvidenceKeeperStrategy.cs
+    /// </summary>
+    private async Task SeedEvidenceKeeperTestDataAsync()
+    {
+        // ===== 判定条件（EvidenceKeeperStrategy と同じ値） =====
+        const int RequiredCount = 20;
+        // 判定式: WorkspaceItemAttachments がある && IsCompleted, Count >= 20
+
+        // Note: ファイル添付のテストデータは複雑なため、説明のみ記載
+        _logger.LogInformation(
+            "EvidenceKeeper: Requires {Required}+ completed tasks with attachments (data-dependent)",
+            RequiredCount);
+    }
+
+    /// <summary>
+    /// AiApprentice（AI使いの弟子）テストデータ
+    /// 条件: AIアシスタント機能を使用した（Botにメッセージを送信した）
+    /// 参照: AiApprenticeStrategy.cs
+    /// </summary>
+    private async Task SeedAiApprenticeTestDataAsync()
+    {
+        // ===== 判定条件（AiApprenticeStrategy と同じ値） =====
+        // 判定式: ChatMessages で SenderActor.BotId != null
+
+        // Note: AI機能使用はチャットデータに依存。説明のみ記載
+        _logger.LogInformation(
+            "AiApprentice: Requires sending a message to AI bot (data-dependent)");
+    }
+
+    /// <summary>
+    /// Learner（学習者）テストデータ
+    /// 条件: リオープンされたタスクから学び、次の10件は一発で完了した
+    /// 参照: LearnerStrategy.cs
+    /// </summary>
+    private async Task SeedLearnerTestDataAsync()
+    {
+        // ===== 判定条件（LearnerStrategy と同じ値） =====
+        const int RequiredStreak = 10;
+        // 判定式: TaskReopened 後に、TaskReopened なしで TaskCompleted が連続10件
+
+        // Note: Activity 履歴の複雑な判定が必要。説明のみ記載
+        _logger.LogInformation(
+            "Learner: Requires {Required} consecutive first-try completions after a reopen (data-dependent)",
+            RequiredStreak);
+    }
+
+    /// <summary>
+    /// UnsungHero（沈黙の守護者）テストデータ
+    /// 条件: 自分が作成者でないタスクを10件完了した
+    /// 参照: UnsungHeroStrategy.cs
+    /// </summary>
+    private async Task SeedUnsungHeroTestDataAsync()
+    {
+        // ===== 判定条件（UnsungHeroStrategy と同じ値） =====
+        const int RequiredCount = 10;
+        // 判定式: AssignedUserId != CreatedByUserId && IsCompleted, Count >= 10
+
+        var tasksByUser = await _context.WorkspaceTasks
+            .Where(t => _targetOrganizationIds.Contains(t.OrganizationId))
+            .Where(t => t.IsCompleted)
+            .GroupBy(t => t.AssignedUserId)
+            .Where(g => g.Count() >= 15)
+            .OrderBy(g => g.Key)
+            .Skip(16)
+            .Take(2)
+            .Select(g => new { UserId = g.Key, Tasks = g.OrderBy(t => t.Id).Take(15).ToList() })
+            .ToListAsync();
+
+        if (tasksByUser.Count < 2)
+        {
+            _logger.LogWarning("UnsungHero: Not enough users with 15+ tasks for test data");
+            return;
+        }
+
+        // 別のユーザーIDを取得（作成者として使用）
+        var otherUsers = await _context.Users
+            .Where(u => u.OrganizationId != null && _targetOrganizationIds.Contains(u.OrganizationId.Value))
+            .Where(u => u.IsActive)
+            .Where(u => u.Id != tasksByUser[0].UserId && u.Id != tasksByUser[1].UserId)
+            .OrderBy(u => u.Id)
+            .Take(2)
+            .ToListAsync();
+
+        if (otherUsers.Count < 2)
+        {
+            _logger.LogWarning("UnsungHero: Not enough other users for test data");
+            return;
+        }
+
+        // ===== 条件を満たすユーザー（1人目: 10件が他者作成） =====
+        var qualifyUser = tasksByUser[0];
+        for (int i = 0; i < qualifyUser.Tasks.Count; i++)
+        {
+            var task = qualifyUser.Tasks[i];
+            if (i < 10)
+            {
+                // 10件: 他者が作成 → AssignedUserId != CreatedByUserId → true
+                task.CreatedByUserId = otherUsers[0].Id;
+            }
+            else
+            {
+                // 残り: 自分が作成 → AssignedUserId == CreatedByUserId → false
+                task.CreatedByUserId = qualifyUser.UserId;
+            }
+        }
+
+        // ===== 条件を満たさないユーザー（2人目: 9件のみ他者作成） =====
+        var nonQualifyUser = tasksByUser[1];
+        for (int i = 0; i < nonQualifyUser.Tasks.Count; i++)
+        {
+            var task = nonQualifyUser.Tasks[i];
+            if (i < 9)
+            {
+                // 9件: 他者が作成 → true だが RequiredCount(10) に満たない
+                task.CreatedByUserId = otherUsers[1].Id;
+            }
+            else
+            {
+                // 残り: 自分が作成
+                task.CreatedByUserId = nonQualifyUser.UserId;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "UnsungHero: User1 completed {Required}+ tasks created by others (qualify), User2 completed {Less} tasks (non-qualify)",
+            RequiredCount, RequiredCount - 1);
+    }
+}
