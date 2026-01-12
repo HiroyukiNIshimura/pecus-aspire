@@ -50,6 +50,7 @@ public class DocumenterStrategy : AchievementStrategyBase
             .GroupBy(t => t.AssignedUserId)
             .Where(g => g.Count() >= RequiredCount)
             .Select(g => g.Key)
+            .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
 
         Logger.LogDebug(

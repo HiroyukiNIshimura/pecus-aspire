@@ -39,6 +39,7 @@ public class SteadyHandStrategy : AchievementStrategyBase
             .Where(t => t.CreatedAt <= thresholdDate)
             .Select(t => t.AssignedUserId)
             .Distinct()
+            .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
 
         Logger.LogDebug(

@@ -42,6 +42,7 @@ public class TaskChefStrategy : AchievementStrategyBase
             .GroupBy(t => t.CreatedByUserId)
             .Where(g => g.Count() >= RequiredCount)
             .Select(g => g.Key)
+            .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
 
         Logger.LogDebug(

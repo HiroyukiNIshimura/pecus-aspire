@@ -38,6 +38,7 @@ public class VeteranStrategy : AchievementStrategyBase
             .Where(u => u.CreatedAt <= thresholdDate)
             .Where(u => u.IsActive)
             .Select(u => u.Id)
+            .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
 
         Logger.LogDebug(

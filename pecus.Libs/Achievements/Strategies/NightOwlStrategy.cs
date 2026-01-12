@@ -54,6 +54,7 @@ public class NightOwlStrategy : AchievementStrategyBase
             })
             .Select(t => t.AssignedUserId)
             .Distinct()
+            .Take(MaxResultsPerEvaluation)
             .ToList();
 
         Logger.LogDebug(

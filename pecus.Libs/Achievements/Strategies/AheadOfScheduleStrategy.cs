@@ -49,6 +49,7 @@ public class AheadOfScheduleStrategy : AchievementStrategyBase
             .GroupBy(t => t.AssignedUserId)
             .Where(g => g.Count() >= RequiredCount)
             .Select(g => g.Key)
+            .Take(MaxResultsPerEvaluation)
             .ToList();
 
         Logger.LogDebug(

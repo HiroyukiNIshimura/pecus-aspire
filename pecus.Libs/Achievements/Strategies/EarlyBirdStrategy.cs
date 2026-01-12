@@ -54,6 +54,7 @@ public class EarlyBirdStrategy : AchievementStrategyBase
             })
             .Select(t => t.AssignedUserId)
             .Distinct()
+            .Take(MaxResultsPerEvaluation)
             .ToList();
 
         Logger.LogDebug(

@@ -9,6 +9,12 @@ namespace Pecus.Libs.Achievements;
 public abstract class AchievementStrategyBase : IAchievementStrategy
 {
     /// <summary>
+    /// 1回の評価で返す最大ユーザー数。
+    /// 対象外になったユーザーは翌日以降のジョブで処理される。
+    /// </summary>
+    protected const int MaxResultsPerEvaluation = 500;
+
+    /// <summary>
     /// データベースコンテキスト
     /// </summary>
     protected readonly ApplicationDbContext Context;

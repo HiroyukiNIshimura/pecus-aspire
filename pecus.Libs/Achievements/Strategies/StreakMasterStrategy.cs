@@ -65,7 +65,7 @@ public class StreakMasterStrategy : AchievementStrategyBase
             organizationId,
             qualifiedUsers.Count);
 
-        return qualifiedUsers;
+        return qualifiedUsers.Take(MaxResultsPerEvaluation);
     }
 
     private static int CalculateMaxStreak(List<DateTime> sortedDates)

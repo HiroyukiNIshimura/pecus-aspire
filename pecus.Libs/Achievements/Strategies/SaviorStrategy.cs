@@ -61,6 +61,7 @@ public class SaviorStrategy : AchievementStrategyBase
             .Where(a => a.UserId != null)
             .Select(a => a.UserId!.Value)
             .Distinct()
+            .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
 
         Logger.LogDebug(

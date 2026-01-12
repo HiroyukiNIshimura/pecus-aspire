@@ -49,6 +49,7 @@ public class AiApprenticeStrategy : AchievementStrategyBase
             .Where(userId => userId != null)
             .Select(userId => userId!.Value)
             .Distinct()
+            .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
 
         Logger.LogDebug(

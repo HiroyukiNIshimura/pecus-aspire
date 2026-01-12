@@ -76,6 +76,6 @@ public class PerfectWeekStrategy : AchievementStrategyBase
             organizationId,
             qualifiedUsers.Count);
 
-        return qualifiedUsers;
+        return qualifiedUsers.Take(MaxResultsPerEvaluation);
     }
 }

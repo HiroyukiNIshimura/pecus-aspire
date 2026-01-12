@@ -49,6 +49,7 @@ public class InboxZeroStrategy : AchievementStrategyBase
 
         var inboxZeroUserIds = activeUsers
             .Where(userId => !usersWithIncompleteTasks.Contains(userId))
+            .Take(MaxResultsPerEvaluation)
             .ToList();
 
         Logger.LogDebug(

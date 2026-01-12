@@ -36,6 +36,7 @@ public class CommentatorStrategy : AchievementStrategyBase
             .GroupBy(tc => tc.UserId)
             .Where(g => g.Count() >= RequiredCount)
             .Select(g => g.Key)
+            .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
 
         Logger.LogDebug(

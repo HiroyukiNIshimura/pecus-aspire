@@ -47,6 +47,7 @@ public class ConnectorStrategy : AchievementStrategyBase
             .GroupBy(wu => wu.UserId)
             .Where(g => g.Count() >= RequiredCount)
             .Select(g => g.Key)
+            .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
 
         Logger.LogDebug(
