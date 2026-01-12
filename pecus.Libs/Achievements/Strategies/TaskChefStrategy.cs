@@ -41,6 +41,7 @@ public class TaskChefStrategy : AchievementStrategyBase
             .Where(t => t.CreatedAt >= startOfDay.AddHours(-12) && t.CreatedAt < endOfDay.AddHours(12))
             .GroupBy(t => t.CreatedByUserId)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);

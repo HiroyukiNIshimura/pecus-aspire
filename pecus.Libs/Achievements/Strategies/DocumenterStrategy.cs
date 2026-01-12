@@ -49,6 +49,7 @@ public class DocumenterStrategy : AchievementStrategyBase
             .Where(t => tasksWithComments.Contains(t.Id))
             .GroupBy(t => t.AssignedUserId)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);

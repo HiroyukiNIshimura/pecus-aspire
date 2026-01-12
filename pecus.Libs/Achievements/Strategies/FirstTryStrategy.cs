@@ -58,6 +58,7 @@ public class FirstTryStrategy : AchievementStrategyBase
             .Where(a => a.UserId != null)
             .GroupBy(a => a.UserId!.Value)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);

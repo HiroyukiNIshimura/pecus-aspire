@@ -36,6 +36,7 @@ public class MultitaskerStrategy : AchievementStrategyBase
             .Where(t => !t.IsCompleted && !t.IsDiscarded)
             .GroupBy(t => t.AssignedUserId)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);

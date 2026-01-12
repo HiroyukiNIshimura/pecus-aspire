@@ -36,6 +36,7 @@ public class CenturyStrategy : AchievementStrategyBase
             .Where(t => t.IsCompleted)
             .GroupBy(t => t.AssignedUserId)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);

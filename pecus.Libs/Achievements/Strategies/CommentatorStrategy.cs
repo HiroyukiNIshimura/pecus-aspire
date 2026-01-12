@@ -35,6 +35,7 @@ public class CommentatorStrategy : AchievementStrategyBase
             .Where(tc => tc.WorkspaceTask != null && tc.WorkspaceTask.OrganizationId == organizationId)
             .GroupBy(tc => tc.UserId)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);

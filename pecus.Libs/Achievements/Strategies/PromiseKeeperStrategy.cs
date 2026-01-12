@@ -57,6 +57,7 @@ public class PromiseKeeperStrategy : AchievementStrategyBase
             .Where(t => !dueDateChangedItemIds.Contains(t.WorkspaceItemId))
             .GroupBy(t => t.AssignedUserId)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);

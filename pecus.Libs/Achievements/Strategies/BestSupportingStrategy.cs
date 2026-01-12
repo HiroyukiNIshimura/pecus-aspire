@@ -45,6 +45,7 @@ public class BestSupportingStrategy : AchievementStrategyBase
             .Where(t => t.AssignedUserId != t.CreatedByUserId)
             .GroupBy(t => t.AssignedUserId)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToList();

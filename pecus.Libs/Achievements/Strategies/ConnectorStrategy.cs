@@ -46,6 +46,7 @@ public class ConnectorStrategy : AchievementStrategyBase
             .Where(wu => activeUsers.Contains(wu.UserId))
             .GroupBy(wu => wu.UserId)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);

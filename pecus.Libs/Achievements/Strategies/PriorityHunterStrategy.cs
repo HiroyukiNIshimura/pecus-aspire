@@ -38,6 +38,7 @@ public class PriorityHunterStrategy : AchievementStrategyBase
             .Where(t => t.Priority == TaskPriority.High)
             .GroupBy(t => t.AssignedUserId)
             .Where(g => g.Count() >= RequiredCount)
+            .OrderBy(g => g.Key)
             .Select(g => g.Key)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
