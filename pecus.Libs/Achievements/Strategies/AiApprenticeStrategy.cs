@@ -28,27 +28,15 @@ public class AiApprenticeStrategy : AchievementStrategyBase
         DateTimeOffset evaluationDate,
         CancellationToken cancellationToken = default)
     {
-        var workspaceIds = await Context.Workspaces
-            .AsNoTracking()
-            .Where(w => w.OrganizationId == organizationId)
-            .Select(w => w.Id)
-            .ToListAsync(cancellationToken);
-
-        if (workspaceIds.Count == 0)
-        {
-            return [];
-        }
-
+        // AI チャットルームでユーザーがメッセージを送信した = AI を使用した
         var aiUserIds = await Context.ChatMessages
             .AsNoTracking()
-            .Where(m => m.ChatRoom != null && m.ChatRoom.WorkspaceId != null &&
-                        workspaceIds.Contains(m.ChatRoom.WorkspaceId.Value))
-            .Where(m => m.SenderActor != null && m.SenderActor.BotId != null)
-            .Where(m => m.SenderActorId != null)
-            .Select(m => m.SenderActor!.UserId)
-            .Where(userId => userId != null)
-            .Select(userId => userId!.Value)
+            .Where(m => m.ChatRoom.OrganizationId == organizationId)
+            .Where(m => m.ChatRoom.Type == DB.Models.Enums.ChatRoomType.Ai)
+            .Where(m => m.SenderActor != null && m.SenderActor.UserId != null)
+            .Select(m => m.SenderActor!.UserId!.Value)
             .Distinct()
+            .OrderBy(userId => userId)
             .Take(MaxResultsPerEvaluation)
             .ToListAsync(cancellationToken);
 

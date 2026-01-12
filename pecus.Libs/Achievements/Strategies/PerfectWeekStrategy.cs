@@ -64,8 +64,14 @@ public class PerfectWeekStrategy : AchievementStrategyBase
                 })
                 .ToList();
 
+            // 期限内判定はローカル時刻（JST）での日付で比較
             if (weekCompletions.Count >= MinimumTasks &&
-                weekCompletions.All(c => c.CompletedAt.Date <= c.DueDate.Date))
+                weekCompletions.All(c =>
+                {
+                    var localCompletedDate = ConvertToLocalTime(c.CompletedAt, DefaultTimeZone).Date;
+                    var localDueDate = ConvertToLocalTime(c.DueDate, DefaultTimeZone).Date;
+                    return localCompletedDate <= localDueDate;
+                }))
             {
                 qualifiedUsers.Add(userGroup.Key);
             }

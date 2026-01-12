@@ -30,22 +30,11 @@ public class WeekendGuardianStrategy : AchievementStrategyBase
         DateTimeOffset evaluationDate,
         CancellationToken cancellationToken = default)
     {
-        var localDate = ConvertToLocalTime(evaluationDate, DefaultTimeZone).Date;
-
-        if (localDate.DayOfWeek != DayOfWeek.Saturday && localDate.DayOfWeek != DayOfWeek.Sunday)
-        {
-            return [];
-        }
-
-        var startOfDay = new DateTimeOffset(localDate, TimeSpan.Zero);
-        var endOfDay = startOfDay.AddDays(1);
-
         var completedTasks = await Context.WorkspaceTasks
             .AsNoTracking()
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
-            .Where(t => t.CompletedAt >= startOfDay.AddHours(-12) && t.CompletedAt < endOfDay.AddHours(12))
             .Select(t => new { t.AssignedUserId, CompletedAt = t.CompletedAt!.Value })
             .ToListAsync(cancellationToken);
 
@@ -57,6 +46,7 @@ public class WeekendGuardianStrategy : AchievementStrategyBase
             })
             .Select(t => t.AssignedUserId)
             .Distinct()
+            .OrderBy(userId => userId)
             .Take(MaxResultsPerEvaluation)
             .ToList();
 

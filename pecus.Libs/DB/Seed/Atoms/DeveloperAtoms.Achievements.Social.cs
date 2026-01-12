@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.DB.Seed.Atoms;
@@ -325,17 +326,75 @@ public partial class DeveloperAtoms
 
     /// <summary>
     /// AiApprentice（AI使いの弟子）テストデータ
-    /// 条件: AIアシスタント機能を使用した（Botにメッセージを送信した）
+    /// 条件: AIアシスタント機能を使用した（AIチャットルームでメッセージを送信した）
     /// 参照: AiApprenticeStrategy.cs
     /// </summary>
     private async Task SeedAiApprenticeTestDataAsync()
     {
         // ===== 判定条件（AiApprenticeStrategy と同じ値） =====
-        // 判定式: ChatMessages で SenderActor.BotId != null
+        // 判定式: ChatRoom.Type == Ai && SenderActor.UserId != null
 
-        // Note: AI機能使用はチャットデータに依存。説明のみ記載
+        // 対象ユーザーを取得
+        var users = await _context.Users
+            .Where(u => u.OrganizationId != null && _targetOrganizationIds.Contains(u.OrganizationId.Value))
+            .Where(u => u.IsActive)
+            .OrderBy(u => u.Id)
+            .Take(2)
+            .ToListAsync();
+
+        if (users.Count < 2)
+        {
+            _logger.LogWarning("AiApprentice: Not enough users for test data");
+            return;
+        }
+
+        var targetUser = users[0];
+        var organizationId = targetUser.OrganizationId!.Value;
+
+        // AI チャットルームを作成
+        var aiChatRoom = new ChatRoom
+        {
+            Type = ChatRoomType.Ai,
+            Name = "AI Assistant Test",
+            OrganizationId = organizationId,
+            CreatedByUserId = targetUser.Id,
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-1)
+        };
+        _context.ChatRooms.Add(aiChatRoom);
+        await _context.SaveChangesAsync();
+
+        // 既存の ChatActor を検索、なければ作成
+        var userActor = await _context.ChatActors
+            .FirstOrDefaultAsync(a => a.UserId == targetUser.Id);
+
+        if (userActor == null)
+        {
+            userActor = new ChatActor
+            {
+                OrganizationId = organizationId,
+                ActorType = ChatActorType.User,
+                UserId = targetUser.Id,
+                DisplayName = targetUser.Username
+            };
+            _context.ChatActors.Add(userActor);
+            await _context.SaveChangesAsync();
+        }
+
+        // AI チャットルームでユーザーがメッセージを送信
+        var chatMessage = new ChatMessage
+        {
+            ChatRoomId = aiChatRoom.Id,
+            SenderActorId = userActor.Id,
+            MessageType = ChatMessageType.Text,
+            Content = "Hello AI!",
+            CreatedAt = DateTimeOffset.UtcNow.AddHours(-1)
+        };
+        _context.ChatMessages.Add(chatMessage);
+        await _context.SaveChangesAsync();
+
         _logger.LogInformation(
-            "AiApprentice: Requires sending a message to AI bot (data-dependent)");
+            "AiApprentice: User {UserId} sent message to AI chat room (qualify)",
+            targetUser.Id);
     }
 
     /// <summary>
@@ -349,9 +408,86 @@ public partial class DeveloperAtoms
         const int RequiredStreak = 10;
         // 判定式: TaskReopened 後に、TaskReopened なしで TaskCompleted が連続10件
 
-        // Note: Activity 履歴の複雑な判定が必要。説明のみ記載
+        var workspaceIds = await _context.Workspaces
+            .Where(w => _targetOrganizationIds.Contains(w.OrganizationId))
+            .Select(w => w.Id)
+            .Take(5)
+            .ToListAsync();
+
+        if (workspaceIds.Count == 0)
+        {
+            _logger.LogWarning("Learner: No workspaces found for test data");
+            return;
+        }
+
+        // TaskReopened を持つユーザーを取得（FirstTry テストデータで作成済み）
+        var usersWithReopen = await _context.Activities
+            .Where(a => workspaceIds.Contains(a.WorkspaceId))
+            .Where(a => a.ActionType == ActivityActionType.TaskReopened)
+            .Where(a => a.UserId != null)
+            .Select(a => a.UserId!.Value)
+            .Distinct()
+            .OrderBy(id => id)
+            .Take(1)
+            .ToListAsync();
+
+        if (usersWithReopen.Count == 0)
+        {
+            _logger.LogWarning("Learner: No users with TaskReopened activity found");
+            return;
+        }
+
+        var targetUserId = usersWithReopen[0];
+
+        // そのユーザーの最後の Reopen 時刻を取得
+        var lastReopenTime = await _context.Activities
+            .Where(a => workspaceIds.Contains(a.WorkspaceId))
+            .Where(a => a.ActionType == ActivityActionType.TaskReopened)
+            .Where(a => a.UserId == targetUserId)
+            .MaxAsync(a => a.CreatedAt);
+
+        // リオープンされていないタスクの完了 Activity を取得
+        var reopenedItemIds = await _context.Activities
+            .Where(a => workspaceIds.Contains(a.WorkspaceId))
+            .Where(a => a.ActionType == ActivityActionType.TaskReopened)
+            .Select(a => a.ItemId)
+            .Distinct()
+            .ToListAsync();
+
+        // リオープンされていないタスクの完了 Activity を追加（10件）
+        var completedTasks = await _context.WorkspaceTasks
+            .Where(t => _targetOrganizationIds.Contains(t.OrganizationId))
+            .Where(t => t.IsCompleted)
+            .Where(t => !reopenedItemIds.Contains(t.WorkspaceItemId))
+            .OrderBy(t => t.Id)
+            .Take(12)
+            .ToListAsync();
+
+        if (completedTasks.Count < 10)
+        {
+            _logger.LogWarning("Learner: Not enough completed tasks without reopen for test data");
+            return;
+        }
+
+        var baseTime = lastReopenTime.AddMinutes(1);
+        for (int i = 0; i < 10; i++)
+        {
+            var task = completedTasks[i];
+            _context.Activities.Add(new Activity
+            {
+                WorkspaceId = task.WorkspaceId,
+                ItemId = task.WorkspaceItemId,
+                UserId = targetUserId,
+                ActionType = ActivityActionType.TaskCompleted,
+                CreatedAt = baseTime.AddMinutes(i + 1)
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
         _logger.LogInformation(
-            "Learner: Requires {Required} consecutive first-try completions after a reopen (data-dependent)",
+            "Learner: User {UserId} has {Required} consecutive first-try completions after reopen (qualify)",
+            targetUserId,
             RequiredStreak);
     }
 

@@ -430,11 +430,44 @@ public partial class DeveloperAtoms
     private async Task SeedInboxZeroTestDataAsync()
     {
         // ===== 判定条件（InboxZeroStrategy と同じ値） =====
-        // 判定式: !IsCompleted && !IsDiscarded のタスクが0件
+        // 判定式: 完了済みタスクがあり && !IsCompleted && !IsDiscarded のタスクが0件
 
-        // Note: InboxZero はユーザーに未完了タスクがないことを判定するため、
-        // 既存データの状態に依存。ここでは説明のみ記載
+        // 完了済みタスクを持つユーザーを取得（未完了タスクも持っている可能性あり）
+        var usersWithCompletedTasks = await _context.WorkspaceTasks
+            .Where(t => _targetOrganizationIds.Contains(t.OrganizationId))
+            .Where(t => t.IsCompleted)
+            .Select(t => t.AssignedUserId)
+            .Distinct()
+            .OrderBy(id => id)
+            .Take(2)
+            .ToListAsync();
+
+        if (usersWithCompletedTasks.Count < 2)
+        {
+            _logger.LogWarning("InboxZero: Not enough users with completed tasks for test data");
+            return;
+        }
+
+        // ===== 条件を満たすユーザー（1人目: 全タスク完了状態にする） =====
+        var qualifyUserId = usersWithCompletedTasks[0];
+        var incompleteTasks = await _context.WorkspaceTasks
+            .Where(t => _targetOrganizationIds.Contains(t.OrganizationId))
+            .Where(t => t.AssignedUserId == qualifyUserId)
+            .Where(t => !t.IsCompleted && !t.IsDiscarded)
+            .ToListAsync();
+
+        foreach (var task in incompleteTasks)
+        {
+            task.IsCompleted = true;
+            task.CompletedAt = DateTimeOffset.UtcNow.AddDays(-1);
+        }
+
+        // ===== 条件を満たさないユーザー（2人目: 未完了タスクを残す） =====
+        // 既存の状態を維持（未完了タスクがあればそのまま）
+
         _logger.LogInformation(
-            "InboxZero: Requires 0 incomplete tasks for user (data-dependent, no modification)");
+            "InboxZero: User {QualifyUserId} has all tasks completed (qualify), User {NonQualifyUserId} has incomplete tasks (non-qualify)",
+            qualifyUserId,
+            usersWithCompletedTasks[1]);
     }
 }
