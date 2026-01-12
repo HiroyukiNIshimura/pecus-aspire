@@ -30,6 +30,11 @@ const BASE_STYLE = `Style: Cute kawaii sticker illustration, flat design with so
 
 // バッジ定義（SeedAchievementMastersAsync と同期）
 const BADGES = [
+  {
+    code: 'UNKNOWN',
+    filename: 'unknown.png',
+    prompt: `A glowing golden question mark "?" surrounded by sparkles and stars, with a faint ghostly coati silhouette behind it. Treasure chest lock keyhole design. Mysterious and inviting, "secret to discover" feeling. ${BASE_STYLE}`,
+  },
   // WorkStyle カテゴリ
   {
     code: 'EARLY_BIRD',
