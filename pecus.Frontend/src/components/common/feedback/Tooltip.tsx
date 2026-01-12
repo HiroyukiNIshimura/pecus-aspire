@@ -72,7 +72,7 @@ export function Tooltip({ text, children, position = 'top', className = '' }: To
           text-xs text-neutral-content
           bg-neutral rounded shadow-lg
           transition-opacity duration-200
-          whitespace-nowrap
+          w-max max-w-48 text-left wrap-break-word
           ${positionClass.container}
         `}
       >
