@@ -54,10 +54,19 @@
 `pecus.Frontend/public/icons/badge/`
 
 ### 命名規則
-`{AchievementMaster.Code}.svg` （例: `EARLY_BIRD.svg`）
+`{code_in_snake_case}.webp` （例: `early_bird.webp`, `night_owl.webp`）
 
-### 未取得バッジ用
-`unknown.svg` — 「？」表示用の共通画像
+※ AchievementMaster.IconPath に格納された値をそのまま使用
+
+### 未取得バッジの表示
+
+未取得バッジはAPIレスポンスで情報を隠蔽し、フロントで汎用表示:
+
+- **iconPath**: `null` → `unknown.webp` を表示
+- **name / nameEn**: `"???"` を返却
+- **description / descriptionEn**: `"???"` を返却
+
+※ `unknown.webp` は汎用シルエット画像として用意
 
 ---
 
@@ -69,8 +78,8 @@
 
 **機能:**
 - 全実績マスタをアルバム風グリッド表示
-- 取得済みバッジ: カラー表示 + 取得日
-- 未取得バッジ: グレーアウト + 「？」アイコン
+- 取得済みバッジ: カラー表示 + 名前 + 取得日
+- 未取得バッジ: `unknown.webp` + 「???」表示（名前・説明も非公開）
 - カテゴリ別フィルタ（任意）
 
 **データ取得:**
@@ -138,11 +147,28 @@
 
 ## API設計
 
-### 実績マスタ取得
+### 実績マスタ取得（コレクション用）
 
 ```
 GET /api/achievements
-Response: AchievementMasterDto[]
+Response: AchievementCollectionDto[]
+```
+
+未取得バッジは情報を隠蔽:
+```typescript
+interface AchievementCollectionDto {
+  id: number;
+  code: string;
+  name: string;           // 未取得: "???"
+  nameEn: string;         // 未取得: "???"
+  description: string;    // 未取得: "???"
+  descriptionEn: string;  // 未取得: "???"
+  iconPath: string | null; // 未取得: null
+  difficulty: AchievementDifficulty;
+  category: AchievementCategory;
+  isEarned: boolean;      // 取得済みフラグ
+  earnedAt: string | null; // 取得日時（未取得: null）
+}
 ```
 
 ### ユーザー実績取得（自分）
