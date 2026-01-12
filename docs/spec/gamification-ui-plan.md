@@ -14,7 +14,7 @@
 | 設定: ユーザー設定にBadgeVisibility追加 | ✅ 完了 |
 | UI: バッジコレクションページ | ✅ 完了 |
 | UI: ユーザーバッジ表示コンポーネント | ⬜ 未着手 |
-| UI: バッジ取得演出コンポーネント | ✅ 完了 |
+| UI: バッジ取得演出コンポーネント | ✅ 完了（コンフェッティ + 難易度別演出） |
 | バッジ画像: 28種 | ✅ 完了 |
 
 ---
@@ -94,6 +94,8 @@
 ### 2. ユーザーバッジ表示コンポーネント
 
 **用途:** ユーザーアバタークリック時のポップオーバー等
+
+**実装候補:** `pecus.Frontend/src/components/common/widgets/user/MemberCard.tsx` に統合予定（検討中）
 
 **機能:**
 - 指定ユーザーの取得済みバッジをコンパクト表示
@@ -250,3 +252,35 @@ interface NewAchievementDto {
 - [backend-guidelines.md](../backend-guidelines.md) - バックエンド実装ガイドライン
 - [frontend-guidelines.md](../frontend-guidelines.md) - フロントエンド実装ガイドライン
 - [ssr-design-guidelines.md](../ssr-design-guidelines.md) - SSR設計ガイドライン
+
+---
+
+## 実装メモ（2026-01-12）
+
+### ユーザーバッジ表示コンポーネント統合調査
+
+**結論:** `MemberCard.tsx` への統合は**可能**
+
+**現状:**
+- `MemberCard` は純粋な表示コンポーネント（`'use client'`）
+- 使用箇所は `WorkspaceMemberList.tsx` のみ（1箇所）
+- `actionSlot` で右端のアクション要素を外部注入するスロットパターン採用済み
+
+**推奨アプローチ: スロットパターン（案A）**
+
+```tsx
+interface MemberCardProps {
+  // ...existing props...
+  /** バッジ表示スロット（ロールバッジの下に配置） */
+  achievementSlot?: React.ReactNode;
+}
+```
+
+- 呼び出し側で `<UserAchievementBadges userId={memberId} />` を渡す
+- MemberCard 自体は achievement 取得ロジックを持たない（責務分離）
+- 既存の `actionSlot` パターンと一貫性がある
+- Gamification が無効な組織では `achievementSlot` を渡さないだけでOK
+
+**注意点:**
+- 他ユーザーのバッジ取得は `GET /api/users/{userId}/achievements` を使用（公開範囲考慮済み）
+- メンバー一覧で大量のカードが表示される場合、バッジ取得をバッチ化するか遅延ロードが必要かも
