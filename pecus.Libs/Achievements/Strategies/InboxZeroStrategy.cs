@@ -28,17 +28,7 @@ public class InboxZeroStrategy : AchievementStrategyBase
         DateTimeOffset evaluationDate,
         CancellationToken cancellationToken = default)
     {
-        var activeUsers = await Context.Users
-            .AsNoTracking()
-            .Where(u => u.OrganizationId == organizationId && u.IsActive)
-            .Select(u => u.Id)
-            .ToListAsync(cancellationToken);
-
-        if (activeUsers.Count == 0)
-        {
-            return [];
-        }
-
+        // 未完了タスクを持つユーザーを取得
         var usersWithIncompleteTasks = await Context.WorkspaceTasks
             .AsNoTracking()
             .Where(t => t.OrganizationId == organizationId)
@@ -47,10 +37,17 @@ public class InboxZeroStrategy : AchievementStrategyBase
             .Distinct()
             .ToListAsync(cancellationToken);
 
-        var inboxZeroUserIds = activeUsers
-            .Where(userId => !usersWithIncompleteTasks.Contains(userId))
+        // 完了済みタスクを持ち、かつ未完了タスクがないユーザーを取得
+        var inboxZeroUserIds = await Context.WorkspaceTasks
+            .AsNoTracking()
+            .Where(t => t.OrganizationId == organizationId)
+            .Where(t => t.IsCompleted)
+            .Where(t => !usersWithIncompleteTasks.Contains(t.AssignedUserId))
+            .Select(t => t.AssignedUserId)
+            .Distinct()
+            .OrderBy(userId => userId)
             .Take(MaxResultsPerEvaluation)
-            .ToList();
+            .ToListAsync(cancellationToken);
 
         Logger.LogDebug(
             "InboxZero evaluation for org {OrganizationId}: {Count} users qualified",
