@@ -12,10 +12,6 @@
 | 1 | 組織/ユーザー設定追加 | ✅ 完了 |
 | 1 | Hangfireバッチ | ✅ 完了 |
 | 1 | Phase 1 動作確認テスト | ✅ 完了 |
-| 2 | API実装 | ⬜ 未着手 |
-| 2 | Piggyback通知 | ⬜ 未着手 |
-| 3 | フロントエンド | ⬜ 未着手 |
-| 4 | AI連携 | ⬜ 未着手 |
 
 ---
 
@@ -295,60 +291,7 @@ if (pendingAchievements.Any())
 
 ---
 
-## Phase 2: API 設計
-
-### 2.1 エンドポイント一覧
-
-| Endpoint | Method | 説明 | 認証 |
-|----------|--------|------|------|
-| `/api/achievements` | GET | 全実績マスタ一覧 | 要認証 |
-| `/api/users/{userId}/achievements` | GET | ユーザーの獲得実績一覧 | 要認証 |
-| `/api/users/{userId}/achievements/main-badge` | PUT | メインバッジ設定 | 本人のみ |
-| `/api/users/{userId}/achievements/pending` | GET | 未通知の実績一覧 | 本人のみ |
-| `/api/users/{userId}/achievements/{id}/notify` | POST | 通知済みマーク | 本人のみ |
-| `/api/users/{userId}/settings/badge-visibility` | PUT | 公開範囲設定 | 本人のみ |
-
-### 2.2 DTO 設計
-
-#### AchievementMasterDto
-
-```csharp
-public record AchievementMasterDto(
-    int Id,
-    string Code,
-    string Name,
-    string NameEn,
-    string Description,
-    string DescriptionEn,
-    string? IconPath,
-    AchievementDifficulty Difficulty,
-    AchievementCategory Category,
-    bool IsSecret,
-    int SortOrder
-);
-```
-
-#### UserAchievementDto
-
-```csharp
-public record UserAchievementDto(
-    int Id,
-    int AchievementMasterId,
-    AchievementMasterDto Achievement,
-    DateTimeOffset EarnedAt,
-    bool IsMainBadge
-);
-```
-
-#### SetMainBadgeRequest
-
-```csharp
-public record SetMainBadgeRequest(
-    [Required] int AchievementMasterId
-);
-```
-
-### 2.3 公開範囲による表示制御
+### 2 公開範囲による表示制御
 
 他ユーザーの実績取得時（`GET /api/users/{userId}/achievements`）:
 
@@ -358,133 +301,6 @@ public record SetMainBadgeRequest(
    - `Private`: 本人以外には空配列を返却
    - `Workspace`: 同一ワークスペースメンバーのみ閲覧可
    - `Organization`: 同一組織メンバーのみ閲覧可
-
----
-
-## Phase 3: フロントエンド実装
-
-### 3.1 ページ構成
-
-| パス | 説明 | SSR/CSR |
-|------|------|---------|
-| `/achievements` | 実績一覧ページ（アルバム形式） | SSR |
-| `/profile/[userId]` | プロフィール（メインバッジ表示） | SSR |
-| `/settings/achievements` | 実績設定（公開範囲、メインバッジ） | SSR + CSR |
-
-### 3.2 Server Actions
-
-```
-src/actions/achievements/
-├── getAchievementMasters.ts      # 実績マスタ取得
-├── getUserAchievements.ts        # ユーザー実績取得
-├── setMainBadge.ts               # メインバッジ設定
-├── getPendingAchievements.ts     # 未通知実績取得
-├── markAchievementNotified.ts    # 通知済みマーク
-└── updateBadgeVisibility.ts      # 公開範囲設定
-```
-
-### 3.3 UI コンポーネント
-
-| コンポーネント | 説明 |
-|----------------|------|
-| `AchievementBadge.tsx` | バッジ表示（ロック/アンロック状態対応） |
-| `AchievementCollection.tsx` | アルバム形式の一覧（グリッド表示） |
-| `AchievementUnlockToast.tsx` | 獲得時のアニメーション演出 |
-| `MainBadgeSelector.tsx` | メインバッジ選択モーダル |
-| `BadgeVisibilitySelector.tsx` | 公開範囲設定UI |
-| `ProfileBadge.tsx` | プロフィールに表示するメインバッジ |
-
-### 3.4 Piggyback 通知フロー（フロントエンド）
-
-```
-1. タスク完了API呼び出し
-2. CompleteTaskTask（Hangfire）が実行される
-3. SignalR経由で以下を受信:
-   a. タスク完了の応援メッセージ（既存）
-   b. 未通知の実績獲得通知（新規）
-4. フロントエンドで演出:
-   a. 応援メッセージをDMに表示
-   b. 実績獲得Toast/モーダルを表示
-5. 通知済みマークAPIを呼び出し
-```
-
----
-
-## Phase 4: AI連携（隠し実績）
-
-### 4.1 シークレットバッジの判定フロー
-
-```
-1. AchievementEvaluationTask実行時
-2. IsSecret=trueの実績に対して:
-   a. IAiClientFactory経由でAI分析を呼び出し
-   b. ユーザーの行動パターンを分析
-   c. 条件を満たすユーザーを特定
-3. 通常の実績と同様にUserAchievementsに保存
-```
-
-### 4.2 AI分析対象データ
-
-- タスク完了パターン（時間帯、頻度、内容）
-- コメント応答パターン（速度、丁寧さ）
-- Bot/AI機能の利用状況
-- チーム内での依存関係解消への貢献度
-
----
-
-## 実装スケジュール（推奨順序）
-
-### Week 1-2: DB & バックエンド基盤
-
-1. [x] Entity作成（AchievementMaster, UserAchievement）
-2. [x] Enum定義（AchievementDifficulty, AchievementCategory, BadgeVisibility）
-3. [x] OrganizationSetting, UserSetting への項目追加
-4. [x] DbContext登録 & Migration実行
-5. [x] Seed データ投入（初期実績マスタ 28件）
-
-### Week 3-4: Strategy パターン & バッチ
-
-6. [x] IAchievementStrategy インターフェース定義
-7. [x] 全Strategy実装（28個: EarlyBird, NightOwl, WeekendGuardian, Veteran, InboxZero, TaskChef, DeadlineMaster, EstimationWizard, SpeedStar, PriorityHunter, Documenter, StreakMaster, Century, Multitasker, Connector, ThousandTasks, PerfectWeek, AiApprentice, BestSupporting, Commentator, UnsungHero, Savior, FirstTry, Learner, SteadyHand, PromiseKeeper, AheadOfSchedule, EvidenceKeeper）
-8. [x] AchievementEvaluator実装
-9. [x] AchievementEvaluationTask実装（Hangfireタスク）
-10. [x] RecurringJob登録
-
-### Week 5: API実装
-
-11. [ ] DTO作成
-12. [ ] AchievementController実装
-13. [ ] 公開範囲による表示制御実装
-14. [ ] OpenAPI生成 & フロントエンドクライアント更新
-
-### Week 6: Piggyback通知
-
-15. [ ] CompleteTaskTask拡張
-16. [ ] SignalR通知ロジック追加
-
-### Week 7-8: フロントエンド
-
-17. [ ] Server Actions実装
-18. [ ] 実績一覧ページ実装
-19. [ ] UIコンポーネント実装
-20. [ ] 獲得時アニメーション実装
-21. [ ] 設定ページ実装
-
-### Week 9: AI連携 & 中高難易度Strategy
-
-22. [x] 中難易度Strategy実装（AiApprentice, StreakMaster, Century, Multitasker, Connector, Commentator, WeekendGuardian, ThousandTasks, PerfectWeek） → Week 3-4で完了
-23. [x] Activity拡張後バッジのStrategy実装（Savior, SteadyHand, FirstTry, Learner, PromiseKeeper, AheadOfSchedule, EvidenceKeeper） → Week 3-4で完了
-24. [x] 高難易度Strategy実装（UnsungHero） → Week 3-4で完了
-25. [ ] シークレットバッジのAI判定実装
-
-### Week 10: テスト & リリース準備
-
-26. [ ] 単体テスト作成
-27. [ ] 統合テスト作成
-28. [ ] ドキュメント更新
-29. [ ] リリース
-
----
 
 ## 注意事項
 
@@ -498,13 +314,13 @@ src/actions/achievements/
 ### パフォーマンス考慮
 
 - 夜間バッチは組織ごとに分割実行を検討
-- 大量ユーザー組織では並列処理を検討
+- 大量ユーザー組織では並列処理を検討（Hangfireのワーカーなど）
 - Strategy実行は独立しているため並列化可能
 
 ### 多言語対応
 
 - 実績マスタに `Name` / `NameEn`, `Description` / `DescriptionEn` を持つ
-- フロントエンドでユーザーのロケールに応じて表示切替
+- 将来フロントエンドでユーザーのロケールに応じて表示切替可能
 
 ### タイムゾーン
 
