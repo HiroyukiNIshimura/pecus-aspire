@@ -22630,6 +22630,14 @@
                 "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
               }
             ]
+          },
+          "newAchievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewAchievementResponse"
+            },
+            "description": "新規取得バッジ（タスク完了時のみ）",
+            "nullable": true
           }
         },
         "description": "ワークスペースタスク操作レスポンス"

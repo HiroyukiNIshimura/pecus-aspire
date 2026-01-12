@@ -7,6 +7,7 @@ import {
   detect404ValidationError,
 } from '@/connectors/api/PecusApiClient';
 import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
+import { AchievementCelebrationProvider } from '@/providers/AchievementCelebrationProvider';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 
@@ -50,9 +51,11 @@ export default async function WorkspaceFullLayout({ children }: WorkspaceFullLay
   return (
     <SignalRProvider>
       <AppSettingsProvider settings={appSettings}>
-        {children}
-        {/* Chat Bottom Drawer (PC only) */}
-        {appSettings.currentUser.id !== 0 && <ChatProvider currentUserId={appSettings.currentUser.id} />}
+        <AchievementCelebrationProvider>
+          {children}
+          {/* Chat Bottom Drawer (PC only) */}
+          {appSettings.currentUser.id !== 0 && <ChatProvider currentUserId={appSettings.currentUser.id} />}
+        </AchievementCelebrationProvider>
       </AppSettingsProvider>
     </SignalRProvider>
   );

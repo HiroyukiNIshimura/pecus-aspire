@@ -8,6 +8,7 @@ import {
   getUserSafeErrorMessage,
 } from '@/connectors/api/PecusApiClient';
 import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
+import { AchievementCelebrationProvider } from '@/providers/AchievementCelebrationProvider';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 
@@ -45,7 +46,9 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   return (
     <SignalRProvider>
       <AppSettingsProvider settings={appSettings}>
-        <DashboardLayoutClient userInfo={appSettings.currentUser}>{children}</DashboardLayoutClient>
+        <AchievementCelebrationProvider>
+          <DashboardLayoutClient userInfo={appSettings.currentUser}>{children}</DashboardLayoutClient>
+        </AchievementCelebrationProvider>
       </AppSettingsProvider>
     </SignalRProvider>
   );

@@ -104,8 +104,16 @@ https://daypicker.dev/docs/styling#css-variables */
   animation: gentleBlink 2.4s ease-in-out infinite;
 }
 
+/* バッジ獲得演出用の浮遊アニメーション */
+.animate-float {
+  animation: float 2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-gentle-blink {
+    animation: none;
+  }
+  .animate-float {
     animation: none;
   }
 }

@@ -30,6 +30,7 @@ import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
 import type { TaskEditStatus as TaskEditStatusType } from '@/providers/SignalRProvider';
 import { useSignalRContext } from '@/providers/SignalRProvider';
 import { taskPriorityOptions, updateWorkspaceTaskSchemaWithRequiredEstimate } from '@/schemas/workspaceTaskSchemas';
+import { useAchievementCelebrationStore } from '@/stores/achievementCelebrationStore';
 
 /** 選択されたユーザー情報 */
 interface SelectedUser {
@@ -197,6 +198,9 @@ export default function WorkspaceTaskDetailPage({
   const [isCompleted, setIsCompleted] = useState(false);
   const [isDiscarded, setIsDiscarded] = useState(false);
   const [discardReason, setDiscardReason] = useState('');
+
+  // バッジ取得演出
+  const showCelebration = useAchievementCelebrationStore((state) => state.showCelebration);
 
   // テキストフィールド状態（制御されたコンポーネント用）
   const [content, setContent] = useState('');
@@ -713,6 +717,11 @@ export default function WorkspaceTaskDetailPage({
           setServerErrors([{ key: 0, message: errorMessage }]);
           notifyRef.current.error(errorMessage);
           return;
+        }
+
+        // バッジ取得演出を表示（newAchievementsがある場合）
+        if (result.data?.newAchievements && result.data.newAchievements.length > 0) {
+          showCelebration(result.data.newAchievements);
         }
 
         notifyRef.current.success('タスクを更新しました');
