@@ -1119,7 +1119,7 @@ public class ProductAtoms
         };
 
         var existingMasters = await _context.AchievementMasters.ToListAsync();
-        if (existingMasters.Any() && achievements.Length != existingMasters.Count)
+        if (achievements.Length != existingMasters.Count)
         {
             _context.AchievementMasters.RemoveRange(existingMasters);
             await _context.SaveChangesAsync();

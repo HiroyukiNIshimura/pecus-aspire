@@ -1,5 +1,6 @@
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.Achievement;
 
@@ -56,12 +57,14 @@ public class AchievementCollectionResponse
     /// 難易度
     /// </summary>
     [Required]
+    [JsonConverter(typeof(JsonStringEnumConverter<AchievementDifficulty>))]
     public required AchievementDifficulty Difficulty { get; set; }
 
     /// <summary>
     /// カテゴリ
     /// </summary>
     [Required]
+    [JsonConverter(typeof(JsonStringEnumConverter<AchievementCategory>))]
     public required AchievementCategory Category { get; set; }
 
     /// <summary>

@@ -2,18 +2,22 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import type { AchievementCategory, AchievementCollectionResponse, AchievementDifficulty } from '@/connectors/api/pecus';
+import { Tooltip } from '@/components/common/feedback/Tooltip';
+import type { AchievementCategory, AchievementCollectionResponse } from '@/connectors/api/pecus';
 
 interface BadgeCardProps {
   achievement: AchievementCollectionResponse;
 }
 
 /** 難易度の表示設定 */
-const difficultyConfig: Record<AchievementDifficulty, { label: string; color: string; stars: number }> = {
+const difficultyConfig: Record<string, { label: string; color: string; stars: number }> = {
   Easy: { label: '簡単', color: 'text-success', stars: 1 },
   Medium: { label: '普通', color: 'text-warning', stars: 2 },
   Hard: { label: '難しい', color: 'text-error', stars: 3 },
 };
+
+/** デフォルトの難易度設定（フォールバック用） */
+const defaultDifficultyConfig = { label: '不明', color: 'text-base-content/50', stars: 0 };
 
 /** カテゴリの表示ラベル */
 const categoryLabels: Record<AchievementCategory, string> = {
@@ -48,18 +52,21 @@ export default function BadgeCard({ achievement }: BadgeCardProps) {
       })
     : null;
 
+  // ツールチップのテキスト
+  const tooltipText = isEarned ? description : '???';
+
   return (
     <>
-      <button
-        type="button"
-        className={`card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer ${
-          !isEarned ? 'opacity-60' : ''
-        }`}
-        onClick={() => setShowDetail(true)}
-      >
-        <div className="card-body items-center text-center p-3 gap-2">
-          {/* バッジアイコン */}
-          <div className="relative">
+      <Tooltip text={tooltipText} position="top" className="w-full">
+        <button
+          type="button"
+          className={`card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer w-full ${
+            !isEarned ? 'opacity-60' : ''
+          }`}
+          onClick={() => setShowDetail(true)}
+        >
+          <div className="card-body items-center text-center p-3 gap-2">
+            {/* バッジアイコン */}
             <Image
               src={badgeIconSrc}
               alt={isEarned ? name : '???'}
@@ -67,28 +74,22 @@ export default function BadgeCard({ achievement }: BadgeCardProps) {
               height={64}
               className={`w-16 h-16 object-contain ${!isEarned ? 'grayscale' : ''}`}
             />
-            {/* 取得済みチェックマーク */}
-            {isEarned && (
-              <span className="absolute -bottom-1 -right-1 bg-success text-success-content rounded-full p-0.5">
-                <span className="icon-[mdi--check] text-sm" />
-              </span>
-            )}
-          </div>
 
-          {/* バッジ名 */}
-          <p className="text-sm font-medium line-clamp-2 h-10">{isEarned ? name : '???'}</p>
+            {/* バッジ名 */}
+            <p className="text-sm font-medium line-clamp-2 h-10">{isEarned ? name : '???'}</p>
 
-          {/* 難易度の星 */}
-          <div className={`flex gap-0.5 ${diffConfig.color}`}>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <span
-                key={`star-${achievement.id}-${i}`}
-                className={`icon-[mdi--star] text-xs ${i < diffConfig.stars ? '' : 'opacity-20'}`}
-              />
-            ))}
+            {/* 難易度の星 */}
+            <div className={`flex gap-0.5 ${diffConfig.color}`}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <span
+                  key={`star-${achievement.id}-${i}`}
+                  className={`icon-[mdi--star] text-xs ${i < diffConfig.stars ? '' : 'opacity-20'}`}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </button>
+        </button>
+      </Tooltip>
 
       {/* 詳細モーダル */}
       {showDetail && (

@@ -122,7 +122,7 @@ export default function AchievementsClient({ achievements, fetchError }: Achieve
           <p>バッジがありません</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 overflow-x-hidden">
           {filteredAchievements.map((achievement) => (
             <BadgeCard key={achievement.id} achievement={achievement} />
           ))}
