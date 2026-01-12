@@ -40,8 +40,8 @@ export default function BadgeCard({ achievement }: BadgeCardProps) {
   // アイコンパス: 未取得はunknown.webpを使用
   const badgeIconSrc = isEarned && iconPath ? `/icons/badge/${iconPath}` : '/icons/badge/unknown.webp';
 
-  // 難易度設定
-  const diffConfig = difficultyConfig[difficulty];
+  // 難易度設定（フォールバック付き）
+  const diffConfig = difficultyConfig[difficulty] ?? defaultDifficultyConfig;
 
   // 取得日のフォーマット
   const formattedDate = earnedAt
