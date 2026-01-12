@@ -46,7 +46,7 @@ public class AchievementService
 
         return achievements.Select(a =>
         {
-            var isEarned = a.UserAchievement != null;
+            var isEarned = a.UserAchievement != null && a.UserAchievement.IsNotified;
 
             return new AchievementCollectionResponse
             {
@@ -73,7 +73,7 @@ public class AchievementService
     public async Task<List<UserAchievementResponse>> GetOwnAchievementsAsync(int userId)
     {
         return await _context.UserAchievements
-            .Where(ua => ua.UserId == userId)
+            .Where(ua => ua.UserId == userId && ua.IsNotified)
             .Include(ua => ua.AchievementMaster)
             .Where(ua => ua.AchievementMaster != null && ua.AchievementMaster.IsActive)
             .OrderByDescending(ua => ua.EarnedAt)
@@ -147,7 +147,7 @@ public class AchievementService
         }
 
         return await _context.UserAchievements
-            .Where(ua => ua.UserId == targetUserId)
+            .Where(ua => ua.UserId == targetUserId && ua.IsNotified)
             .Include(ua => ua.AchievementMaster)
             .Where(ua => ua.AchievementMaster != null && ua.AchievementMaster.IsActive)
             .OrderByDescending(ua => ua.EarnedAt)

@@ -25,6 +25,7 @@ public class WorkspaceTaskController : BaseSecureController
     private readonly WorkspaceTaskService _workspaceTaskService;
     private readonly TaskContentSuggestionService _taskContentSuggestionService;
     private readonly OrganizationAccessHelper _accessHelper;
+    private readonly AchievementService _achievementService;
     private readonly ILogger<WorkspaceTaskController> _logger;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly FrontendUrlResolver _frontendUrlResolver;
@@ -33,6 +34,7 @@ public class WorkspaceTaskController : BaseSecureController
         WorkspaceTaskService workspaceTaskService,
         TaskContentSuggestionService taskContentSuggestionService,
         OrganizationAccessHelper accessHelper,
+        AchievementService achievementService,
         ProfileService profileService,
         ILogger<WorkspaceTaskController> logger,
         IBackgroundJobClient backgroundJobClient,
@@ -42,6 +44,7 @@ public class WorkspaceTaskController : BaseSecureController
         _workspaceTaskService = workspaceTaskService;
         _taskContentSuggestionService = taskContentSuggestionService;
         _accessHelper = accessHelper;
+        _achievementService = achievementService;
         _logger = logger;
         _backgroundJobClient = backgroundJobClient;
         _frontendUrlResolver = frontendUrlResolver;
@@ -362,12 +365,18 @@ public class WorkspaceTaskController : BaseSecureController
             }
         }
 
+        // タスク完了時は未通知バッジを取得
+        var newAchievements = (previousTask != null && previousTask.IsCompleted != task.IsCompleted && task.IsCompleted)
+            ? await _achievementService.GetUnnotifiedAchievementsAsync(CurrentUserId)
+            : null;
+
         var response = new WorkspaceTaskResponse
         {
             Success = true,
             Message = "タスクを更新しました。",
             WorkspaceTask = BuildTaskDetailResponse(task, commentCount: commentCount, commentTypeCounts: commentTypeCounts),
             PreviousWorkspaceTask = previousTask,
+            NewAchievements = newAchievements,
         };
 
         return TypedResults.Ok(response);

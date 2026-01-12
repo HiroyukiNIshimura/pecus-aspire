@@ -1,3 +1,5 @@
+using Pecus.Models.Responses.Achievement;
+
 namespace Pecus.Models.Responses.WorkspaceTask;
 
 /// <summary>
@@ -24,4 +26,9 @@ public class WorkspaceTaskResponse
     /// 変更前のワークスペースタスク情報
     /// </summary>
     public WorkspaceTaskDetailResponse? PreviousWorkspaceTask { get; set; }
+
+    /// <summary>
+    /// 新規取得バッジ（タスク完了時のみ）
+    /// </summary>
+    public List<NewAchievementResponse>? NewAchievements { get; set; }
 }
