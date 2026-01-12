@@ -313,6 +313,7 @@ public abstract class BaseSeedAtoms
                     GenerativeApiKey = null,
                     Plan = OrganizationPlan.Free,
                     DefaultWorkspaceMode = WorkspaceMode.Normal,
+                    GamificationEnabled = true,
                     UpdatedAt = DateTimeOffset.UtcNow,
                     UpdatedByUserId = null,
                 }
