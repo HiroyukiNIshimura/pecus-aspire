@@ -213,6 +213,7 @@ public class ProfileService
                     FocusScorePriority = request.FocusScorePriority,
                     FocusTasksLimit = request.FocusTasksLimit,
                     WaitingTasksLimit = request.WaitingTasksLimit,
+                    BadgeVisibility = request.BadgeVisibility,
                     UpdatedAt = DateTimeOffset.UtcNow,
                     UpdatedByUserId = userId,
                 };
@@ -231,6 +232,7 @@ public class ProfileService
                     FocusScorePriority = setting.FocusScorePriority,
                     FocusTasksLimit = setting.FocusTasksLimit,
                     WaitingTasksLimit = setting.WaitingTasksLimit,
+                    BadgeVisibility = setting.BadgeVisibility,
                     RowVersion = setting.RowVersion,
                 };
             }
@@ -243,6 +245,7 @@ public class ProfileService
             setting.FocusScorePriority = request.FocusScorePriority;
             setting.FocusTasksLimit = request.FocusTasksLimit;
             setting.WaitingTasksLimit = request.WaitingTasksLimit;
+            setting.BadgeVisibility = request.BadgeVisibility;
             setting.UpdatedAt = DateTimeOffset.UtcNow;
             setting.UpdatedByUserId = userId;
 
@@ -268,6 +271,7 @@ public class ProfileService
                 FocusScorePriority = setting.FocusScorePriority,
                 FocusTasksLimit = setting.FocusTasksLimit,
                 WaitingTasksLimit = setting.WaitingTasksLimit,
+                BadgeVisibility = setting.BadgeVisibility,
                 RowVersion = setting.RowVersion,
             };
         }
@@ -406,6 +410,7 @@ public class ProfileService
                 FocusScorePriority = user.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
                 FocusTasksLimit = user.Setting?.FocusTasksLimit ?? 5,
                 WaitingTasksLimit = user.Setting?.WaitingTasksLimit ?? 5,
+                BadgeVisibility = user.Setting?.BadgeVisibility,
                 RowVersion = user.Setting?.RowVersion ?? 0,
             },
         };
@@ -681,6 +686,10 @@ public class ProfileService
                 TimeZone = latestSetting.TimeZone,
                 Language = latestSetting.Language,
                 LandingPage = latestSetting.LandingPage,
+                FocusScorePriority = latestSetting.FocusScorePriority,
+                FocusTasksLimit = latestSetting.FocusTasksLimit,
+                WaitingTasksLimit = latestSetting.WaitingTasksLimit,
+                BadgeVisibility = latestSetting.BadgeVisibility,
                 RowVersion = latestSetting.RowVersion,
             }
         );

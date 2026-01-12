@@ -209,6 +209,9 @@ export const defaultAppSettings: AppPublicSettingsResponse = {
     enforcePredecessorCompletion: false,
     groupChatScope: undefined,
     defaultWorkspaceMode: undefined,
+    gamificationEnabled: true,
+    gamificationBadgeVisibility: 'Private',
+    gamificationAllowUserOverride: true,
   },
   user: {
     timeZone: 'Asia/Tokyo',

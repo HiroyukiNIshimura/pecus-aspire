@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { BadgeVisibility } from './BadgeVisibility';
 import type { GenerativeApiVendor } from './GenerativeApiVendor';
 import type { GroupChatScope } from './GroupChatScope';
 import type { HelpNotificationTarget } from './HelpNotificationTarget';
@@ -52,6 +53,15 @@ export type OrganizationSettingResponse = {
     dashboardHelpCommentMaxCount: number;
     groupChatScope?: GroupChatScope;
     defaultWorkspaceMode?: WorkspaceMode;
+    /**
+     * Gamification機能の有効/無効
+     */
+    gamificationEnabled: boolean;
+    gamificationBadgeVisibility: BadgeVisibility;
+    /**
+     * ユーザーがバッジ公開範囲を変更可能か
+     */
+    gamificationAllowUserOverride: boolean;
     /**
      * 楽観的ロック用RowVersion
      */

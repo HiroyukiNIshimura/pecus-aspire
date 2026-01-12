@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { BadgeVisibility } from './BadgeVisibility';
 import type { FocusScorePriority } from './FocusScorePriority';
 import type { LandingPage } from './LandingPage';
 /**
@@ -35,6 +36,7 @@ export type UserSettingResponse = {
      * 待機中タスクの表示件数（5-20）
      */
     waitingTasksLimit: number;
+    badgeVisibility?: BadgeVisibility;
     /**
      * ユーザー設定の楽観的ロック用 RowVersion
      */

@@ -62,6 +62,13 @@ public class UpdateUserSettingRequest
     public required int WaitingTasksLimit { get; set; }
 
     /// <summary>
+    /// バッジの公開範囲
+    /// null の場合は組織設定に従う
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<BadgeVisibility>))]
+    public BadgeVisibility? BadgeVisibility { get; set; }
+
+    /// <summary>
     /// ユーザー設定の楽観的ロック用 RowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

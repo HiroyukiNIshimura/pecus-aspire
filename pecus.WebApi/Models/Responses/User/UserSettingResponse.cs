@@ -62,6 +62,12 @@ public class UserSettingResponse : IConflictModel
     public int WaitingTasksLimit { get; set; } = 5;
 
     /// <summary>
+    /// バッジの公開範囲（nullの場合は組織設定に従う）
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<BadgeVisibility>))]
+    public BadgeVisibility? BadgeVisibility { get; set; }
+
+    /// <summary>
     /// ユーザー設定の楽観的ロック用 RowVersion
     /// </summary>
     public uint RowVersion { get; set; }

@@ -1,0 +1,324 @@
+using Microsoft.EntityFrameworkCore;
+using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
+
+namespace Pecus.Services;
+
+/// <summary>
+/// 実績（Achievement）関連のサービス
+/// </summary>
+/// <remarks>
+/// ユーザーの実績取得、コレクション一覧、通知済みマークなどを管理します。
+/// </remarks>
+public class AchievementService
+{
+    private readonly ApplicationDbContext _context;
+    private readonly ILogger<AchievementService> _logger;
+
+    public AchievementService(
+        ApplicationDbContext context,
+        ILogger<AchievementService> logger
+    )
+    {
+        _context = context;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// 全実績マスタをユーザーの取得状況付きで取得（コレクションページ用）
+    /// </summary>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <returns>実績コレクションレスポンスのリスト</returns>
+    public async Task<List<AchievementCollectionResponse>> GetAchievementCollectionAsync(int userId)
+    {
+        var achievements = await _context.AchievementMasters
+            .Where(a => a.IsActive)
+            .OrderBy(a => a.SortOrder)
+            .ThenBy(a => a.Id)
+            .Select(a => new
+            {
+                Master = a,
+                UserAchievement = _context.UserAchievements
+                    .FirstOrDefault(ua => ua.AchievementMasterId == a.Id && ua.UserId == userId)
+            })
+            .ToListAsync();
+
+        return achievements.Select(a =>
+        {
+            var isEarned = a.UserAchievement != null;
+
+            return new AchievementCollectionResponse
+            {
+                Id = a.Master.Id,
+                Code = a.Master.Code,
+                Name = isEarned ? a.Master.Name : "???",
+                NameEn = isEarned ? a.Master.NameEn : "???",
+                Description = isEarned ? a.Master.Description : "???",
+                DescriptionEn = isEarned ? a.Master.DescriptionEn : "???",
+                IconPath = isEarned ? a.Master.IconPath : null,
+                Difficulty = a.Master.Difficulty,
+                Category = a.Master.Category,
+                IsEarned = isEarned,
+                EarnedAt = a.UserAchievement?.EarnedAt
+            };
+        }).ToList();
+    }
+
+    /// <summary>
+    /// 自分の取得済み実績を取得
+    /// </summary>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <returns>ユーザー実績レスポンスのリスト</returns>
+    public async Task<List<UserAchievementResponse>> GetOwnAchievementsAsync(int userId)
+    {
+        return await _context.UserAchievements
+            .Where(ua => ua.UserId == userId)
+            .Include(ua => ua.AchievementMaster)
+            .Where(ua => ua.AchievementMaster != null && ua.AchievementMaster.IsActive)
+            .OrderByDescending(ua => ua.EarnedAt)
+            .Select(ua => new UserAchievementResponse
+            {
+                Id = ua.AchievementMaster!.Id,
+                Code = ua.AchievementMaster.Code,
+                Name = ua.AchievementMaster.Name,
+                NameEn = ua.AchievementMaster.NameEn,
+                Description = ua.AchievementMaster.Description,
+                DescriptionEn = ua.AchievementMaster.DescriptionEn,
+                IconPath = ua.AchievementMaster.IconPath,
+                Difficulty = ua.AchievementMaster.Difficulty,
+                Category = ua.AchievementMaster.Category,
+                EarnedAt = ua.EarnedAt
+            })
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 指定ユーザーの取得済み実績を取得（公開範囲を考慮）
+    /// </summary>
+    /// <param name="targetUserId">対象ユーザーID</param>
+    /// <param name="requestUserId">リクエストユーザーID</param>
+    /// <param name="requestUserOrganizationId">リクエストユーザーの組織ID</param>
+    /// <returns>ユーザー実績レスポンスのリスト（公開範囲外の場合は空リスト）</returns>
+    public async Task<List<UserAchievementResponse>> GetUserAchievementsAsync(
+        int targetUserId,
+        int requestUserId,
+        int requestUserOrganizationId)
+    {
+        if (targetUserId == requestUserId)
+        {
+            return await GetOwnAchievementsAsync(targetUserId);
+        }
+
+        var targetUser = await _context.Users
+            .Include(u => u.Setting)
+            .Include(u => u.Organization)
+            .ThenInclude(o => o!.Setting)
+            .FirstOrDefaultAsync(u => u.Id == targetUserId && u.IsActive);
+
+        if (targetUser == null)
+        {
+            return new List<UserAchievementResponse>();
+        }
+
+        var organizationSetting = targetUser.Organization?.Setting;
+        if (organizationSetting == null || !organizationSetting.GamificationEnabled)
+        {
+            return new List<UserAchievementResponse>();
+        }
+
+        var effectiveVisibility = GetEffectiveVisibility(
+            targetUser.Setting?.BadgeVisibility,
+            organizationSetting.GamificationBadgeVisibility,
+            organizationSetting.GamificationAllowUserOverride
+        );
+
+        var hasAccess = await CheckVisibilityAccessAsync(
+            effectiveVisibility,
+            targetUserId,
+            requestUserId,
+            requestUserOrganizationId,
+            targetUser.OrganizationId
+        );
+
+        if (!hasAccess)
+        {
+            return new List<UserAchievementResponse>();
+        }
+
+        return await _context.UserAchievements
+            .Where(ua => ua.UserId == targetUserId)
+            .Include(ua => ua.AchievementMaster)
+            .Where(ua => ua.AchievementMaster != null && ua.AchievementMaster.IsActive)
+            .OrderByDescending(ua => ua.EarnedAt)
+            .Select(ua => new UserAchievementResponse
+            {
+                Id = ua.AchievementMaster!.Id,
+                Code = ua.AchievementMaster.Code,
+                Name = ua.AchievementMaster.Name,
+                NameEn = ua.AchievementMaster.NameEn,
+                Description = ua.AchievementMaster.Description,
+                DescriptionEn = ua.AchievementMaster.DescriptionEn,
+                IconPath = ua.AchievementMaster.IconPath,
+                Difficulty = ua.AchievementMaster.Difficulty,
+                Category = ua.AchievementMaster.Category,
+                EarnedAt = ua.EarnedAt
+            })
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 未通知の実績を取得
+    /// </summary>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <returns>未通知の実績レスポンスのリスト</returns>
+    public async Task<List<NewAchievementResponse>> GetUnnotifiedAchievementsAsync(int userId)
+    {
+        return await _context.UserAchievements
+            .Where(ua => ua.UserId == userId && !ua.IsNotified)
+            .Include(ua => ua.AchievementMaster)
+            .Where(ua => ua.AchievementMaster != null && ua.AchievementMaster.IsActive)
+            .OrderBy(ua => ua.EarnedAt)
+            .Select(ua => new NewAchievementResponse
+            {
+                Id = ua.AchievementMaster!.Id,
+                Code = ua.AchievementMaster.Code,
+                Name = ua.AchievementMaster.Name,
+                NameEn = ua.AchievementMaster.NameEn,
+                Description = ua.AchievementMaster.Description,
+                DescriptionEn = ua.AchievementMaster.DescriptionEn,
+                IconPath = ua.AchievementMaster.IconPath,
+                Difficulty = ua.AchievementMaster.Difficulty,
+                Category = ua.AchievementMaster.Category,
+                EarnedAt = ua.EarnedAt
+            })
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 実績を通知済みにマーク
+    /// </summary>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <param name="achievementId">実績マスタID</param>
+    /// <returns>成功した場合は true</returns>
+    public async Task<bool> MarkAsNotifiedAsync(int userId, int achievementId)
+    {
+        var userAchievement = await _context.UserAchievements
+            .FirstOrDefaultAsync(ua => ua.UserId == userId && ua.AchievementMasterId == achievementId);
+
+        if (userAchievement == null)
+        {
+            _logger.LogWarning(
+                "通知済みマーク失敗: ユーザー実績が見つかりません。UserId: {UserId}, AchievementId: {AchievementId}",
+                userId,
+                achievementId
+            );
+            return false;
+        }
+
+        if (userAchievement.IsNotified)
+        {
+            return true;
+        }
+
+        userAchievement.IsNotified = true;
+        userAchievement.NotifiedAt = DateTimeOffset.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "実績を通知済みにマークしました。UserId: {UserId}, AchievementId: {AchievementId}",
+            userId,
+            achievementId
+        );
+
+        return true;
+    }
+
+    /// <summary>
+    /// 全ての未通知実績を通知済みにマーク（一括処理用）
+    /// </summary>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <returns>マークした件数</returns>
+    public async Task<int> MarkAllAsNotifiedAsync(int userId)
+    {
+        var unnotifiedAchievements = await _context.UserAchievements
+            .Where(ua => ua.UserId == userId && !ua.IsNotified)
+            .ToListAsync();
+
+        if (unnotifiedAchievements.Count == 0)
+        {
+            return 0;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        foreach (var ua in unnotifiedAchievements)
+        {
+            ua.IsNotified = true;
+            ua.NotifiedAt = now;
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "全ての未通知実績を通知済みにマークしました。UserId: {UserId}, Count: {Count}",
+            userId,
+            unnotifiedAchievements.Count
+        );
+
+        return unnotifiedAchievements.Count;
+    }
+
+    /// <summary>
+    /// 有効な公開範囲を決定
+    /// </summary>
+    private static BadgeVisibility GetEffectiveVisibility(
+        BadgeVisibility? userVisibility,
+        BadgeVisibility organizationVisibility,
+        bool allowUserOverride)
+    {
+        if (!allowUserOverride || userVisibility == null)
+        {
+            return organizationVisibility;
+        }
+
+        return (BadgeVisibility)Math.Min((int)userVisibility.Value, (int)organizationVisibility);
+    }
+
+    /// <summary>
+    /// 公開範囲に基づきアクセス可否を判定
+    /// </summary>
+    private async Task<bool> CheckVisibilityAccessAsync(
+        BadgeVisibility visibility,
+        int targetUserId,
+        int requestUserId,
+        int requestUserOrganizationId,
+        int? targetUserOrganizationId)
+    {
+        switch (visibility)
+        {
+            case BadgeVisibility.Private:
+                return false;
+
+            case BadgeVisibility.Organization:
+                return requestUserOrganizationId == targetUserOrganizationId;
+
+            case BadgeVisibility.Workspace:
+                if (requestUserOrganizationId != targetUserOrganizationId)
+                {
+                    return false;
+                }
+                return await _context.WorkspaceUsers
+                    .AnyAsync(wm1 =>
+                        wm1.UserId == targetUserId &&
+                        _context.WorkspaceUsers.Any(wm2 =>
+                            wm2.WorkspaceId == wm1.WorkspaceId &&
+                            wm2.UserId == requestUserId
+                        )
+                    );
+
+            default:
+                return false;
+        }
+    }
+}

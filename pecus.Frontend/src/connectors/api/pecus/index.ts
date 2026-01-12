@@ -7,6 +7,9 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export type { AchievementCategory } from './models/AchievementCategory';
+export type { AchievementCollectionResponse } from './models/AchievementCollectionResponse';
+export type { AchievementDifficulty } from './models/AchievementDifficulty';
 export type { ActivityActionType } from './models/ActivityActionType';
 export type { ActivityPeriod } from './models/ActivityPeriod';
 export type { ActivityResponse } from './models/ActivityResponse';
@@ -32,6 +35,7 @@ export type { BackOfficeOrganizationListItemResponse } from './models/BackOffice
 export type { BackOfficeUpdateBotPersonaRequest } from './models/BackOfficeUpdateBotPersonaRequest';
 export type { BackOfficeUpdateNotificationRequest } from './models/BackOfficeUpdateNotificationRequest';
 export type { BackOfficeUpdateOrganizationRequest } from './models/BackOfficeUpdateOrganizationRequest';
+export type { BadgeVisibility } from './models/BadgeVisibility';
 export type { BotType } from './models/BotType';
 export type { ChatMessageItem } from './models/ChatMessageItem';
 export type { ChatMessageReplyItem } from './models/ChatMessageReplyItem';
@@ -126,6 +130,7 @@ export type { MyCommitterWorkspaceResponse } from './models/MyCommitterWorkspace
 export type { MyItemRelationType } from './models/MyItemRelationType';
 export type { MyTaskDetailResponse } from './models/MyTaskDetailResponse';
 export type { MyTaskWorkspaceResponse } from './models/MyTaskWorkspaceResponse';
+export type { NewAchievementResponse } from './models/NewAchievementResponse';
 export type { NotifyTypingRequest } from './models/NotifyTypingRequest';
 export type { OrganizationInfoResponse } from './models/OrganizationInfoResponse';
 export type { OrganizationPlan } from './models/OrganizationPlan';
@@ -223,6 +228,7 @@ export type { UpdateWorkspaceItemStatusRequest } from './models/UpdateWorkspaceI
 export type { UpdateWorkspaceRequest } from './models/UpdateWorkspaceRequest';
 export type { UpdateWorkspaceTaskRequest } from './models/UpdateWorkspaceTaskRequest';
 export type { UpdateWorkspaceUserRoleRequest } from './models/UpdateWorkspaceUserRoleRequest';
+export type { UserAchievementResponse } from './models/UserAchievementResponse';
 export type { UserDetailResponse } from './models/UserDetailResponse';
 export type { UserPublicSettings } from './models/UserPublicSettings';
 export type { UserRoleResponse } from './models/UserRoleResponse';
@@ -255,6 +261,7 @@ export type { WorkspaceTaskStatistics } from './models/WorkspaceTaskStatistics';
 export type { WorkspaceUserDetailResponse } from './models/WorkspaceUserDetailResponse';
 export type { WorkspaceUserItem } from './models/WorkspaceUserItem';
 
+export { AchievementService } from './services/AchievementService';
 export { ActivityService } from './services/ActivityService';
 export { AdminOrganizationService } from './services/AdminOrganizationService';
 export { AdminSkillService } from './services/AdminSkillService';

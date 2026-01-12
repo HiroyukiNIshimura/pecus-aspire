@@ -143,6 +143,12 @@ const workspaceModeOptions: { value: 'Normal' | 'Document'; label: string }[] = 
   { value: 'Document', label: 'ドキュメント' },
 ];
 
+const badgeVisibilityOptions: { value: 'Private' | 'Workspace' | 'Organization'; label: string }[] = [
+  { value: 'Private', label: '非公開' },
+  { value: 'Workspace', label: 'ワークスペース内で公開' },
+  { value: 'Organization', label: '組織全体で公開' },
+];
+
 export default function AdminSettingsClient({ organization, fetchError }: AdminSettingsClientProps) {
   const notify = useNotify();
   const currentUser = useCurrentUser();
@@ -166,6 +172,9 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
     dashboardHelpCommentMaxCount: 6,
     groupChatScope: null as OrganizationSettingResponse['groupChatScope'],
     defaultWorkspaceMode: null as OrganizationSettingResponse['defaultWorkspaceMode'],
+    gamificationEnabled: true,
+    gamificationBadgeVisibility: 'Private' as OrganizationSettingResponse['gamificationBadgeVisibility'],
+    gamificationAllowUserOverride: true,
     rowVersion: 0,
   };
 
@@ -193,6 +202,9 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
     dashboardHelpCommentMaxCount: initialSetting.dashboardHelpCommentMaxCount ?? 6,
     groupChatScope: initialSetting.groupChatScope ?? null,
     defaultWorkspaceMode: normalizeWorkspaceMode(initialSetting.defaultWorkspaceMode),
+    gamificationEnabled: initialSetting.gamificationEnabled ?? true,
+    gamificationBadgeVisibility: initialSetting.gamificationBadgeVisibility ?? 'Private',
+    gamificationAllowUserOverride: initialSetting.gamificationAllowUserOverride ?? true,
   });
 
   // モデル一覧を取得する関数
@@ -280,6 +292,9 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
             dashboardHelpCommentMaxCount: data.dashboardHelpCommentMaxCount ?? 6,
             groupChatScope: data.groupChatScope ?? undefined,
             defaultWorkspaceMode: data.defaultWorkspaceMode ?? undefined,
+            gamificationEnabled: data.gamificationEnabled ?? true,
+            gamificationBadgeVisibility: data.gamificationBadgeVisibility ?? 'Private',
+            gamificationAllowUserOverride: data.gamificationAllowUserOverride ?? true,
             rowVersion,
           });
 
@@ -330,6 +345,9 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
       dashboardHelpCommentMaxCount: setting.dashboardHelpCommentMaxCount ?? 6,
       groupChatScope: setting.groupChatScope ?? null,
       defaultWorkspaceMode: normalizeWorkspaceMode(setting.defaultWorkspaceMode),
+      gamificationEnabled: setting.gamificationEnabled ?? true,
+      gamificationBadgeVisibility: setting.gamificationBadgeVisibility ?? 'Private',
+      gamificationAllowUserOverride: setting.gamificationAllowUserOverride ?? true,
     });
   };
 
@@ -859,6 +877,87 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                   </div>
                 </div>
 
+                <h2 className="text-lg font-semibold mt-8 pb-2 border-b border-base-content/20">
+                  ゲーミフィケーション設定
+                </h2>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 cursor-pointer" htmlFor="gamificationEnabled">
+                      <input
+                        type="checkbox"
+                        id="gamificationEnabled"
+                        name="gamificationEnabled"
+                        className="switch switch-primary"
+                        checked={formData.gamificationEnabled ?? true}
+                        onChange={(e) => handleFieldChange('gamificationEnabled', e.target.checked)}
+                        disabled={isSubmitting}
+                      />
+                      <span className="font-semibold">ゲーミフィケーション機能を有効にする</span>
+                    </label>
+                    <p className="text-sm text-base-content/60 pl-12">
+                      バッジやアチーブメントなどのゲーミフィケーション機能を使用できるようにします。
+                    </p>
+                  </div>
+
+                  {formData.gamificationEnabled && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="form-control">
+                          <label className="label" htmlFor="select-badge-visibility">
+                            <span className="label-text font-semibold">デフォルトのバッジ公開範囲</span>
+                          </label>
+                          <select
+                            id="select-badge-visibility"
+                            name="gamificationBadgeVisibility"
+                            className={`select select-bordered ${shouldShowError('gamificationBadgeVisibility') ? 'select-error' : ''}`}
+                            value={formData.gamificationBadgeVisibility ?? 'Private'}
+                            onChange={(e) =>
+                              handleFieldChange(
+                                'gamificationBadgeVisibility',
+                                e.target.value as 'Private' | 'Workspace' | 'Organization',
+                              )
+                            }
+                            disabled={isSubmitting}
+                          >
+                            {badgeVisibilityOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                          {shouldShowError('gamificationBadgeVisibility') && (
+                            <span className="label-text-alt text-error">
+                              {getFieldError('gamificationBadgeVisibility')}
+                            </span>
+                          )}
+                          <span className="label-text-alt text-xs text-base-content/60 mt-1">
+                            ユーザーが取得したバッジを他のユーザーに公開する範囲を設定します。
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-3 cursor-pointer" htmlFor="gamificationAllowUserOverride">
+                          <input
+                            type="checkbox"
+                            id="gamificationAllowUserOverride"
+                            name="gamificationAllowUserOverride"
+                            className="switch switch-primary"
+                            checked={formData.gamificationAllowUserOverride ?? true}
+                            onChange={(e) => handleFieldChange('gamificationAllowUserOverride', e.target.checked)}
+                            disabled={isSubmitting}
+                          />
+                          <span className="font-semibold">ユーザーによる公開範囲の変更を許可する</span>
+                        </label>
+                        <p className="text-sm text-base-content/60 pl-12">
+                          各ユーザーが自分のバッジ公開範囲を個別に設定できるようにします。
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+
                 {/* 競合アラート */}
                 <ConflictAlert
                   isConflict={isConflict}
@@ -886,6 +985,9 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                         dashboardHelpCommentMaxCount: formData.dashboardHelpCommentMaxCount ?? 6,
                         groupChatScope: formData.groupChatScope ?? undefined,
                         defaultWorkspaceMode: formData.defaultWorkspaceMode ?? undefined,
+                        gamificationEnabled: formData.gamificationEnabled ?? true,
+                        gamificationBadgeVisibility: formData.gamificationBadgeVisibility ?? 'Private',
+                        gamificationAllowUserOverride: formData.gamificationAllowUserOverride ?? true,
                         rowVersion: latestRowVersion,
                       });
 

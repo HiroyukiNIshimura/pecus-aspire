@@ -156,6 +156,7 @@ builder.Services.AddScoped<BotMessageService>();
 builder.Services.AddScoped<DocumentSuggestionService>();
 builder.Services.AddScoped<TaskContentSuggestionService>();
 builder.Services.AddScoped<IAiAssistantService, AiAssistantService>();
+builder.Services.AddScoped<AchievementService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddScoped<RefreshTokenService>();

@@ -119,6 +119,7 @@ public class AdminUserController : BaseAdminController
                 FocusScorePriority = targetUser.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
                 FocusTasksLimit = targetUser.Setting?.FocusTasksLimit ?? 5,
                 WaitingTasksLimit = targetUser.Setting?.WaitingTasksLimit ?? 5,
+                BadgeVisibility = targetUser.Setting?.BadgeVisibility,
                 RowVersion = targetUser.Setting?.RowVersion ?? 0,
             },
         };
@@ -200,6 +201,7 @@ public class AdminUserController : BaseAdminController
                 FocusScorePriority = u.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
                 FocusTasksLimit = u.Setting?.FocusTasksLimit ?? 5,
                 WaitingTasksLimit = u.Setting?.WaitingTasksLimit ?? 5,
+                BadgeVisibility = u.Setting?.BadgeVisibility,
                 RowVersion = u.Setting?.RowVersion ?? 0,
             },
         });
@@ -453,6 +455,7 @@ public class AdminUserController : BaseAdminController
                 FocusScorePriority = user.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
                 FocusTasksLimit = user.Setting?.FocusTasksLimit ?? 5,
                 WaitingTasksLimit = user.Setting?.WaitingTasksLimit ?? 5,
+                BadgeVisibility = user.Setting?.BadgeVisibility,
                 RowVersion = user.Setting?.RowVersion ?? 0,
             },
         };

@@ -126,6 +126,25 @@ public class OrganizationPublicSettings
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter<WorkspaceMode>))]
     public WorkspaceMode? DefaultWorkspaceMode { get; init; }
+
+    /// <summary>
+    /// ゲーミフィケーション機能の有効/無効
+    /// </summary>
+    [Required]
+    public bool GamificationEnabled { get; init; }
+
+    /// <summary>
+    /// デフォルトのバッジ公開範囲
+    /// </summary>
+    [Required]
+    [JsonConverter(typeof(JsonStringEnumConverter<BadgeVisibility>))]
+    public BadgeVisibility GamificationBadgeVisibility { get; init; }
+
+    /// <summary>
+    /// ユーザーによるバッジ公開範囲のオーバーライドを許可するか
+    /// </summary>
+    [Required]
+    public bool GamificationAllowUserOverride { get; init; }
 }
 
 /// <summary>

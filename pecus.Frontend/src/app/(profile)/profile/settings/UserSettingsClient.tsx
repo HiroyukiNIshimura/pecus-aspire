@@ -5,7 +5,13 @@ import { updateUserSetting } from '@/actions/profile';
 import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { Slider } from '@/components/common/filters/Slider';
-import type { FocusScorePriority, LandingPage, UserSettingResponse } from '@/connectors/api/pecus';
+import type {
+  BadgeVisibility,
+  FocusScorePriority,
+  LandingPage,
+  OrganizationPublicSettings,
+  UserSettingResponse,
+} from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { type UserSettingInput, userSettingSchema } from '@/schemas/userSettingSchemas';
@@ -13,6 +19,7 @@ import { LANDING_PAGE_OPTIONS } from '@/utils/landingPage';
 
 interface UserSettingsClientProps {
   initialSettings: UserSettingResponse;
+  organizationSetting: OrganizationPublicSettings | null;
   fetchError?: string | null;
 }
 
@@ -26,7 +33,17 @@ const FOCUS_SCORE_PRIORITY_OPTIONS: { value: NonNullable<FocusScorePriority>; la
   },
 ];
 
-export default function UserSettingsClient({ initialSettings, fetchError }: UserSettingsClientProps) {
+const BADGE_VISIBILITY_OPTIONS: { value: NonNullable<BadgeVisibility>; label: string }[] = [
+  { value: 'Private', label: '非公開' },
+  { value: 'Workspace', label: 'ワークスペース内で公開' },
+  { value: 'Organization', label: '組織全体で公開' },
+];
+
+export default function UserSettingsClient({
+  initialSettings,
+  organizationSetting,
+  fetchError,
+}: UserSettingsClientProps) {
   const notify = useNotify();
   const [rowVersion, setRowVersion] = useState<number>(initialSettings.rowVersion ?? 0);
   const [formData, setFormData] = useState<UserSettingInput>({
@@ -38,7 +55,13 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
     focusScorePriority: initialSettings.focusScorePriority ?? undefined,
     focusTasksLimit: initialSettings.focusTasksLimit ?? 10,
     waitingTasksLimit: initialSettings.waitingTasksLimit ?? 10,
+    badgeVisibility: initialSettings.badgeVisibility ?? undefined,
   });
+
+  // ゲーミフィケーション設定
+  const gamificationEnabled = organizationSetting?.gamificationEnabled ?? false;
+  const allowUserOverride = organizationSetting?.gamificationAllowUserOverride ?? false;
+  const showBadgeVisibilitySetting = gamificationEnabled && allowUserOverride;
 
   // 競合状態管理
   const [isConflict, setIsConflict] = useState(false);
@@ -58,6 +81,7 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
             focusScorePriority: data.focusScorePriority as FocusScorePriority | undefined,
             focusTasksLimit: data.focusTasksLimit,
             waitingTasksLimit: data.waitingTasksLimit,
+            badgeVisibility: data.badgeVisibility as BadgeVisibility | undefined,
             rowVersion,
           });
 
@@ -93,6 +117,7 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
       focusScorePriority: setting.focusScorePriority ?? undefined,
       focusTasksLimit: setting.focusTasksLimit ?? 10,
       waitingTasksLimit: setting.waitingTasksLimit ?? 10,
+      badgeVisibility: setting.badgeVisibility ?? undefined,
     });
   };
 
@@ -239,6 +264,40 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
                 </p>
               </div>
 
+              {showBadgeVisibilitySetting && (
+                <>
+                  <div className="divider my-6">バッジ設定</div>
+
+                  <div className="form-control">
+                    <label htmlFor="badgeVisibility" className="label">
+                      <span className="label-text font-semibold">バッジの公開範囲</span>
+                    </label>
+                    <select
+                      id="badgeVisibility"
+                      name="badgeVisibility"
+                      className={`select select-bordered w-full ${shouldShowError('badgeVisibility') ? 'select-error' : ''}`}
+                      value={formData.badgeVisibility ?? ''}
+                      onChange={(e) => handleFieldChange('badgeVisibility', e.target.value || undefined)}
+                      disabled={isSubmitting}
+                    >
+                      <option value="">組織のデフォルト設定に従う</option>
+                      {BADGE_VISIBILITY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {shouldShowError('badgeVisibility') && (
+                      <span className="label-text-alt text-error">{getFieldError('badgeVisibility')}</span>
+                    )}
+                    <p className="text-sm text-base-content/70 mt-1">
+                      あなたが獲得したバッジを他のユーザーに公開する範囲を設定します。
+                      「組織のデフォルト設定に従う」を選択すると、管理者が設定した公開範囲が適用されます。
+                    </p>
+                  </div>
+                </>
+              )}
+
               <div className="flex justify-end gap-2 pt-4">
                 {/* 競合アラート */}
                 <ConflictAlert
@@ -259,6 +318,7 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
                         focusScorePriority: formData.focusScorePriority as FocusScorePriority | undefined,
                         focusTasksLimit: formData.focusTasksLimit,
                         waitingTasksLimit: formData.waitingTasksLimit,
+                        badgeVisibility: formData.badgeVisibility as BadgeVisibility | undefined,
                         rowVersion: latestRowVersion,
                       });
 

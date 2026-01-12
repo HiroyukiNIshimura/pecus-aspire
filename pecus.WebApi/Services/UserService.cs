@@ -814,6 +814,10 @@ public class UserService
                         TimeZone = latestUser.Setting.TimeZone,
                         Language = latestUser.Setting.Language,
                         LandingPage = latestUser.Setting.LandingPage,
+                        FocusScorePriority = latestUser.Setting.FocusScorePriority,
+                        FocusTasksLimit = latestUser.Setting.FocusTasksLimit,
+                        WaitingTasksLimit = latestUser.Setting.WaitingTasksLimit,
+                        BadgeVisibility = latestUser.Setting.BadgeVisibility,
                         RowVersion = latestUser.Setting.RowVersion,
                     }
                     : new UserSettingResponse(),

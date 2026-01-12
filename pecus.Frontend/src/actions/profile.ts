@@ -8,6 +8,7 @@ import {
 import type {
   AppPublicSettingsResponse,
   AvatarType,
+  BadgeVisibility,
   EmailChangeRequestResponse,
   EmailChangeVerifyResponse,
   FocusScorePriority,
@@ -348,6 +349,7 @@ export async function updateUserSetting(request: {
   focusScorePriority?: FocusScorePriority;
   focusTasksLimit: number;
   waitingTasksLimit: number;
+  badgeVisibility?: BadgeVisibility;
   rowVersion: number;
 }): Promise<ApiResponse<UserSettingResponse>> {
   try {
@@ -361,6 +363,7 @@ export async function updateUserSetting(request: {
       focusScorePriority: request.focusScorePriority,
       focusTasksLimit: request.focusTasksLimit,
       waitingTasksLimit: request.waitingTasksLimit,
+      badgeVisibility: request.badgeVisibility,
       rowVersion: request.rowVersion,
     });
     return { success: true, data: response };

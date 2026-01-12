@@ -410,6 +410,9 @@ public class OrganizationService
         setting.DashboardHelpCommentMaxCount = request.DashboardHelpCommentMaxCount;
         setting.GroupChatScope = request.GroupChatScope;
         setting.DefaultWorkspaceMode = request.DefaultWorkspaceMode;
+        setting.GamificationEnabled = request.GamificationEnabled;
+        setting.GamificationBadgeVisibility = request.GamificationBadgeVisibility ?? BadgeVisibility.Private;
+        setting.GamificationAllowUserOverride = request.GamificationAllowUserOverride;
         setting.UpdatedAt = DateTimeOffset.UtcNow;
         setting.UpdatedByUserId = updatedByUserId;
 
@@ -441,6 +444,9 @@ public class OrganizationService
             DashboardHelpCommentMaxCount = setting.DashboardHelpCommentMaxCount,
             GroupChatScope = setting.GroupChatScope,
             DefaultWorkspaceMode = setting.DefaultWorkspaceMode,
+            GamificationEnabled = setting.GamificationEnabled,
+            GamificationBadgeVisibility = setting.GamificationBadgeVisibility,
+            GamificationAllowUserOverride = setting.GamificationAllowUserOverride,
             RowVersion = setting.RowVersion,
         };
     }
@@ -610,6 +616,9 @@ public class OrganizationService
                         DashboardHelpCommentMaxCount = latestOrganization.Setting.DashboardHelpCommentMaxCount,
                         GroupChatScope = latestOrganization.Setting.GroupChatScope,
                         DefaultWorkspaceMode = latestOrganization.Setting.DefaultWorkspaceMode,
+                        GamificationEnabled = latestOrganization.Setting.GamificationEnabled,
+                        GamificationBadgeVisibility = latestOrganization.Setting.GamificationBadgeVisibility,
+                        GamificationAllowUserOverride = latestOrganization.Setting.GamificationAllowUserOverride,
                         RowVersion = latestOrganization.Setting.RowVersion,
                     }
                     : new OrganizationSettingResponse
@@ -626,6 +635,9 @@ public class OrganizationService
                         DashboardHelpCommentMaxCount = 6,
                         GroupChatScope = null,
                         DefaultWorkspaceMode = null,
+                        GamificationEnabled = true,
+                        GamificationBadgeVisibility = BadgeVisibility.Private,
+                        GamificationAllowUserOverride = true,
                         RowVersion = 0,
                     },
             }
@@ -655,6 +667,9 @@ public class OrganizationService
                 EnforcePredecessorCompletion = false,
                 GroupChatScope = null,
                 DefaultWorkspaceMode = null,
+                GamificationEnabled = true,
+                GamificationBadgeVisibility = BadgeVisibility.Private,
+                GamificationAllowUserOverride = true,
             };
         }
 
@@ -668,6 +683,9 @@ public class OrganizationService
             EnforcePredecessorCompletion = setting.EnforcePredecessorCompletion,
             GroupChatScope = setting.GroupChatScope,
             DefaultWorkspaceMode = setting.DefaultWorkspaceMode,
+            GamificationEnabled = setting.GamificationEnabled,
+            GamificationBadgeVisibility = setting.GamificationBadgeVisibility,
+            GamificationAllowUserOverride = setting.GamificationAllowUserOverride,
         };
     }
 }

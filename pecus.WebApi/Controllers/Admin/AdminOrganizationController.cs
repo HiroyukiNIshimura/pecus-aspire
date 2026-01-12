@@ -84,6 +84,9 @@ public class AdminOrganizationController : BaseAdminController
                 DashboardHelpCommentMaxCount = organization.Setting?.DashboardHelpCommentMaxCount ?? 6,
                 GroupChatScope = organization.Setting?.GroupChatScope,
                 DefaultWorkspaceMode = organization.Setting?.DefaultWorkspaceMode,
+                GamificationEnabled = organization.Setting?.GamificationEnabled ?? true,
+                GamificationBadgeVisibility = organization.Setting?.GamificationBadgeVisibility ?? BadgeVisibility.Private,
+                GamificationAllowUserOverride = organization.Setting?.GamificationAllowUserOverride ?? true,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };
@@ -143,6 +146,9 @@ public class AdminOrganizationController : BaseAdminController
                 DashboardHelpCommentMaxCount = organization.Setting?.DashboardHelpCommentMaxCount ?? 6,
                 GroupChatScope = organization.Setting?.GroupChatScope,
                 DefaultWorkspaceMode = organization.Setting?.DefaultWorkspaceMode,
+                GamificationEnabled = organization.Setting?.GamificationEnabled ?? true,
+                GamificationBadgeVisibility = organization.Setting?.GamificationBadgeVisibility ?? BadgeVisibility.Private,
+                GamificationAllowUserOverride = organization.Setting?.GamificationAllowUserOverride ?? true,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };

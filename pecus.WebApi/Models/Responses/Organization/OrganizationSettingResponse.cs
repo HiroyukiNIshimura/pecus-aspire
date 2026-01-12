@@ -94,6 +94,25 @@ public class OrganizationSettingResponse : IConflictModel
     public WorkspaceMode? DefaultWorkspaceMode { get; set; }
 
     /// <summary>
+    /// Gamification機能の有効/無効
+    /// </summary>
+    [Required]
+    public bool GamificationEnabled { get; set; }
+
+    /// <summary>
+    /// バッジの公開範囲（デフォルト: Private）
+    /// </summary>
+    [Required]
+    [JsonConverter(typeof(JsonStringEnumConverter<BadgeVisibility>))]
+    public BadgeVisibility GamificationBadgeVisibility { get; set; }
+
+    /// <summary>
+    /// ユーザーがバッジ公開範囲を変更可能か
+    /// </summary>
+    [Required]
+    public bool GamificationAllowUserOverride { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required]

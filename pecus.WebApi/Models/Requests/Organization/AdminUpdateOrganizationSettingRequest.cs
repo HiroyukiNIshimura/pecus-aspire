@@ -95,6 +95,22 @@ public class AdminUpdateOrganizationSettingRequest
     public WorkspaceMode? DefaultWorkspaceMode { get; set; }
 
     /// <summary>
+    /// ゲーミフィケーション機能の有効/無効
+    /// </summary>
+    public bool GamificationEnabled { get; set; } = true;
+
+    /// <summary>
+    /// デフォルトのバッジ公開範囲
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<BadgeVisibility>))]
+    public BadgeVisibility? GamificationBadgeVisibility { get; set; }
+
+    /// <summary>
+    /// ユーザーによるバッジ公開範囲のオーバーライドを許可するか
+    /// </summary>
+    public bool GamificationAllowUserOverride { get; set; } = true;
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

@@ -11,6 +11,287 @@
     }
   ],
   "paths": {
+    "/api/achievements": {
+      "get": {
+        "tags": [
+          "Achievement"
+        ],
+        "summary": "全実績マスタをユーザーの取得状況付きで取得（コレクションページ用）",
+        "description": "未取得の実績は名前・説明・アイコンが隠蔽されます（シークレットバッジ対応）。",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AchievementCollectionResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AchievementCollectionResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AchievementCollectionResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/achievements/me": {
+      "get": {
+        "tags": [
+          "Achievement"
+        ],
+        "summary": "自分の取得済み実績を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserAchievementResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserAchievementResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserAchievementResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/achievements/users/{userId}": {
+      "get": {
+        "tags": [
+          "Achievement"
+        ],
+        "summary": "指定ユーザーの取得済み実績を取得",
+        "description": "対象ユーザーの公開範囲設定に基づきフィルタリングされます。\n公開範囲外の場合は空のリストが返却されます。",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "対象ユーザーID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserAchievementResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserAchievementResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserAchievementResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/achievements/me/unnotified": {
+      "get": {
+        "tags": [
+          "Achievement"
+        ],
+        "summary": "未通知の実績を取得",
+        "description": "まだユーザーに通知していない新規取得実績を取得します。\nバッジ取得演出の表示判定に使用します。",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewAchievementResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewAchievementResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewAchievementResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/achievements/me/{achievementId}/notify": {
+      "post": {
+        "tags": [
+          "Achievement"
+        ],
+        "summary": "実績を通知済みにマーク",
+        "description": "バッジ取得演出を表示した後に呼び出し、重複表示を防ぎます。",
+        "parameters": [
+          {
+            "name": "achievementId",
+            "in": "path",
+            "description": "実績マスタID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/achievements/me/notify-all": {
+      "post": {
+        "tags": [
+          "Achievement"
+        ],
+        "summary": "全ての未通知実績を通知済みにマーク",
+        "description": "一括で全ての未通知実績を通知済みにします。\nコレクションページを開いた際などに使用します。",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/ai-assistant/generate": {
       "post": {
         "tags": [
@@ -12498,6 +12779,90 @@
   },
   "components": {
     "schemas": {
+      "AchievementCategory": {
+        "enum": [
+          "WorkStyle",
+          "Productivity",
+          "AI",
+          "TeamPlay",
+          "Quality",
+          "Reliability"
+        ],
+        "type": "string",
+        "description": "実績のカテゴリを表す列挙型"
+      },
+      "AchievementCollectionResponse": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "nameEn",
+          "description",
+          "descriptionEn",
+          "difficulty",
+          "category",
+          "isEarned"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "実績マスタID",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string",
+            "description": "実績コード（例: EARLY_BIRD）"
+          },
+          "name": {
+            "type": "string",
+            "description": "実績名（未取得の場合は \"???\"）"
+          },
+          "nameEn": {
+            "type": "string",
+            "description": "実績名（英語、未取得の場合は \"???\"）"
+          },
+          "description": {
+            "type": "string",
+            "description": "説明文（未取得の場合は \"???\"）"
+          },
+          "descriptionEn": {
+            "type": "string",
+            "description": "説明文（英語、未取得の場合は \"???\"）"
+          },
+          "iconPath": {
+            "type": "string",
+            "description": "アイコンパス（未取得の場合は null）",
+            "nullable": true
+          },
+          "difficulty": {
+            "$ref": "#/components/schemas/AchievementDifficulty"
+          },
+          "category": {
+            "$ref": "#/components/schemas/AchievementCategory"
+          },
+          "isEarned": {
+            "type": "boolean",
+            "description": "取得済みかどうか"
+          },
+          "earnedAt": {
+            "type": "string",
+            "description": "取得日時（未取得の場合は null）",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "description": "実績コレクションレスポンス（バッジコレクションページ用）"
+      },
+      "AchievementDifficulty": {
+        "enum": [
+          "Easy",
+          "Medium",
+          "Hard"
+        ],
+        "type": "string",
+        "description": "実績の難易度を表す列挙型"
+      },
       "ActivityActionType": {
         "enum": [
           "Created",
@@ -12823,6 +13188,24 @@
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
             ]
+          },
+          "gamificationEnabled": {
+            "type": "boolean",
+            "description": "ゲーミフィケーション機能の有効/無効"
+          },
+          "gamificationBadgeVisibility": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BadgeVisibility"
+              }
+            ]
+          },
+          "gamificationAllowUserOverride": {
+            "type": "boolean",
+            "description": "ユーザーによるバッジ公開範囲のオーバーライドを許可するか"
           },
           "rowVersion": {
             "type": "integer",
@@ -13543,6 +13926,15 @@
           }
         },
         "description": "BackOffice用 組織更新リクエスト"
+      },
+      "BadgeVisibility": {
+        "enum": [
+          "Private",
+          "Workspace",
+          "Organization"
+        ],
+        "type": "string",
+        "nullable": true
       },
       "BotType": {
         "enum": [
@@ -16859,6 +17251,64 @@
         },
         "description": "マイタスクワークスペースレスポンス\nログインユーザーが担当のタスクを持つワークスペースの情報"
       },
+      "NewAchievementResponse": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "nameEn",
+          "description",
+          "descriptionEn",
+          "difficulty",
+          "category",
+          "earnedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "実績マスタID",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string",
+            "description": "実績コード"
+          },
+          "name": {
+            "type": "string",
+            "description": "実績名"
+          },
+          "nameEn": {
+            "type": "string",
+            "description": "実績名（英語）"
+          },
+          "description": {
+            "type": "string",
+            "description": "説明文"
+          },
+          "descriptionEn": {
+            "type": "string",
+            "description": "説明文（英語）"
+          },
+          "iconPath": {
+            "type": "string",
+            "description": "アイコンパス",
+            "nullable": true
+          },
+          "difficulty": {
+            "$ref": "#/components/schemas/AchievementDifficulty"
+          },
+          "category": {
+            "$ref": "#/components/schemas/AchievementCategory"
+          },
+          "earnedAt": {
+            "type": "string",
+            "description": "取得日時",
+            "format": "date-time"
+          }
+        },
+        "description": "新規取得実績レスポンス（タスク更新時のバッジ取得演出用）"
+      },
       "NotifyTypingRequest": {
         "required": [
           "isTyping"
@@ -16912,7 +17362,10 @@
           "isAiConfigured",
           "plan",
           "requireEstimateOnTaskCreation",
-          "enforcePredecessorCompletion"
+          "enforcePredecessorCompletion",
+          "gamificationEnabled",
+          "gamificationBadgeVisibility",
+          "gamificationAllowUserOverride"
         ],
         "type": "object",
         "properties": {
@@ -16953,6 +17406,17 @@
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
             ]
+          },
+          "gamificationEnabled": {
+            "type": "boolean",
+            "description": "ゲーミフィケーション機能の有効/無効"
+          },
+          "gamificationBadgeVisibility": {
+            "$ref": "#/components/schemas/BadgeVisibility"
+          },
+          "gamificationAllowUserOverride": {
+            "type": "boolean",
+            "description": "ユーザーによるバッジ公開範囲のオーバーライドを許可するか"
           }
         },
         "description": "組織の公開設定（センシティブ情報を除外）"
@@ -17046,6 +17510,9 @@
           "requireEstimateOnTaskCreation",
           "enforcePredecessorCompletion",
           "dashboardHelpCommentMaxCount",
+          "gamificationEnabled",
+          "gamificationBadgeVisibility",
+          "gamificationAllowUserOverride",
           "rowVersion"
         ],
         "type": "object",
@@ -17130,6 +17597,17 @@
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
             ]
+          },
+          "gamificationEnabled": {
+            "type": "boolean",
+            "description": "Gamification機能の有効/無効"
+          },
+          "gamificationBadgeVisibility": {
+            "$ref": "#/components/schemas/BadgeVisibility"
+          },
+          "gamificationAllowUserOverride": {
+            "type": "boolean",
+            "description": "ユーザーがバッジ公開範囲を変更可能か"
           },
           "rowVersion": {
             "type": "integer",
@@ -20176,6 +20654,16 @@
             "description": "待機中タスクの表示件数（5-20）",
             "format": "int32"
           },
+          "badgeVisibility": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BadgeVisibility"
+              }
+            ]
+          },
           "rowVersion": {
             "type": "integer",
             "description": "ユーザー設定の楽観的ロック用 RowVersion",
@@ -20480,6 +20968,64 @@
           }
         },
         "description": "ワークスペースメンバーのロール変更リクエスト"
+      },
+      "UserAchievementResponse": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "nameEn",
+          "description",
+          "descriptionEn",
+          "difficulty",
+          "category",
+          "earnedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "実績マスタID",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string",
+            "description": "実績コード"
+          },
+          "name": {
+            "type": "string",
+            "description": "実績名"
+          },
+          "nameEn": {
+            "type": "string",
+            "description": "実績名（英語）"
+          },
+          "description": {
+            "type": "string",
+            "description": "説明文"
+          },
+          "descriptionEn": {
+            "type": "string",
+            "description": "説明文（英語）"
+          },
+          "iconPath": {
+            "type": "string",
+            "description": "アイコンパス",
+            "nullable": true
+          },
+          "difficulty": {
+            "$ref": "#/components/schemas/AchievementDifficulty"
+          },
+          "category": {
+            "$ref": "#/components/schemas/AchievementCategory"
+          },
+          "earnedAt": {
+            "type": "string",
+            "description": "取得日時",
+            "format": "date-time"
+          }
+        },
+        "description": "ユーザー実績レスポンス（取得済み実績用）"
       },
       "UserDetailResponse": {
         "required": [
@@ -20788,6 +21334,16 @@
             "type": "integer",
             "description": "待機中タスクの表示件数（5-20）",
             "format": "int32"
+          },
+          "badgeVisibility": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BadgeVisibility"
+              }
+            ]
           },
           "rowVersion": {
             "type": "integer",
@@ -22253,6 +22809,9 @@
     }
   },
   "tags": [
+    {
+      "name": "Achievement"
+    },
     {
       "name": "AiAssistant"
     },

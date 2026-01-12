@@ -6,6 +6,7 @@ const organizationPlans = ['Unknown', 'Free', 'Standard', 'Enterprise'] as const
 const helpNotificationTargets = ['Organization', 'WorkspaceUsers'] as const;
 const groupChatScopes = ['Workspace', 'Organization'] as const;
 const workspaceModes = ['Unknown', 'Normal', 'Document'] as const;
+const badgeVisibilities = ['Private', 'Workspace', 'Organization'] as const;
 
 export const organizationSettingSchema = z.object({
   taskOverdueThreshold: z.preprocess(
@@ -85,6 +86,14 @@ export const organizationSettingSchema = z.object({
     })
     .optional()
     .nullable(),
+  gamificationEnabled: z.boolean().default(true),
+  gamificationBadgeVisibility: z
+    .enum(badgeVisibilities, {
+      message: 'バッジ公開範囲を選択してください。',
+    })
+    .optional()
+    .nullable(),
+  gamificationAllowUserOverride: z.boolean().default(true),
 });
 
 export const organizationSettingSchemaWithRules = organizationSettingSchema.superRefine((data, ctx) => {
@@ -100,6 +109,13 @@ export const organizationSettingSchemaWithRules = organizationSettingSchema.supe
       code: z.ZodIssueCode.custom,
       path: ['generativeApiModel'],
       message: '選択した生成APIベンダーを利用する場合、モデルは必須です。',
+    });
+  }
+  if (data.gamificationEnabled && !data.gamificationBadgeVisibility) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['gamificationBadgeVisibility'],
+      message: 'ゲーミフィケーション機能を有効にする場合、バッジ公開範囲は必須です。',
     });
   }
 });

@@ -3,6 +3,7 @@ import { z } from 'zod';
 // Enum 値の定義（API から生成される型には null が含まれるため、独自に定義）
 const landingPages = ['Dashboard', 'Workspace', 'MyItems', 'Tasks', 'Committer'] as const;
 const focusScorePriorities = ['Priority', 'Deadline', 'SuccessorImpact'] as const;
+const badgeVisibilities = ['Private', 'Workspace', 'Organization'] as const;
 
 export const userSettingSchema = z.object({
   canReceiveEmail: z.boolean().default(true),
@@ -34,6 +35,14 @@ export const userSettingSchema = z.object({
       .int('待機中タスク表示件数は整数で入力してください。')
       .min(5, '待機中タスク表示件数は5以上で入力してください。')
       .max(20, '待機中タスク表示件数は20以下で入力してください。'),
+  ),
+  badgeVisibility: z.preprocess(
+    (val) => (val === '' || val === null ? undefined : val),
+    z
+      .enum(badgeVisibilities, {
+        message: 'バッジの公開範囲を選択してください。',
+      })
+      .optional(),
   ),
 });
 

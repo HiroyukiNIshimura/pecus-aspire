@@ -84,6 +84,9 @@ export async function updateOrganizationSetting(request: {
   dashboardHelpCommentMaxCount?: number;
   groupChatScope?: OrganizationSettingResponse['groupChatScope'];
   defaultWorkspaceMode?: OrganizationSettingResponse['defaultWorkspaceMode'];
+  gamificationEnabled?: boolean;
+  gamificationBadgeVisibility?: OrganizationSettingResponse['gamificationBadgeVisibility'];
+  gamificationAllowUserOverride?: boolean;
   rowVersion: number;
 }): Promise<ApiResponse<OrganizationSettingResponse>> {
   try {

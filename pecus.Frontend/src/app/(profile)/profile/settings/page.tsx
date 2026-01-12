@@ -1,5 +1,5 @@
 import { createPecusApiClients, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
-import type { UserSettingResponse } from '@/connectors/api/pecus';
+import type { OrganizationPublicSettings, UserSettingResponse } from '@/connectors/api/pecus';
 import UserSettingsClient from './UserSettingsClient';
 
 export const dynamic = 'force-dynamic';
@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic';
  */
 export default async function UserSettingsPage() {
   let userSettings: UserSettingResponse | null = null;
+  let organizationSetting: OrganizationPublicSettings | null = null;
   let fetchError: string | null = null;
 
   try {
@@ -18,6 +19,10 @@ export default async function UserSettingsPage() {
     // ユーザー設定を取得
     const userResponse = await api.profile.getApiProfile();
     userSettings = userResponse.setting ?? null;
+
+    // 組織設定を取得（ゲーミフィケーション設定のため）
+    const appSettings = await api.profile.getApiProfileAppSettings();
+    organizationSetting = appSettings.organization ?? null;
   } catch (error) {
     console.error('Failed to fetch user settings data:', error);
     fetchError = getUserSafeErrorMessage(error, 'ユーザー設定情報の取得に失敗しました');
@@ -34,5 +39,11 @@ export default async function UserSettingsPage() {
     waitingTasksLimit: 5,
   };
 
-  return <UserSettingsClient initialSettings={userSettings ?? defaultSettings} fetchError={fetchError} />;
+  return (
+    <UserSettingsClient
+      initialSettings={userSettings ?? defaultSettings}
+      organizationSetting={organizationSetting}
+      fetchError={fetchError}
+    />
+  );
 }
