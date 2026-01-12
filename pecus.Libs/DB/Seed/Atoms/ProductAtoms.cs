@@ -682,14 +682,6 @@ public class ProductAtoms
     {
         _logger.LogInformation("Seeding achievement masters (delete and re-insert)...");
 
-        var existingMasters = await _context.AchievementMasters.ToListAsync();
-        if (existingMasters.Any())
-        {
-            _context.AchievementMasters.RemoveRange(existingMasters);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Deleted {Count} existing achievement masters", existingMasters.Count);
-        }
-
         var now = DateTimeOffset.UtcNow;
         var achievements = new[]
         {
@@ -1126,8 +1118,16 @@ public class ProductAtoms
             },
         };
 
-        await _context.AchievementMasters.AddRangeAsync(achievements);
-        await _context.SaveChangesAsync();
-        _logger.LogInformation("Added {Count} achievement masters", achievements.Length);
+        var existingMasters = await _context.AchievementMasters.ToListAsync();
+        if (existingMasters.Any() && achievements.Length != existingMasters.Count)
+        {
+            _context.AchievementMasters.RemoveRange(existingMasters);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Deleted {Count} existing achievement masters", existingMasters.Count);
+
+            await _context.AchievementMasters.AddRangeAsync(achievements);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} achievement masters", achievements.Length);
+        }
     }
 }
