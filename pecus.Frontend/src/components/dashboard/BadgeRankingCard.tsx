@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
+import UserBadgesModal from '@/components/common/widgets/user/UserBadgesModal';
 import type { AchievementRankingResponse, RankingItemDto } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 
@@ -62,6 +63,8 @@ interface BadgeRankingCardProps {
  */
 export default function BadgeRankingCard({ data, isLoading = false, className = '' }: BadgeRankingCardProps) {
   const [activeTab, setActiveTab] = useState<RankingType>('difficulty');
+  // ユーザーバッジモーダルの状態
+  const [badgeModalUser, setBadgeModalUser] = useState<{ userId: number; displayName: string } | null>(null);
 
   // 現在のタブのランキングデータを取得
   const getCurrentRanking = (): RankingItemDto[] => {
@@ -136,32 +139,39 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
               {currentRanking.map((item) => {
                 const style = rankStyles[item.rank] || { badge: 'badge-neutral', text: 'text-base-content' };
                 return (
-                  <li key={item.userId} className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200/50">
-                    {/* 順位 */}
-                    <div className="flex-shrink-0">
-                      <span className={`badge badge-sm ${style.badge}`}>{item.rank}</span>
-                    </div>
-
-                    {/* アバター */}
-                    <div className="flex-shrink-0">
-                      <img src={getDisplayIconUrl(item.avatarUrl)} alt="" className="w-8 h-8 rounded-full" />
-                    </div>
-
-                    {/* ユーザー情報 */}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{item.displayName}</div>
-                      <div className="text-xs text-base-content/50">{item.badgeCount}個</div>
-                    </div>
-
-                    {/* スコア */}
-                    <div className="flex-shrink-0 text-right">
-                      <div className={`text-sm font-semibold ${style.text}`}>
-                        {formatScore(item.score, activeTab)}
-                        <span className="text-xs font-normal ml-0.5 text-base-content/60">
-                          {currentConfig.scoreUnit}
-                        </span>
+                  <li key={item.userId}>
+                    <button
+                      type="button"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200/50 cursor-pointer w-full text-left transition-colors"
+                      onClick={() => setBadgeModalUser({ userId: item.userInternalId, displayName: item.displayName })}
+                      aria-label={`${item.displayName}のバッジを表示`}
+                    >
+                      {/* 順位 */}
+                      <div className="flex-shrink-0">
+                        <span className={`badge badge-sm ${style.badge}`}>{item.rank}</span>
                       </div>
-                    </div>
+
+                      {/* アバター */}
+                      <div className="flex-shrink-0">
+                        <img src={getDisplayIconUrl(item.avatarUrl)} alt="" className="w-8 h-8 rounded-full" />
+                      </div>
+
+                      {/* ユーザー情報 */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{item.displayName}</div>
+                        <div className="text-xs text-base-content/50">{item.badgeCount}個</div>
+                      </div>
+
+                      {/* スコア */}
+                      <div className="flex-shrink-0 text-right">
+                        <div className={`text-sm font-semibold ${style.text}`}>
+                          {formatScore(item.score, activeTab)}
+                          <span className="text-xs font-normal ml-0.5 text-base-content/60">
+                            {currentConfig.scoreUnit}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
                   </li>
                 );
               })}
@@ -169,6 +179,14 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
           )}
         </div>
       </div>
+
+      {/* ユーザーバッジモーダル */}
+      <UserBadgesModal
+        isOpen={badgeModalUser !== null}
+        onClose={() => setBadgeModalUser(null)}
+        userId={badgeModalUser?.userId ?? 0}
+        userName={badgeModalUser?.displayName ?? ''}
+      />
     </section>
   );
 }

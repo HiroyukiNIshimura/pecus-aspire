@@ -11,6 +11,10 @@ export type RankingItemDto = {
      */
     rank: number;
     /**
+     * ユーザーの内部ID
+     */
+    userInternalId: number;
+    /**
      * ユーザーの表示用ID（visibleId）
      */
     userId: string;

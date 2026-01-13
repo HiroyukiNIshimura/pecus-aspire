@@ -517,6 +517,7 @@ public class AchievementService
             .Select((u, index) => new RankingItemDto
             {
                 Rank = index + 1,
+                UserInternalId = u.UserId,
                 UserId = u.UserLoginId,
                 DisplayName = u.DisplayName,
                 AvatarUrl = u.AvatarUrl,
@@ -534,6 +535,7 @@ public class AchievementService
             .Select((u, index) => new RankingItemDto
             {
                 Rank = index + 1,
+                UserInternalId = u.UserId,
                 UserId = u.UserLoginId,
                 DisplayName = u.DisplayName,
                 AvatarUrl = u.AvatarUrl,
@@ -551,6 +553,7 @@ public class AchievementService
             .Select((u, index) => new RankingItemDto
             {
                 Rank = index + 1,
+                UserInternalId = u.UserId,
                 UserId = u.UserLoginId,
                 DisplayName = u.DisplayName,
                 AvatarUrl = u.AvatarUrl,

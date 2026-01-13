@@ -38,6 +38,12 @@ public class RankingItemDto
     public required int Rank { get; set; }
 
     /// <summary>
+    /// ユーザーの内部ID
+    /// </summary>
+    [Required]
+    public required int UserInternalId { get; set; }
+
+    /// <summary>
     /// ユーザーの表示用ID（visibleId）
     /// </summary>
     [Required]
