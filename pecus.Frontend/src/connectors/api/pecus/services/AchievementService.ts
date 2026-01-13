@@ -39,28 +39,6 @@ export class AchievementService {
         });
     }
     /**
-     * 指定ユーザーの取得済み実績を取得
-     * 対象ユーザーの公開範囲設定に基づきフィルタリングされます。
-     * 公開範囲外の場合は空のリストが返却されます。
-     * @param userId 対象ユーザーID
-     * @returns UserAchievementResponse OK
-     * @throws ApiError
-     */
-    public static getApiAchievementsUsers(
-        userId: number,
-    ): CancelablePromise<Array<UserAchievementResponse>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/achievements/users/{userId}',
-            path: {
-                'userId': userId,
-            },
-            errors: {
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
      * 未通知の実績を取得
      * まだユーザーに通知していない新規取得実績を取得します。
      * バッジ取得演出の表示判定に使用します。

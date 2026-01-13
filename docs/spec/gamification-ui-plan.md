@@ -88,7 +88,7 @@
 
 **API要件:**
 - `GET /api/achievements` — 全実績マスタ一覧
-- `GET /api/users/me/achievements` — 自分の取得済み実績
+- `GET /api/achievements/me` — 自分の取得済み実績
 
 ---
 

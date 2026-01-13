@@ -58,28 +58,6 @@ public class AchievementController : BaseSecureController
     }
 
     /// <summary>
-    /// 指定ユーザーの取得済み実績を取得
-    /// </summary>
-    /// <remarks>
-    /// 対象ユーザーの公開範囲設定に基づきフィルタリングされます。
-    /// 公開範囲外の場合は空のリストが返却されます。
-    /// </remarks>
-    /// <param name="userId">対象ユーザーID</param>
-    /// <returns>取得済み実績のリスト（公開範囲外の場合は空リスト）</returns>
-    [HttpGet("users/{userId:int}")]
-    [ProducesResponseType(typeof(List<UserAchievementResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<List<UserAchievementResponse>>> GetUserAchievements(int userId)
-    {
-        var response = await _achievementService.GetUserAchievementsAsync(
-            userId,
-            CurrentUserId,
-            CurrentOrganizationId
-        );
-        return TypedResults.Ok(response);
-    }
-
-    /// <summary>
     /// 未通知の実績を取得
     /// </summary>
     /// <remarks>

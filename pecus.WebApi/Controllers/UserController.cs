@@ -15,15 +15,18 @@ namespace Pecus.Controllers;
 public class UserController : BaseSecureController
 {
     private readonly UserService _userService;
+    private readonly AchievementService _achievementService;
     private readonly ILogger<UserController> _logger;
 
     public UserController(
         UserService userService,
+        AchievementService achievementService,
         ProfileService profileService,
         ILogger<UserController> logger
     ) : base(profileService, logger)
     {
         _userService = userService;
+        _achievementService = achievementService;
         _logger = logger;
     }
 
@@ -77,4 +80,28 @@ public class UserController : BaseSecureController
 
         return TypedResults.Ok(response);
     }
+
+    /// <summary>
+    /// 指定ユーザーの取得済み実績を取得
+    /// </summary>
+    /// <remarks>
+    /// 対象ユーザーの公開範囲設定に基づきフィルタリングされます。
+    /// 公開範囲外の場合は空のリストが返却されます。
+    /// </remarks>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <returns>取得済み実績のリスト（公開範囲外の場合は空リスト）</returns>
+    [HttpGet("{userId:int}/achievements")]
+    [ProducesResponseType(typeof(List<UserAchievementResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<List<UserAchievementResponse>>> GetUserAchievements(int userId)
+    {
+        var response = await _achievementService.GetUserAchievementsAsync(
+            userId,
+            CurrentUserId,
+            CurrentOrganizationId
+        );
+        return TypedResults.Ok(response);
+    }
+
+
 }

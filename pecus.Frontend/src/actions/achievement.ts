@@ -37,20 +37,6 @@ export async function getMyAchievements(): Promise<ApiResponse<UserAchievementRe
 }
 
 /**
- * Server Action: 指定ユーザーの取得済み実績を取得
- * 公開範囲設定に基づきフィルタリングされる
- */
-export async function getUserAchievements(userId: number): Promise<ApiResponse<UserAchievementResponse[]>> {
-  try {
-    const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievementsUsers(userId);
-    return { success: true, data: response };
-  } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: 'ユーザー実績の取得に失敗しました' });
-  }
-}
-
-/**
  * Server Action: 未通知の実績を取得
  * バッジ取得演出の表示判定に使用
  */

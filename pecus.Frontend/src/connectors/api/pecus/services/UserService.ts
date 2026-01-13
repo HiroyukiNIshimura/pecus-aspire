@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { UserAchievementResponse } from '../models/UserAchievementResponse';
 import type { UserSearchResultResponse } from '../models/UserSearchResultResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -30,6 +31,28 @@ export class UserService {
             },
             errors: {
                 400: `検索クエリが短すぎます`,
+            },
+        });
+    }
+    /**
+     * 指定ユーザーの取得済み実績を取得
+     * 対象ユーザーの公開範囲設定に基づきフィルタリングされます。
+     * 公開範囲外の場合は空のリストが返却されます。
+     * @param userId 対象ユーザーID
+     * @returns UserAchievementResponse OK
+     * @throws ApiError
+     */
+    public static getApiUsersAchievements(
+        userId: number,
+    ): CancelablePromise<Array<UserAchievementResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/{userId}/achievements',
+            path: {
+                'userId': userId,
+            },
+            errors: {
+                500: `Internal Server Error`,
             },
         });
     }
