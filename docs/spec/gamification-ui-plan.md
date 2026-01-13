@@ -96,7 +96,7 @@
 
 **用途:** ユーザーアバタークリック時のポップオーバー等
 
-**実装候補:** `pecus.Frontend/src/components/common/widgets/user/MemberCard.tsx` に統合予定（検討中）
+**実装候補:** `pecus.Frontend/src/components/common/widgets/user/MemberCard.tsx` に統合
 
 **機能:**
 - 指定ユーザーの取得済みバッジをコンパクト表示
