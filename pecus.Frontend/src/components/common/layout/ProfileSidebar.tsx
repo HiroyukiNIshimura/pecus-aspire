@@ -6,8 +6,8 @@ interface ProfileSidebarProps {
 
 const menuItems = [
   { href: '/profile', label: 'プロフィール', iconClass: 'icon-[mdi--account-outline]' },
-  { href: '/profile/achievements', label: 'バッジコレクション', iconClass: 'icon-[mdi--trophy-outline]' },
   { href: '/profile/settings', label: '設定', iconClass: 'icon-[mdi--cog-outline]' },
+  { href: '/profile/achievements', label: 'バッジコレクション', iconClass: 'icon-[mdi--trophy-outline]' },
 ];
 
 /**

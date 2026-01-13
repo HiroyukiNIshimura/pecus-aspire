@@ -60,9 +60,10 @@ export default function DashboardClient({
 }: DashboardClientProps) {
   const orgSettings = useOrganizationSettings();
 
-  // ダッシュボードでのランキング表示条件:
+  // ダッシュボードでのランキング表示条件（CheckVisibilityAccessAsync 準拠）:
   // - Gamification が有効
   // - GamificationBadgeVisibility が Organization の場合のみ表示
+  // ※ Workspace / Private の場合は非表示（Workspace はワークスペース画面でのみ表示可）
   const showBadgeRanking =
     orgSettings.gamificationEnabled && orgSettings.gamificationBadgeVisibility === 'Organization';
 

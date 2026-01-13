@@ -186,9 +186,10 @@ export default function WorkspaceDetailClient({
   const [badgeRanking, setBadgeRanking] = useState<AchievementRankingResponse | null>(null);
   const [badgeRankingLoading, setBadgeRankingLoading] = useState(false);
 
-  // ワークスペースホームでのランキング表示条件:
+  // ワークスペースホームでのランキング表示条件（CheckVisibilityAccessAsync 準拠）:
   // - Gamification が有効
   // - GamificationBadgeVisibility が Organization または Workspace の場合のみ表示
+  // ※ Private の場合は非表示
   const showBadgeRanking =
     orgSettings.gamificationEnabled &&
     (orgSettings.gamificationBadgeVisibility === 'Organization' ||

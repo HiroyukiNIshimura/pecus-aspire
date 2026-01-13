@@ -396,31 +396,57 @@ public class AchievementService
             }
         }
 
-        // 対象ユーザーを取得（ユーザー個人のBadgeVisibility設定に基づいてフィルタ）
-        IQueryable<User> targetUsersQuery;
+        // 対象ユーザーを取得（GetEffectiveVisibility と CheckVisibilityAccessAsync の要件に準拠）
+        // 組織設定を取得
+        var allowUserOverride = orgSetting.GamificationAllowUserOverride;
+        var orgVisibility = orgSetting.GamificationBadgeVisibility;
 
+        // 対象ユーザーを取得
+        var candidateUsers = await _context.Users
+            .Where(u => u.IsActive && u.OrganizationId == organizationId)
+            .Include(u => u.Setting)
+            .ToListAsync();
+
+        // ワークスペース指定時はワークスペースメンバーのみ対象
         if (workspaceId.HasValue)
         {
-            // ワークスペース指定あり: Workspace または Organization のユーザーを対象
-            // （Private は除外）
-            targetUsersQuery = _context.Users
-                .Where(u => u.IsActive && u.OrganizationId == organizationId)
-                .Include(u => u.Setting)
-                .Where(u => u.Setting == null || u.Setting.BadgeVisibility != BadgeVisibility.Private)
-                .Where(u => _context.WorkspaceUsers.Any(wu =>
-                    wu.UserId == u.Id && wu.WorkspaceId == workspaceId.Value));
-        }
-        else
-        {
-            // ダッシュボード（組織全体）: Organization のユーザーのみ対象
-            // （Private と Workspace は除外）
-            targetUsersQuery = _context.Users
-                .Where(u => u.IsActive && u.OrganizationId == organizationId)
-                .Include(u => u.Setting)
-                .Where(u => u.Setting != null && u.Setting.BadgeVisibility == BadgeVisibility.Organization);
+            var workspaceUserIds = await _context.WorkspaceUsers
+                .Where(wu => wu.WorkspaceId == workspaceId.Value)
+                .Select(wu => wu.UserId)
+                .ToListAsync();
+
+            candidateUsers = candidateUsers
+                .Where(u => workspaceUserIds.Contains(u.Id))
+                .ToList();
         }
 
-        var targetUserIds = await targetUsersQuery.Select(u => u.Id).ToListAsync();
+        // GetEffectiveVisibility と CheckVisibilityAccessAsync の要件に基づきフィルタ
+        var targetUserIds = new List<int>();
+        foreach (var user in candidateUsers)
+        {
+            var effectiveVisibility = GetEffectiveVisibility(
+                user.Setting?.BadgeVisibility,
+                orgVisibility,
+                allowUserOverride
+            );
+
+            // CheckVisibilityAccessAsync の要件に従う判定
+            // - Private: 常に非表示
+            // - Organization: 組織全体で表示 → ダッシュボードとワークスペース両方で表示可
+            // - Workspace: 同じワークスペースのメンバーにのみ表示 → ワークスペース指定時のみ表示可
+            var canShow = effectiveVisibility switch
+            {
+                BadgeVisibility.Private => false,
+                BadgeVisibility.Organization => true,
+                BadgeVisibility.Workspace => workspaceId.HasValue, // ワークスペース指定時のみ表示
+                _ => false
+            };
+
+            if (canShow)
+            {
+                targetUserIds.Add(user.Id);
+            }
+        }
 
         if (targetUserIds.Count == 0)
         {
