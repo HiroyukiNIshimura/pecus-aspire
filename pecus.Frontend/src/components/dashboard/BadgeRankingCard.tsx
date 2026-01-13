@@ -144,11 +144,7 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
 
                     {/* アバター */}
                     <div className="flex-shrink-0">
-                      <img
-                        src={getDisplayIconUrl(item.avatarUrl)}
-                        alt=""
-                        className="w-8 h-8 rounded-full"
-                      />
+                      <img src={getDisplayIconUrl(item.avatarUrl)} alt="" className="w-8 h-8 rounded-full" />
                     </div>
 
                     {/* ユーザー情報 */}
@@ -161,7 +157,9 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
                     <div className="flex-shrink-0 text-right">
                       <div className={`text-sm font-semibold ${style.text}`}>
                         {formatScore(item.score, activeTab)}
-                        <span className="text-xs font-normal ml-0.5 text-base-content/60">{currentConfig.scoreUnit}</span>
+                        <span className="text-xs font-normal ml-0.5 text-base-content/60">
+                          {currentConfig.scoreUnit}
+                        </span>
                       </div>
                     </div>
                   </li>
