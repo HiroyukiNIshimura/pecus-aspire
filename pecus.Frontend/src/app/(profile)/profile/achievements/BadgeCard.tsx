@@ -60,7 +60,7 @@ export default function BadgeCard({ achievement }: BadgeCardProps) {
       <Tooltip text={tooltipText} position="top" className="w-full">
         <button
           type="button"
-          className={`card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer w-full ${
+          className={`card bg-base-200 hover:bg-base-content/10 transition-colors cursor-pointer w-full ${
             !isEarned ? 'opacity-60' : ''
           }`}
           onClick={() => setShowDetail(true)}
