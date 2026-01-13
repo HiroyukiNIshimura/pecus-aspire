@@ -87,7 +87,7 @@ export default function MemberActionMenu({
 
       {/* ドロップダウンメニュー */}
       {isMenuOpen && (
-        <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] bg-base-100 rounded-lg shadow-lg border border-base-300">
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-50 bg-base-100 rounded-lg shadow-lg border border-base-300">
           {/* ロール変更セクション */}
           <div className="px-3 py-2 border-b border-base-300">
             <p className="text-xs text-base-content/60 mb-1">ロールを変更</p>

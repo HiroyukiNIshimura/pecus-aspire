@@ -68,7 +68,7 @@ export default function MemberInfoMenu({ userId, userName }: MemberInfoMenuProps
 
       {/* ドロップダウンメニュー */}
       {isMenuOpen && (
-        <div className="absolute right-0 top-full mt-1 z-50 min-w-[160px] bg-base-100 rounded-lg shadow-lg border border-base-300">
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-40 bg-base-100 rounded-lg shadow-lg border border-base-300">
           <div className="p-1">
             <button
               type="button"

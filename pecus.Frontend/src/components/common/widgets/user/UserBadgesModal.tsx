@@ -1,8 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { getUserAchievements } from '@/actions/user';
-import type { UserAchievementResponse } from '@/connectors/api/pecus';
+import type { AchievementCategory, AchievementDifficulty, UserAchievementResponse } from '@/connectors/api/pecus';
 import { Tooltip } from '../../feedback/Tooltip';
 
 /**
@@ -19,15 +20,35 @@ export interface UserBadgesModalProps {
   userName: string;
 }
 
+/** 難易度の表示設定 */
+const difficultyConfig: Record<AchievementDifficulty, { label: string; color: string; stars: number }> = {
+  Easy: { label: '簡単', color: 'text-success', stars: 1 },
+  Medium: { label: '普通', color: 'text-warning', stars: 2 },
+  Hard: { label: '難しい', color: 'text-error', stars: 3 },
+};
+
+/** デフォルトの難易度設定（フォールバック用） */
+const defaultDifficultyConfig = { label: '不明', color: 'text-base-content/50', stars: 0 };
+
+/** カテゴリの表示ラベル */
+const categoryLabels: Record<AchievementCategory, string> = {
+  WorkStyle: 'ワークスタイル',
+  Productivity: '生産性',
+  AI: 'AI',
+  TeamPlay: 'チームワーク',
+  Quality: '品質',
+  Reliability: '信頼性',
+};
+
 /**
- * 日付をフォーマット（YYYY/MM/DD）
+ * 日付をフォーマット
  */
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('ja-JP', {
     year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -50,6 +71,7 @@ export default function UserBadgesModal({ isOpen, onClose, userId, userName }: U
   const [badges, setBadges] = useState<UserAchievementResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<UserAchievementResponse | null>(null);
 
   // モーダル表示時にデータ取得
   useEffect(() => {
@@ -85,7 +107,7 @@ export default function UserBadgesModal({ isOpen, onClose, userId, userName }: U
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 border-b border-base-300 shrink-0">
           <h2 className="text-lg font-bold flex items-center gap-2">
@@ -98,7 +120,7 @@ export default function UserBadgesModal({ isOpen, onClose, userId, userName }: U
         </div>
 
         {/* ボディ */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto px-8 py-4">
           {isLoading && (
             <div className="flex justify-center py-8">
               <span className="loading loading-spinner loading-md" />
@@ -120,25 +142,40 @@ export default function UserBadgesModal({ isOpen, onClose, userId, userName }: U
 
           {!isLoading && !error && badges.length > 0 && (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-              {badges.map((badge) => (
-                <div key={badge.id} className="flex flex-col items-center text-center group">
-                  {/* バッジアイコン */}
-                  <Tooltip text={badge.description} position="bottom" className="flex-1">
-                    <div className={`w-14 h-14 rounded-full overflow-hidden bg-amber-50`}>
-                      <img
-                        src={getBadgeIconUrl(badge.iconPath)}
-                        alt={badge.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
+              {badges.map((badge) => {
+                const diffConfig = difficultyConfig[badge.difficulty] ?? defaultDifficultyConfig;
+                return (
+                  <Tooltip key={badge.id} text={badge.description} position="bottom" className="w-full">
+                    <button
+                      type="button"
+                      className="card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer w-full"
+                      onClick={() => setSelectedBadge(badge)}
+                    >
+                      <div className="card-body items-center text-center p-3 gap-1">
+                        {/* バッジアイコン */}
+                        <Image
+                          src={getBadgeIconUrl(badge.iconPath)}
+                          alt={badge.name}
+                          width={56}
+                          height={56}
+                          className="w-14 h-14 object-contain"
+                        />
+                        {/* バッジ名 */}
+                        <p className="text-xs font-medium line-clamp-2 h-8">{badge.name}</p>
+                        {/* 難易度の星 */}
+                        <div className={`flex gap-0.5 ${diffConfig.color}`}>
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <span
+                              key={`star-${badge.id}-${i}`}
+                              className={`icon-[mdi--star] text-xs ${i < diffConfig.stars ? '' : 'opacity-20'}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </button>
                   </Tooltip>
-                  {/* バッジ名 */}
-                  <p className="text-xs font-medium mt-1.5 line-clamp-2">{badge.name}</p>
-                  {/* 取得日 */}
-                  <p className="text-xs text-base-content/50">{formatDate(badge.earnedAt)}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -150,6 +187,79 @@ export default function UserBadgesModal({ isOpen, onClose, userId, userName }: U
           </button>
         </div>
       </div>
+
+      {/* バッジ詳細モーダル */}
+      {selectedBadge && (
+        <div
+          className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setSelectedBadge(null)}
+          onKeyDown={() => {}}
+        >
+          <div
+            className="bg-base-100 rounded-box shadow-xl w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={() => {}}
+          >
+            <button
+              type="button"
+              className="btn btn-sm btn-circle btn-secondary absolute right-2 top-2"
+              onClick={() => setSelectedBadge(null)}
+            >
+              <span className="icon-[mdi--close]" aria-hidden="true" />
+            </button>
+
+            <div className="flex flex-col items-center gap-4">
+              {/* バッジアイコン（大） */}
+              <Image
+                src={getBadgeIconUrl(selectedBadge.iconPath)}
+                alt={selectedBadge.name}
+                width={128}
+                height={128}
+                className="w-32 h-32 object-contain"
+              />
+
+              {/* バッジ名 */}
+              <h3 className="font-bold text-xl">{selectedBadge.name}</h3>
+
+              {/* 説明 */}
+              <p className="text-base-content/70 text-center">{selectedBadge.description}</p>
+
+              {/* メタ情報 */}
+              <div className="w-full space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-base-content/50">カテゴリ</span>
+                  <span>{categoryLabels[selectedBadge.category]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-base-content/50">難易度</span>
+                  <span
+                    className={`flex items-center gap-1 ${(difficultyConfig[selectedBadge.difficulty] ?? defaultDifficultyConfig).color}`}
+                  >
+                    {(difficultyConfig[selectedBadge.difficulty] ?? defaultDifficultyConfig).label}
+                    <span className="flex gap-0.5">
+                      {Array.from({
+                        length: (difficultyConfig[selectedBadge.difficulty] ?? defaultDifficultyConfig).stars,
+                      }).map((_, i) => (
+                        <span key={`detail-star-${selectedBadge.id}-${i}`} className="icon-[mdi--star] text-xs" />
+                      ))}
+                    </span>
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-base-content/50">獲得日</span>
+                  <span>{formatDate(selectedBadge.earnedAt)}</span>
+                </div>
+              </div>
+
+              {/* ステータス */}
+              <div className="badge badge-success gap-1">
+                <span className="icon-[mdi--check-circle] text-sm" />
+                獲得済み
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
