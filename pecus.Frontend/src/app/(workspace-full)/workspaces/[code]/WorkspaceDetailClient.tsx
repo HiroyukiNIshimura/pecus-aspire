@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getAchievementRanking } from '@/actions/achievement';
 import { deleteWorkspace } from '@/actions/deleteWorkspace';
 import {
   addMemberToWorkspace,
@@ -16,6 +17,7 @@ import WorkspaceEditStatus from '@/components/common/feedback/WorkspaceEditStatu
 import AppHeader from '@/components/common/layout/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/overlays/DeleteWorkspaceModal';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
+import { BadgeRankingCard } from '@/components/dashboard';
 import type { WorkspaceItemsSidebarHandle } from '@/components/workspaceItems/WorkspaceItemsSidebar';
 import WorkspaceItemsSidebar from '@/components/workspaceItems/WorkspaceItemsSidebar';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
@@ -27,6 +29,7 @@ import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import WorkspacePresence from '@/components/workspaces/WorkspacePresence';
 import type {
+  AchievementRankingResponse,
   MasterGenreResponse,
   MasterSkillResponse,
   TaskFlowNode,
@@ -39,7 +42,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
-import { useCurrentUser } from '@/providers/AppSettingsProvider';
+import { useCurrentUser, useOrganizationSettings } from '@/providers/AppSettingsProvider';
 import type { WorkspacePresenceUser } from '@/providers/SignalRProvider';
 import {
   type SignalRNotification,
@@ -178,6 +181,19 @@ export default function WorkspaceDetailClient({
   // 新規追加されたメンバーのハイライト表示用（3秒間）
   const [highlightedUserIds, setHighlightedUserIds] = useState<Set<number>>(new Set());
 
+  // ===== バッジランキングの状態 =====
+  const orgSettings = useOrganizationSettings();
+  const [badgeRanking, setBadgeRanking] = useState<AchievementRankingResponse | null>(null);
+  const [badgeRankingLoading, setBadgeRankingLoading] = useState(false);
+
+  // ワークスペースホームでのランキング表示条件:
+  // - Gamification が有効
+  // - GamificationBadgeVisibility が Organization または Workspace の場合のみ表示
+  const showBadgeRanking =
+    orgSettings.gamificationEnabled &&
+    (orgSettings.gamificationBadgeVisibility === 'Organization' ||
+      orgSettings.gamificationBadgeVisibility === 'Workspace');
+
   // メンバー追加モーダルの状態
   const [addMemberModal, setAddMemberModal] = useState(false);
 
@@ -222,6 +238,28 @@ export default function WorkspaceDetailClient({
     // 保存値がない場合はデフォルト値
     setSidebarWidth(256);
   }, []);
+
+  // ===== バッジランキング取得 =====
+  useEffect(() => {
+    if (!showBadgeRanking) {
+      setBadgeRanking(null);
+      return;
+    }
+
+    const fetchRanking = async () => {
+      setBadgeRankingLoading(true);
+      try {
+        const result = await getAchievementRanking(currentWorkspaceDetail.id);
+        if (result.success) {
+          setBadgeRanking(result.data);
+        }
+      } finally {
+        setBadgeRankingLoading(false);
+      }
+    };
+
+    fetchRanking();
+  }, [showBadgeRanking, currentWorkspaceDetail.id]);
 
   // 外部クリックでアクションメニューを閉じる
   useEffect(() => {
@@ -1318,6 +1356,13 @@ export default function WorkspaceDetailClient({
                     highlightedUserIds={highlightedUserIds}
                   />
                 </div>
+
+                {/* バッジ獲得ランキング（組織設定で表示制御） */}
+                {showBadgeRanking && (
+                  <div className="mt-4">
+                    <BadgeRankingCard data={badgeRanking} isLoading={badgeRankingLoading} />
+                  </div>
+                )}
               </div>
             </div>
           )}

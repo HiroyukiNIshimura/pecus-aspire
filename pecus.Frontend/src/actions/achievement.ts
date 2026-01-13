@@ -3,6 +3,7 @@
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   AchievementCollectionResponse,
+  AchievementRankingResponse,
   NewAchievementResponse,
   UserAchievementResponse,
 } from '@/connectors/api/pecus';
@@ -61,5 +62,19 @@ export async function markAchievementNotified(achievementId: number): Promise<Ap
     return { success: true, data: undefined };
   } catch (error) {
     return handleApiErrorForAction(error, { defaultMessage: '通知済みマークに失敗しました' });
+  }
+}
+
+/**
+ * Server Action: バッジ獲得ランキングを取得
+ * @param workspaceId ワークスペースID（指定時はそのワークスペース内でのランキング）
+ */
+export async function getAchievementRanking(workspaceId?: number): Promise<ApiResponse<AchievementRankingResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.achievement.getApiAchievementsRanking(workspaceId);
+    return { success: true, data: response };
+  } catch (error) {
+    return handleApiErrorForAction(error, { defaultMessage: 'ランキングの取得に失敗しました' });
   }
 }
