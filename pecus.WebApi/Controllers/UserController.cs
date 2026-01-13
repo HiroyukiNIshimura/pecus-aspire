@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
+using Pecus.Models.Responses.User;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -103,5 +104,21 @@ public class UserController : BaseSecureController
         return TypedResults.Ok(response);
     }
 
-
+    /// <summary>
+    /// 指定ユーザーのスキル一覧を取得
+    /// </summary>
+    /// <remarks>
+    /// 対象ユーザーが持つアクティブなスキルの一覧を取得します。
+    /// スキル名、説明、追加日時を含みます。
+    /// </remarks>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <returns>スキル一覧</returns>
+    [HttpGet("{userId:int}/skills")]
+    [ProducesResponseType(typeof(List<UserSkillDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<List<UserSkillDetailResponse>>> GetUserSkills(int userId)
+    {
+        var response = await _userService.GetUserSkillsAsync(userId);
+        return TypedResults.Ok(response);
+    }
 }

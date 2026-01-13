@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { UserAchievementResponse } from '../models/UserAchievementResponse';
 import type { UserSearchResultResponse } from '../models/UserSearchResultResponse';
+import type { UserSkillDetailResponse } from '../models/UserSkillDetailResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -48,6 +49,28 @@ export class UserService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/{userId}/achievements',
+            path: {
+                'userId': userId,
+            },
+            errors: {
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 指定ユーザーのスキル一覧を取得
+     * 対象ユーザーが持つアクティブなスキルの一覧を取得します。
+     * スキル名、説明、追加日時を含みます。
+     * @param userId 対象ユーザーID
+     * @returns UserSkillDetailResponse OK
+     * @throws ApiError
+     */
+    public static getApiUsersSkills(
+        userId: number,
+    ): CancelablePromise<Array<UserSkillDetailResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/{userId}/skills',
             path: {
                 'userId': userId,
             },

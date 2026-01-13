@@ -235,6 +235,7 @@ export type { UserRoleResponse } from './models/UserRoleResponse';
 export type { UserSearchResultResponse } from './models/UserSearchResultResponse';
 export type { UserSearchSkillResponse } from './models/UserSearchSkillResponse';
 export type { UserSettingResponse } from './models/UserSettingResponse';
+export type { UserSkillDetailResponse } from './models/UserSkillDetailResponse';
 export type { UserSkillResponse } from './models/UserSkillResponse';
 export type { UserStatistics } from './models/UserStatistics';
 export type { WeeklyTaskTrend } from './models/WeeklyTaskTrend';

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
+import UserBadgesModal from './UserBadgesModal';
+import UserSkillsModal from './UserSkillsModal';
 
 /** ロール変更の選択肢 */
 const roleOptions: { value: WorkspaceRole; label: string }[] = [
@@ -28,6 +30,8 @@ export interface MemberActionMenuProps {
 
 /**
  * メンバーアクションメニュー（3点メニュー）
+ * - スキル表示
+ * - バッジ表示
  * - ロール変更
  * - メンバー削除
  */
@@ -39,6 +43,8 @@ export default function MemberActionMenu({
   onRemove,
 }: MemberActionMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
+  const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // メニュー外クリックで閉じる
@@ -72,6 +78,16 @@ export default function MemberActionMenu({
     setIsMenuOpen(false);
   };
 
+  const handleViewSkills = () => {
+    setIsMenuOpen(false);
+    setIsSkillsModalOpen(true);
+  };
+
+  const handleViewBadges = () => {
+    setIsMenuOpen(false);
+    setIsBadgesModalOpen(true);
+  };
+
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -88,6 +104,26 @@ export default function MemberActionMenu({
       {/* ドロップダウンメニュー */}
       {isMenuOpen && (
         <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] bg-base-100 rounded-lg shadow-lg border border-base-300">
+          {/* スキル・バッジ表示セクション */}
+          <div className="p-1 border-b border-base-300">
+            <button
+              type="button"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-base-200 rounded flex items-center gap-2 whitespace-nowrap"
+              onClick={handleViewSkills}
+            >
+              <span className="icon-[mdi--lightning-bolt] size-4 text-warning" aria-hidden="true" />
+              スキルを見る
+            </button>
+            <button
+              type="button"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-base-200 rounded flex items-center gap-2 whitespace-nowrap"
+              onClick={handleViewBadges}
+            >
+              <span className="icon-[mdi--medal] size-4 text-warning" aria-hidden="true" />
+              バッジを見る
+            </button>
+          </div>
+
           {/* ロール変更セクション */}
           <div className="px-3 py-2 border-b border-base-300">
             <p className="text-xs text-base-content/60 mb-1">ロールを変更</p>
@@ -121,6 +157,22 @@ export default function MemberActionMenu({
           </div>
         </div>
       )}
+
+      {/* スキル表示モーダル */}
+      <UserSkillsModal
+        isOpen={isSkillsModalOpen}
+        onClose={() => setIsSkillsModalOpen(false)}
+        userId={userId}
+        userName={userName}
+      />
+
+      {/* バッジ表示モーダル */}
+      <UserBadgesModal
+        isOpen={isBadgesModalOpen}
+        onClose={() => setIsBadgesModalOpen(false)}
+        userId={userId}
+        userName={userName}
+      />
     </div>
   );
 }

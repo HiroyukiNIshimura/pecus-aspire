@@ -1,6 +1,6 @@
 'use server';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { UserAchievementResponse } from '@/connectors/api/pecus';
+import type { UserAchievementResponse, UserSkillDetailResponse } from '@/connectors/api/pecus';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
@@ -15,5 +15,18 @@ export async function getUserAchievements(userId: number): Promise<ApiResponse<U
     return { success: true, data: response };
   } catch (error) {
     return handleApiErrorForAction(error, { defaultMessage: 'ユーザー実績の取得に失敗しました' });
+  }
+}
+
+/**
+ * Server Action: 指定ユーザーのスキル一覧を取得
+ */
+export async function getUserSkills(userId: number): Promise<ApiResponse<UserSkillDetailResponse[]>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.user.getApiUsersSkills(userId);
+    return { success: true, data: response };
+  } catch (error) {
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザースキルの取得に失敗しました' });
   }
 }

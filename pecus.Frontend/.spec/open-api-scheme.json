@@ -3310,6 +3310,54 @@
         ]
       }
     },
+    "/api/users/{userId}/skills": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "指定ユーザーのスキル一覧を取得",
+        "description": "対象ユーザーが持つアクティブなスキルの一覧を取得します。\r\nスキル名、説明、追加日時を含みます。",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "対象ユーザーID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserSkillDetailResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/workspaces": {
       "post": {
         "tags": [
@@ -21339,6 +21387,36 @@
           }
         },
         "description": "ユーザー設定レスポンス"
+      },
+      "UserSkillDetailResponse": {
+        "required": [
+          "id",
+          "name",
+          "addedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "スキルID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "スキル名"
+          },
+          "description": {
+            "type": "string",
+            "description": "スキル説明",
+            "nullable": true
+          },
+          "addedAt": {
+            "type": "string",
+            "description": "スキル追加日時",
+            "format": "date-time"
+          }
+        },
+        "description": "ユーザースキル詳細レスポンス（追加日時・説明を含む）"
       },
       "UserSkillResponse": {
         "required": [

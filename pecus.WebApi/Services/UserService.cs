@@ -6,6 +6,7 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
+using Pecus.Models.Responses.User;
 using System.Security.Cryptography;
 
 namespace Pecus.Services;
@@ -934,5 +935,25 @@ public class UserService
         }
 
         return users;
+    }
+
+    /// <summary>
+    /// 指定ユーザーのスキル一覧を取得
+    /// </summary>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <returns>ユーザーのスキル詳細リスト</returns>
+    public async Task<List<UserSkillDetailResponse>> GetUserSkillsAsync(int userId)
+    {
+        return await _context.UserSkills
+            .Where(us => us.UserId == userId && us.Skill.IsActive)
+            .OrderBy(us => us.Skill.Name)
+            .Select(us => new UserSkillDetailResponse
+            {
+                Id = us.Skill.Id,
+                Name = us.Skill.Name,
+                Description = us.Skill.Description,
+                AddedAt = us.AddedAt,
+            })
+            .ToListAsync();
     }
 }
