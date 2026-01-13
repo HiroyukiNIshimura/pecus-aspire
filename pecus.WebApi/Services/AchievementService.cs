@@ -396,18 +396,28 @@ public class AchievementService
             }
         }
 
-        // 対象ユーザーを取得（BadgeVisibility が Private でないユーザー）
-        var targetUsersQuery = _context.Users
-            .Where(u => u.IsActive && u.OrganizationId == organizationId)
-            .Include(u => u.Setting)
-            .Where(u => u.Setting == null || u.Setting.BadgeVisibility != BadgeVisibility.Private);
+        // 対象ユーザーを取得（ユーザー個人のBadgeVisibility設定に基づいてフィルタ）
+        IQueryable<User> targetUsersQuery;
 
-        // ワークスペース指定がある場合はメンバーに絞る
         if (workspaceId.HasValue)
         {
-            targetUsersQuery = targetUsersQuery
+            // ワークスペース指定あり: Workspace または Organization のユーザーを対象
+            // （Private は除外）
+            targetUsersQuery = _context.Users
+                .Where(u => u.IsActive && u.OrganizationId == organizationId)
+                .Include(u => u.Setting)
+                .Where(u => u.Setting == null || u.Setting.BadgeVisibility != BadgeVisibility.Private)
                 .Where(u => _context.WorkspaceUsers.Any(wu =>
                     wu.UserId == u.Id && wu.WorkspaceId == workspaceId.Value));
+        }
+        else
+        {
+            // ダッシュボード（組織全体）: Organization のユーザーのみ対象
+            // （Private と Workspace は除外）
+            targetUsersQuery = _context.Users
+                .Where(u => u.IsActive && u.OrganizationId == organizationId)
+                .Include(u => u.Setting)
+                .Where(u => u.Setting != null && u.Setting.BadgeVisibility == BadgeVisibility.Organization);
         }
 
         var targetUserIds = await targetUsersQuery.Select(u => u.Id).ToListAsync();

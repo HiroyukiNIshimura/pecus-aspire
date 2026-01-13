@@ -2056,20 +2056,10 @@ public class WorkspaceItemService
             throw new InvalidOperationException("このエンドポイントはドキュメントモードのワークスペースでのみ使用できます。");
         }
 
-        // アイテム数の上限チェック
-        var itemCount = await _context.WorkspaceItems
-            .Where(wi => wi.WorkspaceId == workspaceId && !wi.IsArchived)
-            .CountAsync();
-
-        if (itemCount > _config.Limits.MaxDocumentsPerWorkspace)
-        {
-            throw new InvalidOperationException(
-                $"ワークスペース内のアイテム数が上限（{_config.Limits.MaxDocumentsPerWorkspace}件）を超えています。");
-        }
-
         // ワークスペース内の全アイテムを取得（アーカイブ済みは除外）
         var items = await _context.WorkspaceItems
             .Where(wi => wi.WorkspaceId == workspaceId && !wi.IsArchived)
+            .Take(_config.Limits.MaxDocumentsPerWorkspace)
             .OrderBy(wi => wi.ItemNumber)
             .Select(wi => new
             {
