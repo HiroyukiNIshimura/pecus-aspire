@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import UserBadgesModal from './UserBadgesModal';
-import UserSkillsModal from './UserSkillsModal';
+import UserBadgesPopover from './UserBadgesPopover';
+import UserSkillsPopover from './UserSkillsPopover';
 
 /**
  * メンバー情報メニューのProps
@@ -22,8 +22,8 @@ export interface MemberInfoMenuProps {
  */
 export default function MemberInfoMenu({ userId, userName }: MemberInfoMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
-  const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
+  const [skillsPopover, setSkillsPopover] = useState<{ anchorRect: DOMRect } | null>(null);
+  const [badgesPopover, setBadgesPopover] = useState<{ anchorRect: DOMRect } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // メニュー外クリックで閉じる
@@ -43,14 +43,16 @@ export default function MemberInfoMenu({ userId, userName }: MemberInfoMenuProps
     };
   }, [isMenuOpen]);
 
-  const handleViewSkills = () => {
+  const handleViewSkills = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
     setIsMenuOpen(false);
-    setIsSkillsModalOpen(true);
+    setSkillsPopover({ anchorRect: rect });
   };
 
-  const handleViewBadges = () => {
+  const handleViewBadges = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
     setIsMenuOpen(false);
-    setIsBadgesModalOpen(true);
+    setBadgesPopover({ anchorRect: rect });
   };
 
   return (
@@ -90,20 +92,22 @@ export default function MemberInfoMenu({ userId, userName }: MemberInfoMenuProps
         </div>
       )}
 
-      {/* スキル表示モーダル */}
-      <UserSkillsModal
-        isOpen={isSkillsModalOpen}
-        onClose={() => setIsSkillsModalOpen(false)}
+      {/* スキル表示ポップオーバー */}
+      <UserSkillsPopover
+        isOpen={skillsPopover !== null}
+        onClose={() => setSkillsPopover(null)}
         userId={userId}
         userName={userName}
+        anchorRect={skillsPopover?.anchorRect}
       />
 
-      {/* バッジ表示モーダル */}
-      <UserBadgesModal
-        isOpen={isBadgesModalOpen}
-        onClose={() => setIsBadgesModalOpen(false)}
+      {/* バッジ表示ポップオーバー */}
+      <UserBadgesPopover
+        isOpen={badgesPopover !== null}
+        onClose={() => setBadgesPopover(null)}
         userId={userId}
         userName={userName}
+        anchorRect={badgesPopover?.anchorRect}
       />
     </div>
   );

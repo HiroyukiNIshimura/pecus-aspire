@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
-import UserBadgesModal from '@/components/common/widgets/user/UserBadgesModal';
+import UserBadgesPopover from '@/components/common/widgets/user/UserBadgesPopover';
 import type { AchievementRankingResponse, RankingItemDto } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 
@@ -63,8 +63,12 @@ interface BadgeRankingCardProps {
  */
 export default function BadgeRankingCard({ data, isLoading = false, className = '' }: BadgeRankingCardProps) {
   const [activeTab, setActiveTab] = useState<RankingType>('difficulty');
-  // ユーザーバッジモーダルの状態
-  const [badgeModalUser, setBadgeModalUser] = useState<{ userId: number; displayName: string } | null>(null);
+  // ユーザーバッジポップオーバーの状態
+  const [badgePopoverUser, setBadgePopoverUser] = useState<{
+    userId: number;
+    displayName: string;
+    anchorRect: DOMRect;
+  } | null>(null);
 
   // 現在のタブのランキングデータを取得
   const getCurrentRanking = (): RankingItemDto[] => {
@@ -143,7 +147,14 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
                     <button
                       type="button"
                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200/50 cursor-pointer w-full text-left transition-colors"
-                      onClick={() => setBadgeModalUser({ userId: item.userInternalId, displayName: item.displayName })}
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setBadgePopoverUser({
+                          userId: item.userInternalId,
+                          displayName: item.displayName,
+                          anchorRect: rect,
+                        });
+                      }}
                       aria-label={`${item.displayName}のバッジを表示`}
                     >
                       {/* 順位 */}
@@ -180,12 +191,13 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
         </div>
       </div>
 
-      {/* ユーザーバッジモーダル */}
-      <UserBadgesModal
-        isOpen={badgeModalUser !== null}
-        onClose={() => setBadgeModalUser(null)}
-        userId={badgeModalUser?.userId ?? 0}
-        userName={badgeModalUser?.displayName ?? ''}
+      {/* ユーザーバッジポップオーバー */}
+      <UserBadgesPopover
+        isOpen={badgePopoverUser !== null}
+        onClose={() => setBadgePopoverUser(null)}
+        userId={badgePopoverUser?.userId ?? 0}
+        userName={badgePopoverUser?.displayName ?? ''}
+        anchorRect={badgePopoverUser?.anchorRect}
       />
     </section>
   );
