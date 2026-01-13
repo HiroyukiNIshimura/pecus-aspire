@@ -33,7 +33,7 @@ const BADGES = [
   {
     code: 'UNKNOWN',
     filename: 'unknown.png',
-    prompt: `A glowing golden question mark "?" surrounded by sparkles and stars, with a faint ghostly coati silhouette behind it. Treasure chest lock keyhole design. Mysterious and inviting, "secret to discover" feeling. ${BASE_STYLE}`,
+    prompt: `A shadowy coati silhouette with a large floating "?" above its head, surrounded by soft sparkles and question marks of various sizes. Mysterious purple and blue gradient background. ${BASE_STYLE}`,
   },
   // WorkStyle カテゴリ
   {
