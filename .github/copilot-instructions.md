@@ -1,3 +1,6 @@
+---
+applyTo: "*"
+---
 ## Pecus Aspire — AI エージェント最小指示書
 
 メタ情報
@@ -26,38 +29,6 @@
 - **横断変更の無断実施禁止** — 複数プロジェクトを触る場合は承認を得る
 - **リファクタリング時の業務ロジック変更禁止** — 変更が必要な場合は報告
 
-### 重要なパターン
-- **RowVersion**: PostgreSQL `xmin` → C# `uint` → フロント `number`。実装参照: `pecus.Libs/DB/ApplicationDbContext.cs`
-- **競合処理**: `DbUpdateConcurrencyException` を catch → `FindAsync()` で再取得 → `ConcurrencyException<T>` をスロー
-- **フロント**: SSR-first。読み取りは Server Component、書き込みは Server Actions（`src/actions/`）
-- **UI**: Tailwind CSS + FlyonUI。**daisyUI は禁止**。アイコンは `@iconify/tailwind4`
-- **セッション**: Cookie に `sessionId` のみ（`httpOnly: true`）。トークンは Redis。`ServerSessionManager` 経由で取得
-- **C#**: 原則「1ファイル=1クラス」。関連する複数の enum/record は1ファイル可
-- **修正順序**: バックエンド → フロントエンドの順。バックエンド完了後にフロントエンド修正
-- **コードコメント**: 連番禁止（例: // 1. ～）
-- **シェルスクリプト**: POSIX準拠、`/bin/sh` で実行可能
-
-## 統一方針
-
-### バックエンド (C# / .NET)
-- **コントローラー**: MVC コントローラー + `HttpResults`（`Ok<T>`, `Created<T>`, `NoContent`）。`IActionResult`/`ActionResult<T>` は不使用
-- **例外処理**: 例外をスローして `GlobalExceptionFilter` に任せる。コントローラーで try-catch しない
-- **競合制御**: `DbUpdateConcurrencyException` → `FindAsync()` → `ConcurrencyException<T>`。DTO は `RowVersion: uint` 必須
-- **トランザクション**: サービス層で `BeginTransactionAsync`。コントローラーでは禁止
-- **DTO**: 検証属性（`[Required]`, `[MaxLength]`）必須。Enum は nullable 推奨、`HasDefaultValue()` 禁止
-- **Hangfire**: DI 経由の `IBackgroundJobClient` を使用。静的 API（`BackgroundJob.Enqueue`）は禁止
-
-### フロントエンド (Next.js / TypeScript)
-- **API アクセス**: 読み取り → SSR（Server Component）、変更 → Server Actions。いずれも `createPecusApiClients()` 経由
-- **禁止**: ブラウザから WebApi 直 fetch、SA/SSR から直 fetch（リフレッシュ API のみ例外）
-- **トークン**: `ServerSessionManager.getValidAccessToken()` が自動リフレッシュを実行
-- **UI 禁止事項**: Tailwind 任意値（`z-[10]`, `w-[200px]`）、`h-screen`/`min-h-screen`（`flex-1` を使用）
-- **自動生成**: `PecusApiClient.generated.ts` は編集禁止。Git 管理外
-
-### SSR / Client Component 使い分け
-- **Server Component**: 静的UI、初期データ取得（マスタデータ）、レイアウト
-- **Client Component**: `useState`/`useEffect`/`onClick` が必要な場合のみ。末端コンポーネントとして切り出す
-- **アンチパターン**: `page.tsx` 全体を `"use client"` にすること、トランザクションデータを SSR で取得すること
 
 ## 参照ドキュメント
 
