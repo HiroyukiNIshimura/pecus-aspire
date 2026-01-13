@@ -14,6 +14,7 @@
 | 設定: ユーザー設定にBadgeVisibility追加 | ✅ 完了 |
 | UI: バッジコレクションページ | ✅ 完了 |
 | UI: ユーザーバッジ表示コンポーネント | ⬜ 未着手 |
+| UI: バッジ獲得ランキングリストコンポーネント | ⬜ 未着手 |
 | UI: バッジ取得演出コンポーネント | ✅ 完了（コンフェッティ + 難易度別演出） |
 | バッジ画像: 28種 | ✅ 完了 |
 
@@ -123,6 +124,38 @@
 **API要件:**
 - タスク更新系API（ステータス更新等）のレスポンスに `newAchievements` 追加
 - `POST /api/users/me/achievements/{id}/notify` — 通知済みマーク
+
+---
+
+### 4. バッジ獲得ランキングリストコンポーネント
+
+**用途:** ダッシュボード（組織全体）およびワークスペースホーム（ワークスペース内）
+
+**実装方針:**
+- コンポーネントは **Presentation Component**（Props受け取りのみ）として実装
+- データ取得は親コンポーネント（Page/Server Component）で行う
+
+**Props:**
+```typescript
+interface BadgeRankingListProps {
+  title: string;
+  items: BadgeRankingItemDto[];
+  isLoading?: boolean;
+  className?: string;
+}
+```
+
+**表示制御ルール（組織設定に依存）:**
+- **ダッシュボード:** 組織設定 `GamificationRankingScope` が `Organization` の場合のみ表示
+- **ワークスペース:** 組織設定 `GamificationRankingScope` が `Organization` または `Workspace` の場合のみ表示
+
+**除外ロジック（バックエンド側）:**
+- ユーザー設定 `BadgeVisibility` が `Private` のユーザーはランキングから除外
+- ワークスペースランキングの場合、ワークスペースメンバー外は除外
+
+**API要件:**
+- `GET /api/achievements/ranking/organization` — 組織全体のランキング
+- `GET /api/workspaces/{workspaceId}/achievements/ranking` — ワークスペース内のランキング
 
 ---
 
