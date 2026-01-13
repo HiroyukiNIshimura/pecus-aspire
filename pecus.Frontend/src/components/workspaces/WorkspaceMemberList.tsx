@@ -3,6 +3,7 @@
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import MemberActionMenu from '@/components/common/widgets/user/MemberActionMenu';
 import MemberCard from '@/components/common/widgets/user/MemberCard';
+import MemberInfoMenu from '@/components/common/widgets/user/MemberInfoMenu';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
 
 /**
@@ -109,15 +110,20 @@ export default function WorkspaceMemberList({
                   isWorkspaceOwner={isOwner}
                   isHighlighted={highlightedUserIds?.has(memberId) ?? false}
                   actionSlot={
-                    editable && !isOwner ? (
-                      <MemberActionMenu
-                        userId={memberId}
-                        userName={memberName}
-                        currentRole={member.workspaceRole || 'Viewer'}
-                        onChangeRole={onChangeRole}
-                        onRemove={onRemoveMember}
-                      />
-                    ) : null
+                    <div className="flex items-center gap-1">
+                      {/* 情報メニュー（常に表示） */}
+                      <MemberInfoMenu userId={memberId} userName={memberName} />
+                      {/* アクションメニュー（編集可能かつオーナー以外の場合のみ） */}
+                      {editable && !isOwner && (
+                        <MemberActionMenu
+                          userId={memberId}
+                          userName={memberName}
+                          currentRole={member.workspaceRole || 'Viewer'}
+                          onChangeRole={onChangeRole}
+                          onRemove={onRemoveMember}
+                        />
+                      )}
+                    </div>
                   }
                 />
               );
