@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  BadgeRankingCard,
   HelpCommentsCard,
   HotItemsCard,
   HotWorkspacesCard,
@@ -11,6 +12,7 @@ import {
   WorkspaceBreakdownTable,
 } from '@/components/dashboard';
 import type {
+  AchievementRankingResponse,
   DashboardHelpCommentsResponse,
   DashboardHotItemsResponse,
   DashboardHotWorkspacesResponse,
@@ -20,6 +22,7 @@ import type {
   DashboardTaskTrendResponse,
   DashboardWorkspaceBreakdownResponse,
 } from '@/connectors/api/pecus';
+import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
 
 interface DashboardClientProps {
   fetchError?: string | null;
@@ -39,6 +42,8 @@ interface DashboardClientProps {
   hotWorkspaces?: DashboardHotWorkspacesResponse | null;
   /** ヘルプコメント */
   helpComments?: DashboardHelpCommentsResponse | null;
+  /** バッジ獲得ランキング */
+  badgeRanking?: AchievementRankingResponse | null;
 }
 
 export default function DashboardClient({
@@ -51,7 +56,16 @@ export default function DashboardClient({
   hotItems,
   hotWorkspaces,
   helpComments,
+  badgeRanking,
 }: DashboardClientProps) {
+  const orgSettings = useOrganizationSettings();
+
+  // ダッシュボードでのランキング表示条件:
+  // - Gamification が有効
+  // - GamificationBadgeVisibility が Organization の場合のみ表示
+  const showBadgeRanking =
+    orgSettings.gamificationEnabled && orgSettings.gamificationBadgeVisibility === 'Organization';
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* ページヘッダー */}
@@ -113,8 +127,13 @@ export default function DashboardClient({
         </div>
       )}
 
-      {/* ヘルプリクエスト */}
-      {helpComments && <HelpCommentsCard data={helpComments} />}
+      {/* 2カラムレイアウト: バッジランキング + ヘルプリクエスト */}
+      {(showBadgeRanking || helpComments) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {showBadgeRanking && badgeRanking && <BadgeRankingCard data={badgeRanking} />}
+          {helpComments && <HelpCommentsCard data={helpComments} />}
+        </div>
+      )}
 
       {/* データがない場合のフォールバック */}
       {!summary &&
@@ -125,6 +144,7 @@ export default function DashboardClient({
         !hotItems &&
         !hotWorkspaces &&
         !helpComments &&
+        !badgeRanking &&
         !fetchError && (
           <div className="text-center py-12 text-base-content/60">
             <span className="icon-[mdi--chart-box-outline] w-16 h-16 mb-4" aria-hidden="true" />

@@ -146,8 +146,8 @@ interface BadgeRankingListProps {
 ```
 
 **表示制御ルール（組織設定に依存）:**
-- **ダッシュボード:** 組織設定 `GamificationRankingScope` が `Organization` の場合のみ表示
-- **ワークスペース:** 組織設定 `GamificationRankingScope` が `Organization` または `Workspace` の場合のみ表示
+- **ダッシュボード:** 組織設定 `GamificationBadgeVisibility` が `Organization` の場合のみ表示
+- **ワークスペース:** 組織設定 `GamificationBadgeVisibility` が `Organization` または `Workspace` の場合のみ表示
 
 **除外ロジック（バックエンド側）:**
 - ユーザー設定 `BadgeVisibility` が `Private` のユーザーはランキングから除外

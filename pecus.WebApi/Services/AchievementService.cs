@@ -1,15 +1,31 @@
 using Microsoft.EntityFrameworkCore;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Models.Responses.Achievement;
 
 namespace Pecus.Services;
+
+/// <summary>
+/// 難易度別のスコア重み（指数的）
+/// </summary>
+internal static class DifficultyScoreWeights
+{
+    public static int GetScore(AchievementDifficulty difficulty) => difficulty switch
+    {
+        AchievementDifficulty.Easy => 1,
+        AchievementDifficulty.Medium => 2,
+        AchievementDifficulty.Hard => 4,
+        _ => 1
+    };
+}
 
 /// <summary>
 /// 実績（Achievement）関連のサービス
 /// </summary>
 /// <remarks>
-/// ユーザーの実績取得、コレクション一覧、通知済みマークなどを管理します。
+/// ユーザーの実績取得、コレクション一覧、通知済みマーク、ランキングなどを管理します。
 /// </remarks>
 public class AchievementService
 {
@@ -320,5 +336,198 @@ public class AchievementService
             default:
                 return false;
         }
+    }
+
+    /// <summary>
+    /// バッジ獲得ランキングを取得
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="workspaceId">ワークスペースID（null の場合は組織全体）</param>
+    /// <param name="topN">取得件数（デフォルト: 3）</param>
+    /// <returns>ランキングレスポンス（組織設定により空の場合あり）</returns>
+    public async Task<AchievementRankingResponse> GetRankingAsync(
+        int organizationId,
+        int? workspaceId = null,
+        int topN = 3)
+    {
+        // 組織設定を取得してランキング表示可否をチェック
+        var orgSetting = await _context.OrganizationSettings
+            .FirstOrDefaultAsync(os => os.OrganizationId == organizationId);
+
+        // Gamification が無効の場合は空を返す
+        if (orgSetting == null || !orgSetting.GamificationEnabled)
+        {
+            return new AchievementRankingResponse
+            {
+                DifficultyRanking = [],
+                CountRanking = [],
+                GrowthRanking = []
+            };
+        }
+
+        // GamificationBadgeVisibility に基づく表示制御
+        // - ダッシュボード（workspaceId = null）: Organization の場合のみ表示
+        // - ワークスペース（workspaceId != null）: Organization または Workspace の場合のみ表示
+        var visibility = orgSetting.GamificationBadgeVisibility;
+        if (workspaceId == null)
+        {
+            // ダッシュボード: Organization のみ許可
+            if (visibility != BadgeVisibility.Organization)
+            {
+                return new AchievementRankingResponse
+                {
+                    DifficultyRanking = [],
+                    CountRanking = [],
+                    GrowthRanking = []
+                };
+            }
+        }
+        else
+        {
+            // ワークスペース: Organization または Workspace のみ許可
+            if (visibility == BadgeVisibility.Private)
+            {
+                return new AchievementRankingResponse
+                {
+                    DifficultyRanking = [],
+                    CountRanking = [],
+                    GrowthRanking = []
+                };
+            }
+        }
+
+        // 対象ユーザーを取得（BadgeVisibility が Private でないユーザー）
+        var targetUsersQuery = _context.Users
+            .Where(u => u.IsActive && u.OrganizationId == organizationId)
+            .Include(u => u.Setting)
+            .Where(u => u.Setting == null || u.Setting.BadgeVisibility != BadgeVisibility.Private);
+
+        // ワークスペース指定がある場合はメンバーに絞る
+        if (workspaceId.HasValue)
+        {
+            targetUsersQuery = targetUsersQuery
+                .Where(u => _context.WorkspaceUsers.Any(wu =>
+                    wu.UserId == u.Id && wu.WorkspaceId == workspaceId.Value));
+        }
+
+        var targetUserIds = await targetUsersQuery.Select(u => u.Id).ToListAsync();
+
+        if (targetUserIds.Count == 0)
+        {
+            return new AchievementRankingResponse
+            {
+                DifficultyRanking = [],
+                CountRanking = [],
+                GrowthRanking = []
+            };
+        }
+
+        // ユーザーごとの実績データを取得（通知済みのみ）
+        var userAchievements = await _context.UserAchievements
+            .Where(ua => targetUserIds.Contains(ua.UserId) && ua.IsNotified)
+            .Include(ua => ua.AchievementMaster)
+            .Include(ua => ua.User)
+            .Where(ua => ua.AchievementMaster != null && ua.AchievementMaster.IsActive)
+            .ToListAsync();
+
+        // ユーザーごとに集計
+        var userStats = userAchievements
+            .GroupBy(ua => ua.UserId)
+            .Select(g =>
+            {
+                var user = g.First().User!;
+                var achievements = g.ToList();
+                var badgeCount = achievements.Count;
+
+                // 難易度スコア（指数的重み付け）
+                var difficultyScore = achievements.Sum(ua =>
+                    DifficultyScoreWeights.GetScore(ua.AchievementMaster!.Difficulty));
+
+                // 成長速度スコア計算
+                // 最初のバッジ取得日〜最新バッジ取得日の期間
+                var firstEarned = achievements.Min(ua => ua.EarnedAt);
+                var lastEarned = achievements.Max(ua => ua.EarnedAt);
+                var activeDays = Math.Max(1, (lastEarned - firstEarned).Days + 1);
+                var growthScore = badgeCount >= 2
+                    ? Math.Round((decimal)badgeCount / activeDays * 100, 2)
+                    : 0m; // バッジ1個以下は成長速度計算対象外
+
+                return new
+                {
+                    UserId = user.Id,
+                    UserLoginId = user.LoginId,
+                    DisplayName = user.Username,
+                    AvatarUrl = IdentityIconHelper.GetIdentityIconUrl(
+                        user.AvatarType,
+                        user.Id,
+                        user.Username,
+                        user.Email,
+                        user.UserAvatarPath,
+                        80
+                    ),
+                    BadgeCount = badgeCount,
+                    DifficultyScore = difficultyScore,
+                    GrowthScore = growthScore
+                };
+            })
+            .ToList();
+
+        // 難易度ランキング
+        var difficultyRanking = userStats
+            .Where(u => u.DifficultyScore > 0)
+            .OrderByDescending(u => u.DifficultyScore)
+            .ThenByDescending(u => u.BadgeCount)
+            .Take(topN)
+            .Select((u, index) => new RankingItemDto
+            {
+                Rank = index + 1,
+                UserId = u.UserLoginId,
+                DisplayName = u.DisplayName,
+                AvatarUrl = u.AvatarUrl,
+                Score = u.DifficultyScore,
+                BadgeCount = u.BadgeCount
+            })
+            .ToList();
+
+        // 取得数ランキング
+        var countRanking = userStats
+            .Where(u => u.BadgeCount > 0)
+            .OrderByDescending(u => u.BadgeCount)
+            .ThenByDescending(u => u.DifficultyScore)
+            .Take(topN)
+            .Select((u, index) => new RankingItemDto
+            {
+                Rank = index + 1,
+                UserId = u.UserLoginId,
+                DisplayName = u.DisplayName,
+                AvatarUrl = u.AvatarUrl,
+                Score = u.BadgeCount,
+                BadgeCount = u.BadgeCount
+            })
+            .ToList();
+
+        // 成長速度ランキング（バッジ2個以上取得者のみ）
+        var growthRanking = userStats
+            .Where(u => u.GrowthScore > 0)
+            .OrderByDescending(u => u.GrowthScore)
+            .ThenByDescending(u => u.BadgeCount)
+            .Take(topN)
+            .Select((u, index) => new RankingItemDto
+            {
+                Rank = index + 1,
+                UserId = u.UserLoginId,
+                DisplayName = u.DisplayName,
+                AvatarUrl = u.AvatarUrl,
+                Score = u.GrowthScore,
+                BadgeCount = u.BadgeCount
+            })
+            .ToList();
+
+        return new AchievementRankingResponse
+        {
+            DifficultyRanking = difficultyRanking,
+            CountRanking = countRanking,
+            GrowthRanking = growthRanking
+        };
     }
 }

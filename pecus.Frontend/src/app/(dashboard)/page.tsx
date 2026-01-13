@@ -1,5 +1,6 @@
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
+  AchievementRankingResponse,
   DashboardHelpCommentsResponse,
   DashboardHotItemsResponse,
   DashboardHotWorkspacesResponse,
@@ -23,6 +24,7 @@ export default async function Dashboard() {
   let hotItems: DashboardHotItemsResponse | null = null;
   let hotWorkspaces: DashboardHotWorkspacesResponse | null = null;
   let helpComments: DashboardHelpCommentsResponse | null = null;
+  let badgeRanking: AchievementRankingResponse | null = null;
   let fetchError: string | null = null;
 
   try {
@@ -38,6 +40,7 @@ export default async function Dashboard() {
       hotItemsRes,
       hotWorkspacesRes,
       helpCommentsRes,
+      badgeRankingRes,
     ] = await Promise.allSettled([
       api.dashboard.getApiDashboardSummary(),
       api.dashboard.getApiDashboardTasksByPriority(),
@@ -47,6 +50,7 @@ export default async function Dashboard() {
       api.dashboard.getApiDashboardHotItems('1week', 5),
       api.dashboard.getApiDashboardHotWorkspaces('1week', 5),
       api.dashboard.getApiDashboardHelpComments(),
+      api.achievement.getApiAchievementsRanking(),
     ]);
 
     // 結果を取得（エラーの場合はnull）
@@ -58,6 +62,7 @@ export default async function Dashboard() {
     hotItems = hotItemsRes.status === 'fulfilled' ? hotItemsRes.value : null;
     hotWorkspaces = hotWorkspacesRes.status === 'fulfilled' ? hotWorkspacesRes.value : null;
     helpComments = helpCommentsRes.status === 'fulfilled' ? helpCommentsRes.value : null;
+    badgeRanking = badgeRankingRes.status === 'fulfilled' ? badgeRankingRes.value : null;
 
     // いずれかの取得に失敗した場合はログに残す
     if (summaryRes.status === 'rejected') {
@@ -84,6 +89,9 @@ export default async function Dashboard() {
     if (helpCommentsRes.status === 'rejected') {
       console.error('Dashboard: failed to fetch help comments', helpCommentsRes.reason);
     }
+    if (badgeRankingRes.status === 'rejected') {
+      console.error('Dashboard: failed to fetch badge ranking', badgeRankingRes.reason);
+    }
   } catch (error) {
     console.error('Dashboard: failed to fetch dashboard data', error);
     fetchError = 'ダッシュボードデータの取得に失敗しました';
@@ -100,6 +108,7 @@ export default async function Dashboard() {
       hotItems={hotItems}
       hotWorkspaces={hotWorkspaces}
       helpComments={helpComments}
+      badgeRanking={badgeRanking}
     />
   );
 }

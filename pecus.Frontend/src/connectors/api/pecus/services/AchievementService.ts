@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { AchievementCollectionResponse } from '../models/AchievementCollectionResponse';
+import type { AchievementRankingResponse } from '../models/AchievementRankingResponse';
 import type { NewAchievementResponse } from '../models/NewAchievementResponse';
 import type { UserAchievementResponse } from '../models/UserAchievementResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -87,6 +88,33 @@ export class AchievementService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/achievements/me/notify-all',
+            errors: {
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * バッジ獲得ランキングを取得
+     * 組織全体またはワークスペース内のバッジ獲得ランキングを取得します。
+     * 3種類のランキングを返します:
+     * - 難易度ランカー: 難しいバッジを多く取得している人
+     * - 取得数ランカー: バッジ総数が多い人
+     * - 成長速度ランカー: 期間あたりの取得効率が高い人
+     *
+     * BadgeVisibility が Private のユーザーはランキングから除外されます。
+     * @param workspaceId ワークスペースID（指定しない場合は組織全体）
+     * @returns AchievementRankingResponse OK
+     * @throws ApiError
+     */
+    public static getApiAchievementsRanking(
+        workspaceId?: number,
+    ): CancelablePromise<AchievementRankingResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/achievements/ranking',
+            query: {
+                'workspaceId': workspaceId,
+            },
             errors: {
                 500: `Internal Server Error`,
             },

@@ -1,3 +1,4 @@
+export { default as BadgeRankingCard } from './BadgeRankingCard';
 export { default as HelpCommentsCard } from './HelpCommentsCard.server';
 export { default as HotItemsCard } from './HotItemsCard.server';
 export { default as HotWorkspacesCard } from './HotWorkspacesCard.server';

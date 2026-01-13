@@ -10,6 +10,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export type { AchievementCategory } from './models/AchievementCategory';
 export type { AchievementCollectionResponse } from './models/AchievementCollectionResponse';
 export type { AchievementDifficulty } from './models/AchievementDifficulty';
+export type { AchievementRankingResponse } from './models/AchievementRankingResponse';
 export type { ActivityActionType } from './models/ActivityActionType';
 export type { ActivityPeriod } from './models/ActivityPeriod';
 export type { ActivityResponse } from './models/ActivityResponse';
@@ -158,6 +159,7 @@ export type { PendingEmailChangeResponse } from './models/PendingEmailChangeResp
 export type { PredecessorTaskInfo } from './models/PredecessorTaskInfo';
 export type { PriorityTaskCount } from './models/PriorityTaskCount';
 export type { ProblemDetails } from './models/ProblemDetails';
+export type { RankingItemDto } from './models/RankingItemDto';
 export type { RefreshRequest } from './models/RefreshRequest';
 export type { RefreshResponse } from './models/RefreshResponse';
 export type { RelatedItemInfo } from './models/RelatedItemInfo';

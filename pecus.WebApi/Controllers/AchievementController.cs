@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Models.Responses.Achievement;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -111,5 +112,31 @@ public class AchievementController : BaseSecureController
     {
         await _achievementService.MarkAllAsNotifiedAsync(CurrentUserId);
         return TypedResults.NoContent();
+    }
+
+    /// <summary>
+    /// バッジ獲得ランキングを取得
+    /// </summary>
+    /// <remarks>
+    /// 組織全体またはワークスペース内のバッジ獲得ランキングを取得します。
+    /// 3種類のランキングを返します:
+    /// - 難易度ランカー: 難しいバッジを多く取得している人
+    /// - 取得数ランカー: バッジ総数が多い人
+    /// - 成長速度ランカー: 期間あたりの取得効率が高い人
+    ///
+    /// BadgeVisibility が Private のユーザーはランキングから除外されます。
+    /// </remarks>
+    /// <param name="workspaceId">ワークスペースID（指定しない場合は組織全体）</param>
+    /// <returns>ランキングレスポンス</returns>
+    [HttpGet("ranking")]
+    [ProducesResponseType(typeof(AchievementRankingResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<AchievementRankingResponse>> GetRanking([FromQuery] int? workspaceId = null)
+    {
+        var response = await _achievementService.GetRankingAsync(
+            CurrentOrganizationId,
+            workspaceId
+        );
+        return TypedResults.Ok(response);
     }
 }
