@@ -191,7 +191,7 @@ export default function UserBadgesPopover({ isOpen, onClose, userId, userName, a
       {/* ポップオーバー本体 */}
       <div
         ref={popoverRef}
-        className="z-50 bg-base-100 rounded-box shadow-xl w-[400px] max-h-[70vh] flex flex-col border border-base-300"
+        className="z-50 bg-base-100 rounded-box shadow-xl w-100 max-h-[70vh] flex flex-col border border-base-300"
         style={getPopoverStyle()}
         role="dialog"
         aria-modal="true"

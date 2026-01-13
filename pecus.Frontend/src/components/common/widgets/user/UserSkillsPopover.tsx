@@ -151,7 +151,7 @@ export default function UserSkillsPopover({ isOpen, onClose, userId, userName, a
       {/* ポップオーバー本体 */}
       <div
         ref={popoverRef}
-        className="z-50 bg-base-100 rounded-box shadow-xl w-[360px] max-h-[60vh] flex flex-col border border-base-300"
+        className="z-50 bg-base-100 rounded-box shadow-xl w-90 max-h-[60vh] flex flex-col border border-base-300"
         style={getPopoverStyle()}
         role="dialog"
         aria-modal="true"
