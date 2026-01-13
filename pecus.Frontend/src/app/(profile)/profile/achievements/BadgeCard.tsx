@@ -93,14 +93,23 @@ export default function BadgeCard({ achievement }: BadgeCardProps) {
 
       {/* 詳細モーダル */}
       {showDetail && (
-        <div className="modal modal-open" onClick={() => setShowDetail(false)} onKeyDown={() => {}}>
-          <div className="modal-box max-w-sm" onClick={(e) => e.stopPropagation()} onKeyDown={() => {}}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShowDetail(false)}
+          onKeyDown={() => {}}
+        >
+          <div
+            className="bg-base-100 rounded-box shadow-xl w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={() => {}}
+          >
             <button
               type="button"
               className="btn btn-sm btn-circle btn-secondary absolute right-2 top-2"
               onClick={() => setShowDetail(false)}
+              aria-label="閉じる"
             >
-              <span className="icon-[mdi--close]" />
+              <span className="icon-[mdi--close]" aria-hidden="true" />
             </button>
 
             <div className="flex flex-col items-center gap-4">
