@@ -467,38 +467,36 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                 </button>
               </div>
 
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold">アイテム一覧</h3>
-                  <button
-                    type="button"
-                    onClick={() => refreshItems()}
-                    className="btn btn-text btn-xs"
-                    title="一覧を更新"
-                  >
-                    <span className="icon-[mdi--refresh] w-4 h-4" aria-hidden="true" />
-                  </button>
-                  {currentWorkspace?.mode === 'Document' && (
-                    <div className="join">
-                      <button
-                        type="button"
-                        className={`btn btn-xs join-item ${viewMode === 'list' ? 'btn-active btn-primary' : 'btn-secondary'}`}
-                        onClick={() => setViewMode('list')}
-                        title="リスト表示"
-                      >
-                        <span className="icon-[mdi--format-list-bulleted] w-4 h-4" aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        className={`btn btn-xs join-item ${viewMode === 'tree' ? 'btn-active btn-primary' : 'btn-secondary'}`}
-                        onClick={() => setViewMode('tree')}
-                        title="ツリー表示"
-                      >
-                        <span className="icon-[mdi--file-tree-outline] w-4 h-4" aria-hidden="true" />
-                      </button>
-                    </div>
-                  )}
-                </div>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-lg font-bold">アイテム一覧</h3>
+                <span className="text-xs text-base-content/70">
+                  {searchQuery ? `${items.length} 件（検索結果）` : `${totalCount} 件`}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <button type="button" onClick={() => refreshItems()} className="btn btn-text btn-xs" title="一覧を更新">
+                  <span className="icon-[mdi--refresh] w-4 h-4" aria-hidden="true" />
+                </button>
+                {currentWorkspace?.mode === 'Document' && (
+                  <div className="join">
+                    <button
+                      type="button"
+                      className={`btn btn-xs join-item ${viewMode === 'list' ? 'btn-active btn-primary' : 'btn-secondary'}`}
+                      onClick={() => setViewMode('list')}
+                      title="リスト表示"
+                    >
+                      <span className="icon-[mdi--format-list-bulleted] w-4 h-4" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn btn-xs join-item ${viewMode === 'tree' ? 'btn-active btn-primary' : 'btn-secondary'}`}
+                      onClick={() => setViewMode('tree')}
+                      title="ツリー表示"
+                    >
+                      <span className="icon-[mdi--file-tree-outline] w-4 h-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => {
@@ -509,16 +507,13 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                     setSelectedItemId('new');
                     onCreateNew?.();
                   }}
-                  className="btn btn-primary btn-sm gap-1"
+                  className="btn btn-primary btn-sm gap-1 ml-auto"
                   title="アイテムを追加"
                 >
                   <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
                   <span>追加</span>
                 </button>
               </div>
-              <p className="text-xs text-base-content/70 mb-3">
-                {searchQuery ? `${items.length} 件（検索結果）` : `${totalCount} 件`}
-              </p>
 
               {/* 検索ボックス */}
               {(currentWorkspace?.mode !== 'Document' || viewMode === 'list') && (
