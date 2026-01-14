@@ -237,7 +237,7 @@ export default function UserBadgesPopover({ isOpen, onClose, userId, userName, a
                   <button
                     key={badge.id}
                     type="button"
-                    className="card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer"
+                    className="card bg-base-200 hover:bg-base-content/10 transition-colors cursor-pointer"
                     onClick={() => setSelectedBadge(badge)}
                     title={badge.description}
                   >
