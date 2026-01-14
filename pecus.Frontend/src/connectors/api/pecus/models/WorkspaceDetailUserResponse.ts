@@ -32,5 +32,9 @@ export type WorkspaceDetailUserResponse = {
      * 最終ログイン日時
      */
     lastLoginAt?: string | null;
+    /**
+     * 自分自身のユーザーかどうか
+     */
+    isMe?: boolean;
 };
 

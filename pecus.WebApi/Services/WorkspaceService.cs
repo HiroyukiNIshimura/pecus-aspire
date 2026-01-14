@@ -1006,6 +1006,7 @@ public class WorkspaceService
                 WorkspaceRole = wu.WorkspaceRole,
                 IsActive = wu.User.IsActive,
                 LastLoginAt = wu.User.LastLoginAt,
+                IsMe = currentUserId.HasValue && wu.User.Id == currentUserId.Value,
             })
             .ToList();
 

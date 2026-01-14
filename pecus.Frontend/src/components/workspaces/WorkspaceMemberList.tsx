@@ -27,6 +27,8 @@ export interface MemberItem {
   isActive?: boolean;
   /** 最終ログイン日時 */
   lastLoginAt?: string | null;
+  /** 自分自身のユーザーかどうか */
+  isMe?: boolean;
 }
 
 /** メンバー情報からユーザーIDを取得 */

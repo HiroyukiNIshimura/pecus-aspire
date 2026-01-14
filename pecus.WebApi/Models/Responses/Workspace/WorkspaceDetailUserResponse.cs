@@ -41,4 +41,9 @@ public class WorkspaceDetailUserResponse
     /// 最終ログイン日時
     /// </summary>
     public DateTime? LastLoginAt { get; set; }
+
+    /// <summary>
+    /// 自分自身のユーザーかどうか
+    /// </summary>
+    public bool IsMe { get; set; }
 }

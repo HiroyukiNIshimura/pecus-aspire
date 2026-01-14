@@ -53,14 +53,19 @@ export default function MemberCard({
   const memberName = getMemberName(member);
   const config = roleConfig[member.workspaceRole || 'Viewer'] || roleConfig.Viewer;
 
+  // ボーダースタイルの決定: ハイライト > 自分 > デフォルト
+  const getBorderStyle = () => {
+    if (isHighlighted) {
+      return 'bg-primary/20 ring-2 ring-primary ring-offset-1 animate-pulse border-primary';
+    }
+    if (member.isMe) {
+      return 'bg-base-100 border-success/40';
+    }
+    return 'bg-base-100 border-base-content/20';
+  };
+
   return (
-    <div
-      className={`flex items-center gap-3 p-3 rounded border transition-all duration-500 ${
-        isHighlighted
-          ? 'bg-primary/20 ring-2 ring-primary ring-offset-1 animate-pulse border-primary'
-          : 'bg-base-100 border-base-content/20'
-      }`}
-    >
+    <div className={`flex items-center gap-3 p-3 rounded border transition-all duration-500 ${getBorderStyle()}`}>
       {/* アイコン */}
       {onIconClick ? (
         <button

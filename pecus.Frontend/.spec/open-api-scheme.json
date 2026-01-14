@@ -21813,6 +21813,10 @@
             "description": "最終ログイン日時",
             "format": "date-time",
             "nullable": true
+          },
+          "isMe": {
+            "type": "boolean",
+            "description": "自分自身のユーザーかどうか"
           }
         },
         "description": "ワークスペース詳細取得用ユーザー情報"
