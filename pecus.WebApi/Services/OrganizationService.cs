@@ -80,6 +80,9 @@ public class OrganizationService
                 GenerativeApiVendor = GenerativeApiVendor.None,
                 GenerativeApiKey = null,
                 Plan = OrganizationPlan.Free,
+                GamificationEnabled = true,
+                GamificationAllowUserOverride = true,
+                GamificationBadgeVisibility = BadgeVisibility.Workspace,
                 UpdatedAt = DateTimeOffset.UtcNow,
                 UpdatedByUserId = null,
             };
