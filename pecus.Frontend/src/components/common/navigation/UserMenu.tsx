@@ -1,8 +1,8 @@
 'use client';
 
 import { logout } from '@/actions/auth';
+import AvatarImage from '@/components/common/widgets/user/AvatarImage';
 import type { CurrentUserInfo } from '@/connectors/api/pecus';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface UserMenuProps {
   userInfo: CurrentUserInfo | null;
@@ -34,17 +34,17 @@ export default function UserMenu({
   return (
     <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end]">
       <button type="button" className="dropdown-toggle btn btn-text btn-circle p-0">
-        <div className="avatar">
-          <div className="mask mask-circle size-8 ring-0 hover:ring-2 hover:ring-primary transition-all">
-            {userInfo?.identityIconUrl ? (
-              <img src={getDisplayIconUrl(userInfo.identityIconUrl)} alt={userInfo.username || 'User Avatar'} />
-            ) : (
-              <div className="w-full h-full bg-primary flex items-center justify-center text-primary-content font-bold">
-                {userInfo?.username?.charAt(0).toUpperCase() || 'U'}
-              </div>
-            )}
-          </div>
-        </div>
+        <AvatarImage
+          src={userInfo?.identityIconUrl}
+          alt={userInfo?.username || 'User Avatar'}
+          size={32}
+          className="ring-0 hover:ring-2 hover:ring-primary transition-all"
+          fallback={
+            <div className="w-full h-full bg-primary flex items-center justify-center text-primary-content font-bold">
+              {userInfo?.username?.charAt(0).toUpperCase() || 'U'}
+            </div>
+          }
+        />
       </button>
       <ul className="dropdown-menu dropdown-open:opacity-100 hidden">
         {!hideProfileMenu && (

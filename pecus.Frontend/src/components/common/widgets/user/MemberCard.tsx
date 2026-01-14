@@ -2,7 +2,7 @@
 
 import type { MemberItem } from '@/components/workspaces/WorkspaceMemberList';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
+import AvatarImage from './AvatarImage';
 
 /**
  * ロールの表示設定
@@ -67,62 +67,13 @@ export default function MemberCard({
   return (
     <div className={`flex items-center gap-3 p-3 rounded border transition-all duration-500 ${getBorderStyle()}`}>
       {/* アイコン */}
-      {onIconClick ? (
-        <button
-          type="button"
-          className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded-full"
-          onClick={() => onIconClick(memberId, memberName)}
-          aria-label={`${memberName}のプロフィールを表示`}
-        >
-          {member.identityIconUrl ? (
-            <img
-              src={getDisplayIconUrl(member.identityIconUrl)}
-              alt={memberName || 'ユーザー'}
-              className="w-10 h-10 mask mask-circle object-cover cursor-pointer hover:opacity-80 transition-opacity"
-            />
-          ) : (
-            <div className="w-10 h-10 mask mask-circle bg-base-300 flex items-center justify-center cursor-pointer hover:bg-base-200 transition-colors">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-base-content/40"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            </div>
-          )}
-        </button>
-      ) : member.identityIconUrl ? (
-        <img
-          src={getDisplayIconUrl(member.identityIconUrl)}
-          alt={memberName || 'ユーザー'}
-          className="w-10 h-10 mask mask-circle object-cover flex-shrink-0"
-        />
-      ) : (
-        <div className="w-10 h-10 mask mask-circle bg-base-300 flex items-center justify-center flex-shrink-0">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-base-content/40"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        </div>
-      )}
+      <AvatarImage
+        src={member.identityIconUrl}
+        alt={memberName || 'ユーザー'}
+        size={40}
+        clickable={!!onIconClick}
+        onClick={onIconClick ? () => onIconClick(memberId, memberName) : undefined}
+      />
 
       {/* ユーザー情報 */}
       <div className="min-w-0 flex-1">

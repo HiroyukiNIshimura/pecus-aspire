@@ -16,19 +16,29 @@ export interface AvatarImageProps {
   clickable?: boolean;
   /** クリック時のコールバック */
   onClick?: () => void;
+  /** 画像がない場合のfallbackコンテンツ（指定しない場合はデフォルトアイコン） */
+  fallback?: React.ReactNode;
+  /** 内側divへの追加クラス（hover:ring-2など） */
+  className?: string;
 }
 
 /**
  * FlyonUI avatar構造を使用したアバター画像コンポーネント
  * Gravatarなど円形画像でも境界線が見えない
  */
-export default function AvatarImage({ src, alt = 'avatar', size = 20, clickable = false, onClick }: AvatarImageProps) {
+export default function AvatarImage({
+  src,
+  alt = 'avatar',
+  size = 20,
+  clickable = false,
+  onClick,
+  fallback,
+  className,
+}: AvatarImageProps) {
   const displayUrl = src ? getDisplayIconUrl(src) : null;
 
-  // 画像またはプレースホルダー
-  const content = displayUrl ? (
-    <img src={displayUrl} alt={alt} />
-  ) : (
+  // デフォルトのプレースホルダーアイコン
+  const defaultFallback = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="text-base-content/40"
@@ -46,7 +56,11 @@ export default function AvatarImage({ src, alt = 'avatar', size = 20, clickable 
     </svg>
   );
 
-  const innerClassName = `rounded-full ${!displayUrl ? 'bg-base-300 flex items-center justify-center' : ''} ${clickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`;
+  // 画像またはfallback
+  const content = displayUrl ? <img src={displayUrl} alt={alt} /> : (fallback ?? defaultFallback);
+
+  const innerClassName =
+    `rounded-full ${!displayUrl ? 'bg-base-300 flex items-center justify-center' : ''} ${clickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''} ${className ?? ''}`.trim();
 
   if (onClick) {
     return (

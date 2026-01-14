@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
+import AvatarImage from '@/components/common/widgets/user/AvatarImage';
 import UserBadgesPopover from '@/components/common/widgets/user/UserBadgesPopover';
 import type { AchievementRankingResponse, RankingItemDto } from '@/connectors/api/pecus';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 /**
  * ランキング種別
@@ -164,7 +164,7 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
 
                       {/* アバター */}
                       <div className="flex-shrink-0">
-                        <img src={getDisplayIconUrl(item.avatarUrl)} alt="" className="w-8 h-8 mask mask-circle" />
+                        <AvatarImage src={item.avatarUrl} alt="" size={32} />
                       </div>
 
                       {/* ユーザー情報 */}

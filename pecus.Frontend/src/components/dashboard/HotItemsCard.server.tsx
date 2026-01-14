@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
+import AvatarImage from '@/components/common/widgets/user/AvatarImage';
 import type { DashboardHotItemsResponse } from '@/connectors/api/pecus';
 import { formatRelativeTime } from '@/libs/utils/date';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface HotItemsCardProps {
   /** ホットアイテムデータ */
@@ -85,18 +85,17 @@ export default function HotItemsCard({ data }: HotItemsCardProps) {
                   </div>
                   {/* 最終アクター情報 */}
                   <div className="flex items-center gap-1.5 mt-1.5 ml-6 text-xs text-base-content/60">
-                    {item.lastActorAvatar ? (
-                      <img
-                        src={getDisplayIconUrl(item.lastActorAvatar)}
-                        alt=""
-                        className="w-4 h-4 mask mask-circle flex-shrink-0"
-                      />
-                    ) : (
-                      <span
-                        className="icon-[mdi--account-circle] w-4 h-4 flex-shrink-0 opacity-60"
-                        aria-hidden="true"
-                      />
-                    )}
+                    <AvatarImage
+                      src={item.lastActorAvatar}
+                      alt=""
+                      size={16}
+                      fallback={
+                        <span
+                          className="icon-[mdi--account-circle] w-4 h-4 flex-shrink-0 opacity-60"
+                          aria-hidden="true"
+                        />
+                      }
+                    />
                     <span className="truncate">
                       {item.lastActorName || 'システム'}が{formatRelativeTime(item.lastActivityAt)}に
                       {item.lastActionLabel || '更新'}
