@@ -410,6 +410,7 @@ public partial class DeveloperAtoms
 
         var workspaceIds = await _context.Workspaces
             .Where(w => _targetOrganizationIds.Contains(w.OrganizationId))
+            .OrderBy(w => w.Id)
             .Select(w => w.Id)
             .Take(5)
             .ToListAsync();

@@ -66,8 +66,8 @@ public partial class DeveloperAtoms : BaseSeedAtoms
             await SeedOrganizationSettingsAsync();
             await SeedBotsAsync();
             await _seedAtoms.SeedSkillsAsync(_context);
-            await SeedTagsAsync();
             await SeedUsersAsync();
+            await SeedTagsAsync();  // SeedUsersAsync の後に移動（タグ作成にはユーザーIDが必要）
             await SeedChatActorsAsync();
             await SeedUserSettingsAsync();
             await SeedUserSkillsAsync();
@@ -307,9 +307,14 @@ public partial class DeveloperAtoms : BaseSeedAtoms
         var chatActorsToAdd = new List<ChatActor>();
 
         // 1. ChatActor が未作成のユーザーを取得して作成
-        var usersWithoutActor = await _context.Users
-            .Where(u => u.OrganizationId != null && !_context.ChatActors.Any(a => a.UserId == u.Id))
-            .ToListAsync();
+        // _targetOrganizationIdsが設定されている場合はその組織に所属するユーザーのみを対象とする
+        var userQuery = _context.Users
+            .Where(u => u.OrganizationId != null && !_context.ChatActors.Any(a => a.UserId == u.Id));
+        if (_targetOrganizationIds.Any())
+        {
+            userQuery = userQuery.Where(u => _targetOrganizationIds.Contains(u.OrganizationId!.Value));
+        }
+        var usersWithoutActor = await userQuery.ToListAsync();
 
         foreach (var user in usersWithoutActor)
         {
@@ -325,9 +330,14 @@ public partial class DeveloperAtoms : BaseSeedAtoms
         }
 
         // 2. ChatActor が未作成のボットを取得して作成
-        var botsWithoutActor = await _context.Bots
-            .Where(b => !_context.ChatActors.Any(a => a.BotId == b.Id))
-            .ToListAsync();
+        // _targetOrganizationIdsが設定されている場合はその組織のボットのみを対象とする
+        var botQuery = _context.Bots
+            .Where(b => !_context.ChatActors.Any(a => a.BotId == b.Id));
+        if (_targetOrganizationIds.Any())
+        {
+            botQuery = botQuery.Where(b => _targetOrganizationIds.Contains(b.OrganizationId));
+        }
+        var botsWithoutActor = await botQuery.ToListAsync();
 
         foreach (var bot in botsWithoutActor)
         {
@@ -369,7 +379,13 @@ public partial class DeveloperAtoms : BaseSeedAtoms
     /// </summary>
     public new async Task SeedUserSettingsAsync()
     {
-        var users = await _context.Users.ToListAsync();
+        // _targetOrganizationIdsが設定されている場合はその組織に所属するユーザーのみを対象とする
+        var query = _context.Users.AsQueryable();
+        if (_targetOrganizationIds.Any())
+        {
+            query = query.Where(u => u.OrganizationId != null && _targetOrganizationIds.Contains(u.OrganizationId.Value));
+        }
+        var users = await query.ToListAsync();
         if (!users.Any())
         {
             return;
@@ -601,10 +617,23 @@ public partial class DeveloperAtoms : BaseSeedAtoms
 
         _context.ChangeTracker.Clear();
 
-        var organizations = await _context.Organizations.ToListAsync();
-        var workspaces = await _context.Workspaces
+        // _targetOrganizationIdsが設定されている場合はその組織のみを対象とする
+        var orgQuery = _context.Organizations.AsQueryable();
+        if (_targetOrganizationIds.Any())
+        {
+            orgQuery = orgQuery.Where(o => _targetOrganizationIds.Contains(o.Id));
+        }
+        var organizations = await orgQuery.ToListAsync();
+
+        // _targetOrganizationIdsが設定されている場合はその組織のワークスペースのみを対象とする
+        var wsQuery = _context.Workspaces
             .Include(w => w.WorkspaceUsers)
-            .ToListAsync();
+            .AsQueryable();
+        if (_targetOrganizationIds.Any())
+        {
+            wsQuery = wsQuery.Where(w => _targetOrganizationIds.Contains(w.OrganizationId));
+        }
+        var workspaces = await wsQuery.ToListAsync();
 
         // 組織ごとのユーザーを取得
         var usersByOrganization = await _context.Users
