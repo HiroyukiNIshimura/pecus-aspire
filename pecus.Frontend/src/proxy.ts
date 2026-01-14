@@ -18,6 +18,12 @@ import { NextResponse } from 'next/server';
 const SESSION_COOKIE_KEY = 'sessionId';
 
 /**
+ * セッションをクリアしてそのままページを表示するパス
+ * パスワード設定・リセットは新規/別ユーザー向けなので、既存セッションは破棄する
+ */
+const sessionClearPaths = ['/password-setup', '/password-reset'];
+
+/**
  * キャッシュ無効化ヘッダーを設定
  */
 function setNoCacheHeaders(response: NextResponse): void {
@@ -50,8 +56,24 @@ function redirectToSignIn(request: NextRequest): NextResponse {
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // セッションクリアが必要なパスの処理（パスワード設定・リセット）
+  // 別ユーザーでログイン中でもパスワード設定画面を表示できるようにする
+  if (sessionClearPaths.some((path) => pathname.startsWith(path))) {
+    const sessionId = request.cookies.get(SESSION_COOKIE_KEY)?.value;
+    if (sessionId) {
+      // セッション Cookie が存在する場合は削除してページを表示
+      console.log(`[Proxy] Clearing session for ${pathname}`);
+      const response = NextResponse.next();
+      response.cookies.delete(SESSION_COOKIE_KEY);
+      setNoCacheHeaders(response);
+      return response;
+    }
+    // セッションがなければそのまま表示
+    return NextResponse.next();
+  }
+
   // 認証不要なパス（公開ページ）
-  const publicPaths = ['/signin', '/signup', '/forgot-password', '/password-reset', '/password-setup', '/error-test'];
+  const publicPaths = ['/signin', '/signup', '/forgot-password', '/error-test'];
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
