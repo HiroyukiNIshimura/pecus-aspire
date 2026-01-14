@@ -1,1 +1,38 @@
-{"servers":{"aspire":{"type":"stdio","command":"aspire","args":["mcp","start"]},"playwright":{"type":"stdio","command":"npx","args":["-y","@playwright/mcp@latest"]},"MCP_DOCKER":{"command":"docker","args":["mcp","gateway","run"],"type":"stdio"}}}
+{
+	"servers": {
+		"aspire": {
+			"type": "stdio",
+			"command": "aspire",
+			"args": [
+				"mcp",
+				"start"
+			]
+		},
+		"playwright": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"@playwright/mcp@latest"
+			]
+		},
+		"MCP_DOCKER": {
+			"command": "docker",
+			"args": [
+				"mcp",
+				"gateway",
+				"run"
+			],
+			"type": "stdio"
+		},
+		"context7": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@upstash/context7-mcp@latest"
+			],
+			"type": "stdio"
+		}
+	},
+	"inputs": []
+}
