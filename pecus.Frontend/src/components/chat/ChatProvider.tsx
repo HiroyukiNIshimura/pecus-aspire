@@ -51,7 +51,7 @@ interface ChatUnreadUpdatedPayload {
  * - PC用のボトムドロワーを表示（md以上で表示、スマホは hidden）
  */
 export default function ChatProvider({ currentUserId }: ChatProviderProps) {
-  const { isDrawerOpen, setUnreadCounts } = useChatStore();
+  const { isDrawerOpen, selectedRoomId, setUnreadCounts } = useChatStore();
   const [rooms, setRooms] = useState<ChatRoomItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -102,6 +102,16 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
     }
   }, [isDrawerOpen, fetchRooms]);
 
+  // ルームが選択された時に即座に未読数をローカルでリセット
+  // SignalR イベントを待たずに UI を即座に更新
+  useEffect(() => {
+    if (selectedRoomId !== null) {
+      setRooms((prev) =>
+        prev.map((room) => (room.id === selectedRoomId ? { ...room, unreadCount: 0 } : room)),
+      );
+    }
+  }, [selectedRoomId]);
+
   // SignalR: 新メッセージ受信時に未読数を更新（チャット画面を開いている時）
   // 自分が送信したメッセージの場合は未読数を更新しない
   const handleMessageReceived = useCallback(
@@ -147,9 +157,11 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
       console.log('[ChatProvider] Fetching unread counts...');
       fetchUnreadCounts();
       // ルーム一覧も更新（新規ルームが作成された場合に対応）
-      fetchRooms();
+      if (isDrawerOpen) {
+        fetchRooms();
+      }
     },
-    [currentUserId, fetchUnreadCounts, fetchRooms],
+    [currentUserId, fetchUnreadCounts, fetchRooms, isDrawerOpen],
   );
 
   useSignalREvent<ChatUnreadUpdatedPayload>('chat:unread_updated', handleUnreadUpdated);
