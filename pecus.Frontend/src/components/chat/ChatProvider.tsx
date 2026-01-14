@@ -106,9 +106,7 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
   // SignalR イベントを待たずに UI を即座に更新
   useEffect(() => {
     if (selectedRoomId !== null) {
-      setRooms((prev) =>
-        prev.map((room) => (room.id === selectedRoomId ? { ...room, unreadCount: 0 } : room)),
-      );
+      setRooms((prev) => prev.map((room) => (room.id === selectedRoomId ? { ...room, unreadCount: 0 } : room)));
     }
   }, [selectedRoomId]);
 
