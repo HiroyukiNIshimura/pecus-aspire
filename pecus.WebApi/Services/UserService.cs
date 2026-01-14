@@ -384,6 +384,12 @@ public class UserService
                     throw new InvalidOperationException("指定されたロールIDの一部が無効です。");
                 }
 
+                // BackOfficeロールは管理者専用のため割り当て禁止
+                if (roles.Any(r => r.Name == SystemRole.BackOffice))
+                {
+                    throw new InvalidOperationException("指定されたロールIDの一部が無効です。");
+                }
+
                 // ロールを追加
                 foreach (var role in roles)
                 {
