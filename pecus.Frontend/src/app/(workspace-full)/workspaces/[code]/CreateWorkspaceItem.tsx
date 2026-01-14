@@ -333,7 +333,7 @@ export default function CreateWorkspaceItem({
                   <div className="relative">
                     {/* ローディングオーバーレイ */}
                     {isSuggestLoading && (
-                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-base-100/80 backdrop-blur-sm rounded-box">
+                      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-base-100/80 backdrop-blur-sm rounded-box">
                         <span className="loading loading-ring loading-lg text-secondary"></span>
                         <span className="mt-2 text-sm text-base-content/70">AIが本文を生成中...</span>
                         <button
@@ -346,7 +346,7 @@ export default function CreateWorkspaceItem({
                         </button>
                       </div>
                     )}
-                    <div className="overflow-auto max-h-[50vh]">
+                    <div className={`overflow-auto max-h-[50vh] ${isSuggestLoading ? 'pointer-events-none' : ''}`}>
                       <PecusNotionLikeEditor
                         onChange={handleEditorChange}
                         onEditorReady={handleEditorReady}
