@@ -66,7 +66,7 @@ public class DemoAtoms
     {
         var existingOrg = await _context.Organizations
             .Include(o => o.Users)
-            .FirstOrDefaultAsync(o => o.Code == _options.Organization.Code);
+            .FirstOrDefaultAsync(o => o.Code == _options.Organization.Code && o.IsDemo);
 
         if (existingOrg != null)
         {
