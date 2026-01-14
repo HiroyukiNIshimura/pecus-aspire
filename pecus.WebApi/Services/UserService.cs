@@ -362,6 +362,8 @@ public class UserService
             {
                 UserId = user.Id,
                 CanReceiveEmail = true,
+                CanReceiveRealtimeNotification = true,
+                BadgeVisibility = null,
                 UpdatedAt = DateTimeOffset.UtcNow,
                 UpdatedByUserId = createdByUserId,
             };

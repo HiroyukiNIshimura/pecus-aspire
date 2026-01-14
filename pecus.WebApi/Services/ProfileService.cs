@@ -731,6 +731,7 @@ public class ProfileService
                 CanReceiveRealtimeNotification = true,
                 LandingPage = null,
                 FocusScorePriority = FocusScorePriority.Deadline,
+                BadgeVisibility = null,
                 FocusTasksLimit = 5,
                 WaitingTasksLimit = 5,
             };
@@ -746,6 +747,7 @@ public class ProfileService
             FocusScorePriority = setting.FocusScorePriority,
             FocusTasksLimit = setting.FocusTasksLimit,
             WaitingTasksLimit = setting.WaitingTasksLimit,
+            BadgeVisibility = setting.BadgeVisibility,
         };
     }
 

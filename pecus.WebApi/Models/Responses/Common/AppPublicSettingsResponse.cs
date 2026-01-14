@@ -199,4 +199,10 @@ public class UserPublicSettings
     /// </summary>
     [Required]
     public int WaitingTasksLimit { get; init; }
+
+    /// <summary>
+    /// バッジの公開範囲
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<BadgeVisibility>))]
+    public BadgeVisibility? BadgeVisibility { get; init; }
 }

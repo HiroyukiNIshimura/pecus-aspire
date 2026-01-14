@@ -105,6 +105,19 @@ public class OrganizationService
             _context.Users.Add(adminUser);
             await _context.SaveChangesAsync();
 
+            // ユーザー設定を作成（初期値）
+            var adminUserSetting = new UserSetting
+            {
+                UserId = adminUser.Id,
+                CanReceiveEmail = true,
+                CanReceiveRealtimeNotification = true,
+                BadgeVisibility = null,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                UpdatedByUserId = null,
+            };
+            _context.UserSettings.Add(adminUserSetting);
+            await _context.SaveChangesAsync();
+
             // パスワード設定トークンを生成
             var token = GeneratePasswordResetToken();
             var tokenExpiresAt = DateTime.UtcNow.AddHours(24); // 24時間有効
