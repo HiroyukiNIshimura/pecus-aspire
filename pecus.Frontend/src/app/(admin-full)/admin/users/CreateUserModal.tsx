@@ -62,7 +62,8 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
       try {
         const result = await getRoles();
         if (result.success && result.data) {
-          setRoles(result.data);
+          // BackOfficeロールはバックオフィス専用のため除外
+          setRoles(result.data.filter((role) => role.name !== 'BackOffice'));
         }
       } catch {
         // エラーは無視（UIでロール一覧が空の場合に対応）
