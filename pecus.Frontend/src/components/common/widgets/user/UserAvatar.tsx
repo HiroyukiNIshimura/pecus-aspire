@@ -42,12 +42,12 @@ export default function UserAvatar({
     <img
       src={getDisplayIconUrl(identityIconUrl)}
       alt={displayName}
-      className="rounded-full object-cover flex-shrink-0"
+      className="mask mask-circle object-cover flex-shrink-0"
       style={{ width: size, height: size }}
     />
   ) : (
     <div
-      className="rounded-full bg-base-300 flex items-center justify-center flex-shrink-0"
+      className="mask mask-circle bg-base-300 flex items-center justify-center flex-shrink-0"
       style={{ width: size, height: size }}
     >
       <svg
@@ -96,12 +96,12 @@ export default function UserAvatar({
             <img
               src={getDisplayIconUrl(identityIconUrl)}
               alt={displayName}
-              className="rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+              className="mask mask-circle object-cover cursor-pointer hover:opacity-80 transition-opacity"
               style={{ width: size, height: size }}
             />
           ) : (
             <div
-              className="rounded-full bg-base-300 flex items-center justify-center cursor-pointer hover:bg-base-200 transition-colors"
+              className="mask mask-circle bg-base-300 flex items-center justify-center cursor-pointer hover:bg-base-200 transition-colors"
               style={{ width: size, height: size }}
             >
               <svg

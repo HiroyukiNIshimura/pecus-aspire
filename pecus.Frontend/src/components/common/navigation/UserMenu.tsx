@@ -35,7 +35,7 @@ export default function UserMenu({
     <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end]">
       <button type="button" className="dropdown-toggle btn btn-text btn-circle p-0">
         <div className="avatar">
-          <div className="size-8 rounded-full ring-0 hover:ring-2 hover:ring-primary transition-all">
+          <div className="mask mask-circle size-8 ring-0 hover:ring-2 hover:ring-primary transition-all">
             {userInfo?.identityIconUrl ? (
               <img src={getDisplayIconUrl(userInfo.identityIconUrl)} alt={userInfo.username || 'User Avatar'} />
             ) : (

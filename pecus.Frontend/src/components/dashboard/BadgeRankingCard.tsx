@@ -164,7 +164,7 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
 
                       {/* アバター */}
                       <div className="flex-shrink-0">
-                        <img src={getDisplayIconUrl(item.avatarUrl)} alt="" className="w-8 h-8 rounded-full" />
+                        <img src={getDisplayIconUrl(item.avatarUrl)} alt="" className="w-8 h-8 mask mask-circle" />
                       </div>
 
                       {/* ユーザー情報 */}

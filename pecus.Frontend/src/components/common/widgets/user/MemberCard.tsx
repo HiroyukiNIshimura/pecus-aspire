@@ -78,10 +78,10 @@ export default function MemberCard({
             <img
               src={getDisplayIconUrl(member.identityIconUrl)}
               alt={memberName || 'ユーザー'}
-              className="w-10 h-10 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+              className="w-10 h-10 mask mask-circle object-cover cursor-pointer hover:opacity-80 transition-opacity"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-base-300 flex items-center justify-center cursor-pointer hover:bg-base-200 transition-colors">
+            <div className="w-10 h-10 mask mask-circle bg-base-300 flex items-center justify-center cursor-pointer hover:bg-base-200 transition-colors">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 text-base-content/40"
@@ -103,10 +103,10 @@ export default function MemberCard({
         <img
           src={getDisplayIconUrl(member.identityIconUrl)}
           alt={memberName || 'ユーザー'}
-          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          className="w-10 h-10 mask mask-circle object-cover flex-shrink-0"
         />
       ) : (
-        <div className="w-10 h-10 rounded-full bg-base-300 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 mask mask-circle bg-base-300 flex items-center justify-center flex-shrink-0">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-base-content/40"

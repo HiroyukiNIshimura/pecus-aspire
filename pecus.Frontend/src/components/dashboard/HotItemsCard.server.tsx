@@ -89,7 +89,7 @@ export default function HotItemsCard({ data }: HotItemsCardProps) {
                       <img
                         src={getDisplayIconUrl(item.lastActorAvatar)}
                         alt=""
-                        className="w-4 h-4 rounded-full flex-shrink-0"
+                        className="w-4 h-4 mask mask-circle flex-shrink-0"
                       />
                     ) : (
                       <span
