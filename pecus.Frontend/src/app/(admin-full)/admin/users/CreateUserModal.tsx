@@ -37,7 +37,7 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
         setRoleError(null);
 
         const result = await createUserWithoutPassword({
-          username: data.username,
+          username: data.displayName,
           email: data.email,
           roles: selectedRoleIds,
         });
@@ -139,23 +139,24 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
           <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* ユーザー名 */}
             <div className="form-control">
-              <label htmlFor="username" className="label">
+              <label htmlFor="displayName" className="label">
                 <span className="label-text font-semibold">
                   ユーザー名 <span className="text-error">*</span>
                 </span>
               </label>
               <input
-                id="username"
-                name="username"
+                id="displayName"
+                name="displayName"
                 type="text"
                 placeholder="例：山田太郎"
-                className={`input input-bordered w-full ${shouldShowError('username') ? 'input-error' : ''}`}
-                onBlur={(e) => validateField('username', e.target.value)}
+                className={`input input-bordered w-full ${shouldShowError('displayName') ? 'input-error' : ''}`}
+                onBlur={(e) => validateField('displayName', e.target.value)}
                 disabled={isSubmitting}
+                autoComplete="off"
               />
-              {shouldShowError('username') && (
+              {shouldShowError('displayName') && (
                 <div className="label">
-                  <span className="label-text-alt text-error">{getFieldError('username')}</span>
+                  <span className="label-text-alt text-error">{getFieldError('displayName')}</span>
                 </div>
               )}
             </div>
