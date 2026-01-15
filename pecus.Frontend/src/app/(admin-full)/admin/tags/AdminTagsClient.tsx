@@ -13,13 +13,14 @@ import type { TagListItemResponse, TagStatistics } from '@/connectors/api/pecus'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
-import { useCurrentUser } from '@/providers/AppSettingsProvider';
+import { useCurrentUser, useLimitsSettings } from '@/providers/AppSettingsProvider';
 import { tagNameFilterSchema } from '@/schemas/filterSchemas';
 import CreateTagModal from './CreateTagModal';
 
 export default function AdminTagsClient() {
   const router = useRouter();
   const currentUser = useCurrentUser();
+  const { maxTagsPerOrganization } = useLimitsSettings();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tags, setTags] = useState<TagListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -210,6 +211,19 @@ export default function AdminTagsClient() {
                 <span className="icon-[mdi--tag-plus-outline] w-5 h-5" aria-hidden="true" />
                 新規作成
               </button>
+            </div>
+
+            {/* タグ上限のインフォメーション */}
+            <div className="alert alert-info mb-6">
+              <span className="icon-[mdi--information-outline] size-5" aria-hidden="true" />
+              <span>
+                タグは組織全体で最大 <strong>{maxTagsPerOrganization ?? 100}</strong> 件まで作成できます。
+                {statistics && (
+                  <>
+                    （現在 <strong>{statistics.totalTags ?? 0}</strong> 件）
+                  </>
+                )}
+              </span>
             </div>
 
             {/* Filter Section */}

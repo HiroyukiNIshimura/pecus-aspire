@@ -13,13 +13,14 @@ import type { SkillListItemResponse, SkillStatistics } from '@/connectors/api/pe
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
-import { useCurrentUser } from '@/providers/AppSettingsProvider';
+import { useCurrentUser, useLimitsSettings } from '@/providers/AppSettingsProvider';
 import { skillNameFilterSchema } from '@/schemas/filterSchemas';
 import CreateSkillModal from './CreateSkillModal';
 
 export default function AdminSkillsClient() {
   const router = useRouter();
   const currentUser = useCurrentUser();
+  const { maxSkillsPerOrganization } = useLimitsSettings();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [skills, setSkills] = useState<SkillListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -210,6 +211,19 @@ export default function AdminSkillsClient() {
                 <span className="icon-[mdi--tag-plus-outline] w-5 h-5" aria-hidden="true" />
                 新規スキル追加
               </button>
+            </div>
+
+            {/* スキル上限のインフォメーション */}
+            <div className="alert alert-info mb-6">
+              <span className="icon-[mdi--information-outline] size-5" aria-hidden="true" />
+              <span>
+                スキルは組織全体で最大 <strong>{maxSkillsPerOrganization ?? 100}</strong> 件まで作成できます。
+                {statistics && (
+                  <>
+                    （現在 <strong>{statistics.totalSkills ?? 0}</strong> 件）
+                  </>
+                )}
+              </span>
             </div>
 
             {/* Filter Section */}
