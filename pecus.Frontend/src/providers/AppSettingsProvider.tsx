@@ -220,6 +220,7 @@ export const defaultAppSettings: AppPublicSettingsResponse = {
     gamificationEnabled: true,
     gamificationBadgeVisibility: 'Private',
     gamificationAllowUserOverride: true,
+    botGroupChatMessagesEnabled: true,
   },
   user: {
     timeZone: 'Asia/Tokyo',
