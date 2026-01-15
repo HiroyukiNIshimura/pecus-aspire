@@ -1960,6 +1960,32 @@ function DisableCaptionOnBlur({ setShowCaption }) {
   );
   return null;
 }
+function CaptionOnChangePlugin({
+  parentEditor,
+  nodeKey
+}) {
+  const [captionEditor] = useLexicalComposerContext6();
+  useEffect8(() => {
+    return captionEditor.registerUpdateListener(({ dirtyElements, dirtyLeaves, tags }) => {
+      if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
+        return;
+      }
+      if (tags.has("history-merge")) {
+        return;
+      }
+      parentEditor.update(
+        () => {
+          const node = $getNodeByKey4(nodeKey);
+          if ($isImageNode(node)) {
+            node.getWritable();
+          }
+        },
+        { discrete: true }
+      );
+    });
+  }, [captionEditor, parentEditor, nodeKey]);
+  return null;
+}
 function useSuspenseImage(src) {
   let cached = imageCache.get(src);
   if (cached && "error" in cached && typeof cached.error === "boolean") {
@@ -2249,6 +2275,7 @@ function ImageComponent({
       }
     ) }),
     showCaption && /* @__PURE__ */ jsx14("div", { className: "image-caption-container", children: /* @__PURE__ */ jsxs6(LexicalNestedComposer, { initialEditor: caption, children: [
+      /* @__PURE__ */ jsx14(CaptionOnChangePlugin, { parentEditor: editor, nodeKey }),
       /* @__PURE__ */ jsx14(DisableCaptionOnBlur, { setShowCaption }),
       /* @__PURE__ */ jsx14(NewMentionsPlugin, {}),
       /* @__PURE__ */ jsx14(LinkPlugin, {}),

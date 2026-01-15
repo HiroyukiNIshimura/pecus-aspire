@@ -70,6 +70,41 @@ function DisableCaptionOnBlur({ setShowCaption }: { setShowCaption: (show: boole
   return null;
 }
 
+/**
+ * キャプションエディターの変更を親エディターに通知するプラグイン
+ * これにより、キャプション編集時に親エディターのonChangeがトリガーされる
+ */
+function CaptionOnChangePlugin({ parentEditor, nodeKey }: { parentEditor: LexicalEditor; nodeKey: NodeKey }) {
+  const [captionEditor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return captionEditor.registerUpdateListener(({ dirtyElements, dirtyLeaves, tags }) => {
+      // 選択変更のみの場合やhistory-mergeタグの場合は無視
+      if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
+        return;
+      }
+      if (tags.has('history-merge')) {
+        return;
+      }
+
+      // 親エディターのImageNodeをダーティとしてマーク
+      // これにより親エディターのonChangeがトリガーされる
+      parentEditor.update(
+        () => {
+          const node = $getNodeByKey(nodeKey);
+          if ($isImageNode(node)) {
+            // getWritable()を呼ぶことでノードがダーティとしてマークされる
+            node.getWritable();
+          }
+        },
+        { discrete: true },
+      );
+    });
+  }, [captionEditor, parentEditor, nodeKey]);
+
+  return null;
+}
+
 function useSuspenseImage(src: string): ImageStatus {
   let cached = imageCache.get(src);
   if (cached && 'error' in cached && typeof cached.error === 'boolean') {
@@ -195,6 +230,7 @@ function BrokenImage(): JSX.Element {
         width: 200,
       }}
       draggable="false"
+      // biome-ignore lint/a11y/noRedundantAlt: intentional alt text for broken image placeholder
       alt="Broken image"
     />
   );
@@ -433,6 +469,7 @@ export default function ImageComponent({
       {showCaption && (
         <div className="image-caption-container">
           <LexicalNestedComposer initialEditor={caption}>
+            <CaptionOnChangePlugin parentEditor={editor} nodeKey={nodeKey} />
             <DisableCaptionOnBlur setShowCaption={setShowCaption} />
             <MentionsPlugin />
             <LinkPlugin />

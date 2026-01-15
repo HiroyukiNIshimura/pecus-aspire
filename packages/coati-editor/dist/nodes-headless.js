@@ -1928,6 +1928,32 @@ function DisableCaptionOnBlur({ setShowCaption }) {
   );
   return null;
 }
+function CaptionOnChangePlugin({
+  parentEditor,
+  nodeKey
+}) {
+  const [captionEditor] = (0, import_LexicalComposerContext6.useLexicalComposerContext)();
+  (0, import_react13.useEffect)(() => {
+    return captionEditor.registerUpdateListener(({ dirtyElements, dirtyLeaves, tags }) => {
+      if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
+        return;
+      }
+      if (tags.has("history-merge")) {
+        return;
+      }
+      parentEditor.update(
+        () => {
+          const node = (0, import_lexical15.$getNodeByKey)(nodeKey);
+          if ($isImageNode(node)) {
+            node.getWritable();
+          }
+        },
+        { discrete: true }
+      );
+    });
+  }, [captionEditor, parentEditor, nodeKey]);
+  return null;
+}
 function useSuspenseImage(src) {
   let cached = imageCache.get(src);
   if (cached && "error" in cached && typeof cached.error === "boolean") {
@@ -2217,6 +2243,7 @@ function ImageComponent({
       }
     ) }),
     showCaption && /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: "image-caption-container", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_LexicalNestedComposer.LexicalNestedComposer, { initialEditor: caption, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(CaptionOnChangePlugin, { parentEditor: editor, nodeKey }),
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(DisableCaptionOnBlur, { setShowCaption }),
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(NewMentionsPlugin, {}),
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(LinkPlugin, {}),
