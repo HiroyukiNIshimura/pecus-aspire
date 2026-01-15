@@ -1106,8 +1106,8 @@ public class ProductAtoms
                 Code = "EVIDENCE_KEEPER",
                 Name = "証拠を残す人",
                 NameEn = "Evidence Keeper",
-                Description = "完了タスクの80%以上にファイル添付がある（最低10件）",
-                DescriptionEn = "Attach files to 80%+ of completed tasks (minimum 10)",
+                Description = "ファイル添付がある親アイテムに紐づくタスクを20件以上完了",
+                DescriptionEn = "Complete 20+ tasks linked to items with file attachments",
                 IconPath = "evidence_keeper.webp",
                 Difficulty = AchievementDifficulty.Medium,
                 Category = AchievementCategory.Reliability,
@@ -1118,16 +1118,36 @@ public class ProductAtoms
             },
         };
 
-        var existingMasters = await _context.AchievementMasters.ToListAsync();
-        if (achievements.Length != existingMasters.Count)
-        {
-            _context.AchievementMasters.RemoveRange(existingMasters);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Deleted {Count} existing achievement masters", existingMasters.Count);
+        var existingMasters = await _context.AchievementMasters.ToDictionaryAsync(m => m.Code);
+        var addedCount = 0;
+        var updatedCount = 0;
 
-            await _context.AchievementMasters.AddRangeAsync(achievements);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Added {Count} achievement masters", achievements.Length);
+        foreach (var achievement in achievements)
+        {
+            if (existingMasters.TryGetValue(achievement.Code, out var existing))
+            {
+                // 既存レコードを更新
+                existing.Name = achievement.Name;
+                existing.NameEn = achievement.NameEn;
+                existing.Description = achievement.Description;
+                existing.DescriptionEn = achievement.DescriptionEn;
+                existing.IconPath = achievement.IconPath;
+                existing.Difficulty = achievement.Difficulty;
+                existing.Category = achievement.Category;
+                existing.IsSecret = achievement.IsSecret;
+                existing.IsActive = achievement.IsActive;
+                existing.SortOrder = achievement.SortOrder;
+                updatedCount++;
+            }
+            else
+            {
+                // 新規追加
+                await _context.AchievementMasters.AddAsync(achievement);
+                addedCount++;
+            }
         }
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Achievement masters: {Added} added, {Updated} updated", addedCount, updatedCount);
     }
 }
