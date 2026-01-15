@@ -132,7 +132,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
                 }
 
                 newContent = $"件名: {item.Subject}\n\n本文:\n{newBodyMarkdown}";
-                oldContent = $"本文:\n{oldBodyMarkdown}";
+                oldContent = $"件名: {item.Subject}\n\n本文:\n{oldBodyMarkdown}";
             }
 
             var setting = await GetOrganizationSettingAsync(organizationId);
