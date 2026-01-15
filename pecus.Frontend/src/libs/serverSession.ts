@@ -592,33 +592,41 @@ export class ServerSessionManager {
         ipAddress: session.device?.ipAddress,
       };
 
-      const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒タイムアウト
 
-      if (!refreshResponse.ok) {
-        console.error('[ServerSession] Refresh API failed:', refreshResponse.status);
-        // リフレッシュ失敗時はセッションを破棄
-        await ServerSessionManager.destroySession(session.sessionId);
-        return null;
+      try {
+        const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal,
+          body: JSON.stringify(body),
+        });
+
+        if (!refreshResponse.ok) {
+          console.error('[ServerSession] Refresh API failed:', refreshResponse.status);
+          // リフレッシュ失敗時はセッションを破棄
+          await ServerSessionManager.destroySession(session.sessionId);
+          return null;
+        }
+
+        const data = await refreshResponse.json();
+        console.log('[ServerSession] Token refreshed successfully');
+
+        // セッションを更新
+        const updatedSession = await ServerSessionManager.updateTokens(session.sessionId, {
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          accessExpiresAt: data.expiresAt,
+          refreshExpiresAt: data.refreshExpiresAt,
+        });
+
+        return updatedSession;
+      } finally {
+        clearTimeout(timeoutId);
       }
-
-      const data = await refreshResponse.json();
-      console.log('[ServerSession] Token refreshed successfully');
-
-      // セッションを更新
-      const updatedSession = await ServerSessionManager.updateTokens(session.sessionId, {
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        accessExpiresAt: data.expiresAt,
-        refreshExpiresAt: data.refreshExpiresAt,
-      });
-
-      return updatedSession;
     } catch (error) {
       console.error('[ServerSession] Refresh error:', error);
       return null;
