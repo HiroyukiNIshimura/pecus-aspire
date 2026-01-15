@@ -135,9 +135,9 @@
         "DefaultPageSize": 20
       },
       "Limits": {
-        "MaxTagsPerOrganization": 100,
+        "MaxTagsPerOrganization": 1000,
         "MaxSkillsPerOrganization": 100,
-        "MaxDocumentsPerWorkspace": 1000
+        "MaxDocumentsPerWorkspace": 500
       },
       "FileUpload": {
         "StoragePath": "../data/uploads",
