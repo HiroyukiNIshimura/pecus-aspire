@@ -152,6 +152,12 @@ public class OrganizationPublicSettings
     /// </summary>
     [Required]
     public bool GamificationAllowUserOverride { get; init; }
+
+    /// <summary>
+    /// Botがグループチャットにメッセージを送信するか
+    /// </summary>
+    [Required]
+    public bool BotGroupChatMessagesEnabled { get; init; }
 }
 
 /// <summary>

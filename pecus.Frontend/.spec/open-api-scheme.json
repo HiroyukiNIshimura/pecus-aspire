@@ -13324,6 +13324,10 @@
             "type": "boolean",
             "description": "ユーザーによるバッジ公開範囲のオーバーライドを許可するか"
           },
+          "botGroupChatMessagesEnabled": {
+            "type": "boolean",
+            "description": "Botがグループチャットにメッセージを送信するか"
+          },
           "rowVersion": {
             "type": "integer",
             "description": "楽観的ロック用RowVersion",
@@ -17507,7 +17511,8 @@
           "enforcePredecessorCompletion",
           "gamificationEnabled",
           "gamificationBadgeVisibility",
-          "gamificationAllowUserOverride"
+          "gamificationAllowUserOverride",
+          "botGroupChatMessagesEnabled"
         ],
         "type": "object",
         "properties": {
@@ -17559,6 +17564,10 @@
           "gamificationAllowUserOverride": {
             "type": "boolean",
             "description": "ユーザーによるバッジ公開範囲のオーバーライドを許可するか"
+          },
+          "botGroupChatMessagesEnabled": {
+            "type": "boolean",
+            "description": "Botがグループチャットにメッセージを送信するか"
           }
         },
         "description": "組織の公開設定（センシティブ情報を除外）"
@@ -17655,6 +17664,7 @@
           "gamificationEnabled",
           "gamificationBadgeVisibility",
           "gamificationAllowUserOverride",
+          "botGroupChatMessagesEnabled",
           "rowVersion"
         ],
         "type": "object",
@@ -17750,6 +17760,10 @@
           "gamificationAllowUserOverride": {
             "type": "boolean",
             "description": "ユーザーがバッジ公開範囲を変更可能か"
+          },
+          "botGroupChatMessagesEnabled": {
+            "type": "boolean",
+            "description": "Botがグループチャットにメッセージを送信するか"
           },
           "rowVersion": {
             "type": "integer",

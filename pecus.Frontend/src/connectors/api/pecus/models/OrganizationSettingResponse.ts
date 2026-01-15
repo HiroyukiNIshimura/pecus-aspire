@@ -63,6 +63,10 @@ export type OrganizationSettingResponse = {
      */
     gamificationAllowUserOverride: boolean;
     /**
+     * Botがグループチャットにメッセージを送信するか
+     */
+    botGroupChatMessagesEnabled: boolean;
+    /**
      * 楽観的ロック用RowVersion
      */
     rowVersion: number;

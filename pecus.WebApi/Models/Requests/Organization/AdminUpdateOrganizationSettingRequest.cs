@@ -111,6 +111,11 @@ public class AdminUpdateOrganizationSettingRequest
     public bool GamificationAllowUserOverride { get; set; } = true;
 
     /// <summary>
+    /// Botがグループチャットにメッセージを送信するか
+    /// </summary>
+    public bool BotGroupChatMessagesEnabled { get; set; } = true;
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

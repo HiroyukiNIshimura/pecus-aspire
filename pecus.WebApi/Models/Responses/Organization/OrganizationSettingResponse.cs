@@ -113,6 +113,12 @@ public class OrganizationSettingResponse : IConflictModel
     public bool GamificationAllowUserOverride { get; set; }
 
     /// <summary>
+    /// Botがグループチャットにメッセージを送信するか
+    /// </summary>
+    [Required]
+    public bool BotGroupChatMessagesEnabled { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required]

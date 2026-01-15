@@ -111,6 +111,11 @@ public class OrganizationSetting
     public bool GamificationAllowUserOverride { get; set; } = true;
 
     /// <summary>
+    /// Botがグループチャットにメッセージを送信するか
+    /// </summary>
+    public bool BotGroupChatMessagesEnabled { get; set; } = true;
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }

@@ -430,6 +430,7 @@ public class OrganizationService
         setting.GamificationEnabled = request.GamificationEnabled;
         setting.GamificationBadgeVisibility = request.GamificationBadgeVisibility ?? BadgeVisibility.Private;
         setting.GamificationAllowUserOverride = request.GamificationAllowUserOverride;
+        setting.BotGroupChatMessagesEnabled = request.BotGroupChatMessagesEnabled;
         setting.UpdatedAt = DateTimeOffset.UtcNow;
         setting.UpdatedByUserId = updatedByUserId;
 
@@ -464,6 +465,7 @@ public class OrganizationService
             GamificationEnabled = setting.GamificationEnabled,
             GamificationBadgeVisibility = setting.GamificationBadgeVisibility,
             GamificationAllowUserOverride = setting.GamificationAllowUserOverride,
+            BotGroupChatMessagesEnabled = setting.BotGroupChatMessagesEnabled,
             RowVersion = setting.RowVersion,
         };
     }
@@ -636,6 +638,7 @@ public class OrganizationService
                         GamificationEnabled = latestOrganization.Setting.GamificationEnabled,
                         GamificationBadgeVisibility = latestOrganization.Setting.GamificationBadgeVisibility,
                         GamificationAllowUserOverride = latestOrganization.Setting.GamificationAllowUserOverride,
+                        BotGroupChatMessagesEnabled = latestOrganization.Setting.BotGroupChatMessagesEnabled,
                         RowVersion = latestOrganization.Setting.RowVersion,
                     }
                     : new OrganizationSettingResponse
@@ -655,6 +658,7 @@ public class OrganizationService
                         GamificationEnabled = true,
                         GamificationBadgeVisibility = BadgeVisibility.Private,
                         GamificationAllowUserOverride = true,
+                        BotGroupChatMessagesEnabled = true,
                         RowVersion = 0,
                     },
             }
@@ -687,6 +691,7 @@ public class OrganizationService
                 GamificationEnabled = true,
                 GamificationBadgeVisibility = BadgeVisibility.Private,
                 GamificationAllowUserOverride = true,
+                BotGroupChatMessagesEnabled = true,
             };
         }
 
@@ -703,6 +708,7 @@ public class OrganizationService
             GamificationEnabled = setting.GamificationEnabled,
             GamificationBadgeVisibility = setting.GamificationBadgeVisibility,
             GamificationAllowUserOverride = setting.GamificationAllowUserOverride,
+            BotGroupChatMessagesEnabled = setting.BotGroupChatMessagesEnabled,
         };
     }
 }

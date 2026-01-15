@@ -87,6 +87,7 @@ export async function updateOrganizationSetting(request: {
   gamificationEnabled?: boolean;
   gamificationBadgeVisibility?: OrganizationSettingResponse['gamificationBadgeVisibility'];
   gamificationAllowUserOverride?: boolean;
+  botGroupChatMessagesEnabled?: boolean;
   rowVersion: number;
 }): Promise<ApiResponse<OrganizationSettingResponse>> {
   try {

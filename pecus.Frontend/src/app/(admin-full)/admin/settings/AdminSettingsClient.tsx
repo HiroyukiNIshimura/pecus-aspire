@@ -175,6 +175,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
     gamificationEnabled: true,
     gamificationBadgeVisibility: 'Private' as OrganizationSettingResponse['gamificationBadgeVisibility'],
     gamificationAllowUserOverride: true,
+    botGroupChatMessagesEnabled: true,
     rowVersion: 0,
   };
 
@@ -205,6 +206,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
     gamificationEnabled: initialSetting.gamificationEnabled ?? true,
     gamificationBadgeVisibility: initialSetting.gamificationBadgeVisibility ?? 'Private',
     gamificationAllowUserOverride: initialSetting.gamificationAllowUserOverride ?? true,
+    botGroupChatMessagesEnabled: initialSetting.botGroupChatMessagesEnabled ?? true,
   });
 
   // モデル一覧を取得する関数
@@ -295,6 +297,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
             gamificationEnabled: data.gamificationEnabled ?? true,
             gamificationBadgeVisibility: data.gamificationBadgeVisibility ?? 'Private',
             gamificationAllowUserOverride: data.gamificationAllowUserOverride ?? true,
+            botGroupChatMessagesEnabled: data.botGroupChatMessagesEnabled ?? true,
             rowVersion,
           });
 
@@ -348,6 +351,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
       gamificationEnabled: setting.gamificationEnabled ?? true,
       gamificationBadgeVisibility: setting.gamificationBadgeVisibility ?? 'Private',
       gamificationAllowUserOverride: setting.gamificationAllowUserOverride ?? true,
+      botGroupChatMessagesEnabled: setting.botGroupChatMessagesEnabled ?? true,
     });
   };
 
@@ -841,6 +845,24 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       </span>
                     </div>
                   </div>
+
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 cursor-pointer" htmlFor="toggle-bot-group-chat-messages">
+                      <input
+                        id="toggle-bot-group-chat-messages"
+                        name="botGroupChatMessagesEnabled"
+                        type="checkbox"
+                        className="switch switch-primary"
+                        checked={formData.botGroupChatMessagesEnabled ?? true}
+                        onChange={(e) => handleFieldChange('botGroupChatMessagesEnabled', e.target.checked)}
+                        disabled={isSubmitting}
+                      />
+                      <span className="font-semibold">Botがグループチャットにメッセージを送信する</span>
+                    </label>
+                    <p className="text-sm text-base-content/60 pl-12">
+                      無効にすると、Botはグループチャットにメッセージを送信しなくなります。
+                    </p>
+                  </div>
                 </div>
 
                 <h2 className="text-lg font-semibold mt-8 pb-2 border-b border-base-content/20">ワークスペース設定</h2>
@@ -991,6 +1013,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                         gamificationEnabled: formData.gamificationEnabled ?? true,
                         gamificationBadgeVisibility: formData.gamificationBadgeVisibility ?? 'Private',
                         gamificationAllowUserOverride: formData.gamificationAllowUserOverride ?? true,
+                        botGroupChatMessagesEnabled: formData.botGroupChatMessagesEnabled ?? true,
                         rowVersion: latestRowVersion,
                       });
 

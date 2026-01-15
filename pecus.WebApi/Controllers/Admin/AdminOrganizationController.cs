@@ -87,6 +87,7 @@ public class AdminOrganizationController : BaseAdminController
                 GamificationEnabled = organization.Setting?.GamificationEnabled ?? true,
                 GamificationBadgeVisibility = organization.Setting?.GamificationBadgeVisibility ?? BadgeVisibility.Private,
                 GamificationAllowUserOverride = organization.Setting?.GamificationAllowUserOverride ?? true,
+                BotGroupChatMessagesEnabled = organization.Setting?.BotGroupChatMessagesEnabled ?? true,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };
@@ -149,6 +150,7 @@ public class AdminOrganizationController : BaseAdminController
                 GamificationEnabled = organization.Setting?.GamificationEnabled ?? true,
                 GamificationBadgeVisibility = organization.Setting?.GamificationBadgeVisibility ?? BadgeVisibility.Private,
                 GamificationAllowUserOverride = organization.Setting?.GamificationAllowUserOverride ?? true,
+                BotGroupChatMessagesEnabled = organization.Setting?.BotGroupChatMessagesEnabled ?? true,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };

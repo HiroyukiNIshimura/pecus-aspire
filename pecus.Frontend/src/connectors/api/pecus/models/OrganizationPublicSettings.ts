@@ -36,5 +36,9 @@ export type OrganizationPublicSettings = {
      * ユーザーによるバッジ公開範囲のオーバーライドを許可するか
      */
     gamificationAllowUserOverride: boolean;
+    /**
+     * Botがグループチャットにメッセージを送信するか
+     */
+    botGroupChatMessagesEnabled: boolean;
 };
 

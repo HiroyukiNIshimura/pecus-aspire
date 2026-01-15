@@ -94,6 +94,7 @@ export const organizationSettingSchema = z.object({
     .optional()
     .nullable(),
   gamificationAllowUserOverride: z.boolean().default(true),
+  botGroupChatMessagesEnabled: z.boolean().default(true),
 });
 
 export const organizationSettingSchemaWithRules = organizationSettingSchema.superRefine((data, ctx) => {
