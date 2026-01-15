@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Notifications;
 
@@ -30,15 +31,22 @@ public abstract class TaskNotificationTaskBase
     protected readonly ILogger Logger;
 
     /// <summary>
+    /// Bot タスクガード
+    /// </summary>
+    protected readonly IBotTaskGuard TaskGuard;
+
+    /// <summary>
     /// TaskNotificationTaskBase のコンストラクタ
     /// </summary>
     protected TaskNotificationTaskBase(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
+        IBotTaskGuard taskGuard,
         ILogger logger)
     {
         Context = context;
         Publisher = publisher;
+        TaskGuard = taskGuard;
         Logger = logger;
     }
 
@@ -252,14 +260,9 @@ public abstract class TaskNotificationTaskBase
 
             organizationId = task.OrganizationId;
 
-            // 組織設定を取得し、Botのグループチャットメッセージが無効ならスキップ
-            var orgSetting = await GetOrganizationSettingAsync(organizationId);
-            if (orgSetting != null && !orgSetting.BotGroupChatMessagesEnabled)
+            // 組織設定でグループチャットメッセージが無効ならスキップ
+            if (!await TaskGuard.IsGroupChatEnabledAsync(organizationId))
             {
-                Logger.LogDebug(
-                    "Skipping {TaskName}: BotGroupChatMessagesEnabled is disabled for OrganizationId={OrganizationId}",
-                    TaskName,
-                    organizationId);
                 return;
             }
 

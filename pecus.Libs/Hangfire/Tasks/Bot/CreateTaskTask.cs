@@ -6,6 +6,7 @@ using Pecus.Libs.AI.Prompts.Notifications;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Notifications;
 
@@ -27,10 +28,11 @@ public class CreateTaskTask : TaskNotificationTaskBase
     public CreateTaskTask(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
+        IBotTaskGuard taskGuard,
         ILogger<CreateTaskTask> logger,
         IAiClientFactory? aiClientFactory = null,
         IBotSelector? botSelector = null)
-        : base(context, publisher, logger)
+        : base(context, publisher, taskGuard, logger)
     {
         _aiClientFactory = aiClientFactory;
         _botSelector = botSelector;
@@ -202,14 +204,5 @@ public class CreateTaskTask : TaskNotificationTaskBase
             1 => $"{dateStr}（明日）",
             _ => $"{dateStr}（残り{daysRemaining}日）"
         };
-    }
-
-    /// <summary>
-    /// 組織設定を取得する
-    /// </summary>
-    private async Task<OrganizationSetting?> GetOrganizationSettingAsync(int organizationId)
-    {
-        return await Context.OrganizationSettings
-            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
     }
 }

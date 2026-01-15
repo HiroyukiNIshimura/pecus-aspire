@@ -9,6 +9,7 @@ using Pecus.Libs.AI.Prompts.Notifications;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Notifications;
@@ -43,11 +44,12 @@ public class UpdateItemTask : ItemNotificationTaskBase
     public UpdateItemTask(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
+        IBotTaskGuard taskGuard,
         ILogger<UpdateItemTask> logger,
         ILexicalConverterService? lexicalConverterService = null,
         IAiClientFactory? aiClientFactory = null,
         IBotSelector? botSelector = null)
-        : base(context, publisher, logger)
+        : base(context, publisher, taskGuard, logger)
     {
         _lexicalConverterService = lexicalConverterService;
         _aiClientFactory = aiClientFactory;
@@ -368,14 +370,5 @@ public class UpdateItemTask : ItemNotificationTaskBase
         }
 
         return string.Join("\n", result);
-    }
-
-    /// <summary>
-    /// 組織設定を取得する
-    /// </summary>
-    private async Task<OrganizationSetting?> GetOrganizationSettingAsync(int organizationId)
-    {
-        return await Context.OrganizationSettings
-            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
     }
 }

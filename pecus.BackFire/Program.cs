@@ -64,6 +64,8 @@ builder.Services.AddSingleton<FrontendUrlResolver>();
 builder.Services.AddMessageAnalyzer();
 // BotSelector の登録
 builder.Services.AddBotSelector();
+// BotTaskGuard の登録（Bot タスク実行前の共通チェック）
+builder.Services.AddBotTaskGuard();
 // BotBehaviors の登録（振る舞いプラグインシステム）
 builder.Services.AddBotBehaviors();
 // FocusTaskProvider の登録（やることリスト取得）

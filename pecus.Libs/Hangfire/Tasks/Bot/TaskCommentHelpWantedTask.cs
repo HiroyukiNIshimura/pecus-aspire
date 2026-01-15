@@ -7,6 +7,7 @@ using Pecus.Libs.AI.Tools;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Notifications;
 
@@ -24,6 +25,7 @@ public class TaskCommentHelpWantedTask
     private readonly SignalRNotificationPublisher _publisher;
     private readonly IAiClientFactory _aiClientFactory;
     private readonly IAiToolExecutor _aiToolExecutor;
+    private readonly IBotTaskGuard _taskGuard;
     private readonly ILogger<TaskCommentHelpWantedTask> _logger;
 
     /// <summary>
@@ -34,12 +36,14 @@ public class TaskCommentHelpWantedTask
         SignalRNotificationPublisher publisher,
         IAiClientFactory aiClientFactory,
         IAiToolExecutor aiToolExecutor,
+        IBotTaskGuard taskGuard,
         ILogger<TaskCommentHelpWantedTask> logger)
     {
         _context = context;
         _publisher = publisher;
         _aiClientFactory = aiClientFactory;
         _aiToolExecutor = aiToolExecutor;
+        _taskGuard = taskGuard;
         _logger = logger;
     }
 
@@ -96,15 +100,9 @@ public class TaskCommentHelpWantedTask
 
             var organizationId = workspace.OrganizationId;
 
-            // グループチャットメッセージが無効の場合はスキップ
-            var orgSetting = await _context.OrganizationSettings
-                .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
-            if (orgSetting?.BotGroupChatMessagesEnabled == false)
+            // 組織設定でグループチャットメッセージが無効ならスキップ
+            if (!await _taskGuard.IsGroupChatEnabledAsync(organizationId))
             {
-                _logger.LogDebug(
-                    "Bot group chat messages disabled for organization: OrganizationId={OrganizationId}",
-                    organizationId
-                );
                 return;
             }
 

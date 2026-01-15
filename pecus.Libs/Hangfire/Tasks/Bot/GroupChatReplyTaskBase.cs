@@ -4,6 +4,7 @@ using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Notifications;
 
@@ -41,18 +42,25 @@ public abstract class GroupChatReplyTaskBase
     protected readonly IShouldReplyAnalyzer? ShouldReplyAnalyzer;
 
     /// <summary>
+    /// Bot タスクガード
+    /// </summary>
+    protected readonly IBotTaskGuard TaskGuard;
+
+    /// <summary>
     /// GroupChatReplyTaskBase のコンストラクタ
     /// </summary>
     protected GroupChatReplyTaskBase(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
         IAiClientFactory aiClientFactory,
+        IBotTaskGuard taskGuard,
         ILogger logger,
         IShouldReplyAnalyzer? shouldReplyAnalyzer = null)
     {
         Context = context;
         Publisher = publisher;
         AiClientFactory = aiClientFactory;
+        TaskGuard = taskGuard;
         Logger = logger;
         ShouldReplyAnalyzer = shouldReplyAnalyzer;
     }
@@ -435,14 +443,9 @@ public abstract class GroupChatReplyTaskBase
         int triggerMessageId,
         int senderUserId)
     {
-        // 組織設定を取得し、Botのグループチャットメッセージが無効ならスキップ
-        var orgSetting = await GetOrganizationSettingAsync(organizationId);
-        if (orgSetting != null && !orgSetting.BotGroupChatMessagesEnabled)
+        // 組織設定でグループチャットメッセージが無効ならスキップ
+        if (!await TaskGuard.IsGroupChatEnabledAsync(organizationId))
         {
-            Logger.LogDebug(
-                "Skipping {TaskName}: BotGroupChatMessagesEnabled is disabled for OrganizationId={OrganizationId}",
-                TaskName,
-                organizationId);
             return;
         }
 

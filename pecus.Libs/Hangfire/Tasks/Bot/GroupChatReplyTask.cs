@@ -4,6 +4,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Notifications;
 
@@ -31,12 +32,13 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
         IAiClientFactory aiClientFactory,
+        IBotTaskGuard taskGuard,
         ILogger<GroupChatReplyTask> logger,
         IShouldReplyAnalyzer? shouldReplyAnalyzer = null,
         IBotSelector? botSelector = null,
         IBotBehaviorSelector? behaviorSelector = null,
         IRoomReplyLock? roomReplyLock = null)
-        : base(context, publisher, aiClientFactory, logger, shouldReplyAnalyzer)
+        : base(context, publisher, aiClientFactory, taskGuard, logger, shouldReplyAnalyzer)
     {
         _botSelector = botSelector;
         _behaviorSelector = behaviorSelector;
