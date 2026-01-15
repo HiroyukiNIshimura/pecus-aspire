@@ -5,7 +5,7 @@ import { createWorkspace } from '@/actions/workspace';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type { MasterGenreResponse, WorkspaceMode } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
-import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
+import { useLimitsSettings, useOrganizationSettings } from '@/providers/AppSettingsProvider';
 import { createWorkspaceSchema } from '@/schemas/workspaceSchemas';
 
 interface CreateWorkspaceModalProps {
@@ -18,6 +18,7 @@ interface CreateWorkspaceModalProps {
 export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genres }: CreateWorkspaceModalProps) {
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
   const { defaultWorkspaceMode } = useOrganizationSettings();
+  const { maxDocumentsPerWorkspace } = useLimitsSettings();
   const initialMode: WorkspaceMode = defaultWorkspaceMode === 'Document' ? 'Document' : 'Normal';
   const [selectedMode, setSelectedMode] = useState<WorkspaceMode>(initialMode);
 
@@ -200,10 +201,10 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                 </label>
               </div>
               <div className="label pb-0">
-                <span className="label-text-alt text-base-content/70">
+                <span className="label-text-alt text-base-content/70 min-h-12 block">
                   {selectedMode === 'Normal'
                     ? 'タスク管理や関連アイテムなどすべての機能が利用できます。'
-                    : 'ドキュメント中心のシンプルなモードです。タスクや関連アイテムは非表示になります。'}
+                    : `ドキュメント中心のシンプルなモードです。タスクや関連アイテムは非表示になります。（最大${maxDocumentsPerWorkspace ?? 100}件）`}
                 </span>
               </div>
               <div className="label pt-0">

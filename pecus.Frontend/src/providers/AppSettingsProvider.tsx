@@ -4,6 +4,7 @@ import { createContext, type ReactNode, useCallback, useContext, useMemo, useSta
 import type {
   AppPublicSettingsResponse,
   CurrentUserInfo,
+  LimitsSettings,
   OrganizationPublicSettings,
   UserPublicSettings,
 } from '@/connectors/api/pecus';
@@ -151,6 +152,13 @@ export function useUserSettings(): UserPublicSettings {
 }
 
 /**
+ * 制限設定を取得するフック
+ */
+export function useLimitsSettings(): LimitsSettings {
+  return useAppSettings().limits;
+}
+
+/**
  * 現在のユーザー情報を取得するフック
  *
  * @returns 現在のユーザー情報
@@ -222,5 +230,10 @@ export const defaultAppSettings: AppPublicSettingsResponse = {
     focusScorePriority: 'Deadline',
     focusTasksLimit: 5,
     waitingTasksLimit: 5,
+  },
+  limits: {
+    maxTagsPerOrganization: 100,
+    maxSkillsPerOrganization: 100,
+    maxDocumentsPerWorkspace: 100,
   },
 };
