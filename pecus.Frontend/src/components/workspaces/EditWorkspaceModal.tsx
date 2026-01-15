@@ -144,33 +144,6 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
             </div>
           )}
 
-          {/* サーバーエラー表示 */}
-          {!isLoading && serverErrors.length > 0 && (
-            <div className="alert alert-soft alert-error mb-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 shrink-0 stroke-current"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <div>
-                <h3 className="font-bold">エラーが発生しました</h3>
-                <ul className="list-disc list-inside mt-2">
-                  {serverErrors.map((error) => (
-                    <li key={error.key}>{error.message}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-
           {/* フォーム */}
           {!isLoading && workspaceDetail && (
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -318,6 +291,21 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                 }}
                 isProcessing={isSubmitting}
               />
+
+              {/* サーバーエラー表示 */}
+              {serverErrors.length > 0 && (
+                <div className="alert alert-soft alert-error mb-4">
+                  <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+                  <div>
+                    <h3 className="font-bold">エラーが発生しました</h3>
+                    <ul className="list-disc list-inside mt-2">
+                      {serverErrors.map((error) => (
+                        <li key={error.key}>{error.message}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
 
               {/* ボタングループ */}
               <div className="flex gap-2 justify-end pt-4 border-t border-base-300">

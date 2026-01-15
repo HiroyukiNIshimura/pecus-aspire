@@ -125,14 +125,6 @@ export default function PasswordResetFormClient() {
           新しいパスワードを設定してください。パスワードは8文字以上で、大文字・小文字・数字を含む必要があります。
         </p>
 
-        {/* API エラー表示 */}
-        {apiError && (
-          <div className="alert alert-error mb-4">
-            <span className="icon-[tabler--alert-circle] size-5 shrink-0" />
-            <span>{apiError}</span>
-          </div>
-        )}
-
         <form ref={formRef} onSubmit={handleSubmit} className="w-full" noValidate>
           {/* 隠しトークンフィールド */}
           <input type="hidden" name="token" value={token} />
@@ -192,6 +184,14 @@ export default function PasswordResetFormClient() {
               )}
             </div>
           </div>
+
+          {/* API エラー表示 */}
+          {apiError && (
+            <div className="alert alert-soft alert-error mb-4">
+              <span className="icon-[tabler--alert-circle] size-5 shrink-0" />
+              <span>{apiError}</span>
+            </div>
+          )}
 
           {/* 送信ボタン */}
           <div className="w-full mt-6">

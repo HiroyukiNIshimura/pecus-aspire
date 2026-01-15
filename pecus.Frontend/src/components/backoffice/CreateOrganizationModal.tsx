@@ -159,13 +159,6 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          {submitError && (
-            <div className="alert alert-error mb-4">
-              <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
-              <span>{submitError}</span>
-            </div>
-          )}
-
           <div className="divider mt-0">組織情報</div>
 
           <div className="form-control mb-4">
@@ -352,28 +345,36 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 p-4 sm:p-6 border-t border-base-300 shrink-0">
-          <button type="button" className="btn btn-secondary" onClick={handleClose} disabled={isSubmitting}>
-            キャンセル
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleConfirm}
-            disabled={!isFormValid || isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <span className="loading loading-spinner loading-sm" aria-hidden="true" />
-                作成中...
-              </>
-            ) : (
-              <>
-                <span className="icon-[mdi--plus] size-5" aria-hidden="true" />
-                組織を作成
-              </>
-            )}
-          </button>
+        <div className="p-4 sm:p-6 border-t border-base-300 shrink-0">
+          {submitError && (
+            <div className="alert alert-soft alert-error mb-4">
+              <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+              <span>{submitError}</span>
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <button type="button" className="btn btn-secondary" onClick={handleClose} disabled={isSubmitting}>
+              キャンセル
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleConfirm}
+              disabled={!isFormValid || isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="loading loading-spinner loading-sm" aria-hidden="true" />
+                  作成中...
+                </>
+              ) : (
+                <>
+                  <span className="icon-[mdi--plus] size-5" aria-hidden="true" />
+                  組織を作成
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

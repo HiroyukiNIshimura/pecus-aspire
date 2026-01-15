@@ -181,13 +181,6 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          {submitError && (
-            <div className="alert alert-error mb-4">
-              <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
-              <span>{submitError}</span>
-            </div>
-          )}
-
           <div className="form-control mb-4">
             <label className="label" htmlFor="notification-type">
               <span className="label-text font-semibold">通知種類</span>
@@ -353,6 +346,13 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
               </p>
             </div>
           </div>
+
+          {submitError && (
+            <div className="alert alert-soft alert-error mb-4">
+              <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+              <span>{submitError}</span>
+            </div>
+          )}
 
           <div className="flex gap-2 justify-end pt-6 border-t border-base-300 mt-6">
             <button type="button" className="btn btn-outline" onClick={handleClose} disabled={isSubmitting}>
