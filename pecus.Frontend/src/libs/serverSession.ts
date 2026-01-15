@@ -215,8 +215,9 @@ export class ServerSessionManager {
       path: '/',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: ttl,
+      expires: new Date(Date.now() + ttl * 1000),
     });
 
     console.log(`[ServerSession] Session created: ${sessionId.substring(0, 8)}...`);
