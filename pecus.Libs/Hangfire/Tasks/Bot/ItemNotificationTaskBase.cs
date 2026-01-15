@@ -81,6 +81,17 @@ public abstract class ItemNotificationTaskBase
     }
 
     /// <summary>
+    /// 組織設定を取得する
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>組織設定、見つからない場合は null</returns>
+    protected async Task<OrganizationSetting?> GetOrganizationSettingAsync(int organizationId)
+    {
+        return await Context.OrganizationSettings
+            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+    }
+
+    /// <summary>
     /// Bot がルームのメンバーであることを確認し、メンバーでなければ追加する
     /// </summary>
     /// <param name="roomId">チャットルームID</param>
@@ -239,6 +250,18 @@ public abstract class ItemNotificationTaskBase
             }
 
             organizationId = item.Workspace.OrganizationId;
+
+            // 組織設定を取得し、Botのグループチャットメッセージが無効ならスキップ
+            var orgSetting = await GetOrganizationSettingAsync(organizationId);
+            if (orgSetting != null && !orgSetting.BotGroupChatMessagesEnabled)
+            {
+                Logger.LogDebug(
+                    "Skipping {TaskName}: BotGroupChatMessagesEnabled is disabled for OrganizationId={OrganizationId}",
+                    TaskName,
+                    organizationId);
+                return;
+            }
+
             var workspaceCode = item.Workspace.Code ?? item.Workspace.Name;
             var updatedByUser = item.UpdatedByUser?.Username ?? "不明なユーザー";
 

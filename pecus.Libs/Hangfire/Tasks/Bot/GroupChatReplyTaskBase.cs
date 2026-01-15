@@ -435,6 +435,17 @@ public abstract class GroupChatReplyTaskBase
         int triggerMessageId,
         int senderUserId)
     {
+        // 組織設定を取得し、Botのグループチャットメッセージが無効ならスキップ
+        var orgSetting = await GetOrganizationSettingAsync(organizationId);
+        if (orgSetting != null && !orgSetting.BotGroupChatMessagesEnabled)
+        {
+            Logger.LogDebug(
+                "Skipping {TaskName}: BotGroupChatMessagesEnabled is disabled for OrganizationId={OrganizationId}",
+                TaskName,
+                organizationId);
+            return;
+        }
+
         DB.Models.Bot? bot = null;
         ChatRoom? room = null;
 

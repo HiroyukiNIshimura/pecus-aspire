@@ -96,6 +96,18 @@ public class TaskCommentHelpWantedTask
 
             var organizationId = workspace.OrganizationId;
 
+            // グループチャットメッセージが無効の場合はスキップ
+            var orgSetting = await _context.OrganizationSettings
+                .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+            if (orgSetting?.BotGroupChatMessagesEnabled == false)
+            {
+                _logger.LogDebug(
+                    "Bot group chat messages disabled for organization: OrganizationId={OrganizationId}",
+                    organizationId
+                );
+                return;
+            }
+
             room = await _context.ChatRooms
                 .FirstOrDefaultAsync(r =>
                     r.Type == ChatRoomType.Group &&
