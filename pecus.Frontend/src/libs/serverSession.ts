@@ -215,9 +215,9 @@ export class ServerSessionManager {
       path: '/',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'lax', // StrictだとSafari再訪時にCookieが送られないことがある
       maxAge: ttl,
-      expires: new Date(Date.now() + ttl * 1000),
+      expires: new Date(Date.now() + ttl * 1000), // Safari対策: 明示的な日時指定がないとセッション終了時に破棄されることがある
     });
 
     console.log(`[ServerSession] Session created: ${sessionId.substring(0, 8)}...`);
