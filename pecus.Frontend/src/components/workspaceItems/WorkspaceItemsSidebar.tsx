@@ -567,7 +567,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             <p className="text-sm">{searchQuery ? '該当するアイテムがありません' : 'アイテムがありません'}</p>
           </div>
         ) : (
-          <div ref={scrollContainerRef} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: '750px' }}>
+          <div ref={scrollContainerRef} className="overflow-y-auto bg-base-200 flex-1 min-h-0">
             <ul className="space-y-1 p-2">
               {items.map((item) => {
                 const shortDate = formatShortDate(item.dueDate);

@@ -214,7 +214,7 @@ export default function DocumentTreeSidebar({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex-1 overflow-y-auto bg-base-200 p-2 h-full flex flex-col">
+      <div className="flex-1 overflow-y-auto bg-base-200 p-2 min-h-0 flex flex-col">
         {/* モバイルサイズでのD&D無効案内 */}
         {isMobile && (
           <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-info/10 text-info text-xs rounded-lg">
