@@ -184,8 +184,9 @@ export default function DocumentTreeSidebar({
         )}
         <div className="flex-1 truncate flex items-center gap-2">
           <span className="icon-[mdi--file-document-outline] w-4 h-4 flex-shrink-0 opacity-70" aria-hidden="true" />
-          <span className="text-xs text-base-content/50 flex-shrink-0">#{item?.code}</span>
-          <span className="truncate">{node.text}</span>
+          <span className="truncate" title={`#${item?.code}`}>
+            {node.text}
+          </span>
         </div>
         {item?.isDraft && <span className="badge badge-xs badge-secondary ml-2">Draft</span>}
       </div>
