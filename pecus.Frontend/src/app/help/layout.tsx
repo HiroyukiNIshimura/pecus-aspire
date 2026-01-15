@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import Link from 'next/link';
 import { HelpSearch } from '@/components/help/HelpSearch';
-import { HelpSidebar } from '@/components/help/HelpSidebar';
+import { HelpSidebar, HelpSidebarToggle } from '@/components/help/HelpSidebar';
 import { getAllHelpArticles } from '@/libs/help/getHelpContent';
 import type { HelpIndexEntry } from '@/libs/help/types';
 
@@ -24,12 +24,15 @@ export default async function HelpLayout({ children }: { children: React.ReactNo
       <HelpSidebar articles={articles} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex items-center justify-between border-b border-base-content/10 px-6 py-3">
-          <h1 className="text-lg font-semibold">Coatiのヒント</h1>
-          <div className="flex items-center gap-3">
-            <Link href="/" className="btn btn-text btn-sm gap-1">
-              <span className="icon-[mdi--view-dashboard] w-4 h-4" aria-hidden="true" />
-              ダッシュボードに戻る
+        <header className="flex items-center justify-between gap-2 border-b border-base-content/10 px-4 py-3 md:px-6">
+          <div className="flex items-center gap-2">
+            <HelpSidebarToggle />
+            <h1 className="text-base font-semibold md:text-lg">Coatiのヒント</h1>
+          </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <Link href="/" className="btn btn-text btn-sm gap-1 max-md:btn-square">
+              <span className="icon-[mdi--view-dashboard] size-4" aria-hidden="true" />
+              <span className="max-md:sr-only">ダッシュボードに戻る</span>
             </Link>
             <HelpSearch searchIndex={searchIndex} />
           </div>
