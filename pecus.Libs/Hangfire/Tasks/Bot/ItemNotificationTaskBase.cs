@@ -173,7 +173,8 @@ public abstract class ItemNotificationTaskBase
         WorkspaceItem item,
         string updatedByUserName,
         string workspaceCode,
-        string? details);
+        string? details
+        );
 
     /// <summary>
     /// 通知メッセージの内容を非同期で生成する（継承クラスでオーバーライド可能）
@@ -183,6 +184,7 @@ public abstract class ItemNotificationTaskBase
     /// <param name="item">アイテム</param>
     /// <param name="updatedByUserName">更新者名</param>
     /// <param name="workspaceCode">ワークスペースコード</param>
+    /// <param name="actionType">アクションタイプ</param>
     /// <param name="details">変更詳細</param>
     /// <returns>メッセージ内容と選択されたBot（nullの場合はSystemBotを使用）</returns>
     protected virtual Task<(string Message, DB.Models.Bot? SelectedBot)> BuildNotificationMessageAsync(
@@ -190,6 +192,7 @@ public abstract class ItemNotificationTaskBase
         WorkspaceItem item,
         string updatedByUserName,
         string workspaceCode,
+        ActivityActionType actionType,
         string? details)
     {
         return Task.FromResult((BuildNotificationMessage(organizationId, item, updatedByUserName, workspaceCode, details), (DB.Models.Bot?)null));
@@ -204,8 +207,9 @@ public abstract class ItemNotificationTaskBase
     /// アイテム通知の共通処理を実行する
     /// </summary>
     /// <param name="itemId">アイテムID</param>
+    /// <param name="actionType">アクションタイプ</param>
     /// <param name="details"></param>
-    protected async Task ExecuteNotificationAsync(int itemId, string? details)
+    protected async Task ExecuteNotificationAsync(int itemId, ActivityActionType actionType, string? details)
     {
         DB.Models.Bot? systemBot = null;
         ChatRoom? room = null;
@@ -247,7 +251,7 @@ public abstract class ItemNotificationTaskBase
             }
 
             // メッセージを作成（選択されたBotも取得）
-            var (messageContent, selectedBot) = await BuildNotificationMessageAsync(organizationId, item, updatedByUser, workspaceCode, details);
+            var (messageContent, selectedBot) = await BuildNotificationMessageAsync(organizationId, item, updatedByUser, workspaceCode, actionType, details);
 
             // 選択されたBotがあればそれを使用、なければSystemBotを使用
             if (selectedBot?.ChatActor != null)

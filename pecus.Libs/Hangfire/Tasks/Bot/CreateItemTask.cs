@@ -60,6 +60,7 @@ public class CreateItemTask : ItemNotificationTaskBase
         WorkspaceItem item,
         string updatedByUserName,
         string workspaceCode,
+        ActivityActionType actionType,
         string? details)
     {
         var defaultMessage = BuildDefaultMessage(updatedByUserName, workspaceCode, item.Code);
@@ -169,7 +170,7 @@ public class CreateItemTask : ItemNotificationTaskBase
     /// <param name="itemId">作成されたアイテムのID</param>
     public async Task NotifyItemCreatedAsync(int itemId)
     {
-        await ExecuteNotificationAsync(itemId, null);
+        await ExecuteNotificationAsync(itemId, ActivityActionType.Created, null);
     }
 
     /// <summary>

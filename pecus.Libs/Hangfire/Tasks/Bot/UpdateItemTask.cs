@@ -74,6 +74,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
         WorkspaceItem item,
         string updatedByUserName,
         string workspaceCode,
+        ActivityActionType actionType,
         string? details)
     {
         var defaultMessage = BuildDefaultMessage(updatedByUserName, workspaceCode, item.Code);
@@ -103,11 +104,10 @@ public class UpdateItemTask : ItemNotificationTaskBase
                 return (defaultMessage, null);
             }
 
-            var isSubjectChange = !string.IsNullOrWhiteSpace(updateDetails.New);
             string newContent;
             string? oldContent;
 
-            if (isSubjectChange)
+            if (actionType == ActivityActionType.SubjectUpdated)
             {
                 newContent = $"件名: {updateDetails.New}";
                 oldContent = !string.IsNullOrWhiteSpace(updateDetails.Old)
@@ -170,12 +170,12 @@ public class UpdateItemTask : ItemNotificationTaskBase
             }
 
             // Bot のペルソナと行動指針を プロンプトテンプレート と統合
-            var diffSummary = !isSubjectChange ? ExtractDiff(oldContent ?? "", newContent) : null;
+            var diffSummary = actionType != ActivityActionType.SubjectUpdated ? ExtractDiff(oldContent ?? "", newContent) : null;
             var promptInput = new ItemUpdatedPromptInput(
                 UserName: updatedByUserName,
                 NewContent: newContent,
                 OldContent: oldContent,
-                IsSubjectChange: isSubjectChange,
+                IsSubjectChange: actionType == ActivityActionType.SubjectUpdated,
                 DiffSummary: diffSummary
             );
             var prompt = _promptTemplate.Build(promptInput);
@@ -212,10 +212,11 @@ public class UpdateItemTask : ItemNotificationTaskBase
     /// アイテム更新時のメッセージ通知を実行する
     /// </summary>
     /// <param name="itemId">更新されたアイテムのID</param>
+    /// <param name="actionType">アクションタイプ</param>
     /// <param name="details">更新内容の詳細（JSON形式）</param>
-    public async Task NotifyItemUpdatedAsync(int itemId, string? details = null)
+    public async Task NotifyItemUpdatedAsync(int itemId, ActivityActionType actionType, string? details = null)
     {
-        await ExecuteNotificationAsync(itemId, details);
+        await ExecuteNotificationAsync(itemId, actionType, details);
     }
 
     /// <summary>
