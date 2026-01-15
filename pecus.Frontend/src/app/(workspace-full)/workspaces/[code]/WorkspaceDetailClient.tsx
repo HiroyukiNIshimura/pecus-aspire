@@ -1359,7 +1359,7 @@ export default function WorkspaceDetailClient({
                 </div>
 
                 {/* バッジ獲得ランキング（組織設定で表示制御） */}
-                {showBadgeRanking && (
+                {showBadgeRanking && currentWorkspaceDetail.mode !== 'Document' && (
                   <div className="mt-4">
                     <BadgeRankingCard data={badgeRanking} isLoading={badgeRankingLoading} />
                   </div>
