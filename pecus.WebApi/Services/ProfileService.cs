@@ -326,6 +326,12 @@ public class ProfileService
             _logger.LogDebug("デバイスに関連するリフレッシュトークンを無効化しました。DeviceId: {DeviceId}, TokenCount: {TokenCount}", deviceId, device.RefreshTokens.Count(rt => !rt.IsRevoked));
         }
 
+        // デバイスを削除
+        _context.Devices.Remove(device);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("デバイスを削除しました。UserId: {UserId}, DeviceId: {DeviceId}", userId, deviceId);
+
         return true;
     }
 
