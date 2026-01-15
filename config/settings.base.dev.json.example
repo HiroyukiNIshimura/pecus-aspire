@@ -35,9 +35,21 @@
       },
       "Limits": {
         "_comment": "開発時は制限値を小さくして上限テストがしやすい",
-        "MaxTagsPerOrganization": 10,
-        "MaxSkillsPerOrganization": 10,
-        "MaxDocumentsPerWorkspace": 50
+        "Free": {
+          "MaxTagsPerOrganization": 1000,
+          "MaxSkillsPerOrganization": 100,
+          "MaxDocumentsPerWorkspace": 500
+        },
+        "Standard": {
+          "MaxTagsPerOrganization": 1000,
+          "MaxSkillsPerOrganization": 100,
+          "MaxDocumentsPerWorkspace": 500
+        },
+        "Enterprise": {
+          "MaxTagsPerOrganization": 1000,
+          "MaxSkillsPerOrganization": 100,
+          "MaxDocumentsPerWorkspace": 500
+        }
       }
     }
   },

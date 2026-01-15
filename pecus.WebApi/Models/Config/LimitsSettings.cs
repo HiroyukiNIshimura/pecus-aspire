@@ -1,6 +1,25 @@
 namespace Pecus.Models.Config
 {
     /// <summary>
+    ///
+    /// </summary>
+    public class Limits
+    {
+        /// <summary>
+        /// 無料プランの制限設定
+        /// </summary>
+        public LimitsSettings Free { get; set; } = new();
+        /// <summary>
+        /// スタンダードプランの制限設定
+        /// </summary>
+        public LimitsSettings Standard { get; set; } = new();
+        /// <summary>
+        /// エンタープライズプランの制限設定
+        /// </summary>
+        public LimitsSettings Enterprise { get; set; } = new();
+    }
+
+    /// <summary>
     /// 制限設定
     /// </summary>
     public class LimitsSettings

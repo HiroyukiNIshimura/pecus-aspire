@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Models.Config;
 using Pecus.Services;
 
@@ -211,7 +212,10 @@ public class ProfileController : BaseSecureController
             CurrentUser = currentUserInfo,
             Organization = organizationSettings,
             User = userSettings,
-            Limits = _config.Limits
+            Limits = LimitsHelper.GetLimitsSettingsForPlan(
+                _config.Limits,
+                organizationSettings.Plan
+            )
         };
 
         return TypedResults.Ok(response);

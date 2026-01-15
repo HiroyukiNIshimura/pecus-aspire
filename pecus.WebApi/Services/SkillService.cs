@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Models.Config;
 
 namespace Pecus.Services;
 
@@ -11,10 +13,12 @@ namespace Pecus.Services;
 public class SkillService
 {
     private readonly ApplicationDbContext _context;
+    private readonly PecusConfig _config;
 
-    public SkillService(ApplicationDbContext context)
+    public SkillService(ApplicationDbContext context, PecusConfig config)
     {
         _context = context;
+        _config = config;
     }
 
     /// <summary>
@@ -252,11 +256,20 @@ public class SkillService
     }
 
     /// <summary>
-    /// Get total skill count for an organization
+    /// 組織内のスキル数をチェック
     /// </summary>
-    public async Task<int> GetSkillCountByOrganizationAsync(int? organizationId)
+    public async Task CheckSkillCountByOrganizationAsync(int? organizationId)
     {
-        return await _context.Skills.CountAsync(s => s.OrganizationId == organizationId);
+        var existingSkillCount = await _context.Skills.CountAsync(s => s.OrganizationId == organizationId);
+        var organizationSettings = await _context.OrganizationSettings.FindAsync(organizationId) ?? throw new NotFoundException("組織設定が見つかりません。");
+
+        var limits = LimitsHelper.GetLimitsSettingsForPlan(_config.Limits, organizationSettings.Plan);
+        if (existingSkillCount >= limits.MaxSkillsPerOrganization)
+        {
+            throw new InvalidOperationException(
+                $"組織あたりの最大スキル数({limits.MaxSkillsPerOrganization})に達しています。"
+            );
+        }
     }
 
     /// <summary>

@@ -43,13 +43,7 @@ public class AdminTagController : BaseAdminController
     public async Task<Created<TagResponse>> CreateTag([FromBody] CreateTagRequest request)
     {
         // 組織内のタグ数をチェック
-        var existingTagCount = await _tagService.GetTagCountByOrganizationAsync(CurrentOrganizationId);
-        if (existingTagCount >= _config.Limits.MaxTagsPerOrganization)
-        {
-            throw new InvalidOperationException(
-                $"組織あたりの最大タグ数({_config.Limits.MaxTagsPerOrganization})に達しています。"
-            );
-        }
+        await _tagService.CheckTagCountByOrganizationAsync(CurrentOrganizationId);
 
         var tag = await _tagService.CreateTagAsync(request, CurrentOrganizationId, CurrentUserId);
 

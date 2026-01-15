@@ -62,6 +62,13 @@ public class WorkspaceItemService
                 throw new NotFoundException("ワークスペースが見つかりません。");
             }
 
+            var organizationSettings = await _context.OrganizationSettings.FindAsync(workspace.OrganizationId) ?? throw new NotFoundException("組織設定が見つかりません。");
+
+            var limits = LimitsHelper.GetLimitsSettingsForPlan(
+                     _config.Limits,
+                     organizationSettings.Plan
+                 );
+
             // ドキュメントモードの場合、アイテム数の上限チェック
             if (workspace.Mode == WorkspaceMode.Document)
             {
@@ -69,10 +76,10 @@ public class WorkspaceItemService
                     .Where(wi => wi.WorkspaceId == workspaceId && !wi.IsArchived)
                     .CountAsync();
 
-                if (currentItemCount >= _config.Limits.MaxDocumentsPerWorkspace)
+                if (currentItemCount >= limits.MaxDocumentsPerWorkspace)
                 {
                     throw new InvalidOperationException(
-                        $"ドキュメントモードのワークスペースはアイテム数が上限（{_config.Limits.MaxDocumentsPerWorkspace}件）に達しています。");
+                        $"ドキュメントモードのワークスペースはアイテム数が上限（{limits.MaxDocumentsPerWorkspace}件）に達しています。");
                 }
             }
 
@@ -2057,10 +2064,12 @@ public class WorkspaceItemService
             throw new InvalidOperationException("このエンドポイントはドキュメントモードのワークスペースでのみ使用できます。");
         }
 
+        var limits = await GetLimitsSettingsAsync(workspace.OrganizationId);
+
         // ワークスペース内の全アイテムを取得（アーカイブ済みは除外）
         var items = await _context.WorkspaceItems
             .Where(wi => wi.WorkspaceId == workspaceId && !wi.IsArchived)
-            .Take(_config.Limits.MaxDocumentsPerWorkspace)
+            .Take(limits.MaxDocumentsPerWorkspace)
             .OrderBy(wi => wi.ItemNumber)
             .Select(wi => new
             {
@@ -2190,5 +2199,19 @@ public class WorkspaceItemService
         return await _context.Workspaces
             .AsNoTracking()
             .FirstOrDefaultAsync(w => w.Id == workspaceId);
+    }
+
+    /// <summary>
+    /// 組織の制限設定を取得
+    /// </summary>
+    private async Task<LimitsSettings> GetLimitsSettingsAsync(int organizationId)
+    {
+        var organizationSettings = await _context.OrganizationSettings.FindAsync(organizationId) ?? throw new NotFoundException("組織設定が見つかりません。");
+
+        var limits = LimitsHelper.GetLimitsSettingsForPlan(
+                 _config.Limits,
+                 organizationSettings.Plan
+        );
+        return limits;
     }
 }

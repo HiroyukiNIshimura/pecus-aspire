@@ -43,15 +43,7 @@ public class AdminSkillController : BaseAdminController
     public async Task<Created<SkillResponse>> CreateSkill([FromBody] CreateSkillRequest request)
     {
         // 組織内のスキル数をチェック
-        var existingSkillCount = await _skillService.GetSkillCountByOrganizationAsync(
-            CurrentOrganizationId
-        );
-        if (existingSkillCount >= _config.Limits.MaxSkillsPerOrganization)
-        {
-            throw new InvalidOperationException(
-                $"組織あたりの最大スキル数({_config.Limits.MaxSkillsPerOrganization})に達しています。"
-            );
-        }
+        await _skillService.CheckSkillCountByOrganizationAsync(CurrentOrganizationId);
 
         var skill = await _skillService.CreateSkillAsync(request, CurrentOrganizationId, CurrentUserId);
 

@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Models.Config;
 
 namespace Pecus.Services;
 
@@ -12,11 +14,13 @@ public class TagService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<TagService> _logger;
+    private readonly PecusConfig _config;
 
-    public TagService(ApplicationDbContext context, ILogger<TagService> logger)
+    public TagService(ApplicationDbContext context, ILogger<TagService> logger, PecusConfig config)
     {
         _context = context;
         _logger = logger;
+        _config = config;
     }
 
     /// <summary>
@@ -297,11 +301,19 @@ public class TagService
     }
 
     /// <summary>
-    /// 組織内のタグ総数取得
+    /// 組織内のタグ数をチェック
     /// </summary>
-    public async Task<int> GetTagCountByOrganizationAsync(int organizationId)
+    public async Task CheckTagCountByOrganizationAsync(int organizationId)
     {
-        return await _context.Tags.CountAsync(t => t.OrganizationId == organizationId);
+        var existingTagCount = await _context.Tags.CountAsync(t => t.OrganizationId == organizationId);
+        var organizationSettings = await _context.OrganizationSettings.FindAsync(organizationId) ?? throw new NotFoundException("組織設定が見つかりません。");
+        var limits = LimitsHelper.GetLimitsSettingsForPlan(_config.Limits, organizationSettings.Plan);
+        if (existingTagCount >= limits.MaxTagsPerOrganization)
+        {
+            throw new InvalidOperationException(
+                $"組織あたりの最大タグ数({limits.MaxTagsPerOrganization})に達しています。"
+            );
+        }
     }
 
     /// <summary>

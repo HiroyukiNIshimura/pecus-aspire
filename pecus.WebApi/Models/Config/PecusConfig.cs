@@ -23,7 +23,7 @@ namespace Pecus.Models.Config
         /// <summary>
         /// 制限設定
         /// </summary>
-        public LimitsSettings Limits { get; set; } = new();
+        public Limits Limits { get; set; } = new();
 
         /// <summary>
         /// ファイルアップロード設定
