@@ -311,7 +311,7 @@ public class RefreshTokenService
     /// <summary>
     /// IPアドレスをマスクします（例: 192.168.1.100 → 192.168.1.xxx）
     /// </summary>
-    private static string? MaskIpAddress(string? ipAddress)
+    public static string? MaskIpAddress(string? ipAddress)
     {
         if (string.IsNullOrWhiteSpace(ipAddress)) return null;
 

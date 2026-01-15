@@ -158,7 +158,9 @@ public class EntranceAuthController : ControllerBase
                 DeviceName = deviceInfo.DeviceName ?? "不明なデバイス",
                 DeviceType = deviceInfo.DeviceType.ToString(),
                 OS = deviceInfo.OS.ToString(),
-                IpAddress = deviceInfo.IpAddress,
+                IpAddress = deviceInfo.IpAddress != null
+                    ? RefreshTokenService.MaskIpAddress(deviceInfo.IpAddress)
+                    : "不明",
                 Timezone = deviceInfo.Timezone,
                 LoginAt = DateTime.UtcNow,
                 SecuritySettingsUrl = securitySettingsUrl
