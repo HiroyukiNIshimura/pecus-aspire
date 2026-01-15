@@ -8,7 +8,7 @@ namespace Pecus.Models.Config
         /// <summary>
         /// 組織あたりの最大タグ数
         /// </summary>
-        public int MaxTagsPerOrganization { get; set; } = 100;
+        public int MaxTagsPerOrganization { get; set; } = 1000;
 
         /// <summary>
         /// 組織あたりの最大スキル数
@@ -18,6 +18,6 @@ namespace Pecus.Models.Config
         /// <summary>
         /// ドキュメントモードのワークスペースあたりの最大アイテム数
         /// </summary>
-        public int MaxDocumentsPerWorkspace { get; set; } = 1000;
+        public int MaxDocumentsPerWorkspace { get; set; } = 500;
     }
 }

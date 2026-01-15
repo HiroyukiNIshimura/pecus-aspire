@@ -1,4 +1,5 @@
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Models.Config;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -28,6 +29,12 @@ public class AppPublicSettingsResponse
     /// </summary>
     [Required]
     public required UserPublicSettings User { get; init; }
+
+    /// <summary>
+    /// 制限設定
+    /// </summary>
+    [Required]
+    public required LimitsSettings Limits { get; init; }
 }
 
 /// <summary>

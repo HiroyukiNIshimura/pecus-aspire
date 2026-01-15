@@ -120,6 +120,7 @@ export type { ItemSortBy } from './models/ItemSortBy';
 export type { ItemWithTasksResponse } from './models/ItemWithTasksResponse';
 export type { JsonElement } from './models/JsonElement';
 export type { LandingPage } from './models/LandingPage';
+export type { LimitsSettings } from './models/LimitsSettings';
 export type { LoginDeviceInfo } from './models/LoginDeviceInfo';
 export type { LoginRequest } from './models/LoginRequest';
 export type { LoginResponse } from './models/LoginResponse';

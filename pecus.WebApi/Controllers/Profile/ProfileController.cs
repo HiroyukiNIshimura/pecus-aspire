@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Models.Config;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Profile;
@@ -17,16 +18,19 @@ namespace Pecus.Controllers.Profile;
 public class ProfileController : BaseSecureController
 {
     private readonly ProfileService _profileService;
+    private readonly PecusConfig _config;
     private readonly OrganizationService _organizationService;
     private readonly ILogger<ProfileController> _logger;
 
     public ProfileController(
         ILogger<ProfileController> logger,
+        PecusConfig config,
         ProfileService profileService,
         OrganizationService organizationService
     ) : base(profileService, logger)
     {
         _logger = logger;
+        _config = config;
         _profileService = profileService;
         _organizationService = organizationService;
     }
@@ -207,6 +211,7 @@ public class ProfileController : BaseSecureController
             CurrentUser = currentUserInfo,
             Organization = organizationSettings,
             User = userSettings,
+            Limits = _config.Limits
         };
 
         return TypedResults.Ok(response);

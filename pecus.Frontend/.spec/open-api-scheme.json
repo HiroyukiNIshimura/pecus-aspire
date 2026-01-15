@@ -13336,7 +13336,8 @@
         "required": [
           "currentUser",
           "organization",
-          "user"
+          "user",
+          "limits"
         ],
         "type": "object",
         "properties": {
@@ -13348,6 +13349,9 @@
           },
           "user": {
             "$ref": "#/components/schemas/UserPublicSettings"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/LimitsSettings"
           }
         },
         "description": "アプリケーション公開設定レスポンス\nフロントエンドで利用可能な組織設定とユーザー設定を統合したDTO\n※ APIキー、パスワード等のセンシティブ情報は含まない"
@@ -16640,6 +16644,27 @@
         ],
         "type": "string",
         "nullable": true
+      },
+      "LimitsSettings": {
+        "type": "object",
+        "properties": {
+          "maxTagsPerOrganization": {
+            "type": "integer",
+            "description": "組織あたりの最大タグ数",
+            "format": "int32"
+          },
+          "maxSkillsPerOrganization": {
+            "type": "integer",
+            "description": "組織あたりの最大スキル数",
+            "format": "int32"
+          },
+          "maxDocumentsPerWorkspace": {
+            "type": "integer",
+            "description": "ドキュメントモードのワークスペースあたりの最大アイテム数",
+            "format": "int32"
+          }
+        },
+        "description": "制限設定"
       },
       "LoginDeviceInfo": {
         "type": "object",
@@ -21353,6 +21378,16 @@
             "type": "integer",
             "description": "待機中タスクの表示件数",
             "format": "int32"
+          },
+          "badgeVisibility": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BadgeVisibility"
+              }
+            ]
           }
         },
         "description": "ユーザーの公開設定"

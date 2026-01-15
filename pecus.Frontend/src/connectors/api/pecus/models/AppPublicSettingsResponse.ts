@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CurrentUserInfo } from './CurrentUserInfo';
+import type { LimitsSettings } from './LimitsSettings';
 import type { OrganizationPublicSettings } from './OrganizationPublicSettings';
 import type { UserPublicSettings } from './UserPublicSettings';
 /**
@@ -14,5 +15,6 @@ export type AppPublicSettingsResponse = {
     currentUser: CurrentUserInfo;
     organization: OrganizationPublicSettings;
     user: UserPublicSettings;
+    limits: LimitsSettings;
 };
 
