@@ -339,7 +339,8 @@ public class RefreshTokenService
     private static string GenerateDeviceIdentifier(DeviceInfo deviceInfo)
     {
         // デバイス固有の情報を組み合わせて識別子を生成
-        var identifier = $"{deviceInfo.DeviceType}:{deviceInfo.OS}:{deviceInfo.UserAgent ?? "unknown"}:{deviceInfo.IpAddress ?? "unknown"}";
+        // NOTE: IPアドレスは頻繁に変わる（特にモバイル、iCloud Private Relay）ため除外
+        var identifier = $"{deviceInfo.DeviceType}:{deviceInfo.OS}:{deviceInfo.UserAgent ?? "unknown"}";
         using var sha256 = SHA256.Create();
         var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(identifier));
         return Convert.ToBase64String(hash);
