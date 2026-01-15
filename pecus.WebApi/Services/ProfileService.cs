@@ -305,33 +305,38 @@ public class ProfileService
     /// <returns>削除に成功した場合はtrue、デバイスが見つからない場合はfalse</returns>
     public async Task<bool> DeleteUserDeviceAsync(int userId, int deviceId)
     {
-        // デバイスを取得（ユーザー所有確認）
-        var device = await _context.Devices
-            .Include(d => d.RefreshTokens)
-            .FirstOrDefaultAsync(d => d.Id == deviceId && d.UserId == userId);
+        // デバイスを論理削除（IsRevoked = true）
+        // ExecuteUpdateAsync で直接更新することで xmin 競合を回避
+        var affected = await _context.Devices
+            .Where(d => d.Id == deviceId && d.UserId == userId && !d.IsRevoked)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(d => d.IsRevoked, true));
 
-        if (device == null)
+        if (affected == 0)
         {
-            _logger.LogWarning("デバイス削除失敗: デバイスが見つからないか、アクセス権限がありません。UserId: {UserId}, DeviceId: {DeviceId}", userId, deviceId);
+            _logger.LogWarning("デバイス削除失敗: デバイスが見つからないか、既に無効化されています。UserId: {UserId}, DeviceId: {DeviceId}", userId, deviceId);
             return false;
         }
 
-        // 関連するリフレッシュトークンを無効化
-        if (device.RefreshTokens.Any())
+        // 関連するリフレッシュトークンを無効化（Redis + DB）
+        // トラッキングせずに取得し、RevokeRefreshTokenAsync で個別に無効化
+        var refreshTokens = await _context.RefreshTokens
+            .AsNoTracking()
+            .Where(rt => rt.DeviceId == deviceId && !rt.IsRevoked)
+            .Select(rt => rt.Token)
+            .ToListAsync();
+
+        foreach (var token in refreshTokens)
         {
-            foreach (var refreshToken in device.RefreshTokens.Where(rt => !rt.IsRevoked))
-            {
-                await _refreshTokenService.RevokeRefreshTokenAsync(refreshToken.Token);
-            }
-            _logger.LogDebug("デバイスに関連するリフレッシュトークンを無効化しました。DeviceId: {DeviceId}, TokenCount: {TokenCount}", deviceId, device.RefreshTokens.Count(rt => !rt.IsRevoked));
+            await _refreshTokenService.RevokeRefreshTokenAsync(token);
         }
 
-        // デバイスを削除
-        _context.Devices.Remove(device);
-        await _context.SaveChangesAsync();
+        if (refreshTokens.Count > 0)
+        {
+            _logger.LogDebug("デバイスに関連するリフレッシュトークンを無効化しました。DeviceId: {DeviceId}, TokenCount: {TokenCount}", deviceId, refreshTokens.Count);
+        }
 
-        _logger.LogInformation("デバイスを削除しました。UserId: {UserId}, DeviceId: {DeviceId}", userId, deviceId);
-
+        _logger.LogInformation("デバイスを無効化しました。UserId: {UserId}, DeviceId: {DeviceId}", userId, deviceId);
         return true;
     }
 
