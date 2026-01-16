@@ -211,8 +211,8 @@ export default function WorkspaceDetailClient({
     isOpen: boolean;
     userId: number;
     userName: string;
-    currentRole: WorkspaceRole;
-    newRole: WorkspaceRole;
+    currentRole: NonNullable<WorkspaceRole>;
+    newRole: NonNullable<WorkspaceRole>;
   }>({ isOpen: false, userId: 0, userName: '', currentRole: 'Member', newRole: 'Member' });
 
   // ロール変更時のアサインメントエラー情報
@@ -555,9 +555,9 @@ export default function WorkspaceDetailClient({
   };
 
   /** ロール変更モーダルを開く */
-  const handleChangeRole = (userId: number, userName: string, newRole: WorkspaceRole) => {
+  const handleChangeRole = (userId: number, userName: string, newRole: NonNullable<WorkspaceRole>) => {
     const member = members.find((m) => m.id === userId);
-    const currentRole = member?.workspaceRole || 'Member';
+    const currentRole: NonNullable<WorkspaceRole> = member?.workspaceRole ?? 'Member';
 
     if (currentRole === newRole) {
       return;

@@ -4,10 +4,13 @@ import type { MemberItem } from '@/components/workspaces/WorkspaceMemberList';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
 import AvatarImage from './AvatarImage';
 
+/** null を除外したワークスペースロール型 */
+type WorkspaceRoleValue = NonNullable<WorkspaceRole>;
+
 /**
  * ロールの表示設定
  */
-const roleConfig: Record<WorkspaceRole, { label: string; badgeClass: string; order: number }> = {
+const roleConfig: Record<WorkspaceRoleValue, { label: string; badgeClass: string; order: number }> = {
   Owner: { label: 'オーナー', badgeClass: 'badge-outline badge-warning', order: 0 },
   Member: { label: 'メンバー', badgeClass: 'badge-outline badge-success', order: 1 },
   Viewer: { label: '閲覧者', badgeClass: 'badge-outline badge-light', order: 2 },

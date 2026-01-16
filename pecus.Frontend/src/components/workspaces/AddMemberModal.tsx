@@ -6,6 +6,9 @@ import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInp
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { UserSearchResultResponse, WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
 
+/** null を除外したワークスペースロール型 */
+type WorkspaceRoleValue = NonNullable<WorkspaceRole>;
+
 /**
  * スキルマッチング用のスキル情報
  */
@@ -40,7 +43,7 @@ interface AddMemberModalProps {
     userId: number,
     userName: string,
     email: string,
-    role: WorkspaceRole,
+    role: WorkspaceRoleValue,
     identityIconUrl: string | null,
   ) => Promise<void>;
   /** スキルマッチングを表示するかどうか */
@@ -50,7 +53,7 @@ interface AddMemberModalProps {
 }
 
 /** ロール選択肢 */
-const roleOptions: { value: WorkspaceRole; label: string }[] = [
+const roleOptions: { value: WorkspaceRoleValue; label: string }[] = [
   { value: 'Member', label: 'メンバー' },
   { value: 'Viewer', label: '閲覧者' },
   { value: 'Owner', label: 'オーナー' },
@@ -119,7 +122,7 @@ export default function AddMemberModal({
 
   // 選択状態
   const [selectedUser, setSelectedUser] = useState<UserSearchResultResponse | null>(null);
-  const [selectedRole, setSelectedRole] = useState<WorkspaceRole>('Member');
+  const [selectedRole, setSelectedRole] = useState<WorkspaceRoleValue>('Member');
   const [isAdding, setIsAdding] = useState(false);
 
   // 既存メンバーのIDセット
@@ -379,7 +382,7 @@ export default function AddMemberModal({
                   id="roleSelect"
                   className="select select-bordered w-full"
                   value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as WorkspaceRole)}
+                  onChange={(e) => setSelectedRole(e.target.value as WorkspaceRoleValue)}
                   disabled={isAdding}
                 >
                   {roleOptions.map((option) => (

@@ -3,15 +3,18 @@
 import { useEffect, useState } from 'react';
 import type { WorkspaceMemberAssignmentsResponse, WorkspaceRole } from '@/connectors/api/pecus';
 
+/** null を除外したワークスペースロール型 */
+type WorkspaceRoleValue = NonNullable<WorkspaceRole>;
+
 interface ChangeRoleModalProps {
   /** モーダルの表示状態 */
   isOpen: boolean;
   /** 変更対象のユーザー名 */
   userName: string;
   /** 現在のロール */
-  currentRole: WorkspaceRole;
+  currentRole: WorkspaceRoleValue;
   /** 新しいロール */
-  newRole: WorkspaceRole;
+  newRole: WorkspaceRoleValue;
   /** モーダルを閉じるコールバック */
   onClose: () => void;
   /** 変更確定時のコールバック */
@@ -23,7 +26,7 @@ interface ChangeRoleModalProps {
 }
 
 /** ロール表示名 */
-const roleDisplayNames: Record<WorkspaceRole, string> = {
+const roleDisplayNames: Record<WorkspaceRoleValue, string> = {
   Owner: 'オーナー',
   Member: 'メンバー',
   Viewer: '閲覧者',

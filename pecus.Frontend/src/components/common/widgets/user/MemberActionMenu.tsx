@@ -3,8 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
 
+/** null を除外したワークスペースロール型 */
+type WorkspaceRoleValue = NonNullable<WorkspaceRole>;
+
 /** ロール変更の選択肢 */
-const roleOptions: { value: WorkspaceRole; label: string }[] = [
+const roleOptions: { value: WorkspaceRoleValue; label: string }[] = [
   { value: 'Owner', label: 'オーナー' },
   { value: 'Member', label: 'メンバー' },
   { value: 'Viewer', label: '閲覧者' },
@@ -19,9 +22,9 @@ export interface MemberActionMenuProps {
   /** メンバーのユーザー名 */
   userName: string;
   /** 現在のロール */
-  currentRole: WorkspaceRole;
+  currentRole: WorkspaceRoleValue;
   /** ロール変更時のコールバック */
-  onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRole) => void;
+  onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRoleValue) => void;
   /** メンバー削除時のコールバック */
   onRemove?: (userId: number, userName: string) => void;
 }
@@ -58,7 +61,7 @@ export default function MemberActionMenu({
     };
   }, [isMenuOpen]);
 
-  const handleRoleChange = (newRole: WorkspaceRole) => {
+  const handleRoleChange = (newRole: WorkspaceRoleValue) => {
     if (onChangeRole && newRole !== currentRole) {
       onChangeRole(userId, userName, newRole);
     }

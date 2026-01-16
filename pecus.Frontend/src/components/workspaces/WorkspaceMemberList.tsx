@@ -6,6 +6,9 @@ import MemberCard from '@/components/common/widgets/user/MemberCard';
 import MemberInfoMenu from '@/components/common/widgets/user/MemberInfoMenu';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
 
+/** null を除外したワークスペースロール型 */
+export type WorkspaceRoleValue = NonNullable<WorkspaceRole>;
+
 /**
  * メンバー情報の共通インターフェース
  * WorkspaceUserItem と WorkspaceDetailUserResponse の両方を受け入れ可能
@@ -46,7 +49,7 @@ interface WorkspaceMemberListProps {
   /** メンバー削除ボタンクリック時のコールバック */
   onRemoveMember?: (userId: number, userName: string) => void;
   /** ロール変更時のコールバック */
-  onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRole) => void;
+  onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRoleValue) => void;
   /** ハイライト表示するユーザーIDのセット（新規追加時など） */
   highlightedUserIds?: Set<number>;
 }

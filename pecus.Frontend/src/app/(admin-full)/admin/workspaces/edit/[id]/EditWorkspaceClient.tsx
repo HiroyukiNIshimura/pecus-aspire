@@ -64,8 +64,8 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
     isOpen: boolean;
     userId: number;
     userName: string;
-    currentRole: WorkspaceRole;
-    newRole: WorkspaceRole;
+    currentRole: NonNullable<WorkspaceRole>;
+    newRole: NonNullable<WorkspaceRole>;
   }>({ isOpen: false, userId: 0, userName: '', currentRole: 'Member', newRole: 'Member' });
 
   // ロール変更時のアサインメントエラー情報
@@ -147,7 +147,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
     userId: number,
     userName: string,
     email: string,
-    role: WorkspaceRole,
+    role: NonNullable<WorkspaceRole>,
     identityIconUrl: string | null,
   ) => {
     const result = await addWorkspaceMember(workspaceDetail.id!, userId, role);
@@ -211,10 +211,10 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
   };
 
   /** ロール変更モーダルを開く */
-  const handleChangeRole = (userId: number, userName: string, newRole: WorkspaceRole) => {
+  const handleChangeRole = (userId: number, userName: string, newRole: NonNullable<WorkspaceRole>) => {
     // 現在のロールを取得
     const member = members.find((m) => m.userId === userId);
-    const currentRole = member?.workspaceRole || 'Member';
+    const currentRole: NonNullable<WorkspaceRole> = member?.workspaceRole ?? 'Member';
 
     // 同じロールの場合は何もしない
     if (currentRole === newRole) {
