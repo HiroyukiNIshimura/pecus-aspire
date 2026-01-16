@@ -207,6 +207,7 @@ echo ""
 echo "🔍 Infraサービスの状態を確認中..."
 if [ -f "$OPS_DIR/lib.sh" ]; then
     # lib.sh を読み込んで check_infra_healthy を使用
+    # shellcheck disable=SC2034
     script_dir="$OPS_DIR"
     . "$OPS_DIR/lib.sh"
 
