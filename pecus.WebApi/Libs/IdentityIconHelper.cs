@@ -47,7 +47,7 @@ public static class IdentityIconHelper
     /// </remarks>
     /// <param name="userId">ユーザーID</param>
     /// <param name="avatarPath">アバターパス（ファイル名 or API パス or 相対パス）</param>
-    /// <returns>API URL形式のアイコンURL（例: "/api/downloads/avatar/3/filename.webp"）、失敗時は空文字列</returns>
+    /// <returns>API URL形式のアイコンURL（例: "/api/images/avatar/3/filename.webp"）、失敗時は空文字列</returns>
     public static string GetUserAvatarUrl(int userId, string? avatarPath)
     {
         // 入力検証
@@ -57,7 +57,7 @@ public static class IdentityIconHelper
         }
 
         // avatarPath が既に API パス形式の場合はそのまま返す
-        if (avatarPath.StartsWith("/api/downloads/", StringComparison.OrdinalIgnoreCase))
+        if (avatarPath.StartsWith("/api/images/", StringComparison.OrdinalIgnoreCase))
         {
             return avatarPath;
         }
@@ -65,8 +65,8 @@ public static class IdentityIconHelper
         // ファイル名を抽出
         var fileName = ExtractFileName(avatarPath);
 
-        // API URL形式で返却
-        return $"/api/downloads/avatar/{userId}/{fileName}";
+        // API URL形式で返却（フロントエンドの /api/images/ Route にマッチ）
+        return $"/api/images/avatar/{userId}/{fileName}";
     }
 
     /// <summary>
