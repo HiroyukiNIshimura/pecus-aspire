@@ -1,7 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { deleteWorkspaceItemAttachment, fetchWorkspaceItemAttachments } from '@/actions/workspaceItemAttachment';
+import {
+  deleteWorkspaceItemAttachment,
+  fetchWorkspaceItemAttachments,
+  uploadWorkspaceItemAttachment,
+} from '@/actions/workspaceItemAttachment';
 import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import AttachmentDropzone from './AttachmentDropzone';
@@ -97,22 +101,32 @@ export default function ItemAttachmentModal({
         setUploadingFiles((prev) => [...prev, { id: tempId, fileName: file.name, progress: 0 }]);
 
         try {
+          // ファイルをArrayBufferに変換してからBlobを作成
+          // これにより、ファイルハンドルの問題を回避（Excelで開いている等）
+          // クライアント側でファイルを読み込むことで、NotReadableErrorをここでキャッチできる
+          let fileBlob: Blob;
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            fileBlob = new Blob([arrayBuffer], { type: file.type || 'application/octet-stream' });
+          } catch (readError) {
+            // ファイル読み取りエラー（Excelで開いている、クラウドストレージ等）
+            if (readError instanceof Error && (readError.name === 'NotReadableError' || readError.message.includes('could not be read'))) {
+              throw new Error('ファイルを読み込めません。ファイルが他のアプリで開いていないか、クラウドストレージの場合はローカルにダウンロードしてから再度お試しください。');
+            }
+            throw readError;
+          }
+
           const formData = new FormData();
-          formData.append('file', file);
+          formData.append('file', fileBlob, file.name);
 
-          // 進捗を更新するシミュレーション（実際はXHRで進捗を取得できるが、fetch APIでは難しい）
-          setUploadingFiles((prev) => prev.map((f) => (f.id === tempId ? { ...f, progress: 30 } : f)));
+          // 進捗を更新（Server Actionsでは実際の進捗は取得できないためシミュレーション）
+          setUploadingFiles((prev) => prev.map((f) => (f.id === tempId ? { ...f, progress: 50 } : f)));
 
-          const response = await fetch(`/api/workspaces/${workspaceId}/items/${itemId}/attachments`, {
-            method: 'POST',
-            body: formData,
-          });
+          // Server Actionを呼び出し
+          const result = await uploadWorkspaceItemAttachment(workspaceId, itemId, formData);
 
-          setUploadingFiles((prev) => prev.map((f) => (f.id === tempId ? { ...f, progress: 90 } : f)));
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || 'アップロードに失敗しました');
+          if (!result.success) {
+            throw new Error(result.message || 'アップロードに失敗しました');
           }
 
           // アップロード完了 - サーバーから最新の添付ファイル一覧を再取得

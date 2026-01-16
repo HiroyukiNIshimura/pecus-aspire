@@ -44,16 +44,25 @@ export async function GET(
     // Content-Type を取得（デフォルトは application/octet-stream）
     const contentType = response.headers['content-type'] || 'application/octet-stream';
 
+    // バックエンドからの Content-Disposition ヘッダーを取得
+    // ASP.NET Core は `content-disposition: attachment; filename=<originalFileName>` を返す
+    const backendContentDisposition = response.headers['content-disposition'] as string | undefined;
+
     // レスポンスヘッダーを構築
     const headers: Record<string, string> = {
       'Content-Type': contentType,
     };
 
     if (isDownload) {
-      // ダウンロードモード: ブラウザにダウンロードを促す
-      // RFC 5987 に従い filename* で UTF-8 エンコード
-      const encodedFileName = encodeURIComponent(fileName).replace(/['()]/g, escape);
-      headers['Content-Disposition'] = `attachment; filename*=UTF-8''${encodedFileName}`;
+      if (backendContentDisposition) {
+        // バックエンドからのヘッダーをそのまま転送
+        // 日本語ファイル名は RFC 5987 形式でエンコードされている
+        headers['Content-Disposition'] = backendContentDisposition;
+      } else {
+        // フォールバック: URLのファイル名を使用
+        const encodedFileName = encodeURIComponent(fileName).replace(/['()]/g, escape);
+        headers['Content-Disposition'] = `attachment; filename*=UTF-8''${encodedFileName}`;
+      }
     } else {
       // インラインモード: ブラウザ内で表示（キャッシュ有効）
       headers['Cache-Control'] = 'private, max-age=3600';

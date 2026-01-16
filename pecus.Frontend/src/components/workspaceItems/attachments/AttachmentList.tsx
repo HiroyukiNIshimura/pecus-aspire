@@ -30,11 +30,14 @@ interface AttachmentListProps {
 }
 
 /**
- * ダウンロードURLを生成
+ * バックエンドのdownloadUrlをNext.jsプロキシURLに変換
+ * バックエンド形式: /api/workspaces/{id}/items/{itemId}/attachments/download/{fileName}
+ * Next.js形式: /api/workspaces/{id}/items/{itemId}/attachments/{fileName}
  */
-function generateDownloadUrl(workspaceId: number, itemId: number, fileName: string | undefined): string {
-  if (!fileName) return '#';
-  return `/api/workspaces/${workspaceId}/items/${itemId}/attachments/${encodeURIComponent(fileName)}?download=true`;
+function convertToProxyUrl(downloadUrl: string | undefined): string {
+  if (!downloadUrl) return '#';
+  // "/download/" を削除してNext.jsプロキシ形式に変換
+  return downloadUrl.replace('/attachments/download/', '/attachments/') + '?download=true';
 }
 
 /**
@@ -45,8 +48,6 @@ export default function AttachmentList({
   uploadingFiles,
   onDelete,
   canDelete,
-  workspaceId,
-  itemId,
 }: AttachmentListProps) {
   const hasContent = attachments.length > 0 || uploadingFiles.length > 0;
 
@@ -73,7 +74,7 @@ export default function AttachmentList({
           attachment={attachment}
           onDelete={() => onDelete(attachment.id)}
           canDelete={canDelete(attachment)}
-          downloadUrl={generateDownloadUrl(workspaceId, itemId, attachment.fileName)}
+          downloadUrl={convertToProxyUrl(attachment.downloadUrl)}
         />
       ))}
     </div>
