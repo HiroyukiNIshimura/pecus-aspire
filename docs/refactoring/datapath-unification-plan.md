@@ -40,6 +40,7 @@
 | `pecus.AppHost/AppHost.cs` | 環境変数注入 | `dataPath + "uploads"` | ✅ 正しいパターン |
 | `pecus.Libs/DB/Seed/Atoms/DemoAtoms.cs` | コード内結合 | `dataPath + "uploads"` | ✅ 正しいパターン |
 | `deploy/docker-compose.app-blue.yml` | 環境変数 | `/app/data/uploads` | Docker 内部パス |
+| `deploy/docker-compose.app-green.yml` | 環境変数 | `/app/data/uploads` | Docker 内部パス |
 
 ---
 
