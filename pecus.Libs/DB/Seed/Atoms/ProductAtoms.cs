@@ -539,6 +539,13 @@ public class ProductAtoms
             },
             new Genre
             {
+                Name = "保守・運用",
+                Description = "システムの保守や運用",
+                Icon = "maintenance",
+                DisplayOrder = 10,
+            },
+            new Genre
+            {
                 Name = "その他・個人メモ",
                 Description = "メモ、ToDoリスト、連絡・通知文書",
                 Icon = "general",
