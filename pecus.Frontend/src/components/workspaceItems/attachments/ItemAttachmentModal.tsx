@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   deleteWorkspaceItemAttachment,
   fetchWorkspaceItemAttachments,
@@ -53,6 +53,31 @@ export default function ItemAttachmentModal({
 
   const [attachments, setAttachments] = useState<WorkspaceItemAttachmentResponse[]>(initialAttachments);
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  // タスクフィルター状態（アイテム詳細から開いた場合のみ使用）
+  const [selectedTaskFilter, setSelectedTaskFilter] = useState<number | 'all'>('all');
+
+  // ユニークなタスクリストを抽出（アイテム詳細から開いた場合のみ）
+  const taskOptions = useMemo(() => {
+    if (taskId !== undefined) return []; // タスク詳細から開いた場合はフィルター不要
+    const taskMap = new Map<number, { sequence: number; taskTypeName: string }>();
+    for (const att of attachments) {
+      if (att.task?.sequenceNumber) {
+        taskMap.set(att.task.sequenceNumber, {
+          sequence: att.task.sequenceNumber,
+          taskTypeName: att.task.taskTypeName || '',
+        });
+      }
+    }
+    return Array.from(taskMap.values()).sort((a, b) => a.sequence - b.sequence);
+  }, [attachments, taskId]);
+
+  // フィルタリングされた添付ファイル一覧
+  const filteredAttachments = useMemo(() => {
+    if (taskId !== undefined || selectedTaskFilter === 'all') {
+      return attachments;
+    }
+    return attachments.filter((a) => a.task?.sequenceNumber === selectedTaskFilter);
+  }, [attachments, taskId, selectedTaskFilter]);
 
   // 初期データが変更されたら同期
   useEffect(() => {
@@ -188,11 +213,30 @@ export default function ItemAttachmentModal({
         >
           {/* ヘッダー */}
           <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
-            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-              <span className="icon-[mdi--paperclip] size-6" aria-hidden="true" />
-              添付ファイル
-              {attachments.length > 0 && <span className="badge badge-secondary badge-sm">{attachments.length}</span>}
-            </h2>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                <span className="icon-[mdi--paperclip] size-6" aria-hidden="true" />
+                添付ファイル
+                {attachments.length > 0 && <span className="badge badge-secondary badge-sm">{attachments.length}</span>}
+              </h2>
+              {/* タスクフィルター（アイテム詳細から開いた場合のみ表示） */}
+              {taskId === undefined && taskOptions.length > 0 && (
+                <select
+                  className="select select-sm select-bordered"
+                  value={selectedTaskFilter}
+                  onChange={(e) => setSelectedTaskFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                  aria-label="タスクで絞り込み"
+                >
+                  <option value="all">すべて</option>
+                  {taskOptions.map((t) => (
+                    <option key={t.sequence} value={t.sequence}>
+                      T-{t.sequence}
+                      {t.taskTypeName && `: ${t.taskTypeName}`}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
             <button type="button" onClick={onClose} className="btn btn-sm btn-circle btn-secondary" aria-label="閉じる">
               <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
@@ -211,7 +255,7 @@ export default function ItemAttachmentModal({
 
             {/* ファイル一覧 */}
             <AttachmentList
-              attachments={attachments}
+              attachments={filteredAttachments}
               uploadingFiles={uploadingFiles}
               onDelete={handleDelete}
               canDelete={canDeleteAttachment}
