@@ -39,6 +39,12 @@ else
 
 // Pecus設定の読み込みと登録
 var pecusConfig = builder.Configuration.GetSection("Pecus").Get<PecusConfig>() ?? new PecusConfig();
+// DataPaths:Uploads から StoragePath を設定（環境変数 DataPaths__Uploads 経由）
+var uploadsPath = builder.Configuration["DataPaths:Uploads"];
+if (!string.IsNullOrEmpty(uploadsPath))
+{
+    pecusConfig.FileUpload.StoragePath = uploadsPath;
+}
 builder.Services.AddSingleton(pecusConfig);
 
 // JwtBearerUtilを初期化

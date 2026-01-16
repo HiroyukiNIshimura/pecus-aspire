@@ -133,24 +133,25 @@ public static class CleanupJobScheduler
         // 設定をクラスバインド
         var settings = configuration.GetSection("UploadsCleanup").Get<UploadsCleanupSettings>() ?? new UploadsCleanupSettings();
 
-        // UploadsBasePath が設定されていない場合はジョブを登録しない
-        if (string.IsNullOrWhiteSpace(settings.UploadsBasePath))
+        // DataPaths:Uploads から絶対パスを取得（環境変数 DataPaths__Uploads 経由）
+        var uploadsPath = configuration["DataPaths:Uploads"];
+        if (string.IsNullOrWhiteSpace(uploadsPath))
         {
-            Serilog.Log.Warning("UploadsCleanup: UploadsBasePath is not configured. Skipping job registration.");
+            Serilog.Log.Warning("UploadsCleanup: DataPaths:Uploads is not configured. Skipping job registration.");
             return;
         }
 
         // パスが存在しない場合は作成を試みる
-        if (!Directory.Exists(settings.UploadsBasePath))
+        if (!Directory.Exists(uploadsPath))
         {
             try
             {
-                Directory.CreateDirectory(settings.UploadsBasePath);
-                Serilog.Log.Information("UploadsCleanup: Created directory {UploadsBasePath}", settings.UploadsBasePath);
+                Directory.CreateDirectory(uploadsPath);
+                Serilog.Log.Information("UploadsCleanup: Created directory {UploadsPath}", uploadsPath);
             }
             catch (Exception ex)
             {
-                Serilog.Log.Warning(ex, "UploadsCleanup: Failed to create directory {UploadsBasePath}. Skipping job registration.", settings.UploadsBasePath);
+                Serilog.Log.Warning(ex, "UploadsCleanup: Failed to create directory {UploadsPath}. Skipping job registration.", uploadsPath);
                 return;
             }
         }
@@ -159,12 +160,12 @@ public static class CleanupJobScheduler
         settings.Hour = Math.Clamp(settings.Hour, 0, 23);
         settings.Minute = Math.Clamp(settings.Minute, 0, 59);
 
-        Serilog.Log.Information("UploadsCleanup: Registering job with UploadsBasePath={UploadsBasePath}, TempRetentionHours={TempRetentionHours}, Schedule={Hour}:{Minute:D2}",
-            settings.UploadsBasePath, settings.TempRetentionHours, settings.Hour, settings.Minute);
+        Serilog.Log.Information("UploadsCleanup: Registering job with UploadsPath={UploadsPath}, TempRetentionHours={TempRetentionHours}, Schedule={Hour}:{Minute:D2}",
+            uploadsPath, settings.TempRetentionHours, settings.Hour, settings.Minute);
 
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.UploadsCleanupTasks>(
             "UploadsCleanup",
-            task => task.CleanupUploadsAsync(settings.UploadsBasePath, settings.TempRetentionHours),
+            task => task.CleanupUploadsAsync(uploadsPath, settings.TempRetentionHours),
             Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
         );
     }

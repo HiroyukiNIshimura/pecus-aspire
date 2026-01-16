@@ -5,6 +5,7 @@ set -eu
 # trap 0 は POSIX で EXIT シグナルを意味する
 trap 'tput cnorm 2>/dev/null || true' 0
 
+# ホスト上のデータパス(ボリュームマウント先)
 export DATA_PATH="/var/docker/coati/data"
 
 # script_dir は呼び出し元で定義されていること

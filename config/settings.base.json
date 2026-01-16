@@ -1,13 +1,14 @@
 {
   "_comment": "このファイルが設定の唯一のソースです。scripts/generate-appsettings.js で各プロジェクト用に生成されます。",
 
+  "_folders": {
+    "_comment": "data ディレクトリ配下のフォルダ名。ベースパスは環境変数 DATA_PATH で指定（開発: AppHost.cs が自動計算、本番: docker-compose.yml で設定）",
+    "uploads": "uploads",
+    "notifications": "notifications"
+  },
+
   "_infrastructure": {
-    "_comment": "Docker/Aspire 共通のインフラ設定",
-    "dataPath": "../data",
-    "folders": {
-      "_comment": "dataPath 配下のサブフォルダ名。実際のパスは generate-appsettings.js で生成される",
-      "uploads": "uploads"
-    },
+    "_comment": "Docker/Aspire 共通のインフラ設定（ポート、ホスト名、認証情報など）",
     "postgres": {
       "user": "pecus",
       "password": "P@ssw0rd",

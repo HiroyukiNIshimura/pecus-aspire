@@ -53,18 +53,6 @@ function deepMerge(target, source) {
   return result;
 }
 
-/**
- * _infrastructure.dataPath と folders からフルパスを生成
- * @param {object} infra - _infrastructure オブジェクト
- * @param {string} folderName - folders 内のキー名
- * @returns {string} 結合されたパス
- */
-function resolveDataPath(infra, folderName) {
-  const basePath = infra.dataPath;
-  const folder = infra.folders?.[folderName] ?? folderName;
-  return path.posix.join(basePath, folder);
-}
-
 function applyEnvOverrides(config) {
   // Infrastructure (PostgreSQL)
   if (process.env.POSTGRES_USER) {
@@ -72,9 +60,6 @@ function applyEnvOverrides(config) {
   }
   if (process.env.POSTGRES_PASSWORD) {
     config._infrastructure.postgres.password = process.env.POSTGRES_PASSWORD;
-  }
-  if (process.env.DATA_PATH) {
-    config._infrastructure.dataPath = process.env.DATA_PATH;
   }
 
   // URLs
@@ -175,11 +160,13 @@ function generate() {
 
   const config = loadConfig(env);
 
-  const { _comment, _infrastructure, _shared, ...projects } = config;
+  const { _comment, _folders, _infrastructure, _shared, ...projects } = config;
 
   // pecus.AppHost/appsettings.json (Aspire 開発環境用)
+  // Folders を含める（AppHost が絶対パスを計算して環境変数で注入）
   const appHostConfig = {
     Infrastructure: _infrastructure,
+    Folders: _folders,
   };
   const appHostPath = path.join(ROOT_DIR, 'pecus.AppHost', 'appsettings.json');
   fs.writeFileSync(appHostPath, JSON.stringify(appHostConfig, null, 2) + '\n');
@@ -188,10 +175,13 @@ function generate() {
   // pecus.WebApi/appsettings.json
   // _shared.Application を Pecus.Application にマージ
   // _shared.LexicalConverter に URL を追加
+  // Folders: フォルダ名のみ。実際のパスは環境変数 DataPaths__* で注入される
   const { Application: sharedApplication, LexicalConverter: sharedLexical, ...restShared } = _shared;
   const webapiConfig = {
     ...restShared,
     ...projects.webapi,
+    // Folders: フォルダ名のみ（ベースパスは環境変数 DATA_PATH で注入）
+    Folders: _folders,
     // LexicalConverter: URL は _infrastructure.urls から取得
     LexicalConverter: {
       Endpoint: _infrastructure.urls.lexicalConverter,
@@ -200,11 +190,6 @@ function generate() {
     Pecus: {
       ...projects.webapi.Pecus,
       Application: sharedApplication,
-      // FileUpload.StoragePath を _infrastructure から生成
-      FileUpload: {
-        ...projects.webapi.Pecus.FileUpload,
-        StoragePath: resolveDataPath(_infrastructure, 'uploads'),
-      },
     },
     // Frontend URL を追加
     Frontend: {
@@ -216,9 +201,12 @@ function generate() {
   console.log('Generated:', webapiPath);
 
   // pecus.BackFire/appsettings.json
+  // Folders: フォルダ名のみ。実際のパスは環境変数 DataPaths__* で注入される
   const backfireConfig = {
     ...restShared,
     ...projects.backfire,
+    // Folders: フォルダ名のみ（ベースパスは環境変数 DATA_PATH で注入）
+    Folders: _folders,
     // LexicalConverter: URL は _infrastructure.urls から取得
     LexicalConverter: {
       Endpoint: _infrastructure.urls.lexicalConverter,
@@ -231,9 +219,6 @@ function generate() {
     Frontend: {
       Endpoint: _infrastructure.urls.frontend,
     },
-    // UploadsCleanup: パス設定は環境変数で注入されるため、ここでは生成しない
-    // Aspire: AppHost.cs が UploadsCleanup__UploadsBasePath を注入
-    // Docker: docker-compose.yml が UploadsCleanup__UploadsBasePath を注入
   };
   const backfirePath = path.join(ROOT_DIR, 'pecus.BackFire', 'appsettings.json');
   fs.writeFileSync(backfirePath, JSON.stringify(backfireConfig, null, 2) + '\n');
@@ -241,16 +226,11 @@ function generate() {
 
   // pecus.DbManager/appsettings.json
   // LexicalConverter: URL は _infrastructure.urls から、その他は _shared から取得
-  // _infrastructure.dataPath を DbManager に渡す（デモユーザーのアバター設定用）
+  // Folders: フォルダ名のみ。実際のパスは環境変数 DataPaths__* で注入される
   const dbmanagerConfig = {
     ...projects.dbmanager,
-    _infrastructure: {
-      dataPath: _infrastructure.dataPath,
-    },
-    // FileUpload.StoragePath を _infrastructure から生成
-    FileUpload: {
-      StoragePath: resolveDataPath(_infrastructure, 'uploads'),
-    },
+    // Folders: フォルダ名のみ（ベースパスは環境変数 DATA_PATH で注入）
+    Folders: _folders,
     LexicalConverter: {
       Endpoint: _infrastructure.urls.lexicalConverter,
       GrpcApiKey: _shared.LexicalConverter.GrpcApiKey,
@@ -284,6 +264,13 @@ function generateDockerEnv(infra, _shared, _projects) {
   const docker = infra.docker || {};
   const nginxHttpPort = process.env.NGINX_HTTP_PORT || '80';
   const backupKeepDays = process.env.BACKUP_KEEP_DAYS || '14';
+  // DATA_PATH は環境変数から取得、未設定の場合は警告を出してデフォルト値を使用
+  const dataPath = process.env.DATA_PATH || infra.dataPath;
+  if (!dataPath) {
+    console.warn('Warning: DATA_PATH environment variable is not set. Using default: /app/data');
+    console.warn('For production, set DATA_PATH in your shell or CI/CD environment.');
+  }
+  const resolvedDataPath = dataPath || '/app/data';
 
   const lines = [
     '# ============================================',
@@ -297,7 +284,7 @@ function generateDockerEnv(infra, _shared, _projects) {
     `POSTGRES_DB=${infra.postgres.db}`,
     '',
     '# Data Path (host directory for volumes)',
-    `DATA_PATH=${infra.dataPath}`,
+    `DATA_PATH=${resolvedDataPath}`,
     '',
     '# Ports (external)',
     `WEBAPI_PORT=${infra.ports.webapi}`,

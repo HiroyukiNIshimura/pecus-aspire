@@ -2,8 +2,7 @@
   "_comment": "本番環境用のオーバーライド設定。このファイルをコピーして settings.base.prod.json を作成し、各値を本番環境に合わせて設定してください。",
 
   "_infrastructure": {
-    "_comment_1": "【必須】本番環境のパスと認証情報",
-    "dataPath": "/var/your-app/data",
+    "_comment_1": "【注意】dataPath は廃止されました。本番環境のパスは docker-compose.yml の DATA_PATH 環境変数で設定してください。",
 
     "postgres": {
       "_comment": "【必須】本番用の強力なパスワードを設定",

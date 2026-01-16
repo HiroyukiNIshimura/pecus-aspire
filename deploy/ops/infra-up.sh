@@ -31,6 +31,19 @@ done
 ensure_env_file
 ensure_active_slot_conf
 
+# --no-build の場合、lexicalconverter イメージの存在を確認
+if [ "$build_flag" = "--no-build" ]; then
+  echo "[Info] Checking for pre-built lexicalconverter image..."
+  if ! docker image inspect coati-lexicalconverter:local >/dev/null 2>&1; then
+    echo "[Error] Image 'coati-lexicalconverter:local' not found." >&2
+    echo "        Options:" >&2
+    echo "        1. Run deploy-pc/pull-and-deploy.sh to pull images first" >&2
+    echo "        2. Use --build option to build locally: $0 --build" >&2
+    exit 1
+  fi
+  echo "[OK] Image 'coati-lexicalconverter:local' found."
+fi
+
 # Infra only: postgres/redis/redis-frontend/lexicalconverter/nginx
 
 echo "[Info] Starting Infra..."

@@ -89,11 +89,6 @@ public class EmailChangeTokenCleanupSettings
 public class UploadsCleanupSettings
 {
     /// <summary>
-    /// アップロードフォルダのベースパス（絶対パス、環境変数経由で設定）
-    /// </summary>
-    public string UploadsBasePath { get; set; } = "";
-
-    /// <summary>
     /// tempフォルダ内のファイルを保持する時間（時間単位、デフォルト: 24時間）
     /// </summary>
     public int TempRetentionHours { get; set; } = 24;

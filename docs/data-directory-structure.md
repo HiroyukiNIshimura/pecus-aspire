@@ -64,17 +64,21 @@ Parameters__dataBasePath=/mnt/pecus-data
 `pecus.AppHost/AppHost.cs` で以下のように環境変数として各サービスに注入されます：
 
 ```csharp
-// 永続データのベースパス
-var dataBasePathValue = builder.Configuration["Parameters:dataBasePath"] ?? "../data";
-var dataBasePathResolved = Path.GetFullPath(...);
-var uploadsPath = Path.Combine(dataBasePathResolved, "uploads");
-var notificationsPath = Path.Combine(dataBasePathResolved, "notifications");
+// Folders 設定を読み込み、各フォルダの絶対パスを計算
+var foldersConfig = builder.Configuration.GetSection("Folders");
+var dataPaths = new Dictionary<string, string>();
+foreach (var folder in foldersConfig.GetChildren())
+{
+    if (folder.Key.StartsWith("_")) continue;
+    var folderPath = Path.Combine(dataBasePath, folder.Value ?? folder.Key);
+    dataPaths[folder.Key] = folderPath;
+}
 
-// pecus.BackFire への注入
-var backfire = builder
-    .AddProject<Projects.pecus_BackFire>("backfire")
-    .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath)
-    .WithEnvironment("MaintenanceNotification__NotificationsPath", notificationsPath);
+// 各プロジェクトへの注入
+foreach (var (key, path) in dataPaths)
+{
+    backfireBuilder = backfireBuilder.WithEnvironment($"DataPaths__{char.ToUpper(key[0])}{key[1..]}", path);
+}
 ```
 
 ## 各ディレクトリの用途
@@ -84,8 +88,8 @@ var backfire = builder
 | 項目 | 説明 |
 |------|------|
 | 用途 | ユーザーがアップロードした添付ファイル |
-| 参照元 | `pecus.WebApi`, `pecus.BackFire`（クリーンアップジョブ） |
-| 環境変数 | `UploadsCleanup__UploadsBasePath` |
+| 参照元 | `pecus.WebApi`, `pecus.BackFire`（クリーンアップジョブ）, `pecus.DbManager`（シード） |
+| 環境変数 | `DataPaths__Uploads` |
 
 ### `data/notifications/`
 
@@ -93,7 +97,7 @@ var backfire = builder
 |------|------|
 | 用途 | 運営通知（メンテナンス告知等）の Markdown ファイル |
 | 参照元 | `pecus.BackFire`（30分ごとのジョブ） |
-| 環境変数 | `MaintenanceNotification__NotificationsPath` |
+| 環境変数 | `DataPaths__Notifications` |
 
 ## 運営通知ファイルの運用
 

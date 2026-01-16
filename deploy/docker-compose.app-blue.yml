@@ -18,7 +18,7 @@ services:
       ConnectionStrings__redis: "${REDIS_HOST:-redis}:6379"
       LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
       Frontend__Endpoint: ${FRONTEND_URL:-https://localhost:3000}
-      Pecus__FileUpload__StoragePath: /app/data/uploads
+      DataPaths__Uploads: /app/data/uploads
     volumes:
       - ${DATA_PATH:?DATA_PATH is required}/uploads:/app/data/uploads
       - ${DATA_PATH:?DATA_PATH is required}/logs/webapi-blue:/app/logs
@@ -71,8 +71,8 @@ services:
       ConnectionStrings__redis: "${REDIS_HOST:-redis}:6379"
       LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
       Frontend__Endpoint: ${FRONTEND_URL:-https://localhost:3000}
-      UploadsCleanup__UploadsBasePath: /app/data/uploads
-      MaintenanceNotification__NotificationsPath: /app/data/notifications
+      DataPaths__Uploads: /app/data/uploads
+      DataPaths__Notifications: /app/data/notifications
     volumes:
       - ${DATA_PATH:?DATA_PATH is required}/uploads:/app/data/uploads
       - ${DATA_PATH:?DATA_PATH is required}/notifications:/app/data/notifications

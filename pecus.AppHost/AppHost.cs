@@ -69,12 +69,20 @@ try
             .WithVolume("postgres-data", "/var/lib/postgresql");
     var pecusDb = postgres.AddDatabase("pecusdb");
 
-    // 永続データのベースパス（開発時: ../data、本番時: /mnt/pecus-data など）
-    var dataPathValue = infraConfig["dataPath"] ?? "../data";
-    var dataPathResolved = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.AppHost", dataPathValue));
-    var uploadsPath = Path.Combine(dataPathResolved, "uploads");
-    Log.Information("Data path: {DataPath}", dataPathResolved);
-    Log.Information("Uploads path: {UploadsPath}", uploadsPath);
+    // 永続データのベースパス（開発時は ../data を絶対パスに変換）
+    var dataBasePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.AppHost", "..", "data"));
+    Log.Information("Data base path: {DataBasePath}", dataBasePath);
+
+    // Folders 設定を読み込み、各フォルダの絶対パスを計算
+    var foldersConfig = builder.Configuration.GetSection("Folders");
+    var dataPaths = new Dictionary<string, string>();
+    foreach (var folder in foldersConfig.GetChildren())
+    {
+        if (folder.Key.StartsWith("_")) continue; // _comment などをスキップ
+        var folderPath = Path.Combine(dataBasePath, folder.Value ?? folder.Key);
+        dataPaths[folder.Key] = folderPath;
+        Log.Information("DataPaths:{Key} = {Path}", folder.Key, folderPath);
+    }
 
     // Protos フォルダの絶対パスを取得
     var protosPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.Protos"));
@@ -110,25 +118,35 @@ try
         .WithEnvironment("LEXICAL_PROTO_PATH", lexicalProtoPath);
 
     //マイグレーションとシードデータの投入サービス
-    var dbManager = builder
+    var dbManagerBuilder = builder
         .AddProject<Projects.pecus_DbManager>("dbmanager")
         .WithReference(pecusDb)
         .WithReference(lexicalConverter)
         .WaitFor(lexicalConverter)
+        .WaitFor(pecusDb);
+    // DataPaths 環境変数を注入
+    foreach (var (key, path) in dataPaths)
+    {
+        dbManagerBuilder = dbManagerBuilder.WithEnvironment($"DataPaths__{char.ToUpper(key[0])}{key[1..]}", path);
+    }
+    var dbManager = dbManagerBuilder;
+
+    var backfireBuilder = builder
+        .AddProject<Projects.pecus_BackFire>("backfire")
+        .WithReference(redis)
+        .WithReference(pecusDb)
+        .WithReference(lexicalConverter)
+        .WaitFor(redis)
         .WaitFor(pecusDb)
-        .WithEnvironment("FileUpload__StoragePath", uploadsPath);
+        .WaitFor(lexicalConverter);
+    // DataPaths 環境変数を注入
+    foreach (var (key, path) in dataPaths)
+    {
+        backfireBuilder = backfireBuilder.WithEnvironment($"DataPaths__{char.ToUpper(key[0])}{key[1..]}", path);
+    }
+    var backfire = backfireBuilder;
 
-    var backfire = builder
-    .AddProject<Projects.pecus_BackFire>("backfire")
-    .WithReference(redis)
-    .WithReference(pecusDb)
-    .WithReference(lexicalConverter)
-    .WaitFor(redis)
-    .WaitFor(pecusDb)
-    .WaitFor(lexicalConverter)
-    .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath);
-
-    var pecusApi = builder
+    var pecusApiBuilder = builder
         .AddProject<Projects.pecus_WebApi>("pecusapi")
         .WithReference(pecusDb)
         .WithReference(redis)
@@ -139,8 +157,13 @@ try
         .WaitFor(backfire)
         .WaitFor(lexicalConverter)
         .WithExternalHttpEndpoints()
-        .WithHttpHealthCheck("/")
-        .WithEnvironment("Pecus__FileUpload__StoragePath", uploadsPath);
+        .WithHttpHealthCheck("/");
+    // DataPaths 環境変数を注入
+    foreach (var (key, path) in dataPaths)
+    {
+        pecusApiBuilder = pecusApiBuilder.WithEnvironment($"DataPaths__{char.ToUpper(key[0])}{key[1..]}", path);
+    }
+    var pecusApi = pecusApiBuilder;
 
     // Frontendの設定(開発環境モード)
     var frontendBuilder = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")

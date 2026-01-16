@@ -39,7 +39,9 @@ public class DemoAtoms
         _options = options.Value;
         _commonAtoms = commonAtoms;
         _organizationDeletionService = organizationDeletionService;
-        _fileUploadStoragePath = Path.Combine(configuration["_infrastructure:dataPath"] ?? "../data", "uploads");
+        // DataPaths:Uploads から絶対パスを取得（環境変数 DataPaths__Uploads 経由）
+        _fileUploadStoragePath = configuration["DataPaths:Uploads"]
+            ?? throw new InvalidOperationException("DataPaths:Uploads is not configured. Please set the DataPaths__Uploads environment variable.");
     }
 
     /// <summary>

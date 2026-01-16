@@ -203,6 +203,30 @@ tag_image "lexicalconverter" "coati-lexicalconverter:local"
 
 echo ""
 
+# Step 5.5: infraが未起動の場合は起動
+echo "🔍 Infraサービスの状態を確認中..."
+if [ -f "$OPS_DIR/lib.sh" ]; then
+    # lib.sh を読み込んで check_infra_healthy を使用
+    script_dir="$OPS_DIR"
+    . "$OPS_DIR/lib.sh"
+
+    if ! check_infra_healthy 2>/dev/null; then
+        echo "⚠️  Infraサービスが起動していないか、異常な状態です。"
+        echo "🚀 Infraサービスを起動中..."
+        if sh "$OPS_DIR/infra-up.sh"; then
+            echo "✅ Infraサービスの起動完了"
+        else
+            echo "❌ Infraサービスの起動に失敗しました"
+            exit 1
+        fi
+    else
+        echo "✅ Infraサービスは正常に稼働中"
+    fi
+else
+    echo "⚠️  ops/lib.sh が見つかりません。infraの状態確認をスキップします。"
+fi
+echo ""
+
 # Step 6: switch-node.sh でデプロイ実行（--no-build オプション使用）
 echo "🚀 $TARGET_SLOT スロットへデプロイ中..."
 echo ""
