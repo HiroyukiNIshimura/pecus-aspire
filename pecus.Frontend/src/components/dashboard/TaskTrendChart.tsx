@@ -28,7 +28,7 @@ export default function TaskTrendChart({ data }: TaskTrendChartProps) {
   // 最大値を取得（Y軸のスケール用）
   const maxValue = Math.max(
     ...weeklyTrends.map((t) => Math.max(t.createdCount, t.completedCount, t.itemCreatedCount ?? 0)),
-    1
+    1,
   );
 
   return (
