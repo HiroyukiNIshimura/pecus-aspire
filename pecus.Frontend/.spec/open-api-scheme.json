@@ -22076,9 +22076,37 @@
             "type": "string",
             "description": "アップロードしたユーザー名",
             "nullable": true
+          },
+          "task": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceItemAttachmentTask"
+              }
+            ]
           }
         },
         "description": "ワークスペースアイテム添付ファイルレスポンス"
+      },
+      "WorkspaceItemAttachmentTask": {
+        "type": "object",
+        "properties": {
+          "sequenceNumber": {
+            "type": "integer",
+            "description": "タスクシーケンス番号",
+            "format": "int32"
+          },
+          "content": {
+            "type": "string",
+            "description": "タスク説明"
+          },
+          "taskTypeName": {
+            "type": "string",
+            "description": "タスク種別名"
+          }
+        }
       },
       "WorkspaceItemDetailResponse": {
         "required": [

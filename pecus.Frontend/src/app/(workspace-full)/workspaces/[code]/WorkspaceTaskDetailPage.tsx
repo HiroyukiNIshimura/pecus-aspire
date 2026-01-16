@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { searchWorkspaceMembers } from '@/actions/workspace';
+import { fetchWorkspaceItemAttachments } from '@/actions/workspaceItemAttachment';
 import {
   getPredecessorTaskOptions,
   getWorkspaceTask,
@@ -14,6 +15,7 @@ import { EmptyState } from '@/components/common/feedback/EmptyState';
 import DatePicker from '@/components/common/filters/DatePicker';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
+import { ItemAttachmentModal } from '@/components/workspaceItems/attachments';
 import TaskCommentSection from '@/components/workspaceItems/TaskCommentSection';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
@@ -21,6 +23,7 @@ import type {
   TaskStatusFilter,
   UpdateWorkspaceTaskRequest,
   UserSearchResultResponse,
+  WorkspaceItemAttachmentResponse,
   WorkspaceTaskDetailResponse,
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
@@ -198,6 +201,11 @@ export default function WorkspaceTaskDetailPage({
   const [isCompleted, setIsCompleted] = useState(false);
   const [isDiscarded, setIsDiscarded] = useState(false);
   const [discardReason, setDiscardReason] = useState('');
+
+  // 添付ファイル状態
+  const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+  const [taskAttachments, setTaskAttachments] = useState<WorkspaceItemAttachmentResponse[]>([]);
+  const [attachmentCount, setAttachmentCount] = useState(0);
 
   // バッジ取得演出
   const showCelebration = useAchievementCelebrationStore((state) => state.showCelebration);
@@ -428,6 +436,23 @@ export default function WorkspaceTaskDetailPage({
       fetchTask(taskId);
     }
   }, [taskId, workspaceId, itemId, initialNavigation, fetchTask]);
+
+  // タスクが変わったときに添付ファイル一覧を取得
+  useEffect(() => {
+    const loadAttachments = async () => {
+      if (!task?.id) {
+        setTaskAttachments([]);
+        setAttachmentCount(0);
+        return;
+      }
+      const result = await fetchWorkspaceItemAttachments(workspaceId, itemId, task.id);
+      if (result.success) {
+        setTaskAttachments(result.data);
+        setAttachmentCount(result.data.length);
+      }
+    };
+    loadAttachments();
+  }, [workspaceId, itemId, task?.id]);
 
   // タスク変更時に編集状態をリセット
   useEffect(() => {
@@ -914,6 +939,20 @@ export default function WorkspaceTaskDetailPage({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* 添付ファイルボタン */}
+            {task && (
+              <button
+                type="button"
+                className="btn btn-outline btn-sm gap-1"
+                onClick={() => setIsAttachmentModalOpen(true)}
+                disabled={isLoadingTask || isSubmitting}
+                title="添付ファイル"
+              >
+                <span className="icon-[mdi--paperclip] size-4" aria-hidden="true" />
+                添付
+                {attachmentCount > 0 && <span className="badge badge-secondary badge-sm">{attachmentCount}</span>}
+              </button>
+            )}
             {/* フローボタン */}
             {onShowFlowMap && (
               <button
@@ -1631,6 +1670,22 @@ export default function WorkspaceTaskDetailPage({
             )}
           </div>
         </div>
+
+        {/* 添付ファイルモーダル */}
+        {task && (
+          <ItemAttachmentModal
+            isOpen={isAttachmentModalOpen}
+            onClose={() => setIsAttachmentModalOpen(false)}
+            workspaceId={workspaceId}
+            itemId={itemId}
+            taskId={task.id}
+            initialAttachments={taskAttachments}
+            canEdit={hasEditPermission && !isLockedByOther}
+            currentUserId={currentUser?.id ?? 0}
+            itemOwnerId={task.itemOwnerId ?? undefined}
+            onAttachmentCountChange={setAttachmentCount}
+          />
+        )}
       </div>
     </div>
   );

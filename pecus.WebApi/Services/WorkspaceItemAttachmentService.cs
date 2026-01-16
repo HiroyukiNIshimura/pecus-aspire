@@ -43,6 +43,7 @@ public class WorkspaceItemAttachmentService
     /// <param name="thumbnailMediumPath">サムネイル（M）パス</param>
     /// <param name="thumbnailSmallPath">サムネイル（S）パス</param>
     /// <param name="userId">アップロードユーザーID</param>
+    /// <param name="taskId">ワークスペースタスクID（オプション）</param>
     /// <returns>作成された添付ファイル</returns>
     public async Task<WorkspaceItemAttachment> AddAttachmentAsync(
         int workspaceId,
@@ -54,7 +55,8 @@ public class WorkspaceItemAttachmentService
         string downloadUrl,
         string? thumbnailMediumPath,
         string? thumbnailSmallPath,
-        int userId
+        int userId,
+        int? taskId = null
     )
     {
         // ファイルサイズの検証
@@ -103,9 +105,22 @@ public class WorkspaceItemAttachmentService
             throw new NotFoundException("アイテムが見つかりません。");
         }
 
+        // タスクIDが指定されている場合はタスクの存在確認
+        if (taskId.HasValue)
+        {
+            var taskExists = await _context.WorkspaceTasks.AnyAsync(t =>
+                t.Id == taskId.Value && t.WorkspaceId == workspaceId && t.WorkspaceItemId == itemId
+            );
+            if (!taskExists)
+            {
+                throw new NotFoundException("タスクが見つかりません。");
+            }
+        }
+
         var attachment = new WorkspaceItemAttachment
         {
             WorkspaceItemId = itemId,
+            WorkspaceTaskId = taskId,
             FileName = fileName,
             FileSize = fileSize,
             MimeType = mimeType,
@@ -167,7 +182,10 @@ public class WorkspaceItemAttachmentService
 
         if (taskId.HasValue)
         {
-            query = query.Where(a => a.WorkspaceTaskId == taskId.Value);
+            query = query
+                .Where(a => a.WorkspaceTaskId == taskId.Value)
+                .Include(a => a.WorkspaceTask)
+                    .ThenInclude(t => t!.TaskType);
         }
 
         return await query.OrderBy(a => a.UploadedAt).ToListAsync();

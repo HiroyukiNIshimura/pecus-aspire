@@ -120,7 +120,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
             downloadUrl,
             thumbnailMediumPath,
             thumbnailSmallPath,
-            CurrentUserId
+            CurrentUserId,
+            request.WorkspaceTaskId
         );
 
         // 画像ファイルの場合、バックグラウンドでサムネイル生成をキュー
@@ -194,7 +195,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId, taskId);
 
         var response = attachments
-            .Select(a => new WorkspaceItemAttachmentResponse
+            .Select(static a => new WorkspaceItemAttachmentResponse
             {
                 Id = a.Id,
                 WorkspaceItemId = a.WorkspaceItemId,
@@ -208,6 +209,13 @@ public class WorkspaceItemAttachmentController : BaseSecureController
                 UploadedAt = a.UploadedAt,
                 UploadedByUserId = a.UploadedByUserId,
                 UploadedByUsername = a.UploadedByUser?.Username,
+                Task = a.WorkspaceTask != null
+                    ? new WorkspaceItemAttachmentTask
+                    {
+                        SequenceNumber = a.WorkspaceTask.Sequence,
+                        Content = a.WorkspaceTask.Content,
+                        TaskTypeName = a.WorkspaceTask.TaskType?.Name ?? ""
+                    } : null
             })
             .ToList();
 

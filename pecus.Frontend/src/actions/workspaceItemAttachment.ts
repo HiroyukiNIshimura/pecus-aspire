@@ -50,11 +50,13 @@ function getSafeFileName(originalName: string): string {
  * @param workspaceId ワークスペースID
  * @param itemId アイテムID
  * @param formData ファイルを含むFormData
+ * @param taskId ワークスペースタスクID（オプション）
  */
 export async function uploadWorkspaceItemAttachment(
   workspaceId: number,
   itemId: number,
   formData: FormData,
+  taskId?: number,
 ): Promise<ApiResponse<UploadAttachmentResult>> {
   try {
     const file = formData.get('file') as File | Blob | null;
@@ -94,6 +96,11 @@ export async function uploadWorkspaceItemAttachment(
 
     // 元のファイル名を別フィールドとして送信（DBに保存される表示用ファイル名）
     nodeFormData.append('OriginalFileName', originalFileName || 'upload');
+
+    // タスクIDが指定されている場合は追加
+    if (taskId !== undefined) {
+      nodeFormData.append('WorkspaceTaskId', taskId.toString());
+    }
 
     // Axiosで直接POSTリクエスト
     const response = await axios.post(`/api/workspaces/${workspaceId}/items/${itemId}/attachments`, nodeFormData, {
@@ -135,14 +142,16 @@ export async function uploadWorkspaceItemAttachment(
  * Server Action: ワークスペースアイテムの添付ファイル一覧を取得
  * @param workspaceId ワークスペースID
  * @param itemId アイテムID
+ * @param taskId ワークスペースタスクID（オプション）
  */
 export async function fetchWorkspaceItemAttachments(
   workspaceId: number,
   itemId: number,
+  taskId?: number,
 ): Promise<ApiResponse<WorkspaceItemAttachmentResponse[]>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItemsAttachments(workspaceId, itemId);
+    const response = await api.workspaceItem.getApiWorkspacesItemsAttachments(workspaceId, itemId, taskId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace item attachments:', error);

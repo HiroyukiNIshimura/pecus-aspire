@@ -20,6 +20,8 @@ interface ItemAttachmentModalProps {
   workspaceId: number;
   /** アイテムID */
   itemId: number;
+  /** タスクID（タスク詳細から開く場合） */
+  taskId?: number;
   /** 初期添付ファイル一覧 */
   initialAttachments: WorkspaceItemAttachmentResponse[];
   /** 編集可能かどうか（Viewer以外はtrue） */
@@ -40,6 +42,7 @@ export default function ItemAttachmentModal({
   onClose,
   workspaceId,
   itemId,
+  taskId,
   initialAttachments,
   canEdit,
   currentUserId,
@@ -85,11 +88,11 @@ export default function ItemAttachmentModal({
 
   // 添付ファイル一覧を再取得
   const refreshAttachments = useCallback(async () => {
-    const result = await fetchWorkspaceItemAttachments(workspaceId, itemId);
+    const result = await fetchWorkspaceItemAttachments(workspaceId, itemId, taskId);
     if (result.success) {
       setAttachments(result.data);
     }
-  }, [workspaceId, itemId]);
+  }, [workspaceId, itemId, taskId]);
 
   // ファイルアップロード処理
   const handleFilesSelected = useCallback(
@@ -128,7 +131,7 @@ export default function ItemAttachmentModal({
           setUploadingFiles((prev) => prev.map((f) => (f.id === tempId ? { ...f, progress: 50 } : f)));
 
           // Server Actionを呼び出し
-          const result = await uploadWorkspaceItemAttachment(workspaceId, itemId, formData);
+          const result = await uploadWorkspaceItemAttachment(workspaceId, itemId, formData, taskId);
 
           if (!result.success) {
             throw new Error(result.message || 'アップロードに失敗しました');
@@ -146,7 +149,7 @@ export default function ItemAttachmentModal({
         }
       }
     },
-    [workspaceId, itemId, notify, refreshAttachments],
+    [workspaceId, itemId, taskId, notify, refreshAttachments],
   );
 
   // ファイル削除処理

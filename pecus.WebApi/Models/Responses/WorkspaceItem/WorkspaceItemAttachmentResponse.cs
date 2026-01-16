@@ -67,4 +67,25 @@ public class WorkspaceItemAttachmentResponse
     /// アップロードしたユーザー名
     /// </summary>
     public string? UploadedByUsername { get; set; }
+
+    /// <summary>
+    /// タスク情報（オプション）
+    /// </summary>
+    public WorkspaceItemAttachmentTask? Task { get; set; }
+}
+
+public class WorkspaceItemAttachmentTask
+{
+    /// <summary>
+    /// タスクシーケンス番号
+    /// </summary>
+    public int SequenceNumber { get; set; }
+    /// <summary>
+    /// タスク説明
+    /// </summary>
+    public string Content { get; set; } = string.Empty;
+    /// <summary>
+    /// タスク種別名
+    /// </summary>
+    public string TaskTypeName { get; set; } = string.Empty;
 }
