@@ -548,10 +548,18 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(a => a.UploadedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // WorkspaceItemAttachment と WorkspaceTask の多対一リレーションシップ（オプション）
+            entity
+                .HasOne(a => a.WorkspaceTask)
+                .WithMany(t => t.Attachments)
+                .HasForeignKey(a => a.WorkspaceTaskId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // インデックス
             entity.HasIndex(a => a.WorkspaceItemId);
             entity.HasIndex(a => a.UploadedByUserId);
             entity.HasIndex(a => a.UploadedAt);
+            entity.HasIndex(a => a.WorkspaceTaskId);
         });
 
         // WorkspaceItemRelationエンティティの設定

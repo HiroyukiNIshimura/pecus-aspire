@@ -168,6 +168,11 @@ public class WorkspaceTask
     public ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
 
     /// <summary>
+    /// 添付ファイル
+    /// </summary>
+    public ICollection<WorkspaceItemAttachment> Attachments { get; set; } = new List<WorkspaceItemAttachment>();
+
+    /// <summary>
     /// 先行タスク
     /// </summary>
     [ForeignKey(nameof(PredecessorTaskId))]

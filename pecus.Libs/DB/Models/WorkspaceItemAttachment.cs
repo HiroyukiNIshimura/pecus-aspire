@@ -16,6 +16,11 @@ public class WorkspaceItemAttachment
     public int WorkspaceItemId { get; set; }
 
     /// <summary>
+    /// ワークスペースタスクID（外部キー、オプション）
+    /// </summary>
+    public int? WorkspaceTaskId { get; set; }
+
+    /// <summary>
     /// ファイル名（元のファイル名）
     /// </summary>
     public string FileName { get; set; } = string.Empty;
@@ -65,6 +70,11 @@ public class WorkspaceItemAttachment
     /// ワークスペースアイテム（ナビゲーションプロパティ）
     /// </summary>
     public WorkspaceItem? WorkspaceItem { get; set; }
+
+    /// <summary>
+    /// ワークスペースタスク（ナビゲーションプロパティ、オプション）
+    /// </summary>
+    public WorkspaceTask? WorkspaceTask { get; set; }
 
     /// <summary>
     /// アップロードしたユーザー（ナビゲーションプロパティ）
