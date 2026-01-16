@@ -4,6 +4,10 @@
   "_infrastructure": {
     "_comment": "Docker/Aspire 共通のインフラ設定",
     "dataPath": "../data",
+    "folders": {
+      "_comment": "dataPath 配下のサブフォルダ名。実際のパスは generate-appsettings.js で生成される",
+      "uploads": "uploads"
+    },
     "postgres": {
       "user": "pecus",
       "password": "P@ssw0rd",
@@ -153,7 +157,6 @@
         }
       },
       "FileUpload": {
-        "StoragePath": "../data/uploads",
         "MaxFileSize": 5242880,
         "AllowedImageExtensions": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
         "AllowedMimeTypes": ["image/jpeg", "image/png", "image/gif", "image/webp"],
@@ -217,7 +220,6 @@
       "Minute": 0
     },
     "UploadsCleanup": {
-      "UploadsBasePath": "",
       "TempRetentionHours": 24,
       "Hour": 4,
       "Minute": 0
@@ -246,9 +248,6 @@
 
   "dbmanager": {
     "AllowedHosts": "*",
-    "FileUpload": {
-      "StoragePath": "../data/uploads"
-    },
     "BackOffice": {
       "Organization": {
         "Name": "System Maintenance",

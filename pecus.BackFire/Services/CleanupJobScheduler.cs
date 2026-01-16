@@ -136,18 +136,31 @@ public static class CleanupJobScheduler
         // UploadsBasePath が設定されていない場合はジョブを登録しない
         if (string.IsNullOrWhiteSpace(settings.UploadsBasePath))
         {
+            Serilog.Log.Warning("UploadsCleanup: UploadsBasePath is not configured. Skipping job registration.");
             return;
         }
 
-        // パスが存在しない場合も警告のみでスキップ
+        // パスが存在しない場合は作成を試みる
         if (!Directory.Exists(settings.UploadsBasePath))
         {
-            return;
+            try
+            {
+                Directory.CreateDirectory(settings.UploadsBasePath);
+                Serilog.Log.Information("UploadsCleanup: Created directory {UploadsBasePath}", settings.UploadsBasePath);
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex, "UploadsCleanup: Failed to create directory {UploadsBasePath}. Skipping job registration.", settings.UploadsBasePath);
+                return;
+            }
         }
 
         // 値の範囲を安全にクリップ
         settings.Hour = Math.Clamp(settings.Hour, 0, 23);
         settings.Minute = Math.Clamp(settings.Minute, 0, 59);
+
+        Serilog.Log.Information("UploadsCleanup: Registering job with UploadsBasePath={UploadsBasePath}, TempRetentionHours={TempRetentionHours}, Schedule={Hour}:{Minute:D2}",
+            settings.UploadsBasePath, settings.TempRetentionHours, settings.Hour, settings.Minute);
 
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.UploadsCleanupTasks>(
             "UploadsCleanup",

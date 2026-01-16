@@ -15,8 +15,10 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__pecusdb: "Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-pecusdb};Username=${POSTGRES_USER:-pecus};Password=${POSTGRES_PASSWORD}"
       LexicalConverter__Endpoint: ${LEXICAL_CONVERTER_URL:-http://lexicalconverter:5100}
+      FileUpload__StoragePath: /app/data/uploads
       DB_RESET_MODE: ${DB_RESET_MODE:-false}
     volumes:
+      - ${DATA_PATH:?DATA_PATH is required}/uploads:/app/data/uploads
       - ${DATA_PATH:?DATA_PATH is required}/logs/dbmanager:/app/logs
     depends_on:
       postgres:

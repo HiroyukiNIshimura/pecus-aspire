@@ -53,6 +53,18 @@ function deepMerge(target, source) {
   return result;
 }
 
+/**
+ * _infrastructure.dataPath と folders からフルパスを生成
+ * @param {object} infra - _infrastructure オブジェクト
+ * @param {string} folderName - folders 内のキー名
+ * @returns {string} 結合されたパス
+ */
+function resolveDataPath(infra, folderName) {
+  const basePath = infra.dataPath;
+  const folder = infra.folders?.[folderName] ?? folderName;
+  return path.posix.join(basePath, folder);
+}
+
 function applyEnvOverrides(config) {
   // Infrastructure (PostgreSQL)
   if (process.env.POSTGRES_USER) {
@@ -188,6 +200,11 @@ function generate() {
     Pecus: {
       ...projects.webapi.Pecus,
       Application: sharedApplication,
+      // FileUpload.StoragePath を _infrastructure から生成
+      FileUpload: {
+        ...projects.webapi.Pecus.FileUpload,
+        StoragePath: resolveDataPath(_infrastructure, 'uploads'),
+      },
     },
     // Frontend URL を追加
     Frontend: {
@@ -214,6 +231,9 @@ function generate() {
     Frontend: {
       Endpoint: _infrastructure.urls.frontend,
     },
+    // UploadsCleanup: パス設定は環境変数で注入されるため、ここでは生成しない
+    // Aspire: AppHost.cs が UploadsCleanup__UploadsBasePath を注入
+    // Docker: docker-compose.yml が UploadsCleanup__UploadsBasePath を注入
   };
   const backfirePath = path.join(ROOT_DIR, 'pecus.BackFire', 'appsettings.json');
   fs.writeFileSync(backfirePath, JSON.stringify(backfireConfig, null, 2) + '\n');
@@ -226,6 +246,10 @@ function generate() {
     ...projects.dbmanager,
     _infrastructure: {
       dataPath: _infrastructure.dataPath,
+    },
+    // FileUpload.StoragePath を _infrastructure から生成
+    FileUpload: {
+      StoragePath: resolveDataPath(_infrastructure, 'uploads'),
     },
     LexicalConverter: {
       Endpoint: _infrastructure.urls.lexicalConverter,

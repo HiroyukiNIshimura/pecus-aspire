@@ -67,11 +67,29 @@
 
 ### 3. パス解決の責任分担
 
-| 環境 | パス解決の責任 |
-|------|---------------|
-| **開発 (Aspire)** | `AppHost.cs` が `dataPath` + `folders.uploads` を結合して環境変数で注入 |
-| **本番 (Docker)** | `docker-compose.yml` の環境変数で `/app/data/uploads` を直接指定 |
-| **DbManager Seed** | 既存の `_infrastructure:dataPath` + `"uploads"` パターンを維持 |
+| 設定種別 | 設定元 | 理由 |
+|---------|--------|------|
+| **パス設定** | 環境変数（Aspire / Docker） | 相対パスは実行ディレクトリに依存するため、絶対パスを環境変数で注入 |
+| **その他の設定** | `appsettings.json` | `TempRetentionHours`, `BatchSize` 等は環境に依存しない |
+
+#### 開発環境 (Aspire)
+`AppHost.cs` が `_infrastructure.dataPath` を読み取り、絶対パスに変換して環境変数で注入：
+```csharp
+var uploadsPath = Path.Combine(dataPathResolved, "uploads");
+.WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath);
+```
+
+#### 本番環境 (Docker)
+`docker-compose.yml` でコンテナ内パスを直接指定：
+```yaml
+environment:
+  UploadsCleanup__UploadsBasePath: /app/data/uploads
+volumes:
+  - ${DATA_PATH}/uploads:/app/data/uploads
+```
+
+#### DbManager Seed
+既存の `_infrastructure:dataPath` + `"uploads"` パターンを維持（Seed は起動時に一度だけ実行）
 
 ---
 
@@ -160,7 +178,7 @@
 ### `scripts/generate-appsettings.js` の変更
 
 ```javascript
-// パス結合ヘルパー関数を追加
+// パス結合ヘルパー関数（WebApi, DbManager 用）
 function resolveDataPath(config, folderName) {
   const basePath = config._infrastructure.dataPath;
   const folder = config._infrastructure.folders?.[folderName] ?? folderName;
@@ -168,13 +186,14 @@ function resolveDataPath(config, folderName) {
 }
 
 // 生成時に各プロジェクトへ注入
-// WebApi
+// WebApi: StoragePath を注入（Aspire/Docker で環境変数上書きされる）
 webapiConfig.Pecus.FileUpload.StoragePath = resolveDataPath(config, 'uploads');
 
-// BackFire
-backfireConfig.UploadsCleanup.UploadsBasePath = resolveDataPath(config, 'uploads');
+// BackFire: UploadsBasePath は生成しない（環境変数のみで注入）
+// → Aspire: AppHost.cs が UploadsCleanup__UploadsBasePath を注入
+// → Docker: docker-compose.yml が UploadsCleanup__UploadsBasePath を注入
 
-// DbManager
+// DbManager: Seed 用に StoragePath を注入
 dbmanagerConfig.FileUpload = { StoragePath: resolveDataPath(config, 'uploads') };
 ```
 
@@ -318,4 +337,11 @@ volumes:
 
 ## ステータス
 
-**計画中** - 実装開始前
+**完了** - 2026-01-16 実装完了
+
+### 完了した変更
+
+1. `config/settings.base.json` - `_infrastructure.folders` を追加、重複パス設定を削除
+2. `scripts/generate-appsettings.js` - `resolveDataPath()` 関数を追加、各プロジェクトへのパス自動注入ロジックを実装
+3. 生成テスト成功、ビルド成功を確認
+4. `deploy/docker-compose.migrate.yml` - DbManager に `FileUpload__StoragePath` と uploads ボリュームマウントを追加
