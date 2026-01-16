@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.AI;
@@ -20,6 +21,7 @@ public class DemoAtoms
     private readonly DemoModeOptions _options;
     private readonly CommonAtoms _commonAtoms;
     private readonly BatchOrganizationDeletionService _organizationDeletionService;
+    private readonly string _fileUploadStoragePath;
 
     /// <summary>
     /// Constructor
@@ -29,13 +31,15 @@ public class DemoAtoms
         ILogger<DemoAtoms> logger,
         IOptions<DemoModeOptions> options,
         CommonAtoms commonAtoms,
-        BatchOrganizationDeletionService organizationDeletionService)
+        BatchOrganizationDeletionService organizationDeletionService,
+        IConfiguration configuration)
     {
         _context = context;
         _logger = logger;
         _options = options.Value;
         _commonAtoms = commonAtoms;
         _organizationDeletionService = organizationDeletionService;
+        _fileUploadStoragePath = configuration["FileUpload:StoragePath"] ?? "../data/uploads";
     }
 
     /// <summary>
@@ -103,6 +107,10 @@ public class DemoAtoms
 
             var users = CreateDemoUsers(organization, adminRole, memberRole);
             await _context.Users.AddRangeAsync(users);
+            await _context.SaveChangesAsync();
+
+            // ユーザーのアバター画像を設定
+            await SetupDemoUserAvatarsAsync(organization, users);
             await _context.SaveChangesAsync();
 
             var userSkills = await CreateDemoUserSkillsAsync(organization, users);
@@ -260,6 +268,71 @@ public class DemoAtoms
         }
 
         return users;
+    }
+
+    /// <summary>
+    /// デモユーザーのアバター画像を設定
+    /// pecus.Libs/DB/Seed/Avatar のサンプル画像を data/uploads にコピーし、UserAvatarPath を設定
+    /// </summary>
+    private async Task SetupDemoUserAvatarsAsync(Organization org, List<User> users)
+    {
+        // シードアバター画像のソースディレクトリを取得
+        var seedAvatarDir = Path.Combine(AppContext.BaseDirectory, "DB", "Seed", "Avatar");
+        if (!Directory.Exists(seedAvatarDir))
+        {
+            _logger.LogWarning("Seed avatar directory not found: {Path}", seedAvatarDir);
+            return;
+        }
+
+        // 利用可能なアバター画像ファイルを取得
+        var avatarFiles = Directory.GetFiles(seedAvatarDir, "*.webp").OrderBy(f => f).ToList();
+        if (avatarFiles.Count == 0)
+        {
+            _logger.LogWarning("No avatar files found in seed directory: {Path}", seedAvatarDir);
+            return;
+        }
+
+        _logger.LogInformation("Found {Count} avatar files in seed directory", avatarFiles.Count);
+
+        for (int i = 0; i < users.Count; i++)
+        {
+            var user = users[i];
+            // アバターファイルをローテーション（ユーザー数がアバター数を超える場合）
+            var avatarSourcePath = avatarFiles[i % avatarFiles.Count];
+            var avatarFileName = Path.GetFileName(avatarSourcePath);
+
+            // 宛先ディレクトリ: {StoragePath}/organizations/{orgId}/avatar/{userId}/
+            var destDir = Path.Combine(
+                _fileUploadStoragePath,
+                "organizations",
+                org.Id.ToString(),
+                "avatar",
+                user.Id.ToString()
+            );
+
+            try
+            {
+                // ディレクトリを作成
+                Directory.CreateDirectory(destDir);
+
+                // ファイルをコピー
+                var destPath = Path.Combine(destDir, avatarFileName);
+                File.Copy(avatarSourcePath, destPath, overwrite: true);
+
+                // ユーザーのアバター設定を更新
+                user.AvatarType = AvatarType.UserAvatar;
+                user.UserAvatarPath = avatarFileName;
+
+                _logger.LogDebug("Copied avatar for user {UserId}: {FileName}", user.Id, avatarFileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to copy avatar for user {UserId}", user.Id);
+            }
+        }
+
+        _logger.LogInformation("Set up avatars for {Count} demo users", users.Count);
+        await Task.CompletedTask;
     }
 
     private async Task<List<UserSkill>> CreateDemoUserSkillsAsync(Organization org, List<User> users)

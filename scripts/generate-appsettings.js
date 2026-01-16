@@ -221,6 +221,7 @@ function generate() {
 
   // pecus.DbManager/appsettings.json
   // LexicalConverter: URL は _infrastructure.urls から、その他は _shared から取得
+  // FileUpload: StoragePath を DbManager に渡す（デモユーザーのアバター設定用）
   const dbmanagerConfig = {
     ...projects.dbmanager,
     LexicalConverter: {

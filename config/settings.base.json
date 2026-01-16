@@ -246,6 +246,9 @@
 
   "dbmanager": {
     "AllowedHosts": "*",
+    "FileUpload": {
+      "StoragePath": "../data/uploads"
+    },
     "BackOffice": {
       "Organization": {
         "Name": "System Maintenance",

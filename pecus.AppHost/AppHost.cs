@@ -115,7 +115,8 @@ try
         .WithReference(pecusDb)
         .WithReference(lexicalConverter)
         .WaitFor(lexicalConverter)
-        .WaitFor(pecusDb);
+        .WaitFor(pecusDb)
+        .WithEnvironment("FileUpload__StoragePath", uploadsPath);
 
     var backfire = builder
     .AddProject<Projects.pecus_BackFire>("backfire")
