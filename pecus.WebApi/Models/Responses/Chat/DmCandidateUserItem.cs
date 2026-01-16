@@ -38,5 +38,5 @@ public class DmCandidateUserItem
     /// <summary>
     /// 最終アクティブ日時（最終ログイン日時）
     /// </summary>
-    public DateTime? LastActiveAt { get; set; }
+    public DateTimeOffset? LastActiveAt { get; set; }
 }

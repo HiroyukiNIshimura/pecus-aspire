@@ -67,12 +67,12 @@ public class User
     /// <summary>
     /// 最終ログイン日時
     /// </summary>
-    public DateTime? LastLoginAt { get; set; }
+    public DateTimeOffset? LastLoginAt { get; set; }
 
     /// <summary>
     /// 更新日時
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     /// <summary>
     /// 更新者ユーザーID
@@ -87,7 +87,7 @@ public class User
     /// <summary>
     /// パスワード設定トークンの有効期限
     /// </summary>
-    public DateTime? PasswordResetTokenExpiresAt { get; set; }
+    public DateTimeOffset? PasswordResetTokenExpiresAt { get; set; }
 
     /// <summary>
     /// アクティブフラグ

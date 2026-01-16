@@ -121,6 +121,10 @@ public class DemoAtoms
             await _context.ChatRoomMembers.AddRangeAsync(chatRoomMembers);
             await _context.SaveChangesAsync();
 
+            var dmMessages = CreateDemoDmMessages(chatRooms, users, chatActors);
+            await _context.ChatMessages.AddRangeAsync(dmMessages);
+            await _context.SaveChangesAsync();
+
             var workspaces = await CreateDemoWorkspacesAsync(organization, users);
             await _context.Workspaces.AddRangeAsync(workspaces);
             await _context.SaveChangesAsync();
@@ -247,6 +251,7 @@ public class DemoAtoms
                 LoginId = loginId,
                 PasswordHash = passwordHash,
                 IsActive = true,
+                AvatarType = AvatarType.UserAvatar,
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -664,6 +669,7 @@ public class DemoAtoms
 
     /// <summary>
     /// サンプルプロジェクトのアイテムにタスクを作成
+    /// フェーズごとに異なる進捗状態を持たせてシナリオ性を高める
     /// </summary>
     private async Task CreateSampleProjectTasksAsync(WorkspaceItem item, Workspace workspace, User assignee, List<User> users)
     {
@@ -681,17 +687,14 @@ public class DemoAtoms
             return;
         }
 
-        var random = new Random();
-        var taskContents = SeedConstants.TaskContents;
-        var priorities = new TaskPriority?[] { TaskPriority.Low, TaskPriority.Medium, TaskPriority.High, TaskPriority.Critical };
-
+        // タスクのフェーズ定義（シナリオ性を持たせる）
+        var taskPhases = GetTaskPhaseScenarios();
         var tasks = new List<WorkspaceTask>();
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < taskPhases.Count; i++)
         {
-            var taskType = taskTypes[random.Next(taskTypes.Count)];
-            var priority = priorities[random.Next(priorities.Length)];
-            var content = taskContents[random.Next(taskContents.Length)];
+            var phase = taskPhases[i];
+            var taskType = taskTypes.FirstOrDefault(t => t.Name == phase.TaskTypeName) ?? taskTypes[0];
 
             var task = new WorkspaceTask
             {
@@ -701,20 +704,20 @@ public class DemoAtoms
                 Sequence = i + 1,
                 AssignedUserId = assignee.Id,
                 CreatedByUserId = adminUser.Id,
-                Content = content,
+                Content = phase.Content,
                 TaskTypeId = taskType.Id,
-                Priority = priority,
-                StartDate = DateTimeOffset.UtcNow,
-                DueDate = DateTimeOffset.UtcNow.AddDays(random.Next(7, 30)),
-                EstimatedHours = random.Next(1, 16),
-                ActualHours = null,
-                ProgressPercentage = 0,
-                IsCompleted = false,
-                CompletedAt = null,
+                Priority = phase.Priority,
+                StartDate = DateTimeOffset.UtcNow.AddDays(phase.StartDaysOffset),
+                DueDate = DateTimeOffset.UtcNow.AddDays(phase.DueDaysOffset),
+                EstimatedHours = phase.EstimatedHours,
+                ActualHours = phase.ActualHours,
+                ProgressPercentage = phase.ProgressPercentage,
+                IsCompleted = phase.IsCompleted,
+                CompletedAt = phase.IsCompleted ? DateTimeOffset.UtcNow.AddDays(phase.CompletedDaysOffset) : null,
                 IsDiscarded = false,
                 DiscardedAt = null,
                 DiscardReason = null,
-                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(phase.CreatedDaysOffset),
                 UpdatedAt = DateTimeOffset.UtcNow
             };
 
@@ -724,38 +727,209 @@ public class DemoAtoms
         await _context.WorkspaceTasks.AddRangeAsync(tasks);
         await _context.SaveChangesAsync();
 
+        // 先行タスクIDを設定（保存後にIDが確定するため）
+        var hasUpdates = false;
+        for (int i = 0; i < tasks.Count && i < taskPhases.Count; i++)
+        {
+            var predecessorIndex = taskPhases[i].PredecessorIndex;
+            if (predecessorIndex.HasValue && predecessorIndex.Value >= 0 && predecessorIndex.Value < tasks.Count)
+            {
+                tasks[i].PredecessorTaskId = tasks[predecessorIndex.Value].Id;
+                hasUpdates = true;
+            }
+        }
+
+        if (hasUpdates)
+        {
+            await _context.SaveChangesAsync();
+        }
+
         _logger.LogInformation("Created {Count} tasks for sample project item", tasks.Count);
 
-        await CreateSampleProjectTaskCommentsAsync(tasks, users);
+        await CreateSampleProjectTaskCommentsAsync(tasks, users, taskPhases);
+    }
+
+    /// <summary>
+    /// タスクのフェーズシナリオを取得
+    /// </summary>
+    private static List<TaskPhaseScenario> GetTaskPhaseScenarios()
+    {
+        return new List<TaskPhaseScenario>
+        {
+            // フェーズ1: 完了済み（3日前に完了）- 先行タスクなし
+            new()
+            {
+                Content = "要件定義書のドラフト作成",
+                TaskTypeName = "作業",
+                Priority = TaskPriority.High,
+                StartDaysOffset = -10,
+                DueDaysOffset = -3,
+                CreatedDaysOffset = -10,
+                CompletedDaysOffset = -3,
+                EstimatedHours = 8,
+                ActualHours = 6,
+                ProgressPercentage = 100,
+                IsCompleted = true,
+                PredecessorIndex = null, // 先行タスクなし
+                Comments = new List<(string Content, TaskCommentType Type, int MinutesOffset)>
+                {
+                    ("ドラフト完成しました。レビューをお願いします。", TaskCommentType.NeedReply, -4320), // 3日前
+                    ("確認しました。いくつか修正点をコメントしています。", TaskCommentType.Normal, -4200),
+                    ("修正完了しました！", TaskCommentType.Normal, -4140),
+                    ("LGTM👍 完了にします。", TaskCommentType.Normal, -4080),
+                }
+            },
+            // フェーズ2: レビュー中（80%完了）- 要件定義が先行
+            new()
+            {
+                Content = "画面設計書の作成",
+                TaskTypeName = "作業",
+                Priority = TaskPriority.High,
+                StartDaysOffset = -5,
+                DueDaysOffset = 2,
+                CreatedDaysOffset = -5,
+                CompletedDaysOffset = 0,
+                EstimatedHours = 16,
+                ActualHours = 12,
+                ProgressPercentage = 80,
+                IsCompleted = false,
+                PredecessorIndex = 0, // 要件定義書が先行
+                Comments = new List<(string Content, TaskCommentType Type, int MinutesOffset)>
+                {
+                    ("画面設計の方針について相談させてください。", TaskCommentType.HelpWanted, -2880), // 2日前
+                    ("モバイルファーストで進めましょう。参考資料を共有します。", TaskCommentType.Normal, -2820),
+                    ("承知しました。進めます！", TaskCommentType.Normal, -2760),
+                    ("8割完成しました。レビューお願いできますか？", TaskCommentType.NeedReply, -60),
+                }
+            },
+            // フェーズ3: 作業中（30%進行）- 画面設計が先行
+            new()
+            {
+                Content = "APIエンドポイントの実装",
+                TaskTypeName = "開発",
+                Priority = TaskPriority.Medium,
+                StartDaysOffset = -2,
+                DueDaysOffset = 5,
+                CreatedDaysOffset = -3,
+                CompletedDaysOffset = 0,
+                EstimatedHours = 24,
+                ActualHours = 8,
+                ProgressPercentage = 30,
+                IsCompleted = false,
+                PredecessorIndex = 1, // 画面設計書が先行
+                Comments = new List<(string Content, TaskCommentType Type, int MinutesOffset)>
+                {
+                    ("認証周りの実装で少し詰まっています…", TaskCommentType.HelpWanted, -1440), // 1日前
+                    ("JWTの検証部分ですか？サンプルコード送りますね。", TaskCommentType.Normal, -1380),
+                    ("ありがとうございます！参考にして進めます。", TaskCommentType.Normal, -1320),
+                    ("進捗30%です。予定通り進んでいます。", TaskCommentType.Memo, -120),
+                }
+            },
+            // フェーズ4: 未着手（これから開始）- API実装が先行
+            new()
+            {
+                Content = "結合テストの実施",
+                TaskTypeName = "検証",
+                Priority = TaskPriority.Medium,
+                StartDaysOffset = 5,
+                DueDaysOffset = 10,
+                CreatedDaysOffset = -3,
+                CompletedDaysOffset = 0,
+                EstimatedHours = 16,
+                ActualHours = null,
+                ProgressPercentage = 0,
+                IsCompleted = false,
+                PredecessorIndex = 2, // API実装が先行
+                Comments = new List<(string Content, TaskCommentType Type, int MinutesOffset)>
+                {
+                    ("テスト環境の準備をお願いします。", TaskCommentType.NeedReply, -2880),
+                    ("来週月曜に準備完了予定です。", TaskCommentType.Normal, -2820),
+                    ("了解です！それまでにテストケースを準備しておきます。", TaskCommentType.Normal, -2760),
+                }
+            },
+            // フェーズ5: 期限超過（注意喚起）- 独立タスク（並行作業）
+            new()
+            {
+                Content = "ドキュメント更新",
+                TaskTypeName = "作業",
+                Priority = TaskPriority.Low,
+                StartDaysOffset = -7,
+                DueDaysOffset = -1, // 昨日が期限
+                CreatedDaysOffset = -7,
+                CompletedDaysOffset = 0,
+                EstimatedHours = 4,
+                ActualHours = 2,
+                ProgressPercentage = 50,
+                IsCompleted = false,
+                PredecessorIndex = null, // 独立タスク（並行作業可能）
+                Comments = new List<(string Content, TaskCommentType Type, int MinutesOffset)>
+                {
+                    ("ドキュメント更新、半分完了しました。", TaskCommentType.Memo, -2880),
+                    ("期限が近づいています。進捗いかがですか？", TaskCommentType.Reminder, -1440),
+                    ("すみません、他のタスクに追われていました。今日中に完了させます。", TaskCommentType.Normal, -1380),
+                    ("本日期限です。対応をお願いします！", TaskCommentType.Urge, -60),
+                }
+            },
+        };
+    }
+
+    /// <summary>
+    /// タスクフェーズのシナリオ定義
+    /// </summary>
+    private class TaskPhaseScenario
+    {
+        public string Content { get; set; } = string.Empty;
+        public string TaskTypeName { get; set; } = "作業";
+        public TaskPriority? Priority { get; set; }
+        public int StartDaysOffset { get; set; }
+        public int DueDaysOffset { get; set; }
+        public int CreatedDaysOffset { get; set; }
+        public int CompletedDaysOffset { get; set; }
+        public decimal EstimatedHours { get; set; }
+        public decimal? ActualHours { get; set; }
+        public int ProgressPercentage { get; set; }
+        public bool IsCompleted { get; set; }
+        /// <summary>
+        /// 先行タスクのインデックス（0始まり、nullは先行タスクなし）
+        /// </summary>
+        public int? PredecessorIndex { get; set; }
+        public List<(string Content, TaskCommentType Type, int MinutesOffset)> Comments { get; set; } = new();
     }
 
     /// <summary>
     /// サンプルプロジェクトのタスクにコメントを作成
+    /// フェーズシナリオに基づいた会話形式のコメントを生成
     /// </summary>
-    private async Task CreateSampleProjectTaskCommentsAsync(List<WorkspaceTask> tasks, List<User> users)
+    private async Task CreateSampleProjectTaskCommentsAsync(
+        List<WorkspaceTask> tasks,
+        List<User> users,
+        List<TaskPhaseScenario> taskPhases)
     {
-        var random = new Random();
-        var normalComments = SeedConstants.NormalComments;
-        var commentTypes = Enum.GetValues<TaskCommentType>();
-
         var comments = new List<TaskComment>();
 
-        foreach (var task in tasks)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                var commentUser = users[random.Next(users.Count)];
-                var commentType = commentTypes[random.Next(commentTypes.Length)];
+        var adminUser = users.FirstOrDefault(u => _options.Users.Any(o => o.Role == "Admin" && o.Email == u.Email));
+        var memberUsers = users.Where(u => u.Id != adminUser?.Id).ToList();
 
-                var content = commentType switch
+        for (int taskIndex = 0; taskIndex < tasks.Count && taskIndex < taskPhases.Count; taskIndex++)
+        {
+            var task = tasks[taskIndex];
+            var phase = taskPhases[taskIndex];
+
+            // シナリオに基づいたコメントを作成
+            for (int i = 0; i < phase.Comments.Count; i++)
+            {
+                var (content, commentType, minutesOffset) = phase.Comments[i];
+
+                // 会話形式: 偶数番目はメンバー、奇数番目は管理者（または交互）
+                User commentUser;
+                if (i % 2 == 0)
                 {
-                    TaskCommentType.Memo => "メモを追加しました。後で確認してください。",
-                    TaskCommentType.HelpWanted => "助けてください！この作業で詰まっています。どなたかアドバイスをいただけないでしょうか？",
-                    TaskCommentType.NeedReply => "確認をお願いします。返信をお待ちしています。",
-                    TaskCommentType.Reminder => "リマインドです。進捗はいかがでしょうか？",
-                    TaskCommentType.Urge => "至急対応をお願いします。期限が迫っています！",
-                    _ => normalComments[random.Next(normalComments.Length)]
-                };
+                    commentUser = memberUsers.Any() ? memberUsers[taskIndex % memberUsers.Count] : users[0];
+                }
+                else
+                {
+                    commentUser = adminUser ?? users[0];
+                }
 
                 var comment = new TaskComment
                 {
@@ -763,7 +937,7 @@ public class DemoAtoms
                     UserId = commentUser.Id,
                     Content = content,
                     CommentType = commentType,
-                    CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-random.Next(1, 60) * (4 - i)),
+                    CreatedAt = DateTimeOffset.UtcNow.AddMinutes(minutesOffset),
                     UpdatedAt = DateTimeOffset.UtcNow,
                     IsDeleted = false
                 };
@@ -852,7 +1026,115 @@ public class DemoAtoms
 #pragma warning restore EF1002
 
         _logger.LogInformation("Created {Count} sample document items in '{WorkspaceName}'", workspaceItems.Count, workspace.Name);
+    }
 
+    /// <summary>
+    /// デモDMルームにシナリオ性のあるメッセージを作成
+    /// </summary>
+    private List<ChatMessage> CreateDemoDmMessages(
+        List<ChatRoom> chatRooms,
+        List<User> users,
+        List<ChatActor> chatActors)
+    {
+        var messages = new List<ChatMessage>();
+
+        var adminUserOption = _options.Users.FirstOrDefault(u => u.Role == "Admin");
+        if (adminUserOption == null) return messages;
+
+        var adminUser = users.First(u => u.Email == adminUserOption.Email);
+        var adminActor = chatActors.FirstOrDefault(a => a.UserId == adminUser.Id);
+        if (adminActor == null) return messages;
+
+        var operatorUsers = users.Where(u => u.Email != adminUser.Email).ToList();
+        var dmRooms = chatRooms.Where(r => r.Type == ChatRoomType.Dm).ToList();
+
+        // 各オペレーターとの会話シナリオを作成
+        var conversationScenarios = GetDmConversationScenarios();
+        var scenarioIndex = 0;
+
+        foreach (var operatorUser in operatorUsers)
+        {
+            var operatorActor = chatActors.FirstOrDefault(a => a.UserId == operatorUser.Id);
+            if (operatorActor == null) continue;
+
+            // このユーザーとのDMルームを探す
+            var dmRoom = dmRooms.FirstOrDefault(r =>
+                r.DmUserPair != null &&
+                r.DmUserPair.Split('_').Select(long.Parse).Contains(adminUser.Id) &&
+                r.DmUserPair.Split('_').Select(long.Parse).Contains(operatorUser.Id));
+
+            if (dmRoom == null) continue;
+
+            // シナリオを取得（ローテーション）
+            var scenario = conversationScenarios[scenarioIndex % conversationScenarios.Count];
+            scenarioIndex++;
+
+            // 会話を時系列で作成（3日前から開始）
+            var baseTime = DateTimeOffset.UtcNow.AddDays(-3);
+
+            foreach (var (isAdmin, messageText, minutesOffset) in scenario)
+            {
+                var senderActor = isAdmin ? adminActor : operatorActor;
+                var message = new ChatMessage
+                {
+                    ChatRoomId = dmRoom.Id,
+                    SenderActorId = senderActor.Id,
+                    MessageType = ChatMessageType.Text,
+                    Content = messageText,
+                    CreatedAt = baseTime.AddMinutes(minutesOffset)
+                };
+                messages.Add(message);
+            }
+        }
+
+        _logger.LogInformation("Created {Count} DM messages for demo", messages.Count);
+        return messages;
+    }
+
+    /// <summary>
+    /// DMの会話シナリオを取得
+    /// </summary>
+    private static List<List<(bool IsAdmin, string Message, int MinutesOffset)>> GetDmConversationScenarios()
+    {
+        return new List<List<(bool, string, int)>>
+        {
+            // シナリオ1: 新人オンボーディング
+            new()
+            {
+                (true, "こんにちは！チームへようこそ🎉 何か困ったことがあればいつでも聞いてくださいね。", 0),
+                (false, "ありがとうございます！早速ですが、プロジェクトの進め方について質問があります。", 15),
+                (true, "もちろん！何でも聞いてください。", 18),
+                (false, "タスクの優先度はどうやって決めればいいですか？", 20),
+                (true, "基本的には期限が近いものから対応してください。緊急度が高いものには🔴マークをつけているので、それを目安にしてもらえると助かります。", 25),
+                (false, "なるほど、わかりました！ありがとうございます😊", 30),
+                (true, "何かあればいつでも声かけてね👍", 32),
+            },
+            // シナリオ2: 作業相談
+            new()
+            {
+                (false, "お疲れさまです。今対応中のドキュメント作成の件でご相談があります。", 0),
+                (true, "お疲れさま！どうしました？", 5),
+                (false, "構成案を作ったのですが、一度レビューいただけますか？", 8),
+                (true, "もちろん！ワークスペースにアップロードしてもらえれば確認するよ。", 12),
+                (false, "承知しました。今日中にアップします！", 15),
+                (true, "👌了解！", 16),
+                (false, "アップしました！お手すきの時に確認お願いします。", 180),
+                (true, "確認しました！全体的にいい構成だと思います。1点だけコメント入れたので見てみてください。", 240),
+                (false, "ありがとうございます！修正して再度アップしますね。", 245),
+            },
+            // シナリオ3: 進捗確認
+            new()
+            {
+                (true, "今週の進捗はどうですか？", 0),
+                (false, "順調に進んでいます！予定通り金曜日には完了できそうです。", 30),
+                (true, "よかった！何か詰まっているところはない？", 35),
+                (false, "大丈夫です。ただ、来週のミーティングについて確認したいことが…", 40),
+                (true, "何でしょう？", 42),
+                (false, "水曜の14時からで大丈夫ですか？", 45),
+                (true, "OK！カレンダーに入れておくね。", 48),
+                (false, "ありがとうございます🙏", 50),
+            },
+        };
     }
 
 }

@@ -40,7 +40,7 @@ public class WorkspaceDetailUserResponse
     /// <summary>
     /// 最終ログイン日時
     /// </summary>
-    public DateTime? LastLoginAt { get; set; }
+    public DateTimeOffset? LastLoginAt { get; set; }
 
     /// <summary>
     /// 自分自身のユーザーかどうか
