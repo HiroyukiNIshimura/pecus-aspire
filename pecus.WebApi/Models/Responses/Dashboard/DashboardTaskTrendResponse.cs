@@ -61,4 +61,9 @@ public class WeeklyTaskTrend
     /// </summary>
     [Required]
     public required int CompletedCount { get; set; }
+
+    /// <summary>
+    /// その週に作成されたアイテム数（ワークスペース用、ダッシュボードでは未使用）
+    /// </summary>
+    public int? ItemCreatedCount { get; set; }
 }

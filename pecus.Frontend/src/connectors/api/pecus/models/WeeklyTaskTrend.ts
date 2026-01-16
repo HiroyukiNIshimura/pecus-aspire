@@ -26,5 +26,9 @@ export type WeeklyTaskTrend = {
      * その週に完了したタスク数
      */
     completedCount: number;
+    /**
+     * その週に作成されたアイテム数（ワークスペース用、ダッシュボードでは未使用）
+     */
+    itemCreatedCount?: number | null;
 };
 

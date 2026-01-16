@@ -22,10 +22,14 @@ export default function TaskTrendChart({ data }: TaskTrendChartProps) {
     weekNumber: trend.weekNumber,
     created: trend.createdCount,
     completed: trend.completedCount,
+    itemCreated: trend.itemCreatedCount ?? 0,
   }));
 
   // 最大値を取得（Y軸のスケール用）
-  const maxValue = Math.max(...weeklyTrends.map((t) => Math.max(t.createdCount, t.completedCount)), 1);
+  const maxValue = Math.max(
+    ...weeklyTrends.map((t) => Math.max(t.createdCount, t.completedCount, t.itemCreatedCount ?? 0)),
+    1
+  );
 
   return (
     <section aria-labelledby="task-trend-heading" className="card bg-base-100 shadow-sm border border-base-300">
@@ -76,6 +80,15 @@ export default function TaskTrendChart({ data }: TaskTrendChartProps) {
                   dot={{ r: 4, fill: 'var(--color-success)', stroke: 'var(--color-success)' }}
                   activeDot={{ r: 6, fill: 'var(--color-success)', stroke: 'var(--color-success)' }}
                 />
+                <Line
+                  type="monotone"
+                  dataKey="itemCreated"
+                  name="アイテム作成"
+                  stroke="var(--color-warning)"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: 'var(--color-warning)', stroke: 'var(--color-warning)' }}
+                  activeDot={{ r: 6, fill: 'var(--color-warning)', stroke: 'var(--color-warning)' }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -85,15 +98,21 @@ export default function TaskTrendChart({ data }: TaskTrendChartProps) {
         {weeklyTrends.length > 0 && (
           <div className="flex justify-around mt-4 pt-4 border-t border-base-300">
             <div className="text-center">
-              <p className="text-xs text-base-content/60">期間内作成</p>
+              <p className="text-xs text-base-content/60">タスク作成</p>
               <p className="text-lg font-bold text-info">
                 {weeklyTrends.reduce((sum, t) => sum + t.createdCount, 0).toLocaleString()}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-base-content/60">期間内完了</p>
+              <p className="text-xs text-base-content/60">タスク完了</p>
               <p className="text-lg font-bold text-success">
                 {weeklyTrends.reduce((sum, t) => sum + t.completedCount, 0).toLocaleString()}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-base-content/60">アイテム作成</p>
+              <p className="text-lg font-bold text-warning">
+                {weeklyTrends.reduce((sum, t) => sum + (t.itemCreatedCount ?? 0), 0).toLocaleString()}
               </p>
             </div>
             <div className="text-center">

@@ -347,6 +347,13 @@ public class DashboardStatisticsService
             .Select(t => new { t.CreatedAt, t.CompletedAt })
             .ToListAsync();
 
+        // 期間内のアイテムを取得
+        var itemsInPeriod = await _context.WorkspaceItems
+            .Where(i => workspaceIds.Contains(i.WorkspaceId))
+            .Where(i => i.CreatedAt >= startDate)
+            .Select(i => new { i.CreatedAt })
+            .ToListAsync();
+
         // 週ごとに集計
         var weeklyTrends = new List<WeeklyTaskTrend>();
         for (int i = 0; i < weeks; i++)
@@ -356,6 +363,7 @@ public class DashboardStatisticsService
 
             var createdCount = tasksInPeriod.Count(t => t.CreatedAt >= weekStart && t.CreatedAt < weekEnd);
             var completedCount = tasksInPeriod.Count(t => t.CompletedAt != null && t.CompletedAt >= weekStart && t.CompletedAt < weekEnd);
+            var itemCreatedCount = itemsInPeriod.Count(item => item.CreatedAt >= weekStart && item.CreatedAt < weekEnd);
 
             weeklyTrends.Add(new WeeklyTaskTrend
             {
@@ -364,6 +372,7 @@ public class DashboardStatisticsService
                 Label = $"{weekStart:M/d}〜{weekStart.AddDays(6):M/d}",
                 CreatedCount = createdCount,
                 CompletedCount = completedCount,
+                ItemCreatedCount = itemCreatedCount,
             });
         }
 

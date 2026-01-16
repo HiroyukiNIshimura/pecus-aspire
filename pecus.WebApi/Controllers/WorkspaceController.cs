@@ -9,6 +9,7 @@ using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
+using Pecus.Models.Responses.Dashboard;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -840,5 +841,32 @@ public class WorkspaceController : BaseSecureController
             workspace.Code,
             targetUsers.Count
         );
+    }
+
+    /// <summary>
+    /// ワークスペースの週次タスクトレンドを取得（Viewer以上の権限が必要）
+    /// </summary>
+    /// <param name="id">ワークスペースID</param>
+    /// <param name="weeks">取得する週数（4〜12週、デフォルト8週）</param>
+    /// <returns>週次タスクトレンド</returns>
+    [HttpGet("{id:int}/task-trend")]
+    [ProducesResponseType(typeof(DashboardTaskTrendResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<Results<Ok<DashboardTaskTrendResponse>, NotFound>> GetWorkspaceTaskTrend(
+        int id,
+        [FromQuery] int weeks = 8
+    )
+    {
+        // ワークスペース閲覧権限チェック（Viewer以上）
+        var workspace = await _workspaceService.GetWorkspaceDetailAsync(id, CurrentUserId);
+        if (workspace == null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var clampedWeeks = Math.Clamp(weeks, 4, 12);
+        var trend = await _workspaceService.GetWorkspaceTaskTrendAsync(id, clampedWeeks);
+
+        return TypedResults.Ok(trend);
     }
 }

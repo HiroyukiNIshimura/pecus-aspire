@@ -4461,6 +4461,64 @@
         ]
       }
     },
+    "/api/workspaces/{id}/task-trend": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ワークスペースの週次タスクトレンドを取得（Viewer以上の権限が必要）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "weeks",
+            "in": "query",
+            "description": "取得する週数（4〜12週、デフォルト8週）",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 8
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardTaskTrendResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/workspaces/{workspaceId}/items/{itemId}/attachments": {
       "post": {
         "tags": [
@@ -21710,6 +21768,12 @@
             "type": "integer",
             "description": "その週に完了したタスク数",
             "format": "int32"
+          },
+          "itemCreatedCount": {
+            "type": "integer",
+            "description": "その週に作成されたアイテム数（ワークスペース用、ダッシュボードでは未使用）",
+            "format": "int32",
+            "nullable": true
           }
         },
         "description": "週ごとのタスクトレンドデータ"

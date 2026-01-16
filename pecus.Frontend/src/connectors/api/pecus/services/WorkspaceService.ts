@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { AddUserToWorkspaceRequest } from '../models/AddUserToWorkspaceRequest';
 import type { CreateWorkspaceRequest } from '../models/CreateWorkspaceRequest';
+import type { DashboardTaskTrendResponse } from '../models/DashboardTaskTrendResponse';
 import type { DocumentTreeResponse } from '../models/DocumentTreeResponse';
 import type { PagedResponseOfWorkspaceListItemResponse } from '../models/PagedResponseOfWorkspaceListItemResponse';
 import type { SetWorkspaceSkillsRequest } from '../models/SetWorkspaceSkillsRequest';
@@ -395,6 +396,31 @@ export class WorkspaceService {
                 404: `ワークスペースが見つかりません`,
                 409: `競合: ワークスペース情報が別のユーザーにより更新されています`,
                 500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ワークスペースの週次タスクトレンドを取得（Viewer以上の権限が必要）
+     * @param id ワークスペースID
+     * @param weeks 取得する週数（4〜12週、デフォルト8週）
+     * @returns DashboardTaskTrendResponse OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesTaskTrend(
+        id: number,
+        weeks: number = 8,
+    ): CancelablePromise<DashboardTaskTrendResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/{id}/task-trend',
+            path: {
+                'id': id,
+            },
+            query: {
+                'weeks': weeks,
+            },
+            errors: {
+                404: `Not Found`,
             },
         });
     }

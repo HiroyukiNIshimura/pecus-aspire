@@ -4,7 +4,9 @@ using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Statistics;
 using Pecus.Libs.Utils;
+using Pecus.Models.Responses.Dashboard;
 
 namespace Pecus.Services;
 
@@ -1285,6 +1287,66 @@ public class WorkspaceService
             AssignedItems = assignedItems,
             CommitterItems = committerItems,
             OwnerItems = ownerItems,
+        };
+    }
+
+    /// <summary>
+    /// ワークスペース単位の週次タスクトレンドを取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="weeks">取得する週数（デフォルト8週）</param>
+    /// <returns>週次タスクトレンド</returns>
+    public async Task<DashboardTaskTrendResponse> GetWorkspaceTaskTrendAsync(int workspaceId, int weeks = 8)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
+        var currentWeekStart = StatisticsDateHelper.GetStartOfWeek(todayStart);
+        var startDate = currentWeekStart.AddDays(-7 * (weeks - 1));
+
+        // 期間内のタスクを取得
+        var tasksInPeriod = await _context.WorkspaceTasks
+            .Where(t => t.WorkspaceId == workspaceId)
+            .Where(t =>
+                (t.CreatedAt >= startDate) ||
+                (t.CompletedAt != null && t.CompletedAt >= startDate)
+            )
+            .Select(t => new { t.CreatedAt, t.CompletedAt })
+            .ToListAsync();
+
+        // 期間内のアイテムを取得
+        var itemsInPeriod = await _context.WorkspaceItems
+            .Where(i => i.WorkspaceId == workspaceId)
+            .Where(i => i.CreatedAt >= startDate)
+            .Select(i => new { i.CreatedAt })
+            .ToListAsync();
+
+        // 週ごとに集計
+        var weeklyTrends = new List<WeeklyTaskTrend>();
+        for (int i = 0; i < weeks; i++)
+        {
+            var weekStart = startDate.AddDays(7 * i);
+            var weekEnd = weekStart.AddDays(7);
+
+            var createdCount = tasksInPeriod.Count(t => t.CreatedAt >= weekStart && t.CreatedAt < weekEnd);
+            var completedCount = tasksInPeriod.Count(t => t.CompletedAt != null && t.CompletedAt >= weekStart && t.CompletedAt < weekEnd);
+            var itemCreatedCount = itemsInPeriod.Count(i => i.CreatedAt >= weekStart && i.CreatedAt < weekEnd);
+
+            weeklyTrends.Add(new WeeklyTaskTrend
+            {
+                WeekStart = weekStart,
+                WeekNumber = StatisticsDateHelper.GetIsoWeekNumber(weekStart),
+                Label = $"{weekStart:M/d}〜{weekStart.AddDays(6):M/d}",
+                CreatedCount = createdCount,
+                CompletedCount = completedCount,
+                ItemCreatedCount = itemCreatedCount,
+            });
+        }
+
+        return new DashboardTaskTrendResponse
+        {
+            WeeklyTrends = weeklyTrends,
+            StartDate = startDate,
+            EndDate = currentWeekStart.AddDays(7).AddTicks(-1),
         };
     }
 }
