@@ -19,6 +19,11 @@ public class WorkspaceItemAttachmentResponse
     public int WorkspaceItemId { get; set; }
 
     /// <summary>
+    /// ワークスペースタスクID（オプション）
+    /// </summary>
+    public int? WorkspaceTaskId { get; set; }
+
+    /// <summary>
     /// ファイル名
     /// </summary>
     public string FileName { get; set; } = string.Empty;

@@ -4602,6 +4602,15 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "taskId",
+            "in": "query",
+            "description": "ワークスペースタスクID（オプション）",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -22019,6 +22028,12 @@
             "type": "integer",
             "description": "ワークスペースアイテムID",
             "format": "int32"
+          },
+          "workspaceTaskId": {
+            "type": "integer",
+            "description": "ワークスペースタスクID（オプション）",
+            "format": "int32",
+            "nullable": true
           },
           "fileName": {
             "type": "string",

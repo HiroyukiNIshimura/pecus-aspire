@@ -15,6 +15,10 @@ export type WorkspaceItemAttachmentResponse = {
      */
     workspaceItemId?: number;
     /**
+     * ワークスペースタスクID（オプション）
+     */
+    workspaceTaskId?: number | null;
+    /**
      * ファイル名
      */
     fileName?: string;

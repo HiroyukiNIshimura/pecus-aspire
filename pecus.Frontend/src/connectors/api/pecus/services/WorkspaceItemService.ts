@@ -66,12 +66,14 @@ export class WorkspaceItemService {
      * ワークスペースアイテムの添付ファイル一覧を取得
      * @param workspaceId ワークスペースID
      * @param itemId アイテムID
+     * @param taskId ワークスペースタスクID（オプション）
      * @returns WorkspaceItemAttachmentResponse OK
      * @throws ApiError
      */
     public static getApiWorkspacesItemsAttachments(
         workspaceId: number,
         itemId: number,
+        taskId?: number,
     ): CancelablePromise<Array<WorkspaceItemAttachmentResponse>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -79,6 +81,9 @@ export class WorkspaceItemService {
             path: {
                 'workspaceId': workspaceId,
                 'itemId': itemId,
+            },
+            query: {
+                'taskId': taskId,
             },
             errors: {
                 404: `Not Found`,

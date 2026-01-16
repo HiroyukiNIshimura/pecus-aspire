@@ -131,10 +131,12 @@ public class WorkspaceItemAttachmentService
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">アイテムID</param>
+    /// <param name="taskId">ワークスペースタスクID（オプション）</param>
     /// <returns>添付ファイル一覧</returns>
     public async Task<List<WorkspaceItemAttachment>> GetAttachmentsAsync(
         int workspaceId,
-        int itemId
+        int itemId,
+        int? taskId = null
     )
     {
         // アイテムの存在確認
@@ -147,11 +149,28 @@ public class WorkspaceItemAttachmentService
             throw new NotFoundException("アイテムが見つかりません。");
         }
 
-        return await _context
-            .WorkspaceItemAttachments.Include(a => a.UploadedByUser)
-            .Where(a => a.WorkspaceItemId == itemId)
-            .OrderBy(a => a.UploadedAt)
-            .ToListAsync();
+        // タスクIDが指定されている場合は存在確認
+        if (taskId.HasValue)
+        {
+            var taskExists = await _context.WorkspaceTasks.AnyAsync(t =>
+                t.Id == taskId.Value && t.WorkspaceId == workspaceId && t.WorkspaceItemId == itemId
+            );
+            if (!taskExists)
+            {
+                throw new NotFoundException("タスクが見つかりません。");
+            }
+        }
+
+        var query = _context.WorkspaceItemAttachments
+            .Include(a => a.UploadedByUser)
+            .Where(a => a.WorkspaceItemId == itemId);
+
+        if (taskId.HasValue)
+        {
+            query = query.Where(a => a.WorkspaceTaskId == taskId.Value);
+        }
+
+        return await query.OrderBy(a => a.UploadedAt).ToListAsync();
     }
 
     /// <summary>

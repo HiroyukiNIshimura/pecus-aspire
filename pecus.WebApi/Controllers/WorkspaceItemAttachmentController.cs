@@ -172,6 +172,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">アイテムID</param>
+    /// <param name="taskId">ワークスペースタスクID（オプション）</param>
     /// <returns>添付ファイル一覧</returns>
     [HttpGet]
     [ProducesResponseType(typeof(List<WorkspaceItemAttachmentResponse>), StatusCodes.Status200OK)]
@@ -179,7 +180,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<WorkspaceItemAttachmentResponse>>> GetAttachments(
         int workspaceId,
-        int itemId
+        int itemId,
+        int? taskId = null
     )
     {
         // ワークスペースへのアクセス権限をチェック
@@ -189,13 +191,14 @@ public class WorkspaceItemAttachmentController : BaseSecureController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId);
+        var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId, taskId);
 
         var response = attachments
             .Select(a => new WorkspaceItemAttachmentResponse
             {
                 Id = a.Id,
                 WorkspaceItemId = a.WorkspaceItemId,
+                WorkspaceTaskId = a.WorkspaceTaskId,
                 FileName = a.FileName,
                 FileSize = a.FileSize,
                 MimeType = a.MimeType,
