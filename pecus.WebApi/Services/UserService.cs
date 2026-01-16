@@ -227,6 +227,9 @@ public class UserService
         user.UpdatedAt = DateTime.UtcNow;
         user.UpdatedByUserId = updatedByUserId;
 
+        // ChatActor のキャッシュも同期更新（Username と Avatar）
+        await SyncChatActorAsync(userId, request.Username.Trim(), request.AvatarType, user.UserAvatarPath);
+
         try
         {
             await _context.SaveChangesAsync();
@@ -259,6 +262,9 @@ public class UserService
         user.UserAvatarPath = userAvatarPath;
         user.UpdatedAt = DateTime.UtcNow;
         user.UpdatedByUserId = updatedByUserId;
+
+        // ChatActor のキャッシュも同期更新
+        await SyncChatActorAvatarAsync(userId, avatarType, userAvatarPath);
 
         try
         {
@@ -774,6 +780,39 @@ public class UserService
         {
             await transaction.RollbackAsync();
             throw;
+        }
+    }
+
+    /// <summary>
+    /// ChatActor のキャッシュ情報を同期更新（DisplayName と Avatar）
+    /// </summary>
+    private async Task SyncChatActorAsync(int userId, string displayName, AvatarType? avatarType, string? avatarUrl)
+    {
+        var chatActor = await _context.ChatActors
+            .FirstOrDefaultAsync(a => a.UserId == userId);
+
+        if (chatActor != null)
+        {
+            chatActor.DisplayName = displayName;
+            chatActor.AvatarType = avatarType;
+            chatActor.AvatarUrl = avatarUrl;
+            chatActor.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// ChatActor のアバターキャッシュのみ同期更新
+    /// </summary>
+    private async Task SyncChatActorAvatarAsync(int userId, AvatarType? avatarType, string? avatarUrl)
+    {
+        var chatActor = await _context.ChatActors
+            .FirstOrDefaultAsync(a => a.UserId == userId);
+
+        if (chatActor != null)
+        {
+            chatActor.AvatarType = avatarType;
+            chatActor.AvatarUrl = avatarUrl;
+            chatActor.UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 
