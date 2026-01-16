@@ -110,8 +110,13 @@ export default function ItemAttachmentModal({
             fileBlob = new Blob([arrayBuffer], { type: file.type || 'application/octet-stream' });
           } catch (readError) {
             // ファイル読み取りエラー（Excelで開いている、クラウドストレージ等）
-            if (readError instanceof Error && (readError.name === 'NotReadableError' || readError.message.includes('could not be read'))) {
-              throw new Error('ファイルを読み込めません。ファイルが他のアプリで開いていないか、クラウドストレージの場合はローカルにダウンロードしてから再度お試しください。');
+            if (
+              readError instanceof Error &&
+              (readError.name === 'NotReadableError' || readError.message.includes('could not be read'))
+            ) {
+              throw new Error(
+                'ファイルを読み込めません。ファイルが他のアプリで開いていないか、クラウドストレージの場合はローカルにダウンロードしてから再度お試しください。',
+              );
             }
             throw readError;
           }

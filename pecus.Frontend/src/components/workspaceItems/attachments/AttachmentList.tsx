@@ -43,12 +43,7 @@ function convertToProxyUrl(downloadUrl: string | undefined): string {
 /**
  * 添付ファイル一覧コンポーネント
  */
-export default function AttachmentList({
-  attachments,
-  uploadingFiles,
-  onDelete,
-  canDelete,
-}: AttachmentListProps) {
+export default function AttachmentList({ attachments, uploadingFiles, onDelete, canDelete }: AttachmentListProps) {
   const hasContent = attachments.length > 0 || uploadingFiles.length > 0;
 
   if (!hasContent) {
