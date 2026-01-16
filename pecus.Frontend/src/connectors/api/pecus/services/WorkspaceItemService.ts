@@ -31,7 +31,7 @@ export class WorkspaceItemService {
      * ワークスペースアイテムに添付ファイルをアップロード
      * @param workspaceId ワークスペースID
      * @param itemId アイテムID
-     * @param formData 元のファイル名（オプション、省略時はfile.FileNameを使用）
+     * @param formData ワークスペースタスクID（オプション）
      * @returns WorkspaceItemAttachmentResponse Created
      * @throws ApiError
      */
@@ -41,7 +41,8 @@ export class WorkspaceItemService {
         formData: ({
             file?: IFormFile;
         } & {
-            originalFileName?: string;
+            OriginalFileName?: string;
+            WorkspaceTaskId?: number;
         }),
     ): CancelablePromise<WorkspaceItemAttachmentResponse> {
         return __request(OpenAPI, {

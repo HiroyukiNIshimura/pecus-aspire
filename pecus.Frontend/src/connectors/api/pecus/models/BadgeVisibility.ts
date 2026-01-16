@@ -2,4 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type BadgeVisibility = 'Private' | 'Workspace' | 'Organization' | null;
+/**
+ * バッジの公開範囲を表す列挙型
+ */
+export type BadgeVisibility = 'Private' | 'Workspace' | 'Organization';

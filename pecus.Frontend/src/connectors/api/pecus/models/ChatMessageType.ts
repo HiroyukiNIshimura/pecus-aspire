@@ -2,4 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type ChatMessageType = 'Text' | 'System' | 'Ai' | 'File' | null;
+/**
+ * チャットメッセージタイプ
+ */
+export type ChatMessageType = 'Text' | 'System' | 'Ai' | 'File';
