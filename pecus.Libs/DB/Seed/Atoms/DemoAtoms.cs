@@ -39,7 +39,7 @@ public class DemoAtoms
         _options = options.Value;
         _commonAtoms = commonAtoms;
         _organizationDeletionService = organizationDeletionService;
-        _fileUploadStoragePath = configuration["FileUpload:StoragePath"] ?? "../data/uploads";
+        _fileUploadStoragePath = Path.Combine(configuration["_infrastructure:dataPath"] ?? "../data", "uploads");
     }
 
     /// <summary>
