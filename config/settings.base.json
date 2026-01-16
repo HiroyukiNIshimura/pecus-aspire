@@ -281,13 +281,19 @@
         },
         {
           "Email": "user1@demo.coati.none",
-          "Username": "子宛 一",
+          "Username": "子宛 一郎",
           "Password": "P@ssw0rd",
           "Role": "User"
         },
         {
           "Email": "user2@demo.coati.none",
-          "Username": "個宛 二",
+          "Username": "個宛 二郎",
+          "Password": "P@ssw0rd",
+          "Role": "User"
+        },
+        {
+          "Email": "user3@demo.coati.none",
+          "Username": "小当 三郎",
           "Password": "P@ssw0rd",
           "Role": "User"
         }

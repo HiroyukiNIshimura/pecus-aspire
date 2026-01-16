@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Linq.Expressions;
 
 namespace Pecus.Libs.DB.Services;
 
@@ -197,6 +198,7 @@ public class BatchOrganizationDeletionService
         // WorkspaceItemTag（アイテムに紐づく）
         await DeleteInBatchesAsync(
             _context.WorkspaceItemTags.Where(t => itemIdsQuery.Contains(t.WorkspaceItemId)),
+            t => t.WorkspaceItemId,
             "WorkspaceItemTags (by item)",
             organizationId,
             batchSize,
@@ -205,6 +207,7 @@ public class BatchOrganizationDeletionService
         // WorkspaceItemTag（ユーザーが作成）
         await DeleteInBatchesAsync(
             _context.WorkspaceItemTags.Where(t => userIdsQuery.Contains(t.CreatedByUserId)),
+            t => t.WorkspaceItemId,
             "WorkspaceItemTags (by user)",
             organizationId,
             batchSize,
@@ -213,6 +216,7 @@ public class BatchOrganizationDeletionService
         // WorkspaceItemPin
         await DeleteInBatchesAsync(
             _context.WorkspaceItemPins.Where(p => itemIdsQuery.Contains(p.WorkspaceItemId)),
+            p => p.WorkspaceItemId,
             "WorkspaceItemPins",
             organizationId,
             batchSize,
@@ -229,6 +233,7 @@ public class BatchOrganizationDeletionService
         // WorkspaceSkill（ワークスペースに紐づく）
         await DeleteInBatchesAsync(
             _context.WorkspaceSkills.Where(s => workspaceIdsQuery.Contains(s.WorkspaceId)),
+            s => s.WorkspaceId,
             "WorkspaceSkills (by workspace)",
             organizationId,
             batchSize,
@@ -237,6 +242,7 @@ public class BatchOrganizationDeletionService
         // WorkspaceSkill（ユーザーが追加）
         await DeleteInBatchesAsync(
             _context.WorkspaceSkills.Where(s => s.AddedByUserId != null && userIdsQuery.Contains(s.AddedByUserId.Value)),
+            s => s.WorkspaceId,
             "WorkspaceSkills (by user)",
             organizationId,
             batchSize,
@@ -245,6 +251,7 @@ public class BatchOrganizationDeletionService
         // WorkspaceUser
         await DeleteInBatchesAsync(
             _context.WorkspaceUsers.Where(u => workspaceIdsQuery.Contains(u.WorkspaceId)),
+            u => u.WorkspaceId,
             "WorkspaceUsers",
             organizationId,
             batchSize,
@@ -261,6 +268,7 @@ public class BatchOrganizationDeletionService
         // UserSkill（ユーザーが追加者）
         await DeleteInBatchesAsync(
             _context.UserSkills.Where(s => s.AddedByUserId != null && userIdsQuery.Contains(s.AddedByUserId.Value)),
+            s => s.UserId,
             "UserSkills (by AddedByUserId)",
             organizationId,
             batchSize,
@@ -269,6 +277,7 @@ public class BatchOrganizationDeletionService
         // UserSkill（ユーザー自身のスキル）
         await DeleteInBatchesAsync(
             _context.UserSkills.Where(s => userIdsQuery.Contains(s.UserId)),
+            s => s.UserId,
             "UserSkills (by UserId)",
             organizationId,
             batchSize,
@@ -350,10 +359,50 @@ public class BatchOrganizationDeletionService
     }
 
     /// <summary>
-    /// バッチ単位で削除を実行
+    /// バッチ単位で削除を実行（Id プロパティを持つエンティティ用）
     /// </summary>
     private async Task DeleteInBatchesAsync<T>(
         IQueryable<T> query,
+        string entityName,
+        int organizationId,
+        int batchSize,
+        CancellationToken cancellationToken) where T : class
+    {
+        // Id プロパティでソート
+        await DeleteInBatchesWithOrderAsync(
+            query.OrderBy(e => EF.Property<int>(e, "Id")),
+            entityName,
+            organizationId,
+            batchSize,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// バッチ単位で削除を実行（複合キーエンティティ用）
+    /// </summary>
+    /// <typeparam name="T">エンティティ型</typeparam>
+    /// <typeparam name="TKey">ソートキー型</typeparam>
+    private async Task DeleteInBatchesAsync<T, TKey>(
+        IQueryable<T> query,
+        Expression<Func<T, TKey>> orderBySelector,
+        string entityName,
+        int organizationId,
+        int batchSize,
+        CancellationToken cancellationToken) where T : class
+    {
+        await DeleteInBatchesWithOrderAsync(
+            query.OrderBy(orderBySelector),
+            entityName,
+            organizationId,
+            batchSize,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// バッチ単位で削除を実行（OrderBy 適用済みクエリ用）
+    /// </summary>
+    private async Task DeleteInBatchesWithOrderAsync<T>(
+        IOrderedQueryable<T> orderedQuery,
         string entityName,
         int organizationId,
         int batchSize,
@@ -366,7 +415,7 @@ public class BatchOrganizationDeletionService
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            deleted = await query
+            deleted = await orderedQuery
                 .Take(batchSize)
                 .ExecuteDeleteAsync(cancellationToken);
 
