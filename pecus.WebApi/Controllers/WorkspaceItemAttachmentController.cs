@@ -43,7 +43,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">アイテムID</param>
     /// <param name="file">アップロードするファイル</param>
-    /// <param name="originalFileName">元のファイル名（オプション、省略時はfile.FileNameを使用）</param>
+    /// <param name="request">アップロードリクエスト</param>
     /// <returns>アップロードされた添付ファイル情報</returns>
     [HttpPost]
     [ProducesResponseType(typeof(WorkspaceItemAttachmentResponse), StatusCodes.Status201Created)]
@@ -55,7 +55,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         int workspaceId,
         int itemId,
         IFormFile file,
-        [FromForm] string? originalFileName = null
+        [FromForm] UploadAttachmentRequest request
     )
     {
         // ワークスペースへのアクセス権限と編集権限をチェック（Viewerは403）
@@ -68,8 +68,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
 
         // ファイル名とMIMEタイプを取得
         // originalFileNameが指定されていればそれを使用（表示用）、なければfile.FileNameを使用
-        var displayFileName = !string.IsNullOrWhiteSpace(originalFileName)
-            ? Path.GetFileName(originalFileName)
+        var displayFileName = !string.IsNullOrWhiteSpace(request.OriginalFileName)
+            ? Path.GetFileName(request.OriginalFileName)
             : Path.GetFileName(file.FileName);
         var mimeType = file.ContentType;
 
@@ -337,3 +337,4 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         );
     }
 }
+

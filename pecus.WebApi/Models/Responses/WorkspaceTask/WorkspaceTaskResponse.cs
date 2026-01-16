@@ -1,6 +1,4 @@
-using Pecus.Models.Responses.Achievement;
-
-namespace Pecus.Models.Responses.WorkspaceTask;
+﻿namespace Pecus.Models.Responses.WorkspaceTask;
 
 /// <summary>
 /// ワークスペースタスク操作レスポンス

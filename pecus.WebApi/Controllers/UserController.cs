@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
-using Pecus.Models.Responses.User;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
