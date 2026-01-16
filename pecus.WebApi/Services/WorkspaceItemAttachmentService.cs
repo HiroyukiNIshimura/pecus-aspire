@@ -178,14 +178,13 @@ public class WorkspaceItemAttachmentService
 
         var query = _context.WorkspaceItemAttachments
             .Include(a => a.UploadedByUser)
+            .Include(a => a.WorkspaceTask)
+                .ThenInclude(t => t!.TaskType)
             .Where(a => a.WorkspaceItemId == itemId);
 
         if (taskId.HasValue)
         {
-            query = query
-                .Where(a => a.WorkspaceTaskId == taskId.Value)
-                .Include(a => a.WorkspaceTask)
-                    .ThenInclude(t => t!.TaskType);
+            query = query.Where(a => a.WorkspaceTaskId == taskId.Value);
         }
 
         return await query.OrderBy(a => a.UploadedAt).ToListAsync();

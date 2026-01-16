@@ -133,13 +133,14 @@ export default function AttachmentListItem({ attachment, onDelete, canDelete, do
 
       {/* ファイル情報 */}
       <div className="flex-1 min-w-0">
-        <a
-          href={downloadUrl}
-          download
-          className="font-medium text-sm truncate block hover:underline hover:text-primary"
-        >
-          {attachment.fileName || '不明なファイル'}
-        </a>
+        <div className="flex items-center gap-2">
+          <a href={downloadUrl} download className="font-medium text-sm truncate hover:underline hover:text-primary">
+            {attachment.fileName || '不明なファイル'}
+          </a>
+          {attachment.task?.sequenceNumber && (
+            <span className="badge badge-secondary badge-xs font-mono">T-{attachment.task.sequenceNumber}</span>
+          )}
+        </div>
         <p className="text-xs text-base-content/60">
           {formatFileSize(attachment.fileSize)}
           {attachment.uploadedByUsername && ` • ${attachment.uploadedByUsername}`}
