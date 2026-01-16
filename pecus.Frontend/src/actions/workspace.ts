@@ -6,6 +6,7 @@ import {
   detectMemberHasAssignmentsError,
 } from '@/connectors/api/PecusApiClient';
 import type {
+  DashboardTaskTrendResponse,
   PagedResponseOfWorkspaceListItemResponse,
   SuccessResponse,
   UserSearchResultResponse,
@@ -400,6 +401,27 @@ export async function searchWorkspaceMembers(
     console.error('Failed to search workspace members:', error);
     return handleApiErrorForAction<UserSearchResultResponse[]>(error, {
       defaultMessage: 'メンバー検索に失敗しました',
+    });
+  }
+}
+
+/**
+ * Server Action: ワークスペースの週次タスクトレンドを取得
+ * @param workspaceId ワークスペースID
+ * @param weeks 取得する週数（4〜12、デフォルト8）
+ */
+export async function getWorkspaceTaskTrend(
+  workspaceId: number,
+  weeks: number = 8,
+): Promise<ApiResponse<DashboardTaskTrendResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspace.getApiWorkspacesTaskTrend(workspaceId, weeks);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch workspace task trend:', error);
+    return handleApiErrorForAction<DashboardTaskTrendResponse>(error, {
+      defaultMessage: 'タスクトレンドの取得に失敗しました',
     });
   }
 }

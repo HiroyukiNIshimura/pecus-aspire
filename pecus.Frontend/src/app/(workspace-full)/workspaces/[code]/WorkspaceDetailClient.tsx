@@ -6,6 +6,7 @@ import { getAchievementRanking } from '@/actions/achievement';
 import { deleteWorkspace } from '@/actions/deleteWorkspace';
 import {
   addMemberToWorkspace,
+  getWorkspaceTaskTrend,
   removeMemberFromWorkspace,
   toggleWorkspaceActive,
   updateMemberRoleInWorkspace,
@@ -17,7 +18,7 @@ import WorkspaceEditStatus from '@/components/common/feedback/WorkspaceEditStatu
 import AppHeader from '@/components/common/layout/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/overlays/DeleteWorkspaceModal';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import { BadgeRankingCard } from '@/components/dashboard';
+import { BadgeRankingCard, TaskTrendChart } from '@/components/dashboard';
 import type { WorkspaceItemsSidebarHandle } from '@/components/workspaceItems/WorkspaceItemsSidebar';
 import WorkspaceItemsSidebar from '@/components/workspaceItems/WorkspaceItemsSidebar';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
@@ -30,6 +31,7 @@ import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import WorkspacePresence from '@/components/workspaces/WorkspacePresence';
 import type {
   AchievementRankingResponse,
+  DashboardTaskTrendResponse,
   MasterGenreResponse,
   MasterSkillResponse,
   TaskFlowNode,
@@ -186,6 +188,10 @@ export default function WorkspaceDetailClient({
   const [badgeRanking, setBadgeRanking] = useState<AchievementRankingResponse | null>(null);
   const [badgeRankingLoading, setBadgeRankingLoading] = useState(false);
 
+  // ===== タスクトレンドの状態 =====
+  const [taskTrend, setTaskTrend] = useState<DashboardTaskTrendResponse | null>(null);
+  const [taskTrendLoading, setTaskTrendLoading] = useState(false);
+
   // ワークスペースホームでのランキング表示条件（CheckVisibilityAccessAsync 準拠）:
   // - Gamification が有効
   // - GamificationBadgeVisibility が Organization または Workspace の場合のみ表示
@@ -261,6 +267,23 @@ export default function WorkspaceDetailClient({
 
     fetchRanking();
   }, [showBadgeRanking, currentWorkspaceDetail.id]);
+
+  // ===== タスクトレンド取得 =====
+  useEffect(() => {
+    const fetchTrend = async () => {
+      setTaskTrendLoading(true);
+      try {
+        const result = await getWorkspaceTaskTrend(currentWorkspaceDetail.id);
+        if (result.success) {
+          setTaskTrend(result.data);
+        }
+      } finally {
+        setTaskTrendLoading(false);
+      }
+    };
+
+    fetchTrend();
+  }, [currentWorkspaceDetail.id]);
 
   // 外部クリックでアクションメニューを閉じる
   useEffect(() => {
@@ -1364,6 +1387,21 @@ export default function WorkspaceDetailClient({
                     <BadgeRankingCard data={badgeRanking} isLoading={badgeRankingLoading} />
                   </div>
                 )}
+
+                {/* タスクトレンドチャート */}
+                <div className="mt-4">
+                  {taskTrendLoading ? (
+                    <div className="card bg-base-100 shadow-sm border border-base-300">
+                      <div className="card-body p-4">
+                        <div className="flex items-center justify-center h-64">
+                          <span className="loading loading-spinner loading-lg text-primary" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    taskTrend && <TaskTrendChart data={taskTrend} mode={currentWorkspaceDetail.mode} />
+                  )}
+                </div>
               </div>
             </div>
           )}
