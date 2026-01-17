@@ -84,4 +84,10 @@ public class DashboardWorkspaceStatistics
     /// </summary>
     [Required]
     public required int MemberCount { get; set; }
+
+    /// <summary>
+    /// 現在のユーザーがメンバーかどうか
+    /// </summary>
+    [Required]
+    public required bool IsMember { get; set; }
 }

@@ -83,7 +83,7 @@ public class DashboardStatisticsController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<DashboardWorkspaceBreakdownResponse>> GetWorkspaceBreakdown()
     {
-        var response = await _dashboardService.GetWorkspaceBreakdownAsync(CurrentOrganizationId);
+        var response = await _dashboardService.GetWorkspaceBreakdownAsync(CurrentOrganizationId, CurrentUserId);
         return TypedResults.Ok(response);
     }
 

@@ -48,5 +48,9 @@ export type DashboardWorkspaceStatistics = {
      * メンバー数
      */
     memberCount: number;
+    /**
+     * 現在のユーザーがメンバーかどうか
+     */
+    isMember: boolean;
 };
 

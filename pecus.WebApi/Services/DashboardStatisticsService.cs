@@ -192,8 +192,9 @@ public class DashboardStatisticsService
     /// ワークスペース別統計を取得
     /// </summary>
     /// <param name="organizationId">組織ID</param>
+    /// <param name="userId">現在のユーザーID</param>
     /// <returns>ワークスペース別統計</returns>
-    public async Task<DashboardWorkspaceBreakdownResponse> GetWorkspaceBreakdownAsync(int organizationId)
+    public async Task<DashboardWorkspaceBreakdownResponse> GetWorkspaceBreakdownAsync(int organizationId, int userId)
     {
         var now = DateTimeOffset.UtcNow;
         var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
@@ -202,6 +203,12 @@ public class DashboardStatisticsService
         var workspaces = await _context.Workspaces
             .Include(w => w.Genre)
             .Where(w => w.OrganizationId == organizationId && w.IsActive)
+            .ToListAsync();
+
+        // ユーザーが参加しているワークスペースIDを取得
+        var memberWorkspaceIds = await _context.WorkspaceUsers
+            .Where(wu => wu.UserId == userId)
+            .Select(wu => wu.WorkspaceId)
             .ToListAsync();
 
         var workspaceStatistics = new List<DashboardWorkspaceStatistics>();
@@ -235,6 +242,7 @@ public class DashboardStatisticsService
                 OverdueCount = overdueCount,
                 ItemCount = itemCount,
                 MemberCount = memberCount,
+                IsMember = memberWorkspaceIds.Contains(workspace.Id),
             });
         }
 

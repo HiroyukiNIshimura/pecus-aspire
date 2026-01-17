@@ -15682,7 +15682,8 @@
           "completedCount",
           "overdueCount",
           "itemCount",
-          "memberCount"
+          "memberCount",
+          "isMember"
         ],
         "type": "object",
         "properties": {
@@ -15743,6 +15744,10 @@
             "type": "integer",
             "description": "メンバー数",
             "format": "int32"
+          },
+          "isMember": {
+            "type": "boolean",
+            "description": "現在のユーザーがメンバーかどうか"
           }
         },
         "description": "ワークスペースごとの統計"
