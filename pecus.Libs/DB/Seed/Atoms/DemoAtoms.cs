@@ -791,7 +791,8 @@ public class DemoAtoms
                 ActualHours = phase.ActualHours,
                 ProgressPercentage = phase.ProgressPercentage,
                 IsCompleted = phase.IsCompleted,
-                CompletedAt = phase.IsCompleted ? DateTimeOffset.UtcNow.AddDays(phase.CompletedDaysOffset) : null,
+                // 暁の開拓者バッジ取得のため、完了時刻を日本時間の午前6時（UTC 21時）に設定
+                CompletedAt = phase.IsCompleted ? GetEarlyBirdCompletionTime(phase.CompletedDaysOffset) : null,
                 IsDiscarded = false,
                 DiscardedAt = null,
                 DiscardReason = null,
@@ -823,6 +824,9 @@ public class DemoAtoms
         }
 
         _logger.LogInformation("Created {Count} tasks for sample project item", tasks.Count);
+
+        // アクティビティ（操作履歴）を作成
+        await CreateSampleProjectActivitiesAsync(item, tasks, users, taskPhases);
 
         await CreateSampleProjectTaskCommentsAsync(tasks, users, taskPhases);
     }
@@ -972,6 +976,103 @@ public class DemoAtoms
         /// </summary>
         public int? PredecessorIndex { get; set; }
         public List<(string Content, TaskCommentType Type, int MinutesOffset)> Comments { get; set; } = new();
+    }
+
+    /// <summary>
+    /// 暁の開拓者バッジ取得用の完了時刻を生成
+    /// 日本時間(JST)の午前6時（UTCでは前日21時）に設定
+    /// </summary>
+    /// <param name="daysOffset">現在日からの日数オフセット</param>
+    /// <returns>日本時間午前6時に相当するUTC時刻</returns>
+    private static DateTimeOffset GetEarlyBirdCompletionTime(int daysOffset)
+    {
+        // 日本時間(JST)は UTC+9
+        // 日本時間の午前6時 = UTC 21時（前日）
+        var targetDate = DateTimeOffset.UtcNow.Date.AddDays(daysOffset);
+        // UTC 21時 = 日本時間の翌日 6時
+        // daysOffset が -3 なら、3日前の日本時間6時 = 4日前のUTC 21時
+        return new DateTimeOffset(targetDate.AddDays(-1).AddHours(21), TimeSpan.Zero);
+    }
+
+    /// <summary>
+    /// サンプルプロジェクトのアクティビティ（操作履歴）を作成
+    /// アイテム作成、タスク追加、タスク完了のアクティビティを生成
+    /// </summary>
+    private async Task CreateSampleProjectActivitiesAsync(
+        WorkspaceItem item,
+        List<WorkspaceTask> tasks,
+        List<User> users,
+        List<TaskPhaseScenario> taskPhases)
+    {
+        var activities = new List<Activity>();
+
+        var adminUser = users.FirstOrDefault(u => _options.Users.Any(o => o.Role == "Admin" && o.Email == u.Email));
+        var assignee = users.FirstOrDefault(u => _options.Users.Any(o => o.Role != "Admin" && o.Email == u.Email));
+
+        if (adminUser == null)
+        {
+            _logger.LogWarning("Admin user not found for creating activities");
+            return;
+        }
+
+        // 1. アイテム作成アクティビティ
+        activities.Add(new Activity
+        {
+            WorkspaceId = item.WorkspaceId,
+            ItemId = item.Id,
+            UserId = adminUser.Id,
+            ActionType = ActivityActionType.Created,
+            Details = null,
+            CreatedAt = item.CreatedAt
+        });
+
+        // 2. 各タスクのアクティビティを作成
+        for (int i = 0; i < tasks.Count && i < taskPhases.Count; i++)
+        {
+            var task = tasks[i];
+            var phase = taskPhases[i];
+
+            // タスク追加アクティビティ
+            var taskAddedDetails = ActivityDetailsBuilder.BuildTaskAddedDetails(
+                task.Id,
+                task.Content,
+                assignee?.Username);
+
+            activities.Add(new Activity
+            {
+                WorkspaceId = item.WorkspaceId,
+                ItemId = item.Id,
+                UserId = adminUser.Id,
+                ActionType = ActivityActionType.TaskAdded,
+                Details = taskAddedDetails,
+                CreatedAt = task.CreatedAt
+            });
+
+            // タスク完了アクティビティ（完了済みタスクのみ）
+            if (phase.IsCompleted && task.CompletedAt.HasValue)
+            {
+                var taskCompletedDetails = ActivityDetailsBuilder.BuildTaskCompletedDetails(
+                    task.Id,
+                    task.Content,
+                    assignee?.Username,
+                    assignee?.Username ?? "Unknown");
+
+                activities.Add(new Activity
+                {
+                    WorkspaceId = item.WorkspaceId,
+                    ItemId = item.Id,
+                    UserId = assignee?.Id,
+                    ActionType = ActivityActionType.TaskCompleted,
+                    Details = taskCompletedDetails,
+                    CreatedAt = task.CompletedAt.Value
+                });
+            }
+        }
+
+        await _context.Activities.AddRangeAsync(activities);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Created {Count} activities for sample project item", activities.Count);
     }
 
     /// <summary>
