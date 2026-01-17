@@ -712,6 +712,17 @@ public class WorkspaceTaskController : BaseSecureController
                     avatarPath: task.AssignedUser.UserAvatarPath
                 )
                 : null,
+            CompletedByUserId = task.CompletedByUserId,
+            CompletedByUsername = task.CompletedByUser?.Username,
+            CompletedByAvatarUrl = task.CompletedByUser != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: task.CompletedByUser.AvatarType,
+                    userId: task.CompletedByUser.Id,
+                    username: task.CompletedByUser.Username,
+                    email: task.CompletedByUser.Email,
+                    avatarPath: task.CompletedByUser.UserAvatarPath
+                )
+                : null,
             CreatedByUserId = task.CreatedByUserId,
             CreatedByUsername = task.CreatedByUser?.Username,
             CreatedByAvatarUrl = task.CreatedByUser != null

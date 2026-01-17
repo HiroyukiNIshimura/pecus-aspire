@@ -805,6 +805,13 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(wt => wt.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // WorkspaceTask と CompletedByUser の多対一リレーションシップ（オプション）
+            entity
+                .HasOne(wt => wt.CompletedByUser)
+                .WithMany()
+                .HasForeignKey(wt => wt.CompletedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // WorkspaceTask と TaskType の多対一リレーションシップ
             entity
                 .HasOne(wt => wt.TaskType)
@@ -823,6 +830,7 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wt => wt.OrganizationId);
             entity.HasIndex(wt => wt.AssignedUserId);
             entity.HasIndex(wt => wt.CreatedByUserId);
+            entity.HasIndex(wt => wt.CompletedByUserId);
             entity.HasIndex(wt => wt.IsCompleted);
             entity.HasIndex(wt => wt.IsDiscarded);
             entity.HasIndex(wt => wt.DueDate);

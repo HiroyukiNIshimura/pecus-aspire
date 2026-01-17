@@ -142,6 +142,7 @@ public class WorkspaceTaskService
         var task = await _context.WorkspaceTasks
         .Include(t => t.AssignedUser)
         .Include(t => t.CreatedByUser)
+        .Include(t => t.CompletedByUser)
         .Include(t => t.TaskType)
         .FirstAsync(t => t.Id == inserted.FirstOrDefault()!.Id);
 
@@ -239,6 +240,7 @@ public class WorkspaceTaskService
         var task = await _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
             .Include(t => t.WorkspaceItem)
             .FirstOrDefaultAsync(t =>
@@ -275,6 +277,7 @@ public class WorkspaceTaskService
         var task = await _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
             .Include(t => t.WorkspaceItem)
             .FirstOrDefaultAsync(t =>
@@ -325,6 +328,7 @@ public class WorkspaceTaskService
         var query = _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
             .Include(t => t.PredecessorTask)
             .Where(t => t.WorkspaceItemId == itemId && t.WorkspaceId == workspaceId);
@@ -459,6 +463,7 @@ public class WorkspaceTaskService
         var task = await _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
             .FirstOrDefaultAsync(t =>
                 t.Id == taskId &&
@@ -555,10 +560,12 @@ public class WorkspaceTaskService
             if (request.IsCompleted.Value && !task.CompletedAt.HasValue)
             {
                 task.CompletedAt = DateTime.UtcNow;
+                task.CompletedByUserId = currentUserId;
             }
             else if (!request.IsCompleted.Value)
             {
                 task.CompletedAt = null;
+                task.CompletedByUserId = null;
             }
         }
 
@@ -626,6 +633,7 @@ public class WorkspaceTaskService
             var latestTask = await _context.WorkspaceTasks
                 .Include(t => t.AssignedUser)
                 .Include(t => t.CreatedByUser)
+                .Include(t => t.CompletedByUser)
                 .Include(t => t.TaskType)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
 
@@ -814,6 +822,7 @@ public class WorkspaceTaskService
         var tasks = await _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
             .Where(t => itemIds.Contains(t.WorkspaceItemId))
             .OrderByDescending(t => t.CreatedAt)
@@ -923,6 +932,17 @@ public class WorkspaceTaskService
                     avatarPath: task.AssignedUser.UserAvatarPath
                 )
                 : null,
+            CompletedByUserId = task.CompletedByUserId,
+            CompletedByUsername = task.CompletedByUser?.Username,
+            CompletedByAvatarUrl = task.CompletedByUser != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: task.CompletedByUser.AvatarType,
+                    userId: task.CompletedByUser.Id,
+                    username: task.CompletedByUser.Username,
+                    email: task.CompletedByUser.Email,
+                    avatarPath: task.CompletedByUser.UserAvatarPath
+                )
+                : null,
             CreatedByUserId = task.CreatedByUserId,
             CreatedByUsername = task.CreatedByUser?.Username,
             CreatedByAvatarUrl = task.CreatedByUser != null
@@ -975,6 +995,7 @@ public class WorkspaceTaskService
         var query = _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
             .Include(t => t.WorkspaceItem!)
                 .ThenInclude(wi => wi.Workspace!)
@@ -2235,6 +2256,7 @@ public class WorkspaceTaskService
         return await _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.CompletedByUser)
             .Include(t => t.Workspace)
             .Include(t => t.WorkspaceItem)
             .FirstOrDefaultAsync(t => t.Id == taskId);

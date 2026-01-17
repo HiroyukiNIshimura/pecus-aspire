@@ -152,6 +152,21 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     public DateTimeOffset? CompletedAt { get; set; }
 
     /// <summary>
+    /// タスク完了者ユーザーID
+    /// </summary>
+    public int? CompletedByUserId { get; set; }
+
+    /// <summary>
+    /// タスク完了者ユーザー名
+    /// </summary>
+    public string? CompletedByUsername { get; set; }
+
+    /// <summary>
+    /// タスク完了者アバターURL
+    /// </summary>
+    public string? CompletedByAvatarUrl { get; set; }
+
+    /// <summary>
     /// 破棄状態
     /// </summary>
     public bool IsDiscarded { get; set; }

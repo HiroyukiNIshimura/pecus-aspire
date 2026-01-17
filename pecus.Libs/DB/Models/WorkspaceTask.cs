@@ -95,6 +95,11 @@ public class WorkspaceTask
     public DateTimeOffset? CompletedAt { get; set; }
 
     /// <summary>
+    /// タスク完了者ユーザーID（外部キー）
+    /// </summary>
+    public int? CompletedByUserId { get; set; }
+
+    /// <summary>
     /// 破棄状態（完了せずタスクを行うのをやめた状態）
     /// </summary>
     public bool IsDiscarded { get; set; } = false;
@@ -155,6 +160,12 @@ public class WorkspaceTask
     /// </summary>
     [ForeignKey(nameof(CreatedByUserId))]
     public User CreatedByUser { get; set; } = null!;
+
+    /// <summary>
+    /// 完了ユーザー
+    /// </summary>
+    [ForeignKey(nameof(CompletedByUserId))]
+    public User? CompletedByUser { get; set; }
 
     /// <summary>
     /// タスク種類
