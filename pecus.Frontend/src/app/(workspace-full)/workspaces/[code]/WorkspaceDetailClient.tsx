@@ -1315,7 +1315,7 @@ export default function WorkspaceDetailClient({
                         <UserAvatar
                           userName={currentWorkspaceDetail.owner.userName}
                           identityIconUrl={currentWorkspaceDetail.owner.identityIconUrl}
-                          size={20}
+                          size={28}
                           nameClassName="font-semibold truncate"
                         />
                       </div>
@@ -1338,7 +1338,7 @@ export default function WorkspaceDetailClient({
                         <UserAvatar
                           userName={currentWorkspaceDetail.updatedBy.userName}
                           identityIconUrl={currentWorkspaceDetail.updatedBy.identityIconUrl}
-                          size={20}
+                          size={28}
                           nameClassName="font-semibold truncate"
                         />
                       </div>

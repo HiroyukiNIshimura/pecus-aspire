@@ -73,7 +73,7 @@ export default function MemberCard({
       <AvatarImage
         src={member.identityIconUrl}
         alt={memberName || 'ユーザー'}
-        size={40}
+        size={36}
         clickable={!!onIconClick}
         onClick={onIconClick ? () => onIconClick(memberId, memberName) : undefined}
       />
