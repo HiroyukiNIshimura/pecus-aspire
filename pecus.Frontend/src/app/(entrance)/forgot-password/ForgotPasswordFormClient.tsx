@@ -74,6 +74,7 @@ export default function ForgotPasswordFormClient() {
                 }}
                 disabled={isSubmitting}
                 required
+                autoComplete="email"
               />
               {shouldShowError('email') && (
                 <div className="label">

@@ -163,6 +163,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                   className={`input input-bordered ${shouldShowError('name') ? 'input-error' : ''}`}
                   onBlur={(e) => validateField('name', e.target.value)}
                   disabled={isSubmitting}
+                  autoComplete="one-time-code"
                 />
                 {shouldShowError('name') && (
                   <div className="label">
@@ -186,6 +187,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                   }`}
                   onBlur={(e) => validateField('description', e.target.value)}
                   disabled={isSubmitting}
+                  autoComplete="one-time-code"
                 />
                 {shouldShowError('description') && (
                   <div className="label">

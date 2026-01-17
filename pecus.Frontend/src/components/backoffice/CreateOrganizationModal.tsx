@@ -177,6 +177,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
               placeholder="株式会社サンプル"
               maxLength={100}
               disabled={isSubmitting}
+              autoComplete="one-time-code"
             />
             {errors.name && (
               <div className="label">
@@ -201,6 +202,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
                 onChange={(e) => handleFieldChange('code', e.target.value)}
                 placeholder="sample-corp"
                 disabled={isSubmitting}
+                autoComplete="one-time-code"
               />
               {errors.code && (
                 <div className="label">
@@ -224,6 +226,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
                 onChange={(e) => handleFieldChange('phoneNumber', e.target.value)}
                 placeholder="03-1234-5678"
                 disabled={isSubmitting}
+                autoComplete="one-time-code"
               />
               {errors.phoneNumber && (
                 <div className="label">
@@ -247,6 +250,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
                 onChange={(e) => handleFieldChange('representativeName', e.target.value)}
                 placeholder="山田 太郎"
                 disabled={isSubmitting}
+                autoComplete="one-time-code"
               />
             </div>
 
@@ -263,6 +267,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
                 onChange={(e) => handleFieldChange('email', e.target.value)}
                 placeholder="info@example.com"
                 disabled={isSubmitting}
+                autoComplete="one-time-code"
               />
               {errors.email && (
                 <div className="label">
@@ -284,6 +289,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
               onChange={(e) => handleFieldChange('description', e.target.value)}
               placeholder="組織の説明（任意）"
               disabled={isSubmitting}
+              autoComplete="one-time-code"
             />
           </div>
 
@@ -312,6 +318,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
                 onChange={(e) => handleFieldChange('adminUsername', e.target.value)}
                 placeholder="admin_user"
                 disabled={isSubmitting}
+                autoComplete="one-time-code"
               />
               {errors.adminUsername && (
                 <div className="label">
@@ -335,6 +342,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onConfirm }: 
                 onChange={(e) => handleFieldChange('adminEmail', e.target.value)}
                 placeholder="admin@example.com"
                 disabled={isSubmitting}
+                autoComplete="one-time-code"
               />
               {errors.adminEmail && (
                 <div className="label">

@@ -221,6 +221,7 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
               placeholder="通知の件名を入力"
               maxLength={200}
               disabled={isSubmitting}
+              autoComplete="one-time-code"
             />
             {errors.subject && (
               <div className="label">
@@ -243,6 +244,7 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
               onChange={(e) => handleFieldChange('body', e.target.value)}
               placeholder="通知の本文を入力..."
               disabled={isSubmitting}
+              autoComplete="one-time-code"
             />
             {errors.body && (
               <div className="label">

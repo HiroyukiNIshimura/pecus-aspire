@@ -152,7 +152,7 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                 className={`input input-bordered w-full ${shouldShowError('displayName') ? 'input-error' : ''}`}
                 onBlur={(e) => validateField('displayName', e.target.value)}
                 disabled={isSubmitting}
-                autoComplete="off"
+                autoComplete="one-time-code"
               />
               {shouldShowError('displayName') && (
                 <div className="label">
@@ -176,6 +176,7 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                 className={`input input-bordered w-full ${shouldShowError('email') ? 'input-error' : ''}`}
                 onBlur={(e) => validateField('email', e.target.value)}
                 disabled={isSubmitting}
+                autoComplete="one-time-code"
               />
               {shouldShowError('email') && (
                 <div className="label">

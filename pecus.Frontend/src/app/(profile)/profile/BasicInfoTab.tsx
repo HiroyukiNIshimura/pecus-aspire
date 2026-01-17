@@ -262,7 +262,7 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
           onBlur={(e) => validateField('displayName', e.target.value)}
           disabled={isSubmitting}
           required
-          autoComplete="off"
+          autoComplete="one-time-code"
         />
         {shouldShowError('displayName') && (
           <div className="label">
