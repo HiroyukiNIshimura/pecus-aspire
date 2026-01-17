@@ -26,25 +26,22 @@ public class PerfectWeekStrategy : AchievementStrategyBase
     public override string AchievementCode => "PERFECT_WEEK";
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// 過去全期間を対象に、週単位で評価します。いずれかの週で条件を満たしていればバッジ獲得対象です。
+    /// 既にバッジを獲得しているユーザーの除外は AchievementEvaluator が担当します。
+    /// </remarks>
     public override async Task<IEnumerable<int>> EvaluateAsync(
         int organizationId,
         DateTimeOffset evaluationDate,
         CancellationToken cancellationToken = default)
     {
-        var localDate = ConvertToLocalTime(evaluationDate, DefaultTimeZone).Date;
-
-        var daysToSubtract = ((int)localDate.DayOfWeek + 6) % 7;
-        var weekStart = localDate.AddDays(-daysToSubtract);
-        var weekEnd = weekStart.AddDays(7);
-
-        var completionsThisWeek = await Context.WorkspaceTasks
+        // 過去全期間の完了タスクを取得
+        var allCompletions = await Context.WorkspaceTasks
             .AsNoTracking()
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
             .Where(t => t.CompletedByUserId != null)
-            .Where(t => t.CompletedAt >= new DateTimeOffset(weekStart, TimeSpan.Zero).AddHours(-12))
-            .Where(t => t.CompletedAt < new DateTimeOffset(weekEnd, TimeSpan.Zero).AddHours(12))
             .Select(t => new
             {
                 CompletedByUserId = t.CompletedByUserId!.Value,
@@ -55,26 +52,46 @@ public class PerfectWeekStrategy : AchievementStrategyBase
 
         var qualifiedUsers = new List<int>();
 
-        foreach (var userGroup in completionsThisWeek.GroupBy(c => c.CompletedByUserId))
+        foreach (var userGroup in allCompletions.GroupBy(c => c.CompletedByUserId))
         {
-            var weekCompletions = userGroup
-                .Where(c =>
-                {
-                    var localCompletedAt = ConvertToLocalTime(c.CompletedAt, DefaultTimeZone).Date;
-                    return localCompletedAt >= weekStart && localCompletedAt < weekEnd;
-                })
-                .ToList();
-
-            // 期限内判定はローカル時刻（JST）での日付で比較
-            if (weekCompletions.Count >= MinimumTasks &&
-                weekCompletions.All(c =>
-                {
-                    var localCompletedDate = ConvertToLocalTime(c.CompletedAt, DefaultTimeZone).Date;
-                    var localDueDate = ConvertToLocalTime(c.DueDate, DefaultTimeZone).Date;
-                    return localCompletedDate <= localDueDate;
-                }))
+            // 週番号でグループ化（ISOウィーク）
+            var weekGroups = userGroup.GroupBy(c =>
             {
-                qualifiedUsers.Add(userGroup.Key);
+                var localDate = ConvertToLocalTime(c.CompletedAt, DefaultTimeZone).Date;
+                // 月曜始まりの週番号を計算
+                var daysToMonday = ((int)localDate.DayOfWeek + 6) % 7;
+                var weekStart = localDate.AddDays(-daysToMonday);
+                return weekStart;
+            });
+
+            // いずれかの週で条件を満たしているか
+            foreach (var weekGroup in weekGroups)
+            {
+                var weekCompletions = weekGroup.ToList();
+                var weekStart = weekGroup.Key;
+                var weekEnd = weekStart.AddDays(7);
+
+                // 週内の完了タスクのみを抽出
+                var validCompletions = weekCompletions
+                    .Where(c =>
+                    {
+                        var localCompletedDate = ConvertToLocalTime(c.CompletedAt, DefaultTimeZone).Date;
+                        return localCompletedDate >= weekStart && localCompletedDate < weekEnd;
+                    })
+                    .ToList();
+
+                // 期限内判定はローカル時刻（JST）での日付で比較
+                if (validCompletions.Count >= MinimumTasks &&
+                    validCompletions.All(c =>
+                    {
+                        var localCompletedDate = ConvertToLocalTime(c.CompletedAt, DefaultTimeZone).Date;
+                        var localDueDate = ConvertToLocalTime(c.DueDate, DefaultTimeZone).Date;
+                        return localCompletedDate <= localDueDate;
+                    }))
+                {
+                    qualifiedUsers.Add(userGroup.Key);
+                    break; // このユーザーは条件達成、次のユーザーへ
+                }
             }
         }
 

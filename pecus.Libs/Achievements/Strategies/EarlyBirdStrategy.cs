@@ -27,22 +27,22 @@ public class EarlyBirdStrategy : AchievementStrategyBase
     public override string AchievementCode => "EARLY_BIRD";
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// 過去全期間のタスク完了を評価します。
+    /// 既にバッジを獲得しているユーザーの除外は AchievementEvaluator が担当します。
+    /// </remarks>
     public override async Task<IEnumerable<int>> EvaluateAsync(
         int organizationId,
         DateTimeOffset evaluationDate,
         CancellationToken cancellationToken = default)
     {
-        var localDate = ConvertToLocalTime(evaluationDate, DefaultTimeZone).Date;
-        var startOfDay = new DateTimeOffset(localDate, TimeSpan.Zero);
-        var endOfDay = startOfDay.AddDays(1);
-
+        // 過去全期間の完了タスクを取得（時間帯判定はメモリ上で行う）
         var completedTasks = await Context.WorkspaceTasks
             .AsNoTracking()
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
             .Where(t => t.CompletedByUserId != null)
-            .Where(t => t.CompletedAt >= startOfDay.AddHours(-12) && t.CompletedAt < endOfDay.AddHours(12))
             .Select(t => new { CompletedByUserId = t.CompletedByUserId!.Value, CompletedAt = t.CompletedAt!.Value })
             .ToListAsync(cancellationToken);
 

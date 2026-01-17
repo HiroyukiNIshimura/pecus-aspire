@@ -26,25 +26,32 @@ public class TaskChefStrategy : AchievementStrategyBase
     public override string AchievementCode => "TASK_CHEF";
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// 過去全期間のタスク作成を評価し、1日で5件以上作成した日があるユーザーを抽出します。
+    /// 既にバッジを獲得しているユーザーの除外は AchievementEvaluator が担当します。
+    /// </remarks>
     public override async Task<IEnumerable<int>> EvaluateAsync(
         int organizationId,
         DateTimeOffset evaluationDate,
         CancellationToken cancellationToken = default)
     {
-        var localDate = ConvertToLocalTime(evaluationDate, DefaultTimeZone).Date;
-        var startOfDay = new DateTimeOffset(localDate, TimeSpan.Zero);
-        var endOfDay = startOfDay.AddDays(1);
-
-        var taskChefUserIds = await Context.WorkspaceTasks
+        // 過去全期間のタスク作成を取得
+        var allTasks = await Context.WorkspaceTasks
             .AsNoTracking()
             .Where(t => t.OrganizationId == organizationId)
-            .Where(t => t.CreatedAt >= startOfDay.AddHours(-12) && t.CreatedAt < endOfDay.AddHours(12))
-            .GroupBy(t => t.CreatedByUserId)
-            .Where(g => g.Count() >= RequiredCount)
-            .OrderBy(g => g.Key)
-            .Select(g => g.Key)
-            .Take(MaxResultsPerEvaluation)
+            .Select(t => new { t.CreatedByUserId, t.CreatedAt })
             .ToListAsync(cancellationToken);
+
+        // ユーザーごとに日付別でグループ化し、1日に5件以上作成した日があるか判定
+        var taskChefUserIds = allTasks
+            .GroupBy(t => t.CreatedByUserId)
+            .Where(userGroup => userGroup
+                .GroupBy(t => ConvertToLocalTime(t.CreatedAt, DefaultTimeZone).Date)
+                .Any(dateGroup => dateGroup.Count() >= RequiredCount))
+            .Select(g => g.Key)
+            .OrderBy(userId => userId)
+            .Take(MaxResultsPerEvaluation)
+            .ToList();
 
         Logger.LogDebug(
             "TaskChef evaluation for org {OrganizationId}: {Count} users qualified",

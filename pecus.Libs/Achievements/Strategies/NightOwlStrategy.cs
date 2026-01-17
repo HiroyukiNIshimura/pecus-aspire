@@ -27,22 +27,22 @@ public class NightOwlStrategy : AchievementStrategyBase
     public override string AchievementCode => "NIGHT_OWL";
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// 過去全期間のタスク完了を評価します。
+    /// 既にバッジを獲得しているユーザーの除外は AchievementEvaluator が担当します。
+    /// </remarks>
     public override async Task<IEnumerable<int>> EvaluateAsync(
         int organizationId,
         DateTimeOffset evaluationDate,
         CancellationToken cancellationToken = default)
     {
-        var localDate = ConvertToLocalTime(evaluationDate, DefaultTimeZone).Date;
-        var startTime = new DateTimeOffset(localDate.AddHours(StartHour), TimeSpan.Zero);
-        var endTime = new DateTimeOffset(localDate.AddDays(1).AddHours(EndHour), TimeSpan.Zero);
-
+        // 過去全期間の完了タスクを取得（時間帯判定はメモリ上で行う）
         var completedTasks = await Context.WorkspaceTasks
             .AsNoTracking()
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
             .Where(t => t.CompletedByUserId != null)
-            .Where(t => t.CompletedAt >= startTime.AddHours(-12) && t.CompletedAt < endTime.AddHours(12))
             .Select(t => new { CompletedByUserId = t.CompletedByUserId!.Value, CompletedAt = t.CompletedAt!.Value })
             .ToListAsync(cancellationToken);
 
@@ -55,7 +55,6 @@ public class NightOwlStrategy : AchievementStrategyBase
             })
             .Select(t => t.CompletedByUserId)
             .Distinct()
-            .OrderBy(userId => userId)
             .Take(MaxResultsPerEvaluation)
             .ToList();
 
