@@ -708,6 +708,9 @@ public class DemoAtoms
 #pragma warning restore EF1002
         workspace.ItemNumberSequenceName = sequenceName;
 
+        // 最初のタスクの1日前にアイテムを作成（タスクより先にアイテムが存在する必要がある）
+        var itemCreatedAt = DateTimeOffset.UtcNow.AddDays(-11);
+
         var workspaceItem = new WorkspaceItem
         {
             WorkspaceId = workspace.Id,
@@ -719,13 +722,13 @@ public class DemoAtoms
             OwnerId = user1.Id,
             AssigneeId = user2.Id,
             Priority = TaskPriority.Medium,
-            DueDate = DateTime.UtcNow.AddDays(30),
+            DueDate = itemCreatedAt.AddDays(30),
             IsArchived = false,
             IsDraft = false,
             CommitterId = adminUser.Id,
             IsActive = true,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = itemCreatedAt,
+            UpdatedAt = itemCreatedAt
         };
 
         await _context.WorkspaceItems.AddAsync(workspaceItem);
