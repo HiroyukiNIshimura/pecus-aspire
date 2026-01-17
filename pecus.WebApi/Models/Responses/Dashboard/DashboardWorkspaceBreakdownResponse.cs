@@ -51,6 +51,11 @@ public class DashboardWorkspaceStatistics
     public WorkspaceMode? Mode { get; set; }
 
     /// <summary>
+    /// ワークスペースの説明
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// 進行中タスク数
     /// </summary>
     [Required]

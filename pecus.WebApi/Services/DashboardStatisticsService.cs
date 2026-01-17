@@ -229,6 +229,7 @@ public class DashboardStatisticsService
                 WorkspaceName = workspace.Name,
                 GenreIcon = workspace.Genre?.Icon,
                 Mode = workspace.Mode,
+                Description = workspace.Description,
                 InProgressCount = inProgressCount,
                 CompletedCount = completedCount,
                 OverdueCount = overdueCount,

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
+import { Tooltip } from '@/components/common/feedback/Tooltip';
 import type { DashboardWorkspaceBreakdownResponse } from '@/connectors/api/pecus';
 
 /** 初期表示件数 */
@@ -88,6 +89,13 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
                       )}
                       <span className="text-xs text-base-content/50 hidden sm:inline">({ws.workspaceCode})</span>
                     </Link>
+                    {ws.description && (
+                      <Tooltip text={ws.description} position="top" contentClassName="max-w-64 whitespace-normal">
+                        <span className="text-xs text-base-content/60 truncate block max-w-xs mt-0.5">
+                          {ws.description}
+                        </span>
+                      </Tooltip>
+                    )}
                   </td>
                   <td className="text-right">
                     <span className="badge badge-info badge-sm min-w-12 tabular-nums">{ws.inProgressCount}</span>

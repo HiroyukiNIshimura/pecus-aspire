@@ -9,8 +9,10 @@ interface TooltipProps {
   children: ReactNode;
   /** ツールチップの表示位置 */
   position?: TooltipPosition;
-  /** 追加のクラス名 */
+  /** 追加のクラス名（外側コンテナ） */
   className?: string;
+  /** ツールチップ内容部分の追加クラス名 */
+  contentClassName?: string;
 }
 
 const positionClasses: Record<
@@ -56,7 +58,7 @@ const positionClasses: Record<
  * </Tooltip>
  * ```
  */
-export function Tooltip({ text, children, position = 'top', className = '' }: TooltipProps) {
+export function Tooltip({ text, children, position = 'top', className = '', contentClassName = '' }: TooltipProps) {
   const positionClass = positionClasses[position];
 
   return (
@@ -74,6 +76,7 @@ export function Tooltip({ text, children, position = 'top', className = '' }: To
           transition-opacity duration-200
           w-max max-w-48 text-left wrap-break-word
           ${positionClass.container}
+          ${contentClassName}
         `}
       >
         {text}

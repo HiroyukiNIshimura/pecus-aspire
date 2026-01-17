@@ -15714,6 +15714,11 @@
               }
             ]
           },
+          "description": {
+            "type": "string",
+            "description": "ワークスペースの説明",
+            "nullable": true
+          },
           "inProgressCount": {
             "type": "integer",
             "description": "進行中タスク数",

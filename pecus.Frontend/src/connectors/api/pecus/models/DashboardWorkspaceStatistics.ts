@@ -25,6 +25,10 @@ export type DashboardWorkspaceStatistics = {
     genreIcon?: string | null;
     mode?: WorkspaceMode;
     /**
+     * ワークスペースの説明
+     */
+    description?: string | null;
+    /**
      * 進行中タスク数
      */
     inProgressCount: number;
