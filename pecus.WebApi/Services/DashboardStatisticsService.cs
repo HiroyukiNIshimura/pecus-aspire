@@ -160,8 +160,9 @@ public class DashboardStatisticsService
         var assignedCount = await userTaskQuery
             .CountAsync(t => !t.IsCompleted && !t.IsDiscarded);
 
-        // 完了済み（全期間）
-        var completedCount = await userTaskQuery
+        // 自分が完了したタスク（全期間）- CompletedByUserIdで判定
+        var completedCount = await _context.WorkspaceTasks
+            .Where(t => t.CompletedByUserId == userId && workspaceIds.Contains(t.WorkspaceId))
             .CountAsync(t => t.IsCompleted);
 
         // 期限切れ
@@ -172,8 +173,9 @@ public class DashboardStatisticsService
         var dueThisWeekCount = await userTaskQuery
             .CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate >= todayStart && t.DueDate <= endOfWeek);
 
-        // 今週完了（CompletedAtベース）
-        var completedThisWeekCount = await userTaskQuery
+        // 今週自分が完了したタスク（CompletedByUserIdで判定）
+        var completedThisWeekCount = await _context.WorkspaceTasks
+            .Where(t => t.CompletedByUserId == userId && workspaceIds.Contains(t.WorkspaceId))
             .CountAsync(t => t.IsCompleted && t.CompletedAt != null && t.CompletedAt >= startOfWeek && t.CompletedAt <= endOfWeek);
 
         return new DashboardPersonalSummaryResponse
