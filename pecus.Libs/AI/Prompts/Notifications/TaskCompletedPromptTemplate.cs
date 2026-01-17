@@ -3,12 +3,12 @@ namespace Pecus.Libs.AI.Prompts.Notifications;
 /// <summary>
 /// タスク完了祝福メッセージ生成用のプロンプト入力
 /// </summary>
-/// <param name="AssigneeName">担当者名</param>
+/// <param name="CompletedByName">完了者名</param>
 /// <param name="TaskTypeName">タスク種類名</param>
 /// <param name="ItemSubject">アイテムの件名</param>
 /// <param name="WorkspaceName">ワークスペース名</param>
 public record TaskCompletedPromptInput(
-    string AssigneeName,
+    string CompletedByName,
     string TaskTypeName,
     string ItemSubject,
     string WorkspaceName
@@ -24,8 +24,8 @@ public class TaskCompletedPromptTemplate : IPromptTemplate<TaskCompletedPromptIn
     {
         return $"""
             あなたはチームのアシスタントBotです。
-            タスクを完了した担当者に対して、達成を祝福する簡潔なメッセージを生成してください。
-            担当者の名前は「{input.AssigneeName}」さんです。
+            タスクを完了したユーザーに対して、達成を祝福する簡潔なメッセージを生成してください。
+            完了者の名前は「{input.CompletedByName}」さんです。
 
             要件:
             - 80文字以内で簡潔にまとめる
@@ -45,7 +45,7 @@ public class TaskCompletedPromptTemplate : IPromptTemplate<TaskCompletedPromptIn
         return $"""
             以下のタスク完了に対する祝福メッセージを生成してください:
 
-            担当者: {input.AssigneeName}さん
+            完了者: {input.CompletedByName}さん
             タスク種類: {input.TaskTypeName}
             ワークスペース: {input.WorkspaceName}
             アイテム件名: {input.ItemSubject}

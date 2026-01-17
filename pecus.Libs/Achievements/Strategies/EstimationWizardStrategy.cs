@@ -35,11 +35,12 @@ public class EstimationWizardStrategy : AchievementStrategyBase
             .AsNoTracking()
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
+            .Where(t => t.CompletedByUserId != null)
             .Where(t => t.EstimatedHours != null && t.EstimatedHours > 0)
             .Where(t => t.ActualHours != null && t.ActualHours > 0)
             .Select(t => new
             {
-                t.AssignedUserId,
+                CompletedByUserId = t.CompletedByUserId!.Value,
                 EstimatedHours = t.EstimatedHours!.Value,
                 ActualHours = t.ActualHours!.Value
             })
@@ -52,7 +53,7 @@ public class EstimationWizardStrategy : AchievementStrategyBase
                 var errorRate = (double)difference / (double)t.EstimatedHours;
                 return errorRate <= AllowedErrorPercentage;
             })
-            .GroupBy(t => t.AssignedUserId)
+            .GroupBy(t => t.CompletedByUserId)
             .Where(g => g.Count() >= RequiredCount)
             .OrderBy(g => g.Key)
             .Select(g => g.Key)

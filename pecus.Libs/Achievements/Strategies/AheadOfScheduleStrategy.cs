@@ -36,9 +36,10 @@ public class AheadOfScheduleStrategy : AchievementStrategyBase
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
+            .Where(t => t.CompletedByUserId != null)
             .Select(t => new
             {
-                t.AssignedUserId,
+                CompletedByUserId = t.CompletedByUserId!.Value,
                 CompletedAt = t.CompletedAt!.Value,
                 t.DueDate
             })
@@ -46,7 +47,7 @@ public class AheadOfScheduleStrategy : AchievementStrategyBase
 
         var aheadOfScheduleUserIds = completedTasks
             .Where(t => (t.DueDate.Date - t.CompletedAt.Date).TotalDays >= DaysAhead)
-            .GroupBy(t => t.AssignedUserId)
+            .GroupBy(t => t.CompletedByUserId)
             .Where(g => g.Count() >= RequiredCount)
             .OrderBy(g => g.Key)
             .Select(g => g.Key)

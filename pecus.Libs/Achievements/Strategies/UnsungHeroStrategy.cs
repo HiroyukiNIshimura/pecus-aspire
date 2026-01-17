@@ -34,16 +34,17 @@ public class UnsungHeroStrategy : AchievementStrategyBase
             .AsNoTracking()
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
+            .Where(t => t.CompletedByUserId != null)
             .Select(t => new
             {
-                t.AssignedUserId,
+                CompletedByUserId = t.CompletedByUserId!.Value,
                 t.CreatedByUserId
             })
             .ToListAsync(cancellationToken);
 
         var unsungHeroUserIds = completedTasks
-            .Where(t => t.AssignedUserId != t.CreatedByUserId)
-            .GroupBy(t => t.AssignedUserId)
+            .Where(t => t.CompletedByUserId != t.CreatedByUserId)
+            .GroupBy(t => t.CompletedByUserId)
             .Where(g => g.Count() >= RequiredCount)
             .OrderBy(g => g.Key)
             .Select(g => g.Key)

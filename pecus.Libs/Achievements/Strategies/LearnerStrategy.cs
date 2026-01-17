@@ -100,6 +100,6 @@ public class LearnerStrategy : AchievementStrategyBase
             organizationId,
             qualifiedUsers.Count);
 
-        return qualifiedUsers.Distinct().Take(MaxResultsPerEvaluation);
+        return qualifiedUsers.Distinct().OrderBy(userId => userId).Take(MaxResultsPerEvaluation);
     }
 }

@@ -36,9 +36,10 @@ public class SpeedStarStrategy : AchievementStrategyBase
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
+            .Where(t => t.CompletedByUserId != null)
             .Select(t => new
             {
-                t.AssignedUserId,
+                CompletedByUserId = t.CompletedByUserId!.Value,
                 t.CreatedAt,
                 CompletedAt = t.CompletedAt!.Value
             })
@@ -46,7 +47,7 @@ public class SpeedStarStrategy : AchievementStrategyBase
 
         var speedStarUserIds = completedTasks
             .Where(t => (t.CompletedAt - t.CreatedAt).TotalHours <= MaxHours)
-            .GroupBy(t => t.AssignedUserId)
+            .GroupBy(t => t.CompletedByUserId)
             .Where(g => g.Count() >= RequiredCount)
             .OrderBy(g => g.Key)
             .Select(g => g.Key)

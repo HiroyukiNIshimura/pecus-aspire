@@ -38,13 +38,14 @@ public class StreakMasterStrategy : AchievementStrategyBase
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
+            .Where(t => t.CompletedByUserId != null)
             .Where(t => t.CompletedAt >= evaluationDate.AddDays(-lookbackDays))
-            .Select(t => new { t.AssignedUserId, CompletedAt = t.CompletedAt!.Value })
+            .Select(t => new { CompletedByUserId = t.CompletedByUserId!.Value, CompletedAt = t.CompletedAt!.Value })
             .ToListAsync(cancellationToken);
 
         var qualifiedUsers = new List<int>();
 
-        foreach (var userGroup in completions.GroupBy(c => c.AssignedUserId))
+        foreach (var userGroup in completions.GroupBy(c => c.CompletedByUserId))
         {
             var activeDates = userGroup
                 .Select(c => ConvertToLocalTime(c.CompletedAt, DefaultTimeZone).Date)

@@ -41,8 +41,9 @@ public class EarlyBirdStrategy : AchievementStrategyBase
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
+            .Where(t => t.CompletedByUserId != null)
             .Where(t => t.CompletedAt >= startOfDay.AddHours(-12) && t.CompletedAt < endOfDay.AddHours(12))
-            .Select(t => new { t.AssignedUserId, CompletedAt = t.CompletedAt!.Value })
+            .Select(t => new { CompletedByUserId = t.CompletedByUserId!.Value, CompletedAt = t.CompletedAt!.Value })
             .ToListAsync(cancellationToken);
 
         var earlyBirdUserIds = completedTasks
@@ -52,8 +53,9 @@ public class EarlyBirdStrategy : AchievementStrategyBase
                 var hour = localTime.Hour;
                 return hour >= StartHour && hour < EndHour;
             })
-            .Select(t => t.AssignedUserId)
+            .Select(t => t.CompletedByUserId)
             .Distinct()
+            .OrderBy(userId => userId)
             .Take(MaxResultsPerEvaluation)
             .ToList();
 

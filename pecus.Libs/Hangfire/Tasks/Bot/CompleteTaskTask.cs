@@ -56,6 +56,7 @@ public class CompleteTaskTask
                 .Include(t => t.WorkspaceItem)
                     .ThenInclude(i => i.Workspace)
                 .Include(t => t.AssignedUser)
+                .Include(t => t.CompletedByUser)
                     .ThenInclude(u => u!.ChatActor)
                 .Include(t => t.TaskType)
                 .AsSplitQuery()
@@ -77,10 +78,11 @@ public class CompleteTaskTask
                 return;
             }
 
-            if (task.AssignedUser == null || task.AssignedUser.ChatActor == null)
+            // 完了者に祝福メッセージを送信（完了者がいない場合はスキップ）
+            if (task.CompletedByUser == null || task.CompletedByUser.ChatActor == null)
             {
                 _logger.LogDebug(
-                    "Task has no assignee or assignee has no ChatActor, skipping: TaskId={TaskId}",
+                    "Task has no completed-by user or completed-by user has no ChatActor, skipping: TaskId={TaskId}",
                     taskId);
                 return;
             }
@@ -105,14 +107,14 @@ public class CompleteTaskTask
 
             await SendCelebrationDmAsync(
                 organizationId,
-                task.AssignedUser.Id,
+                task.CompletedByUser.Id,
                 selectedBot,
                 message);
 
             _logger.LogInformation(
-                "Task completion celebration sent: TaskId={TaskId}, AssigneeId={AssigneeId}, BotId={BotId}",
+                "Task completion celebration sent: TaskId={TaskId}, CompletedByUserId={CompletedByUserId}, BotId={BotId}",
                 taskId,
-                task.AssignedUser.Id,
+                task.CompletedByUser.Id,
                 selectedBot.Id);
         }
         catch (Exception ex)
@@ -172,9 +174,9 @@ public class CompleteTaskTask
         DB.Models.Bot selectedBot)
     {
         var workspace = task.WorkspaceItem.Workspace!;
-        var assigneeName = task.AssignedUser?.Username ?? "不明なユーザー";
+        var completedByName = task.CompletedByUser?.Username ?? "不明なユーザー";
         var defaultMessage = BuildDefaultMessage(
-            assigneeName,
+            completedByName,
             workspace.Code ?? "",
             task.WorkspaceItem.Code,
             task.Sequence);
@@ -212,7 +214,7 @@ public class CompleteTaskTask
 
             var taskTypeName = task.TaskType?.Name ?? "タスク";
             var promptInput = new TaskCompletedPromptInput(
-                AssigneeName: assigneeName,
+                CompletedByName: completedByName,
                 TaskTypeName: taskTypeName,
                 ItemSubject: task.WorkspaceItem.Subject,
                 WorkspaceName: workspace.Name);
@@ -251,16 +253,16 @@ public class CompleteTaskTask
     /// 定型の祝福メッセージを生成する
     /// </summary>
     private static string BuildDefaultMessage(
-        string assigneeName,
+        string completedByName,
         string workspaceCode,
         string itemCode,
         int taskSequence)
     {
-        return $"{assigneeName}さん、タスク完了おめでとうございます！ [{workspaceCode}#{itemCode}T{taskSequence}]";
+        return $"{completedByName}さん、タスク完了おめでとうございます！ [{workspaceCode}#{itemCode}T{taskSequence}]";
     }
 
     /// <summary>
-    /// 担当者へ祝福DMを送信する
+    /// 完了者へ祝福DMを送信する
     /// </summary>
     private async Task SendCelebrationDmAsync(
         int organizationId,

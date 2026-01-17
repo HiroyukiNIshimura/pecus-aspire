@@ -35,10 +35,11 @@ public class DeadlineMasterStrategy : AchievementStrategyBase
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
+            .Where(t => t.CompletedByUserId != null)
             .OrderByDescending(t => t.CompletedAt)
             .Select(t => new
             {
-                t.AssignedUserId,
+                CompletedByUserId = t.CompletedByUserId!.Value,
                 CompletedAt = t.CompletedAt!.Value,
                 t.DueDate
             })
@@ -46,7 +47,7 @@ public class DeadlineMasterStrategy : AchievementStrategyBase
 
         var qualifiedUsers = new List<int>();
 
-        foreach (var group in completedTasksWithDueDate.GroupBy(t => t.AssignedUserId))
+        foreach (var group in completedTasksWithDueDate.GroupBy(t => t.CompletedByUserId))
         {
             var streak = 0;
 
@@ -73,6 +74,6 @@ public class DeadlineMasterStrategy : AchievementStrategyBase
             organizationId,
             qualifiedUsers.Count);
 
-        return qualifiedUsers.Distinct().Take(MaxResultsPerEvaluation);
+        return qualifiedUsers.Distinct().OrderBy(userId => userId).Take(MaxResultsPerEvaluation);
     }
 }

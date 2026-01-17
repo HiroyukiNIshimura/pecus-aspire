@@ -35,7 +35,8 @@ public class WeekendGuardianStrategy : AchievementStrategyBase
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
-            .Select(t => new { t.AssignedUserId, CompletedAt = t.CompletedAt!.Value })
+            .Where(t => t.CompletedByUserId != null)
+            .Select(t => new { CompletedByUserId = t.CompletedByUserId!.Value, CompletedAt = t.CompletedAt!.Value })
             .ToListAsync(cancellationToken);
 
         var weekendUserIds = completedTasks
@@ -44,7 +45,7 @@ public class WeekendGuardianStrategy : AchievementStrategyBase
                 var localTime = ConvertToLocalTime(t.CompletedAt, DefaultTimeZone);
                 return localTime.DayOfWeek == DayOfWeek.Saturday || localTime.DayOfWeek == DayOfWeek.Sunday;
             })
-            .Select(t => t.AssignedUserId)
+            .Select(t => t.CompletedByUserId)
             .Distinct()
             .OrderBy(userId => userId)
             .Take(MaxResultsPerEvaluation)

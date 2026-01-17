@@ -42,11 +42,12 @@ public class PerfectWeekStrategy : AchievementStrategyBase
             .Where(t => t.OrganizationId == organizationId)
             .Where(t => t.IsCompleted)
             .Where(t => t.CompletedAt != null)
+            .Where(t => t.CompletedByUserId != null)
             .Where(t => t.CompletedAt >= new DateTimeOffset(weekStart, TimeSpan.Zero).AddHours(-12))
             .Where(t => t.CompletedAt < new DateTimeOffset(weekEnd, TimeSpan.Zero).AddHours(12))
             .Select(t => new
             {
-                t.AssignedUserId,
+                CompletedByUserId = t.CompletedByUserId!.Value,
                 CompletedAt = t.CompletedAt!.Value,
                 t.DueDate
             })
@@ -54,7 +55,7 @@ public class PerfectWeekStrategy : AchievementStrategyBase
 
         var qualifiedUsers = new List<int>();
 
-        foreach (var userGroup in completionsThisWeek.GroupBy(c => c.AssignedUserId))
+        foreach (var userGroup in completionsThisWeek.GroupBy(c => c.CompletedByUserId))
         {
             var weekCompletions = userGroup
                 .Where(c =>
