@@ -359,7 +359,7 @@ public class WorkspaceTaskController : BaseSecureController
                 if (changes.HasAnyChanges)
                 {
                     _backgroundJobClient.Enqueue<UpdateTaskTask>(x =>
-                        x.NotifyTaskUpdatedAsync(task.Id, changes)
+                        x.NotifyTaskUpdatedAsync(task.Id, CurrentUserId, changes)
                     );
                 }
             }

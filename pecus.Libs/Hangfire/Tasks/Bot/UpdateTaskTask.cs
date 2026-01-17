@@ -28,6 +28,11 @@ public class UpdateTaskTask : TaskNotificationTaskBase
     private TaskUpdateChanges? _currentChanges;
 
     /// <summary>
+    /// 現在処理中の更新者ID（一時保持用）
+    /// </summary>
+    private int? _currentUpdaterUserId;
+
+    /// <summary>
     /// UpdateTaskTask のコンストラクタ
     /// </summary>
     public UpdateTaskTask(
@@ -63,7 +68,21 @@ public class UpdateTaskTask : TaskNotificationTaskBase
         string userName,
         string workspaceCode)
     {
-        var defaultMessage = BuildDefaultMessage(userName, workspaceCode, task.WorkspaceItem.Code, task.Sequence);
+        // 更新者IDが設定されていれば、更新者の名前を取得して使用
+        var effectiveUserName = userName;
+        if (_currentUpdaterUserId.HasValue)
+        {
+            var updater = await Context.Users
+                .Where(u => u.Id == _currentUpdaterUserId.Value)
+                .Select(u => u.Username)
+                .FirstOrDefaultAsync();
+            if (!string.IsNullOrEmpty(updater))
+            {
+                effectiveUserName = updater;
+            }
+        }
+
+        var defaultMessage = BuildDefaultMessage(effectiveUserName, workspaceCode, task.WorkspaceItem.Code, task.Sequence);
 
         if (_aiClientFactory == null || _botSelector == null)
         {
@@ -115,7 +134,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
 
             // Bot のペルソナと行動指針を プロンプトテンプレート と統合
             var promptInput = new TaskUpdatedPromptInput(
-                UserName: userName,
+                UserName: effectiveUserName,
                 TaskTypeName: taskTypeName,
                 PriorityText: priorityText,
                 DueDateText: dueDateText,
@@ -159,10 +178,12 @@ public class UpdateTaskTask : TaskNotificationTaskBase
     /// タスク更新時のメッセージ通知を実行する
     /// </summary>
     /// <param name="taskId">更新されたタスクのID</param>
+    /// <param name="updaterUserId">更新者のユーザーID</param>
     /// <param name="changes">タスクの変更情報（オプション）</param>
-    public async Task NotifyTaskUpdatedAsync(int taskId, TaskUpdateChanges? changes = null)
+    public async Task NotifyTaskUpdatedAsync(int taskId, int updaterUserId, TaskUpdateChanges? changes = null)
     {
         _currentChanges = changes;
+        _currentUpdaterUserId = updaterUserId;
         try
         {
             await ExecuteNotificationAsync(taskId);
@@ -170,6 +191,7 @@ public class UpdateTaskTask : TaskNotificationTaskBase
         finally
         {
             _currentChanges = null;
+            _currentUpdaterUserId = null;
         }
     }
 
