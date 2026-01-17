@@ -108,6 +108,9 @@ builder.Services.AddAchievementServices();
 // 週間レポート関連サービスの登録
 builder.Services.AddWeeklyReportServices();
 
+// ランディングページ推奨関連サービスの登録
+builder.Services.AddLandingPageRecommendationServices();
+
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
 var redisConnectionString = builder.Configuration.GetConnectionString("redis");
@@ -161,5 +164,8 @@ SystemNotificationJobScheduler.ConfigureSystemNotificationJob(recurringJobManage
 
 // 実績判定ジョブの設定（毎日AM3:00 UTC）
 AchievementJobScheduler.ConfigureAchievementJob(recurringJobManager, builder.Configuration);
+
+// ランディングページ推奨ジョブの設定（週次 月曜 AM4:00 UTC）
+LandingPageRecommendationJobScheduler.ConfigureLandingPageRecommendationJob(recurringJobManager, builder.Configuration);
 
 app.Run();

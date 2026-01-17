@@ -233,6 +233,9 @@ public class ProfileService
                     FocusTasksLimit = setting.FocusTasksLimit,
                     WaitingTasksLimit = setting.WaitingTasksLimit,
                     BadgeVisibility = setting.BadgeVisibility,
+                    PendingLandingPageRecommendation = setting.PendingLandingPageRecommendation,
+                    LandingPageUpdatedAt = setting.LandingPageUpdatedAt,
+                    LandingPageRecommendationRefusedAt = setting.LandingPageRecommendationRefusedAt,
                     RowVersion = setting.RowVersion,
                 };
             }
@@ -272,6 +275,9 @@ public class ProfileService
                 FocusTasksLimit = setting.FocusTasksLimit,
                 WaitingTasksLimit = setting.WaitingTasksLimit,
                 BadgeVisibility = setting.BadgeVisibility,
+                PendingLandingPageRecommendation = setting.PendingLandingPageRecommendation,
+                LandingPageUpdatedAt = setting.LandingPageUpdatedAt,
+                LandingPageRecommendationRefusedAt = setting.LandingPageRecommendationRefusedAt,
                 RowVersion = setting.RowVersion,
             };
         }
@@ -422,6 +428,9 @@ public class ProfileService
                 FocusTasksLimit = user.Setting?.FocusTasksLimit ?? 5,
                 WaitingTasksLimit = user.Setting?.WaitingTasksLimit ?? 5,
                 BadgeVisibility = user.Setting?.BadgeVisibility,
+                PendingLandingPageRecommendation = user.Setting?.PendingLandingPageRecommendation,
+                LandingPageUpdatedAt = user.Setting?.LandingPageUpdatedAt,
+                LandingPageRecommendationRefusedAt = user.Setting?.LandingPageRecommendationRefusedAt,
                 RowVersion = user.Setting?.RowVersion ?? 0,
             },
         };
@@ -701,6 +710,9 @@ public class ProfileService
                 FocusTasksLimit = latestSetting.FocusTasksLimit,
                 WaitingTasksLimit = latestSetting.WaitingTasksLimit,
                 BadgeVisibility = latestSetting.BadgeVisibility,
+                PendingLandingPageRecommendation = latestSetting.PendingLandingPageRecommendation,
+                LandingPageUpdatedAt = latestSetting.LandingPageUpdatedAt,
+                LandingPageRecommendationRefusedAt = latestSetting.LandingPageRecommendationRefusedAt,
                 RowVersion = latestSetting.RowVersion,
             }
         );

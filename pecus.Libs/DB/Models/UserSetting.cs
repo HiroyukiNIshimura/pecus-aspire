@@ -71,6 +71,21 @@ public class UserSetting
     public BadgeVisibility? BadgeVisibility { get; set; }
 
     /// <summary>
+    /// バッチが計算したランディングページの推奨値（提示待ち）
+    /// </summary>
+    public LandingPage? PendingLandingPageRecommendation { get; set; }
+
+    /// <summary>
+    /// ユーザーが最後にランディングページ設定を変更した日時
+    /// </summary>
+    public DateTimeOffset? LandingPageUpdatedAt { get; set; }
+
+    /// <summary>
+    /// ユーザーがランディングページ推奨を拒否した日時（Cool-down制御用）
+    /// </summary>
+    public DateTimeOffset? LandingPageRecommendationRefusedAt { get; set; }
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }

@@ -865,6 +865,9 @@ public class UserService
                         FocusTasksLimit = latestUser.Setting.FocusTasksLimit,
                         WaitingTasksLimit = latestUser.Setting.WaitingTasksLimit,
                         BadgeVisibility = latestUser.Setting.BadgeVisibility,
+                        PendingLandingPageRecommendation = latestUser.Setting.PendingLandingPageRecommendation,
+                        LandingPageUpdatedAt = latestUser.Setting.LandingPageUpdatedAt,
+                        LandingPageRecommendationRefusedAt = latestUser.Setting.LandingPageRecommendationRefusedAt,
                         RowVersion = latestUser.Setting.RowVersion,
                     }
                     : new UserSettingResponse(),
