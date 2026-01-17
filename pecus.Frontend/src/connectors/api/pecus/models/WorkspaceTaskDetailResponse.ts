@@ -118,6 +118,18 @@ export type WorkspaceTaskDetailResponse = {
      */
     completedAt?: string | null;
     /**
+     * タスク完了者ユーザーID
+     */
+    completedByUserId?: number | null;
+    /**
+     * タスク完了者ユーザー名
+     */
+    completedByUsername?: string | null;
+    /**
+     * タスク完了者アバターURL
+     */
+    completedByAvatarUrl?: string | null;
+    /**
      * 破棄状態
      */
     isDiscarded?: boolean;

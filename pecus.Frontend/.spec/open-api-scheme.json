@@ -20205,6 +20205,22 @@
             "description": "担当ユーザーアバターURL",
             "nullable": true
           },
+          "completedByUserId": {
+            "type": "integer",
+            "description": "完了者ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "completedByUsername": {
+            "type": "string",
+            "description": "完了者ユーザー名",
+            "nullable": true
+          },
+          "completedByAvatarUrl": {
+            "type": "string",
+            "description": "完了者ユーザーアバターURL",
+            "nullable": true
+          },
           "canStart": {
             "type": "boolean",
             "description": "着手可能か（先行タスクなし or 完了済み、かつ自身が未完了・未破棄）"
@@ -23042,6 +23058,22 @@
             "type": "string",
             "description": "タスク完了日時",
             "format": "date-time",
+            "nullable": true
+          },
+          "completedByUserId": {
+            "type": "integer",
+            "description": "タスク完了者ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "completedByUsername": {
+            "type": "string",
+            "description": "タスク完了者ユーザー名",
+            "nullable": true
+          },
+          "completedByAvatarUrl": {
+            "type": "string",
+            "description": "タスク完了者アバターURL",
             "nullable": true
           },
           "isDiscarded": {

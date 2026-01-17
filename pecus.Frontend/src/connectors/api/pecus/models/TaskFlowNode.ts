@@ -62,6 +62,18 @@ export type TaskFlowNode = {
      */
     assignedAvatarUrl?: string | null;
     /**
+     * 完了者ユーザーID
+     */
+    completedByUserId?: number | null;
+    /**
+     * 完了者ユーザー名
+     */
+    completedByUsername?: string | null;
+    /**
+     * 完了者ユーザーアバターURL
+     */
+    completedByAvatarUrl?: string | null;
+    /**
      * 着手可能か（先行タスクなし or 完了済み、かつ自身が未完了・未破棄）
      */
     canStart: boolean;

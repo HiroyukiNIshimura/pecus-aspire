@@ -1734,6 +1734,7 @@ public class WorkspaceTaskService
         // アイテム内の全タスクを取得
         var tasks = await _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
+            .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
             .Where(t => t.WorkspaceId == workspaceId && t.WorkspaceItemId == itemId)
             .OrderBy(t => t.DueDate)
@@ -2021,6 +2022,17 @@ public class WorkspaceTaskService
                     avatarPath: task.AssignedUser.UserAvatarPath
                 )
                 : null,
+            CompletedByUserId = task.CompletedByUserId,
+            CompletedByUsername = task.CompletedByUser?.Username,
+            CompletedByAvatarUrl = task.CompletedByUser != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: task.CompletedByUser.AvatarType,
+                    userId: task.CompletedByUser.Id,
+                    username: task.CompletedByUser.Username,
+                    email: task.CompletedByUser.Email,
+                    avatarPath: task.CompletedByUser.UserAvatarPath
+                )
+                : null,
             CanStart = canStart,
             PredecessorTaskId = task.PredecessorTaskId,
             PredecessorTask = predecessorInfo,
@@ -2128,6 +2140,17 @@ public class WorkspaceTaskService
                     username: task.AssignedUser.Username,
                     email: task.AssignedUser.Email,
                     avatarPath: task.AssignedUser.UserAvatarPath
+                )
+                : null,
+            CompletedByUserId = task.CompletedByUserId,
+            CompletedByUsername = task.CompletedByUser?.Username,
+            CompletedByAvatarUrl = task.CompletedByUser != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: task.CompletedByUser.AvatarType,
+                    userId: task.CompletedByUser.Id,
+                    username: task.CompletedByUser.Username,
+                    email: task.CompletedByUser.Email,
+                    avatarPath: task.CompletedByUser.UserAvatarPath
                 )
                 : null,
             CanStart = canStart,

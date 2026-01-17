@@ -696,11 +696,24 @@ const WorkspaceTasks = ({
                       ></progress>
                     </div>
 
-                    {/* 担当者 + 期限（固定高さ） */}
+                    {/* 担当者・完了者 + 期限（固定高さ） */}
                     <div className="border-t border-base-300 pt-1.5 min-h-3rem">
-                      {/* 担当者 */}
+                      {/* 担当者（未完了）または完了者（完了済み） */}
                       <div className="flex items-center gap-1.5 h-5">
-                        {task.assignedUserId ? (
+                        {task.isCompleted && task.completedByUserId ? (
+                          <>
+                            <span
+                              className="icon-[mdi--check-circle] w-3.5 h-3.5 text-success flex-shrink-0"
+                              aria-hidden="true"
+                            />
+                            <UserAvatar
+                              userName={task.completedByUsername}
+                              identityIconUrl={task.completedByAvatarUrl}
+                              size={16}
+                              nameClassName="text-xs truncate text-success"
+                            />
+                          </>
+                        ) : task.assignedUserId ? (
                           <UserAvatar
                             userName={task.assignedUsername}
                             identityIconUrl={task.assignedAvatarUrl}

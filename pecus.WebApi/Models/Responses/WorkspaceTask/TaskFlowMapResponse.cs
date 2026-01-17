@@ -159,6 +159,21 @@ public class TaskFlowNode
     public string? AssignedAvatarUrl { get; set; }
 
     /// <summary>
+    /// 完了者ユーザーID
+    /// </summary>
+    public int? CompletedByUserId { get; set; }
+
+    /// <summary>
+    /// 完了者ユーザー名
+    /// </summary>
+    public string? CompletedByUsername { get; set; }
+
+    /// <summary>
+    /// 完了者ユーザーアバターURL
+    /// </summary>
+    public string? CompletedByAvatarUrl { get; set; }
+
+    /// <summary>
     /// 着手可能か（先行タスクなし or 完了済み、かつ自身が未完了・未破棄）
     /// </summary>
     [Required]

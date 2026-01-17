@@ -1590,7 +1590,7 @@ export default function WorkspaceTaskDetailPage({
                     </div>
                   )}
 
-                  {/* メタ情報（作成者・更新日時） */}
+                  {/* メタ情報（作成者・完了者・更新日時） */}
                   <div className="border-t border-base-300 pt-4 mt-4">
                     <div className="flex flex-wrap gap-4 text-sm text-base-content/60">
                       {task.createdByUserId && (
@@ -1605,6 +1605,18 @@ export default function WorkspaceTaskDetailPage({
                         </div>
                       )}
                       {task.createdAt && <div>作成日時: {formatDateTime(task.createdAt)}</div>}
+                      {task.isCompleted && task.completedByUserId && (
+                        <div className="flex items-center gap-2 text-success">
+                          <span className="icon-[mdi--check-circle] w-4 h-4" aria-hidden="true" />
+                          <span>完了者:</span>
+                          <UserAvatar
+                            userName={task.completedByUsername}
+                            identityIconUrl={task.completedByAvatarUrl}
+                            size={20}
+                            nameClassName="text-success"
+                          />
+                        </div>
+                      )}
                       {task.updatedAt && <div>更新日時: {formatDateTime(task.updatedAt)}</div>}
                     </div>
                   </div>

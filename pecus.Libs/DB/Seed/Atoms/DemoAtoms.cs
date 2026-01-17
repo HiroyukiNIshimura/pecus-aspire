@@ -793,6 +793,7 @@ public class DemoAtoms
                 IsCompleted = phase.IsCompleted,
                 // 暁の開拓者バッジ取得のため、完了時刻を日本時間の午前6時（UTC 21時）に設定
                 CompletedAt = phase.IsCompleted ? GetEarlyBirdCompletionTime(phase.CompletedDaysOffset) : null,
+                CompletedByUserId = phase.IsCompleted ? assignee.Id : null,
                 IsDiscarded = false,
                 DiscardedAt = null,
                 DiscardReason = null,

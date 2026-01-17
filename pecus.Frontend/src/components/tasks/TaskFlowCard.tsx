@@ -183,9 +183,19 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
           max="100"
         />
 
-        {/* フッター: 担当者・期限 */}
+        {/* フッター: 担当者/完了者・期限 */}
         <div className="flex items-center justify-between text-xs text-base-content/60 mt-auto">
-          {task.assignedUserId ? (
+          {task.isCompleted && task.completedByUserId ? (
+            <div className="flex items-center gap-0.5">
+              <span className="icon-[mdi--check-circle] w-3 h-3 text-success flex-shrink-0" aria-hidden="true" />
+              <UserAvatar
+                userName={task.completedByUsername}
+                identityIconUrl={task.completedByAvatarUrl}
+                size={14}
+                nameClassName="text-xs truncate max-w-[60px] text-success"
+              />
+            </div>
+          ) : task.assignedUserId ? (
             <UserAvatar
               userName={task.assignedUsername}
               identityIconUrl={task.assignedAvatarUrl}
