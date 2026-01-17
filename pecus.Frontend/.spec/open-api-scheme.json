@@ -112,7 +112,7 @@
           "Achievement"
         ],
         "summary": "未通知の実績を取得",
-        "description": "まだユーザーに通知していない新規取得実績を取得します。\r\nバッジ取得演出の表示判定に使用します。",
+        "description": "まだユーザーに通知していない新規取得実績を取得します。\nバッジ取得演出の表示判定に使用します。",
         "responses": {
           "200": {
             "description": "OK",
@@ -215,7 +215,7 @@
           "Achievement"
         ],
         "summary": "全ての未通知実績を通知済みにマーク",
-        "description": "一括で全ての未通知実績を通知済みにします。\r\nコレクションページを開いた際などに使用します。",
+        "description": "一括で全ての未通知実績を通知済みにします。\nコレクションページを開いた際などに使用します。",
         "responses": {
           "204": {
             "description": "No Content"
@@ -237,7 +237,7 @@
           "Achievement"
         ],
         "summary": "バッジ獲得ランキングを取得",
-        "description": "組織全体またはワークスペース内のバッジ獲得ランキングを取得します。\r\n3種類のランキングを返します:\r\n- 難易度ランカー: 難しいバッジを多く取得している人\r\n- 取得数ランカー: バッジ総数が多い人\r\n- 成長速度ランカー: 期間あたりの取得効率が高い人\r\n\r\nBadgeVisibility が Private のユーザーはランキングから除外されます。",
+        "description": "組織全体またはワークスペース内のバッジ獲得ランキングを取得します。\n3種類のランキングを返します:\n- 難易度ランカー: 難しいバッジを多く取得している人\n- 取得数ランカー: バッジ総数が多い人\n- 成長速度ランカー: 期間あたりの取得効率が高い人\n\nBadgeVisibility が Private のユーザーはランキングから除外されます。",
         "parameters": [
           {
             "name": "workspaceId",
@@ -526,7 +526,7 @@
           "Chat"
         ],
         "summary": "DM候補ユーザー一覧を取得（既存DMがないアクティブユーザー）",
-        "description": "DMタブで「他のメンバー」セクションに表示する、既存DMがないユーザーを取得します。\r\n最終ログイン日時でソートされ、最近アクティブなユーザーが優先されます。",
+        "description": "DMタブで「他のメンバー」セクションに表示する、既存DMがないユーザーを取得します。\n最終ログイン日時でソートされ、最近アクティブなユーザーが優先されます。",
         "parameters": [
           {
             "name": "limit",
@@ -614,7 +614,7 @@
           "Chat"
         ],
         "summary": "グループルームを取得（組織単位のグループチャット）",
-        "description": "組織設定の GroupChatScope が Organization の場合のみ利用可能。\r\nWorkspace の場合は 404 を返す。",
+        "description": "組織設定の GroupChatScope が Organization の場合のみ利用可能。\nWorkspace の場合は 404 を返す。",
         "responses": {
           "200": {
             "description": "OK",
@@ -697,7 +697,7 @@
           "Chat"
         ],
         "summary": "ワークスペースのグループルームを取得",
-        "description": "組織設定の GroupChatScope が Workspace（デフォルト）の場合のみ利用可能。\r\nOrganization の場合は 404 を返す。",
+        "description": "組織設定の GroupChatScope が Workspace（デフォルト）の場合のみ利用可能。\nOrganization の場合は 404 を返す。",
         "parameters": [
           {
             "name": "workspaceId",
@@ -1183,7 +1183,7 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "組織のダッシュボードサマリを取得\r\nタスクとアイテムの現在状態を集計したサマリ情報",
+        "summary": "組織のダッシュボードサマリを取得\nタスクとアイテムの現在状態を集計したサマリ情報",
         "responses": {
           "200": {
             "description": "OK",
@@ -1224,7 +1224,7 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "組織の優先度別タスク数を取得\r\n進行中タスクの優先度別内訳",
+        "summary": "組織の優先度別タスク数を取得\n進行中タスクの優先度別内訳",
         "responses": {
           "200": {
             "description": "OK",
@@ -1265,7 +1265,7 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "個人のダッシュボードサマリを取得\r\nログインユーザー自身のタスク状況",
+        "summary": "個人のダッシュボードサマリを取得\nログインユーザー自身のタスク状況",
         "responses": {
           "200": {
             "description": "OK",
@@ -1306,7 +1306,7 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "ワークスペース別統計を取得\r\n組織内の各ワークスペースのタスク・アイテム状況",
+        "summary": "ワークスペース別統計を取得\n組織内の各ワークスペースのタスク・アイテム状況",
         "responses": {
           "200": {
             "description": "OK",
@@ -1347,7 +1347,7 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "週次タスクトレンドを取得\r\nタスクの作成数/完了数の週次推移",
+        "summary": "週次タスクトレンドを取得\nタスクの作成数/完了数の週次推移",
         "parameters": [
           {
             "name": "weeks",
@@ -1400,7 +1400,7 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "ホットアイテムを取得\r\n直近でアクティビティが多いアイテムのランキング",
+        "summary": "ホットアイテムを取得\n直近でアクティビティが多いアイテムのランキング",
         "parameters": [
           {
             "name": "period",
@@ -1462,7 +1462,7 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "ホットワークスペースを取得\r\nタスク関連アクティビティが活発なワークスペースのランキング",
+        "summary": "ホットワークスペースを取得\nタスク関連アクティビティが活発なワークスペースのランキング",
         "parameters": [
           {
             "name": "period",
@@ -1524,7 +1524,7 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "ヘルプコメント一覧を取得\r\nHelpWanted タイプのコメントで、未完了・未破棄のタスクに紐づくもの",
+        "summary": "ヘルプコメント一覧を取得\nHelpWanted タイプのコメントで、未完了・未破棄のタスクに紐づくもの",
         "responses": {
           "200": {
             "description": "OK",
@@ -1565,8 +1565,8 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ドキュメントツリーを取得\r\nワークスペース内の全アイテムと親子関係を解決して返す",
-        "description": "このエンドポイントはドキュメントモードのワークスペースでのみ使用可能です。\r\n通常モードのワークスペースで呼び出すと 400 Bad Request が返されます。",
+        "summary": "ドキュメントツリーを取得\nワークスペース内の全アイテムと親子関係を解決して返す",
+        "description": "このエンドポイントはドキュメントモードのワークスペースでのみ使用可能です。\n通常モードのワークスペースで呼び出すと 400 Bad Request が返されます。",
         "parameters": [
           {
             "name": "workspaceId",
@@ -2146,7 +2146,7 @@
         "tags": [
           "My"
         ],
-        "summary": "マイコミッターワークスペース一覧を取得\r\nログインユーザーがコミッターとして割り当てられたアイテムを持つワークスペースの一覧を取得します",
+        "summary": "マイコミッターワークスペース一覧を取得\nログインユーザーがコミッターとして割り当てられたアイテムを持つワークスペースの一覧を取得します",
         "responses": {
           "200": {
             "description": "OK",
@@ -2180,7 +2180,7 @@
         "tags": [
           "My"
         ],
-        "summary": "指定ワークスペース内のコミッタータスクを期限日グループで取得\r\nログインユーザーがコミッターとして割り当てられたアイテムに紐づくタスクを期限日でグループ化して返します",
+        "summary": "指定ワークスペース内のコミッタータスクを期限日グループで取得\nログインユーザーがコミッターとして割り当てられたアイテムに紐づくタスクを期限日でグループ化して返します",
         "parameters": [
           {
             "name": "workspaceId",
@@ -2245,7 +2245,7 @@
         "tags": [
           "My"
         ],
-        "summary": "マイコミッターアイテム一覧を取得\r\nログインユーザーがコミッターとして割り当てられたアイテムとそのタスクを取得します",
+        "summary": "マイコミッターアイテム一覧を取得\nログインユーザーがコミッターとして割り当てられたアイテムとそのタスクを取得します",
         "parameters": [
           {
             "name": "Page",
@@ -2318,7 +2318,7 @@
         "tags": [
           "My"
         ],
-        "summary": "マイアイテム一覧を取得\r\nログインユーザーがオーナー、担当者、コミッター、またはPIN済みのアイテムを取得",
+        "summary": "マイアイテム一覧を取得\nログインユーザーがオーナー、担当者、コミッター、またはPIN済みのアイテムを取得",
         "parameters": [
           {
             "name": "Page",
@@ -2342,7 +2342,7 @@
           {
             "name": "IncludeArchived",
             "in": "query",
-            "description": "アーカイブ済みアイテムを含めるかどうか（デフォルト: false）\r\ntrue の場合、アーカイブ済みアイテムのみ表示\r\nfalse または未指定の場合、アーカイブ済みアイテムを除外",
+            "description": "アーカイブ済みアイテムを含めるかどうか（デフォルト: false）\ntrue の場合、アーカイブ済みアイテムのみ表示\nfalse または未指定の場合、アーカイブ済みアイテムを除外",
             "schema": {
               "type": "boolean"
             }
@@ -2417,7 +2417,7 @@
           "My"
         ],
         "summary": "ログインユーザーの所属組織情報を取得",
-        "description": "組織の基本情報を返します。\r\n組織設定は GET /api/profile/app-settings で取得してください。",
+        "description": "組織の基本情報を返します。\n組織設定は GET /api/profile/app-settings で取得してください。",
         "responses": {
           "200": {
             "description": "組織情報を返します",
@@ -2452,7 +2452,7 @@
         "tags": [
           "My"
         ],
-        "summary": "マイタスク一覧を取得\r\nログインユーザーに割り当てられたタスクを全ワークスペース横断で取得",
+        "summary": "マイタスク一覧を取得\nログインユーザーに割り当てられたタスクを全ワークスペース横断で取得",
         "parameters": [
           {
             "name": "Page",
@@ -2514,7 +2514,7 @@
         "tags": [
           "My"
         ],
-        "summary": "マイタスクワークスペース一覧を取得\r\nログインユーザーが担当のタスクを持つワークスペースの一覧を取得します（期限日が古い順）",
+        "summary": "マイタスクワークスペース一覧を取得\nログインユーザーが担当のタスクを持つワークスペースの一覧を取得します（期限日が古い順）",
         "responses": {
           "200": {
             "description": "OK",
@@ -2548,7 +2548,7 @@
         "tags": [
           "My"
         ],
-        "summary": "指定ワークスペース内のマイタスクを期限日グループで取得\r\nログインユーザーが担当のタスクを期限日でグループ化して返します",
+        "summary": "指定ワークスペース内のマイタスクを期限日グループで取得\nログインユーザーが担当のタスクを期限日でグループ化して返します",
         "parameters": [
           {
             "name": "workspaceId",
@@ -3256,7 +3256,7 @@
           "User"
         ],
         "summary": "ユーザーをあいまい検索",
-        "description": "ユーザー名またはメールアドレスであいまい検索を行います。\r\npgroonga を使用しているため、日本語の漢字のゆらぎやタイポにも対応します。\r\nワークスペースへのメンバー追加時などに使用します。",
+        "description": "ユーザー名またはメールアドレスであいまい検索を行います。\npgroonga を使用しているため、日本語の漢字のゆらぎやタイポにも対応します。\nワークスペースへのメンバー追加時などに使用します。",
         "parameters": [
           {
             "name": "Q",
@@ -3318,7 +3318,7 @@
           "User"
         ],
         "summary": "指定ユーザーの取得済み実績を取得",
-        "description": "対象ユーザーの公開範囲設定に基づきフィルタリングされます。\r\n公開範囲外の場合は空のリストが返却されます。",
+        "description": "対象ユーザーの公開範囲設定に基づきフィルタリングされます。\n公開範囲外の場合は空のリストが返却されます。",
         "parameters": [
           {
             "name": "userId",
@@ -3366,7 +3366,7 @@
           "User"
         ],
         "summary": "指定ユーザーのスキル一覧を取得",
-        "description": "対象ユーザーが持つアクティブなスキルの一覧を取得します。\r\nスキル名、説明、追加日時を含みます。",
+        "description": "対象ユーザーが持つアクティブなスキルの一覧を取得します。\nスキル名、説明、追加日時を含みます。",
         "parameters": [
           {
             "name": "userId",
@@ -3977,7 +3977,7 @@
           "Workspace"
         ],
         "summary": "ワークスペースメンバーのロールを変更する（Ownerのみ実行可能）",
-        "description": "ワークスペースの Owner ロールを持つユーザーのみ実行可能です。\r\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。\r\nまた、Viewer に変更する場合、対象ユーザーが担当中のタスクやアイテムがあると変更できません。",
+        "description": "ワークスペースの Owner ロールを持つユーザーのみ実行可能です。\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。\nまた、Viewer に変更する場合、対象ユーザーが担当中のタスクやアイテムがあると変更できません。",
         "parameters": [
           {
             "name": "id",
@@ -4084,7 +4084,7 @@
           "Workspace"
         ],
         "summary": "ワークスペースのメンバーをあいまい検索する",
-        "description": "ワークスペースに参加しているメンバーの中から、ユーザー名またはメールアドレスで\r\nあいまい検索を行います。pgroonga を使用しているため、日本語の漢字のゆらぎや\r\nタイポにも対応します。\r\n\r\nタスクの担当者選択など、編集権限が必要な場面では excludeViewer=true を指定して\r\nViewer ロールのメンバーを除外できます。",
+        "description": "ワークスペースに参加しているメンバーの中から、ユーザー名またはメールアドレスで\nあいまい検索を行います。pgroonga を使用しているため、日本語の漢字のゆらぎや\nタイポにも対応します。\n\nタスクの担当者選択など、編集権限が必要な場面では excludeViewer=true を指定して\nViewer ロールのメンバーを除外できます。",
         "parameters": [
           {
             "name": "id",
@@ -4371,7 +4371,7 @@
           "Workspace"
         ],
         "summary": "ワークスペースのスキルを設定する（Ownerのみ実行可能）",
-        "description": "ワークスペースが必要とするスキルを設定します（洗い替え）。\r\n指定されたスキル以外のスキルは削除されます。",
+        "description": "ワークスペースが必要とするスキルを設定します（洗い替え）。\n指定されたスキル以外のスキルは削除されます。",
         "parameters": [
           {
             "name": "id",
@@ -5059,7 +5059,7 @@
           {
             "name": "SearchQuery",
             "in": "query",
-            "description": "あいまい検索クエリ（Subject, RawBody を対象）\r\npgroonga を使用して日本語のゆらぎやタイポにも対応",
+            "description": "あいまい検索クエリ（Subject, RawBody を対象）\npgroonga を使用して日本語のゆらぎやタイポにも対応",
             "schema": {
               "maxLength": 200,
               "minLength": 0,
@@ -5589,7 +5589,7 @@
           "WorkspaceItem"
         ],
         "summary": "ワークスペースアイテム属性更新",
-        "description": "属性ごとに値を個別に更新します。サポートされる属性:\r\n- assignee: 担当者ID (int? / null で割り当て解除)\r\n- committer: コミッターID (int? / null で割り当て解除)\r\n- priority: 優先度 (TaskPriority enum / null でクリア)\r\n- duedate: 期限日 (DateTime / null でクリア)\r\n- archive: アーカイブ状態 (bool / 必須)",
+        "description": "属性ごとに値を個別に更新します。サポートされる属性:\n- assignee: 担当者ID (int? / null で割り当て解除)\n- committer: コミッターID (int? / null で割り当て解除)\n- priority: 優先度 (TaskPriority enum / null でクリア)\n- duedate: 期限日 (DateTime / null でクリア)\n- archive: アーカイブ状態 (bool / 必須)",
         "parameters": [
           {
             "name": "workspaceId",
@@ -7021,7 +7021,7 @@
           {
             "name": "PageSize",
             "in": "query",
-            "description": "1ページあたりの件数（1〜50、デフォルト10）\r\nカルーセルのためクライアントからの指定を許可",
+            "description": "1ページあたりの件数（1〜50、デフォルト10）\nカルーセルのためクライアントからの指定を許可",
             "schema": {
               "maximum": 50,
               "minimum": 1,
@@ -7361,7 +7361,7 @@
         "tags": [
           "WorkspaceTask"
         ],
-        "summary": "タスクフローマップ取得\r\nアイテム内のタスク依存関係を可視化するためのデータを取得します",
+        "summary": "タスクフローマップ取得\nアイテム内のタスク依存関係を可視化するためのデータを取得します",
         "parameters": [
           {
             "name": "workspaceId",
@@ -7823,7 +7823,7 @@
           "Profile"
         ],
         "summary": "メールアドレス変更をリクエスト",
-        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\r\n確認メールが送信され、24時間有効なトークンが発行されます。",
+        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\n確認メールが送信され、24時間有効なトークンが発行されます。",
         "requestBody": {
           "description": "メールアドレス変更リクエスト",
           "content": {
@@ -7923,7 +7923,7 @@
           "Profile"
         ],
         "summary": "メールアドレス変更を確認（トークン検証）",
-        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\r\nトークンは24時間有効で、一度のみ使用可能です。",
+        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\nトークンは24時間有効で、一度のみ使用可能です。",
         "parameters": [
           {
             "name": "token",
@@ -8012,7 +8012,7 @@
           "Profile"
         ],
         "summary": "未使用のメールアドレス変更トークン情報を取得",
-        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\r\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
+        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
         "responses": {
           "200": {
             "description": "トークン情報を取得しました（存在する場合）",
@@ -8111,7 +8111,7 @@
           "Profile"
         ],
         "summary": "自分のプロフィール情報を更新",
-        "description": "ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。\r\nスキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。",
+        "description": "ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。\nスキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。",
         "requestBody": {
           "description": "更新情報",
           "content": {
@@ -8351,7 +8351,7 @@
           "Profile"
         ],
         "summary": "自分のスキルを設定",
-        "description": "ユーザーが自身のスキルを設定します（洗い替え）。\r\n指定されたスキル以外のスキルは削除されます。",
+        "description": "ユーザーが自身のスキルを設定します（洗い替え）。\n指定されたスキル以外のスキルは削除されます。",
         "requestBody": {
           "description": "スキルIDのリスト",
           "content": {
@@ -8468,7 +8468,7 @@
           "Profile"
         ],
         "summary": "パスワードを変更",
-        "description": "ユーザーが自身のパスワードを変更します。重要なセキュリティ変更です。\r\n現在のパスワードの確認（古いパスワード）が必須です。",
+        "description": "ユーザーが自身のパスワードを変更します。重要なセキュリティ変更です。\n現在のパスワードの確認（古いパスワード）が必須です。",
         "requestBody": {
           "description": "変更情報",
           "content": {
@@ -8568,7 +8568,7 @@
           "Profile"
         ],
         "summary": "アプリケーション公開設定を取得",
-        "description": "フロントエンドで利用可能な現在のユーザー情報、組織設定、ユーザー設定を統合して返します。\r\nAPIキーやパスワード等のセンシティブ情報は含まれません。\r\nSSRでレイアウトレベルで取得し、Context経由で配信することを想定しています。",
+        "description": "フロントエンドで利用可能な現在のユーザー情報、組織設定、ユーザー設定を統合して返します。\nAPIキーやパスワード等のセンシティブ情報は含まれません。\nSSRでレイアウトレベルで取得し、Context経由で配信することを想定しています。",
         "responses": {
           "200": {
             "description": "公開設定を返します",
@@ -8609,6 +8609,106 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/profile/landing-page-recommendation/respond": {
+      "post": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "ランディングページ推奨への応答",
+        "description": "バッチ処理で計算されたランディングページ推奨に対して、\nユーザーが受け入れ（Accept）または拒否（Reject）を選択します。\n- Accept: 推奨されたランディングページに設定を変更します\n- Reject: 現在の設定を維持し、一定期間再提案を抑制します",
+        "requestBody": {
+          "description": "応答リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RespondToLandingPageRecommendationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RespondToLandingPageRecommendationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RespondToLandingPageRecommendationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettingResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettingResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         },
         "security": [
@@ -8686,7 +8786,7 @@
           "Entrance - Password"
         ],
         "summary": "/// パスワードを設定",
-        "description": "メールで送信されたトークンを使ってパスワードを設定します。\r\nトークンは24時間有効です。",
+        "description": "メールで送信されたトークンを使ってパスワードを設定します。\nトークンは24時間有効です。",
         "requestBody": {
           "description": "パスワード設定リクエスト",
           "content": {
@@ -8743,7 +8843,7 @@
           "Entrance - Password"
         ],
         "summary": "パスワードリセットをリクエスト",
-        "description": "メールアドレスを入力してパスワードリセットをリクエストします。\r\nパスワードリセット用のメールが送信されます。",
+        "description": "メールアドレスを入力してパスワードリセットをリクエストします。\nパスワードリセット用のメールが送信されます。",
         "requestBody": {
           "description": "パスワードリセットリクエスト",
           "content": {
@@ -8790,7 +8890,7 @@
           "Entrance - Password"
         ],
         "summary": "パスワードをリセット",
-        "description": "メールで送信されたトークンを使ってパスワードをリセットします。\r\nトークンは24時間有効です。",
+        "description": "メールで送信されたトークンを使ってパスワードをリセットします。\nトークンは24時間有効です。",
         "requestBody": {
           "description": "パスワードリセットリクエスト",
           "content": {
@@ -9002,7 +9102,7 @@
         "tags": [
           "EmailPreview"
         ],
-        "summary": "指定したテンプレートのHTMLプレビューを取得\r\nダミーデータを使用してレンダリング",
+        "summary": "指定したテンプレートのHTMLプレビューを取得\nダミーデータを使用してレンダリング",
         "parameters": [
           {
             "name": "templateName",
@@ -9247,7 +9347,7 @@
           "BackOffice - Organizations"
         ],
         "summary": "組織登録（管理者ユーザーも同時作成）",
-        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\r\n管理者ユーザーへはパスワード設定メールが送信されます。",
+        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\n管理者ユーザーへはパスワード設定メールが送信されます。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -9479,7 +9579,7 @@
           "BackOffice - Organizations"
         ],
         "summary": "組織を削除（物理削除）",
-        "description": "組織とすべての関連データを物理削除します。\r\n誤操作防止のため、確認用に組織名の入力が必要です。",
+        "description": "組織とすべての関連データを物理削除します。\n誤操作防止のため、確認用に組織名の入力が必要です。",
         "parameters": [
           {
             "name": "id",
@@ -9583,7 +9683,7 @@
           "BackOffice - Organizations"
         ],
         "summary": "組織登録完了メールを再送",
-        "description": "組織登録完了メールを再送します。\r\n管理者ユーザーがパスワード未設定の場合のみ再送可能です。\r\nパスワード設定トークンは再生成されます。",
+        "description": "組織登録完了メールを再送します。\n管理者ユーザーがパスワード未設定の場合のみ再送可能です。\nパスワード設定トークンは再生成されます。",
         "parameters": [
           {
             "name": "id",
@@ -10486,7 +10586,7 @@
           "Admin - Organization"
         ],
         "summary": "指定したAPIキーとベンダーで利用可能なAIモデル一覧を取得",
-        "description": "APIキーとベンダーを指定して、そのベンダーで利用可能なモデル一覧を取得します。\r\nモデル選択UIで使用します。\r\n外部API呼び出し時のエラー（認証エラー等）はレスポンスのSuccess=falseとErrorMessageで返します。",
+        "description": "APIキーとベンダーを指定して、そのベンダーで利用可能なモデル一覧を取得します。\nモデル選択UIで使用します。\n外部API呼び出し時のエラー（認証エラー等）はレスポンスのSuccess=falseとErrorMessageで返します。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -10617,7 +10717,7 @@
           "Admin - Skill"
         ],
         "summary": "スキル一覧取得（ページネーション）",
-        "description": "スキルの一覧をページネーションで取得します。\r\n統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５スキル、利用されていないスキルのリストを含みます。",
+        "description": "スキルの一覧をページネーションで取得します。\n統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、\n利用されているトップ５スキル、利用されていないスキルのリストを含みます。",
         "parameters": [
           {
             "name": "Page",
@@ -11068,7 +11168,7 @@
           "Admin - Tag"
         ],
         "summary": "タグ一覧取得（ページネーション）",
-        "description": "タグの一覧をページネーションで取得します。\r\n統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５タグ、利用されていないタグのリストを含みます。",
+        "description": "タグの一覧をページネーションで取得します。\n統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、\n利用されているトップ５タグ、利用されていないタグのリストを含みます。",
         "parameters": [
           {
             "name": "Page",
@@ -11614,7 +11714,7 @@
           {
             "name": "SkillFilterMode",
             "in": "query",
-            "description": "スキルフィルターのモード（\"and\": すべてのスキルを保有、\"or\": いずれかのスキルを保有）\r\nデフォルトは \"and\"",
+            "description": "スキルフィルターのモード（\"and\": すべてのスキルを保有、\"or\": いずれかのスキルを保有）\nデフォルトは \"and\"",
             "schema": {
               "pattern": "^(and|or)$",
               "type": "string"
@@ -11745,7 +11845,7 @@
           "Admin - User"
         ],
         "summary": "ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）",
-        "description": "    管理者が組織内のユーザーのスキルを設定します（洗い替え）。\r\n指定されたスキル以外は削除されます。\r\n    重要：このエンドポイントは管理者による操作であり、\r\nユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
+        "description": "    管理者が組織内のユーザーのスキルを設定します（洗い替え）。\n指定されたスキル以外は削除されます。\n    重要：このエンドポイントは管理者による操作であり、\nユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
         "parameters": [
           {
             "name": "id",
@@ -11834,7 +11934,7 @@
           "Admin - User"
         ],
         "summary": "パスワードなしでユーザーを作成",
-        "description": "ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。\r\n作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。",
+        "description": "ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。\n作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。",
         "requestBody": {
           "description": "ユーザー作成リクエスト",
           "content": {
@@ -11901,7 +12001,7 @@
           "Admin - User"
         ],
         "summary": "ユーザーのパスワードリセットをリクエスト",
-        "description": "指定したユーザーのパスワードリセットをリクエストします。組織内のユーザーのみ操作可能です。\r\nパスワードリセット用のメールがユーザーに送信されます。",
+        "description": "指定したユーザーのパスワードリセットをリクエストします。組織内のユーザーのみ操作可能です。\nパスワードリセット用のメールがユーザーに送信されます。",
         "parameters": [
           {
             "name": "id",
@@ -11959,7 +12059,7 @@
           "Admin - User"
         ],
         "summary": "パスワード設定メールを再送（新規ユーザー用）",
-        "description": "新規作成時に送信されたパスワード設定メールを再送します。\r\nユーザーがメールを紛失した場合などに使用します。\r\nトークンは再生成されます。",
+        "description": "新規作成時に送信されたパスワード設定メールを再送します。\nユーザーがメールを紛失した場合などに使用します。\nトークンは再生成されます。",
         "parameters": [
           {
             "name": "id",
@@ -12027,7 +12127,7 @@
           "Admin - User"
         ],
         "summary": "ユーザーのロールを設定（管理者が他のユーザーのロールを管理）",
-        "description": "    管理者が組織内のユーザーのロールを設定します（洗い替え）。\r\n指定されたロール以外は削除されます。\r\n    重要：このエンドポイントは管理者による操作です。\r\nユーザーのロールはシステム管理者によってのみ変更されるべきです。",
+        "description": "    管理者が組織内のユーザーのロールを設定します（洗い替え）。\n指定されたロール以外は削除されます。\n    重要：このエンドポイントは管理者による操作です。\nユーザーのロールはシステム管理者によってのみ変更されるべきです。",
         "parameters": [
           {
             "name": "id",
@@ -12844,7 +12944,7 @@
           "Admin - Workspace"
         ],
         "summary": "ワークスペースメンバーのロールを変更",
-        "description": "組織に属するユーザーであれば実行可能です。\r\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。",
+        "description": "組織に属するユーザーであれば実行可能です。\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。",
         "parameters": [
           {
             "name": "id",
@@ -13430,7 +13530,7 @@
             "$ref": "#/components/schemas/LimitsSettings"
           }
         },
-        "description": "アプリケーション公開設定レスポンス\r\nフロントエンドで利用可能な組織設定とユーザー設定を統合したDTO\r\n※ APIキー、パスワード等のセンシティブ情報は含まない"
+        "description": "アプリケーション公開設定レスポンス\nフロントエンドで利用可能な組織設定とユーザー設定を統合したDTO\n※ APIキー、パスワード等のセンシティブ情報は含まない"
       },
       "AssignedItemInfo": {
         "type": "object",
@@ -15333,7 +15433,7 @@
             "description": "ホットアイテムリスト（アクティビティ数の多い順）"
           }
         },
-        "description": "ホットアイテム統計レスポンス\r\n直近で作業が活発なアイテムのランキング"
+        "description": "ホットアイテム統計レスポンス\n直近で作業が活発なアイテムのランキング"
       },
       "DashboardHotWorkspacesResponse": {
         "required": [
@@ -15354,7 +15454,7 @@
             "description": "ホットワークスペースリスト（タスク関連アクティビティ数の多い順）"
           }
         },
-        "description": "ホットワークスペース統計レスポンス\r\nタスク関連アクティビティが活発なワークスペースのランキング"
+        "description": "ホットワークスペース統計レスポンス\nタスク関連アクティビティが活発なワークスペースのランキング"
       },
       "DashboardItemSummary": {
         "required": [
@@ -15424,7 +15524,7 @@
             "format": "int32"
           }
         },
-        "description": "個人ダッシュボード統計レスポンス\r\nログインユーザー自身のタスク状況を集計"
+        "description": "個人ダッシュボード統計レスポンス\nログインユーザー自身のタスク状況を集計"
       },
       "DashboardSummaryResponse": {
         "required": [
@@ -15444,7 +15544,7 @@
             "$ref": "#/components/schemas/DashboardWorkspaceSummary"
           }
         },
-        "description": "ダッシュボード統計サマリレスポンス\r\nタスクとアイテムの現在状態を集計したサマリ情報"
+        "description": "ダッシュボード統計サマリレスポンス\nタスクとアイテムの現在状態を集計したサマリ情報"
       },
       "DashboardTaskFilter": {
         "enum": [
@@ -15555,7 +15655,7 @@
             "format": "date-time"
           }
         },
-        "description": "タスクトレンドレスポンス\r\n週次のタスク作成/完了推移データ"
+        "description": "タスクトレンドレスポンス\n週次のタスク作成/完了推移データ"
       },
       "DashboardWorkspaceBreakdownResponse": {
         "required": [
@@ -15688,7 +15788,7 @@
           },
           "currentDevicePublicId": {
             "type": "string",
-            "description": "現在のリクエストに対応するデバイスのPublicId\r\nリクエスト情報からマッチングして特定",
+            "description": "現在のリクエストに対応するデバイスのPublicId\nリクエスト情報からマッチングして特定",
             "nullable": true
           }
         },
@@ -16721,6 +16821,14 @@
         "type": "string",
         "nullable": true
       },
+      "LandingPageRecommendationAction": {
+        "enum": [
+          "Accept",
+          "Reject"
+        ],
+        "type": "string",
+        "description": "ランディングページ推奨への応答アクション"
+      },
       "LimitsSettings": {
         "type": "object",
         "properties": {
@@ -17116,7 +17224,7 @@
             "nullable": true
           }
         },
-        "description": "マイコミッターワークスペースレスポンス\r\nログインユーザーがコミッターになっているアイテムを持つワークスペースの情報"
+        "description": "マイコミッターワークスペースレスポンス\nログインユーザーがコミッターになっているアイテムを持つワークスペースの情報"
       },
       "MyItemRelationType": {
         "enum": [
@@ -17467,7 +17575,7 @@
             "nullable": true
           }
         },
-        "description": "マイタスクワークスペースレスポンス\r\nログインユーザーが担当のタスクを持つワークスペースの情報"
+        "description": "マイタスクワークスペースレスポンス\nログインユーザーが担当のタスクを持つワークスペースの情報"
       },
       "NewAchievementResponse": {
         "required": [
@@ -17535,7 +17643,7 @@
         "properties": {
           "isTyping": {
             "type": "boolean",
-            "description": "入力中かどうか\r\ntrue: 入力開始, false: 入力終了"
+            "description": "入力中かどうか\ntrue: 入力開始, false: 入力終了"
           }
         },
         "description": "入力中通知リクエスト"
@@ -18746,7 +18854,7 @@
           },
           "score": {
             "type": "number",
-            "description": "スコア（各ランキング種別に応じた値）\r\n- 難易度ランキング: 難易度スコア合計\r\n- 取得数ランキング: バッジ取得数\r\n- 成長速度ランキング: 成長スコア（バッジ数/活動日数×100）",
+            "description": "スコア（各ランキング種別に応じた値）\n- 難易度ランキング: 難易度スコア合計\n- 取得数ランキング: バッジ取得数\n- 成長速度ランキング: 成長スコア（バッジ数/活動日数×100）",
             "format": "double"
           },
           "badgeCount": {
@@ -18902,7 +19010,7 @@
           },
           "direction": {
             "type": "string",
-            "description": "関連の方向（このアイテムから見て）\r\n\"from\": このアイテムが関連元\r\n\"to\": このアイテムが関連先"
+            "description": "関連の方向（このアイテムから見て）\n\"from\": このアイテムが関連元\n\"to\": このアイテムが関連先"
           },
           "ownerId": {
             "type": "integer",
@@ -18993,6 +19101,18 @@
           }
         },
         "description": "パスワードリセット実行リクエスト"
+      },
+      "RespondToLandingPageRecommendationRequest": {
+        "required": [
+          "action"
+        ],
+        "type": "object",
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/LandingPageRecommendationAction"
+          }
+        },
+        "description": "ランディングページ推奨への応答リクエスト"
       },
       "RoleInfoResponse": {
         "required": [
@@ -19136,12 +19256,12 @@
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。",
             "nullable": true
           },
           "userRowVersion": {
             "type": "integer",
-            "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
+            "description": "ユーザーの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
             "format": "uint32",
             "nullable": true
           }
@@ -19157,12 +19277,12 @@
             "items": {
               "type": "string"
             },
-            "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\r\n空のリストまたはnullの場合はすべてのタグを削除します。",
+            "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\n空のリストまたはnullの場合はすべてのタグを削除します。",
             "nullable": true
           },
           "itemRowVersion": {
             "type": "integer",
-            "description": "アイテムの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
+            "description": "アイテムの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
             "format": "uint32",
             "nullable": true
           }
@@ -19258,12 +19378,12 @@
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。",
             "nullable": true
           },
           "rowVersion": {
             "type": "integer",
-            "description": "ワークスペースの楽観的ロック用RowVersion。\r\n競合検出に使用されます。",
+            "description": "ワークスペースの楽観的ロック用RowVersion。\n競合検出に使用されます。",
             "format": "uint32"
           }
         },
@@ -19972,7 +20092,7 @@
             "items": {
               "$ref": "#/components/schemas/TaskFlowNode"
             },
-            "description": "クリティカルパス（合計所要期間が最長の依存チェーン）\r\n期間は各タスクの StartDate（なければ前タスクの DueDate、最初のタスクなら CreatedAt）から DueDate までの日数を合計して算出"
+            "description": "クリティカルパス（合計所要期間が最長の依存チェーン）\n期間は各タスクの StartDate（なければ前タスクの DueDate、最初のタスクなら CreatedAt）から DueDate までの日数を合計して算出"
           },
           "otherChains": {
             "type": "array",
@@ -19995,7 +20115,7 @@
             "$ref": "#/components/schemas/TaskFlowSummary"
           }
         },
-        "description": "タスクフローマップレスポンス\r\nアイテム内のタスク依存関係を可視化するためのデータ"
+        "description": "タスクフローマップレスポンス\nアイテム内のタスク依存関係を可視化するためのデータ"
       },
       "TaskFlowNode": {
         "required": [
@@ -20112,13 +20232,13 @@
           },
           "durationDays": {
             "type": "number",
-            "description": "所要期間（日数）\r\nStartDate（なければ前タスクのDueDate、最初のタスクならCreatedAt）からDueDateまでの期間\r\n完了・破棄済みの場合はnull",
+            "description": "所要期間（日数）\nStartDate（なければ前タスクのDueDate、最初のタスクならCreatedAt）からDueDateまでの期間\n完了・破棄済みの場合はnull",
             "format": "double",
             "nullable": true
           },
           "hasDueDateConflict": {
             "type": "boolean",
-            "description": "先行タスクとの期限日コンフリクトがあるか\r\n先行タスクの期限日が自タスクの期限日より後の場合にtrue"
+            "description": "先行タスクとの期限日コンフリクトがあるか\n先行タスクの期限日が自タスクの期限日より後の場合にtrue"
           }
         },
         "description": "タスクフローマップのノード（個別タスク）"
@@ -20634,7 +20754,7 @@
             "description": "コメントタイプ別件数"
           }
         },
-        "description": "アイテム情報付きタスクレスポンス\r\nタスク一覧でアイテムへのリンクを表示するために使用"
+        "description": "アイテム情報付きタスクレスポンス\nタスク一覧でアイテムへのリンクを表示するために使用"
       },
       "TempAttachmentResponse": {
         "required": [
@@ -20788,7 +20908,7 @@
           },
           "readMessageId": {
             "type": "integer",
-            "description": "既読したメッセージID（省略可能）\r\nSignalR で他のメンバーに通知する際に使用",
+            "description": "既読したメッセージID（省略可能）\nSignalR で他のメンバーに通知する際に使用",
             "format": "int32",
             "nullable": true
           }
@@ -20865,7 +20985,7 @@
             "format": "uint32"
           }
         },
-        "description": "タスクコメント更新リクエスト\r\nコメントタイプは変更不可（内容のみ編集可能）"
+        "description": "タスクコメント更新リクエスト\nコメントタイプは変更不可（内容のみ編集可能）"
       },
       "UpdateUserSettingRequest": {
         "required": [
@@ -20889,7 +21009,7 @@
           },
           "timeZone": {
             "type": "string",
-            "description": "タイムゾーン（TODO：未使用）\r\nIANA zone name"
+            "description": "タイムゾーン（TODO：未使用）\nIANA zone name"
           },
           "language": {
             "type": "string",
@@ -21085,7 +21205,7 @@
           },
           "keepChildrenRelation": {
             "type": "boolean",
-            "description": "アーカイブ時に子アイテムとの親子関係を維持するかどうか（ドキュメントモード用）\r\ntrue: 親子関係を維持する（子はツリーから除外されるが、親のアーカイブ解除で復活）\r\nfalse: 子アイテムはルートに移動（親子関係を解除）\r\nnull: 子アイテムはそのまま（従来の動作）",
+            "description": "アーカイブ時に子アイテムとの親子関係を維持するかどうか（ドキュメントモード用）\ntrue: 親子関係を維持する（子はツリーから除外されるが、親のアーカイブ解除で復活）\nfalse: 子アイテムはルートに移動（親子関係を解除）\nnull: 子アイテムはそのまま（従来の動作）",
             "nullable": true
           },
           "rowVersion": {
@@ -21216,7 +21336,7 @@
           },
           "predecessorTaskId": {
             "type": "integer",
-            "description": "先行タスクID（このタスクが完了しないと着手できない）\r\nnullを設定すると先行タスクを解除",
+            "description": "先行タスクID（このタスクが完了しないと着手できない）\nnullを設定すると先行タスクを解除",
             "format": "int32",
             "nullable": true
           },
@@ -21350,12 +21470,12 @@
           },
           "userAvatarPath": {
             "type": "string",
-            "description": "ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）\r\nAvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）",
+            "description": "ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）\nAvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）",
             "nullable": true
           },
           "identityIconUrl": {
             "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）\r\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される\r\n必ず有効なURLが返されるため、クライアント側でnullチェック不要"
+            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される\n必ず有効なURLが返されるため、クライアント側でnullチェック不要"
           },
           "roles": {
             "type": "array",
@@ -21474,6 +21594,16 @@
                 "$ref": "#/components/schemas/BadgeVisibility"
               }
             ]
+          },
+          "pendingLandingPageRecommendation": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/LandingPage"
+              }
+            ]
           }
         },
         "description": "ユーザーの公開設定"
@@ -21580,7 +21710,7 @@
           },
           "timeZone": {
             "type": "string",
-            "description": "タイムゾーン（TODO：未使用）\r\nIANA zone name"
+            "description": "タイムゾーン（TODO：未使用）\nIANA zone name"
           },
           "language": {
             "type": "string",
@@ -21629,6 +21759,28 @@
                 "$ref": "#/components/schemas/BadgeVisibility"
               }
             ]
+          },
+          "pendingLandingPageRecommendation": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/LandingPage"
+              }
+            ]
+          },
+          "landingPageUpdatedAt": {
+            "type": "string",
+            "description": "ユーザーが最後にランディングページ設定を変更した日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "landingPageRecommendationRefusedAt": {
+            "type": "string",
+            "description": "ユーザーがランディングページ推奨を拒否した日時（Cool-down制御用）",
+            "format": "date-time",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -22645,7 +22797,7 @@
             "description": "担当があるかどうか"
           }
         },
-        "description": "ワークスペースメンバーが担当しているタスク/アイテムの情報\r\nViewer変更前のチェック用"
+        "description": "ワークスペースメンバーが担当しているタスク/アイテムの情報\nViewer変更前のチェック用"
       },
       "WorkspaceMode": {
         "enum": [
@@ -23086,7 +23238,7 @@
           },
           "identityIconUrl": {
             "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）\r\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
+            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
           },
           "workspaceRole": {
             "oneOf": [
@@ -23140,7 +23292,7 @@
           },
           "identityIconUrl": {
             "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）\r\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
+            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
           },
           "workspaceRole": {
             "oneOf": [

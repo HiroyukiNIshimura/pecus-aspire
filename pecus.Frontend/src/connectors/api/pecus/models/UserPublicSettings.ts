@@ -36,5 +36,6 @@ export type UserPublicSettings = {
      */
     waitingTasksLimit: number;
     badgeVisibility?: BadgeVisibility;
+    pendingLandingPageRecommendation?: LandingPage;
 };
 

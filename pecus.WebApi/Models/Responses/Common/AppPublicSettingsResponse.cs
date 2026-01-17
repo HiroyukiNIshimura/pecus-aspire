@@ -218,4 +218,10 @@ public class UserPublicSettings
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter<BadgeVisibility>))]
     public BadgeVisibility? BadgeVisibility { get; init; }
+
+    /// <summary>
+    /// バッチが計算したランディングページの推奨値（提示待ち）
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<LandingPage>))]
+    public LandingPage? PendingLandingPageRecommendation { get; init; }
 }

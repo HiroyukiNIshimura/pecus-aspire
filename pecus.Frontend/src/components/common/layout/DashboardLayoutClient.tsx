@@ -3,10 +3,12 @@
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
 import ChatProvider from '@/components/chat/ChatProvider';
+import LandingPageRecommendationBanner from '@/components/common/feedback/LandingPageRecommendationBanner';
 import AppHeader from '@/components/common/layout/AppHeader';
 import DashboardSidebar from '@/components/common/layout/DashboardSidebar.server';
 import type { CurrentUserInfo } from '@/connectors/api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useAppSettings } from '@/providers/AppSettingsProvider';
 
 interface DashboardLayoutClientProps {
   children: ReactNode;
@@ -21,12 +23,16 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const isMobile = useIsMobile();
+  const settings = useAppSettings();
 
   // スマホ用チャットページでは AppHeader/Sidebar を非表示
   // /chat または /chat/rooms/* のパスで、スマホ表示の場合
   // isMobile === null（初期化中）の場合は、チャットページなら AppHeader を非表示にしておく（ちらつき防止）
   const isChatPage = pathname?.startsWith('/chat') ?? false;
   const isMobileChatPage = isChatPage && isMobile !== false;
+
+  // ランディングページおすすめ設定
+  const pendingRecommendation = settings?.user?.pendingLandingPageRecommendation;
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
@@ -62,6 +68,10 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
             isMobileChatPage ? 'flex flex-col min-h-0 overflow-hidden' : 'p-4 md:p-6 overflow-y-auto'
           }`}
         >
+          {/* Landing Page Recommendation Banner */}
+          {pendingRecommendation && !isMobileChatPage && (
+            <LandingPageRecommendationBanner recommendedPage={pendingRecommendation} />
+          )}
           {children}
         </div>
       </div>

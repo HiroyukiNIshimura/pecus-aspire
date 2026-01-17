@@ -410,3 +410,29 @@ export async function fetchAppSettings(): Promise<ApiResponse<AppPublicSettingsR
     });
   }
 }
+
+/**
+ * Server Action: ランディングページ推奨への応答
+ *
+ * バッチ処理で計算されたランディングページ推奨に対して、
+ * ユーザーが受け入れ（accept）または拒否（reject）を選択する。
+ *
+ * @param action - 'accept' で推奨を受け入れ、'reject' で拒否
+ * @returns 更新後のユーザー設定
+ */
+export async function respondToLandingPageRecommendation(
+  action: 'Accept' | 'Reject',
+): Promise<ApiResponse<UserSettingResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.profile.postApiProfileLandingPageRecommendationRespond({
+      action,
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to respond to landing page recommendation:', error);
+    return handleApiErrorForAction<UserSettingResponse>(error, {
+      defaultMessage: 'ランディングページ推奨への応答に失敗しました',
+    });
+  }
+}

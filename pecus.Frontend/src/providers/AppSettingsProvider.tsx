@@ -228,6 +228,7 @@ export const defaultAppSettings: AppPublicSettingsResponse = {
     canReceiveEmail: true,
     canReceiveRealtimeNotification: true,
     landingPage: undefined,
+    pendingLandingPageRecommendation: undefined,
     focusScorePriority: 'Deadline',
     focusTasksLimit: 5,
     waitingTasksLimit: 5,

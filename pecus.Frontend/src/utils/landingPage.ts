@@ -32,3 +32,13 @@ export const LANDING_PAGE_OPTIONS: { value: NonNullable<LandingPage>; label: str
   { value: 'Tasks', label: 'タスク' },
   { value: 'Committer', label: 'コミッター' },
 ];
+
+/**
+ * LandingPage 列挙値を表示名に変換
+ * @param landingPage ランディングページ設定
+ * @returns 表示名
+ */
+export function getLandingPageDisplayName(landingPage?: LandingPage | null): string {
+  const option = LANDING_PAGE_OPTIONS.find((opt) => opt.value === landingPage);
+  return option?.label ?? 'ダッシュボード';
+}

@@ -244,7 +244,17 @@ public class ProfileService
             setting.CanReceiveRealtimeNotification = request.CanReceiveRealtimeNotification;
             setting.TimeZone = request.TimeZone;
             setting.Language = request.Language;
+
+            // ランディングページが変更された場合の処理
+            var landingPageChanged = setting.LandingPage != request.LandingPage;
             setting.LandingPage = request.LandingPage;
+            if (landingPageChanged)
+            {
+                setting.LandingPageUpdatedAt = DateTimeOffset.UtcNow;
+                // ユーザーが手動で変更したので推奨をクリア
+                setting.PendingLandingPageRecommendation = null;
+            }
+
             setting.FocusScorePriority = request.FocusScorePriority;
             setting.FocusTasksLimit = request.FocusTasksLimit;
             setting.WaitingTasksLimit = request.WaitingTasksLimit;
@@ -757,6 +767,7 @@ public class ProfileService
                 BadgeVisibility = null,
                 FocusTasksLimit = 5,
                 WaitingTasksLimit = 5,
+                PendingLandingPageRecommendation = null,
             };
         }
 
@@ -771,6 +782,7 @@ public class ProfileService
             FocusTasksLimit = setting.FocusTasksLimit,
             WaitingTasksLimit = setting.WaitingTasksLimit,
             BadgeVisibility = setting.BadgeVisibility,
+            PendingLandingPageRecommendation = setting.PendingLandingPageRecommendation,
         };
     }
 
@@ -805,6 +817,91 @@ public class ProfileService
             IdentityIconUrl = identityIconUrl,
             IsAdmin = user.Roles.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice),
             IsBackOffice = user.Roles.Any(r => r.Name == SystemRole.BackOffice),
+        };
+    }
+
+    /// <summary>
+    /// ランディングページ推奨への応答を処理
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="accept">推奨を受け入れる場合は true、拒否する場合は false</param>
+    /// <returns>更新後の設定レスポンス。ユーザーが見つからない場合は null</returns>
+    public async Task<UserSettingResponse?> RespondToLandingPageRecommendationAsync(int userId, bool accept)
+    {
+        var setting = await _context.UserSettings
+            .FirstOrDefaultAsync(us => us.UserId == userId);
+
+        if (setting == null)
+        {
+            _logger.LogWarning(
+                "ランディングページ推奨応答失敗: ユーザー設定が見つかりません。UserId: {UserId}",
+                userId);
+            return null;
+        }
+
+        var pendingRecommendation = setting.PendingLandingPageRecommendation;
+        if (pendingRecommendation == null)
+        {
+            _logger.LogWarning(
+                "ランディングページ推奨応答失敗: 推奨値がありません。UserId: {UserId}",
+                userId);
+            // 推奨がない場合でも現在の設定を返す
+            return MapToUserSettingResponse(setting);
+        }
+
+        var now = DateTimeOffset.UtcNow;
+
+        if (accept)
+        {
+            // 推奨を受け入れ: ランディングページを変更
+            setting.LandingPage = pendingRecommendation;
+            setting.LandingPageUpdatedAt = now;
+            setting.PendingLandingPageRecommendation = null;
+            setting.LandingPageRecommendationRefusedAt = null; // 受け入れたので拒否日時をクリア
+
+            _logger.LogInformation(
+                "ランディングページ推奨を受け入れ。UserId: {UserId}, NewLandingPage: {LandingPage}",
+                userId, pendingRecommendation);
+        }
+        else
+        {
+            // 推奨を拒否: 拒否日時を記録し、推奨をクリア
+            setting.LandingPageRecommendationRefusedAt = now;
+            setting.PendingLandingPageRecommendation = null;
+
+            _logger.LogInformation(
+                "ランディングページ推奨を拒否。UserId: {UserId}",
+                userId);
+        }
+
+        setting.UpdatedAt = now;
+        setting.UpdatedByUserId = userId;
+
+        await _context.SaveChangesAsync();
+
+        return MapToUserSettingResponse(setting);
+    }
+
+    /// <summary>
+    /// UserSetting を UserSettingResponse にマッピング
+    /// </summary>
+    private static UserSettingResponse MapToUserSettingResponse(UserSetting setting)
+    {
+        return new UserSettingResponse
+        {
+            CanReceiveEmail = setting.CanReceiveEmail,
+            CanReceiveRealtimeNotification = setting.CanReceiveRealtimeNotification,
+            TimeZone = setting.TimeZone,
+            Language = setting.Language,
+            LandingPage = setting.LandingPage,
+            FocusScorePriority = setting.FocusScorePriority,
+            FocusTasksLimit = setting.FocusTasksLimit,
+            WaitingTasksLimit = setting.WaitingTasksLimit,
+            BadgeVisibility = setting.BadgeVisibility,
+            PendingLandingPageRecommendation = setting.PendingLandingPageRecommendation,
+            LandingPageUpdatedAt = setting.LandingPageUpdatedAt,
+            LandingPageRecommendationRefusedAt = setting.LandingPageRecommendationRefusedAt,
+            RowVersion = setting.RowVersion,
         };
     }
 }

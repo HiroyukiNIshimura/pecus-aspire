@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Models.Config;
+using Pecus.Models.Requests.User;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Profile;
@@ -217,6 +218,36 @@ public class ProfileController : BaseSecureController
                 organizationSettings.Plan
             )
         };
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// ランディングページ推奨への応答
+    /// </summary>
+    /// <remarks>
+    /// バッチ処理で計算されたランディングページ推奨に対して、
+    /// ユーザーが受け入れ（Accept）または拒否（Reject）を選択します。
+    /// - Accept: 推奨されたランディングページに設定を変更します
+    /// - Reject: 現在の設定を維持し、一定期間再提案を抑制します
+    /// </remarks>
+    /// <param name="request">応答リクエスト</param>
+    /// <returns>更新後のユーザー設定</returns>
+    [HttpPost("landing-page-recommendation/respond")]
+    [ProducesResponseType(typeof(UserSettingResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<UserSettingResponse>> RespondToLandingPageRecommendation(
+        RespondToLandingPageRecommendationRequest request)
+    {
+        var accept = request.Action == LandingPageRecommendationAction.Accept;
+        var response = await _profileService.RespondToLandingPageRecommendationAsync(CurrentUserId, accept);
+
+        if (response == null)
+        {
+            throw new NotFoundException("ユーザー設定が見つかりません。");
+        }
 
         return TypedResults.Ok(response);
     }

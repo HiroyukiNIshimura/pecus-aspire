@@ -82,14 +82,13 @@ public class LandingPageRecommendationTasks
         var processedCount = 0;
         var updatedCount = 0;
 
-        // 組織内のアクティブユーザーをストリーミング取得
-        // AsAsyncEnumerable で全件メモリロードを回避
-        var userIds = _context.Users
+        // 組織内のアクティブユーザーIDを取得（intの配列なのでメモリ負荷は軽微）
+        var userIds = await _context.Users
             .Where(u => u.OrganizationId == organizationId && u.IsActive)
             .Select(u => u.Id)
-            .AsAsyncEnumerable();
+            .ToListAsync();
 
-        await foreach (var userId in userIds)
+        foreach (var userId in userIds)
         {
             try
             {

@@ -12,6 +12,7 @@ import type { MessageResponse } from '../models/MessageResponse';
 import type { OSPlatform } from '../models/OSPlatform';
 import type { PendingEmailChangeResponse } from '../models/PendingEmailChangeResponse';
 import type { RequestEmailChangeRequest } from '../models/RequestEmailChangeRequest';
+import type { RespondToLandingPageRecommendationRequest } from '../models/RespondToLandingPageRecommendationRequest';
 import type { SetOwnSkillsRequest } from '../models/SetOwnSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdatePasswordRequest } from '../models/UpdatePasswordRequest';
@@ -272,6 +273,31 @@ export class ProfileService {
             url: '/api/profile/app-settings',
             errors: {
                 404: `組織に所属していません`,
+            },
+        });
+    }
+    /**
+     * ランディングページ推奨への応答
+     * バッチ処理で計算されたランディングページ推奨に対して、
+     * ユーザーが受け入れ（Accept）または拒否（Reject）を選択します。
+     * - Accept: 推奨されたランディングページに設定を変更します
+     * - Reject: 現在の設定を維持し、一定期間再提案を抑制します
+     * @param requestBody 応答リクエスト
+     * @returns UserSettingResponse OK
+     * @throws ApiError
+     */
+    public static postApiProfileLandingPageRecommendationRespond(
+        requestBody: RespondToLandingPageRecommendationRequest,
+    ): CancelablePromise<UserSettingResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/profile/landing-page-recommendation/respond',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                500: `Internal Server Error`,
             },
         });
     }

@@ -37,6 +37,15 @@ export type UserSettingResponse = {
      */
     waitingTasksLimit: number;
     badgeVisibility?: BadgeVisibility;
+    pendingLandingPageRecommendation?: LandingPage;
+    /**
+     * ユーザーが最後にランディングページ設定を変更した日時
+     */
+    landingPageUpdatedAt?: string | null;
+    /**
+     * ユーザーがランディングページ推奨を拒否した日時（Cool-down制御用）
+     */
+    landingPageRecommendationRefusedAt?: string | null;
     /**
      * ユーザー設定の楽観的ロック用 RowVersion
      */
