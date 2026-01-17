@@ -206,6 +206,9 @@ public class DemoAtoms
             GenerativeApiKey = _options.Organization.GenerativeApiKey,
             GenerativeApiModel = _options.Organization.GenerativeApiModel,
             Plan = OrganizationPlan.Free,
+            GamificationEnabled = true,
+            GamificationBadgeVisibility = BadgeVisibility.Organization,
+            GamificationAllowUserOverride = true,
             UpdatedAt = DateTimeOffset.UtcNow
         };
     }
