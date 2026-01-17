@@ -353,13 +353,14 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
                     </label>
                     <input
                       id="name"
-                      name="name"
+                      data-field="name"
                       type="text"
                       className={`input input-bordered w-full ${shouldShowError('name') ? 'input-error' : ''}`}
                       value={formData.name}
                       onChange={(e) => handleFieldChange('name', e.target.value)}
                       placeholder="ワークスペース名を入力"
                       disabled={isSubmitting}
+                      autoComplete="off"
                     />
                     {shouldShowError('name') && (
                       <div className="label">
@@ -375,7 +376,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
                     </label>
                     <textarea
                       id="description"
-                      name="description"
+                      data-field="description"
                       className={`textarea textarea-bordered w-full ${
                         shouldShowError('description') ? 'textarea-error' : ''
                       }`}
@@ -385,6 +386,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
                       disabled={isSubmitting}
                       maxLength={500}
                       rows={4}
+                      autoComplete="off"
                     />
                     <div className="label">
                       <span className="label-text-alt text-xs">{formData.description.length}/500 文字</span>
@@ -423,7 +425,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
                       <input
                         type="checkbox"
                         id="isActive"
-                        name="isActive"
+                        data-field="isActive"
                         className="switch switch-outline switch-warning"
                         checked={formData.isActive}
                         onChange={(e) => handleFieldChange('isActive', e.target.checked)}

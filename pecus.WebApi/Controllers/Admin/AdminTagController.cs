@@ -229,7 +229,7 @@ public class AdminTagController : BaseAdminController
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var result = await _tagService.DeactivateTagAsync(id, CurrentUserId);
+        var result = await _tagService.DeactivateTagAsync(id, CurrentOrganizationId, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("タグが見つかりません。");
@@ -256,7 +256,7 @@ public class AdminTagController : BaseAdminController
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var result = await _tagService.ActivateTagAsync(id, CurrentUserId);
+        var result = await _tagService.ActivateTagAsync(id, CurrentOrganizationId, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("タグが見つかりません。");

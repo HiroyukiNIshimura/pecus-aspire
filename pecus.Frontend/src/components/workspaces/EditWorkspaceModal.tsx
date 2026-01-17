@@ -156,14 +156,14 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                 </label>
                 <input
                   id="name"
-                  name="name"
+                  data-field="name"
                   type="text"
                   defaultValue={workspaceDetail.name}
                   placeholder="例：プロジェクトA"
                   className={`input input-bordered ${shouldShowError('name') ? 'input-error' : ''}`}
                   onBlur={(e) => validateField('name', e.target.value)}
                   disabled={isSubmitting}
-                  autoComplete="one-time-code"
+                  autoComplete="off"
                 />
                 {shouldShowError('name') && (
                   <div className="label">
@@ -179,7 +179,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                 </label>
                 <textarea
                   id="description"
-                  name="description"
+                  data-field="description"
                   defaultValue={workspaceDetail.description || ''}
                   placeholder="ワークスペースの説明を入力してください..."
                   className={`textarea textarea-bordered h-24 ${
@@ -187,7 +187,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                   }`}
                   onBlur={(e) => validateField('description', e.target.value)}
                   disabled={isSubmitting}
-                  autoComplete="one-time-code"
+                  autoComplete="off"
                 />
                 {shouldShowError('description') && (
                   <div className="label">

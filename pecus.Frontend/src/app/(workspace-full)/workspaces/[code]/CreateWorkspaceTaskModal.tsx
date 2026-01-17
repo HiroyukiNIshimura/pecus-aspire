@@ -478,7 +478,7 @@ export default function CreateWorkspaceTaskModal({
                 </label>
                 <select
                   id="priority"
-                  name="priority"
+                  data-field="priority"
                   className="select select-bordered"
                   defaultValue="Medium"
                   disabled={isSubmitting}
@@ -613,7 +613,7 @@ export default function CreateWorkspaceTaskModal({
                 )}
                 <textarea
                   id="content"
-                  name="content"
+                  data-field="content"
                   placeholder="タスクは、単純かつ具体的で達成可能な内容を入力にします..."
                   className={`textarea textarea-bordered h-24 w-full ${shouldShowError('content') ? 'textarea-error' : ''}`}
                   value={taskContent}

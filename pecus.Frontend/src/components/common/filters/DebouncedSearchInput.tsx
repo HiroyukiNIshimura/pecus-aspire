@@ -129,7 +129,7 @@ export default function DebouncedSearchInput({
         onChange={handleChange}
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
-        autoComplete="nope"
+        autoComplete="off"
       />
       {showSearchIcon && (
         <span

@@ -94,12 +94,13 @@ export default function CreateTagModal({ isOpen, onClose, onSuccess }: CreateTag
               </label>
               <input
                 id="name"
-                name="name"
+                data-field="name"
                 type="text"
                 placeholder="例：重要"
                 className={`input input-bordered w-full ${shouldShowError('name') ? 'input-error' : ''}`}
                 onBlur={(e) => validateField('name', e.target.value)}
                 disabled={isSubmitting}
+                autoComplete="off"
               />
               {shouldShowError('name') && (
                 <div className="label">

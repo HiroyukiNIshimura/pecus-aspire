@@ -242,7 +242,7 @@ public class AdminSkillController : BaseAdminController
             throw new NotFoundException("スキルが見つかりません。");
         }
 
-        var result = await _skillService.DeactivateSkillAsync(id, CurrentUserId);
+        var result = await _skillService.DeactivateSkillAsync(id, CurrentOrganizationId, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("スキルが見つかりません。");
@@ -269,7 +269,7 @@ public class AdminSkillController : BaseAdminController
             throw new NotFoundException("スキルが見つかりません。");
         }
 
-        var result = await _skillService.ActivateSkillAsync(id, CurrentUserId);
+        var result = await _skillService.ActivateSkillAsync(id, CurrentOrganizationId, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("スキルが見つかりません。");

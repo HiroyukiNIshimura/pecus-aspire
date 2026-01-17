@@ -99,10 +99,9 @@ export type UpdateSkillsFormInput = z.infer<typeof updateSkillsFormSchema>;
 /**
  * ユーザー作成フォーム（管理者用・パスワードなし）
  * Note: roles は配列のためフォームバリデーションでは扱わず、コンポーネント側で別途バリデーションする
- * Note: displayName はブラウザのサインイン自動入力を回避するための名称（内部的には username）
  */
 export const createUserWithoutPasswordSchema = z.object({
-  displayName: usernameSchema,
+  username: usernameSchema,
   email: newEmailSchema,
 });
 export type CreateUserWithoutPasswordInput = z.infer<typeof createUserWithoutPasswordSchema>;

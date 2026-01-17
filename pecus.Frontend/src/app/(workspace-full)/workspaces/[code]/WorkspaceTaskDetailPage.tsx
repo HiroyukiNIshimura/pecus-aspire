@@ -1096,7 +1096,7 @@ export default function WorkspaceTaskDetailPage({
                       </label>
                       <select
                         id="priority"
-                        name="priority"
+                        data-field="priority"
                         className="select select-bordered"
                         value={priority ?? ''}
                         onChange={(e) => setPriority(e.target.value as TaskPriority)}
@@ -1217,7 +1217,7 @@ export default function WorkspaceTaskDetailPage({
                     </label>
                     <textarea
                       id="content"
-                      name="content"
+                      data-field="content"
                       placeholder="タスクは、単純かつ具体的で達成可能な内容を入力にします..."
                       className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
                       value={content}
@@ -1493,7 +1493,7 @@ export default function WorkspaceTaskDetailPage({
                         <input
                           type="checkbox"
                           id="isCompleted"
-                          name="isCompleted"
+                          data-field="isCompleted"
                           className="switch switch-outline switch-success"
                           checked={isCompleted}
                           onChange={(e) => {
@@ -1545,7 +1545,7 @@ export default function WorkspaceTaskDetailPage({
                         <input
                           type="checkbox"
                           id="isDiscarded"
-                          name="isDiscarded"
+                          data-field="isDiscarded"
                           className="switch switch-outline switch-warning"
                           checked={isDiscarded}
                           onChange={(e) => {
@@ -1573,7 +1573,7 @@ export default function WorkspaceTaskDetailPage({
                       </label>
                       <textarea
                         id="discardReason"
-                        name="discardReason"
+                        data-field="discardReason"
                         placeholder="破棄の理由を入力してください..."
                         className={`textarea textarea-bordered h-20 ${shouldShowError('discardReason') ? 'textarea-error' : ''}`}
                         value={discardReason}

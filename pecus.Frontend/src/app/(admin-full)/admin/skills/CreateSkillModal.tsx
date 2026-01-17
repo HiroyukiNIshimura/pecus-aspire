@@ -95,12 +95,13 @@ export default function CreateSkillModal({ isOpen, onClose, onSuccess }: CreateS
               </label>
               <input
                 id="name"
-                name="name"
+                data-field="name"
                 type="text"
                 placeholder="例：TypeScript"
                 className={`input input-bordered w-full ${shouldShowError('name') ? 'input-error' : ''}`}
                 onBlur={(e) => validateField('name', e.target.value)}
                 disabled={isSubmitting}
+                autoComplete="off"
               />
               {shouldShowError('name') && (
                 <div className="label">
@@ -116,11 +117,12 @@ export default function CreateSkillModal({ isOpen, onClose, onSuccess }: CreateS
               </label>
               <textarea
                 id="description"
-                name="description"
+                data-field="description"
                 placeholder="スキルの説明を入力してください..."
                 className={`textarea textarea-bordered h-24 ${shouldShowError('description') ? 'textarea-error' : ''}`}
                 onBlur={(e) => validateField('description', e.target.value)}
                 disabled={isSubmitting}
+                autoComplete="off"
               />
               {shouldShowError('description') && (
                 <div className="label">

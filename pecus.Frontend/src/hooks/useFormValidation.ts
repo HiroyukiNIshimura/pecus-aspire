@@ -103,6 +103,8 @@ export function useFormValidation<T extends z.ZodRawShape>({
 
   /**
    * フォーム全体のZod検証（サブミット時用）
+   * data-field 属性を使用してフォームデータを収集（name 属性不要）
+   * これにより iOS Safari のオートフィル検出を回避
    */
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -112,12 +114,61 @@ export function useFormValidation<T extends z.ZodRawShape>({
 
       setIsSubmitting(true);
       try {
-        // フォームデータを収集
-        const formData = new FormData(formRef.current!);
-        const data = Object.fromEntries(formData) as Record<string, unknown>;
+        // data-field 属性または name 属性を持つ要素からデータを収集
+        // data-field 優先（iOS オートフィル回避用）、name はログインフォーム等の互換性維持用
+        const form = formRef.current!;
+        const data: Record<string, unknown> = {};
+
+        // data-field 属性を持つ要素を取得
+        const dataFieldElements = form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+          '[data-field]',
+        );
+
+        dataFieldElements.forEach((el) => {
+          const fieldName = el.dataset.field!;
+          if (el instanceof HTMLInputElement) {
+            if (el.type === 'checkbox') {
+              data[fieldName] = el.checked;
+            } else if (el.type === 'radio') {
+              if (el.checked) {
+                data[fieldName] = el.value;
+              }
+            } else {
+              data[fieldName] = el.value;
+            }
+          } else {
+            // select, textarea
+            data[fieldName] = el.value;
+          }
+        });
+
+        // name 属性を持つ要素も取得（data-field がない場合のフォールバック）
+        const namedElements = form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+          '[name]:not([data-field])',
+        );
+
+        namedElements.forEach((el) => {
+          const fieldName = el.name;
+          if (!fieldName || fieldName in data) return; // 既に data-field で取得済みならスキップ
+
+          if (el instanceof HTMLInputElement) {
+            if (el.type === 'checkbox') {
+              data[fieldName] = el.checked;
+            } else if (el.type === 'radio') {
+              if (el.checked) {
+                data[fieldName] = el.value;
+              }
+            } else {
+              data[fieldName] = el.value;
+            }
+          } else {
+            // select, textarea
+            data[fieldName] = el.value;
+          }
+        });
 
         // チェックボックス値を正しく処理
-        // FormData では未チェックのチェックボックスが含まれないため、スキーマから判定して追加
+        // data-field を持たない未チェックのチェックボックスや、スキーマで定義された boolean フィールドを補完
         const shape = schema.shape;
         for (const key of Object.keys(shape)) {
           const fieldSchema = shape[key as keyof T];
@@ -125,9 +176,9 @@ export function useFormValidation<T extends z.ZodRawShape>({
           if (isBooleanSchema(fieldSchema)) {
             if (!(key in data)) {
               data[key] = false;
-            } else {
+            } else if (data[key] === 'on') {
               // "on" という値を true に変換
-              data[key] = data[key] === 'on' || data[key] === true;
+              data[key] = true;
             }
           }
         }

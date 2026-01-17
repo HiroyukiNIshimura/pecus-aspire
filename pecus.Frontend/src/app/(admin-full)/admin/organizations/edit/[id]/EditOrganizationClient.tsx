@@ -169,13 +169,13 @@ export default function EditOrganizationClient({ organizationDetail, fetchError 
                       </label>
                       <input
                         id="input-name"
-                        name="name"
+                        data-field="name"
                         type="text"
                         className={`input input-bordered ${shouldShowError('name') ? 'input-error' : ''}`}
                         value={formData.name}
                         onChange={(e) => handleFieldChange('name', e.target.value)}
                         required
-                        autoComplete="one-time-code"
+                        autoComplete="off"
                       />
                       {shouldShowError('name') && (
                         <span className="label-text-alt text-error">{getFieldError('name')}</span>
@@ -188,12 +188,12 @@ export default function EditOrganizationClient({ organizationDetail, fetchError 
                       </label>
                       <input
                         id="input-representative-name"
-                        name="representativeName"
+                        data-field="representativeName"
                         type="text"
                         className={`input input-bordered ${shouldShowError('representativeName') ? 'input-error' : ''}`}
                         value={formData.representativeName}
                         onChange={(e) => handleFieldChange('representativeName', e.target.value)}
-                        autoComplete="one-time-code"
+                        autoComplete="off"
                       />
                       {shouldShowError('representativeName') && (
                         <span className="label-text-alt text-error">{getFieldError('representativeName')}</span>
@@ -206,12 +206,12 @@ export default function EditOrganizationClient({ organizationDetail, fetchError 
                       </label>
                       <input
                         id="input-email"
-                        name="email"
+                        data-field="email"
                         type="email"
                         className={`input input-bordered ${shouldShowError('email') ? 'input-error' : ''}`}
                         value={formData.email}
                         onChange={(e) => handleFieldChange('email', e.target.value)}
-                        autoComplete="one-time-code"
+                        autoComplete="off"
                       />
                       {shouldShowError('email') && (
                         <span className="label-text-alt text-error">{getFieldError('email')}</span>
@@ -224,12 +224,12 @@ export default function EditOrganizationClient({ organizationDetail, fetchError 
                       </label>
                       <input
                         id="input-phone-number"
-                        name="phoneNumber"
+                        data-field="phoneNumber"
                         type="text"
                         className={`input input-bordered ${shouldShowError('phoneNumber') ? 'input-error' : ''}`}
                         value={formData.phoneNumber}
                         onChange={(e) => handleFieldChange('phoneNumber', e.target.value)}
-                        autoComplete="one-time-code"
+                        autoComplete="off"
                       />
                       {shouldShowError('phoneNumber') && (
                         <span className="label-text-alt text-error">{getFieldError('phoneNumber')}</span>
@@ -242,7 +242,7 @@ export default function EditOrganizationClient({ organizationDetail, fetchError 
                       </label>
                       <textarea
                         id="input-description"
-                        name="description"
+                        data-field="description"
                         className={`textarea textarea-bordered ${
                           shouldShowError('description') ? 'textarea-error' : ''
                         }`}
@@ -250,7 +250,7 @@ export default function EditOrganizationClient({ organizationDetail, fetchError 
                         value={formData.description}
                         onChange={(e) => handleFieldChange('description', e.target.value)}
                         rows={3}
-                        autoComplete="one-time-code"
+                        autoComplete="off"
                       ></textarea>
                       {shouldShowError('description') && (
                         <span className="label-text-alt text-error">{getFieldError('description')}</span>

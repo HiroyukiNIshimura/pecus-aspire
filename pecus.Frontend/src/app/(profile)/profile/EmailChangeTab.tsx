@@ -153,13 +153,14 @@ export default function EmailChangeTab({
         </label>
         <input
           id="newEmail"
-          name="newEmail"
+          data-field="newEmail"
           type="email"
           placeholder="new-email@example.com"
           className={`input input-bordered ${shouldShowError('newEmail') ? 'input-error' : ''}`}
           onChange={(e) => handleFieldChange('newEmail', e.target.value)}
           disabled={isLoading || isSubmitting}
           required
+          autoComplete="off"
         />
         {shouldShowError('newEmail') && (
           <div className="label">
@@ -178,13 +179,14 @@ export default function EmailChangeTab({
         </label>
         <input
           id="currentPassword"
-          name="currentPassword"
+          data-field="currentPassword"
           type={showPassword ? 'text' : 'password'}
           placeholder="現在のパスワードを入力"
           className={`input input-bordered ${shouldShowError('currentPassword') ? 'input-error' : ''}`}
           onChange={(e) => handleFieldChange('currentPassword', e.target.value)}
           disabled={isLoading || isSubmitting}
           required
+          autoComplete="off"
         />
         {shouldShowError('currentPassword') && (
           <div className="label">

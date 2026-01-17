@@ -132,7 +132,7 @@ public class WorkspaceTaskService
                     {DateTime.UtcNow},
                     {DateTime.UtcNow}
                 )
-                RETURNING ""xmin"", ""Id"", ""WorkspaceItemId"", ""WorkspaceId"", ""OrganizationId"", ""Sequence"", ""AssignedUserId"", ""CreatedByUserId"", ""Content"", ""TaskTypeId"", ""Priority"", ""StartDate"", ""DueDate"", ""EstimatedHours"", ""PredecessorTaskId"", ""IsCompleted"", ""CompletedAt"", ""IsDiscarded"", ""DiscardedAt"", ""DiscardReason"", ""ActualHours"", ""ProgressPercentage"", ""CreatedAt"", ""UpdatedAt""
+                RETURNING ""xmin"", ""Id"", ""WorkspaceItemId"", ""WorkspaceId"", ""OrganizationId"", ""Sequence"", ""AssignedUserId"", ""CreatedByUserId"", ""CompletedByUserId"",""Content"", ""TaskTypeId"", ""Priority"", ""StartDate"", ""DueDate"", ""EstimatedHours"", ""PredecessorTaskId"", ""IsCompleted"", ""CompletedAt"", ""IsDiscarded"", ""DiscardedAt"", ""DiscardReason"", ""ActualHours"", ""ProgressPercentage"", ""CreatedAt"", ""UpdatedAt""
             ")
             .ToListAsync();
 

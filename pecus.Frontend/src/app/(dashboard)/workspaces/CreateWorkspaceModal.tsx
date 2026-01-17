@@ -106,13 +106,13 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
               </label>
               <input
                 id="name"
-                name="name"
+                data-field="name"
                 type="text"
                 placeholder="例：プロジェクトA"
                 className={`input input-bordered ${shouldShowError('name') ? 'input-error' : ''}`}
                 onBlur={(e) => validateField('name', e.target.value)}
                 disabled={isSubmitting}
-                autoComplete="one-time-code"
+                autoComplete="off"
               />
               {shouldShowError('name') && (
                 <div className="label">
@@ -128,12 +128,12 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
               </label>
               <textarea
                 id="description"
-                name="description"
+                data-field="description"
                 placeholder="ワークスペースの説明を入力してください..."
                 className={`textarea textarea-bordered h-24 ${shouldShowError('description') ? 'textarea-error' : ''}`}
                 onBlur={(e) => validateField('description', e.target.value)}
                 disabled={isSubmitting}
-                autoComplete="one-time-code"
+                autoComplete="off"
               />
               {shouldShowError('description') && (
                 <div className="label">

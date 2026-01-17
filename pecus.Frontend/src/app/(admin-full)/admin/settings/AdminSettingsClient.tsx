@@ -434,7 +434,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                     </label>
                     <input
                       id="weeklyReportDeliveryDay"
-                      name="weeklyReportDeliveryDay"
+                      data-field="weeklyReportDeliveryDay"
                       type="hidden"
                       value={formData.weeklyReportDeliveryDay}
                       readOnly
@@ -473,7 +473,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                     </label>
                     <input
                       id="input-mail-from-address"
-                      name="mailFromAddress"
+                      data-field="mailFromAddress"
                       type="email"
                       className={`input input-bordered ${shouldShowError('mailFromAddress') ? 'input-error' : ''}`}
                       value={formData.mailFromAddress ?? ''}
@@ -494,7 +494,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                     </label>
                     <input
                       id="input-mail-from-name"
-                      name="mailFromName"
+                      data-field="mailFromName"
                       type="text"
                       className={`input input-bordered ${shouldShowError('mailFromName') ? 'input-error' : ''}`}
                       value={formData.mailFromName ?? ''}
@@ -517,7 +517,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                     </label>
                     <select
                       id="select-generative-vendor"
-                      name="generativeApiVendor"
+                      data-field="generativeApiVendor"
                       className={`select select-bordered ${shouldShowError('generativeApiVendor') ? 'select-error' : ''}`}
                       value={formData.generativeApiVendor}
                       onChange={(e) => handleFieldChange('generativeApiVendor', e.target.value)}
@@ -542,7 +542,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                     </label>
                     <input
                       id="input-generative-api-key"
-                      name="generativeApiKey"
+                      data-field="generativeApiKey"
                       type="password"
                       className={`input input-bordered ${shouldShowError('generativeApiKey') ? 'input-error' : ''}`}
                       value={formData.generativeApiKey ?? ''}
@@ -568,7 +568,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                     <div className="flex gap-2">
                       <select
                         id="select-generative-model"
-                        name="generativeApiModel"
+                        data-field="generativeApiModel"
                         className={`select select-bordered flex-1 ${shouldShowError('generativeApiModel') ? 'select-error' : ''}`}
                         value={formData.generativeApiModel ?? ''}
                         onChange={(e) => handleFieldChange('generativeApiModel', e.target.value)}
@@ -633,7 +633,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                     </label>
                     <select
                       id="select-plan"
-                      name="plan"
+                      data-field="plan"
                       className={`select select-bordered ${shouldShowError('plan') ? 'select-error' : ''}`}
                       value={formData.plan}
                       onChange={(e) => handleFieldChange('plan', e.target.value)}
@@ -666,7 +666,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       >
                         <input
                           id="input-task-overdue"
-                          name="taskOverdueThreshold"
+                          data-field="taskOverdueThreshold"
                           type="text"
                           inputMode="numeric"
                           value={formData.taskOverdueThreshold}
@@ -728,7 +728,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       </label>
                       <select
                         id="select-help-notification-target"
-                        name="helpNotificationTarget"
+                        data-field="helpNotificationTarget"
                         className={`select select-bordered ${shouldShowError('helpNotificationTarget') ? 'select-error' : ''}`}
                         value={formData.helpNotificationTarget ?? ''}
                         onChange={(e) => handleFieldChange('helpNotificationTarget', e.target.value)}
@@ -753,7 +753,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       <label className="flex items-center gap-3 cursor-pointer" htmlFor="toggle-require-estimate">
                         <input
                           id="toggle-require-estimate"
-                          name="requireEstimateOnTaskCreation"
+                          data-field="requireEstimateOnTaskCreation"
                           type="checkbox"
                           className="switch switch-primary"
                           checked={formData.requireEstimateOnTaskCreation ?? false}
@@ -771,7 +771,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       <label className="flex items-center gap-3 cursor-pointer" htmlFor="toggle-enforce-predecessor">
                         <input
                           id="toggle-enforce-predecessor"
-                          name="enforcePredecessorCompletion"
+                          data-field="enforcePredecessorCompletion"
                           type="checkbox"
                           className="switch switch-primary"
                           checked={formData.enforcePredecessorCompletion ?? false}
@@ -795,7 +795,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       min={5}
                       max={20}
                       step={1}
-                      name="dashboardHelpCommentMaxCount"
+                      data-field="dashboardHelpCommentMaxCount"
                       value={formData.dashboardHelpCommentMaxCount ?? 6}
                       onChange={(value) => handleFieldChange('dashboardHelpCommentMaxCount', value)}
                       label="ヘルプコメント表示件数"
@@ -823,7 +823,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       </label>
                       <select
                         id="select-group-chat-scope"
-                        name="groupChatScope"
+                        data-field="groupChatScope"
                         className={`select select-bordered ${shouldShowError('groupChatScope') ? 'select-error' : ''}`}
                         value={formData.groupChatScope ?? 'Workspace'}
                         onChange={(e) =>
@@ -850,7 +850,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                     <label className="flex items-center gap-3 cursor-pointer" htmlFor="toggle-bot-group-chat-messages">
                       <input
                         id="toggle-bot-group-chat-messages"
-                        name="botGroupChatMessagesEnabled"
+                        data-field="botGroupChatMessagesEnabled"
                         type="checkbox"
                         className="switch switch-primary"
                         checked={formData.botGroupChatMessagesEnabled ?? true}
@@ -875,7 +875,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       </label>
                       <select
                         id="select-default-workspace-mode"
-                        name="defaultWorkspaceMode"
+                        data-field="defaultWorkspaceMode"
                         className={`select select-bordered ${shouldShowError('defaultWorkspaceMode') ? 'select-error' : ''}`}
                         value={formData.defaultWorkspaceMode ?? 'Normal'}
                         onChange={(e) =>
@@ -909,7 +909,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       <input
                         type="checkbox"
                         id="gamificationEnabled"
-                        name="gamificationEnabled"
+                        data-field="gamificationEnabled"
                         className="switch switch-primary"
                         checked={formData.gamificationEnabled ?? true}
                         onChange={(e) => handleFieldChange('gamificationEnabled', e.target.checked)}
@@ -931,7 +931,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                           </label>
                           <select
                             id="select-badge-visibility"
-                            name="gamificationBadgeVisibility"
+                            data-field="gamificationBadgeVisibility"
                             className={`select select-bordered ${shouldShowError('gamificationBadgeVisibility') ? 'select-error' : ''}`}
                             value={formData.gamificationBadgeVisibility ?? 'Private'}
                             onChange={(e) =>
@@ -967,7 +967,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                           <input
                             type="checkbox"
                             id="gamificationAllowUserOverride"
-                            name="gamificationAllowUserOverride"
+                            data-field="gamificationAllowUserOverride"
                             className="switch switch-primary"
                             checked={formData.gamificationAllowUserOverride ?? true}
                             onChange={(e) => handleFieldChange('gamificationAllowUserOverride', e.target.checked)}

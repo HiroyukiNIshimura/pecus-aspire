@@ -130,7 +130,7 @@ export default function EditTagClient({ tagDetail, fetchError }: EditTagClientPr
                     </label>
                     <input
                       id="name"
-                      name="name"
+                      data-field="name"
                       type="text"
                       className={`input input-bordered w-full ${shouldShowError('name') ? 'input-error' : ''}`}
                       value={formData.name}
@@ -138,6 +138,7 @@ export default function EditTagClient({ tagDetail, fetchError }: EditTagClientPr
                       placeholder="タグ名を入力"
                       disabled={isSubmitting}
                       required
+                      autoComplete="off"
                     />
                     {shouldShowError('name') && (
                       <span className="label-text-alt text-error">{getFieldError('name')}</span>
@@ -149,7 +150,7 @@ export default function EditTagClient({ tagDetail, fetchError }: EditTagClientPr
                       <input
                         type="checkbox"
                         id="isActive"
-                        name="isActive"
+                        data-field="isActive"
                         className="switch switch-outline switch-warning"
                         checked={formData.isActive}
                         onChange={(e) => handleFieldChange('isActive', e.target.checked)}

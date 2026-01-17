@@ -37,7 +37,7 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
         setRoleError(null);
 
         const result = await createUserWithoutPassword({
-          username: data.displayName,
+          username: data.username,
           email: data.email,
           roles: selectedRoleIds,
         });
@@ -139,24 +139,24 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
           <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* ユーザー名 */}
             <div className="form-control">
-              <label htmlFor="displayName" className="label">
+              <label htmlFor="username" className="label">
                 <span className="label-text font-semibold">
                   ユーザー名 <span className="text-error">*</span>
                 </span>
               </label>
               <input
-                id="displayName"
-                name="displayName"
+                id="username"
+                data-field="username"
                 type="text"
                 placeholder="例：山田太郎"
-                className={`input input-bordered w-full ${shouldShowError('displayName') ? 'input-error' : ''}`}
-                onBlur={(e) => validateField('displayName', e.target.value)}
+                className={`input input-bordered w-full ${shouldShowError('username') ? 'input-error' : ''}`}
+                onBlur={(e) => validateField('username', e.target.value)}
                 disabled={isSubmitting}
-                autoComplete="one-time-code"
+                autoComplete="off"
               />
-              {shouldShowError('displayName') && (
+              {shouldShowError('username') && (
                 <div className="label">
-                  <span className="label-text-alt text-error">{getFieldError('displayName')}</span>
+                  <span className="label-text-alt text-error">{getFieldError('username')}</span>
                 </div>
               )}
             </div>
@@ -170,13 +170,13 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
               </label>
               <input
                 id="email"
-                name="email"
+                data-field="email"
                 type="email"
                 placeholder="例：user@example.com"
                 className={`input input-bordered w-full ${shouldShowError('email') ? 'input-error' : ''}`}
                 onBlur={(e) => validateField('email', e.target.value)}
                 disabled={isSubmitting}
-                autoComplete="one-time-code"
+                autoComplete="off"
               />
               {shouldShowError('email') && (
                 <div className="label">

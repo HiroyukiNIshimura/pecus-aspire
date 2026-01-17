@@ -136,7 +136,7 @@ export default function EditSkillClient({ skillDetail, fetchError }: EditSkillCl
                     </label>
                     <input
                       id="input-skill-name"
-                      name="name"
+                      data-field="name"
                       type="text"
                       className={`input input-bordered w-full ${shouldShowError('name') ? 'input-error' : ''}`}
                       value={formData.name}
@@ -144,6 +144,7 @@ export default function EditSkillClient({ skillDetail, fetchError }: EditSkillCl
                       placeholder="スキル名を入力"
                       disabled={isSubmitting}
                       required
+                      autoComplete="off"
                     />
                     {shouldShowError('name') && (
                       <span className="label-text-alt text-error">{getFieldError('name')}</span>
@@ -156,7 +157,7 @@ export default function EditSkillClient({ skillDetail, fetchError }: EditSkillCl
                     </label>
                     <textarea
                       id="input-description"
-                      name="description"
+                      data-field="description"
                       className={`textarea textarea-bordered w-full ${
                         shouldShowError('description') ? 'textarea-error' : ''
                       }`}
@@ -165,6 +166,7 @@ export default function EditSkillClient({ skillDetail, fetchError }: EditSkillCl
                       onChange={(e) => handleFieldChange('description', e.target.value)}
                       disabled={isSubmitting}
                       rows={3}
+                      autoComplete="off"
                     ></textarea>
                     {shouldShowError('description') && (
                       <span className="label-text-alt text-error">{getFieldError('description')}</span>
@@ -176,7 +178,7 @@ export default function EditSkillClient({ skillDetail, fetchError }: EditSkillCl
                       <input
                         type="checkbox"
                         id="isActive"
-                        name="isActive"
+                        data-field="isActive"
                         className="switch switch-outline switch-warning"
                         checked={formData.isActive}
                         onChange={(e) => handleFieldChange('isActive', e.target.checked)}
