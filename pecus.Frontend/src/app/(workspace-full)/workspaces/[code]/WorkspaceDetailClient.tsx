@@ -1489,6 +1489,7 @@ export default function WorkspaceDetailClient({
                 onShowTaskDetail={handleShowTaskDetail}
                 onShowFlowMap={handleShowFlowMap}
                 onArchiveComplete={handleArchiveComplete}
+                onSidebarRefresh={handleArchiveComplete}
                 canEdit={canEdit}
               />
             )}

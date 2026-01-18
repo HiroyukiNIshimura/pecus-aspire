@@ -652,6 +652,14 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                               </span>
                             )}
 
+                            {/* アーカイブ済み */}
+                            {item.isArchived && (
+                              <span className="flex items-center gap-0.5" title="アーカイブ済み">
+                                <span className="icon-[mdi--archive-outline] w-3 h-3" aria-hidden="true" />
+                                <span>アーカイブ</span>
+                              </span>
+                            )}
+
                             {/* 期限日 */}
                             {shortDate && (
                               <span

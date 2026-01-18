@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import {
   addWorkspaceItemPin,
   type ExportFormat,
@@ -10,6 +10,10 @@ import {
   fetchLatestWorkspaceItem,
   removeWorkspaceItemPin,
   removeWorkspaceItemRelation,
+  updateWorkspaceItem,
+  updateWorkspaceItemAssignee,
+  updateWorkspaceItemAttribute,
+  updateWorkspaceItemStatus,
 } from '@/actions/workspaceItem';
 import { fetchWorkspaceItemAttachments } from '@/actions/workspaceItemAttachment';
 import ItemActivityTimeline from '@/components/activity/ItemActivityTimeline';
@@ -18,11 +22,12 @@ import ItemEditStatus from '@/components/common/feedback/ItemEditStatus';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
 import { ItemAttachmentModal } from '@/components/workspaceItems/attachments';
-import WorkspaceItemDrawer from '@/components/workspaceItems/WorkspaceItemDrawer';
+import WorkspaceItemDrawer, { type ItemAttributeUpdateRequest } from '@/components/workspaceItems/WorkspaceItemDrawer';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   ErrorResponse,
   RelatedItemInfo,
+  TaskPriority,
   TaskStatusFilter,
   WorkspaceDetailUserResponse,
   WorkspaceItemAttachmentResponse,
@@ -33,8 +38,16 @@ import type {
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate, formatDateTime } from '@/libs/utils/date';
 import { type ItemEditStatus as ItemEditState, useSignalRContext } from '@/providers/SignalRProvider';
-import EditWorkspaceItem from './EditWorkspaceItem';
+import EditWorkspaceItem, { type ItemUpdateRequest } from './EditWorkspaceItem';
 import WorkspaceTasks from './WorkspaceTasks';
+
+/** 優先度の文字列を数値に変換（バックエンドの enum 値に対応） */
+const PRIORITY_TO_NUMBER: Record<NonNullable<TaskPriority>, number> = {
+  Low: 1,
+  Medium: 2,
+  High: 3,
+  Critical: 4,
+};
 
 /** タスクナビゲーション情報 */
 interface TaskNavigation {
@@ -96,6 +109,8 @@ interface WorkspaceItemDetailProps {
   ) => void;
   /** アイテムアーカイブ完了時のコールバック（ツリー更新用） */
   onArchiveComplete?: () => void;
+  /** アイテム属性更新時にサイドバーを更新するためのコールバック */
+  onSidebarRefresh?: () => void;
   /** 編集権限があるかどうか（Viewer以外）*/
   canEdit?: boolean;
 }
@@ -124,6 +139,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       itemCode,
       onShowFlowMap,
       onArchiveComplete,
+      onSidebarRefresh,
       canEdit = true,
     },
     ref,
@@ -141,6 +157,23 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const [isPinLoading, setIsPinLoading] = useState(false);
     const [isTimelineOpen, setIsTimelineOpen] = useState(false);
     const [isExporting, setIsExporting] = useState<ExportFormat | null>(null);
+
+    // ドローワー属性更新用の状態
+    const [isAttributeUpdating, setIsAttributeUpdating] = useState(false);
+    const [attributeError, setAttributeError] = useState<string | null>(null);
+
+    // 更新中フラグをuseRefで管理（連続操作の防止用、state更新の遅延を回避）
+    const isUpdatingRef = useRef<boolean>(false);
+
+    // rowVersionをuseRefで管理（クロージャ問題を回避し、常に最新値を参照するため）
+    const rowVersionRef = useRef<number>(0);
+
+    // itemが更新されたらrowVersionRefを同期
+    useEffect(() => {
+      if (item) {
+        rowVersionRef.current = item.rowVersion;
+      }
+    }, [item]);
 
     // 関連削除モーダルの状態
     const [deleteRelationModal, setDeleteRelationModal] = useState<{
@@ -261,9 +294,209 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       }, 250); // アニメーション時間と合わせる
     };
 
-    const handleEditSave = (updatedItem: WorkspaceItemDetailResponse) => {
-      setItem(updatedItem);
-    };
+    // ドローワーからの属性更新ハンドラー（一元管理）
+    const handleAttributeUpdate = useCallback(
+      async (request: ItemAttributeUpdateRequest) => {
+        if (!item) return;
+        // useRefで更新中チェック（state更新の遅延を回避）
+        if (isUpdatingRef.current) return;
+
+        isUpdatingRef.current = true;
+        setIsAttributeUpdating(true);
+        setAttributeError(null);
+
+        try {
+          let result: { success: boolean; data?: WorkspaceItemDetailResponse; message?: string };
+
+          switch (request.type) {
+            case 'assignee':
+              result = await updateWorkspaceItemAssignee(workspaceId, itemId, {
+                assigneeId: request.value as number | null,
+                rowVersion: rowVersionRef.current,
+              });
+              break;
+
+            case 'committer':
+              result = await updateWorkspaceItemAttribute(workspaceId, itemId, 'committer', {
+                value: (request.value as number | null) ?? undefined,
+                rowVersion: rowVersionRef.current,
+              });
+              break;
+
+            case 'archive':
+              result = await updateWorkspaceItemStatus(workspaceId, itemId, {
+                isArchived: request.value as boolean,
+                keepChildrenRelation: request.keepChildrenRelation,
+                rowVersion: rowVersionRef.current,
+              });
+              break;
+
+            case 'dueDate':
+              result = await updateWorkspaceItemAttribute(workspaceId, itemId, 'duedate', {
+                value: (request.value as string | null) ?? undefined,
+                rowVersion: rowVersionRef.current,
+              });
+              break;
+
+            case 'priority': {
+              const priorityValue = request.value
+                ? PRIORITY_TO_NUMBER[request.value as NonNullable<TaskPriority>]
+                : null;
+              result = await updateWorkspaceItemAttribute(workspaceId, itemId, 'priority', {
+                value: priorityValue ?? undefined,
+                rowVersion: rowVersionRef.current,
+              });
+              break;
+            }
+
+            default:
+              throw new Error(`Unknown attribute type: ${request.type}`);
+          }
+
+          if (result.success && result.data) {
+            // rowVersionRefを即座に更新（次の更新で使用するため）
+            rowVersionRef.current = result.data.rowVersion;
+            // item stateを更新
+            setItem(result.data);
+            // サイドバーを更新
+            onSidebarRefresh?.();
+            // アーカイブの場合はツリー更新も
+            if (request.type === 'archive' && workspaceMode === 'Document') {
+              onArchiveComplete?.();
+            }
+          } else {
+            setAttributeError(result.message || '更新に失敗しました。');
+            throw new Error(result.message || '更新に失敗しました。');
+          }
+        } catch (err) {
+          if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
+            setAttributeError('別のユーザーが先に更新しました。ページをリロードしてください。');
+          } else if (err instanceof Error && !attributeError) {
+            setAttributeError(err.message);
+          }
+          throw err;
+        } finally {
+          isUpdatingRef.current = false;
+          setIsAttributeUpdating(false);
+        }
+      },
+      [item, workspaceId, itemId, onSidebarRefresh, onArchiveComplete, workspaceMode, attributeError],
+    );
+
+    // 編集モーダル更新用の状態
+    const [isItemUpdating, setIsItemUpdating] = useState(false);
+    const [itemUpdateError, setItemUpdateError] = useState<string | null>(null);
+
+    // 編集モーダルからのアイテム更新ハンドラー（一元管理）
+    const handleItemUpdate = useCallback(
+      async (request: ItemUpdateRequest) => {
+        if (!item) return;
+        if (isUpdatingRef.current) return;
+
+        isUpdatingRef.current = true;
+        setIsItemUpdating(true);
+        setItemUpdateError(null);
+
+        try {
+          const result = await updateWorkspaceItem(workspaceId, itemId, {
+            subject: request.subject,
+            body: request.body,
+            isDraft: request.isDraft,
+            tagNames: request.tagNames,
+            rowVersion: rowVersionRef.current,
+          });
+
+          if (!result.success) {
+            // エラー処理
+            if (result.error === 'conflict' && 'latest' in result && result.latest) {
+              // 競合エラーは子コンポーネントで処理するため、エラーをthrow
+              throw { error: 'conflict', latest: result.latest };
+            }
+            setItemUpdateError(result.message || 'アイテムの更新に失敗しました。');
+            throw new Error(result.message || 'アイテムの更新に失敗しました。');
+          }
+
+          // 成功処理
+          // rowVersionRefを即座に更新
+          rowVersionRef.current = result.data.rowVersion;
+          // item stateを更新
+          setItem(result.data);
+          // サイドバーを更新
+          onSidebarRefresh?.();
+          // モーダルを閉じる
+          setIsEditModalOpen(false);
+          notify.success('アイテムを更新しました。');
+        } catch (err) {
+          if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
+            // 競合エラーは再throw
+            throw err;
+          }
+          if (err instanceof Error && !itemUpdateError) {
+            setItemUpdateError(err.message);
+          }
+          throw err;
+        } finally {
+          isUpdatingRef.current = false;
+          setIsItemUpdating(false);
+        }
+      },
+      [item, workspaceId, itemId, onSidebarRefresh, notify, itemUpdateError],
+    );
+
+    // 競合時の上書き更新ハンドラー
+    const handleItemOverwrite = useCallback(
+      async (request: ItemUpdateRequest, latestRowVersion: number) => {
+        if (!item) return;
+        if (isUpdatingRef.current) return;
+
+        isUpdatingRef.current = true;
+        setIsItemUpdating(true);
+        setItemUpdateError(null);
+
+        try {
+          const result = await updateWorkspaceItem(workspaceId, itemId, {
+            subject: request.subject,
+            body: request.body,
+            isDraft: request.isDraft,
+            tagNames: request.tagNames,
+            rowVersion: latestRowVersion,
+          });
+
+          if (!result.success) {
+            // エラー処理
+            if (result.error === 'conflict' && 'latest' in result && result.latest) {
+              // 再度競合エラー
+              throw { error: 'conflict', latest: result.latest };
+            }
+            setItemUpdateError(result.message || 'アイテムの更新に失敗しました。');
+            throw new Error(result.message || 'アイテムの更新に失敗しました。');
+          }
+
+          // 成功処理
+          // rowVersionRefを即座に更新
+          rowVersionRef.current = result.data.rowVersion;
+          // item stateを更新
+          setItem(result.data);
+          // サイドバーを更新
+          onSidebarRefresh?.();
+          // モーダルを閉じる
+          setIsEditModalOpen(false);
+          notify.success('アイテムを更新しました。');
+        } catch (err) {
+          if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
+            throw err;
+          }
+          if (err instanceof Error && !itemUpdateError) {
+            setItemUpdateError(err.message);
+          }
+          throw err;
+        } finally {
+          isUpdatingRef.current = false;
+          setIsItemUpdating(false);
+        }
+      },
+      [item, workspaceId, itemId, onSidebarRefresh, notify, itemUpdateError],
+    );
 
     // PIN操作ハンドラー
     const handlePinToggle = async () => {
@@ -292,7 +525,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const isOwner = item && currentUserId !== undefined && item.ownerId === currentUserId;
     const isDraftAndNotOwner = item?.isDraft && !isOwner;
     const isLockedByOther = itemEditStatus.isEditing && itemEditStatus.editor?.userId !== effectiveCurrentUserId;
-    const isEditDisabled = isDraftAndNotOwner || isLockedByOther;
+    const isArchived = item?.isArchived ?? false;
+    const isEditDisabled = isDraftAndNotOwner || isLockedByOther || isArchived;
+    const isDrawerDisabled = isDraftAndNotOwner || isLockedByOther; // ドロワーはアーカイブ時も有効
     const editingUserName = itemEditStatus.editor?.userName ?? '他のユーザー';
 
     // 編集ボタンクリック時の権限チェック
@@ -328,6 +563,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
     // 編集ボタンのツールチップを決定
     const getEditButtonTooltip = () => {
+      if (isArchived) {
+        return 'アーカイブ済みのアイテムは編集できません';
+      }
       if (isLockedByOther) {
         return `${editingUserName} さんが編集中です`;
       }
@@ -575,7 +813,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 onClick={openDrawer}
                 className="btn btn-secondary btn-sm gap-2"
                 title="詳細オプション"
-                disabled={isEditDisabled}
+                disabled={isDrawerDisabled}
               >
                 <span className="icon-[mdi--menu] size-4" aria-hidden="true" />
               </button>
@@ -866,9 +1104,12 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             item={item}
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
-            onSave={handleEditSave}
             currentUserId={currentUserId}
             canEdit={canEdit}
+            isUpdating={isItemUpdating}
+            error={itemUpdateError}
+            onUpdate={handleItemUpdate}
+            onOverwrite={handleItemOverwrite}
           />
         )}
 
@@ -879,11 +1120,12 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           isClosing={isDrawerClosing}
           onClose={closeDrawer}
           members={members}
-          onItemUpdate={(updatedItem) => setItem(updatedItem)}
           currentUserId={currentUserId}
           workspaceMode={workspaceMode}
-          onArchiveComplete={onArchiveComplete}
           canEdit={canEdit}
+          isUpdating={isAttributeUpdating}
+          error={attributeError}
+          onAttributeUpdate={handleAttributeUpdate}
         />
 
         {/* タイムラインモーダル */}

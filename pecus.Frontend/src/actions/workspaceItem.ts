@@ -129,11 +129,14 @@ export async function updateWorkspaceItem(
   workspaceId: number,
   itemId: number,
   request: UpdateWorkspaceItemRequest,
-): Promise<ApiResponse<WorkspaceItemResponse>> {
+): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.workspaceItem.patchApiWorkspacesItems(workspaceId, itemId, request);
-    return { success: true, data: response };
+    if (response.workspaceItem) {
+      return { success: true, data: response.workspaceItem };
+    }
+    return serverError('アイテムの更新結果取得に失敗しました。');
   } catch (error) {
     console.error('Failed to update workspace item:', error);
 
@@ -151,7 +154,7 @@ export async function updateWorkspaceItem(
       };
     }
 
-    return handleApiErrorForAction<WorkspaceItemResponse>(error, {
+    return handleApiErrorForAction<WorkspaceItemDetailResponse>(error, {
       defaultMessage: 'アイテムの更新に失敗しました。',
       handled: { validation: true, not_found: true },
     });

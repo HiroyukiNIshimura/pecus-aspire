@@ -1,17 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  fetchChildrenCount,
-  updateWorkspaceItemAssignee,
-  updateWorkspaceItemAttribute,
-  updateWorkspaceItemStatus,
-} from '@/actions/workspaceItem';
+import { useEffect, useState } from 'react';
+import { fetchChildrenCount } from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/filters/DatePicker';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import ArchiveConfirmModal from '@/components/workspaceItems/ArchiveConfirmModal';
 import type {
-  ErrorResponse,
   TaskPriority,
   WorkspaceDetailUserResponse,
   WorkspaceItemDetailResponse,
@@ -28,13 +22,13 @@ const PRIORITY_OPTIONS: { value: TaskPriority | null; label: string; className: 
   { value: 'Critical', label: '緊急', className: 'text-error font-bold' },
 ];
 
-/** 優先度の文字列を数値に変換（バックエンドの enum 値に対応） */
-const PRIORITY_TO_NUMBER: Record<NonNullable<TaskPriority>, number> = {
-  Low: 1,
-  Medium: 2,
-  High: 3,
-  Critical: 4,
-};
+/** 更新リクエストの型定義 */
+export interface ItemAttributeUpdateRequest {
+  type: 'assignee' | 'committer' | 'archive' | 'dueDate' | 'priority';
+  value: number | string | boolean | null;
+  /** アーカイブ時のみ: 子アイテムの親子関係を維持するか */
+  keepChildrenRelation?: boolean;
+}
 
 interface WorkspaceItemDrawerProps {
   item: WorkspaceItemDetailResponse;
@@ -42,14 +36,17 @@ interface WorkspaceItemDrawerProps {
   isClosing: boolean;
   onClose: () => void;
   members?: WorkspaceDetailUserResponse[];
-  onItemUpdate?: (updatedItem: WorkspaceItemDetailResponse) => void;
   currentUserId?: number;
   /** ワークスペースモード（ドキュメントモードの場合アーカイブ時に確認モーダルを表示） */
   workspaceMode?: WorkspaceMode | null;
-  /** アーカイブ完了時のコールバック（ツリー更新用） */
-  onArchiveComplete?: () => void;
   /** ワークスペース編集権限があるかどうか（Viewer以外）*/
   canEdit?: boolean;
+  /** 更新処理中かどうか（親から渡される） */
+  isUpdating?: boolean;
+  /** エラーメッセージ（親から渡される） */
+  error?: string | null;
+  /** 属性更新リクエスト（親に委譲） */
+  onAttributeUpdate: (request: ItemAttributeUpdateRequest) => Promise<void>;
 }
 
 export default function WorkspaceItemDrawer({
@@ -58,26 +55,36 @@ export default function WorkspaceItemDrawer({
   isClosing,
   onClose,
   members = [],
-  onItemUpdate,
   currentUserId,
   workspaceMode,
-  onArchiveComplete,
   canEdit: canEditWorkspace = true,
+  isUpdating = false,
+  error = null,
+  onAttributeUpdate,
 }: WorkspaceItemDrawerProps) {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState<number | null>(item.assigneeId || null);
-  const [selectedCommitterId, setSelectedCommitterId] = useState<number | null>(item.committerId || null);
-  const [isArchived, setIsArchived] = useState<boolean>(item.isArchived ?? false);
-  const [dueDate, setDueDate] = useState<string>(item.dueDate ? item.dueDate.split('T')[0] : '');
-  const [priority, setPriority] = useState<TaskPriority | null>(item.priority ?? null);
-  const [currentRowVersion, setCurrentRowVersion] = useState<number>(item.rowVersion);
+  // UI表示用のローカル状態（楽観的更新用）
+  const [localAssigneeId, setLocalAssigneeId] = useState<number | null>(item.assigneeId || null);
+  const [localCommitterId, setLocalCommitterId] = useState<number | null>(item.committerId || null);
+  const [localIsArchived, setLocalIsArchived] = useState<boolean>(item.isArchived ?? false);
+  const [localDueDate, setLocalDueDate] = useState<string>(item.dueDate ? item.dueDate.split('T')[0] : '');
+  const [localPriority, setLocalPriority] = useState<TaskPriority | null>(item.priority ?? null);
 
   // アーカイブ確認モーダルの状態（ドキュメントモード用）
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [childrenCount, setChildrenCount] = useState(0);
   const [totalDescendantsCount, setTotalDescendantsCount] = useState(0);
   const [isLoadingChildren, setIsLoadingChildren] = useState(false);
+
+  const notify = useNotify();
+
+  // item propが更新されたらローカル状態を同期
+  useEffect(() => {
+    setLocalAssigneeId(item.assigneeId || null);
+    setLocalCommitterId(item.committerId || null);
+    setLocalIsArchived(item.isArchived ?? false);
+    setLocalDueDate(item.dueDate ? item.dueDate.split('T')[0] : '');
+    setLocalPriority(item.priority ?? null);
+  }, [item.id, item.assigneeId, item.committerId, item.isArchived, item.dueDate, item.priority]);
 
   // 権限フラグの計算
   const isOwner = currentUserId !== undefined && item.ownerId === currentUserId;
@@ -89,97 +96,53 @@ export default function WorkspaceItemDrawer({
   // 下書き中はオーナーのみ編集可能
   const canEditDraft = isOwner;
 
-  const notify = useNotify();
-
   if (!isOpen) return null;
-
-  /** 汎用アイテム更新ハンドラー */
-  const handleItemUpdate = async (
-    updateFn: () => Promise<{
-      success: boolean;
-      data?: WorkspaceItemDetailResponse;
-      message?: string;
-    }>,
-    errorMessage: string,
-    rollbackFn?: () => void,
-  ) => {
-    // ワークスペース編集権限チェック
-    if (!canEditWorkspace) {
-      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
-      rollbackFn?.();
-      return;
-    }
-
-    try {
-      setIsUpdating(true);
-      setError(null);
-
-      const result = await updateFn();
-
-      if (result.success && result.data) {
-        setCurrentRowVersion(result.data.rowVersion);
-        onItemUpdate?.(result.data);
-      } else {
-        setError(result.message || errorMessage);
-        rollbackFn?.();
-      }
-    } catch (err) {
-      if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
-        setError('別のユーザーが先に更新しました。ページをリロードしてください。');
-      } else {
-        setError((err as ErrorResponse).message || errorMessage);
-      }
-      rollbackFn?.();
-    } finally {
-      setIsUpdating(false);
-    }
-  };
 
   /** 担当者変更ハンドラー */
   const handleAssigneeChange = async (newAssigneeId: number | null) => {
-    const prevValue = selectedAssigneeId;
-    setSelectedAssigneeId(newAssigneeId);
+    if (isUpdating) return;
+    if (!canEditWorkspace) {
+      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+      return;
+    }
 
-    await handleItemUpdate(
-      async () => {
-        const result = await updateWorkspaceItemAssignee(item.workspaceId ?? 0, item.id, {
-          assigneeId: newAssigneeId,
-          rowVersion: currentRowVersion,
-        });
-        return result;
-      },
-      '担当者の更新に失敗しました。',
-      () => setSelectedAssigneeId(prevValue),
-    );
+    const prevValue = localAssigneeId;
+    setLocalAssigneeId(newAssigneeId);
+
+    try {
+      await onAttributeUpdate({ type: 'assignee', value: newAssigneeId });
+    } catch {
+      setLocalAssigneeId(prevValue);
+    }
   };
 
   /** コミッター変更ハンドラー */
   const handleCommitterChange = async (newCommitterId: number | null) => {
-    const prevValue = selectedCommitterId;
-    setSelectedCommitterId(newCommitterId);
-
-    await handleItemUpdate(
-      async () => {
-        const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'committer', {
-          value: newCommitterId ?? undefined,
-          rowVersion: currentRowVersion,
-        });
-        return result;
-      },
-      'コミッターの更新に失敗しました。',
-      () => setSelectedCommitterId(prevValue),
-    );
-  };
-
-  /** アーカイブ切り替えハンドラー */
-  const handleArchivedChange = async (newIsArchived: boolean) => {
-    // ワークスペース編集権限チェック
+    if (isUpdating) return;
     if (!canEditWorkspace) {
       notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
       return;
     }
 
-    // アーカイブOFFにする場合は従来通り
+    const prevValue = localCommitterId;
+    setLocalCommitterId(newCommitterId);
+
+    try {
+      await onAttributeUpdate({ type: 'committer', value: newCommitterId });
+    } catch {
+      setLocalCommitterId(prevValue);
+    }
+  };
+
+  /** アーカイブ切り替えハンドラー */
+  const handleArchivedChange = async (newIsArchived: boolean) => {
+    if (isUpdating) return;
+    if (!canEditWorkspace) {
+      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+      return;
+    }
+
+    // アーカイブOFFにする場合は直接実行
     if (!newIsArchived) {
       await executeArchive(false, undefined);
       return;
@@ -207,48 +170,23 @@ export default function WorkspaceItemDrawer({
       }
     }
 
-    // 子アイテムがない場合または通常モードの場合は従来通り
+    // 子アイテムがない場合または通常モードの場合は直接実行
     await executeArchive(true, undefined);
   };
 
-  /** アーカイブ実行（keepChildrenRelation: true=親子関係維持, false=子はルートに移動, undefined=従来動作） */
+  /** アーカイブ実行 */
   const executeArchive = async (newIsArchived: boolean, keepChildrenRelation: boolean | undefined) => {
-    const prevValue = isArchived;
-    setIsArchived(newIsArchived);
+    const prevValue = localIsArchived;
+    setLocalIsArchived(newIsArchived);
 
     try {
-      setIsUpdating(true);
-      setError(null);
-
-      const result = await updateWorkspaceItemStatus(item.workspaceId ?? 0, item.id, {
-        isArchived: newIsArchived,
-        keepChildrenRelation: keepChildrenRelation,
-        rowVersion: currentRowVersion,
+      await onAttributeUpdate({
+        type: 'archive',
+        value: newIsArchived,
+        keepChildrenRelation,
       });
-
-      if (!result.success) {
-        setError(result.message || 'アーカイブ状態の更新に失敗しました。');
-        setIsArchived(prevValue);
-        return;
-      }
-
-      if (result.data) {
-        setCurrentRowVersion(result.data.rowVersion);
-        onItemUpdate?.(result.data);
-        // ドキュメントモードでアーカイブ成功時にツリーを更新
-        if (workspaceMode === 'Document') {
-          onArchiveComplete?.();
-        }
-      }
-    } catch (err) {
-      if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
-        setError('別のユーザーが先に更新しました。ページをリロードしてください。');
-      } else {
-        setError((err as ErrorResponse).message || 'アーカイブ状態の更新に失敗しました。');
-      }
-      setIsArchived(prevValue);
-    } finally {
-      setIsUpdating(false);
+    } catch {
+      setLocalIsArchived(prevValue);
     }
   };
 
@@ -258,48 +196,55 @@ export default function WorkspaceItemDrawer({
     await executeArchive(true, keepChildrenRelation);
   };
 
-  /** 期限変更ハンドラー */
-  const handleDueDateChange = async (newDueDate: string) => {
-    const prevValue = dueDate;
-    setDueDate(newDueDate);
+  /** 期限変更ハンドラー（ローカル状態のみ更新） */
+  const handleDueDateLocalChange = (newDueDate: string) => {
+    setLocalDueDate(newDueDate);
+  };
 
-    await handleItemUpdate(
-      async () => {
-        // 日付を ISO 8601 形式（UTC）に変換
-        let isoDateValue: string | null = null;
-        if (newDueDate) {
-          const date = new Date(newDueDate);
-          isoDateValue = date.toISOString();
-        }
-        const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'duedate', {
-          value: isoDateValue ?? undefined,
-          rowVersion: currentRowVersion,
-        });
-        return result;
-      },
-      '期限の更新に失敗しました。',
-      () => setDueDate(prevValue),
-    );
+  /** 期限確定ハンドラー（カレンダー閉じた時に呼ばれる） */
+  const handleDueDateCommit = async (newDueDate: string) => {
+    // 値が変わっていない場合は何もしない
+    const originalDate = item.dueDate ? item.dueDate.split('T')[0] : '';
+    if (newDueDate === originalDate) return;
+
+    if (isUpdating) return;
+    if (!canEditWorkspace) {
+      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+      return;
+    }
+
+    const prevValue = localDueDate;
+    setLocalDueDate(newDueDate);
+
+    try {
+      // 日付を ISO 8601 形式（UTC）に変換
+      let isoDateValue: string | null = null;
+      if (newDueDate) {
+        const date = new Date(newDueDate);
+        isoDateValue = date.toISOString();
+      }
+      await onAttributeUpdate({ type: 'dueDate', value: isoDateValue });
+    } catch {
+      setLocalDueDate(prevValue);
+    }
   };
 
   /** 優先度変更ハンドラー */
   const handlePriorityChange = async (newPriority: TaskPriority | null) => {
-    const prevValue = priority;
-    setPriority(newPriority);
+    if (isUpdating) return;
+    if (!canEditWorkspace) {
+      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+      return;
+    }
 
-    await handleItemUpdate(
-      async () => {
-        // バックエンドは数値を期待するため、文字列から数値に変換
-        const priorityValue = newPriority ? PRIORITY_TO_NUMBER[newPriority] : null;
-        const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'priority', {
-          value: priorityValue ?? undefined,
-          rowVersion: currentRowVersion,
-        });
-        return result;
-      },
-      '優先度の更新に失敗しました。',
-      () => setPriority(prevValue),
-    );
+    const prevValue = localPriority;
+    setLocalPriority(newPriority);
+
+    try {
+      await onAttributeUpdate({ type: 'priority', value: newPriority });
+    } catch {
+      setLocalPriority(prevValue);
+    }
   };
 
   /** 選択されたメンバーの情報を取得 */
@@ -373,9 +318,9 @@ export default function WorkspaceItemDrawer({
               </span>
             </div>
             <select
-              value={selectedAssigneeId || ''}
+              value={localAssigneeId || ''}
               onChange={(e) => handleAssigneeChange(e.target.value ? Number.parseInt(e.target.value, 10) : null)}
-              disabled={isUpdating}
+              disabled={isUpdating || localIsArchived}
               className="select select-bordered"
             >
               <option value="">未割当</option>
@@ -387,9 +332,9 @@ export default function WorkspaceItemDrawer({
             </select>
 
             {/* 現在の担当者情報を表示 */}
-            {selectedAssigneeId &&
+            {localAssigneeId &&
               (() => {
-                const assignee = getSelectedMember(selectedAssigneeId);
+                const assignee = getSelectedMember(localAssigneeId);
                 return assignee ? (
                   <div className="mt-2 flex items-center gap-2 p-2 bg-base-200 rounded">
                     <UserAvatar
@@ -412,9 +357,9 @@ export default function WorkspaceItemDrawer({
                 </span>
               </div>
               <select
-                value={selectedCommitterId || ''}
+                value={localCommitterId || ''}
                 onChange={(e) => handleCommitterChange(e.target.value ? Number.parseInt(e.target.value, 10) : null)}
-                disabled={isUpdating}
+                disabled={isUpdating || localIsArchived}
                 className="select select-bordered"
               >
                 <option value="">未割当</option>
@@ -426,9 +371,9 @@ export default function WorkspaceItemDrawer({
               </select>
 
               {/* 現在のコミッター情報を表示 */}
-              {selectedCommitterId &&
+              {localCommitterId &&
                 (() => {
-                  const committer = getSelectedMember(selectedCommitterId);
+                  const committer = getSelectedMember(localCommitterId);
                   return committer ? (
                     <div className="mt-2 flex items-center gap-2 p-2 bg-base-200 rounded">
                       <UserAvatar
@@ -443,31 +388,6 @@ export default function WorkspaceItemDrawer({
             </div>
           )}
 
-          {/* アーカイブ設定（オーナーまたは担当者のみ表示、下書き中はオーナーのみ） */}
-          {((isDraft && canEditDraft) || (!isDraft && canEdit)) && (
-            <>
-              <div className="divider my-2" />
-
-              <div className="form-control">
-                <div className="flex items-center gap-3">
-                  <input
-                    id="archive-switch"
-                    type="checkbox"
-                    className="switch switch-primary"
-                    checked={isArchived}
-                    onChange={(e) => handleArchivedChange(e.target.checked)}
-                    disabled={isUpdating || isLoadingChildren}
-                  />
-                  <label htmlFor="archive-switch" className="label-text font-semibold cursor-pointer">
-                    アーカイブ
-                  </label>
-                  {isLoadingChildren && <span className="loading loading-spinner loading-xs" />}
-                </div>
-                <p className="text-xs text-base-content/60 mt-1">アーカイブされたアイテムは編集不可になります</p>
-              </div>
-            </>
-          )}
-
           <div className="divider my-2" />
 
           {/* 期限設定（誰でも表示） */}
@@ -475,14 +395,19 @@ export default function WorkspaceItemDrawer({
             <div className="label">
               <span className="label-text font-semibold">期限</span>
             </div>
-            <DatePicker value={dueDate} onChange={handleDueDateChange} disabled={isUpdating} />
-            {dueDate && (
+            <DatePicker
+              value={localDueDate}
+              onChange={handleDueDateLocalChange}
+              onClose={handleDueDateCommit}
+              disabled={isUpdating || localIsArchived}
+            />
+            {localDueDate && (
               <div className="flex justify-end">
                 <button
                   type="button"
                   className="btn btn-xs mt-1"
-                  onClick={() => handleDueDateChange('')}
-                  disabled={isUpdating}
+                  onClick={() => handleDueDateCommit('')}
+                  disabled={isUpdating || localIsArchived}
                 >
                   期限をクリア
                 </button>
@@ -496,9 +421,9 @@ export default function WorkspaceItemDrawer({
               <span className="label-text font-semibold">優先度</span>
             </div>
             <select
-              value={priority || ''}
+              value={localPriority || ''}
               onChange={(e) => handlePriorityChange((e.target.value as TaskPriority) || null)}
-              disabled={isUpdating}
+              disabled={isUpdating || localIsArchived}
               className="select select-bordered"
             >
               {PRIORITY_OPTIONS.map((option) => (
@@ -507,24 +432,49 @@ export default function WorkspaceItemDrawer({
                 </option>
               ))}
             </select>
-            {priority && (
+            {localPriority && (
               <div className="mt-2">
                 <span
                   className={`badge ${
-                    priority === 'Low'
+                    localPriority === 'Low'
                       ? 'badge-info'
-                      : priority === 'Medium'
+                      : localPriority === 'Medium'
                         ? 'badge-warning'
-                        : priority === 'High'
+                        : localPriority === 'High'
                           ? 'badge-error'
                           : 'badge-error'
                   }`}
                 >
-                  {PRIORITY_OPTIONS.find((o) => o.value === priority)?.label}
+                  {PRIORITY_OPTIONS.find((o) => o.value === localPriority)?.label}
                 </span>
               </div>
             )}
           </div>
+
+          {/* アーカイブ設定（オーナーまたは担当者のみ表示、下書き中はオーナーのみ） */}
+          {((isDraft && canEditDraft) || (!isDraft && canEdit)) && (
+            <>
+              <div className="divider my-2" />
+
+              <div className="form-control">
+                <div className="flex items-center gap-3">
+                  <input
+                    id="archive-switch"
+                    type="checkbox"
+                    className="switch switch-primary"
+                    checked={localIsArchived}
+                    onChange={(e) => handleArchivedChange(e.target.checked)}
+                    disabled={isUpdating || isLoadingChildren}
+                  />
+                  <label htmlFor="archive-switch" className="label-text font-semibold cursor-pointer">
+                    アーカイブ
+                  </label>
+                  {isLoadingChildren && <span className="loading loading-spinner loading-xs" />}
+                </div>
+                <p className="text-xs text-base-content/60 mt-1">アーカイブされたアイテムは編集不可になります</p>
+              </div>
+            </>
+          )}
         </div>
 
         {/* フッター */}
