@@ -5,12 +5,15 @@ using Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
 using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Models.Requests.Dashboard;
 using Pecus.Models.Responses.Dashboard;
+using StackExchange.Redis;
+using System.Text.Json;
 
 namespace Pecus.Services;
 
 /// <summary>
 /// 健康診断サービス
 /// 生成AIを使用して組織/ワークスペースの健康状態を分析
+/// Redis キャッシュにより AI 呼び出しコストを削減
 /// </summary>
 public class HealthAnalysisService
 {
@@ -18,19 +21,32 @@ public class HealthAnalysisService
     private readonly IHealthDataProvider _healthDataProvider;
     private readonly IAiClientFactory _aiClientFactory;
     private readonly IBotTaskGuard _botTaskGuard;
+    private readonly IConnectionMultiplexer _redis;
     private readonly ILogger<HealthAnalysisService> _logger;
+
+    /// <summary>
+    /// キャッシュキーのプレフィックス
+    /// </summary>
+    private const string CacheKeyPrefix = "health-analysis";
+
+    // キャッシュ TTL（有効期間）定数
+    private static readonly TimeSpan CacheTtlDefault = TimeSpan.FromHours(1);
+    private static readonly TimeSpan CacheTtlFuturePrediction = TimeSpan.FromHours(6);
+    private static readonly TimeSpan CacheTtlComparison = TimeSpan.FromHours(24);
 
     public HealthAnalysisService(
         ApplicationDbContext context,
         IHealthDataProvider healthDataProvider,
         IAiClientFactory aiClientFactory,
         IBotTaskGuard botTaskGuard,
+        IConnectionMultiplexer redis,
         ILogger<HealthAnalysisService> logger)
     {
         _context = context;
         _healthDataProvider = healthDataProvider;
         _aiClientFactory = aiClientFactory;
         _botTaskGuard = botTaskGuard;
+        _redis = redis;
         _logger = logger;
     }
 
@@ -46,6 +62,26 @@ public class HealthAnalysisService
         HealthAnalysisRequest request,
         CancellationToken cancellationToken = default)
     {
+        // キャッシュキーを生成
+        var cacheKey = BuildCacheKey(organizationId, request);
+        var db = _redis.GetDatabase();
+
+        // キャッシュを確認
+        var cached = await db.StringGetAsync(cacheKey);
+        if (cached.HasValue)
+        {
+            _logger.LogDebug("Cache hit for health analysis: {CacheKey}", cacheKey);
+            try
+            {
+                return JsonSerializer.Deserialize<HealthAnalysisResponse>((string)cached!);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Failed to deserialize cached health analysis, regenerating");
+            }
+        }
+
+        // AI クライアントを取得
         var aiClient = await GetAiClientForOrganizationAsync(organizationId, cancellationToken);
         if (aiClient == null)
         {
@@ -86,7 +122,7 @@ public class HealthAnalysisService
                 persona: null,
                 cancellationToken);
 
-            return new HealthAnalysisResponse
+            var result = new HealthAnalysisResponse
             {
                 AnalysisType = request.AnalysisType,
                 Scope = request.Scope,
@@ -95,6 +131,14 @@ public class HealthAnalysisService
                 Analysis = analysis.Trim(),
                 GeneratedAt = DateTimeOffset.UtcNow,
             };
+
+            // キャッシュに保存
+            var ttl = GetCacheTtl(request.AnalysisType);
+            var json = JsonSerializer.Serialize(result);
+            await db.StringSetAsync(cacheKey, json, ttl);
+            _logger.LogDebug("Cached health analysis: {CacheKey}, TTL: {Ttl}", cacheKey, ttl);
+
+            return result;
         }
         catch (Exception ex)
         {
@@ -109,6 +153,30 @@ public class HealthAnalysisService
     }
 
     /// <summary>
+    /// キャッシュキーを生成
+    /// </summary>
+    private static string BuildCacheKey(int organizationId, HealthAnalysisRequest request)
+    {
+        var workspaceIdPart = request.Scope == HealthAnalysisScope.Workspace && request.WorkspaceId.HasValue
+            ? request.WorkspaceId.Value.ToString()
+            : "all";
+        return $"{CacheKeyPrefix}:{organizationId}:{request.Scope}:{workspaceIdPart}:{request.AnalysisType}";
+    }
+
+    /// <summary>
+    /// 分析タイプに応じたキャッシュ有効期間を取得
+    /// </summary>
+    private static TimeSpan GetCacheTtl(HealthAnalysisType analysisType)
+    {
+        return analysisType switch
+        {
+            HealthAnalysisType.FuturePrediction => CacheTtlFuturePrediction,
+            HealthAnalysisType.Comparison => CacheTtlComparison,
+            _ => CacheTtlDefault,
+        };
+    }
+
+    /// <summary>
     /// システムプロンプトを構築
     /// </summary>
     private static string BuildSystemPrompt(
@@ -118,73 +186,105 @@ public class HealthAnalysisService
     {
         var targetName = scope == HealthAnalysisScope.Workspace && workspaceName != null
             ? $"ワークスペース「{workspaceName}」"
-            : "組織全体";
+            : "チーム全体";
 
         var basePrompt = $"""
-            あなたはプロジェクト管理の専門家です。
-            {targetName}のタスク統計データを分析し、的確なフィードバックを提供してください。
+            あなたはチームの頼れるアドバイザーです。
+            {targetName}のタスク状況を見て、わかりやすくフィードバックしてください。
 
-            【回答ルール】
-            - データに基づいた客観的な分析を行う
-            - 具体的な数値を引用して説明する
-            - 専門用語を避け、わかりやすい日本語で説明する
-            - Markdown形式で回答する
+            【絶対に守るルール】
+            - 小学生でもわかる簡単な言葉で説明する
+            - 難しい専門用語は使わない
+            - 数字を使って具体的に説明する
+            - 短い文で、要点だけ伝える
+            - 絵文字を適度に使って親しみやすく
+            - Markdown形式で読みやすく
+            - 見出しは必ず ## や ### を使う（**太字**を見出し代わりにしない）
+            - 各セクションの間は空行を入れる
             """;
 
         var specificPrompt = analysisType switch
         {
             HealthAnalysisType.CurrentHealth => """
 
-                【分析の観点】
-                - 現在の全体的な健康状態を評価（良好/注意/要改善）
-                - タスク完了率、期限切れ率、未アサイン率から状況を判断
-                - ポジティブな点とネガティブな点をバランスよく説明
-                - 200-300文字程度で簡潔にまとめる
+                【やること】
+                今の状態を「😊 順調」「⚠️ ちょっと心配」「🚨 要注意」のどれかで教えて、
+                その理由を2-3行で簡単に説明してください。
+
+                例：
+                ## 😊 順調です！
+                タスクの8割が予定通り進んでいます。期限切れも少なく、いい感じ！
                 """,
 
             HealthAnalysisType.ProblemPickup => """
 
-                【分析の観点】
-                - 現在の問題点を優先度順にリストアップ
-                - 各問題点について、なぜ問題なのかを簡潔に説明
-                - 問題がない場合は、その旨を伝える
-                - 箇条書きで3-5点を目安に
+                【やること】
+                気になる点を3つまで教えてください。
+                各項目は ### 見出しで区切り、1-2行で説明してください。
+                問題がなければ「特に心配なし！」と伝えてください。
+
+                例：
+                ## 気になる点
+
+                ### ⚠️ 期限切れタスクが多い
+                5件のタスクが期限を過ぎています。早めに対応しましょう。
+
+                ### 📋 担当者が決まっていない
+                3件のタスクに担当者がいません。誰かにお願いしましょう。
                 """,
 
             HealthAnalysisType.FuturePrediction => """
 
-                【分析の観点】
-                - 週次トレンドから今後1-2週間の状況を予測
-                - タスク蓄積/消化の傾向を分析
-                - このままの傾向が続いた場合のリスクを説明
-                - 楽観的すぎず、悲観的すぎない現実的な予測を
+                【やること】
+                このままいくと来週どうなりそうか、2-3行で予想してください。
+                良い予想でも悪い予想でも、正直に伝えてください。
+
+                例：
+                ## 来週の見通し
+                今のペースなら来週も順調そう！ただ、新しいタスクが増えているので、
+                少し注意しておくといいかも。
                 """,
 
             HealthAnalysisType.Recommendation => """
 
-                【分析の観点】
-                - 具体的で実行可能な改善アクションを提案
-                - 優先度の高い順に3-5点を提示
-                - 各アクションの期待効果も簡潔に説明
-                - 抽象的な提案ではなく、すぐに実行できる内容を
+                【やること】
+                今すぐできる改善アクションを3つまで、具体的に提案してください。
+                「〜しましょう」という形で、すぐ実行できる内容にしてください。
+
+                例：
+                ## おすすめアクション
+                1. 📌 期限切れの5件を今日中に確認しましょう
+                2. 👤 未アサインの3件に担当者を決めましょう
                 """,
 
             HealthAnalysisType.Comparison => """
 
-                【分析の観点】
-                - 週次トレンドデータから前週との変化を分析
-                - 改善した点、悪化した点を明確に
-                - 変化の要因について推測を含めて説明
-                - 変化がない場合は安定している旨を伝える
+                【やること】
+                先週と比べてどう変わったか教えてください。
+                良くなった点と気になる点を ### 見出しで分けて説明してください。
+                変化がなければ「安定しています」と伝えてください。
+
+                例：
+                ## 先週との比較
+
+                ### ✅ 良くなった点
+                完了タスクが先週より10件増えました！いい調子です。
+
+                ### ⚠️ 気をつけたい点
+                新規タスクも増えているので、油断は禁物です。
                 """,
 
             HealthAnalysisType.Summary => """
 
-                【分析の観点】
-                - 総合的な健康診断レポートを作成
-                - 現状評価、問題点、今後の予測、改善提案を含める
-                - 経営層や管理者向けの簡潔なサマリー形式
-                - 400-500文字程度でまとめる
+                【やること】
+                全体の状況を短くまとめてください。
+                「今の状態」「気になる点」「おすすめ」の3つを、それぞれ1-2行で。
+
+                例：
+                ## 📊 まとめ
+                **今の状態**: 8割順調、2割が遅れ気味
+                **気になる点**: 期限切れが少し増えてきた
+                **おすすめ**: 今週中に期限切れを片付けよう
                 """,
 
             _ => "",

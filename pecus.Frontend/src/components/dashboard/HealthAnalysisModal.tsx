@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Markdown from 'react-markdown';
 import { analyzeHealth } from '@/actions/dashboard';
 import { getMyWorkspaces } from '@/actions/workspace';
 import type {
@@ -201,8 +202,8 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
               </div>
 
               {/* 分析結果 */}
-              <div className="bg-base-200 rounded-lg p-4 whitespace-pre-wrap text-sm leading-relaxed">
-                {result.analysis}
+              <div className="bg-base-200 rounded-lg p-4 text-sm leading-relaxed prose prose-sm prose-neutral dark:prose-invert max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-ul:my-2 prose-li:my-1">
+                <Markdown>{result.analysis}</Markdown>
               </div>
 
               {/* 生成日時 */}
