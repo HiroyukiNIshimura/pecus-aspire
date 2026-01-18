@@ -66,15 +66,12 @@ public class WorkspaceItemController : BaseSecureController
             CurrentUserId
         );
 
-        // AI機能が有効な場合のみ、ワークスペースアイテム作成通知をバックグラウンドジョブで実行
-        if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
-        {
-            _backgroundJobClient.Enqueue<CreateItemTask>(x =>
-                     x.NotifyItemCreatedAsync(
-                        item.Id
-                     )
-                 );
-        }
+        //ワークスペースアイテム作成通知をバックグラウンドジョブで実行
+        _backgroundJobClient.Enqueue<CreateItemTask>(x =>
+                 x.NotifyItemCreatedAsync(
+                    item.Id
+                 )
+             );
 
         var response = new WorkspaceItemResponse
         {

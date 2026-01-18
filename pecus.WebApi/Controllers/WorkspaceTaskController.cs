@@ -81,15 +81,12 @@ public class WorkspaceTaskController : BaseSecureController
         // タスク作成通知メールを送信
         await SendTaskCreatedEmailAsync(task.Id);
 
-        // AI機能が有効な場合のみ、ワークスペースタスク作成通知をバックグラウンドジョブで実行
-        if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
-        {
-            _backgroundJobClient.Enqueue<CreateTaskTask>(x =>
-                           x.NotifyTaskCreatedAsync(
-                              task.Id
-                           )
-                       );
-        }
+        // ワークスペースタスク作成通知をバックグラウンドジョブで実行
+        _backgroundJobClient.Enqueue<CreateTaskTask>(x =>
+                       x.NotifyTaskCreatedAsync(
+                          task.Id
+                       )
+                   );
 
         var response = new WorkspaceTaskResponse
         {
@@ -327,41 +324,38 @@ public class WorkspaceTaskController : BaseSecureController
                 await SendTaskCompletedEmailAsync(task.Id, request.IsDiscarded == true);
             }
 
-            // AI機能が有効な場合のみ、ワークスペースタスク更新通知をバックグラウンドジョブで実行
-            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+            // ワークスペースタスク更新通知をバックグラウンドジョブで実行
+            if (previousTask.IsCompleted != task.IsCompleted && task.IsCompleted)
             {
-                if (previousTask.IsCompleted != task.IsCompleted && task.IsCompleted)
-                {
-                    _backgroundJobClient.Enqueue<CompleteTaskTask>(x =>
-                        x.NotifyTaskCompletedAsync(task.Id)
-                    );
-                }
-
-                var changes = TaskUpdateChanges.FromComparison(
-                    requestPriority: request.Priority,
-                    requestStartDate: request.StartDate,
-                    requestDueDate: request.DueDate,
-                    requestEstimatedHours: request.EstimatedHours,
-                    requestProgressPercentage: request.ProgressPercentage,
-                    requestAssignedUserId: request.AssignedUserId,
-                    requestIsDiscarded: request.IsDiscarded == true,
-                    requestIsCompleted: request.IsCompleted == true,
-                    previousPriority: previousTask.Priority,
-                    previousStartDate: previousTask.StartDate,
-                    previousDueDate: previousTask.DueDate,
-                    previousEstimatedHours: previousTask.EstimatedHours,
-                    previousProgressPercentage: previousTask.ProgressPercentage,
-                    previousAssignedUserId: previousTask.AssignedUserId,
-                    previousIsDiscarded: previousTask.IsDiscarded,
-                    previousIsCompleted: previousTask.IsCompleted
+                _backgroundJobClient.Enqueue<CompleteTaskTask>(x =>
+                    x.NotifyTaskCompletedAsync(task.Id)
                 );
+            }
 
-                if (changes.HasAnyChanges)
-                {
-                    _backgroundJobClient.Enqueue<UpdateTaskTask>(x =>
-                        x.NotifyTaskUpdatedAsync(task.Id, CurrentUserId, changes)
-                    );
-                }
+            var changes = TaskUpdateChanges.FromComparison(
+                requestPriority: request.Priority,
+                requestStartDate: request.StartDate,
+                requestDueDate: request.DueDate,
+                requestEstimatedHours: request.EstimatedHours,
+                requestProgressPercentage: request.ProgressPercentage,
+                requestAssignedUserId: request.AssignedUserId,
+                requestIsDiscarded: request.IsDiscarded == true,
+                requestIsCompleted: request.IsCompleted == true,
+                previousPriority: previousTask.Priority,
+                previousStartDate: previousTask.StartDate,
+                previousDueDate: previousTask.DueDate,
+                previousEstimatedHours: previousTask.EstimatedHours,
+                previousProgressPercentage: previousTask.ProgressPercentage,
+                previousAssignedUserId: previousTask.AssignedUserId,
+                previousIsDiscarded: previousTask.IsDiscarded,
+                previousIsCompleted: previousTask.IsCompleted
+            );
+
+            if (changes.HasAnyChanges)
+            {
+                _backgroundJobClient.Enqueue<UpdateTaskTask>(x =>
+                    x.NotifyTaskUpdatedAsync(task.Id, CurrentUserId, changes)
+                );
             }
         }
 

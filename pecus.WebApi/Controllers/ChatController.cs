@@ -507,8 +507,7 @@ public class ChatController : BaseSecureController
 
         // AI ルームへのメッセージの場合、AI機能が有効ならAI 返信タスクをキュー
         var room = await _chatRoomService.GetRoomByIdAsync(roomId);
-        if (room?.Type == ChatRoomType.Ai &&
-            await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+        if (room?.Type == ChatRoomType.Ai)
         {
             _backgroundJobClient.Enqueue<AiChatReplyTask>(x =>
                 x.SendReplyAsync(
@@ -527,8 +526,7 @@ public class ChatController : BaseSecureController
         }
 
         // グループチャットの場合、AI機能が有効ならBot返信タスクをキュー
-        if (room?.Type == ChatRoomType.Group &&
-            await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
+        if (room?.Type == ChatRoomType.Group)
         {
             // ワークスペースのメンバーに対して通知を送信するバックグラウンドジョブをキュー
             _backgroundJobClient.Enqueue<GroupChatReplyTask>(x =>

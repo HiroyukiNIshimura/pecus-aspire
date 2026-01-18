@@ -170,18 +170,14 @@ public class TaskCommentController : BaseSecureController
         {
             await SendReminderEmailAsync(workspaceId, itemId, taskId, comment);
 
-            // AI機能が有効な場合のみ、リマインダースケジュールタスクをキュー
-            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
-            {
-                _backgroundJobClient.Enqueue<TaskCommentReminderTask>(x =>
-                    x.ScheduleReminderAsync(comment.Id)
-                );
+            _backgroundJobClient.Enqueue<TaskCommentReminderTask>(x =>
+                x.ScheduleReminderAsync(comment.Id)
+            );
 
-                _logger.LogDebug(
-                    "Enqueued Reminder Comment: CommentId={CommentId}",
-                    comment.Id
-                );
-            }
+            _logger.LogDebug(
+                "Enqueued Reminder Comment: CommentId={CommentId}",
+                comment.Id
+            );
         }
 
         // ヘルプコメントの場合、通知先ユーザーにDM送信
@@ -189,53 +185,41 @@ public class TaskCommentController : BaseSecureController
         {
             await SendHelpEmailAsync(workspaceId, itemId, taskId, comment);
 
-            // AI機能が有効な場合のみ、Bot通知タスクをキュー
             // HelpWanted 通知と類似タスク提案は TaskCommentHelpWantedTask で統合処理
-            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
-            {
-                _backgroundJobClient.Enqueue<TaskCommentHelpWantedTask>(x =>
-                    x.SendHelpWantedNotificationAsync(comment.Id)
-                );
+            _backgroundJobClient.Enqueue<TaskCommentHelpWantedTask>(x =>
+                x.SendHelpWantedNotificationAsync(comment.Id)
+            );
 
-                _logger.LogDebug(
-                    "Enqueued Help Comment: CommentId={CommentId}",
-                    comment.Id
-                );
-            }
+            _logger.LogDebug(
+                "Enqueued Help Comment: CommentId={CommentId}",
+                comment.Id
+            );
         }
 
         // 回答依頼コメントの場合の処理
         if (request.CommentType == TaskCommentType.NeedReply)
         {
-            // AI機能が有効な場合のみ、Bot通知タスクをキュー
-            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
-            {
-                _backgroundJobClient.Enqueue<TaskCommentNeedReplyTask>(x =>
-                    x.SendNeedReplyNotificationAsync(comment.Id)
-                );
+            _backgroundJobClient.Enqueue<TaskCommentNeedReplyTask>(x =>
+                x.SendNeedReplyNotificationAsync(comment.Id)
+            );
 
-                _logger.LogDebug(
-                    "Enqueued NeedReply Comment: CommentId={CommentId}",
-                    comment.Id
-                );
-            }
+            _logger.LogDebug(
+                "Enqueued NeedReply Comment: CommentId={CommentId}",
+                comment.Id
+            );
         }
 
         // 督促コメントの場合の処理
         if (request.CommentType == TaskCommentType.Urge)
         {
-            // AI機能が有効な場合のみ、Bot通知タスクをキュー
-            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
-            {
-                _backgroundJobClient.Enqueue<TaskCommentUrgeTask>(x =>
-                    x.SendUrgeNotificationAsync(comment.Id)
-                );
+            _backgroundJobClient.Enqueue<TaskCommentUrgeTask>(x =>
+                x.SendUrgeNotificationAsync(comment.Id)
+            );
 
-                _logger.LogDebug(
-                    "Enqueued Urge Comment: CommentId={CommentId}",
-                    comment.Id
-                );
-            }
+            _logger.LogDebug(
+                "Enqueued Urge Comment: CommentId={CommentId}",
+                comment.Id
+            );
         }
 
         var response = new TaskCommentResponse
@@ -297,18 +281,15 @@ public class TaskCommentController : BaseSecureController
                 );
             }
 
-            // AI機能が有効な場合のみ、新規にリマインダースケジュールタスクをキュー
-            if (await _accessHelper.IsAiEnabledAsync(CurrentOrganizationId))
-            {
-                _backgroundJobClient.Enqueue<TaskCommentReminderTask>(x =>
-                    x.ScheduleReminderAsync(comment.Id)
-                );
+            // 新規にリマインダースケジュールタスクをキュー
+            _backgroundJobClient.Enqueue<TaskCommentReminderTask>(x =>
+                x.ScheduleReminderAsync(comment.Id)
+            );
 
-                _logger.LogDebug(
-                    "Enqueued Reminder Comment for update: CommentId={CommentId}",
-                    comment.Id
-                );
-            }
+            _logger.LogDebug(
+                "Enqueued Reminder Comment for update: CommentId={CommentId}",
+                comment.Id
+            );
         }
 
         var response = new TaskCommentResponse
