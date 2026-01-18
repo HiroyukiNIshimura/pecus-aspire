@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Models.Requests.Dashboard;
 using Pecus.Models.Responses.Dashboard;
 using Pecus.Services;
 
@@ -15,15 +16,18 @@ namespace Pecus.Controllers;
 public class DashboardStatisticsController : BaseSecureController
 {
     private readonly DashboardStatisticsService _dashboardService;
+    private readonly HealthAnalysisService _healthAnalysisService;
     private readonly ILogger<DashboardStatisticsController> _logger;
 
     public DashboardStatisticsController(
         DashboardStatisticsService dashboardService,
+        HealthAnalysisService healthAnalysisService,
         ProfileService profileService,
         ILogger<DashboardStatisticsController> logger
     ) : base(profileService, logger)
     {
         _dashboardService = dashboardService;
+        _healthAnalysisService = healthAnalysisService;
         _logger = logger;
     }
 
@@ -169,6 +173,47 @@ public class DashboardStatisticsController : BaseSecureController
     public async Task<Ok<DashboardHelpCommentsResponse>> GetHelpComments()
     {
         var response = await _dashboardService.GetHelpCommentsAsync(CurrentOrganizationId);
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// 健康診断を実行
+    /// 生成AIを使用して組織/ワークスペースの健康状態を分析
+    /// </summary>
+    /// <param name="request">診断リクエスト</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>診断結果</returns>
+    [HttpPost("health-analysis")]
+    [ProducesResponseType(typeof(HealthAnalysisResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Results<Ok<HealthAnalysisResponse>, BadRequest<ErrorResponse>>> PostHealthAnalysis(
+        [FromBody] HealthAnalysisRequest request,
+        CancellationToken cancellationToken)
+    {
+        // ワークスペーススコープの場合、WorkspaceIdが必須
+        if (request.Scope == HealthAnalysisScope.Workspace && !request.WorkspaceId.HasValue)
+        {
+            return TypedResults.BadRequest(new ErrorResponse
+            {
+                Message = "Scope が Workspace の場合、WorkspaceId は必須です。",
+            });
+        }
+
+        var response = await _healthAnalysisService.AnalyzeAsync(
+            CurrentOrganizationId,
+            request,
+            cancellationToken);
+
+        if (response == null)
+        {
+            return TypedResults.BadRequest(new ErrorResponse
+            {
+                Message = "AI機能が利用できません。組織設定でAI APIを設定してください。",
+            });
+        }
+
         return TypedResults.Ok(response);
     }
 }
