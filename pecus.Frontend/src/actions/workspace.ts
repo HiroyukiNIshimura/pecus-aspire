@@ -425,3 +425,21 @@ export async function getWorkspaceTaskTrend(
     });
   }
 }
+
+/**
+ * Server Action: ワークスペースに閲覧メンバーとして参加
+ * @param workspaceId ワークスペースID
+ */
+export async function joinWorkspace(workspaceId: number): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspace.postApiWorkspacesJoin(workspaceId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to join workspace:', error);
+    return handleApiErrorForAction<WorkspaceUserDetailResponse>(error, {
+      defaultMessage: 'ワークスペースへの参加に失敗しました',
+      handled: { validation: true, not_found: true },
+    });
+  }
+}

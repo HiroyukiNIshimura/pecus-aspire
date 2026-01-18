@@ -101,7 +101,7 @@ export default function DashboardClient({
       )}
 
       {/* 2カラムレイアウト: 優先度別（狭め） + ワークスペース別（広め） */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* 優先度別タスク */}
         {tasksByPriority && (
           <div className="lg:col-span-1">
@@ -111,7 +111,7 @@ export default function DashboardClient({
 
         {/* ワークスペース別統計 */}
         {workspaceBreakdown && (
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <WorkspaceBreakdownTable data={workspaceBreakdown} />
           </div>
         )}

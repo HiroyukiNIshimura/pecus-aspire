@@ -1,10 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { joinWorkspace } from '@/actions/workspace';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import { Tooltip } from '@/components/common/feedback/Tooltip';
-import type { DashboardWorkspaceBreakdownResponse } from '@/connectors/api/pecus';
+import JoinWorkspaceModal from '@/components/workspaces/JoinWorkspaceModal';
+import type { DashboardWorkspaceBreakdownResponse, DashboardWorkspaceStatistics } from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
 
 /** 初期表示件数 */
 const INITIAL_DISPLAY_COUNT = 5;
@@ -16,17 +20,53 @@ interface WorkspaceBreakdownTableProps {
   data: DashboardWorkspaceBreakdownResponse;
 }
 
+/** 参加モーダルの状態 */
+interface JoinModalState {
+  isOpen: boolean;
+  workspace: DashboardWorkspaceStatistics | null;
+}
+
 /**
  * ワークスペース別統計テーブル
  * 各ワークスペースのタスク・アイテム状況を一覧表示
  */
 export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTableProps) {
+  const router = useRouter();
+  const notify = useNotify();
   const { workspaces } = data;
   const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+  const [joinModal, setJoinModal] = useState<JoinModalState>({ isOpen: false, workspace: null });
 
   const displayedWorkspaces = workspaces.slice(0, displayCount);
   const hasMore = workspaces.length > displayCount;
   const remainingCount = workspaces.length - displayCount;
+
+  /** 参加モーダルを開く */
+  const handleOpenJoinModal = (workspace: DashboardWorkspaceStatistics) => {
+    setJoinModal({ isOpen: true, workspace });
+  };
+
+  /** 参加モーダルを閉じる */
+  const handleCloseJoinModal = () => {
+    setJoinModal({ isOpen: false, workspace: null });
+  };
+
+  /** ワークスペースに参加 */
+  const handleJoinWorkspace = async () => {
+    if (!joinModal.workspace) return;
+
+    const result = await joinWorkspace(joinModal.workspace.workspaceId);
+
+    if (result.success) {
+      notify.success(`${joinModal.workspace.workspaceName} に参加しました`);
+      handleCloseJoinModal();
+      // ページをリフレッシュして最新の状態を反映
+      router.refresh();
+    } else {
+      // エラーは例外としてスローしてモーダル側で処理
+      throw new Error(result.message || 'ワークスペースへの参加に失敗しました');
+    }
+  };
 
   if (workspaces.length === 0) {
     return (
@@ -67,6 +107,7 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
                 <th className="text-right">期限切れ</th>
                 <th className="text-right">アイテム</th>
                 <th className="text-right">メンバー</th>
+                <th className="text-center w-20">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -128,6 +169,21 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
                   </td>
                   <td className="text-right text-base-content/70">{ws.itemCount}</td>
                   <td className="text-right text-base-content/70">{ws.memberCount}</td>
+                  <td className="text-center">
+                    {!ws.isMember && (
+                      <Tooltip text="閲覧者として参加" position="top">
+                        <button
+                          type="button"
+                          className="btn btn-xs btn-outline btn-primary"
+                          onClick={() => handleOpenJoinModal(ws)}
+                          aria-label={`${ws.workspaceName}に参加`}
+                        >
+                          <span className="icon-[mdi--account-plus-outline] w-4 h-4" aria-hidden="true" />
+                          参加
+                        </button>
+                      </Tooltip>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -160,6 +216,15 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
           </div>
         )}
       </div>
+
+      {/* ワークスペース参加確認モーダル */}
+      <JoinWorkspaceModal
+        isOpen={joinModal.isOpen}
+        workspaceName={joinModal.workspace?.workspaceName || ''}
+        workspaceCode={joinModal.workspace?.workspaceCode || ''}
+        onClose={handleCloseJoinModal}
+        onConfirm={handleJoinWorkspace}
+      />
     </section>
   );
 }
