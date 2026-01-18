@@ -111,6 +111,10 @@ export type { GetAvailableModelsRequest } from './models/GetAvailableModelsReque
 export type { GetAvailableModelsResponse } from './models/GetAvailableModelsResponse';
 export type { GroupChatScope } from './models/GroupChatScope';
 export type { HangfireStatsResponse } from './models/HangfireStatsResponse';
+export type { HealthAnalysisRequest } from './models/HealthAnalysisRequest';
+export type { HealthAnalysisResponse } from './models/HealthAnalysisResponse';
+export type { HealthAnalysisScope } from './models/HealthAnalysisScope';
+export type { HealthAnalysisType } from './models/HealthAnalysisType';
 export type { HelpCommentItem } from './models/HelpCommentItem';
 export type { HelpNotificationTarget } from './models/HelpNotificationTarget';
 export type { HotItemEntry } from './models/HotItemEntry';

@@ -10,6 +10,8 @@ import type { DashboardSummaryResponse } from '../models/DashboardSummaryRespons
 import type { DashboardTasksByPriorityResponse } from '../models/DashboardTasksByPriorityResponse';
 import type { DashboardTaskTrendResponse } from '../models/DashboardTaskTrendResponse';
 import type { DashboardWorkspaceBreakdownResponse } from '../models/DashboardWorkspaceBreakdownResponse';
+import type { HealthAnalysisRequest } from '../models/HealthAnalysisRequest';
+import type { HealthAnalysisResponse } from '../models/HealthAnalysisResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -161,6 +163,28 @@ export class DashboardService {
             method: 'GET',
             url: '/api/dashboard/help-comments',
             errors: {
+                401: `Unauthorized`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 健康診断を実行
+     * 生成AIを使用して組織/ワークスペースの健康状態を分析
+     * @param requestBody キャンセルトークン
+     * @returns HealthAnalysisResponse OK
+     * @throws ApiError
+     */
+    public static postApiDashboardHealthAnalysis(
+        requestBody: HealthAnalysisRequest,
+    ): CancelablePromise<HealthAnalysisResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/dashboard/health-analysis',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
                 401: `Unauthorized`,
                 500: `Internal Server Error`,
             },

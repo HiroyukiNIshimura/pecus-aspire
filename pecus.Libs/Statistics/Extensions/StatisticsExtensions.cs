@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
 
 namespace Pecus.Libs.Statistics.Extensions;
 
@@ -15,6 +16,7 @@ public static class StatisticsExtensions
     public static IServiceCollection AddStatistics(this IServiceCollection services)
     {
         services.AddScoped<IStatisticsCollector, StatisticsCollector>();
+        services.AddScoped<IHealthDataProvider, HealthDataProvider>();
         return services;
     }
 }

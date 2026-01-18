@@ -153,6 +153,7 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddStatistics();
 builder.Services.AddScoped<DashboardStatisticsService>();
+builder.Services.AddScoped<HealthAnalysisService>();
 builder.Services.AddScoped<IFocusTaskProvider, FocusTaskProvider>();
 builder.Services.AddScoped<IInformationSearchProvider, InformationSearchProvider>();
 builder.Services.AddScoped<FocusRecommendationService>();

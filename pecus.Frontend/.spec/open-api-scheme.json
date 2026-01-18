@@ -1560,6 +1560,78 @@
         ]
       }
     },
+    "/api/dashboard/health-analysis": {
+      "post": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "健康診断を実行\n生成AIを使用して組織/ワークスペースの健康状態を分析",
+        "requestBody": {
+          "description": "キャンセルトークン",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HealthAnalysisRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HealthAnalysisRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/HealthAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthAnalysisResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/workspaces/{workspaceId}/document-tree": {
       "get": {
         "tags": [
@@ -16584,6 +16656,86 @@
           }
         },
         "description": "Hangfireの統計情報レスポンス"
+      },
+      "HealthAnalysisRequest": {
+        "required": [
+          "scope",
+          "analysisType"
+        ],
+        "type": "object",
+        "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/HealthAnalysisScope"
+          },
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID（Scope が Workspace の場合に必須）",
+            "format": "int32",
+            "nullable": true
+          },
+          "analysisType": {
+            "$ref": "#/components/schemas/HealthAnalysisType"
+          }
+        },
+        "description": "健康診断リクエスト"
+      },
+      "HealthAnalysisResponse": {
+        "required": [
+          "analysisType",
+          "scope",
+          "analysis",
+          "generatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "analysisType": {
+            "$ref": "#/components/schemas/HealthAnalysisType"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/HealthAnalysisScope"
+          },
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID（Scope が Workspace の場合）",
+            "format": "int32",
+            "nullable": true
+          },
+          "workspaceName": {
+            "type": "string",
+            "description": "ワークスペース名（Scope が Workspace の場合）",
+            "nullable": true
+          },
+          "analysis": {
+            "type": "string",
+            "description": "生成AIによる診断結果"
+          },
+          "generatedAt": {
+            "type": "string",
+            "description": "診断生成日時",
+            "format": "date-time"
+          }
+        },
+        "description": "健康診断レスポンス"
+      },
+      "HealthAnalysisScope": {
+        "enum": [
+          "Organization",
+          "Workspace"
+        ],
+        "type": "string",
+        "description": "健康診断のスコープ"
+      },
+      "HealthAnalysisType": {
+        "enum": [
+          "CurrentHealth",
+          "ProblemPickup",
+          "FuturePrediction",
+          "Recommendation",
+          "Comparison",
+          "Summary"
+        ],
+        "type": "string",
+        "description": "健康診断の種類"
       },
       "HelpCommentItem": {
         "required": [
