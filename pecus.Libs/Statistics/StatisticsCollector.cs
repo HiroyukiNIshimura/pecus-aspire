@@ -217,4 +217,74 @@ public class StatisticsCollector : IStatisticsCollector
             ArchivedCount = archivedCount,
         };
     }
+
+    /// <inheritdoc />
+    public async Task<TaskTrend> GetOrganizationTaskTrendAsync(
+        int organizationId,
+        int weeks = 4,
+        CancellationToken cancellationToken = default)
+    {
+        var workspaceIds = await GetActiveWorkspaceIdsAsync(organizationId, cancellationToken);
+
+        var query = _context.WorkspaceTasks
+            .Where(t => workspaceIds.Contains(t.WorkspaceId));
+
+        return await GetTaskTrendFromQueryAsync(query, weeks, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<TaskTrend> GetWorkspaceTaskTrendAsync(
+        int workspaceId,
+        int weeks = 4,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.WorkspaceTasks
+            .Where(t => t.WorkspaceId == workspaceId);
+
+        return await GetTaskTrendFromQueryAsync(query, weeks, cancellationToken);
+    }
+
+    /// <summary>
+    /// クエリから週次トレンドを集計
+    /// </summary>
+    private async Task<TaskTrend> GetTaskTrendFromQueryAsync(
+        IQueryable<DB.Models.WorkspaceTask> query,
+        int weeks,
+        CancellationToken cancellationToken)
+    {
+        var todayStart = StatisticsDateHelper.GetTodayStart();
+        var currentWeekStart = StatisticsDateHelper.GetStartOfWeek(todayStart);
+        var startDate = currentWeekStart.AddDays(-7 * (weeks - 1));
+
+        // 期間内のタスクを取得
+        var tasksInPeriod = await query
+            .Where(t =>
+                t.CreatedAt >= startDate ||
+                (t.CompletedAt != null && t.CompletedAt >= startDate))
+            .Select(t => new { t.CreatedAt, t.CompletedAt })
+            .ToListAsync(cancellationToken);
+
+        // 週ごとに集計
+        var weeklyTrends = new List<WeeklyTrend>();
+        for (int i = 0; i < weeks; i++)
+        {
+            var weekStart = startDate.AddDays(7 * i);
+            var weekEnd = weekStart.AddDays(7);
+
+            var createdCount = tasksInPeriod.Count(t =>
+                t.CreatedAt >= weekStart && t.CreatedAt < weekEnd);
+            var completedCount = tasksInPeriod.Count(t =>
+                t.CompletedAt != null && t.CompletedAt >= weekStart && t.CompletedAt < weekEnd);
+
+            weeklyTrends.Add(new WeeklyTrend
+            {
+                WeekStart = weekStart,
+                Label = $"{weekStart:M/d}〜{weekStart.AddDays(6):M/d}",
+                CreatedCount = createdCount,
+                CompletedCount = completedCount,
+            });
+        }
+
+        return new TaskTrend { Weeks = weeklyTrends };
+    }
 }

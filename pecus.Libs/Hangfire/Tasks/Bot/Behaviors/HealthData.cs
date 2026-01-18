@@ -1,3 +1,5 @@
+using Pecus.Libs.Statistics.Models;
+
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
 
 /// <summary>
@@ -29,6 +31,9 @@ public record HealthData
     /// <summary>直近7日間のアクティビティ数</summary>
     public int ActivitiesThisWeek { get; init; }
 
+    /// <summary>週次トレンド（オプション）</summary>
+    public TaskTrend? Trend { get; init; }
+
     /// <summary>完了率（0-100）</summary>
     public double CompletionRate => TotalTasks > 0
         ? Math.Round((double)CompletedTasks / TotalTasks * 100, 1)
@@ -37,7 +42,7 @@ public record HealthData
     /// <summary>AI向けの要約テキストを生成</summary>
     public string ToSummary()
     {
-        return $"""
+        var baseSummary = $"""
             チーム人員:
             - 総メンバー数: {TotalMembers}人
 
@@ -50,5 +55,12 @@ public record HealthData
             チーム活動:
             - 直近7日間のアクティビティ: {ActivitiesThisWeek}件
             """;
+
+        if (Trend != null)
+        {
+            baseSummary += $"\n\n{Trend.ToSummary()}";
+        }
+
+        return baseSummary;
     }
 }

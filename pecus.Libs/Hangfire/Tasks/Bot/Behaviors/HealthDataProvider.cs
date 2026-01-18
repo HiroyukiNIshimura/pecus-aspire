@@ -42,6 +42,7 @@ public class HealthDataProvider : IHealthDataProvider
         var taskStats = await _statisticsCollector.GetWorkspaceTaskStatisticsAsync(workspaceId);
         var memberCount = await _statisticsCollector.GetWorkspaceMemberCountAsync(workspaceId);
         var activityCount = await _statisticsCollector.GetWorkspaceActivityCountAsync(workspaceId, oneWeekAgo);
+        var trend = await _statisticsCollector.GetWorkspaceTaskTrendAsync(workspaceId, 4);
 
         return new HealthData
         {
@@ -53,6 +54,7 @@ public class HealthDataProvider : IHealthDataProvider
             TasksCompletedThisWeek = taskStats.CompletedThisWeekCount,
             AverageTaskAgeDays = taskStats.AverageTaskAgeDays,
             ActivitiesThisWeek = activityCount,
+            Trend = trend,
         };
     }
 
@@ -64,6 +66,7 @@ public class HealthDataProvider : IHealthDataProvider
         var taskStats = await _statisticsCollector.GetOrganizationTaskStatisticsAsync(organizationId);
         var memberCount = await _statisticsCollector.GetOrganizationMemberCountAsync(organizationId);
         var activityCount = await _statisticsCollector.GetOrganizationActivityCountAsync(organizationId, oneWeekAgo);
+        var trend = await _statisticsCollector.GetOrganizationTaskTrendAsync(organizationId, 4);
 
         return new HealthData
         {
@@ -75,6 +78,7 @@ public class HealthDataProvider : IHealthDataProvider
             TasksCompletedThisWeek = taskStats.CompletedThisWeekCount,
             AverageTaskAgeDays = taskStats.AverageTaskAgeDays,
             ActivitiesThisWeek = activityCount,
+            Trend = trend,
         };
     }
 }

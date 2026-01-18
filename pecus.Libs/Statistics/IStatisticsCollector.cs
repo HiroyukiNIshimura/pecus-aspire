@@ -113,4 +113,28 @@ public interface IStatisticsCollector
         int workspaceId,
         DateTimeOffset since,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 組織の週次タスクトレンドを取得
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="weeks">取得する週数（デフォルト4週）</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>週次トレンドデータ</returns>
+    Task<TaskTrend> GetOrganizationTaskTrendAsync(
+        int organizationId,
+        int weeks = 4,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// ワークスペースの週次タスクトレンドを取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="weeks">取得する週数（デフォルト4週）</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>週次トレンドデータ</returns>
+    Task<TaskTrend> GetWorkspaceTaskTrendAsync(
+        int workspaceId,
+        int weeks = 4,
+        CancellationToken cancellationToken = default);
 }
