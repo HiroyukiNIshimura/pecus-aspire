@@ -279,6 +279,28 @@ export class WorkspaceService {
         });
     }
     /**
+     * ワークスペースに閲覧メンバーとして参加する
+     * @param id ワークスペースID
+     * @returns WorkspaceUserDetailResponse Created
+     * @throws ApiError
+     */
+    public static postApiWorkspacesJoin(
+        id: number,
+    ): CancelablePromise<WorkspaceUserDetailResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/workspaces/{id}/join',
+            path: {
+                'id': id,
+            },
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
      * ワークスペースのメンバーをあいまい検索する
      * ワークスペースに参加しているメンバーの中から、ユーザー名またはメールアドレスで
      * あいまい検索を行います。pgroonga を使用しているため、日本語の漢字のゆらぎや

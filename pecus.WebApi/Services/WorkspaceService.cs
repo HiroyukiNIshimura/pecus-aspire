@@ -840,18 +840,40 @@ public class WorkspaceService
     /// </summary>
     public async Task CheckWorkspaceAccessAsync(int workspaceId, int userId)
     {
-        var access = await _context.WorkspaceUsers
+        var access = await GetWorkspaceUserAsync(workspaceId, userId);
+        if (access == null || access.User == null || !access.User.IsActive)
+        {
+            throw new NotFoundException("ワークスペースにアクセスできません。");
+        }
+    }
+
+    /// <summary>
+    /// ワークスペースユーザー情報を取得
+    /// </summary>
+    public async Task<WorkspaceUser?> GetWorkspaceUserAsync(int workspaceId, int userId)
+    {
+        return await _context.WorkspaceUsers
             .AsNoTracking()
             .Include(wu => wu.User)
             .FirstOrDefaultAsync(wu =>
                 wu.WorkspaceId == workspaceId &&
                 wu.UserId == userId
             );
+    }
 
-        if (access == null || access.User == null || !access.User.IsActive)
-        {
-            throw new NotFoundException("ワークスペースにアクセスできません。");
-        }
+    /// <summary>
+    /// ワークスペースのオーナー情報を取得
+    /// </summary>
+    public async Task<List<WorkspaceUser>> GetWorkspaceOwnersAsync(int workspaceId)
+    {
+        return await _context.WorkspaceUsers
+            .AsNoTracking()
+            .Include(wu => wu.User)
+            .Where(wu =>
+                wu.WorkspaceId == workspaceId &&
+                wu.WorkspaceRole == WorkspaceRole.Owner
+            )
+            .ToListAsync();
     }
 
     /// <summary>
@@ -860,14 +882,7 @@ public class WorkspaceService
     /// </summary>
     public async Task CheckWorkspaceMemberOrOwnerAsync(int workspaceId, int userId)
     {
-        var workspaceUser = await _context.WorkspaceUsers
-            .AsNoTracking()
-            .Include(wu => wu.User)
-            .FirstOrDefaultAsync(wu =>
-                wu.WorkspaceId == workspaceId &&
-                wu.UserId == userId
-            );
-
+        var workspaceUser = await GetWorkspaceUserAsync(workspaceId, userId);
         if (workspaceUser == null || workspaceUser.User == null || !workspaceUser.User.IsActive)
         {
             throw new NotFoundException("ワークスペースにアクセスできません。");

@@ -1,0 +1,14 @@
+@model Pecus.Libs.Mail.Templates.Models.WorkspaceViewerJoinedEmailModel
+
+@Model.UserName さんが @Model.WorkspaceName の閲覧者になりました。
+
+ワークスペースを開くには、以下のリンクをご利用ください。
+- ワークスペースを開く: @Model.FrontendWorkspaceUrl
+
+参加情報:
+- 参加者: @Model.UserName
+- 参加日時 (JST): @Model.JoinedAt.ToString("yyyy/MM/dd HH:mm")
+- ワークスペース名: @Model.WorkspaceName
+- ワークスペースコード: @Model.WorkspaceCode
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。

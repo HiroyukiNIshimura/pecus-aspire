@@ -25,6 +25,7 @@ public static class EmailPreviewDataFactory
             new(WorkspaceUpdatedEmailModel.TemplateName, "ワークスペース更新", "ワークスペース更新通知"),
             new(WorkspaceDeletedEmailModel.TemplateName, "ワークスペース削除", "ワークスペース削除通知"),
             new(WorkspaceJoinedEmailModel.TemplateName, "ワークスペース加入", "ワークスペース加入通知"),
+            new(WorkspaceViewerJoinedEmailModel.TemplateName, "ワークスペース参加", "ワークスペース参加通知"),
             new(ItemCreatedEmailModel.TemplateName, "アイテム作成", "アイテム作成通知"),
             new(ItemUpdatedEmailModel.TemplateName, "アイテム更新", "アイテム更新通知"),
             new(TaskCreatedEmailModel.TemplateName, "タスク作成", "タスク作成通知"),
@@ -55,6 +56,7 @@ public static class EmailPreviewDataFactory
             "workspace-updated" => CreateWorkspaceUpdatedData(now),
             "workspace-deleted" => CreateWorkspaceDeletedData(now),
             "workspace-joined" => CreateWorkspaceJoinedData(now),
+            "workspace-viewer-joined" => CreateWorkspaceViewerJoinedData(now),
             "item-created" => CreateItemCreatedData(now),
             "item-updated" => CreateItemUpdatedData(now),
             "task-created" => CreateTaskCreatedData(now),
@@ -168,6 +170,15 @@ public static class EmailPreviewDataFactory
         WorkspaceName = "プロジェクトA",
         WorkspaceCode = "PROJECT-001",
         InviterName = "山田 花子",
+        JoinedAt = now,
+        FrontendWorkspaceUrl = "https://app.example.com/workspace/PROJECT-001",
+    };
+
+    private static WorkspaceViewerJoinedEmailModel CreateWorkspaceViewerJoinedData(DateTimeOffset now) => new()
+    {
+        UserName = "田中 太郎",
+        WorkspaceName = "プロジェクトA",
+        WorkspaceCode = "PROJECT-001",
         JoinedAt = now,
         FrontendWorkspaceUrl = "https://app.example.com/workspace/PROJECT-001",
     };

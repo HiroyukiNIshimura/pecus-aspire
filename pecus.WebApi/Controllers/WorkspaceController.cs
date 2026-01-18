@@ -393,6 +393,92 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
+    /// ワークスペースに閲覧メンバーとして参加する
+    /// </summary>
+    /// <param name="id">ワークスペースID</param>
+    [HttpPost("{id:int}/join")]
+    [ProducesResponseType(typeof(WorkspaceUserDetailResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Created<WorkspaceUserDetailResponse>> JoinWorkspace(
+        int id
+    )
+    {
+        var workspace = await _workspaceService.GetWorkspaceByIdAsync(id);
+        if (workspace == null || !workspace.IsActive)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var existingUser = await _workspaceService.GetWorkspaceUserAsync(workspaceId: id, userId: CurrentUserId);
+        if (existingUser != null)
+        {
+            throw new BadRequestException("既にワークスペースのメンバーです。");
+        }
+
+        // メンバーを追加（権限チェック済みのワークスペースを渡して再検索を省略）
+        var (workspaceUser, returnedWorkspace) = await _workspaceService.AddUserToWorkspaceAsync(
+            workspaceId: id,
+            request: new AddUserToWorkspaceRequest
+            {
+                UserId = CurrentUserId,
+                WorkspaceRole = WorkspaceRole.Viewer
+            },
+            verifiedWorkspace: workspace
+        );
+
+        var response = new WorkspaceUserDetailResponse
+        {
+            WorkspaceId = workspaceUser.WorkspaceId,
+            UserId = workspaceUser.UserId,
+            Username = workspaceUser.User?.Username ?? "",
+            Email = workspaceUser.User?.Email ?? "",
+            IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                iconType: workspaceUser.User?.AvatarType,
+                userId: workspaceUser.UserId,
+                username: workspaceUser.User?.Username ?? "",
+                email: workspaceUser.User?.Email ?? "",
+                avatarPath: workspaceUser.User?.UserAvatarPath
+            ),
+            WorkspaceRole = workspaceUser.WorkspaceRole,
+            JoinedAt = workspaceUser.JoinedAt,
+            LastAccessedAt = workspaceUser.LastAccessedAt,
+            IsActive = workspaceUser.User?.IsActive ?? false,
+        };
+
+        // ワークスペース参加通知メールを送信（オーナーへ）
+        var owners = await _workspaceService.GetWorkspaceOwnersAsync(id);
+        foreach (var owner in owners)
+        {
+            // ワークスペース参加通知メールを送信（オーナー全員に送信）
+            if (owner.User.Email != null && returnedWorkspace != null)
+            {
+                var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
+                var emailModel = new WorkspaceViewerJoinedEmailModel
+                {
+                    UserName = workspaceUser.User!.Username,
+                    WorkspaceName = returnedWorkspace.Name,
+                    WorkspaceCode = returnedWorkspace.Code ?? "",
+                    JoinedAt = workspaceUser.JoinedAt,
+                    FrontendWorkspaceUrl = $"{baseUrl}/workspaces/{returnedWorkspace.Code ?? ""}",
+                };
+
+                _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                    x.SendTemplatedEmailAsync(
+                        CurrentOrganizationId,
+                        owner.User.Email,
+                        "ワークスペースへの閲覧者参加のお知らせ",
+                        emailModel
+                    )
+                );
+            }
+        }
+
+        return TypedResults.Created($"/workspaces/{returnedWorkspace?.Code ?? ""}", response);
+    }
+
+    /// <summary>
     /// ワークスペースのメンバーをあいまい検索する
     /// </summary>
     /// <remarks>

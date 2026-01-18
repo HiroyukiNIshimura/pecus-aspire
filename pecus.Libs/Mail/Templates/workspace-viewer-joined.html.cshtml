@@ -1,0 +1,24 @@
+@model Pecus.Libs.Mail.Templates.Models.WorkspaceViewerJoinedEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>@Model.UserName さんが @Model.WorkspaceName の閲覧者になりました</h2>
+
+<p>以下のリンクからワークスペースを開いてください。</p>
+
+<div style="text-align:center; margin:20px 0;">
+    <a href="@Model.FrontendWorkspaceUrl" class="button">ワークスペースを開く</a>
+</div>
+
+<div class="divider"></div>
+
+<p><strong>参加情報:</strong></p>
+<ul>
+    <li>参加者: @Model.UserName</li>
+    <li>参加日時 (JST): @Model.JoinedAt.ToString("yyyy/MM/dd HH:mm")</li>
+    <li>ワークスペース名: @Model.WorkspaceName</li>
+    <li>ワークスペースコード: @Model.WorkspaceCode</li>
+</ul>
+
+<p class="muted">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>
