@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Services;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
@@ -20,6 +21,7 @@ public class TaskCommentReminderTask
     private readonly IDateExtractor _dateExtractor;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<TaskCommentReminderTask> _logger;
+    private readonly IBotTaskGuard _taskGuard;
 
     /// <summary>
     /// TaskCommentReminderTask のコンストラクタ
@@ -29,13 +31,15 @@ public class TaskCommentReminderTask
         IAiClientFactory aiClientFactory,
         IDateExtractor dateExtractor,
         IBackgroundJobClient backgroundJobClient,
-        ILogger<TaskCommentReminderTask> logger)
+        ILogger<TaskCommentReminderTask> logger,
+        IBotTaskGuard taskGuard)
     {
         _context = context;
         _aiClientFactory = aiClientFactory;
         _dateExtractor = dateExtractor;
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
+        _taskGuard = taskGuard;
     }
 
     /// <summary>
@@ -84,24 +88,20 @@ public class TaskCommentReminderTask
 
             var organizationId = workspace.OrganizationId;
 
-            var setting = await _context.OrganizationSettings
-                .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
-
-            if (setting == null ||
-                setting.GenerativeApiVendor == GenerativeApiVendor.None ||
-                string.IsNullOrEmpty(setting.GenerativeApiKey) ||
-                string.IsNullOrEmpty(setting.GenerativeApiModel))
+            var (isBotEnabled, signature) = await _taskGuard.IsBotEnabledAsync(organizationId);
+            if (!isBotEnabled || signature == null)
             {
-                _logger.LogDebug(
-                    "AI settings not configured for organization, skipping reminder: OrganizationId={OrganizationId}",
-                    organizationId);
+                _logger.LogInformation(
+                    "Bot is disabled for OrganizationId={OrganizationId}, skipping AI reply",
+                    organizationId
+                );
                 return;
             }
 
             var aiClient = _aiClientFactory.CreateClient(
-                setting.GenerativeApiVendor,
-                setting.GenerativeApiKey,
-                setting.GenerativeApiModel);
+                signature.GenerativeApiVendor,
+                signature.GenerativeApiKey,
+                signature.GenerativeApiModel);
 
             if (aiClient == null)
             {

@@ -11,6 +11,7 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot;
 /// <summary>
 /// タスクコメントで NeedReply（回答依頼）が投稿された際にDMへ通知する Hangfire タスク
 /// SystemBot がユーザーへのDMでメッセージを送信する
+/// AI Bot は使用しない
 /// </summary>
 public class TaskCommentNeedReplyTask
 {

@@ -6,6 +6,7 @@ using Pecus.Libs.AI.Tools;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Notifications;
 
@@ -24,6 +25,7 @@ public class AiChatReplyTask
     private readonly IBotSelector? _botSelector;
     private readonly IMessageAnalyzer? _messageAnalyzer;
     private readonly IAiToolExecutor? _toolExecutor;
+    private readonly IBotTaskGuard _taskGuard;
 
     /// <summary>
     /// Bot typing がタイムアウトするまでの時間（秒）
@@ -54,9 +56,11 @@ public class AiChatReplyTask
         IAiClientFactory aiClientFactory,
         SignalRNotificationPublisher publisher,
         ILogger<AiChatReplyTask> logger,
+        IBotTaskGuard taskGuard,
         IBotSelector? botSelector = null,
         IMessageAnalyzer? messageAnalyzer = null,
-        IAiToolExecutor? toolExecutor = null)
+        IAiToolExecutor? toolExecutor = null
+        )
     {
         _context = context;
         _aiClientFactory = aiClientFactory;
@@ -65,6 +69,7 @@ public class AiChatReplyTask
         _botSelector = botSelector;
         _messageAnalyzer = messageAnalyzer;
         _toolExecutor = toolExecutor;
+        _taskGuard = taskGuard;
     }
 
     /// <summary>
@@ -80,36 +85,30 @@ public class AiChatReplyTask
 
         try
         {
-            // 組織設定を取得
-            var setting = await GetOrganizationSettingAsync(organizationId);
-            if (setting == null ||
-                setting.GenerativeApiVendor == GenerativeApiVendor.None ||
-                string.IsNullOrEmpty(setting.GenerativeApiKey) ||
-                string.IsNullOrEmpty(setting.GenerativeApiModel))
+            var (isBotEnabled, signature) = await _taskGuard.IsBotEnabledAsync(organizationId);
+            if (!isBotEnabled || signature == null)
             {
-                _logger.LogWarning(
-                    "GenerativeApiVendor is not configured or required fields are missing: OrganizationId={OrganizationId}, Setting={Setting}, Vendor={Vendor}",
-                    organizationId,
-                    setting != null ? "exists" : "null",
-                    setting?.GenerativeApiVendor
+                _logger.LogInformation(
+                    "Bot is disabled for OrganizationId={OrganizationId}, skipping AI reply",
+                    organizationId
                 );
                 return;
             }
 
             // AI クライアントを作成
             var aiClient = _aiClientFactory.CreateClient(
-                setting.GenerativeApiVendor,
-                setting.GenerativeApiKey,
-                setting.GenerativeApiModel
+                signature.GenerativeApiVendor,
+                signature.GenerativeApiKey,
+                signature.GenerativeApiModel
             );
 
             if (aiClient == null)
             {
                 _logger.LogWarning(
                     "Failed to create AI client: Vendor={Vendor}, OrganizationId={OrganizationId}, HasApiKey={HasApiKey}",
-                    setting.GenerativeApiVendor,
+                    signature.GenerativeApiVendor,
                     organizationId,
-                    !string.IsNullOrEmpty(setting.GenerativeApiKey)
+                    !string.IsNullOrEmpty(signature.GenerativeApiKey)
                 );
                 return;
             }

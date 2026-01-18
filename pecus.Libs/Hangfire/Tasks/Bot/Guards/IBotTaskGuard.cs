@@ -1,3 +1,6 @@
+using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
+
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 
 /// <summary>
@@ -10,9 +13,14 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 public interface IBotTaskGuard
 {
     /// <summary>
-    /// グループチャットへのメッセージ送信が許可されているかチェック
+    /// Bot 全体の有効/無効設定をチェック
     /// </summary>
     /// <param name="organizationId">組織ID</param>
-    /// <returns>許可されている場合は true、無効の場合は false</returns>
-    Task<bool> IsGroupChatEnabledAsync(int organizationId);
+    /// <returns>有効の場合は true、無効の場合は false</returns>
+    Task<(bool, AISignature?)> IsBotEnabledAsync(int organizationId);
 }
+
+/// <summary>
+/// Bot の署名情報を表すレコード構造体
+/// </summary>
+public record AISignature(GenerativeApiVendor GenerativeApiVendor, string GenerativeApiModel, string GenerativeApiKey, bool BotGroupChatMessagesEnabled = false);

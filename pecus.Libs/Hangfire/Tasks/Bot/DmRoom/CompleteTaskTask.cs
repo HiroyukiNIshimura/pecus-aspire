@@ -6,6 +6,7 @@ using Pecus.Libs.AI.Prompts.Notifications;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Notifications;
 
@@ -20,8 +21,9 @@ public class CompleteTaskTask
     private readonly ApplicationDbContext _context;
     private readonly SignalRNotificationPublisher _publisher;
     private readonly ILogger<CompleteTaskTask> _logger;
-    private readonly IAiClientFactory? _aiClientFactory;
-    private readonly IBotSelector? _botSelector;
+    private readonly IAiClientFactory _aiClientFactory;
+    private readonly IBotSelector _botSelector;
+    private readonly IBotTaskGuard _taskGuard;
     private readonly TaskCompletedPromptTemplate _promptTemplate = new();
 
     /// <summary>
@@ -31,14 +33,16 @@ public class CompleteTaskTask
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
         ILogger<CompleteTaskTask> logger,
-        IAiClientFactory? aiClientFactory = null,
-        IBotSelector? botSelector = null)
+        IAiClientFactory aiClientFactory,
+        IBotSelector botSelector,
+        IBotTaskGuard taskGuard)
     {
         _context = context;
         _publisher = publisher;
         _logger = logger;
         _aiClientFactory = aiClientFactory;
         _botSelector = botSelector;
+        _taskGuard = taskGuard;
     }
 
     /// <summary>
@@ -52,6 +56,16 @@ public class CompleteTaskTask
 
         try
         {
+            var (isBotEnabled, signature) = await _taskGuard.IsBotEnabledAsync(organizationId);
+            if (!isBotEnabled || signature == null)
+            {
+                _logger.LogInformation(
+                    "Bot is disabled for OrganizationId={OrganizationId}, skipping AI reply",
+                    organizationId
+                );
+                return;
+            }
+
             var task = await _context.WorkspaceTasks
                 .Include(t => t.WorkspaceItem)
                     .ThenInclude(i => i.Workspace)

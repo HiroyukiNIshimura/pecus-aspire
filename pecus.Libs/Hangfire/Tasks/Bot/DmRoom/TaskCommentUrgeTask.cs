@@ -3,59 +3,73 @@ using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Notifications;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot;
 
 /// <summary>
-/// リマインダー発火タスク
-/// 指定日時にタスク担当者へDMでリマインダーメッセージを送信する
+/// タスクコメントで Urge（督促）が投稿された際にDMへ通知する Hangfire タスク
+/// SystemBot がタスク担当者へのDMでメッセージを送信する
 /// </summary>
-public class TaskCommentReminderFireTask
+public class TaskCommentUrgeTask
 {
     private readonly ApplicationDbContext _context;
     private readonly SignalRNotificationPublisher _publisher;
-    private readonly ILogger<TaskCommentReminderFireTask> _logger;
+    private readonly ILogger<TaskCommentUrgeTask> _logger;
+    private readonly IBotTaskGuard _taskGuard;
 
     /// <summary>
-    /// TaskCommentReminderFireTask のコンストラクタ
+    /// TaskCommentUrgeTask のコンストラクタ
     /// </summary>
-    public TaskCommentReminderFireTask(
+    public TaskCommentUrgeTask(
         ApplicationDbContext context,
         SignalRNotificationPublisher publisher,
-        ILogger<TaskCommentReminderFireTask> logger)
+        ILogger<TaskCommentUrgeTask> logger,
+        IBotTaskGuard taskGuard)
     {
         _context = context;
         _publisher = publisher;
         _logger = logger;
+        _taskGuard = taskGuard;
     }
 
     /// <summary>
-    /// リマインダーDM通知を送信する
+    /// Urge コメントに対するDM通知を送信する
     /// </summary>
     /// <param name="commentId">タスクコメントID</param>
-    /// <param name="reminderMonth">リマインダー月</param>
-    /// <param name="reminderDay">リマインダー日</param>
-    public async Task SendReminderFireNotificationAsync(int commentId, int reminderMonth, int reminderDay)
+    public async Task SendUrgeNotificationAsync(int commentId)
     {
+        DB.Models.Bot? systemBot = null;
+        int organizationId = 0;
+
         try
         {
             var comment = await _context.TaskComments
+                .Include(c => c.User)
                 .Include(c => c.WorkspaceTask)
                     .ThenInclude(t => t.WorkspaceItem)
                         .ThenInclude(i => i!.Workspace)
                 .Include(c => c.WorkspaceTask)
                     .ThenInclude(t => t.AssignedUser)
                         .ThenInclude(u => u.ChatActor)
-                .AsSplitQuery()
                 .FirstOrDefaultAsync(c => c.Id == commentId);
 
             if (comment == null)
             {
                 _logger.LogWarning(
-                    "TaskComment not found for reminder fire: CommentId={CommentId}",
+                    "TaskComment not found: CommentId={CommentId}",
                     commentId);
+                return;
+            }
+
+            if (comment.CommentType != TaskCommentType.Urge)
+            {
+                _logger.LogDebug(
+                    "TaskComment is not Urge type, skipping: CommentId={CommentId}, Type={Type}",
+                    commentId,
+                    comment.CommentType);
                 return;
             }
 
@@ -66,15 +80,26 @@ public class TaskCommentReminderFireTask
             if (workspace == null || task == null || item == null)
             {
                 _logger.LogWarning(
-                    "Workspace, Task, or Item not found for reminder fire: CommentId={CommentId}",
+                    "Workspace, Task, or Item not found for comment: CommentId={CommentId}",
                     commentId);
                 return;
             }
 
-            var organizationId = workspace.OrganizationId;
+            organizationId = workspace.OrganizationId;
+
+            var commentUserId = comment.UserId;
             var taskAssignedUserId = task.AssignedUserId;
 
-            var systemBot = await GetSystemBotAsync(organizationId);
+            if (commentUserId == taskAssignedUserId)
+            {
+                _logger.LogDebug(
+                    "Comment creator is the same as task assignee, skipping: CommentId={CommentId}, UserId={UserId}",
+                    commentId,
+                    commentUserId);
+                return;
+            }
+
+            systemBot = await GetSystemBotAsync(organizationId);
             if (systemBot?.ChatActor == null)
             {
                 _logger.LogWarning(
@@ -83,13 +108,13 @@ public class TaskCommentReminderFireTask
                 return;
             }
 
+            var commentUserName = comment.User?.Username ?? "不明なユーザー";
             var workspaceCode = workspace.Code ?? workspace.Name;
             var itemCode = item.Code;
             var taskSequence = task.Sequence;
 
             var messageContent = BuildNotificationMessage(
-                reminderMonth,
-                reminderDay,
+                commentUserName,
                 workspaceCode,
                 itemCode,
                 taskSequence);
@@ -101,17 +126,15 @@ public class TaskCommentReminderFireTask
                 messageContent);
 
             _logger.LogInformation(
-                "Reminder fire notification sent: CommentId={CommentId}, TargetUserId={TargetUserId}, Date={Month}/{Day}",
+                "Urge notification sent: CommentId={CommentId}, TargetUserId={TargetUserId}",
                 commentId,
-                taskAssignedUserId,
-                reminderMonth,
-                reminderDay);
+                taskAssignedUserId);
         }
         catch (Exception ex)
         {
             _logger.LogError(
                 ex,
-                "TaskCommentReminderFireTask failed: CommentId={CommentId}",
+                "TaskCommentUrgeTask failed: CommentId={CommentId}",
                 commentId);
 
             throw;
@@ -122,13 +145,12 @@ public class TaskCommentReminderFireTask
     /// 通知メッセージを生成する
     /// </summary>
     private static string BuildNotificationMessage(
-        int month,
-        int day,
+        string userName,
         string workspaceCode,
         string itemCode,
         int taskSequence)
     {
-        return $"リマインダの期日が来ました。{month}月{day}日 タスク[{workspaceCode}#{itemCode}T{taskSequence}]を確認してください。";
+        return $"{userName}さんから督促コメントがタスクで作成されました。[{workspaceCode}#{itemCode}T{taskSequence}]";
     }
 
     /// <summary>
@@ -178,7 +200,7 @@ public class TaskCommentReminderFireTask
             isTyping: false);
 
         _logger.LogDebug(
-            "Reminder fire DM sent: TargetUserId={TargetUserId}, RoomId={RoomId}",
+            "Urge DM sent: TargetUserId={TargetUserId}, RoomId={RoomId}",
             targetUserId,
             dmRoom.Id);
     }

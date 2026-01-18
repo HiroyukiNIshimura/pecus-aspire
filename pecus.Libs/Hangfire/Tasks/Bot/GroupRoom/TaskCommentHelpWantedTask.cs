@@ -100,9 +100,23 @@ public class TaskCommentHelpWantedTask
 
             var organizationId = workspace.OrganizationId;
 
-            // 組織設定でグループチャットメッセージが無効ならスキップ
-            if (!await _taskGuard.IsGroupChatEnabledAsync(organizationId))
+            var (isBotEnabled, signature) = await _taskGuard.IsBotEnabledAsync(organizationId);
+            if (!isBotEnabled)
             {
+                _logger.LogInformation(
+                    "Bot is disabled for organization: OrganizationId={OrganizationId}",
+                    organizationId
+                );
+                return;
+            }
+
+            // 組織設定でグループチャットメッセージが無効ならスキップ
+            if (signature == null || !signature.BotGroupChatMessagesEnabled)
+            {
+                _logger.LogInformation(
+                    "Bot group chat messages are disabled for organization: OrganizationId={OrganizationId}",
+                    organizationId
+                );
                 return;
             }
 

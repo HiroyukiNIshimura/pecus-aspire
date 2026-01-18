@@ -259,8 +259,18 @@ public abstract class ItemNotificationTaskBase
 
             organizationId = item.Workspace.OrganizationId;
 
+            var (isBotEnabled, signature) = await TaskGuard.IsBotEnabledAsync(organizationId);
+            if (!isBotEnabled)
+            {
+                Logger.LogInformation(
+                    "Bot is disabled for organization: OrganizationId={OrganizationId}",
+                    organizationId
+                );
+                return;
+            }
+
             // 組織設定でグループチャットメッセージが無効ならスキップ
-            if (!await TaskGuard.IsGroupChatEnabledAsync(organizationId))
+            if (signature == null || !signature.BotGroupChatMessagesEnabled)
             {
                 return;
             }

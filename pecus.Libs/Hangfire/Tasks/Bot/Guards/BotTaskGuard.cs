@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 
@@ -22,19 +24,29 @@ public class BotTaskGuard : IBotTaskGuard
     }
 
     /// <inheritdoc />
-    public async Task<bool> IsGroupChatEnabledAsync(int organizationId)
+    public async Task<(bool, AISignature?)> IsBotEnabledAsync(int organizationId)
     {
         var setting = await _context.OrganizationSettings
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
 
-        if (setting?.BotGroupChatMessagesEnabled == false)
+        if (setting?.GenerativeApiVendor == GenerativeApiVendor.None ||
+                string.IsNullOrEmpty(setting?.GenerativeApiKey) ||
+                string.IsNullOrEmpty(setting?.GenerativeApiModel))
         {
-            _logger.LogDebug(
-                "BotGroupChatMessagesEnabled is disabled: OrganizationId={OrganizationId}",
-                organizationId);
-            return false;
+            _logger.LogWarning(
+                    "GenerativeApiVendor is not configured or required fields are missing: OrganizationId={OrganizationId}, Setting={Setting}, Vendor={Vendor}",
+                    organizationId,
+                    setting != null ? "exists" : "null",
+                    setting?.GenerativeApiVendor
+                );
+            return (false, null);
         }
 
-        return true;
+        return (true, new AISignature(
+            setting.GenerativeApiVendor,
+            setting.GenerativeApiModel,
+            setting.GenerativeApiKey,
+            setting.BotGroupChatMessagesEnabled
+            ));
     }
 }
