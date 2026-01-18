@@ -1,4 +1,5 @@
 import type { DashboardItemSummary, DashboardTaskSummary } from '@/connectors/api/pecus';
+import OrganizationHealthButton from './OrganizationHealthButton';
 import StatCard from './StatCard.server';
 
 interface TaskSummarySectionProps {
@@ -17,10 +18,13 @@ interface TaskSummarySectionProps {
 export default function TaskSummarySection({ taskSummary, itemSummary, workspaceSummary }: TaskSummarySectionProps) {
   return (
     <section aria-labelledby="task-summary-heading">
-      <h2 id="task-summary-heading" className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <span className="icon-[mdi--clipboard-check-outline] w-5 h-5 text-primary" aria-hidden="true" />
-        組織サマリ
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 id="task-summary-heading" className="text-lg font-semibold flex items-center gap-2">
+          <span className="icon-[mdi--clipboard-check-outline] w-5 h-5 text-primary" aria-hidden="true" />
+          組織サマリ
+        </h2>
+        <OrganizationHealthButton />
+      </div>
 
       {/* タスク統計 */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

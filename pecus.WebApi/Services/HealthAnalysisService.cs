@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.AI;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
+using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Models.Requests.Dashboard;
 using Pecus.Models.Responses.Dashboard;
 
@@ -16,17 +17,20 @@ public class HealthAnalysisService
     private readonly ApplicationDbContext _context;
     private readonly IHealthDataProvider _healthDataProvider;
     private readonly IAiClientFactory _aiClientFactory;
+    private readonly IBotTaskGuard _botTaskGuard;
     private readonly ILogger<HealthAnalysisService> _logger;
 
     public HealthAnalysisService(
         ApplicationDbContext context,
         IHealthDataProvider healthDataProvider,
         IAiClientFactory aiClientFactory,
+        IBotTaskGuard botTaskGuard,
         ILogger<HealthAnalysisService> logger)
     {
         _context = context;
         _healthDataProvider = healthDataProvider;
         _aiClientFactory = aiClientFactory;
+        _botTaskGuard = botTaskGuard;
         _logger = logger;
     }
 
@@ -223,20 +227,16 @@ public class HealthAnalysisService
         int organizationId,
         CancellationToken cancellationToken)
     {
-        var setting = await _context.OrganizationSettings
-            .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId, cancellationToken);
+        var (isEnabled, signature) = await _botTaskGuard.IsBotEnabledAsync(organizationId);
 
-        if (setting == null ||
-            string.IsNullOrEmpty(setting.GenerativeApiKey) ||
-            string.IsNullOrEmpty(setting.GenerativeApiModel))
+        if (!isEnabled || signature == null)
         {
             return null;
         }
 
         return _aiClientFactory.CreateClient(
-            setting.GenerativeApiVendor,
-            setting.GenerativeApiKey,
-            setting.GenerativeApiModel);
+            signature.GenerativeApiVendor,
+            signature.GenerativeApiKey,
+            signature.GenerativeApiModel);
     }
 }

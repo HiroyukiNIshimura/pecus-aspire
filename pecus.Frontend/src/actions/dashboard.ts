@@ -8,6 +8,8 @@ import type {
   DashboardTasksByPriorityResponse,
   DashboardTaskTrendResponse,
   DashboardWorkspaceBreakdownResponse,
+  HealthAnalysisRequest,
+  HealthAnalysisResponse,
 } from '@/connectors/api/pecus';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
@@ -117,6 +119,24 @@ export async function fetchHelpComments(): Promise<ApiResponse<DashboardHelpComm
     console.error('Failed to fetch help comments:', error);
     return handleApiErrorForAction<DashboardHelpCommentsResponse>(error, {
       defaultMessage: 'ヘルプコメントの取得に失敗しました',
+    });
+  }
+}
+
+/**
+ * AIによるワークスペース/組織の健康状態分析を実行
+ * @param request 分析リクエスト（スコープ、分析タイプ、ワークスペースID等）
+ */
+export async function analyzeHealth(request: HealthAnalysisRequest): Promise<ApiResponse<HealthAnalysisResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.dashboard.postApiDashboardHealthAnalysis(request);
+
+    return { success: true, data: response };
+  } catch (error: unknown) {
+    console.error('Failed to analyze health:', error);
+    return handleApiErrorForAction<HealthAnalysisResponse>(error, {
+      defaultMessage: '健康状態の分析に失敗しました',
     });
   }
 }
