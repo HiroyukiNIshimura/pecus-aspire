@@ -86,7 +86,7 @@ public class AgendaService
     }
 
     /// <summary>
-    /// アジェンダ作成（単発イベント）
+    /// アジェンダ作成（単発・繰り返しイベント対応）
     /// </summary>
     public async Task<AgendaResponse> CreateAsync(int organizationId, int userId, CreateAgendaRequest request)
     {
@@ -95,10 +95,18 @@ public class AgendaService
             throw new BadRequestException("終了日時は開始日時より後である必要があります。");
         }
 
-        // 繰り返し設定のバリデーション（Phase 2では単発のみ）
-        if (request.RecurrenceType != null && request.RecurrenceType != RecurrenceType.None)
+        // 繰り返し設定のバリデーション
+        var (isValid, errorMessage) = RecurrenceHelper.ValidateRecurrence(
+            request.RecurrenceType,
+            request.RecurrenceInterval,
+            request.RecurrenceWeekOfMonth,
+            request.RecurrenceEndDate,
+            request.RecurrenceCount,
+            request.StartAt);
+
+        if (!isValid)
         {
-            throw new BadRequestException("繰り返しイベントは現在サポートされていません。");
+            throw new BadRequestException(errorMessage!);
         }
 
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -168,10 +176,18 @@ public class AgendaService
             throw new BadRequestException("終了日時は開始日時より後である必要があります。");
         }
 
-        // 繰り返し設定のバリデーション（Phase 2では単発のみ）
-        if (request.RecurrenceType != null && request.RecurrenceType != RecurrenceType.None)
+        // 繰り返し設定のバリデーション
+        var (isValid, errorMessage) = RecurrenceHelper.ValidateRecurrence(
+            request.RecurrenceType,
+            request.RecurrenceInterval,
+            request.RecurrenceWeekOfMonth,
+            request.RecurrenceEndDate,
+            request.RecurrenceCount,
+            request.StartAt);
+
+        if (!isValid)
         {
-            throw new BadRequestException("繰り返しイベントは現在サポートされていません。");
+            throw new BadRequestException(errorMessage!);
         }
 
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -353,6 +369,110 @@ public class AgendaService
             .Where(v => v.HasValue)
             .Select(v => v!.Value)
             .OrderByDescending(x => x)
+            .ToList();
+    }
+
+    /// <summary>
+    /// 展開済みオカレンス一覧取得（期間指定）
+    /// 繰り返しイベントを展開し、例外（中止・変更）を反映した一覧を返す
+    /// </summary>
+    public async Task<List<AgendaOccurrenceResponse>> GetOccurrencesAsync(
+        int organizationId,
+        int currentUserId,
+        DateTimeOffset start,
+        DateTimeOffset end)
+    {
+        // 対象期間に開始日があるアジェンダ、または繰り返しで期間内にオカレンスがある可能性があるアジェンダを取得
+        var agendas = await _context.Agendas
+            .AsNoTracking()
+            .Include(a => a.CreatedByUser)
+            .Include(a => a.Attendees)
+            .Include(a => a.Exceptions)
+            .Where(a => a.OrganizationId == organizationId)
+            .Where(a =>
+                // 単発イベント: 期間内に開始
+                (a.RecurrenceType == null || a.RecurrenceType == RecurrenceType.None)
+                    ? (a.StartAt < end && a.EndAt > start)
+                    // 繰り返しイベント: 開始日が期間終了より前、かつ終了条件が期間開始より後（または無期限）
+                    : (a.StartAt < end &&
+                       (a.RecurrenceEndDate == null ||
+                        a.RecurrenceEndDate >= DateOnly.FromDateTime(start.UtcDateTime))))
+            .ToListAsync();
+
+        var occurrences = new List<AgendaOccurrenceResponse>();
+        var duration = TimeSpan.Zero;
+
+        foreach (var agenda in agendas)
+        {
+            duration = agenda.EndAt - agenda.StartAt;
+            var expandedDates = RecurrenceHelper.ExpandOccurrences(agenda, start, end);
+
+            foreach (var occurrenceStart in expandedDates)
+            {
+                var occurrenceEnd = occurrenceStart + duration;
+
+                // 例外（中止・変更）を確認
+                var exception = agenda.Exceptions?
+                    .FirstOrDefault(e => e.OriginalStartAt == occurrenceStart);
+
+                // この回が中止されているか
+                var isCancelled = agenda.IsCancelled || (exception?.IsCancelled ?? false);
+                var cancellationReason = agenda.IsCancelled
+                    ? agenda.CancellationReason
+                    : exception?.CancellationReason;
+
+                // 例外で変更されている場合はその値を使用
+                var title = exception?.ModifiedTitle ?? agenda.Title;
+                var location = exception?.ModifiedLocation ?? agenda.Location;
+                var url = exception?.ModifiedUrl ?? agenda.Url;
+                var actualStart = exception?.ModifiedStartAt ?? occurrenceStart;
+                var actualEnd = exception?.ModifiedEndAt ?? occurrenceEnd;
+
+                // 現在ユーザーの参加状況
+                var myAttendance = agenda.Attendees?.FirstOrDefault(a => a.UserId == currentUserId);
+
+                occurrences.Add(new AgendaOccurrenceResponse
+                {
+                    AgendaId = agenda.Id,
+                    ExceptionId = exception?.Id,
+                    StartAt = actualStart,
+                    EndAt = actualEnd,
+                    Title = title,
+                    Location = location,
+                    Url = url,
+                    IsAllDay = agenda.IsAllDay,
+                    RecurrenceType = agenda.RecurrenceType,
+                    IsCancelled = isCancelled,
+                    CancellationReason = cancellationReason,
+                    IsModified = exception != null && !exception.IsCancelled,
+                    AttendeeCount = agenda.Attendees?.Count ?? 0,
+                    MyAttendanceStatus = myAttendance?.Status,
+                    CreatedByUser = agenda.CreatedByUser == null ? null : ToUserItem(agenda.CreatedByUser)
+                });
+            }
+        }
+
+        // 開始日時でソート
+        return occurrences.OrderBy(o => o.StartAt).ToList();
+    }
+
+    /// <summary>
+    /// 直近の展開済みオカレンス一覧取得
+    /// </summary>
+    public async Task<List<AgendaOccurrenceResponse>> GetRecentOccurrencesAsync(
+        int organizationId,
+        int currentUserId,
+        int limit = 20)
+    {
+        var now = DateTimeOffset.UtcNow;
+        // 3ヶ月先まで展開して取得
+        var end = now.AddMonths(3);
+
+        var occurrences = await GetOccurrencesAsync(organizationId, currentUserId, now, end);
+
+        return occurrences
+            .Where(o => o.EndAt > now) // 終了していないもののみ
+            .Take(limit)
             .ToList();
     }
 
