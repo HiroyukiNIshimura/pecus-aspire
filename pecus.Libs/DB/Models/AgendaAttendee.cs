@@ -1,6 +1,5 @@
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Pecus.Libs.DB.Models;
 
@@ -34,6 +33,14 @@ public class AgendaAttendee
 
     // Navigation Properties
 
+    /// <summary>
+    ///  アジェンダ
+    /// </summary>
     public Agenda? Agenda { get; set; }
+
+    /// <summary>
+    /// ユーザー
+    /// </summary>
     public User? User { get; set; }
+
 }

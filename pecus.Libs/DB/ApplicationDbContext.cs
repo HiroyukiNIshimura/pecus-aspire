@@ -1254,13 +1254,6 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Workspace とのリレーション（任意）
-            entity
-                .HasOne(e => e.Workspace)
-                .WithMany()
-                .HasForeignKey(e => e.WorkspaceId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             // CreatedByUser とのリレーション
             entity
                 .HasOne(e => e.CreatedByUser)
@@ -1269,7 +1262,7 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict); // ユーザー削除時もアジェンダは残す（またはSetNull）
 
             // 期間検索用インデックス
-            entity.HasIndex(e => new { e.OrganizationId, e.WorkspaceId, e.StartAt, e.EndAt });
+            entity.HasIndex(e => new { e.OrganizationId, e.StartAt, e.EndAt });
         });
 
         // AgendaAttendeeエンティティの設定

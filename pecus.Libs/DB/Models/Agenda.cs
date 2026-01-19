@@ -22,11 +22,6 @@ public class Agenda
     public int OrganizationId { get; set; }
 
     /// <summary>
-    /// ワークスペースID（任意）
-    /// </summary>
-    public int? WorkspaceId { get; set; }
-
-    /// <summary>
     /// タイトル
     /// </summary>
     [Required]
@@ -95,10 +90,6 @@ public class Agenda
     /// </summary>
     public Organization? Organization { get; set; }
 
-    /// <summary>
-    /// ワークスペース
-    /// </summary>
-    public Workspace? Workspace { get; set; }
     /// <summary>
     ///  作成ユーザー
     /// </summary>

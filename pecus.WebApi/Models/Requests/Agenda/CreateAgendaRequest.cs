@@ -4,8 +4,6 @@ namespace Pecus.Models.Requests.Agenda;
 
 public class CreateAgendaRequest
 {
-    public int? WorkspaceId { get; set; }
-
     [Required]
     [MaxLength(200)]
     public string Title { get; set; } = string.Empty;

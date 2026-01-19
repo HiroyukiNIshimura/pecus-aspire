@@ -6,7 +6,6 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Requests.Agenda;
 using Pecus.Models.Responses.Agenda;
-using Pecus.Models.Responses.User;
 
 namespace Pecus.Services;
 
@@ -21,7 +20,7 @@ public class AgendaService
         _logger = logger;
     }
 
-    public async Task<List<AgendaResponse>> GetListAsync(int organizationId, int? workspaceId, DateTimeOffset start, DateTimeOffset end)
+    public async Task<List<AgendaResponse>> GetListAsync(int organizationId, DateTimeOffset start, DateTimeOffset end)
     {
         var query = _context.Agendas
             .AsNoTracking()
@@ -30,11 +29,6 @@ public class AgendaService
                 .ThenInclude(at => at.User)
             .Where(a => a.OrganizationId == organizationId && a.StartAt < end && a.EndAt > start);
 
-        if (workspaceId.HasValue)
-        {
-            query = query.Where(a => a.WorkspaceId == workspaceId);
-        }
-
         var agendas = await query
             .OrderBy(a => a.StartAt)
             .ToListAsync();
@@ -42,7 +36,7 @@ public class AgendaService
         return agendas.Select(ToResponse).ToList();
     }
 
-    public async Task<List<AgendaResponse>> GetRecentListAsync(int organizationId, int? workspaceId, int limit = 20)
+    public async Task<List<AgendaResponse>> GetRecentListAsync(int organizationId, int limit = 20)
     {
         var now = DateTimeOffset.UtcNow;
         var query = _context.Agendas
@@ -52,11 +46,6 @@ public class AgendaService
                 .ThenInclude(at => at.User)
             .Where(a => a.OrganizationId == organizationId && a.EndAt > now);
 
-        if (workspaceId.HasValue)
-        {
-            query = query.Where(a => a.WorkspaceId == workspaceId);
-        }
-
         var agendas = await query
             .OrderBy(a => a.StartAt)
             .Take(limit)
@@ -65,7 +54,7 @@ public class AgendaService
         return agendas.Select(ToResponse).ToList();
     }
 
-    public async Task<AgendaResponse> GetByIdAsync(long id, int organizationId, int? workspaceId = null)
+    public async Task<AgendaResponse> GetByIdAsync(long id, int organizationId)
     {
         var query = _context.Agendas
             .AsNoTracking()
@@ -73,11 +62,6 @@ public class AgendaService
             .Include(a => a.Attendees)
                 .ThenInclude(at => at.User)
             .Where(a => a.Id == id && a.OrganizationId == organizationId);
-
-        if (workspaceId.HasValue)
-        {
-            query = query.Where(a => a.WorkspaceId == workspaceId);
-        }
 
         var agenda = await query.FirstOrDefaultAsync();
 
@@ -89,20 +73,19 @@ public class AgendaService
         return ToResponse(agenda);
     }
 
-    public async Task<AgendaResponse> CreateAsync(int organizationId, int? workspaceId, int userId, CreateAgendaRequest request)
+    public async Task<AgendaResponse> CreateAsync(int organizationId, int userId, CreateAgendaRequest request)
     {
         if (request.EndAt <= request.StartAt)
         {
             throw new BadRequestException("終了日時は開始日時より後である必要があります。");
         }
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
             var agenda = new Agenda
             {
                 OrganizationId = organizationId,
-                WorkspaceId = workspaceId,
                 Title = request.Title,
                 Description = request.Description,
                 StartAt = request.StartAt,
@@ -132,7 +115,7 @@ public class AgendaService
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            return await GetByIdAsync(agenda.Id, organizationId, workspaceId);
+            return await GetByIdAsync(agenda.Id, organizationId);
         }
         catch
         {
@@ -141,24 +124,19 @@ public class AgendaService
         }
     }
 
-    public async Task<AgendaResponse> UpdateAsync(long id, int organizationId, int? workspaceId, int userId, UpdateAgendaRequest request)
+    public async Task<AgendaResponse> UpdateAsync(long id, int organizationId, UpdateAgendaRequest request)
     {
         if (request.EndAt <= request.StartAt)
         {
             throw new BadRequestException("終了日時は開始日時より後である必要があります。");
         }
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
             var query = _context.Agendas
                 .Include(a => a.Attendees)
                 .Where(a => a.Id == id && a.OrganizationId == organizationId);
-
-            if (workspaceId.HasValue)
-            {
-                query = query.Where(a => a.WorkspaceId == workspaceId);
-            }
 
             var agenda = await query.FirstOrDefaultAsync();
 
@@ -206,18 +184,15 @@ public class AgendaService
             // OriginalValue に設定することで WHERE 句に RowVersion 条件が追加される
             _context.Entry(agenda).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                var latest = await GetByIdAsync(id, organizationId, workspaceId);
-                throw new ConcurrencyException<AgendaResponse>("データが更新されています。再読み込みしてください。", latest);
-            }
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
-            return await GetByIdAsync(id, organizationId, workspaceId);
+            return await GetByIdAsync(id, organizationId);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            var latest = await GetByIdAsync(id, organizationId);
+            throw new ConcurrencyException<AgendaResponse>("データが更新されています。再読み込みしてください。", latest);
         }
         catch
         {
@@ -226,14 +201,9 @@ public class AgendaService
         }
     }
 
-    public async Task DeleteAsync(long id, int organizationId, int? workspaceId)
+    public async Task DeleteAsync(long id, int organizationId)
     {
         var query = _context.Agendas.Where(a => a.Id == id && a.OrganizationId == organizationId);
-
-        if (workspaceId.HasValue)
-        {
-            query = query.Where(a => a.WorkspaceId == workspaceId);
-        }
 
         var agenda = await query.FirstOrDefaultAsync();
         if (agenda == null) throw new NotFoundException("アジェンダが見つかりません。");
@@ -248,7 +218,6 @@ public class AgendaService
         {
             Id = agenda.Id,
             OrganizationId = agenda.OrganizationId,
-            WorkspaceId = agenda.WorkspaceId,
             Title = agenda.Title,
             Description = agenda.Description,
             StartAt = agenda.StartAt,
