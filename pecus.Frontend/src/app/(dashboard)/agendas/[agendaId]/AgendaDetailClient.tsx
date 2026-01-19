@@ -62,11 +62,19 @@ export default function AgendaDetailClient({ agenda, exceptions, fetchError }: A
   return (
     <div className="flex flex-1 flex-col p-4 md:p-6">
       {/* ヘッダー */}
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex items-center justify-between">
         <Link href="/agendas" className="btn btn-secondary btn-sm">
           <span className="icon-[tabler--arrow-left] size-4" />
           戻る
         </Link>
+
+        {/* 編集ボタン（中止されていない場合のみ） */}
+        {!currentAgenda.isCancelled && (
+          <Link href={`/agendas/${currentAgenda.id}/edit`} className="btn btn-primary btn-sm">
+            <span className="icon-[tabler--pencil] size-4" />
+            編集
+          </Link>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

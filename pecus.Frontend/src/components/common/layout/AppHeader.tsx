@@ -1,5 +1,6 @@
 'use client';
 
+import AgendaIconButton from '@/components/agendas/AgendaIconButton';
 import ChatIconButton from '@/components/chat/ChatIconButton';
 import type { CurrentUserInfo } from '@/connectors/api/pecus';
 import HeaderLogo from '../navigation/HeaderLogo';
@@ -73,6 +74,7 @@ export default function AppHeader({
 
         <div className="navbar-end flex items-center gap-1">
           <ThemeToggle />
+          <AgendaIconButton />
           {showChat && <ChatIconButton />}
           <UserMenu
             userInfo={userInfo}

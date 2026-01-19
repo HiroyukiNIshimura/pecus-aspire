@@ -8,6 +8,8 @@ import type {
   AttendanceStatus,
   CancelAgendaRequest,
   CreateAgendaExceptionRequest,
+  CreateAgendaRequest,
+  UpdateAgendaRequest,
   UpdateAttendanceRequest,
 } from '@/connectors/api/pecus';
 import { handleApiErrorForAction } from './apiErrorPolicy';
@@ -135,6 +137,62 @@ export async function fetchAgendaExceptions(agendaId: number): Promise<ApiRespon
     console.error('fetchAgendaExceptions error:', error);
     return handleApiErrorForAction<AgendaExceptionResponse[]>(error, {
       defaultMessage: '例外の取得に失敗しました。',
+    });
+  }
+}
+
+/**
+ * アジェンダを作成
+ */
+export async function createAgenda(request: CreateAgendaRequest): Promise<ApiResponse<AgendaResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const result = await api.agenda.postApiAgendas(request);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('createAgenda error:', error);
+    return handleApiErrorForAction<AgendaResponse>(error, {
+      defaultMessage: 'アジェンダの作成に失敗しました。',
+    });
+  }
+}
+
+/**
+ * アジェンダを更新（シリーズ全体）
+ */
+export async function updateAgenda(
+  agendaId: number,
+  request: UpdateAgendaRequest,
+): Promise<ApiResponse<AgendaResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const result = await api.agenda.putApiAgendas(agendaId, request);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('updateAgenda error:', error);
+    return handleApiErrorForAction<AgendaResponse>(error, {
+      defaultMessage: 'アジェンダの更新に失敗しました。',
+    });
+  }
+}
+
+/**
+ * 直近24時間の予定数を取得（ヘッダーバッジ用）
+ */
+export async function fetchUpcomingNotificationCount(): Promise<ApiResponse<number>> {
+  try {
+    const api = await createPecusApiClients();
+    // 直近24時間の予定を取得
+    const now = new Date();
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const result = await api.agenda.getApiAgendasOccurrences(now.toISOString(), tomorrow.toISOString());
+    // 中止されていない予定のみカウント
+    const count = result.filter((occ) => !occ.isCancelled).length;
+    return { success: true, data: count };
+  } catch (error: unknown) {
+    console.error('fetchUpcomingNotificationCount error:', error);
+    return handleApiErrorForAction<number>(error, {
+      defaultMessage: '通知数の取得に失敗しました。',
     });
   }
 }
