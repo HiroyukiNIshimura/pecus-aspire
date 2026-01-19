@@ -331,6 +331,52 @@ public class BatchOrganizationDeletionService
             batchSize,
             cancellationToken);
 
+        // アジェンダIDのサブクエリ
+        var agendaIdsQuery = _context.Agendas
+            .Where(a => a.OrganizationId == organizationId)
+            .Select(a => a.Id);
+
+        // AgendaReminderLog
+        await DeleteInBatchesAsync(
+            _context.AgendaReminderLogs.Where(l => agendaIdsQuery.Contains(l.AgendaId)),
+            "AgendaReminderLogs",
+            organizationId,
+            batchSize,
+            cancellationToken);
+
+        // AgendaNotification
+        await DeleteInBatchesAsync(
+            _context.AgendaNotifications.Where(n => agendaIdsQuery.Contains(n.AgendaId)),
+            "AgendaNotifications",
+            organizationId,
+            batchSize,
+            cancellationToken);
+
+        // AgendaException
+        await DeleteInBatchesAsync(
+            _context.AgendaExceptions.Where(e => agendaIdsQuery.Contains(e.AgendaId)),
+            "AgendaExceptions",
+            organizationId,
+            batchSize,
+            cancellationToken);
+
+        // AgendaAttendee
+        await DeleteInBatchesAsync(
+            _context.AgendaAttendees.Where(a => agendaIdsQuery.Contains(a.AgendaId)),
+            a => a.AgendaId,
+            "AgendaAttendees",
+            organizationId,
+            batchSize,
+            cancellationToken);
+
+        // Agenda
+        await DeleteInBatchesAsync(
+            _context.Agendas.Where(a => a.OrganizationId == organizationId),
+            "Agendas",
+            organizationId,
+            batchSize,
+            cancellationToken);
+
         // User
         await DeleteInBatchesAsync(
             _context.Users.Where(u => u.OrganizationId == organizationId),

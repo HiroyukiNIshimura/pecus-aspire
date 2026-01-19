@@ -2,7 +2,9 @@
 
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
+  AgendaExceptionResponse,
   AgendaOccurrenceResponse,
+  AgendaResponse,
   AttendanceStatus,
   CancelAgendaRequest,
   CreateAgendaExceptionRequest,
@@ -101,6 +103,38 @@ export async function cancelOccurrence(
     console.error('cancelOccurrence error:', error);
     return handleApiErrorForAction<void>(error, {
       defaultMessage: 'この回の中止に失敗しました。',
+    });
+  }
+}
+
+/**
+ * アジェンダ詳細を取得
+ */
+export async function fetchAgendaById(agendaId: number): Promise<ApiResponse<AgendaResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const result = await api.agenda.getApiAgendas1(agendaId);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('fetchAgendaById error:', error);
+    return handleApiErrorForAction<AgendaResponse>(error, {
+      defaultMessage: 'アジェンダの取得に失敗しました。',
+    });
+  }
+}
+
+/**
+ * アジェンダの例外一覧を取得（繰り返しアジェンダ用）
+ */
+export async function fetchAgendaExceptions(agendaId: number): Promise<ApiResponse<AgendaExceptionResponse[]>> {
+  try {
+    const api = await createPecusApiClients();
+    const result = await api.agenda.getApiAgendasExceptions(agendaId);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('fetchAgendaExceptions error:', error);
+    return handleApiErrorForAction<AgendaExceptionResponse[]>(error, {
+      defaultMessage: '例外の取得に失敗しました。',
     });
   }
 }
