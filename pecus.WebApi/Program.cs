@@ -167,6 +167,7 @@ builder.Services.AddScoped<TaskContentSuggestionService>();
 builder.Services.AddScoped<IAiAssistantService, AiAssistantService>();
 builder.Services.AddScoped<AchievementService>();
 builder.Services.AddScoped<AgendaService>();
+builder.Services.AddScoped<AgendaNotificationService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddScoped<RefreshTokenService>();

@@ -1352,6 +1352,13 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // CreatedByUser とのリレーション
+            entity
+                .HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // ユーザーの未読通知検索用インデックス
             entity.HasIndex(e => new { e.UserId, e.IsRead, e.CreatedAt });
         });

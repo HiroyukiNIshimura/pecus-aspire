@@ -58,6 +58,11 @@ public class AgendaNotification
     /// </summary>
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
+    /// <summary>
+    /// 通知を作成したユーザーID（招待者、変更者など）
+    /// </summary>
+    public int? CreatedByUserId { get; set; }
+
     // Navigation Properties
 
     /// <summary>
@@ -69,4 +74,9 @@ public class AgendaNotification
     /// 対象ユーザー
     /// </summary>
     public User? User { get; set; }
+
+    /// <summary>
+    /// 通知を作成したユーザー
+    /// </summary>
+    public User? CreatedByUser { get; set; }
 }
