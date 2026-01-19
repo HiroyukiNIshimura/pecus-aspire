@@ -1,4 +1,6 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Requests.Workspace;
 
@@ -15,6 +17,9 @@ public class GetWorkspacesRequest
 
     [MaxLength(100, ErrorMessage = "検索名は100文字以内で入力してください。")]
     public string? Name { get; set; }
+
+    [JsonConverter(typeof(JsonStringEnumConverter<WorkspaceMode>))]
+    public WorkspaceMode? Mode { get; set; }
 }
 
 /// <summary>

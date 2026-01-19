@@ -13,6 +13,7 @@ import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
 import type { UserSearchResultResponse } from '../models/UserSearchResultResponse';
 import type { WorkspaceFullDetailResponse } from '../models/WorkspaceFullDetailResponse';
+import type { WorkspaceMode } from '../models/WorkspaceMode';
 import type { WorkspaceStatistics } from '../models/WorkspaceStatistics';
 import type { WorkspaceUserDetailResponse } from '../models/WorkspaceUserDetailResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -69,6 +70,7 @@ export class WorkspaceService {
      * @param page
      * @param genreId
      * @param name
+     * @param mode
      * @returns PagedResponseOfWorkspaceListItemResponse OK
      * @throws ApiError
      */
@@ -76,6 +78,7 @@ export class WorkspaceService {
         page?: number,
         genreId?: number,
         name?: string,
+        mode?: WorkspaceMode,
     ): CancelablePromise<PagedResponseOfWorkspaceListItemResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -84,6 +87,7 @@ export class WorkspaceService {
                 'Page': page,
                 'GenreId': genreId,
                 'Name': name,
+                'Mode': mode,
             },
             errors: {
                 500: `Internal Server Error`,

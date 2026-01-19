@@ -623,6 +623,7 @@ public class WorkspaceService
     /// <param name="pageSize">ページサイズ</param>
     /// <param name="genreId">ジャンルIDフィルター</param>
     /// <param name="name">名前フィルター（前方一致）</param>
+    /// <param name="mode">ワークスペースモードフィルター</param>
     public async Task<(
         List<WorkspaceListItemResponse> workspaces,
         int totalCount
@@ -631,7 +632,8 @@ public class WorkspaceService
         int page,
         int pageSize,
         int? genreId = null,
-        string? name = null
+        string? name = null,
+        WorkspaceMode? mode = null
     )
     {
         // ユーザーが参加しているワークスペースIDをサブクエリとして使用
@@ -653,6 +655,11 @@ public class WorkspaceService
         if (!string.IsNullOrEmpty(name))
         {
             baseQuery = baseQuery.Where(w => w.Name.StartsWith(name));
+        }
+
+        if (mode.HasValue)
+        {
+            baseQuery = baseQuery.Where(w => w.Mode == mode.Value);
         }
 
         // 総件数はシンプルにカウント

@@ -27,7 +27,7 @@ import { validationError } from './types';
  * ページネーションで全件取得する
  * @deprecated getMyWorkspacesPaged を使用してください
  */
-export async function getMyWorkspaces(): Promise<ApiResponse<WorkspaceListItemResponse[]>> {
+export async function getMyWorkspaces(mode?: WorkspaceMode): Promise<ApiResponse<WorkspaceListItemResponse[]>> {
   try {
     const api = createPecusApiClients();
     const allWorkspaces: WorkspaceListItemResponse[] = [];
@@ -36,7 +36,7 @@ export async function getMyWorkspaces(): Promise<ApiResponse<WorkspaceListItemRe
 
     // 全ページを取得
     while (hasMore) {
-      const response = await api.workspace.getApiWorkspaces(page, undefined, undefined);
+      const response = await api.workspace.getApiWorkspaces(page, undefined, undefined, mode);
 
       if (response.data && response.data.length > 0) {
         allWorkspaces.push(...response.data);
@@ -76,7 +76,7 @@ export interface PagedWorkspacesResponse {
 export async function getMyWorkspacesPaged(page: number = 1): Promise<ApiResponse<PagedWorkspacesResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(page, undefined, undefined);
+    const response = await api.workspace.getApiWorkspaces(page, undefined, undefined, undefined);
 
     return {
       success: true,
@@ -111,7 +111,7 @@ export async function fetchWorkspaces(
 ): Promise<ApiResponse<PagedResponseOfWorkspaceListItemResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(page, genreId, name);
+    const response = await api.workspace.getApiWorkspaces(page, genreId, name, undefined);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);

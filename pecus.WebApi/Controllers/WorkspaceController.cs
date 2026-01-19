@@ -143,7 +143,8 @@ public class WorkspaceController : BaseSecureController
                 page: validatedPage,
                 pageSize: pageSize,
                 genreId: request.GenreId,
-                name: request.Name
+                name: request.Name,
+                mode: request.Mode
             );
 
         var response = PaginationHelper.CreatePagedResponse(

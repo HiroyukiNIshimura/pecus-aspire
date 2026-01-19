@@ -20,7 +20,7 @@ export default function OrganizationHealthButton() {
     <>
       <button
         type="button"
-        className="btn btn-sm btn-outline btn-primary"
+        className="btn btn-sm btn-primary"
         onClick={() => setIsModalOpen(true)}
         aria-label="健康診断を表示"
       >

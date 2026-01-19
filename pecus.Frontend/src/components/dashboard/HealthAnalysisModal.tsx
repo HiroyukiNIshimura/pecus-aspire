@@ -66,6 +66,7 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
   const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null);
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(false);
+  const [hasFetchedWorkspaces, setHasFetchedWorkspaces] = useState(false);
 
   // 分析関連
   const [selectedType, setSelectedType] = useState<HealthAnalysisType>('CurrentHealth');
@@ -83,29 +84,33 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
     };
   }, [isOpen]);
 
-  // ワークスペーススコープ選択時にワークスペースリストを取得
+  // モーダルが開いた時にワークスペースリストを取得
   useEffect(() => {
-    if (scope === 'Workspace' && workspaces.length === 0 && !isLoadingWorkspaces) {
+    if (isOpen && !hasFetchedWorkspaces && !isLoadingWorkspaces) {
       const fetchWorkspaces = async () => {
         setIsLoadingWorkspaces(true);
         try {
-          const response = await getMyWorkspaces();
+          const response = await getMyWorkspaces('Normal');
           if (response.success) {
             setWorkspaces(response.data);
-            // 最初のワークスペースを選択
-            if (response.data.length > 0) {
-              setSelectedWorkspaceId(response.data[0].id);
-            }
           }
         } catch (err) {
           console.error('Failed to fetch workspaces:', err);
         } finally {
           setIsLoadingWorkspaces(false);
+          setHasFetchedWorkspaces(true);
         }
       };
       fetchWorkspaces();
     }
-  }, [scope, workspaces.length, isLoadingWorkspaces]);
+  }, [isOpen, hasFetchedWorkspaces, isLoadingWorkspaces]);
+
+  // ワークスペーススコープ選択時に最初のワークスペースを自動選択
+  useEffect(() => {
+    if (scope === 'Workspace' && workspaces.length > 0 && selectedWorkspaceId === null) {
+      setSelectedWorkspaceId(workspaces[0].id);
+    }
+  }, [scope, workspaces, selectedWorkspaceId]);
 
   // モーダルを閉じるときに状態をリセット
   const handleClose = useCallback(() => {
@@ -114,6 +119,8 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
     setIsLoading(false);
     setScope('Organization');
     setSelectedWorkspaceId(null);
+    setWorkspaces([]);
+    setHasFetchedWorkspaces(false);
     onClose();
   }, [onClose]);
 
@@ -240,7 +247,7 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
                     type="button"
                     className={`btn flex-1 ${scope === 'Workspace' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setScope('Workspace')}
-                    disabled={isLoading}
+                    disabled={isLoading || (hasFetchedWorkspaces && workspaces.length === 0)}
                   >
                     <span className="icon-[mdi--folder-outline] size-5" aria-hidden="true" />
                     ワークスペース
