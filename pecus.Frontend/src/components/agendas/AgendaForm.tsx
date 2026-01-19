@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import DatePicker from '@/components/common/filters/DatePicker';
 import type { AgendaAttendeeRequest, AgendaResponse, RecurrenceType } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { createAgendaSchema } from '@/schemas/agendaSchemas';
@@ -210,41 +211,24 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
         </div>
       </div>
 
-      {/* 終日チェック */}
-      <div className="form-control">
-        <label className="label cursor-pointer justify-start gap-2">
-          <input
-            type="checkbox"
-            data-field="isAllDay"
-            className="checkbox checkbox-primary"
-            checked={formData.isAllDay}
-            onChange={(e) => handleFieldChange('isAllDay', e.target.checked)}
-            disabled={isFormDisabled}
-          />
-          <span className="label-text">終日</span>
-        </label>
-      </div>
-
       {/* 日時 */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <div className="form-control">
           <label className="label" htmlFor="startAt">
             <span className="label-text">
               開始 <span className="text-error">*</span>
             </span>
           </label>
-          <input
-            type={formData.isAllDay ? 'date' : 'datetime-local'}
-            id="startAt"
-            data-field="startAt"
-            className={`input input-bordered w-full ${shouldShowError('startAt') ? 'input-error' : ''}`}
+          <DatePicker
+            mode={formData.isAllDay ? 'date' : 'datetime'}
             value={formData.isAllDay ? formData.startAt.split('T')[0] : formData.startAt}
-            onChange={(e) =>
-              handleFieldChange('startAt', formData.isAllDay ? `${e.target.value}T00:00` : e.target.value)
-            }
+            onChange={(value) => handleFieldChange('startAt', formData.isAllDay ? `${value}T00:00` : value)}
             onBlur={() => validateField('startAt', formData.startAt)}
             disabled={isFormDisabled}
+            placeholder="開始日時を選択"
+            error={shouldShowError('startAt')}
           />
+          <input type="hidden" data-field="startAt" value={formData.startAt} />
           {shouldShowError('startAt') && (
             <div className="label">
               <span className="label-text-alt text-error">{getFieldError('startAt')}</span>
@@ -257,21 +241,37 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
               終了 <span className="text-error">*</span>
             </span>
           </label>
-          <input
-            type={formData.isAllDay ? 'date' : 'datetime-local'}
-            id="endAt"
-            data-field="endAt"
-            className={`input input-bordered w-full ${shouldShowError('endAt') ? 'input-error' : ''}`}
+          <DatePicker
+            mode={formData.isAllDay ? 'date' : 'datetime'}
             value={formData.isAllDay ? formData.endAt.split('T')[0] : formData.endAt}
-            onChange={(e) => handleFieldChange('endAt', formData.isAllDay ? `${e.target.value}T23:59` : e.target.value)}
+            onChange={(value) => handleFieldChange('endAt', formData.isAllDay ? `${value}T23:59` : value)}
             onBlur={() => validateField('endAt', formData.endAt)}
             disabled={isFormDisabled}
+            placeholder="終了日時を選択"
+            error={shouldShowError('endAt')}
           />
+          <input type="hidden" data-field="endAt" value={formData.endAt} />
           {shouldShowError('endAt') && (
             <div className="label">
               <span className="label-text-alt text-error">{getFieldError('endAt')}</span>
             </div>
           )}
+        </div>
+        <div className="form-control">
+          <label className="label" htmlFor="isAllDay">
+            <span className="label-text">終日</span>
+          </label>
+          <div className="flex items-center h-12 px-1">
+            <input
+              type="checkbox"
+              id="isAllDay"
+              data-field="isAllDay"
+              className="checkbox checkbox-primary"
+              checked={formData.isAllDay}
+              onChange={(e) => handleFieldChange('isAllDay', e.target.checked)}
+              disabled={isFormDisabled}
+            />
+          </div>
         </div>
       </div>
 
@@ -413,15 +413,19 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
                   />
                   <span>終了日を指定</span>
                   {formData.recurrenceEndType === 'date' && (
-                    <input
-                      type="date"
-                      data-field="recurrenceEndDate"
-                      className={`input input-bordered input-sm ml-2 ${shouldShowError('recurrenceEndDate') ? 'input-error' : ''}`}
-                      value={formData.recurrenceEndDate}
-                      onChange={(e) => handleFieldChange('recurrenceEndDate', e.target.value)}
-                      onBlur={() => validateField('recurrenceEndDate', formData.recurrenceEndDate)}
-                      disabled={isFormDisabled}
-                    />
+                    <div className="ml-2">
+                      <DatePicker
+                        mode="date"
+                        value={formData.recurrenceEndDate}
+                        onChange={(value) => handleFieldChange('recurrenceEndDate', value)}
+                        onBlur={() => validateField('recurrenceEndDate', formData.recurrenceEndDate)}
+                        disabled={isFormDisabled}
+                        placeholder="終了日を選択"
+                        error={shouldShowError('recurrenceEndDate')}
+                        className="input-sm"
+                      />
+                      <input type="hidden" data-field="recurrenceEndDate" value={formData.recurrenceEndDate} />
+                    </div>
                   )}
                 </label>
                 {shouldShowError('recurrenceEndDate') && formData.recurrenceEndType === 'date' && (

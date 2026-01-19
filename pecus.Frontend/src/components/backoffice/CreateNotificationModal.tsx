@@ -282,14 +282,13 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
                   公開時間 <span className="text-error">*</span>
                 </span>
               </label>
-              <input
-                id="notification-publish-time"
-                name="publishTime"
-                type="time"
-                className={`input input-bordered w-full ${errors.publishTime ? 'input-error' : ''}`}
+              <DatePicker
+                mode="time"
                 value={form.publishTime}
-                onChange={(e) => handleFieldChange('publishTime', e.target.value)}
+                onChange={(time) => handleFieldChange('publishTime', time)}
                 disabled={isSubmitting}
+                placeholder="公開時間を選択"
+                error={!!errors.publishTime}
               />
               {errors.publishTime && (
                 <div className="label">
@@ -322,14 +321,13 @@ export default function CreateNotificationModal({ isOpen, onClose, onConfirm }: 
               <label className="label" htmlFor="notification-end-time">
                 <span className="label-text font-semibold">終了時間</span>
               </label>
-              <input
-                id="notification-end-time"
-                name="endTime"
-                type="time"
-                className={`input input-bordered w-full ${errors.endTime ? 'input-error' : ''}`}
+              <DatePicker
+                mode="time"
                 value={form.endTime || ''}
-                onChange={(e) => handleFieldChange('endTime', e.target.value)}
+                onChange={(time) => handleFieldChange('endTime', time)}
                 disabled={isSubmitting || !form.endDate}
+                placeholder="終了時間を選択"
+                error={!!errors.endTime}
               />
               {errors.endTime && (
                 <div className="label">
