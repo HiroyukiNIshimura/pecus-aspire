@@ -186,10 +186,10 @@ public class HealthAnalysisService
     {
         var targetName = scope == HealthAnalysisScope.Workspace && workspaceName != null
             ? $"ワークスペース「{workspaceName}」"
-            : "チーム全体";
+            : "組織全体";
 
         var basePrompt = $"""
-            あなたはチームの頼れるアドバイザーです。
+            あなたは組織の頼れるアドバイザーです。
             {targetName}のタスク状況を見て、わかりやすくフィードバックしてください。
 
             【絶対に守るルール】
