@@ -12,5 +12,10 @@ public class AgendaAttendeeResponse
     public required AttendanceStatus Status { get; set; }
     public required bool IsOptional { get; set; }
 
+    /// <summary>
+    /// 個人リマインダー設定（分単位のリスト、null=デフォルト設定を使用）
+    /// </summary>
+    public List<int>? CustomReminders { get; set; }
+
     public UserItem? User { get; set; }
 }

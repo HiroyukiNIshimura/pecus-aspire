@@ -99,11 +99,11 @@ public class AgendasController : BaseSecureController
             throw new NotFoundException("組織が見つかりません。");
 
         var result = await _agendaService.CreateAsync(CurrentOrganizationId, CurrentUserId, request);
-        return TypedResults.Created($"/api/organizations/{CurrentOrganizationId}/agendas/{result.Id}", result);
+        return TypedResults.Created($"/api/agendas/{result.Id}", result);
     }
 
     /// <summary>
-    /// アジェンダ更新
+    /// アジェンダ更新（シリーズ全体）
     /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(AgendaResponse), StatusCodes.Status200OK)]
@@ -112,33 +112,62 @@ public class AgendasController : BaseSecureController
     [ProducesResponseType(typeof(ConcurrencyErrorResponse<AgendaResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<AgendaResponse>> Update(
-        int organizationId,
         long id,
         [FromBody] UpdateAgendaRequest request
-    )
-    {
-        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, organizationId))
-            throw new NotFoundException("組織が見つかりません。");
-
-        var result = await _agendaService.UpdateAsync(id, organizationId, request);
-        return TypedResults.Ok(result);
-    }
-
-    /// <summary>
-    /// アジェンダ削除
-    /// </summary>
-    [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<NoContent> Delete(
-        long id
     )
     {
         if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
             throw new NotFoundException("組織が見つかりません。");
 
-        await _agendaService.DeleteAsync(id, CurrentOrganizationId);
-        return TypedResults.NoContent();
+        var result = await _agendaService.UpdateAsync(id, CurrentOrganizationId, request);
+        return TypedResults.Ok(result);
+    }
+
+    /// <summary>
+    /// アジェンダ中止（シリーズ全体）
+    /// </summary>
+    /// <remarks>
+    /// 物理削除ではなく中止状態にします。中止されたアジェンダは一覧に表示されますが、
+    /// 中止理由と共に視覚的に区別されます。
+    /// </remarks>
+    [HttpPatch("{id}/cancel")]
+    [ProducesResponseType(typeof(AgendaResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<AgendaResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<AgendaResponse>> Cancel(
+        long id,
+        [FromBody] CancelAgendaRequest request
+    )
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        var result = await _agendaService.CancelAsync(id, CurrentOrganizationId, CurrentUserId, request);
+        return TypedResults.Ok(result);
+    }
+
+    /// <summary>
+    /// 参加状況更新
+    /// </summary>
+    /// <remarks>
+    /// 現在のユーザーの参加状況を更新します。
+    /// </remarks>
+    [HttpPatch("{id}/attendance")]
+    [ProducesResponseType(typeof(AgendaResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<AgendaResponse>> UpdateAttendance(
+        long id,
+        [FromBody] UpdateAttendanceRequest request
+    )
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        var result = await _agendaService.UpdateAttendanceAsync(id, CurrentOrganizationId, CurrentUserId, request);
+        return TypedResults.Ok(result);
     }
 }
