@@ -3,6 +3,8 @@
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   AgendaExceptionResponse,
+  AgendaNotificationCountResponse,
+  AgendaNotificationResponse,
   AgendaOccurrenceResponse,
   AgendaResponse,
   AttendanceStatus,
@@ -176,23 +178,76 @@ export async function updateAgenda(
   }
 }
 
+// ===== 通知関連 =====
+
 /**
- * 直近24時間の予定数を取得（ヘッダーバッジ用）
+ * 通知件数を取得（ヘッダーバッジ用）
  */
-export async function fetchUpcomingNotificationCount(): Promise<ApiResponse<number>> {
+export async function fetchNotificationCount(): Promise<ApiResponse<AgendaNotificationCountResponse>> {
   try {
     const api = await createPecusApiClients();
-    // 直近24時間の予定を取得
-    const now = new Date();
-    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const result = await api.agenda.getApiAgendasOccurrences(now.toISOString(), tomorrow.toISOString());
-    // 中止されていない予定のみカウント
-    const count = result.filter((occ) => !occ.isCancelled).length;
-    return { success: true, data: count };
+    const result = await api.agendaNotification.getApiAgendasNotificationsCount();
+    return { success: true, data: result };
   } catch (error: unknown) {
-    console.error('fetchUpcomingNotificationCount error:', error);
-    return handleApiErrorForAction<number>(error, {
+    console.error('fetchNotificationCount error:', error);
+    return handleApiErrorForAction<AgendaNotificationCountResponse>(error, {
       defaultMessage: '通知数の取得に失敗しました。',
+    });
+  }
+}
+
+/**
+ * 通知一覧を取得
+ */
+export async function fetchNotifications(
+  limit: number = 50,
+  beforeId?: number,
+  unreadOnly: boolean = false,
+): Promise<ApiResponse<AgendaNotificationResponse[]>> {
+  try {
+    const api = await createPecusApiClients();
+    const result = await api.agendaNotification.getApiAgendasNotifications(limit, beforeId, unreadOnly);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('fetchNotifications error:', error);
+    return handleApiErrorForAction<AgendaNotificationResponse[]>(error, {
+      defaultMessage: '通知の取得に失敗しました。',
+    });
+  }
+}
+
+/**
+ * 通知を既読にする（個別）
+ */
+export async function markNotificationAsRead(notificationId: number): Promise<ApiResponse<void>> {
+  try {
+    const api = await createPecusApiClients();
+    await api.agendaNotification.postApiAgendasNotificationsRead(notificationId);
+    return { success: true, data: undefined };
+  } catch (error: unknown) {
+    console.error('markNotificationAsRead error:', error);
+    return handleApiErrorForAction<void>(error, {
+      defaultMessage: '通知の既読処理に失敗しました。',
+    });
+  }
+}
+
+/**
+ * 通知を一括既読にする
+ */
+export async function markAllNotificationsAsRead(
+  notificationIds?: number[],
+): Promise<ApiResponse<{ markedCount: number }>> {
+  try {
+    const api = await createPecusApiClients();
+    const result = await api.agendaNotification.postApiAgendasNotificationsRead1({
+      notificationIds: notificationIds ?? null,
+    });
+    return { success: true, data: { markedCount: result.markedCount ?? 0 } };
+  } catch (error: unknown) {
+    console.error('markAllNotificationsAsRead error:', error);
+    return handleApiErrorForAction<{ markedCount: number }>(error, {
+      defaultMessage: '通知の一括既読処理に失敗しました。',
     });
   }
 }

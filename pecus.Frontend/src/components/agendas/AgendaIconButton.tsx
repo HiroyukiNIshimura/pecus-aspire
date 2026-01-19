@@ -2,20 +2,21 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { fetchUpcomingNotificationCount } from '@/actions/agenda';
+import { fetchNotificationCount } from '@/actions/agenda';
 
 /**
  * ヘッダーのアジェンダアイコンボタン
- * 直近の予定通知をバッジで表示
+ * 未読通知・未回答招待をバッジで表示
  */
 export default function AgendaIconButton() {
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     const loadCount = async () => {
-      const result = await fetchUpcomingNotificationCount();
+      const result = await fetchNotificationCount();
       if (result.success) {
-        setUnreadCount(result.data);
+        // 未読通知数 + 未回答招待数の合計を表示
+        setTotalCount(result.data.total ?? 0);
       }
     };
 
@@ -29,9 +30,9 @@ export default function AgendaIconButton() {
   return (
     <Link href="/agendas" className="btn btn-text btn-circle relative" aria-label="予定">
       <span className="icon-[tabler--calendar-event] size-6" aria-hidden="true" />
-      {unreadCount > 0 && (
+      {totalCount > 0 && (
         <span className="badge badge-error badge-xs absolute -top-1 -right-1 min-w-4 px-1">
-          {unreadCount > 99 ? '99+' : unreadCount}
+          {totalCount > 99 ? '99+' : totalCount}
         </span>
       )}
     </Link>

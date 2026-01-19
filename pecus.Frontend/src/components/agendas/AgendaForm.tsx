@@ -117,8 +117,8 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
   // リマインダー
   const [reminders, setReminders] = useState<number[]>(initialData?.reminders ?? [1440, 60]);
 
-  // 参加者
-  const [attendees, setAttendees] = useState<AgendaAttendeeRequest[]>(
+  // 参加者 - TODO: 参加者選択機能を実装時に使用
+  const [attendees] = useState<AgendaAttendeeRequest[]>(
     initialData?.attendees?.map((a) => ({ userId: a.userId, isOptional: a.isOptional })) ?? [],
   );
 
@@ -330,9 +330,7 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
 
             {/* 終了条件 */}
             <div className="form-control mt-3">
-              <label className="label">
-                <span className="label-text">終了</span>
-              </label>
+              <span className="label-text mb-2">終了</span>
               <div className="space-y-2">
                 <label className="flex items-center gap-2">
                   <input
