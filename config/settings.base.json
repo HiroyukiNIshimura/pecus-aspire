@@ -137,7 +137,8 @@
         "ExpiresMinutes": 15
       },
       "Pagination": {
-        "DefaultPageSize": 20
+        "DefaultPageSize": 20,
+        "MaxPageSize": 100
       },
       "Limits": {
         "_comment":"今はプランの差はつけていないが、将来のために分けている。プランごとの制限値を変えたい場合はここを編集する。",

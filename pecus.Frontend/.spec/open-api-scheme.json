@@ -761,7 +761,7 @@
           "Agenda"
         ],
         "summary": "直近の展開済みオカレンス一覧取得",
-        "description": "繰り返しイベントを展開し、直近の各オカレンス（回）を個別に返します。\nタイムライン表示用に最適化されています。",
+        "description": "繰り返しイベントを展開し、直近の各オカレンス（回）を個別に返します。\nタイムライン表示用に最適化されています。\nカーソルベースのページネーションに対応しています。",
         "parameters": [
           {
             "name": "limit",
@@ -771,6 +771,14 @@
               "format": "int32",
               "default": 20
             }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
           }
         ],
         "responses": {
@@ -779,10 +787,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AgendaOccurrenceResponse"
-                  }
+                  "$ref": "#/components/schemas/AgendaOccurrencesResponse"
                 }
               }
             }
@@ -15199,6 +15204,32 @@
           }
         },
         "description": "アジェンダ展開済みオカレンス（一覧用）\n繰り返しイベントを展開した各回を表すDTO"
+      },
+      "AgendaOccurrencesResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgendaOccurrenceResponse"
+            },
+            "description": "オカレンス一覧"
+          },
+          "nextCursor": {
+            "type": "string",
+            "description": "次ページカーソル（最後のオカレンスのStartAt、null の場合は最後のページ）",
+            "format": "date-time",
+            "nullable": true
+          },
+          "hasMore": {
+            "type": "boolean",
+            "description": "さらにオカレンスがあるか"
+          }
+        },
+        "description": "アジェンダオカレンス一覧レスポンス（ページネーション対応）"
       },
       "AgendaResponse": {
         "required": [

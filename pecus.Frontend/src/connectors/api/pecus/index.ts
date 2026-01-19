@@ -26,6 +26,7 @@ export type { AgendaNotificationCountResponse } from './models/AgendaNotificatio
 export type { AgendaNotificationResponse } from './models/AgendaNotificationResponse';
 export type { AgendaNotificationType } from './models/AgendaNotificationType';
 export type { AgendaOccurrenceResponse } from './models/AgendaOccurrenceResponse';
+export type { AgendaOccurrencesResponse } from './models/AgendaOccurrencesResponse';
 export type { AgendaResponse } from './models/AgendaResponse';
 export type { AppPublicSettingsResponse } from './models/AppPublicSettingsResponse';
 export type { AssignedItemInfo } from './models/AssignedItemInfo';

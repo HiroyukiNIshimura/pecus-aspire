@@ -137,6 +137,9 @@ public class AgendaService
                 var distinctAttendees = request.Attendees.DistinctBy(a => a.UserId);
                 foreach (var reqAttendee in distinctAttendees)
                 {
+                    // 作成者は後で追加するのでスキップ
+                    if (reqAttendee.UserId == userId) continue;
+
                     agenda.Attendees.Add(new AgendaAttendee
                     {
                         UserId = reqAttendee.UserId,
@@ -145,6 +148,14 @@ public class AgendaService
                     });
                 }
             }
+
+            // 作成者を参加者として追加（自動的にAccepted）
+            agenda.Attendees.Add(new AgendaAttendee
+            {
+                UserId = userId,
+                IsOptional = false,
+                Status = AttendanceStatus.Accepted
+            });
 
             _context.Agendas.Add(agenda);
             await _context.SaveChangesAsync();
@@ -464,16 +475,41 @@ public class AgendaService
         int currentUserId,
         int limit = 20)
     {
+        var result = await GetRecentOccurrencesPaginatedAsync(organizationId, currentUserId, limit, null);
+        return result.Items;
+    }
+
+    /// <summary>
+    /// 直近の展開済みオカレンス一覧取得（ページネーション対応）
+    /// </summary>
+    public async Task<AgendaOccurrencesResponse> GetRecentOccurrencesPaginatedAsync(
+        int organizationId,
+        int currentUserId,
+        int limit = 20,
+        DateTimeOffset? cursor = null)
+    {
         var now = DateTimeOffset.UtcNow;
+        // カーソルがある場合はその日時以降、なければ現在時刻以降
+        var start = cursor ?? now;
         // 3ヶ月先まで展開して取得
-        var end = now.AddMonths(3);
+        var end = start.AddMonths(3);
 
-        var occurrences = await GetOccurrencesAsync(organizationId, currentUserId, now, end);
+        var occurrences = await GetOccurrencesAsync(organizationId, currentUserId, start, end);
 
-        return occurrences
-            .Where(o => o.EndAt > now) // 終了していないもののみ
-            .Take(limit)
-            .ToList();
+        // カーソルがある場合は、そのカーソル時刻より後のものだけにフィルター
+        var filtered = cursor.HasValue
+            ? occurrences.Where(o => o.StartAt > cursor.Value).ToList()
+            : occurrences.Where(o => o.EndAt > now).ToList(); // 終了していないもののみ
+
+        // limit + 1 件取得して、次ページがあるか判定
+        var items = filtered.Take(limit).ToList();
+        var hasMore = filtered.Count > limit;
+
+        return new AgendaOccurrencesResponse
+        {
+            Items = items,
+            NextCursor = hasMore ? items.LastOrDefault()?.StartAt : null
+        };
     }
 
     // ===== 例外（特定回の中止・変更）関連メソッド =====

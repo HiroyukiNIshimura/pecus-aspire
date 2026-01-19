@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Models.Config;
 using Pecus.Models.Requests.Agenda;
 using Pecus.Models.Responses.Agenda;
 using Pecus.Services;
@@ -18,16 +19,19 @@ public class AgendasController : BaseSecureController
 {
     private readonly AgendaService _agendaService;
     private readonly OrganizationAccessHelper _accessHelper;
+    private readonly PecusConfig _config;
 
     public AgendasController(
         AgendaService agendaService,
         OrganizationAccessHelper accessHelper,
         ProfileService profileService,
-        ILogger<AgendasController> logger
+        ILogger<AgendasController> logger,
+        PecusConfig config
     ) : base(profileService, logger)
     {
         _agendaService = agendaService;
         _accessHelper = accessHelper;
+        _config = config;
     }
 
     /// <summary>
@@ -96,19 +100,21 @@ public class AgendasController : BaseSecureController
     /// <remarks>
     /// 繰り返しイベントを展開し、直近の各オカレンス（回）を個別に返します。
     /// タイムライン表示用に最適化されています。
+    /// カーソルベースのページネーションに対応しています。
     /// </remarks>
     [HttpGet("occurrences/recent")]
-    [ProducesResponseType(typeof(List<AgendaOccurrenceResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AgendaOccurrencesResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<List<AgendaOccurrenceResponse>>> GetRecentOccurrences(
-        [FromQuery] int limit = 20
+    public async Task<Ok<AgendaOccurrencesResponse>> GetRecentOccurrences(
+        [FromQuery] GetRecentOccurrencesRequest request
     )
     {
         if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
             throw new NotFoundException("組織が見つかりません。");
 
-        var result = await _agendaService.GetRecentOccurrencesAsync(CurrentOrganizationId, CurrentUserId, limit);
+        var pageSize = request.Limit ?? _config.Pagination.DefaultPageSize;
+        var result = await _agendaService.GetRecentOccurrencesPaginatedAsync(CurrentOrganizationId, CurrentUserId, pageSize, request.Cursor);
         return TypedResults.Ok(result);
     }
 

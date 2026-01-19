@@ -6,6 +6,7 @@ import type {
   AgendaNotificationCountResponse,
   AgendaNotificationResponse,
   AgendaOccurrenceResponse,
+  AgendaOccurrencesResponse,
   AgendaResponse,
   AttendanceStatus,
   CancelAgendaRequest,
@@ -19,15 +20,35 @@ import type { ApiResponse } from './types';
 
 /**
  * 直近のアジェンダオカレンス一覧を取得（タイムライン表示用）
+ * @deprecated 代わりに fetchRecentOccurrencesPaginated を使用してください
  */
 export async function fetchRecentOccurrences(limit: number = 50): Promise<ApiResponse<AgendaOccurrenceResponse[]>> {
   try {
     const api = await createPecusApiClients();
     const result = await api.agenda.getApiAgendasOccurrencesRecent(limit);
-    return { success: true, data: result };
+    return { success: true, data: result.items };
   } catch (error: unknown) {
     console.error('fetchRecentOccurrences error:', error);
     return handleApiErrorForAction<AgendaOccurrenceResponse[]>(error, {
+      defaultMessage: 'アジェンダの取得に失敗しました。',
+    });
+  }
+}
+
+/**
+ * 直近のアジェンダオカレンス一覧を取得（ページネーション対応）
+ */
+export async function fetchRecentOccurrencesPaginated(
+  limit: number = 20,
+  cursor?: string,
+): Promise<ApiResponse<AgendaOccurrencesResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const result = await api.agenda.getApiAgendasOccurrencesRecent(limit, cursor);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('fetchRecentOccurrencesPaginated error:', error);
+    return handleApiErrorForAction<AgendaOccurrencesResponse>(error, {
       defaultMessage: 'アジェンダの取得に失敗しました。',
     });
   }

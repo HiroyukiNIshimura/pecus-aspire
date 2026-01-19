@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { AgendaOccurrenceResponse, RecurrenceType } from '@/connectors/api/pecus';
 import QuickAttendanceButtons from './QuickAttendanceButtons';
 
@@ -47,17 +48,21 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
     cancellationReason,
     isModified,
     attendeeCount,
+    createdByUser,
   } = occurrence;
 
   const recurrenceLabel = getRecurrenceLabel(recurrenceType);
   const isCancelledItem = isCancelled ?? false;
+  const isUnanswered = !occurrence.myAttendanceStatus || occurrence.myAttendanceStatus === 'Pending';
 
   return (
     <div
       className={`
         relative -ml-4 pl-6 py-3 pr-4
         rounded-r-lg transition-colors
-        ${isCancelledItem ? 'bg-base-200/50 opacity-60' : 'bg-base-100 hover:bg-base-200/30'}
+        ${isCancelledItem ? 'bg-base-200/50 opacity-60' : ''}
+        ${!isCancelledItem && isUnanswered ? 'bg-warning/10' : ''}
+        ${!isCancelledItem && !isUnanswered ? 'bg-base-100 hover:bg-base-200/30' : ''}
       `}
     >
       {/* タイムラインのドット */}
@@ -65,7 +70,9 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
         className={`
           absolute left-0 top-4 -translate-x-1/2
           size-3 rounded-full border-2 border-base-100
-          ${isCancelledItem ? 'bg-base-content/30' : 'bg-primary'}
+          ${isCancelledItem ? 'bg-base-content/30' : ''}
+          ${!isCancelledItem && isUnanswered ? 'bg-warning' : ''}
+          ${!isCancelledItem && !isUnanswered ? 'bg-primary' : ''}
         `}
       />
 
@@ -139,6 +146,19 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
               <span className="flex items-center gap-1">
                 <span className="icon-[tabler--users] size-4" />
                 {attendeeCount}人
+              </span>
+            )}
+
+            {/* 作成者 */}
+            {createdByUser && (
+              <span className="flex items-center gap-1">
+                <UserAvatar
+                  userName={createdByUser.username}
+                  identityIconUrl={createdByUser.identityIconUrl}
+                  size={16}
+                  showName={true}
+                  nameClassName="text-sm font-normal"
+                />
               </span>
             )}
           </div>

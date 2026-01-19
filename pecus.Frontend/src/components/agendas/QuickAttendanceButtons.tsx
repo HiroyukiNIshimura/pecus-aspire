@@ -61,8 +61,19 @@ export default function QuickAttendanceButtons({
   // 表示するボタン（Pending以外）
   const buttons: AttendanceStatus[] = ['Accepted', 'Tentative', 'Declined'];
 
+  // 未回答かどうか
+  const isUnanswered = !currentStatus || currentStatus === 'Pending';
+
   return (
     <div className="flex items-center gap-1">
+      {/* 未回答ラベル（控えめ） */}
+      {isUnanswered && (
+        <span className="text-xs text-base-content/50 flex items-center gap-0.5 mr-1">
+          <span className="icon-[tabler--clock] size-3" />
+          未回答
+        </span>
+      )}
+
       {buttons.map((status) => {
         const config = statusConfig[status];
         const isActive = currentStatus === status;

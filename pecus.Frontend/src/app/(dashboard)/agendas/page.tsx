@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
-import { fetchRecentOccurrences } from '@/actions/agenda';
+import { fetchRecentOccurrencesPaginated } from '@/actions/agenda';
 import {
   createPecusApiClients,
   detect401ValidationError,
@@ -12,6 +12,7 @@ import AgendaPageClient from './AgendaPageClient';
 
 export default async function AgendasPage() {
   let initialOccurrences: AgendaOccurrenceResponse[] = [];
+  let initialNextCursor: string | null = null;
   let fetchError: string | null = null;
 
   try {
@@ -19,10 +20,11 @@ export default async function AgendasPage() {
     // ユーザー認証確認（appSettings取得でOK）
     await api.profile.getApiProfileAppSettings();
 
-    // 直近のオカレンスを取得
-    const result = await fetchRecentOccurrences(50);
+    // 直近のオカレンスを取得（初回は20件）
+    const result = await fetchRecentOccurrencesPaginated(20);
     if (result.success) {
-      initialOccurrences = result.data;
+      initialOccurrences = result.data.items;
+      initialNextCursor = result.data.nextCursor ?? null;
     } else {
       fetchError = result.message ?? 'アジェンダの取得に失敗しました。';
     }
@@ -36,5 +38,11 @@ export default async function AgendasPage() {
     fetchError = getUserSafeErrorMessage(error, 'データの取得に失敗しました');
   }
 
-  return <AgendaPageClient initialOccurrences={initialOccurrences} fetchError={fetchError} />;
+  return (
+    <AgendaPageClient
+      initialOccurrences={initialOccurrences}
+      initialNextCursor={initialNextCursor}
+      fetchError={fetchError}
+    />
+  );
 }

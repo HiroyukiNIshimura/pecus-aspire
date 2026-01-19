@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { AgendaExceptionResponse } from '../models/AgendaExceptionResponse';
 import type { AgendaOccurrenceResponse } from '../models/AgendaOccurrenceResponse';
+import type { AgendaOccurrencesResponse } from '../models/AgendaOccurrencesResponse';
 import type { AgendaResponse } from '../models/AgendaResponse';
 import type { CancelAgendaRequest } from '../models/CancelAgendaRequest';
 import type { CreateAgendaExceptionRequest } from '../models/CreateAgendaExceptionRequest';
@@ -112,18 +113,22 @@ export class AgendaService {
      * 直近の展開済みオカレンス一覧取得
      * 繰り返しイベントを展開し、直近の各オカレンス（回）を個別に返します。
      * タイムライン表示用に最適化されています。
+     * カーソルベースのページネーションに対応しています。
      * @param limit
-     * @returns AgendaOccurrenceResponse OK
+     * @param cursor
+     * @returns AgendaOccurrencesResponse OK
      * @throws ApiError
      */
     public static getApiAgendasOccurrencesRecent(
         limit: number = 20,
-    ): CancelablePromise<Array<AgendaOccurrenceResponse>> {
+        cursor?: string,
+    ): CancelablePromise<AgendaOccurrencesResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/agendas/occurrences/recent',
             query: {
                 'limit': limit,
+                'cursor': cursor,
             },
             errors: {
                 404: `Not Found`,

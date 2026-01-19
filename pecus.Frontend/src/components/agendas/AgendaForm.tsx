@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import type { AgendaAttendeeRequest, AgendaResponse, RecurrenceType } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { createAgendaSchema } from '@/schemas/agendaSchemas';
 
 export interface AgendaFormData {
   title: string;
@@ -73,7 +75,7 @@ function toISOString(localString: string): string {
 
 export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: AgendaFormProps) {
   // 初期値の設定
-  const getInitialStartAt = () => {
+  const getInitialStartAt = useCallback(() => {
     if (initialData?.startAt) {
       return toLocalDateTimeString(initialData.startAt);
     }
@@ -82,9 +84,9 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
     now.setMinutes(Math.ceil(now.getMinutes() / 30) * 30, 0, 0);
     now.setHours(now.getHours() + 1);
     return toLocalDateTimeString(now.toISOString());
-  };
+  }, [initialData?.startAt]);
 
-  const getInitialEndAt = () => {
+  const getInitialEndAt = useCallback(() => {
     if (initialData?.endAt) {
       return toLocalDateTimeString(initialData.endAt);
     }
@@ -93,28 +95,29 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
     now.setMinutes(Math.ceil(now.getMinutes() / 30) * 30, 0, 0);
     now.setHours(now.getHours() + 2);
     return toLocalDateTimeString(now.toISOString());
-  };
+  }, [initialData?.endAt]);
 
-  const [title, setTitle] = useState(initialData?.title ?? '');
-  const [description, setDescription] = useState(initialData?.description ?? '');
-  const [startAt, setStartAt] = useState(getInitialStartAt);
-  const [endAt, setEndAt] = useState(getInitialEndAt);
-  const [isAllDay, setIsAllDay] = useState(initialData?.isAllDay ?? false);
-  const [location, setLocation] = useState(initialData?.location ?? '');
-  const [url, setUrl] = useState(initialData?.url ?? '');
+  // フォーム状態（リアルタイムUI更新用）
+  const [formData, setFormData] = useState({
+    title: initialData?.title ?? '',
+    description: initialData?.description ?? '',
+    startAt: getInitialStartAt(),
+    endAt: getInitialEndAt(),
+    isAllDay: initialData?.isAllDay ?? false,
+    location: initialData?.location ?? '',
+    url: initialData?.url ?? '',
+    recurrenceType: (initialData?.recurrenceType ?? 'None') as RecurrenceType,
+    recurrenceInterval: initialData?.recurrenceInterval ?? 1,
+    recurrenceEndType: (initialData?.recurrenceEndDate ? 'date' : initialData?.recurrenceCount ? 'count' : 'never') as
+      | 'date'
+      | 'count'
+      | 'never',
+    recurrenceEndDate: initialData?.recurrenceEndDate ? toLocalDateString(initialData.recurrenceEndDate) : '',
+    recurrenceCount: initialData?.recurrenceCount ?? 10,
+    sendNotification: true,
+  });
 
-  // 繰り返し設定
-  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>(initialData?.recurrenceType ?? 'None');
-  const [recurrenceInterval, setRecurrenceInterval] = useState(initialData?.recurrenceInterval ?? 1);
-  const [recurrenceEndType, setRecurrenceEndType] = useState<'date' | 'count' | 'never'>(
-    initialData?.recurrenceEndDate ? 'date' : initialData?.recurrenceCount ? 'count' : 'never',
-  );
-  const [recurrenceEndDate, setRecurrenceEndDate] = useState(
-    initialData?.recurrenceEndDate ? toLocalDateString(initialData.recurrenceEndDate) : '',
-  );
-  const [recurrenceCount, setRecurrenceCount] = useState(initialData?.recurrenceCount ?? 10);
-
-  // リマインダー
+  // リマインダー（フォームとは別で管理）
   const [reminders, setReminders] = useState<number[]>(initialData?.reminders ?? [1440, 60]);
 
   // 参加者 - TODO: 参加者選択機能を実装時に使用
@@ -122,52 +125,62 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
     initialData?.attendees?.map((a) => ({ userId: a.userId, isOptional: a.isOptional })) ?? [],
   );
 
-  // 通知
-  const [sendNotification, setSendNotification] = useState(true);
+  // useFormValidationフック
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
+    schema: createAgendaSchema,
+    onSubmit: async (data) => {
+      // Zod検証済みデータをAgendaFormDataに変換
+      const agendaFormData: AgendaFormData = {
+        title: data.title,
+        description: data.description || '',
+        startAt: toISOString(data.startAt),
+        endAt: toISOString(data.endAt),
+        isAllDay: data.isAllDay,
+        location: data.location || '',
+        url: data.url || '',
+        recurrenceType: data.recurrenceType as RecurrenceType,
+        recurrenceInterval: data.recurrenceInterval,
+        recurrenceEndDate:
+          data.recurrenceEndType === 'date' && data.recurrenceEndDate
+            ? toISOString(`${data.recurrenceEndDate}T23:59:59`)
+            : '',
+        recurrenceCount: data.recurrenceEndType === 'count' ? data.recurrenceCount : null,
+        reminders,
+        attendees,
+        sendNotification: data.sendNotification,
+      };
+
+      onSubmit(agendaFormData);
+    },
+  });
+
+  // フィールド変更ハンドラー
+  const handleFieldChange = useCallback(<K extends keyof typeof formData>(field: K, value: (typeof formData)[K]) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }, []);
 
   // 終日切り替え時に時刻部分を調整
   useEffect(() => {
-    if (isAllDay) {
-      // 終日の場合、時刻を00:00にする
-      const startDate = startAt.split('T')[0];
-      const endDate = endAt.split('T')[0];
-      setStartAt(`${startDate}T00:00`);
-      setEndAt(`${endDate}T23:59`);
+    if (formData.isAllDay) {
+      const startDate = formData.startAt.split('T')[0];
+      const endDate = formData.endAt.split('T')[0];
+      setFormData((prev) => ({
+        ...prev,
+        startAt: `${startDate}T00:00`,
+        endAt: `${endDate}T23:59`,
+      }));
     }
-  }, [isAllDay]);
+  }, [formData.isAllDay]);
 
   const handleReminderToggle = useCallback((value: number) => {
     setReminders((prev) => (prev.includes(value) ? prev.filter((r) => r !== value) : [...prev, value]));
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const formData: AgendaFormData = {
-      title,
-      description,
-      startAt: toISOString(startAt),
-      endAt: toISOString(endAt),
-      isAllDay,
-      location,
-      url,
-      recurrenceType,
-      recurrenceInterval,
-      recurrenceEndDate:
-        recurrenceEndType === 'date' && recurrenceEndDate ? toISOString(`${recurrenceEndDate}T23:59:59`) : '',
-      recurrenceCount: recurrenceEndType === 'count' ? recurrenceCount : null,
-      reminders,
-      attendees,
-      sendNotification,
-    };
-
-    onSubmit(formData);
-  };
-
-  const isRecurring = recurrenceType && recurrenceType !== 'None';
+  const isRecurring = formData.recurrenceType && formData.recurrenceType !== 'None';
+  const isFormDisabled = isPending || isSubmitting;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-6">
       {/* タイトル */}
       <div className="form-control">
         <label className="label" htmlFor="title">
@@ -178,13 +191,23 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
         <input
           type="text"
           id="title"
-          className="input input-bordered w-full"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          data-field="title"
+          className={`input input-bordered w-full ${shouldShowError('title') ? 'input-error' : ''}`}
+          value={formData.title}
+          onChange={(e) => handleFieldChange('title', e.target.value)}
+          onBlur={() => validateField('title', formData.title)}
           placeholder="予定のタイトル"
-          required
           maxLength={200}
+          disabled={isFormDisabled}
         />
+        {shouldShowError('title') && (
+          <div className="label">
+            <span className="label-text-alt text-error">{getFieldError('title')}</span>
+          </div>
+        )}
+        <div className="label">
+          <span className="label-text-alt text-xs">{formData.title.length}/200 文字</span>
+        </div>
       </div>
 
       {/* 終日チェック */}
@@ -192,9 +215,11 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
         <label className="label cursor-pointer justify-start gap-2">
           <input
             type="checkbox"
+            data-field="isAllDay"
             className="checkbox checkbox-primary"
-            checked={isAllDay}
-            onChange={(e) => setIsAllDay(e.target.checked)}
+            checked={formData.isAllDay}
+            onChange={(e) => handleFieldChange('isAllDay', e.target.checked)}
+            disabled={isFormDisabled}
           />
           <span className="label-text">終日</span>
         </label>
@@ -209,13 +234,22 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
             </span>
           </label>
           <input
-            type={isAllDay ? 'date' : 'datetime-local'}
+            type={formData.isAllDay ? 'date' : 'datetime-local'}
             id="startAt"
-            className="input input-bordered w-full"
-            value={isAllDay ? startAt.split('T')[0] : startAt}
-            onChange={(e) => setStartAt(isAllDay ? `${e.target.value}T00:00` : e.target.value)}
-            required
+            data-field="startAt"
+            className={`input input-bordered w-full ${shouldShowError('startAt') ? 'input-error' : ''}`}
+            value={formData.isAllDay ? formData.startAt.split('T')[0] : formData.startAt}
+            onChange={(e) =>
+              handleFieldChange('startAt', formData.isAllDay ? `${e.target.value}T00:00` : e.target.value)
+            }
+            onBlur={() => validateField('startAt', formData.startAt)}
+            disabled={isFormDisabled}
           />
+          {shouldShowError('startAt') && (
+            <div className="label">
+              <span className="label-text-alt text-error">{getFieldError('startAt')}</span>
+            </div>
+          )}
         </div>
         <div className="form-control">
           <label className="label" htmlFor="endAt">
@@ -224,13 +258,20 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
             </span>
           </label>
           <input
-            type={isAllDay ? 'date' : 'datetime-local'}
+            type={formData.isAllDay ? 'date' : 'datetime-local'}
             id="endAt"
-            className="input input-bordered w-full"
-            value={isAllDay ? endAt.split('T')[0] : endAt}
-            onChange={(e) => setEndAt(isAllDay ? `${e.target.value}T23:59` : e.target.value)}
-            required
+            data-field="endAt"
+            className={`input input-bordered w-full ${shouldShowError('endAt') ? 'input-error' : ''}`}
+            value={formData.isAllDay ? formData.endAt.split('T')[0] : formData.endAt}
+            onChange={(e) => handleFieldChange('endAt', formData.isAllDay ? `${e.target.value}T23:59` : e.target.value)}
+            onBlur={() => validateField('endAt', formData.endAt)}
+            disabled={isFormDisabled}
           />
+          {shouldShowError('endAt') && (
+            <div className="label">
+              <span className="label-text-alt text-error">{getFieldError('endAt')}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -243,25 +284,41 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
           <input
             type="text"
             id="location"
-            className="input input-bordered w-full"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            data-field="location"
+            className={`input input-bordered w-full ${shouldShowError('location') ? 'input-error' : ''}`}
+            value={formData.location}
+            onChange={(e) => handleFieldChange('location', e.target.value)}
+            onBlur={() => validateField('location', formData.location)}
             placeholder="会議室A、オンラインなど"
             maxLength={200}
+            disabled={isFormDisabled}
           />
+          {shouldShowError('location') && (
+            <div className="label">
+              <span className="label-text-alt text-error">{getFieldError('location')}</span>
+            </div>
+          )}
         </div>
         <div className="form-control">
           <label className="label" htmlFor="url">
             <span className="label-text">URL</span>
           </label>
           <input
-            type="url"
+            type="text"
             id="url"
-            className="input input-bordered w-full"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            data-field="url"
+            className={`input input-bordered w-full ${shouldShowError('url') ? 'input-error' : ''}`}
+            value={formData.url}
+            onChange={(e) => handleFieldChange('url', e.target.value)}
+            onBlur={() => validateField('url', formData.url)}
             placeholder="https://zoom.us/j/..."
+            disabled={isFormDisabled}
           />
+          {shouldShowError('url') && (
+            <div className="label">
+              <span className="label-text-alt text-error">{getFieldError('url')}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -272,11 +329,13 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
         </label>
         <textarea
           id="description"
+          data-field="description"
           className="textarea textarea-bordered w-full"
           rows={4}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={formData.description}
+          onChange={(e) => handleFieldChange('description', e.target.value)}
           placeholder="予定の詳細（Markdown対応）"
+          disabled={isFormDisabled}
         />
       </div>
 
@@ -290,9 +349,11 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
           </label>
           <select
             id="recurrenceType"
+            data-field="recurrenceType"
             className="select select-bordered w-full"
-            value={recurrenceType ?? 'None'}
-            onChange={(e) => setRecurrenceType(e.target.value as RecurrenceType)}
+            value={formData.recurrenceType ?? 'None'}
+            onChange={(e) => handleFieldChange('recurrenceType', e.target.value as RecurrenceType)}
+            disabled={isFormDisabled}
           >
             {recurrenceOptions.map((opt) => (
               <option key={opt.value} value={opt.value ?? 'None'}>
@@ -313,19 +374,28 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
                 <input
                   type="number"
                   id="recurrenceInterval"
-                  className="input input-bordered w-20"
-                  value={recurrenceInterval}
-                  onChange={(e) => setRecurrenceInterval(Number(e.target.value))}
+                  data-field="recurrenceInterval"
+                  className={`input input-bordered w-20 ${shouldShowError('recurrenceInterval') ? 'input-error' : ''}`}
+                  value={formData.recurrenceInterval}
+                  onChange={(e) => handleFieldChange('recurrenceInterval', Number(e.target.value))}
+                  onBlur={() => validateField('recurrenceInterval', formData.recurrenceInterval)}
                   min={1}
                   max={99}
+                  disabled={isFormDisabled}
                 />
                 <span className="text-sm text-base-content/70">
-                  {recurrenceType === 'Daily' && '日ごと'}
-                  {(recurrenceType === 'Weekly' || recurrenceType === 'Biweekly') && '週ごと'}
-                  {(recurrenceType === 'MonthlyByDate' || recurrenceType === 'MonthlyByWeekday') && 'ヶ月ごと'}
-                  {recurrenceType === 'Yearly' && '年ごと'}
+                  {formData.recurrenceType === 'Daily' && '日ごと'}
+                  {(formData.recurrenceType === 'Weekly' || formData.recurrenceType === 'Biweekly') && '週ごと'}
+                  {(formData.recurrenceType === 'MonthlyByDate' || formData.recurrenceType === 'MonthlyByWeekday') &&
+                    'ヶ月ごと'}
+                  {formData.recurrenceType === 'Yearly' && '年ごと'}
                 </span>
               </div>
+              {shouldShowError('recurrenceInterval') && (
+                <div className="label">
+                  <span className="label-text-alt text-error">{getFieldError('recurrenceInterval')}</span>
+                </div>
+              )}
             </div>
 
             {/* 終了条件 */}
@@ -335,51 +405,70 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
                 <label className="flex items-center gap-2">
                   <input
                     type="radio"
-                    name="recurrenceEndType"
+                    name="recurrenceEndTypeRadio"
                     className="radio radio-primary"
-                    checked={recurrenceEndType === 'date'}
-                    onChange={() => setRecurrenceEndType('date')}
+                    checked={formData.recurrenceEndType === 'date'}
+                    onChange={() => handleFieldChange('recurrenceEndType', 'date')}
+                    disabled={isFormDisabled}
                   />
                   <span>終了日を指定</span>
-                  {recurrenceEndType === 'date' && (
+                  {formData.recurrenceEndType === 'date' && (
                     <input
                       type="date"
-                      className="input input-bordered input-sm ml-2"
-                      value={recurrenceEndDate}
-                      onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                      data-field="recurrenceEndDate"
+                      className={`input input-bordered input-sm ml-2 ${shouldShowError('recurrenceEndDate') ? 'input-error' : ''}`}
+                      value={formData.recurrenceEndDate}
+                      onChange={(e) => handleFieldChange('recurrenceEndDate', e.target.value)}
+                      onBlur={() => validateField('recurrenceEndDate', formData.recurrenceEndDate)}
+                      disabled={isFormDisabled}
                     />
                   )}
                 </label>
+                {shouldShowError('recurrenceEndDate') && formData.recurrenceEndType === 'date' && (
+                  <div className="label pt-0">
+                    <span className="label-text-alt text-error">{getFieldError('recurrenceEndDate')}</span>
+                  </div>
+                )}
                 <label className="flex items-center gap-2">
                   <input
                     type="radio"
-                    name="recurrenceEndType"
+                    name="recurrenceEndTypeRadio"
                     className="radio radio-primary"
-                    checked={recurrenceEndType === 'count'}
-                    onChange={() => setRecurrenceEndType('count')}
+                    checked={formData.recurrenceEndType === 'count'}
+                    onChange={() => handleFieldChange('recurrenceEndType', 'count')}
+                    disabled={isFormDisabled}
                   />
                   <span>回数を指定</span>
-                  {recurrenceEndType === 'count' && (
+                  {formData.recurrenceEndType === 'count' && (
                     <>
                       <input
                         type="number"
-                        className="input input-bordered input-sm ml-2 w-20"
-                        value={recurrenceCount}
-                        onChange={(e) => setRecurrenceCount(Number(e.target.value))}
+                        data-field="recurrenceCount"
+                        className={`input input-bordered input-sm ml-2 w-20 ${shouldShowError('recurrenceCount') ? 'input-error' : ''}`}
+                        value={formData.recurrenceCount}
+                        onChange={(e) => handleFieldChange('recurrenceCount', Number(e.target.value))}
+                        onBlur={() => validateField('recurrenceCount', formData.recurrenceCount)}
                         min={1}
                         max={999}
+                        disabled={isFormDisabled}
                       />
                       <span>回</span>
                     </>
                   )}
                 </label>
+                {shouldShowError('recurrenceCount') && formData.recurrenceEndType === 'count' && (
+                  <div className="label pt-0">
+                    <span className="label-text-alt text-error">{getFieldError('recurrenceCount')}</span>
+                  </div>
+                )}
                 <label className="flex items-center gap-2">
                   <input
                     type="radio"
-                    name="recurrenceEndType"
+                    name="recurrenceEndTypeRadio"
                     className="radio radio-primary"
-                    checked={recurrenceEndType === 'never'}
-                    onChange={() => setRecurrenceEndType('never')}
+                    checked={formData.recurrenceEndType === 'never'}
+                    onChange={() => handleFieldChange('recurrenceEndType', 'never')}
+                    disabled={isFormDisabled}
                   />
                   <span>終了しない</span>
                 </label>
@@ -387,6 +476,8 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
             </div>
           </>
         )}
+        {/* Hidden field for recurrenceEndType to be picked up by useFormValidation */}
+        <input type="hidden" data-field="recurrenceEndType" value={formData.recurrenceEndType} />
       </div>
 
       {/* リマインダー */}
@@ -394,12 +485,13 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
         <h3 className="mb-3 font-medium">リマインダー</h3>
         <div className="flex flex-wrap gap-2">
           {reminderOptions.map((opt) => (
-            <label key={opt.value} className="flex items-center gap-1.5 cursor-pointer">
+            <label key={opt.value} className="flex cursor-pointer items-center gap-1.5">
               <input
                 type="checkbox"
                 className="checkbox checkbox-sm checkbox-primary"
                 checked={reminders.includes(opt.value)}
                 onChange={() => handleReminderToggle(opt.value)}
+                disabled={isFormDisabled}
               />
               <span className="text-sm">{opt.label}</span>
             </label>
@@ -412,9 +504,11 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
         <label className="label cursor-pointer justify-start gap-2">
           <input
             type="checkbox"
+            data-field="sendNotification"
             className="checkbox checkbox-primary"
-            checked={sendNotification}
-            onChange={(e) => setSendNotification(e.target.checked)}
+            checked={formData.sendNotification}
+            onChange={(e) => handleFieldChange('sendNotification', e.target.checked)}
+            disabled={isFormDisabled}
           />
           <span className="label-text">参加者にメール通知を送信する（推奨）</span>
         </label>
@@ -430,8 +524,8 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
 
       {/* 送信ボタン */}
       <div className="flex justify-end gap-2 pt-4">
-        <button type="submit" className="btn btn-primary" disabled={isPending || !title.trim()}>
-          {isPending && <span className="loading loading-spinner loading-sm" />}
+        <button type="submit" className="btn btn-primary" disabled={isFormDisabled}>
+          {(isPending || isSubmitting) && <span className="loading loading-spinner loading-sm" />}
           {submitLabel}
         </button>
       </div>

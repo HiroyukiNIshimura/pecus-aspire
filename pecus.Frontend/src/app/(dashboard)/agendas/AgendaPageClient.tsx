@@ -1,18 +1,41 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { fetchRecentOccurrencesPaginated } from '@/actions/agenda';
 import AgendaTimeline from '@/components/agendas/AgendaTimeline';
 import type { AgendaOccurrenceResponse } from '@/connectors/api/pecus';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 interface AgendaPageClientProps {
   initialOccurrences: AgendaOccurrenceResponse[];
+  initialNextCursor: string | null;
   fetchError: string | null;
 }
 
-export default function AgendaPageClient({ initialOccurrences, fetchError }: AgendaPageClientProps) {
+export default function AgendaPageClient({ initialOccurrences, initialNextCursor, fetchError }: AgendaPageClientProps) {
   const [occurrences, setOccurrences] = useState<AgendaOccurrenceResponse[]>(initialOccurrences);
+  const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
   const [error, setError] = useState<string | null>(fetchError);
+
+  // 追加読み込み
+  const loadMore = useCallback(async () => {
+    if (!nextCursor) return;
+
+    const result = await fetchRecentOccurrencesPaginated(20, nextCursor);
+    if (result.success) {
+      setOccurrences((prev) => [...prev, ...result.data.items]);
+      setNextCursor(result.data.nextCursor ?? null);
+    } else {
+      setError(result.message ?? '追加データの取得に失敗しました。');
+    }
+  }, [nextCursor]);
+
+  const { sentinelRef, isLoading } = useInfiniteScroll({
+    onLoadMore: loadMore,
+    hasMore: !!nextCursor,
+    rootMargin: '200px',
+  });
 
   // 参加状況更新後にローカル状態を更新
   const handleAttendanceUpdate = (agendaId: number, startAt: string, newStatus: string) => {
@@ -52,6 +75,21 @@ export default function AgendaPageClient({ initialOccurrences, fetchError }: Age
 
       {/* タイムライン */}
       <AgendaTimeline occurrences={occurrences} onAttendanceUpdate={handleAttendanceUpdate} />
+
+      {/* 無限スクロール センチネル */}
+      <div ref={sentinelRef} aria-hidden="true" />
+
+      {/* ローディング表示 */}
+      {isLoading && (
+        <div className="flex justify-center py-4">
+          <span className="loading loading-spinner loading-md text-primary" />
+        </div>
+      )}
+
+      {/* 終端表示 */}
+      {!isLoading && !nextCursor && occurrences.length > 0 && (
+        <p className="text-center text-base-content/50 text-sm py-4">すべての予定を表示しました</p>
+      )}
     </div>
   );
 }
