@@ -1,0 +1,34 @@
+@model Pecus.Libs.Mail.Templates.Models.AgendaUpdatedEmailModel
+
+予定が変更されました
+
+以下の予定が変更されました。
+
+■ @Model.AgendaTitle
+
+日時: @if (Model.IsAllDay)
+{
+    @Model.StartAt.ToString("yyyy/MM/dd")@: (終日)
+}
+else
+{
+    @Model.StartAt.ToString("yyyy/MM/dd HH:mm")@: - @Model.EndAt.ToString("HH:mm")
+}
+@if (!string.IsNullOrWhiteSpace(Model.Location))
+{
+@:場所: @Model.Location
+}
+@if (!string.IsNullOrWhiteSpace(Model.Url))
+{
+@:URL: @Model.Url
+}
+変更者: @Model.UpdatedByName
+組織: @Model.OrganizationName
+@if (!string.IsNullOrWhiteSpace(Model.ChangeDescription))
+{
+@:
+@:変更内容:
+@Model.ChangeDescription
+}
+
+予定を確認: @Model.AgendaUrl

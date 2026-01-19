@@ -33,6 +33,10 @@ public static class EmailPreviewDataFactory
             new(HelpCommentEmailModel.TemplateName, "ヘルプ要求", "ヘルプコメント通知"),
             new(ReminderCommentEmailModel.TemplateName, "督促コメント", "リマインダーコメント通知"),
             new(WeeklyReportEmailModel.TemplateName, "週間レポート", "週間タスク・進捗レポート"),
+            new(AgendaInvitationEmailModel.TemplateName, "アジェンダ招待", "アジェンダへの招待通知"),
+            new(AgendaUpdatedEmailModel.TemplateName, "アジェンダ変更", "アジェンダ変更通知"),
+            new(AgendaCancelledEmailModel.TemplateName, "アジェンダ中止", "アジェンダ中止通知"),
+            new(AgendaReminderEmailModel.TemplateName, "アジェンダリマインダー", "アジェンダ開始前のリマインダー"),
         ];
     }
 
@@ -64,6 +68,10 @@ public static class EmailPreviewDataFactory
             "help-comment" => CreateHelpCommentData(now),
             "reminder-comment" => CreateReminderCommentData(now),
             "weekly-report" => CreateWeeklyReportData(now),
+            "agenda-invitation" => CreateAgendaInvitationData(now),
+            "agenda-updated" => CreateAgendaUpdatedData(now),
+            "agenda-cancelled" => CreateAgendaCancelledData(now),
+            "agenda-reminder" => CreateAgendaReminderData(now),
             _ => throw new NotImplementedException(),
         };
     }
@@ -293,6 +301,64 @@ public static class EmailPreviewDataFactory
         WorkspaceCode = "PROJECT-001",
         ItemUrl = "https://app.example.com/workspace/PROJECT-001/item/ITEM-001",
         OrganizationName = "サンプル株式会社",
+    };
+
+    private static AgendaInvitationEmailModel CreateAgendaInvitationData(DateTimeOffset now) => new()
+    {
+        UserName = "田中 太郎",
+        AgendaTitle = "週次プロジェクト定例会議",
+        StartAt = now.AddDays(3).Date.AddHours(10),
+        EndAt = now.AddDays(3).Date.AddHours(11),
+        IsAllDay = false,
+        Location = "会議室A（3階）",
+        Url = "https://meet.example.com/project-weekly",
+        RecurrenceDescription = "毎週水曜日 10:00〜11:00",
+        Description = "週次のプロジェクト進捗確認会議です。\n各担当者は進捗状況を準備してください。",
+        InvitedByName = "山田 花子",
+        OrganizationName = "サンプル株式会社",
+        AgendaUrl = "https://app.example.com/agenda/12345",
+    };
+
+    private static AgendaUpdatedEmailModel CreateAgendaUpdatedData(DateTimeOffset now) => new()
+    {
+        UserName = "田中 太郎",
+        AgendaTitle = "週次プロジェクト定例会議",
+        StartAt = now.AddDays(3).Date.AddHours(14),
+        EndAt = now.AddDays(3).Date.AddHours(15),
+        IsAllDay = false,
+        Location = "会議室B（2階）に変更",
+        Url = "https://meet.example.com/project-weekly",
+        ChangeDescription = "会議時間が 10:00〜11:00 から 14:00〜15:00 に変更されました。\n会議室も A から B に変更されています。",
+        UpdatedByName = "山田 花子",
+        OrganizationName = "サンプル株式会社",
+        AgendaUrl = "https://app.example.com/agenda/12345",
+    };
+
+    private static AgendaCancelledEmailModel CreateAgendaCancelledData(DateTimeOffset now) => new()
+    {
+        UserName = "田中 太郎",
+        AgendaTitle = "週次プロジェクト定例会議",
+        OriginalStartAt = now.AddDays(3).Date.AddHours(10),
+        OriginalEndAt = now.AddDays(3).Date.AddHours(11),
+        IsAllDay = false,
+        CancellationReason = "祝日のため中止となりました。次週に振り替えます。",
+        IsOccurrenceCancellation = true,
+        CancelledByName = "山田 花子",
+        OrganizationName = "サンプル株式会社",
+    };
+
+    private static AgendaReminderEmailModel CreateAgendaReminderData(DateTimeOffset now) => new()
+    {
+        UserName = "田中 太郎",
+        AgendaTitle = "週次プロジェクト定例会議",
+        StartAt = now.AddHours(1),
+        EndAt = now.AddHours(2),
+        IsAllDay = false,
+        Location = "会議室A（3階）",
+        Url = "https://meet.example.com/project-weekly",
+        ReminderMessage = "1時間後に開始します",
+        OrganizationName = "サンプル株式会社",
+        AgendaUrl = "https://app.example.com/agenda/12345",
     };
 
     private static WeeklyReportEmailModel CreateWeeklyReportData(DateTimeOffset now)

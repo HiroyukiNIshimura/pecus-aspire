@@ -171,4 +171,7 @@ LandingPageRecommendationJobScheduler.ConfigureLandingPageRecommendationJob(recu
 // アジェンダリマインダージョブの設定（5分ごと）
 AgendaReminderJobScheduler.ConfigureAgendaReminderJob(recurringJobManager, builder.Configuration);
 
+// アジェンダメール送信ジョブの設定（5分ごと）
+AgendaEmailJobScheduler.ConfigureAgendaEmailJob(recurringJobManager, builder.Configuration);
+
 app.Run();

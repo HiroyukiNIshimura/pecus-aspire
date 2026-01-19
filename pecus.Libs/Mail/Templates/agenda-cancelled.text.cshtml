@@ -1,0 +1,31 @@
+@model Pecus.Libs.Mail.Templates.Models.AgendaCancelledEmailModel
+
+予定が中止されました
+
+@if (Model.IsOccurrenceCancellation)
+{
+@:以下の予定の【この回】が中止されました。
+}
+else
+{
+@:以下の予定が中止されました。
+}
+
+■ @Model.AgendaTitle
+
+元の日時: @if (Model.IsAllDay)
+{
+    @Model.OriginalStartAt.ToString("yyyy/MM/dd")@: (終日)
+}
+else
+{
+    @Model.OriginalStartAt.ToString("yyyy/MM/dd HH:mm")@: - @Model.OriginalEndAt.ToString("HH:mm")
+}
+中止者: @Model.CancelledByName
+組織: @Model.OrganizationName
+@if (!string.IsNullOrWhiteSpace(Model.CancellationReason))
+{
+@:
+@:中止理由:
+@Model.CancellationReason
+}

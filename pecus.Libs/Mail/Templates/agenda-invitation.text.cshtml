@@ -1,0 +1,37 @@
+@model Pecus.Libs.Mail.Templates.Models.AgendaInvitationEmailModel
+
+予定に招待されました
+
+@Model.InvitedByName さんから以下の予定に招待されました。
+
+■ @Model.AgendaTitle
+
+日時: @if (Model.IsAllDay)
+{
+    @Model.StartAt.ToString("yyyy/MM/dd")@: (終日)
+}
+else
+{
+    @Model.StartAt.ToString("yyyy/MM/dd HH:mm")@: - @Model.EndAt.ToString("HH:mm")
+}
+@if (!string.IsNullOrWhiteSpace(Model.RecurrenceDescription))
+{
+@:繰り返し: @Model.RecurrenceDescription
+}
+@if (!string.IsNullOrWhiteSpace(Model.Location))
+{
+@:場所: @Model.Location
+}
+@if (!string.IsNullOrWhiteSpace(Model.Url))
+{
+@:URL: @Model.Url
+}
+組織: @Model.OrganizationName
+@if (!string.IsNullOrWhiteSpace(Model.Description))
+{
+@:
+@:詳細:
+@Model.Description
+}
+
+予定を確認: @Model.AgendaUrl

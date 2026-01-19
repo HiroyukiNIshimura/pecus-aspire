@@ -1,0 +1,39 @@
+@model Pecus.Libs.Mail.Templates.Models.AgendaCancelledEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2 style="color: #dc3545;">予定が中止されました</h2>
+
+<p>@if (Model.IsOccurrenceCancellation)
+{
+    <span>以下の予定の <strong>この回</strong> が中止されました。</span>
+}
+else
+{
+    <span>以下の予定が中止されました。</span>
+}</p>
+
+<p><strong>@Model.AgendaTitle</strong></p>
+
+<ul>
+    <li>元の日時: @if (Model.IsAllDay)
+        {
+            <span>@Model.OriginalStartAt.ToString("yyyy/MM/dd") (終日)</span>
+        }
+        else
+        {
+            <span>@Model.OriginalStartAt.ToString("yyyy/MM/dd HH:mm") - @Model.OriginalEndAt.ToString("HH:mm")</span>
+        }
+    </li>
+    <li>中止者: @Model.CancelledByName</li>
+    <li>組織: @Model.OrganizationName</li>
+</ul>
+
+@if (!string.IsNullOrWhiteSpace(Model.CancellationReason))
+{
+    <div style="margin: 16px 0; padding: 12px; background-color: #f8d7da; border-radius: 4px; border: 1px solid #f5c6cb;">
+        <strong>中止理由:</strong><br />
+        @Model.CancellationReason
+    </div>
+}

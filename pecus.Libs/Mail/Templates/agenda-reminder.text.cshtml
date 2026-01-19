@@ -1,0 +1,27 @@
+@model Pecus.Libs.Mail.Templates.Models.AgendaReminderEmailModel
+
+📅 @Model.ReminderMessage
+
+まもなく以下の予定が始まります。
+
+■ @Model.AgendaTitle
+
+日時: @if (Model.IsAllDay)
+{
+    @Model.StartAt.ToString("yyyy/MM/dd")@: (終日)
+}
+else
+{
+    @Model.StartAt.ToString("yyyy/MM/dd HH:mm")@: - @Model.EndAt.ToString("HH:mm")
+}
+@if (!string.IsNullOrWhiteSpace(Model.Location))
+{
+@:場所: @Model.Location
+}
+@if (!string.IsNullOrWhiteSpace(Model.Url))
+{
+@:URL: @Model.Url
+}
+組織: @Model.OrganizationName
+
+予定を確認: @Model.AgendaUrl
