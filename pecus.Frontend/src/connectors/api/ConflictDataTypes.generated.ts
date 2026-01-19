@@ -14,6 +14,7 @@
  */
 
 import type {
+  AgendaResponse,
   OrganizationResponse,
   OrganizationSettingResponse,
   SkillDetailResponse,
@@ -64,6 +65,10 @@ export type ConcurrencyErrorResponseBody<T = unknown> = {
  * }
  */
 export type ConflictLatestData =
+  | {
+      type: 'agenda';
+      data: AgendaResponse;
+    }
   | {
       type: 'organization';
       data: OrganizationResponse;
