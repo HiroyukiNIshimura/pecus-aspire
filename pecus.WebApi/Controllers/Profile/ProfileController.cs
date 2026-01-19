@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Models.Config;
-using Pecus.Models.Requests.User;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Profile;
