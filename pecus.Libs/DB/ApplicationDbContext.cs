@@ -182,6 +182,16 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserAchievement> UserAchievements { get; set; }
 
     /// <summary>
+    /// アジェンダテーブル
+    /// </summary>
+    public DbSet<Agenda> Agendas { get; set; }
+
+    /// <summary>
+    /// アジェンダ参加者テーブル
+    /// </summary>
+    public DbSet<AgendaAttendee> AgendaAttendees { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -1232,6 +1242,56 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => new { e.UserId, e.IsMainBadge });
         });
 
+        // Agendaエンティティの設定
+        modelBuilder.Entity<Agenda>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // Organization とのリレーション
+            entity
+                .HasOne(e => e.Organization)
+                .WithMany()
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Workspace とのリレーション（任意）
+            entity
+                .HasOne(e => e.Workspace)
+                .WithMany()
+                .HasForeignKey(e => e.WorkspaceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CreatedByUser とのリレーション
+            entity
+                .HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict); // ユーザー削除時もアジェンダは残す（またはSetNull）
+
+            // 期間検索用インデックス
+            entity.HasIndex(e => new { e.OrganizationId, e.WorkspaceId, e.StartAt, e.EndAt });
+        });
+
+        // AgendaAttendeeエンティティの設定
+        modelBuilder.Entity<AgendaAttendee>(entity =>
+        {
+            entity.HasKey(e => new { e.AgendaId, e.UserId });
+
+            // Agenda とのリレーション
+            entity
+                .HasOne(e => e.Agenda)
+                .WithMany(a => a.Attendees)
+                .HasForeignKey(e => e.AgendaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // User とのリレーション
+            entity
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）
         ConfigureRowVersionForAllEntities(modelBuilder);
     }
@@ -1264,5 +1324,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<SystemNotification>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<Bot>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<AchievementMaster>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<Agenda>().Property(e => e.RowVersion).IsRowVersion();
     }
 }

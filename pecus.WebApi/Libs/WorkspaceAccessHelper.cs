@@ -60,6 +60,18 @@ public class OrganizationAccessHelper
     }
 
     /// <summary>
+    /// ユーザーが指定した組織にアクセス可能かチェック（所属しているか）
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>アクセス可能な場合はtrue</returns>
+    public async Task<bool> CanAccessOrganizationAsync(int userId, int organizationId)
+    {
+        var userOrgId = await GetUserOrganizationIdAsync(userId);
+        return userOrgId.HasValue && userOrgId.Value == organizationId;
+    }
+
+    /// <summary>
     /// ユーザーが指定したワークスペースにアクセス可能かチェック
     /// </summary>
     /// <param name="userId">ユーザーID</param>
