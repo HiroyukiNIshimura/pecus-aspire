@@ -1,14 +1,18 @@
-using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
-/// アジェンダ参加者エンティティ
-/// 中間テーブルとして機能する
+/// アジェンダリマインダー送信ログエンティティ
+/// 繰り返しイベントの各回に対して、どのリマインダーを送信済みかを追跡する
 /// </summary>
-public class AgendaAttendee
+public class AgendaReminderLog
 {
+    /// <summary>
+    /// ID
+    /// </summary>
+    public long Id { get; set; }
+
     /// <summary>
     /// アジェンダID
     /// </summary>
@@ -22,20 +26,21 @@ public class AgendaAttendee
     public int UserId { get; set; }
 
     /// <summary>
-    /// 参加ステータス
+    /// 対象回の開始日時（繰り返しの特定回を識別）
     /// </summary>
-    public AttendanceStatus Status { get; set; } = AttendanceStatus.Pending;
+    [Required]
+    public DateTimeOffset OccurrenceStartAt { get; set; }
 
     /// <summary>
-    /// 任意参加フラグ（false=必須参加）
+    /// 何分前のリマインダーか（1440=1日前, 60=1時間前など）
     /// </summary>
-    public bool IsOptional { get; set; } = false;
+    [Required]
+    public int MinutesBefore { get; set; }
 
     /// <summary>
-    /// 個人のリマインダー設定（null=デフォルト使用、カンマ区切り分）
+    /// 送信日時
     /// </summary>
-    [MaxLength(50)]
-    public string? CustomReminders { get; set; }
+    public DateTimeOffset SentAt { get; set; } = DateTimeOffset.UtcNow;
 
     // Navigation Properties
 

@@ -308,6 +308,65 @@ public enum ReminderTiming
 | IsEmailSent | bool | メール送信済みフラグ |
 | CreatedAt | DateTimeOffset | 作成日時 |
 
+#### AgendaReminderLog（リマインダー送信ログ - 新規）
+
+繰り返しイベントの各回に対して、どのリマインダーを送信済みかを追跡するテーブル。
+
+| カラム | 型 | 説明 |
+|--------|-----|------|
+| Id | long | PK |
+| AgendaId | long | FK |
+| UserId | int | FK |
+| OccurrenceStartAt | DateTimeOffset | 対象回の開始日時（繰り返しの特定回を識別） |
+| MinutesBefore | int | 何分前のリマインダーか（1440=1日前, 60=1時間前など） |
+| SentAt | DateTimeOffset | 送信日時 |
+
+**用途**:
+- 定期ジョブがリマインダー送信時に、このテーブルを確認して重複送信を防止
+- 参加者ごとの `CustomReminders` または `Agenda.DefaultReminders` と照合し、未送信のもののみ送信
+
+```csharp
+// リマインダージョブの処理イメージ
+public async Task ProcessRemindersAsync()
+{
+    var now = DateTimeOffset.UtcNow;
+
+    // 今後24時間以内に開始するアジェンダを取得
+    var upcomingAgendas = await GetUpcomingAgendas(now, now.AddHours(24));
+
+    foreach (var (agenda, occurrenceStartAt) in upcomingAgendas)
+    {
+        foreach (var attendee in agenda.Attendees)
+        {
+            // 個人設定 or デフォルト設定からリマインダー分数リストを取得
+            var reminders = ParseReminders(attendee.CustomReminders ?? agenda.DefaultReminders);
+
+            foreach (var minutesBefore in reminders)
+            {
+                var reminderTime = occurrenceStartAt.AddMinutes(-minutesBefore);
+
+                // リマインダー時刻が現在〜5分後の範囲内か
+                if (reminderTime >= now && reminderTime <= now.AddMinutes(5))
+                {
+                    // 既に送信済みか確認
+                    var alreadySent = await _context.AgendaReminderLogs
+                        .AnyAsync(l => l.AgendaId == agenda.Id
+                            && l.UserId == attendee.UserId
+                            && l.OccurrenceStartAt == occurrenceStartAt
+                            && l.MinutesBefore == minutesBefore);
+
+                    if (!alreadySent)
+                    {
+                        // 通知作成 + メール送信 + ログ記録
+                        await SendReminderAsync(agenda, attendee, occurrenceStartAt, minutesBefore);
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
 ---
 
 ## 4. API設計

@@ -192,6 +192,21 @@ public class ApplicationDbContext : DbContext
     public DbSet<AgendaAttendee> AgendaAttendees { get; set; }
 
     /// <summary>
+    /// アジェンダ例外テーブル（特定回の中止・変更）
+    /// </summary>
+    public DbSet<AgendaException> AgendaExceptions { get; set; }
+
+    /// <summary>
+    /// アジェンダ通知テーブル
+    /// </summary>
+    public DbSet<AgendaNotification> AgendaNotifications { get; set; }
+
+    /// <summary>
+    /// アジェンダリマインダー送信ログテーブル
+    /// </summary>
+    public DbSet<AgendaReminderLog> AgendaReminderLogs { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -1259,10 +1274,20 @@ public class ApplicationDbContext : DbContext
                 .HasOne(e => e.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedByUserId)
-                .OnDelete(DeleteBehavior.Restrict); // ユーザー削除時もアジェンダは残す（またはSetNull）
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // CancelledByUser とのリレーション
+            entity
+                .HasOne(e => e.CancelledByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CancelledByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // 期間検索用インデックス
             entity.HasIndex(e => new { e.OrganizationId, e.StartAt, e.EndAt });
+
+            // 中止フラグ検索用インデックス
+            entity.HasIndex(e => new { e.OrganizationId, e.IsCancelled });
         });
 
         // AgendaAttendeeエンティティの設定
@@ -1283,6 +1308,75 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // AgendaExceptionエンティティの設定
+        modelBuilder.Entity<AgendaException>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // Agenda とのリレーション
+            entity
+                .HasOne(e => e.Agenda)
+                .WithMany(a => a.Exceptions)
+                .HasForeignKey(e => e.AgendaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CreatedByUser とのリレーション
+            entity
+                .HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 特定回検索用インデックス（アジェンダIDと元の開始日時で一意）
+            entity.HasIndex(e => new { e.AgendaId, e.OriginalStartAt }).IsUnique();
+        });
+
+        // AgendaNotificationエンティティの設定
+        modelBuilder.Entity<AgendaNotification>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // Agenda とのリレーション
+            entity
+                .HasOne(e => e.Agenda)
+                .WithMany()
+                .HasForeignKey(e => e.AgendaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // User とのリレーション
+            entity
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ユーザーの未読通知検索用インデックス
+            entity.HasIndex(e => new { e.UserId, e.IsRead, e.CreatedAt });
+        });
+
+        // AgendaReminderLogエンティティの設定
+        modelBuilder.Entity<AgendaReminderLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // Agenda とのリレーション
+            entity
+                .HasOne(e => e.Agenda)
+                .WithMany()
+                .HasForeignKey(e => e.AgendaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // User とのリレーション
+            entity
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 重複送信防止用インデックス（ユニーク）
+            entity.HasIndex(e => new { e.AgendaId, e.UserId, e.OccurrenceStartAt, e.MinutesBefore }).IsUnique();
         });
 
         // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）
