@@ -281,6 +281,231 @@
         ]
       }
     },
+    "/api/agendas/notifications": {
+      "get": {
+        "tags": [
+          "AgendaNotification"
+        ],
+        "summary": "通知一覧取得",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "取得件数（デフォルト: 50）",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            }
+          },
+          {
+            "name": "beforeId",
+            "in": "query",
+            "description": "このID以前の通知を取得（ページング用）",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "unreadOnly",
+            "in": "query",
+            "description": "未読のみ取得",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgendaNotificationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/agendas/notifications/count": {
+      "get": {
+        "tags": [
+          "AgendaNotification"
+        ],
+        "summary": "未読通知件数取得（ヘッダーバッジ用）",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgendaNotificationCountResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/agendas/notifications/{id}/read": {
+      "post": {
+        "tags": [
+          "AgendaNotification"
+        ],
+        "summary": "通知を既読にする（個別）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/agendas/notifications/read": {
+      "post": {
+        "tags": [
+          "AgendaNotification"
+        ],
+        "summary": "通知を一括既読にする",
+        "description": "notificationIdsを指定した場合は指定した通知のみ、\n指定しない場合は全ての未読通知を既読にします。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkNotificationsReadRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkNotificationsReadRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkNotificationsReadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkNotificationsReadResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/agendas": {
       "get": {
         "tags": [
@@ -412,6 +637,69 @@
         ]
       }
     },
+    "/api/agendas/occurrences": {
+      "get": {
+        "tags": [
+          "Agenda"
+        ],
+        "summary": "展開済みオカレンス一覧取得（期間指定）",
+        "description": "繰り返しイベントを展開し、各オカレンス（回）を個別に返します。\n例外（特定回の中止・変更）も反映されます。",
+        "parameters": [
+          {
+            "name": "startAt",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endAt",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgendaOccurrenceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/agendas/recent": {
       "get": {
         "tags": [
@@ -438,6 +726,62 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/AgendaResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/agendas/occurrences/recent": {
+      "get": {
+        "tags": [
+          "Agenda"
+        ],
+        "summary": "直近の展開済みオカレンス一覧取得",
+        "description": "繰り返しイベントを展開し、直近の各オカレンス（回）を個別に返します。\nタイムライン表示用に最適化されています。",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgendaOccurrenceResponse"
                   }
                 }
               }
@@ -522,16 +866,8 @@
         "tags": [
           "Agenda"
         ],
-        "summary": "アジェンダ更新",
+        "summary": "アジェンダ更新（シリーズ全体）",
         "parameters": [
-          {
-            "name": "organizationId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -615,15 +951,513 @@
             "Bearer": [ ]
           }
         ]
+      }
+    },
+    "/api/agendas/{id}/from": {
+      "put": {
+        "tags": [
+          "Agenda"
+        ],
+        "summary": "「この回以降」更新（シリーズ分割）",
+        "description": "指定された回を境にシリーズを分割します。\n元のシリーズは分割地点の前の回で終了し、新しいシリーズが作成されます。\n戻り値は新しく作成されたシリーズのアジェンダです。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFromOccurrenceRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFromOccurrenceRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFromOccurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgendaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/agendas/{id}/cancel": {
+      "patch": {
+        "tags": [
+          "Agenda"
+        ],
+        "summary": "アジェンダ中止（シリーズ全体）",
+        "description": "物理削除ではなく中止状態にします。中止されたアジェンダは一覧に表示されますが、\n中止理由と共に視覚的に区別されます。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAgendaRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAgendaRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAgendaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgendaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfAgendaResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/agendas/{id}/attendance": {
+      "patch": {
+        "tags": [
+          "Agenda"
+        ],
+        "summary": "参加状況更新",
+        "description": "現在のユーザーの参加状況を更新します。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttendanceRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttendanceRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttendanceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgendaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/agendas/{id}/exceptions": {
+      "get": {
+        "tags": [
+          "Agenda"
+        ],
+        "summary": "アジェンダ例外一覧取得",
+        "description": "指定されたアジェンダの全例外（特定回の中止・変更）を取得します。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgendaExceptionResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Agenda"
+        ],
+        "summary": "アジェンダ例外作成（特定回の中止・変更）",
+        "description": "繰り返しアジェンダの特定回を中止または変更します。\n単発イベントには使用できません。シリーズ全体の変更は PUT を使用してください。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgendaExceptionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgendaExceptionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgendaExceptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgendaExceptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/agendas/{id}/exceptions/{exceptionId}": {
+      "put": {
+        "tags": [
+          "Agenda"
+        ],
+        "summary": "アジェンダ例外更新",
+        "description": "既存の例外（特定回の中止・変更）を更新します。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "exceptionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgendaExceptionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgendaExceptionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgendaExceptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgendaExceptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       },
       "delete": {
         "tags": [
           "Agenda"
         ],
-        "summary": "アジェンダ削除",
+        "summary": "アジェンダ例外削除（元に戻す）",
+        "description": "例外を削除し、特定回を元の設定に戻します。\n中止していた回の中止を取り消す、または変更していた回を元に戻す場合に使用します。",
         "parameters": [
           {
             "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "exceptionId",
             "in": "path",
             "required": true,
             "schema": {
@@ -637,6 +1471,16 @@
             "description": "No Content",
             "content": {
               "application/json": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
             }
           },
           "404": {
@@ -14063,6 +14907,15 @@
           "isOptional": {
             "type": "boolean"
           },
+          "customReminders": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "個人リマインダー設定（分単位のリスト、null=デフォルト設定を使用）",
+            "nullable": true
+          },
           "user": {
             "oneOf": [
               {
@@ -14074,6 +14927,278 @@
             ]
           }
         }
+      },
+      "AgendaExceptionResponse": {
+        "required": [
+          "id",
+          "agendaId",
+          "originalStartAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "例外ID",
+            "format": "int64"
+          },
+          "agendaId": {
+            "type": "integer",
+            "description": "親アジェンダID",
+            "format": "int64"
+          },
+          "originalStartAt": {
+            "type": "string",
+            "description": "対象の元の開始日時（どの回かを特定）",
+            "format": "date-time"
+          },
+          "isCancelled": {
+            "type": "boolean",
+            "description": "この回は中止か"
+          },
+          "cancellationReason": {
+            "type": "string",
+            "description": "中止理由",
+            "nullable": true
+          },
+          "modifiedStartAt": {
+            "type": "string",
+            "description": "変更後の開始日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "modifiedEndAt": {
+            "type": "string",
+            "description": "変更後の終了日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "modifiedTitle": {
+            "type": "string",
+            "description": "変更後のタイトル",
+            "nullable": true
+          },
+          "modifiedLocation": {
+            "type": "string",
+            "description": "変更後の場所",
+            "nullable": true
+          },
+          "modifiedUrl": {
+            "type": "string",
+            "description": "変更後のURL",
+            "nullable": true
+          },
+          "modifiedDescription": {
+            "type": "string",
+            "description": "変更後の詳細",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "createdByUser": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserItem"
+              }
+            ]
+          }
+        },
+        "description": "アジェンダ例外レスポンス（特定回の中止・変更）"
+      },
+      "AgendaNotificationCountResponse": {
+        "type": "object",
+        "properties": {
+          "pendingInvitations": {
+            "type": "integer",
+            "description": "未回答の招待数",
+            "format": "int32"
+          },
+          "unreadNotifications": {
+            "type": "integer",
+            "description": "未読通知数",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "description": "合計",
+            "format": "int32"
+          }
+        },
+        "description": "アジェンダ通知件数レスポンス（ヘッダーバッジ用）"
+      },
+      "AgendaNotificationResponse": {
+        "required": [
+          "agendaTitle"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "通知ID",
+            "format": "int64"
+          },
+          "agendaId": {
+            "type": "integer",
+            "description": "アジェンダID",
+            "format": "int64"
+          },
+          "agendaTitle": {
+            "type": "string",
+            "description": "アジェンダタイトル"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AgendaNotificationType"
+          },
+          "occurrenceStartAt": {
+            "type": "string",
+            "description": "対象回の開始日時（繰り返しイベントの特定回への通知の場合）",
+            "format": "date-time",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "description": "通知メッセージ",
+            "nullable": true
+          },
+          "isRead": {
+            "type": "boolean",
+            "description": "既読フラグ"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "createdByUser": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserItem"
+              }
+            ]
+          }
+        },
+        "description": "アジェンダ通知レスポンス"
+      },
+      "AgendaNotificationType": {
+        "enum": [
+          "Invited",
+          "SeriesUpdated",
+          "SeriesCancelled",
+          "OccurrenceUpdated",
+          "OccurrenceCancelled",
+          "Reminder",
+          "AddedToEvent",
+          "RemovedFromEvent"
+        ],
+        "type": "string",
+        "description": "アジェンダ通知タイプ"
+      },
+      "AgendaOccurrenceResponse": {
+        "required": [
+          "agendaId",
+          "startAt",
+          "endAt",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "agendaId": {
+            "type": "integer",
+            "description": "親アジェンダID",
+            "format": "int64"
+          },
+          "exceptionId": {
+            "type": "integer",
+            "description": "例外ID（この回が変更されている場合）",
+            "format": "int64",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "description": "この回の開始日時",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "description": "この回の終了日時",
+            "format": "date-time"
+          },
+          "title": {
+            "type": "string",
+            "description": "タイトル（例外で変更されていればその値）"
+          },
+          "location": {
+            "type": "string",
+            "description": "場所",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "URL",
+            "nullable": true
+          },
+          "isAllDay": {
+            "type": "boolean",
+            "description": "終日イベントか"
+          },
+          "recurrenceType": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/RecurrenceType"
+              }
+            ]
+          },
+          "isCancelled": {
+            "type": "boolean",
+            "description": "この回は中止されているか"
+          },
+          "cancellationReason": {
+            "type": "string",
+            "description": "中止理由",
+            "nullable": true
+          },
+          "isModified": {
+            "type": "boolean",
+            "description": "この回のみ変更されているか"
+          },
+          "attendeeCount": {
+            "type": "integer",
+            "description": "参加者数",
+            "format": "int32"
+          },
+          "myAttendanceStatus": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/AttendanceStatus"
+              }
+            ]
+          },
+          "createdByUser": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserItem"
+              }
+            ]
+          }
+        },
+        "description": "アジェンダ展開済みオカレンス（一覧用）\n繰り返しイベントを展開した各回を表すDTO"
       },
       "AgendaResponse": {
         "required": [
@@ -14123,6 +15248,73 @@
           "url": {
             "type": "string",
             "nullable": true
+          },
+          "recurrenceType": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/RecurrenceType"
+              }
+            ]
+          },
+          "recurrenceInterval": {
+            "type": "integer",
+            "description": "繰り返し間隔",
+            "format": "int32"
+          },
+          "recurrenceWeekOfMonth": {
+            "type": "integer",
+            "description": "月次（曜日指定）の場合の週番号",
+            "format": "int32",
+            "nullable": true
+          },
+          "recurrenceEndDate": {
+            "type": "string",
+            "description": "繰り返し終了日",
+            "format": "date",
+            "nullable": true
+          },
+          "recurrenceCount": {
+            "type": "integer",
+            "description": "繰り返し終了回数",
+            "format": "int32",
+            "nullable": true
+          },
+          "reminders": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "デフォルトリマインダー（分単位のリスト）",
+            "nullable": true
+          },
+          "isCancelled": {
+            "type": "boolean",
+            "description": "中止フラグ"
+          },
+          "cancellationReason": {
+            "type": "string",
+            "description": "中止理由",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "description": "中止日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledByUser": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserItem"
+              }
+            ]
           },
           "createdByUserId": {
             "type": "integer",
@@ -14901,6 +16093,29 @@
         ],
         "type": "string",
         "description": "ボットの種類を表す列挙型"
+      },
+      "CancelAgendaRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "中止理由",
+            "nullable": true
+          },
+          "rowVersion": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "sendNotification": {
+            "type": "boolean",
+            "description": "参加者へ中止通知を送信するか"
+          }
+        },
+        "description": "アジェンダ中止リクエスト"
       },
       "ChatMessageItem": {
         "required": [
@@ -15716,6 +16931,69 @@
         },
         "description": "競合エラーレスポンス（409 Conflict）"
       },
+      "CreateAgendaExceptionRequest": {
+        "required": [
+          "originalStartAt"
+        ],
+        "type": "object",
+        "properties": {
+          "originalStartAt": {
+            "type": "string",
+            "description": "対象の元の開始日時（どの回かを特定）",
+            "format": "date-time"
+          },
+          "isCancelled": {
+            "type": "boolean",
+            "description": "この回を中止するか"
+          },
+          "cancellationReason": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "中止理由（IsCancelled=trueの場合）",
+            "nullable": true
+          },
+          "modifiedStartAt": {
+            "type": "string",
+            "description": "変更後の開始日時（時間変更の場合）",
+            "format": "date-time",
+            "nullable": true
+          },
+          "modifiedEndAt": {
+            "type": "string",
+            "description": "変更後の終了日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "modifiedTitle": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "変更後のタイトル",
+            "nullable": true
+          },
+          "modifiedLocation": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "変更後の場所",
+            "nullable": true
+          },
+          "modifiedUrl": {
+            "maxLength": 2000,
+            "type": "string",
+            "description": "変更後のURL",
+            "nullable": true
+          },
+          "modifiedDescription": {
+            "type": "string",
+            "description": "変更後の詳細",
+            "nullable": true
+          },
+          "sendNotification": {
+            "type": "boolean",
+            "description": "参加者へ通知を送信するか"
+          }
+        },
+        "description": "アジェンダ例外作成リクエスト（特定回の中止・変更）"
+      },
       "CreateAgendaRequest": {
         "required": [
           "title",
@@ -15753,12 +17031,64 @@
             "type": "string",
             "nullable": true
           },
+          "recurrenceType": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/RecurrenceType"
+              }
+            ]
+          },
+          "recurrenceInterval": {
+            "maximum": 99,
+            "minimum": 1,
+            "type": "integer",
+            "description": "繰り返し間隔（例: 2週間ごと = Weekly + Interval=2）",
+            "format": "int32"
+          },
+          "recurrenceWeekOfMonth": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer",
+            "description": "月次（曜日指定）の場合の週番号（1-5, 5=最終週）",
+            "format": "int32",
+            "nullable": true
+          },
+          "recurrenceEndDate": {
+            "type": "string",
+            "description": "繰り返し終了日（null=無期限、RecurrenceCountと排他）",
+            "format": "date",
+            "nullable": true
+          },
+          "recurrenceCount": {
+            "maximum": 999,
+            "minimum": 1,
+            "type": "integer",
+            "description": "繰り返し終了回数（null=無期限、RecurrenceEndDateと排他）",
+            "format": "int32",
+            "nullable": true
+          },
+          "reminders": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "リマインダー設定（分単位のリスト: 1440=1日前, 60=1時間前など）",
+            "nullable": true
+          },
           "attendees": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AgendaAttendeeRequest"
             },
             "description": "参加者リスト"
+          },
+          "sendNotification": {
+            "type": "boolean",
+            "description": "作成時に参加者へ通知を送信するか"
           }
         }
       },
@@ -17854,6 +19184,32 @@
         },
         "description": "ログインレスポンス"
       },
+      "MarkNotificationsReadRequest": {
+        "type": "object",
+        "properties": {
+          "notificationIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "既読にする通知IDリスト（nullまたは空の場合は全て既読にする）",
+            "nullable": true
+          }
+        },
+        "description": "通知一括既読リクエスト"
+      },
+      "MarkNotificationsReadResponse": {
+        "type": "object",
+        "properties": {
+          "markedCount": {
+            "type": "integer",
+            "description": "既読にした通知数",
+            "format": "int32"
+          }
+        },
+        "description": "一括既読レスポンス"
+      },
       "MasterGenreResponse": {
         "required": [
           "id",
@@ -19693,6 +21049,19 @@
           }
         },
         "description": "ランキング項目DTO"
+      },
+      "RecurrenceType": {
+        "enum": [
+          "None",
+          "Daily",
+          "Weekly",
+          "Biweekly",
+          "MonthlyByDate",
+          "MonthlyByWeekday",
+          "Yearly"
+        ],
+        "type": "string",
+        "nullable": true
       },
       "RefreshRequest": {
         "required": [
@@ -21640,6 +23009,61 @@
         },
         "description": "一時添付ファイルのレスポンス"
       },
+      "UpdateAgendaExceptionRequest": {
+        "type": "object",
+        "properties": {
+          "isCancelled": {
+            "type": "boolean",
+            "description": "この回を中止するか"
+          },
+          "cancellationReason": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "中止理由（IsCancelled=trueの場合）",
+            "nullable": true
+          },
+          "modifiedStartAt": {
+            "type": "string",
+            "description": "変更後の開始日時（時間変更の場合）",
+            "format": "date-time",
+            "nullable": true
+          },
+          "modifiedEndAt": {
+            "type": "string",
+            "description": "変更後の終了日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "modifiedTitle": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "変更後のタイトル",
+            "nullable": true
+          },
+          "modifiedLocation": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "変更後の場所",
+            "nullable": true
+          },
+          "modifiedUrl": {
+            "maxLength": 2000,
+            "type": "string",
+            "description": "変更後のURL",
+            "nullable": true
+          },
+          "modifiedDescription": {
+            "type": "string",
+            "description": "変更後の詳細",
+            "nullable": true
+          },
+          "sendNotification": {
+            "type": "boolean",
+            "description": "参加者へ通知を送信するか"
+          }
+        },
+        "description": "アジェンダ例外更新リクエスト"
+      },
       "UpdateAgendaRequest": {
         "required": [
           "rowVersion",
@@ -21682,14 +23106,192 @@
             "type": "string",
             "nullable": true
           },
+          "recurrenceType": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/RecurrenceType"
+              }
+            ]
+          },
+          "recurrenceInterval": {
+            "maximum": 99,
+            "minimum": 1,
+            "type": "integer",
+            "description": "繰り返し間隔（例: 2週間ごと = Weekly + Interval=2）",
+            "format": "int32"
+          },
+          "recurrenceWeekOfMonth": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer",
+            "description": "月次（曜日指定）の場合の週番号（1-5, 5=最終週）",
+            "format": "int32",
+            "nullable": true
+          },
+          "recurrenceEndDate": {
+            "type": "string",
+            "description": "繰り返し終了日（null=無期限、RecurrenceCountと排他）",
+            "format": "date",
+            "nullable": true
+          },
+          "recurrenceCount": {
+            "maximum": 999,
+            "minimum": 1,
+            "type": "integer",
+            "description": "繰り返し終了回数（null=無期限、RecurrenceEndDateと排他）",
+            "format": "int32",
+            "nullable": true
+          },
+          "reminders": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "リマインダー設定（分単位のリスト: 1440=1日前, 60=1時間前など）",
+            "nullable": true
+          },
           "attendees": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AgendaAttendeeRequest"
             },
             "description": "参加者リスト"
+          },
+          "sendNotification": {
+            "type": "boolean",
+            "description": "作成時に参加者へ通知を送信するか"
           }
-        }
+        },
+        "description": "アジェンダ更新リクエスト（シリーズ全体）"
+      },
+      "UpdateAttendanceRequest": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/AttendanceStatus"
+          }
+        },
+        "description": "参加状況更新リクエスト"
+      },
+      "UpdateFromOccurrenceRequest": {
+        "required": [
+          "fromStartAt",
+          "title",
+          "startAt",
+          "endAt"
+        ],
+        "type": "object",
+        "properties": {
+          "fromStartAt": {
+            "type": "string",
+            "description": "分割起点となる回の開始日時",
+            "format": "date-time"
+          },
+          "title": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "タイトル"
+          },
+          "description": {
+            "type": "string",
+            "description": "詳細（Markdown対応）",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "description": "新しいシリーズの開始日時",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "description": "新しいシリーズの終了日時",
+            "format": "date-time"
+          },
+          "isAllDay": {
+            "type": "boolean",
+            "description": "終日フラグ"
+          },
+          "location": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "場所",
+            "nullable": true
+          },
+          "url": {
+            "maxLength": 2000,
+            "type": "string",
+            "description": "URL",
+            "nullable": true
+          },
+          "recurrenceType": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/RecurrenceType"
+              }
+            ]
+          },
+          "recurrenceInterval": {
+            "maximum": 365,
+            "minimum": 1,
+            "type": "integer",
+            "description": "繰り返し間隔",
+            "format": "int32"
+          },
+          "recurrenceWeekOfMonth": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer",
+            "description": "月次曜日指定時の週番号（1-5）",
+            "format": "int32",
+            "nullable": true
+          },
+          "recurrenceEndDate": {
+            "type": "string",
+            "description": "繰り返し終了日",
+            "format": "date",
+            "nullable": true
+          },
+          "recurrenceCount": {
+            "maximum": 999,
+            "minimum": 1,
+            "type": "integer",
+            "description": "繰り返し回数",
+            "format": "int32",
+            "nullable": true
+          },
+          "reminders": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "リマインダー（分単位のリスト）",
+            "nullable": true
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgendaAttendeeRequest"
+            },
+            "description": "参加者リスト（指定しない場合は元のシリーズから引き継ぎ）",
+            "nullable": true
+          },
+          "sendNotification": {
+            "type": "boolean",
+            "description": "変更通知を送信するか"
+          }
+        },
+        "description": "「この回以降」更新リクエスト（シリーズ分割）"
       },
       "UpdateItemParentRequest": {
         "required": [
@@ -24300,6 +25902,9 @@
   "tags": [
     {
       "name": "Achievement"
+    },
+    {
+      "name": "AgendaNotification"
     },
     {
       "name": "Agenda"

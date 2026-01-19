@@ -8,6 +8,10 @@ export type AgendaAttendeeResponse = {
     userId: number;
     status: AttendanceStatus;
     isOptional: boolean;
+    /**
+     * 個人リマインダー設定（分単位のリスト、null=デフォルト設定を使用）
+     */
+    customReminders?: Array<number> | null;
     user?: UserItem;
 };
 
