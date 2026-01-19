@@ -76,12 +76,13 @@ export default function AgendaFormClient({ mode, initialData }: AgendaFormClient
   };
 
   const pageTitle = mode === 'create' ? '新しい予定を作成' : '予定を編集';
+  const backUrl = mode === 'edit' && initialData ? `/agendas/${initialData.id}` : '/agendas';
 
   return (
     <div className="flex flex-1 flex-col p-4 md:p-6">
       {/* ヘッダー */}
       <div className="mb-4 flex items-center gap-2">
-        <Link href="/agendas" className="btn btn-secondary btn-sm">
+        <Link href={backUrl} className="btn btn-secondary btn-sm">
           <span className="icon-[tabler--arrow-left] size-4" />
           戻る
         </Link>

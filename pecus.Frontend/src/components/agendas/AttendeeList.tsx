@@ -73,31 +73,26 @@ export function AttendeeList({ attendees, currentUserId }: AttendeeListProps) {
             return (
               <li
                 key={attendee.userId}
-                className={`flex items-center justify-between gap-2 rounded-lg p-2 ${
-                  isCurrentUser ? 'bg-primary/10' : ''
-                }`}
+                className={`flex items-center gap-2 rounded-lg p-2 ${isCurrentUser ? 'bg-primary/10' : ''}`}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="avatar shrink-0">
-                    {attendee.user?.identityIconUrl ? (
-                      <img
-                        src={attendee.user.identityIconUrl}
-                        alt={attendee.user?.username ?? ''}
-                        className="size-8 rounded-full"
-                      />
-                    ) : (
-                      <span className="bg-base-300 text-base-content rounded-full flex items-center justify-center size-8">
-                        <span className="icon-[tabler--user] size-4" />
-                      </span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className={`truncate font-medium ${isCurrentUser ? 'text-primary' : ''}`}>
-                      {attendee.user?.username ?? `ユーザー ${attendee.userId}`}
-                      {isCurrentUser && <span className="ml-1 text-xs">（あなた）</span>}
-                    </p>
-                    {attendee.isOptional && <p className="text-xs text-base-content/50">任意参加</p>}
-                  </div>
+                <div className="avatar shrink-0">
+                  {attendee.user?.identityIconUrl ? (
+                    <img
+                      src={attendee.user.identityIconUrl}
+                      alt={attendee.user?.username ?? ''}
+                      className="size-8 rounded-full"
+                    />
+                  ) : (
+                    <span className="bg-base-300 text-base-content rounded-full flex items-center justify-center size-8">
+                      <span className="icon-[tabler--user] size-4" />
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className={`truncate font-medium text-sm ${isCurrentUser ? 'text-primary' : ''}`}>
+                    {attendee.user?.username ?? `ユーザー ${attendee.userId}`}
+                  </p>
+                  {attendee.isOptional && <p className="text-xs text-base-content/50">任意参加</p>}
                 </div>
                 <AttendanceStatusBadge status={attendee.status} size="sm" />
               </li>

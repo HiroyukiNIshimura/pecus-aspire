@@ -77,9 +77,9 @@ export default function AgendaDetailClient({ agenda, exceptions, fetchError }: A
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3">
         {/* メイン詳細（左側2/3） */}
-        <div className="lg:col-span-2">
+        <div className="md:col-span-2">
           <AgendaDetail
             agenda={currentAgenda}
             exceptions={exceptions}
@@ -90,7 +90,7 @@ export default function AgendaDetailClient({ agenda, exceptions, fetchError }: A
         </div>
 
         {/* 参加者リスト（右側1/3） */}
-        <div className="lg:col-span-1">
+        <div className="md:col-span-1">
           <AttendeeList attendees={currentAgenda.attendees ?? []} currentUserId={currentUser?.id} />
         </div>
       </div>
