@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.AI;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
 using Pecus.Libs.Hangfire.Tasks.Bot.Guards;
 using Pecus.Models.Requests.Dashboard;
@@ -94,16 +95,21 @@ public class HealthAnalysisService
         // 健康データを取得
         HealthData healthData;
         string? workspaceName = null;
+        WorkspaceMode? workspaceMode = null;
 
         if (request.Scope == HealthAnalysisScope.Workspace && request.WorkspaceId.HasValue)
         {
-            healthData = await _healthDataProvider.GetWorkspaceHealthDataAsync(request.WorkspaceId.Value);
+            // 先にワークスペース情報を取得してモードを確認
             var workspace = await _context.Workspaces
                 .AsNoTracking()
                 .Where(w => w.Id == request.WorkspaceId.Value)
-                .Select(w => new { w.Name })
+                .Select(w => new { w.Name, w.Mode })
                 .FirstOrDefaultAsync(cancellationToken);
             workspaceName = workspace?.Name;
+            workspaceMode = workspace?.Mode;
+
+            // モードを渡してデータ取得（ドキュメントモードの場合は追加統計も取得）
+            healthData = await _healthDataProvider.GetWorkspaceHealthDataAsync(request.WorkspaceId.Value, workspaceMode);
         }
         else
         {
@@ -111,7 +117,7 @@ public class HealthAnalysisService
         }
 
         // プロンプトを構築
-        var systemPrompt = BuildSystemPrompt(request.AnalysisType, request.Scope, workspaceName);
+        var systemPrompt = BuildSystemPrompt(request.AnalysisType, request.Scope, workspaceName, workspaceMode);
         var userPrompt = BuildUserPrompt(healthData, request.AnalysisType);
 
         try
@@ -177,20 +183,83 @@ public class HealthAnalysisService
     }
 
     /// <summary>
+    /// ワークスペースモードに応じた評価コンテキストを構築
+    /// </summary>
+    /// <remarks>
+    /// - ドキュメントモード: 情報の鮮度・循環・継続性を評価
+    /// - 組織全体: プロジェクトとドキュメントのバランスを評価
+    /// - 通常モード: 従来のタスク進行評価（追加コンテキストなし）
+    /// </remarks>
+    private static string BuildModeContext(HealthAnalysisScope scope, WorkspaceMode? workspaceMode)
+    {
+        // ドキュメントモードのワークスペース
+        if (scope == HealthAnalysisScope.Workspace && workspaceMode == WorkspaceMode.Document)
+        {
+            return """
+
+            【重要：評価の基準】
+            このワークスペースは「ドキュメント管理（ナレッジベース）」モードです。
+            通常のプロジェクト管理とは異なり、以下の観点で健康状態を診断してください：
+
+            📚 ドキュメントの健康指標：
+            - 情報の鮮度（長期間更新されていない記事はないか）
+            - 知識の循環（特定の記事だけ孤立していないか、活用されているか）
+            - 更新の継続性（ナレッジの蓄積が止まっていないか）
+            - 貢献の分散（特定の人だけが編集していないか）
+
+            ⚠️ 言い換えルール：
+            - 「タスクの遅れ」→「情報の陳腐化」「更新の停滞」
+            - 「期限切れ」→「長期未更新」「放置された記事」
+            - 「完了率」→「更新頻度」「活性度」
+            - 「担当者未設定」→「管理者不在のドキュメント」
+            """;
+        }
+
+        // 組織全体の診断
+        if (scope == HealthAnalysisScope.Organization)
+        {
+            return """
+
+            【重要：評価の基準】
+            組織全体の診断です。この組織には「プロジェクト管理」と「ドキュメント管理」の両方のワークスペースが含まれています。
+
+            🔍 2つの観点でバランスを見てください：
+            1. プロジェクトの進行状況（タスク消化率、期限遵守など）
+            2. ナレッジの蓄積状況（ドキュメントの更新頻度、情報の鮮度）
+
+            ⚖️ バランスの診断ポイント：
+            - 開発は進んでいるがドキュメントが放置 → 属人化リスク、技術的負債の蓄積
+            - ドキュメント整備ばかりで開発停滞 → 分析麻痺、過剰な計画主義
+            - 両方が健全 → 持続可能な開発体制
+
+            診断結果には、このバランスについても一言触れてください。
+            """;
+        }
+
+        // 通常のプロジェクト管理モード（追加コンテキストなし）
+        return "";
+    }
+
+    /// <summary>
     /// システムプロンプトを構築
     /// </summary>
     private static string BuildSystemPrompt(
         HealthAnalysisType analysisType,
         HealthAnalysisScope scope,
-        string? workspaceName)
+        string? workspaceName,
+        WorkspaceMode? workspaceMode)
     {
         var targetName = scope == HealthAnalysisScope.Workspace && workspaceName != null
             ? $"ワークスペース「{workspaceName}」"
             : "組織全体";
 
+        // モードに応じた評価軸の定義を生成
+        var modeContext = BuildModeContext(scope, workspaceMode);
+
         var basePrompt = $"""
             あなたは組織の頼れるアドバイザーです。
-            {targetName}のタスク状況を見て、わかりやすくフィードバックしてください。
+            {targetName}の状況を見て、わかりやすくフィードバックしてください。
+            {modeContext}
 
             【絶対に守るルール】
             - 小学生でもわかる簡単な言葉で説明する

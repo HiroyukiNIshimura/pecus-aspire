@@ -34,6 +34,14 @@ public record HealthData
     /// <summary>週次トレンド（オプション）</summary>
     public TaskTrend? Trend { get; init; }
 
+    // --- ドキュメントモード用の統計（オプション） ---
+
+    /// <summary>ドキュメント統計（ドキュメントモードの場合に設定）</summary>
+    public ItemStatistics? DocumentStats { get; init; }
+
+    /// <summary>ワークスペースモード（診断時の参考情報）</summary>
+    public string? WorkspaceMode { get; init; }
+
     /// <summary>完了率（0-100）</summary>
     public double CompletionRate => TotalTasks > 0
         ? Math.Round((double)CompletedTasks / TotalTasks * 100, 1)
@@ -55,6 +63,21 @@ public record HealthData
             チーム活動:
             - 直近7日間のアクティビティ: {ActivitiesThisWeek}件
             """;
+
+        // ドキュメント統計がある場合は追加
+        if (DocumentStats != null)
+        {
+            baseSummary += $"""
+
+
+            ドキュメント状況:
+            - 総数: {DocumentStats.TotalCount}件（公開: {DocumentStats.PublishedCount}件、下書き: {DocumentStats.DraftCount}件）
+            - 長期未更新（30日以上）: {DocumentStats.StaleCount}件
+            - 今週の新規作成: {DocumentStats.CreatedThisWeekCount}件、今週の更新: {DocumentStats.UpdatedThisWeekCount}件
+            - 公開記事の平均経過日数（最終更新から）: {DocumentStats.AverageItemAgeDays:F1}日
+            - 直近30日間のユニーク編集者: {DocumentStats.UniqueContributorCount}人
+            """;
+        }
 
         if (Trend != null)
         {

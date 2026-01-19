@@ -201,6 +201,10 @@ public class StatisticsCollector : IStatisticsCollector
         IQueryable<DB.Models.WorkspaceItem> query,
         CancellationToken cancellationToken)
     {
+        var now = DateTimeOffset.UtcNow;
+        var thirtyDaysAgo = now.AddDays(-30);
+        var oneWeekAgo = StatisticsDateHelper.GetDaysAgo(7);
+
         var totalCount = await query.CountAsync(cancellationToken);
         var publishedCount = await query
             .CountAsync(i => !i.IsDraft && !i.IsArchived, cancellationToken);
@@ -209,12 +213,47 @@ public class StatisticsCollector : IStatisticsCollector
         var archivedCount = await query
             .CountAsync(i => i.IsArchived, cancellationToken);
 
+        // ドキュメントモード用の拡張統計
+        // 長期未更新（30日以上）の公開アイテム数
+        var staleCount = await query
+            .CountAsync(i => !i.IsDraft && !i.IsArchived && i.UpdatedAt < thirtyDaysAgo, cancellationToken);
+
+        // 今週更新されたアイテム数
+        var updatedThisWeekCount = await query
+            .CountAsync(i => !i.IsArchived && i.UpdatedAt >= oneWeekAgo, cancellationToken);
+
+        // 今週作成されたアイテム数
+        var createdThisWeekCount = await query
+            .CountAsync(i => i.CreatedAt >= oneWeekAgo, cancellationToken);
+
+        // 公開アイテムの平均経過日数（最終更新からの日数）
+        var publishedItemUpdatedDates = await query
+            .Where(i => !i.IsDraft && !i.IsArchived)
+            .Select(i => i.UpdatedAt)
+            .ToListAsync(cancellationToken);
+
+        var averageItemAgeDays = publishedItemUpdatedDates.Count > 0
+            ? Math.Round(publishedItemUpdatedDates.Average(updatedAt => (now - updatedAt).TotalDays), 1)
+            : 0;
+
+        // ユニーク編集者数（直近30日間）
+        var uniqueContributorCount = await query
+            .Where(i => i.UpdatedAt >= thirtyDaysAgo && i.UpdatedByUserId != null)
+            .Select(i => i.UpdatedByUserId)
+            .Distinct()
+            .CountAsync(cancellationToken);
+
         return new ItemStatistics
         {
             TotalCount = totalCount,
             PublishedCount = publishedCount,
             DraftCount = draftCount,
             ArchivedCount = archivedCount,
+            StaleCount = staleCount,
+            UpdatedThisWeekCount = updatedThisWeekCount,
+            CreatedThisWeekCount = createdThisWeekCount,
+            AverageItemAgeDays = averageItemAgeDays,
+            UniqueContributorCount = uniqueContributorCount,
         };
     }
 

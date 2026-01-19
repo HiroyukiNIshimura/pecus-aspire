@@ -90,7 +90,7 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
       const fetchWorkspaces = async () => {
         setIsLoadingWorkspaces(true);
         try {
-          const response = await getMyWorkspaces('Normal');
+          const response = await getMyWorkspaces();
           if (response.success) {
             setWorkspaces(response.data);
           }

@@ -14,7 +14,9 @@ public class OrganizationHealthBehavior : IBotBehavior
         "期限切れタスクに注目して",
         "進行中タスクの数に注目して",
         "今週の進捗に注目して",
-        "メンバーの貢献度に注目して"
+        "メンバーの貢献度に注目して",
+        "ドキュメントの鮮度に注目して",
+        "プロジェクトとナレッジのバランスに注目して"
     ];
 
     private readonly IHealthDataProvider _healthDataProvider;
@@ -62,10 +64,16 @@ public class OrganizationHealthBehavior : IBotBehavior
 
         var systemPrompt = $"""
             あなたはチャットに参加しているボットです。
-            会話の流れとは無関係に、ふと思い立って組織全体のタスク状況について呟きます。
+            会話の流れとは無関係に、ふと思い立って組織全体の状況について呟きます。
             質問に答えるのではなく、独り言のように自然に発言してください。
 
-            【参照データ】以下のタスク統計データに基づいて呟いてください:
+            【重要】組織には「プロジェクト管理」と「ドキュメント管理」の両方のワークスペースがあります。
+            データにドキュメント統計が含まれている場合は、以下の観点も意識してください：
+            - 開発は進んでいるがドキュメントが放置 → 属人化リスク
+            - ドキュメント整備ばかりで開発停滞 → 分析麻痺
+            - 両方が健全 → 持続可能な開発体制
+
+            【参照データ】以下の統計データに基づいて呟いてください:
             {healthData.ToSummary()}
 
             【今回の注目ポイント】
@@ -85,7 +93,7 @@ public class OrganizationHealthBehavior : IBotBehavior
 
         var messages = new List<(MessageRole Role, string Content)>
         {
-            (MessageRole.User, $"組織のタスク状況について、{perspective}呟いて")
+            (MessageRole.User, $"組織の状況について、{perspective}呟いて")
         };
 
         try
