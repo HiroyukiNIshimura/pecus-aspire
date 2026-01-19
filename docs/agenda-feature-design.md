@@ -15,7 +15,7 @@
 ## 🔲 TODO（実装漏れ）
 
 Phase 1-13は完了済みですが、以下の機能・UIが未実装です。
-フォーム検証：docs/frontend-guidelines.mdの7. クライアントサイドバリデーション（Zod）
+フォーム検証：docs/frontend-guidelines.mdの7. クライアントサイドバリデーション（Zod）✅
 
 ### 優先度: 高
 
