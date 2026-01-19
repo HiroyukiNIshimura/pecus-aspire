@@ -168,4 +168,7 @@ AchievementJobScheduler.ConfigureAchievementJob(recurringJobManager, builder.Con
 // ランディングページ推奨ジョブの設定（週次 月曜 AM4:00 UTC）
 LandingPageRecommendationJobScheduler.ConfigureLandingPageRecommendationJob(recurringJobManager, builder.Configuration);
 
+// アジェンダリマインダージョブの設定（5分ごと）
+AgendaReminderJobScheduler.ConfigureAgendaReminderJob(recurringJobManager, builder.Configuration);
+
 app.Run();

@@ -244,6 +244,15 @@
     "SystemNotification": {
       "Enabled": true,
       "CronExpression": "30 * * * *"
+    },
+    "AchievementEvaluation": {
+      "Enabled": true,
+      "Hour": 3,
+      "Minute": 0
+    },
+    "AgendaReminder": {
+      "Enabled": true,
+      "CronExpression": "*/5 * * * *"
     }
   },
 
