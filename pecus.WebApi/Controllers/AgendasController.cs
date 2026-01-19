@@ -215,4 +215,94 @@ public class AgendasController : BaseSecureController
         var result = await _agendaService.UpdateAttendanceAsync(id, CurrentOrganizationId, CurrentUserId, request);
         return TypedResults.Ok(result);
     }
+
+    // ===== 例外（特定回の中止・変更）エンドポイント =====
+
+    /// <summary>
+    /// アジェンダ例外一覧取得
+    /// </summary>
+    /// <remarks>
+    /// 指定されたアジェンダの全例外（特定回の中止・変更）を取得します。
+    /// </remarks>
+    [HttpGet("{id}/exceptions")]
+    [ProducesResponseType(typeof(List<AgendaExceptionResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<List<AgendaExceptionResponse>>> GetExceptions(long id)
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        var result = await _agendaService.GetExceptionsAsync(id, CurrentOrganizationId);
+        return TypedResults.Ok(result);
+    }
+
+    /// <summary>
+    /// アジェンダ例外作成（特定回の中止・変更）
+    /// </summary>
+    /// <remarks>
+    /// 繰り返しアジェンダの特定回を中止または変更します。
+    /// 単発イベントには使用できません。シリーズ全体の変更は PUT を使用してください。
+    /// </remarks>
+    [HttpPost("{id}/exceptions")]
+    [ProducesResponseType(typeof(AgendaExceptionResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Created<AgendaExceptionResponse>> CreateException(
+        long id,
+        [FromBody] CreateAgendaExceptionRequest request
+    )
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        var result = await _agendaService.CreateExceptionAsync(id, CurrentOrganizationId, CurrentUserId, request);
+        return TypedResults.Created($"/api/agendas/{id}/exceptions/{result.Id}", result);
+    }
+
+    /// <summary>
+    /// アジェンダ例外更新
+    /// </summary>
+    /// <remarks>
+    /// 既存の例外（特定回の中止・変更）を更新します。
+    /// </remarks>
+    [HttpPut("{id}/exceptions/{exceptionId}")]
+    [ProducesResponseType(typeof(AgendaExceptionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<AgendaExceptionResponse>> UpdateException(
+        long id,
+        long exceptionId,
+        [FromBody] UpdateAgendaExceptionRequest request
+    )
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        var result = await _agendaService.UpdateExceptionAsync(id, exceptionId, CurrentOrganizationId, request);
+        return TypedResults.Ok(result);
+    }
+
+    /// <summary>
+    /// アジェンダ例外削除（元に戻す）
+    /// </summary>
+    /// <remarks>
+    /// 例外を削除し、特定回を元の設定に戻します。
+    /// 中止していた回の中止を取り消す、または変更していた回を元に戻す場合に使用します。
+    /// </remarks>
+    [HttpDelete("{id}/exceptions/{exceptionId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<NoContent> DeleteException(long id, long exceptionId)
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        await _agendaService.DeleteExceptionAsync(id, exceptionId, CurrentOrganizationId);
+        return TypedResults.NoContent();
+    }
 }

@@ -476,6 +476,222 @@ public class AgendaService
             .ToList();
     }
 
+    // ===== 例外（特定回の中止・変更）関連メソッド =====
+
+    /// <summary>
+    /// アジェンダ例外作成（特定回の中止・変更）
+    /// </summary>
+    public async Task<AgendaExceptionResponse> CreateExceptionAsync(
+        long agendaId,
+        int organizationId,
+        int userId,
+        CreateAgendaExceptionRequest request)
+    {
+        var agenda = await _context.Agendas
+            .Include(a => a.Exceptions)
+            .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
+
+        if (agenda == null)
+            throw new NotFoundException("アジェンダが見つかりません。");
+
+        if (agenda.IsCancelled)
+            throw new BadRequestException("中止されたアジェンダの例外は作成できません。");
+
+        // 繰り返しイベントでない場合は例外を作成する必要がない
+        if (agenda.RecurrenceType == null || agenda.RecurrenceType == RecurrenceType.None)
+            throw new BadRequestException("単発イベントには例外を作成できません。シリーズ全体を編集してください。");
+
+        // 対象の回が存在するか確認（展開して確認）
+        var rangeEnd = request.OriginalStartAt.AddDays(1);
+        var occurrences = RecurrenceHelper.ExpandOccurrences(agenda, request.OriginalStartAt, rangeEnd);
+        if (!occurrences.Any(o => o == request.OriginalStartAt))
+            throw new BadRequestException("指定された日時はこのアジェンダの繰り返し回ではありません。");
+
+        // 同じ回の例外が既に存在するか確認
+        var existingException = agenda.Exceptions?
+            .FirstOrDefault(e => e.OriginalStartAt == request.OriginalStartAt);
+        if (existingException != null)
+            throw new BadRequestException("この回には既に例外が設定されています。更新を使用してください。");
+
+        // 過去の回は変更不可
+        if (request.OriginalStartAt < DateTimeOffset.UtcNow)
+            throw new BadRequestException("過去の回は変更できません。");
+
+        // バリデーション
+        if (!request.IsCancelled && request.ModifiedEndAt.HasValue && request.ModifiedStartAt.HasValue)
+        {
+            if (request.ModifiedEndAt <= request.ModifiedStartAt)
+                throw new BadRequestException("終了日時は開始日時より後である必要があります。");
+        }
+
+        var exception = new AgendaException
+        {
+            AgendaId = agendaId,
+            OriginalStartAt = request.OriginalStartAt,
+            IsCancelled = request.IsCancelled,
+            CancellationReason = request.IsCancelled ? request.CancellationReason : null,
+            ModifiedStartAt = request.IsCancelled ? null : request.ModifiedStartAt,
+            ModifiedEndAt = request.IsCancelled ? null : request.ModifiedEndAt,
+            ModifiedTitle = request.IsCancelled ? null : request.ModifiedTitle,
+            ModifiedLocation = request.IsCancelled ? null : request.ModifiedLocation,
+            ModifiedUrl = request.IsCancelled ? null : request.ModifiedUrl,
+            ModifiedDescription = request.IsCancelled ? null : request.ModifiedDescription,
+            CreatedByUserId = userId,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        _context.AgendaExceptions.Add(exception);
+        await _context.SaveChangesAsync();
+
+        // TODO: Phase 7で通知機能を実装
+        // if (request.SendNotification)
+        // {
+        //     await CreateOccurrenceNotificationsAsync(agenda, exception);
+        // }
+
+        return await GetExceptionByIdAsync(exception.Id);
+    }
+
+    /// <summary>
+    /// アジェンダ例外更新
+    /// </summary>
+    public async Task<AgendaExceptionResponse> UpdateExceptionAsync(
+        long agendaId,
+        long exceptionId,
+        int organizationId,
+        UpdateAgendaExceptionRequest request)
+    {
+        var agenda = await _context.Agendas
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
+
+        if (agenda == null)
+            throw new NotFoundException("アジェンダが見つかりません。");
+
+        var exception = await _context.AgendaExceptions
+            .FirstOrDefaultAsync(e => e.Id == exceptionId && e.AgendaId == agendaId);
+
+        if (exception == null)
+            throw new NotFoundException("アジェンダ例外が見つかりません。");
+
+        // 過去の回は変更不可
+        if (exception.OriginalStartAt < DateTimeOffset.UtcNow)
+            throw new BadRequestException("過去の回は変更できません。");
+
+        // バリデーション
+        if (!request.IsCancelled && request.ModifiedEndAt.HasValue && request.ModifiedStartAt.HasValue)
+        {
+            if (request.ModifiedEndAt <= request.ModifiedStartAt)
+                throw new BadRequestException("終了日時は開始日時より後である必要があります。");
+        }
+
+        exception.IsCancelled = request.IsCancelled;
+        exception.CancellationReason = request.IsCancelled ? request.CancellationReason : null;
+        exception.ModifiedStartAt = request.IsCancelled ? null : request.ModifiedStartAt;
+        exception.ModifiedEndAt = request.IsCancelled ? null : request.ModifiedEndAt;
+        exception.ModifiedTitle = request.IsCancelled ? null : request.ModifiedTitle;
+        exception.ModifiedLocation = request.IsCancelled ? null : request.ModifiedLocation;
+        exception.ModifiedUrl = request.IsCancelled ? null : request.ModifiedUrl;
+        exception.ModifiedDescription = request.IsCancelled ? null : request.ModifiedDescription;
+
+        await _context.SaveChangesAsync();
+
+        // TODO: Phase 7で通知機能を実装
+        // if (request.SendNotification)
+        // {
+        //     await CreateOccurrenceUpdateNotificationsAsync(agenda, exception);
+        // }
+
+        return await GetExceptionByIdAsync(exceptionId);
+    }
+
+    /// <summary>
+    /// アジェンダ例外削除（特定回の中止・変更を取消）
+    /// </summary>
+    public async Task DeleteExceptionAsync(
+        long agendaId,
+        long exceptionId,
+        int organizationId)
+    {
+        var agenda = await _context.Agendas
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
+
+        if (agenda == null)
+            throw new NotFoundException("アジェンダが見つかりません。");
+
+        var exception = await _context.AgendaExceptions
+            .FirstOrDefaultAsync(e => e.Id == exceptionId && e.AgendaId == agendaId);
+
+        if (exception == null)
+            throw new NotFoundException("アジェンダ例外が見つかりません。");
+
+        // 過去の回は変更不可
+        if (exception.OriginalStartAt < DateTimeOffset.UtcNow)
+            throw new BadRequestException("過去の回の例外は削除できません。");
+
+        _context.AgendaExceptions.Remove(exception);
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// アジェンダ例外一覧取得
+    /// </summary>
+    public async Task<List<AgendaExceptionResponse>> GetExceptionsAsync(long agendaId, int organizationId)
+    {
+        var agenda = await _context.Agendas
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
+
+        if (agenda == null)
+            throw new NotFoundException("アジェンダが見つかりません。");
+
+        var exceptions = await _context.AgendaExceptions
+            .AsNoTracking()
+            .Include(e => e.CreatedByUser)
+            .Where(e => e.AgendaId == agendaId)
+            .OrderBy(e => e.OriginalStartAt)
+            .ToListAsync();
+
+        return exceptions.Select(ToExceptionResponse).ToList();
+    }
+
+    /// <summary>
+    /// アジェンダ例外詳細取得
+    /// </summary>
+    private async Task<AgendaExceptionResponse> GetExceptionByIdAsync(long exceptionId)
+    {
+        var exception = await _context.AgendaExceptions
+            .AsNoTracking()
+            .Include(e => e.CreatedByUser)
+            .FirstOrDefaultAsync(e => e.Id == exceptionId);
+
+        if (exception == null)
+            throw new NotFoundException("アジェンダ例外が見つかりません。");
+
+        return ToExceptionResponse(exception);
+    }
+
+    private AgendaExceptionResponse ToExceptionResponse(AgendaException exception)
+    {
+        return new AgendaExceptionResponse
+        {
+            Id = exception.Id,
+            AgendaId = exception.AgendaId,
+            OriginalStartAt = exception.OriginalStartAt,
+            IsCancelled = exception.IsCancelled,
+            CancellationReason = exception.CancellationReason,
+            ModifiedStartAt = exception.ModifiedStartAt,
+            ModifiedEndAt = exception.ModifiedEndAt,
+            ModifiedTitle = exception.ModifiedTitle,
+            ModifiedLocation = exception.ModifiedLocation,
+            ModifiedUrl = exception.ModifiedUrl,
+            ModifiedDescription = exception.ModifiedDescription,
+            CreatedAt = exception.CreatedAt,
+            CreatedByUser = exception.CreatedByUser == null ? null : ToUserItem(exception.CreatedByUser)
+        };
+    }
+
     private AgendaResponse ToResponse(Agenda agenda)
     {
         return new AgendaResponse
