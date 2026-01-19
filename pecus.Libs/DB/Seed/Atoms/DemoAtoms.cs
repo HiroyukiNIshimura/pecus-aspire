@@ -159,6 +159,9 @@ public class DemoAtoms
                 await CreateSampleDocumentItemAsync(documentProjectWorkspace, users);
             }
 
+            // アジェンダのデモデータを作成
+            await CreateDemoAgendasAsync(organization, users);
+
             await transaction.CommitAsync();
             _logger.LogInformation("Demo data seeding completed successfully");
             return organization.Id;
@@ -1318,6 +1321,139 @@ public class DemoAtoms
                 (false, "ありがとうございます🙏", 50),
             },
         };
+    }
+
+    /// <summary>
+    /// デモ用アジェンダを作成
+    /// - 単発イベント（今日）
+    /// - 週次繰り返しイベント（明日開始）
+    /// - 中止されたイベント（来週）
+    /// </summary>
+    private async Task CreateDemoAgendasAsync(Organization org, List<User> users)
+    {
+        var adminUser = users.FirstOrDefault(u => _options.Users.Any(o => o.Role == "Admin" && o.Email == u.Email));
+        var memberUsers = users.Where(u => u.Id != adminUser?.Id).ToList();
+
+        if (adminUser == null || memberUsers.Count < 2)
+        {
+            _logger.LogWarning("Not enough users for demo agendas");
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var today = now.Date;
+        var agendas = new List<Agenda>();
+
+        // 1. 単発イベント: 今日の14時から1時間（プロジェクトレビュー）
+        var singleEvent = new Agenda
+        {
+            OrganizationId = org.Id,
+            Title = "プロジェクトレビュー",
+            Description = "今週の進捗確認と来週のタスク割り当てを行います。\n\n## アジェンダ\n1. 各メンバーの進捗報告\n2. 課題の共有\n3. 来週の計画",
+            StartAt = new DateTimeOffset(today.AddHours(14), TimeSpan.Zero),
+            EndAt = new DateTimeOffset(today.AddHours(15), TimeSpan.Zero),
+            IsAllDay = false,
+            Location = "会議室A（3階）",
+            Url = "https://meet.example.com/project-review",
+            RecurrenceType = null, // 単発
+            DefaultReminders = "60,1440", // 1時間前と1日前
+            IsCancelled = false,
+            CreatedByUserId = adminUser.Id,
+            CreatedAt = now.AddDays(-3),
+            UpdatedAt = now.AddDays(-3)
+        };
+        agendas.Add(singleEvent);
+
+        // 2. 週次繰り返しイベント: 明日の10時から（週次定例MTG）
+        var tomorrow = today.AddDays(1);
+        var weeklyEvent = new Agenda
+        {
+            OrganizationId = org.Id,
+            Title = "週次定例MTG",
+            Description = "毎週の定例ミーティングです。\n\n各自、前週の成果と今週の予定を共有してください。",
+            StartAt = new DateTimeOffset(tomorrow.AddHours(10), TimeSpan.Zero),
+            EndAt = new DateTimeOffset(tomorrow.AddHours(11), TimeSpan.Zero),
+            IsAllDay = false,
+            Location = null,
+            Url = "https://meet.example.com/weekly-mtg",
+            RecurrenceType = RecurrenceType.Weekly,
+            RecurrenceInterval = 1,
+            RecurrenceEndDate = DateOnly.FromDateTime(tomorrow.AddMonths(3)), // 3ヶ月後まで
+            DefaultReminders = "60,1440", // 1時間前と1日前
+            IsCancelled = false,
+            CreatedByUserId = adminUser.Id,
+            CreatedAt = now.AddDays(-7),
+            UpdatedAt = now.AddDays(-7)
+        };
+        agendas.Add(weeklyEvent);
+
+        // 3. 中止されたイベント: 来週の終日イベント（社内勉強会）
+        var nextWeek = today.AddDays(7);
+        var cancelledEvent = new Agenda
+        {
+            OrganizationId = org.Id,
+            Title = "社内勉強会: 新技術紹介",
+            Description = "最新のフレームワークについて学ぶ勉強会です。",
+            StartAt = new DateTimeOffset(nextWeek, TimeSpan.Zero),
+            EndAt = new DateTimeOffset(nextWeek.AddDays(1), TimeSpan.Zero),
+            IsAllDay = true,
+            Location = "研修室",
+            Url = null,
+            RecurrenceType = null, // 単発
+            DefaultReminders = "1440", // 1日前
+            IsCancelled = true,
+            CancellationReason = "講師の都合により延期となりました。次回日程は追ってご連絡します。",
+            CancelledAt = now.AddDays(-1),
+            CancelledByUserId = adminUser.Id,
+            CreatedByUserId = adminUser.Id,
+            CreatedAt = now.AddDays(-14),
+            UpdatedAt = now.AddDays(-1)
+        };
+        agendas.Add(cancelledEvent);
+
+        await _context.Agendas.AddRangeAsync(agendas);
+        await _context.SaveChangesAsync();
+
+        // 参加者を追加
+        var attendees = new List<AgendaAttendee>();
+
+        foreach (var agenda in agendas)
+        {
+            // 作成者を参加者として追加（承諾済み）
+            attendees.Add(new AgendaAttendee
+            {
+                AgendaId = agenda.Id,
+                UserId = adminUser.Id,
+                Status = AttendanceStatus.Accepted,
+                IsOptional = false
+            });
+
+            // メンバーを参加者として追加（様々なステータス）
+            for (int i = 0; i < memberUsers.Count; i++)
+            {
+                var member = memberUsers[i];
+                var status = i switch
+                {
+                    0 => AttendanceStatus.Accepted,
+                    1 => AttendanceStatus.Tentative,
+                    _ => AttendanceStatus.Pending
+                };
+
+                attendees.Add(new AgendaAttendee
+                {
+                    AgendaId = agenda.Id,
+                    UserId = member.Id,
+                    Status = status,
+                    IsOptional = i > 0 // 最初のメンバー以外は任意参加
+                });
+            }
+        }
+
+        await _context.AgendaAttendees.AddRangeAsync(attendees);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Created {AgendaCount} demo agendas with {AttendeeCount} attendees",
+            agendas.Count, attendees.Count);
     }
 
 }
