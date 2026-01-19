@@ -692,6 +692,190 @@ public class AgendaService
         };
     }
 
+    // ===== 「この回以降」更新（シリーズ分割）関連メソッド =====
+
+    /// <summary>
+    /// 「この回以降」更新（シリーズ分割）
+    /// </summary>
+    /// <remarks>
+    /// 指定された回を境にシリーズを分割します。
+    /// 元のシリーズは分割地点の前の回で終了し、新しいシリーズが作成されます。
+    /// 分割地点以降の例外は新しいシリーズに移行されます。
+    /// </remarks>
+    public async Task<AgendaResponse> UpdateFromOccurrenceAsync(
+        long agendaId,
+        int organizationId,
+        int userId,
+        UpdateFromOccurrenceRequest request)
+    {
+        if (request.EndAt <= request.StartAt)
+            throw new BadRequestException("終了日時は開始日時より後である必要があります。");
+
+        // 繰り返し設定のバリデーション
+        var (isValid, errorMessage) = RecurrenceHelper.ValidateRecurrence(
+            request.RecurrenceType,
+            request.RecurrenceInterval,
+            request.RecurrenceWeekOfMonth,
+            request.RecurrenceEndDate,
+            request.RecurrenceCount,
+            request.StartAt);
+
+        if (!isValid)
+            throw new BadRequestException(errorMessage!);
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var originalAgenda = await _context.Agendas
+                .Include(a => a.Attendees)
+                .Include(a => a.Exceptions)
+                .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
+
+            if (originalAgenda == null)
+                throw new NotFoundException("アジェンダが見つかりません。");
+
+            if (originalAgenda.IsCancelled)
+                throw new BadRequestException("中止されたアジェンダは編集できません。");
+
+            // 繰り返しイベントでない場合はシリーズ分割は不要
+            if (originalAgenda.RecurrenceType == null || originalAgenda.RecurrenceType == RecurrenceType.None)
+                throw new BadRequestException("単発イベントにはこの操作は使用できません。通常の更新を使用してください。");
+
+            // 分割地点が繰り返しの回に存在するか確認
+            var rangeEnd = request.FromStartAt.AddDays(1);
+            var occurrences = RecurrenceHelper.ExpandOccurrences(originalAgenda, request.FromStartAt, rangeEnd);
+            if (!occurrences.Any(o => o == request.FromStartAt))
+                throw new BadRequestException("指定された日時はこのアジェンダの繰り返し回ではありません。");
+
+            // 過去の回からの分割は不可
+            if (request.FromStartAt < DateTimeOffset.UtcNow)
+                throw new BadRequestException("過去の回からの分割はできません。");
+
+            // 最初の回で分割しようとした場合は通常の更新を使用すべき
+            if (request.FromStartAt == originalAgenda.StartAt)
+                throw new BadRequestException("最初の回からの分割はできません。シリーズ全体の更新を使用してください。");
+
+            // ===== 元のシリーズを分割地点の前日で終了 =====
+            // 分割地点の1つ前の回を見つける
+            var previousOccurrenceEnd = FindPreviousOccurrenceDate(originalAgenda, request.FromStartAt);
+            if (previousOccurrenceEnd == null)
+                throw new BadRequestException("分割地点より前の回が見つかりません。");
+
+            originalAgenda.RecurrenceEndDate = DateOnly.FromDateTime(previousOccurrenceEnd.Value.UtcDateTime);
+            originalAgenda.RecurrenceCount = null; // 終了日指定に切り替え
+            originalAgenda.UpdatedAt = DateTimeOffset.UtcNow;
+
+            // ===== 新しいシリーズを作成 =====
+            var newAgenda = new Agenda
+            {
+                OrganizationId = organizationId,
+                Title = request.Title,
+                Description = request.Description,
+                StartAt = request.StartAt,
+                EndAt = request.EndAt,
+                IsAllDay = request.IsAllDay,
+                Location = request.Location,
+                Url = request.Url,
+                RecurrenceType = request.RecurrenceType,
+                RecurrenceInterval = request.RecurrenceInterval,
+                RecurrenceWeekOfMonth = request.RecurrenceWeekOfMonth,
+                RecurrenceEndDate = request.RecurrenceEndDate,
+                RecurrenceCount = request.RecurrenceCount,
+                DefaultReminders = ConvertRemindersToString(request.Reminders),
+                CreatedByUserId = userId
+            };
+
+            // 参加者を引き継ぎまたは指定
+            var attendeesToAdd = request.Attendees ?? originalAgenda.Attendees
+                .Select(a => new AgendaAttendeeRequest
+                {
+                    UserId = a.UserId,
+                    IsOptional = a.IsOptional
+                })
+                .ToList();
+
+            foreach (var reqAttendee in attendeesToAdd.DistinctBy(a => a.UserId))
+            {
+                // 元のシリーズでの参加状況を引き継ぎ
+                var originalAttendee = originalAgenda.Attendees
+                    .FirstOrDefault(a => a.UserId == reqAttendee.UserId);
+
+                newAgenda.Attendees.Add(new AgendaAttendee
+                {
+                    UserId = reqAttendee.UserId,
+                    IsOptional = reqAttendee.IsOptional,
+                    Status = originalAttendee?.Status ?? AttendanceStatus.Pending,
+                    CustomReminders = originalAttendee?.CustomReminders
+                });
+            }
+
+            _context.Agendas.Add(newAgenda);
+            await _context.SaveChangesAsync();
+
+            // ===== 分割地点以降の例外を新しいシリーズに移行 =====
+            var exceptionsToMove = originalAgenda.Exceptions?
+                .Where(e => e.OriginalStartAt >= request.FromStartAt)
+                .ToList() ?? new List<AgendaException>();
+
+            foreach (var exception in exceptionsToMove)
+            {
+                // 新しいシリーズに例外をコピー
+                var newException = new AgendaException
+                {
+                    AgendaId = newAgenda.Id,
+                    OriginalStartAt = exception.OriginalStartAt,
+                    IsCancelled = exception.IsCancelled,
+                    CancellationReason = exception.CancellationReason,
+                    ModifiedStartAt = exception.ModifiedStartAt,
+                    ModifiedEndAt = exception.ModifiedEndAt,
+                    ModifiedTitle = exception.ModifiedTitle,
+                    ModifiedLocation = exception.ModifiedLocation,
+                    ModifiedUrl = exception.ModifiedUrl,
+                    ModifiedDescription = exception.ModifiedDescription,
+                    CreatedByUserId = exception.CreatedByUserId,
+                    CreatedAt = exception.CreatedAt
+                };
+                _context.AgendaExceptions.Add(newException);
+
+                // 元のシリーズから例外を削除
+                _context.AgendaExceptions.Remove(exception);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // TODO: Phase 7で通知機能を実装
+            // if (request.SendNotification && newAgenda.Attendees.Any())
+            // {
+            //     await CreateSeriesUpdateNotificationsAsync(originalAgenda, newAgenda, request.FromStartAt);
+            // }
+
+            await transaction.CommitAsync();
+
+            return await GetByIdAsync(newAgenda.Id, organizationId);
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 指定された日時より前の直近のオカレンス日時を取得
+    /// </summary>
+    private DateTimeOffset? FindPreviousOccurrenceDate(Agenda agenda, DateTimeOffset targetDate)
+    {
+        // 開始日から対象日時までを展開
+        var occurrences = RecurrenceHelper.ExpandOccurrences(agenda, agenda.StartAt, targetDate);
+
+        // 対象日時より前の最後のオカレンスを取得
+        return occurrences
+            .Where(o => o < targetDate)
+            .OrderByDescending(o => o)
+            .Cast<DateTimeOffset?>()
+            .FirstOrDefault();
+    }
+
     private AgendaResponse ToResponse(Agenda agenda)
     {
         return new AgendaResponse

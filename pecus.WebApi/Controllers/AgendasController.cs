@@ -169,6 +169,31 @@ public class AgendasController : BaseSecureController
     }
 
     /// <summary>
+    /// 「この回以降」更新（シリーズ分割）
+    /// </summary>
+    /// <remarks>
+    /// 指定された回を境にシリーズを分割します。
+    /// 元のシリーズは分割地点の前の回で終了し、新しいシリーズが作成されます。
+    /// 戻り値は新しく作成されたシリーズのアジェンダです。
+    /// </remarks>
+    [HttpPut("{id}/from")]
+    [ProducesResponseType(typeof(AgendaResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Created<AgendaResponse>> UpdateFromOccurrence(
+        long id,
+        [FromBody] UpdateFromOccurrenceRequest request
+    )
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        var result = await _agendaService.UpdateFromOccurrenceAsync(id, CurrentOrganizationId, CurrentUserId, request);
+        return TypedResults.Created($"/api/agendas/{result.Id}", result);
+    }
+
+    /// <summary>
     /// アジェンダ中止（シリーズ全体）
     /// </summary>
     /// <remarks>
