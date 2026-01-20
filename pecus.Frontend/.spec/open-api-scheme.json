@@ -19077,6 +19077,11 @@
             "type": "integer",
             "description": "ドキュメントモードのワークスペースあたりの最大アイテム数",
             "format": "int32"
+          },
+          "maxAttendeesPerAgenda": {
+            "type": "integer",
+            "description": "アジェンダあたりの最大参加者数",
+            "format": "int32"
           }
         },
         "description": "制限設定"

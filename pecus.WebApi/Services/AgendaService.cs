@@ -4,6 +4,7 @@ using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Models.Config;
 using Pecus.Models.Requests.Agenda;
 using Pecus.Models.Responses.Agenda;
 
@@ -14,15 +15,18 @@ public class AgendaService
     private readonly ApplicationDbContext _context;
     private readonly AgendaNotificationService _notificationService;
     private readonly ILogger<AgendaService> _logger;
+    private readonly PecusConfig _config;
 
     public AgendaService(
         ApplicationDbContext context,
         AgendaNotificationService notificationService,
-        ILogger<AgendaService> logger)
+        ILogger<AgendaService> logger,
+        PecusConfig config)
     {
         _context = context;
         _notificationService = notificationService;
         _logger = logger;
+        _config = config;
     }
 
     /// <summary>
@@ -91,6 +95,31 @@ public class AgendaService
     }
 
     /// <summary>
+    /// アジェンダの最大参加者数を取得
+    /// </summary>
+    /// <param name="organizationId"></param>
+    /// <returns></returns>
+    private int GetMaxAttendees(int organizationId)
+    {
+        var settings = _context.OrganizationSettings
+            .AsNoTracking()
+            .Where(o => o.Id == organizationId)
+            .FirstOrDefault();
+
+        if (settings == null)
+        {
+            throw new NotFoundException("組織設定が見つかりません。");
+        }
+
+        var limitsSettings = LimitsHelper.GetLimitsSettingsForPlan(
+            _config.Limits,
+            settings.Plan
+        );
+
+        return limitsSettings.MaxAttendeesPerAgenda;
+    }
+
+    /// <summary>
     /// アジェンダ作成（単発・繰り返しイベント対応）
     /// </summary>
     public async Task<AgendaResponse> CreateAsync(int organizationId, int userId, CreateAgendaRequest request)
@@ -98,6 +127,14 @@ public class AgendaService
         if (request.EndAt <= request.StartAt)
         {
             throw new BadRequestException("終了日時は開始日時より後である必要があります。");
+        }
+
+        // 参加者数のバリデーション（作成者も含める）
+        var maxAttendees = GetMaxAttendees(organizationId);
+        var attendeeCount = (request.Attendees?.DistinctBy(a => a.UserId).Count(a => a.UserId != userId) ?? 0) + 1;
+        if (attendeeCount > maxAttendees)
+        {
+            throw new BadRequestException($"参加者数は{maxAttendees}人以下にしてください。");
         }
 
         // 繰り返し設定のバリデーション
@@ -206,6 +243,14 @@ public class AgendaService
             throw new BadRequestException("終了日時は開始日時より後である必要があります。");
         }
 
+        // 参加者数のバリデーション
+        var maxAttendees = GetMaxAttendees(organizationId);
+        var attendeeCount = request.Attendees?.DistinctBy(a => a.UserId).Count() ?? 0;
+        if (attendeeCount > maxAttendees)
+        {
+            throw new BadRequestException($"参加者数は{maxAttendees}人以下にしてください。");
+        }
+
         // 繰り返し設定のバリデーション
         var (isValid, errorMessage) = RecurrenceHelper.ValidateRecurrence(
             request.RecurrenceType,
@@ -249,7 +294,7 @@ public class AgendaService
             agenda.UpdatedAt = DateTimeOffset.UtcNow;
 
             // 参加者の更新（全量リストが送られてくる前提）
-            var requestUserIds = request.Attendees.Select(r => r.UserId).Distinct().ToList();
+            var requestUserIds = request.Attendees?.Select(r => r.UserId).Distinct().ToList() ?? [];
 
             // 削除対象の参加者
             var toRemove = agenda.Attendees.Where(a => !requestUserIds.Contains(a.UserId)).ToList();
@@ -259,7 +304,7 @@ public class AgendaService
             }
 
             // 更新/追加
-            foreach (var reqAttendee in request.Attendees)
+            foreach (var reqAttendee in request.Attendees ?? [])
             {
                 var existing = agenda.Attendees.FirstOrDefault(a => a.UserId == reqAttendee.UserId);
                 if (existing != null)

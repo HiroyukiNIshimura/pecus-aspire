@@ -18,5 +18,9 @@ export type LimitsSettings = {
      * ドキュメントモードのワークスペースあたりの最大アイテム数
      */
     maxDocumentsPerWorkspace?: number;
+    /**
+     * アジェンダあたりの最大参加者数
+     */
+    maxAttendeesPerAgenda?: number;
 };
 

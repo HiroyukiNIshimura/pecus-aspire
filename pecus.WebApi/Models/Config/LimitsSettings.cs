@@ -17,6 +17,7 @@ namespace Pecus.Models.Config
         /// エンタープライズプランの制限設定
         /// </summary>
         public LimitsSettings Enterprise { get; set; } = new();
+
     }
 
     /// <summary>
@@ -38,5 +39,10 @@ namespace Pecus.Models.Config
         /// ドキュメントモードのワークスペースあたりの最大アイテム数
         /// </summary>
         public int MaxDocumentsPerWorkspace { get; set; } = 500;
+
+        /// <summary>
+        /// アジェンダあたりの最大参加者数
+        /// </summary>
+        public int MaxAttendeesPerAgenda { get; set; } = 100;
     }
 }

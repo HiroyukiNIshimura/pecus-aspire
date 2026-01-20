@@ -517,18 +517,22 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel, curr
       </div>
 
       {/* 通知設定 */}
-      <div className="form-control">
-        <label className="label cursor-pointer justify-start gap-2">
+      <div className="space-y-2">
+        <label className="flex items-center gap-3 cursor-pointer" htmlFor="toggle-send-notification">
           <input
+            id="toggle-send-notification"
             type="checkbox"
             data-field="sendNotification"
-            className="checkbox checkbox-primary"
+            className="switch switch-primary"
             checked={formData.sendNotification}
             onChange={(e) => handleFieldChange('sendNotification', e.target.checked)}
             disabled={isFormDisabled}
           />
-          <span className="label-text">参加者にメール通知を送信する（推奨）</span>
+          <span className="font-semibold">参加者にメール通知を送信する（推奨）</span>
         </label>
+        <p className="text-sm text-base-content/60 pl-12">
+          有効にすると、アジェンダの作成・更新時に参加者へメールで通知されます。
+        </p>
       </div>
 
       {/* 参加者選択 */}
