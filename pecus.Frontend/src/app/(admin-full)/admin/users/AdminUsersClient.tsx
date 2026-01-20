@@ -2,13 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { deleteUser } from '@/actions/admin/user';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import ActiveStatusFilter from '@/components/common/filters/ActiveStatusFilter';
 import Pagination from '@/components/common/filters/Pagination';
-import DeleteUserModal from '@/components/common/overlays/DeleteUserModal';
 import type { SkillListItemResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
@@ -68,18 +66,8 @@ export default function AdminUsersClient() {
   const usernameValidation = useValidation(usernameFilterSchema);
   const notify = useNotify();
 
-  // 削除モーダルの状態
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
-
   // 新規ユーザー作成モーダルの状態
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  // 削除ボタンクリック時のハンドラ
-  const handleDeleteClick = useCallback((user: User) => {
-    setUserToDelete(user);
-    setIsDeleteModalOpen(true);
-  }, []);
 
   // 初期データフェッチ（マウント時に1回だけ実行）
   useEffect(() => {
@@ -547,13 +535,6 @@ export default function AdminUsersClient() {
                                   >
                                     編集
                                   </button>
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline btn-error"
-                                    onClick={() => handleDeleteClick(user)}
-                                  >
-                                    削除
-                                  </button>
                                 </div>
                               )}
                             </td>
@@ -684,26 +665,6 @@ export default function AdminUsersClient() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={handleFilterChange}
-      />
-
-      {/* 削除確認モーダル */}
-      <DeleteUserModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setUserToDelete(null);
-        }}
-        onConfirm={async () => {
-          if (!userToDelete) return;
-          const result = await deleteUser(userToDelete.id);
-          if (result.success) {
-            handleFilterChange();
-            notify.success('ユーザーを削除しました');
-          } else {
-            notify.error(result.message || 'ユーザーの削除に失敗しました。');
-          }
-        }}
-        user={userToDelete}
       />
     </div>
   );

@@ -13192,62 +13192,6 @@
             "Bearer": [ ]
           }
         ]
-      },
-      "delete": {
-        "tags": [
-          "Admin - User"
-        ],
-        "summary": "ユーザーを削除",
-        "description": "指定したユーザーを削除します。組織内のユーザーのみ操作可能です。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ユーザーID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "ユーザーを削除しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "他組織のユーザーは操作できません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "ユーザーが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
       }
     },
     "/api/admin/users": {

@@ -37,28 +37,6 @@ export class AdminUserService {
         });
     }
     /**
-     * ユーザーを削除
-     * 指定したユーザーを削除します。組織内のユーザーのみ操作可能です。
-     * @param id ユーザーID
-     * @returns SuccessResponse ユーザーを削除しました
-     * @throws ApiError
-     */
-    public static deleteApiAdminUsers(
-        id: number,
-    ): CancelablePromise<SuccessResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/admin/users/{id}',
-            path: {
-                'id': id,
-            },
-            errors: {
-                403: `他組織のユーザーは操作できません`,
-                404: `ユーザーが見つかりません`,
-            },
-        });
-    }
-    /**
      * 組織内のユーザー一覧を取得（ページング）
      * ログインユーザーの組織に所属するユーザーの一覧をページングで取得します。
      * @param page

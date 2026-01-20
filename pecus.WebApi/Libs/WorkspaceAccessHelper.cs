@@ -60,6 +60,32 @@ public class OrganizationAccessHelper
     }
 
     /// <summary>
+    ///  ユーザーが指定した組織に所属しているかチェック
+    ///  非活性を含むバージョン
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="organizationId"></param>
+    /// <returns></returns>
+    public async Task<User> CheckIncludeOrganizationAllAsync(int userId, int? organizationId)
+    {
+        if (!organizationId.HasValue)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        var user = await _context
+            .Users.Where(u => u.Id == userId && u.OrganizationId == organizationId)
+            .FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        return user;
+    }
+
+    /// <summary>
     /// ユーザーが指定した組織にアクセス可能かチェック（所属しているか）
     /// </summary>
     /// <param name="userId">ユーザーID</param>

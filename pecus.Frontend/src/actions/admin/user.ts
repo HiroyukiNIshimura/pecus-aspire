@@ -50,20 +50,6 @@ export async function createUserWithoutPassword(request: {
 }
 
 /**
- * Server Action: ユーザーを削除
- */
-export async function deleteUser(userId: number): Promise<ApiResponse<SuccessResponse>> {
-  try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.deleteApiAdminUsers(userId);
-    return { success: true, data: response };
-  } catch (error) {
-    console.error('Failed to delete user:', error);
-    return handleApiErrorForAction(error, { defaultMessage: 'ユーザーの削除に失敗しました' });
-  }
-}
-
-/**
  * Server Action: ユーザーのアクティブ状態を設定
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */

@@ -73,7 +73,7 @@ public class AdminUserController : BaseAdminController
     public async Task<Ok<UserDetailResponse>> GetUserById(int id)
     {
         // ログインユーザーと同じ組織に所属しているか確認
-        var targetUser = await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
+        var targetUser = await _accessHelper.CheckIncludeOrganizationAllAsync(id, CurrentOrganizationId);
 
         var response = new UserDetailResponse
         {
@@ -244,7 +244,7 @@ public class AdminUserController : BaseAdminController
     )
     {
         // ログインユーザーと同じ組織に所属しているか確認
-        await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
+        await _accessHelper.CheckIncludeOrganizationAllAsync(id, CurrentOrganizationId);
 
         var result = await _userService.SetUserActiveStatusAsync(
             id,
@@ -260,40 +260,6 @@ public class AdminUserController : BaseAdminController
             ? "ユーザーを有効化しました。"
             : "ユーザーを無効化しました。";
         return TypedResults.Ok(new SuccessResponse { Message = message });
-    }
-
-    /// <summary>
-    /// ユーザーを削除
-    /// </summary>
-    /// <remarks>
-    /// 指定したユーザーを削除します。組織内のユーザーのみ操作可能です。
-    /// </remarks>
-    /// /// <param name="id">ユーザーID</param>
-    /// <response code="200">ユーザーを削除しました</response>
-    /// <response code="403">他組織のユーザーは操作できません</response>
-    /// <response code="404">ユーザーが見つかりません</response>
-    [HttpDelete("{id}")]
-    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<Ok<SuccessResponse>> DeleteUser(int id)
-    {
-        // ログインユーザーと同じ組織に所属しているか確認
-        var targetUser = await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
-
-        // チャットルームからメンバーを削除
-        if (targetUser.OrganizationId.HasValue)
-        {
-            await _chatRoomService.RemoveUserFromOrganizationRoomsAsync(id, targetUser.OrganizationId.Value);
-        }
-
-        var result = await _userService.DeleteUserAsync(id);
-        if (!result)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
-        return TypedResults.Ok(new SuccessResponse { Message = "ユーザーを削除しました。" });
     }
 
     /// <summary>
@@ -326,7 +292,7 @@ public class AdminUserController : BaseAdminController
     )
     {
         // ログインユーザーと同じ組織に所属しているか確認
-        await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
+        await _accessHelper.CheckIncludeOrganizationAllAsync(id, CurrentOrganizationId);
 
         // 管理者が別のユーザーのスキルを設定（洗い替え）
         // 操作実行者（me = 管理者）がスキル情報を変更
@@ -631,7 +597,7 @@ public class AdminUserController : BaseAdminController
     )
     {
         // ログインユーザーと同じ組織に所属しているか確認
-        await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
+        await _accessHelper.CheckIncludeOrganizationAllAsync(id, CurrentOrganizationId);
 
         // 管理者が別のユーザーのロールを設定（洗い替え）
         // 操作実行者（me = 管理者）がロール情報を変更
