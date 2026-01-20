@@ -114,21 +114,21 @@ export class AgendaService {
      * 繰り返しイベントを展開し、直近の各オカレンス（回）を個別に返します。
      * タイムライン表示用に最適化されています。
      * カーソルベースのページネーションに対応しています。
-     * @param limit
-     * @param cursor
+     * @param limit 取得件数（1〜100、省略時はデフォルトページサイズ）
+     * @param cursor ページネーションカーソル（前回レスポンスのNextCursor）
      * @returns AgendaOccurrencesResponse OK
      * @throws ApiError
      */
     public static getApiAgendasOccurrencesRecent(
-        limit: number = 20,
+        limit?: number,
         cursor?: string,
     ): CancelablePromise<AgendaOccurrencesResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/agendas/occurrences/recent',
             query: {
-                'limit': limit,
-                'cursor': cursor,
+                'Limit': limit,
+                'Cursor': cursor,
             },
             errors: {
                 404: `Not Found`,

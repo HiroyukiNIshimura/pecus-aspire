@@ -764,17 +764,20 @@
         "description": "繰り返しイベントを展開し、直近の各オカレンス（回）を個別に返します。\nタイムライン表示用に最適化されています。\nカーソルベースのページネーションに対応しています。",
         "parameters": [
           {
-            "name": "limit",
+            "name": "Limit",
             "in": "query",
+            "description": "取得件数（1〜100、省略時はデフォルトページサイズ）",
             "schema": {
+              "maximum": 100,
+              "minimum": 1,
               "type": "integer",
-              "format": "int32",
-              "default": 20
+              "format": "int32"
             }
           },
           {
-            "name": "cursor",
+            "name": "Cursor",
             "in": "query",
+            "description": "ページネーションカーソル（前回レスポンスのNextCursor）",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -4603,6 +4606,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/users/organization-members": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "組織の全メンバー一覧を取得（ページング）",
+        "description": "現在の組織に所属するアクティブなユーザーの一覧をページングで取得します。\nアジェンダの参加者選択など、組織全体を対象とする機能で使用します。\n結果はユーザー名でソートされます。",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "ページ番号（1から開始、デフォルト1）",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "メンバー一覧を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfOrganizationMemberItem"
                 }
               }
             }
@@ -19888,6 +19929,34 @@
         },
         "description": "組織情報レスポンス（簡易版）"
       },
+      "OrganizationMemberItem": {
+        "required": [
+          "userName",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
+          },
+          "userName": {
+            "type": "string",
+            "description": "ユーザー名"
+          },
+          "email": {
+            "type": "string",
+            "description": "メールアドレス"
+          },
+          "identityIconUrl": {
+            "type": "string",
+            "description": "アイデンティティアイコンURL",
+            "nullable": true
+          }
+        },
+        "description": "組織メンバーアイテム（ページングレスポンスで使用）"
+      },
       "OrganizationPlan": {
         "enum": [
           "Unknown",
@@ -20426,6 +20495,50 @@
           }
         },
         "description": "ページネーション付きレスポンス（統計情報付き）"
+      },
+      "PagedResponseOfOrganizationMemberItem": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganizationMemberItem"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          }
+        },
+        "description": "ページネーション付きレスポンス"
       },
       "PagedResponseOfSkillListItemResponseAndSkillStatistics": {
         "required": [

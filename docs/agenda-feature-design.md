@@ -1,7 +1,7 @@
 # アジェンダ機能 設計書
 
 > **更新日**: 2026-01-20
-> **ステータス**: Phase 13完了・Phase 14実装待ち
+> **ステータス**: Phase 14完了
 
 ---
 **重要**
@@ -17,7 +17,7 @@
 
 ## 🔲 TODO（実装漏れ）
 
-Phase 1-13は完了済みですが、以下の機能・UIが未実装です。
+Phase 1-14は完了済みですが、以下の機能・UIが未実装です。
 フォーム検証：docs/frontend-guidelines.mdの7. クライアントサイドバリデーション（Zod）✅
 
 ### 優先度: 高
@@ -34,7 +34,7 @@ Phase 1-13は完了済みですが、以下の機能・UIが未実装です。
 
 | 項目 | 説明 | 状態 |
 |------|------|------|
-| **参加者選択UI** | Phase 14。統合検索による参加者追加機能（AttendeeSelector） | 🔲 Phase 14 |
+| **参加者選択UI** | Phase 14。統合検索による参加者追加機能（AttendeeSelector） | ✅ 完了 |
 
 ### 優先度: 低（リファクタリング）
 
@@ -691,13 +691,13 @@ public class AgendaEmailJob
 | **Phase 11** | FE詳細 | 詳細表示 + 参加状況変更 | 1.5日 | ✅ |
 | **Phase 12** | FEフォーム | 作成・編集 + 繰り返し設定 | 2日 | ✅ |
 | **Phase 13** | FE通知 | ヘッダーアイコン + バッジ（一覧ページ遷移） | 1日 | ✅ |
-| **Phase 14** | 参加者選択 | 統合検索UIで参加者追加 | 1日 | 🔲 |
+| **Phase 14** | 参加者選択 | 統合検索UIで参加者追加 | 1日 | ✅ |
 
 **合計: 約18日**
 
 ---
 
-## 9. Phase 14: 参加者選択機能 詳細設計
+## 9. Phase 14: 参加者選択機能 詳細設計（✅完了）
 
 ### 9.1 概要
 
@@ -759,19 +759,27 @@ Google Calendar / Slack 風のシンプルな検索ベースUI。
 
 ```
 src/components/agendas/
-├── AttendeeSelector.tsx         # 検索フィールド + 候補リスト + チップ表示
-└── AttendeeChip.tsx             # 選択済みチップ（ユーザー/WS）
+├── AttendeeSelector.tsx         # 検索フィールド + 候補リスト + チップ表示 ✅
+└── AttendeeChip.tsx             # 選択済みチップ（ユーザー/WS）→ AttendeeSelector内に統合
 ```
+**参考コンポーネント**: pecus.Frontend/src/components/workspaces/AddMemberModal.tsx
 
-### 9.6 実装タスク
 
-| タスク | 詳細 | 工数 |
-|--------|------|------|
-| AttendeeSelector | 検索・候補表示・選択管理 | 0.5日 |
-| AttendeeChip | チップUI（削除、WS展開） | 0.25日 |
-| AgendaForm統合 | フォームへの組み込み | 0.25日 |
+### 9.6 実装タスク（✅完了）
+
+| タスク | 詳細 | 工数 | 状態 |
+|--------|------|------|------|
+| AttendeeSelector | 検索・候補表示・選択管理 | 0.5日 | ✅ |
+| AttendeeChip | チップUI（削除、WS展開）→ AttendeeSelector内に統合 | 0.25日 | ✅ |
+| AgendaForm統合 | フォームへの組み込み | 0.25日 | ✅ |
 
 **工数: 1日**
+
+**実装メモ:**
+- `AttendeeSelector.tsx` を新規作成。デバウンス付き検索 + ドロップダウン候補 + チップ表示を統合
+- Server Actions: `searchAttendees`, `fetchWorkspaceMembers`, `fetchOrganizationMembers` を `src/actions/agenda.ts` に追加
+- `AgendaForm.tsx` に統合済み、`currentUserId` propsを追加（主催者を検索結果から除外）
+- `AgendaFormClient.tsx` / `new/page.tsx` / `edit/page.tsx` で `getCurrentUser()` を使用してユーザーIDを取得
 
 ---
 

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { fetchAgendaById } from '@/actions/agenda';
+import { getCurrentUser } from '@/actions/auth';
 import {
   createPecusApiClients,
   detect401ValidationError,
@@ -28,13 +29,19 @@ export default async function EditAgendaPage({ params }: EditAgendaPageProps) {
     const api = createPecusApiClients();
     await api.profile.getApiProfileAppSettings();
 
+    // 現在のユーザーID取得
+    const userResult = await getCurrentUser();
+    if (!userResult.success || !userResult.data) {
+      redirect('/signin');
+    }
+
     // アジェンダ詳細取得
     const agendaResult = await fetchAgendaById(agendaIdNum);
     if (!agendaResult.success) {
       redirect('/agendas');
     }
 
-    return <AgendaFormClient mode="edit" initialData={agendaResult.data} />;
+    return <AgendaFormClient mode="edit" initialData={agendaResult.data} currentUserId={userResult.data.id} />;
   } catch (error) {
     console.error('EditAgendaPage: failed to fetch data', error);
 

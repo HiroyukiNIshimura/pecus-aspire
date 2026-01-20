@@ -82,6 +82,55 @@ public class UserController : BaseSecureController
     }
 
     /// <summary>
+    /// 組織の全メンバー一覧を取得（ページング）
+    /// </summary>
+    /// <remarks>
+    /// 現在の組織に所属するアクティブなユーザーの一覧をページングで取得します。
+    /// アジェンダの参加者選択など、組織全体を対象とする機能で使用します。
+    /// 結果はユーザー名でソートされます。
+    /// </remarks>
+    /// <param name="page">ページ番号（1から開始、デフォルト1）</param>
+    /// <response code="200">メンバー一覧を返します</response>
+    [HttpGet("organization-members")]
+    [ProducesResponseType(typeof(PagedResponse<OrganizationMemberItem>), StatusCodes.Status200OK)]
+    public async Task<Ok<PagedResponse<OrganizationMemberItem>>> GetOrganizationMembers(
+        [FromQuery] int? page = 1
+    )
+    {
+        var validatedPage = PaginationHelper.ValidatePageNumber(page);
+        const int pageSize = 50;
+
+        var (users, totalCount) = await _userService.GetOrganizationMembersPagedAsync(
+            organizationId: CurrentOrganizationId,
+            page: validatedPage,
+            pageSize: pageSize
+        );
+
+        var memberItems = users.Select(u => new OrganizationMemberItem
+        {
+            UserId = u.Id,
+            UserName = u.Username,
+            Email = u.Email,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: u.AvatarType,
+                userId: u.Id,
+                username: u.Username,
+                email: u.Email,
+                avatarPath: u.UserAvatarPath
+            ),
+        });
+
+        var response = PaginationHelper.CreatePagedResponse(
+            data: memberItems,
+            totalCount: totalCount,
+            page: validatedPage,
+            pageSize: pageSize
+        );
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// 指定ユーザーの取得済み実績を取得
     /// </summary>
     /// <remarks>

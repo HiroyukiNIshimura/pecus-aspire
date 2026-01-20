@@ -156,6 +156,7 @@ export type { MyTaskWorkspaceResponse } from './models/MyTaskWorkspaceResponse';
 export type { NewAchievementResponse } from './models/NewAchievementResponse';
 export type { NotifyTypingRequest } from './models/NotifyTypingRequest';
 export type { OrganizationInfoResponse } from './models/OrganizationInfoResponse';
+export type { OrganizationMemberItem } from './models/OrganizationMemberItem';
 export type { OrganizationPlan } from './models/OrganizationPlan';
 export type { OrganizationPublicSettings } from './models/OrganizationPublicSettings';
 export type { OrganizationResponse } from './models/OrganizationResponse';
@@ -167,6 +168,7 @@ export type { PagedResponseOfBackOfficeNotificationListItemResponse } from './mo
 export type { PagedResponseOfBackOfficeOrganizationListItemResponse } from './models/PagedResponseOfBackOfficeOrganizationListItemResponse';
 export type { PagedResponseOfItemWithTasksResponse } from './models/PagedResponseOfItemWithTasksResponse';
 export type { PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics } from './models/PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics';
+export type { PagedResponseOfOrganizationMemberItem } from './models/PagedResponseOfOrganizationMemberItem';
 export type { PagedResponseOfSkillListItemResponseAndSkillStatistics } from './models/PagedResponseOfSkillListItemResponseAndSkillStatistics';
 export type { PagedResponseOfTagListItemResponseAndTagStatistics } from './models/PagedResponseOfTagListItemResponseAndTagStatistics';
 export type { PagedResponseOfTaskCommentDetailResponse } from './models/PagedResponseOfTaskCommentDetailResponse';

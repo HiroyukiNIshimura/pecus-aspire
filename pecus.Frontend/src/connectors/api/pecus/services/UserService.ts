@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { PagedResponseOfOrganizationMemberItem } from '../models/PagedResponseOfOrganizationMemberItem';
 import type { UserAchievementResponse } from '../models/UserAchievementResponse';
 import type { UserSearchResultResponse } from '../models/UserSearchResultResponse';
 import type { UserSkillDetailResponse } from '../models/UserSkillDetailResponse';
@@ -32,6 +33,26 @@ export class UserService {
             },
             errors: {
                 400: `検索クエリが短すぎます`,
+            },
+        });
+    }
+    /**
+     * 組織の全メンバー一覧を取得（ページング）
+     * 現在の組織に所属するアクティブなユーザーの一覧をページングで取得します。
+     * アジェンダの参加者選択など、組織全体を対象とする機能で使用します。
+     * 結果はユーザー名でソートされます。
+     * @param page ページ番号（1から開始、デフォルト1）
+     * @returns PagedResponseOfOrganizationMemberItem メンバー一覧を返します
+     * @throws ApiError
+     */
+    public static getApiUsersOrganizationMembers(
+        page: number = 1,
+    ): CancelablePromise<PagedResponseOfOrganizationMemberItem> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/organization-members',
+            query: {
+                'page': page,
             },
         });
     }

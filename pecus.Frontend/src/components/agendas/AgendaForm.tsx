@@ -5,6 +5,7 @@ import DatePicker from '@/components/common/filters/DatePicker';
 import type { AgendaAttendeeRequest, AgendaResponse, RecurrenceType } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { createAgendaSchema } from '@/schemas/agendaSchemas';
+import AttendeeSelector, { type SelectedAttendee, toAgendaAttendeeRequests } from './AttendeeSelector';
 
 export interface AgendaFormData {
   title: string;
@@ -28,6 +29,8 @@ interface AgendaFormProps {
   onSubmit: (data: AgendaFormData) => void;
   isPending: boolean;
   submitLabel: string;
+  /** 現在のユーザーID（主催者）- 参加者選択で除外するため */
+  currentUserId: number;
 }
 
 const recurrenceOptions: { value: RecurrenceType; label: string }[] = [
@@ -74,7 +77,7 @@ function toISOString(localString: string): string {
   return date.toISOString();
 }
 
-export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: AgendaFormProps) {
+export function AgendaForm({ initialData, onSubmit, isPending, submitLabel, currentUserId }: AgendaFormProps) {
   // 初期値の設定
   const getInitialStartAt = useCallback(() => {
     if (initialData?.startAt) {
@@ -121,10 +124,20 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
   // リマインダー（フォームとは別で管理）
   const [reminders, setReminders] = useState<number[]>(initialData?.reminders ?? [1440, 60]);
 
-  // 参加者 - TODO: 参加者選択機能を実装時に使用
-  const [attendees] = useState<AgendaAttendeeRequest[]>(
-    initialData?.attendees?.map((a) => ({ userId: a.userId, isOptional: a.isOptional })) ?? [],
-  );
+  // 参加者選択の状態管理
+  const [selectedAttendees, setSelectedAttendees] = useState<SelectedAttendee[]>(() => {
+    // initialDataがあれば変換
+    if (initialData?.attendees) {
+      return initialData.attendees.map((a) => ({
+        userId: a.userId,
+        userName: a.user?.username ?? '',
+        email: a.user?.email ?? '',
+        identityIconUrl: a.user?.identityIconUrl ?? null,
+        isOptional: a.isOptional,
+      }));
+    }
+    return [];
+  });
 
   // useFormValidationフック
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
@@ -147,7 +160,7 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
             : '',
         recurrenceCount: data.recurrenceEndType === 'count' ? data.recurrenceCount : null,
         reminders,
-        attendees,
+        attendees: toAgendaAttendeeRequests(selectedAttendees),
         sendNotification: data.sendNotification,
       };
 
@@ -518,12 +531,17 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel }: Ag
         </label>
       </div>
 
-      {/* TODO: 参加者選択は別途実装 */}
-      <div className="rounded-lg border border-base-300 bg-base-200/50 p-4">
-        <h3 className="mb-2 font-medium text-base-content/70">参加者</h3>
-        <p className="text-sm text-base-content/50">
-          参加者の追加機能は別途実装予定です。現在は作成者のみが参加者として登録されます。
-        </p>
+      {/* 参加者選択 */}
+      <div className="form-control">
+        <div className="label">
+          <span className="label-text font-medium">参加者</span>
+        </div>
+        <AttendeeSelector
+          selectedAttendees={selectedAttendees}
+          onChange={setSelectedAttendees}
+          disabled={isFormDisabled}
+          currentUserId={currentUserId}
+        />
       </div>
 
       {/* 送信ボタン */}

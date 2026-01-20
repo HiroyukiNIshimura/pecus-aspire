@@ -1005,4 +1005,28 @@ public class UserService
             })
             .ToListAsync();
     }
+
+    /// <summary>
+    /// 組織の全メンバー一覧を取得（ページング）
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="page">ページ番号（1から開始）</param>
+    /// <param name="pageSize">1ページあたりの件数</param>
+    /// <returns>メンバー一覧と総数</returns>
+    public async Task<(List<User> Users, int TotalCount)> GetOrganizationMembersPagedAsync(
+        int organizationId,
+        int page,
+        int pageSize
+    )
+    {
+        var query = _context.Users
+            .Where(u => u.OrganizationId == organizationId && u.IsActive)
+            .OrderBy(u => u.Username);
+
+        var totalCount = await query.CountAsync();
+
+        var users = await PaginationHelper.ApplyPaginationAsync(query, page, pageSize);
+
+        return (users, totalCount);
+    }
 }

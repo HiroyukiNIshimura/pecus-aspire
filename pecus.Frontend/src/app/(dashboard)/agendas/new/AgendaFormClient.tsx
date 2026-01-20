@@ -10,9 +10,11 @@ import type { AgendaResponse, CreateAgendaRequest, RecurrenceType, UpdateAgendaR
 interface AgendaFormClientProps {
   mode: 'create' | 'edit';
   initialData?: AgendaResponse;
+  /** 現在のユーザーID（必須: 参加者選択で主催者を除外するため） */
+  currentUserId: number;
 }
 
-export default function AgendaFormClient({ mode, initialData }: AgendaFormClientProps) {
+export default function AgendaFormClient({ mode, initialData, currentUserId }: AgendaFormClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +107,7 @@ export default function AgendaFormClient({ mode, initialData }: AgendaFormClient
             onSubmit={handleSubmit}
             isPending={isPending}
             submitLabel={mode === 'create' ? '作成' : '更新'}
+            currentUserId={currentUserId}
           />
         </div>
       </div>
