@@ -38,8 +38,6 @@ export function OccurrenceAttendanceSelector({
   onOccurrenceStatusChange,
   onResetToSeries,
 }: OccurrenceAttendanceSelectorProps) {
-  // 有効な参加状況（この回の回答 > シリーズの回答）
-  const effectiveStatus = occurrenceStatus ?? seriesStatus;
   // シリーズと同じかどうか（この回の個別回答がない）
   const isSameAsSeries = occurrenceStatus === null || occurrenceStatus === undefined;
 
