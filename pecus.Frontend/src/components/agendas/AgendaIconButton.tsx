@@ -27,6 +27,7 @@ export default function AgendaIconButton() {
     return () => clearInterval(interval);
   }, []);
 
+  //TODO : /agendasではなく通知一覧UIの表示に変更する
   return (
     <Link href="/agendas" className="btn btn-text btn-circle relative" aria-label="予定">
       <span className="icon-[tabler--calendar-event] size-6" aria-hidden="true" />
