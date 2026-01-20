@@ -2,6 +2,7 @@
 
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
+  AdminUpdateUserRequest,
   PagedResponseOfUserDetailResponseAndUserStatistics,
   RoleListItemResponse,
   SuccessResponse,
@@ -50,17 +51,19 @@ export async function createUserWithoutPassword(request: {
 }
 
 /**
- * Server Action: ユーザーのアクティブ状態を設定
+ * Server Action: ユーザー情報を一括更新（管理者用）
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function setUserActiveStatus(userId: number, isActive: boolean): Promise<ApiResponse<SuccessResponse>> {
+export async function updateUser(
+  userId: number,
+  request: AdminUpdateUserRequest,
+): Promise<ApiResponse<UserDetailResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.putApiAdminUsersActiveStatus(userId, {
-      isActive,
-    });
+    const response = await api.adminUser.putApiAdminUsers(userId, request);
     return { success: true, data: response };
   } catch (error) {
+    // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
       const payload = concurrencyError.payload ?? {};
@@ -75,8 +78,8 @@ export async function setUserActiveStatus(userId: number, isActive: boolean): Pr
         },
       };
     }
-    console.error('Failed to set user active status:', error);
-    return handleApiErrorForAction(error, { defaultMessage: 'ユーザーのアクティブ状態の設定に失敗しました' });
+    console.error('Failed to update user:', error);
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザー情報の更新に失敗しました' });
   }
 }
 
@@ -119,86 +122,6 @@ export async function getUserDetail(userId: number): Promise<ApiResponse<UserDet
   } catch (error) {
     console.error('Failed to fetch user detail:', error);
     return handleApiErrorForAction(error, { defaultMessage: 'ユーザー情報の取得に失敗しました' });
-  }
-}
-
-/**
- * Server Action: ユーザーのスキルを更新
- * @note 409 Conflict: 並行更新による競合。最新データを返す
- */
-export async function setUserSkills(
-  userId: number,
-  skillIds: number[],
-  userRowVersion: number,
-): Promise<ApiResponse<SuccessResponse>> {
-  try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.putApiAdminUsersSkills(userId, {
-      skillIds,
-      userRowVersion,
-    });
-    return { success: true, data: response };
-  } catch (error) {
-    // 409 Conflict: 並行更新による競合を検出
-    const concurrencyError = detectConcurrencyError(error);
-    if (concurrencyError) {
-      const payload = concurrencyError.payload ?? {};
-      const current = payload.current as UserDetailResponse | undefined;
-      return {
-        success: false,
-        error: 'conflict',
-        message: concurrencyError.message,
-        latest: {
-          type: 'user',
-          data: current as UserDetailResponse,
-        },
-      };
-    }
-
-    console.error('Failed to set user skills:', error);
-    return handleApiErrorForAction(error, { defaultMessage: 'ユーザースキルの更新に失敗しました' });
-  }
-}
-
-/**
- * Server Action: ユーザーのロールを更新
- * @note 409 Conflict: 並行更新による競合。最新データを返す
- *
- * Note: userRowVersion は楽観的ロック用で、バックエンド側で検証されます。
- * 現在のバックエンドで UserResponse に rowVersion が含まれていないため、
- * オプション扱いですが、将来的には必須化予定です。
- */
-export async function setUserRoles(
-  userId: number,
-  roleIds: number[],
-  userRowVersion: number,
-): Promise<ApiResponse<SuccessResponse>> {
-  try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.putApiAdminUsersRoles(userId, {
-      roles: roleIds,
-      userRowVersion,
-    });
-    return { success: true, data: response };
-  } catch (error) {
-    // 409 Conflict: 並行更新による競合を検出
-    const concurrencyError = detectConcurrencyError(error);
-    if (concurrencyError) {
-      const payload = concurrencyError.payload ?? {};
-      const current = payload.current as UserDetailResponse | undefined;
-      return {
-        success: false,
-        error: 'conflict',
-        message: concurrencyError.message,
-        latest: {
-          type: 'user',
-          data: current as UserDetailResponse,
-        },
-      };
-    }
-
-    console.error('Failed to set user roles:', error);
-    return handleApiErrorForAction(error, { defaultMessage: 'ユーザーロールの更新に失敗しました' });
   }
 }
 

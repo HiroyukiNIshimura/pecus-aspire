@@ -93,18 +93,18 @@ export class AgendaService {
     /**
      * 直近のアジェンダ一覧取得
      * 自分が参加者のアジェンダのみ返します。
-     * @param limit
+     * @param limit 取得件数（1〜100、省略時はデフォルトページサイズ）
      * @returns AgendaResponse OK
      * @throws ApiError
      */
     public static getApiAgendasRecent(
-        limit: number = 20,
+        limit?: number,
     ): CancelablePromise<Array<AgendaResponse>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/agendas/recent',
             query: {
-                'limit': limit,
+                'Limit': limit,
             },
             errors: {
                 404: `Not Found`,

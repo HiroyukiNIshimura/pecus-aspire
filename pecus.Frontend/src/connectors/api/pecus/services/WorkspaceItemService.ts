@@ -177,7 +177,7 @@ export class WorkspaceItemService {
      * ワークスペースアイテム一覧取得
      * @param workspaceId
      * @param page
-     * @param pageSize ページサイズ
+     * @param pageSize ページサイズ（1〜100、省略時はデフォルトページサイズ）
      * @param isDraft 下書きかどうか
      * @param isArchived アーカイブ済みかどうか
      * @param assigneeId 担当者ID

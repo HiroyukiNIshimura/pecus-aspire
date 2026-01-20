@@ -6,6 +6,7 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
+using Pecus.Models.Requests.User;
 using System.Security.Cryptography;
 
 namespace Pecus.Services;
@@ -104,6 +105,35 @@ public class UserService
       .Include(u => u.Setting)
       .AsSplitQuery()
       .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
+
+    /// <summary>
+    /// ユーザーIDで取得(管理者用: 非アクティブを含む、組織チェック付き)
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="organizationId">組織ID（ログインユーザーの組織）</param>
+    /// <returns>ユーザー情報（見つからない場合はNotFoundException）</returns>
+    public async Task<User> GetUserByIdForAdminAsync(int userId, int? organizationId)
+    {
+        if (!organizationId.HasValue)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        var user = await _context
+            .Users
+            .Include(u => u.Roles)
+            .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
+            .Include(u => u.Setting)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(u => u.Id == userId && u.OrganizationId == organizationId);
+
+        if (user == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        return user;
+    }
 
     /// <summary>
     /// 組織IDでユーザーをページネーション付きで取得
@@ -279,8 +309,117 @@ public class UserService
     }
 
     /// <summary>
+    /// 管理者によるユーザー情報の一括更新
+    /// </summary>
+    /// <remarks>
+    /// 1トランザクションでユーザー情報、スキル、ロールを一括更新します。
+    /// </remarks>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="request">更新リクエスト</param>
+    /// <param name="updatedByUserId">更新者のユーザーID</param>
+    /// <returns>更新されたユーザー</returns>
+    public async Task<User> AdminUpdateUserAsync(
+        int userId,
+        AdminUpdateUserRequest request,
+        int updatedByUserId
+    )
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var user = await _context.Users
+                .Include(u => u.UserSkills)
+                .Include(u => u.Roles)
+                .Include(u => u.Setting)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException("ユーザーが見つかりません。");
+            }
+
+            // 楽観的ロックチェック
+            if (user.RowVersion != request.RowVersion)
+            {
+                await RaiseConflictException(userId);
+            }
+
+            // 基本情報更新
+            user.Username = request.Username.Trim();
+            user.IsActive = request.IsActive;
+            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedByUserId = updatedByUserId;
+
+            // スキル洗い替え
+            _context.UserSkills.RemoveRange(user.UserSkills);
+            foreach (var skillId in request.SkillIds)
+            {
+                _context.UserSkills.Add(new UserSkill
+                {
+                    UserId = userId,
+                    SkillId = skillId,
+                    AddedAt = DateTime.UtcNow,
+                    AddedByUserId = updatedByUserId,
+                });
+            }
+
+            // ロール洗い替え
+            user.Roles.Clear();
+            if (request.RoleIds.Count > 0)
+            {
+                var roles = await _context.Roles
+                    .Where(r => request.RoleIds.Contains(r.Id))
+                    .ToListAsync();
+
+                if (roles.Count != request.RoleIds.Count)
+                {
+                    throw new InvalidOperationException("指定されたロールIDの一部が無効です。");
+                }
+
+                // BackOfficeロールは管理者専用のため割り当て禁止
+                if (roles.Any(r => r.Name == SystemRole.BackOffice))
+                {
+                    throw new InvalidOperationException("指定されたロールIDの一部が無効です。");
+                }
+
+                foreach (var role in roles)
+                {
+                    user.Roles.Add(role);
+                }
+            }
+
+            // ChatActor同期
+            await SyncChatActorAsync(userId, user.Username, user.AvatarType, user.UserAvatarPath);
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            // 更新後のユーザー情報を返す
+            return await _context.Users
+                .Include(u => u.Roles)
+                .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
+                .Include(u => u.Setting)
+                .AsSplitQuery()
+                .FirstAsync(u => u.Id == userId);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await transaction.RollbackAsync();
+            await RaiseConflictException(userId);
+            throw; // コンパイラ用（RaiseConflictExceptionは例外をスロー）
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
     /// ユーザーのアクティブ状態を設定
     /// </summary>
+    [Obsolete("AdminUpdateUserAsync を使用してください")]
     public async Task<bool> SetUserActiveStatusAsync(int userId, bool isActive, int updatedByUserId)
     {
         var user = await _context.Users.FindAsync(userId);
@@ -573,6 +712,7 @@ public class UserService
     /// <param name="userRowVersion">ユーザーの楽観的ロック用のRowVersion</param>
     /// <param name="updatedByUserId">更新者のユーザーID</param>
     /// <returns>スキル更新の成功フラグ</returns>
+    [Obsolete("AdminUpdateUserAsync を使用してください")]
     public async Task<bool> SetUserSkillsAsync(
         int userId,
         List<int>? skillIds,
@@ -718,6 +858,7 @@ public class UserService
     /// <param name="userRowVersion">ユーザーの楽観的ロック用のRowVersion</param>
     /// <param name="updatedByUserId">更新者のユーザーID</param>
     /// <returns>ロール更新の成功フラグ</returns>
+    [Obsolete("AdminUpdateUserAsync を使用してください")]
     public async Task<bool> SetUserRolesAsync(
         int userId,
         List<int>? roleIds,

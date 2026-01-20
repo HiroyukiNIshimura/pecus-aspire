@@ -19,6 +19,7 @@ export type { AddWorkspaceItemRelationRequest } from './models/AddWorkspaceItemR
 export type { AddWorkspaceItemRelationResponse } from './models/AddWorkspaceItemRelationResponse';
 export type { AdminUpdateOrganizationRequest } from './models/AdminUpdateOrganizationRequest';
 export type { AdminUpdateOrganizationSettingRequest } from './models/AdminUpdateOrganizationSettingRequest';
+export type { AdminUpdateUserRequest } from './models/AdminUpdateUserRequest';
 export type { AgendaAttendeeRequest } from './models/AgendaAttendeeRequest';
 export type { AgendaAttendeeResponse } from './models/AgendaAttendeeResponse';
 export type { AgendaExceptionResponse } from './models/AgendaExceptionResponse';
@@ -200,10 +201,7 @@ export type { RoleUserCountResponse } from './models/RoleUserCountResponse';
 export type { SendMessageRequest } from './models/SendMessageRequest';
 export type { SetOwnSkillsRequest } from './models/SetOwnSkillsRequest';
 export type { SetTagsToItemRequest } from './models/SetTagsToItemRequest';
-export type { SetUserActiveStatusRequest } from './models/SetUserActiveStatusRequest';
 export type { SetUserPasswordRequest } from './models/SetUserPasswordRequest';
-export type { SetUserRolesRequest } from './models/SetUserRolesRequest';
-export type { SetUserSkillsRequest } from './models/SetUserSkillsRequest';
 export type { SetWorkspaceSkillsRequest } from './models/SetWorkspaceSkillsRequest';
 export type { SkillDetailResponse } from './models/SkillDetailResponse';
 export type { SkillListItemResponse } from './models/SkillListItemResponse';

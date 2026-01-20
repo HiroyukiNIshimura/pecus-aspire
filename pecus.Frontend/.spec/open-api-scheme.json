@@ -289,17 +289,18 @@
         "summary": "通知一覧取得",
         "parameters": [
           {
-            "name": "limit",
+            "name": "Limit",
             "in": "query",
-            "description": "取得件数（デフォルト: 50）",
+            "description": "取得件数（1〜100、省略時はデフォルトページサイズ）",
             "schema": {
+              "maximum": 100,
+              "minimum": 1,
               "type": "integer",
-              "format": "int32",
-              "default": 50
+              "format": "int32"
             }
           },
           {
-            "name": "beforeId",
+            "name": "BeforeId",
             "in": "query",
             "description": "このID以前の通知を取得（ページング用）",
             "schema": {
@@ -308,12 +309,11 @@
             }
           },
           {
-            "name": "unreadOnly",
+            "name": "UnreadOnly",
             "in": "query",
             "description": "未読のみ取得",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "boolean"
             }
           }
         ],
@@ -710,12 +710,14 @@
         "description": "自分が参加者のアジェンダのみ返します。",
         "parameters": [
           {
-            "name": "limit",
+            "name": "Limit",
             "in": "query",
+            "description": "取得件数（1〜100、省略時はデフォルトページサイズ）",
             "schema": {
+              "maximum": 100,
+              "minimum": 1,
               "type": "integer",
-              "format": "int32",
-              "default": 20
+              "format": "int32"
             }
           }
         ],
@@ -6563,9 +6565,9 @@
           {
             "name": "PageSize",
             "in": "query",
-            "description": "ページサイズ",
+            "description": "ページサイズ（1〜100、省略時はデフォルトページサイズ）",
             "schema": {
-              "maximum": 1000,
+              "maximum": 100,
               "minimum": 1,
               "type": "integer",
               "format": "int32"
@@ -13192,6 +13194,93 @@
             "Bearer": [ ]
           }
         ]
+      },
+      "put": {
+        "tags": [
+          "Admin - User"
+        ],
+        "summary": "ユーザー情報を更新（管理者用）",
+        "description": "    管理者がユーザー情報を一括更新します。\nユーザー名、アクティブ状態、スキル、ロールを1トランザクションで更新します。\n    楽観的ロック：RowVersionを使用して競合を検出します。\n別のユーザーが同時に更新した場合は409エラーを返します。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ユーザーID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "更新リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateUserRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateUserRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "ユーザー情報を更新しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDetailResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "他組織のユーザーは操作できません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "競合: ユーザー情報が別のユーザーにより更新されています",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/admin/users": {
@@ -13270,184 +13359,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/admin/users/{id}/active-status": {
-      "put": {
-        "tags": [
-          "Admin - User"
-        ],
-        "summary": "ユーザーのアクティブ状態を設定",
-        "description": "指定したユーザーのアクティブ状態を設定します。組織内のユーザーのみ操作可能です。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ユーザーID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "アクティブ状態設定リクエスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserActiveStatusRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserActiveStatusRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserActiveStatusRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "ユーザーのアクティブ状態を設定しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "他組織のユーザーは操作できません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "ユーザーが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/admin/users/{id}/skills": {
-      "put": {
-        "tags": [
-          "Admin - User"
-        ],
-        "summary": "ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）",
-        "description": "    管理者が組織内のユーザーのスキルを設定します（洗い替え）。\n指定されたスキル以外は削除されます。\n    重要：このエンドポイントは管理者による操作であり、\nユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "対象ユーザーID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "スキルIDのリスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserSkillsRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserSkillsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserSkillsRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "スキルを設定しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "他組織のユーザーは操作できません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "ユーザーが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "競合: スキル情報が別のユーザーにより更新されています",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
                 }
               }
             }
@@ -13641,95 +13552,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/admin/users/{id}/roles": {
-      "put": {
-        "tags": [
-          "Admin - User"
-        ],
-        "summary": "ユーザーのロールを設定（管理者が他のユーザーのロールを管理）",
-        "description": "    管理者が組織内のユーザーのロールを設定します（洗い替え）。\n指定されたロール以外は削除されます。\n    重要：このエンドポイントは管理者による操作です。\nユーザーのロールはシステム管理者によってのみ変更されるべきです。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "対象ユーザーID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "ロールIDのリスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserRolesRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserRolesRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserRolesRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "ロールを設定しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "他組織のユーザーは操作できません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "ユーザーが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "競合: ロール情報が別のユーザーにより更新されています",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
                 }
               }
             }
@@ -15039,6 +14861,47 @@
           }
         },
         "description": "組織設定更新リクエスト（管理者用）"
+      },
+      "AdminUpdateUserRequest": {
+        "required": [
+          "username",
+          "isActive",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "ユーザー名"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブ状態"
+          },
+          "skillIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "スキルIDのリスト"
+          },
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "ロールIDのリスト"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "uint32"
+          }
+        },
+        "description": "管理者によるユーザー更新リクエスト"
       },
       "AgendaAttendeeRequest": {
         "type": "object",
@@ -21782,18 +21645,6 @@
         },
         "description": "Request DTO for setting all tags on a workspace item"
       },
-      "SetUserActiveStatusRequest": {
-        "required": [
-          "isActive"
-        ],
-        "type": "object",
-        "properties": {
-          "isActive": {
-            "type": "boolean"
-          }
-        },
-        "description": "ユーザーのアクティブ状態設定リクエスト"
-      },
       "SetUserPasswordRequest": {
         "required": [
           "token",
@@ -21816,48 +21667,6 @@
           }
         },
         "description": "ユーザーパスワード設定リクエスト"
-      },
-      "SetUserRolesRequest": {
-        "required": [
-          "roles"
-        ],
-        "type": "object",
-        "properties": {
-          "roles": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          "userRowVersion": {
-            "type": "integer",
-            "format": "uint32",
-            "nullable": true
-          }
-        },
-        "description": "ユーザーロール設定リクエスト"
-      },
-      "SetUserSkillsRequest": {
-        "required": [
-          "skillIds"
-        ],
-        "type": "object",
-        "properties": {
-          "skillIds": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          "userRowVersion": {
-            "type": "integer",
-            "format": "uint32",
-            "nullable": true
-          }
-        },
-        "description": "ユーザーのスキル設定リクエスト"
       },
       "SetWorkspaceSkillsRequest": {
         "required": [

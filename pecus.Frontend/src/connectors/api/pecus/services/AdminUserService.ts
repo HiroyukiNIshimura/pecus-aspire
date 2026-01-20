@@ -2,12 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AdminUpdateUserRequest } from '../models/AdminUpdateUserRequest';
 import type { CreateUserWithoutPasswordRequest } from '../models/CreateUserWithoutPasswordRequest';
 import type { PagedResponseOfUserDetailResponseAndUserStatistics } from '../models/PagedResponseOfUserDetailResponseAndUserStatistics';
 import type { RoleListItemResponse } from '../models/RoleListItemResponse';
-import type { SetUserActiveStatusRequest } from '../models/SetUserActiveStatusRequest';
-import type { SetUserRolesRequest } from '../models/SetUserRolesRequest';
-import type { SetUserSkillsRequest } from '../models/SetUserSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UserDetailResponse } from '../models/UserDetailResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -33,6 +31,36 @@ export class AdminUserService {
             errors: {
                 403: `他組織のユーザーは取得できません`,
                 404: `ユーザーが見つかりません`,
+            },
+        });
+    }
+    /**
+     * ユーザー情報を更新（管理者用）
+     *     管理者がユーザー情報を一括更新します。
+     * ユーザー名、アクティブ状態、スキル、ロールを1トランザクションで更新します。
+     * 楽観的ロック：RowVersionを使用して競合を検出します。
+     * 別のユーザーが同時に更新した場合は409エラーを返します。
+     * @param id ユーザーID
+     * @param requestBody 更新リクエスト
+     * @returns UserDetailResponse ユーザー情報を更新しました
+     * @throws ApiError
+     */
+    public static putApiAdminUsers(
+        id: number,
+        requestBody: AdminUpdateUserRequest,
+    ): CancelablePromise<UserDetailResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/admin/users/{id}',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                403: `他組織のユーザーは操作できません`,
+                404: `ユーザーが見つかりません`,
+                409: `競合: ユーザー情報が別のユーザーにより更新されています`,
             },
         });
     }
@@ -67,63 +95,6 @@ export class AdminUserService {
             },
             errors: {
                 404: `組織が見つかりません`,
-            },
-        });
-    }
-    /**
-     * ユーザーのアクティブ状態を設定
-     * 指定したユーザーのアクティブ状態を設定します。組織内のユーザーのみ操作可能です。
-     * @param id ユーザーID
-     * @param requestBody アクティブ状態設定リクエスト
-     * @returns SuccessResponse ユーザーのアクティブ状態を設定しました
-     * @throws ApiError
-     */
-    public static putApiAdminUsersActiveStatus(
-        id: number,
-        requestBody: SetUserActiveStatusRequest,
-    ): CancelablePromise<SuccessResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/admin/users/{id}/active-status',
-            path: {
-                'id': id,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                403: `他組織のユーザーは操作できません`,
-                404: `ユーザーが見つかりません`,
-                409: `Conflict`,
-            },
-        });
-    }
-    /**
-     * ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）
-     *     管理者が組織内のユーザーのスキルを設定します（洗い替え）。
-     * 指定されたスキル以外は削除されます。
-     * 重要：このエンドポイントは管理者による操作であり、
-     * ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。
-     * @param id 対象ユーザーID
-     * @param requestBody スキルIDのリスト
-     * @returns SuccessResponse スキルを設定しました
-     * @throws ApiError
-     */
-    public static putApiAdminUsersSkills(
-        id: number,
-        requestBody: SetUserSkillsRequest,
-    ): CancelablePromise<SuccessResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/admin/users/{id}/skills',
-            path: {
-                'id': id,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                403: `他組織のユーザーは操作できません`,
-                404: `ユーザーが見つかりません`,
-                409: `競合: スキル情報が別のユーザーにより更新されています`,
             },
         });
     }
@@ -194,36 +165,6 @@ export class AdminUserService {
                 400: `パスワードが既に設定されています`,
                 403: `他組織のユーザーは操作できません`,
                 404: `ユーザーが見つかりません`,
-            },
-        });
-    }
-    /**
-     * ユーザーのロールを設定（管理者が他のユーザーのロールを管理）
-     *     管理者が組織内のユーザーのロールを設定します（洗い替え）。
-     * 指定されたロール以外は削除されます。
-     * 重要：このエンドポイントは管理者による操作です。
-     * ユーザーのロールはシステム管理者によってのみ変更されるべきです。
-     * @param id 対象ユーザーID
-     * @param requestBody ロールIDのリスト
-     * @returns SuccessResponse ロールを設定しました
-     * @throws ApiError
-     */
-    public static putApiAdminUsersRoles(
-        id: number,
-        requestBody: SetUserRolesRequest,
-    ): CancelablePromise<SuccessResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/admin/users/{id}/roles',
-            path: {
-                'id': id,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                403: `他組織のユーザーは操作できません`,
-                404: `ユーザーが見つかりません`,
-                409: `競合: ロール情報が別のユーザーにより更新されています`,
             },
         });
     }

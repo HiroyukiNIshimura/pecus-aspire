@@ -2,13 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
-import {
-  requestPasswordReset,
-  resendPasswordSetup,
-  setUserActiveStatus,
-  setUserRoles,
-  setUserSkills,
-} from '@/actions/admin/user';
+import { requestPasswordReset, resendPasswordSetup, updateUser } from '@/actions/admin/user';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
@@ -45,9 +39,8 @@ export default function EditUserClient({
   const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // === 状態管理: ユーザー編集対象の3つの項目 ===
-  // 選択肢のみで構成されているため、HTMLバリデーションやZodバリデーションは不要
-  // 変更検知フラグで「更新ボタンの有効/無効」を制御している
+  // === 状態管理: ユーザー編集対象の項目 ===
+  const [username, setUsername] = useState(userDetail.username || '');
   const [isActive, setIsActive] = useState(userDetail.isActive ?? true);
   const [selectedSkillIds, setSelectedSkillIds] = useState<number[]>(
     userDetail.skills?.map((s) => s.id).filter((id): id is number => id !== undefined) || [],
@@ -57,10 +50,7 @@ export default function EditUserClient({
   );
 
   // === 変更検知: 元の値と現在の値を比較 ===
-  // この3つのフラグは:
-  // 1. 更新ボタンの有効/無効判定（hasChanges）に使用
-  // 2. 更新前に「何が変更されるか」をユーザーに表示
-  // 3. 実際の更新（Promise.all）で「どの操作を実行するか」を判定
+  const usernameChanged = username.trim() !== (userDetail.username || '');
   const isActiveChanged = isActive !== (userDetail.isActive ?? true);
   const skillsChanged = (() => {
     const currentSkillIds = userDetail.skills?.map((s) => s.id).filter((id): id is number => id !== undefined) || [];
@@ -77,68 +67,37 @@ export default function EditUserClient({
   })();
 
   // いずれかの項目が変更されている場合のみ更新ボタンを有効化
-  const hasChanges = isActiveChanged || skillsChanged || rolesChanged;
+  const hasChanges = usernameChanged || isActiveChanged || skillsChanged || rolesChanged;
+
+  // バリデーション
+  const isUsernameValid = username.trim().length > 0 && username.trim().length <= 50;
 
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasChanges) return;
+    if (!hasChanges || !isUsernameValid) return;
 
     setIsSubmitting(true);
     try {
-      const updatePromises: Array<Promise<void>> = [];
-      const updateMessages: string[] = [];
+      // 1つのAPIで全項目を一括更新
+      const result = await updateUser(userDetail.id!, {
+        username: username.trim(),
+        isActive,
+        skillIds: selectedSkillIds,
+        roleIds: selectedRoleIds,
+        rowVersion: userDetail.rowVersion!,
+      });
 
-      // === 並列で更新処理を実行 ===
-      // 3つの操作は相互に依存しないため、Promise.all()で並列実行可能
-      // - setUserActiveStatus: ユーザーのアクティブ状態を更新
-      // - setUserSkills: スキル割り当てを更新（多対多の関連付け）
-      // - setUserRoles: ロール割り当てを更新（多対多の関連付け）
-      // 各操作は独立しており、1つが失敗しても他に影響しない設計
-
-      if (isActiveChanged) {
-        updatePromises.push(
-          setUserActiveStatus(userDetail.id!, isActive).then((result) => {
-            if (!result.success) {
-              throw new Error(result.message || 'アクティブ状態の更新に失敗しました。');
-            }
-            updateMessages.push(isActive ? 'ユーザーを有効化しました' : 'ユーザーを無効化しました');
-          }),
-        );
-      }
-
-      if (skillsChanged) {
-        updatePromises.push(
-          setUserSkills(userDetail.id!, selectedSkillIds, userDetail.rowVersion!).then((result) => {
-            if (!result.success) {
-              throw new Error(result.message || 'スキルの更新に失敗しました。');
-            }
-            updateMessages.push('スキルを更新しました');
-          }),
-        );
-      }
-
-      if (rolesChanged) {
-        updatePromises.push(
-          setUserRoles(userDetail.id!, selectedRoleIds, userDetail.rowVersion!).then((result) => {
-            if (!result.success) {
-              throw new Error(result.message || 'ロールの更新に失敗しました。');
-            }
-            updateMessages.push('ロールを更新しました');
-          }),
-        );
-      }
-
-      // 全ての更新を並列実行し、すべて完了を待つ
-      await Promise.all(updatePromises);
-
-      // 成功時のフィードバック: 何が変更されたかを具体的に表示
-      if (updateMessages.length > 0) {
-        notify.success(`更新完了: ${updateMessages.join('、')}`);
+      if (result.success) {
+        notify.success('ユーザー情報を更新しました');
+        router.push('/admin/users');
+      } else if (result.error === 'conflict') {
+        // 競合時は最新データを表示して警告
+        notify.warning(result.message || '別のユーザーが同時に更新しました。画面を更新してください。');
       } else {
-        notify.info('変更はありませんでした。');
+        notify.error(result.message || 'ユーザー情報の更新に失敗しました。');
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -218,7 +177,7 @@ export default function EditUserClient({
             <div className="mb-6 flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold">ユーザー編集</h1>
-                <p className="text-base-content/60 mt-2">ユーザーのアクティブ状態、スキル、ロールを編集します</p>
+                <p className="text-base-content/60 mt-2">ユーザー名、アクティブ状態、スキル、ロールを編集します</p>
               </div>
               <button type="button" className="btn btn-outline" onClick={() => router.push('/admin/users')}>
                 一覧に戻る
@@ -232,35 +191,60 @@ export default function EditUserClient({
               </div>
             )}
 
-            {/* 基本情報カード（読み取り専用） */}
-            <div className="card mb-6">
-              <div className="card-body">
-                <h2 className="card-title text-lg mb-4">基本情報</h2>
+            {/* 編集フォーム */}
+            <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
+              {/* 基本情報カード */}
+              <div className="card mb-6">
+                <div className="card-body">
+                  <h2 className="card-title text-lg mb-4">基本情報</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-base-content/60">ユーザー名</p>
-                    <p className="text-lg font-semibold">{userDetail.username || '-'}</p>
-                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="form-control">
+                      <label htmlFor="username" className="label">
+                        <span className="label-text">ユーザー名</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="username"
+                        className={`input input-bordered w-full ${!isUsernameValid ? 'input-error' : ''}`}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        disabled={isSubmitting}
+                        maxLength={50}
+                        required
+                        aria-describedby={
+                          !isUsernameValid ? 'username-error' : usernameChanged ? 'username-changed' : undefined
+                        }
+                      />
+                      {!isUsernameValid && (
+                        <p id="username-error" className="label-text-alt text-error mt-1">
+                          ユーザー名は1〜50文字で入力してください
+                        </p>
+                      )}
+                      {usernameChanged && isUsernameValid && (
+                        <p id="username-changed" className="label-text-alt text-info mt-1">
+                          ✓ ユーザー名が変更されています
+                        </p>
+                      )}
+                    </div>
 
-                  <div>
-                    <p className="text-sm text-base-content/60">メールアドレス</p>
-                    <p className="text-lg font-semibold">{userDetail.email || '-'}</p>
-                  </div>
+                    <div>
+                      <p className="text-sm text-base-content/60 mb-2">メールアドレス</p>
+                      <p className="text-lg font-semibold">{userDetail.email || '-'}</p>
+                    </div>
 
-                  <div>
-                    <p className="text-sm text-base-content/60">ログインID</p>
-                    <p className="text-lg font-semibold">{userDetail.loginId || '-'}</p>
+                    <div>
+                      <p className="text-sm text-base-content/60 mb-2">ログインID</p>
+                      <p className="text-lg font-semibold">{userDetail.loginId || '-'}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* 編集フォーム */}
-            <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
-              <div className="card">
+              {/* 編集項目カード */}
+              <div className="card mb-6">
                 <div className="card-body">
-                  <h2 className="card-title text-lg mb-4">編集項目</h2>
+                  <h2 className="card-title text-lg mb-4">属性設定</h2>
 
                   {/* スキル編集 */}
                   <div className="divider my-4"></div>
@@ -327,18 +311,18 @@ export default function EditUserClient({
                     <button type="button" className="btn btn-secondary" onClick={handleCancel} disabled={isSubmitting}>
                       キャンセル
                     </button>
-                    <button type="submit" className="btn btn-primary" disabled={isSubmitting || !hasChanges}>
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={isSubmitting || !hasChanges || !isUsernameValid}
+                    >
                       {isSubmitting ? (
                         <>
                           <span className="loading loading-spinner"></span>
                           更新中...
                         </>
                       ) : (
-                        <>
-                          更新
-                          {hasChanges &&
-                            ` (${[isActiveChanged && 'アクティブ', skillsChanged && 'スキル', rolesChanged && 'ロール'].filter(Boolean).join('・')})`}
-                        </>
+                        '更新'
                       )}
                     </button>
                   </div>

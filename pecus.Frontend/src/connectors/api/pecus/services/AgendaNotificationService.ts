@@ -12,24 +12,24 @@ import { request as __request } from '../core/request';
 export class AgendaNotificationService {
     /**
      * 通知一覧取得
-     * @param limit 取得件数（デフォルト: 50）
+     * @param limit 取得件数（1〜100、省略時はデフォルトページサイズ）
      * @param beforeId このID以前の通知を取得（ページング用）
      * @param unreadOnly 未読のみ取得
      * @returns AgendaNotificationResponse OK
      * @throws ApiError
      */
     public static getApiAgendasNotifications(
-        limit: number = 50,
+        limit?: number,
         beforeId?: number,
-        unreadOnly: boolean = false,
+        unreadOnly?: boolean,
     ): CancelablePromise<Array<AgendaNotificationResponse>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/agendas/notifications',
             query: {
-                'limit': limit,
-                'beforeId': beforeId,
-                'unreadOnly': unreadOnly,
+                'Limit': limit,
+                'BeforeId': beforeId,
+                'UnreadOnly': unreadOnly,
             },
             errors: {
                 404: `Not Found`,

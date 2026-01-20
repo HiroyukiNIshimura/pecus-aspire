@@ -9,6 +9,7 @@ using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
+using Pecus.Models.Requests.User;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Admin;
@@ -72,8 +73,8 @@ public class AdminUserController : BaseAdminController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Ok<UserDetailResponse>> GetUserById(int id)
     {
-        // ログインユーザーと同じ組織に所属しているか確認
-        var targetUser = await _accessHelper.CheckIncludeOrganizationAllAsync(id, CurrentOrganizationId);
+        // ログインユーザーと同じ組織に所属しているか確認（関連データを含む）
+        var targetUser = await _userService.GetUserByIdForAdminAsync(id, CurrentOrganizationId);
 
         var response = new UserDetailResponse
         {
@@ -223,98 +224,96 @@ public class AdminUserController : BaseAdminController
     }
 
     /// <summary>
-    /// ユーザーのアクティブ状態を設定
+    /// ユーザー情報を更新（管理者用）
     /// </summary>
     /// <remarks>
-    /// 指定したユーザーのアクティブ状態を設定します。組織内のユーザーのみ操作可能です。
+    /// <para>
+    /// 管理者がユーザー情報を一括更新します。
+    /// ユーザー名、アクティブ状態、スキル、ロールを1トランザクションで更新します。
+    /// </para>
+    /// <para>
+    /// <strong>楽観的ロック</strong>：RowVersionを使用して競合を検出します。
+    /// 別のユーザーが同時に更新した場合は409エラーを返します。
+    /// </para>
     /// </remarks>
     /// <param name="id">ユーザーID</param>
-    /// <param name="request">アクティブ状態設定リクエスト</param>
-    /// <response code="200">ユーザーのアクティブ状態を設定しました</response>
+    /// <param name="request">更新リクエスト</param>
+    /// <response code="200">ユーザー情報を更新しました</response>
     /// <response code="403">他組織のユーザーは操作できません</response>
     /// <response code="404">ユーザーが見つかりません</response>
-    [HttpPut("{id}/active-status")]
-    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    /// <response code="409">競合: ユーザー情報が別のユーザーにより更新されています</response>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(UserDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserDetailResponse>), StatusCodes.Status409Conflict)]
-    public async Task<Ok<SuccessResponse>> SetUserActiveStatus(
+    public async Task<Ok<UserDetailResponse>> UpdateUser(
         int id,
-        [FromBody] SetUserActiveStatusRequest request
+        [FromBody] AdminUpdateUserRequest request
     )
     {
         // ログインユーザーと同じ組織に所属しているか確認
         await _accessHelper.CheckIncludeOrganizationAllAsync(id, CurrentOrganizationId);
 
-        var result = await _userService.SetUserActiveStatusAsync(
-            id,
-            request.IsActive,
-            CurrentUserId
-        );
-        if (!result)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
-        var message = request.IsActive
-            ? "ユーザーを有効化しました。"
-            : "ユーザーを無効化しました。";
-        return TypedResults.Ok(new SuccessResponse { Message = message });
-    }
-
-    /// <summary>
-    /// ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// 管理者が組織内のユーザーのスキルを設定します（洗い替え）。
-    /// 指定されたスキル以外は削除されます。
-    /// </para>
-    /// <para>
-    /// <strong>重要</strong>：このエンドポイントは管理者による操作であり、
-    /// ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。
-    /// </para>
-    /// </remarks>
-    /// <param name="id">対象ユーザーID</param>
-    /// <param name="request">スキルIDのリスト</param>
-    /// <response code="200">スキルを設定しました</response>
-    /// <response code="403">他組織のユーザーは操作できません</response>
-    /// <response code="404">ユーザーが見つかりません</response>
-    /// <response code="409">競合: スキル情報が別のユーザーにより更新されています</response>
-    [HttpPut("{id}/skills")]
-    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserDetailResponse>), StatusCodes.Status409Conflict)]
-    public async Task<Ok<SuccessResponse>> SetUserSkills(
-        int id,
-        [FromBody] SetUserSkillsRequest request
-    )
-    {
-        // ログインユーザーと同じ組織に所属しているか確認
-        await _accessHelper.CheckIncludeOrganizationAllAsync(id, CurrentOrganizationId);
-
-        // 管理者が別のユーザーのスキルを設定（洗い替え）
-        // 操作実行者（me = 管理者）がスキル情報を変更
-        var result = await _userService.SetUserSkillsAsync(
-            userId: id,
-            skillIds: request.SkillIds,
-            userRowVersion: request.UserRowVersion,
-            updatedByUserId: CurrentUserId
-        );
-        if (!result)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
+        var user = await _userService.AdminUpdateUserAsync(id, request, CurrentUserId);
 
         _logger.LogDebug(
-            "管理者がユーザーのスキルを更新しました。AdminId: {AdminId}, TargetUserId: {TargetUserId}, SkillCount: {SkillCount}",
+            "管理者がユーザー情報を更新しました。AdminId: {AdminId}, TargetUserId: {TargetUserId}",
             CurrentUserId,
-            id,
-            request.SkillIds?.Count ?? 0
+            id
         );
 
-        return TypedResults.Ok(new SuccessResponse { Message = "スキルを設定しました。" });
+        var response = new UserDetailResponse
+        {
+            Id = user.Id,
+            OrganizationId = user.OrganizationId,
+            LoginId = user.LoginId,
+            Username = user.Username,
+            Email = user.Email,
+            AvatarType = user.AvatarType,
+            UserAvatarPath = user.UserAvatarPath,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: user.AvatarType,
+                userId: user.Id,
+                username: user.Username,
+                email: user.Email,
+                avatarPath: user.UserAvatarPath
+            ),
+            CreatedAt = user.CreatedAt,
+            LastLoginAt = user.LastLoginAt,
+            RowVersion = user.RowVersion,
+            Roles = user.Roles?
+                .Select(r => new UserRoleResponse
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                })
+                .ToList() ?? [],
+            Skills = user.UserSkills?
+                .Select(us => new UserSkillResponse
+                {
+                    Id = us.Skill.Id,
+                    Name = us.Skill.Name,
+                })
+                .ToList() ?? [],
+            IsAdmin = user.Roles?.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice) ?? false,
+            IsActive = user.IsActive,
+            Setting = new UserSettingResponse
+            {
+                CanReceiveEmail = user.Setting?.CanReceiveEmail ?? true,
+                CanReceiveRealtimeNotification = user.Setting?.CanReceiveRealtimeNotification ?? true,
+                TimeZone = user.Setting?.TimeZone ?? "Asia/Tokyo",
+                Language = user.Setting?.Language ?? "ja-JP",
+                LandingPage = user.Setting?.LandingPage,
+                FocusScorePriority = user.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
+                FocusTasksLimit = user.Setting?.FocusTasksLimit ?? 5,
+                WaitingTasksLimit = user.Setting?.WaitingTasksLimit ?? 5,
+                BadgeVisibility = user.Setting?.BadgeVisibility,
+                RowVersion = user.Setting?.RowVersion ?? 0,
+            },
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -565,61 +564,6 @@ public class AdminUserController : BaseAdminController
         return TypedResults.Ok(
             new SuccessResponse { Message = "パスワード設定メールを再送しました。" }
         );
-    }
-
-    /// <summary>
-    /// ユーザーのロールを設定（管理者が他のユーザーのロールを管理）
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// 管理者が組織内のユーザーのロールを設定します（洗い替え）。
-    /// 指定されたロール以外は削除されます。
-    /// </para>
-    /// <para>
-    /// <strong>重要</strong>：このエンドポイントは管理者による操作です。
-    /// ユーザーのロールはシステム管理者によってのみ変更されるべきです。
-    /// </para>
-    /// </remarks>
-    /// <param name="id">対象ユーザーID</param>
-    /// <param name="request">ロールIDのリスト</param>
-    /// <response code="200">ロールを設定しました</response>
-    /// <response code="403">他組織のユーザーは操作できません</response>
-    /// <response code="404">ユーザーが見つかりません</response>
-    /// <response code="409">競合: ロール情報が別のユーザーにより更新されています</response>
-    [HttpPut("{id}/roles")]
-    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserDetailResponse>), StatusCodes.Status409Conflict)]
-    public async Task<Ok<SuccessResponse>> SetUserRoles(
-        int id,
-        [FromBody] SetUserRolesRequest request
-    )
-    {
-        // ログインユーザーと同じ組織に所属しているか確認
-        await _accessHelper.CheckIncludeOrganizationAllAsync(id, CurrentOrganizationId);
-
-        // 管理者が別のユーザーのロールを設定（洗い替え）
-        // 操作実行者（me = 管理者）がロール情報を変更
-        var result = await _userService.SetUserRolesAsync(
-            userId: id,
-            roleIds: request.Roles,
-            userRowVersion: request.UserRowVersion,
-            updatedByUserId: CurrentUserId
-        );
-        if (!result)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
-        _logger.LogDebug(
-            "管理者がユーザーのロールを更新しました。AdminId: {AdminId}, TargetUserId: {TargetUserId}, RoleCount: {RoleCount}",
-            CurrentUserId,
-            id,
-            request.Roles?.Count ?? 0
-        );
-
-        return TypedResults.Ok(new SuccessResponse { Message = "ロールを設定しました。" });
     }
 
     /// <summary>

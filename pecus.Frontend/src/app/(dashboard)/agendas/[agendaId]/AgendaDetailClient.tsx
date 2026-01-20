@@ -223,16 +223,12 @@ export default function AgendaDetailClient({
             exceptions={exceptions}
             currentStatus={
               // 特定回表示中の場合は occurrenceStatus ?? seriesStatus、それ以外は seriesStatus
-              isRecurring && occurrenceIndex !== undefined
-                ? currentOccurrenceStatus ?? currentStatus
-                : currentStatus
+              isRecurring && occurrenceIndex !== undefined ? (currentOccurrenceStatus ?? currentStatus) : currentStatus
             }
             isPending={isPending}
             onAttendanceChange={
               // 特定回表示中の場合は特定回用のハンドラーを使用
-              isRecurring && occurrenceIndex !== undefined
-                ? handleOccurrenceAttendanceChange
-                : handleAttendanceChange
+              isRecurring && occurrenceIndex !== undefined ? handleOccurrenceAttendanceChange : handleAttendanceChange
             }
             occurrenceLabel={isRecurring && occurrenceIndex !== undefined ? occurrenceDate : undefined}
           />
