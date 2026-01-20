@@ -79,18 +79,6 @@ export default function AgendaDetailClient({
   const currentOccurrenceException = initialExceptions.find((e) => e.occurrenceIndex === effectiveOccurrenceIndex);
   const isCurrentOccurrenceCancelled = currentOccurrenceException?.isCancelled ?? false;
 
-  // デバッグ: ボタン表示条件
-  // biome-ignore lint/suspicious/noConsole: デバッグ用
-  console.log('[AgendaDetailClient] Button condition:', {
-    effectiveOccurrenceIndex,
-    isRecurring,
-    currentOccurrenceException,
-    isCurrentOccurrenceCancelled,
-    agendaIsCancelled: currentAgenda.isCancelled,
-    shouldShowButtonArea: !currentAgenda.isCancelled,
-    shouldShowCancelOccurrenceBtn: isRecurring && !isCurrentOccurrenceCancelled,
-  });
-
   const handleAttendanceChange = (newStatus: AttendanceStatus) => {
     if (isPending) return;
 

@@ -125,12 +125,9 @@ export function AgendaForm({
     url: initialData?.url ?? '',
     recurrenceType: (initialData?.recurrenceType ?? 'None') as RecurrenceType,
     recurrenceInterval: initialData?.recurrenceInterval ?? 1,
-    recurrenceEndType: (initialData?.recurrenceEndDate ? 'date' : initialData?.recurrenceCount ? 'count' : 'never') as
-      | 'date'
-      | 'count'
-      | 'never',
+    recurrenceEndType: (initialData?.recurrenceEndDate ? 'date' : 'count') as 'date' | 'count',
     recurrenceEndDate: initialData?.recurrenceEndDate ? toLocalDateString(initialData.recurrenceEndDate) : '',
-    recurrenceCount: initialData?.recurrenceCount ?? 10,
+    recurrenceCount: initialData?.recurrenceCount ?? 12,
     sendNotification: true,
   });
 
@@ -492,17 +489,6 @@ export function AgendaForm({
                       <span className="label-text-alt text-error">{getFieldError('recurrenceCount')}</span>
                     </div>
                   )}
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="recurrenceEndTypeRadio"
-                      className="radio radio-primary"
-                      checked={formData.recurrenceEndType === 'never'}
-                      onChange={() => handleFieldChange('recurrenceEndType', 'never')}
-                      disabled={isFormDisabled}
-                    />
-                    <span>終了しない</span>
-                  </label>
                 </div>
               </div>
             </>
