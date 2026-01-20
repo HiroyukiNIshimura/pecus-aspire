@@ -91,12 +91,13 @@ public class AgendasController : BaseSecureController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<AgendaResponse>>> GetRecentList(
-        [FromQuery] int limit = 20
+        [FromQuery] GetRecentAgendasRequest request
     )
     {
         if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
             throw new NotFoundException("組織が見つかりません。");
 
+        var limit = request.Limit ?? _config.Pagination.DefaultPageSize;
         var result = await _agendaService.GetRecentListAsync(CurrentOrganizationId, CurrentUserId, limit);
         return TypedResults.Ok(result);
     }

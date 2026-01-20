@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Models.Config;
 using Pecus.Models.Requests.Agenda;
 using Pecus.Models.Responses.Agenda;
 using Pecus.Services;
@@ -18,39 +19,39 @@ public class AgendaNotificationsController : BaseSecureController
 {
     private readonly AgendaNotificationService _notificationService;
     private readonly OrganizationAccessHelper _accessHelper;
+    private readonly PecusConfig _config;
 
     public AgendaNotificationsController(
         AgendaNotificationService notificationService,
         OrganizationAccessHelper accessHelper,
+        PecusConfig config,
         ProfileService profileService,
         ILogger<AgendaNotificationsController> logger
     ) : base(profileService, logger)
     {
         _notificationService = notificationService;
         _accessHelper = accessHelper;
+        _config = config;
     }
 
     /// <summary>
     /// 通知一覧取得
     /// </summary>
-    /// <param name="limit">取得件数（デフォルト: 50）</param>
-    /// <param name="beforeId">このID以前の通知を取得（ページング用）</param>
-    /// <param name="unreadOnly">未読のみ取得</param>
+    /// <param name="request">通知一覧取得リクエスト</param>
     [HttpGet]
     [ProducesResponseType(typeof(List<AgendaNotificationResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<AgendaNotificationResponse>>> GetList(
-        [FromQuery] int limit = 50,
-        [FromQuery] long? beforeId = null,
-        [FromQuery] bool unreadOnly = false
+        [FromQuery] GetAgendaNotificationsRequest request
     )
     {
         if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
             throw new NotFoundException("組織が見つかりません。");
 
+        var limit = request.Limit ?? _config.Pagination.DefaultPageSize;
         var result = await _notificationService.GetListAsync(
-            CurrentOrganizationId, CurrentUserId, limit, beforeId, unreadOnly);
+            CurrentOrganizationId, CurrentUserId, limit, request.BeforeId, request.UnreadOnly);
         return TypedResults.Ok(result);
     }
 

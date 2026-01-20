@@ -9,9 +9,9 @@ public class GetWorkspaceItemsRequest
     public int Page { get; set; } = 1;
 
     /// <summary>
-    /// ページサイズ
+    /// ページサイズ（1〜100、省略時はデフォルトページサイズ）
     /// </summary>
-    [Range(1, 1000, ErrorMessage = "ページサイズは1から1000の間で指定してください。")]
+    [Range(1, 100, ErrorMessage = "ページサイズは1〜100の範囲で指定してください。")]
     public int? PageSize { get; set; }
 
     /// <summary>
