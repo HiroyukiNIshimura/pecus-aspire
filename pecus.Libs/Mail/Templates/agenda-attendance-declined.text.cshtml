@@ -1,0 +1,25 @@
+@model Pecus.Libs.Mail.Templates.Models.AgendaAttendanceDeclinedEmailModel
+
+イベント欠席の通知です
+
+@Model.UserName さん、
+
+@Model.DeclinedByName さんが以下の予定を不参加に変更しました。
+
+■ @Model.AgendaTitle
+
+日時: @if (Model.IsAllDay)
+{
+    @Model.StartAt.ToString("yyyy/MM/dd")@: (終日)
+}
+else
+{
+    @Model.StartAt.ToString("yyyy/MM/dd HH:mm")@: - @Model.EndAt.ToString("HH:mm")
+}
+@if (Model.IsOccurrenceDeclined)
+{
+@:（この回のみ）
+}
+組織: @Model.OrganizationName
+
+予定を確認: @Model.AgendaUrl

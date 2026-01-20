@@ -161,3 +161,39 @@ public class AgendaReminderEmailModel : EmailTemplateModelBase, IEmailTemplateMo
     /// <summary>アジェンダ詳細ページ URL</summary>
     public string AgendaUrl { get; set; } = string.Empty;
 }
+
+/// <summary>
+/// 参加者不参加通知メールテンプレート用モデル
+/// </summary>
+public class AgendaAttendanceDeclinedEmailModel : EmailTemplateModelBase, IEmailTemplateModel<AgendaAttendanceDeclinedEmailModel>
+{
+    /// <inheritdoc />
+    public static string TemplateName => "agenda-attendance-declined";
+
+    /// <summary>宛先ユーザー名</summary>
+    public string UserName { get; set; } = string.Empty;
+
+    /// <summary>アジェンダタイトル</summary>
+    public string AgendaTitle { get; set; } = string.Empty;
+
+    /// <summary>開始日時</summary>
+    public DateTimeOffset StartAt { get; set; }
+
+    /// <summary>終了日時</summary>
+    public DateTimeOffset EndAt { get; set; }
+
+    /// <summary>終日フラグ</summary>
+    public bool IsAllDay { get; set; }
+
+    /// <summary>不参加にした人の名前</summary>
+    public string DeclinedByName { get; set; } = string.Empty;
+
+    /// <summary>特定回の不参加か（繰り返しイベントの場合）</summary>
+    public bool IsOccurrenceDeclined { get; set; }
+
+    /// <summary>組織名</summary>
+    public string OrganizationName { get; set; } = string.Empty;
+
+    /// <summary>アジェンダ詳細ページ URL</summary>
+    public string AgendaUrl { get; set; } = string.Empty;
+}

@@ -7,6 +7,7 @@ import type { UserItem } from './UserItem';
 export type AgendaAttendeeResponse = {
     userId: number;
     status: AttendanceStatus;
+    occurrenceStatus?: AttendanceStatus;
     isOptional: boolean;
     /**
      * 個人リマインダー設定（分単位のリスト、null=デフォルト設定を使用）

@@ -151,6 +151,10 @@ public class AgendaEmailTask
                 // 削除通知はメール不要
                 break;
 
+            case AgendaNotificationType.AttendanceDeclined:
+                await SendAttendanceDeclinedEmailAsync(notification, agenda, user, organization, agendaUrl);
+                break;
+
             default:
                 _logger.LogWarning(
                     "未対応の通知タイプ: NotificationId={NotificationId}, Type={Type}",
@@ -308,6 +312,43 @@ public class AgendaEmailTask
 
         _logger.LogDebug(
             "リマインダーメール送信完了: NotificationId={NotificationId}, To={To}",
+            notification.Id, user.Email);
+    }
+
+    /// <summary>
+    /// 参加者不参加通知メール送信
+    /// </summary>
+    private async Task SendAttendanceDeclinedEmailAsync(
+        AgendaNotification notification,
+        Agenda agenda,
+        User user,
+        Organization organization,
+        string agendaUrl)
+    {
+        var declinedBy = notification.CreatedByUser;
+        var isOccurrence = notification.OccurrenceStartAt.HasValue
+            && notification.OccurrenceStartAt.Value != agenda.StartAt;
+
+        var model = new AgendaAttendanceDeclinedEmailModel
+        {
+            UserName = user.Username,
+            AgendaTitle = agenda.Title,
+            StartAt = notification.OccurrenceStartAt ?? agenda.StartAt,
+            EndAt = notification.OccurrenceStartAt.HasValue
+                ? notification.OccurrenceStartAt.Value + (agenda.EndAt - agenda.StartAt)
+                : agenda.EndAt,
+            IsAllDay = agenda.IsAllDay,
+            DeclinedByName = declinedBy?.Username ?? "不明",
+            IsOccurrenceDeclined = isOccurrence,
+            OrganizationName = organization.Name,
+            AgendaUrl = agendaUrl
+        };
+
+        var subject = $"【不参加】{declinedBy?.Username ?? "参加者"}さんが「{agenda.Title}」を不参加に変更しました";
+        await _emailService.SendTemplatedEmailAsync(user.Email, subject, model);
+
+        _logger.LogDebug(
+            "不参加通知メール送信完了: NotificationId={NotificationId}, To={To}",
             notification.Id, user.Email);
     }
 }

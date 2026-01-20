@@ -192,6 +192,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<AgendaAttendee> AgendaAttendees { get; set; }
 
     /// <summary>
+    /// アジェンダ出欠回答テーブル
+    /// </summary>
+    public DbSet<AgendaAttendanceResponse> AgendaAttendanceResponses { get; set; }
+
+    /// <summary>
     /// アジェンダ例外テーブル（特定回の中止・変更）
     /// </summary>
     public DbSet<AgendaException> AgendaExceptions { get; set; }
@@ -1299,6 +1304,33 @@ public class ApplicationDbContext : DbContext
             entity
                 .HasOne(e => e.Agenda)
                 .WithMany(a => a.Attendees)
+                .HasForeignKey(e => e.AgendaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // User とのリレーション
+            entity
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // AgendaAttendanceResponseエンティティの設定
+        modelBuilder.Entity<AgendaAttendanceResponse>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // ユニーク制約: 同じユーザーが同じアジェンダ・オカレンスに対して1つの回答のみ
+            entity.HasIndex(e => new { e.AgendaId, e.UserId, e.OccurrenceIndex })
+                .IsUnique();
+
+            // 検索用インデックス
+            entity.HasIndex(e => new { e.AgendaId, e.OccurrenceIndex });
+
+            // Agenda とのリレーション
+            entity
+                .HasOne(e => e.Agenda)
+                .WithMany(a => a.AttendanceResponses)
                 .HasForeignKey(e => e.AgendaId)
                 .OnDelete(DeleteBehavior.Cascade);
 

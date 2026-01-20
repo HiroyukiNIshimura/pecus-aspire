@@ -5,4 +5,4 @@
 /**
  * アジェンダ通知タイプ
  */
-export type AgendaNotificationType = 'Invited' | 'SeriesUpdated' | 'SeriesCancelled' | 'OccurrenceUpdated' | 'OccurrenceCancelled' | 'Reminder' | 'AddedToEvent' | 'RemovedFromEvent';
+export type AgendaNotificationType = 'Invited' | 'SeriesUpdated' | 'SeriesCancelled' | 'OccurrenceUpdated' | 'OccurrenceCancelled' | 'Reminder' | 'AddedToEvent' | 'RemovedFromEvent' | 'AttendanceDeclined';

@@ -165,6 +165,11 @@ public class Agenda
     public ICollection<AgendaAttendee> Attendees { get; set; } = new List<AgendaAttendee>();
 
     /// <summary>
+    /// 出欠回答リスト
+    /// </summary>
+    public ICollection<AgendaAttendanceResponse> AttendanceResponses { get; set; } = new List<AgendaAttendanceResponse>();
+
+    /// <summary>
     /// 例外リスト（特定回の中止・変更）
     /// </summary>
     public ICollection<AgendaException> Exceptions { get; set; } = new List<AgendaException>();

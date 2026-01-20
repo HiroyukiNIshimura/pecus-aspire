@@ -92,6 +92,46 @@ export async function updateAttendance(agendaId: number, status: AttendanceStatu
 }
 
 /**
+ * 特定回の参加状況を更新
+ */
+export async function updateOccurrenceAttendance(
+  agendaId: number,
+  occurrenceIndex: number,
+  status: AttendanceStatus,
+): Promise<ApiResponse<AgendaResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const request: UpdateAttendanceRequest = { status };
+    const result = await api.agenda.patchApiAgendasOccurrencesAttendance(agendaId, occurrenceIndex, request);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('updateOccurrenceAttendance error:', error);
+    return handleApiErrorForAction<AgendaResponse>(error, {
+      defaultMessage: '参加状況の更新に失敗しました。',
+    });
+  }
+}
+
+/**
+ * 特定回の参加状況をリセット（シリーズデフォルトに戻す）
+ */
+export async function resetOccurrenceAttendance(
+  agendaId: number,
+  occurrenceIndex: number,
+): Promise<ApiResponse<AgendaResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const result = await api.agenda.deleteApiAgendasOccurrencesAttendance(agendaId, occurrenceIndex);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('resetOccurrenceAttendance error:', error);
+    return handleApiErrorForAction<AgendaResponse>(error, {
+      defaultMessage: '参加状況のリセットに失敗しました。',
+    });
+  }
+}
+
+/**
  * アジェンダをキャンセル（シリーズ全体）
  */
 export async function cancelAgenda(agendaId: number, rowVersion: number, reason?: string): Promise<ApiResponse<void>> {

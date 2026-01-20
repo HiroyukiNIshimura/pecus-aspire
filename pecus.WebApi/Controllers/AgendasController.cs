@@ -257,6 +257,53 @@ public class AgendasController : BaseSecureController
         return TypedResults.Ok(result);
     }
 
+    /// <summary>
+    /// 特定回の参加状況更新
+    /// </summary>
+    /// <remarks>
+    /// 繰り返しアジェンダの特定回のみの参加状況を更新します。
+    /// </remarks>
+    [HttpPatch("{id}/occurrences/{occurrenceIndex}/attendance")]
+    [ProducesResponseType(typeof(AgendaResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<AgendaResponse>> UpdateOccurrenceAttendance(
+        long id,
+        int occurrenceIndex,
+        [FromBody] UpdateAttendanceRequest request
+    )
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        var result = await _agendaService.UpdateOccurrenceAttendanceAsync(id, CurrentOrganizationId, CurrentUserId, occurrenceIndex, request);
+        return TypedResults.Ok(result);
+    }
+
+    /// <summary>
+    /// 特定回の参加状況をリセット
+    /// </summary>
+    /// <remarks>
+    /// 特定回の参加状況をシリーズデフォルトにリセットします（特定回の回答を削除）。
+    /// </remarks>
+    [HttpDelete("{id}/occurrences/{occurrenceIndex}/attendance")]
+    [ProducesResponseType(typeof(AgendaResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<AgendaResponse>> ResetOccurrenceAttendance(
+        long id,
+        int occurrenceIndex
+    )
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        var result = await _agendaService.ResetOccurrenceAttendanceAsync(id, CurrentOrganizationId, CurrentUserId, occurrenceIndex);
+        return TypedResults.Ok(result);
+    }
+
     // ===== 例外（特定回の中止・変更）エンドポイント =====
 
     /// <summary>

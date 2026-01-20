@@ -279,6 +279,62 @@ export class AgendaService {
         });
     }
     /**
+     * 特定回の参加状況更新
+     * 繰り返しアジェンダの特定回のみの参加状況を更新します。
+     * @param id
+     * @param occurrenceIndex
+     * @param requestBody
+     * @returns AgendaResponse OK
+     * @throws ApiError
+     */
+    public static patchApiAgendasOccurrencesAttendance(
+        id: number,
+        occurrenceIndex: number,
+        requestBody: UpdateAttendanceRequest,
+    ): CancelablePromise<AgendaResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/agendas/{id}/occurrences/{occurrenceIndex}/attendance',
+            path: {
+                'id': id,
+                'occurrenceIndex': occurrenceIndex,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 特定回の参加状況をリセット
+     * 特定回の参加状況をシリーズデフォルトにリセットします（特定回の回答を削除）。
+     * @param id
+     * @param occurrenceIndex
+     * @returns AgendaResponse OK
+     * @throws ApiError
+     */
+    public static deleteApiAgendasOccurrencesAttendance(
+        id: number,
+        occurrenceIndex: number,
+    ): CancelablePromise<AgendaResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/agendas/{id}/occurrences/{occurrenceIndex}/attendance',
+            path: {
+                'id': id,
+                'occurrenceIndex': occurrenceIndex,
+            },
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
      * アジェンダ例外一覧取得
      * 指定されたアジェンダの全例外（特定回の中止・変更）を取得します。
      * @param id

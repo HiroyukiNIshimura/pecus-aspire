@@ -182,6 +182,7 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
               agendaId={agendaId}
               occurrenceIndex={occurrenceIndex}
               currentStatus={occurrence.myAttendanceStatus}
+              isRecurring={!!recurrenceType && recurrenceType !== 'None'}
               onUpdate={onAttendanceUpdate}
             />
           </div>

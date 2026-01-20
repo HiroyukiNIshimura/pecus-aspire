@@ -218,6 +218,7 @@ export default function AgendaFormClient({
             submitLabel={mode === 'create' ? '作成' : '更新'}
             currentUserId={currentUserId}
             hideRecurrence={editScope === 'single'}
+            hideAttendees={editScope === 'single'}
           />
         </div>
       </div>

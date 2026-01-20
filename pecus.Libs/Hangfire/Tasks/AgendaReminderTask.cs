@@ -84,6 +84,7 @@ public class AgendaReminderTask
         return await _context.Agendas
             .AsNoTracking()
             .Include(a => a.Attendees)
+            .Include(a => a.AttendanceResponses)
             .Include(a => a.Exceptions)
             .Where(a =>
                 !a.IsCancelled &&
@@ -125,8 +126,16 @@ public class AgendaReminderTask
             // 各参加者に対してリマインダーを送信
             foreach (var attendee in agenda.Attendees)
             {
-                // 不参加の人にはリマインダーを送らない
-                if (attendee.Status == AttendanceStatus.Declined)
+                // シリーズ全体で不参加の人にはリマインダーを送らない
+                var seriesResponse = agenda.AttendanceResponses?
+                    .FirstOrDefault(r => r.UserId == attendee.UserId && r.OccurrenceIndex == null);
+                if (seriesResponse?.Status == AttendanceStatus.Declined)
+                    continue;
+
+                // この回のみ不参加の場合もスキップ
+                var occurrenceResponse = agenda.AttendanceResponses?
+                    .FirstOrDefault(r => r.UserId == attendee.UserId && r.OccurrenceIndex == occurrence.Index);
+                if (occurrenceResponse?.Status == AttendanceStatus.Declined)
                     continue;
 
                 var count = await ProcessAttendeeRemindersAsync(

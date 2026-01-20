@@ -43,5 +43,10 @@ public enum AgendaNotificationType
     /// <summary>
     /// 参加者削除
     /// </summary>
-    RemovedFromEvent = 7
+    RemovedFromEvent = 7,
+
+    /// <summary>
+    /// 参加者が不参加に変更
+    /// </summary>
+    AttendanceDeclined = 8
 }

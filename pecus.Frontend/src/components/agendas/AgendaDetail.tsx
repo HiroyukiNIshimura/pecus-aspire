@@ -9,6 +9,8 @@ interface AgendaDetailProps {
   currentStatus?: AttendanceStatus;
   isPending: boolean;
   onAttendanceChange: (status: AttendanceStatus) => void;
+  /** 特定回表示中の場合のラベル（例: "1/21"） */
+  occurrenceLabel?: string;
 }
 
 const recurrenceLabels: Record<string, string> = {
@@ -26,7 +28,14 @@ const attendanceOptions: { status: AttendanceStatus; label: string; icon: string
   { status: 'Declined', label: '不参加', icon: 'icon-[tabler--x]', activeClass: 'btn-error' },
 ];
 
-export function AgendaDetail({ agenda, exceptions, currentStatus, isPending, onAttendanceChange }: AgendaDetailProps) {
+export function AgendaDetail({
+  agenda,
+  exceptions,
+  currentStatus,
+  isPending,
+  onAttendanceChange,
+  occurrenceLabel,
+}: AgendaDetailProps) {
   const isCancelled = agenda.isCancelled;
   const recurrenceType = agenda.recurrenceType as RecurrenceType | undefined;
   const isRecurring = recurrenceType && recurrenceType !== 'None';
@@ -164,7 +173,7 @@ export function AgendaDetail({ agenda, exceptions, currentStatus, isPending, onA
         {/* 参加状況変更（参加者のみ表示） */}
         {!isCancelled && currentStatus !== undefined && (
           <div>
-            <h3 className="mb-3 font-medium">参加状況を変更</h3>
+            <h3 className="mb-3 font-medium">{occurrenceLabel ? `${occurrenceLabel} の参加状況` : '参加状況を変更'}</h3>
             <div className="flex flex-wrap gap-2">
               {attendanceOptions.map(({ status, label, icon, activeClass }) => (
                 <button

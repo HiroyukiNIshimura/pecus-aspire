@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { updateAttendance } from '@/actions/agenda';
+import { updateAttendance, updateOccurrenceAttendance } from '@/actions/agenda';
 import type { AttendanceStatus } from '@/connectors/api/pecus';
 
 interface QuickAttendanceButtonsProps {
   agendaId: number;
   occurrenceIndex: number;
   currentStatus: AttendanceStatus | null | undefined;
+  /** 繰り返しアジェンダかどうか */
+  isRecurring?: boolean;
   onUpdate: (agendaId: number, occurrenceIndex: number, newStatus: string) => void;
 }
 
@@ -39,6 +41,7 @@ export default function QuickAttendanceButtons({
   agendaId,
   occurrenceIndex,
   currentStatus,
+  isRecurring = false,
   onUpdate,
 }: QuickAttendanceButtonsProps) {
   const [isPending, startTransition] = useTransition();
@@ -49,7 +52,12 @@ export default function QuickAttendanceButtons({
 
     setError(null);
     startTransition(async () => {
-      const result = await updateAttendance(agendaId, newStatus);
+      // 繰り返しアジェンダの場合は特定回の参加状況を更新
+      // 単発アジェンダの場合はシリーズ全体（＝そのアジェンダ自体）を更新
+      const result = isRecurring
+        ? await updateOccurrenceAttendance(agendaId, occurrenceIndex, newStatus)
+        : await updateAttendance(agendaId, newStatus);
+
       if (result.success) {
         onUpdate(agendaId, occurrenceIndex, newStatus);
       } else {

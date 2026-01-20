@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import { updateAttendance } from '@/actions/agenda';
+import { updateAttendance, updateOccurrenceAttendance } from '@/actions/agenda';
 import { AgendaDetail } from '@/components/agendas/AgendaDetail';
 import { AttendeeList } from '@/components/agendas/AttendeeList';
 import { CancelConfirmModal } from '@/components/agendas/CancelConfirmModal';
@@ -52,6 +52,8 @@ export default function AgendaDetailClient({
   // 現在のユーザーの参加状況を取得
   const currentUserAttendee = currentAgenda.attendees?.find((a) => a.userId === currentUser?.id);
   const currentStatus = currentUserAttendee?.status;
+  // 特定回の参加状況（APIから返される、null = シリーズと同じ）
+  const currentOccurrenceStatus = currentUserAttendee?.occurrenceStatus as AttendanceStatus | null | undefined;
 
   // 繰り返しアジェンダかどうか
   const recurrenceType = currentAgenda.recurrenceType as RecurrenceType | undefined;
@@ -79,6 +81,7 @@ export default function AgendaDetailClient({
   const currentOccurrenceException = initialExceptions.find((e) => e.occurrenceIndex === effectiveOccurrenceIndex);
   const isCurrentOccurrenceCancelled = currentOccurrenceException?.isCancelled ?? false;
 
+  // シリーズ全体の参加状況を更新
   const handleAttendanceChange = (newStatus: AttendanceStatus) => {
     if (isPending) return;
 
@@ -91,6 +94,21 @@ export default function AgendaDetailClient({
           ...prev,
           attendees: prev.attendees?.map((a) => (a.userId === currentUser?.id ? { ...a, status: newStatus } : a)),
         }));
+      } else {
+        setError(result.message ?? '参加状況の更新に失敗しました。');
+      }
+    });
+  };
+
+  // 特定回の参加状況を更新
+  const handleOccurrenceAttendanceChange = (newStatus: AttendanceStatus) => {
+    if (isPending || occurrenceIndex === undefined) return;
+
+    setError(null);
+    startTransition(async () => {
+      const result = await updateOccurrenceAttendance(currentAgenda.id, occurrenceIndex, newStatus);
+      if (result.success) {
+        setCurrentAgenda(result.data);
       } else {
         setError(result.message ?? '参加状況の更新に失敗しました。');
       }
@@ -203,9 +221,20 @@ export default function AgendaDetailClient({
           <AgendaDetail
             agenda={currentAgenda}
             exceptions={exceptions}
-            currentStatus={currentStatus}
+            currentStatus={
+              // 特定回表示中の場合は occurrenceStatus ?? seriesStatus、それ以外は seriesStatus
+              isRecurring && occurrenceIndex !== undefined
+                ? currentOccurrenceStatus ?? currentStatus
+                : currentStatus
+            }
             isPending={isPending}
-            onAttendanceChange={handleAttendanceChange}
+            onAttendanceChange={
+              // 特定回表示中の場合は特定回用のハンドラーを使用
+              isRecurring && occurrenceIndex !== undefined
+                ? handleOccurrenceAttendanceChange
+                : handleAttendanceChange
+            }
+            occurrenceLabel={isRecurring && occurrenceIndex !== undefined ? occurrenceDate : undefined}
           />
         </div>
 

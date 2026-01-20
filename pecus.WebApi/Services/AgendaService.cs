@@ -97,6 +97,7 @@ public class AgendaService
             .Include(a => a.CancelledByUser)
             .Include(a => a.Attendees)
                 .ThenInclude(at => at.User)
+            .Include(a => a.AttendanceResponses)
             .Include(a => a.Exceptions)
             .Where(a => a.Id == id && a.OrganizationId == organizationId);
 
@@ -201,18 +202,16 @@ public class AgendaService
                     agenda.Attendees.Add(new AgendaAttendee
                     {
                         UserId = reqAttendee.UserId,
-                        IsOptional = reqAttendee.IsOptional,
-                        Status = AttendanceStatus.Pending
+                        IsOptional = reqAttendee.IsOptional
                     });
                 }
             }
 
-            // 作成者を参加者として追加（自動的にAccepted）
+            // 作成者を参加者として追加
             agenda.Attendees.Add(new AgendaAttendee
             {
                 UserId = userId,
-                IsOptional = false,
-                Status = AttendanceStatus.Accepted
+                IsOptional = false
             });
 
             _context.Agendas.Add(agenda);
@@ -351,8 +350,7 @@ public class AgendaService
                     agenda.Attendees.Add(new AgendaAttendee
                     {
                         UserId = reqAttendee.UserId,
-                        IsOptional = reqAttendee.IsOptional,
-                        Status = AttendanceStatus.Pending
+                        IsOptional = reqAttendee.IsOptional
                     });
                     addedUserIds.Add(reqAttendee.UserId);
                 }
@@ -479,6 +477,7 @@ public class AgendaService
     {
         var agenda = await _context.Agendas
             .AsNoTracking()
+            .Include(a => a.Attendees)
             .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
 
         if (agenda == null)
@@ -487,16 +486,186 @@ public class AgendaService
         if (agenda.IsCancelled)
             throw new BadRequestException("中止されたアジェンダの参加状況は変更できません。");
 
+        var attendee = agenda.Attendees?.FirstOrDefault(a => a.UserId == userId);
+
+        if (attendee == null)
+            throw new BadRequestException("このアジェンダの参加者ではありません。");
+
+        // 出欠回答を Upsert（OccurrenceIndex = null はシリーズ全体への回答）
+        var existingResponse = await _context.AgendaAttendanceResponses
+            .FirstOrDefaultAsync(r => r.AgendaId == agendaId && r.UserId == userId && r.OccurrenceIndex == null);
+
+        if (existingResponse != null)
+        {
+            existingResponse.Status = request.Status;
+            existingResponse.RespondedAt = DateTimeOffset.UtcNow;
+        }
+        else
+        {
+            _context.AgendaAttendanceResponses.Add(new AgendaAttendanceResponse
+            {
+                AgendaId = agendaId,
+                UserId = userId,
+                OccurrenceIndex = null,
+                Status = request.Status,
+                RespondedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
+        // 不参加に変更した場合、他の参加者に通知
+        if (request.Status == AttendanceStatus.Declined)
+        {
+            var attendeesToNotify = agenda.Attendees?
+                .Where(a => a.UserId != userId) // 変更した本人は除外
+                .Select(a => a.UserId)
+                .ToList() ?? [];
+
+            if (attendeesToNotify.Count > 0)
+            {
+                await _notificationService.CreateBulkNotificationsAsync(
+                    agendaId,
+                    attendeesToNotify,
+                    AgendaNotificationType.AttendanceDeclined,
+                    agenda.StartAt,
+                    null,
+                    userId);
+            }
+        }
+
+        return await GetByIdAsync(agendaId, organizationId);
+    }
+
+    /// <summary>
+    /// 特定回の参加状況更新
+    /// </summary>
+    public async Task<AgendaResponse> UpdateOccurrenceAttendanceAsync(
+        long agendaId,
+        int organizationId,
+        int userId,
+        int occurrenceIndex,
+        UpdateAttendanceRequest request)
+    {
+        var agenda = await _context.Agendas
+            .AsNoTracking()
+            .Include(a => a.Exceptions)
+            .Include(a => a.Attendees)
+            .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
+
+        if (agenda == null)
+            throw new NotFoundException("アジェンダが見つかりません。");
+
+        if (agenda.IsCancelled)
+            throw new BadRequestException("中止されたアジェンダの参加状況は変更できません。");
+
+        // 繰り返しイベントでない場合はシリーズ全体の更新を使用
+        if (agenda.RecurrenceType == null || agenda.RecurrenceType == RecurrenceType.None)
+            throw new BadRequestException("単発イベントには特定回の参加状況を設定できません。");
+
+        // 参加者かどうかを確認
+        var attendee = agenda.Attendees?.FirstOrDefault(a => a.UserId == userId);
+
+        if (attendee == null)
+            throw new BadRequestException("このアジェンダの参加者ではありません。");
+
+        // 対象のオカレンスが存在するか確認
+        var farFuture = agenda.StartAt.AddYears(5);
+        var allOccurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(agenda, agenda.StartAt, farFuture);
+        var targetOccurrence = allOccurrences.FirstOrDefault(o => o.Index == occurrenceIndex);
+        if (targetOccurrence == null)
+            throw new BadRequestException("指定されたインデックスはこのアジェンダの繰り返し回ではありません。");
+
+        // この回が中止されていないか確認
+        var exception = agenda.Exceptions?.FirstOrDefault(e => e.OccurrenceIndex == occurrenceIndex);
+        if (exception?.IsCancelled == true)
+            throw new BadRequestException("中止された回の参加状況は変更できません。");
+
+        // 出欠回答を Upsert
+        var existingResponse = await _context.AgendaAttendanceResponses
+            .FirstOrDefaultAsync(r => r.AgendaId == agendaId && r.UserId == userId && r.OccurrenceIndex == occurrenceIndex);
+
+        if (existingResponse != null)
+        {
+            existingResponse.Status = request.Status;
+            existingResponse.RespondedAt = DateTimeOffset.UtcNow;
+        }
+        else
+        {
+            _context.AgendaAttendanceResponses.Add(new AgendaAttendanceResponse
+            {
+                AgendaId = agendaId,
+                UserId = userId,
+                OccurrenceIndex = occurrenceIndex,
+                Status = request.Status,
+                RespondedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
+        // 不参加に変更した場合、他の参加者に通知（特定回の開始日時を含める）
+        if (request.Status == AttendanceStatus.Declined)
+        {
+            var attendeesToNotify = agenda.Attendees?
+                .Where(a => a.UserId != userId) // 変更した本人は除外
+                .Select(a => a.UserId)
+                .ToList() ?? [];
+
+            if (attendeesToNotify.Count > 0)
+            {
+                await _notificationService.CreateBulkNotificationsAsync(
+                    agendaId,
+                    attendeesToNotify,
+                    AgendaNotificationType.AttendanceDeclined,
+                    targetOccurrence.StartAt,
+                    null,
+                    userId);
+            }
+        }
+
+        return await GetByIdAsync(agendaId, organizationId, occurrenceIndex);
+    }
+
+    /// <summary>
+    /// 特定回の参加状況をシリーズデフォルトにリセット
+    /// </summary>
+    public async Task<AgendaResponse> ResetOccurrenceAttendanceAsync(
+        long agendaId,
+        int organizationId,
+        int userId,
+        int occurrenceIndex)
+    {
+        var agenda = await _context.Agendas
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
+
+        if (agenda == null)
+            throw new NotFoundException("アジェンダが見つかりません。");
+
+        // 繰り返しイベントでない場合はエラー
+        if (agenda.RecurrenceType == null || agenda.RecurrenceType == RecurrenceType.None)
+            throw new BadRequestException("単発イベントには特定回の参加状況はありません。");
+
+        // 参加者かどうかを確認
         var attendee = await _context.AgendaAttendees
+            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.AgendaId == agendaId && a.UserId == userId);
 
         if (attendee == null)
             throw new BadRequestException("このアジェンダの参加者ではありません。");
 
-        attendee.Status = request.Status;
-        await _context.SaveChangesAsync();
+        // 特定回の回答を削除
+        var existingResponse = await _context.AgendaAttendanceResponses
+            .FirstOrDefaultAsync(r => r.AgendaId == agendaId && r.UserId == userId && r.OccurrenceIndex == occurrenceIndex);
 
-        return await GetByIdAsync(agendaId, organizationId);
+        if (existingResponse != null)
+        {
+            _context.AgendaAttendanceResponses.Remove(existingResponse);
+            await _context.SaveChangesAsync();
+        }
+
+        return await GetByIdAsync(agendaId, organizationId, occurrenceIndex);
     }
 
     /// <summary>
@@ -538,6 +707,7 @@ public class AgendaService
             .AsNoTracking()
             .Include(a => a.CreatedByUser)
             .Include(a => a.Attendees)
+            .Include(a => a.AttendanceResponses)
             .Include(a => a.Exceptions)
             .Where(a => a.OrganizationId == organizationId)
             .Where(a => a.Attendees.Any(at => at.UserId == currentUserId)) // 自分が参加者のみ
@@ -580,8 +750,9 @@ public class AgendaService
                 var actualStart = exception?.ModifiedStartAt ?? occurrence.StartAt;
                 var actualEnd = exception?.ModifiedEndAt ?? occurrenceEnd;
 
-                // 現在ユーザーの参加状況
-                var myAttendance = agenda.Attendees?.FirstOrDefault(a => a.UserId == currentUserId);
+                // 現在ユーザーの参加状況を取得（特定回 > シリーズ全体 の優先順位）
+                var myAttendanceStatus = GetEffectiveAttendanceStatus(
+                    agenda.AttendanceResponses, currentUserId, occurrence.Index);
 
                 occurrences.Add(new AgendaOccurrenceResponse
                 {
@@ -599,7 +770,7 @@ public class AgendaService
                     CancellationReason = cancellationReason,
                     IsModified = exception != null && !exception.IsCancelled,
                     AttendeeCount = agenda.Attendees?.Count ?? 0,
-                    MyAttendanceStatus = myAttendance?.Status,
+                    MyAttendanceStatus = myAttendanceStatus,
                     CreatedByUser = agenda.CreatedByUser == null ? null : ToUserItem(agenda.CreatedByUser)
                 });
             }
@@ -607,6 +778,29 @@ public class AgendaService
 
         // 開始日時でソート
         return occurrences.OrderBy(o => o.StartAt).ToList();
+    }
+
+    /// <summary>
+    /// 有効な出欠ステータスを取得（特定回 > シリーズ全体 の優先順位）
+    /// </summary>
+    private static AttendanceStatus? GetEffectiveAttendanceStatus(
+        ICollection<AgendaAttendanceResponse>? responses,
+        int userId,
+        int occurrenceIndex)
+    {
+        if (responses == null || responses.Count == 0)
+            return null;
+
+        // 特定回の回答があればそれを優先
+        var occurrenceResponse = responses
+            .FirstOrDefault(r => r.UserId == userId && r.OccurrenceIndex == occurrenceIndex);
+        if (occurrenceResponse != null)
+            return occurrenceResponse.Status;
+
+        // シリーズ全体の回答
+        var seriesResponse = responses
+            .FirstOrDefault(r => r.UserId == userId && r.OccurrenceIndex == null);
+        return seriesResponse?.Status;
     }
 
     /// <summary>
@@ -1086,7 +1280,7 @@ public class AgendaService
 
             foreach (var reqAttendee in attendeesToAdd.DistinctBy(a => a.UserId))
             {
-                // 元のシリーズでの参加状況を引き継ぎ
+                // 元のシリーズでのリマインダー設定を引き継ぎ
                 var originalAttendee = originalAgenda.Attendees
                     .FirstOrDefault(a => a.UserId == reqAttendee.UserId);
 
@@ -1094,7 +1288,6 @@ public class AgendaService
                 {
                     UserId = reqAttendee.UserId,
                     IsOptional = reqAttendee.IsOptional,
-                    Status = originalAttendee?.Status ?? AttendanceStatus.Pending,
                     CustomReminders = originalAttendee?.CustomReminders
                 });
             }
@@ -1236,13 +1429,30 @@ public class AgendaService
             UpdatedAt = agenda.UpdatedAt,
             RowVersion = agenda.RowVersion,
             CreatedByUser = agenda.CreatedByUser == null ? null : ToUserItem(agenda.CreatedByUser),
-            Attendees = agenda.Attendees.Select(a => new AgendaAttendeeResponse
+            Attendees = agenda.Attendees.Select(a =>
             {
-                UserId = a.UserId,
-                Status = a.Status,
-                IsOptional = a.IsOptional,
-                CustomReminders = ParseRemindersFromString(a.CustomReminders),
-                User = a.User == null ? null : ToUserItem(a.User)
+                // シリーズ全体の出欠回答を取得
+                var seriesResponse = agenda.AttendanceResponses?
+                    .FirstOrDefault(r => r.UserId == a.UserId && r.OccurrenceIndex == null);
+
+                // 特定回の出欠回答を取得（occurrenceIndexが指定された場合のみ）
+                AttendanceStatus? occurrenceStatus = null;
+                if (occurrenceIndex.HasValue)
+                {
+                    var occurrenceResponse = agenda.AttendanceResponses?
+                        .FirstOrDefault(r => r.UserId == a.UserId && r.OccurrenceIndex == occurrenceIndex.Value);
+                    occurrenceStatus = occurrenceResponse?.Status;
+                }
+
+                return new AgendaAttendeeResponse
+                {
+                    UserId = a.UserId,
+                    Status = seriesResponse?.Status ?? AttendanceStatus.Pending,
+                    OccurrenceStatus = occurrenceStatus,
+                    IsOptional = a.IsOptional,
+                    CustomReminders = ParseRemindersFromString(a.CustomReminders),
+                    User = a.User == null ? null : ToUserItem(a.User)
+                };
             }).OrderBy(a => a.User?.Username).ToList()
         };
     }

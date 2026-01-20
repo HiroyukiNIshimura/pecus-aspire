@@ -34,6 +34,8 @@ interface AgendaFormProps {
   currentUserId: number;
   /** 繰り返し設定を非表示にする（「この回のみ」編集時） */
   hideRecurrence?: boolean;
+  /** 参加者設定を非表示にする（「この回のみ」編集時） */
+  hideAttendees?: boolean;
 }
 
 const recurrenceOptions: { value: RecurrenceType; label: string }[] = [
@@ -87,6 +89,7 @@ export function AgendaForm({
   submitLabel,
   currentUserId,
   hideRecurrence = false,
+  hideAttendees = false,
 }: AgendaFormProps) {
   // 制限設定から最大参加者数を取得
   const { maxAttendeesPerAgenda } = useLimitsSettings();
@@ -517,38 +520,42 @@ export function AgendaForm({
         </div>
       </div>
 
-      {/* 通知設定 */}
-      <div className="space-y-2">
-        <label className="flex items-center gap-3 cursor-pointer" htmlFor="toggle-send-notification">
-          <input
-            id="toggle-send-notification"
-            type="checkbox"
-            data-field="sendNotification"
-            className="switch switch-primary"
-            checked={formData.sendNotification}
-            onChange={(e) => handleFieldChange('sendNotification', e.target.checked)}
-            disabled={isFormDisabled}
-          />
-          <span className="font-semibold">参加者にメール通知を送信する（推奨）</span>
-        </label>
-        <p className="text-sm text-base-content/60 pl-12">
-          有効にすると、アジェンダの作成・更新時に参加者へメールで通知されます。
-        </p>
-      </div>
-
-      {/* 参加者選択 */}
-      <div className="form-control">
-        <div className="label">
-          <span className="label-text font-medium">参加者</span>
+      {/* 通知設定（参加者設定が表示される場合のみ） */}
+      {!hideAttendees && (
+        <div className="space-y-2">
+          <label className="flex items-center gap-3 cursor-pointer" htmlFor="toggle-send-notification">
+            <input
+              id="toggle-send-notification"
+              type="checkbox"
+              data-field="sendNotification"
+              className="switch switch-primary"
+              checked={formData.sendNotification}
+              onChange={(e) => handleFieldChange('sendNotification', e.target.checked)}
+              disabled={isFormDisabled}
+            />
+            <span className="font-semibold">参加者にメール通知を送信する（推奨）</span>
+          </label>
+          <p className="text-sm text-base-content/60 pl-12">
+            有効にすると、アジェンダの作成・更新時に参加者へメールで通知されます。
+          </p>
         </div>
-        <AttendeeSelector
-          selectedAttendees={selectedAttendees}
-          onChange={setSelectedAttendees}
-          disabled={isFormDisabled}
-          currentUserId={currentUserId}
-          maxAttendees={maxAttendeesPerAgenda}
-        />
-      </div>
+      )}
+
+      {/* 参加者選択（「この回のみ」編集時は非表示） */}
+      {!hideAttendees && (
+        <div className="form-control">
+          <div className="label">
+            <span className="label-text font-medium">参加者</span>
+          </div>
+          <AttendeeSelector
+            selectedAttendees={selectedAttendees}
+            onChange={setSelectedAttendees}
+            disabled={isFormDisabled}
+            currentUserId={currentUserId}
+            maxAttendees={maxAttendeesPerAgenda}
+          />
+        </div>
+      )}
 
       {/* 送信ボタン */}
       <div className="flex justify-end gap-2 pt-4">

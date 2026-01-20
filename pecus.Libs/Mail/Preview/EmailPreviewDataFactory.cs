@@ -37,6 +37,7 @@ public static class EmailPreviewDataFactory
             new(AgendaUpdatedEmailModel.TemplateName, "アジェンダ変更", "アジェンダ変更通知"),
             new(AgendaCancelledEmailModel.TemplateName, "アジェンダ中止", "アジェンダ中止通知"),
             new(AgendaReminderEmailModel.TemplateName, "アジェンダリマインダー", "アジェンダ開始前のリマインダー"),
+            new(AgendaAttendanceDeclinedEmailModel.TemplateName, "参加者不参加", "参加者が不参加に変更した通知"),
         ];
     }
 
@@ -72,6 +73,7 @@ public static class EmailPreviewDataFactory
             "agenda-updated" => CreateAgendaUpdatedData(now),
             "agenda-cancelled" => CreateAgendaCancelledData(now),
             "agenda-reminder" => CreateAgendaReminderData(now),
+            "agenda-attendance-declined" => CreateAgendaAttendanceDeclinedData(now),
             _ => throw new NotImplementedException(),
         };
     }
@@ -357,6 +359,19 @@ public static class EmailPreviewDataFactory
         Location = "会議室A（3階）",
         Url = "https://meet.example.com/project-weekly",
         ReminderMessage = "1時間後に開始します",
+        OrganizationName = "サンプル株式会社",
+        AgendaUrl = "https://app.example.com/agenda/12345",
+    };
+
+    private static AgendaAttendanceDeclinedEmailModel CreateAgendaAttendanceDeclinedData(DateTimeOffset now) => new()
+    {
+        UserName = "田中 太郎",
+        AgendaTitle = "週次プロジェクト定例会議",
+        StartAt = now.AddDays(3).Date.AddHours(10),
+        EndAt = now.AddDays(3).Date.AddHours(11),
+        IsAllDay = false,
+        DeclinedByName = "鈴木 一郎",
+        IsOccurrenceDeclined = false,
         OrganizationName = "サンプル株式会社",
         AgendaUrl = "https://app.example.com/agenda/12345",
     };

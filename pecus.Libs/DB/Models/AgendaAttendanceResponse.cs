@@ -1,13 +1,19 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
-/// アジェンダ参加者エンティティ
-/// 中間テーブルとして機能する
+/// アジェンダ出欠回答エンティティ
+/// 招待(AgendaAttendee)への出欠回答を管理する
 /// </summary>
-public class AgendaAttendee
+public class AgendaAttendanceResponse
 {
+    /// <summary>
+    /// 出欠回答ID
+    /// </summary>
+    public long Id { get; set; }
+
     /// <summary>
     /// アジェンダID
     /// </summary>
@@ -21,15 +27,19 @@ public class AgendaAttendee
     public int UserId { get; set; }
 
     /// <summary>
-    /// 任意参加フラグ（false=必須参加）
+    /// オカレンスインデックス（null=シリーズ全体への回答）
     /// </summary>
-    public bool IsOptional { get; set; } = false;
+    public int? OccurrenceIndex { get; set; }
 
     /// <summary>
-    /// 個人のリマインダー設定（null=デフォルト使用、カンマ区切り分）
+    /// 参加ステータス
     /// </summary>
-    [MaxLength(50)]
-    public string? CustomReminders { get; set; }
+    public AttendanceStatus Status { get; set; }
+
+    /// <summary>
+    /// 回答日時
+    /// </summary>
+    public DateTimeOffset RespondedAt { get; set; }
 
     // Navigation Properties
 

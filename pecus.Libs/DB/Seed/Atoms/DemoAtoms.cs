@@ -1416,16 +1416,26 @@ public class DemoAtoms
 
         // 参加者を追加
         var attendees = new List<AgendaAttendee>();
+        var attendanceResponses = new List<AgendaAttendanceResponse>();
 
         foreach (var agenda in agendas)
         {
-            // 作成者を参加者として追加（承諾済み）
+            // 作成者を参加者として追加
             attendees.Add(new AgendaAttendee
             {
                 AgendaId = agenda.Id,
                 UserId = adminUser.Id,
-                Status = AttendanceStatus.Accepted,
                 IsOptional = false
+            });
+
+            // 作成者の出欠回答（承諾済み）
+            attendanceResponses.Add(new AgendaAttendanceResponse
+            {
+                AgendaId = agenda.Id,
+                UserId = adminUser.Id,
+                OccurrenceIndex = null, // シリーズ全体への回答
+                Status = AttendanceStatus.Accepted,
+                RespondedAt = now.AddDays(-7)
             });
 
             // メンバーを参加者として追加（様々なステータス）
@@ -1443,17 +1453,30 @@ public class DemoAtoms
                 {
                     AgendaId = agenda.Id,
                     UserId = member.Id,
-                    Status = status,
                     IsOptional = i > 0 // 最初のメンバー以外は任意参加
                 });
+
+                // Pending以外は出欠回答を追加
+                if (status != AttendanceStatus.Pending)
+                {
+                    attendanceResponses.Add(new AgendaAttendanceResponse
+                    {
+                        AgendaId = agenda.Id,
+                        UserId = member.Id,
+                        OccurrenceIndex = null, // シリーズ全体への回答
+                        Status = status,
+                        RespondedAt = now.AddDays(-6 + i)
+                    });
+                }
             }
         }
 
         await _context.AgendaAttendees.AddRangeAsync(attendees);
+        await _context.AgendaAttendanceResponses.AddRangeAsync(attendanceResponses);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Created {AgendaCount} demo agendas with {AttendeeCount} attendees",
-            agendas.Count, attendees.Count);
+        _logger.LogInformation("Created {AgendaCount} demo agendas with {AttendeeCount} attendees and {ResponseCount} responses",
+            agendas.Count, attendees.Count, attendanceResponses.Count);
     }
 
 }

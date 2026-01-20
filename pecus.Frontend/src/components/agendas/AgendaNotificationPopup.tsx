@@ -30,6 +30,7 @@ const notificationTypeConfig: Record<AgendaNotificationType, { icon: string; lab
   Reminder: { icon: 'icon-[mdi--alarm]', label: 'リマインダー', color: 'text-accent' },
   AddedToEvent: { icon: 'icon-[mdi--account-plus]', label: '参加者追加', color: 'text-success' },
   RemovedFromEvent: { icon: 'icon-[mdi--account-minus]', label: '参加者削除', color: 'text-error' },
+  AttendanceDeclined: { icon: 'icon-[mdi--account-cancel]', label: '不参加', color: 'text-warning' },
 };
 
 /** デフォルトの通知タイプ設定（フォールバック用） */
@@ -63,6 +64,8 @@ function getNotificationDescription(
       return `${username}さんがあなたを追加しました`;
     case 'RemovedFromEvent':
       return `${username}さんがあなたを削除しました`;
+    case 'AttendanceDeclined':
+      return `${username}さんが不参加に変更しました`;
     default:
       return null;
   }
