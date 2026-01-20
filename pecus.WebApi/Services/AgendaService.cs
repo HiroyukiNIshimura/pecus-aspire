@@ -32,7 +32,11 @@ public class AgendaService
     /// <summary>
     /// アジェンダ一覧取得（期間指定）
     /// </summary>
-    public async Task<List<AgendaResponse>> GetListAsync(int organizationId, DateTimeOffset start, DateTimeOffset end)
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="userId">ユーザーID（このユーザーが参加者のアジェンダのみ返す）</param>
+    /// <param name="start">開始日時</param>
+    /// <param name="end">終了日時</param>
+    public async Task<List<AgendaResponse>> GetListAsync(int organizationId, int userId, DateTimeOffset start, DateTimeOffset end)
     {
         var query = _context.Agendas
             .AsNoTracking()
@@ -40,7 +44,10 @@ public class AgendaService
             .Include(a => a.CancelledByUser)
             .Include(a => a.Attendees)
                 .ThenInclude(at => at.User)
-            .Where(a => a.OrganizationId == organizationId && a.StartAt < end && a.EndAt > start);
+            .Where(a => a.OrganizationId == organizationId
+                && a.StartAt < end
+                && a.EndAt > start
+                && a.Attendees.Any(at => at.UserId == userId)); // 自分が参加者のみ
 
         var agendas = await query
             .OrderBy(a => a.StartAt)
@@ -52,7 +59,10 @@ public class AgendaService
     /// <summary>
     /// 直近のアジェンダ一覧取得
     /// </summary>
-    public async Task<List<AgendaResponse>> GetRecentListAsync(int organizationId, int limit = 20)
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="userId">ユーザーID（このユーザーが参加者のアジェンダのみ返す）</param>
+    /// <param name="limit">取得件数</param>
+    public async Task<List<AgendaResponse>> GetRecentListAsync(int organizationId, int userId, int limit = 20)
     {
         var now = DateTimeOffset.UtcNow;
         var query = _context.Agendas
@@ -61,7 +71,9 @@ public class AgendaService
             .Include(a => a.CancelledByUser)
             .Include(a => a.Attendees)
                 .ThenInclude(at => at.User)
-            .Where(a => a.OrganizationId == organizationId && a.EndAt > now);
+            .Where(a => a.OrganizationId == organizationId
+                && a.EndAt > now
+                && a.Attendees.Any(at => at.UserId == userId)); // 自分が参加者のみ
 
         var agendas = await query
             .OrderBy(a => a.StartAt)
@@ -103,7 +115,7 @@ public class AgendaService
     {
         var settings = _context.OrganizationSettings
             .AsNoTracking()
-            .Where(o => o.Id == organizationId)
+            .Where(o => o.OrganizationId == organizationId)
             .FirstOrDefault();
 
         if (settings == null)
@@ -236,7 +248,7 @@ public class AgendaService
     /// <summary>
     /// アジェンダ更新（シリーズ全体）
     /// </summary>
-    public async Task<AgendaResponse> UpdateAsync(long id, int organizationId, UpdateAgendaRequest request)
+    public async Task<AgendaResponse> UpdateAsync(long id, int organizationId, int userId, UpdateAgendaRequest request)
     {
         if (request.EndAt <= request.StartAt)
         {
@@ -295,13 +307,18 @@ public class AgendaService
 
             // 参加者の更新（全量リストが送られてくる前提）
             var requestUserIds = request.Attendees?.Select(r => r.UserId).Distinct().ToList() ?? [];
+            var existingUserIds = agenda.Attendees.Select(a => a.UserId).ToList();
 
-            // 削除対象の参加者
-            var toRemove = agenda.Attendees.Where(a => !requestUserIds.Contains(a.UserId)).ToList();
+            // 削除対象の参加者（通知用にIDを保存）
+            var removedUserIds = existingUserIds.Where(id => !requestUserIds.Contains(id)).ToList();
+            var toRemove = agenda.Attendees.Where(a => removedUserIds.Contains(a.UserId)).ToList();
             foreach (var item in toRemove)
             {
                 _context.AgendaAttendees.Remove(item);
             }
+
+            // 追加対象の参加者（通知用にIDを保存）
+            var addedUserIds = new List<int>();
 
             // 更新/追加
             foreach (var reqAttendee in request.Attendees ?? [])
@@ -319,6 +336,7 @@ public class AgendaService
                         IsOptional = reqAttendee.IsOptional,
                         Status = AttendanceStatus.Pending
                     });
+                    addedUserIds.Add(reqAttendee.UserId);
                 }
             }
 
@@ -326,6 +344,31 @@ public class AgendaService
             _context.Entry(agenda).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
 
             await _context.SaveChangesAsync();
+
+            // 参加者追加通知（追加された本人以外への通知ではなく、追加された本人へ）
+            if (request.SendNotification && addedUserIds.Count > 0)
+            {
+                await _notificationService.CreateBulkNotificationsAsync(
+                    agenda.Id,
+                    addedUserIds,
+                    AgendaNotificationType.AddedToEvent,
+                    agenda.StartAt,
+                    null,
+                    userId);
+            }
+
+            // 参加者削除通知（削除された本人へ）
+            if (request.SendNotification && removedUserIds.Count > 0)
+            {
+                await _notificationService.CreateBulkNotificationsAsync(
+                    agenda.Id,
+                    removedUserIds,
+                    AgendaNotificationType.RemovedFromEvent,
+                    agenda.StartAt,
+                    null,
+                    userId);
+            }
+
             await transaction.CommitAsync();
 
             return await GetByIdAsync(id, organizationId);
@@ -472,12 +515,14 @@ public class AgendaService
         DateTimeOffset end)
     {
         // 対象期間に開始日があるアジェンダ、または繰り返しで期間内にオカレンスがある可能性があるアジェンダを取得
+        // かつ、自分が参加者のもののみ
         var agendas = await _context.Agendas
             .AsNoTracking()
             .Include(a => a.CreatedByUser)
             .Include(a => a.Attendees)
             .Include(a => a.Exceptions)
             .Where(a => a.OrganizationId == organizationId)
+            .Where(a => a.Attendees.Any(at => at.UserId == currentUserId)) // 自分が参加者のみ
             .Where(a =>
                 // 単発イベント: 期間内に開始
                 (a.RecurrenceType == null || a.RecurrenceType == RecurrenceType.None)

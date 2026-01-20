@@ -1,5 +1,6 @@
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Requests.Agenda;
 
@@ -62,6 +63,7 @@ public class UpdateFromOccurrenceRequest
     /// <summary>
     /// 繰り返しタイプ
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<RecurrenceType>))]
     public RecurrenceType? RecurrenceType { get; set; }
 
     /// <summary>

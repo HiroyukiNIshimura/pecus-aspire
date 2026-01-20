@@ -1,4 +1,5 @@
 using Pecus.Libs.DB.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.Agenda;
 
@@ -25,6 +26,7 @@ public class AgendaNotificationResponse
     /// <summary>
     /// 通知タイプ
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<AgendaNotificationType>))]
     public AgendaNotificationType Type { get; set; }
 
     /// <summary>

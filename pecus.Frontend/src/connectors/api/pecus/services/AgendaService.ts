@@ -19,6 +19,7 @@ import { request as __request } from '../core/request';
 export class AgendaService {
     /**
      * アジェンダ一覧取得（期間指定）
+     * 自分が参加者のアジェンダのみ返します。
      * @param startAt
      * @param endAt
      * @returns AgendaResponse OK
@@ -66,6 +67,7 @@ export class AgendaService {
      * 展開済みオカレンス一覧取得（期間指定）
      * 繰り返しイベントを展開し、各オカレンス（回）を個別に返します。
      * 例外（特定回の中止・変更）も反映されます。
+     * 自分が参加者のアジェンダのみ返します。
      * @param startAt
      * @param endAt
      * @returns AgendaOccurrenceResponse OK
@@ -90,6 +92,7 @@ export class AgendaService {
     }
     /**
      * 直近のアジェンダ一覧取得
+     * 自分が参加者のアジェンダのみ返します。
      * @param limit
      * @returns AgendaResponse OK
      * @throws ApiError

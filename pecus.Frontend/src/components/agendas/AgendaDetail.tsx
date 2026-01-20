@@ -161,8 +161,8 @@ export function AgendaDetail({ agenda, exceptions, currentStatus, isPending, onA
 
         <div className="divider" />
 
-        {/* 参加状況変更 */}
-        {!isCancelled && (
+        {/* 参加状況変更（参加者のみ表示） */}
+        {!isCancelled && currentStatus !== undefined && (
           <div>
             <h3 className="mb-3 font-medium">参加状況を変更</h3>
             <div className="flex flex-wrap gap-2">

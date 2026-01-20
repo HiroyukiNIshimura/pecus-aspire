@@ -159,9 +159,13 @@ public class AgendaReminderTask
         {
             var reminderTime = occurrenceStart.AddMinutes(-minutesBefore);
 
-            // リマインダー時刻が現在〜5分後の範囲内か
-            // （5分ごとの実行で、次回実行までの間にリマインダー時刻が来るもの）
-            if (reminderTime < now || reminderTime > now.AddMinutes(5))
+            // リマインダー時刻が未来の場合は、現在〜5分後の範囲内かチェック
+            // リマインダー時刻が過去の場合でも、イベント開始前なら送信対象とする
+            // （遅延実行やサービス再起動後でもリマインダーが届くように）
+            var isInUpcomingWindow = reminderTime >= now && reminderTime <= now.AddMinutes(5);
+            var isMissedButEventNotStarted = reminderTime < now && occurrenceStart > now;
+
+            if (!isInUpcomingWindow && !isMissedButEventNotStarted)
                 continue;
 
             // 既に送信済みか確認

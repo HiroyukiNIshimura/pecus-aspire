@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Requests.Agenda;
 
@@ -40,5 +41,6 @@ public class UpdateAttendanceRequest
     /// 新しい参加状況
     /// </summary>
     [Required]
+    [JsonConverter(typeof(JsonStringEnumConverter<Libs.DB.Models.Enums.AttendanceStatus>))]
     public Libs.DB.Models.Enums.AttendanceStatus Status { get; set; }
 }

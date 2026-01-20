@@ -37,6 +37,9 @@ public class AgendasController : BaseSecureController
     /// <summary>
     /// アジェンダ一覧取得（期間指定）
     /// </summary>
+    /// <remarks>
+    /// 自分が参加者のアジェンダのみ返します。
+    /// </remarks>
     [HttpGet]
     [ProducesResponseType(typeof(List<AgendaResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -49,7 +52,7 @@ public class AgendasController : BaseSecureController
         if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
             throw new NotFoundException("組織が見つかりません。");
 
-        var result = await _agendaService.GetListAsync(CurrentOrganizationId, startAt, endAt);
+        var result = await _agendaService.GetListAsync(CurrentOrganizationId, CurrentUserId, startAt, endAt);
         return TypedResults.Ok(result);
     }
 
@@ -59,6 +62,7 @@ public class AgendasController : BaseSecureController
     /// <remarks>
     /// 繰り返しイベントを展開し、各オカレンス（回）を個別に返します。
     /// 例外（特定回の中止・変更）も反映されます。
+    /// 自分が参加者のアジェンダのみ返します。
     /// </remarks>
     [HttpGet("occurrences")]
     [ProducesResponseType(typeof(List<AgendaOccurrenceResponse>), StatusCodes.Status200OK)]
@@ -79,6 +83,9 @@ public class AgendasController : BaseSecureController
     /// <summary>
     /// 直近のアジェンダ一覧取得
     /// </summary>
+    /// <remarks>
+    /// 自分が参加者のアジェンダのみ返します。
+    /// </remarks>
     [HttpGet("recent")]
     [ProducesResponseType(typeof(List<AgendaResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -90,7 +97,7 @@ public class AgendasController : BaseSecureController
         if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
             throw new NotFoundException("組織が見つかりません。");
 
-        var result = await _agendaService.GetRecentListAsync(CurrentOrganizationId, limit);
+        var result = await _agendaService.GetRecentListAsync(CurrentOrganizationId, CurrentUserId, limit);
         return TypedResults.Ok(result);
     }
 
@@ -170,7 +177,7 @@ public class AgendasController : BaseSecureController
         if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
             throw new NotFoundException("組織が見つかりません。");
 
-        var result = await _agendaService.UpdateAsync(id, CurrentOrganizationId, request);
+        var result = await _agendaService.UpdateAsync(id, CurrentOrganizationId, CurrentUserId, request);
         return TypedResults.Ok(result);
     }
 

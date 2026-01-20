@@ -24,7 +24,7 @@ Phase 1-14は完了済みですが、以下の機能・UIが未実装です。
 
 | 項目 | 説明 | 状態 |
 |------|------|------|
-| **通知ポップアップUI** | AppHeaderのアジェンダアイコンからポップアップで通知表示。招待・変更・中止・リマインダー通知。個別/一括既読機能。詳細は2.6節参照 | 🔲 |
+| **通知ポップアップUI** | AppHeaderのアジェンダアイコンからポップアップで通知表示。招待・変更・中止・リマインダー通知。個別/一括既読機能。詳細は2.6節参照 | ✅ 完了 |
 | **中止確認モーダル** | シリーズ全体を中止する際の確認ダイアログ（CancelConfirmModal）。詳細画面から呼び出す | 🔲 |
 | **編集範囲選択モーダル** | 繰り返しアジェンダ編集時に「この回のみ / この回以降 / シリーズ全体」を選択（EditScopeModal） | 🔲 |
 | **特定回中止モーダル** | 特定回のみ中止する際のダイアログ（CancelOccurrenceModal）。詳細画面の例外一覧から呼び出す | 🔲 |
@@ -633,11 +633,9 @@ pecus.Frontend/src/
 │       ├── QuickAttendanceButtons.tsx       # クイック参加ボタン
 │       ├── CancelConfirmModal.tsx           # 中止確認モーダル
 │       ├── EditScopeModal.tsx               # 編集範囲選択モーダル
-│       └── CancelOccurrenceModal.tsx        # 特定回中止モーダル
-│
-├── components/
-│   └── agendas/
-│       └── AgendaIconButton.tsx             # ヘッダー用アジェンダアイコン+バッジ（一覧ページへリンク）
+│       ├── CancelOccurrenceModal.tsx        # 特定回中止モーダル
+│       ├── AgendaIconButton.tsx             # ヘッダー用アジェンダアイコン+バッジ
+│       └── AgendaNotificationPopup.tsx      # 通知ポップアップ
 │
 └── actions/
     └── agenda.ts                            # Server Actions

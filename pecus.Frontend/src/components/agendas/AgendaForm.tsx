@@ -18,7 +18,7 @@ export interface AgendaFormData {
   url: string;
   recurrenceType: RecurrenceType;
   recurrenceInterval: number;
-  recurrenceEndDate: string;
+  recurrenceEndDate: string | null;
   recurrenceCount: number | null;
   reminders: number[];
   attendees: AgendaAttendeeRequest[];
@@ -160,8 +160,8 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel, curr
         recurrenceInterval: data.recurrenceInterval,
         recurrenceEndDate:
           data.recurrenceEndType === 'date' && data.recurrenceEndDate
-            ? toISOString(`${data.recurrenceEndDate}T23:59:59`)
-            : '',
+            ? data.recurrenceEndDate // "YYYY-MM-DD" 形式でそのまま送信（DateOnlyへの変換）
+            : null,
         recurrenceCount: data.recurrenceEndType === 'count' ? data.recurrenceCount : null,
         reminders,
         attendees: toAgendaAttendeeRequests(selectedAttendees),

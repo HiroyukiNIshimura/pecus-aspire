@@ -60,31 +60,23 @@ public class AgendaNotificationService
     /// <summary>
     /// 通知件数取得（ヘッダーバッジ用）
     /// </summary>
+    /// <remarks>
+    /// 未読通知数のみを返します。
+    /// 招待通知はAgendaNotificationsテーブルにInvitedタイプとして保存されているため、
+    /// PendingInvitations（AgendaAttendeesのPending状態）を別途カウントすると二重カウントになります。
+    /// </remarks>
     public async Task<AgendaNotificationCountResponse> GetCountAsync(int organizationId, int userId)
     {
-        // 未読通知数
+        // 未読通知数（招待通知も含む）
         var unreadCount = await _context.AgendaNotifications
             .AsNoTracking()
             .Include(n => n.Agenda)
             .Where(n => n.UserId == userId && n.Agenda!.OrganizationId == organizationId && !n.IsRead)
             .CountAsync();
 
-        // 未回答の招待数（Pending状態のアジェンダ参加者で、まだ開始していないもの）
-        var now = DateTimeOffset.UtcNow;
-        var pendingInvitations = await _context.AgendaAttendees
-            .AsNoTracking()
-            .Include(a => a.Agenda)
-            .Where(a =>
-                a.UserId == userId &&
-                a.Agenda!.OrganizationId == organizationId &&
-                a.Status == AttendanceStatus.Pending &&
-                !a.Agenda.IsCancelled &&
-                a.Agenda.EndAt > now) // まだ終了していないもの
-            .CountAsync();
-
         return new AgendaNotificationCountResponse
         {
-            PendingInvitations = pendingInvitations,
+            PendingInvitations = 0, // 招待通知はAgendaNotificationsに含まれるため0
             UnreadNotifications = unreadCount
         };
     }
