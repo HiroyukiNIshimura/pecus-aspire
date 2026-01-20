@@ -74,6 +74,7 @@ export default async function AgendaDetailPage({ params, searchParams }: AgendaD
 
   return (
     <AgendaDetailClient
+      key={`${agendaIdNum}-${occurrenceIndex ?? 0}`}
       agenda={agenda}
       exceptions={exceptions}
       fetchError={fetchError}

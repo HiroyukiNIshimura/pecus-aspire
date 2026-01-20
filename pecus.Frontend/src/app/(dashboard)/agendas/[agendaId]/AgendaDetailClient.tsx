@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { updateAttendance } from '@/actions/agenda';
 import { AgendaDetail } from '@/components/agendas/AgendaDetail';
 import { AttendeeList } from '@/components/agendas/AttendeeList';
 import { CancelConfirmModal } from '@/components/agendas/CancelConfirmModal';
+import { CancelOccurrenceModal } from '@/components/agendas/CancelOccurrenceModal';
 import { type EditScope, EditScopeModal } from '@/components/agendas/EditScopeModal';
 import type { AgendaExceptionResponse, AgendaResponse, AttendanceStatus, RecurrenceType } from '@/connectors/api/pecus';
 import { useAppSettings } from '@/providers/AppSettingsProvider';
@@ -21,7 +22,7 @@ interface AgendaDetailClientProps {
 
 export default function AgendaDetailClient({
   agenda,
-  exceptions,
+  exceptions: initialExceptions,
   fetchError,
   occurrenceIndex,
 }: AgendaDetailClientProps) {
@@ -30,8 +31,23 @@ export default function AgendaDetailClient({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(fetchError);
   const [currentAgenda, setCurrentAgenda] = useState(agenda);
+  const [exceptions, setExceptions] = useState(initialExceptions);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelOccurrenceModalOpen, setIsCancelOccurrenceModalOpen] = useState(false);
   const [isEditScopeModalOpen, setIsEditScopeModalOpen] = useState(false);
+
+  // propsが変わったときにstateを更新（クライアントサイドナビゲーション対応）
+  useEffect(() => {
+    setCurrentAgenda(agenda);
+    setExceptions(initialExceptions);
+    setError(fetchError);
+
+    // メインコンテンツのスクロールをトップに戻す（overflow-y-autoのdiv）
+    const mainContent = document.querySelector('[data-main-content]');
+    if (mainContent) {
+      mainContent.scrollTop = 0;
+    }
+  }, [agenda, initialExceptions, fetchError]);
 
   // 現在のユーザーの参加状況を取得
   const currentUserAttendee = currentAgenda.attendees?.find((a) => a.userId === currentUser?.id);
@@ -59,6 +75,22 @@ export default function AgendaDetailClient({
   // シリーズの最初の回かどうか（最初の回からは「この回以降」の分割はできない）
   const isFirstOccurrence = effectiveOccurrenceIndex === 0;
 
+  // 現在表示中の回が中止済みかどうかを判定（propsから直接計算）
+  const currentOccurrenceException = initialExceptions.find((e) => e.occurrenceIndex === effectiveOccurrenceIndex);
+  const isCurrentOccurrenceCancelled = currentOccurrenceException?.isCancelled ?? false;
+
+  // デバッグ: ボタン表示条件
+  // biome-ignore lint/suspicious/noConsole: デバッグ用
+  console.log('[AgendaDetailClient] Button condition:', {
+    effectiveOccurrenceIndex,
+    isRecurring,
+    currentOccurrenceException,
+    isCurrentOccurrenceCancelled,
+    agendaIsCancelled: currentAgenda.isCancelled,
+    shouldShowButtonArea: !currentAgenda.isCancelled,
+    shouldShowCancelOccurrenceBtn: isRecurring && !isCurrentOccurrenceCancelled,
+  });
+
   const handleAttendanceChange = (newStatus: AttendanceStatus) => {
     if (isPending) return;
 
@@ -82,6 +114,13 @@ export default function AgendaDetailClient({
     // 中止完了後、一覧ページにリダイレクト
     router.push('/agendas');
     router.refresh();
+  };
+
+  // 特定回中止完了
+  const handleOccurrenceCancelled = () => {
+    setIsCancelOccurrenceModalOpen(false);
+    // 一覧ページにリダイレクト
+    router.push('/agendas');
   };
 
   // 編集ボタンクリック
@@ -147,6 +186,17 @@ export default function AgendaDetailClient({
         {/* アクションボタン（中止されていない場合のみ） */}
         {!currentAgenda.isCancelled && (
           <div className="flex items-center gap-2">
+            {/* 繰り返しイベントの場合、特定回の中止ボタンを表示（すでに中止済みの回は除く） */}
+            {isRecurring && !isCurrentOccurrenceCancelled && (
+              <button
+                type="button"
+                className="btn btn-error btn-sm btn-soft"
+                onClick={() => setIsCancelOccurrenceModalOpen(true)}
+              >
+                <span className="icon-[mdi--cancel] size-4" />
+                この回を中止
+              </button>
+            )}
             <button type="button" className="btn btn-error btn-sm" onClick={() => setIsCancelModalOpen(true)}>
               <span className="icon-[mdi--cancel] size-4" />
               {isRecurring ? 'シリーズを中止' : '中止'}
@@ -187,6 +237,19 @@ export default function AgendaDetailClient({
         rowVersion={currentAgenda.rowVersion}
         isRecurring={!!isRecurring}
       />
+
+      {/* 特定回中止モーダル */}
+      {isRecurring && (
+        <CancelOccurrenceModal
+          isOpen={isCancelOccurrenceModalOpen}
+          onClose={() => setIsCancelOccurrenceModalOpen(false)}
+          onCancelled={handleOccurrenceCancelled}
+          agendaId={currentAgenda.id}
+          agendaTitle={currentAgenda.title}
+          occurrenceIndex={effectiveOccurrenceIndex}
+          occurrenceDate={occurrenceDate}
+        />
+      )}
 
       {/* 編集範囲選択モーダル */}
       {isRecurring && (

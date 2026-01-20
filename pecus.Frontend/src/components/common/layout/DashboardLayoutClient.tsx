@@ -64,6 +64,7 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
 
         {/* Main Content */}
         <div
+          data-main-content
           className={`flex-1 bg-base-100 ${
             isMobileChatPage ? 'flex flex-col min-h-0 overflow-hidden' : 'p-4 md:p-6 overflow-y-auto'
           }`}

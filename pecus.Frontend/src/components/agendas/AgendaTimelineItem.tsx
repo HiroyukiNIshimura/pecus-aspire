@@ -90,6 +90,8 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
             {/* タイトル */}
             <Link
               href={`/agendas/${agendaId}?occurrence=${occurrenceIndex}`}
+              prefetch={false}
+              scroll={true}
               className={`
                 font-medium truncate max-w-xs sm:max-w-md
                 ${isCancelledItem ? 'line-through text-base-content/50' : 'text-base-content hover:text-primary'}
