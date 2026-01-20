@@ -79,6 +79,12 @@ public class UserDetailResponse : IConflictModel
     public bool IsActive { get; set; }
 
     /// <summary>
+    /// バックアップ用メールアドレス（無効化ユーザーの元のメールアドレス）
+    /// 管理者画面でのみ使用。有効ユーザーの場合はnull
+    /// </summary>
+    public string? BackupEmail { get; set; }
+
+    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTimeOffset CreatedAt { get; set; }

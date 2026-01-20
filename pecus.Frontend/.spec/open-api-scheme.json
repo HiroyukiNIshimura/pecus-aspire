@@ -24101,6 +24101,11 @@
             "type": "boolean",
             "description": "アクティブなユーザーかどうか"
           },
+          "backupEmail": {
+            "type": "string",
+            "description": "バックアップ用メールアドレス（無効化ユーザーの元のメールアドレス）\n管理者画面でのみ使用。有効ユーザーの場合はnull",
+            "nullable": true
+          },
           "createdAt": {
             "type": "string",
             "description": "作成日時",

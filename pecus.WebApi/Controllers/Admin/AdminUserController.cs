@@ -110,6 +110,7 @@ public class AdminUserController : BaseAdminController
                 .ToList() ?? new List<UserSkillResponse>(),
             IsAdmin = targetUser.Roles?.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice) ?? false,
             IsActive = targetUser.IsActive,
+            BackupEmail = targetUser.BackupEmail,
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = targetUser.Setting?.CanReceiveEmail ?? true,
@@ -190,6 +191,7 @@ public class AdminUserController : BaseAdminController
                 .ToList() ?? new List<UserSkillResponse>(),
             IsAdmin = u.Roles?.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice) ?? false,
             IsActive = u.IsActive,
+            BackupEmail = u.BackupEmail,
             LastLoginAt = u.LastLoginAt,
             RowVersion = u.RowVersion!,
             Setting = new UserSettingResponse
@@ -298,6 +300,7 @@ public class AdminUserController : BaseAdminController
                 .ToList() ?? [],
             IsAdmin = user.Roles?.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice) ?? false,
             IsActive = user.IsActive,
+            BackupEmail = user.BackupEmail,
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = user.Setting?.CanReceiveEmail ?? true,
@@ -399,6 +402,7 @@ public class AdminUserController : BaseAdminController
             ),
             CreatedAt = user.CreatedAt,
             IsActive = user.IsActive,
+            BackupEmail = user.BackupEmail,
             Roles = user.Roles?
                 .Select(r => new UserRoleResponse
                 {

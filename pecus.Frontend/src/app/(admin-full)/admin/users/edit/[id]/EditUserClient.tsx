@@ -230,7 +230,12 @@ export default function EditUserClient({
 
                     <div>
                       <p className="text-sm text-base-content/60 mb-2">メールアドレス</p>
-                      <p className="text-lg font-semibold">{userDetail.email || '-'}</p>
+                      <p className="text-lg font-semibold">
+                        {userDetail.isActive ? userDetail.email : userDetail.backupEmail || '-'}
+                      </p>
+                      {!userDetail.isActive && userDetail.backupEmail && (
+                        <p className="text-xs text-base-content/50 mt-1">無効化前のメールアドレス</p>
+                      )}
                     </div>
 
                     <div>

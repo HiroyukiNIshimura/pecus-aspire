@@ -34,6 +34,7 @@ interface User {
   createdAt: string;
   skills?: Skill[];
   roles?: UserRole[];
+  backupEmail?: string | null;
 }
 
 interface UserStatistics {
@@ -92,6 +93,7 @@ export default function AdminUsersClient() {
               createdAt: user.createdAt ?? new Date().toISOString(),
               skills: user.skills ?? [],
               roles: user.roles ?? [],
+              backupEmail: user.backupEmail,
             }));
             setUsers(mappedUsers);
             setCurrentPage(data.currentPage || 1);
@@ -161,6 +163,7 @@ export default function AdminUsersClient() {
             createdAt: user.createdAt ?? new Date().toISOString(),
             skills: user.skills ?? [],
             roles: user.roles ?? [],
+            backupEmail: user.backupEmail,
           }));
           setUsers(mappedUsers);
           setCurrentPage(data.currentPage || 1);
@@ -205,6 +208,7 @@ export default function AdminUsersClient() {
               createdAt: user.createdAt ?? new Date().toISOString(),
               skills: user.skills ?? [],
               roles: user.roles ?? [],
+              backupEmail: user.backupEmail,
             }));
             setUsers(mappedUsers);
             setCurrentPage(data.currentPage || 1);
@@ -262,6 +266,7 @@ export default function AdminUsersClient() {
               createdAt: user.createdAt ?? new Date().toISOString(),
               skills: user.skills ?? [],
               roles: user.roles ?? [],
+              backupEmail: user.backupEmail,
             }));
             setUsers(mappedUsers);
             setCurrentPage(data.currentPage || 1);
@@ -502,7 +507,7 @@ export default function AdminUsersClient() {
                         users.map((user) => (
                           <tr key={user.id}>
                             <td className="font-bold">{user.username}</td>
-                            <td>{user.email}</td>
+                            <td>{user.isActive ? user.email : user.backupEmail || user.email}</td>
                             <td>
                               {user.skills && user.skills.length > 0 ? (
                                 <div className="flex flex-wrap gap-1">

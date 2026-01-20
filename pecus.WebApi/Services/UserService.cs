@@ -345,6 +345,36 @@ public class UserService
                 await RaiseConflictException(userId);
             }
 
+            // IsActive 変更時のメールアドレス処理
+            var isActiveChanging = user.IsActive != request.IsActive;
+            if (isActiveChanging)
+            {
+                if (request.IsActive)
+                {
+                    // 有効化: BackupEmail から復元
+                    if (!string.IsNullOrEmpty(user.BackupEmail))
+                    {
+                        // 復元先メールが既に使用されていないかチェック
+                        var emailInUse = await _context.Users
+                            .AnyAsync(u => u.Email == user.BackupEmail && u.Id != userId);
+                        if (emailInUse)
+                        {
+                            throw new InvalidOperationException(
+                                $"元のメールアドレス ({user.BackupEmail}) は既に別のユーザーに使用されています。"
+                            );
+                        }
+                        user.Email = user.BackupEmail;
+                        user.BackupEmail = null;
+                    }
+                }
+                else
+                {
+                    // 無効化: Email を BackupEmail に退避し、Email には LoginId を設定
+                    user.BackupEmail = user.Email;
+                    user.Email = user.LoginId;
+                }
+            }
+
             // 基本情報更新
             user.Username = request.Username.Trim();
             user.IsActive = request.IsActive;

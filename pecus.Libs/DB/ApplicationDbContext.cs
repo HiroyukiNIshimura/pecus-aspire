@@ -229,6 +229,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.PasswordHash).IsRequired();
             entity.Property(e => e.AvatarType);
             entity.Property(e => e.UserAvatarPath).HasMaxLength(500);
+            entity.Property(e => e.BackupEmail).HasMaxLength(254);
             entity.HasIndex(e => e.LoginId).IsUnique();
             entity.HasIndex(e => e.Username);
             entity.HasIndex(e => e.Email).IsUnique();

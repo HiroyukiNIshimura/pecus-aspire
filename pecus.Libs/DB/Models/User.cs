@@ -95,6 +95,13 @@ public class User
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// バックアップ用メールアドレス
+    /// ユーザー無効化時に元のメールアドレスを退避するために使用
+    /// 有効化時にはこの値をEmailに復元する
+    /// </summary>
+    public string? BackupEmail { get; set; }
+
+    /// <summary>
     /// このユーザーに割り当てられたロール
     /// </summary>
     public ICollection<Role> Roles { get; set; } = new List<Role>();
