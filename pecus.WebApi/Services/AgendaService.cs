@@ -12,11 +12,16 @@ namespace Pecus.Services;
 public class AgendaService
 {
     private readonly ApplicationDbContext _context;
+    private readonly AgendaNotificationService _notificationService;
     private readonly ILogger<AgendaService> _logger;
 
-    public AgendaService(ApplicationDbContext context, ILogger<AgendaService> logger)
+    public AgendaService(
+        ApplicationDbContext context,
+        AgendaNotificationService notificationService,
+        ILogger<AgendaService> logger)
     {
         _context = context;
+        _notificationService = notificationService;
         _logger = logger;
     }
 
@@ -160,11 +165,25 @@ public class AgendaService
             _context.Agendas.Add(agenda);
             await _context.SaveChangesAsync();
 
-            // TODO: Phase 7で通知機能を実装
-            // if (request.SendNotification && agenda.Attendees.Any())
-            // {
-            //     await CreateInvitationNotificationsAsync(agenda);
-            // }
+            // 招待通知を作成（作成者自身は除外）
+            if (request.SendNotification)
+            {
+                var attendeesToNotify = agenda.Attendees
+                    .Where(a => a.UserId != userId) // 作成者自身は除外
+                    .Select(a => a.UserId)
+                    .ToList();
+
+                if (attendeesToNotify.Count > 0)
+                {
+                    await _notificationService.CreateBulkNotificationsAsync(
+                        agenda.Id,
+                        attendeesToNotify,
+                        AgendaNotificationType.Invited,
+                        agenda.StartAt,
+                        null,
+                        userId);
+                }
+            }
 
             await transaction.CommitAsync();
 
@@ -311,11 +330,25 @@ public class AgendaService
 
             await _context.SaveChangesAsync();
 
-            // TODO: Phase 7で通知機能を実装
-            // if (request.SendNotification && agenda.Attendees.Any())
-            // {
-            //     await CreateCancellationNotificationsAsync(agenda);
-            // }
+            // 中止通知を作成（中止した本人は除外）
+            if (request.SendNotification)
+            {
+                var attendeesToNotify = agenda.Attendees
+                    .Where(a => a.UserId != userId) // 中止した本人は除外
+                    .Select(a => a.UserId)
+                    .ToList();
+
+                if (attendeesToNotify.Count > 0)
+                {
+                    await _notificationService.CreateBulkNotificationsAsync(
+                        agenda.Id,
+                        attendeesToNotify,
+                        AgendaNotificationType.SeriesCancelled,
+                        agenda.StartAt,
+                        request.Reason,
+                        userId);
+                }
+            }
 
             await transaction.CommitAsync();
 
@@ -525,6 +558,7 @@ public class AgendaService
     {
         var agenda = await _context.Agendas
             .Include(a => a.Exceptions)
+            .Include(a => a.Attendees)
             .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
 
         if (agenda == null)
@@ -579,11 +613,29 @@ public class AgendaService
         _context.AgendaExceptions.Add(exception);
         await _context.SaveChangesAsync();
 
-        // TODO: Phase 7で通知機能を実装
-        // if (request.SendNotification)
-        // {
-        //     await CreateOccurrenceNotificationsAsync(agenda, exception);
-        // }
+        // 特定回の中止・変更通知を作成（操作者自身は除外）
+        if (request.SendNotification)
+        {
+            var attendeesToNotify = agenda.Attendees
+                .Where(a => a.UserId != userId) // 操作者自身は除外
+                .Select(a => a.UserId)
+                .ToList();
+
+            if (attendeesToNotify.Count > 0)
+            {
+                var notificationType = request.IsCancelled
+                    ? AgendaNotificationType.OccurrenceCancelled
+                    : AgendaNotificationType.OccurrenceUpdated;
+
+                await _notificationService.CreateBulkNotificationsAsync(
+                    agenda.Id,
+                    attendeesToNotify,
+                    notificationType,
+                    request.OriginalStartAt,
+                    request.IsCancelled ? request.CancellationReason : null,
+                    userId);
+            }
+        }
 
         return await GetExceptionByIdAsync(exception.Id);
     }
@@ -595,10 +647,11 @@ public class AgendaService
         long agendaId,
         long exceptionId,
         int organizationId,
+        int userId,
         UpdateAgendaExceptionRequest request)
     {
         var agenda = await _context.Agendas
-            .AsNoTracking()
+            .Include(a => a.Attendees)
             .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
 
         if (agenda == null)
@@ -632,11 +685,29 @@ public class AgendaService
 
         await _context.SaveChangesAsync();
 
-        // TODO: Phase 7で通知機能を実装
-        // if (request.SendNotification)
-        // {
-        //     await CreateOccurrenceUpdateNotificationsAsync(agenda, exception);
-        // }
+        // 特定回の中止・変更通知を作成（操作者自身は除外）
+        if (request.SendNotification)
+        {
+            var attendeesToNotify = agenda.Attendees
+                .Where(a => a.UserId != userId) // 操作者自身は除外
+                .Select(a => a.UserId)
+                .ToList();
+
+            if (attendeesToNotify.Count > 0)
+            {
+                var notificationType = request.IsCancelled
+                    ? AgendaNotificationType.OccurrenceCancelled
+                    : AgendaNotificationType.OccurrenceUpdated;
+
+                await _notificationService.CreateBulkNotificationsAsync(
+                    agenda.Id,
+                    attendeesToNotify,
+                    notificationType,
+                    exception.OriginalStartAt,
+                    request.IsCancelled ? request.CancellationReason : null,
+                    userId);
+            }
+        }
 
         return await GetExceptionByIdAsync(exceptionId);
     }
@@ -879,11 +950,25 @@ public class AgendaService
 
             await _context.SaveChangesAsync();
 
-            // TODO: Phase 7で通知機能を実装
-            // if (request.SendNotification && newAgenda.Attendees.Any())
-            // {
-            //     await CreateSeriesUpdateNotificationsAsync(originalAgenda, newAgenda, request.FromStartAt);
-            // }
+            // シリーズ更新通知を作成（操作者自身は除外）
+            if (request.SendNotification)
+            {
+                var attendeesToNotify = newAgenda.Attendees
+                    .Where(a => a.UserId != userId) // 操作者自身は除外
+                    .Select(a => a.UserId)
+                    .ToList();
+
+                if (attendeesToNotify.Count > 0)
+                {
+                    await _notificationService.CreateBulkNotificationsAsync(
+                        newAgenda.Id,
+                        attendeesToNotify,
+                        AgendaNotificationType.SeriesUpdated,
+                        request.FromStartAt,
+                        $"{request.FromStartAt:yyyy/MM/dd}以降のイベントが変更されました",
+                        userId);
+                }
+            }
 
             await transaction.CommitAsync();
 

@@ -312,7 +312,7 @@ public class AgendasController : BaseSecureController
         if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
             throw new NotFoundException("組織が見つかりません。");
 
-        var result = await _agendaService.UpdateExceptionAsync(id, exceptionId, CurrentOrganizationId, request);
+        var result = await _agendaService.UpdateExceptionAsync(id, exceptionId, CurrentOrganizationId, CurrentUserId, request);
         return TypedResults.Ok(result);
     }
 
