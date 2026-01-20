@@ -707,12 +707,15 @@ public class UserService
     /// <summary>
     /// ユーザーのスキルを設定（洗い替え、楽観的ロック対応）
     /// </summary>
+    /// <remarks>
+    /// ProfileService からユーザー自身のスキル更新に使用されます。
+    /// 管理者による一括更新は AdminUpdateUserAsync を使用してください。
+    /// </remarks>
     /// <param name="userId">ユーザーID</param>
     /// <param name="skillIds">スキルIDのリスト</param>
     /// <param name="userRowVersion">ユーザーの楽観的ロック用のRowVersion</param>
     /// <param name="updatedByUserId">更新者のユーザーID</param>
     /// <returns>スキル更新の成功フラグ</returns>
-    [Obsolete("AdminUpdateUserAsync を使用してください")]
     public async Task<bool> SetUserSkillsAsync(
         int userId,
         List<int>? skillIds,
