@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import DatePicker from '@/components/common/filters/DatePicker';
 import type { AgendaAttendeeRequest, AgendaResponse, RecurrenceType } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
+import { useLimitsSettings } from '@/providers/AppSettingsProvider';
 import { createAgendaSchema } from '@/schemas/agendaSchemas';
 import AttendeeSelector, { type SelectedAttendee, toAgendaAttendeeRequests } from './AttendeeSelector';
 
@@ -78,6 +79,9 @@ function toISOString(localString: string): string {
 }
 
 export function AgendaForm({ initialData, onSubmit, isPending, submitLabel, currentUserId }: AgendaFormProps) {
+  // 制限設定から最大参加者数を取得
+  const { maxAttendeesPerAgenda } = useLimitsSettings();
+
   // 初期値の設定
   const getInitialStartAt = useCallback(() => {
     if (initialData?.startAt) {
@@ -545,6 +549,7 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel, curr
           onChange={setSelectedAttendees}
           disabled={isFormDisabled}
           currentUserId={currentUserId}
+          maxAttendees={maxAttendeesPerAgenda}
         />
       </div>
 

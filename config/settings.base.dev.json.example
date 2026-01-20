@@ -38,17 +38,20 @@
         "Free": {
           "MaxTagsPerOrganization": 1000,
           "MaxSkillsPerOrganization": 100,
-          "MaxDocumentsPerWorkspace": 500
+          "MaxDocumentsPerWorkspace": 500,
+          "MaxAttendeesPerAgenda": 100
         },
         "Standard": {
           "MaxTagsPerOrganization": 1000,
           "MaxSkillsPerOrganization": 100,
-          "MaxDocumentsPerWorkspace": 500
+          "MaxDocumentsPerWorkspace": 500,
+          "MaxAttendeesPerAgenda": 100
         },
         "Enterprise": {
           "MaxTagsPerOrganization": 1000,
           "MaxSkillsPerOrganization": 100,
-          "MaxDocumentsPerWorkspace": 500
+          "MaxDocumentsPerWorkspace": 500,
+          "MaxAttendeesPerAgenda": 100
         }
       }
     }

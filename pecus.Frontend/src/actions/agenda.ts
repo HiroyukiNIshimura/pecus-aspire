@@ -470,28 +470,29 @@ export async function fetchWorkspaceMembers(
 /** 組織メンバー1件の型（APIクライアントの型を再エクスポート） */
 export type { OrganizationMemberItem as OrganizationMember } from '@/connectors/api/pecus';
 
-/** 参加者の最大人数 */
-const MAX_ATTENDEES = 100;
+/** デフォルトの参加者最大人数（AppSettingsから取得できない場合のフォールバック） */
+const DEFAULT_MAX_ATTENDEES = 100;
 
 /**
- * 組織の全メンバー一覧を取得（ページング対応、最大100人まで）
+ * 組織の全メンバー一覧を取得（ページング対応）
  * クライアント側でページを取得してマージします
+ * @param maxAttendees 取得する最大人数（デフォルト: 100）
  */
-export async function fetchOrganizationMembers(): Promise<
-  ApiResponse<{ userId: number; userName: string; email: string; identityIconUrl: string | null }[]>
-> {
+export async function fetchOrganizationMembers(
+  maxAttendees: number = DEFAULT_MAX_ATTENDEES,
+): Promise<ApiResponse<{ userId: number; userName: string; email: string; identityIconUrl: string | null }[]>> {
   try {
     const api = await createPecusApiClients();
     const allMembers: { userId: number; userName: string; email: string; identityIconUrl: string | null }[] = [];
     let currentPage = 1;
     let hasNextPage = true;
 
-    // 100人に達するまでページを取得
-    while (hasNextPage && allMembers.length < MAX_ATTENDEES) {
+    // maxAttendeesに達するまでページを取得
+    while (hasNextPage && allMembers.length < maxAttendees) {
       const response = await api.user.getApiUsersOrganizationMembers(currentPage);
 
-      // 100人を超えないように追加
-      const remaining = MAX_ATTENDEES - allMembers.length;
+      // maxAttendeesを超えないように追加
+      const remaining = maxAttendees - allMembers.length;
       const toAdd = response.data.slice(0, remaining).map((m) => ({
         userId: m.userId ?? 0,
         userName: m.userName,
@@ -503,8 +504,8 @@ export async function fetchOrganizationMembers(): Promise<
       hasNextPage = response.hasNextPage ?? false;
       currentPage++;
 
-      // 100人に達したら終了
-      if (allMembers.length >= MAX_ATTENDEES) break;
+      // maxAttendeesに達したら終了
+      if (allMembers.length >= maxAttendees) break;
     }
 
     return { success: true, data: allMembers };

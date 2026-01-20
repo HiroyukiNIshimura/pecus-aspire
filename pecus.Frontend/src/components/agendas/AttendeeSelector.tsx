@@ -12,8 +12,8 @@ import {
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { AgendaAttendeeRequest } from '@/connectors/api/pecus';
 
-/** 参加者の最大人数 */
-const MAX_ATTENDEES = 100;
+/** デフォルトの参加者最大人数（AppSettingsから取得できない場合のフォールバック） */
+const DEFAULT_MAX_ATTENDEES = 100;
 
 /**
  * 選択済み参加者情報（UI表示用）
@@ -39,6 +39,8 @@ interface AttendeeSelectorProps {
   disabled?: boolean;
   /** 現在のユーザーID（主催者除外用） */
   currentUserId?: number;
+  /** 参加者の最大人数（AppSettingsから取得） */
+  maxAttendees?: number;
 }
 
 /**
@@ -53,6 +55,7 @@ export default function AttendeeSelector({
   onChange,
   disabled = false,
   currentUserId,
+  maxAttendees = DEFAULT_MAX_ATTENDEES,
 }: AttendeeSelectorProps) {
   // ユーザー検索
   const [searchQuery, setSearchQuery] = useState('');
@@ -148,14 +151,14 @@ export default function AttendeeSelector({
   }, []);
 
   // 残り追加可能人数
-  const remainingSlots = MAX_ATTENDEES - selectedAttendees.length;
+  const remainingSlots = maxAttendees - selectedAttendees.length;
   const isAtLimit = remainingSlots <= 0;
 
   // ユーザー追加
   const handleAddUser = useCallback(
     (user: { userId: number; userName: string; email: string; identityIconUrl: string | null }) => {
       if (selectedUserIds.has(user.userId)) return;
-      if (selectedAttendees.length >= MAX_ATTENDEES) return;
+      if (selectedAttendees.length >= maxAttendees) return;
 
       const newAttendee: SelectedAttendee = {
         userId: user.userId,
@@ -175,7 +178,7 @@ export default function AttendeeSelector({
   // ワークスペースメンバーを展開して追加
   const handleAddWorkspace = useCallback(
     async (workspace: WorkspaceOption) => {
-      if (selectedAttendees.length >= MAX_ATTENDEES) return;
+      if (selectedAttendees.length >= maxAttendees) return;
 
       setIsExpanding(true);
       setShowWorkspaceDropdown(false);
@@ -183,7 +186,7 @@ export default function AttendeeSelector({
         const result = await fetchWorkspaceMembers(workspace.id);
         if (result.success && result.data) {
           const newAttendees: SelectedAttendee[] = [];
-          const currentRemaining = MAX_ATTENDEES - selectedAttendees.length;
+          const currentRemaining = maxAttendees - selectedAttendees.length;
 
           for (const member of result.data) {
             // 上限チェック
@@ -217,14 +220,14 @@ export default function AttendeeSelector({
 
   // 組織全体を展開して追加
   const handleAddOrganization = useCallback(async () => {
-    if (selectedAttendees.length >= MAX_ATTENDEES) return;
+    if (selectedAttendees.length >= maxAttendees) return;
 
     setIsExpanding(true);
     try {
-      const result = await fetchOrganizationMembers();
+      const result = await fetchOrganizationMembers(maxAttendees);
       if (result.success && result.data) {
         const newAttendees: SelectedAttendee[] = [];
-        const currentRemaining = MAX_ATTENDEES - selectedAttendees.length;
+        const currentRemaining = maxAttendees - selectedAttendees.length;
 
         for (const member of result.data) {
           // 上限チェック
@@ -250,7 +253,7 @@ export default function AttendeeSelector({
     } finally {
       setIsExpanding(false);
     }
-  }, [selectedAttendees, selectedUserIds, currentUserId, onChange]);
+  }, [selectedAttendees, selectedUserIds, currentUserId, onChange, maxAttendees]);
 
   // 参加者削除
   const handleRemoveAttendee = useCallback(
@@ -275,7 +278,7 @@ export default function AttendeeSelector({
         </div>
         <div className="flex items-center gap-2 text-sm text-base-content/60">
           <span className="icon-[mdi--account-group] size-4" aria-hidden="true" />
-          <span>参加者は最大{MAX_ATTENDEES}人まで追加できます</span>
+          <span>参加者は最大{maxAttendees}人まで追加できます</span>
         </div>
       </div>
 
@@ -283,7 +286,7 @@ export default function AttendeeSelector({
       {isAtLimit && (
         <div className="alert alert-warning">
           <span className="icon-[mdi--alert] size-5" aria-hidden="true" />
-          <span>参加者の上限（{MAX_ATTENDEES}人）に達しました。追加するには既存の参加者を削除してください。</span>
+          <span>参加者の上限（{maxAttendees}人）に達しました。追加するには既存の参加者を削除してください。</span>
         </div>
       )}
 
