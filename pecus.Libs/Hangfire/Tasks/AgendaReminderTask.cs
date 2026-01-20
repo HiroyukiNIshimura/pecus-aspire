@@ -105,18 +105,18 @@ public class AgendaReminderTask
         var remindersSent = 0;
         var lookAheadEnd = now.AddHours(25);
 
-        // オカレンス（回）を展開
-        var occurrences = RecurrenceHelper.ExpandOccurrences(agenda, now, lookAheadEnd);
+        // オカレンス（回）を展開（インデックス付き）
+        var occurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(agenda, now, lookAheadEnd);
 
-        foreach (var occurrenceStart in occurrences)
+        foreach (var occurrence in occurrences)
         {
             // この回が例外で中止されていないか確認
-            var exception = agenda.Exceptions?.FirstOrDefault(e => e.OriginalStartAt == occurrenceStart);
+            var exception = agenda.Exceptions?.FirstOrDefault(e => e.OccurrenceIndex == occurrence.Index);
             if (exception?.IsCancelled == true)
                 continue;
 
             // 例外で日時が変更されている場合はその日時を使用
-            var actualStart = exception?.ModifiedStartAt ?? occurrenceStart;
+            var actualStart = exception?.ModifiedStartAt ?? occurrence.StartAt;
 
             // 過去のオカレンスはスキップ
             if (actualStart <= now)

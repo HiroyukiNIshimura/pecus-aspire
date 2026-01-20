@@ -14,11 +14,17 @@ interface EditAgendaPageProps {
   params: Promise<{
     agendaId: string;
   }>;
+  searchParams: Promise<{
+    scope?: 'from' | 'single';
+    occurrence?: string;
+  }>;
 }
 
-export default async function EditAgendaPage({ params }: EditAgendaPageProps) {
+export default async function EditAgendaPage({ params, searchParams }: EditAgendaPageProps) {
   const { agendaId } = await params;
+  const { scope, occurrence } = await searchParams;
   const agendaIdNum = parseInt(agendaId, 10);
+  const occurrenceIndex = occurrence ? parseInt(occurrence, 10) : undefined;
 
   if (Number.isNaN(agendaIdNum)) {
     redirect('/agendas');
@@ -35,13 +41,21 @@ export default async function EditAgendaPage({ params }: EditAgendaPageProps) {
       redirect('/signin');
     }
 
-    // アジェンダ詳細取得
-    const agendaResult = await fetchAgendaById(agendaIdNum);
+    // アジェンダ詳細取得（インデックスがある場合は例外適用済みデータを取得）
+    const agendaResult = await fetchAgendaById(agendaIdNum, occurrenceIndex);
     if (!agendaResult.success) {
       redirect('/agendas');
     }
 
-    return <AgendaFormClient mode="edit" initialData={agendaResult.data} currentUserId={userResult.data.id} />;
+    return (
+      <AgendaFormClient
+        mode="edit"
+        initialData={agendaResult.data}
+        currentUserId={userResult.data.id}
+        editScope={scope}
+        occurrenceIndex={occurrenceIndex}
+      />
+    );
   } catch (error) {
     console.error('EditAgendaPage: failed to fetch data', error);
 

@@ -32,6 +32,8 @@ interface AgendaFormProps {
   submitLabel: string;
   /** 現在のユーザーID（主催者）- 参加者選択で除外するため */
   currentUserId: number;
+  /** 繰り返し設定を非表示にする（「この回のみ」編集時） */
+  hideRecurrence?: boolean;
 }
 
 const recurrenceOptions: { value: RecurrenceType; label: string }[] = [
@@ -78,7 +80,14 @@ function toISOString(localString: string): string {
   return date.toISOString();
 }
 
-export function AgendaForm({ initialData, onSubmit, isPending, submitLabel, currentUserId }: AgendaFormProps) {
+export function AgendaForm({
+  initialData,
+  onSubmit,
+  isPending,
+  submitLabel,
+  currentUserId,
+  hideRecurrence = false,
+}: AgendaFormProps) {
   // 制限設定から最大参加者数を取得
   const { maxAttendeesPerAgenda } = useLimitsSettings();
 
@@ -356,150 +365,152 @@ export function AgendaForm({ initialData, onSubmit, isPending, submitLabel, curr
         />
       </div>
 
-      {/* 繰り返し設定 */}
-      <div className="rounded-lg border border-base-300 p-4">
-        <h3 className="mb-3 font-medium">繰り返し設定</h3>
+      {/* 繰り返し設定（「この回のみ」編集時は非表示） */}
+      {!hideRecurrence && (
+        <div className="rounded-lg border border-base-300 p-4">
+          <h3 className="mb-3 font-medium">繰り返し設定</h3>
 
-        <div className="form-control">
-          <label className="label" htmlFor="recurrenceType">
-            <span className="label-text">繰り返し</span>
-          </label>
-          <select
-            id="recurrenceType"
-            data-field="recurrenceType"
-            className="select select-bordered w-full"
-            value={formData.recurrenceType ?? 'None'}
-            onChange={(e) => handleFieldChange('recurrenceType', e.target.value as RecurrenceType)}
-            disabled={isFormDisabled}
-          >
-            {recurrenceOptions.map((opt) => (
-              <option key={opt.value} value={opt.value ?? 'None'}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="form-control">
+            <label className="label" htmlFor="recurrenceType">
+              <span className="label-text">繰り返し</span>
+            </label>
+            <select
+              id="recurrenceType"
+              data-field="recurrenceType"
+              className="select select-bordered w-full"
+              value={formData.recurrenceType ?? 'None'}
+              onChange={(e) => handleFieldChange('recurrenceType', e.target.value as RecurrenceType)}
+              disabled={isFormDisabled}
+            >
+              {recurrenceOptions.map((opt) => (
+                <option key={opt.value} value={opt.value ?? 'None'}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        {isRecurring && (
-          <>
-            {/* 間隔 */}
-            <div className="form-control mt-3">
-              <label className="label" htmlFor="recurrenceInterval">
-                <span className="label-text">間隔</span>
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  id="recurrenceInterval"
-                  data-field="recurrenceInterval"
-                  className={`input input-bordered w-20 ${shouldShowError('recurrenceInterval') ? 'input-error' : ''}`}
-                  value={formData.recurrenceInterval}
-                  onChange={(e) => handleFieldChange('recurrenceInterval', Number(e.target.value))}
-                  onBlur={() => validateField('recurrenceInterval', formData.recurrenceInterval)}
-                  min={1}
-                  max={99}
-                  disabled={isFormDisabled}
-                />
-                <span className="text-sm text-base-content/70">
-                  {formData.recurrenceType === 'Daily' && '日ごと'}
-                  {(formData.recurrenceType === 'Weekly' || formData.recurrenceType === 'Biweekly') && '週ごと'}
-                  {(formData.recurrenceType === 'MonthlyByDate' || formData.recurrenceType === 'MonthlyByWeekday') &&
-                    'ヶ月ごと'}
-                  {formData.recurrenceType === 'Yearly' && '年ごと'}
-                </span>
-              </div>
-              {shouldShowError('recurrenceInterval') && (
-                <div className="label">
-                  <span className="label-text-alt text-error">{getFieldError('recurrenceInterval')}</span>
-                </div>
-              )}
-            </div>
-
-            {/* 終了条件 */}
-            <div className="form-control mt-3">
-              <span className="label-text mb-2">終了</span>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2">
+          {isRecurring && (
+            <>
+              {/* 間隔 */}
+              <div className="form-control mt-3">
+                <label className="label" htmlFor="recurrenceInterval">
+                  <span className="label-text">間隔</span>
+                </label>
+                <div className="flex items-center gap-2">
                   <input
-                    type="radio"
-                    name="recurrenceEndTypeRadio"
-                    className="radio radio-primary"
-                    checked={formData.recurrenceEndType === 'date'}
-                    onChange={() => handleFieldChange('recurrenceEndType', 'date')}
+                    type="number"
+                    id="recurrenceInterval"
+                    data-field="recurrenceInterval"
+                    className={`input input-bordered w-20 ${shouldShowError('recurrenceInterval') ? 'input-error' : ''}`}
+                    value={formData.recurrenceInterval}
+                    onChange={(e) => handleFieldChange('recurrenceInterval', Number(e.target.value))}
+                    onBlur={() => validateField('recurrenceInterval', formData.recurrenceInterval)}
+                    min={1}
+                    max={99}
                     disabled={isFormDisabled}
                   />
-                  <span>終了日を指定</span>
-                  {formData.recurrenceEndType === 'date' && (
-                    <div className="ml-2">
-                      <DatePicker
-                        mode="date"
-                        value={formData.recurrenceEndDate}
-                        onChange={(value) => handleFieldChange('recurrenceEndDate', value)}
-                        onBlur={() => validateField('recurrenceEndDate', formData.recurrenceEndDate)}
-                        disabled={isFormDisabled}
-                        placeholder="終了日を選択"
-                        error={shouldShowError('recurrenceEndDate')}
-                        className="input-sm"
-                      />
-                      <input type="hidden" data-field="recurrenceEndDate" value={formData.recurrenceEndDate} />
+                  <span className="text-sm text-base-content/70">
+                    {formData.recurrenceType === 'Daily' && '日ごと'}
+                    {(formData.recurrenceType === 'Weekly' || formData.recurrenceType === 'Biweekly') && '週ごと'}
+                    {(formData.recurrenceType === 'MonthlyByDate' || formData.recurrenceType === 'MonthlyByWeekday') &&
+                      'ヶ月ごと'}
+                    {formData.recurrenceType === 'Yearly' && '年ごと'}
+                  </span>
+                </div>
+                {shouldShowError('recurrenceInterval') && (
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError('recurrenceInterval')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 終了条件 */}
+              <div className="form-control mt-3">
+                <span className="label-text mb-2">終了</span>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="recurrenceEndTypeRadio"
+                      className="radio radio-primary"
+                      checked={formData.recurrenceEndType === 'date'}
+                      onChange={() => handleFieldChange('recurrenceEndType', 'date')}
+                      disabled={isFormDisabled}
+                    />
+                    <span>終了日を指定</span>
+                    {formData.recurrenceEndType === 'date' && (
+                      <div className="ml-2">
+                        <DatePicker
+                          mode="date"
+                          value={formData.recurrenceEndDate}
+                          onChange={(value) => handleFieldChange('recurrenceEndDate', value)}
+                          onBlur={() => validateField('recurrenceEndDate', formData.recurrenceEndDate)}
+                          disabled={isFormDisabled}
+                          placeholder="終了日を選択"
+                          error={shouldShowError('recurrenceEndDate')}
+                          className="input-sm"
+                        />
+                        <input type="hidden" data-field="recurrenceEndDate" value={formData.recurrenceEndDate} />
+                      </div>
+                    )}
+                  </label>
+                  {shouldShowError('recurrenceEndDate') && formData.recurrenceEndType === 'date' && (
+                    <div className="label pt-0">
+                      <span className="label-text-alt text-error">{getFieldError('recurrenceEndDate')}</span>
                     </div>
                   )}
-                </label>
-                {shouldShowError('recurrenceEndDate') && formData.recurrenceEndType === 'date' && (
-                  <div className="label pt-0">
-                    <span className="label-text-alt text-error">{getFieldError('recurrenceEndDate')}</span>
-                  </div>
-                )}
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="recurrenceEndTypeRadio"
-                    className="radio radio-primary"
-                    checked={formData.recurrenceEndType === 'count'}
-                    onChange={() => handleFieldChange('recurrenceEndType', 'count')}
-                    disabled={isFormDisabled}
-                  />
-                  <span>回数を指定</span>
-                  {formData.recurrenceEndType === 'count' && (
-                    <>
-                      <input
-                        type="number"
-                        data-field="recurrenceCount"
-                        className={`input input-bordered input-sm ml-2 w-20 ${shouldShowError('recurrenceCount') ? 'input-error' : ''}`}
-                        value={formData.recurrenceCount}
-                        onChange={(e) => handleFieldChange('recurrenceCount', Number(e.target.value))}
-                        onBlur={() => validateField('recurrenceCount', formData.recurrenceCount)}
-                        min={1}
-                        max={999}
-                        disabled={isFormDisabled}
-                      />
-                      <span>回</span>
-                    </>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="recurrenceEndTypeRadio"
+                      className="radio radio-primary"
+                      checked={formData.recurrenceEndType === 'count'}
+                      onChange={() => handleFieldChange('recurrenceEndType', 'count')}
+                      disabled={isFormDisabled}
+                    />
+                    <span>回数を指定</span>
+                    {formData.recurrenceEndType === 'count' && (
+                      <>
+                        <input
+                          type="number"
+                          data-field="recurrenceCount"
+                          className={`input input-bordered input-sm ml-2 w-20 ${shouldShowError('recurrenceCount') ? 'input-error' : ''}`}
+                          value={formData.recurrenceCount}
+                          onChange={(e) => handleFieldChange('recurrenceCount', Number(e.target.value))}
+                          onBlur={() => validateField('recurrenceCount', formData.recurrenceCount)}
+                          min={1}
+                          max={999}
+                          disabled={isFormDisabled}
+                        />
+                        <span>回</span>
+                      </>
+                    )}
+                  </label>
+                  {shouldShowError('recurrenceCount') && formData.recurrenceEndType === 'count' && (
+                    <div className="label pt-0">
+                      <span className="label-text-alt text-error">{getFieldError('recurrenceCount')}</span>
+                    </div>
                   )}
-                </label>
-                {shouldShowError('recurrenceCount') && formData.recurrenceEndType === 'count' && (
-                  <div className="label pt-0">
-                    <span className="label-text-alt text-error">{getFieldError('recurrenceCount')}</span>
-                  </div>
-                )}
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="recurrenceEndTypeRadio"
-                    className="radio radio-primary"
-                    checked={formData.recurrenceEndType === 'never'}
-                    onChange={() => handleFieldChange('recurrenceEndType', 'never')}
-                    disabled={isFormDisabled}
-                  />
-                  <span>終了しない</span>
-                </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="recurrenceEndTypeRadio"
+                      className="radio radio-primary"
+                      checked={formData.recurrenceEndType === 'never'}
+                      onChange={() => handleFieldChange('recurrenceEndType', 'never')}
+                      disabled={isFormDisabled}
+                    />
+                    <span>終了しない</span>
+                  </label>
+                </div>
               </div>
-            </div>
-          </>
-        )}
-        {/* Hidden field for recurrenceEndType to be picked up by useFormValidation */}
-        <input type="hidden" data-field="recurrenceEndType" value={formData.recurrenceEndType} />
-      </div>
+            </>
+          )}
+          {/* Hidden field for recurrenceEndType to be picked up by useFormValidation */}
+          <input type="hidden" data-field="recurrenceEndType" value={formData.recurrenceEndType} />
+        </div>
+      )}
 
       {/* リマインダー */}
       <div className="rounded-lg border border-base-300 p-4">

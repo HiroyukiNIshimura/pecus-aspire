@@ -38,10 +38,10 @@ export default function AgendaPageClient({ initialOccurrences, initialNextCursor
   });
 
   // 参加状況更新後にローカル状態を更新
-  const handleAttendanceUpdate = (agendaId: number, startAt: string, newStatus: string) => {
+  const handleAttendanceUpdate = (agendaId: number, occurrenceIndex: number, newStatus: string) => {
     setOccurrences((prev) =>
       prev.map((occ) =>
-        occ.agendaId === agendaId && occ.startAt === startAt
+        occ.agendaId === agendaId && occ.occurrenceIndex === occurrenceIndex
           ? { ...occ, myAttendanceStatus: newStatus as AgendaOccurrenceResponse['myAttendanceStatus'] }
           : occ,
       ),

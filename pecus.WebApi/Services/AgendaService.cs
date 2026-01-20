@@ -53,7 +53,7 @@ public class AgendaService
             .OrderBy(a => a.StartAt)
             .ToListAsync();
 
-        return agendas.Select(ToResponse).ToList();
+        return agendas.Select(a => ToResponse(a)).ToList();
     }
 
     /// <summary>
@@ -80,13 +80,16 @@ public class AgendaService
             .Take(limit)
             .ToListAsync();
 
-        return agendas.Select(ToResponse).ToList();
+        return agendas.Select(a => ToResponse(a)).ToList();
     }
 
     /// <summary>
     /// アジェンダ詳細取得
     /// </summary>
-    public async Task<AgendaResponse> GetByIdAsync(long id, int organizationId)
+    /// <param name="id">アジェンダID</param>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="occurrenceIndex">特定回のインデックス（指定すると例外情報を適用した値を返す）</param>
+    public async Task<AgendaResponse> GetByIdAsync(long id, int organizationId, int? occurrenceIndex = null)
     {
         var query = _context.Agendas
             .AsNoTracking()
@@ -94,6 +97,7 @@ public class AgendaService
             .Include(a => a.CancelledByUser)
             .Include(a => a.Attendees)
                 .ThenInclude(at => at.User)
+            .Include(a => a.Exceptions)
             .Where(a => a.Id == id && a.OrganizationId == organizationId);
 
         var agenda = await query.FirstOrDefaultAsync();
@@ -103,7 +107,7 @@ public class AgendaService
             throw new NotFoundException("アジェンダが見つかりません。");
         }
 
-        return ToResponse(agenda);
+        return ToResponse(agenda, occurrenceIndex);
     }
 
     /// <summary>
@@ -282,6 +286,7 @@ public class AgendaService
         {
             var agenda = await _context.Agendas
                 .Include(a => a.Attendees)
+                .Include(a => a.Exceptions)
                 .FirstOrDefaultAsync(a => a.Id == id && a.OrganizationId == organizationId);
 
             if (agenda == null)
@@ -289,6 +294,19 @@ public class AgendaService
 
             if (agenda.IsCancelled)
                 throw new BadRequestException("中止されたアジェンダは編集できません。");
+
+            // 繰り返しルールが変更されたかチェック
+            var recurrenceChanged =
+                agenda.RecurrenceType != request.RecurrenceType ||
+                agenda.RecurrenceInterval != request.RecurrenceInterval ||
+                agenda.RecurrenceWeekOfMonth != request.RecurrenceWeekOfMonth ||
+                agenda.StartAt != request.StartAt; // 開始日時も繰り返しに影響
+
+            // 繰り返しルールが変更された場合は既存の例外を全削除
+            if (recurrenceChanged && agenda.Exceptions != null && agenda.Exceptions.Any())
+            {
+                _context.AgendaExceptions.RemoveRange(agenda.Exceptions);
+            }
 
             agenda.Title = request.Title;
             agenda.Description = request.Description;
@@ -539,15 +557,15 @@ public class AgendaService
         foreach (var agenda in agendas)
         {
             duration = agenda.EndAt - agenda.StartAt;
-            var expandedDates = RecurrenceHelper.ExpandOccurrences(agenda, start, end);
+            var expandedOccurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(agenda, start, end);
 
-            foreach (var occurrenceStart in expandedDates)
+            foreach (var occurrence in expandedOccurrences)
             {
-                var occurrenceEnd = occurrenceStart + duration;
+                var occurrenceEnd = occurrence.StartAt + duration;
 
-                // 例外（中止・変更）を確認
+                // 例外（中止・変更）を確認（インデックスで検索）
                 var exception = agenda.Exceptions?
-                    .FirstOrDefault(e => e.OriginalStartAt == occurrenceStart);
+                    .FirstOrDefault(e => e.OccurrenceIndex == occurrence.Index);
 
                 // この回が中止されているか
                 var isCancelled = agenda.IsCancelled || (exception?.IsCancelled ?? false);
@@ -559,7 +577,7 @@ public class AgendaService
                 var title = exception?.ModifiedTitle ?? agenda.Title;
                 var location = exception?.ModifiedLocation ?? agenda.Location;
                 var url = exception?.ModifiedUrl ?? agenda.Url;
-                var actualStart = exception?.ModifiedStartAt ?? occurrenceStart;
+                var actualStart = exception?.ModifiedStartAt ?? occurrence.StartAt;
                 var actualEnd = exception?.ModifiedEndAt ?? occurrenceEnd;
 
                 // 現在ユーザーの参加状況
@@ -569,6 +587,7 @@ public class AgendaService
                 {
                     AgendaId = agenda.Id,
                     ExceptionId = exception?.Id,
+                    OccurrenceIndex = occurrence.Index,
                     StartAt = actualStart,
                     EndAt = actualEnd,
                     Title = title,
@@ -638,7 +657,8 @@ public class AgendaService
     // ===== 例外（特定回の中止・変更）関連メソッド =====
 
     /// <summary>
-    /// アジェンダ例外作成（特定回の中止・変更）
+    /// アジェンダ例外作成または更新（特定回の中止・変更）
+    /// 同じ回の例外が既に存在する場合は更新します。
     /// </summary>
     public async Task<AgendaExceptionResponse> CreateExceptionAsync(
         long agendaId,
@@ -661,20 +681,19 @@ public class AgendaService
         if (agenda.RecurrenceType == null || agenda.RecurrenceType == RecurrenceType.None)
             throw new BadRequestException("単発イベントには例外を作成できません。シリーズ全体を編集してください。");
 
-        // 対象の回が存在するか確認（展開して確認）
-        var rangeEnd = request.OriginalStartAt.AddDays(1);
-        var occurrences = RecurrenceHelper.ExpandOccurrences(agenda, request.OriginalStartAt, rangeEnd);
-        if (!occurrences.Any(o => o == request.OriginalStartAt))
-            throw new BadRequestException("指定された日時はこのアジェンダの繰り返し回ではありません。");
+        // 対象のインデックスのオカレンスを計算
+        var farFuture = agenda.StartAt.AddYears(5);
+        var allOccurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(agenda, agenda.StartAt, farFuture);
+        var targetOccurrence = allOccurrences.FirstOrDefault(o => o.Index == request.OccurrenceIndex);
+        if (targetOccurrence == null)
+            throw new BadRequestException("指定されたインデックスはこのアジェンダの繰り返し回ではありません。");
 
-        // 同じ回の例外が既に存在するか確認
+        // 同じ回の例外が既に存在するか確認（インデックスで検索）
         var existingException = agenda.Exceptions?
-            .FirstOrDefault(e => e.OriginalStartAt == request.OriginalStartAt);
-        if (existingException != null)
-            throw new BadRequestException("この回には既に例外が設定されています。更新を使用してください。");
+            .FirstOrDefault(e => e.OccurrenceIndex == request.OccurrenceIndex);
 
         // 過去の回は変更不可
-        if (request.OriginalStartAt < DateTimeOffset.UtcNow)
+        if (targetOccurrence.StartAt < DateTimeOffset.UtcNow)
             throw new BadRequestException("過去の回は変更できません。");
 
         // バリデーション
@@ -684,23 +703,43 @@ public class AgendaService
                 throw new BadRequestException("終了日時は開始日時より後である必要があります。");
         }
 
-        var exception = new AgendaException
-        {
-            AgendaId = agendaId,
-            OriginalStartAt = request.OriginalStartAt,
-            IsCancelled = request.IsCancelled,
-            CancellationReason = request.IsCancelled ? request.CancellationReason : null,
-            ModifiedStartAt = request.IsCancelled ? null : request.ModifiedStartAt,
-            ModifiedEndAt = request.IsCancelled ? null : request.ModifiedEndAt,
-            ModifiedTitle = request.IsCancelled ? null : request.ModifiedTitle,
-            ModifiedLocation = request.IsCancelled ? null : request.ModifiedLocation,
-            ModifiedUrl = request.IsCancelled ? null : request.ModifiedUrl,
-            ModifiedDescription = request.IsCancelled ? null : request.ModifiedDescription,
-            CreatedByUserId = userId,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
+        AgendaException exception;
+        bool isUpdate = existingException != null;
 
-        _context.AgendaExceptions.Add(exception);
+        if (isUpdate)
+        {
+            // 既存の例外を更新
+            exception = existingException!;
+            exception.IsCancelled = request.IsCancelled;
+            exception.CancellationReason = request.IsCancelled ? request.CancellationReason : null;
+            exception.ModifiedStartAt = request.IsCancelled ? null : request.ModifiedStartAt;
+            exception.ModifiedEndAt = request.IsCancelled ? null : request.ModifiedEndAt;
+            exception.ModifiedTitle = request.IsCancelled ? null : request.ModifiedTitle;
+            exception.ModifiedLocation = request.IsCancelled ? null : request.ModifiedLocation;
+            exception.ModifiedUrl = request.IsCancelled ? null : request.ModifiedUrl;
+            exception.ModifiedDescription = request.IsCancelled ? null : request.ModifiedDescription;
+        }
+        else
+        {
+            // 新規作成
+            exception = new AgendaException
+            {
+                AgendaId = agendaId,
+                OccurrenceIndex = request.OccurrenceIndex,
+                IsCancelled = request.IsCancelled,
+                CancellationReason = request.IsCancelled ? request.CancellationReason : null,
+                ModifiedStartAt = request.IsCancelled ? null : request.ModifiedStartAt,
+                ModifiedEndAt = request.IsCancelled ? null : request.ModifiedEndAt,
+                ModifiedTitle = request.IsCancelled ? null : request.ModifiedTitle,
+                ModifiedLocation = request.IsCancelled ? null : request.ModifiedLocation,
+                ModifiedUrl = request.IsCancelled ? null : request.ModifiedUrl,
+                ModifiedDescription = request.IsCancelled ? null : request.ModifiedDescription,
+                CreatedByUserId = userId,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            _context.AgendaExceptions.Add(exception);
+        }
+
         await _context.SaveChangesAsync();
 
         // 特定回の中止・変更通知を作成（操作者自身は除外）
@@ -721,7 +760,7 @@ public class AgendaService
                     agenda.Id,
                     attendeesToNotify,
                     notificationType,
-                    request.OriginalStartAt,
+                    targetOccurrence.StartAt,
                     request.IsCancelled ? request.CancellationReason : null,
                     userId);
             }
@@ -753,8 +792,14 @@ public class AgendaService
         if (exception == null)
             throw new NotFoundException("アジェンダ例外が見つかりません。");
 
+        // 対象のオカレンスの日時を計算（過去判定と通知用）
+        var farFuture = agenda.StartAt.AddYears(5);
+        var allOccurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(agenda, agenda.StartAt, farFuture);
+        var targetOccurrence = allOccurrences.FirstOrDefault(o => o.Index == exception.OccurrenceIndex);
+        var occurrenceStartAt = targetOccurrence?.StartAt ?? agenda.StartAt;
+
         // 過去の回は変更不可
-        if (exception.OriginalStartAt < DateTimeOffset.UtcNow)
+        if (occurrenceStartAt < DateTimeOffset.UtcNow)
             throw new BadRequestException("過去の回は変更できません。");
 
         // バリデーション
@@ -793,7 +838,7 @@ public class AgendaService
                     agenda.Id,
                     attendeesToNotify,
                     notificationType,
-                    exception.OriginalStartAt,
+                    occurrenceStartAt,
                     request.IsCancelled ? request.CancellationReason : null,
                     userId);
             }
@@ -823,8 +868,14 @@ public class AgendaService
         if (exception == null)
             throw new NotFoundException("アジェンダ例外が見つかりません。");
 
+        // 対象のオカレンスの日時を計算（過去判定用）
+        var farFuture = agenda.StartAt.AddYears(5);
+        var allOccurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(agenda, agenda.StartAt, farFuture);
+        var targetOccurrence = allOccurrences.FirstOrDefault(o => o.Index == exception.OccurrenceIndex);
+        var occurrenceStartAt = targetOccurrence?.StartAt ?? agenda.StartAt;
+
         // 過去の回は変更不可
-        if (exception.OriginalStartAt < DateTimeOffset.UtcNow)
+        if (occurrenceStartAt < DateTimeOffset.UtcNow)
             throw new BadRequestException("過去の回の例外は削除できません。");
 
         _context.AgendaExceptions.Remove(exception);
@@ -847,10 +898,25 @@ public class AgendaService
             .AsNoTracking()
             .Include(e => e.CreatedByUser)
             .Where(e => e.AgendaId == agendaId)
-            .OrderBy(e => e.OriginalStartAt)
+            .OrderBy(e => e.OccurrenceIndex)
             .ToListAsync();
 
-        return exceptions.Select(ToExceptionResponse).ToList();
+        // 親アジェンダのオカレンス一覧を取得（元の日時を計算するため）
+        List<OccurrenceInfo>? occurrences = null;
+        if (agenda.RecurrenceType != RecurrenceType.None && exceptions.Count > 0)
+        {
+            var maxIndex = exceptions.Max(e => e.OccurrenceIndex);
+            // 必要なインデックスまで十分展開するため、開始から遠い将来までの範囲で展開
+            var rangeEnd = agenda.StartAt.AddYears(10);
+            occurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(
+                agenda,
+                agenda.StartAt,
+                rangeEnd,
+                maxIndex + 10  // 余裕を持った回数
+            );
+        }
+
+        return exceptions.Select(e => ToExceptionResponse(e, occurrences)).ToList();
     }
 
     /// <summary>
@@ -866,16 +932,27 @@ public class AgendaService
         if (exception == null)
             throw new NotFoundException("アジェンダ例外が見つかりません。");
 
-        return ToExceptionResponse(exception);
+        return ToExceptionResponse(exception, null);
     }
 
-    private AgendaExceptionResponse ToExceptionResponse(AgendaException exception)
+    private AgendaExceptionResponse ToExceptionResponse(
+        AgendaException exception,
+        List<OccurrenceInfo>? occurrences)
     {
+        // オカレンス一覧から元の日時を取得
+        DateTimeOffset? originalStartAt = null;
+        if (occurrences != null)
+        {
+            var occ = occurrences.FirstOrDefault(o => o.Index == exception.OccurrenceIndex);
+            originalStartAt = occ?.StartAt;
+        }
+
         return new AgendaExceptionResponse
         {
             Id = exception.Id,
             AgendaId = exception.AgendaId,
-            OriginalStartAt = exception.OriginalStartAt,
+            OccurrenceIndex = exception.OccurrenceIndex,
+            OriginalStartAt = originalStartAt,
             IsCancelled = exception.IsCancelled,
             CancellationReason = exception.CancellationReason,
             ModifiedStartAt = exception.ModifiedStartAt,
@@ -938,38 +1015,54 @@ public class AgendaService
             if (originalAgenda.RecurrenceType == null || originalAgenda.RecurrenceType == RecurrenceType.None)
                 throw new BadRequestException("単発イベントにはこの操作は使用できません。通常の更新を使用してください。");
 
-            // 分割地点が繰り返しの回に存在するか確認
-            var rangeEnd = request.FromStartAt.AddDays(1);
-            var occurrences = RecurrenceHelper.ExpandOccurrences(originalAgenda, request.FromStartAt, rangeEnd);
-            if (!occurrences.Any(o => o == request.FromStartAt))
-                throw new BadRequestException("指定された日時はこのアジェンダの繰り返し回ではありません。");
+            // 分割地点のインデックスを見つける
+            var farFuture = originalAgenda.StartAt.AddYears(5);
+            var allOccurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(originalAgenda, originalAgenda.StartAt, farFuture);
+            var splitOccurrence = allOccurrences.FirstOrDefault(o => o.Index == request.FromOccurrenceIndex);
+            if (splitOccurrence == null)
+                throw new BadRequestException("指定されたインデックスはこのアジェンダの繰り返し回ではありません。");
 
             // 過去の回からの分割は不可
-            if (request.FromStartAt < DateTimeOffset.UtcNow)
+            if (splitOccurrence.StartAt < DateTimeOffset.UtcNow)
                 throw new BadRequestException("過去の回からの分割はできません。");
 
             // 最初の回で分割しようとした場合は通常の更新を使用すべき
-            if (request.FromStartAt == originalAgenda.StartAt)
+            if (request.FromOccurrenceIndex == 0)
                 throw new BadRequestException("最初の回からの分割はできません。シリーズ全体の更新を使用してください。");
 
             // ===== 元のシリーズを分割地点の前日で終了 =====
             // 分割地点の1つ前の回を見つける
-            var previousOccurrenceEnd = FindPreviousOccurrenceDate(originalAgenda, request.FromStartAt);
-            if (previousOccurrenceEnd == null)
+            var previousOccurrence = allOccurrences.FirstOrDefault(o => o.Index == request.FromOccurrenceIndex - 1);
+            if (previousOccurrence == null)
                 throw new BadRequestException("分割地点より前の回が見つかりません。");
 
-            originalAgenda.RecurrenceEndDate = DateOnly.FromDateTime(previousOccurrenceEnd.Value.UtcDateTime);
+            originalAgenda.RecurrenceEndDate = DateOnly.FromDateTime(previousOccurrence.StartAt.UtcDateTime);
             originalAgenda.RecurrenceCount = null; // 終了日指定に切り替え
             originalAgenda.UpdatedAt = DateTimeOffset.UtcNow;
 
             // ===== 新しいシリーズを作成 =====
+            // 新しいシリーズの開始日時は、分割地点と同じ日付で、
+            // 時刻はrequest.StartAtの時刻を使用（時刻変更の場合に対応）
+            var newStartAt = new DateTimeOffset(
+                splitOccurrence.StartAt.Year,
+                splitOccurrence.StartAt.Month,
+                splitOccurrence.StartAt.Day,
+                request.StartAt.Hour,
+                request.StartAt.Minute,
+                request.StartAt.Second,
+                request.StartAt.Offset);
+
+            // 終了日時も同様に調整
+            var duration = request.EndAt - request.StartAt;
+            var newEndAt = newStartAt + duration;
+
             var newAgenda = new Agenda
             {
                 OrganizationId = organizationId,
                 Title = request.Title,
                 Description = request.Description,
-                StartAt = request.StartAt,
-                EndAt = request.EndAt,
+                StartAt = newStartAt,
+                EndAt = newEndAt,
                 IsAllDay = request.IsAllDay,
                 Location = request.Location,
                 Url = request.Url,
@@ -1010,21 +1103,33 @@ public class AgendaService
             await _context.SaveChangesAsync();
 
             // ===== 分割地点以降の例外を新しいシリーズに移行 =====
+            // インデックスベースで、分割地点以降の例外を移行
             var exceptionsToMove = originalAgenda.Exceptions?
-                .Where(e => e.OriginalStartAt >= request.FromStartAt)
+                .Where(e => e.OccurrenceIndex >= request.FromOccurrenceIndex)
                 .ToList() ?? new List<AgendaException>();
+
+            // 元のシリーズと新しいシリーズの時刻差を計算
+            var timeShift = newStartAt.TimeOfDay - originalAgenda.StartAt.TimeOfDay;
 
             foreach (var exception in exceptionsToMove)
             {
                 // 新しいシリーズに例外をコピー
+                // インデックスは新しいシリーズの視点で再計算（分割地点が0になる）
+                var newOccurrenceIndex = exception.OccurrenceIndex - request.FromOccurrenceIndex;
+
                 var newException = new AgendaException
                 {
                     AgendaId = newAgenda.Id,
-                    OriginalStartAt = exception.OriginalStartAt,
+                    OccurrenceIndex = newOccurrenceIndex,
                     IsCancelled = exception.IsCancelled,
                     CancellationReason = exception.CancellationReason,
-                    ModifiedStartAt = exception.ModifiedStartAt,
-                    ModifiedEndAt = exception.ModifiedEndAt,
+                    // ModifiedStartAt/EndAt も時刻変更に合わせて調整（設定されている場合）
+                    ModifiedStartAt = exception.ModifiedStartAt.HasValue
+                        ? exception.ModifiedStartAt.Value + timeShift
+                        : null,
+                    ModifiedEndAt = exception.ModifiedEndAt.HasValue
+                        ? exception.ModifiedEndAt.Value + timeShift
+                        : null,
                     ModifiedTitle = exception.ModifiedTitle,
                     ModifiedLocation = exception.ModifiedLocation,
                     ModifiedUrl = exception.ModifiedUrl,
@@ -1054,8 +1159,8 @@ public class AgendaService
                         newAgenda.Id,
                         attendeesToNotify,
                         AgendaNotificationType.SeriesUpdated,
-                        request.FromStartAt,
-                        $"{request.FromStartAt:yyyy/MM/dd}以降のイベントが変更されました",
+                        splitOccurrence.StartAt,
+                        $"{splitOccurrence.StartAt:yyyy/MM/dd}以降のイベントが変更されました",
                         userId);
                 }
             }
@@ -1087,24 +1192,40 @@ public class AgendaService
             .FirstOrDefault();
     }
 
-    private AgendaResponse ToResponse(Agenda agenda)
+    private AgendaResponse ToResponse(Agenda agenda, int? occurrenceIndex = null)
     {
+        // 特定回の例外を取得（例外情報を適用するため）
+        AgendaException? exception = null;
+        if (occurrenceIndex.HasValue && agenda.Exceptions != null)
+        {
+            exception = agenda.Exceptions.FirstOrDefault(e => e.OccurrenceIndex == occurrenceIndex.Value);
+        }
+
+        // 例外情報を適用した値を計算
+        var title = exception?.ModifiedTitle ?? agenda.Title;
+        var description = exception?.ModifiedDescription ?? agenda.Description;
+        var location = exception?.ModifiedLocation ?? agenda.Location;
+        var url = exception?.ModifiedUrl ?? agenda.Url;
+        var startAt = exception?.ModifiedStartAt ?? agenda.StartAt;
+        var endAt = exception?.ModifiedEndAt ?? agenda.EndAt;
+
         return new AgendaResponse
         {
             Id = agenda.Id,
             OrganizationId = agenda.OrganizationId,
-            Title = agenda.Title,
-            Description = agenda.Description,
-            StartAt = agenda.StartAt,
-            EndAt = agenda.EndAt,
+            Title = title,
+            Description = description,
+            StartAt = startAt,
+            EndAt = endAt,
             IsAllDay = agenda.IsAllDay,
-            Location = agenda.Location,
-            Url = agenda.Url,
+            Location = location,
+            Url = url,
             RecurrenceType = agenda.RecurrenceType,
             RecurrenceInterval = agenda.RecurrenceInterval,
             RecurrenceWeekOfMonth = agenda.RecurrenceWeekOfMonth,
             RecurrenceEndDate = agenda.RecurrenceEndDate,
             RecurrenceCount = agenda.RecurrenceCount,
+            NextOccurrenceStartAt = CalculateNextOccurrenceStartAt(agenda),
             Reminders = ParseRemindersFromString(agenda.DefaultReminders),
             IsCancelled = agenda.IsCancelled,
             CancellationReason = agenda.CancellationReason,
@@ -1124,6 +1245,43 @@ public class AgendaService
                 User = a.User == null ? null : ToUserItem(a.User)
             }).OrderBy(a => a.User?.Username).ToList()
         };
+    }
+
+    /// <summary>
+    /// 今日以降の次の回の開始日時を計算
+    /// </summary>
+    private DateTimeOffset? CalculateNextOccurrenceStartAt(Agenda agenda)
+    {
+        // 繰り返しアジェンダでない場合はnull
+        if (agenda.RecurrenceType == null || agenda.RecurrenceType == RecurrenceType.None)
+            return null;
+
+        // 中止されている場合はnull
+        if (agenda.IsCancelled)
+            return null;
+
+        // 今日の0時を起点にして、今後1年間の範囲で次の回を探す
+        var today = DateTimeOffset.UtcNow.Date;
+        var rangeStart = new DateTimeOffset(today, TimeSpan.Zero);
+        var rangeEnd = rangeStart.AddYears(1);
+
+        // アジェンダの開始日が未来の場合は、開始日を起点にする
+        if (agenda.StartAt > rangeStart)
+        {
+            rangeStart = agenda.StartAt;
+        }
+
+        var occurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(agenda, rangeStart, rangeEnd);
+
+        // 例外で中止されているインデックスのセットを作成
+        var cancelledIndices = agenda.Exceptions?.Where(e => e.IsCancelled).Select(e => e.OccurrenceIndex).ToHashSet()
+            ?? new HashSet<int>();
+
+        // 中止されていない最初の回を返す
+        return occurrences
+            .Where(o => !cancelledIndices.Contains(o.Index))
+            .Select(o => (DateTimeOffset?)o.StartAt)
+            .FirstOrDefault();
     }
 
     private UserItem ToUserItem(User user)

@@ -52,6 +52,12 @@ public class AgendaResponse : IConflictModel
     /// </summary>
     public int? RecurrenceCount { get; set; }
 
+    /// <summary>
+    /// 今日以降の次の回の開始日時（繰り返しアジェンダの場合のみ）
+    /// 繰り返しアジェンダでない場合や、すべての回が終了している場合はnull
+    /// </summary>
+    public DateTimeOffset? NextOccurrenceStartAt { get; set; }
+
     // ===== リマインダー =====
 
     /// <summary>

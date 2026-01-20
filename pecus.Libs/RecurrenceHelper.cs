@@ -4,12 +4,77 @@ using Pecus.Libs.DB.Models.Enums;
 namespace Pecus.Libs;
 
 /// <summary>
+/// オカレンス情報（インデックス付き）
+/// </summary>
+public record OccurrenceInfo(int Index, DateTimeOffset StartAt);
+
+/// <summary>
 /// 繰り返しイベントの展開ロジックを提供するヘルパークラス
 /// </summary>
 public static class RecurrenceHelper
 {
     /// <summary>
-    /// 繰り返しイベントを指定期間内で展開し、各オカレンスの開始日時を返す
+    /// 繰り返しイベントを指定期間内で展開し、各オカレンスの開始日時とインデックスを返す
+    /// </summary>
+    /// <param name="agenda">展開対象のアジェンダ</param>
+    /// <param name="rangeStart">期間開始</param>
+    /// <param name="rangeEnd">期間終了</param>
+    /// <param name="maxOccurrences">最大オカレンス数（安全策）</param>
+    /// <returns>各オカレンスの情報リスト</returns>
+    public static List<OccurrenceInfo> ExpandOccurrencesWithIndex(
+        Agenda agenda,
+        DateTimeOffset rangeStart,
+        DateTimeOffset rangeEnd,
+        int maxOccurrences = 365)
+    {
+        var occurrences = new List<OccurrenceInfo>();
+
+        // 単発イベントまたは繰り返しなしの場合
+        if (agenda.RecurrenceType == null || agenda.RecurrenceType == RecurrenceType.None)
+        {
+            if (agenda.StartAt < rangeEnd && agenda.EndAt > rangeStart)
+            {
+                occurrences.Add(new OccurrenceInfo(0, agenda.StartAt));
+            }
+            return occurrences;
+        }
+
+        var current = agenda.StartAt;
+        var interval = Math.Max(1, agenda.RecurrenceInterval);
+        var index = 0;
+
+        // 繰り返し終了条件
+        var endDate = GetRecurrenceEndDate(agenda);
+
+        while (index < maxOccurrences)
+        {
+            // 終了条件チェック
+            if (endDate.HasValue && DateOnly.FromDateTime(current.UtcDateTime) > endDate.Value)
+                break;
+
+            if (current >= rangeEnd)
+                break;
+
+            // 範囲内に入っていれば追加
+            if (current >= rangeStart || agenda.EndAt.Add(current - agenda.StartAt) > rangeStart)
+            {
+                occurrences.Add(new OccurrenceInfo(index, current));
+            }
+
+            // 次のオカレンスを計算
+            current = GetNextOccurrence(agenda, current, interval);
+            index++;
+
+            // 回数制限チェック
+            if (agenda.RecurrenceCount.HasValue && index >= agenda.RecurrenceCount.Value)
+                break;
+        }
+
+        return occurrences;
+    }
+
+    /// <summary>
+    /// 繰り返しイベントを指定期間内で展開し、各オカレンスの開始日時を返す（後方互換性用）
     /// </summary>
     /// <param name="agenda">展開対象のアジェンダ</param>
     /// <param name="rangeStart">期間開始</param>
@@ -22,50 +87,9 @@ public static class RecurrenceHelper
         DateTimeOffset rangeEnd,
         int maxOccurrences = 365)
     {
-        var occurrences = new List<DateTimeOffset>();
-
-        // 単発イベントまたは繰り返しなしの場合
-        if (agenda.RecurrenceType == null || agenda.RecurrenceType == RecurrenceType.None)
-        {
-            if (agenda.StartAt < rangeEnd && agenda.EndAt > rangeStart)
-            {
-                occurrences.Add(agenda.StartAt);
-            }
-            return occurrences;
-        }
-
-        var current = agenda.StartAt;
-        var interval = Math.Max(1, agenda.RecurrenceInterval);
-        var count = 0;
-
-        // 繰り返し終了条件
-        var endDate = GetRecurrenceEndDate(agenda);
-
-        while (count < maxOccurrences)
-        {
-            // 終了条件チェック
-            if (endDate.HasValue && DateOnly.FromDateTime(current.UtcDateTime) > endDate.Value)
-                break;
-
-            if (current >= rangeEnd)
-                break;
-
-            // 範囲内に入っていれば追加
-            if (current >= rangeStart || agenda.EndAt.Add(current - agenda.StartAt) > rangeStart)
-            {
-                occurrences.Add(current);
-            }
-
-            // 次のオカレンスを計算
-            current = GetNextOccurrence(agenda, current, interval);
-            count++;
-
-            // 回数制限チェック
-            if (agenda.RecurrenceCount.HasValue && count >= agenda.RecurrenceCount.Value)
-                break;
-        }
-
-        return occurrences;
+        return ExpandOccurrencesWithIndex(agenda, rangeStart, rangeEnd, maxOccurrences)
+            .Select(o => o.StartAt)
+            .ToList();
     }
 
     /// <summary>

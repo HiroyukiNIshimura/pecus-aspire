@@ -20,10 +20,10 @@ public class AgendaException
     public long AgendaId { get; set; }
 
     /// <summary>
-    /// 対象の元の開始日時（どの回かを特定）
+    /// オカレンスのインデックス（0から始まる、何回目かを特定）
     /// </summary>
     [Required]
-    public DateTimeOffset OriginalStartAt { get; set; }
+    public int OccurrenceIndex { get; set; }
 
     /// <summary>
     /// この回は中止か

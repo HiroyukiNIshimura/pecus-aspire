@@ -827,6 +827,7 @@
           "Agenda"
         ],
         "summary": "アジェンダ詳細取得",
+        "description": "occurrenceIndexを指定すると、その回の例外情報を適用した値を返します。",
         "parameters": [
           {
             "name": "id",
@@ -835,6 +836,14 @@
             "schema": {
               "type": "integer",
               "format": "int64"
+            }
+          },
+          {
+            "name": "occurrenceIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -14980,7 +14989,7 @@
         "required": [
           "id",
           "agendaId",
-          "originalStartAt"
+          "occurrenceIndex"
         ],
         "type": "object",
         "properties": {
@@ -14994,10 +15003,16 @@
             "description": "親アジェンダID",
             "format": "int64"
           },
+          "occurrenceIndex": {
+            "type": "integer",
+            "description": "オカレンスのインデックス（0から始まる、何回目かを特定）",
+            "format": "int32"
+          },
           "originalStartAt": {
             "type": "string",
-            "description": "対象の元の開始日時（どの回かを特定）",
-            "format": "date-time"
+            "description": "元の予定日時（繰り返しルールから計算された、例外適用前の日時）",
+            "format": "date-time",
+            "nullable": true
           },
           "isCancelled": {
             "type": "boolean",
@@ -15152,6 +15167,7 @@
       "AgendaOccurrenceResponse": {
         "required": [
           "agendaId",
+          "occurrenceIndex",
           "startAt",
           "endAt",
           "title"
@@ -15168,6 +15184,11 @@
             "description": "例外ID（この回が変更されている場合）",
             "format": "int64",
             "nullable": true
+          },
+          "occurrenceIndex": {
+            "type": "integer",
+            "description": "オカレンスのインデックス（0から始まる、何回目かを特定）",
+            "format": "int32"
           },
           "startAt": {
             "type": "string",
@@ -15354,6 +15375,12 @@
             "type": "integer",
             "description": "繰り返し終了回数",
             "format": "int32",
+            "nullable": true
+          },
+          "nextOccurrenceStartAt": {
+            "type": "string",
+            "description": "今日以降の次の回の開始日時（繰り返しアジェンダの場合のみ）\n繰り返しアジェンダでない場合や、すべての回が終了している場合はnull",
+            "format": "date-time",
             "nullable": true
           },
           "reminders": {
@@ -17007,14 +17034,14 @@
       },
       "CreateAgendaExceptionRequest": {
         "required": [
-          "originalStartAt"
+          "occurrenceIndex"
         ],
         "type": "object",
         "properties": {
-          "originalStartAt": {
-            "type": "string",
-            "description": "対象の元の開始日時（どの回かを特定）",
-            "format": "date-time"
+          "occurrenceIndex": {
+            "type": "integer",
+            "description": "オカレンスのインデックス（0から始まる、何回目かを特定）",
+            "format": "int32"
           },
           "isCancelled": {
             "type": "boolean",
@@ -23333,17 +23360,17 @@
       },
       "UpdateFromOccurrenceRequest": {
         "required": [
-          "fromStartAt",
+          "fromOccurrenceIndex",
           "title",
           "startAt",
           "endAt"
         ],
         "type": "object",
         "properties": {
-          "fromStartAt": {
-            "type": "string",
-            "description": "分割起点となる回の開始日時",
-            "format": "date-time"
+          "fromOccurrenceIndex": {
+            "type": "integer",
+            "description": "分割起点となる回のインデックス（0から始まる）",
+            "format": "int32"
           },
           "title": {
             "maxLength": 200,

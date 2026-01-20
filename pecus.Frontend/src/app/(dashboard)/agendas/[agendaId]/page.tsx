@@ -14,11 +14,16 @@ interface AgendaDetailPageProps {
   params: Promise<{
     agendaId: string;
   }>;
+  searchParams: Promise<{
+    occurrence?: string;
+  }>;
 }
 
-export default async function AgendaDetailPage({ params }: AgendaDetailPageProps) {
+export default async function AgendaDetailPage({ params, searchParams }: AgendaDetailPageProps) {
   const { agendaId } = await params;
+  const { occurrence } = await searchParams;
   const agendaIdNum = parseInt(agendaId, 10);
+  const occurrenceIndex = occurrence ? parseInt(occurrence, 10) : undefined;
 
   if (Number.isNaN(agendaIdNum)) {
     redirect('/agendas');
@@ -33,8 +38,8 @@ export default async function AgendaDetailPage({ params }: AgendaDetailPageProps
     const api = createPecusApiClients();
     await api.profile.getApiProfileAppSettings();
 
-    // アジェンダ詳細取得
-    const agendaResult = await fetchAgendaById(agendaIdNum);
+    // アジェンダ詳細取得（occurrenceIndexを渡して例外情報を適用）
+    const agendaResult = await fetchAgendaById(agendaIdNum, occurrenceIndex);
     if (agendaResult.success) {
       agenda = agendaResult.data;
 
@@ -67,5 +72,12 @@ export default async function AgendaDetailPage({ params }: AgendaDetailPageProps
     redirect('/agendas');
   }
 
-  return <AgendaDetailClient agenda={agenda} exceptions={exceptions} fetchError={fetchError} />;
+  return (
+    <AgendaDetailClient
+      agenda={agenda}
+      exceptions={exceptions}
+      fetchError={fetchError}
+      occurrenceIndex={occurrenceIndex}
+    />
+  );
 }

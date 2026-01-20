@@ -18,6 +18,15 @@ AIに対するコーディングルールは、.github\copilot-instructions.md�
 Pecus Aspire は、.NET Aspire 10.0 を使用した分散マイクロサービス構成のマルチテナント管理システムです。
 複数の組織をサポートし、ユーザー管理、ワークスペース管理、スキル管理などの機能を提供します。
 
+## 🪧 デモサイト
+https://coati.bright-l.0am.jp
+
+ログイン: user1@demo.coati.none、user2@demo.coati.none、user3@demo.coati.none
+パスワード: P@ssw0rd
+※管理者権限のユーザーは利用できません。
+
+![デモサイト](images/demo-site.webp)
+
 ## 🏗️ アーキテクチャ
 
 ### プロジェクト構成

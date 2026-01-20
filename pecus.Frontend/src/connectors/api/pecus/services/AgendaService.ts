@@ -141,18 +141,24 @@ export class AgendaService {
     }
     /**
      * アジェンダ詳細取得
+     * occurrenceIndexを指定すると、その回の例外情報を適用した値を返します。
      * @param id
+     * @param occurrenceIndex
      * @returns AgendaResponse OK
      * @throws ApiError
      */
     public static getApiAgendas1(
         id: number,
+        occurrenceIndex?: number,
     ): CancelablePromise<AgendaResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/agendas/{id}',
             path: {
                 'id': id,
+            },
+            query: {
+                'occurrenceIndex': occurrenceIndex,
             },
             errors: {
                 404: `Not Found`,

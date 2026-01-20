@@ -7,7 +7,7 @@ import AgendaTimelineGroup from './AgendaTimelineGroup';
 
 interface AgendaTimelineProps {
   occurrences: AgendaOccurrenceResponse[];
-  onAttendanceUpdate: (agendaId: number, startAt: string, newStatus: string) => void;
+  onAttendanceUpdate: (agendaId: number, occurrenceIndex: number, newStatus: string) => void;
 }
 
 /** 日付をグループ化するためのキーを取得（ローカルタイムゾーン） */

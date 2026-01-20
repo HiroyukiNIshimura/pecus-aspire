@@ -7,6 +7,7 @@ import { updateAttendance } from '@/actions/agenda';
 import { AgendaDetail } from '@/components/agendas/AgendaDetail';
 import { AttendeeList } from '@/components/agendas/AttendeeList';
 import { CancelConfirmModal } from '@/components/agendas/CancelConfirmModal';
+import { type EditScope, EditScopeModal } from '@/components/agendas/EditScopeModal';
 import type { AgendaExceptionResponse, AgendaResponse, AttendanceStatus, RecurrenceType } from '@/connectors/api/pecus';
 import { useAppSettings } from '@/providers/AppSettingsProvider';
 
@@ -14,15 +15,23 @@ interface AgendaDetailClientProps {
   agenda: AgendaResponse;
   exceptions: AgendaExceptionResponse[];
   fetchError: string | null;
+  /** 特定回のインデックス（タイムラインからのリンク経由） */
+  occurrenceIndex?: number;
 }
 
-export default function AgendaDetailClient({ agenda, exceptions, fetchError }: AgendaDetailClientProps) {
+export default function AgendaDetailClient({
+  agenda,
+  exceptions,
+  fetchError,
+  occurrenceIndex,
+}: AgendaDetailClientProps) {
   const { currentUser } = useAppSettings();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(fetchError);
   const [currentAgenda, setCurrentAgenda] = useState(agenda);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isEditScopeModalOpen, setIsEditScopeModalOpen] = useState(false);
 
   // 現在のユーザーの参加状況を取得
   const currentUserAttendee = currentAgenda.attendees?.find((a) => a.userId === currentUser?.id);
@@ -31,6 +40,24 @@ export default function AgendaDetailClient({ agenda, exceptions, fetchError }: A
   // 繰り返しアジェンダかどうか
   const recurrenceType = currentAgenda.recurrenceType as RecurrenceType | undefined;
   const isRecurring = recurrenceType && recurrenceType !== 'None';
+
+  // 表示対象の回のインデックス
+  // - URLパラメータで指定されていればそれを使用
+  // - 指定されていない場合は0（最初の回）
+  const effectiveOccurrenceIndex = occurrenceIndex ?? 0;
+
+  // 表示対象の回の開始日時（日付表示用）
+  // - バックエンドから返されたstartAtを使用（例外適用済み）
+  const effectiveOccurrenceStartAt = currentAgenda.startAt;
+
+  // 特定回の日付表示用（例: "1/26"）
+  const occurrenceDate = new Date(effectiveOccurrenceStartAt).toLocaleDateString('ja-JP', {
+    month: 'numeric',
+    day: 'numeric',
+  });
+
+  // シリーズの最初の回かどうか（最初の回からは「この回以降」の分割はできない）
+  const isFirstOccurrence = effectiveOccurrenceIndex === 0;
 
   const handleAttendanceChange = (newStatus: AttendanceStatus) => {
     if (isPending) return;
@@ -55,6 +82,40 @@ export default function AgendaDetailClient({ agenda, exceptions, fetchError }: A
     // 中止完了後、一覧ページにリダイレクト
     router.push('/agendas');
     router.refresh();
+  };
+
+  // 編集ボタンクリック
+  const handleEditClick = () => {
+    if (isRecurring) {
+      // 繰り返しアジェンダの場合、編集範囲選択モーダルを表示
+      setIsEditScopeModalOpen(true);
+    } else {
+      // 単発アジェンダの場合は直接編集ページへ
+      router.push(`/agendas/${currentAgenda.id}/edit`);
+    }
+  };
+
+  // 編集範囲選択完了
+  const handleEditScopeSelect = (scope: EditScope) => {
+    setIsEditScopeModalOpen(false);
+
+    switch (scope) {
+      case 'all':
+        // シリーズ全体の編集
+        router.push(`/agendas/${currentAgenda.id}/edit`);
+        break;
+      case 'this-and-future':
+        // この回以降の編集（シリーズ分割）
+        // 編集ページにscope=fromパラメータを追加
+        router.push(`/agendas/${currentAgenda.id}/edit?scope=from&occurrence=${effectiveOccurrenceIndex}`);
+        break;
+      case 'this-only':
+        // この回のみの編集（例外作成）
+        // 特定回の編集ページへ遷移（現時点では未実装のためアラート表示）
+        // TODO: 特定回の編集ページが実装されたら遷移先を変更
+        router.push(`/agendas/${currentAgenda.id}/edit?scope=single&occurrence=${effectiveOccurrenceIndex}`);
+        break;
+    }
   };
 
   if (error) {
@@ -90,10 +151,10 @@ export default function AgendaDetailClient({ agenda, exceptions, fetchError }: A
               <span className="icon-[mdi--cancel] size-4" />
               {isRecurring ? 'シリーズを中止' : '中止'}
             </button>
-            <Link href={`/agendas/${currentAgenda.id}/edit`} className="btn btn-primary btn-sm">
+            <button type="button" className="btn btn-primary btn-sm" onClick={handleEditClick}>
               <span className="icon-[tabler--pencil] size-4" />
               編集
-            </Link>
+            </button>
           </div>
         )}
       </div>
@@ -126,6 +187,19 @@ export default function AgendaDetailClient({ agenda, exceptions, fetchError }: A
         rowVersion={currentAgenda.rowVersion}
         isRecurring={!!isRecurring}
       />
+
+      {/* 編集範囲選択モーダル */}
+      {isRecurring && (
+        <EditScopeModal
+          isOpen={isEditScopeModalOpen}
+          onClose={() => setIsEditScopeModalOpen(false)}
+          onSelect={handleEditScopeSelect}
+          agendaTitle={currentAgenda.title}
+          occurrenceDate={occurrenceDate || undefined}
+          isFirstOccurrence={isFirstOccurrence}
+          isPending={isPending}
+        />
+      )}
     </div>
   );
 }

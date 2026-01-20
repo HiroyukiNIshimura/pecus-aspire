@@ -18,9 +18,14 @@ public class AgendaExceptionResponse
     public required long AgendaId { get; set; }
 
     /// <summary>
-    /// 対象の元の開始日時（どの回かを特定）
+    /// オカレンスのインデックス（0から始まる、何回目かを特定）
     /// </summary>
-    public required DateTimeOffset OriginalStartAt { get; set; }
+    public required int OccurrenceIndex { get; set; }
+
+    /// <summary>
+    /// 元の予定日時（繰り返しルールから計算された、例外適用前の日時）
+    /// </summary>
+    public DateTimeOffset? OriginalStartAt { get; set; }
 
     /// <summary>
     /// この回は中止か

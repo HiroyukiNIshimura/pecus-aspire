@@ -14,10 +14,10 @@ namespace Pecus.Models.Requests.Agenda;
 public class UpdateFromOccurrenceRequest
 {
     /// <summary>
-    /// 分割起点となる回の開始日時
+    /// 分割起点となる回のインデックス（0から始まる）
     /// </summary>
     [Required]
-    public DateTimeOffset FromStartAt { get; set; }
+    public int FromOccurrenceIndex { get; set; }
 
     /// <summary>
     /// タイトル

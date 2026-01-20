@@ -191,11 +191,13 @@ export function AgendaDetail({ agenda, exceptions, currentStatus, isPending, onA
                 <div key={ex.id} className="rounded-lg border border-base-300 bg-base-200 p-3">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">
-                      {new Date(ex.originalStartAt).toLocaleDateString('ja-JP', {
-                        month: 'long',
-                        day: 'numeric',
-                        weekday: 'short',
-                      })}
+                      {ex.originalStartAt
+                        ? new Date(ex.originalStartAt).toLocaleDateString('ja-JP', {
+                            month: 'long',
+                            day: 'numeric',
+                            weekday: 'short',
+                          })
+                        : `第${ex.occurrenceIndex + 1}回`}
                     </span>
                     {ex.isCancelled && <span className="badge badge-error badge-sm">中止</span>}
                     {ex.modifiedStartAt && <span className="badge badge-warning badge-sm">日時変更</span>}

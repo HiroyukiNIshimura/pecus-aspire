@@ -21,6 +21,11 @@ public class AgendaOccurrenceResponse
     public long? ExceptionId { get; set; }
 
     /// <summary>
+    /// オカレンスのインデックス（0から始まる、何回目かを特定）
+    /// </summary>
+    public required int OccurrenceIndex { get; set; }
+
+    /// <summary>
     /// この回の開始日時
     /// </summary>
     public required DateTimeOffset StartAt { get; set; }

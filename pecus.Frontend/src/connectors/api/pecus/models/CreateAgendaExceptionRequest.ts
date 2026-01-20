@@ -7,9 +7,9 @@
  */
 export type CreateAgendaExceptionRequest = {
     /**
-     * 対象の元の開始日時（どの回かを特定）
+     * オカレンスのインデックス（0から始まる、何回目かを特定）
      */
-    originalStartAt: string;
+    occurrenceIndex: number;
     /**
      * この回を中止するか
      */

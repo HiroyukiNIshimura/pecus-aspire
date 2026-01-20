@@ -6,9 +6,9 @@ import type { AttendanceStatus } from '@/connectors/api/pecus';
 
 interface QuickAttendanceButtonsProps {
   agendaId: number;
-  startAt: string;
+  occurrenceIndex: number;
   currentStatus: AttendanceStatus | null | undefined;
-  onUpdate: (agendaId: number, startAt: string, newStatus: string) => void;
+  onUpdate: (agendaId: number, occurrenceIndex: number, newStatus: string) => void;
 }
 
 /** ステータスごとの設定 */
@@ -37,7 +37,7 @@ const statusConfig: Record<AttendanceStatus, { label: string; icon: string; acti
 
 export default function QuickAttendanceButtons({
   agendaId,
-  startAt,
+  occurrenceIndex,
   currentStatus,
   onUpdate,
 }: QuickAttendanceButtonsProps) {
@@ -51,7 +51,7 @@ export default function QuickAttendanceButtons({
     startTransition(async () => {
       const result = await updateAttendance(agendaId, newStatus);
       if (result.success) {
-        onUpdate(agendaId, startAt, newStatus);
+        onUpdate(agendaId, occurrenceIndex, newStatus);
       } else {
         setError(result.message ?? '更新に失敗しました');
       }

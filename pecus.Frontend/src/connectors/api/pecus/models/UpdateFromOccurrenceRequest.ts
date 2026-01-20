@@ -9,9 +9,9 @@ import type { RecurrenceType } from './RecurrenceType';
  */
 export type UpdateFromOccurrenceRequest = {
     /**
-     * 分割起点となる回の開始日時
+     * 分割起点となる回のインデックス（0から始まる）
      */
-    fromStartAt: string;
+    fromOccurrenceIndex: number;
     /**
      * タイトル
      */

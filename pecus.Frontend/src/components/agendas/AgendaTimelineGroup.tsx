@@ -6,7 +6,7 @@ import AgendaTimelineItem from './AgendaTimelineItem';
 interface AgendaTimelineGroupProps {
   dateLabel: string;
   occurrences: AgendaOccurrenceResponse[];
-  onAttendanceUpdate: (agendaId: number, startAt: string, newStatus: string) => void;
+  onAttendanceUpdate: (agendaId: number, occurrenceIndex: number, newStatus: string) => void;
   /** 今日・明日以外の場合に日付ラベルを表示 */
   showDateLabel?: boolean;
 }
@@ -32,7 +32,7 @@ export default function AgendaTimelineGroup({
       <div className="space-y-3 pl-4 border-l-2 border-base-300">
         {occurrences.map((occ) => (
           <AgendaTimelineItem
-            key={`${occ.agendaId}-${occ.startAt}`}
+            key={`${occ.agendaId}-${occ.occurrenceIndex}`}
             occurrence={occ}
             onAttendanceUpdate={onAttendanceUpdate}
           />

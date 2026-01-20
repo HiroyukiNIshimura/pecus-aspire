@@ -19,6 +19,10 @@ export type AgendaOccurrenceResponse = {
      */
     exceptionId?: number | null;
     /**
+     * オカレンスのインデックス（0から始まる、何回目かを特定）
+     */
+    occurrenceIndex: number;
+    /**
      * この回の開始日時
      */
     startAt: string;

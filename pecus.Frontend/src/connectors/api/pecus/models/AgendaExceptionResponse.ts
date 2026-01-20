@@ -16,9 +16,13 @@ export type AgendaExceptionResponse = {
      */
     agendaId: number;
     /**
-     * 対象の元の開始日時（どの回かを特定）
+     * オカレンスのインデックス（0から始まる、何回目かを特定）
      */
-    originalStartAt: string;
+    occurrenceIndex: number;
+    /**
+     * 元の予定日時（繰り返しルールから計算された、例外適用前の日時）
+     */
+    originalStartAt?: string | null;
     /**
      * この回は中止か
      */

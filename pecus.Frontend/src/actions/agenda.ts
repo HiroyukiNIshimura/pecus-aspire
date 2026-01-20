@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createAuthenticatedAxios, createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   AgendaExceptionResponse,
   AgendaNotificationCountResponse,
@@ -14,6 +14,7 @@ import type {
   CreateAgendaRequest,
   UpdateAgendaRequest,
   UpdateAttendanceRequest,
+  UpdateFromOccurrenceRequest,
 } from '@/connectors/api/pecus';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
@@ -112,13 +113,13 @@ export async function cancelAgenda(agendaId: number, rowVersion: number, reason?
  */
 export async function cancelOccurrence(
   agendaId: number,
-  originalStartAt: string,
+  occurrenceIndex: number,
   reason?: string,
 ): Promise<ApiResponse<void>> {
   try {
     const api = await createPecusApiClients();
     const request: CreateAgendaExceptionRequest = {
-      originalStartAt,
+      occurrenceIndex,
       isCancelled: true,
       cancellationReason: reason,
     };
@@ -133,11 +134,64 @@ export async function cancelOccurrence(
 }
 
 /**
- * アジェンダ詳細を取得
+ * 特定回を変更（この回のみ - 例外作成）
+ * 指定された回のみを変更し、他の回には影響を与えません。
  */
-export async function fetchAgendaById(agendaId: number): Promise<ApiResponse<AgendaResponse>> {
+export async function updateOccurrence(
+  agendaId: number,
+  occurrenceIndex: number,
+  modifications: {
+    title?: string;
+    location?: string;
+    url?: string;
+    description?: string;
+    startAt?: string;
+    endAt?: string;
+  },
+): Promise<ApiResponse<AgendaExceptionResponse>> {
   try {
     const api = await createPecusApiClients();
+    const request: CreateAgendaExceptionRequest = {
+      occurrenceIndex,
+      isCancelled: false,
+      modifiedTitle: modifications.title,
+      modifiedLocation: modifications.location,
+      modifiedUrl: modifications.url,
+      modifiedDescription: modifications.description,
+      modifiedStartAt: modifications.startAt,
+      modifiedEndAt: modifications.endAt,
+      sendNotification: true,
+    };
+    const result = await api.agenda.postApiAgendasExceptions(agendaId, request);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('updateOccurrence error:', error);
+    return handleApiErrorForAction<AgendaExceptionResponse>(error, {
+      defaultMessage: 'この回の更新に失敗しました。',
+    });
+  }
+}
+
+/**
+ * アジェンダ詳細を取得
+ * @param agendaId アジェンダID
+ * @param occurrenceIndex 特定回のインデックス（指定すると例外情報を適用した値を返す）
+ */
+export async function fetchAgendaById(
+  agendaId: number,
+  occurrenceIndex?: number,
+): Promise<ApiResponse<AgendaResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    // occurrenceIndexが指定されている場合はクエリパラメータとして追加
+    // NOTE: APIクライアント再生成後は api.agenda.getApiAgendas1(agendaId, occurrenceIndex) を使用
+    if (occurrenceIndex !== undefined) {
+      const axios = await createAuthenticatedAxios();
+      const response = await axios.get<AgendaResponse>(`/api/agendas/${agendaId}`, {
+        params: { occurrenceIndex },
+      });
+      return { success: true, data: response.data };
+    }
     const result = await api.agenda.getApiAgendas1(agendaId);
     return { success: true, data: result };
   } catch (error: unknown) {
@@ -193,6 +247,27 @@ export async function updateAgenda(
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('updateAgenda error:', error);
+    return handleApiErrorForAction<AgendaResponse>(error, {
+      defaultMessage: 'アジェンダの更新に失敗しました。',
+    });
+  }
+}
+
+/**
+ * アジェンダを更新（この回以降 - シリーズ分割）
+ * 指定された回を境にシリーズを分割し、新しいシリーズを作成します。
+ * 元のシリーズは分割地点の前の回で終了します。
+ */
+export async function updateAgendaFromOccurrence(
+  agendaId: number,
+  request: UpdateFromOccurrenceRequest,
+): Promise<ApiResponse<AgendaResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const result = await api.agenda.putApiAgendasFrom(agendaId, request);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    console.error('updateAgendaFromOccurrence error:', error);
     return handleApiErrorForAction<AgendaResponse>(error, {
       defaultMessage: 'アジェンダの更新に失敗しました。',
     });

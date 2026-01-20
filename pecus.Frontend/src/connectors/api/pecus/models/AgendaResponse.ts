@@ -33,6 +33,11 @@ export type AgendaResponse = {
      */
     recurrenceCount?: number | null;
     /**
+     * 今日以降の次の回の開始日時（繰り返しアジェンダの場合のみ）
+     * 繰り返しアジェンダでない場合や、すべての回が終了している場合はnull
+     */
+    nextOccurrenceStartAt?: string | null;
+    /**
      * デフォルトリマインダー（分単位のリスト）
      */
     reminders?: Array<number> | null;

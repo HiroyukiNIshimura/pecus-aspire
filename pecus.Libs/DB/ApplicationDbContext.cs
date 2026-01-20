@@ -1329,8 +1329,8 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(e => e.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 特定回検索用インデックス（アジェンダIDと元の開始日時で一意）
-            entity.HasIndex(e => new { e.AgendaId, e.OriginalStartAt }).IsUnique();
+            // 特定回検索用インデックス（アジェンダIDとオカレンスインデックスで一意）
+            entity.HasIndex(e => new { e.AgendaId, e.OccurrenceIndex }).IsUnique();
         });
 
         // AgendaNotificationエンティティの設定

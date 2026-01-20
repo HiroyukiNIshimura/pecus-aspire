@@ -7,7 +7,7 @@ import QuickAttendanceButtons from './QuickAttendanceButtons';
 
 interface AgendaTimelineItemProps {
   occurrence: AgendaOccurrenceResponse;
-  onAttendanceUpdate: (agendaId: number, startAt: string, newStatus: string) => void;
+  onAttendanceUpdate: (agendaId: number, occurrenceIndex: number, newStatus: string) => void;
 }
 
 /** 時刻をフォーマット */
@@ -37,6 +37,7 @@ function getRecurrenceLabel(type: RecurrenceType | null | undefined): string | n
 export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: AgendaTimelineItemProps) {
   const {
     agendaId,
+    occurrenceIndex,
     startAt,
     endAt,
     title,
@@ -88,7 +89,7 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
 
             {/* タイトル */}
             <Link
-              href={`/agendas/${agendaId}?startAt=${encodeURIComponent(startAt)}`}
+              href={`/agendas/${agendaId}?occurrence=${occurrenceIndex}`}
               className={`
                 font-medium truncate max-w-xs sm:max-w-md
                 ${isCancelledItem ? 'line-through text-base-content/50' : 'text-base-content hover:text-primary'}
@@ -177,7 +178,7 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
           <div className="flex items-center gap-2 mt-2 sm:mt-0">
             <QuickAttendanceButtons
               agendaId={agendaId}
-              startAt={startAt}
+              occurrenceIndex={occurrenceIndex}
               currentStatus={occurrence.myAttendanceStatus}
               onUpdate={onAttendanceUpdate}
             />
