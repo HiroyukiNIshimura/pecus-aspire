@@ -1017,5 +1017,52 @@ public class ChatRoomService
         return actor?.Id;
     }
 
+    /// <summary>
+    /// ユーザーの ChatActor が存在しない場合は作成する
+    /// 管理者がユーザーを追加した際にチャット機能を利用可能にするために必要
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="displayName">表示名</param>
+    /// <param name="avatarType">アバタータイプ（省略可能）</param>
+    /// <param name="avatarUrl">アバターURL（省略可能）</param>
+    /// <returns>ChatActor</returns>
+    public async Task<ChatActor> EnsureChatActorExistsAsync(
+        int userId,
+        int organizationId,
+        string displayName,
+        AvatarType? avatarType = null,
+        string? avatarUrl = null)
+    {
+        var existingActor = await _context.ChatActors
+            .FirstOrDefaultAsync(a => a.UserId == userId);
+
+        if (existingActor != null)
+        {
+            return existingActor;
+        }
+
+        var actor = new ChatActor
+        {
+            OrganizationId = organizationId,
+            ActorType = ChatActorType.User,
+            UserId = userId,
+            DisplayName = displayName,
+            AvatarType = avatarType,
+            AvatarUrl = avatarUrl,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+
+        _context.ChatActors.Add(actor);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "ChatActor created for user: UserId={UserId}, OrganizationId={OrganizationId}, ActorId={ActorId}",
+            userId, organizationId, actor.Id);
+
+        return actor;
+    }
+
     #endregion
 }

@@ -24,6 +24,7 @@ export default function ProfileLayoutClient({ children }: ProfileLayoutClientPro
         userInfo={currentUser}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         showBackOfficeLink={currentUser?.isBackOffice ?? false}
+        showChat={false}
       />
 
       <div className="flex flex-1 overflow-hidden">
