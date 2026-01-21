@@ -23,7 +23,7 @@ public class ChatMessageItem
     /// <summary>
     /// 送信者情報（AI/System メッセージの場合は null）
     /// </summary>
-    public ChatUserItem? Sender { get; set; }
+    public UserIdentityResponse? Sender { get; set; }
 
     /// <summary>
     /// メッセージタイプ

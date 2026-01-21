@@ -518,17 +518,22 @@ public class TaskCommentController : BaseSecureController
         {
             Id = comment.Id,
             WorkspaceTaskId = comment.WorkspaceTaskId,
-            UserId = comment.UserId,
-            Username = comment.User?.Username,
-            AvatarUrl = comment.User != null
-                ? IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: comment.User.AvatarType,
-                    userId: comment.User.Id,
-                    username: comment.User.Username,
-                    email: comment.User.Email,
-                    avatarPath: comment.User.UserAvatarPath
-                )
-                : null,
+            User = new UserIdentityResponse
+            {
+                Id = comment.UserId,
+                Username = comment.User?.Username,
+                IdentityIconUrl =
+                    comment.User != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: comment.User.AvatarType,
+                        userId: comment.User.Id,
+                        username: comment.User.Username,
+                        email: comment.User.Email,
+                        avatarPath: comment.User.UserAvatarPath
+                    )
+                    : null,
+                IsActive = comment.User?.IsActive ?? false,
+            },
             Content = comment.Content,
             CommentType = comment.CommentType,
             IsDeleted = comment.IsDeleted,

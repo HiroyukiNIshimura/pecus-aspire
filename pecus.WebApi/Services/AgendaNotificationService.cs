@@ -206,24 +206,18 @@ public class AgendaNotificationService
             Message = notification.Message,
             IsRead = notification.IsRead,
             CreatedAt = notification.CreatedAt,
-            CreatedByUser = notification.CreatedByUser == null ? null : ToUserItem(notification.CreatedByUser)
+            CreatedBy = notification.CreatedByUser == null ? null : ToUserItem(notification.CreatedByUser)
         };
     }
 
-    private UserItem ToUserItem(Libs.DB.Models.User user)
+    private UserIdentityResponse ToUserItem(User user)
     {
-        return new UserItem
+        return new UserIdentityResponse
         {
             Id = user.Id,
-            LoginId = user.LoginId,
             Username = user.Username,
-            Email = user.Email,
-            AvatarType = user.AvatarType?.ToString() ?? "auto-generated",
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(user.AvatarType, user.Id, user.Username, user.Email, user.UserAvatarPath),
             IsActive = user.IsActive,
-            CreatedAt = user.CreatedAt,
-            LastLoginAt = user.LastLoginAt,
-            RoleCount = 0
         };
     }
 }

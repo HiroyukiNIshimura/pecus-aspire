@@ -705,16 +705,18 @@ public class DashboardStatisticsService
                 CommentId = c.Id,
                 Content = c.Content,
                 CreatedAt = c.CreatedAt,
-                CommentUserId = c.UserId,
-                CommentUsername = c.User.Username,
-                CommentUserAvatarUrl = IdentityIconHelper.GetIdentityIconUrl(
-                    c.User.AvatarType,
-                    c.User.Id,
-                    c.User.Username,
-                    c.User.Email,
-                    c.User.UserAvatarPath,
-                    200
-                ),
+                CommentBy = new UserIdentityResponse
+                {
+                    Id = c.UserId,
+                    Username = c.User.Username,
+                    IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                        c.User.AvatarType,
+                        c.User.Id,
+                        c.User.Username,
+                        c.User.Email,
+                        c.User.UserAvatarPath
+                    ),
+                },
                 TaskId = c.WorkspaceTaskId,
                 TaskSequence = c.WorkspaceTask!.Sequence,
                 TaskContent = c.WorkspaceTask!.Content,

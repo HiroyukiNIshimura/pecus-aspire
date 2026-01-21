@@ -771,7 +771,7 @@ public class AgendaService
                     IsModified = exception != null && !exception.IsCancelled,
                     AttendeeCount = agenda.Attendees?.Count ?? 0,
                     MyAttendanceStatus = myAttendanceStatus,
-                    CreatedByUser = agenda.CreatedByUser == null ? null : ToUserItem(agenda.CreatedByUser)
+                    CreatedBy = agenda.CreatedByUser == null ? null : ToUserItem(agenda.CreatedByUser)
                 });
             }
         }
@@ -1156,7 +1156,7 @@ public class AgendaService
             ModifiedUrl = exception.ModifiedUrl,
             ModifiedDescription = exception.ModifiedDescription,
             CreatedAt = exception.CreatedAt,
-            CreatedByUser = exception.CreatedByUser == null ? null : ToUserItem(exception.CreatedByUser)
+            CreatedBy = exception.CreatedByUser == null ? null : ToUserItem(exception.CreatedByUser)
         };
     }
 
@@ -1423,12 +1423,12 @@ public class AgendaService
             IsCancelled = agenda.IsCancelled,
             CancellationReason = agenda.CancellationReason,
             CancelledAt = agenda.CancelledAt,
-            CancelledByUser = agenda.CancelledByUser == null ? null : ToUserItem(agenda.CancelledByUser),
+            CancelledBy = agenda.CancelledByUser == null ? null : ToUserItem(agenda.CancelledByUser),
             CreatedByUserId = agenda.CreatedByUserId,
             CreatedAt = agenda.CreatedAt,
             UpdatedAt = agenda.UpdatedAt,
             RowVersion = agenda.RowVersion,
-            CreatedByUser = agenda.CreatedByUser == null ? null : ToUserItem(agenda.CreatedByUser),
+            CreatedBy = agenda.CreatedByUser == null ? null : ToUserItem(agenda.CreatedByUser),
             Attendees = agenda.Attendees.Select(a =>
             {
                 // シリーズ全体の出欠回答を取得
@@ -1494,20 +1494,14 @@ public class AgendaService
             .FirstOrDefault();
     }
 
-    private UserItem ToUserItem(User user)
+    private UserIdentityResponse ToUserItem(User user)
     {
-        return new UserItem
+        return new UserIdentityResponse
         {
             Id = user.Id,
-            LoginId = user.LoginId,
             Username = user.Username,
-            Email = user.Email,
-            AvatarType = user.AvatarType?.ToString() ?? "auto-generated",
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(user.AvatarType, user.Id, user.Username, user.Email, user.UserAvatarPath),
             IsActive = user.IsActive,
-            CreatedAt = user.CreatedAt,
-            LastLoginAt = user.LastLoginAt,
-            RoleCount = 0
         };
     }
 }

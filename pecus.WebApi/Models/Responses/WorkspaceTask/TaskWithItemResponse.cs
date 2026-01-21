@@ -96,19 +96,9 @@ public class TaskWithItemResponse
     public bool IsDiscarded { get; set; }
 
     /// <summary>
-    /// 担当ユーザーID
+    /// 担当者情報
     /// </summary>
-    public int AssignedUserId { get; set; }
-
-    /// <summary>
-    /// 担当ユーザー名
-    /// </summary>
-    public string? AssignedUsername { get; set; }
-
-    /// <summary>
-    /// 担当ユーザーアバターURL
-    /// </summary>
-    public string? AssignedAvatarUrl { get; set; }
+    public UserIdentityResponse Assigned { get; set; } = new();
 
     /// <summary>
     /// 作成日時
@@ -143,49 +133,19 @@ public class TaskWithItemResponse
     public required string WorkspaceCode { get; set; }
 
     /// <summary>
-    /// アイテムオーナーユーザーID
+    /// アイテムオーナー情報
     /// </summary>
-    public int ItemOwnerId { get; set; }
+    public UserIdentityResponse ItemOwner { get; set; } = new();
 
     /// <summary>
-    /// アイテムオーナーユーザー名
+    /// アイテム担当者情報
     /// </summary>
-    public string? ItemOwnerUsername { get; set; }
+    public UserIdentityResponse? ItemAssignee { get; set; }
 
     /// <summary>
-    /// アイテムオーナーアバターURL
+    /// アイテムコミッター情報
     /// </summary>
-    public string? ItemOwnerAvatarUrl { get; set; }
-
-    /// <summary>
-    /// アイテム担当ユーザーID
-    /// </summary>
-    public int? ItemAssigneeId { get; set; }
-
-    /// <summary>
-    /// アイテム担当ユーザー名
-    /// </summary>
-    public string? ItemAssigneeUsername { get; set; }
-
-    /// <summary>
-    /// アイテム担当アバターURL
-    /// </summary>
-    public string? ItemAssigneeAvatarUrl { get; set; }
-
-    /// <summary>
-    /// アイテムコミッターユーザーID
-    /// </summary>
-    public int? ItemCommitterId { get; set; }
-
-    /// <summary>
-    /// アイテムコミッターユーザー名
-    /// </summary>
-    public string? ItemCommitterUsername { get; set; }
-
-    /// <summary>
-    /// アイテムコミッターアバターURL
-    /// </summary>
-    public string? ItemCommitterAvatarUrl { get; set; }
+    public UserIdentityResponse? ItemCommitter { get; set; }
 
     /// <summary>
     /// コメントタイプ別件数

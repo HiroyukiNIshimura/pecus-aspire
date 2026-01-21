@@ -161,8 +161,21 @@ public class WorkspaceItemAttachmentController : BaseSecureController
             ThumbnailMediumUrl = attachment.ThumbnailMediumPath,
             ThumbnailSmallUrl = attachment.ThumbnailSmallPath,
             UploadedAt = attachment.UploadedAt,
-            UploadedByUserId = attachment.UploadedByUserId,
-            UploadedByUsername = attachment.UploadedByUser?.Username,
+            UploadedBy = new UserIdentityResponse
+            {
+                Id = attachment.UploadedByUserId,
+                Username = attachment.UploadedByUser?.Username,
+                IdentityIconUrl = attachment.UploadedByUser != null
+                        ? IdentityIconHelper.GetIdentityIconUrl(
+                            iconType: attachment.UploadedByUser.AvatarType,
+                            userId: attachment.UploadedByUser.Id,
+                            username: attachment.UploadedByUser.Username,
+                            email: attachment.UploadedByUser.Email,
+                            avatarPath: attachment.UploadedByUser.UserAvatarPath
+                        )
+                        : null,
+                IsActive = attachment.UploadedByUser?.IsActive ?? false,
+            },
         };
 
         return TypedResults.Created(attachment.DownloadUrl, response);
@@ -207,8 +220,21 @@ public class WorkspaceItemAttachmentController : BaseSecureController
                 ThumbnailMediumUrl = a.ThumbnailMediumPath,
                 ThumbnailSmallUrl = a.ThumbnailSmallPath,
                 UploadedAt = a.UploadedAt,
-                UploadedByUserId = a.UploadedByUserId,
-                UploadedByUsername = a.UploadedByUser?.Username,
+                UploadedBy = new UserIdentityResponse
+                {
+                    Id = a.UploadedByUserId,
+                    Username = a.UploadedByUser?.Username,
+                    IdentityIconUrl = a.UploadedByUser != null
+                            ? IdentityIconHelper.GetIdentityIconUrl(
+                                iconType: a.UploadedByUser.AvatarType,
+                                userId: a.UploadedByUser.Id,
+                                username: a.UploadedByUser.Username,
+                                email: a.UploadedByUser.Email,
+                                avatarPath: a.UploadedByUser.UserAvatarPath
+                            )
+                            : null,
+                    IsActive = a.UploadedByUser?.IsActive ?? false,
+                },
                 Task = a.WorkspaceTask != null
                     ? new WorkspaceItemAttachmentTask
                     {

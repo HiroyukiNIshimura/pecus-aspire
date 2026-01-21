@@ -144,34 +144,14 @@ public class TaskFlowNode
     public required bool IsDiscarded { get; set; }
 
     /// <summary>
-    /// 担当ユーザーID
+    /// 担当ユーザー情報
     /// </summary>
-    public int? AssignedUserId { get; set; }
+    public UserIdentityResponse Assigned { get; set; } = new();
 
     /// <summary>
-    /// 担当ユーザー名
+    /// タスク完了者情報
     /// </summary>
-    public string? AssignedUsername { get; set; }
-
-    /// <summary>
-    /// 担当ユーザーアバターURL
-    /// </summary>
-    public string? AssignedAvatarUrl { get; set; }
-
-    /// <summary>
-    /// 完了者ユーザーID
-    /// </summary>
-    public int? CompletedByUserId { get; set; }
-
-    /// <summary>
-    /// 完了者ユーザー名
-    /// </summary>
-    public string? CompletedByUsername { get; set; }
-
-    /// <summary>
-    /// 完了者ユーザーアバターURL
-    /// </summary>
-    public string? CompletedByAvatarUrl { get; set; }
+    public UserIdentityResponse? CompletedBy { get; set; } = new();
 
     /// <summary>
     /// 着手可能か（先行タスクなし or 完了済み、かつ自身が未完了・未破棄）

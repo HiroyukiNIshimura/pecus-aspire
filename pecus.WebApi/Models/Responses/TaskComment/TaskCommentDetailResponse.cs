@@ -20,19 +20,9 @@ public class TaskCommentDetailResponse : IConflictModel
     public int WorkspaceTaskId { get; set; }
 
     /// <summary>
-    /// コメントしたユーザーID
+    /// コメントしたユーザー情報
     /// </summary>
-    public int UserId { get; set; }
-
-    /// <summary>
-    /// コメントしたユーザー名
-    /// </summary>
-    public string? Username { get; set; }
-
-    /// <summary>
-    /// コメントしたユーザーアバターURL
-    /// </summary>
-    public string? AvatarUrl { get; set; }
+    public UserIdentityResponse User { get; set; } = new();
 
     /// <summary>
     /// コメント内容

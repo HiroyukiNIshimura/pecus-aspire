@@ -28,46 +28,55 @@ public static class WorkspaceItemResponseHelper
             Code = item.Code,
             Subject = item.Subject,
             Body = item.Body,
-            OwnerId = item.OwnerId,
-            OwnerUsername = item.Owner?.Username,
-            OwnerAvatarUrl =
-                item.Owner != null
-                    ? IdentityIconHelper.GetIdentityIconUrl(
-                        iconType: item.Owner.AvatarType,
-                        userId: item.Owner.Id,
-                        username: item.Owner.Username,
-                        email: item.Owner.Email,
-                        avatarPath: item.Owner.UserAvatarPath
-                    )
-                    : null,
-            AssigneeId = item.AssigneeId,
-            AssigneeUsername = item.Assignee?.Username,
-            AssigneeAvatarUrl =
-                item.Assignee != null
-                    ? IdentityIconHelper.GetIdentityIconUrl(
-                        iconType: item.Assignee.AvatarType,
-                        userId: item.Assignee.Id,
-                        username: item.Assignee.Username,
-                        email: item.Assignee.Email,
-                        avatarPath: item.Assignee.UserAvatarPath
-                    )
-                    : null,
+            Owner = new UserIdentityResponse
+            {
+                Id = item.OwnerId,
+                Username = item.Owner?.Username,
+                IdentityIconUrl = item.Owner != null
+                        ? IdentityIconHelper.GetIdentityIconUrl(
+                            iconType: item.Owner.AvatarType,
+                            userId: item.Owner.Id,
+                            username: item.Owner.Username,
+                            email: item.Owner.Email,
+                            avatarPath: item.Owner.UserAvatarPath
+                        )
+                        : null,
+                IsActive = item.Owner?.IsActive ?? false,
+            },
+            Assignee = item.AssigneeId.HasValue ? new UserIdentityResponse
+            {
+                Id = item.AssigneeId.Value,
+                Username = item.Assignee?.Username,
+                IdentityIconUrl = item.Assignee != null
+                        ? IdentityIconHelper.GetIdentityIconUrl(
+                            iconType: item.Assignee.AvatarType,
+                            userId: item.Assignee.Id,
+                            username: item.Assignee.Username,
+                            email: item.Assignee.Email,
+                            avatarPath: item.Assignee.UserAvatarPath
+                        )
+                        : null,
+                IsActive = item.Assignee?.IsActive ?? false,
+            } : null,
             Priority = item.Priority,
             DueDate = item.DueDate,
             IsArchived = item.IsArchived,
             IsDraft = item.IsDraft,
-            CommitterId = item.CommitterId,
-            CommitterUsername = item.Committer?.Username,
-            CommitterAvatarUrl =
-                item.Committer != null
-                    ? IdentityIconHelper.GetIdentityIconUrl(
-                        iconType: item.Committer.AvatarType,
-                        userId: item.Committer.Id,
-                        username: item.Committer.Username,
-                        email: item.Committer.Email,
-                        avatarPath: item.Committer.UserAvatarPath
-                    )
-                    : null,
+            Committer = item.CommitterId.HasValue ? new UserIdentityResponse
+            {
+                Id = item.CommitterId.Value,
+                Username = item.Committer?.Username,
+                IdentityIconUrl = item.Committer != null
+                        ? IdentityIconHelper.GetIdentityIconUrl(
+                            iconType: item.Committer.AvatarType,
+                            userId: item.Committer.Id,
+                            username: item.Committer.Username,
+                            email: item.Committer.Email,
+                            avatarPath: item.Committer.UserAvatarPath
+                        )
+                        : null,
+                IsActive = item.Committer?.IsActive ?? false,
+            } : null,
             CreatedAt = item.CreatedAt,
             UpdatedAt = item.UpdatedAt,
             Tags =
@@ -114,17 +123,22 @@ public static class WorkspaceItemResponseHelper
                         Direction = "from",
                         OwnerId = relation.ToItem.OwnerId,
                         IsArchived = relation.ToItem.IsArchived,
-                        OwnerUsername = relation.ToItem.Owner?.Username,
-                        OwnerAvatarUrl =
-                            relation.ToItem.Owner != null
-                                ? IdentityIconHelper.GetIdentityIconUrl(
-                                    iconType: relation.ToItem.Owner.AvatarType,
-                                    userId: relation.ToItem.Owner.Id,
-                                    username: relation.ToItem.Owner.Username,
-                                    email: relation.ToItem.Owner.Email,
-                                    avatarPath: relation.ToItem.Owner.UserAvatarPath
-                                )
-                                : null
+                        Owner = relation.ToItem.Owner != null ? new UserIdentityResponse
+                        {
+                            Id = relation.ToItem.Owner.Id,
+                            Username = relation.ToItem.Owner?.Username,
+                            IdentityIconUrl =
+                                relation.ToItem.Owner != null
+                                    ? IdentityIconHelper.GetIdentityIconUrl(
+                                        iconType: relation.ToItem.Owner.AvatarType,
+                                        userId: relation.ToItem.Owner.Id,
+                                        username: relation.ToItem.Owner.Username,
+                                        email: relation.ToItem.Owner.Email,
+                                        avatarPath: relation.ToItem.Owner.UserAvatarPath
+                                    )
+                                    : null,
+                            IsActive = relation.ToItem.Owner?.IsActive ?? false,
+                        } : new UserIdentityResponse(),
                     });
                 }
             }
@@ -148,17 +162,22 @@ public static class WorkspaceItemResponseHelper
                         Direction = "to",
                         OwnerId = relation.FromItem.OwnerId,
                         IsArchived = relation.FromItem.IsArchived,
-                        OwnerUsername = relation.FromItem.Owner?.Username,
-                        OwnerAvatarUrl =
-                            relation.FromItem.Owner != null
-                                ? IdentityIconHelper.GetIdentityIconUrl(
-                                    iconType: relation.FromItem.Owner.AvatarType,
-                                    userId: relation.FromItem.Owner.Id,
-                                    username: relation.FromItem.Owner.Username,
-                                    email: relation.FromItem.Owner.Email,
-                                    avatarPath: relation.FromItem.Owner.UserAvatarPath
-                                )
-                                : null
+                        Owner = relation.FromItem.Owner != null ? new UserIdentityResponse
+                        {
+                            Id = relation.FromItem.Owner.Id,
+                            Username = relation.FromItem.Owner?.Username,
+                            IdentityIconUrl =
+                                relation.FromItem.Owner != null
+                                    ? IdentityIconHelper.GetIdentityIconUrl(
+                                        iconType: relation.FromItem.Owner.AvatarType,
+                                        userId: relation.FromItem.Owner.Id,
+                                        username: relation.FromItem.Owner.Username,
+                                        email: relation.FromItem.Owner.Email,
+                                        avatarPath: relation.FromItem.Owner.UserAvatarPath
+                                    )
+                                    : null,
+                            IsActive = relation.FromItem.Owner?.IsActive ?? false,
+                        } : new UserIdentityResponse(),
                     });
                 }
             }

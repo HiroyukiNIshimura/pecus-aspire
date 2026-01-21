@@ -44,21 +44,9 @@ public class HelpCommentItem
     public required DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
-    /// コメント投稿者ID
+    /// コメント投稿者情報
     /// </summary>
-    [Required]
-    public required int CommentUserId { get; set; }
-
-    /// <summary>
-    /// コメント投稿者名
-    /// </summary>
-    [Required]
-    public required string CommentUsername { get; set; }
-
-    /// <summary>
-    /// コメント投稿者アバターURL
-    /// </summary>
-    public string? CommentUserAvatarUrl { get; set; }
+    public UserIdentityResponse CommentBy { get; set; } = new();
 
     /// <summary>
     /// タスクID

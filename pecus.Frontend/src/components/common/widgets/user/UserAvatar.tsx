@@ -8,6 +8,8 @@ import AvatarImage from './AvatarImage';
 export interface UserAvatarProps {
   /** ユーザー名 */
   userName: string | null | undefined;
+  /** ユーザーがアクティブかどうか */
+  isActive: boolean;
   /** アイデンティティアイコンURL */
   identityIconUrl?: string | null;
   /** アイコンサイズ（ピクセル） */
@@ -28,6 +30,7 @@ export interface UserAvatarProps {
  */
 export default function UserAvatar({
   userName,
+  isActive,
   identityIconUrl,
   size = 20,
   showName = true,
@@ -36,6 +39,7 @@ export default function UserAvatar({
   onNameClick,
 }: UserAvatarProps) {
   const displayName = userName || 'ユーザー';
+  const inactiveClass = !isActive ? 'line-through' : '';
 
   // 名前要素
   const nameElement =
@@ -43,13 +47,13 @@ export default function UserAvatar({
     (onNameClick ? (
       <button
         type="button"
-        className={`truncate text-left hover:text-primary hover:underline transition-colors focus:outline-none focus:text-primary ${nameClassName}`}
+        className={`truncate text-left hover:text-primary hover:underline transition-colors focus:outline-none focus:text-primary ${nameClassName} ${inactiveClass}`}
         onClick={onNameClick}
       >
         {displayName}
       </button>
     ) : (
-      <span className={`truncate ${nameClassName}`}>{displayName}</span>
+      <span className={`truncate ${nameClassName} ${inactiveClass}`}>{displayName}</span>
     ));
 
   return (

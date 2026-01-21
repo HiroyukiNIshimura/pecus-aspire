@@ -40,13 +40,8 @@ public class AppPublicSettingsResponse
 /// <summary>
 /// 現在ログイン中のユーザーの最小限情報
 /// </summary>
-public class CurrentUserInfo
+public class CurrentUserInfo : UserIdentityResponse
 {
-    /// <summary>
-    /// ユーザーID
-    /// </summary>
-    [Required]
-    public required int Id { get; init; }
 
     /// <summary>
     /// 組織ID
@@ -55,21 +50,10 @@ public class CurrentUserInfo
     public required int OrganizationId { get; init; }
 
     /// <summary>
-    /// ユーザー名
-    /// </summary>
-    [Required]
-    public required string Username { get; init; }
-
-    /// <summary>
     /// メールアドレス
     /// </summary>
     [Required]
     public required string Email { get; init; }
-
-    /// <summary>
-    /// アイデンティティアイコンURL（表示用）
-    /// </summary>
-    public string? IdentityIconUrl { get; init; }
 
     /// <summary>
     /// 管理者権限を持つかどうか

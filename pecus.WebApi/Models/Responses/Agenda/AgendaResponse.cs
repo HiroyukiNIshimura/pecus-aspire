@@ -85,7 +85,7 @@ public class AgendaResponse : IConflictModel
     /// <summary>
     /// 中止したユーザー
     /// </summary>
-    public UserItem? CancelledByUser { get; set; }
+    public UserIdentityResponse? CancelledBy { get; set; }
 
     // ===== 監査情報 =====
 
@@ -97,6 +97,6 @@ public class AgendaResponse : IConflictModel
     [Required]
     public uint RowVersion { get; set; }
 
-    public UserItem? CreatedByUser { get; set; }
+    public UserIdentityResponse? CreatedBy { get; set; }
     public List<AgendaAttendeeResponse> Attendees { get; set; } = new();
 }

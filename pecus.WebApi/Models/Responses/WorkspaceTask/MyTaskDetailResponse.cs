@@ -62,84 +62,30 @@ public class MyTaskDetailResponse
     public string? ItemSubject { get; set; }
 
     /// <summary>
-    /// アイテムオーナーID
+    /// アイテムオーナー情報
     /// </summary>
-    public int? ItemOwnerId { get; set; }
+    public UserIdentityResponse? ItemOwner { get; set; }
 
     /// <summary>
-    /// アイテムオーナー名
+    /// アイテム担当者情報
     /// </summary>
-    public string? ItemOwnerUsername { get; set; }
+    public UserIdentityResponse? ItemAssignee { get; set; }
 
     /// <summary>
-    /// アイテムオーナーアバターURL
+    /// アイテムコミッター情報
     /// </summary>
-    public string? ItemOwnerAvatarUrl { get; set; }
+    public UserIdentityResponse? ItemCommitter { get; set; }
 
     /// <summary>
-    /// アイテム担当者ID
+    /// タスク作成者情報
     /// </summary>
-    public int? ItemAssigneeId { get; set; }
-
-    /// <summary>
-    /// アイテム担当者名
-    /// </summary>
-    public string? ItemAssigneeUsername { get; set; }
-
-    /// <summary>
-    /// アイテム担当者アバターURL
-    /// </summary>
-    public string? ItemAssigneeAvatarUrl { get; set; }
-
-    /// <summary>
-    /// アイテムコミッターID
-    /// </summary>
-    public int? ItemCommitterId { get; set; }
-
-    /// <summary>
-    /// アイテムコミッター名
-    /// </summary>
-    public string? ItemCommitterUsername { get; set; }
-
-    /// <summary>
-    /// アイテムコミッターアバターURL
-    /// </summary>
-    public string? ItemCommitterAvatarUrl { get; set; }
+    /// <value></value>
+    public UserIdentityResponse? CreatedBy { get; set; }
 
     /// <summary>
     /// 組織ID
     /// </summary>
     public int OrganizationId { get; set; }
-
-    /// <summary>
-    /// 担当ユーザーID
-    /// </summary>
-    public int AssignedUserId { get; set; }
-
-    /// <summary>
-    /// 担当ユーザー名
-    /// </summary>
-    public string? AssignedUsername { get; set; }
-
-    /// <summary>
-    /// 担当ユーザーアバターURL
-    /// </summary>
-    public string? AssignedAvatarUrl { get; set; }
-
-    /// <summary>
-    /// 作成ユーザーID
-    /// </summary>
-    public int CreatedByUserId { get; set; }
-
-    /// <summary>
-    /// 作成ユーザー名
-    /// </summary>
-    public string? CreatedByUsername { get; set; }
-
-    /// <summary>
-    /// 作成ユーザーアバターURL
-    /// </summary>
-    public string? CreatedByAvatarUrl { get; set; }
 
     /// <summary>
     /// タスク内容

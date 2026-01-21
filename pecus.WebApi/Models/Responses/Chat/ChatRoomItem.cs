@@ -35,7 +35,7 @@ public class ChatRoomItem
     /// <summary>
     /// DM の場合の相手ユーザー情報
     /// </summary>
-    public ChatUserItem? OtherUser { get; set; }
+    public UserIdentityResponse? OtherUser { get; set; }
 
     /// <summary>
     /// 最新メッセージ

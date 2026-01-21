@@ -52,22 +52,13 @@ public class ActivityResponse
     /// <summary>
     /// アイテム件名
     /// </summary>
+
     public string ItemSubject { get; set; } = string.Empty;
 
     /// <summary>
-    /// ユーザーID（NULL = システム操作）
+    /// 操作を行ったユーザー情報（NULL = システム操作）
     /// </summary>
-    public int? UserId { get; set; }
-
-    /// <summary>
-    /// ユーザー名
-    /// </summary>
-    public string? Username { get; set; }
-
-    /// <summary>
-    /// ユーザーのアイデンティティアイコンURL
-    /// </summary>
-    public string? IdentityIconUrl { get; set; }
+    public UserIdentityResponse? User { get; set; }
 
     /// <summary>
     /// 操作タイプ

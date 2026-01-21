@@ -516,9 +516,13 @@ public class AchievementService
             {
                 Rank = index + 1,
                 UserInternalId = u.UserId,
-                UserId = u.UserLoginId,
-                DisplayName = u.DisplayName,
-                AvatarUrl = u.AvatarUrl,
+                User = new UserIdentityResponse
+                {
+                    Id = u.UserId,
+                    Username = u.UserLoginId,
+                    IdentityIconUrl = u.AvatarUrl,
+                    IsActive = true,
+                },
                 Score = u.DifficultyScore,
                 BadgeCount = u.BadgeCount
             })
@@ -534,9 +538,13 @@ public class AchievementService
             {
                 Rank = index + 1,
                 UserInternalId = u.UserId,
-                UserId = u.UserLoginId,
-                DisplayName = u.DisplayName,
-                AvatarUrl = u.AvatarUrl,
+                User = new UserIdentityResponse
+                {
+                    Id = u.UserId,
+                    Username = u.UserLoginId,
+                    IdentityIconUrl = u.AvatarUrl,
+                    IsActive = true,
+                },
                 Score = u.BadgeCount,
                 BadgeCount = u.BadgeCount
             })
@@ -552,9 +560,13 @@ public class AchievementService
             {
                 Rank = index + 1,
                 UserInternalId = u.UserId,
-                UserId = u.UserLoginId,
-                DisplayName = u.DisplayName,
-                AvatarUrl = u.AvatarUrl,
+                User = new UserIdentityResponse
+                {
+                    Id = u.UserId,
+                    Username = u.UserLoginId,
+                    IdentityIconUrl = u.AvatarUrl,
+                    IsActive = true,
+                },
                 Score = u.GrowthScore,
                 BadgeCount = u.BadgeCount
             })

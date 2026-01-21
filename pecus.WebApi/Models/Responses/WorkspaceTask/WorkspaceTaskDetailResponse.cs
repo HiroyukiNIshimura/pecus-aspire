@@ -42,49 +42,34 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     // ===== アイテム権限情報（タスク編集権限チェック用） =====
 
     /// <summary>
-    /// アイテムオーナーユーザーID
+    /// アイテムオーナー情報
     /// </summary>
-    public int ItemOwnerId { get; set; }
+    public UserIdentityResponse ItemOwner { get; set; } = new();
 
     /// <summary>
-    /// アイテム担当ユーザーID
+    /// アイテム担当者情報
     /// </summary>
-    public int? ItemAssigneeId { get; set; }
+    public UserIdentityResponse? ItemAssignee { get; set; }
 
     /// <summary>
-    /// アイテムコミッターユーザーID
+    /// アイテムコミッター情報
     /// </summary>
-    public int? ItemCommitterId { get; set; }
+    public UserIdentityResponse? ItemCommitter { get; set; }
 
     /// <summary>
-    /// 担当ユーザーID
+    /// タスク担当者情報
     /// </summary>
-    public int AssignedUserId { get; set; }
+    public UserIdentityResponse Assigned { get; set; } = new();
 
     /// <summary>
-    /// 担当ユーザー名
+    /// タスク作成者情報
     /// </summary>
-    public string? AssignedUsername { get; set; }
+    public UserIdentityResponse CreatedBy { get; set; } = new();
 
     /// <summary>
-    /// 担当ユーザーアバターURL
+    /// タスク完了者情報
     /// </summary>
-    public string? AssignedAvatarUrl { get; set; }
-
-    /// <summary>
-    /// 作成ユーザーID
-    /// </summary>
-    public int CreatedByUserId { get; set; }
-
-    /// <summary>
-    /// 作成ユーザー名
-    /// </summary>
-    public string? CreatedByUsername { get; set; }
-
-    /// <summary>
-    /// 作成ユーザーアバターURL
-    /// </summary>
-    public string? CreatedByAvatarUrl { get; set; }
+    public UserIdentityResponse? CompletedBy { get; set; }
 
     /// <summary>
     /// タスク内容
@@ -150,21 +135,6 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     /// タスク完了日時
     /// </summary>
     public DateTimeOffset? CompletedAt { get; set; }
-
-    /// <summary>
-    /// タスク完了者ユーザーID
-    /// </summary>
-    public int? CompletedByUserId { get; set; }
-
-    /// <summary>
-    /// タスク完了者ユーザー名
-    /// </summary>
-    public string? CompletedByUsername { get; set; }
-
-    /// <summary>
-    /// タスク完了者アバターURL
-    /// </summary>
-    public string? CompletedByAvatarUrl { get; set; }
 
     /// <summary>
     /// 破棄状態

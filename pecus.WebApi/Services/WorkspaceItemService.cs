@@ -1422,8 +1422,18 @@ public class WorkspaceItemService
                 Code = latestItem.Code,
                 Subject = latestItem.Subject,
                 Body = latestItem.Body,
-                OwnerId = latestItem.OwnerId,
-                AssigneeId = latestItem.AssigneeId,
+                Owner = new UserIdentityResponse
+                {
+                    Id = latestItem.Owner!.Id,
+                    Username = latestItem.Owner.Username,
+                    IsActive = latestItem.Owner.IsActive,
+                },
+                Assignee = latestItem.Assignee == null ? null : new UserIdentityResponse
+                {
+                    Id = latestItem.Assignee.Id,
+                    Username = latestItem.Assignee.Username,
+                    IsActive = latestItem.Assignee.IsActive,
+                },
                 Priority = latestItem.Priority,
                 DueDate = latestItem.DueDate,
                 IsDraft = latestItem.IsDraft,

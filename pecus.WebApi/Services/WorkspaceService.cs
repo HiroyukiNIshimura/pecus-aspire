@@ -692,7 +692,7 @@ public class WorkspaceService
                 Owner = w.Owner != null
                     ? new WorkspaceUserItem
                     {
-                        UserId = w.Owner.Id,
+                        Id = w.Owner.Id,
                         Username = w.Owner.Username,
                         Email = w.Owner.Email,
                         IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(

@@ -27,5 +27,8 @@ public class AgendaAttendeeResponse
     /// </summary>
     public List<int>? CustomReminders { get; set; }
 
-    public UserItem? User { get; set; }
+    /// <summary>
+    /// ユーザー情報
+    /// </summary>
+    public UserIdentityResponse? User { get; set; }
 }

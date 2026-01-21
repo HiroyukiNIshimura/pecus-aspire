@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Libs;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Config;
 using Pecus.Models.Requests.Activity;
@@ -77,8 +78,21 @@ public class MyActivityController : BaseSecureController
         ItemId = a.ItemId,
         ItemCode = a.Item?.Code ?? string.Empty,
         ItemSubject = a.Item?.Subject ?? string.Empty,
-        UserId = a.UserId,
-        Username = a.User?.Username,
+        User = a.UserId != null ? new UserIdentityResponse
+        {
+            Id = a.UserId.Value,
+            Username = a.User?.Username,
+            IdentityIconUrl = a.User != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: a.User.AvatarType,
+                        userId: a.User.Id,
+                        username: a.User.Username,
+                        email: a.User.Email,
+                        avatarPath: a.User.UserAvatarPath
+                    )
+                    : null,
+            IsActive = a.User?.IsActive ?? false,
+        } : null,
         ActionType = a.ActionType,
         Details = a.Details,
         CreatedAt = a.CreatedAt,

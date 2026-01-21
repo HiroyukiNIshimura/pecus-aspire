@@ -98,11 +98,15 @@ public class ItemActivityController : BaseSecureController
         ItemId = a.ItemId,
         ItemCode = a.Item?.Code ?? string.Empty,
         ItemSubject = a.Item?.Subject ?? string.Empty,
-        UserId = a.UserId,
-        Username = a.User?.Username,
-        IdentityIconUrl = a.User != null
-            ? IdentityIconHelper.GetIdentityIconUrl(a.User.AvatarType, a.User.Id, a.User.Username, a.User.Email, a.User.UserAvatarPath)
-            : null,
+        User = a.UserId != null ? new UserIdentityResponse
+        {
+            Id = a.UserId.Value,
+            Username = a.User?.Username,
+            IdentityIconUrl = a.User != null
+        ? IdentityIconHelper.GetIdentityIconUrl(a.User.AvatarType, a.User.Id, a.User.Username, a.User.Email, a.User.UserAvatarPath)
+        : null,
+            IsActive = a.User?.IsActive ?? false,
+        } : null,
         ActionType = a.ActionType,
         Details = a.Details,
         CreatedAt = a.CreatedAt,

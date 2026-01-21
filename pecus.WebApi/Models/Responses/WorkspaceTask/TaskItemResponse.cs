@@ -47,34 +47,19 @@ public class TaskItemResponse
     public string Subject { get; set; } = string.Empty;
 
     /// <summary>
-    /// オーナーユーザーID
+    /// オーナー情報
     /// </summary>
-    public int OwnerId { get; set; }
+    public UserIdentityResponse Owner { get; set; } = new();
 
     /// <summary>
-    /// オーナーユーザー名
+    /// 担当者情報
     /// </summary>
-    public string? OwnerUsername { get; set; }
+    public UserIdentityResponse? Assignee { get; set; }
 
     /// <summary>
-    /// オーナーアバターURL
+    /// コミッター情報
     /// </summary>
-    public string? OwnerAvatarUrl { get; set; }
-
-    /// <summary>
-    /// 作業中のユーザーID
-    /// </summary>
-    public int? AssigneeId { get; set; }
-
-    /// <summary>
-    /// 作業中のユーザー名
-    /// </summary>
-    public string? AssigneeUsername { get; set; }
-
-    /// <summary>
-    /// 作業中のユーザーアバターURL
-    /// </summary>
-    public string? AssigneeAvatarUrl { get; set; }
+    public UserIdentityResponse? Committer { get; set; }
 
     /// <summary>
     /// 重要度（NULL の場合は未設定）
@@ -95,21 +80,6 @@ public class TaskItemResponse
     /// 下書き中フラグ
     /// </summary>
     public bool IsDraft { get; set; }
-
-    /// <summary>
-    /// コミッターユーザーID
-    /// </summary>
-    public int? CommitterId { get; set; }
-
-    /// <summary>
-    /// コミッターユーザー名
-    /// </summary>
-    public string? CommitterUsername { get; set; }
-
-    /// <summary>
-    /// コミッターアバターURL
-    /// </summary>
-    public string? CommitterAvatarUrl { get; set; }
 
     /// <summary>
     /// 作成日時

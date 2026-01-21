@@ -234,8 +234,6 @@ public class ChatController : BaseSecureController
         {
             Id = u.Id,
             Username = u.Username,
-            Email = u.Email,
-            AvatarType = u.AvatarType?.ToString()?.ToLowerInvariant(),
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 u.AvatarType,
                 u.Id,
@@ -244,6 +242,7 @@ public class ChatController : BaseSecureController
                 u.UserAvatarPath
             ),
             LastActiveAt = u.LastLoginAt,
+            IsActive = u.IsActive,
         }).ToList();
 
         return TypedResults.Ok(response);
@@ -653,10 +652,9 @@ public class ChatController : BaseSecureController
     {
         return new ChatRoomMemberItem
         {
-            UserId = member.ChatActor.UserId ?? 0,  // Bot の場合は 0
+            Id = member.ChatActor.UserId ?? 0,  // Bot の場合は 0
             Username = member.ChatActor.DisplayName,
             Email = member.ChatActor.User?.Email ?? "",
-            AvatarType = member.ChatActor.AvatarType?.ToString()?.ToLowerInvariant(),
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 member.ChatActor.AvatarType,
                 member.ChatActor.UserId ?? 0,
@@ -667,10 +665,11 @@ public class ChatController : BaseSecureController
             Role = member.Role,
             JoinedAt = member.JoinedAt,
             LastReadAt = member.LastReadAt,
+            IsActive = member.ChatActor.User?.IsActive ?? false,
         };
     }
 
-    private static ChatUserItem MapToChatUserItemFromActor(Pecus.Libs.DB.Models.ChatActor actor)
+    private static UserIdentityResponse MapToChatUserItemFromActor(Pecus.Libs.DB.Models.ChatActor actor)
     {
         // Bot の場合は AvatarUrl を直接使用（IconUrl が格納されている）
         // User の場合は IdentityIconHelper を使用
@@ -684,33 +683,12 @@ public class ChatController : BaseSecureController
                 actor.AvatarUrl
             );
 
-        return new ChatUserItem
+        return new UserIdentityResponse
         {
             Id = actor.UserId ?? 0,  // Bot の場合は 0
             Username = actor.DisplayName,
-            Email = actor.User?.Email ?? "",
-            AvatarType = actor.AvatarType?.ToString()?.ToLowerInvariant(),
             IdentityIconUrl = identityIconUrl,
             IsActive = actor.User?.IsActive ?? true,
-        };
-    }
-
-    private static ChatUserItem MapToUserItem(Pecus.Libs.DB.Models.User user)
-    {
-        return new ChatUserItem
-        {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            AvatarType = user.AvatarType?.ToString()?.ToLowerInvariant(),
-            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
-                user.AvatarType,
-                user.Id,
-                user.Username,
-                user.Email,
-                user.UserAvatarPath
-            ),
-            IsActive = user.IsActive,
         };
     }
 

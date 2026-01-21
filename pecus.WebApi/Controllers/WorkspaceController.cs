@@ -243,7 +243,7 @@ public class WorkspaceController : BaseSecureController
         var response = new WorkspaceUserDetailResponse
         {
             WorkspaceId = workspaceUser.WorkspaceId,
-            UserId = workspaceUser.UserId,
+            Id = workspaceUser.UserId,
             Username = workspaceUser.User?.Username ?? "",
             Email = workspaceUser.User?.Email ?? "",
             IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
@@ -374,7 +374,7 @@ public class WorkspaceController : BaseSecureController
         var response = new WorkspaceUserDetailResponse
         {
             WorkspaceId = workspaceUser.WorkspaceId,
-            UserId = workspaceUser.UserId,
+            Id = workspaceUser.UserId,
             Username = workspaceUser.User?.Username ?? "",
             Email = workspaceUser.User?.Email ?? "",
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
@@ -432,7 +432,7 @@ public class WorkspaceController : BaseSecureController
         var response = new WorkspaceUserDetailResponse
         {
             WorkspaceId = workspaceUser.WorkspaceId,
-            UserId = workspaceUser.UserId,
+            Id = workspaceUser.UserId,
             Username = workspaceUser.User?.Username ?? "",
             Email = workspaceUser.User?.Email ?? "",
             IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(

@@ -6,35 +6,13 @@ namespace Pecus.Models.Responses.Chat;
 /// <summary>
 /// チャットルームメンバー項目
 /// </summary>
-public class ChatRoomMemberItem
+public class ChatRoomMemberItem : UserIdentityResponse
 {
-    /// <summary>
-    /// ユーザーID
-    /// </summary>
-    [Required]
-    public required int UserId { get; set; }
-
-    /// <summary>
-    /// ユーザー名
-    /// </summary>
-    [Required]
-    public required string Username { get; set; }
-
     /// <summary>
     /// メールアドレス
     /// </summary>
     [Required]
     public required string Email { get; set; }
-
-    /// <summary>
-    /// アバタータイプ
-    /// </summary>
-    public string? AvatarType { get; set; }
-
-    /// <summary>
-    /// アイデンティティアイコンURL
-    /// </summary>
-    public string? IdentityIconUrl { get; set; }
 
     /// <summary>
     /// ロール

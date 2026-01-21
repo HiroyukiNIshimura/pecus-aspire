@@ -52,7 +52,7 @@ public class AgendaNotificationResponse
     /// <summary>
     /// 通知を作成したユーザー（招待者、変更者など）
     /// </summary>
-    public UserItem? CreatedByUser { get; set; }
+    public UserIdentityResponse? CreatedBy { get; set; }
 }
 
 /// <summary>

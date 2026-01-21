@@ -75,5 +75,5 @@ public class AgendaExceptionResponse
     /// <summary>
     /// 作成ユーザー
     /// </summary>
-    public UserItem? CreatedByUser { get; set; }
+    public UserIdentityResponse? CreatedBy { get; set; }
 }

@@ -55,12 +55,8 @@ public class RelatedItemInfo
     public bool IsArchived { get; set; }
 
     /// <summary>
-    /// オーナーユーザー名
+    /// オーナー情報
     /// </summary>
-    public string? OwnerUsername { get; set; }
+    public UserIdentityResponse Owner { get; set; } = new();
 
-    /// <summary>
-    /// オーナーアバターURL
-    /// </summary>
-    public string? OwnerAvatarUrl { get; set; }
 }

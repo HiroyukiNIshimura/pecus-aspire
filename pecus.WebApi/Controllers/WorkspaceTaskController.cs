@@ -346,7 +346,7 @@ public class WorkspaceTaskController : BaseSecureController
                 previousDueDate: previousTask.DueDate,
                 previousEstimatedHours: previousTask.EstimatedHours,
                 previousProgressPercentage: previousTask.ProgressPercentage,
-                previousAssignedUserId: previousTask.AssignedUserId,
+                previousAssignedUserId: previousTask.Assigned.Id,
                 previousIsDiscarded: previousTask.IsDiscarded,
                 previousIsCompleted: previousTask.IsCompleted
             );
@@ -530,113 +530,6 @@ public class WorkspaceTaskController : BaseSecureController
     }
 
     /// <summary>
-    /// WorkspaceItemエンティティからレスポンスを生成
-    /// </summary>
-    /// <param name="item">アイテムエンティティ</param>
-    private static WorkspaceItemDetailResponse BuildItemDetailResponse(WorkspaceItem item)
-    {
-        return new WorkspaceItemDetailResponse
-        {
-            Id = item.Id,
-            WorkspaceId = item.WorkspaceId,
-            WorkspaceCode = item.Workspace?.Code,
-            WorkspaceName = item.Workspace?.Name,
-            GenreIcon = item.Workspace?.Genre?.Icon,
-            GenreName = item.Workspace?.Genre?.Name,
-            Code = item.Code,
-            Subject = item.Subject,
-            Body = item.Body,
-            OwnerId = item.OwnerId,
-            OwnerUsername = item.Owner?.Username,
-            OwnerAvatarUrl = item.Owner != null
-                ? IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: item.Owner.AvatarType,
-                    userId: item.Owner.Id,
-                    username: item.Owner.Username,
-                    email: item.Owner.Email,
-                    avatarPath: item.Owner.UserAvatarPath
-                )
-                : null,
-            AssigneeId = item.AssigneeId,
-            AssigneeUsername = item.Assignee?.Username,
-            AssigneeAvatarUrl = item.Assignee != null
-                ? IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: item.Assignee.AvatarType,
-                    userId: item.Assignee.Id,
-                    username: item.Assignee.Username,
-                    email: item.Assignee.Email,
-                    avatarPath: item.Assignee.UserAvatarPath
-                )
-                : null,
-            Priority = item.Priority,
-            DueDate = item.DueDate,
-            IsArchived = item.IsArchived,
-            IsDraft = item.IsDraft,
-            CreatedAt = item.CreatedAt,
-            UpdatedAt = item.UpdatedAt,
-            RowVersion = item.RowVersion!,
-        };
-    }
-
-    /// <summary>
-    /// WorkspaceItemエンティティからTaskItemResponseを生成
-    /// </summary>
-    /// <param name="item">ワークスペースアイテムエンティティ</param>
-    private static TaskItemResponse BuildTaskItemResponse(WorkspaceItem item)
-    {
-        return new TaskItemResponse
-        {
-            WorkspaceId = item.WorkspaceId,
-            WorkspaceCode = item.Workspace?.Code,
-            WorkspaceName = item.Workspace?.Name,
-            GenreIcon = item.Workspace?.Genre?.Icon,
-            GenreName = item.Workspace?.Genre?.Name,
-            Mode = item.Workspace?.Mode,
-            Code = item.Code,
-            Subject = item.Subject,
-            OwnerId = item.OwnerId,
-            OwnerUsername = item.Owner?.Username,
-            OwnerAvatarUrl = item.Owner != null
-                ? IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: item.Owner.AvatarType,
-                    userId: item.Owner.Id,
-                    username: item.Owner.Username,
-                    email: item.Owner.Email,
-                    avatarPath: item.Owner.UserAvatarPath
-                )
-                : null,
-            AssigneeId = item.AssigneeId,
-            AssigneeUsername = item.Assignee?.Username,
-            AssigneeAvatarUrl = item.Assignee != null
-                ? IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: item.Assignee.AvatarType,
-                    userId: item.Assignee.Id,
-                    username: item.Assignee.Username,
-                    email: item.Assignee.Email,
-                    avatarPath: item.Assignee.UserAvatarPath
-                )
-                : null,
-            Priority = item.Priority,
-            DueDate = item.DueDate,
-            IsArchived = item.IsArchived,
-            IsDraft = item.IsDraft,
-            CommitterId = item.CommitterId,
-            CommitterUsername = item.Committer?.Username,
-            CommitterAvatarUrl = item.Committer != null
-                ? IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: item.Committer.AvatarType,
-                    userId: item.Committer.Id,
-                    username: item.Committer.Username,
-                    email: item.Committer.Email,
-                    avatarPath: item.Committer.UserAvatarPath
-                )
-                : null,
-            CreatedAt = item.CreatedAt,
-            UpdatedAt = item.UpdatedAt,
-        };
-    }
-
-    /// <summary>
     /// タスク内容提案取得
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
@@ -692,42 +585,90 @@ public class WorkspaceTaskController : BaseSecureController
             WorkspaceId = task.WorkspaceId,
             OrganizationId = task.OrganizationId,
             // アイテム権限情報（タスク編集権限チェック用）
-            ItemOwnerId = task.WorkspaceItem?.OwnerId ?? 0,
-            ItemAssigneeId = task.WorkspaceItem?.AssigneeId,
-            ItemCommitterId = task.WorkspaceItem?.CommitterId,
-            AssignedUserId = task.AssignedUserId,
-            AssignedUsername = task.AssignedUser?.Username,
-            AssignedAvatarUrl = task.AssignedUser != null
-                ? IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: task.AssignedUser.AvatarType,
-                    userId: task.AssignedUser.Id,
-                    username: task.AssignedUser.Username,
-                    email: task.AssignedUser.Email,
-                    avatarPath: task.AssignedUser.UserAvatarPath
-                )
-                : null,
-            CompletedByUserId = task.CompletedByUserId,
-            CompletedByUsername = task.CompletedByUser?.Username,
-            CompletedByAvatarUrl = task.CompletedByUser != null
-                ? IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: task.CompletedByUser.AvatarType,
-                    userId: task.CompletedByUser.Id,
-                    username: task.CompletedByUser.Username,
-                    email: task.CompletedByUser.Email,
-                    avatarPath: task.CompletedByUser.UserAvatarPath
-                )
-                : null,
-            CreatedByUserId = task.CreatedByUserId,
-            CreatedByUsername = task.CreatedByUser?.Username,
-            CreatedByAvatarUrl = task.CreatedByUser != null
-                ? IdentityIconHelper.GetIdentityIconUrl(
-                    iconType: task.CreatedByUser.AvatarType,
-                    userId: task.CreatedByUser.Id,
-                    username: task.CreatedByUser.Username,
-                    email: task.CreatedByUser.Email,
-                    avatarPath: task.CreatedByUser.UserAvatarPath
-                )
-                : null,
+            ItemOwner = new UserIdentityResponse
+            {
+                Id = task.WorkspaceItem?.OwnerId ?? 0,
+                Username = task.WorkspaceItem?.Owner?.Username,
+                IdentityIconUrl = task.WorkspaceItem?.Owner != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: task.WorkspaceItem.Owner.AvatarType,
+                        userId: task.WorkspaceItem.Owner.Id,
+                        username: task.WorkspaceItem.Owner.Username,
+                        email: task.WorkspaceItem.Owner.Email,
+                        avatarPath: task.WorkspaceItem.Owner.UserAvatarPath
+                    )
+                    : null,
+            },
+            ItemAssignee = task.WorkspaceItem?.AssigneeId != null ? new UserIdentityResponse
+            {
+                Id = task.WorkspaceItem.AssigneeId.Value,
+                Username = task.WorkspaceItem.Assignee?.Username,
+                IdentityIconUrl = task.WorkspaceItem.Assignee != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: task.WorkspaceItem.Assignee.AvatarType,
+                        userId: task.WorkspaceItem.Assignee.Id,
+                        username: task.WorkspaceItem.Assignee.Username,
+                        email: task.WorkspaceItem.Assignee.Email,
+                        avatarPath: task.WorkspaceItem.Assignee.UserAvatarPath
+                    )
+                    : null,
+            } : null,
+            ItemCommitter = task.WorkspaceItem?.CommitterId != null ? new UserIdentityResponse
+            {
+                Id = task.WorkspaceItem.CommitterId.Value,
+                Username = task.WorkspaceItem.Committer?.Username,
+                IdentityIconUrl = task.WorkspaceItem.Committer != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: task.WorkspaceItem.Committer.AvatarType,
+                        userId: task.WorkspaceItem.Committer.Id,
+                        username: task.WorkspaceItem.Committer.Username,
+                        email: task.WorkspaceItem.Committer.Email,
+                        avatarPath: task.WorkspaceItem.Committer.UserAvatarPath
+                    )
+                    : null,
+            } : null,
+            Assigned = new UserIdentityResponse
+            {
+                Id = task.AssignedUserId,
+                Username = task.AssignedUser?.Username,
+                IdentityIconUrl = task.AssignedUser != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: task.AssignedUser.AvatarType,
+                        userId: task.AssignedUser.Id,
+                        username: task.AssignedUser.Username,
+                        email: task.AssignedUser.Email,
+                        avatarPath: task.AssignedUser.UserAvatarPath
+                    )
+                    : null,
+            },
+            CompletedBy = task.CompletedByUserId != null ? new UserIdentityResponse
+            {
+                Id = task.CompletedByUserId.Value,
+                Username = task.CompletedByUser?.Username,
+                IdentityIconUrl = task.CompletedByUser != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: task.CompletedByUser.AvatarType,
+                        userId: task.CompletedByUser.Id,
+                        username: task.CompletedByUser.Username,
+                        email: task.CompletedByUser.Email,
+                        avatarPath: task.CompletedByUser.UserAvatarPath
+                    )
+                    : null,
+            } : null,
+            CreatedBy = new UserIdentityResponse
+            {
+                Id = task.CreatedByUserId,
+                Username = task.CreatedByUser?.Username,
+                IdentityIconUrl = task.CreatedByUser != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: task.CreatedByUser.AvatarType,
+                        userId: task.CreatedByUser.Id,
+                        username: task.CreatedByUser.Username,
+                        email: task.CreatedByUser.Email,
+                        avatarPath: task.CreatedByUser.UserAvatarPath
+                    )
+                    : null,
+            },
             Content = task.Content,
             TaskTypeId = task.TaskTypeId,
             TaskTypeCode = task.TaskType?.Code,

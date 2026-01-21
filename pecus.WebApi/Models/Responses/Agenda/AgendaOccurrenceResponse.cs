@@ -90,5 +90,5 @@ public class AgendaOccurrenceResponse
     /// <summary>
     /// 作成者
     /// </summary>
-    public UserItem? CreatedByUser { get; set; }
+    public UserIdentityResponse? CreatedBy { get; set; }
 }

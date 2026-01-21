@@ -145,7 +145,7 @@ public class AdminWorkspaceController : BaseAdminController
                 .Select(wu => new WorkspaceUserDetailResponse
                 {
                     WorkspaceId = wu.WorkspaceId,
-                    UserId = wu.UserId,
+                    Id = wu.UserId,
                     Username = wu.User!.Username,
                     Email = wu.User.Email,
                     IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
@@ -237,7 +237,7 @@ public class AdminWorkspaceController : BaseAdminController
                     .Where(wu => wu.User != null && wu.User.IsActive)
                     .Select(wu => new WorkspaceUserItem
                     {
-                        UserId = wu.UserId,
+                        Id = wu.UserId,
                         Username = wu.User!.Username,
                         Email = wu.User.Email,
                         IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
@@ -255,7 +255,7 @@ public class AdminWorkspaceController : BaseAdminController
                 Owner = w.Owner != null
                     ? new WorkspaceUserItem
                     {
-                        UserId = w.Owner.Id,
+                        Id = w.Owner.Id,
                         Username = w.Owner.Username,
                         Email = w.Owner.Email,
                         IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
@@ -465,7 +465,7 @@ public class AdminWorkspaceController : BaseAdminController
         var response = new WorkspaceUserDetailResponse
         {
             WorkspaceId = workspaceUser.WorkspaceId,
-            UserId = workspaceUser.UserId,
+            Id = workspaceUser.UserId,
             Username = workspaceUser.User?.Username ?? "",
             Email = workspaceUser.User?.Email ?? "",
             IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
@@ -573,7 +573,7 @@ public class AdminWorkspaceController : BaseAdminController
         var response = new WorkspaceUserDetailResponse
         {
             WorkspaceId = workspaceUser.WorkspaceId,
-            UserId = workspaceUser.UserId,
+            Id = workspaceUser.UserId,
             Username = workspaceUser.User?.Username ?? "",
             Email = workspaceUser.User?.Email ?? "",
             IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
@@ -637,7 +637,7 @@ public class AdminWorkspaceController : BaseAdminController
             .Select(m => new WorkspaceUserDetailResponse
             {
                 WorkspaceId = m.WorkspaceId,
-                UserId = m.UserId,
+                Id = m.UserId,
                 Username = m.User?.Username ?? "",
                 Email = m.User?.Email ?? "",
                 IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
