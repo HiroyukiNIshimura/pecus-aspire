@@ -92,14 +92,14 @@ export default function QuickAttendanceButtons({
             type="button"
             disabled={isPending}
             onClick={() => handleStatusChange(status)}
-            className={`
-              btn btn-xs
-              ${isActive ? config.activeClass : 'btn-outline btn-secondary'}
-              ${isPending ? 'loading' : ''}
-            `}
+            className={`btn btn-xs ${isActive ? config.activeClass : 'btn-secondary'}`}
             title={config.label}
           >
-            {!isPending && <span className={`${config.icon} size-4`} />}
+            {isPending ? (
+              <span className="loading loading-spinner loading-xs" />
+            ) : (
+              <span className={`${config.icon} size-4`} />
+            )}
             <span className="hidden sm:inline">{config.label}</span>
           </button>
         );
