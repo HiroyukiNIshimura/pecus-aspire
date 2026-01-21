@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cancelOccurrence } from '@/actions/agenda';
+import { useNotify } from '@/hooks/useNotify';
 
 interface CancelOccurrenceModalProps {
   /** モーダル表示状態 */
@@ -35,6 +36,7 @@ export function CancelOccurrenceModal({
   occurrenceIndex,
   occurrenceDate,
 }: CancelOccurrenceModalProps) {
+  const notify = useNotify();
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +83,7 @@ export function CancelOccurrenceModal({
     const result = await cancelOccurrence(agendaId, occurrenceIndex, reason.trim() || undefined);
 
     if (result.success) {
+      notify.success('この回を中止しました');
       onCancelled();
     } else {
       setError(result.message ?? 'この回の中止に失敗しました。');

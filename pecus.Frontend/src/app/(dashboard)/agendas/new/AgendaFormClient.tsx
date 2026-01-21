@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { createAgenda, updateAgenda, updateAgendaFromOccurrence, updateOccurrence } from '@/actions/agenda';
 import { AgendaForm, type AgendaFormData } from '@/components/agendas/AgendaForm';
+import { useNotify } from '@/hooks/useNotify';
 import type {
   AgendaResponse,
   CreateAgendaRequest,
@@ -35,6 +36,7 @@ export default function AgendaFormClient({
   occurrenceIndex,
 }: AgendaFormClientProps) {
   const router = useRouter();
+  const notify = useNotify();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +65,7 @@ export default function AgendaFormClient({
 
         const result = await createAgenda(request);
         if (result.success) {
+          notify.success('予定を作成しました');
           router.push(`/agendas/${result.data.id}`);
         } else {
           setError(result.message ?? 'アジェンダの作成に失敗しました。');
@@ -91,6 +94,7 @@ export default function AgendaFormClient({
 
           const result = await updateAgendaFromOccurrence(initialData.id, request);
           if (result.success) {
+            notify.success('予定を更新しました');
             // 新しく作成されたシリーズの詳細ページへ遷移
             router.push(`/agendas/${result.data.id}`);
           } else {
@@ -107,6 +111,7 @@ export default function AgendaFormClient({
             endAt: formData.endAt,
           });
           if (result.success) {
+            notify.success('この回を更新しました');
             // 元のアジェンダの詳細ページへ遷移（インデックスを維持）
             router.push(`/agendas/${initialData.id}?occurrence=${occurrenceIndex}`);
           } else {
@@ -134,6 +139,7 @@ export default function AgendaFormClient({
 
           const result = await updateAgenda(initialData.id, request);
           if (result.success) {
+            notify.success('予定を更新しました');
             router.push(`/agendas/${result.data.id}`);
           } else {
             setError(result.message ?? 'アジェンダの更新に失敗しました。');

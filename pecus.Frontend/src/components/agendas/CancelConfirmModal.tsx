@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cancelAgenda } from '@/actions/agenda';
+import { useNotify } from '@/hooks/useNotify';
 
 interface CancelConfirmModalProps {
   /** モーダル表示状態 */
@@ -35,6 +36,7 @@ export function CancelConfirmModal({
   rowVersion,
   isRecurring,
 }: CancelConfirmModalProps) {
+  const notify = useNotify();
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +83,7 @@ export function CancelConfirmModal({
     const result = await cancelAgenda(agendaId, rowVersion, reason.trim() || undefined);
 
     if (result.success) {
+      notify.success(isRecurring ? 'シリーズを中止しました' : '予定を中止しました');
       onCancelled();
     } else {
       setError(result.message ?? 'イベントの中止に失敗しました。');
