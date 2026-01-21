@@ -599,6 +599,7 @@ export default function WorkspaceTaskAccordion({
                                               {task.assigned?.id ? (
                                                 <UserAvatar
                                                   userName={task.assigned.username}
+                                                  isActive={task.assigned.isActive ?? false}
                                                   identityIconUrl={task.assigned.identityIconUrl}
                                                   size={20}
                                                   nameClassName="text-xs text-base-content/70 truncate"
@@ -616,6 +617,7 @@ export default function WorkspaceTaskAccordion({
                                               {task.itemCommitter?.id ? (
                                                 <UserAvatar
                                                   userName={task.itemCommitter.username}
+                                                  isActive={task.itemCommitter.isActive ?? false}
                                                   identityIconUrl={task.itemCommitter.identityIconUrl}
                                                   size={20}
                                                   nameClassName="text-xs text-base-content/70 truncate"

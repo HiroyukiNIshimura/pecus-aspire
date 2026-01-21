@@ -255,6 +255,7 @@ export default function AddMemberModal({
                 <div className="flex items-center gap-3">
                   <UserAvatar
                     userName={selectedUser.username}
+                    isActive={true}
                     identityIconUrl={selectedUser.identityIconUrl}
                     size={40}
                     showName={false}
@@ -441,6 +442,7 @@ export default function AddMemberModal({
                           {/* アバター */}
                           <UserAvatar
                             userName={user.username}
+                            isActive={true}
                             identityIconUrl={user.identityIconUrl}
                             size={40}
                             showName={false}

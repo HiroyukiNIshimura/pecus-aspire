@@ -429,6 +429,7 @@ export default function TaskCommentSection({
                     <div className="flex-shrink-0 pt-0.5">
                       <UserAvatar
                         userName={comment.user?.username}
+                        isActive={comment.user?.isActive ?? false}
                         identityIconUrl={comment.user?.identityIconUrl}
                         size={36}
                         showName={false}
@@ -530,6 +531,7 @@ export default function TaskCommentSection({
                     <div className="flex-shrink-0 pt-0.5">
                       <UserAvatar
                         userName={comment.user?.username}
+                        isActive={comment.user?.isActive ?? false}
                         identityIconUrl={comment.user?.identityIconUrl}
                         size={36}
                         showName={false}

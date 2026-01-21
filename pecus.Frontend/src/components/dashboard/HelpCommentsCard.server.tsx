@@ -91,6 +91,7 @@ export default function HelpCommentsCard({ data }: HelpCommentsCardProps) {
                   <div className="flex items-center gap-1.5 text-xs text-base-content/60">
                     <UserAvatar
                       userName={comment.commentBy?.username}
+                      isActive={comment.commentBy?.isActive ?? false}
                       identityIconUrl={comment.commentBy?.identityIconUrl}
                       size={16}
                       showName={true}

@@ -114,7 +114,13 @@ export default function ActivityClient({
     <div className="max-w-4xl mx-auto">
       {/* ヘッダー */}
       <div className="flex items-center gap-3 mb-6">
-        <UserAvatar userName={initialUserName} identityIconUrl={initialUserIconUrl} size={48} showName={false} />
+        <UserAvatar
+          userName={initialUserName}
+          isActive={true}
+          identityIconUrl={initialUserIconUrl}
+          size={48}
+          showName={false}
+        />
         <div>
           <h1 className="text-2xl font-bold">アクティビティ</h1>
           <p className="text-sm text-base-content/70">{initialUserName} さんの活動履歴</p>

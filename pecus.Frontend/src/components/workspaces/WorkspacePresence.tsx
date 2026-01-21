@@ -190,6 +190,7 @@ export default function WorkspacePresence({
                 >
                   <UserAvatar
                     userName={user.userName}
+                    isActive={true}
                     identityIconUrl={user.identityIconUrl}
                     size={36}
                     showName={false}

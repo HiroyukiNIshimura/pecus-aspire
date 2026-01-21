@@ -323,6 +323,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
                       <div className="flex items-center gap-2 mt-1">
                         <UserAvatar
                           userName={workspaceDetail.owner.userName || 'オーナー'}
+                          isActive={workspaceDetail.owner.isActive ?? false}
                           identityIconUrl={workspaceDetail.owner.identityIconUrl}
                           size={24}
                           nameClassName="text-lg font-semibold"

@@ -512,6 +512,7 @@ export default function CreateWorkspaceTaskModal({
                 <div className="input input-bordered flex items-center gap-2">
                   <UserAvatar
                     userName={selectedAssignee.username}
+                    isActive={true}
                     identityIconUrl={selectedAssignee.identityIconUrl}
                     size={24}
                     showName={false}
@@ -558,6 +559,7 @@ export default function CreateWorkspaceTaskModal({
                         >
                           <UserAvatar
                             userName={user.username}
+                            isActive={true}
                             identityIconUrl={user.identityIconUrl}
                             size={24}
                             showName={false}

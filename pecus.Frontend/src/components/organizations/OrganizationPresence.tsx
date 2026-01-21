@@ -172,6 +172,7 @@ export default function OrganizationPresence({
               >
                 <UserAvatar
                   userName={user.userName}
+                  isActive={true}
                   identityIconUrl={user.identityIconUrl}
                   size={24}
                   showName={false}

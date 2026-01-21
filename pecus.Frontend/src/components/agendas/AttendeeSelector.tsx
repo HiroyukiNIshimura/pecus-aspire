@@ -387,6 +387,7 @@ export default function AttendeeSelector({
                 >
                   <UserAvatar
                     userName={user.userName}
+                    isActive={true}
                     identityIconUrl={user.identityIconUrl}
                     size={32}
                     showName={false}
@@ -434,6 +435,7 @@ export default function AttendeeSelector({
               >
                 <UserAvatar
                   userName={attendee.userName}
+                  isActive={true}
                   identityIconUrl={attendee.identityIconUrl}
                   size={24}
                   showName={false}

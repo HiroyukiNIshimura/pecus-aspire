@@ -157,6 +157,7 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
               <span className="flex items-center gap-1">
                 <UserAvatar
                   userName={createdBy.username}
+                  isActive={createdBy.isActive ?? false}
                   identityIconUrl={createdBy.identityIconUrl}
                   size={16}
                   showName={true}

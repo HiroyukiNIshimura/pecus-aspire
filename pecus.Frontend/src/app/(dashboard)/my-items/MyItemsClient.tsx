@@ -623,6 +623,7 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                             {item.assignee?.username ? (
                               <UserAvatar
                                 userName={item.assignee.username}
+                                isActive={item.assignee.isActive}
                                 identityIconUrl={item.assignee.identityIconUrl}
                                 size={20}
                                 nameClassName="truncate"
@@ -641,6 +642,7 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                             {item.committer?.username ? (
                               <UserAvatar
                                 userName={item.committer.username}
+                                isActive={item.committer.isActive ?? false}
                                 identityIconUrl={item.committer.identityIconUrl}
                                 size={20}
                                 nameClassName="truncate"
@@ -659,6 +661,7 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                           <span className="text-base-content/70 flex-shrink-0">オーナー</span>
                           <UserAvatar
                             userName={item.owner?.username}
+                            isActive={item.owner?.isActive ?? false}
                             identityIconUrl={item.owner?.identityIconUrl}
                             size={20}
                             nameClassName="truncate"

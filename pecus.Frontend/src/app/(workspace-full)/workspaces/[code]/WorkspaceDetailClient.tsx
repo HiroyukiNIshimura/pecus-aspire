@@ -1314,6 +1314,7 @@ export default function WorkspaceDetailClient({
                       <div className="flex items-center gap-2 mt-1">
                         <UserAvatar
                           userName={currentWorkspaceDetail.owner.userName}
+                          isActive={currentWorkspaceDetail.owner.isActive ?? false}
                           identityIconUrl={currentWorkspaceDetail.owner.identityIconUrl}
                           size={28}
                           nameClassName="font-semibold truncate"
@@ -1337,6 +1338,7 @@ export default function WorkspaceDetailClient({
                       <div className="flex items-center gap-2 mt-1">
                         <UserAvatar
                           userName={currentWorkspaceDetail.updatedBy.userName}
+                          isActive={currentWorkspaceDetail.updatedBy.isActive ?? false}
                           identityIconUrl={currentWorkspaceDetail.updatedBy.identityIconUrl}
                           size={28}
                           nameClassName="font-semibold truncate"

@@ -864,6 +864,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <div className="flex items-center gap-2 mt-1">
                   <UserAvatar
                     userName={item.owner.username}
+                    isActive={item.owner.isActive ?? false}
                     identityIconUrl={item.owner.identityIconUrl}
                     size={20}
                     nameClassName="font-semibold truncate"
@@ -887,6 +888,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <div className="flex items-center gap-2 mt-1">
                   <UserAvatar
                     userName={item.assignee.username}
+                    isActive={item.assignee.isActive ?? false}
                     identityIconUrl={item.assignee.identityIconUrl}
                     size={20}
                     nameClassName="font-semibold truncate"
@@ -951,6 +953,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                           {related.owner?.id && (
                             <UserAvatar
                               userName={related.owner.username}
+                              isActive={related.owner.isActive ?? false}
                               identityIconUrl={related.owner.identityIconUrl}
                               size={16}
                               nameClassName="truncate"

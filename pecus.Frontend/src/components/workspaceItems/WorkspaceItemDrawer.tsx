@@ -339,6 +339,7 @@ export default function WorkspaceItemDrawer({
                   <div className="mt-2 flex items-center gap-2 p-2 bg-base-200 rounded">
                     <UserAvatar
                       userName={assignee.userName}
+                      isActive={assignee.isActive ?? false}
                       identityIconUrl={assignee.identityIconUrl}
                       size={24}
                       nameClassName="text-sm font-semibold"
@@ -378,6 +379,7 @@ export default function WorkspaceItemDrawer({
                     <div className="mt-2 flex items-center gap-2 p-2 bg-base-200 rounded">
                       <UserAvatar
                         userName={committer.userName}
+                        isActive={committer.isActive ?? false}
                         identityIconUrl={committer.identityIconUrl}
                         size={24}
                         nameClassName="text-sm font-semibold"

@@ -1135,6 +1135,7 @@ export default function WorkspaceTaskDetailPage({
                       <div className="input input-bordered flex items-center gap-2">
                         <UserAvatar
                           userName={selectedAssignee.username}
+                          isActive={true}
                           identityIconUrl={selectedAssignee.identityIconUrl}
                           size={24}
                           showName={false}
@@ -1187,6 +1188,7 @@ export default function WorkspaceTaskDetailPage({
                               >
                                 <UserAvatar
                                   userName={user.username}
+                                  isActive={true}
                                   identityIconUrl={user.identityIconUrl}
                                   size={24}
                                   showName={false}
@@ -1598,6 +1600,7 @@ export default function WorkspaceTaskDetailPage({
                           <span>作成者:</span>
                           <UserAvatar
                             userName={task.createdBy.username}
+                            isActive={task.createdBy.isActive ?? false}
                             identityIconUrl={task.createdBy.identityIconUrl}
                             size={20}
                             nameClassName=""
@@ -1611,6 +1614,7 @@ export default function WorkspaceTaskDetailPage({
                           <span>完了者:</span>
                           <UserAvatar
                             userName={task.completedBy.username}
+                            isActive={task.completedBy.isActive ?? false}
                             identityIconUrl={task.completedBy.identityIconUrl}
                             size={20}
                             nameClassName="text-success"

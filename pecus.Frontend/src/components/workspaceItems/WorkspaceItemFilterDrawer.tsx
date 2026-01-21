@@ -108,6 +108,7 @@ function UserSearchFilter({
         <div className="flex items-center gap-2 p-2 bg-base-200 rounded-lg">
           <UserAvatar
             userName={selectedUser.username}
+            isActive={true}
             identityIconUrl={selectedUser.identityIconUrl}
             size={24}
             showName={false}
@@ -151,6 +152,7 @@ function UserSearchFilter({
                 >
                   <UserAvatar
                     userName={user.username}
+                    isActive={true}
                     identityIconUrl={user.identityIconUrl}
                     size={24}
                     showName={false}

@@ -551,6 +551,7 @@ const WorkspaceTasks = ({
             <div className="input input-xs input-bordered flex items-center gap-1.5 pr-1">
               <UserAvatar
                 userName={selectedAssignee.username}
+                isActive={true}
                 identityIconUrl={selectedAssignee.identityIconUrl}
                 size={16}
                 showName={false}
@@ -595,6 +596,7 @@ const WorkspaceTasks = ({
                     >
                       <UserAvatar
                         userName={user.username}
+                        isActive={true}
                         identityIconUrl={user.identityIconUrl}
                         size={20}
                         showName={false}
@@ -708,6 +710,7 @@ const WorkspaceTasks = ({
                             />
                             <UserAvatar
                               userName={task.completedBy.username}
+                              isActive={task.completedBy.isActive ?? false}
                               identityIconUrl={task.completedBy.identityIconUrl}
                               size={16}
                               nameClassName="text-xs truncate text-success"
@@ -716,6 +719,7 @@ const WorkspaceTasks = ({
                         ) : task.assigned?.id ? (
                           <UserAvatar
                             userName={task.assigned.username}
+                            isActive={task.assigned.isActive ?? false}
                             identityIconUrl={task.assigned.identityIconUrl}
                             size={16}
                             nameClassName="text-xs truncate"

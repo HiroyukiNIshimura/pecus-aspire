@@ -345,6 +345,7 @@ export default function WorkspacesClient({
                             <span className="text-base-content/70 flex-shrink-0">オーナー</span>
                             <UserAvatar
                               userName={workspace.owner.username}
+                              isActive={workspace.owner.isActive ?? false}
                               identityIconUrl={workspace.owner.identityIconUrl}
                               size={20}
                               showName={true}

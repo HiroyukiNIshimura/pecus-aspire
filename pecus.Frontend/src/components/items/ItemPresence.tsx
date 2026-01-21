@@ -153,7 +153,13 @@ export default function ItemPresence({
               className="w-5 h-5 rounded-full border border-base-100 overflow-hidden bg-base-200"
               title={user.userName}
             >
-              <UserAvatar userName={user.userName} identityIconUrl={user.identityIconUrl} size={18} showName={false} />
+              <UserAvatar
+                userName={user.userName}
+                isActive={true}
+                identityIconUrl={user.identityIconUrl}
+                size={18}
+                showName={false}
+              />
             </div>
           ))}
           {activeUsers.length > 3 && (
@@ -198,6 +204,7 @@ export default function ItemPresence({
               >
                 <UserAvatar
                   userName={user.userName}
+                  isActive={true}
                   identityIconUrl={user.identityIconUrl}
                   size={24}
                   showName={false}

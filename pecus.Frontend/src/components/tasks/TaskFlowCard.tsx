@@ -190,6 +190,7 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
               <span className="icon-[mdi--check-circle] w-3 h-3 text-success flex-shrink-0" aria-hidden="true" />
               <UserAvatar
                 userName={task.completedBy.username}
+                isActive={task.completedBy.isActive ?? false}
                 identityIconUrl={task.completedBy.identityIconUrl}
                 size={14}
                 nameClassName="text-xs truncate max-w-[60px] text-success"
@@ -198,6 +199,7 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
           ) : task.assigned?.id ? (
             <UserAvatar
               userName={task.assigned.username}
+              isActive={task.assigned.isActive ?? false}
               identityIconUrl={task.assigned.identityIconUrl}
               size={14}
               nameClassName="text-xs truncate max-w-[60px]"
