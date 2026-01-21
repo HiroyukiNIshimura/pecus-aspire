@@ -1444,6 +1444,8 @@ export default function WorkspaceDetailClient({
               onShowFlowMap={handleShowFlowMapFromTaskDetail}
               onNavigateToTask={handleNavigateToTask}
               canEdit={canEdit}
+              workspaceCode={workspaceCode}
+              itemCode={selectedItemCode ?? undefined}
             />
           )}
 

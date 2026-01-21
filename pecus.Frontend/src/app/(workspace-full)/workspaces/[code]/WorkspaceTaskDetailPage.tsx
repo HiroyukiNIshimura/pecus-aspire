@@ -104,6 +104,10 @@ export interface WorkspaceTaskDetailPageProps {
   onNavigateToTask?: (taskSequence: number) => void;
   /** 編集権限があるかどうか（Viewer以外）*/
   canEdit?: boolean;
+  /** ワークスペースコード（参照コード生成用） */
+  workspaceCode?: string;
+  /** アイテムコード（参照コード生成用） */
+  itemCode?: string;
 }
 
 export default function WorkspaceTaskDetailPage({
@@ -125,6 +129,8 @@ export default function WorkspaceTaskDetailPage({
   onShowFlowMap,
   onNavigateToTask,
   canEdit = true,
+  workspaceCode,
+  itemCode,
 }: WorkspaceTaskDetailPageProps) {
   const notify = useNotify();
   const notifyRef = useRef(notify);
@@ -918,7 +924,20 @@ export default function WorkspaceTaskDetailPage({
             <h2 className="text-xl font-bold flex items-center gap-2">
               <span className="icon-[mdi--clipboard-text-outline] size-6" aria-hidden="true" />
               タスク詳細
-              {task?.sequence && <span className="text-base-content/70 font-mono">T-{task.sequence}</span>}
+              {task?.sequence && workspaceCode && itemCode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const refText = `${workspaceCode}#${itemCode}T${task.sequence}`;
+                    navigator.clipboard.writeText(refText);
+                    notify.success(`${refText} をコピーしました`);
+                  }}
+                  className="text-base-content/70 font-mono hover:text-primary cursor-pointer transition-colors"
+                  title="クリックして参照コードをコピー"
+                >
+                  T-{task.sequence}
+                </button>
+              )}
             </h2>
             {/* ナビゲーションインジケーター */}
             {showNavigationControls && navigation && navigation.totalCount > 1 && (canGoPrev || canGoNext) && (

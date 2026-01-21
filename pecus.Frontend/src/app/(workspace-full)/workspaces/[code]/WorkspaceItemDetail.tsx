@@ -708,7 +708,20 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             {/* 件名とコード */}
             <div className="min-w-0">
               <h2 className="text-xl sm:text-2xl font-bold wrap-break-word">{item.subject || '（未設定）'}</h2>
-              {item.code && <span className="text-xs text-base-content/50 font-mono block mt-1">#{item.code}</span>}
+              {item.code && item.workspaceCode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const refText = `${item.workspaceCode}#${item.code}`;
+                    navigator.clipboard.writeText(refText);
+                    notify.success(`${refText} をコピーしました`);
+                  }}
+                  className="text-xs text-base-content/50 font-mono block mt-1 hover:text-primary cursor-pointer transition-colors"
+                  title="クリックして参照コードをコピー"
+                >
+                  #{item.code}
+                </button>
+              )}
             </div>
             {/* 優先度・期限バッジ */}
             <div className="flex items-center gap-2 flex-wrap">

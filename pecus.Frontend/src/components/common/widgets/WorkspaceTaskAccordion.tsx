@@ -718,6 +718,8 @@ export default function WorkspaceTaskAccordion({
                 itemCommitterAvatarUrl={editingTask.itemCommitter?.identityIconUrl}
                 showNavigationControls={false}
                 isModal={true}
+                workspaceCode={editingTask.workspaceCode}
+                itemCode={editingTask.itemCode}
               />
             </div>
           </div>
