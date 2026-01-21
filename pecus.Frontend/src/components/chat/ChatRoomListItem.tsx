@@ -68,7 +68,7 @@ export default function ChatRoomListItem({ room, isSelected = false, onClick }: 
           {room.type === 'Dm' && room.otherUser?.identityIconUrl ? (
             <img
               src={room.otherUser.identityIconUrl}
-              alt={room.otherUser.username}
+              alt={room.otherUser.username ?? ''}
               className="w-10 h-10 rounded-full"
             />
           ) : (

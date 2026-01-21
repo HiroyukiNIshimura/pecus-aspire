@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { ChatMessageReplyItem } from './ChatMessageReplyItem';
 import type { ChatMessageType } from './ChatMessageType';
-import type { ChatUserItem } from './ChatUserItem';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * チャットメッセージ項目
  */
@@ -17,7 +17,7 @@ export type ChatMessageItem = {
      * 送信者ユーザーID（AI/System メッセージの場合は null）
      */
     senderUserId?: number | null;
-    sender?: ChatUserItem;
+    sender?: UserIdentityResponse;
     messageType: ChatMessageType;
     /**
      * メッセージ内容

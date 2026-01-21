@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ActivityActionType } from './ActivityActionType';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * アクティビティレスポンス
@@ -41,18 +42,7 @@ export type ActivityResponse = {
      * アイテム件名
      */
     itemSubject?: string;
-    /**
-     * ユーザーID（NULL = システム操作）
-     */
-    userId?: number | null;
-    /**
-     * ユーザー名
-     */
-    username?: string | null;
-    /**
-     * ユーザーのアイデンティティアイコンURL
-     */
-    identityIconUrl?: string | null;
+    user?: UserIdentityResponse;
     actionType?: ActivityActionType;
     /**
      * 操作の詳細データ（JSON文字列）

@@ -475,11 +475,11 @@ export default function WorkspaceDetailClient({
           // アイテム情報を設定（フローマップ遷移用）
           if (itemResult.success && itemResult.data) {
             const item = itemResult.data;
-            setTaskDetailItemCommitterId(item.committerId ?? null);
-            setTaskDetailItemCommitterName(item.committerUsername ?? null);
-            setTaskDetailItemCommitterAvatarUrl(item.committerAvatarUrl ?? null);
-            setTaskDetailItemOwnerId(item.ownerId ?? null);
-            setTaskDetailItemAssigneeId(item.assigneeId ?? null);
+            setTaskDetailItemCommitterId(item.committer?.id ?? null);
+            setTaskDetailItemCommitterName(item.committer?.username ?? null);
+            setTaskDetailItemCommitterAvatarUrl(item.committer?.identityIconUrl ?? null);
+            setTaskDetailItemOwnerId(item.owner?.id ?? null);
+            setTaskDetailItemAssigneeId(item.assignee?.id ?? null);
             setTaskDetailItemTitle(item.subject ?? null);
           }
 
@@ -893,7 +893,7 @@ export default function WorkspaceDetailClient({
   const canEditTaskForFlowMap = useCallback(
     (task: TaskFlowNode): boolean => {
       return (
-        task.assignedUserId === currentUser.id ||
+        task.assigned?.id === currentUser.id ||
         flowMapItemCommitterId === currentUser.id ||
         flowMapItemAssigneeId === currentUser.id ||
         flowMapItemOwnerId === currentUser.id
@@ -1214,9 +1214,9 @@ export default function WorkspaceDetailClient({
               initialSelectedItemId={initialItemId}
               currentUser={{
                 id: currentUser.id,
-                username: currentUser.username,
+                username: currentUser.username ?? '',
                 email: currentUser.email,
-                identityIconUrl: currentUser.identityIconUrl ?? null,
+                identityIconUrl: currentUser.identityIconUrl,
               }}
               onSelectionConfirm={handleSelectionConfirm}
               onSelectionCancel={handleSelectionCancel}
@@ -1420,9 +1420,9 @@ export default function WorkspaceDetailClient({
               taskTypes={taskTypes}
               currentUser={{
                 id: currentUser.id,
-                username: currentUser.username,
+                username: currentUser.username ?? '',
                 email: currentUser.email,
-                identityIconUrl: currentUser.identityIconUrl ?? null,
+                identityIconUrl: currentUser.identityIconUrl,
               }}
               onClose={handleCloseTaskDetail}
               onSuccess={handleTaskDetailSuccess}
@@ -1501,12 +1501,12 @@ export default function WorkspaceDetailClient({
           onClose={handleAddMemberModalClose}
           onConfirm={handleAddMemberConfirm}
           existingMembers={members.map((m) => ({
-            userId: m.id ?? 0,
-            username: m.userName ?? '',
+            id: m.id ?? 0,
+            username: m.userName ?? null,
             email: m.email ?? '',
-            identityIconUrl: m.identityIconUrl ?? '',
+            identityIconUrl: m.identityIconUrl ?? null,
             workspaceRole: m.workspaceRole,
-            isActive: m.isActive,
+            isActive: m.isActive ?? true,
           }))}
           showSkillMatching={true}
           requiredSkills={
@@ -1646,9 +1646,9 @@ export default function WorkspaceDetailClient({
               initialSelectedItemId={initialItemId}
               currentUser={{
                 id: currentUser.id,
-                username: currentUser.username,
+                username: currentUser.username ?? '',
                 email: currentUser.email,
-                identityIconUrl: currentUser.identityIconUrl ?? null,
+                identityIconUrl: currentUser.identityIconUrl,
               }}
               onSelectionConfirm={handleSelectionConfirm}
               onSelectionCancel={handleSelectionCancel}

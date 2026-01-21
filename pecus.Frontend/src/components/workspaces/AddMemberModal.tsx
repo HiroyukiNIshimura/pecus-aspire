@@ -126,7 +126,7 @@ export default function AddMemberModal({
   const [isAdding, setIsAdding] = useState(false);
 
   // 既存メンバーのIDセット
-  const existingMemberIds = useMemo(() => new Set(existingMembers.map((m) => m.userId)), [existingMembers]);
+  const existingMemberIds = useMemo(() => new Set(existingMembers.map((m) => m.id)), [existingMembers]);
 
   // 検索結果から既存メンバーを除外
   const availableResults = useMemo(

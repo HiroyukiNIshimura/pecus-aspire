@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { TaskFlowPredecessorInfo } from './TaskFlowPredecessorInfo';
 import type { TaskPriority } from './TaskPriority';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * タスクフローマップのノード（個別タスク）
  */
@@ -49,30 +50,8 @@ export type TaskFlowNode = {
      * 破棄フラグ
      */
     isDiscarded: boolean;
-    /**
-     * 担当ユーザーID
-     */
-    assignedUserId?: number | null;
-    /**
-     * 担当ユーザー名
-     */
-    assignedUsername?: string | null;
-    /**
-     * 担当ユーザーアバターURL
-     */
-    assignedAvatarUrl?: string | null;
-    /**
-     * 完了者ユーザーID
-     */
-    completedByUserId?: number | null;
-    /**
-     * 完了者ユーザー名
-     */
-    completedByUsername?: string | null;
-    /**
-     * 完了者ユーザーアバターURL
-     */
-    completedByAvatarUrl?: string | null;
+    assigned?: UserIdentityResponse;
+    completedBy?: UserIdentityResponse;
     /**
      * 着手可能か（先行タスクなし or 完了済み、かつ自身が未完了・未破棄）
      */

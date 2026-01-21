@@ -9,7 +9,7 @@ export interface UserAvatarProps {
   /** ユーザー名 */
   userName: string | null | undefined;
   /** ユーザーがアクティブかどうか */
-  isActive: boolean;
+  isActive?: boolean;
   /** アイデンティティアイコンURL */
   identityIconUrl?: string | null;
   /** アイコンサイズ（ピクセル） */
@@ -30,7 +30,7 @@ export interface UserAvatarProps {
  */
 export default function UserAvatar({
   userName,
-  isActive,
+  isActive = true,
   identityIconUrl,
   size = 20,
   showName = true,

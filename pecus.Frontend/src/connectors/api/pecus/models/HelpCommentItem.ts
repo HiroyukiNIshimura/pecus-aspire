@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * ヘルプコメント項目
  */
@@ -18,18 +19,7 @@ export type HelpCommentItem = {
      * コメント投稿日時
      */
     createdAt: string;
-    /**
-     * コメント投稿者ID
-     */
-    commentUserId: number;
-    /**
-     * コメント投稿者名
-     */
-    commentUsername: string;
-    /**
-     * コメント投稿者アバターURL
-     */
-    commentUserAvatarUrl?: string | null;
+    commentBy?: UserIdentityResponse;
     /**
      * タスクID
      */

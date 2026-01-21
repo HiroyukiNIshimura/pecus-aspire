@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TaskCommentType } from './TaskCommentType';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * タスクコメント詳細レスポンス
  */
@@ -15,18 +16,7 @@ export type TaskCommentDetailResponse = {
      * タスクID
      */
     workspaceTaskId?: number;
-    /**
-     * コメントしたユーザーID
-     */
-    userId?: number;
-    /**
-     * コメントしたユーザー名
-     */
-    username?: string | null;
-    /**
-     * コメントしたユーザーアバターURL
-     */
-    avatarUrl?: string | null;
+    user?: UserIdentityResponse;
     /**
      * コメント内容
      */

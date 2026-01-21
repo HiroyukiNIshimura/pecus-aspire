@@ -143,7 +143,7 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
               {currentRanking.map((item) => {
                 const style = rankStyles[item.rank] || { badge: 'badge-neutral', text: 'text-base-content' };
                 return (
-                  <li key={item.userId}>
+                  <li key={item.user?.id ?? item.userInternalId}>
                     <button
                       type="button"
                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200/50 cursor-pointer w-full text-left transition-colors"
@@ -151,11 +151,11 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
                         const rect = e.currentTarget.getBoundingClientRect();
                         setBadgePopoverUser({
                           userId: item.userInternalId,
-                          displayName: item.displayName,
+                          displayName: item.user?.username ?? '',
                           anchorRect: rect,
                         });
                       }}
-                      aria-label={`${item.displayName}のバッジを表示`}
+                      aria-label={`${item.user?.username ?? 'ユーザー'}のバッジを表示`}
                     >
                       {/* 順位 */}
                       <div className="flex-shrink-0">
@@ -164,12 +164,12 @@ export default function BadgeRankingCard({ data, isLoading = false, className = 
 
                       {/* アバター */}
                       <div className="flex-shrink-0">
-                        <AvatarImage src={item.avatarUrl} alt="" size={32} />
+                        <AvatarImage src={item.user?.identityIconUrl} alt="" size={32} />
                       </div>
 
                       {/* ユーザー情報 */}
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{item.displayName}</div>
+                        <div className="text-sm font-medium truncate">{item.user?.username ?? 'ユーザー'}</div>
                         <div className="text-xs text-base-content/50">{item.badgeCount}個</div>
                       </div>
 

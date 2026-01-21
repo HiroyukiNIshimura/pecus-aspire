@@ -14592,21 +14592,15 @@
             "type": "string",
             "description": "アイテム件名"
           },
-          "userId": {
-            "type": "integer",
-            "description": "ユーザーID（NULL = システム操作）",
-            "format": "int32",
-            "nullable": true
-          },
-          "username": {
-            "type": "string",
-            "description": "ユーザー名",
-            "nullable": true
-          },
-          "identityIconUrl": {
-            "type": "string",
-            "description": "ユーザーのアイデンティティアイコンURL",
-            "nullable": true
+          "user": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
           "actionType": {
             "$ref": "#/components/schemas/ActivityActionType"
@@ -14958,7 +14952,7 @@
                 "nullable": true
               },
               {
-                "$ref": "#/components/schemas/UserItem"
+                "$ref": "#/components/schemas/UserIdentityResponse"
               }
             ]
           }
@@ -15039,13 +15033,13 @@
             "description": "作成日時",
             "format": "date-time"
           },
-          "createdByUser": {
+          "createdBy": {
             "oneOf": [
               {
                 "nullable": true
               },
               {
-                "$ref": "#/components/schemas/UserItem"
+                "$ref": "#/components/schemas/UserIdentityResponse"
               }
             ]
           }
@@ -15116,13 +15110,13 @@
             "description": "作成日時",
             "format": "date-time"
           },
-          "createdByUser": {
+          "createdBy": {
             "oneOf": [
               {
                 "nullable": true
               },
               {
-                "$ref": "#/components/schemas/UserItem"
+                "$ref": "#/components/schemas/UserIdentityResponse"
               }
             ]
           }
@@ -15236,13 +15230,13 @@
               }
             ]
           },
-          "createdByUser": {
+          "createdBy": {
             "oneOf": [
               {
                 "nullable": true
               },
               {
-                "$ref": "#/components/schemas/UserItem"
+                "$ref": "#/components/schemas/UserIdentityResponse"
               }
             ]
           }
@@ -15387,13 +15381,13 @@
             "format": "date-time",
             "nullable": true
           },
-          "cancelledByUser": {
+          "cancelledBy": {
             "oneOf": [
               {
                 "nullable": true
               },
               {
-                "$ref": "#/components/schemas/UserItem"
+                "$ref": "#/components/schemas/UserIdentityResponse"
               }
             ]
           },
@@ -15413,13 +15407,13 @@
             "type": "integer",
             "format": "uint32"
           },
-          "createdByUser": {
+          "createdBy": {
             "oneOf": [
               {
                 "nullable": true
               },
               {
-                "$ref": "#/components/schemas/UserItem"
+                "$ref": "#/components/schemas/UserIdentityResponse"
               }
             ]
           },
@@ -16223,7 +16217,7 @@
                 "nullable": true
               },
               {
-                "$ref": "#/components/schemas/ChatUserItem"
+                "$ref": "#/components/schemas/UserIdentityResponse"
               }
             ]
           },
@@ -16434,7 +16428,7 @@
                 "nullable": true
               },
               {
-                "$ref": "#/components/schemas/ChatUserItem"
+                "$ref": "#/components/schemas/UserIdentityResponse"
               }
             ]
           },
@@ -16472,35 +16466,18 @@
       },
       "ChatRoomMemberItem": {
         "required": [
-          "userId",
-          "username",
           "email",
-          "role"
+          "role",
+          "id",
+          "username",
+          "identityIconUrl",
+          "isActive"
         ],
         "type": "object",
         "properties": {
-          "userId": {
-            "type": "integer",
-            "description": "ユーザーID",
-            "format": "int32"
-          },
-          "username": {
-            "type": "string",
-            "description": "ユーザー名"
-          },
           "email": {
             "type": "string",
             "description": "メールアドレス"
-          },
-          "avatarType": {
-            "type": "string",
-            "description": "アバタータイプ",
-            "nullable": true
-          },
-          "identityIconUrl": {
-            "type": "string",
-            "description": "アイデンティティアイコンURL",
-            "nullable": true
           },
           "role": {
             "$ref": "#/components/schemas/ChatRoomRole"
@@ -16515,6 +16492,25 @@
             "description": "最終既読日時",
             "format": "date-time",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
+          },
+          "username": {
+            "type": "string",
+            "description": "ユーザー名",
+            "nullable": true
+          },
+          "identityIconUrl": {
+            "type": "string",
+            "description": "アイデンティティアイコンURL（表示用）\n必ず有効なURLが返されるため、クライアント側でnullチェック不要",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "ユーザーがアクティブかどうか"
           }
         },
         "description": "チャットルームメンバー項目"
@@ -16589,44 +16585,6 @@
           }
         },
         "description": "未読数レスポンス"
-      },
-      "ChatUserItem": {
-        "required": [
-          "id",
-          "username",
-          "email"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ユーザーID",
-            "format": "int32"
-          },
-          "username": {
-            "type": "string",
-            "description": "ユーザー名"
-          },
-          "email": {
-            "type": "string",
-            "description": "メールアドレス"
-          },
-          "avatarType": {
-            "type": "string",
-            "description": "アバタータイプ",
-            "nullable": true
-          },
-          "identityIconUrl": {
-            "type": "string",
-            "description": "アイデンティティアイコンURL",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブフラグ（false の場合は退会済み/無効化されたユーザー）"
-          }
-        },
-        "description": "チャットユーザー項目（簡易版）"
       },
       "ChildrenCountResponse": {
         "type": "object",
@@ -17499,37 +17457,25 @@
       },
       "CurrentUserInfo": {
         "required": [
-          "id",
           "organizationId",
-          "username",
           "email",
           "isAdmin",
-          "isBackOffice"
+          "isBackOffice",
+          "id",
+          "username",
+          "identityIconUrl",
+          "isActive"
         ],
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ユーザーID",
-            "format": "int32"
-          },
           "organizationId": {
             "type": "integer",
             "description": "組織ID",
             "format": "int32"
           },
-          "username": {
-            "type": "string",
-            "description": "ユーザー名"
-          },
           "email": {
             "type": "string",
             "description": "メールアドレス"
-          },
-          "identityIconUrl": {
-            "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）",
-            "nullable": true
           },
           "isAdmin": {
             "type": "boolean",
@@ -17538,6 +17484,25 @@
           "isBackOffice": {
             "type": "boolean",
             "description": "バックオフィス権限を持つかどうか"
+          },
+          "id": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
+          },
+          "username": {
+            "type": "string",
+            "description": "ユーザー名",
+            "nullable": true
+          },
+          "identityIconUrl": {
+            "type": "string",
+            "description": "アイデンティティアイコンURL（表示用）\n必ず有効なURLが返されるため、クライアント側でnullチェック不要",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "ユーザーがアクティブかどうか"
           }
         },
         "description": "現在ログイン中のユーザーの最小限情報"
@@ -18030,10 +17995,17 @@
         "required": [
           "id",
           "username",
-          "email"
+          "identityIconUrl",
+          "isActive"
         ],
         "type": "object",
         "properties": {
+          "lastActiveAt": {
+            "type": "string",
+            "description": "最終アクティブ日時（最終ログイン日時）",
+            "format": "date-time",
+            "nullable": true
+          },
           "id": {
             "type": "integer",
             "description": "ユーザーID",
@@ -18041,27 +18013,17 @@
           },
           "username": {
             "type": "string",
-            "description": "ユーザー名"
-          },
-          "email": {
-            "type": "string",
-            "description": "メールアドレス"
-          },
-          "avatarType": {
-            "type": "string",
-            "description": "アバタータイプ",
+            "description": "ユーザー名",
             "nullable": true
           },
           "identityIconUrl": {
             "type": "string",
-            "description": "アイデンティティアイコンURL",
+            "description": "アイデンティティアイコンURL（表示用）\n必ず有効なURLが返されるため、クライアント側でnullチェック不要",
             "nullable": true
           },
-          "lastActiveAt": {
-            "type": "string",
-            "description": "最終アクティブ日時（最終ログイン日時）",
-            "format": "date-time",
-            "nullable": true
+          "isActive": {
+            "type": "boolean",
+            "description": "ユーザーがアクティブかどうか"
           }
         },
         "description": "DM候補ユーザー項目（既存DMがないアクティブユーザー）"
@@ -18756,8 +18718,6 @@
           "commentId",
           "content",
           "createdAt",
-          "commentUserId",
-          "commentUsername",
           "taskId",
           "taskSequence",
           "taskContent",
@@ -18783,19 +18743,8 @@
             "description": "コメント投稿日時",
             "format": "date-time"
           },
-          "commentUserId": {
-            "type": "integer",
-            "description": "コメント投稿者ID",
-            "format": "int32"
-          },
-          "commentUsername": {
-            "type": "string",
-            "description": "コメント投稿者名"
-          },
-          "commentUserAvatarUrl": {
-            "type": "string",
-            "description": "コメント投稿者アバターURL",
-            "nullable": true
+          "commentBy": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "taskId": {
             "type": "integer",
@@ -19570,88 +19519,50 @@
             "description": "アイテム件名",
             "nullable": true
           },
-          "itemOwnerId": {
-            "type": "integer",
-            "description": "アイテムオーナーID",
-            "format": "int32",
-            "nullable": true
+          "itemOwner": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
-          "itemOwnerUsername": {
-            "type": "string",
-            "description": "アイテムオーナー名",
-            "nullable": true
+          "itemAssignee": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
-          "itemOwnerAvatarUrl": {
-            "type": "string",
-            "description": "アイテムオーナーアバターURL",
-            "nullable": true
+          "itemCommitter": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
-          "itemAssigneeId": {
-            "type": "integer",
-            "description": "アイテム担当者ID",
-            "format": "int32",
-            "nullable": true
-          },
-          "itemAssigneeUsername": {
-            "type": "string",
-            "description": "アイテム担当者名",
-            "nullable": true
-          },
-          "itemAssigneeAvatarUrl": {
-            "type": "string",
-            "description": "アイテム担当者アバターURL",
-            "nullable": true
-          },
-          "itemCommitterId": {
-            "type": "integer",
-            "description": "アイテムコミッターID",
-            "format": "int32",
-            "nullable": true
-          },
-          "itemCommitterUsername": {
-            "type": "string",
-            "description": "アイテムコミッター名",
-            "nullable": true
-          },
-          "itemCommitterAvatarUrl": {
-            "type": "string",
-            "description": "アイテムコミッターアバターURL",
-            "nullable": true
+          "createdBy": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
           "organizationId": {
             "type": "integer",
             "description": "組織ID",
             "format": "int32"
-          },
-          "assignedUserId": {
-            "type": "integer",
-            "description": "担当ユーザーID",
-            "format": "int32"
-          },
-          "assignedUsername": {
-            "type": "string",
-            "description": "担当ユーザー名",
-            "nullable": true
-          },
-          "assignedAvatarUrl": {
-            "type": "string",
-            "description": "担当ユーザーアバターURL",
-            "nullable": true
-          },
-          "createdByUserId": {
-            "type": "integer",
-            "description": "作成ユーザーID",
-            "format": "int32"
-          },
-          "createdByUsername": {
-            "type": "string",
-            "description": "作成ユーザー名",
-            "nullable": true
-          },
-          "createdByAvatarUrl": {
-            "type": "string",
-            "description": "作成ユーザーアバターURL",
-            "nullable": true
           },
           "content": {
             "type": "string",
@@ -21165,9 +21076,7 @@
         "required": [
           "rank",
           "userInternalId",
-          "userId",
-          "displayName",
-          "avatarUrl",
+          "user",
           "score",
           "badgeCount"
         ],
@@ -21183,17 +21092,8 @@
             "description": "ユーザーの内部ID",
             "format": "int32"
           },
-          "userId": {
-            "type": "string",
-            "description": "ユーザーの表示用ID（visibleId）"
-          },
-          "displayName": {
-            "type": "string",
-            "description": "ユーザー表示名"
-          },
-          "avatarUrl": {
-            "type": "string",
-            "description": "アバターURL（Gravatar / UserAvatar / AutoGenerated いずれかのURL）"
+          "user": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "score": {
             "type": "number",
@@ -21378,15 +21278,8 @@
             "type": "boolean",
             "description": "アーカイブ済みかどうか"
           },
-          "ownerUsername": {
-            "type": "string",
-            "description": "オーナーユーザー名",
-            "nullable": true
-          },
-          "ownerAvatarUrl": {
-            "type": "string",
-            "description": "オーナーアバターURL",
-            "nullable": true
+          "owner": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           }
         },
         "description": "関連アイテムの基本情報"
@@ -22261,20 +22154,8 @@
             "description": "タスクID",
             "format": "int32"
           },
-          "userId": {
-            "type": "integer",
-            "description": "コメントしたユーザーID",
-            "format": "int32"
-          },
-          "username": {
-            "type": "string",
-            "description": "コメントしたユーザー名",
-            "nullable": true
-          },
-          "avatarUrl": {
-            "type": "string",
-            "description": "コメントしたユーザーアバターURL",
-            "nullable": true
+          "user": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "content": {
             "type": "string",
@@ -22491,37 +22372,18 @@
             "type": "boolean",
             "description": "破棄フラグ"
           },
-          "assignedUserId": {
-            "type": "integer",
-            "description": "担当ユーザーID",
-            "format": "int32",
-            "nullable": true
+          "assigned": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
-          "assignedUsername": {
-            "type": "string",
-            "description": "担当ユーザー名",
-            "nullable": true
-          },
-          "assignedAvatarUrl": {
-            "type": "string",
-            "description": "担当ユーザーアバターURL",
-            "nullable": true
-          },
-          "completedByUserId": {
-            "type": "integer",
-            "description": "完了者ユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "completedByUsername": {
-            "type": "string",
-            "description": "完了者ユーザー名",
-            "nullable": true
-          },
-          "completedByAvatarUrl": {
-            "type": "string",
-            "description": "完了者ユーザーアバターURL",
-            "nullable": true
+          "completedBy": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
           "canStart": {
             "type": "boolean",
@@ -22681,36 +22543,28 @@
             "type": "string",
             "description": "件名"
           },
-          "ownerId": {
-            "type": "integer",
-            "description": "オーナーユーザーID",
-            "format": "int32"
+          "owner": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
-          "ownerUsername": {
-            "type": "string",
-            "description": "オーナーユーザー名",
-            "nullable": true
+          "assignee": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
-          "ownerAvatarUrl": {
-            "type": "string",
-            "description": "オーナーアバターURL",
-            "nullable": true
-          },
-          "assigneeId": {
-            "type": "integer",
-            "description": "作業中のユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "assigneeUsername": {
-            "type": "string",
-            "description": "作業中のユーザー名",
-            "nullable": true
-          },
-          "assigneeAvatarUrl": {
-            "type": "string",
-            "description": "作業中のユーザーアバターURL",
-            "nullable": true
+          "committer": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
           "priority": {
             "oneOf": [
@@ -22735,22 +22589,6 @@
           "isDraft": {
             "type": "boolean",
             "description": "下書き中フラグ"
-          },
-          "committerId": {
-            "type": "integer",
-            "description": "コミッターユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "committerUsername": {
-            "type": "string",
-            "description": "コミッターユーザー名",
-            "nullable": true
-          },
-          "committerAvatarUrl": {
-            "type": "string",
-            "description": "コミッターアバターURL",
-            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -22974,20 +22812,8 @@
             "type": "boolean",
             "description": "破棄状態"
           },
-          "assignedUserId": {
-            "type": "integer",
-            "description": "担当ユーザーID",
-            "format": "int32"
-          },
-          "assignedUsername": {
-            "type": "string",
-            "description": "担当ユーザー名",
-            "nullable": true
-          },
-          "assignedAvatarUrl": {
-            "type": "string",
-            "description": "担当ユーザーアバターURL",
-            "nullable": true
+          "assigned": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "createdAt": {
             "type": "string",
@@ -23016,52 +22842,28 @@
             "type": "string",
             "description": "ワークスペースコード"
           },
-          "itemOwnerId": {
-            "type": "integer",
-            "description": "アイテムオーナーユーザーID",
-            "format": "int32"
+          "itemOwner": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
-          "itemOwnerUsername": {
-            "type": "string",
-            "description": "アイテムオーナーユーザー名",
-            "nullable": true
+          "itemAssignee": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
-          "itemOwnerAvatarUrl": {
-            "type": "string",
-            "description": "アイテムオーナーアバターURL",
-            "nullable": true
-          },
-          "itemAssigneeId": {
-            "type": "integer",
-            "description": "アイテム担当ユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "itemAssigneeUsername": {
-            "type": "string",
-            "description": "アイテム担当ユーザー名",
-            "nullable": true
-          },
-          "itemAssigneeAvatarUrl": {
-            "type": "string",
-            "description": "アイテム担当アバターURL",
-            "nullable": true
-          },
-          "itemCommitterId": {
-            "type": "integer",
-            "description": "アイテムコミッターユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "itemCommitterUsername": {
-            "type": "string",
-            "description": "アイテムコミッターユーザー名",
-            "nullable": true
-          },
-          "itemCommitterAvatarUrl": {
-            "type": "string",
-            "description": "アイテムコミッターアバターURL",
-            "nullable": true
+          "itemCommitter": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
           "commentTypeCounts": {
             "type": "object",
@@ -24135,12 +23937,12 @@
         },
         "description": "ユーザー詳細レスポンス"
       },
-      "UserItem": {
+      "UserIdentityResponse": {
         "required": [
           "id",
-          "loginId",
           "username",
-          "email"
+          "identityIconUrl",
+          "isActive"
         ],
         "type": "object",
         "properties": {
@@ -24149,49 +23951,21 @@
             "description": "ユーザーID",
             "format": "int32"
           },
-          "loginId": {
-            "type": "string",
-            "description": "ログインID"
-          },
           "username": {
             "type": "string",
-            "description": "ユーザー名"
-          },
-          "email": {
-            "type": "string",
-            "description": "メールアドレス"
-          },
-          "avatarType": {
-            "type": "string",
-            "description": "アバタータイプ"
+            "description": "ユーザー名",
+            "nullable": true
           },
           "identityIconUrl": {
             "type": "string",
-            "description": "アイデンティティアイコンURL",
+            "description": "アイデンティティアイコンURL（表示用）\n必ず有効なURLが返されるため、クライアント側でnullチェック不要",
             "nullable": true
           },
           "isActive": {
             "type": "boolean",
-            "description": "アクティブフラグ"
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "lastLoginAt": {
-            "type": "string",
-            "description": "最終ログイン日時",
-            "format": "date-time",
-            "nullable": true
-          },
-          "roleCount": {
-            "type": "integer",
-            "description": "ユーザーが持つロール数",
-            "format": "int32"
+            "description": "ユーザーがアクティブかどうか"
           }
-        },
-        "description": "ユーザー一覧項目"
+        }
       },
       "UserPublicSettings": {
         "required": [
@@ -24948,15 +24722,8 @@
             "description": "アップロード日時",
             "format": "date-time"
           },
-          "uploadedByUserId": {
-            "type": "integer",
-            "description": "アップロードしたユーザーID",
-            "format": "int32"
-          },
-          "uploadedByUsername": {
-            "type": "string",
-            "description": "アップロードしたユーザー名",
-            "nullable": true
+          "uploadedBy": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "task": {
             "oneOf": [
@@ -25049,36 +24816,28 @@
             "description": "本文",
             "nullable": true
           },
-          "ownerId": {
-            "type": "integer",
-            "description": "オーナーユーザーID",
-            "format": "int32"
+          "owner": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
-          "ownerUsername": {
-            "type": "string",
-            "description": "オーナーユーザー名",
-            "nullable": true
+          "assignee": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
-          "ownerAvatarUrl": {
-            "type": "string",
-            "description": "オーナーアバターURL",
-            "nullable": true
-          },
-          "assigneeId": {
-            "type": "integer",
-            "description": "作業中のユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "assigneeUsername": {
-            "type": "string",
-            "description": "作業中のユーザー名",
-            "nullable": true
-          },
-          "assigneeAvatarUrl": {
-            "type": "string",
-            "description": "作業中のユーザーアバターURL",
-            "nullable": true
+          "committer": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
           "priority": {
             "oneOf": [
@@ -25103,22 +24862,6 @@
           "isDraft": {
             "type": "boolean",
             "description": "下書き中フラグ"
-          },
-          "committerId": {
-            "type": "integer",
-            "description": "コミッターユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "committerUsername": {
-            "type": "string",
-            "description": "コミッターユーザー名",
-            "nullable": true
-          },
-          "committerAvatarUrl": {
-            "type": "string",
-            "description": "コミッターアバターURL",
-            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -25590,52 +25333,44 @@
             "description": "組織ID",
             "format": "int32"
           },
-          "itemOwnerId": {
-            "type": "integer",
-            "description": "アイテムオーナーユーザーID",
-            "format": "int32"
+          "itemOwner": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
-          "itemAssigneeId": {
-            "type": "integer",
-            "description": "アイテム担当ユーザーID",
-            "format": "int32",
-            "nullable": true
+          "itemAssignee": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
-          "itemCommitterId": {
-            "type": "integer",
-            "description": "アイテムコミッターユーザーID",
-            "format": "int32",
-            "nullable": true
+          "itemCommitter": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
-          "assignedUserId": {
-            "type": "integer",
-            "description": "担当ユーザーID",
-            "format": "int32"
+          "assigned": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
-          "assignedUsername": {
-            "type": "string",
-            "description": "担当ユーザー名",
-            "nullable": true
+          "createdBy": {
+            "$ref": "#/components/schemas/UserIdentityResponse"
           },
-          "assignedAvatarUrl": {
-            "type": "string",
-            "description": "担当ユーザーアバターURL",
-            "nullable": true
-          },
-          "createdByUserId": {
-            "type": "integer",
-            "description": "作成ユーザーID",
-            "format": "int32"
-          },
-          "createdByUsername": {
-            "type": "string",
-            "description": "作成ユーザー名",
-            "nullable": true
-          },
-          "createdByAvatarUrl": {
-            "type": "string",
-            "description": "作成ユーザーアバターURL",
-            "nullable": true
+          "completedBy": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/UserIdentityResponse"
+              }
+            ]
           },
           "content": {
             "type": "string",
@@ -25707,22 +25442,6 @@
             "type": "string",
             "description": "タスク完了日時",
             "format": "date-time",
-            "nullable": true
-          },
-          "completedByUserId": {
-            "type": "integer",
-            "description": "タスク完了者ユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "completedByUsername": {
-            "type": "string",
-            "description": "タスク完了者ユーザー名",
-            "nullable": true
-          },
-          "completedByAvatarUrl": {
-            "type": "string",
-            "description": "タスク完了者アバターURL",
             "nullable": true
           },
           "isDiscarded": {
@@ -25892,10 +25611,11 @@
       "WorkspaceUserDetailResponse": {
         "required": [
           "workspaceId",
-          "userId",
-          "username",
           "email",
-          "identityIconUrl"
+          "id",
+          "username",
+          "identityIconUrl",
+          "isActive"
         ],
         "type": "object",
         "properties": {
@@ -25904,22 +25624,9 @@
             "description": "ワークスペースID",
             "format": "int32"
           },
-          "userId": {
-            "type": "integer",
-            "description": "ユーザーID",
-            "format": "int32"
-          },
-          "username": {
-            "type": "string",
-            "description": "ユーザー名"
-          },
           "email": {
             "type": "string",
             "description": "メールアドレス"
-          },
-          "identityIconUrl": {
-            "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
           },
           "workspaceRole": {
             "oneOf": [
@@ -25942,38 +25649,41 @@
             "format": "date-time",
             "nullable": true
           },
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブフラグ"
-          }
-        },
-        "description": "ワークスペースユーザー詳細レスポンス"
-      },
-      "WorkspaceUserItem": {
-        "required": [
-          "userId",
-          "username",
-          "email",
-          "identityIconUrl"
-        ],
-        "type": "object",
-        "properties": {
-          "userId": {
+          "id": {
             "type": "integer",
             "description": "ユーザーID",
             "format": "int32"
           },
           "username": {
             "type": "string",
-            "description": "ユーザー名"
-          },
-          "email": {
-            "type": "string",
-            "description": "メールアドレス"
+            "description": "ユーザー名",
+            "nullable": true
           },
           "identityIconUrl": {
             "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
+            "description": "アイデンティティアイコンURL（表示用）\n必ず有効なURLが返されるため、クライアント側でnullチェック不要",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "ユーザーがアクティブかどうか"
+          }
+        },
+        "description": "ワークスペースユーザー詳細レスポンス"
+      },
+      "WorkspaceUserItem": {
+        "required": [
+          "email",
+          "id",
+          "username",
+          "identityIconUrl",
+          "isActive"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "メールアドレス"
           },
           "workspaceRole": {
             "oneOf": [
@@ -25985,15 +25695,30 @@
               }
             ]
           },
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブフラグ"
-          },
           "lastLoginAt": {
             "type": "string",
             "description": "最終ログイン日時",
             "format": "date-time",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
+          },
+          "username": {
+            "type": "string",
+            "description": "ユーザー名",
+            "nullable": true
+          },
+          "identityIconUrl": {
+            "type": "string",
+            "description": "アイデンティティアイコンURL（表示用）\n必ず有効なURLが返されるため、クライアント側でnullチェック不要",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "ユーザーがアクティブかどうか"
           }
         },
         "description": "ワークスペースユーザー一覧用DTO（軽量）"

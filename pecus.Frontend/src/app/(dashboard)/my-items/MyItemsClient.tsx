@@ -620,10 +620,10 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                           </span>
                           <div className="flex items-center gap-1 text-xs">
                             <span className="text-base-content/70 w-16 flex-shrink-0">担当</span>
-                            {item.assigneeUsername ? (
+                            {item.assignee?.username ? (
                               <UserAvatar
-                                userName={item.assigneeUsername}
-                                identityIconUrl={item.assigneeAvatarUrl}
+                                userName={item.assignee.username}
+                                identityIconUrl={item.assignee.identityIconUrl}
                                 size={20}
                                 nameClassName="truncate"
                               />
@@ -638,10 +638,10 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                           <span className="min-w-12" />
                           <div className="flex items-center gap-1 text-xs">
                             <span className="text-base-content/70 w-16 flex-shrink-0">コミッター</span>
-                            {item.committerUsername ? (
+                            {item.committer?.username ? (
                               <UserAvatar
-                                userName={item.committerUsername}
-                                identityIconUrl={item.committerAvatarUrl}
+                                userName={item.committer.username}
+                                identityIconUrl={item.committer.identityIconUrl}
                                 size={20}
                                 nameClassName="truncate"
                               />
@@ -658,8 +658,8 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                         <div className="flex items-center justify-between text-sm gap-2">
                           <span className="text-base-content/70 flex-shrink-0">オーナー</span>
                           <UserAvatar
-                            userName={item.ownerUsername}
-                            identityIconUrl={item.ownerAvatarUrl}
+                            userName={item.owner?.username}
+                            identityIconUrl={item.owner?.identityIconUrl}
                             size={20}
                             nameClassName="truncate"
                           />

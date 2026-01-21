@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TaskPriority } from './TaskPriority';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 import type { WorkspaceMode } from './WorkspaceMode';
 export type TaskItemResponse = {
     /**
@@ -34,30 +35,9 @@ export type TaskItemResponse = {
      * 件名
      */
     subject?: string;
-    /**
-     * オーナーユーザーID
-     */
-    ownerId?: number;
-    /**
-     * オーナーユーザー名
-     */
-    ownerUsername?: string | null;
-    /**
-     * オーナーアバターURL
-     */
-    ownerAvatarUrl?: string | null;
-    /**
-     * 作業中のユーザーID
-     */
-    assigneeId?: number | null;
-    /**
-     * 作業中のユーザー名
-     */
-    assigneeUsername?: string | null;
-    /**
-     * 作業中のユーザーアバターURL
-     */
-    assigneeAvatarUrl?: string | null;
+    owner?: UserIdentityResponse;
+    assignee?: UserIdentityResponse;
+    committer?: UserIdentityResponse;
     priority?: TaskPriority;
     /**
      * 期限日時
@@ -71,18 +51,6 @@ export type TaskItemResponse = {
      * 下書き中フラグ
      */
     isDraft?: boolean;
-    /**
-     * コミッターユーザーID
-     */
-    committerId?: number | null;
-    /**
-     * コミッターユーザー名
-     */
-    committerUsername?: string | null;
-    /**
-     * コミッターアバターURL
-     */
-    committerAvatarUrl?: string | null;
     /**
      * 作成日時
      */

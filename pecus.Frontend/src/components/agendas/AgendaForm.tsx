@@ -144,7 +144,7 @@ export function AgendaForm({
       return initialData.attendees.map((a) => ({
         userId: a.userId,
         userName: a.user?.username ?? '',
-        email: a.user?.email ?? '',
+        email: '',
         identityIconUrl: a.user?.identityIconUrl ?? null,
         isOptional: a.isOptional,
       }));

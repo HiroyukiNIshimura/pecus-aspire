@@ -18,7 +18,7 @@ export interface MemberItem {
   userId?: number;
   id?: number;
   /** ユーザー名 (username または userName) */
-  username?: string;
+  username?: string | null;
   userName?: string | null;
   /** メールアドレス */
   email?: string | null;

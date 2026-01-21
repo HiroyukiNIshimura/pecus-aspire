@@ -522,7 +522,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     };
 
     const effectiveCurrentUserId = currentUserId ?? 0;
-    const isOwner = item && currentUserId !== undefined && item.ownerId === currentUserId;
+    const isOwner = item && currentUserId !== undefined && item.owner?.id === currentUserId;
     const isDraftAndNotOwner = item?.isDraft && !isOwner;
     const isLockedByOther = itemEditStatus.isEditing && itemEditStatus.editor?.userId !== effectiveCurrentUserId;
     const isArchived = item?.isArchived ?? false;
@@ -546,8 +546,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       }
 
       // オーナーまたは担当者かどうかをチェック
-      const isOwner = currentUserId !== undefined && item.ownerId === currentUserId;
-      const isAssignee = currentUserId !== undefined && item.assigneeId === currentUserId;
+      const isOwner = currentUserId !== undefined && item.owner?.id === currentUserId;
+      const isAssignee = currentUserId !== undefined && item.assignee?.id === currentUserId;
 
       if (!isOwner && !isAssignee) {
         notify.warning(
@@ -784,11 +784,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                   onClick={() =>
                     onShowFlowMap(
                       item.subject ?? null,
-                      item.committerUsername ?? null,
-                      item.committerAvatarUrl ?? null,
-                      item.ownerId ?? null,
-                      item.assigneeId ?? null,
-                      item.committerId ?? null,
+                      item.committer?.username ?? null,
+                      item.committer?.identityIconUrl ?? null,
+                      item.owner?.id ?? null,
+                      item.assignee?.id ?? null,
+                      item.committer?.id ?? null,
                     )
                   }
                   className="btn btn-secondary btn-sm gap-1"
@@ -858,13 +858,13 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             )}
 
             {/* 作成者 */}
-            {item.ownerId && (
+            {item.owner?.id && (
               <div>
                 <span className="text-xs text-base-content/70">オーナー</span>
                 <div className="flex items-center gap-2 mt-1">
                   <UserAvatar
-                    userName={item.ownerUsername}
-                    identityIconUrl={item.ownerAvatarUrl}
+                    userName={item.owner.username}
+                    identityIconUrl={item.owner.identityIconUrl}
                     size={20}
                     nameClassName="font-semibold truncate"
                   />
@@ -883,11 +883,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             {/* 担当者 */}
             <div>
               <span className="text-xs text-base-content/70">担当者</span>
-              {item.assigneeId ? (
+              {item.assignee?.id ? (
                 <div className="flex items-center gap-2 mt-1">
                   <UserAvatar
-                    userName={item.assigneeUsername}
-                    identityIconUrl={item.assigneeAvatarUrl}
+                    userName={item.assignee.username}
+                    identityIconUrl={item.assignee.identityIconUrl}
                     size={20}
                     nameClassName="font-semibold truncate"
                   />
@@ -948,10 +948,10 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                         {/* アーカイブ状態とオーナー情報 */}
                         <div className="flex items-center gap-1 mt-1 text-xs text-base-content/70">
                           {related.isArchived && <span className="badge badge-xs badge-neutral">アーカイブ</span>}
-                          {related.ownerId && (
+                          {related.owner?.id && (
                             <UserAvatar
-                              userName={related.ownerUsername}
-                              identityIconUrl={related.ownerAvatarUrl}
+                              userName={related.owner.username}
+                              identityIconUrl={related.owner.identityIconUrl}
                               size={16}
                               nameClassName="truncate"
                             />
@@ -983,11 +983,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 workspaceId={workspaceId}
                 itemId={itemId}
                 itemCode={itemCode ?? ''}
-                itemOwnerId={item?.ownerId}
-                itemAssigneeId={item?.assigneeId}
-                itemCommitterId={item?.committerId}
-                itemCommitterName={item?.committerUsername}
-                itemCommitterAvatarUrl={item?.committerAvatarUrl}
+                itemOwnerId={item?.owner?.id}
+                itemAssigneeId={item?.assignee?.id}
+                itemCommitterId={item?.committer?.id}
+                itemCommitterName={item?.committer?.username}
+                itemCommitterAvatarUrl={item?.committer?.identityIconUrl}
                 taskTypes={taskTypes}
                 currentUser={
                   currentUserId
@@ -1033,11 +1033,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                     ? () =>
                         onShowFlowMap(
                           item.subject ?? null,
-                          item.committerUsername ?? null,
-                          item.committerAvatarUrl ?? null,
-                          item.ownerId ?? null,
-                          item.assigneeId ?? null,
-                          item.committerId ?? null,
+                          item.committer?.username ?? null,
+                          item.committer?.identityIconUrl ?? null,
+                          item.owner?.id ?? null,
+                          item.assignee?.id ?? null,
+                          item.committer?.id ?? null,
                         )
                     : undefined
                 }
@@ -1145,7 +1145,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           initialAttachments={attachments}
           canEdit={canEdit}
           currentUserId={currentUserId ?? 0}
-          itemOwnerId={item.ownerId}
+          itemOwnerId={item.owner?.id}
           onAttachmentCountChange={setAttachmentCount}
         />
 
@@ -1166,9 +1166,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                   <p className="py-4">以下のアイテムとの関連を削除しますか？</p>
                   <div className="bg-base-200 p-3 rounded-lg mb-4">
                     <p className="font-semibold">{deleteRelationModal.relation.subject || '（件名未設定）'}</p>
-                    {deleteRelationModal.relation.ownerUsername && (
+                    {deleteRelationModal.relation.owner?.username && (
                       <p className="text-sm text-base-content/70 mt-1">
-                        オーナー: {deleteRelationModal.relation.ownerUsername}
+                        オーナー: {deleteRelationModal.relation.owner.username}
                       </p>
                     )}
                   </div>

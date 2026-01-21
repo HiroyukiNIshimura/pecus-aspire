@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { AttendanceStatus } from './AttendanceStatus';
 import type { RecurrenceType } from './RecurrenceType';
-import type { UserItem } from './UserItem';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * アジェンダ展開済みオカレンス（一覧用）
  * 繰り返しイベントを展開した各回を表すDTO
@@ -64,6 +64,6 @@ export type AgendaOccurrenceResponse = {
      */
     attendeeCount?: number;
     myAttendanceStatus?: AttendanceStatus;
-    createdByUser?: UserItem;
+    createdBy?: UserIdentityResponse;
 };
 

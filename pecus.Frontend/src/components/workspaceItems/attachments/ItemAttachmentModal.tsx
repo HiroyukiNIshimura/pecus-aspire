@@ -106,7 +106,7 @@ export default function ItemAttachmentModal({
       // オーナーは全ファイル削除可能
       if (itemOwnerId !== undefined && currentUserId === itemOwnerId) return true;
       // 自分がアップロードしたファイルのみ削除可能
-      return attachment.uploadedByUserId === currentUserId;
+      return attachment.uploadedBy?.id === currentUserId;
     },
     [canEdit, currentUserId, itemOwnerId],
   );

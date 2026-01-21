@@ -49,7 +49,7 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
     cancellationReason,
     isModified,
     attendeeCount,
-    createdByUser,
+    createdBy,
   } = occurrence;
 
   const recurrenceLabel = getRecurrenceLabel(recurrenceType);
@@ -153,11 +153,11 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
             )}
 
             {/* 作成者 */}
-            {createdByUser && (
+            {createdBy && (
               <span className="flex items-center gap-1">
                 <UserAvatar
-                  userName={createdByUser.username}
-                  identityIconUrl={createdByUser.identityIconUrl}
+                  userName={createdBy.username}
+                  identityIconUrl={createdBy.identityIconUrl}
                   size={16}
                   showName={true}
                   nameClassName="text-sm font-normal"

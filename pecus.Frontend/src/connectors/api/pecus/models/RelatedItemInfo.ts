@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { RelationType } from './RelationType';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * 関連アイテムの基本情報
  */
@@ -42,13 +43,6 @@ export type RelatedItemInfo = {
      * アーカイブ済みかどうか
      */
     isArchived?: boolean;
-    /**
-     * オーナーユーザー名
-     */
-    ownerUsername?: string | null;
-    /**
-     * オーナーアバターURL
-     */
-    ownerAvatarUrl?: string | null;
+    owner?: UserIdentityResponse;
 };
 

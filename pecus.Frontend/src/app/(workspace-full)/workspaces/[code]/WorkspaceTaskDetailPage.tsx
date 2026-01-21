@@ -288,10 +288,10 @@ export default function WorkspaceTaskDetailPage({
     const userId = currentUser.id;
     // 編集権限があるユーザーのみステータスチェックを待つ
     const canEdit =
-      task.assignedUserId === userId ||
-      (task.itemAssigneeId != null && task.itemAssigneeId === userId) ||
-      (task.itemCommitterId != null && task.itemCommitterId === userId) ||
-      (task.itemOwnerId != null && task.itemOwnerId === userId);
+      task.assigned?.id === userId ||
+      (task.itemAssignee?.id != null && task.itemAssignee?.id === userId) ||
+      (task.itemCommitter?.id != null && task.itemCommitter?.id === userId) ||
+      (task.itemOwner?.id != null && task.itemOwner?.id === userId);
     return canEdit;
   }, [signalRInitStarted, task, currentUser, taskEditStatusFetched, connectionState]);
 
@@ -347,12 +347,12 @@ export default function WorkspaceTaskDetailPage({
   // タスクデータをフォーム状態に反映
   const syncTaskToForm = useCallback((taskData: WorkspaceTaskDetailResponse) => {
     // 担当者
-    if (taskData.assignedUserId) {
+    if (taskData.assigned?.id) {
       setSelectedAssignee({
-        id: taskData.assignedUserId,
-        username: taskData.assignedUsername || '',
+        id: taskData.assigned.id,
+        username: taskData.assigned.username || '',
         email: '',
-        identityIconUrl: taskData.assignedAvatarUrl || null,
+        identityIconUrl: taskData.assigned.identityIconUrl || null,
       });
     } else {
       setSelectedAssignee(null);
@@ -764,13 +764,13 @@ export default function WorkspaceTaskDetailPage({
     const userId = currentUser.id;
 
     // タスク担当者
-    if (task.assignedUserId === userId) return true;
+    if (task.assigned?.id === userId) return true;
     // アイテム担当者（APIレスポンスから取得）
-    if (task.itemAssigneeId != null && task.itemAssigneeId === userId) return true;
+    if (task.itemAssignee?.id != null && task.itemAssignee?.id === userId) return true;
     // アイテムコミッター（APIレスポンスから取得）
-    if (task.itemCommitterId != null && task.itemCommitterId === userId) return true;
+    if (task.itemCommitter?.id != null && task.itemCommitter?.id === userId) return true;
     // アイテムオーナー（APIレスポンスから取得）
-    if (task.itemOwnerId != null && task.itemOwnerId === userId) return true;
+    if (task.itemOwner?.id != null && task.itemOwner?.id === userId) return true;
 
     return false;
   }, [currentUser, task]);
@@ -1505,29 +1505,29 @@ export default function WorkspaceTaskDetailPage({
                           }}
                           disabled={
                             isFormDisabled ||
-                            (task?.itemCommitterId != null &&
-                              currentUser?.id !== task.itemCommitterId &&
-                              currentUser?.id !== task.itemAssigneeId &&
-                              currentUser?.id !== task.itemOwnerId) ||
+                            (task?.itemCommitter?.id != null &&
+                              currentUser?.id !== task.itemCommitter?.id &&
+                              currentUser?.id !== task.itemAssignee?.id &&
+                              currentUser?.id !== task.itemOwner?.id) ||
                             (enforcePredecessorCompletion && isPredecessorIncomplete)
                           }
                           title={
                             enforcePredecessorCompletion && isPredecessorIncomplete
                               ? '先行タスクが完了していないため、完了にできません'
-                              : task?.itemCommitterId != null &&
-                                  currentUser?.id !== task.itemCommitterId &&
-                                  currentUser?.id !== task.itemAssigneeId &&
-                                  currentUser?.id !== task.itemOwnerId
+                              : task?.itemCommitter?.id != null &&
+                                  currentUser?.id !== task.itemCommitter?.id &&
+                                  currentUser?.id !== task.itemAssignee?.id &&
+                                  currentUser?.id !== task.itemOwner?.id
                                 ? '完了操作はコミッター、アイテム担当者、またはオーナーのみ可能です'
                                 : undefined
                           }
                         />
                         <label htmlFor="isCompleted" className="label-text cursor-pointer">
                           完了
-                          {task?.itemCommitterId != null &&
-                            currentUser?.id !== task.itemCommitterId &&
-                            currentUser?.id !== task.itemAssigneeId &&
-                            currentUser?.id !== task.itemOwnerId && (
+                          {task?.itemCommitter?.id != null &&
+                            currentUser?.id !== task.itemCommitter?.id &&
+                            currentUser?.id !== task.itemAssignee?.id &&
+                            currentUser?.id !== task.itemOwner?.id && (
                               <span className="text-xs text-base-content/50 ml-1">
                                 (コミッター/担当者/オーナーのみ)
                               </span>
@@ -1593,25 +1593,25 @@ export default function WorkspaceTaskDetailPage({
                   {/* メタ情報（作成者・完了者・更新日時） */}
                   <div className="border-t border-base-300 pt-4 mt-4">
                     <div className="flex flex-wrap gap-4 text-sm text-base-content/60">
-                      {task.createdByUserId && (
+                      {task.createdBy?.id && (
                         <div className="flex items-center gap-2">
                           <span>作成者:</span>
                           <UserAvatar
-                            userName={task.createdByUsername}
-                            identityIconUrl={task.createdByAvatarUrl}
+                            userName={task.createdBy.username}
+                            identityIconUrl={task.createdBy.identityIconUrl}
                             size={20}
                             nameClassName=""
                           />
                         </div>
                       )}
                       {task.createdAt && <div>作成日時: {formatDateTime(task.createdAt)}</div>}
-                      {task.isCompleted && task.completedByUserId && (
+                      {task.isCompleted && task.completedBy?.id && (
                         <div className="flex items-center gap-2 text-success">
                           <span className="icon-[mdi--check-circle] w-4 h-4" aria-hidden="true" />
                           <span>完了者:</span>
                           <UserAvatar
-                            userName={task.completedByUsername}
-                            identityIconUrl={task.completedByAvatarUrl}
+                            userName={task.completedBy.username}
+                            identityIconUrl={task.completedBy.identityIconUrl}
                             size={20}
                             nameClassName="text-success"
                           />
@@ -1674,10 +1674,10 @@ export default function WorkspaceTaskDetailPage({
                 taskId={task.id}
                 autoFocus={initialFocusComments}
                 canEdit={canEdit}
-                taskAssigneeId={task.assignedUserId}
-                itemOwnerId={task.itemOwnerId}
-                itemAssigneeId={task.itemAssigneeId}
-                itemCommitterId={task.itemCommitterId}
+                taskAssigneeId={task.assigned?.id}
+                itemOwnerId={task.itemOwner?.id}
+                itemAssigneeId={task.itemAssignee?.id}
+                itemCommitterId={task.itemCommitter?.id}
               />
             )}
           </div>
@@ -1694,7 +1694,7 @@ export default function WorkspaceTaskDetailPage({
             initialAttachments={taskAttachments}
             canEdit={hasEditPermission && !isLockedByOther}
             currentUserId={currentUser?.id ?? 0}
-            itemOwnerId={task.itemOwnerId ?? undefined}
+            itemOwnerId={task.itemOwner?.id ?? undefined}
             onAttachmentCountChange={setAttachmentCount}
           />
         )}

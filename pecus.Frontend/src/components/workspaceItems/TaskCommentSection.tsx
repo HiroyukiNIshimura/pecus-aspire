@@ -418,7 +418,7 @@ export default function TaskCommentSection({
         ) : (
           <>
             {comments.map((comment) => {
-              const isOwn = comment.userId === currentUserId;
+              const isOwn = comment.user?.id === currentUserId;
               return (
                 <div
                   key={comment.id}
@@ -428,8 +428,8 @@ export default function TaskCommentSection({
                   {!isOwn && (
                     <div className="flex-shrink-0 pt-0.5">
                       <UserAvatar
-                        userName={comment.username}
-                        identityIconUrl={comment.avatarUrl}
+                        userName={comment.user?.username}
+                        identityIconUrl={comment.user?.identityIconUrl}
                         size={36}
                         showName={false}
                       />
@@ -440,7 +440,7 @@ export default function TaskCommentSection({
                   <div className={`max-w-[75%] ${isOwn ? 'text-right' : 'text-left'}`}>
                     {/* ヘッダー */}
                     <div className={`flex items-center gap-2 mb-1 flex-wrap ${isOwn ? 'justify-end' : ''}`}>
-                      <span className="font-medium text-sm">{comment.username}</span>
+                      <span className="font-medium text-sm">{comment.user?.username}</span>
                       {(() => {
                         const type = comment.commentType || 'Normal';
                         const config = commentTypeConfig[type];
@@ -529,8 +529,8 @@ export default function TaskCommentSection({
                   {isOwn && (
                     <div className="flex-shrink-0 pt-0.5">
                       <UserAvatar
-                        userName={comment.username}
-                        identityIconUrl={comment.avatarUrl}
+                        userName={comment.user?.username}
+                        identityIconUrl={comment.user?.identityIconUrl}
                         size={36}
                         showName={false}
                       />

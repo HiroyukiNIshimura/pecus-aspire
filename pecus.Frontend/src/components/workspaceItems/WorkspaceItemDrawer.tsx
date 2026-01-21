@@ -63,8 +63,8 @@ export default function WorkspaceItemDrawer({
   onAttributeUpdate,
 }: WorkspaceItemDrawerProps) {
   // UI表示用のローカル状態（楽観的更新用）
-  const [localAssigneeId, setLocalAssigneeId] = useState<number | null>(item.assigneeId || null);
-  const [localCommitterId, setLocalCommitterId] = useState<number | null>(item.committerId || null);
+  const [localAssigneeId, setLocalAssigneeId] = useState<number | null>(item.assignee?.id || null);
+  const [localCommitterId, setLocalCommitterId] = useState<number | null>(item.committer?.id || null);
   const [localIsArchived, setLocalIsArchived] = useState<boolean>(item.isArchived ?? false);
   const [localDueDate, setLocalDueDate] = useState<string>(item.dueDate ? item.dueDate.split('T')[0] : '');
   const [localPriority, setLocalPriority] = useState<TaskPriority | null>(item.priority ?? null);
@@ -79,16 +79,16 @@ export default function WorkspaceItemDrawer({
 
   // item propが更新されたらローカル状態を同期
   useEffect(() => {
-    setLocalAssigneeId(item.assigneeId || null);
-    setLocalCommitterId(item.committerId || null);
+    setLocalAssigneeId(item.assignee?.id || null);
+    setLocalCommitterId(item.committer?.id || null);
     setLocalIsArchived(item.isArchived ?? false);
     setLocalDueDate(item.dueDate ? item.dueDate.split('T')[0] : '');
     setLocalPriority(item.priority ?? null);
-  }, [item.id, item.assigneeId, item.committerId, item.isArchived, item.dueDate, item.priority]);
+  }, [item.id, item.assignee?.id, item.committer?.id, item.isArchived, item.dueDate, item.priority]);
 
   // 権限フラグの計算
-  const isOwner = currentUserId !== undefined && item.ownerId === currentUserId;
-  const isAssignee = currentUserId !== undefined && item.assigneeId === currentUserId;
+  const isOwner = currentUserId !== undefined && item.owner?.id === currentUserId;
+  const isAssignee = currentUserId !== undefined && item.assignee?.id === currentUserId;
   const isDraft = item.isDraft ?? false;
 
   // オーナーまたは担当者かどうか（編集権限あり）

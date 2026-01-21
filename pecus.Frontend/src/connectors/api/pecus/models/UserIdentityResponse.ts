@@ -2,26 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-/**
- * 現在ログイン中のユーザーの最小限情報
- */
-export type CurrentUserInfo = {
-    /**
-     * 組織ID
-     */
-    organizationId: number;
-    /**
-     * メールアドレス
-     */
-    email: string;
-    /**
-     * 管理者権限を持つかどうか
-     */
-    isAdmin: boolean;
-    /**
-     * バックオフィス権限を持つかどうか
-     */
-    isBackOffice: boolean;
+export type UserIdentityResponse = {
     /**
      * ユーザーID
      */

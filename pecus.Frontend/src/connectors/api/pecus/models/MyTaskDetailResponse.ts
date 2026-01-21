@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TaskPriority } from './TaskPriority';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * ログインユーザーのタスク詳細レスポンス（アイテム情報含む）
@@ -45,70 +46,14 @@ export type MyTaskDetailResponse = {
      * アイテム件名
      */
     itemSubject?: string | null;
-    /**
-     * アイテムオーナーID
-     */
-    itemOwnerId?: number | null;
-    /**
-     * アイテムオーナー名
-     */
-    itemOwnerUsername?: string | null;
-    /**
-     * アイテムオーナーアバターURL
-     */
-    itemOwnerAvatarUrl?: string | null;
-    /**
-     * アイテム担当者ID
-     */
-    itemAssigneeId?: number | null;
-    /**
-     * アイテム担当者名
-     */
-    itemAssigneeUsername?: string | null;
-    /**
-     * アイテム担当者アバターURL
-     */
-    itemAssigneeAvatarUrl?: string | null;
-    /**
-     * アイテムコミッターID
-     */
-    itemCommitterId?: number | null;
-    /**
-     * アイテムコミッター名
-     */
-    itemCommitterUsername?: string | null;
-    /**
-     * アイテムコミッターアバターURL
-     */
-    itemCommitterAvatarUrl?: string | null;
+    itemOwner?: UserIdentityResponse;
+    itemAssignee?: UserIdentityResponse;
+    itemCommitter?: UserIdentityResponse;
+    createdBy?: UserIdentityResponse;
     /**
      * 組織ID
      */
     organizationId?: number;
-    /**
-     * 担当ユーザーID
-     */
-    assignedUserId?: number;
-    /**
-     * 担当ユーザー名
-     */
-    assignedUsername?: string | null;
-    /**
-     * 担当ユーザーアバターURL
-     */
-    assignedAvatarUrl?: string | null;
-    /**
-     * 作成ユーザーID
-     */
-    createdByUserId?: number;
-    /**
-     * 作成ユーザー名
-     */
-    createdByUsername?: string | null;
-    /**
-     * 作成ユーザーアバターURL
-     */
-    createdByAvatarUrl?: string | null;
     /**
      * タスク内容
      */

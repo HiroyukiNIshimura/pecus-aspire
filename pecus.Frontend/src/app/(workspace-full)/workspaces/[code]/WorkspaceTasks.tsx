@@ -700,23 +700,23 @@ const WorkspaceTasks = ({
                     <div className="border-t border-base-300 pt-1.5 min-h-3rem">
                       {/* 担当者（未完了）または完了者（完了済み） */}
                       <div className="flex items-center gap-1.5 h-5">
-                        {task.isCompleted && task.completedByUserId ? (
+                        {task.isCompleted && task.completedBy?.id ? (
                           <>
                             <span
                               className="icon-[mdi--check-circle] w-3.5 h-3.5 text-success flex-shrink-0"
                               aria-hidden="true"
                             />
                             <UserAvatar
-                              userName={task.completedByUsername}
-                              identityIconUrl={task.completedByAvatarUrl}
+                              userName={task.completedBy.username}
+                              identityIconUrl={task.completedBy.identityIconUrl}
                               size={16}
                               nameClassName="text-xs truncate text-success"
                             />
                           </>
-                        ) : task.assignedUserId ? (
+                        ) : task.assigned?.id ? (
                           <UserAvatar
-                            userName={task.assignedUsername}
-                            identityIconUrl={task.assignedAvatarUrl}
+                            userName={task.assigned.username}
+                            identityIconUrl={task.assigned.identityIconUrl}
                             size={16}
                             nameClassName="text-xs truncate"
                           />
@@ -748,7 +748,7 @@ const WorkspaceTasks = ({
                     <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-base-300">
                       {/* 編集ボタン: タスク担当者、アイテムオーナー、アイテム担当者、アイテムコミッタのみ表示 */}
                       {currentUser &&
-                        (task.assignedUserId === currentUser.id ||
+                        (task.assigned?.id === currentUser.id ||
                           itemOwnerId === currentUser.id ||
                           itemAssigneeId === currentUser.id ||
                           itemCommitterId === currentUser.id) && (

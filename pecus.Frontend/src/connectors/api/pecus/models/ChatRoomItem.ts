@@ -5,7 +5,7 @@
 import type { ChatMessageItem } from './ChatMessageItem';
 import type { ChatNotificationSetting } from './ChatNotificationSetting';
 import type { ChatRoomType } from './ChatRoomType';
-import type { ChatUserItem } from './ChatUserItem';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * チャットルーム一覧項目
  */
@@ -23,7 +23,7 @@ export type ChatRoomItem = {
      * ワークスペースID（ワークスペースグループチャットの場合）
      */
     workspaceId?: number | null;
-    otherUser?: ChatUserItem;
+    otherUser?: UserIdentityResponse;
     latestMessage?: ChatMessageItem;
     /**
      * 未読メッセージ数

@@ -413,7 +413,7 @@ export default function EditWorkspaceItem({
                   </div>
 
                   {/* ステータス（オーナーのみ表示） */}
-                  {currentUserId !== undefined && latestItem.ownerId === currentUserId && (
+                  {currentUserId !== undefined && latestItem.owner?.id === currentUserId && (
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"

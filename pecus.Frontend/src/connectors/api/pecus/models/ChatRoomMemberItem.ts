@@ -8,25 +8,9 @@ import type { ChatRoomRole } from './ChatRoomRole';
  */
 export type ChatRoomMemberItem = {
     /**
-     * ユーザーID
-     */
-    userId: number;
-    /**
-     * ユーザー名
-     */
-    username: string;
-    /**
      * メールアドレス
      */
     email: string;
-    /**
-     * アバタータイプ
-     */
-    avatarType?: string | null;
-    /**
-     * アイデンティティアイコンURL
-     */
-    identityIconUrl?: string | null;
     role: ChatRoomRole;
     /**
      * 参加日時
@@ -36,5 +20,22 @@ export type ChatRoomMemberItem = {
      * 最終既読日時
      */
     lastReadAt?: string | null;
+    /**
+     * ユーザーID
+     */
+    id: number;
+    /**
+     * ユーザー名
+     */
+    username: string | null;
+    /**
+     * アイデンティティアイコンURL（表示用）
+     * 必ず有効なURLが返されるため、クライアント側でnullチェック不要
+     */
+    identityIconUrl: string | null;
+    /**
+     * ユーザーがアクティブかどうか
+     */
+    isActive: boolean;
 };
 

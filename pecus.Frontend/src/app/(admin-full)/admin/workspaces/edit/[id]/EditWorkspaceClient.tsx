@@ -22,7 +22,7 @@ import type {
   WorkspaceDetailResponse,
   WorkspaceMemberAssignmentsResponse,
   WorkspaceRole,
-  WorkspaceUserItem,
+  WorkspaceUserDetailResponse,
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
@@ -43,7 +43,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // メンバー管理の状態
-  const [members, setMembers] = useState<WorkspaceUserItem[]>(workspaceDetail.members || []);
+  const [members, setMembers] = useState<WorkspaceUserDetailResponse[]>(workspaceDetail.members || []);
 
   // 新規追加されたメンバーのハイライト表示用（3秒間）
   const [highlightedUserIds, setHighlightedUserIds] = useState<Set<number>>(new Set());
@@ -154,8 +154,9 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
 
     if (result.success) {
       // メンバー一覧に追加
-      const newMember: WorkspaceUserItem = {
-        userId,
+      const newMember: WorkspaceUserDetailResponse = {
+        workspaceId: workspaceDetail.id!,
+        id: userId,
         username: userName,
         email,
         workspaceRole: role,
@@ -184,7 +185,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
   /** メンバー削除モーダルを開く */
   const handleRemoveMember = (userId: number, userName: string) => {
     // membersからユーザー情報を取得してemailを設定
-    const member = members.find((m) => m.userId === userId);
+    const member = members.find((m) => m.id === userId);
     const email = member?.email || '';
     setRemoveMemberModal({ isOpen: true, userId, userName, email });
   };
@@ -201,7 +202,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
 
     if (result.success) {
       // メンバー一覧から削除
-      setMembers((prev) => prev.filter((m) => m.userId !== userId));
+      setMembers((prev) => prev.filter((m) => m.id !== userId));
       notify.success(`${userName} をワークスペースから削除しました。`);
     } else {
       notify.error(result.message || 'メンバーの削除に失敗しました。');
@@ -213,7 +214,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
   /** ロール変更モーダルを開く */
   const handleChangeRole = (userId: number, userName: string, newRole: NonNullable<WorkspaceRole>) => {
     // 現在のロールを取得
-    const member = members.find((m) => m.userId === userId);
+    const member = members.find((m) => m.id === userId);
     const currentRole: NonNullable<WorkspaceRole> = member?.workspaceRole ?? 'Member';
 
     // 同じロールの場合は何もしない
@@ -248,7 +249,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
 
     if (result.success) {
       // メンバー一覧のロールを更新
-      setMembers((prev) => prev.map((m) => (m.userId === userId ? { ...m, workspaceRole: newRole } : m)));
+      setMembers((prev) => prev.map((m) => (m.id === userId ? { ...m, workspaceRole: newRole } : m)));
       notify.success(`${userName} のロールを変更しました。`);
       handleChangeRoleModalClose();
     } else if (result.error === 'member_has_assignments' && 'assignments' in result && result.assignments) {

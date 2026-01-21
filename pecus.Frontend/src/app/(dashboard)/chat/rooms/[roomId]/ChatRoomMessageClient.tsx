@@ -98,7 +98,7 @@ export default function ChatRoomMessageClient({
   const getRoomName = () => {
     if (room.type === 'Dm') {
       // DM の場合は自分以外のメンバーを取得
-      const otherMember = room.members.find((m) => m.userId !== currentUserId);
+      const otherMember = room.members.find((m) => m.id !== currentUserId);
       return otherMember?.username || 'ルーム';
     }
     return room.name || 'ルーム';
@@ -162,7 +162,14 @@ export default function ChatRoomMessageClient({
       const newMessage: ChatMessageItem = {
         id: payload.message.id,
         senderUserId: payload.message.senderUserId,
-        sender: payload.message.sender,
+        sender: payload.message.sender
+          ? {
+              id: payload.message.sender.id,
+              username: payload.message.sender.username ?? null,
+              identityIconUrl: payload.message.sender.identityIconUrl ?? null,
+              isActive: payload.message.sender.isActive ?? true,
+            }
+          : undefined,
         messageType: payload.message.messageType as ChatMessageItem['messageType'],
         content: payload.message.content,
         replyToMessageId: payload.message.replyToMessageId,

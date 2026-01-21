@@ -7,28 +7,25 @@
  */
 export type DmCandidateUserItem = {
     /**
+     * 最終アクティブ日時（最終ログイン日時）
+     */
+    lastActiveAt?: string | null;
+    /**
      * ユーザーID
      */
     id: number;
     /**
      * ユーザー名
      */
-    username: string;
+    username: string | null;
     /**
-     * メールアドレス
+     * アイデンティティアイコンURL（表示用）
+     * 必ず有効なURLが返されるため、クライアント側でnullチェック不要
      */
-    email: string;
+    identityIconUrl: string | null;
     /**
-     * アバタータイプ
+     * ユーザーがアクティブかどうか
      */
-    avatarType?: string | null;
-    /**
-     * アイデンティティアイコンURL
-     */
-    identityIconUrl?: string | null;
-    /**
-     * 最終アクティブ日時（最終ログイン日時）
-     */
-    lastActiveAt?: string | null;
+    isActive: boolean;
 };
 

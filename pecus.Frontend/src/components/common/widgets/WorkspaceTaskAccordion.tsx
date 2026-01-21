@@ -596,10 +596,10 @@ export default function WorkspaceTaskAccordion({
                                           {(displayMode === 'both' || displayMode === 'assigned') && (
                                             <div>
                                               <p className="text-xs text-base-content/50 mb-1">担当者</p>
-                                              {task.assignedUserId ? (
+                                              {task.assigned?.id ? (
                                                 <UserAvatar
-                                                  userName={task.assignedUsername}
-                                                  identityIconUrl={task.assignedAvatarUrl}
+                                                  userName={task.assigned.username}
+                                                  identityIconUrl={task.assigned.identityIconUrl}
                                                   size={20}
                                                   nameClassName="text-xs text-base-content/70 truncate"
                                                 />
@@ -613,10 +613,10 @@ export default function WorkspaceTaskAccordion({
                                           {(displayMode === 'both' || displayMode === 'committer') && (
                                             <div>
                                               <p className="text-xs text-base-content/50 mb-1">コミッター</p>
-                                              {task.itemCommitterId ? (
+                                              {task.itemCommitter?.id ? (
                                                 <UserAvatar
-                                                  userName={task.itemCommitterUsername}
-                                                  identityIconUrl={task.itemCommitterAvatarUrl}
+                                                  userName={task.itemCommitter.username}
+                                                  identityIconUrl={task.itemCommitter.identityIconUrl}
                                                   size={20}
                                                   nameClassName="text-xs text-base-content/70 truncate"
                                                 />
@@ -709,11 +709,11 @@ export default function WorkspaceTaskAccordion({
                 taskId={editingTask.taskId}
                 taskTypes={taskTypes}
                 currentUser={currentUser}
-                itemOwnerId={editingTask.itemOwnerId}
-                itemAssigneeId={editingTask.itemAssigneeId}
-                itemCommitterId={editingTask.itemCommitterId}
-                itemCommitterName={editingTask.itemCommitterUsername}
-                itemCommitterAvatarUrl={editingTask.itemCommitterAvatarUrl}
+                itemOwnerId={editingTask.itemOwner?.id}
+                itemAssigneeId={editingTask.itemAssignee?.id}
+                itemCommitterId={editingTask.itemCommitter?.id}
+                itemCommitterName={editingTask.itemCommitter?.username}
+                itemCommitterAvatarUrl={editingTask.itemCommitter?.identityIconUrl}
                 showNavigationControls={false}
                 isModal={true}
               />

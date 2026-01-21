@@ -228,7 +228,7 @@ export function AgendaDetail({
         {/* 作成者・更新日時 */}
         <div className="mt-6 text-sm text-base-content/50">
           <p>
-            作成者: {agenda.createdByUser?.username ?? '不明'} ・ 作成日:{' '}
+            作成者: {agenda.createdBy?.username ?? '不明'} ・ 作成日:{' '}
             {new Date(agenda.createdAt).toLocaleDateString('ja-JP')}
           </p>
           <p>最終更新: {new Date(agenda.updatedAt).toLocaleDateString('ja-JP')}</p>

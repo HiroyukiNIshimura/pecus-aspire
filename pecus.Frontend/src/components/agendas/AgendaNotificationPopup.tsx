@@ -41,7 +41,7 @@ const defaultNotificationConfig = { icon: 'icon-[mdi--bell]', label: '通知', c
  */
 function getNotificationDescription(
   type: AgendaNotificationType | undefined,
-  createdByUser: { username?: string } | null | undefined,
+  createdByUser: { username?: string | null } | null | undefined,
 ): string | null {
   if (!type) return null;
 
@@ -304,7 +304,7 @@ export default function AgendaNotificationPopup({
             <ul className="divide-y divide-base-200">
               {notifications.map((notification) => {
                 const typeConfig = getTypeConfig(notification.type);
-                const description = getNotificationDescription(notification.type, notification.createdByUser);
+                const description = getNotificationDescription(notification.type, notification.createdBy);
                 return (
                   <li key={notification.id}>
                     <Link

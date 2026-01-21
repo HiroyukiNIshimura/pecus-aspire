@@ -90,8 +90,8 @@ export default function HelpCommentsCard({ data }: HelpCommentsCardProps) {
                 <div className="flex items-center justify-between ml-6">
                   <div className="flex items-center gap-1.5 text-xs text-base-content/60">
                     <UserAvatar
-                      userName={comment.commentUsername}
-                      identityIconUrl={comment.commentUserAvatarUrl}
+                      userName={comment.commentBy?.username}
+                      identityIconUrl={comment.commentBy?.identityIconUrl}
                       size={16}
                       showName={true}
                       nameClassName="text-xs"

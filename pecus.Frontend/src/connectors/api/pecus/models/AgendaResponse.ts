@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { AgendaAttendeeResponse } from './AgendaAttendeeResponse';
 import type { RecurrenceType } from './RecurrenceType';
-import type { UserItem } from './UserItem';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 export type AgendaResponse = {
     id: number;
     organizationId: number;
@@ -53,12 +53,12 @@ export type AgendaResponse = {
      * 中止日時
      */
     cancelledAt?: string | null;
-    cancelledByUser?: UserItem;
+    cancelledBy?: UserIdentityResponse;
     createdByUserId: number;
     createdAt: string;
     updatedAt: string;
     rowVersion: number;
-    createdByUser?: UserItem;
+    createdBy?: UserIdentityResponse;
     attendees?: Array<AgendaAttendeeResponse>;
 };
 

@@ -179,8 +179,8 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
                                 {/* 2行目: UserAvatar */}
                                 <div className="mt-2">
                                   <UserAvatar
-                                    userName={activity.username}
-                                    identityIconUrl={activity.identityIconUrl}
+                                    userName={activity.user?.username}
+                                    identityIconUrl={activity.user?.identityIconUrl}
                                     size={32}
                                     nameClassName="text-sm text-base-content/70"
                                   />

@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { UserIdentityResponse } from './UserIdentityResponse';
 import type { WorkspaceItemAttachmentTask } from './WorkspaceItemAttachmentTask';
 /**
  * ワークスペースアイテム添付ファイルレスポンス
@@ -47,14 +48,7 @@ export type WorkspaceItemAttachmentResponse = {
      * アップロード日時
      */
     uploadedAt?: string;
-    /**
-     * アップロードしたユーザーID
-     */
-    uploadedByUserId?: number;
-    /**
-     * アップロードしたユーザー名
-     */
-    uploadedByUsername?: string | null;
+    uploadedBy?: UserIdentityResponse;
     task?: WorkspaceItemAttachmentTask;
 };
 

@@ -62,7 +62,6 @@ export type { ChatRoomRole } from './models/ChatRoomRole';
 export type { ChatRoomType } from './models/ChatRoomType';
 export type { ChatUnreadCountByCategoryResponse } from './models/ChatUnreadCountByCategoryResponse';
 export type { ChatUnreadCountResponse } from './models/ChatUnreadCountResponse';
-export type { ChatUserItem } from './models/ChatUserItem';
 export type { ChildrenCountResponse } from './models/ChildrenCountResponse';
 export type { ConcurrencyErrorResponseOfAgendaResponse } from './models/ConcurrencyErrorResponseOfAgendaResponse';
 export type { ConcurrencyErrorResponseOfOrganizationResponse } from './models/ConcurrencyErrorResponseOfOrganizationResponse';
@@ -260,7 +259,7 @@ export type { UpdateWorkspaceTaskRequest } from './models/UpdateWorkspaceTaskReq
 export type { UpdateWorkspaceUserRoleRequest } from './models/UpdateWorkspaceUserRoleRequest';
 export type { UserAchievementResponse } from './models/UserAchievementResponse';
 export type { UserDetailResponse } from './models/UserDetailResponse';
-export type { UserItem } from './models/UserItem';
+export type { UserIdentityResponse } from './models/UserIdentityResponse';
 export type { UserPublicSettings } from './models/UserPublicSettings';
 export type { UserRoleResponse } from './models/UserRoleResponse';
 export type { UserSearchResultResponse } from './models/UserSearchResultResponse';

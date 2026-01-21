@@ -50,7 +50,7 @@ export default function TaskFlowMap({ data, onTaskClick, canEditTask }: TaskFlow
   // 担当者のユニーク人数を計算
   const allTasks = [...criticalPath, ...otherChains.flat(), ...independentTasks];
   const uniqueAssigneeCount = new Set(
-    allTasks.map((task) => task.assignedUserId).filter((id): id is number => id != null),
+    allTasks.map((task) => task.assigned?.id).filter((id): id is number => id != null),
   ).size;
 
   // その他のチェーンを期間の降順でソート

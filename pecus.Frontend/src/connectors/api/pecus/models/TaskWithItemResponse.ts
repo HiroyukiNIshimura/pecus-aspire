@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TaskPriority } from './TaskPriority';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * アイテム情報付きタスクレスポンス
  * タスク一覧でアイテムへのリンクを表示するために使用
@@ -73,18 +74,7 @@ export type TaskWithItemResponse = {
      * 破棄状態
      */
     isDiscarded?: boolean;
-    /**
-     * 担当ユーザーID
-     */
-    assignedUserId?: number;
-    /**
-     * 担当ユーザー名
-     */
-    assignedUsername?: string | null;
-    /**
-     * 担当ユーザーアバターURL
-     */
-    assignedAvatarUrl?: string | null;
+    assigned?: UserIdentityResponse;
     /**
      * 作成日時
      */
@@ -109,42 +99,9 @@ export type TaskWithItemResponse = {
      * ワークスペースコード
      */
     workspaceCode: string;
-    /**
-     * アイテムオーナーユーザーID
-     */
-    itemOwnerId?: number;
-    /**
-     * アイテムオーナーユーザー名
-     */
-    itemOwnerUsername?: string | null;
-    /**
-     * アイテムオーナーアバターURL
-     */
-    itemOwnerAvatarUrl?: string | null;
-    /**
-     * アイテム担当ユーザーID
-     */
-    itemAssigneeId?: number | null;
-    /**
-     * アイテム担当ユーザー名
-     */
-    itemAssigneeUsername?: string | null;
-    /**
-     * アイテム担当アバターURL
-     */
-    itemAssigneeAvatarUrl?: string | null;
-    /**
-     * アイテムコミッターユーザーID
-     */
-    itemCommitterId?: number | null;
-    /**
-     * アイテムコミッターユーザー名
-     */
-    itemCommitterUsername?: string | null;
-    /**
-     * アイテムコミッターアバターURL
-     */
-    itemCommitterAvatarUrl?: string | null;
+    itemOwner?: UserIdentityResponse;
+    itemAssignee?: UserIdentityResponse;
+    itemCommitter?: UserIdentityResponse;
     /**
      * コメントタイプ別件数
      */

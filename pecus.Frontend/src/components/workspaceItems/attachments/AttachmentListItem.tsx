@@ -143,7 +143,7 @@ export default function AttachmentListItem({ attachment, onDelete, canDelete, do
         </div>
         <p className="text-xs text-base-content/60">
           {formatFileSize(attachment.fileSize)}
-          {attachment.uploadedByUsername && ` • ${attachment.uploadedByUsername}`}
+          {attachment.uploadedBy?.username && ` • ${attachment.uploadedBy.username}`}
           {attachment.uploadedAt && ` • ${formatDate(attachment.uploadedAt)}`}
         </p>
       </div>

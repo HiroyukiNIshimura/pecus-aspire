@@ -208,6 +208,7 @@ export const defaultAppSettings: AppPublicSettingsResponse = {
     identityIconUrl: null,
     isAdmin: false,
     isBackOffice: false,
+    isActive: false,
   },
   organization: {
     aiProvider: 'None',

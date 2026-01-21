@@ -156,11 +156,11 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
           messagesResult.success &&
           messagesResult.data
         ) {
-          // DM: 自分以外のメンバー、AI: Bot メンバー（userId が 0 のメンバー）
+          // DM: 自分以外のメンバー、AI: Bot メンバー（id が 0 のメンバー）
           const otherMember =
             roomResult.data.type === 'Dm'
-              ? roomResult.data.members?.find((m) => m.userId !== currentUserId)
-              : roomResult.data.members?.find((m) => m.userId === 0); // Bot は userId が 0
+              ? roomResult.data.members?.find((m) => m.id !== currentUserId)
+              : roomResult.data.members?.find((m) => m.id === 0); // Bot は id が 0
 
           if (otherMember?.lastReadAt) {
             // 相手の lastReadAt 以前に自分が送信したメッセージの中で最新のものを探す
@@ -284,11 +284,9 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         sender: payload.message.sender
           ? {
               id: payload.message.sender.id,
-              username: payload.message.sender.displayName,
-              email: '',
-              avatarType: payload.message.sender.avatarType,
-              identityIconUrl: payload.message.sender.identityIconUrl,
-              isActive: payload.message.sender.isActive,
+              username: payload.message.sender.displayName ?? null,
+              identityIconUrl: payload.message.sender.identityIconUrl ?? null,
+              isActive: payload.message.sender.isActive ?? true,
             }
           : undefined,
         messageType: payload.message.messageType as ChatMessageItem['messageType'],
@@ -489,7 +487,7 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
     if (!room) return 'ルーム';
     if (room.type === 'Dm') {
       // DM の場合は自分以外のメンバーを取得
-      const otherMember = room.members.find((m) => m.userId !== currentUserId);
+      const otherMember = room.members.find((m) => m.id !== currentUserId);
       return otherMember?.username || 'ルーム';
     }
     return room.name || 'ルーム';

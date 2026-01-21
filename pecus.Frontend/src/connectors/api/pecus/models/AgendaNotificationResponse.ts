@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { AgendaNotificationType } from './AgendaNotificationType';
-import type { UserItem } from './UserItem';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * アジェンダ通知レスポンス
  */
@@ -37,6 +37,6 @@ export type AgendaNotificationResponse = {
      * 作成日時
      */
     createdAt?: string;
-    createdByUser?: UserItem;
+    createdBy?: UserIdentityResponse;
 };
 

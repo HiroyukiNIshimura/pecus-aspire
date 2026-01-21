@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { PredecessorTaskInfo } from './PredecessorTaskInfo';
 import type { TaskPriority } from './TaskPriority';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * ワークスペースタスク詳細レスポンス
  */
@@ -32,42 +33,12 @@ export type WorkspaceTaskDetailResponse = {
      * 組織ID
      */
     organizationId?: number;
-    /**
-     * アイテムオーナーユーザーID
-     */
-    itemOwnerId?: number;
-    /**
-     * アイテム担当ユーザーID
-     */
-    itemAssigneeId?: number | null;
-    /**
-     * アイテムコミッターユーザーID
-     */
-    itemCommitterId?: number | null;
-    /**
-     * 担当ユーザーID
-     */
-    assignedUserId?: number;
-    /**
-     * 担当ユーザー名
-     */
-    assignedUsername?: string | null;
-    /**
-     * 担当ユーザーアバターURL
-     */
-    assignedAvatarUrl?: string | null;
-    /**
-     * 作成ユーザーID
-     */
-    createdByUserId?: number;
-    /**
-     * 作成ユーザー名
-     */
-    createdByUsername?: string | null;
-    /**
-     * 作成ユーザーアバターURL
-     */
-    createdByAvatarUrl?: string | null;
+    itemOwner?: UserIdentityResponse;
+    itemAssignee?: UserIdentityResponse;
+    itemCommitter?: UserIdentityResponse;
+    assigned?: UserIdentityResponse;
+    createdBy?: UserIdentityResponse;
+    completedBy?: UserIdentityResponse;
     /**
      * タスク内容
      */
@@ -117,18 +88,6 @@ export type WorkspaceTaskDetailResponse = {
      * タスク完了日時
      */
     completedAt?: string | null;
-    /**
-     * タスク完了者ユーザーID
-     */
-    completedByUserId?: number | null;
-    /**
-     * タスク完了者ユーザー名
-     */
-    completedByUsername?: string | null;
-    /**
-     * タスク完了者アバターURL
-     */
-    completedByAvatarUrl?: string | null;
     /**
      * 破棄状態
      */

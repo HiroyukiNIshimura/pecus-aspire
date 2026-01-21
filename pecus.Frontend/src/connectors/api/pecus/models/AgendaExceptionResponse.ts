@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { UserItem } from './UserItem';
+import type { UserIdentityResponse } from './UserIdentityResponse';
 /**
  * アジェンダ例外レスポンス（特定回の中止・変更）
  */
@@ -59,6 +59,6 @@ export type AgendaExceptionResponse = {
      * 作成日時
      */
     createdAt?: string;
-    createdByUser?: UserItem;
+    createdBy?: UserIdentityResponse;
 };
 
