@@ -19,6 +19,7 @@ public static class CleanupJobScheduler
         ConfigureEmailChangeTokenCleanupJob(recurringJobManager, configuration);
         ConfigureChatCleanupJob(recurringJobManager, configuration);
         ConfigureUploadsCleanupJob(recurringJobManager, configuration);
+        ConfigureAgendaCleanupJob(recurringJobManager, configuration);
     }
 
     /// <summary>
@@ -167,6 +168,35 @@ public static class CleanupJobScheduler
             "UploadsCleanup",
             task => task.CleanupUploadsAsync(uploadsPath, settings.TempRetentionHours),
             Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
+        );
+    }
+
+    /// <summary>
+    /// アジェンダクリーンアップジョブを設定します
+    /// </summary>
+    /// <param name="recurringJobManager">Hangfire定期ジョブマネージャー</param>
+    /// <param name="configuration">設定</param>
+    private static void ConfigureAgendaCleanupJob(IRecurringJobManager recurringJobManager, IConfiguration configuration)
+    {
+        var settings = configuration.GetSection("AgendaCleanup").Get<AgendaCleanupSettings>() ?? new AgendaCleanupSettings();
+
+        if (!settings.Enabled)
+        {
+            Serilog.Log.Information("AgendaCleanup: Disabled by configuration");
+            return;
+        }
+
+        // 値の範囲を安全にクリップ
+        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
+        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
+
+        var batchSize = settings.BatchSize;
+        var olderThanDays = settings.OlderThanDays;
+
+        recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
+            "AgendaCleanup",
+            task => task.CleanupOldAgendasAsync(batchSize, olderThanDays),
+            Cron.Daily(settings.Hour, settings.Minute)
         );
     }
 }

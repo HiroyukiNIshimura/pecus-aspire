@@ -157,3 +157,34 @@ public class ChatTypeSettings
     public int OlderThanDays { get; set; } = 90;
 
 }
+
+/// <summary>
+/// アジェンダクリーンアップの設定
+/// </summary>
+public class AgendaCleanupSettings
+{
+    /// <summary>
+    /// バッチサイズ
+    /// </summary>
+    public int BatchSize { get; set; } = 1000;
+
+    /// <summary>
+    /// 有効フラグ
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// 終了後に残す日数（この日数より古いアジェンダを削除）
+    /// </summary>
+    public int OlderThanDays { get; set; } = 2;
+
+    /// <summary>
+    /// 実行時刻の時（0-23）
+    /// </summary>
+    public int Hour { get; set; } = 6;
+
+    /// <summary>
+    /// 実行時刻の分（0-59）
+    /// </summary>
+    public int Minute { get; set; } = 0;
+}

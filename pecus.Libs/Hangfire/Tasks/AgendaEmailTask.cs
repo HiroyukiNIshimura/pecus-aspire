@@ -140,6 +140,17 @@ public class AgendaEmailTask
                 break;
 
             case AgendaNotificationType.Reminder:
+                // 予定開始N分前を切っている場合はリマインダー送信しても意味がないのでスキップ
+                var cutoffMinutes = _config.GetValue("AgendaReminder:CutoffMinutes", 5);
+                var reminderStartAt = notification.OccurrenceStartAt ?? agenda.StartAt;
+                var reminderDeadline = reminderStartAt.AddMinutes(-cutoffMinutes);
+                if (DateTime.UtcNow >= reminderDeadline)
+                {
+                    _logger.LogDebug(
+                        "リマインダー送信期限を過ぎているためスキップ: NotificationId={NotificationId}, StartAt={StartAt}, Deadline={Deadline}",
+                        notification.Id, reminderStartAt, reminderDeadline);
+                    break;
+                }
                 await SendReminderEmailAsync(notification, agenda, user, organization, agendaUrl);
                 break;
 

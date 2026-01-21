@@ -256,7 +256,15 @@
     },
     "AgendaReminder": {
       "Enabled": true,
-      "CronExpression": "*/5 * * * *"
+      "CronExpression": "*/5 * * * *",
+      "CutoffMinutes": 0
+    },
+    "AgendaCleanup": {
+      "BatchSize": 1000,
+      "Enabled": true,
+      "OlderThanDays": 0,
+      "Hour": 6,
+      "Minute": 0
     }
   },
 

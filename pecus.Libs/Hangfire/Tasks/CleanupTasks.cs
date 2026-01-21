@@ -252,4 +252,145 @@ public class CleanupTasks
 
         _logger.LogInformation("ChatMessage cleanup completed. totalDeleted={Total}", totalDeleted);
     }
+
+    /// <summary>
+    /// 古いアジェンダと関連データを組織単位でバッチ削除します。
+    /// - 単発イベント: EndAt が cutoff 以前
+    /// - 繰り返し（終了日指定）: RecurrenceEndDate が cutoff 以前
+    /// - 繰り返し（回数指定）: 最終回の EndAt が cutoff 以前
+    /// - 繰り返し（無期限）: 削除しない
+    /// </summary>
+    /// <param name="batchSize">一度に削除する件数</param>
+    /// <param name="olderThanDays">終了後に残す日数</param>
+    public async Task CleanupOldAgendasAsync(int batchSize = 1000, int olderThanDays = 2)
+    {
+        _logger.LogInformation("Agenda cleanup started. batchSize={BatchSize} olderThanDays={OlderThanDays}", batchSize, olderThanDays);
+
+        var cutoff = DateTimeOffset.UtcNow.AddDays(-olderThanDays);
+        var cutoffDate = DateOnly.FromDateTime(cutoff.UtcDateTime);
+        var totalDeletedAgendas = 0;
+
+        // 組織一覧を取得
+        var organizationIds = await _context.Organizations
+            .AsNoTracking()
+            .Select(o => o.Id)
+            .ToListAsync();
+
+        foreach (var orgId in organizationIds)
+        {
+            try
+            {
+                var deletedInOrg = await CleanupAgendasForOrganizationAsync(orgId, batchSize, cutoff, cutoffDate);
+                totalDeletedAgendas += deletedInOrg;
+
+                if (deletedInOrg > 0)
+                {
+                    _logger.LogInformation("Agenda cleanup for OrganizationId={OrgId}: deleted={Deleted} agendas", orgId, deletedInOrg);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Agenda cleanup failed for OrganizationId={OrgId}. Continuing with next organization.", orgId);
+            }
+        }
+
+        _logger.LogInformation("Agenda cleanup completed. totalDeletedAgendas={Total}", totalDeletedAgendas);
+    }
+
+    /// <summary>
+    /// 組織単位でアジェンダをクリーンアップ
+    /// </summary>
+    private async Task<int> CleanupAgendasForOrganizationAsync(int organizationId, int batchSize, DateTimeOffset cutoff, DateOnly cutoffDate)
+    {
+        var totalDeleted = 0;
+
+        while (true)
+        {
+            // 削除対象のアジェンダIDを取得
+            var targetAgendaIds = await _context.Agendas
+                .AsNoTracking()
+                .Where(a => a.OrganizationId == organizationId)
+                .Where(a =>
+                    // 単発イベント: EndAt が cutoff 以前
+                    ((a.RecurrenceType == null || a.RecurrenceType == RecurrenceType.None) && a.EndAt <= cutoff)
+                    ||
+                    // 繰り返し（終了日指定）: RecurrenceEndDate が cutoff 以前
+                    (a.RecurrenceType != null && a.RecurrenceType != RecurrenceType.None && a.RecurrenceEndDate != null && a.RecurrenceEndDate <= cutoffDate)
+                )
+                .OrderBy(a => a.Id)
+                .Select(a => a.Id)
+                .Take(batchSize)
+                .ToListAsync();
+
+            if (targetAgendaIds.Count == 0)
+                break;
+
+            // 関連テーブルを削除（子から順に）
+            // 1. AgendaNotification
+            var notifications = await _context.AgendaNotifications
+                .Where(n => targetAgendaIds.Contains(n.AgendaId))
+                .ToListAsync();
+            if (notifications.Count > 0)
+            {
+                _context.AgendaNotifications.RemoveRange(notifications);
+                await _context.SaveChangesAsync();
+            }
+
+            // 2. AgendaReminderLog
+            var reminderLogs = await _context.AgendaReminderLogs
+                .Where(l => targetAgendaIds.Contains(l.AgendaId))
+                .ToListAsync();
+            if (reminderLogs.Count > 0)
+            {
+                _context.AgendaReminderLogs.RemoveRange(reminderLogs);
+                await _context.SaveChangesAsync();
+            }
+
+            // 3. AgendaAttendanceResponse
+            var attendanceResponses = await _context.AgendaAttendanceResponses
+                .Where(r => targetAgendaIds.Contains(r.AgendaId))
+                .ToListAsync();
+            if (attendanceResponses.Count > 0)
+            {
+                _context.AgendaAttendanceResponses.RemoveRange(attendanceResponses);
+                await _context.SaveChangesAsync();
+            }
+
+            // 4. AgendaAttendee
+            var attendees = await _context.AgendaAttendees
+                .Where(a => targetAgendaIds.Contains(a.AgendaId))
+                .ToListAsync();
+            if (attendees.Count > 0)
+            {
+                _context.AgendaAttendees.RemoveRange(attendees);
+                await _context.SaveChangesAsync();
+            }
+
+            // 5. AgendaException
+            var exceptions = await _context.AgendaExceptions
+                .Where(e => targetAgendaIds.Contains(e.AgendaId))
+                .ToListAsync();
+            if (exceptions.Count > 0)
+            {
+                _context.AgendaExceptions.RemoveRange(exceptions);
+                await _context.SaveChangesAsync();
+            }
+
+            // 6. Agenda本体を削除
+            var agendas = await _context.Agendas
+                .Where(a => targetAgendaIds.Contains(a.Id))
+                .ToListAsync();
+            if (agendas.Count > 0)
+            {
+                _context.Agendas.RemoveRange(agendas);
+                await _context.SaveChangesAsync();
+                totalDeleted += agendas.Count;
+            }
+
+            // DB負荷軽減のため少し待機
+            await Task.Delay(200);
+        }
+
+        return totalDeleted;
+    }
 }
