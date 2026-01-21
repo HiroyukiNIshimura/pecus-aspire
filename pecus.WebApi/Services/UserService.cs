@@ -1096,7 +1096,7 @@ public class UserService
         //       サブクエリで重複排除してから外側でスコア順にソートする
         // 注意: サブクエリ内の u.* には xmin が含まれないため、外側で sub.xmin を明示的に SELECT する
         var sql = $@"
-            SELECT sub.""Id"", sub.""LoginId"", sub.""Username"", sub.""Email"", sub.""PasswordHash"",
+            SELECT sub.""Id"", sub.""LoginId"", sub.""Username"", sub.""Email"", sub.""PasswordHash"", sub.""BackupEmail"",
                    sub.""AvatarType"", sub.""UserAvatarPath"", sub.""OrganizationId"",
                    sub.""CreatedAt"", sub.""CreatedByUserId"", sub.""LastLoginAt"",
                    sub.""UpdatedAt"", sub.""UpdatedByUserId"",
