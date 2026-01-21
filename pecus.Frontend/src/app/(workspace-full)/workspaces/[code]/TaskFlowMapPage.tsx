@@ -20,6 +20,8 @@ export interface TaskFlowMapPageProps {
   itemTitle?: string | null;
   /** アイテムのコミッター名 */
   itemCommitterName?: string | null;
+  /** アイテムのコミッターがアクティブかどうか */
+  itemCommitterIsActive?: boolean;
   /** アイテムのコミッターアバターURL */
   itemCommitterAvatarUrl?: string | null;
   /** タスクカードクリック時のコールバック */
@@ -39,6 +41,7 @@ export default function TaskFlowMapPage({
   itemCode,
   itemTitle,
   itemCommitterName,
+  itemCommitterIsActive,
   itemCommitterAvatarUrl,
   onTaskClick,
   canEditTask,
@@ -111,6 +114,7 @@ export default function TaskFlowMapPage({
                 <span className="text-base-content/50">コミッター:</span>
                 <UserAvatar
                   userName={itemCommitterName}
+                  isActive={itemCommitterIsActive ?? false}
                   identityIconUrl={itemCommitterAvatarUrl}
                   size={20}
                   nameClassName="font-medium"

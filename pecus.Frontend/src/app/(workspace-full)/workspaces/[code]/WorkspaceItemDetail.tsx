@@ -91,6 +91,7 @@ interface WorkspaceItemDetailProps {
     navigation: TaskNavigation,
     itemCommitterId: number | null,
     itemCommitterName: string | null,
+    itemCommitterIsActive: boolean,
     itemCommitterAvatarUrl: string | null,
     itemOwnerId: number | null,
     itemAssigneeId: number | null,
@@ -102,6 +103,7 @@ interface WorkspaceItemDetailProps {
   onShowFlowMap?: (
     itemTitle: string | null,
     itemCommitterName: string | null,
+    itemCommitterIsActive: boolean,
     itemCommitterAvatarUrl: string | null,
     itemOwnerId: number | null,
     itemAssigneeId: number | null,
@@ -785,6 +787,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                     onShowFlowMap(
                       item.subject ?? null,
                       item.committer?.username ?? null,
+                      item.committer?.isActive ?? false,
                       item.committer?.identityIconUrl ?? null,
                       item.owner?.id ?? null,
                       item.assignee?.id ?? null,
@@ -990,6 +993,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 itemAssigneeId={item?.assignee?.id}
                 itemCommitterId={item?.committer?.id}
                 itemCommitterName={item?.committer?.username}
+                itemCommitterIsActive={item?.committer?.isActive ?? false}
                 itemCommitterAvatarUrl={item?.committer?.identityIconUrl}
                 taskTypes={taskTypes}
                 currentUser={
@@ -1013,6 +1017,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                         navigation,
                         itemCommitterId,
                         itemCommitterNameParam,
+                        itemCommitterIsActiveParam,
                         itemCommitterAvatarUrlParam,
                         itemOwnerIdParam,
                         itemAssigneeIdParam,
@@ -1024,6 +1029,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                           navigation,
                           itemCommitterId,
                           itemCommitterNameParam,
+                          itemCommitterIsActiveParam,
                           itemCommitterAvatarUrlParam,
                           itemOwnerIdParam,
                           itemAssigneeIdParam,
@@ -1037,6 +1043,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                         onShowFlowMap(
                           item.subject ?? null,
                           item.committer?.username ?? null,
+                          item.committer?.isActive ?? false,
                           item.committer?.identityIconUrl ?? null,
                           item.owner?.id ?? null,
                           item.assignee?.id ?? null,

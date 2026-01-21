@@ -73,6 +73,8 @@ export interface WorkspaceTaskDetailPageProps {
   itemCommitterId?: number | null;
   /** アイテムのコミッター名 */
   itemCommitterName?: string | null;
+  /** アイテムのコミッターがアクティブかどうか */
+  itemCommitterIsActive?: boolean;
   /** アイテムのコミッターアバターURL */
   itemCommitterAvatarUrl?: string | null;
   /** 初期タスクナビゲーション情報 */
@@ -110,6 +112,7 @@ export default function WorkspaceTaskDetailPage({
   workspaceId,
   itemId,
   itemCommitterName,
+  itemCommitterIsActive,
   itemCommitterAvatarUrl,
   initialNavigation = null,
   taskTypes,
@@ -929,6 +932,7 @@ export default function WorkspaceTaskDetailPage({
               {itemCommitterName ? (
                 <UserAvatar
                   userName={itemCommitterName}
+                  isActive={itemCommitterIsActive ?? false}
                   identityIconUrl={itemCommitterAvatarUrl}
                   size={20}
                   nameClassName="font-medium"

@@ -77,6 +77,8 @@ interface WorkspaceTasksProps {
   itemCommitterId?: number | null;
   /** アイテムのコミッター名 */
   itemCommitterName?: string | null;
+  /** アイテムのコミッターがアクティブかどうか */
+  itemCommitterIsActive?: boolean;
   /** アイテムのコミッターアバターURL */
   itemCommitterAvatarUrl?: string | null;
   /** タスクタイプマスタデータ */
@@ -95,6 +97,7 @@ interface WorkspaceTasksProps {
     navigation: TaskNavigation,
     itemCommitterId: number | null,
     itemCommitterName: string | null,
+    itemCommitterIsActive: boolean,
     itemCommitterAvatarUrl: string | null,
     itemOwnerId: number | null,
     itemAssigneeId: number | null,
@@ -117,6 +120,7 @@ const WorkspaceTasks = ({
   itemAssigneeId,
   itemCommitterId,
   itemCommitterName,
+  itemCommitterIsActive,
   itemCommitterAvatarUrl,
   taskTypes,
   currentUser,
@@ -306,6 +310,7 @@ const WorkspaceTasks = ({
           navigation,
           itemCommitterId ?? null,
           itemCommitterName ?? null,
+          itemCommitterIsActive ?? false,
           itemCommitterAvatarUrl ?? null,
           itemOwnerId ?? null,
           itemAssigneeId ?? null,
@@ -324,6 +329,7 @@ const WorkspaceTasks = ({
       itemCode,
       itemCommitterId,
       itemCommitterName,
+      itemCommitterIsActive,
       itemCommitterAvatarUrl,
       itemOwnerId,
       itemAssigneeId,
@@ -382,6 +388,7 @@ const WorkspaceTasks = ({
           {itemCommitterName ? (
             <UserAvatar
               userName={itemCommitterName}
+              isActive={itemCommitterIsActive ?? false}
               identityIconUrl={itemCommitterAvatarUrl}
               size={20}
               nameClassName="font-medium"

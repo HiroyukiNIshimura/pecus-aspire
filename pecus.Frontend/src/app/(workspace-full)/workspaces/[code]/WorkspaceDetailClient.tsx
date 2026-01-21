@@ -137,6 +137,7 @@ export default function WorkspaceDetailClient({
   const [taskDetailItemId, setTaskDetailItemId] = useState<number | null>(null);
   const [taskDetailItemCommitterId, setTaskDetailItemCommitterId] = useState<number | null>(null);
   const [taskDetailItemCommitterName, setTaskDetailItemCommitterName] = useState<string | null>(null);
+  const [taskDetailItemCommitterIsActive, setTaskDetailItemCommitterIsActive] = useState<boolean>(false);
   const [taskDetailItemCommitterAvatarUrl, setTaskDetailItemCommitterAvatarUrl] = useState<string | null>(null);
   // タスク詳細からフローマップ遷移用の追加情報
   const [taskDetailItemOwnerId, setTaskDetailItemOwnerId] = useState<number | null>(null);
@@ -149,6 +150,7 @@ export default function WorkspaceDetailClient({
   const [showFlowMap, setShowFlowMap] = useState(false);
   const [flowMapItemTitle, setFlowMapItemTitle] = useState<string | null>(null);
   const [flowMapItemCommitterName, setFlowMapItemCommitterName] = useState<string | null>(null);
+  const [flowMapItemCommitterIsActive, setFlowMapItemCommitterIsActive] = useState<boolean>(false);
   const [flowMapItemCommitterAvatarUrl, setFlowMapItemCommitterAvatarUrl] = useState<string | null>(null);
   const [flowMapItemOwnerId, setFlowMapItemOwnerId] = useState<number | null>(null);
   const [flowMapItemAssigneeId, setFlowMapItemAssigneeId] = useState<number | null>(null);
@@ -477,6 +479,7 @@ export default function WorkspaceDetailClient({
             const item = itemResult.data;
             setTaskDetailItemCommitterId(item.committer?.id ?? null);
             setTaskDetailItemCommitterName(item.committer?.username ?? null);
+            setTaskDetailItemCommitterIsActive(item.committer?.isActive ?? false);
             setTaskDetailItemCommitterAvatarUrl(item.committer?.identityIconUrl ?? null);
             setTaskDetailItemOwnerId(item.owner?.id ?? null);
             setTaskDetailItemAssigneeId(item.assignee?.id ?? null);
@@ -762,6 +765,7 @@ export default function WorkspaceDetailClient({
       navigation: TaskNavigation,
       itemCommitterId: number | null,
       itemCommitterName: string | null,
+      itemCommitterIsActive: boolean,
       itemCommitterAvatarUrl: string | null,
       itemOwnerId: number | null,
       itemAssigneeId: number | null,
@@ -771,6 +775,7 @@ export default function WorkspaceDetailClient({
       setTaskDetailNavigation(navigation);
       setTaskDetailItemCommitterId(itemCommitterId);
       setTaskDetailItemCommitterName(itemCommitterName);
+      setTaskDetailItemCommitterIsActive(itemCommitterIsActive);
       setTaskDetailItemCommitterAvatarUrl(itemCommitterAvatarUrl);
       setTaskDetailItemOwnerId(itemOwnerId);
       setTaskDetailItemAssigneeId(itemAssigneeId);
@@ -790,6 +795,7 @@ export default function WorkspaceDetailClient({
     setTaskDetailItemId(null);
     setTaskDetailItemCommitterId(null);
     setTaskDetailItemCommitterName(null);
+    setTaskDetailItemCommitterIsActive(false);
     setTaskDetailItemCommitterAvatarUrl(null);
     setTaskDetailItemOwnerId(null);
     setTaskDetailItemAssigneeId(null);
@@ -829,6 +835,7 @@ export default function WorkspaceDetailClient({
     // 先にフローマップ用の情報を設定
     setFlowMapItemTitle(taskDetailItemTitle);
     setFlowMapItemCommitterName(taskDetailItemCommitterName);
+    setFlowMapItemCommitterIsActive(taskDetailItemCommitterIsActive);
     setFlowMapItemCommitterAvatarUrl(taskDetailItemCommitterAvatarUrl);
     setFlowMapItemOwnerId(taskDetailItemOwnerId);
     setFlowMapItemAssigneeId(taskDetailItemAssigneeId);
@@ -840,6 +847,7 @@ export default function WorkspaceDetailClient({
     setTaskDetailItemId(null);
     setTaskDetailItemCommitterId(null);
     setTaskDetailItemCommitterName(null);
+    setTaskDetailItemCommitterIsActive(false);
     setTaskDetailItemCommitterAvatarUrl(null);
     setTaskDetailItemOwnerId(null);
     setTaskDetailItemAssigneeId(null);
@@ -851,6 +859,7 @@ export default function WorkspaceDetailClient({
   }, [
     taskDetailItemTitle,
     taskDetailItemCommitterName,
+    taskDetailItemCommitterIsActive,
     taskDetailItemCommitterAvatarUrl,
     taskDetailItemOwnerId,
     taskDetailItemAssigneeId,
@@ -862,6 +871,7 @@ export default function WorkspaceDetailClient({
     (
       itemTitle: string | null,
       itemCommitterName: string | null,
+      itemCommitterIsActive: boolean,
       itemCommitterAvatarUrl: string | null,
       itemOwnerId: number | null,
       itemAssigneeId: number | null,
@@ -869,6 +879,7 @@ export default function WorkspaceDetailClient({
     ) => {
       setFlowMapItemTitle(itemTitle);
       setFlowMapItemCommitterName(itemCommitterName);
+      setFlowMapItemCommitterIsActive(itemCommitterIsActive);
       setFlowMapItemCommitterAvatarUrl(itemCommitterAvatarUrl);
       setFlowMapItemOwnerId(itemOwnerId);
       setFlowMapItemAssigneeId(itemAssigneeId);
@@ -883,6 +894,7 @@ export default function WorkspaceDetailClient({
     setShowFlowMap(false);
     setFlowMapItemTitle(null);
     setFlowMapItemCommitterName(null);
+    setFlowMapItemCommitterIsActive(false);
     setFlowMapItemCommitterAvatarUrl(null);
     setFlowMapItemOwnerId(null);
     setFlowMapItemAssigneeId(null);
@@ -1417,6 +1429,7 @@ export default function WorkspaceDetailClient({
               itemAssigneeId={taskDetailItemAssigneeId}
               itemCommitterId={taskDetailItemCommitterId}
               itemCommitterName={taskDetailItemCommitterName}
+              itemCommitterIsActive={taskDetailItemCommitterIsActive}
               itemCommitterAvatarUrl={taskDetailItemCommitterAvatarUrl}
               initialNavigation={taskDetailNavigation}
               taskTypes={taskTypes}
@@ -1453,6 +1466,7 @@ export default function WorkspaceDetailClient({
               itemCode={selectedItemCode}
               itemTitle={flowMapItemTitle}
               itemCommitterName={flowMapItemCommitterName}
+              itemCommitterIsActive={flowMapItemCommitterIsActive}
               itemCommitterAvatarUrl={flowMapItemCommitterAvatarUrl}
               onClose={handleCloseFlowMap}
               canEditTask={canEditTaskForFlowMap}
