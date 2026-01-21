@@ -83,6 +83,7 @@ public class AgendaReminderTask
     {
         return await _context.Agendas
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(a => a.Attendees)
             .Include(a => a.AttendanceResponses)
             .Include(a => a.Exceptions)
