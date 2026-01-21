@@ -12,7 +12,7 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260121122755_InitialCreate")]
+    [Migration("20260121123545_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
