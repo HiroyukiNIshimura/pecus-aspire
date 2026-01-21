@@ -628,6 +628,96 @@ public class AgendaService
     }
 
     /// <summary>
+    /// 特定回以降の参加状況を一括更新
+    /// </summary>
+    public async Task<AgendaResponse> UpdateAttendanceFromOccurrenceAsync(
+        long agendaId,
+        int organizationId,
+        int userId,
+        int fromOccurrenceIndex,
+        UpdateAttendanceRequest request)
+    {
+        var agenda = await _context.Agendas
+            .AsNoTracking()
+            .Include(a => a.Exceptions)
+            .Include(a => a.Attendees)
+            .FirstOrDefaultAsync(a => a.Id == agendaId && a.OrganizationId == organizationId);
+
+        if (agenda == null)
+            throw new NotFoundException("アジェンダが見つかりません。");
+
+        if (agenda.IsCancelled)
+            throw new BadRequestException("中止されたアジェンダの参加状況は変更できません。");
+
+        // 繰り返しイベントでない場合はエラー
+        if (agenda.RecurrenceType == null || agenda.RecurrenceType == RecurrenceType.None)
+            throw new BadRequestException("単発イベントには特定回以降の一括設定は使用できません。");
+
+        // 参加者かどうかを確認
+        var attendee = agenda.Attendees?.FirstOrDefault(a => a.UserId == userId);
+        if (attendee == null)
+            throw new BadRequestException("このアジェンダの参加者ではありません。");
+
+        // 展開期間: 5年分のオカレンスを取得
+        var farFuture = agenda.StartAt.AddYears(5);
+        var allOccurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(agenda, agenda.StartAt, farFuture);
+
+        // fromOccurrenceIndex 以降のオカレンスをフィルタ
+        var targetOccurrences = allOccurrences
+            .Where(o => o.Index >= fromOccurrenceIndex)
+            .ToList();
+
+        if (targetOccurrences.Count == 0)
+            throw new BadRequestException("指定されたインデックス以降の繰り返し回がありません。");
+
+        // 中止された回を除外
+        var cancelledIndices = agenda.Exceptions?
+            .Where(e => e.IsCancelled)
+            .Select(e => e.OccurrenceIndex)
+            .ToHashSet() ?? [];
+
+        var activeOccurrences = targetOccurrences
+            .Where(o => !cancelledIndices.Contains(o.Index))
+            .ToList();
+
+        if (activeOccurrences.Count == 0)
+            throw new BadRequestException("指定されたインデックス以降で有効な繰り返し回がありません。");
+
+        // 既存の回答を取得
+        var targetIndices = activeOccurrences.Select(o => o.Index).ToList();
+        var existingResponses = await _context.AgendaAttendanceResponses
+            .Where(r => r.AgendaId == agendaId && r.UserId == userId && r.OccurrenceIndex.HasValue && targetIndices.Contains(r.OccurrenceIndex.Value))
+            .ToDictionaryAsync(r => r.OccurrenceIndex!.Value);
+
+        var now = DateTimeOffset.UtcNow;
+
+        // 各オカレンスについて Upsert
+        foreach (var occurrence in activeOccurrences)
+        {
+            if (existingResponses.TryGetValue(occurrence.Index, out var existingResponse))
+            {
+                existingResponse.Status = request.Status;
+                existingResponse.RespondedAt = now;
+            }
+            else
+            {
+                _context.AgendaAttendanceResponses.Add(new AgendaAttendanceResponse
+                {
+                    AgendaId = agendaId,
+                    UserId = userId,
+                    OccurrenceIndex = occurrence.Index,
+                    Status = request.Status,
+                    RespondedAt = now
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        return await GetByIdAsync(agendaId, organizationId, fromOccurrenceIndex);
+    }
+
+    /// <summary>
     /// 特定回の参加状況をシリーズデフォルトにリセット
     /// </summary>
     public async Task<AgendaResponse> ResetOccurrenceAttendanceAsync(

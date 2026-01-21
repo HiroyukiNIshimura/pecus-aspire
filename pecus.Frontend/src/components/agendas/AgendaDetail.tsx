@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Markdown from 'react-markdown';
 import type { AgendaExceptionResponse, AgendaResponse, AttendanceStatus, RecurrenceType } from '@/connectors/api/pecus';
 
@@ -11,6 +12,8 @@ interface AgendaDetailProps {
   onAttendanceChange: (status: AttendanceStatus) => void;
   /** 特定回表示中の場合のラベル（例: "1/21"） */
   occurrenceLabel?: string;
+  /** この回以降の参加状況を一括変更（繰り返しイベント用） */
+  onBulkAttendanceChange?: (status: AttendanceStatus) => void;
 }
 
 const recurrenceLabels: Record<string, string> = {
@@ -35,10 +38,13 @@ export function AgendaDetail({
   isPending,
   onAttendanceChange,
   occurrenceLabel,
+  onBulkAttendanceChange,
 }: AgendaDetailProps) {
   const isCancelled = agenda.isCancelled;
   const recurrenceType = agenda.recurrenceType as RecurrenceType | undefined;
   const isRecurring = recurrenceType && recurrenceType !== 'None';
+  // 「この回以降」セクションの展開状態
+  const [isBulkExpanded, setIsBulkExpanded] = useState(false);
 
   const formatDateTime = (dateStr: string, isAllDay: boolean) => {
     const date = new Date(dateStr);
@@ -188,6 +194,56 @@ export function AgendaDetail({
                 </button>
               ))}
             </div>
+
+            {/* この回以降の一括設定（繰り返しイベント＆特定回表示中の場合のみ表示） */}
+            {isRecurring && occurrenceLabel && onBulkAttendanceChange && (
+              <div className="mt-4 border-t border-base-300 pt-4">
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between text-left"
+                  onClick={() => setIsBulkExpanded(!isBulkExpanded)}
+                  disabled={isPending}
+                >
+                  <span className="text-sm font-medium text-base-content/80">この回以降の一括設定</span>
+                  <svg
+                    className={`size-5 text-base-content/60 transition-transform ${isBulkExpanded ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {isBulkExpanded && (
+                  <div className="mt-3 space-y-2">
+                    <p className="mb-2 text-xs text-base-content/60">
+                      {occurrenceLabel} 以降のすべての回の参加状況を一括で変更します。
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {attendanceOptions.map(({ status, label, icon }) => (
+                        <button
+                          key={status}
+                          type="button"
+                          className="btn btn-sm btn-secondary"
+                          disabled={isPending}
+                          onClick={() => onBulkAttendanceChange(status)}
+                        >
+                          {isPending ? (
+                            <span className="loading loading-spinner loading-xs" />
+                          ) : (
+                            <>
+                              <span className={`${icon} size-4`} />
+                              以降すべて{label}
+                            </>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 

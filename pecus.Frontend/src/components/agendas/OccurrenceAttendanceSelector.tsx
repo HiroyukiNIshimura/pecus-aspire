@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { AttendanceStatus } from '@/connectors/api/pecus';
 
 interface OccurrenceAttendanceSelectorProps {
@@ -15,6 +16,12 @@ interface OccurrenceAttendanceSelectorProps {
   onOccurrenceStatusChange: (status: AttendanceStatus) => void;
   /** シリーズと同じに戻す */
   onResetToSeries: () => void;
+  /** 繰り返しイベントかどうか（trueの場合のみ「この回以降」オプションを表示） */
+  isRecurring?: boolean;
+  /** この回以降の参加状況を一括変更 */
+  onBulkStatusChange?: (status: AttendanceStatus) => void;
+  /** 一括更新処理中フラグ */
+  isBulkPending?: boolean;
 }
 
 const statusLabels: Record<AttendanceStatus, string> = {
@@ -37,9 +44,14 @@ export function OccurrenceAttendanceSelector({
   occurrenceDate,
   onOccurrenceStatusChange,
   onResetToSeries,
+  isRecurring = false,
+  onBulkStatusChange,
+  isBulkPending = false,
 }: OccurrenceAttendanceSelectorProps) {
   // シリーズと同じかどうか（この回の個別回答がない）
   const isSameAsSeries = occurrenceStatus === null || occurrenceStatus === undefined;
+  // 「この回以降」セクションの展開状態
+  const [isBulkExpanded, setIsBulkExpanded] = useState(false);
 
   return (
     <div className="mt-4 rounded-lg border border-base-300 bg-base-200/50 p-4">
@@ -100,6 +112,49 @@ export function OccurrenceAttendanceSelector({
           <p>この回のみ個別の参加状況が設定されています。</p>
         )}
       </div>
+
+      {/* この回以降の一括設定（繰り返しイベントの場合のみ表示） */}
+      {isRecurring && onBulkStatusChange && (
+        <div className="mt-4 border-t border-base-300 pt-4">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between text-left"
+            onClick={() => setIsBulkExpanded(!isBulkExpanded)}
+            disabled={isBulkPending}
+          >
+            <span className="text-sm font-medium text-base-content/80">この回以降の一括設定</span>
+            <svg
+              className={`size-5 text-base-content/60 transition-transform ${isBulkExpanded ? 'rotate-180' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {isBulkExpanded && (
+            <div className="mt-3 space-y-2">
+              <p className="mb-2 text-xs text-base-content/60">
+                {occurrenceDate} 以降のすべての回の参加状況を一括で変更します。
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {statusOptions.map(({ status, label }) => (
+                  <button
+                    key={status}
+                    type="button"
+                    className="btn btn-sm btn-secondary"
+                    disabled={isBulkPending}
+                    onClick={() => onBulkStatusChange(status)}
+                  >
+                    {isBulkPending ? <span className="loading loading-spinner loading-xs" /> : `以降すべて${label}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import { updateAttendance, updateOccurrenceAttendance } from '@/actions/agenda';
+import { updateAttendance, updateAttendanceFromOccurrence, updateOccurrenceAttendance } from '@/actions/agenda';
 import { AgendaDetail } from '@/components/agendas/AgendaDetail';
 import { AttendeeList } from '@/components/agendas/AttendeeList';
 import { CancelConfirmModal } from '@/components/agendas/CancelConfirmModal';
@@ -111,6 +111,21 @@ export default function AgendaDetailClient({
         setCurrentAgenda(result.data);
       } else {
         setError(result.message ?? '参加状況の更新に失敗しました。');
+      }
+    });
+  };
+
+  // この回以降の参加状況を一括更新
+  const handleBulkAttendanceChange = (newStatus: AttendanceStatus) => {
+    if (isPending || occurrenceIndex === undefined) return;
+
+    setError(null);
+    startTransition(async () => {
+      const result = await updateAttendanceFromOccurrence(currentAgenda.id, occurrenceIndex, newStatus);
+      if (result.success) {
+        setCurrentAgenda(result.data);
+      } else {
+        setError(result.message ?? '参加状況の一括更新に失敗しました。');
       }
     });
   };
@@ -231,6 +246,10 @@ export default function AgendaDetailClient({
               isRecurring && occurrenceIndex !== undefined ? handleOccurrenceAttendanceChange : handleAttendanceChange
             }
             occurrenceLabel={isRecurring && occurrenceIndex !== undefined ? occurrenceDate : undefined}
+            onBulkAttendanceChange={
+              // 特定回表示中の繰り返しイベントのみ一括更新を有効化
+              isRecurring && occurrenceIndex !== undefined ? handleBulkAttendanceChange : undefined
+            }
           />
         </div>
 

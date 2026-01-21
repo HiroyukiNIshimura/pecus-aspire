@@ -283,6 +283,30 @@ public class AgendasController : BaseSecureController
     }
 
     /// <summary>
+    /// 特定回以降の参加状況を一括更新
+    /// </summary>
+    /// <remarks>
+    /// 繰り返しアジェンダの特定回以降すべての参加状況を一括更新します。
+    /// </remarks>
+    [HttpPatch("{id}/occurrences/{occurrenceIndex}/attendance/from")]
+    [ProducesResponseType(typeof(AgendaResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<AgendaResponse>> UpdateAttendanceFromOccurrence(
+        long id,
+        int occurrenceIndex,
+        [FromBody] UpdateAttendanceRequest request
+    )
+    {
+        if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
+            throw new NotFoundException("組織が見つかりません。");
+
+        var result = await _agendaService.UpdateAttendanceFromOccurrenceAsync(id, CurrentOrganizationId, CurrentUserId, occurrenceIndex, request);
+        return TypedResults.Ok(result);
+    }
+
+    /// <summary>
     /// 特定回の参加状況をリセット
     /// </summary>
     /// <remarks>

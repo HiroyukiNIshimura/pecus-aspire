@@ -335,6 +335,36 @@ export class AgendaService {
         });
     }
     /**
+     * 特定回以降の参加状況を一括更新
+     * 繰り返しアジェンダの特定回以降すべての参加状況を一括更新します。
+     * @param id
+     * @param occurrenceIndex
+     * @param requestBody
+     * @returns AgendaResponse OK
+     * @throws ApiError
+     */
+    public static patchApiAgendasOccurrencesAttendanceFrom(
+        id: number,
+        occurrenceIndex: number,
+        requestBody: UpdateAttendanceRequest,
+    ): CancelablePromise<AgendaResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/agendas/{id}/occurrences/{occurrenceIndex}/attendance/from',
+            path: {
+                'id': id,
+                'occurrenceIndex': occurrenceIndex,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
      * アジェンダ例外一覧取得
      * 指定されたアジェンダの全例外（特定回の中止・変更）を取得します。
      * @param id
