@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Markdown from 'react-markdown';
 import type { AgendaExceptionResponse, AgendaResponse, AttendanceStatus, RecurrenceType } from '@/connectors/api/pecus';
+import { remarkItemCodeLinks } from '@/libs/markdown/remarkItemCodeLinks';
 
 interface AgendaDetailProps {
   agenda: AgendaResponse;
@@ -155,7 +156,7 @@ export function AgendaDetail({
           <div className="mt-4">
             <h3 className="mb-2 font-medium text-base-content/70">詳細</h3>
             <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none prose-headings:mt-3 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5">
-              <Markdown>{agenda.description}</Markdown>
+              <Markdown remarkPlugins={[remarkItemCodeLinks]}>{agenda.description}</Markdown>
             </div>
           </div>
         )}
