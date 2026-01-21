@@ -1633,10 +1633,7 @@ function DisableCaptionOnBlur({ setShowCaption }) {
   );
   return null;
 }
-function CaptionOnChangePlugin({
-  parentEditor,
-  nodeKey
-}) {
+function CaptionOnChangePlugin({ parentEditor, nodeKey }) {
   const [captionEditor] = useLexicalComposerContext4();
   useEffect5(() => {
     return captionEditor.registerUpdateListener(({ dirtyElements, dirtyLeaves, tags }) => {

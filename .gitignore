@@ -14,7 +14,9 @@ x64/
 [Bb]in/
 [Oo]bj/
 
-bin\\
+# EF Core Tools が macOS で作成してしまう不正なフォルダ名
+bin\\Debug
+bin\\Release
 
 # MSTest test Results
 [Tt]est[Rr]esult*/

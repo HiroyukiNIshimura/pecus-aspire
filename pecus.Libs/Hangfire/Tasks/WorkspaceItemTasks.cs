@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.Lexical;
 
 namespace Pecus.Libs.Hangfire.Tasks;
@@ -31,38 +32,33 @@ public class WorkspaceItemTasks
     }
 
     /// <summary>
-    /// ワークスペースアイテムの RawBody を更新する
+    /// ワークスペースアイテムの検索インデックス（RawBody）を更新する
     /// </summary>
     /// <param name="workspaceItemId">対象のワークスペースアイテムID</param>
-    /// <param name="rowVersion">更新条件となる RowVersion</param>
     /// <remarks>
-    /// Body から Lexical JSON をパースしてプレーンテキストを抽出し、RawBody に設定します。
-    /// 指定された ID と RowVersion が一致するレコードが存在しない場合は、
-    /// 競合として扱いエラーにせず処理をスキップします。
+    /// Body から Lexical JSON をパースしてプレーンテキストを抽出し、
+    /// WorkspaceItemSearchIndices テーブルに Upsert します。
+    /// アイテムが存在しない場合はスキップします。
     /// </remarks>
-    public async Task UpdateRawBodyAsync(int workspaceItemId, uint rowVersion)
+    public async Task UpdateSearchIndexAsync(int workspaceItemId)
     {
         _logger.LogInformation(
-            "Updating RawBody for WorkspaceItem {WorkspaceItemId} with RowVersion {RowVersion}",
-            workspaceItemId,
-            rowVersion
+            "Updating SearchIndex for WorkspaceItem {WorkspaceItemId}",
+            workspaceItemId
         );
 
         try
         {
-            // ID と RowVersion が一致するレコードを検索
-            var item = await _context
-                .WorkspaceItems.FirstOrDefaultAsync(wi =>
-                    wi.Id == workspaceItemId && wi.RowVersion == rowVersion
-                );
+            // ID のみで取得（RowVersion チェック不要、本体は更新しない）
+            var item = await _context.WorkspaceItems
+                .AsNoTracking()
+                .FirstOrDefaultAsync(wi => wi.Id == workspaceItemId);
 
             if (item == null)
             {
                 _logger.LogInformation(
-                    "WorkspaceItem {WorkspaceItemId} with RowVersion {RowVersion} not found. " +
-                    "The item may have been updated or deleted. Skipping RawBody update.",
-                    workspaceItemId,
-                    rowVersion
+                    "WorkspaceItem {WorkspaceItemId} not found. Skipping SearchIndex update.",
+                    workspaceItemId
                 );
                 return;
             }
@@ -80,8 +76,6 @@ public class WorkspaceItemTasks
                 throw new InvalidOperationException($"Lexical conversion failed: {result.ErrorMessage}");
             }
 
-            item.RawBody = result.Result;
-
             if (result.UnknownNodes.Count > 0)
             {
                 _logger.LogWarning(
@@ -91,13 +85,35 @@ public class WorkspaceItemTasks
                 );
             }
 
+            var rawBody = result.Result ?? string.Empty;
+
+            // Upsert: 存在すれば更新、なければ挿入
+            var searchIndex = await _context.WorkspaceItemSearchIndices
+                .FirstOrDefaultAsync(si => si.WorkspaceItemId == workspaceItemId);
+
+            if (searchIndex == null)
+            {
+                searchIndex = new WorkspaceItemSearchIndex
+                {
+                    WorkspaceItemId = workspaceItemId,
+                    RawBody = rawBody,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.WorkspaceItemSearchIndices.Add(searchIndex);
+            }
+            else
+            {
+                searchIndex.RawBody = rawBody;
+                searchIndex.UpdatedAt = DateTime.UtcNow;
+            }
+
             await _context.SaveChangesAsync();
 
             _logger.LogInformation(
-                "Successfully updated RawBody for WorkspaceItem {WorkspaceItemId}. " +
+                "Successfully updated SearchIndex for WorkspaceItem {WorkspaceItemId}. " +
                 "Extracted text length: {TextLength}, ProcessingTime: {ProcessingTimeMs}ms",
                 workspaceItemId,
-                item.RawBody.Length,
+                rawBody.Length,
                 result.ProcessingTimeMs
             );
         }
@@ -105,10 +121,21 @@ public class WorkspaceItemTasks
         {
             _logger.LogError(
                 ex,
-                "Failed to update RawBody for WorkspaceItem {WorkspaceItemId}",
+                "Failed to update SearchIndex for WorkspaceItem {WorkspaceItemId}",
                 workspaceItemId
             );
             throw;
         }
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムの RawBody を更新する（後方互換性のため残す）
+    /// </summary>
+    /// <param name="workspaceItemId">対象のワークスペースアイテムID</param>
+    /// <param name="rowVersion">更新条件となる RowVersion（現在は未使用）</param>
+    [Obsolete("Use UpdateSearchIndexAsync instead")]
+    public Task UpdateRawBodyAsync(int workspaceItemId, uint rowVersion)
+    {
+        return UpdateSearchIndexAsync(workspaceItemId);
     }
 }

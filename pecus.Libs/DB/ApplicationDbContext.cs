@@ -97,6 +97,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkspaceItemRelation> WorkspaceItemRelations { get; set; }
 
     /// <summary>
+    /// ワークスペースアイテム検索インデックステーブル
+    /// </summary>
+    public DbSet<WorkspaceItemSearchIndex> WorkspaceItemSearchIndices { get; set; }
+
+    /// <summary>
     /// スキルテーブル
     /// </summary>
     public DbSet<Skill> Skills { get; set; }
@@ -472,6 +477,20 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wi => wi.Priority);
             entity.HasIndex(wi => wi.IsArchived);
             entity.HasIndex(wi => wi.IsDraft);
+
+            // SearchIndex との1対1リレーションシップ
+            entity
+                .HasOne(wi => wi.SearchIndex)
+                .WithOne(si => si.WorkspaceItem)
+                .HasForeignKey<WorkspaceItemSearchIndex>(si => si.WorkspaceItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // WorkspaceItemSearchIndexエンティティの設定
+        modelBuilder.Entity<WorkspaceItemSearchIndex>(entity =>
+        {
+            entity.HasKey(e => e.WorkspaceItemId);
+            entity.Property(e => e.RawBody).IsRequired();
         });
 
         // Tagエンティティの設定

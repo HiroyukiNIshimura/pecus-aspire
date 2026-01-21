@@ -934,7 +934,7 @@ public class LoadTestAtoms : BaseSeedAtoms
                     g => g.Select(wu => wu.UserId).ToList()
                 );
 
-            var itemBatch = new List<WorkspaceItem>();
+            var itemBatch = new List<(WorkspaceItem Item, string RawBody)>();
 
             // AutoDetectChangesを無効化してパフォーマンス向上
             var autoDetectChanges = _context.ChangeTracker.AutoDetectChangesEnabled;
@@ -976,7 +976,6 @@ public class LoadTestAtoms : BaseSeedAtoms
                             Code = itemNumber.ToString(),
                             Subject = bodyData.FileName.ClampLength(max: 200), // Markdownファイル名（拡張子なし）
                             Body = bodyData.Body, // Markdown から変換された Lexical JSON
-                            RawBody = bodyData.RawBody, // プレーンテキスト
                             OwnerId = ownerId,
                             AssigneeId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
                             Priority = _random.Next(4) switch
@@ -994,16 +993,29 @@ public class LoadTestAtoms : BaseSeedAtoms
                             IsActive = true,
                             CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)), // 過去365日以内のランダムな作成日
                             UpdatedAt = DateTime.UtcNow,
+                            // SearchIndex は SaveChanges 後に作成（ID が必要なため）
                         };
 
-                        itemBatch.Add(workspaceItem);
+                        itemBatch.Add((workspaceItem, bodyData.RawBody));
                         totalItemsAdded++;
 
                         // バッチサイズに達したら一括保存
                         if (itemBatch.Count >= batchSize)
                         {
-                            _context.WorkspaceItems.AddRange(itemBatch);
+                            var items = itemBatch.Select(x => x.Item).ToList();
+                            _context.WorkspaceItems.AddRange(items);
                             await _context.SaveChangesAsync();
+
+                            // 検索インデックスを作成
+                            var searchIndices = itemBatch.Select(x => new WorkspaceItemSearchIndex
+                            {
+                                WorkspaceItemId = x.Item.Id,
+                                RawBody = x.RawBody,
+                                UpdatedAt = DateTime.UtcNow
+                            }).ToList();
+                            _context.WorkspaceItemSearchIndices.AddRange(searchIndices);
+                            await _context.SaveChangesAsync();
+
                             _logger.LogInformation("Added {Count} workspace items", totalItemsAdded);
                             itemBatch.Clear();
                         }
@@ -1013,7 +1025,18 @@ public class LoadTestAtoms : BaseSeedAtoms
                 // 残りのアイテムを保存
                 if (itemBatch.Any())
                 {
-                    _context.WorkspaceItems.AddRange(itemBatch);
+                    var items = itemBatch.Select(x => x.Item).ToList();
+                    _context.WorkspaceItems.AddRange(items);
+                    await _context.SaveChangesAsync();
+
+                    // 検索インデックスを作成
+                    var searchIndices = itemBatch.Select(x => new WorkspaceItemSearchIndex
+                    {
+                        WorkspaceItemId = x.Item.Id,
+                        RawBody = x.RawBody,
+                        UpdatedAt = DateTime.UtcNow
+                    }).ToList();
+                    _context.WorkspaceItemSearchIndices.AddRange(searchIndices);
                     await _context.SaveChangesAsync();
                 }
             }

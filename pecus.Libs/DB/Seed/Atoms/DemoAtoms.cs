@@ -724,7 +724,6 @@ public class DemoAtoms
             Code = "1",
             Subject = bodyData.Value.FileName,
             Body = bodyData.Value.Body,
-            RawBody = bodyData.Value.RawBody,
             OwnerId = user1.Id,
             AssigneeId = user2.Id,
             Priority = TaskPriority.Medium,
@@ -738,6 +737,16 @@ public class DemoAtoms
         };
 
         await _context.WorkspaceItems.AddAsync(workspaceItem);
+        await _context.SaveChangesAsync();
+
+        // 検索インデックスを作成
+        var searchIndex = new WorkspaceItemSearchIndex
+        {
+            WorkspaceItemId = workspaceItem.Id,
+            RawBody = bodyData.Value.RawBody,
+            UpdatedAt = DateTime.UtcNow
+        };
+        await _context.WorkspaceItemSearchIndices.AddAsync(searchIndex);
         await _context.SaveChangesAsync();
 
 #pragma warning disable EF1002
@@ -1187,7 +1196,6 @@ public class DemoAtoms
                 Code = itemNumber.ToString(),
                 Subject = bodyData.FileName,
                 Body = bodyData.Body,
-                RawBody = bodyData.RawBody,
                 OwnerId = user1.Id,
                 AssigneeId = user2.Id,
                 Priority = TaskPriority.Medium,
@@ -1203,6 +1211,16 @@ public class DemoAtoms
         }
 
         await _context.WorkspaceItems.AddRangeAsync(workspaceItems);
+        await _context.SaveChangesAsync();
+
+        // 検索インデックスを作成
+        var searchIndices = workspaceItems.Select((wi, i) => new WorkspaceItemSearchIndex
+        {
+            WorkspaceItemId = wi.Id,
+            RawBody = bodyDataList[i].RawBody,
+            UpdatedAt = DateTime.UtcNow
+        }).ToList();
+        await _context.WorkspaceItemSearchIndices.AddRangeAsync(searchIndices);
         await _context.SaveChangesAsync();
 
 #pragma warning disable EF1002

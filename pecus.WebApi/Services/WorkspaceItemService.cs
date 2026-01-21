@@ -122,7 +122,6 @@ public class WorkspaceItemService
                 Code = itemNumber.ToString(),
                 Subject = request.Subject,
                 Body = request.Body,
-                RawBody = string.Empty,
                 OwnerId = ownerId,
                 AssigneeId = request.AssigneeId,
                 Priority = request.Priority,
@@ -280,9 +279,9 @@ public class WorkspaceItemService
 
             await transaction.CommitAsync();
 
-            // RawBody 更新ジョブをエンキュー
+            // 検索インデックス更新ジョブをエンキュー
             _backgroundJobClient.Enqueue<WorkspaceItemTasks>(x =>
-                x.UpdateRawBodyAsync(item.Id, item.RowVersion)
+                x.UpdateSearchIndexAsync(item.Id)
             );
 
             // Activity 記録ジョブをエンキュー（Created は details が null でも記録）
@@ -568,17 +567,19 @@ public class WorkspaceItemService
 
         var filterClause = string.Join(" AND ", filterClauses);
 
-        // 検索条件（Subject, RawBody, Code, タグ名を対象）
+        // 検索条件（Subject, Code, タグ名, SearchIndex.RawBody を対象）
         // Code を追加することで #123 形式のアイテムコード検索に対応
         // タグ名検索のために LEFT JOIN で Tags テーブルを結合
+        // RawBody は別テーブル（WorkspaceItemSearchIndices）に分離されているため JOIN
         // DISTINCT ON で重複排除（1アイテムに複数タグがある場合の対策）
-        var searchCondition = @"(ARRAY[wi.""Subject"", wi.""RawBody"", wi.""Code""] &@~ {1} OR t.""Name"" &@~ {1})";
+        var searchCondition = @"(ARRAY[wi.""Subject"", wi.""Code"", COALESCE(si.""RawBody"", '')] &@~ {1} OR t.""Name"" &@~ {1})";
 
         // カウント用クエリを実行（SqlQueryRaw<int> は "Value" カラムを期待する）
         // タグ結合による重複を DISTINCT でカウント
         var countSql = $@"
             SELECT COUNT(DISTINCT wi.""Id"")::int AS ""Value""
             FROM ""WorkspaceItems"" wi
+            LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
             LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
             LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
             WHERE {filterClause} AND {searchCondition}";
@@ -597,13 +598,14 @@ public class WorkspaceItemService
             // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
             // サブクエリで重複排除してから外側でスコア順にソート
             var mainSql = $@"
-                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Code"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
+                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Code"", sub.""Subject"", sub.""Body"",
                        sub.""OwnerId"", sub.""AssigneeId"", sub.""CommitterId"", sub.""UpdatedByUserId"",
                        sub.""IsDraft"", sub.""IsArchived"", sub.""IsActive"", sub.""Priority"", sub.""DueDate"",
                        sub.""CreatedAt"", sub.""UpdatedAt"", sub.xmin
                 FROM (
                     SELECT DISTINCT ON (wi.""Id"") wi.*, wi.xmin, pgroonga_score(wi.tableoid, wi.ctid) AS score
                     FROM ""WorkspaceItems"" wi
+                    LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
                     LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
                     LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
                     INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
@@ -624,6 +626,7 @@ public class WorkspaceItemService
             var countWithPinSql = $@"
                 SELECT COUNT(DISTINCT wi.""Id"")::int AS ""Value""
                 FROM ""WorkspaceItems"" wi
+                LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
                 LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
                 LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
                 INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
@@ -639,13 +642,14 @@ public class WorkspaceItemService
             // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
             // サブクエリで重複排除してから外側でスコア順にソート
             var mainSql = $@"
-                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Code"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
+                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Code"", sub.""Subject"", sub.""Body"",
                        sub.""OwnerId"", sub.""AssigneeId"", sub.""CommitterId"", sub.""UpdatedByUserId"",
                        sub.""IsDraft"", sub.""IsArchived"", sub.""IsActive"", sub.""Priority"", sub.""DueDate"",
                        sub.""CreatedAt"", sub.""UpdatedAt"", sub.xmin
                 FROM (
                     SELECT DISTINCT ON (wi.""Id"") wi.*, wi.xmin, pgroonga_score(wi.tableoid, wi.ctid) AS score
                     FROM ""WorkspaceItems"" wi
+                    LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
                     LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
                     LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
                     WHERE {filterClause} AND {searchCondition}
@@ -1014,11 +1018,11 @@ public class WorkspaceItemService
             await RaiseConflictException(itemId);
         }
 
-        // Body が更新された場合、RawBody 更新ジョブをエンキュー
+        // Body が更新された場合、検索インデックス更新ジョブをエンキュー
         if (request.Body != null)
         {
             _backgroundJobClient.Enqueue<WorkspaceItemTasks>(x =>
-                x.UpdateRawBodyAsync(item.Id, item.RowVersion)
+                x.UpdateSearchIndexAsync(item.Id)
             );
         }
 

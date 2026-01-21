@@ -38,11 +38,6 @@ public class WorkspaceItem
     public string? Body { get; set; }
 
     /// <summary>
-    /// プレーンテキスト形式の本文（NULL 許容）
-    /// </summary>
-    public string? RawBody { get; set; }
-
-    /// <summary>
     /// オーナーユーザーID（外部キー）
     /// </summary>
     public int OwnerId { get; set; }
@@ -152,6 +147,11 @@ public class WorkspaceItem
     /// </summary>
     public ICollection<WorkspaceItemRelation> RelationsTo { get; set; } =
         new List<WorkspaceItemRelation>();
+
+    /// <summary>
+    /// 検索インデックス（ナビゲーションプロパティ）
+    /// </summary>
+    public WorkspaceItemSearchIndex? SearchIndex { get; set; }
 
     /// <summary>
     /// 楽観的ロック用バージョン番号（PostgreSQL の xmin システムカラム）
