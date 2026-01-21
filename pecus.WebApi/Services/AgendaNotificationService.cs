@@ -206,18 +206,7 @@ public class AgendaNotificationService
             Message = notification.Message,
             IsRead = notification.IsRead,
             CreatedAt = notification.CreatedAt,
-            CreatedBy = notification.CreatedByUser == null ? null : ToUserItem(notification.CreatedByUser)
-        };
-    }
-
-    private UserIdentityResponse ToUserItem(User user)
-    {
-        return new UserIdentityResponse
-        {
-            Id = user.Id,
-            Username = user.Username,
-            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(user.AvatarType, user.Id, user.Username, user.Email, user.UserAvatarPath),
-            IsActive = user.IsActive,
+            CreatedBy = UserIdentityResponseBuilder.FromUser(notification.CreatedByUser)
         };
     }
 }
