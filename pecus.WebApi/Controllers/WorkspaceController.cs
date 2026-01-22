@@ -994,7 +994,6 @@ public class WorkspaceController : BaseSecureController
         return TypedResults.File(
             bytes,
             contentType: "application/octet-stream",
-            //octet-streamの場合は利用されないっぽいのでクライアントでも指定してる
             fileDownloadName: $"{report.Workspace.Code}_report_{from:yyyyMMdd}_{to:yyyyMMdd}.json"
         );
     }

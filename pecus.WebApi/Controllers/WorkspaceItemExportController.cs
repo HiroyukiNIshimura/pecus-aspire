@@ -59,7 +59,6 @@ public class WorkspaceItemExportController : BaseSecureController
         return TypedResults.File(
             bytes,
             contentType: "application/octet-stream",
-            //octet-streamの場合は利用されないっぽいのでクライアントでも指定してる
             fileDownloadName: fileName
         );
     }
@@ -112,7 +111,6 @@ public class WorkspaceItemExportController : BaseSecureController
         return TypedResults.File(
             bytes,
             contentType: "application/octet-stream",
-            //octet-streamの場合は利用されないっぽいのでクライアントでも指定してる
             fileDownloadName: fileName
         );
     }
@@ -168,7 +166,6 @@ public class WorkspaceItemExportController : BaseSecureController
         return TypedResults.File(
             bytes,
             contentType: "application/octet-stream",
-            //octet-streamの場合は利用されないっぽいのでクライアントでも指定してる
             fileDownloadName: fileName
         );
     }
@@ -192,47 +189,21 @@ public class WorkspaceItemExportController : BaseSecureController
 
     /// <summary>
     /// ダウンロード用のファイル名を生成
+    /// ASP.NET Core の TypedResults.File が自動的に RFC 5987 形式でエンコードするため、
+    /// 日本語やファイル名に使えない文字のサニタイズは不要
     /// </summary>
     private static string GenerateFileName(string subject, int itemNumber, string extension)
     {
-        // Subject をファイル名に使用可能な形式にサニタイズ
-        var sanitizedSubject = SanitizeFileName(subject);
-        if (string.IsNullOrWhiteSpace(sanitizedSubject))
+        // Subject が空の場合のフォールバック
+        var displaySubject = string.IsNullOrWhiteSpace(subject) ? "item" : subject;
+
+        // 最大30文字に制限（日本語も文字数でカウント）
+        if (displaySubject.Length > 30)
         {
-            sanitizedSubject = "item";
+            displaySubject = displaySubject[..30];
         }
 
-        // 最大30文字に制限
-        if (sanitizedSubject.Length > 30)
-        {
-            sanitizedSubject = sanitizedSubject[..30];
-        }
-
-        return $"{itemNumber}_{sanitizedSubject}.{extension}";
-    }
-
-    /// <summary>
-    /// ファイル名として使用できない文字を除去
-    /// </summary>
-    private static string SanitizeFileName(string fileName)
-    {
-        // Windows/Unix で無効な文字を除去
-        var invalidChars = Path.GetInvalidFileNameChars();
-        var sanitized = new StringBuilder();
-
-        foreach (var c in fileName)
-        {
-            if (!invalidChars.Contains(c) && c != ' ')
-            {
-                sanitized.Append(c);
-            }
-            else if (c == ' ')
-            {
-                sanitized.Append('_');
-            }
-        }
-
-        return sanitized.ToString();
+        return $"{itemNumber}_{displaySubject}.{extension}";
     }
 
     /// <summary>
