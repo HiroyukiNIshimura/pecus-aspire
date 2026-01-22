@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError, downloadFile } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   AddWorkspaceItemRelationResponse,
   CreateWorkspaceItemRequest,
@@ -436,103 +436,6 @@ export async function removeWorkspaceItemRelation(
     console.error('Failed to remove workspace item relation:', error);
     return handleApiErrorForAction<SuccessResponse>(error, {
       defaultMessage: '関連アイテムの削除に失敗しました。',
-      handled: { not_found: true },
-    });
-  }
-}
-
-/**
- * エクスポートフォーマット
- */
-export type ExportFormat = 'markdown' | 'html' | 'json';
-
-/**
- * エクスポート結果
- */
-export type ExportDownloadResult = {
-  content: string;
-  filename: string;
-};
-
-/**
- * Server Action: ワークスペースアイテムをMarkdown形式でエクスポート
- * @param workspaceId ワークスペースID
- * @param itemId アイテムID
- */
-export async function exportWorkspaceItemMarkdown(
-  workspaceId: number,
-  itemId: number,
-): Promise<ApiResponse<ExportDownloadResult>> {
-  try {
-    const result = await downloadFile(`/api/workspaces/${workspaceId}/items/${itemId}/export/markdown`);
-
-    return {
-      success: true,
-      data: {
-        content: result.data.toString('utf-8'),
-        filename: result.filename ?? `item-${itemId}.md`,
-      },
-    };
-  } catch (error) {
-    console.error('Failed to export workspace item as markdown:', error);
-    return handleApiErrorForAction<ExportDownloadResult>(error, {
-      defaultMessage: 'Markdownエクスポートに失敗しました。',
-      handled: { not_found: true },
-    });
-  }
-}
-
-/**
- * Server Action: ワークスペースアイテムをHTML形式でエクスポート
- * @param workspaceId ワークスペースID
- * @param itemId アイテムID
- */
-export async function exportWorkspaceItemHtml(
-  workspaceId: number,
-  itemId: number,
-): Promise<ApiResponse<ExportDownloadResult>> {
-  try {
-    const result = await downloadFile(`/api/workspaces/${workspaceId}/items/${itemId}/export/html`);
-
-    return {
-      success: true,
-      data: {
-        content: result.data.toString('utf-8'),
-        filename: result.filename ?? `item-${itemId}.html`,
-      },
-    };
-  } catch (error) {
-    console.error('Failed to export workspace item as HTML:', error);
-    return handleApiErrorForAction<ExportDownloadResult>(error, {
-      defaultMessage: 'HTMLエクスポートに失敗しました。',
-      handled: { not_found: true },
-    });
-  }
-}
-
-/**
- * Server Action: ワークスペースアイテムをJSON形式でエクスポート（Node データ）
- * @param workspaceId ワークスペースID
- * @param itemId アイテムID
- */
-export async function exportWorkspaceItemJson(
-  workspaceId: number,
-  itemId: number,
-): Promise<ApiResponse<ExportDownloadResult>> {
-  try {
-    const result = await downloadFile(`/api/workspaces/${workspaceId}/items/${itemId}/export/json`);
-
-    return {
-      success: true,
-      data: {
-        content: result.data.toString('utf-8'),
-        filename: result.filename ?? `item-${itemId}.json`,
-      },
-    };
-  } catch (error) {
-    console.error('Failed to export workspace item as JSON:', error);
-    return handleApiErrorForAction<ExportDownloadResult>(error, {
-      defaultMessage: 'JSONエクスポートに失敗しました。',
       handled: { not_found: true },
     });
   }

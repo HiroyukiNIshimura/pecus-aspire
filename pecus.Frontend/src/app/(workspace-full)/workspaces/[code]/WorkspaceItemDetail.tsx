@@ -3,10 +3,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import {
   addWorkspaceItemPin,
-  type ExportFormat,
-  exportWorkspaceItemHtml,
-  exportWorkspaceItemJson,
-  exportWorkspaceItemMarkdown,
   fetchLatestWorkspaceItem,
   removeWorkspaceItemPin,
   removeWorkspaceItemRelation,
@@ -15,6 +11,10 @@ import {
   updateWorkspaceItemAttribute,
   updateWorkspaceItemStatus,
 } from '@/actions/workspaceItem';
+
+/** エクスポート形式 */
+type ExportFormat = 'markdown' | 'html' | 'json';
+
 import { fetchWorkspaceItemAttachments } from '@/actions/workspaceItemAttachment';
 import ItemActivityTimeline from '@/components/activity/ItemActivityTimeline';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
@@ -615,57 +615,27 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       }
     };
 
-    // ファイルダウンロードのヘルパー関数
-    const downloadFile = (content: string, filename: string, mimeType: string) => {
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    };
-
-    // エクスポートハンドラー
+    // エクスポートハンドラー（API Route経由でダウンロード）
     const handleExport = async (format: ExportFormat) => {
       if (!item) return;
 
       setIsExporting(format);
       try {
-        switch (format) {
-          case 'markdown': {
-            const result = await exportWorkspaceItemMarkdown(workspaceId, itemId);
-            if (result.success) {
-              downloadFile(result.data.content, result.data.filename, 'text/markdown;charset=utf-8');
-              notify.success('Markdownファイルをダウンロードしました。');
-            } else {
-              notify.error(result.message || 'Markdownエクスポートに失敗しました。');
-            }
-            break;
-          }
-          case 'html': {
-            const result = await exportWorkspaceItemHtml(workspaceId, itemId);
-            if (result.success) {
-              downloadFile(result.data.content, result.data.filename, 'text/html;charset=utf-8');
-              notify.success('HTMLファイルをダウンロードしました。');
-            } else {
-              notify.error(result.message || 'HTMLエクスポートに失敗しました。');
-            }
-            break;
-          }
-          case 'json': {
-            const result = await exportWorkspaceItemJson(workspaceId, itemId);
-            if (result.success) {
-              downloadFile(result.data.content, result.data.filename, 'application/json;charset=utf-8');
-              notify.success('JSONファイルをダウンロードしました。');
-            } else {
-              notify.error(result.message || 'JSONエクスポートに失敗しました。');
-            }
-            break;
-          }
-        }
+        // API Route経由でダウンロード
+        const url = `/api/workspaces/${workspaceId}/items/${itemId}/export/${format}`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = ''; // Content-Dispositionヘッダーのファイル名を使用
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        const formatNames: Record<ExportFormat, string> = {
+          markdown: 'Markdown',
+          html: 'HTML',
+          json: 'JSON',
+        };
+        notify.success(`${formatNames[format]}ファイルをダウンロードしました。`);
       } catch (_err: unknown) {
         notify.error('エクスポート中にエラーが発生しました。');
       } finally {

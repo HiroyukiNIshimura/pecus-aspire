@@ -1,14 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { downloadWorkspaceProgressReport } from '@/actions/workspace';
 import { useNotify } from '@/hooks/useNotify';
 
 interface ProgressReportDownloadModalProps {
   isOpen: boolean;
   onClose: () => void;
   workspaceId: number;
-  workspaceCode: string;
   workspaceName: string;
 }
 
@@ -20,7 +18,6 @@ export default function ProgressReportDownloadModal({
   isOpen,
   onClose,
   workspaceId,
-  workspaceCode,
   workspaceName,
 }: ProgressReportDownloadModalProps) {
   const notify = useNotify();
@@ -45,19 +42,6 @@ export default function ProgressReportDownloadModal({
     };
   }, [isOpen]);
 
-  // ファイルダウンロードのヘルパー関数
-  const downloadFile = (content: string, filename: string, mimeType: string) => {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
   const handleDownload = async () => {
     // バリデーション
     if (!fromDate || !toDate) {
@@ -79,16 +63,22 @@ export default function ProgressReportDownloadModal({
 
     setIsDownloading(true);
     try {
-      const result = await downloadWorkspaceProgressReport(workspaceId, fromDate, toDate, includeArchived);
+      // API Route経由でダウンロード
+      const params = new URLSearchParams({
+        from: fromDate,
+        to: toDate,
+        includeArchived: includeArchived.toString(),
+      });
+      const url = `/api/workspaces/${workspaceId}/progress-report?${params.toString()}`;
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = ''; // Content-Dispositionヘッダーのファイル名を使用
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-      if (result.success) {
-        // サーバーから返されたファイル名を使用
-        downloadFile(result.data.content, result.data.filename, 'application/json;charset=utf-8');
-        notify.success('レポートを出力しました。');
-        onClose();
-      } else {
-        notify.error(result.message || 'レポートの出力に失敗しました。');
-      }
+      notify.success('レポートを出力しました。');
+      onClose();
     } catch (error) {
       console.error('Download failed:', error);
       notify.error('レポートの出力に失敗しました。');

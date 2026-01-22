@@ -4,7 +4,6 @@ import {
   createPecusApiClients,
   detectConcurrencyError,
   detectMemberHasAssignmentsError,
-  downloadFile,
 } from '@/connectors/api/PecusApiClient';
 import type {
   DashboardTaskTrendResponse,
@@ -441,51 +440,6 @@ export async function joinWorkspace(workspaceId: number): Promise<ApiResponse<Wo
     return handleApiErrorForAction<WorkspaceUserDetailResponse>(error, {
       defaultMessage: 'ワークスペースへの参加に失敗しました',
       handled: { validation: true, not_found: true },
-    });
-  }
-}
-
-/**
- * 進捗レポートダウンロード結果
- */
-export type ProgressReportDownloadResult = {
-  content: string;
-  filename: string;
-};
-
-/**
- * Server Action: ワークスペースの進捗レポートをダウンロード
- * @param workspaceId ワークスペースID
- * @param from 開始日（YYYY-MM-DD形式）
- * @param to 終了日（YYYY-MM-DD形式）
- * @param includeArchived アーカイブ済みアイテムを含むか
- * @returns JSONデータとファイル名
- */
-export async function downloadWorkspaceProgressReport(
-  workspaceId: number,
-  from: string,
-  to: string,
-  includeArchived: boolean = false,
-): Promise<ApiResponse<ProgressReportDownloadResult>> {
-  try {
-    const result = await downloadFile(`/api/workspaces/${workspaceId}/progress-report`, {
-      from,
-      to,
-      includeArchived,
-    });
-
-    return {
-      success: true,
-      data: {
-        content: result.data.toString('utf-8'),
-        filename: result.filename ?? `workspace_${workspaceId}_report.json`,
-      },
-    };
-  } catch (error) {
-    console.error('Failed to download progress report:', error);
-    return handleApiErrorForAction<ProgressReportDownloadResult>(error, {
-      defaultMessage: 'レポートの出力に失敗しました',
-      handled: { not_found: true },
     });
   }
 }

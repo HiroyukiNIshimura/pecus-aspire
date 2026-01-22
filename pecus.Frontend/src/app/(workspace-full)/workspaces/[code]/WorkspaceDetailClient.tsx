@@ -1637,7 +1637,6 @@ export default function WorkspaceDetailClient({
           isOpen={isProgressReportModalOpen}
           onClose={() => setIsProgressReportModalOpen(false)}
           workspaceId={currentWorkspaceDetail.id}
-          workspaceCode={currentWorkspaceDetail.code ?? ''}
           workspaceName={currentWorkspaceDetail.name}
         />
 
