@@ -198,7 +198,7 @@ export default function AgendaDetailClient({
   return (
     <div className="flex flex-1 flex-col p-4 md:p-6">
       {/* ヘッダー */}
-      <div className="mb-4 flex items-center justify-end gap-2">
+      <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
         {/* アクションボタン（中止されていない場合のみ） */}
         {!currentAgenda.isCancelled && (
           <>
