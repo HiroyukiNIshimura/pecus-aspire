@@ -864,7 +864,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           )}
 
           {/* メタ情報 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-4 border-y border-base-300 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 py-4 border-y border-base-300 text-sm">
             {/* 作成日時 */}
             {item.createdAt && (
               <div>
@@ -889,14 +889,6 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               </div>
             )}
 
-            {/* 更新日時 */}
-            {item.updatedAt && (
-              <div>
-                <span className="text-xs text-base-content/70">更新日時</span>
-                <p className="font-semibold">{formatDateTime(item.updatedAt)}</p>
-              </div>
-            )}
-
             {/* 担当者 */}
             <div>
               <span className="text-xs text-base-content/70">担当者</span>
@@ -914,6 +906,32 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <p className="font-semibold text-base-content/50">未割当</p>
               )}
             </div>
+
+            {/* コミッタ */}
+            <div>
+              <span className="text-xs text-base-content/70">コミッタ</span>
+              {item.committer?.id ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <UserAvatar
+                    userName={item.committer.username}
+                    isActive={item.committer.isActive ?? false}
+                    identityIconUrl={item.committer.identityIconUrl}
+                    size={20}
+                    nameClassName="font-semibold truncate"
+                  />
+                </div>
+              ) : (
+                <p className="font-semibold text-base-content/50">未割当</p>
+              )}
+            </div>
+
+            {/* 更新日時 */}
+            {item.updatedAt && (
+              <div>
+                <span className="text-xs text-base-content/70">更新日時</span>
+                <p className="font-semibold">{formatDateTime(item.updatedAt)}</p>
+              </div>
+            )}
           </div>
 
           {/* タグ */}

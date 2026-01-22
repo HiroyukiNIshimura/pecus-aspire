@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { searchWorkspaceMembers } from '@/actions/workspace';
 import { fetchWorkspaceItemAttachments } from '@/actions/workspaceItemAttachment';
@@ -962,6 +963,16 @@ export default function WorkspaceTaskDetailPage({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* アジェンダ作成ボタン */}
+            <Link
+              href="/agendas/new"
+              target="_blank"
+              className="btn btn-outline btn-sm gap-1"
+              title="新規イベントを作成（別タブで開きます）"
+            >
+              <span className="icon-[mdi--calendar-plus] size-4" aria-hidden="true" />
+              イベント作成
+            </Link>
             {/* 添付ファイルボタン */}
             {task && (
               <button
