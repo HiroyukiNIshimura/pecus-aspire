@@ -5,7 +5,7 @@ import type { LandingPage } from '@/connectors/api/pecus';
  * @param landingPage ランディングページ設定（null/undefined の場合はダッシュボード）
  * @returns URL パス
  */
-export function getLandingPageUrl(landingPage?: LandingPage | null): string {
+export function getLandingPageUrl(landingPage?: LandingPage | 'BackOffice' | null): string {
   switch (landingPage) {
     case 'Dashboard':
       return '/';
@@ -17,6 +17,8 @@ export function getLandingPageUrl(landingPage?: LandingPage | null): string {
       return '/tasks';
     case 'Committer':
       return '/committer';
+    case 'BackOffice':
+      return '/backoffice';
     default:
       return '/';
   }

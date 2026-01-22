@@ -56,6 +56,10 @@ export default async function Dashboard() {
   if (!isInternal) {
     try {
       const appSettings = await api.profile.getApiProfileAppSettings();
+      if (appSettings.currentUser.isBackOffice) {
+        redirect(getLandingPageUrl('BackOffice'));
+      }
+
       const landingPage = appSettings.user?.landingPage;
       if (landingPage && landingPage !== 'Dashboard') {
         redirect(getLandingPageUrl(landingPage));
