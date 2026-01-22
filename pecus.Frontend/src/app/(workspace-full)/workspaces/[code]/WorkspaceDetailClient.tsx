@@ -25,6 +25,7 @@ import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import EditWorkspaceModal from '@/components/workspaces/EditWorkspaceModal';
 import EditWorkspaceSkillsModal from '@/components/workspaces/EditWorkspaceSkillsModal';
+import ProgressReportDownloadModal from '@/components/workspaces/ProgressReportDownloadModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
@@ -164,6 +165,7 @@ export default function WorkspaceDetailClient({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isProgressReportModalOpen, setIsProgressReportModalOpen] = useState(false);
   const [currentWorkspaceDetail, setCurrentWorkspaceDetail] = useState<WorkspaceFullDetailResponse>(workspaceDetail);
   const [workspaceEditStatus, setWorkspaceEditStatus] = useState<WorkspaceEditStatusType>({ isEditing: false });
   // JoinWorkspace の戻り値から取得した編集状態（initialStatus として渡す）
@@ -1415,6 +1417,17 @@ export default function WorkspaceDetailClient({
                   ) : (
                     taskTrend && <TaskTrendChart data={taskTrend} mode={currentWorkspaceDetail.mode} />
                   )}
+                  {/* レポート出力ボタン */}
+                  <div className="flex justify-end mt-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsProgressReportModalOpen(true)}
+                      className="btn btn-sm btn-secondary gap-2"
+                    >
+                      <span className="icon-[mdi--file-export-outline] w-4 h-4" aria-hidden="true" />
+                      レポート出力
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1617,6 +1630,15 @@ export default function WorkspaceDetailClient({
                 }
               : null
           }
+        />
+
+        {/* レポート出力モーダル */}
+        <ProgressReportDownloadModal
+          isOpen={isProgressReportModalOpen}
+          onClose={() => setIsProgressReportModalOpen(false)}
+          workspaceId={currentWorkspaceDetail.id}
+          workspaceCode={currentWorkspaceDetail.code ?? ''}
+          workspaceName={currentWorkspaceDetail.name}
         />
 
         {/* アイテム一覧ドロワー (スマホ) */}

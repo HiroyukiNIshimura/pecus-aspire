@@ -7,6 +7,7 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Statistics;
 using Pecus.Libs.Utils;
 using Pecus.Models.Responses.Dashboard;
+using Pecus.Models.Responses.Workspace;
 
 namespace Pecus.Services;
 
@@ -137,10 +138,10 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペースIDで取得
     /// </summary>
-    public async Task<Workspace?> GetWorkspaceByIdAsync(int workspaceId) =>
+    public async Task<Workspace?> GetWorkspaceByIdAsync(int workspaceId, int organizationId) =>
         await _context
             .Workspaces.Include(w => w.Organization)
-            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+            .FirstOrDefaultAsync(w => w.Id == workspaceId && w.OrganizationId == organizationId);
 
     /// <summary>
     /// ワークスペースをページネーション付きで取得
@@ -1369,6 +1370,220 @@ public class WorkspaceService
             WeeklyTrends = weeklyTrends,
             StartDate = startDate,
             EndDate = currentWeekStart.AddDays(7).AddTicks(-1),
+        };
+    }
+
+    /// <summary>
+    /// ワークスペース進捗レポートを取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="from">開始日</param>
+    /// <param name="to">終了日</param>
+    /// <param name="includeArchived">アーカイブ済みアイテムを含むか</param>
+    /// <returns>進捗レポート</returns>
+    public async Task<WorkspaceProgressReportResponse> GetProgressReportAsync(
+        int workspaceId,
+        int organizationId,
+        DateOnly from,
+        DateOnly to,
+        bool includeArchived = false)
+    {
+
+        // 期間の検証
+        if (from > to)
+        {
+            throw new NotFoundException("開始日は終了日以前である必要があります。");
+        }
+
+        // 最大期間を1年に制限
+        if (to.DayNumber - from.DayNumber > 365)
+        {
+            throw new NotFoundException("レポート期間は最大1年間です。");
+        }
+
+        // ワークスペースメンバーであることを確認（Viewer含む全ロールがアクセス可能）
+        var workspace = await GetWorkspaceByIdAsync(workspaceId, organizationId);
+        if (workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        // 期間の変換（UTCとして扱う）
+        var fromDate = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var toDate = new DateTimeOffset(to.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+
+        // アイテムを取得
+        var itemsQuery = _context.WorkspaceItems
+            .Where(i => i.WorkspaceId == workspaceId)
+            .Where(i => !i.IsDraft); // 下書きは除外
+
+        if (!includeArchived)
+        {
+            itemsQuery = itemsQuery.Where(i => !i.IsArchived);
+        }
+
+        var items = await itemsQuery
+            .Include(i => i.Owner)
+            .Include(i => i.Assignee)
+            .Include(i => i.Committer)
+            .OrderBy(i => i.ItemNumber)
+            .ToListAsync();
+
+        var itemIds = items.Select(i => i.Id).ToList();
+
+        // タスクを別途取得（期間フィルタ適用）
+        var tasks = await _context.WorkspaceTasks
+            .Where(t => itemIds.Contains(t.WorkspaceItemId))
+            .Where(t =>
+                t.CreatedAt <= toDate &&
+                (t.CompletedAt == null || t.CompletedAt >= fromDate) &&
+                (t.DiscardedAt == null || t.DiscardedAt >= fromDate)
+            )
+            .Include(t => t.TaskType)
+            .Include(t => t.AssignedUser)
+            .Include(t => t.CreatedByUser)
+            .Include(t => t.CompletedByUser)
+            .OrderBy(t => t.WorkspaceItemId)
+            .ThenBy(t => t.Sequence)
+            .ToListAsync();
+
+        // アイテムIDごとにタスクをグループ化
+        var tasksByItemId = tasks.GroupBy(t => t.WorkspaceItemId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        // サマリー集計
+        var completedTasks = tasks.Count(t => t.IsCompleted);
+        var discardedTasks = tasks.Count(t => t.IsDiscarded);
+        var inProgressTasks = tasks.Count(t => !t.IsCompleted && !t.IsDiscarded && t.ProgressPercentage > 0);
+        var openTasks = tasks.Count(t => !t.IsCompleted && !t.IsDiscarded && t.ProgressPercentage == 0);
+        var totalTasks = tasks.Count;
+        var completionRate = totalTasks > 0 ? Math.Round((decimal)completedTasks / totalTasks * 100, 1) : 0;
+
+        var response = new WorkspaceProgressReportResponse
+        {
+            Workspace = new ProgressReportWorkspaceInfo
+            {
+                Code = workspace.Code ?? "",
+                Name = workspace.Name,
+                Mode = workspace.Mode.ToString(),
+            },
+            Period = new ProgressReportPeriod
+            {
+                From = from.ToString("yyyy-MM-dd"),
+                To = to.ToString("yyyy-MM-dd"),
+            },
+            GeneratedAt = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(9)).ToString("yyyy-MM-dd HH:mm"),
+            Summary = new ProgressReportSummary
+            {
+                TotalItems = items.Count,
+                ArchivedItems = items.Count(i => i.IsArchived),
+                TotalTasks = totalTasks,
+                TasksByStatus = new ProgressReportTasksByStatus
+                {
+                    Completed = completedTasks,
+                    Discarded = discardedTasks,
+                    InProgress = inProgressTasks,
+                    Open = openTasks,
+                },
+                CompletionRate = completionRate,
+                TotalEstimatedHours = tasks.Sum(t => t.EstimatedHours ?? 0),
+                TotalActualHours = tasks.Sum(t => t.ActualHours ?? 0),
+            },
+            Items = items.Select(i => MapToProgressReportItem(i, tasksByItemId.GetValueOrDefault(i.Id, []))).ToList(),
+        };
+
+        return response;
+    }
+
+    /// <summary>
+    /// WorkspaceItem を ProgressReportItem にマッピング
+    /// </summary>
+    private static ProgressReportItem MapToProgressReportItem(WorkspaceItem item, List<WorkspaceTask> tasks)
+    {
+        var orderedTasks = tasks.OrderBy(t => t.Sequence).ToList();
+        var completedTasks = tasks.Count(t => t.IsCompleted);
+        var discardedTasks = tasks.Count(t => t.IsDiscarded);
+        var inProgressTasks = tasks.Count(t => !t.IsCompleted && !t.IsDiscarded && t.ProgressPercentage > 0);
+        var openTasks = tasks.Count(t => !t.IsCompleted && !t.IsDiscarded && t.ProgressPercentage == 0);
+        var totalTasks = tasks.Count;
+        var completionRate = totalTasks > 0 ? Math.Round((decimal)completedTasks / totalTasks * 100, 1) : 0;
+
+        return new ProgressReportItem
+        {
+            Code = item.ItemNumber.ToString(),
+            Subject = item.Subject ?? "",
+            IsArchived = item.IsArchived,
+            IsDraft = item.IsDraft,
+            Priority = item.Priority?.ToString() ?? "",
+            DueDate = item.DueDate?.ToString("yyyy-MM-dd") ?? "",
+            Owner = item.Owner?.Username ?? "",
+            Assignee = item.Assignee?.Username ?? "",
+            Committer = item.Committer?.Username ?? "",
+            CreatedAt = item.CreatedAt.ToOffset(TimeSpan.FromHours(9)).ToString("yyyy-MM-dd"),
+            UpdatedAt = item.UpdatedAt.ToOffset(TimeSpan.FromHours(9)).ToString("yyyy-MM-dd"),
+            TaskSummary = new ProgressReportItemTaskSummary
+            {
+                Total = totalTasks,
+                Completed = completedTasks,
+                Discarded = discardedTasks,
+                InProgress = inProgressTasks,
+                Open = openTasks,
+                CompletionRate = completionRate,
+                EstimatedHours = orderedTasks.Sum(t => t.EstimatedHours ?? 0),
+                ActualHours = orderedTasks.Sum(t => t.ActualHours ?? 0),
+            },
+            Tasks = orderedTasks.Select(t => MapToProgressReportTask(t)).ToList(),
+        };
+    }
+
+    /// <summary>
+    /// WorkspaceTask を ProgressReportTask にマッピング
+    /// </summary>
+    private static ProgressReportTask MapToProgressReportTask(WorkspaceTask task)
+    {
+        // ステータスを導出
+        string status;
+        if (task.IsCompleted)
+        {
+            status = "Completed";
+        }
+        else if (task.IsDiscarded)
+        {
+            status = "Discarded";
+        }
+        else if (task.ProgressPercentage > 0)
+        {
+            status = "InProgress";
+        }
+        else
+        {
+            status = "Open";
+        }
+
+        return new ProgressReportTask
+        {
+            Sequence = task.Sequence,
+            Content = task.Content,
+            Status = status,
+            IsCompleted = task.IsCompleted,
+            IsDiscarded = task.IsDiscarded,
+            Priority = task.Priority?.ToString() ?? "",
+            TaskType = task.TaskType?.Name ?? "",
+            TaskTypeIcon = task.TaskType?.Icon ?? "",
+            Assignee = task.AssignedUser?.Username ?? "",
+            CreatedBy = task.CreatedByUser?.Username ?? "",
+            CompletedBy = task.CompletedByUser?.Username ?? "",
+            StartDate = task.StartDate?.ToString("yyyy-MM-dd") ?? "",
+            DueDate = task.DueDate.ToString("yyyy-MM-dd"),
+            CompletedAt = task.CompletedAt?.ToOffset(TimeSpan.FromHours(9)).ToString("yyyy-MM-dd") ?? "",
+            DiscardedAt = task.DiscardedAt?.ToOffset(TimeSpan.FromHours(9)).ToString("yyyy-MM-dd") ?? "",
+            DiscardReason = task.DiscardReason ?? "",
+            EstimatedHours = task.EstimatedHours ?? 0,
+            ActualHours = task.ActualHours ?? 0,
+            ProgressPercentage = task.ProgressPercentage,
+            CreatedAt = task.CreatedAt.ToOffset(TimeSpan.FromHours(9)).ToString("yyyy-MM-dd"),
+            UpdatedAt = task.UpdatedAt.ToOffset(TimeSpan.FromHours(9)).ToString("yyyy-MM-dd"),
         };
     }
 }

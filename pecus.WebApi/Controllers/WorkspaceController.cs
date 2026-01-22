@@ -10,7 +10,10 @@ using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Models.Responses.Dashboard;
+using Pecus.Models.Responses.Workspace;
 using Pecus.Services;
+using System.Text;
+using System.Text.Json;
 
 namespace Pecus.Controllers;
 
@@ -406,7 +409,7 @@ public class WorkspaceController : BaseSecureController
         int id
     )
     {
-        var workspace = await _workspaceService.GetWorkspaceByIdAsync(id);
+        var workspace = await _workspaceService.GetWorkspaceByIdAsync(id, CurrentOrganizationId);
         if (workspace == null || !workspace.IsActive)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -955,5 +958,44 @@ public class WorkspaceController : BaseSecureController
         var trend = await _workspaceService.GetWorkspaceTaskTrendAsync(id, clampedWeeks);
 
         return TypedResults.Ok(trend);
+    }
+
+    /// <summary>
+    /// ワークスペースの進捗レポートを取得（Viewer以上の権限が必要）
+    /// </summary>
+    /// <param name="id">ワークスペースID</param>
+    /// <param name="from">開始日（YYYY-MM-DD形式）</param>
+    /// <param name="to">終了日（YYYY-MM-DD形式）</param>
+    /// <param name="includeArchived">アーカイブ済みアイテムを含むか（デフォルト: false）</param>
+    /// <returns>進捗レポート（JSON）</returns>
+    [HttpGet("{id:int}/progress-report")]
+    //FileContentResultにしないのは、OpenAPIクライアントがContent-Typeを見て勝手にパースしてしまうため
+    //[ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+    public async Task<FileContentHttpResult> GetProgressReport(
+        int id,
+        [FromQuery] DateOnly from,
+        [FromQuery] DateOnly to,
+        [FromQuery] bool includeArchived = false
+    )
+    {
+        // 進捗レポートを取得
+        var report = await _workspaceService.GetProgressReportAsync(id, CurrentOrganizationId, from, to, includeArchived);
+
+        var json = JsonSerializer.Serialize(report, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        });
+
+        var bytes = Encoding.UTF8.GetBytes(json);
+        return TypedResults.File(
+            bytes,
+            contentType: "application/octet-stream",
+            //octet-streamの場合は利用されないっぽいのでクライアントでも指定してる
+            fileDownloadName: $"{report.Workspace.Code}_report_{from:yyyyMMdd}_{to:yyyyMMdd}.json"
+        );
     }
 }

@@ -474,6 +474,7 @@ export async function exportWorkspaceItemHtml(workspaceId: number, itemId: numbe
   try {
     const api = createPecusApiClients();
     const response = await api.workspaceItem.getApiWorkspacesItemsExportHtml(workspaceId, itemId);
+    console.log('exportWorkspaceItemHtml response:', response);
     return { success: true, data: response as string };
   } catch (error) {
     console.error('Failed to export workspace item as HTML:', error);
@@ -489,14 +490,18 @@ export async function exportWorkspaceItemHtml(workspaceId: number, itemId: numbe
  * @param workspaceId ワークスペースID
  * @param itemId アイテムID
  */
-export async function exportWorkspaceItemJson(workspaceId: number, itemId: number): Promise<ApiResponse<unknown>> {
+export async function exportWorkspaceItemJson(workspaceId: number, itemId: number): Promise<ApiResponse<string>> {
   try {
     const api = createPecusApiClients();
     const response = await api.workspaceItem.getApiWorkspacesItemsExportJson(workspaceId, itemId);
-    return { success: true, data: response };
+
+    // OpenAPIクライアントがJSONをオブジェクトとしてパースするため、文字列に変換
+    const jsonStr = typeof response === 'string' ? response : JSON.stringify(response, null, 2);
+
+    return { success: true, data: jsonStr };
   } catch (error) {
     console.error('Failed to export workspace item as JSON:', error);
-    return handleApiErrorForAction<unknown>(error, {
+    return handleApiErrorForAction<string>(error, {
       defaultMessage: 'JSONエクスポートに失敗しました。',
       handled: { not_found: true },
     });

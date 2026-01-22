@@ -6201,6 +6201,83 @@
         ]
       }
     },
+    "/api/workspaces/{id}/progress-report": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ワークスペースの進捗レポートを取得（Viewer以上の権限が必要）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "開始日（YYYY-MM-DD形式）",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "終了日（YYYY-MM-DD形式）",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "description": "アーカイブ済みアイテムを含むか（デフォルト: false）",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/workspaces/{workspaceId}/items/{itemId}/attachments": {
       "post": {
         "tags": [

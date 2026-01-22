@@ -443,3 +443,32 @@ export async function joinWorkspace(workspaceId: number): Promise<ApiResponse<Wo
     });
   }
 }
+
+/**
+ * Server Action: ワークスペースの進捗レポートをダウンロード
+ * @param workspaceId ワークスペースID
+ * @param from 開始日（YYYY-MM-DD形式）
+ * @param to 終了日（YYYY-MM-DD形式）
+ * @param includeArchived アーカイブ済みアイテムを含むか
+ * @returns JSONデータとファイル名
+ */
+export async function downloadWorkspaceProgressReport(
+  workspaceId: number,
+  from: string,
+  to: string,
+  includeArchived: boolean = false,
+): Promise<ApiResponse<string>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspace.getApiWorkspacesProgressReport(workspaceId, from, to, includeArchived);
+    // OpenAPIクライアントがJSONをオブジェクトとしてパースするため、文字列に変換
+    const jsonStr = typeof response === 'string' ? response : JSON.stringify(response, null, 2);
+    return { success: true, data: jsonStr };
+  } catch (error) {
+    console.error('Failed to download progress report:', error);
+    return handleApiErrorForAction<string>(error, {
+      defaultMessage: 'レポートの出力に失敗しました',
+      handled: { not_found: true },
+    });
+  }
+}

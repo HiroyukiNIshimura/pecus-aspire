@@ -42,6 +42,8 @@ public class WorkspaceItemExportController : BaseSecureController
     /// <param name="itemId">アイテムID</param>
     /// <returns>Lexical JSON ファイル</returns>
     [HttpGet("json")]
+    //FileContentResultにしないのは、OpenAPIクライアントがContent-Typeを見て勝手にパースしてしまうため
+    //[ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -57,6 +59,7 @@ public class WorkspaceItemExportController : BaseSecureController
         return TypedResults.File(
             bytes,
             contentType: "application/octet-stream",
+            //octet-streamの場合は利用されないっぽいのでクライアントでも指定してる
             fileDownloadName: fileName
         );
     }
@@ -68,6 +71,8 @@ public class WorkspaceItemExportController : BaseSecureController
     /// <param name="itemId">アイテムID</param>
     /// <returns>Markdown ファイル</returns>
     [HttpGet("markdown")]
+    //FileContentResultにしないのは、OpenAPIクライアントがContent-Typeを見て勝手にパースしてしまうため
+    //[ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -107,6 +112,7 @@ public class WorkspaceItemExportController : BaseSecureController
         return TypedResults.File(
             bytes,
             contentType: "application/octet-stream",
+            //octet-streamの場合は利用されないっぽいのでクライアントでも指定してる
             fileDownloadName: fileName
         );
     }
@@ -118,6 +124,8 @@ public class WorkspaceItemExportController : BaseSecureController
     /// <param name="itemId">アイテムID</param>
     /// <returns>HTML ファイル</returns>
     [HttpGet("html")]
+    //FileContentResultにしないのは、OpenAPIクライアントがContent-Typeを見て勝手にパースしてしまうため
+    //[ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -160,6 +168,7 @@ public class WorkspaceItemExportController : BaseSecureController
         return TypedResults.File(
             bytes,
             contentType: "application/octet-stream",
+            //octet-streamの場合は利用されないっぽいのでクライアントでも指定してる
             fileDownloadName: fileName
         );
     }

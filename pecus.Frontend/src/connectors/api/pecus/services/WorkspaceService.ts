@@ -450,4 +450,36 @@ export class WorkspaceService {
             },
         });
     }
+    /**
+     * ワークスペースの進捗レポートを取得（Viewer以上の権限が必要）
+     * @param id ワークスペースID
+     * @param from 開始日（YYYY-MM-DD形式）
+     * @param to 終了日（YYYY-MM-DD形式）
+     * @param includeArchived アーカイブ済みアイテムを含むか（デフォルト: false）
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesProgressReport(
+        id: number,
+        from?: string,
+        to?: string,
+        includeArchived: boolean = false,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/{id}/progress-report',
+            path: {
+                'id': id,
+            },
+            query: {
+                'from': from,
+                'to': to,
+                'includeArchived': includeArchived,
+            },
+            errors: {
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
 }
