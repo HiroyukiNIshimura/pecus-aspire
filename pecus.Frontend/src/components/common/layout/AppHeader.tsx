@@ -39,16 +39,16 @@ export default function AppHeader({
 }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-base-100 shadow-sm border-b border-base-300">
-      <nav className="navbar">
-        <div className="navbar-start flex items-center gap-2">
+      <nav className="navbar gap-2">
+        <div className="navbar-start w-auto flex items-center gap-2">
           {/* ハンバーガーメニュー（モバイルのみ） */}
           {onToggleSidebar && <MobileMenuButton onToggleSidebar={onToggleSidebar} />}
           {/* ロゴ（デスクトップのみ） */}
           <HeaderLogo />
         </div>
 
-        <div className="navbar-center">
-          <ul className="menu menu-horizontal px-1">
+        <div className="navbar-center flex-1 overflow-x-auto justify-start md:justify-center md:overflow-visible">
+          <ul className="menu menu-horizontal px-1 w-max">
             <HeaderNavItem href="/">
               <span className="icon-[mdi--view-dashboard] size-6" aria-hidden="true" />
               <span className="hidden md:inline">ダッシュボード</span>
@@ -72,7 +72,7 @@ export default function AppHeader({
           </ul>
         </div>
 
-        <div className="navbar-end flex items-center gap-1">
+        <div className="navbar-end w-auto flex items-center gap-1">
           <ThemeToggle />
           <AgendaIconButton />
           {showChat && <ChatIconButton />}
