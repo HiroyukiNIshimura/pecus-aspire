@@ -329,8 +329,8 @@ public class CommonAtoms
     /// <returns>変換結果 (FileName: ドキュメント名, Body: Lexical JSON, RawBody: プレーンテキスト)、失敗時は null</returns>
     public async Task<(string FileName, string Body, string RawBody)?> LoadProductVisionAsLexicalJsonAsync()
     {
-        const string fileName = "プロダクトビジョン";
-        var markdown = SeedConstants.ProductVision;
+        const string fileName = "タスク管理モジュール (v2.0)";
+        var markdown = SeedConstants.DemoItemBody;
 
         if (string.IsNullOrWhiteSpace(markdown))
         {
