@@ -95,15 +95,15 @@ export function AgendaDetail({
   return (
     <div className="card bg-base-100 shadow-sm">
       <div className="card-body">
-        {/* タイトル & 中止バッジ */}
-        <div className="flex items-start justify-between gap-4">
-          <h1 className={`card-title text-xl ${isCancelled ? 'text-base-content/50 line-through' : ''}`}>
-            {agenda.title}
-          </h1>
+        {/* タイトル & バッジ */}
+        <div className="flex items-start gap-3">
           {isCancelled && <span className="badge badge-error shrink-0">中止</span>}
           {isRecurring && (
             <span className="badge badge-info shrink-0">{recurrenceLabels[recurrenceType] ?? '繰り返し'}</span>
           )}
+          <h1 className={`card-title text-xl ${isCancelled ? 'text-base-content/50 line-through' : ''}`}>
+            {agenda.title}
+          </h1>
         </div>
 
         {/* 中止理由 */}

@@ -163,12 +163,12 @@ export default function AgendaFormClient({
   return (
     <div className="flex flex-1 flex-col p-4 md:p-6">
       {/* ヘッダー */}
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-bold">{pageTitle}</h1>
         <Link href={backUrl} className="btn btn-secondary btn-sm">
           <span className="icon-[tabler--arrow-left] size-4" />
           戻る
         </Link>
-        <h1 className="text-xl font-bold">{pageTitle}</h1>
       </div>
 
       {/* 編集範囲の説明バナー */}

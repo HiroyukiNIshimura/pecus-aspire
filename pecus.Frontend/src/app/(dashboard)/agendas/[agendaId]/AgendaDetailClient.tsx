@@ -198,15 +198,10 @@ export default function AgendaDetailClient({
   return (
     <div className="flex flex-1 flex-col p-4 md:p-6">
       {/* ヘッダー */}
-      <div className="mb-4 flex items-center justify-between">
-        <Link href="/agendas" className="btn btn-secondary btn-sm">
-          <span className="icon-[tabler--arrow-left] size-4" />
-          戻る
-        </Link>
-
+      <div className="mb-4 flex items-center justify-end gap-2">
         {/* アクションボタン（中止されていない場合のみ） */}
         {!currentAgenda.isCancelled && (
-          <div className="flex items-center gap-2">
+          <>
             {/* 繰り返しイベントの場合、特定回の中止ボタンを表示（すでに中止済みの回は除く） */}
             {isRecurring && !isCurrentOccurrenceCancelled && (
               <button
@@ -226,8 +221,12 @@ export default function AgendaDetailClient({
               <span className="icon-[tabler--pencil] size-4" />
               編集
             </button>
-          </div>
+          </>
         )}
+        <Link href="/agendas" className="btn btn-secondary btn-sm">
+          <span className="icon-[tabler--arrow-left] size-4" />
+          戻る
+        </Link>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
