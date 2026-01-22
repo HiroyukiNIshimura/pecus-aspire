@@ -634,13 +634,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
       setIsExporting(format);
       try {
-        const filename = item.code || `item-${itemId}`;
-
         switch (format) {
           case 'markdown': {
             const result = await exportWorkspaceItemMarkdown(workspaceId, itemId);
             if (result.success) {
-              downloadFile(result.data, `${filename}.md`, 'text/markdown;charset=utf-8');
+              downloadFile(result.data.content, result.data.filename, 'text/markdown;charset=utf-8');
               notify.success('Markdownファイルをダウンロードしました。');
             } else {
               notify.error(result.message || 'Markdownエクスポートに失敗しました。');
@@ -650,7 +648,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           case 'html': {
             const result = await exportWorkspaceItemHtml(workspaceId, itemId);
             if (result.success) {
-              downloadFile(result.data, `${filename}.html`, 'text/html;charset=utf-8');
+              downloadFile(result.data.content, result.data.filename, 'text/html;charset=utf-8');
               notify.success('HTMLファイルをダウンロードしました。');
             } else {
               notify.error(result.message || 'HTMLエクスポートに失敗しました。');
@@ -660,8 +658,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           case 'json': {
             const result = await exportWorkspaceItemJson(workspaceId, itemId);
             if (result.success) {
-              const jsonContent = typeof result.data === 'string' ? result.data : JSON.stringify(result.data, null, 2);
-              downloadFile(jsonContent, `${filename}.json`, 'application/json;charset=utf-8');
+              downloadFile(result.data.content, result.data.filename, 'application/json;charset=utf-8');
               notify.success('JSONファイルをダウンロードしました。');
             } else {
               notify.error(result.message || 'JSONエクスポートに失敗しました。');

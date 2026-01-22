@@ -82,11 +82,8 @@ export default function ProgressReportDownloadModal({
       const result = await downloadWorkspaceProgressReport(workspaceId, fromDate, toDate, includeArchived);
 
       if (result.success) {
-        downloadFile(
-          result.data,
-          `${workspaceCode}_report_${fromDate.replace(/-/g, '')}_${toDate.replace(/-/g, '')}.json`,
-          'application/json;charset=utf-8',
-        );
+        // サーバーから返されたファイル名を使用
+        downloadFile(result.data.content, result.data.filename, 'application/json;charset=utf-8');
         notify.success('レポートを出力しました。');
         onClose();
       } else {

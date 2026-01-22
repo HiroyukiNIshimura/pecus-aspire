@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError, downloadFile } from '@/connectors/api/PecusApiClient';
 import type {
   AddWorkspaceItemRelationResponse,
   CreateWorkspaceItemRequest,
@@ -447,18 +447,35 @@ export async function removeWorkspaceItemRelation(
 export type ExportFormat = 'markdown' | 'html' | 'json';
 
 /**
+ * エクスポート結果
+ */
+export type ExportDownloadResult = {
+  content: string;
+  filename: string;
+};
+
+/**
  * Server Action: ワークスペースアイテムをMarkdown形式でエクスポート
  * @param workspaceId ワークスペースID
  * @param itemId アイテムID
  */
-export async function exportWorkspaceItemMarkdown(workspaceId: number, itemId: number): Promise<ApiResponse<string>> {
+export async function exportWorkspaceItemMarkdown(
+  workspaceId: number,
+  itemId: number,
+): Promise<ApiResponse<ExportDownloadResult>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItemsExportMarkdown(workspaceId, itemId);
-    return { success: true, data: response as string };
+    const result = await downloadFile(`/api/workspaces/${workspaceId}/items/${itemId}/export/markdown`);
+
+    return {
+      success: true,
+      data: {
+        content: result.data.toString('utf-8'),
+        filename: result.filename ?? `item-${itemId}.md`,
+      },
+    };
   } catch (error) {
     console.error('Failed to export workspace item as markdown:', error);
-    return handleApiErrorForAction<string>(error, {
+    return handleApiErrorForAction<ExportDownloadResult>(error, {
       defaultMessage: 'Markdownエクスポートに失敗しました。',
       handled: { not_found: true },
     });
@@ -470,15 +487,23 @@ export async function exportWorkspaceItemMarkdown(workspaceId: number, itemId: n
  * @param workspaceId ワークスペースID
  * @param itemId アイテムID
  */
-export async function exportWorkspaceItemHtml(workspaceId: number, itemId: number): Promise<ApiResponse<string>> {
+export async function exportWorkspaceItemHtml(
+  workspaceId: number,
+  itemId: number,
+): Promise<ApiResponse<ExportDownloadResult>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItemsExportHtml(workspaceId, itemId);
-    console.log('exportWorkspaceItemHtml response:', response);
-    return { success: true, data: response as string };
+    const result = await downloadFile(`/api/workspaces/${workspaceId}/items/${itemId}/export/html`);
+
+    return {
+      success: true,
+      data: {
+        content: result.data.toString('utf-8'),
+        filename: result.filename ?? `item-${itemId}.html`,
+      },
+    };
   } catch (error) {
     console.error('Failed to export workspace item as HTML:', error);
-    return handleApiErrorForAction<string>(error, {
+    return handleApiErrorForAction<ExportDownloadResult>(error, {
       defaultMessage: 'HTMLエクスポートに失敗しました。',
       handled: { not_found: true },
     });
@@ -490,18 +515,23 @@ export async function exportWorkspaceItemHtml(workspaceId: number, itemId: numbe
  * @param workspaceId ワークスペースID
  * @param itemId アイテムID
  */
-export async function exportWorkspaceItemJson(workspaceId: number, itemId: number): Promise<ApiResponse<string>> {
+export async function exportWorkspaceItemJson(
+  workspaceId: number,
+  itemId: number,
+): Promise<ApiResponse<ExportDownloadResult>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItemsExportJson(workspaceId, itemId);
+    const result = await downloadFile(`/api/workspaces/${workspaceId}/items/${itemId}/export/json`);
 
-    // OpenAPIクライアントがJSONをオブジェクトとしてパースするため、文字列に変換
-    const jsonStr = typeof response === 'string' ? response : JSON.stringify(response, null, 2);
-
-    return { success: true, data: jsonStr };
+    return {
+      success: true,
+      data: {
+        content: result.data.toString('utf-8'),
+        filename: result.filename ?? `item-${itemId}.json`,
+      },
+    };
   } catch (error) {
     console.error('Failed to export workspace item as JSON:', error);
-    return handleApiErrorForAction<string>(error, {
+    return handleApiErrorForAction<ExportDownloadResult>(error, {
       defaultMessage: 'JSONエクスポートに失敗しました。',
       handled: { not_found: true },
     });
