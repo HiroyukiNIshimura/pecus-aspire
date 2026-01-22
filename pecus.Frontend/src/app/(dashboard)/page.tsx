@@ -56,13 +56,19 @@ export default async function Dashboard() {
   if (!isInternal) {
     try {
       const appSettings = await api.profile.getApiProfileAppSettings();
+      // バックオフィスユーザーの場合、デフォルトランディングページは /backoffice
+      // ただし、明示的にダッシュボードにアクセスしている場合（リファラーなしの直接アクセス除く）は許可
+      // 注: バックオフィスユーザーも一般ダッシュボードにアクセス可能とする
       if (appSettings.currentUser.isBackOffice) {
-        redirect(getLandingPageUrl('BackOffice'));
-      }
-
-      const landingPage = appSettings.user?.landingPage;
-      if (landingPage && landingPage !== 'Dashboard') {
-        redirect(getLandingPageUrl(landingPage));
+        // バックオフィスユーザーのデフォルトランディングは /backoffice だが、
+        // ダッシュボードへの明示的なアクセスは許可（ヘッダーナビからの遷移等）
+        // ここでは初回ログイン直後のみリダイレクト（LoginFormClient.tsx で処理済み）
+        // ダッシュボードページを直接開いた場合はそのまま表示を許可
+      } else {
+        const landingPage = appSettings.user?.landingPage;
+        if (landingPage && landingPage !== 'Dashboard') {
+          redirect(getLandingPageUrl(landingPage));
+        }
       }
     } catch (error) {
       // Next.js の redirect() は NEXT_REDIRECT エラーをスローするため、再スローが必要
