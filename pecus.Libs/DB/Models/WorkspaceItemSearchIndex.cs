@@ -25,6 +25,8 @@ public class WorkspaceItemSearchIndex
     /// </summary>
     public DateTime UpdatedAt { get; set; }
 
-    // Navigation property
+    /// <summary>
+    /// ナビゲーションプロパティ：ワークスペースアイテム
+    /// </summary>
     public WorkspaceItem? WorkspaceItem { get; set; }
 }
