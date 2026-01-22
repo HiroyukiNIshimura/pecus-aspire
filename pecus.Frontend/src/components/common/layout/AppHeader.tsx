@@ -47,26 +47,26 @@ export default function AppHeader({
           <HeaderLogo />
         </div>
 
-        <div className="navbar-center flex-1 overflow-x-auto justify-start md:justify-center md:overflow-visible">
-          <ul className="menu menu-horizontal px-1 w-max">
+        <div className="navbar-center flex flex-1 min-w-0 overflow-x-auto justify-start lg:justify-center lg:overflow-visible">
+          <ul className="menu menu-horizontal flex-nowrap px-1 w-max">
             <HeaderNavItem href="/">
               <span className="icon-[mdi--view-dashboard] size-6" aria-hidden="true" />
-              <span className="hidden md:inline">ダッシュボード</span>
+              <span className="hidden lg:inline">ダッシュボード</span>
             </HeaderNavItem>
             <HeaderNavItem href="/workspaces">
               <span className="icon-[mdi--view-grid-outline] size-6" aria-hidden="true" />
-              <span className="hidden md:inline">ワークスペース</span>
+              <span className="hidden lg:inline">ワークスペース</span>
             </HeaderNavItem>
             {!loading && showAdminLink && userInfo?.isAdmin && (
               <HeaderNavItem href="/admin">
                 <span className="icon-[mdi--cog-outline] size-6" aria-hidden="true" />
-                <span className="hidden md:inline">管理者</span>
+                <span className="hidden lg:inline">管理者</span>
               </HeaderNavItem>
             )}
             {!loading && showBackOfficeLink && userInfo?.isBackOffice && (
               <HeaderNavItem href="/backoffice">
                 <span className="icon-[mdi--shield-crown-outline] size-6" aria-hidden="true" />
-                <span className="hidden md:inline">BackOffice</span>
+                <span className="hidden lg:inline">BackOffice</span>
               </HeaderNavItem>
             )}
           </ul>
