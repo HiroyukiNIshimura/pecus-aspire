@@ -23,7 +23,10 @@ https://coati.bright-l.0am.jp
 
 ログイン: user1@demo.coati.none、user2@demo.coati.none、user3@demo.coati.none
 パスワード: P@ssw0rd
-※管理者権限のユーザーは利用できません。
+
+- 管理者権限のユーザーは利用できません。
+- user2@demo.coati.noneでログインして色々触ってみるのが一番面白いかも？
+- 複数のブラウザを利用して複数のユーザーでログインすればチャットも試せます。
 
 ![デモサイト](images/demo-site.webp)
 
