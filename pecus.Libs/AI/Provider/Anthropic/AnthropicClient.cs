@@ -4,6 +4,7 @@ using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Models;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Libs.AI.Provider.Anthropic;
 
@@ -235,7 +236,8 @@ public class AnthropicClient : IAnthropicClient, IAiClient
         {
             var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
             });
 
             if (result == null)

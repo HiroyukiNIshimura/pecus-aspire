@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Pecus.Libs.AI.Models;
 
 /// <summary>
@@ -116,6 +118,7 @@ public class MessageSentimentResult
 /// <summary>
 /// メッセージが誰について言及しているか
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<TargetSubject>))]
 public enum TargetSubject
 {
     /// <summary>自分自身</summary>
