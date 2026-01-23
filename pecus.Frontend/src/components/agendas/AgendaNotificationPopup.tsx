@@ -42,6 +42,7 @@ const defaultNotificationConfig = { icon: 'icon-[mdi--bell]', label: '通知', c
 function getNotificationDescription(
   type: AgendaNotificationType | undefined,
   createdByUser: { username?: string | null } | null | undefined,
+  message?: string | null,
 ): string | null {
   if (!type) return null;
 
@@ -59,7 +60,7 @@ function getNotificationDescription(
     case 'OccurrenceCancelled':
       return `${username}さんがこの回を中止しました`;
     case 'Reminder':
-      return 'まもなく開始します';
+      return message ?? 'リマインダー';
     case 'AddedToEvent':
       return `${username}さんがあなたを追加しました`;
     case 'RemovedFromEvent':
@@ -304,7 +305,11 @@ export default function AgendaNotificationPopup({
             <ul className="divide-y divide-base-200">
               {notifications.map((notification) => {
                 const typeConfig = getTypeConfig(notification.type);
-                const description = getNotificationDescription(notification.type, notification.createdBy);
+                const description = getNotificationDescription(
+                  notification.type,
+                  notification.createdBy,
+                  notification.message,
+                );
                 return (
                   <li key={notification.id}>
                     <Link
