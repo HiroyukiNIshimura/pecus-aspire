@@ -716,6 +716,7 @@ public class DashboardStatisticsService
                         c.User.Email,
                         c.User.UserAvatarPath
                     ),
+                    IsActive = c.User.IsActive,
                 },
                 TaskId = c.WorkspaceTaskId,
                 TaskSequence = c.WorkspaceTask!.Sequence,
