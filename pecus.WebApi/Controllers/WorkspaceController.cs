@@ -13,6 +13,7 @@ using Pecus.Models.Responses.Dashboard;
 using Pecus.Models.Responses.Workspace;
 using Pecus.Services;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace Pecus.Controllers;
@@ -988,6 +989,7 @@ public class WorkspaceController : BaseSecureController
         var json = JsonSerializer.Serialize(report, new JsonSerializerOptions
         {
             WriteIndented = true,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         });
 
         var bytes = Encoding.UTF8.GetBytes(json);
