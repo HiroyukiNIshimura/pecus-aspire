@@ -47,6 +47,17 @@ public class MessageSentimentResult
     public string? InformationTopic { get; set; }
 
     /// <summary>
+    /// 対象者の視点スコア（0-100）
+    /// 0に近いほど「自分のこと」、100に近いほど「他人/チームのこと」
+    /// </summary>
+    public int OthersFocusScore { get; set; }
+
+    /// <summary>
+    /// 対象者の種類
+    /// </summary>
+    public TargetSubject TargetSubject { get; set; } = TargetSubject.Self;
+
+    /// <summary>
     /// 検出された主な感情カテゴリ
     /// </summary>
     public string PrimaryEmotion { get; set; } = string.Empty;
@@ -92,7 +103,30 @@ public class MessageSentimentResult
     public bool IsSeekingInformation => InformationSeekingScore >= 50;
 
     /// <summary>
+    /// 他者/チームのことを気にしているかどうか（OthersFocusScore >= 50）
+    /// </summary>
+    public bool IsFocusingOnOthers => OthersFocusScore >= 50;
+
+    /// <summary>
     /// 注意が必要かどうか（困っている or ネガティブ or 緊急）
     /// </summary>
     public bool NeedsAttention => IsTroubled || IsNegative || IsUrgent;
+}
+
+/// <summary>
+/// メッセージが誰について言及しているか
+/// </summary>
+public enum TargetSubject
+{
+    /// <summary>自分自身</summary>
+    Self,
+
+    /// <summary>特定の他者</summary>
+    SpecificOther,
+
+    /// <summary>チーム/組織全体</summary>
+    Team,
+
+    /// <summary>不明/一般的</summary>
+    General
 }

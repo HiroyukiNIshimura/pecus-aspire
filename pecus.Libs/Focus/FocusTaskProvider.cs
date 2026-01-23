@@ -42,6 +42,19 @@ public interface IFocusTaskProvider
         int waitingTasksLimit = 5,
         FocusScorePriority focusScorePriority = FocusScorePriority.Deadline,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// チームメンバーの手伝えそうなタスクを取得
+    /// 期限が近い・ブロック中など、サポートが必要そうなタスクを返す
+    /// </summary>
+    /// <param name="currentUserId">現在のユーザーID（このユーザーのタスクは除外）</param>
+    /// <param name="limit">取得数上限（デフォルト: 5）</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>手伝えそうなタスク一覧</returns>
+    Task<FocusTaskResult> GetTeamTasksNeedingHelpAsync(
+        int currentUserId,
+        int limit = 5,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -318,6 +331,142 @@ public class FocusTaskProvider : IFocusTaskProvider
             FocusTasks = focusTasks,
             WaitingTasks = waitingTasks,
             TotalTaskCount = tasks.Count
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<FocusTaskResult> GetTeamTasksNeedingHelpAsync(
+        int currentUserId,
+        int limit = 5,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("チームの手伝えそうなタスク取得開始: CurrentUserId={UserId}", currentUserId);
+
+        var now = DateTimeOffset.UtcNow;
+        var nearDeadline = now.AddDays(3);
+
+        // 現在のユーザーが所属するワークスペースを取得
+        var userWorkspaceIds = await _context.WorkspaceUsers
+            .Where(m => m.UserId == currentUserId)
+            .Select(m => m.WorkspaceId)
+            .ToListAsync(cancellationToken);
+
+        if (userWorkspaceIds.Count == 0)
+        {
+            _logger.LogDebug("ユーザーが所属するワークスペースがありません");
+            return new FocusTaskResult
+            {
+                FocusTasks = [],
+                WaitingTasks = [],
+                TotalTaskCount = 0
+            };
+        }
+
+        // 他のメンバーのタスクで、期限が近い or ブロック中のものを取得
+        // AssignedUserId != null チェックは nullable int との比較のため警告が出るが、
+        // EF Core のクエリ変換では正しく動作するため抑制
+#pragma warning disable CS0472
+        var tasks = await _context.WorkspaceTasks
+            .AsSplitQuery()
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(i => i.Workspace)
+            .Include(t => t.TaskType)
+            .Include(t => t.AssignedUser)
+            .Include(t => t.PredecessorTask!)
+                .ThenInclude(p => p.WorkspaceItem)
+            .Where(t => t.AssignedUserId != currentUserId
+                && t.AssignedUserId != null
+                && !t.IsCompleted
+                && !t.IsDiscarded
+                && t.WorkspaceItem.IsActive
+                && !t.WorkspaceItem.IsArchived
+                && t.WorkspaceItem.Workspace != null
+                && t.WorkspaceItem.Workspace.IsActive
+                && userWorkspaceIds.Contains(t.WorkspaceId)
+                && (t.DueDate <= nearDeadline || (t.PredecessorTask != null && !t.PredecessorTask.IsCompleted)))
+            .OrderBy(t => t.DueDate)
+            .Take(limit * 2) // ブロック中除外分を考慮して多めに取得
+            .ToListAsync(cancellationToken);
+#pragma warning restore CS0472
+
+        _logger.LogDebug("対象タスク数: {Count}", tasks.Count);
+
+        if (tasks.Count == 0)
+        {
+            return new FocusTaskResult
+            {
+                FocusTasks = [],
+                WaitingTasks = [],
+                TotalTaskCount = 0
+            };
+        }
+
+        // タスクを変換
+        var focusTasks = tasks
+            .Where(t => t.PredecessorTask == null || t.PredecessorTask.IsCompleted)
+            .Select(task => new FocusTaskInfo
+            {
+                Id = task.Id,
+                Sequence = task.Sequence,
+                WorkspaceItemId = task.WorkspaceItemId,
+                WorkspaceId = task.WorkspaceId,
+                WorkspaceCode = task.WorkspaceItem.Workspace?.Code,
+                WorkspaceName = task.WorkspaceItem.Workspace?.Name,
+                ItemCode = task.WorkspaceItem.Code,
+                Content = task.Content,
+                ItemSubject = task.WorkspaceItem.Subject,
+                TaskTypeName = task.TaskType?.Name,
+                Priority = task.Priority,
+                DueDate = task.DueDate,
+                EstimatedHours = task.EstimatedHours,
+                ProgressPercentage = task.ProgressPercentage,
+                TotalScore = 0, // チームタスクはスコア計算不要
+                SuccessorCount = 0,
+                CanStart = true,
+                AssignedUserName = task.AssignedUser?.Username
+            })
+            .Take(limit)
+            .ToList();
+
+        var waitingTasks = tasks
+            .Where(t => t.PredecessorTask != null && !t.PredecessorTask.IsCompleted)
+            .Select(task => new FocusTaskInfo
+            {
+                Id = task.Id,
+                Sequence = task.Sequence,
+                WorkspaceItemId = task.WorkspaceItemId,
+                WorkspaceId = task.WorkspaceId,
+                WorkspaceCode = task.WorkspaceItem.Workspace?.Code,
+                WorkspaceName = task.WorkspaceItem.Workspace?.Name,
+                ItemCode = task.WorkspaceItem.Code,
+                Content = task.Content,
+                ItemSubject = task.WorkspaceItem.Subject,
+                TaskTypeName = task.TaskType?.Name,
+                Priority = task.Priority,
+                DueDate = task.DueDate,
+                EstimatedHours = task.EstimatedHours,
+                ProgressPercentage = task.ProgressPercentage,
+                TotalScore = 0,
+                SuccessorCount = 0,
+                CanStart = false,
+                PredecessorItemCode = task.PredecessorTask?.WorkspaceItem.Code,
+                PredecessorContent = task.PredecessorTask?.Content,
+                AssignedUserName = task.AssignedUser?.Username
+            })
+            .Take(limit)
+            .ToList();
+
+        _logger.LogDebug(
+            "チームタスク取得完了: FocusTasks={FocusCount}, WaitingTasks={WaitingCount}",
+            focusTasks.Count,
+            waitingTasks.Count
+        );
+
+        return new FocusTaskResult
+        {
+            FocusTasks = focusTasks,
+            WaitingTasks = waitingTasks,
+            TotalTaskCount = focusTasks.Count + waitingTasks.Count
         };
     }
 }

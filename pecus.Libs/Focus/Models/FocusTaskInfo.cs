@@ -102,6 +102,11 @@ public class FocusTaskInfo
     /// 先行タスクの内容（存在する場合）
     /// </summary>
     public string? PredecessorContent { get; set; }
+
+    /// <summary>
+    /// 担当者名（チームタスク取得時に使用）
+    /// </summary>
+    public string? AssignedUserName { get; set; }
 }
 
 /// <summary>

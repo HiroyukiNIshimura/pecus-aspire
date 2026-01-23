@@ -39,6 +39,15 @@ public class MessageAnalyzer : IMessageAnalyzer
         - InformationTopic: 情報を求めている対象（○○の部分）を抽出。複数ある場合はカンマ区切り。ない場合はnull。
           - 例: 「マイクロサービスについて知りたい」→ "マイクロサービス"
           - 例: 「APIとRESTの違いがわからない」→ "API, REST, その違い"
+        - OthersFocusScore: 他者への関心度（0=自分のことを気にしている、100=他人/チームのことを気にしている）
+          - 自分のタスク・状況について → 0〜30
+          - 曖昧な場合（誰のタスクか不明） → 30〜50
+          - 他人やチームのことを気にしている → 60〜100
+        - TargetSubject: 誰についての話か（"Self", "SpecificOther", "Team", "General"）
+          - Self: 自分自身（「私の〜」「今日は何から始める？」「やることある？」）
+          - SpecificOther: 特定の他者（「〇〇さんの進捗は？」「彼女の状況は？」）
+          - Team: チーム/組織（「手伝えそうなタスクは？」「誰か困ってない？」「チームの状況は？」）
+          - General: 不明/一般的
         - PrimaryEmotion: 主な感情カテゴリ（例: "困惑", "不安", "怒り", "悲しみ", "喜び", "感謝", "中立" など）
         - Confidence: 分析の確信度（0=自信なし、100=非常に確信）
         - Summary: 分析結果の簡潔な説明（30文字以内の日本語）
@@ -53,6 +62,13 @@ public class MessageAnalyzer : IMessageAnalyzer
         - 質問形式で知識や情報を尋ねている場合はInformationSeekingScoreを高くする
         - 絵文字や感嘆符の使い方も感情の手がかりになる
         - 複数の感情が混在する場合もある（例: 困っているが感謝もしている）
+
+        OthersFocusScore/TargetSubject の判定ヒント:
+        - 「今日は何から始める？」「私のタスクは？」→ OthersFocusScore: 0〜20, TargetSubject: Self
+        - 「期限が近いタスクは？」→ 文脈不明のため OthersFocusScore: 30〜50, TargetSubject: General（自分のことが多い）
+        - 「手伝えそうなタスクは？」「サポートできることある？」→ OthersFocusScore: 80〜100, TargetSubject: Team
+        - 「〇〇さんの進捗は？」「彼の状況どう？」→ OthersFocusScore: 70〜90, TargetSubject: SpecificOther
+        - 「チームで困ってる人いる？」「誰か助けが必要？」→ OthersFocusScore: 80〜100, TargetSubject: Team
 
         必ず有効なJSONのみを返してください。説明文は不要です。
         """;
@@ -78,7 +94,7 @@ public class MessageAnalyzer : IMessageAnalyzer
             );
 
             _logger.LogDebug(
-                "Sentiment analysis completed: PrimaryEmotion={PrimaryEmotion}, Troubled={TroubledScore}, Negative={NegativeScore}, Positive={PositiveScore}, Urgency={UrgencyScore}, GuidanceSeeking={GuidanceSeekingScore}, InformationSeeking={InformationSeekingScore}, InformationTopic={InformationTopic}, Confidence={Confidence}",
+                "Sentiment analysis completed: PrimaryEmotion={PrimaryEmotion}, Troubled={TroubledScore}, Negative={NegativeScore}, Positive={PositiveScore}, Urgency={UrgencyScore}, GuidanceSeeking={GuidanceSeekingScore}, InformationSeeking={InformationSeekingScore}, InformationTopic={InformationTopic}, OthersFocus={OthersFocusScore}, TargetSubject={TargetSubject}, Confidence={Confidence}",
                 result.PrimaryEmotion,
                 result.TroubledScore,
                 result.NegativeScore,
@@ -87,6 +103,8 @@ public class MessageAnalyzer : IMessageAnalyzer
                 result.GuidanceSeekingScore,
                 result.InformationSeekingScore,
                 result.InformationTopic,
+                result.OthersFocusScore,
+                result.TargetSubject,
                 result.Confidence
             );
 
@@ -162,6 +180,8 @@ public class MessageAnalyzer : IMessageAnalyzer
             UrgencyScore = 0,
             GuidanceSeekingScore = 0,
             InformationSeekingScore = 0,
+            OthersFocusScore = 0,
+            TargetSubject = TargetSubject.Self,
             PrimaryEmotion = "中立",
             Confidence = summary == null ? 100 : 0,
             Summary = summary ?? "分析対象なし",
