@@ -1074,23 +1074,17 @@ public class UserService
             : "";
 
         // pgroonga のあいまい検索を使用
+        // ID とスコアのみ取得することで、User Entity へのカラム追加時に SQL 修正が不要になる
         // &@~ 演算子：類似検索（タイポ許容）
         // ARRAY[Username, Email] @@ query：複数カラムに対する全文検索
         // スキル名での検索もサポート（UserSkills 経由で Skills.Name を検索）
-        // 注意: xmin は PostgreSQL のシステムカラムのため、SELECT * では取得されない
-        //       EF Core の RowVersion プロパティ用に明示的に xmin を SELECT する
-        // 注意: DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
-        //       サブクエリで重複排除してから外側でスコア順にソートする
-        // 注意: サブクエリ内の u.* には xmin が含まれないため、外側で sub.xmin を明示的に SELECT する
+        // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
+        // サブクエリで重複排除してから外側でスコア順にソート
+#pragma warning disable EF1002
         var sql = $@"
-            SELECT sub.""Id"", sub.""LoginId"", sub.""Username"", sub.""Email"", sub.""PasswordHash"", sub.""BackupEmail"",
-                   sub.""AvatarType"", sub.""UserAvatarPath"", sub.""OrganizationId"",
-                   sub.""CreatedAt"", sub.""CreatedByUserId"", sub.""LastLoginAt"",
-                   sub.""UpdatedAt"", sub.""UpdatedByUserId"",
-                   sub.""PasswordResetToken"", sub.""PasswordResetTokenExpiresAt"",
-                   sub.""IsActive"", sub.xmin
+            SELECT sub.""Id"", sub.score AS ""Score""
             FROM (
-                SELECT DISTINCT ON (u.""Id"") u.*, u.xmin, pgroonga_score(u.tableoid, u.ctid) AS score
+                SELECT DISTINCT ON (u.""Id"") u.""Id"", pgroonga_score(u.tableoid, u.ctid) AS score
                 FROM ""Users"" u
                 LEFT JOIN ""UserSkills"" us ON u.""Id"" = us.""UserId""
                 LEFT JOIN ""Skills"" s ON us.""SkillId"" = s.""Id"" AND s.""IsActive"" = true
@@ -1108,44 +1102,49 @@ public class UserService
             LIMIT {{2}}
         ";
 
-        List<User> users;
+        List<PgroongaSearchResult> searchResults;
         if (workspaceId.HasValue)
         {
-            users = await _context.Users
-                .FromSqlRaw(sql, organizationId, searchQuery, limit, workspaceId.Value)
+            searchResults = await _context.Database
+                .SqlQueryRaw<PgroongaSearchResult>(sql, organizationId, searchQuery, limit, workspaceId.Value)
                 .ToListAsync();
         }
         else
         {
-            users = await _context.Users
-                .FromSqlRaw(sql, organizationId, searchQuery, limit)
+            searchResults = await _context.Database
+                .SqlQueryRaw<PgroongaSearchResult>(sql, organizationId, searchQuery, limit)
                 .ToListAsync();
         }
+#pragma warning restore EF1002
 
-        // Include はサブクエリで処理するため、別途取得
-        if (users.Any())
+        if (!searchResults.Any())
         {
-            var userIds = users.Select(u => u.Id).ToList();
-
-            // Roles と UserSkills を別クエリで取得
-            var usersWithIncludes = await _context.Users
-                .Where(u => userIds.Contains(u.Id))
-                .Include(u => u.Roles)
-                .Include(u => u.UserSkills)
-                    .ThenInclude(us => us.Skill)
-                .AsSplitQuery()
-                .ToListAsync();
-
-            // pgroonga のスコア順を維持するため、元のリストの順序でマッピング
-            var userDict = usersWithIncludes.ToDictionary(u => u.Id);
-            return users
-                .Where(u => userDict.ContainsKey(u.Id))
-                .Select(u => userDict[u.Id])
-                .ToList();
+            return new List<User>();
         }
 
-        return users;
+        var userIds = searchResults.Select(r => r.Id).ToList();
+
+        // EF Core で Entity を取得（Include 自由、カラム追加の影響なし）
+        var users = await _context.Users
+            .Where(u => userIds.Contains(u.Id))
+            .Include(u => u.Roles)
+            .Include(u => u.UserSkills)
+                .ThenInclude(us => us.Skill)
+            .AsSplitQuery()
+            .ToListAsync();
+
+        // pgroonga スコア順を維持
+        var userDict = users.ToDictionary(u => u.Id);
+        return searchResults
+            .Where(r => userDict.ContainsKey(r.Id))
+            .Select(r => userDict[r.Id])
+            .ToList();
     }
+
+    /// <summary>
+    /// pgroonga 検索結果用の軽量モデル
+    /// </summary>
+    private sealed record PgroongaSearchResult(int Id, double Score);
 
     /// <summary>
     /// 指定ユーザーのスキル一覧を取得

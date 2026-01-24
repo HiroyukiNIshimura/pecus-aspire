@@ -587,23 +587,19 @@ public class WorkspaceItemService
             .SqlQueryRaw<int>(countSql, parameters.ToArray())
             .FirstOrDefaultAsync();
 
-        // PIN フィルタがある場合は別途処理（サブクエリが必要）
-        IQueryable<WorkspaceItem> query;
+        // ID とスコアのみ取得することで、WorkspaceItem Entity へのカラム追加時に SQL 修正が不要になる
         var offset = (page - 1) * pageSize;
+        string idSql;
 
         if (pinnedByUserId.HasValue)
         {
-            // PIN フィルタがある場合、まず pgroonga で検索してから PIN フィルタを適用
-            // xmin はシステムカラムなので SELECT * では含まれない。明示的に指定する必要がある
+            // PIN フィルタがある場合
             // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
             // サブクエリで重複排除してから外側でスコア順にソート
-            var mainSql = $@"
-                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Code"", sub.""Subject"", sub.""Body"",
-                       sub.""OwnerId"", sub.""AssigneeId"", sub.""CommitterId"", sub.""UpdatedByUserId"",
-                       sub.""IsDraft"", sub.""IsArchived"", sub.""IsActive"", sub.""Priority"", sub.""DueDate"",
-                       sub.""CreatedAt"", sub.""UpdatedAt"", sub.xmin
+            idSql = $@"
+                SELECT sub.""Id"", sub.score AS ""Score""
                 FROM (
-                    SELECT DISTINCT ON (wi.""Id"") wi.*, wi.xmin, pgroonga_score(wi.tableoid, wi.ctid) AS score
+                    SELECT DISTINCT ON (wi.""Id"") wi.""Id"", pgroonga_score(wi.tableoid, wi.ctid) AS score
                     FROM ""WorkspaceItems"" wi
                     LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
                     LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
@@ -618,9 +614,6 @@ public class WorkspaceItemService
             parameters.Add(pinnedByUserId.Value);
             parameters.Add(pageSize);
             parameters.Add(offset);
-
-            query = _context.WorkspaceItems
-                .FromSqlRaw(mainSql, parameters.ToArray());
 
             // PIN フィルタ適用時のカウントを再計算（SqlQueryRaw<int> は "Value" カラムを期待する）
             var countWithPinSql = $@"
@@ -638,16 +631,13 @@ public class WorkspaceItemService
         }
         else
         {
-            // xmin はシステムカラムなので SELECT * では含まれない。明示的に指定する必要がある
+            // PIN フィルタなしの場合
             // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
             // サブクエリで重複排除してから外側でスコア順にソート
-            var mainSql = $@"
-                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Code"", sub.""Subject"", sub.""Body"",
-                       sub.""OwnerId"", sub.""AssigneeId"", sub.""CommitterId"", sub.""UpdatedByUserId"",
-                       sub.""IsDraft"", sub.""IsArchived"", sub.""IsActive"", sub.""Priority"", sub.""DueDate"",
-                       sub.""CreatedAt"", sub.""UpdatedAt"", sub.xmin
+            idSql = $@"
+                SELECT sub.""Id"", sub.score AS ""Score""
                 FROM (
-                    SELECT DISTINCT ON (wi.""Id"") wi.*, wi.xmin, pgroonga_score(wi.tableoid, wi.ctid) AS score
+                    SELECT DISTINCT ON (wi.""Id"") wi.""Id"", pgroonga_score(wi.tableoid, wi.ctid) AS score
                     FROM ""WorkspaceItems"" wi
                     LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
                     LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
@@ -660,25 +650,47 @@ public class WorkspaceItemService
 
             parameters.Add(pageSize);
             parameters.Add(offset);
-
-            query = _context.WorkspaceItems
-                .FromSqlRaw(mainSql, parameters.ToArray());
         }
 
-        // ナビゲーションプロパティをロード
-        var items = await query
+        // ID + スコアのみ取得
+        var searchResults = await _context.Database
+            .SqlQueryRaw<PgroongaItemSearchResult>(idSql, parameters.ToArray())
+            .ToListAsync();
+
+        if (!searchResults.Any())
+        {
+            return (new List<WorkspaceItem>(), totalCount);
+        }
+
+        var itemIds = searchResults.Select(r => r.Id).ToList();
+
+        // EF Core で Entity を取得（Include 自由、カラム追加の影響なし）
+        var items = await _context.WorkspaceItems
+            .Where(wi => itemIds.Contains(wi.Id))
             .Include(wi => wi.Workspace)
             .Include(wi => wi.Owner)
             .Include(wi => wi.Assignee)
             .Include(wi => wi.Committer)
             .Include(wi => wi.WorkspaceItemTags)
-            .ThenInclude(wit => wit.Tag)
+                .ThenInclude(wit => wit.Tag)
             .Include(wi => wi.WorkspaceItemPins)
             .AsSplitQuery()
             .ToListAsync();
 
-        return (items, totalCount);
+        // pgroonga スコア順を維持
+        var itemDict = items.ToDictionary(i => i.Id);
+        var orderedItems = searchResults
+            .Where(r => itemDict.ContainsKey(r.Id))
+            .Select(r => itemDict[r.Id])
+            .ToList();
+
+        return (orderedItems, totalCount);
     }
+
+    /// <summary>
+    /// pgroonga 検索結果用の軽量モデル
+    /// </summary>
+    private sealed record PgroongaItemSearchResult(int Id, double Score);
 
     /// <summary>
     /// ユーザーがPINしたワークスペースアイテム一覧を取得
