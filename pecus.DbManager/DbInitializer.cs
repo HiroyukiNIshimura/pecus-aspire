@@ -138,11 +138,11 @@ internal class DbInitializer(
         );
 
         // WorkspaceItemSearchIndices テーブルに pgroonga インデックスを作成
-        // RawBody（プレーンテキスト）を検索対象
+        // FullText（Subject + Code + TagNames + RawBody を統合）を検索対象
         await dbContext.Database.ExecuteSqlRawAsync(
-            @"CREATE INDEX IF NOT EXISTS idx_workspaceitemsearchindices_pgroonga
+            @"CREATE INDEX IF NOT EXISTS idx_workspace_item_search_indices_fulltext_pgroonga
               ON ""WorkspaceItemSearchIndices""
-              USING pgroonga (""RawBody"") WITH (tokenizer=""TokenMecab"");",
+              USING pgroonga (""FullText"") WITH (tokenizer=""TokenMecab"");",
             cancellationToken
         );
 
@@ -150,14 +150,6 @@ internal class DbInitializer(
         await dbContext.Database.ExecuteSqlRawAsync(
             @"CREATE INDEX IF NOT EXISTS idx_skills_pgroonga
               ON ""Skills""
-              USING pgroonga (""Name"") WITH (tokenizer=""TokenMecab"");",
-            cancellationToken
-        );
-
-        // Tags テーブルに pgroonga インデックスを作成（ワークスペースアイテム検索時のタグ名検索用）
-        await dbContext.Database.ExecuteSqlRawAsync(
-            @"CREATE INDEX IF NOT EXISTS idx_tags_pgroonga
-              ON ""Tags""
               USING pgroonga (""Name"") WITH (tokenizer=""TokenMecab"");",
             cancellationToken
         );

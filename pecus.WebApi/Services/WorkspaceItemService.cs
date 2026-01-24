@@ -483,7 +483,7 @@ public class WorkspaceItemService
 
     /// <summary>
     /// pgroonga を使用してワークスペースアイテムをあいまい検索
-    /// Subject, RawBody, Code, 関連タグ名を対象に日本語のゆらぎやタイポにも対応した検索を行う
+    /// FullText（Subject + Code + TagNames + RawBody）を対象に日本語のゆらぎやタイポにも対応した検索を行う
     /// <para>
     /// 検索クエリの書式:
     /// - スペース区切り → AND検索（例: "aaa bbb" → aaa AND bbb）
@@ -508,13 +508,18 @@ public class WorkspaceItemService
         string searchQuery
     )
     {
-        // ユーザー入力を pgroonga クエリに変換（SQLインジェクション対策済み）
+        // pgroonga クエリ構文に変換
         var pgroongaQuery = PgroongaQueryBuilder.BuildQuery(searchQuery);
 
-        // 動的にフィルタ条件を構築（検索条件は別途構築）
+        // 動的にフィルタ条件を構築
         var filterClauses = new List<string> { @"wi.""WorkspaceId"" = {0}" };
-        var parameters = new List<object> { workspaceId, pgroongaQuery };
-        var paramIndex = 2;
+        var parameters = new List<object> { workspaceId };
+        var paramIndex = 1;
+
+        // pgroonga 検索クエリをパラメータに追加
+        parameters.Add(pgroongaQuery);
+        var searchParamIndex = paramIndex;
+        paramIndex++;
 
         if (isDraft.HasValue)
         {
@@ -567,13 +572,8 @@ public class WorkspaceItemService
 
         var filterClause = string.Join(" AND ", filterClauses);
 
-        // 検索条件（Subject, Code, タグ名, SearchIndex.RawBody を対象）
-        // Code を追加することで #123 形式のアイテムコード検索に対応
-        // タグ名検索のために LEFT JOIN で Tags テーブルを結合
-        // RawBody は別テーブル（WorkspaceItemSearchIndices）に分離されているため JOIN
-        // DISTINCT ON で重複排除（1アイテムに複数タグがある場合の対策）
-        // ※ 配列 + COALESCE は pgroonga インデックスが効かないため、個別カラムで OR 検索
-        var searchCondition = @"(ARRAY[wi.""Subject"", wi.""Code""] &@~ {1} OR (si.""RawBody"" IS NOT NULL AND si.""RawBody"" &@~ {1}) OR t.""Name"" &@~ {1})";
+        // 検索条件: FullText カラムのみを対象（Subject + Code + TagNames + RawBody が統合済み）
+        var searchCondition = $@"si.""FullText"" &@~ {{{searchParamIndex}}}";
 
         // ID とスコアのみ取得することで、WorkspaceItem Entity へのカラム追加時に SQL 修正が不要になる
         var offset = (page - 1) * pageSize;
@@ -581,24 +581,19 @@ public class WorkspaceItemService
         string countSql;
         object[] countParams;
 
+        // カウントクエリ用のパラメータ数を記録（PIN/LIMIT/OFFSET を除く）
+        var countParamCount = paramIndex;
+
         if (pinnedByUserId.HasValue)
         {
             // PIN フィルタがある場合
-            // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
-            // サブクエリで重複排除してから外側でスコア順にソート
             idSql = $@"
-                SELECT sub.""Id"", sub.score AS ""Score""
-                FROM (
-                    SELECT DISTINCT ON (wi.""Id"") wi.""Id"", pgroonga_score(wi.tableoid, wi.ctid) AS score
-                    FROM ""WorkspaceItems"" wi
-                    LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
-                    LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
-                    LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
-                    INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
-                    WHERE {filterClause} AND {searchCondition} AND wip.""UserId"" = {{{paramIndex}}}
-                    ORDER BY wi.""Id"", pgroonga_score(wi.tableoid, wi.ctid) DESC
-                ) sub
-                ORDER BY sub.score DESC
+                SELECT wi.""Id"", pgroonga_score(si.tableoid, si.ctid) AS ""Score""
+                FROM ""WorkspaceItems"" wi
+                INNER JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
+                INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
+                WHERE {filterClause} AND {searchCondition} AND wip.""UserId"" = {{{paramIndex}}}
+                ORDER BY ""Score"" DESC
                 LIMIT {{{paramIndex + 1}}} OFFSET {{{paramIndex + 2}}}";
 
             parameters.Add(pinnedByUserId.Value);
@@ -607,32 +602,22 @@ public class WorkspaceItemService
 
             // PIN フィルタ適用時のカウントクエリ
             countSql = $@"
-                SELECT COUNT(DISTINCT wi.""Id"")::int AS ""Value""
+                SELECT COUNT(*)::int AS ""Value""
                 FROM ""WorkspaceItems"" wi
-                LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
-                LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
-                LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
+                INNER JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
                 INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
-                WHERE {filterClause} AND {searchCondition} AND wip.""UserId"" = {{{paramIndex - 3}}}";
-            countParams = parameters.Take(paramIndex - 2).Append(pinnedByUserId.Value).ToArray();
+                WHERE {filterClause} AND {searchCondition} AND wip.""UserId"" = {{{countParamCount}}}";
+            countParams = parameters.Take(countParamCount).Append(pinnedByUserId.Value).ToArray();
         }
         else
         {
             // PIN フィルタなしの場合
-            // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
-            // サブクエリで重複排除してから外側でスコア順にソート
             idSql = $@"
-                SELECT sub.""Id"", sub.score AS ""Score""
-                FROM (
-                    SELECT DISTINCT ON (wi.""Id"") wi.""Id"", pgroonga_score(wi.tableoid, wi.ctid) AS score
-                    FROM ""WorkspaceItems"" wi
-                    LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
-                    LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
-                    LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
-                    WHERE {filterClause} AND {searchCondition}
-                    ORDER BY wi.""Id"", pgroonga_score(wi.tableoid, wi.ctid) DESC
-                ) sub
-                ORDER BY sub.score DESC
+                SELECT wi.""Id"", pgroonga_score(si.tableoid, si.ctid) AS ""Score""
+                FROM ""WorkspaceItems"" wi
+                INNER JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
+                WHERE {filterClause} AND {searchCondition}
+                ORDER BY ""Score"" DESC
                 LIMIT {{{paramIndex}}} OFFSET {{{paramIndex + 1}}}";
 
             parameters.Add(pageSize);
@@ -640,13 +625,11 @@ public class WorkspaceItemService
 
             // カウント用クエリ
             countSql = $@"
-                SELECT COUNT(DISTINCT wi.""Id"")::int AS ""Value""
+                SELECT COUNT(*)::int AS ""Value""
                 FROM ""WorkspaceItems"" wi
-                LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
-                LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
-                LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
+                INNER JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
                 WHERE {filterClause} AND {searchCondition}";
-            countParams = parameters.Take(paramIndex).ToArray();
+            countParams = parameters.Take(countParamCount).ToArray();
         }
 
         // カウントクエリと検索クエリを順次実行

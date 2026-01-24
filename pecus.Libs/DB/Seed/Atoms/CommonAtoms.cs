@@ -157,12 +157,6 @@ public class CommonAtoms
             );
             _logger.LogInformation("Completed reindexing idx_skills_pgroonga");
 
-            _logger.LogInformation("Reindexing idx_tags_pgroonga");
-            await context.Database.ExecuteSqlRawAsync(
-                @"REINDEX INDEX CONCURRENTLY idx_tags_pgroonga;"
-            );
-            _logger.LogInformation("Completed reindexing idx_tags_pgroonga");
-
             _logger.LogInformation("Reindexing idx_workspacetasks_content_pgroonga");
             await context.Database.ExecuteSqlRawAsync(
                 @"REINDEX INDEX CONCURRENTLY idx_workspacetasks_content_pgroonga;"

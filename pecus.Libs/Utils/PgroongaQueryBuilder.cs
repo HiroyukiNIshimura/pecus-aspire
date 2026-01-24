@@ -37,6 +37,33 @@ public static class PgroongaQueryBuilder
     }
 
     /// <summary>
+    /// ユーザー入力を個別の検索キーワードに分解
+    /// 複数カラムを横断したAND検索を実現するために使用
+    /// </summary>
+    /// <param name="input">ユーザー入力（例: "aaa bbb|ccc"）</param>
+    /// <returns>
+    /// 各AND要素のリスト。各要素はpgroongaクエリ形式の文字列。
+    /// 例: "aaa bbb|ccc" → ["aaa", "(bbb OR ccc)"]
+    /// </returns>
+    public static List<string> SplitToAndTerms(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return [];
+        }
+
+        // パイプ前後のスペースを正規化
+        var normalized = NormalizePipeOperator(input);
+
+        // スペースで分割して各ANDグループを取得
+        return normalized
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select(ConvertOrGroup)
+            .Where(p => !string.IsNullOrEmpty(p))
+            .ToList();
+    }
+
+    /// <summary>
     /// パイプ演算子の前後のスペースを正規化
     /// "aaa | bbb" → "aaa|bbb"
     /// "aaa |bbb" → "aaa|bbb"

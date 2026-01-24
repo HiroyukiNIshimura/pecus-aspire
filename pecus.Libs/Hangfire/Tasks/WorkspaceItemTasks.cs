@@ -49,9 +49,11 @@ public class WorkspaceItemTasks
 
         try
         {
-            // ID のみで取得（RowVersion チェック不要、本体は更新しない）
+            // タグを含めて取得（FullText 構築に必要）
             var item = await _context.WorkspaceItems
                 .AsNoTracking()
+                .Include(wi => wi.WorkspaceItemTags)
+                    .ThenInclude(wit => wit.Tag)
                 .FirstOrDefaultAsync(wi => wi.Id == workspaceItemId);
 
             if (item == null)
@@ -87,6 +89,25 @@ public class WorkspaceItemTasks
 
             var rawBody = result.Result ?? string.Empty;
 
+            // タグ名を抽出（アクティブなタグのみ）
+            var tagNames = item.WorkspaceItemTags
+                .Where(wit => wit.Tag?.IsActive == true)
+                .Select(wit => wit.Tag!.Name)
+                .ToList();
+
+            // FullText を構築: Subject + Code + TagNames + RawBody
+            var fullTextParts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(item.Subject))
+                fullTextParts.Add(item.Subject);
+            if (!string.IsNullOrWhiteSpace(item.Code))
+                fullTextParts.Add(item.Code);
+            if (tagNames.Count > 0)
+                fullTextParts.AddRange(tagNames);
+            if (!string.IsNullOrWhiteSpace(rawBody))
+                fullTextParts.Add(rawBody);
+
+            var fullText = string.Join(" ", fullTextParts);
+
             // Upsert: 存在すれば更新、なければ挿入
             var searchIndex = await _context.WorkspaceItemSearchIndices
                 .FirstOrDefaultAsync(si => si.WorkspaceItemId == workspaceItemId);
@@ -97,6 +118,7 @@ public class WorkspaceItemTasks
                 {
                     WorkspaceItemId = workspaceItemId,
                     RawBody = rawBody,
+                    FullText = fullText,
                     UpdatedAt = DateTime.UtcNow
                 };
                 _context.WorkspaceItemSearchIndices.Add(searchIndex);
@@ -104,6 +126,7 @@ public class WorkspaceItemTasks
             else
             {
                 searchIndex.RawBody = rawBody;
+                searchIndex.FullText = fullText;
                 searchIndex.UpdatedAt = DateTime.UtcNow;
             }
 

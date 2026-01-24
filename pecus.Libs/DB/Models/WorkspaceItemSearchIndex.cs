@@ -21,6 +21,12 @@ public class WorkspaceItemSearchIndex
     public string RawBody { get; set; } = string.Empty;
 
     /// <summary>
+    /// 全文検索用の統合テキスト（Subject + Code + TagNames + RawBody）
+    /// pgroonga のメインターゲット
+    /// </summary>
+    public string FullText { get; set; } = string.Empty;
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTime UpdatedAt { get; set; }
