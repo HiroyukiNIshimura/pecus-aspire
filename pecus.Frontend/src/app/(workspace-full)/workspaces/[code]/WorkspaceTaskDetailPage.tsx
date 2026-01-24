@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getUnnotifiedAchievements, markAllAchievementsNotified } from '@/actions/achievement';
 import { searchWorkspaceMembers } from '@/actions/workspace';
 import { fetchWorkspaceItemAttachments } from '@/actions/workspaceItemAttachment';
 import {
@@ -404,10 +405,11 @@ export default function WorkspaceTaskDetailPage({
       setServerErrors([]);
 
       try {
-        // タスクデータと先行タスク候補を並列で取得（組織設定はAppSettingsProviderから取得済み）
-        const [taskResult, predecessorResult] = await Promise.all([
+        // タスクデータ、先行タスク候補、未通知バッジを並列で取得
+        const [taskResult, predecessorResult, achievementResult] = await Promise.all([
           getWorkspaceTask(workspaceId, itemId, targetTaskId),
           getPredecessorTaskOptions(workspaceId, itemId, targetTaskId),
+          getUnnotifiedAchievements(),
         ]);
 
         if (taskResult.success) {
@@ -420,13 +422,22 @@ export default function WorkspaceTaskDetailPage({
         if (predecessorResult.success) {
           setPredecessorTaskOptions(predecessorResult.data || []);
         }
+
+        // 未通知バッジがあれば演出を表示
+        console.log('[Achievement] unnotified badges:', achievementResult);
+        if (achievementResult.success && achievementResult.data && achievementResult.data.length > 0) {
+          console.log('[Achievement] showing celebration for', achievementResult.data.length, 'badges');
+          showCelebration(achievementResult.data);
+          // 通知済みにマーク
+          await markAllAchievementsNotified();
+        }
       } catch {
         notifyRef.current.error('タスクの取得中にエラーが発生しました');
       } finally {
         setIsLoadingTask(false);
       }
     },
-    [workspaceId, itemId, syncTaskToForm],
+    [workspaceId, itemId, syncTaskToForm, showCelebration],
   );
 
   // 初期化

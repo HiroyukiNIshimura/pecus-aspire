@@ -103,13 +103,29 @@ public class AchievementEvaluator
 
                 if (newAchievements.Count > 0)
                 {
-                    await _context.UserAchievements.AddRangeAsync(newAchievements, cancellationToken);
-                    await _context.SaveChangesAsync(cancellationToken);
-                    totalNewAchievements += newAchievements.Count;
+                    // 重複エラーを回避するため、SaveChanges前に再度DBをチェック
+                    var userIdsToAdd = newAchievements.Select(a => a.UserId).ToList();
+                    var alreadyExists = await _context.UserAchievements
+                        .Where(ua => ua.AchievementMasterId == master.Id)
+                        .Where(ua => userIdsToAdd.Contains(ua.UserId))
+                        .Select(ua => ua.UserId)
+                        .ToListAsync(cancellationToken);
 
-                    _logger.LogInformation(
-                        "Strategy {StrategyCode} awarded {Count} new achievements",
-                        strategy.AchievementCode, newAchievements.Count);
+                    // 既に存在するユーザーを除外
+                    newAchievements = newAchievements
+                        .Where(a => !alreadyExists.Contains(a.UserId))
+                        .ToList();
+
+                    if (newAchievements.Count > 0)
+                    {
+                        await _context.UserAchievements.AddRangeAsync(newAchievements, cancellationToken);
+                        await _context.SaveChangesAsync(cancellationToken);
+                        totalNewAchievements += newAchievements.Count;
+
+                        _logger.LogInformation(
+                            "Strategy {StrategyCode} awarded {Count} new achievements",
+                            strategy.AchievementCode, newAchievements.Count);
+                    }
                 }
             }
             catch (Exception ex)

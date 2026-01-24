@@ -66,6 +66,20 @@ export async function markAchievementNotified(achievementId: number): Promise<Ap
 }
 
 /**
+ * Server Action: 全ての未通知実績を通知済みにマーク
+ * バッジ取得演出を表示した後に呼び出す（一括処理用）
+ */
+export async function markAllAchievementsNotified(): Promise<ApiResponse<void>> {
+  try {
+    const api = createPecusApiClients();
+    await api.achievement.postApiAchievementsMeNotifyAll();
+    return { success: true, data: undefined };
+  } catch (error) {
+    return handleApiErrorForAction(error, { defaultMessage: '通知済みマークに失敗しました' });
+  }
+}
+
+/**
  * Server Action: バッジ獲得ランキングを取得
  * @param workspaceId ワークスペースID（指定時はそのワークスペース内でのランキング）
  */
