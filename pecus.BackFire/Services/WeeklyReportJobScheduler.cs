@@ -19,6 +19,12 @@ public static class WeeklyReportJobScheduler
         var settings = configuration.GetSection(WeeklyReportSettings.SectionName).Get<WeeklyReportSettings>()
             ?? new WeeklyReportSettings();
 
+        if (!settings.Enabled)
+        {
+            recurringJobManager.RemoveIfExists("WeeklyReportScheduler");
+            return;
+        }
+
         // 値の範囲を安全にクリップ
         settings.DeliveryHour = Math.Clamp(settings.DeliveryHour, 0, 23);
         settings.DeliveryMinute = Math.Clamp(settings.DeliveryMinute, 0, 59);

@@ -206,44 +206,42 @@
       }
     },
     "RefreshTokenCleanup": {
+      "Enabled": true,
       "BatchSize": 1000,
       "OlderThanDays": 30,
-      "Hour": 2,
-      "Minute": 0
+      "CronExpression": "0 2 * * *"
     },
     "DeviceCleanup": {
+      "Enabled": true,
       "BatchSize": 1000,
       "OlderThanDays": 30,
       "VeryOldDays": 365,
-      "Hour": 2,
-      "Minute": 30
+      "CronExpression": "30 2 * * *"
     },
     "EmailChangeTokenCleanup": {
+      "Enabled": true,
       "BatchSize": 1000,
       "OlderThanDays": 7,
-      "Hour": 3,
-      "Minute": 0
+      "CronExpression": "0 3 * * *"
     },
     "UploadsCleanup": {
+      "Enabled": true,
       "TempRetentionHours": 24,
-      "Hour": 4,
-      "Minute": 0
+      "CronExpression": "0 4 * * *"
     },
     "ChatCleanup": {
+      "Enabled": true,
       "BatchSize": 1000,
       "System": { "OlderThanDays": 40 },
       "Group": { "OlderThanDays": 120 },
       "Dm": { "OlderThanDays": 380 },
       "Ai": { "OlderThanDays": 40 },
-      "Hour": 5,
-      "Minute": 0
+      "CronExpression": "0 5 * * *"
     },
     "WeeklyReport": {
+      "Enabled": true,
       "DeliveryHour": 8,
       "DeliveryMinute": 0
-    },
-    "MaintenanceNotification": {
-      "Enabled": true
     },
     "SystemNotification": {
       "Enabled": true,
@@ -251,8 +249,7 @@
     },
     "AchievementEvaluation": {
       "Enabled": true,
-      "Hour": 3,
-      "Minute": 0
+      "CronExpression": "0 3 * * *"
     },
     "AgendaReminder": {
       "Enabled": true,
@@ -260,11 +257,18 @@
       "CutoffMinutes": 0
     },
     "AgendaCleanup": {
-      "BatchSize": 1000,
       "Enabled": true,
+      "BatchSize": 1000,
       "OlderThanDays": 0,
-      "Hour": 6,
-      "Minute": 0
+      "CronExpression": "0 6 * * *"
+    },
+    "AgendaEmail": {
+      "Enabled": true,
+      "CronExpression": "*/5 * * * *"
+    },
+    "LandingPageRecommendation": {
+      "Enabled": true,
+      "CronExpression": "0 4 * * 1"
     }
   },
 

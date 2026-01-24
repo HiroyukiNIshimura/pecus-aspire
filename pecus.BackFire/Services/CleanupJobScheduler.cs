@@ -32,14 +32,16 @@ public static class CleanupJobScheduler
         // 設定をクラスバインド
         var settings = configuration.GetSection("RefreshTokenCleanup").Get<RefreshTokenCleanupSettings>() ?? new RefreshTokenCleanupSettings();
 
-        // 値の範囲を安全にクリップ
-        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
-        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
+        if (!settings.Enabled)
+        {
+            recurringJobManager.RemoveIfExists("RefreshTokenCleanup");
+            return;
+        }
 
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
             "RefreshTokenCleanup",
             task => task.CleanupExpiredTokensAsync(settings.BatchSize, settings.OlderThanDays),
-            Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
+            settings.CronExpression
         );
     }
 
@@ -53,14 +55,16 @@ public static class CleanupJobScheduler
         // 設定をクラスバインド
         var settings = configuration.GetSection("DeviceCleanup").Get<DeviceCleanupSettings>() ?? new DeviceCleanupSettings();
 
-        // 値の範囲を安全にクリップ
-        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
-        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
+        if (!settings.Enabled)
+        {
+            recurringJobManager.RemoveIfExists("DeviceCleanup");
+            return;
+        }
 
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
             "DeviceCleanup",
             task => task.CleanupOldDevicesAsync(settings.BatchSize, settings.OlderThanDays, settings.VeryOldDays),
-            Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
+            settings.CronExpression
         );
     }
 
@@ -74,14 +78,16 @@ public static class CleanupJobScheduler
         // 設定をクラスバインド
         var settings = configuration.GetSection("EmailChangeTokenCleanup").Get<EmailChangeTokenCleanupSettings>() ?? new EmailChangeTokenCleanupSettings();
 
-        // 値の範囲を安全にクリップ
-        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
-        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
+        if (!settings.Enabled)
+        {
+            recurringJobManager.RemoveIfExists("EmailChangeTokenCleanup");
+            return;
+        }
 
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
             "EmailChangeTokenCleanup",
             task => task.CleanupExpiredEmailChangeTokensAsync(settings.BatchSize, settings.OlderThanDays),
-            Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
+            settings.CronExpression
         );
     }
 
@@ -94,9 +100,11 @@ public static class CleanupJobScheduler
     {
         var settings = configuration.GetSection("ChatCleanup").Get<ChatCleanupSettings>() ?? new ChatCleanupSettings();
 
-        // 値の範囲を安全にクリップ（時刻）
-        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
-        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
+        if (!settings.Enabled)
+        {
+            recurringJobManager.RemoveIfExists("ChatCleanup");
+            return;
+        }
 
         // すべてのタイプが無効（<=0）なら登録しない
         var allDisabled =
@@ -120,7 +128,7 @@ public static class CleanupJobScheduler
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
             "ChatCleanup",
             task => task.CleanupOldChatMessagesAsync(batchSize, systemDays, groupDays, dmDays, aiDays),
-            Cron.Daily(settings.Hour, settings.Minute)
+            settings.CronExpression
         );
     }
 
@@ -133,6 +141,12 @@ public static class CleanupJobScheduler
     {
         // 設定をクラスバインド
         var settings = configuration.GetSection("UploadsCleanup").Get<UploadsCleanupSettings>() ?? new UploadsCleanupSettings();
+
+        if (!settings.Enabled)
+        {
+            recurringJobManager.RemoveIfExists("UploadsCleanup");
+            return;
+        }
 
         // DataPaths:Uploads から絶対パスを取得（環境変数 DataPaths__Uploads 経由）
         var uploadsPath = configuration["DataPaths:Uploads"];
@@ -157,17 +171,13 @@ public static class CleanupJobScheduler
             }
         }
 
-        // 値の範囲を安全にクリップ
-        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
-        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
-
-        Serilog.Log.Information("UploadsCleanup: Registering job with UploadsPath={UploadsPath}, TempRetentionHours={TempRetentionHours}, Schedule={Hour}:{Minute:D2}",
-            uploadsPath, settings.TempRetentionHours, settings.Hour, settings.Minute);
+        Serilog.Log.Information("UploadsCleanup: Registering job with UploadsPath={UploadsPath}, TempRetentionHours={TempRetentionHours}, CronExpression={CronExpression}",
+            uploadsPath, settings.TempRetentionHours, settings.CronExpression);
 
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.UploadsCleanupTasks>(
             "UploadsCleanup",
             task => task.CleanupUploadsAsync(uploadsPath, settings.TempRetentionHours),
-            Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
+            settings.CronExpression
         );
     }
 
@@ -182,13 +192,10 @@ public static class CleanupJobScheduler
 
         if (!settings.Enabled)
         {
+            recurringJobManager.RemoveIfExists("AgendaCleanup");
             Serilog.Log.Information("AgendaCleanup: Disabled by configuration");
             return;
         }
-
-        // 値の範囲を安全にクリップ
-        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
-        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
 
         var batchSize = settings.BatchSize;
         var olderThanDays = settings.OlderThanDays;
@@ -196,7 +203,7 @@ public static class CleanupJobScheduler
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
             "AgendaCleanup",
             task => task.CleanupOldAgendasAsync(batchSize, olderThanDays),
-            Cron.Daily(settings.Hour, settings.Minute)
+            settings.CronExpression
         );
     }
 }

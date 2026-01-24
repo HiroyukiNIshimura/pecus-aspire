@@ -11,6 +11,11 @@ public class WeeklyReportSettings
     public const string SectionName = "WeeklyReport";
 
     /// <summary>
+    /// ジョブを有効にするかどうか
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
     /// 配信時刻（時）デフォルト: 8時
     /// </summary>
     public int DeliveryHour { get; set; } = 8;

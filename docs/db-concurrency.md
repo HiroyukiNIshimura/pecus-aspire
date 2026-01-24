@@ -269,7 +269,6 @@ await _context.ChatRooms
 #### 対象ファイル
 
 - `pecus.Libs/Hangfire/Tasks/Bot/` 配下の全タスク
-- `pecus.Libs/Hangfire/Tasks/MaintenanceNotificationTask.cs`
 
 詳細は [`docs/bot-hangfire-tasks.md`](./bot-hangfire-tasks.md) の「DB 更新の特殊ケース」セクションを参照してください。
 

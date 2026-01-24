@@ -6,6 +6,11 @@ namespace Pecus.BackFire.Services;
 public class RefreshTokenCleanupSettings
 {
     /// <summary>
+    /// ジョブを有効にするかどうか
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
     /// バッチサイズ
     /// </summary>
     public int BatchSize { get; set; } = 1000;
@@ -16,14 +21,9 @@ public class RefreshTokenCleanupSettings
     public int OlderThanDays { get; set; } = 30;
 
     /// <summary>
-    /// 実行時刻の時（0-23）
+    /// Cron式（デフォルト: 毎日2:00）
     /// </summary>
-    public int Hour { get; set; } = 2;
-
-    /// <summary>
-    /// 実行時刻の分（0-59）
-    /// </summary>
-    public int Minute { get; set; } = 0;
+    public string CronExpression { get; set; } = "0 2 * * *";
 }
 
 /// <summary>
@@ -31,6 +31,11 @@ public class RefreshTokenCleanupSettings
 /// </summary>
 public class DeviceCleanupSettings
 {
+    /// <summary>
+    /// ジョブを有効にするかどうか
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
     /// <summary>
     /// バッチサイズ
     /// </summary>
@@ -47,14 +52,9 @@ public class DeviceCleanupSettings
     public int VeryOldDays { get; set; } = 365;
 
     /// <summary>
-    /// 実行時刻の時（0-23）
+    /// Cron式（デフォルト: 毎日2:30）
     /// </summary>
-    public int Hour { get; set; } = 2;
-
-    /// <summary>
-    /// 実行時刻の分（0-59）
-    /// </summary>
-    public int Minute { get; set; } = 30;
+    public string CronExpression { get; set; } = "30 2 * * *";
 }
 
 /// <summary>
@@ -62,6 +62,11 @@ public class DeviceCleanupSettings
 /// </summary>
 public class EmailChangeTokenCleanupSettings
 {
+    /// <summary>
+    /// ジョブを有効にするかどうか
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
     /// <summary>
     /// バッチサイズ
     /// </summary>
@@ -73,14 +78,9 @@ public class EmailChangeTokenCleanupSettings
     public int OlderThanDays { get; set; } = 7;
 
     /// <summary>
-    /// 実行時刻の時（0-23）
+    /// Cron式（デフォルト: 毎日3:00）
     /// </summary>
-    public int Hour { get; set; } = 3;
-
-    /// <summary>
-    /// 実行時刻の分（0-59）
-    /// </summary>
-    public int Minute { get; set; } = 0;
+    public string CronExpression { get; set; } = "0 3 * * *";
 }
 
 /// <summary>
@@ -89,19 +89,19 @@ public class EmailChangeTokenCleanupSettings
 public class UploadsCleanupSettings
 {
     /// <summary>
+    /// ジョブを有効にするかどうか
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
     /// tempフォルダ内のファイルを保持する時間（時間単位、デフォルト: 24時間）
     /// </summary>
     public int TempRetentionHours { get; set; } = 24;
 
     /// <summary>
-    /// 実行時刻の時（0-23）
+    /// Cron式（デフォルト: 毎日4:00）
     /// </summary>
-    public int Hour { get; set; } = 4;
-
-    /// <summary>
-    /// 実行時刻の分（0-59）
-    /// </summary>
-    public int Minute { get; set; } = 0;
+    public string CronExpression { get; set; } = "0 4 * * *";
 }
 
 /// <summary>
@@ -109,6 +109,11 @@ public class UploadsCleanupSettings
 /// </summary>
 public class ChatCleanupSettings
 {
+    /// <summary>
+    /// ジョブを有効にするかどうか
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
     /// <summary>
     /// バッチサイズ
     /// </summary>
@@ -136,14 +141,9 @@ public class ChatCleanupSettings
     public ChatTypeSettings Ai { get; set; } = new ChatTypeSettings();
 
     /// <summary>
-    /// 実行時刻の時（0-23）
+    /// Cron式（デフォルト: 毎日5:00）
     /// </summary>
-    public int Hour { get; set; } = 5;
-
-    /// <summary>
-    /// 実行時刻の分（0-59）
-    /// </summary>
-    public int Minute { get; set; } = 0;
+    public string CronExpression { get; set; } = "0 5 * * *";
 }
 
 /// <summary>
@@ -179,12 +179,7 @@ public class AgendaCleanupSettings
     public int OlderThanDays { get; set; } = 2;
 
     /// <summary>
-    /// 実行時刻の時（0-23）
+    /// Cron式（デフォルト: 毎日6:00）
     /// </summary>
-    public int Hour { get; set; } = 6;
-
-    /// <summary>
-    /// 実行時刻の分（0-59）
-    /// </summary>
-    public int Minute { get; set; } = 0;
+    public string CronExpression { get; set; } = "0 6 * * *";
 }

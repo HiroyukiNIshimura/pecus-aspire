@@ -23,16 +23,16 @@ public static class LandingPageRecommendationJobScheduler
             .Get<LandingPageRecommendationSettings>()
             ?? new LandingPageRecommendationSettings();
 
-        // 値の範囲を安全にクリップ
-        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
-        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
-        settings.DayOfWeek = Math.Clamp(settings.DayOfWeek, 0, 6);
+        if (!settings.Enabled)
+        {
+            recurringJobManager.RemoveIfExists("LandingPageRecommendation");
+            return;
+        }
 
-        // 週次実行（デフォルト: 月曜 AM4:00 UTC）
         recurringJobManager.AddOrUpdate<LandingPageRecommendationTasks>(
             "LandingPageRecommendation",
             task => task.DispatchLandingPageAnalysisAsync(),
-            Cron.Weekly((DayOfWeek)settings.DayOfWeek, settings.Hour, settings.Minute),
+            settings.CronExpression,
             new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc }
         );
     }
@@ -44,19 +44,14 @@ public static class LandingPageRecommendationJobScheduler
 public class LandingPageRecommendationSettings
 {
     /// <summary>
-    /// 実行曜日（0=日曜, 1=月曜, ..., 6=土曜）デフォルト: 1（月曜）
+    /// ジョブを有効にするかどうか
     /// </summary>
-    public int DayOfWeek { get; set; } = 1;
+    public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// 実行時刻（時）デフォルト: 4時（UTC）
+    /// Cron式（デフォルト: 毎週月曜日 AM4:00 UTC）
     /// </summary>
-    public int Hour { get; set; } = 4;
-
-    /// <summary>
-    /// 実行時刻（分）デフォルト: 0分
-    /// </summary>
-    public int Minute { get; set; } = 0;
+    public string CronExpression { get; set; } = "0 4 * * 1";
 }
 
 /// <summary>

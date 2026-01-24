@@ -24,14 +24,10 @@ public static class AchievementJobScheduler
             return;
         }
 
-        // 値の範囲を安全にクリップ
-        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
-        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
-
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.AchievementEvaluationTask>(
             "AchievementEvaluation",
             task => task.EvaluateAllOrganizationsAsync(),
-            Cron.Daily(settings.Hour, settings.Minute),
+            settings.CronExpression,
             new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc }
         );
     }
@@ -48,12 +44,7 @@ public class AchievementEvaluationSettings
     public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// 実行時刻（時）デフォルト: 3時（UTC）
+    /// Cron式（デフォルト: 毎日3:00 UTC）
     /// </summary>
-    public int Hour { get; set; } = 3;
-
-    /// <summary>
-    /// 実行時刻（分）デフォルト: 0分
-    /// </summary>
-    public int Minute { get; set; } = 0;
+    public string CronExpression { get; set; } = "0 3 * * *";
 }
