@@ -572,24 +572,14 @@ public class WorkspaceItemService
         // タグ名検索のために LEFT JOIN で Tags テーブルを結合
         // RawBody は別テーブル（WorkspaceItemSearchIndices）に分離されているため JOIN
         // DISTINCT ON で重複排除（1アイテムに複数タグがある場合の対策）
-        var searchCondition = @"(ARRAY[wi.""Subject"", wi.""Code"", COALESCE(si.""RawBody"", '')] &@~ {1} OR t.""Name"" &@~ {1})";
-
-        // カウント用クエリを実行（SqlQueryRaw<int> は "Value" カラムを期待する）
-        // タグ結合による重複を DISTINCT でカウント
-        var countSql = $@"
-            SELECT COUNT(DISTINCT wi.""Id"")::int AS ""Value""
-            FROM ""WorkspaceItems"" wi
-            LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
-            LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
-            LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
-            WHERE {filterClause} AND {searchCondition}";
-        var totalCount = await _context.Database
-            .SqlQueryRaw<int>(countSql, parameters.ToArray())
-            .FirstOrDefaultAsync();
+        // ※ 配列 + COALESCE は pgroonga インデックスが効かないため、個別カラムで OR 検索
+        var searchCondition = @"(ARRAY[wi.""Subject"", wi.""Code""] &@~ {1} OR (si.""RawBody"" IS NOT NULL AND si.""RawBody"" &@~ {1}) OR t.""Name"" &@~ {1})";
 
         // ID とスコアのみ取得することで、WorkspaceItem Entity へのカラム追加時に SQL 修正が不要になる
         var offset = (page - 1) * pageSize;
         string idSql;
+        string countSql;
+        object[] countParams;
 
         if (pinnedByUserId.HasValue)
         {
@@ -615,8 +605,8 @@ public class WorkspaceItemService
             parameters.Add(pageSize);
             parameters.Add(offset);
 
-            // PIN フィルタ適用時のカウントを再計算（SqlQueryRaw<int> は "Value" カラムを期待する）
-            var countWithPinSql = $@"
+            // PIN フィルタ適用時のカウントクエリ
+            countSql = $@"
                 SELECT COUNT(DISTINCT wi.""Id"")::int AS ""Value""
                 FROM ""WorkspaceItems"" wi
                 LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
@@ -624,10 +614,7 @@ public class WorkspaceItemService
                 LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
                 INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
                 WHERE {filterClause} AND {searchCondition} AND wip.""UserId"" = {{{paramIndex - 3}}}";
-            var countParams = parameters.Take(paramIndex - 2).Append(pinnedByUserId.Value).ToArray();
-            totalCount = await _context.Database
-                .SqlQueryRaw<int>(countWithPinSql, countParams)
-                .FirstOrDefaultAsync();
+            countParams = parameters.Take(paramIndex - 2).Append(pinnedByUserId.Value).ToArray();
         }
         else
         {
@@ -650,9 +637,24 @@ public class WorkspaceItemService
 
             parameters.Add(pageSize);
             parameters.Add(offset);
+
+            // カウント用クエリ
+            countSql = $@"
+                SELECT COUNT(DISTINCT wi.""Id"")::int AS ""Value""
+                FROM ""WorkspaceItems"" wi
+                LEFT JOIN ""WorkspaceItemSearchIndices"" si ON wi.""Id"" = si.""WorkspaceItemId""
+                LEFT JOIN ""WorkspaceItemTags"" wit ON wi.""Id"" = wit.""WorkspaceItemId""
+                LEFT JOIN ""Tags"" t ON wit.""TagId"" = t.""Id"" AND t.""IsActive"" = true
+                WHERE {filterClause} AND {searchCondition}";
+            countParams = parameters.Take(paramIndex).ToArray();
         }
 
-        // ID + スコアのみ取得
+        // カウントクエリと検索クエリを順次実行
+        // ※ DbContext はスレッドセーフではないため並列実行不可
+        var totalCount = await _context.Database
+            .SqlQueryRaw<int>(countSql, countParams)
+            .FirstOrDefaultAsync();
+
         var searchResults = await _context.Database
             .SqlQueryRaw<PgroongaItemSearchResult>(idSql, parameters.ToArray())
             .ToListAsync();

@@ -113,6 +113,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSearching, setIsSearching] = useState(false);
 
     // フィルタードローワーの状態
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
@@ -372,9 +373,15 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         setSearchQuery(query);
         // refも即座に更新（loadMoreItemsがuseEffect実行前に呼ばれた場合に備えて）
         searchQueryRef.current = query;
-        // refreshItems完了後にresetを呼ぶ（hasMoreが更新されてからObserverを再初期化するため）
-        await refreshItemsRef.current(undefined, query);
-        resetInfiniteScroll();
+        // 検索中状態を設定
+        setIsSearching(true);
+        try {
+          // refreshItems完了後にresetを呼ぶ（hasMoreが更新されてからObserverを再初期化するため）
+          await refreshItemsRef.current(undefined, query);
+          resetInfiniteScroll();
+        } finally {
+          setIsSearching(false);
+        }
       },
       [resetInfiniteScroll],
     );
@@ -522,6 +529,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                   placeholder="あいまい検索..."
                   debounceMs={300}
                   size="sm"
+                  isLoading={isSearching}
                 />
               )}
 
