@@ -120,14 +120,14 @@ public partial class DeveloperAtoms
 
     /// <summary>
     /// Connector（コネクター）テストデータ
-    /// 条件: 5つ以上のワークスペースに参加している
+    /// 条件: アイテム間の関連を10件以上作成した
     /// 参照: ConnectorStrategy.cs
     /// </summary>
     private async Task SeedConnectorTestDataAsync()
     {
         // ===== 判定条件（ConnectorStrategy と同じ値） =====
-        const int RequiredCount = 5;
-        // 判定式: WorkspaceUser の数 >= 5
+        const int RequiredCount = 10;
+        // 判定式: WorkspaceItemRelationの数 >= 10
 
         var users = await _context.Users
             .Where(u => u.OrganizationId != null && _targetOrganizationIds.Contains(u.OrganizationId.Value))
@@ -143,57 +143,76 @@ public partial class DeveloperAtoms
             return;
         }
 
-        var workspaces = await _context.Workspaces
-            .Where(w => _targetOrganizationIds.Contains(w.OrganizationId))
-            .OrderBy(w => w.Id)
-            .Take(6)
+        var items = await _context.WorkspaceItems
+            .Where(i => i.Workspace!.OrganizationId == users[0].OrganizationId)
+            .Take(2)
             .ToListAsync();
 
-        if (workspaces.Count < 6)
+        if (items.Count == 0)
         {
-            _logger.LogWarning("Connector: Not enough workspaces for test data");
+            _logger.LogWarning("Connector: No items found to create relations");
             return;
         }
 
-        // 既存のWorkspaceUserを取得
-        var existingWorkspaceUsers = await _context.WorkspaceUsers
-            .Where(wu => users.Select(u => u.Id).Contains(wu.UserId))
-            .ToListAsync();
+        var item1 = items[0];
+        WorkspaceItem item2;
 
-        // ===== 条件を満たすユーザー（1人目: 5つのワークスペースに参加） =====
-        for (int i = 0; i < 5; i++)
+        if (items.Count >= 2)
         {
-            if (!existingWorkspaceUsers.Any(wu => wu.UserId == users[0].Id && wu.WorkspaceId == workspaces[i].Id))
+            item2 = items[1];
+        }
+        else
+        {
+            // アイテムが1つしかない場合は、リレーション用のダミーアイテムを作成
+            var maxItemNumber = await _context.WorkspaceItems
+                .Where(i => i.WorkspaceId == item1.WorkspaceId)
+                .MaxAsync(i => (int?)i.ItemNumber) ?? 0;
+
+            item2 = new WorkspaceItem
             {
-                _context.WorkspaceUsers.Add(new DB.Models.WorkspaceUser
-                {
-                    WorkspaceId = workspaces[i].Id,
-                    UserId = users[0].Id,
-                    WorkspaceRole = WorkspaceRole.Viewer,
-                    JoinedAt = DateTimeOffset.UtcNow
-                });
-            }
+                WorkspaceId = item1.WorkspaceId,
+                ItemNumber = maxItemNumber + 1,
+                Code = $"{item1.WorkspaceId}-{maxItemNumber + 1}",
+                Subject = "Connector Test Item 2",
+                Body = "Connector Test Item 2 Body",
+                OwnerId = item1.OwnerId,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            _context.WorkspaceItems.Add(item2);
+            await _context.SaveChangesAsync();
         }
 
-        // ===== 条件を満たさないユーザー（2人目: 4つのワークスペースに参加） =====
-        for (int i = 0; i < 4; i++)
+        // ===== 条件を満たすユーザー（1人目: 10件の関連を作成） =====
+        for (int i = 0; i < 10; i++)
         {
-            if (!existingWorkspaceUsers.Any(wu => wu.UserId == users[1].Id && wu.WorkspaceId == workspaces[i].Id))
+            _context.WorkspaceItemRelations.Add(new DB.Models.WorkspaceItemRelation
             {
-                _context.WorkspaceUsers.Add(new DB.Models.WorkspaceUser
-                {
-                    WorkspaceId = workspaces[i].Id,
-                    UserId = users[1].Id,
-                    WorkspaceRole = WorkspaceRole.Viewer,
-                    JoinedAt = DateTimeOffset.UtcNow
-                });
-            }
+                FromItemId = item1.Id,
+                ToItemId = item2.Id,
+                CreatedByUserId = users[0].Id,
+                CreatedAt = DateTimeOffset.UtcNow,
+                RowVersion = 0
+            });
+        }
+
+        // ===== 条件を満たさないユーザー（2人目: 9件の関連を作成） =====
+        for (int i = 0; i < 9; i++)
+        {
+            _context.WorkspaceItemRelations.Add(new DB.Models.WorkspaceItemRelation
+            {
+                FromItemId = item1.Id,
+                ToItemId = item2.Id,
+                CreatedByUserId = users[1].Id,
+                CreatedAt = DateTimeOffset.UtcNow,
+                RowVersion = 0
+            });
         }
 
         await _context.SaveChangesAsync();
 
         _logger.LogInformation(
-            "Connector: User1 joined {Required}+ workspaces (qualify), User2 joined {Less} workspaces (non-qualify)",
+            "Connector: User1 created {Required}+ relations (qualify), User2 created {Less} relations (non-qualify)",
             RequiredCount, RequiredCount - 1);
     }
 

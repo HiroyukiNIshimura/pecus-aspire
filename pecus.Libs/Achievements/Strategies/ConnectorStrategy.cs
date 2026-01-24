@@ -5,11 +5,11 @@ using Pecus.Libs.DB;
 namespace Pecus.Libs.Achievements.Strategies;
 
 /// <summary>
-/// コネクター - 5つ以上のワークスペースに参加している
+/// コネクター - アイテム間の関連を10件以上作成した
 /// </summary>
 public class ConnectorStrategy : AchievementStrategyBase
 {
-    private const int RequiredCount = 5;
+    private const int RequiredCount = 10;
 
     /// <summary>
     /// <see cref="ConnectorStrategy"/> クラスの新しいインスタンスを初期化します。
@@ -30,21 +30,16 @@ public class ConnectorStrategy : AchievementStrategyBase
         DateTimeOffset evaluationDate,
         CancellationToken cancellationToken = default)
     {
-        var activeUsers = await Context.Users
-            .AsNoTracking()
-            .Where(u => u.OrganizationId == organizationId && u.IsActive)
-            .Select(u => u.Id)
-            .ToListAsync(cancellationToken);
+        // ユーザーが作成したアイテム間の関連数をカウント
+        // Note: WorkspaceItemRelation は FromItem に紐づくため、
+        // 厳密には FromItem.OrganizationId == organizationId のチェックが望ましいが、
+        // リソース最適化のため、ひとまずリレーション自体の作成者を見る。
+        // （組織をまたぐリレーションは基本的にはない前提）
 
-        if (activeUsers.Count == 0)
-        {
-            return [];
-        }
-
-        var connectorUserIds = await Context.WorkspaceUsers
+        var connectorUserIds = await Context.WorkspaceItemRelations
             .AsNoTracking()
-            .Where(wu => activeUsers.Contains(wu.UserId))
-            .GroupBy(wu => wu.UserId)
+            .Where(r => r.FromItem!.Workspace!.OrganizationId == organizationId)
+            .GroupBy(r => r.CreatedByUserId)
             .Where(g => g.Count() >= RequiredCount)
             .OrderBy(g => g.Key)
             .Select(g => g.Key)
