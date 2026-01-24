@@ -915,9 +915,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           {/* 本文  */}
           {item.body && (
             <div className="mb-4 border border-base-300 rounded-lg p-4">
-              {/* searchTerms が変わったら Viewer を再マウントしてハイライトを適用 */}
+              {/* searchQuery が変わったら Viewer を再マウントしてハイライトを適用 */}
               <WorkspaceItemBodyViewer
-                key={searchTerms.join('|')}
+                key={searchQuery ?? ''}
                 body={item.body}
                 workspaceCode={item.workspaceCode!}
                 searchTerms={searchTerms}
