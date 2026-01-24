@@ -59,6 +59,16 @@ const BADGES = [
 
   // Productivity カテゴリ
   {
+    code: 'FIRST_POST',
+    filename: 'first_post.png',
+    prompt: `A proud coati character holding up a freshly created task card like a trophy, with sparkles and confetti around. "1st" ribbon badge on chest. Excited celebratory pose. ${BASE_STYLE}`,
+  },
+  {
+    code: 'PLANNER',
+    filename: 'planner.png',
+    prompt: `A thoughtful coati character wearing glasses, holding a clipboard with a Gantt chart and hourglass icon. Floating clock and calendar symbols. Organized and strategic pose. ${BASE_STYLE}`,
+  },
+  {
     code: 'INBOX_ZERO',
     filename: 'inbox_zero.png',
     prompt: `A peaceful coati character meditating in lotus position, surrounded by floating sparkles. Empty inbox icon floating above. Zen garden aesthetic with soft pastel colors. ${BASE_STYLE}`,

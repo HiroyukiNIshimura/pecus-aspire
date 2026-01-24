@@ -757,6 +757,36 @@ public class ProductAtoms
             // Productivity カテゴリ
             new AchievementMaster
             {
+                Code = "FIRST_POST",
+                Name = "初投稿",
+                NameEn = "First Post",
+                Description = "初めてのタスクを作成",
+                DescriptionEn = "Create your first task",
+                IconPath = "first_post.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 9,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
+                Code = "PLANNER",
+                Name = "プランナー",
+                NameEn = "Planner",
+                Description = "見積もり工数を設定したタスクを完了",
+                DescriptionEn = "Complete a task with estimated hours",
+                IconPath = "planner.webp",
+                Difficulty = AchievementDifficulty.Easy,
+                Category = AchievementCategory.Productivity,
+                IsSecret = false,
+                IsActive = true,
+                SortOrder = 10,
+                CreatedAt = now
+            },
+            new AchievementMaster
+            {
                 Code = "INBOX_ZERO",
                 Name = "Inbox Zero",
                 NameEn = "Zen Master",
@@ -767,7 +797,7 @@ public class ProductAtoms
                 Category = AchievementCategory.Productivity,
                 IsSecret = false,
                 IsActive = true,
-                SortOrder = 10,
+                SortOrder = 11,
                 CreatedAt = now
             },
             new AchievementMaster
