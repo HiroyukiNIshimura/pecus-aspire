@@ -39,17 +39,18 @@ export interface NotionLikeViewerProps {
   customLinkMatchers?: LinkMatcher[];
 
   /**
-   * 検索クエリ（ハイライト用）
+   * 検索語の配列（ハイライト用）
    * 指定するとマッチするテキストがハイライト表示される
+   * クエリのパース処理は呼び出し側で行う
    */
-  searchQuery?: string;
+  searchTerms?: string[];
 }
 
 export default function NotionLikeViewer({
   initialViewerState,
   isCodeShiki = true,
   customLinkMatchers,
-  searchQuery,
+  searchTerms,
 }: NotionLikeViewerProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -82,7 +83,7 @@ export default function NotionLikeViewer({
             <TableContext>
               <div className="viewer-shell">
                 <Viewer />
-                <SearchHighlightPlugin searchQuery={searchQuery} />
+                <SearchHighlightPlugin searchTerms={searchTerms} />
               </div>
             </TableContext>
           </LexicalExtensionComposer>

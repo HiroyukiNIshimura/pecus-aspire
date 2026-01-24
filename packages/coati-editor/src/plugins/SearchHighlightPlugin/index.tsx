@@ -1,8 +1,11 @@
 /**
  * SearchHighlightPlugin
  *
- * 検索クエリにマッチするテキストをハイライト表示するプラグイン。
+ * 検索語にマッチするテキストをハイライト表示するプラグイン。
  * Viewer専用（editable: false）で使用することを想定。
+ *
+ * 検索語の配列を受け取り、各単語を個別にハイライトする。
+ * クエリのパース処理は呼び出し側で行う。
  */
 
 'use client';
@@ -16,27 +19,50 @@ import { useEffect, useRef } from 'react';
 const SEARCH_HIGHLIGHT_ID = '__search_highlight__';
 
 interface SearchHighlightPluginProps {
-  /** 検索クエリ */
-  searchQuery?: string;
+  /** 検索語の配列（パース済み） */
+  searchTerms?: string[];
 }
 
 /**
- * TextNode内で検索クエリにマッチする位置を全て取得
+ * TextNode内で検索語にマッチする位置を全て取得
  */
-function findAllMatches(text: string, query: string): Array<{ start: number; end: number }> {
+function findAllMatches(text: string, terms: string[]): Array<{ start: number; end: number }> {
   const matches: Array<{ start: number; end: number }> = [];
   const lowerText = text.toLowerCase();
-  const lowerQuery = query.toLowerCase();
 
-  let startIndex = 0;
-  while (startIndex < lowerText.length) {
-    const index = lowerText.indexOf(lowerQuery, startIndex);
-    if (index === -1) break;
-    matches.push({ start: index, end: index + query.length });
-    startIndex = index + 1; // 重複を許可しない場合は index + query.length
+  for (const term of terms) {
+    if (!term.trim()) continue;
+    const lowerTerm = term.toLowerCase();
+
+    let startIndex = 0;
+    while (startIndex < lowerText.length) {
+      const index = lowerText.indexOf(lowerTerm, startIndex);
+      if (index === -1) break;
+      matches.push({ start: index, end: index + term.length });
+      startIndex = index + 1;
+    }
   }
 
-  return matches;
+  // 開始位置でソートし、重複を除去
+  matches.sort((a, b) => a.start - b.start);
+
+  // 重複範囲をマージ
+  const merged: Array<{ start: number; end: number }> = [];
+  for (const match of matches) {
+    if (merged.length === 0) {
+      merged.push(match);
+    } else {
+      const last = merged[merged.length - 1];
+      if (match.start <= last.end) {
+        // 重複または隣接 → マージ
+        last.end = Math.max(last.end, match.end);
+      } else {
+        merged.push(match);
+      }
+    }
+  }
+
+  return merged;
 }
 
 /**
@@ -58,10 +84,10 @@ function getAllTextNodes(node: LexicalNode): TextNode[] {
 }
 
 /**
- * 検索クエリにマッチするテキストをハイライト
+ * 検索語にマッチするテキストをハイライト
  */
-function applySearchHighlights(searchQuery: string): void {
-  if (!searchQuery.trim()) return;
+function applySearchHighlights(searchTerms: string[]): void {
+  if (searchTerms.length === 0) return;
 
   const root = $getRoot();
   const textNodes = getAllTextNodes(root);
@@ -74,7 +100,7 @@ function applySearchHighlights(searchQuery: string): void {
     }
 
     const text = textNode.getTextContent();
-    const matches = findAllMatches(text, searchQuery);
+    const matches = findAllMatches(text, searchTerms);
 
     if (matches.length === 0) continue;
 
@@ -96,13 +122,13 @@ function applySearchHighlights(searchQuery: string): void {
   $setSelection(null);
 }
 
-export default function SearchHighlightPlugin({ searchQuery }: SearchHighlightPluginProps): null {
+export default function SearchHighlightPlugin({ searchTerms }: SearchHighlightPluginProps): null {
   const [editor] = useLexicalComposerContext();
   const hasAppliedRef = useRef(false);
 
   // 初回マウント時にハイライトを適用（key で再マウントされるため、これで十分）
   useEffect(() => {
-    if (hasAppliedRef.current || !searchQuery?.trim()) return;
+    if (hasAppliedRef.current || !searchTerms || searchTerms.length === 0) return;
 
     // EditorState が準備完了するのを待つ
     const unregister = editor.registerUpdateListener(() => {
@@ -111,7 +137,7 @@ export default function SearchHighlightPlugin({ searchQuery }: SearchHighlightPl
 
       editor.update(
         () => {
-          applySearchHighlights(searchQuery);
+          applySearchHighlights(searchTerms);
         },
         { discrete: true },
       );
@@ -123,7 +149,7 @@ export default function SearchHighlightPlugin({ searchQuery }: SearchHighlightPl
     return () => {
       unregister();
     };
-  }, [editor, searchQuery]);
+  }, [editor, searchTerms]);
 
   return null;
 }

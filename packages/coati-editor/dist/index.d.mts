@@ -336,12 +336,13 @@ interface NotionLikeViewerProps {
      */
     customLinkMatchers?: LinkMatcher[];
     /**
-     * 検索クエリ（ハイライト用）
+     * 検索語の配列（ハイライト用）
      * 指定するとマッチするテキストがハイライト表示される
+     * クエリのパース処理は呼び出し側で行う
      */
-    searchQuery?: string;
+    searchTerms?: string[];
 }
-declare function NotionLikeViewer({ initialViewerState, isCodeShiki, customLinkMatchers, searchQuery, }: NotionLikeViewerProps): react_jsx_runtime.JSX.Element;
+declare function NotionLikeViewer({ initialViewerState, isCodeShiki, customLinkMatchers, searchTerms, }: NotionLikeViewerProps): react_jsx_runtime.JSX.Element;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -412,16 +413,19 @@ declare const PLAYGROUND_TRANSFORMERS: Array<Transformer>;
 /**
  * SearchHighlightPlugin
  *
- * 検索クエリにマッチするテキストをハイライト表示するプラグイン。
+ * 検索語にマッチするテキストをハイライト表示するプラグイン。
  * Viewer専用（editable: false）で使用することを想定。
+ *
+ * 検索語の配列を受け取り、各単語を個別にハイライトする。
+ * クエリのパース処理は呼び出し側で行う。
  */
 /** 検索ハイライト用のマークID */
 declare const SEARCH_HIGHLIGHT_ID = "__search_highlight__";
 interface SearchHighlightPluginProps {
-    /** 検索クエリ */
-    searchQuery?: string;
+    /** 検索語の配列（パース済み） */
+    searchTerms?: string[];
 }
-declare function SearchHighlightPlugin({ searchQuery }: SearchHighlightPluginProps): null;
+declare function SearchHighlightPlugin({ searchTerms }: SearchHighlightPluginProps): null;
 
 declare function TableContext({ children }: {
     children: JSX.Element;

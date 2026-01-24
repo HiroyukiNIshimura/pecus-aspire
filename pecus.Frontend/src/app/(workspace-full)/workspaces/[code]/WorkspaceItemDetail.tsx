@@ -1,7 +1,7 @@
 'use client';
 
 import Mark from 'mark.js';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
   addWorkspaceItemPin,
   fetchLatestWorkspaceItem,
@@ -41,6 +41,62 @@ import { formatDate, formatDateTime } from '@/libs/utils/date';
 import { type ItemEditStatus as ItemEditState, useSignalRContext } from '@/providers/SignalRProvider';
 import EditWorkspaceItem, { type ItemUpdateRequest } from './EditWorkspaceItem';
 import WorkspaceTasks from './WorkspaceTasks';
+
+/**
+ * 検索クエリをパースして個別の検索語に分解する
+ * バックエンドの PgroongaQueryBuilder と同じロジック
+ * - スペース区切り → AND検索（各単語を個別にハイライト）
+ * - パイプ区切り → OR検索（各単語を個別にハイライト）
+ * - #123 → アイテムコード検索（プレフィックス部分のみ）
+ */
+function parseSearchQuery(query: string): string[] {
+  if (!query?.trim()) return [];
+
+  const terms: string[] = [];
+  const trimmed = query.trim();
+
+  // パイプ区切りの場合（OR検索）
+  if (trimmed.includes('|')) {
+    const parts = trimmed
+      .split('|')
+      .map((p) => p.trim())
+      .filter(Boolean);
+    for (const part of parts) {
+      // #123 形式はコード部分のみ
+      if (part.startsWith('#')) {
+        const code = part.slice(1);
+        if (code) terms.push(code);
+      } else {
+        terms.push(part);
+      }
+    }
+  }
+  // スペース区切りの場合（AND検索）
+  else if (trimmed.includes(' ')) {
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    for (const part of parts) {
+      // #123 形式はコード部分のみ
+      if (part.startsWith('#')) {
+        const code = part.slice(1);
+        if (code) terms.push(code);
+      } else {
+        terms.push(part);
+      }
+    }
+  }
+  // 単一の検索語
+  else {
+    // #123 形式はコード部分のみ
+    if (trimmed.startsWith('#')) {
+      const code = trimmed.slice(1);
+      if (code) terms.push(code);
+    } else {
+      terms.push(trimmed);
+    }
+  }
+
+  return terms;
+}
 
 /** 優先度の文字列を数値に変換（バックエンドの enum 値に対応） */
 const PRIORITY_TO_NUMBER: Record<NonNullable<TaskPriority>, number> = {
@@ -199,6 +255,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     // ハイライト用のコンテナ ref
     const highlightContainerRef = useRef<HTMLDivElement>(null);
 
+    // 検索語をパースしてメモ化
+    const searchTerms = useMemo(() => parseSearchQuery(searchQuery ?? ''), [searchQuery]);
+
     // 検索語ハイライト（エディタ部分は除外）
     useEffect(() => {
       if (!highlightContainerRef.current) return;
@@ -206,12 +265,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       const marker = new Mark(highlightContainerRef.current);
       marker.unmark(); // 前回のハイライトをクリア
 
-      if (searchQuery?.trim()) {
-        marker.mark(searchQuery, {
-          separateWordSearch: false, // フレーズ全体をマッチ
-        });
+      if (searchTerms.length > 0) {
+        // 配列で渡すと各単語を個別にハイライト
+        marker.mark(searchTerms);
       }
-    }, [searchQuery, item]);
+    }, [searchTerms, item]);
 
     // アイテム詳細を取得する関数
     const fetchItemDetail = useCallback(async () => {
@@ -857,12 +915,12 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           {/* 本文  */}
           {item.body && (
             <div className="mb-4 border border-base-300 rounded-lg p-4">
-              {/* searchQuery が変わったら Viewer を再マウントしてハイライトを適用 */}
+              {/* searchTerms が変わったら Viewer を再マウントしてハイライトを適用 */}
               <WorkspaceItemBodyViewer
-                key={searchQuery ?? ''}
+                key={searchTerms.join('|')}
                 body={item.body}
                 workspaceCode={item.workspaceCode!}
-                searchQuery={searchQuery}
+                searchTerms={searchTerms}
               />
             </div>
           )}
@@ -1247,15 +1305,15 @@ export default WorkspaceItemDetail;
 function WorkspaceItemBodyViewer({
   body,
   workspaceCode,
-  searchQuery,
+  searchTerms,
 }: {
   body: string;
   workspaceCode: string;
-  searchQuery?: string;
+  searchTerms?: string[];
 }) {
   const itemCodeMatchers = useItemCodeLinkMatchers({ workspaceCode });
 
   return (
-    <PecusNotionLikeViewer initialViewerState={body} customLinkMatchers={itemCodeMatchers} searchQuery={searchQuery} />
+    <PecusNotionLikeViewer initialViewerState={body} customLinkMatchers={itemCodeMatchers} searchTerms={searchTerms} />
   );
 }
