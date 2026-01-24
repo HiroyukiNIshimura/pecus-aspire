@@ -125,6 +125,9 @@ export default function WorkspaceDetailClient({
   const [selectedItemCode, setSelectedItemCode] = useState<string | null>(initialItemCode ?? null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // ===== 検索クエリ状態（ハイライト用）=====
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
   // ===== スクロールターゲット状態（一度使用したらクリア）=====
   const [scrollTarget, setScrollTarget] = useState<string | null>(initialScrollTarget ?? null);
 
@@ -1235,6 +1238,7 @@ export default function WorkspaceDetailClient({
               onSelectionConfirm={handleSelectionConfirm}
               onSelectionCancel={handleSelectionCancel}
               canEdit={canEdit}
+              onSearchQueryChange={setSearchQuery}
             />
 
             {/* リサイズハンドル */}
@@ -1522,6 +1526,7 @@ export default function WorkspaceDetailClient({
                 onArchiveComplete={handleArchiveComplete}
                 onSidebarRefresh={handleArchiveComplete}
                 canEdit={canEdit}
+                searchQuery={searchQuery}
               />
             )}
         </main>
@@ -1692,6 +1697,7 @@ export default function WorkspaceDetailClient({
               onSelectionConfirm={handleSelectionConfirm}
               onSelectionCancel={handleSelectionCancel}
               canEdit={canEdit}
+              onSearchQueryChange={setSearchQuery}
             />
           </div>
         </div>

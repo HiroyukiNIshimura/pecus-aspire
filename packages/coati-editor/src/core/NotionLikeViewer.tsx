@@ -14,6 +14,7 @@ import { useMemo } from 'react';
 import { AutoLinkProvider, type LinkMatcher } from '../context/AutoLinkContext';
 import { SettingsContext } from '../context/SettingsContext';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
+import SearchHighlightPlugin from '../plugins/SearchHighlightPlugin';
 import { TableContext } from '../plugins/TablePlugin';
 import NotionLikeViewerTheme from '../themes/NotionLikeViewerTheme';
 import { INITIAL_SETTINGS } from './appSettings';
@@ -36,12 +37,19 @@ export interface NotionLikeViewerProps {
    * URLやメールアドレスの基本Matcherに追加される
    */
   customLinkMatchers?: LinkMatcher[];
+
+  /**
+   * 検索クエリ（ハイライト用）
+   * 指定するとマッチするテキストがハイライト表示される
+   */
+  searchQuery?: string;
 }
 
 export default function NotionLikeViewer({
   initialViewerState,
   isCodeShiki = true,
   customLinkMatchers,
+  searchQuery,
 }: NotionLikeViewerProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -74,6 +82,7 @@ export default function NotionLikeViewer({
             <TableContext>
               <div className="viewer-shell">
                 <Viewer />
+                <SearchHighlightPlugin searchQuery={searchQuery} />
               </div>
             </TableContext>
           </LexicalExtensionComposer>

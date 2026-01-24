@@ -1,5 +1,6 @@
 'use client';
 
+import Mark from 'mark.js';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import {
   addWorkspaceItemPin,
@@ -115,6 +116,8 @@ interface WorkspaceItemDetailProps {
   onSidebarRefresh?: () => void;
   /** 編集権限があるかどうか（Viewer以外）*/
   canEdit?: boolean;
+  /** 検索クエリ（ハイライト用） */
+  searchQuery?: string;
 }
 
 /** WorkspaceItemDetail の外部公開メソッド */
@@ -143,6 +146,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       onArchiveComplete,
       onSidebarRefresh,
       canEdit = true,
+      searchQuery,
     },
     ref,
   ) {
@@ -191,6 +195,23 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
     const [attachments, setAttachments] = useState<WorkspaceItemAttachmentResponse[]>([]);
     const [attachmentCount, setAttachmentCount] = useState(0);
+
+    // ハイライト用のコンテナ ref
+    const highlightContainerRef = useRef<HTMLDivElement>(null);
+
+    // 検索語ハイライト（エディタ部分は除外）
+    useEffect(() => {
+      if (!highlightContainerRef.current) return;
+
+      const marker = new Mark(highlightContainerRef.current);
+      marker.unmark(); // 前回のハイライトをクリア
+
+      if (searchQuery?.trim()) {
+        marker.mark(searchQuery, {
+          separateWordSearch: false, // フレーズ全体をマッチ
+        });
+      }
+    }, [searchQuery, item]);
 
     // アイテム詳細を取得する関数
     const fetchItemDetail = useCallback(async () => {
@@ -668,7 +689,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     }
 
     return (
-      <div className="card">
+      <div className="card" ref={highlightContainerRef}>
         <div className="card-body">
           {/* ヘッダー */}
           <div className="flex flex-col gap-3 mb-4">
@@ -836,7 +857,13 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           {/* 本文  */}
           {item.body && (
             <div className="mb-4 border border-base-300 rounded-lg p-4">
-              <WorkspaceItemBodyViewer body={item.body} workspaceCode={item.workspaceCode!} />
+              {/* searchQuery が変わったら Viewer を再マウントしてハイライトを適用 */}
+              <WorkspaceItemBodyViewer
+                key={searchQuery ?? ''}
+                body={item.body}
+                workspaceCode={item.workspaceCode!}
+                searchQuery={searchQuery}
+              />
             </div>
           )}
 
@@ -1217,8 +1244,18 @@ export default WorkspaceItemDetail;
  * 本文表示用のビューアーコンポーネント
  * アイテムコードリンク用のMatcherを設定した状態でViewerをラップ
  */
-function WorkspaceItemBodyViewer({ body, workspaceCode }: { body: string; workspaceCode: string }) {
+function WorkspaceItemBodyViewer({
+  body,
+  workspaceCode,
+  searchQuery,
+}: {
+  body: string;
+  workspaceCode: string;
+  searchQuery?: string;
+}) {
   const itemCodeMatchers = useItemCodeLinkMatchers({ workspaceCode });
 
-  return <PecusNotionLikeViewer initialViewerState={body} customLinkMatchers={itemCodeMatchers} />;
+  return (
+    <PecusNotionLikeViewer initialViewerState={body} customLinkMatchers={itemCodeMatchers} searchQuery={searchQuery} />
+  );
 }

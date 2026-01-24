@@ -76,6 +76,8 @@ interface WorkspaceItemsSidebarProps {
   onSelectionCancel?: () => void;
   /** 編集権限があるかどうか（Viewer以外）*/
   canEdit?: boolean;
+  /** 検索クエリが変更された時のコールバック（ハイライト用） */
+  onSearchQueryChange?: (query: string) => void;
 }
 
 export interface WorkspaceItemsSidebarHandle {
@@ -100,6 +102,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       onSelectionConfirm,
       onSelectionCancel,
       canEdit = true,
+      onSearchQueryChange,
     },
     ref,
   ) => {
@@ -373,6 +376,8 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         setSearchQuery(query);
         // refも即座に更新（loadMoreItemsがuseEffect実行前に呼ばれた場合に備えて）
         searchQueryRef.current = query;
+        // 親コンポーネントに検索クエリを通知（ハイライト用）
+        onSearchQueryChange?.(query);
         // 検索中状態を設定
         setIsSearching(true);
         try {
@@ -383,7 +388,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           setIsSearching(false);
         }
       },
-      [resetInfiniteScroll],
+      [resetInfiniteScroll, onSearchQueryChange],
     );
 
     // フィルタードローワーを閉じるハンドラー

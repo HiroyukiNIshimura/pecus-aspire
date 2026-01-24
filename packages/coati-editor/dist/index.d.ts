@@ -335,8 +335,13 @@ interface NotionLikeViewerProps {
      * URLやメールアドレスの基本Matcherに追加される
      */
     customLinkMatchers?: LinkMatcher[];
+    /**
+     * 検索クエリ（ハイライト用）
+     * 指定するとマッチするテキストがハイライト表示される
+     */
+    searchQuery?: string;
 }
-declare function NotionLikeViewer({ initialViewerState, isCodeShiki, customLinkMatchers, }: NotionLikeViewerProps): react_jsx_runtime.JSX.Element;
+declare function NotionLikeViewer({ initialViewerState, isCodeShiki, customLinkMatchers, searchQuery, }: NotionLikeViewerProps): react_jsx_runtime.JSX.Element;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -403,6 +408,20 @@ declare const INSERT_MARKDOWN_COMMAND: LexicalCommand<string>;
  */
 
 declare const PLAYGROUND_TRANSFORMERS: Array<Transformer>;
+
+/**
+ * SearchHighlightPlugin
+ *
+ * 検索クエリにマッチするテキストをハイライト表示するプラグイン。
+ * Viewer専用（editable: false）で使用することを想定。
+ */
+/** 検索ハイライト用のマークID */
+declare const SEARCH_HIGHLIGHT_ID = "__search_highlight__";
+interface SearchHighlightPluginProps {
+    /** 検索クエリ */
+    searchQuery?: string;
+}
+declare function SearchHighlightPlugin({ searchQuery }: SearchHighlightPluginProps): null;
 
 declare function TableContext({ children }: {
     children: JSX.Element;
@@ -848,4 +867,4 @@ declare function validateUrl(url: string): boolean;
 
 declare const PACKAGE_VERSION = "0.1.0";
 
-export { Button, ColorPicker, type ComponentPickerOptionConfig, ComponentPickerProvider, LexicalContentEditable as ContentEditable, type CoreEditorProps, DialogActions, DialogButtonsList, DropDown, DropDownItem, DropdownColorPicker, Editor, type EditorChangeCallbacks, type EditorContext, type EditorSettings, _default$1 as EquationEditor, type ExtraOptionsProvider, FileInput, FlashMessage, FlashMessageContext, FragmentLinkPlugin, FullscreenProvider, HorizontalRulePlugin, INSERT_MARKDOWN_COMMAND, ImageResizer, type ImageUploadHandler, ImageUploadProvider, type ImageUploadResult, ImagesPlugin, KatexEquationAlterer, KatexRenderer, Modal, NotionLikeEditor, type NotionLikeEditorProps, theme$2 as NotionLikeEditorTheme, NotionLikeViewer, type NotionLikeViewerProps, theme$1 as NotionLikeViewerTheme, PACKAGE_VERSION, PLAYGROUND_TRANSFORMERS, type PecusEditorProps, Select, SettingsContext, SharedHistoryContext, type ShowFlashMessage, theme as StickyEditorTheme, Switch, TableContext, TextInput, ToolbarContext, Viewer, blockTypeToBlockName, _default as emojiList, getSelectedNode, joinClasses, sanitizeUrl, useComponentPickerContext, useFlashMessageContext, useFullscreen, useImageUpload, useModal, useReport, useSettings, useSharedHistoryContext, useToolbarState, validateUrl };
+export { Button, ColorPicker, type ComponentPickerOptionConfig, ComponentPickerProvider, LexicalContentEditable as ContentEditable, type CoreEditorProps, DialogActions, DialogButtonsList, DropDown, DropDownItem, DropdownColorPicker, Editor, type EditorChangeCallbacks, type EditorContext, type EditorSettings, _default$1 as EquationEditor, type ExtraOptionsProvider, FileInput, FlashMessage, FlashMessageContext, FragmentLinkPlugin, FullscreenProvider, HorizontalRulePlugin, INSERT_MARKDOWN_COMMAND, ImageResizer, type ImageUploadHandler, ImageUploadProvider, type ImageUploadResult, ImagesPlugin, KatexEquationAlterer, KatexRenderer, Modal, NotionLikeEditor, type NotionLikeEditorProps, theme$2 as NotionLikeEditorTheme, NotionLikeViewer, type NotionLikeViewerProps, theme$1 as NotionLikeViewerTheme, PACKAGE_VERSION, PLAYGROUND_TRANSFORMERS, type PecusEditorProps, SEARCH_HIGHLIGHT_ID, SearchHighlightPlugin, Select, SettingsContext, SharedHistoryContext, type ShowFlashMessage, theme as StickyEditorTheme, Switch, TableContext, TextInput, ToolbarContext, Viewer, blockTypeToBlockName, _default as emojiList, getSelectedNode, joinClasses, sanitizeUrl, useComponentPickerContext, useFlashMessageContext, useFullscreen, useImageUpload, useModal, useReport, useSettings, useSharedHistoryContext, useToolbarState, validateUrl };
