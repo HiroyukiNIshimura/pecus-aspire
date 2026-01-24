@@ -12,7 +12,7 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260121123545_InitialCreate")]
+    [Migration("20260124055243_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -1809,9 +1809,6 @@ namespace pecus.DbManager.Migrations
                     b.Property<int?>("Priority")
                         .HasColumnType("integer");
 
-                    b.Property<string>("RawBody")
-                        .HasColumnType("text");
-
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -1998,6 +1995,27 @@ namespace pecus.DbManager.Migrations
                         {
                             t.HasCheckConstraint("CK_WorkspaceItemRelation_DifferentItems", "from_item_id != to_item_id");
                         });
+                });
+
+            modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceItemSearchIndex", b =>
+                {
+                    b.Property<int>("WorkspaceItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FullText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RawBody")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("WorkspaceItemId");
+
+                    b.ToTable("WorkspaceItemSearchIndices");
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceItemTag", b =>
@@ -2856,6 +2874,17 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("ToItem");
                 });
 
+            modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceItemSearchIndex", b =>
+                {
+                    b.HasOne("Pecus.Libs.DB.Models.WorkspaceItem", "WorkspaceItem")
+                        .WithOne("SearchIndex")
+                        .HasForeignKey("Pecus.Libs.DB.Models.WorkspaceItemSearchIndex", "WorkspaceItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WorkspaceItem");
+                });
+
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceItemTag", b =>
                 {
                     b.HasOne("Pecus.Libs.DB.Models.User", "CreatedByUser")
@@ -3118,6 +3147,8 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("RelationsFrom");
 
                     b.Navigation("RelationsTo");
+
+                    b.Navigation("SearchIndex");
 
                     b.Navigation("WorkspaceItemAttachments");
 

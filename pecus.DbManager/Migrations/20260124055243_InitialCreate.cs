@@ -947,7 +947,6 @@ namespace pecus.DbManager.Migrations
                     Code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Subject = table.Column<string>(type: "text", nullable: false),
                     Body = table.Column<string>(type: "text", nullable: true),
-                    RawBody = table.Column<string>(type: "text", nullable: true),
                     OwnerId = table.Column<int>(type: "integer", nullable: false),
                     AssigneeId = table.Column<int>(type: "integer", nullable: true),
                     Priority = table.Column<int>(type: "integer", nullable: true),
@@ -1215,6 +1214,26 @@ namespace pecus.DbManager.Migrations
                     table.ForeignKey(
                         name: "FK_WorkspaceItemRelations_WorkspaceItems_to_item_id",
                         column: x => x.to_item_id,
+                        principalTable: "WorkspaceItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkspaceItemSearchIndices",
+                columns: table => new
+                {
+                    WorkspaceItemId = table.Column<int>(type: "integer", nullable: false),
+                    RawBody = table.Column<string>(type: "text", nullable: false),
+                    FullText = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkspaceItemSearchIndices", x => x.WorkspaceItemId);
+                    table.ForeignKey(
+                        name: "FK_WorkspaceItemSearchIndices_WorkspaceItems_WorkspaceItemId",
+                        column: x => x.WorkspaceItemId,
                         principalTable: "WorkspaceItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -2236,6 +2255,9 @@ namespace pecus.DbManager.Migrations
 
             migrationBuilder.DropTable(
                 name: "WorkspaceItemRelations");
+
+            migrationBuilder.DropTable(
+                name: "WorkspaceItemSearchIndices");
 
             migrationBuilder.DropTable(
                 name: "WorkspaceItemTags");
