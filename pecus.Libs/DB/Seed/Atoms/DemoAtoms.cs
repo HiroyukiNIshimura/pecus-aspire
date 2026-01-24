@@ -744,6 +744,7 @@ public class DemoAtoms
         {
             WorkspaceItemId = workspaceItem.Id,
             RawBody = bodyData.Value.RawBody,
+            FullText = $"{workspaceItem.Subject} {workspaceItem.Code} {bodyData.Value.RawBody}",
             UpdatedAt = DateTime.UtcNow
         };
         await _context.WorkspaceItemSearchIndices.AddAsync(searchIndex);
@@ -1218,6 +1219,7 @@ public class DemoAtoms
         {
             WorkspaceItemId = wi.Id,
             RawBody = bodyDataList[i].RawBody,
+            FullText = $"{wi.Subject} {wi.Code} {bodyDataList[i].RawBody}",
             UpdatedAt = DateTime.UtcNow
         }).ToList();
         await _context.WorkspaceItemSearchIndices.AddRangeAsync(searchIndices);

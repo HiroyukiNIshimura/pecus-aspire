@@ -1011,6 +1011,7 @@ public class LoadTestAtoms : BaseSeedAtoms
                             {
                                 WorkspaceItemId = x.Item.Id,
                                 RawBody = x.RawBody,
+                                FullText = $"{x.Item.Subject} {x.Item.Code} {x.RawBody}",
                                 UpdatedAt = DateTime.UtcNow
                             }).ToList();
                             _context.WorkspaceItemSearchIndices.AddRange(searchIndices);
@@ -1034,6 +1035,7 @@ public class LoadTestAtoms : BaseSeedAtoms
                     {
                         WorkspaceItemId = x.Item.Id,
                         RawBody = x.RawBody,
+                        FullText = $"{x.Item.Subject} {x.Item.Code} {x.RawBody}",
                         UpdatedAt = DateTime.UtcNow
                     }).ToList();
                     _context.WorkspaceItemSearchIndices.AddRange(searchIndices);

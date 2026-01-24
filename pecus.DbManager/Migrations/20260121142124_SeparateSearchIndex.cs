@@ -21,6 +21,7 @@ namespace pecus.DbManager.Migrations
                 {
                     WorkspaceItemId = table.Column<int>(type: "integer", nullable: false),
                     RawBody = table.Column<string>(type: "text", nullable: false),
+                    FullText = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
