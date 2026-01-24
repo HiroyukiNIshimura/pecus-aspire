@@ -477,7 +477,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-lg font-bold">アイテム一覧</h3>
                 <span className="text-xs text-base-content/70">
-                  {searchQuery ? `${items.length} 件（検索結果）` : `${totalCount} 件`}
+                  {searchQuery ? `${totalCount} 件（検索結果）` : `${totalCount} 件`}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-2 mb-3">

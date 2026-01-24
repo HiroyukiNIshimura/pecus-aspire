@@ -689,6 +689,16 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                   #{item.code}
                 </button>
               )}
+              {/* タグ（件名直下に表示） */}
+              {item.tags && item.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {item.tags.map((tag) => (
+                    <span key={tag.id} className="badge badge-outline badge-sm">
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             {/* 優先度・期限バッジ */}
             <div className="flex items-center gap-2 flex-wrap">
@@ -900,20 +910,6 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               </div>
             )}
           </div>
-
-          {/* タグ */}
-          {item.tags && item.tags.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-lg font-bold mb-2">タグ</h3>
-              <div className="flex flex-wrap gap-2">
-                {item.tags.map((tag) => (
-                  <span key={tag.id} className="badge badge-outline">
-                    {tag.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* 関連アイテム（ドキュメントモードでは非表示） */}
           {!isDocumentMode && (
