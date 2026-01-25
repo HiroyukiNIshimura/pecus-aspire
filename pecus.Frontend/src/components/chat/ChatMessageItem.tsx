@@ -29,9 +29,11 @@ function Avatar({
   config: AvatarConfig;
 }) {
   return (
-    <div className={`flex-shrink-0 size-10 rounded-full ${config.bgClass} flex items-center justify-center`}>
+    <div
+      className={`flex-shrink-0 size-12 rounded-full ${config.bgClass} flex items-center justify-center transition-transform duration-200 hover:scale-150 cursor-pointer`}
+    >
       {iconUrl ? (
-        <img src={iconUrl} alt={username ?? ''} className="size-10 rounded-full" />
+        <img src={iconUrl} alt={username ?? ''} className="size-12 rounded-full" />
       ) : (
         <span className={`${config.iconClass} size-5 ${config.iconColorClass}`} aria-hidden="true" />
       )}
@@ -82,19 +84,19 @@ function LeftAlignedMessage({
 /** アバター設定マップ */
 const AVATAR_CONFIGS = {
   system: {
-    bgClass: 'bg-neutral',
+    bgClass: 'bg-lime-100',
     iconClass: 'icon-[tabler--settings-automation]',
-    iconColorClass: 'text-neutral-content',
+    iconColorClass: 'text-success-content',
   },
   ai: {
-    bgClass: 'bg-secondary',
+    bgClass: 'bg-lime-100',
     iconClass: 'icon-[tabler--robot]',
-    iconColorClass: 'text-secondary-content',
+    iconColorClass: 'text-success-content',
   },
   user: {
-    bgClass: 'bg-neutral',
+    bgClass: 'bg-lime-100',
     iconClass: 'icon-[tabler--user]',
-    iconColorClass: 'text-neutral-content',
+    iconColorClass: 'text-success-content',
   },
 } as const;
 
