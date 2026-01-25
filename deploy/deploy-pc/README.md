@@ -81,6 +81,27 @@ sudo ./setup-docker-daemon.sh
 ./pull-and-deploy.sh 20260108214353
 ```
 
+### DBリセット付きデプロイ（フレッシュデプロイ）
+
+DBスキーマの破壊的変更や、初期状態からのセットアップが必要な場合に使用します。
+
+```bash
+# 最新バージョンでフレッシュデプロイ
+./fresh-deploy.sh
+
+# 特定バージョンでフレッシュデプロイ
+./fresh-deploy.sh 20260108214353
+```
+
+**⚠️ 警告**: このコマンドはデータベースを完全に初期化します。全てのデータが失われます。
+
+または、オプションを直接指定することもできます：
+
+```bash
+./pull-and-deploy.sh --db-reset
+./pull-and-deploy.sh 20260108214353 --db-reset
+```
+
 ---
 
 ## トラブルシューティング
@@ -131,6 +152,7 @@ deploy-pc/
 ├── README.md                   # このファイル
 ├── setup-docker-daemon.sh      # Docker daemon 設定
 ├── pull-and-deploy.sh          # プル & デプロイ
+├── fresh-deploy.sh             # フレッシュデプロイ（DBリセット付き）
 ├── list-tags.sh                # タグ一覧表示
 ├── .env.example                # 環境変数テンプレート
 └── .env                        # 環境変数（git ignore）
@@ -182,4 +204,4 @@ deploy-pc/
 
 ---
 
-*最終更新: 2026-01-08*
+*最終更新: 2026-01-25*

@@ -23,9 +23,26 @@ else
 fi
 
 REGISTRY="${BUILD_PC_IP}:${REGISTRY_PORT:-5000}"
-VERSION="${1:-latest}"
 BUILD_PC_USER="${BUILD_PC_USER:-coati}"
 BUILD_PC_PROJECT_PATH="${BUILD_PC_PROJECT_PATH:-/var/docker/coati/pecus-aspire}"
+
+# 引数パース
+VERSION="latest"
+DB_RESET_MODE="false"
+for arg in "$@"; do
+    case "$arg" in
+        --db-reset)
+            DB_RESET_MODE="true"
+            ;;
+        -*)
+            echo "❌ 不明なオプション: $arg"
+            exit 1
+            ;;
+        *)
+            VERSION="$arg"
+            ;;
+    esac
+done
 
 # スクリプト自身のパスとハッシュ（自己更新検出用）
 SCRIPT_PATH="$SCRIPT_DIR/pull-and-deploy.sh"
@@ -227,6 +244,35 @@ else
     echo "⚠️  ops/lib.sh が見つかりません。infraの状態確認をスキップします。"
 fi
 echo ""
+
+# Step 5.6: DBリセット（--db-reset オプション指定時のみ）
+if [ "$DB_RESET_MODE" = "true" ]; then
+    echo "========================================="
+    echo "  ⚠️  DBリセットモード"
+    echo "========================================="
+    echo ""
+    echo "警告: データベースを完全に初期化します。"
+    echo "      全てのデータが失われます！"
+    echo ""
+    printf "続行しますか？[y/N]: "
+    read -r answer
+    if [ "$answer" != "y" ] && [ "$answer" != "Y" ]; then
+        echo "キャンセルしました。"
+        exit 0
+    fi
+    echo ""
+
+    echo "🛑 アプリケーションを停止中..."
+    sh "$OPS_DIR/app-down.sh" -y
+    echo ""
+
+    echo "🗑️  DBリセット & マイグレーション実行中..."
+    # db-reset-migrate.sh 内の確認プロンプトをスキップするため -y を渡す
+    sh "$OPS_DIR/db-reset-migrate.sh" -y
+    echo ""
+    echo "✅ DBリセット完了"
+    echo ""
+fi
 
 # Step 6: switch-node.sh でデプロイ実行（--no-build オプション使用）
 echo "🚀 $TARGET_SLOT スロットへデプロイ中..."
