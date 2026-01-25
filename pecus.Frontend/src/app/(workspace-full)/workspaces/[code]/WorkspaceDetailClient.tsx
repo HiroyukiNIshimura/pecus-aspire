@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Markdown from 'react-markdown';
 import { getAchievementRanking } from '@/actions/achievement';
 import { deleteWorkspace } from '@/actions/deleteWorkspace';
 import {
@@ -44,6 +45,7 @@ import type {
   WorkspaceTaskDetailResponse,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { remarkItemCodeLinks } from '@/libs/markdown/remarkItemCodeLinks';
 import { formatDateTime } from '@/libs/utils/date';
 import { useCurrentUser, useOrganizationSettings } from '@/providers/AppSettingsProvider';
 import type { WorkspacePresenceUser } from '@/providers/SignalRProvider';
@@ -1273,9 +1275,9 @@ export default function WorkspaceDetailClient({
 
                 {/* 説明 */}
                 {currentWorkspaceDetail.description && (
-                  <p className="text-base text-base-content/70 mb-4 whitespace-pre-wrap wrap-break-word">
-                    {currentWorkspaceDetail.description}
-                  </p>
+                  <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none prose-headings:mt-3 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 mb-4 text-base-content/70">
+                    <Markdown remarkPlugins={[remarkItemCodeLinks]}>{currentWorkspaceDetail.description}</Markdown>
+                  </div>
                 )}
 
                 {/* メタ情報（4列＋モード） */}
