@@ -87,13 +87,13 @@ public class ProductAtoms
                 throw new InvalidOperationException("Required role (BackOffice) not found.");
             }
 
-            var (systemBot, chatBot) = await GetOrCreateGlobalBotsAsync();
+            var (systemBot, chatBot, wildBot) = await GetOrCreateGlobalBotsAsync();
 
             var users = CreateBackOfficeUsers(organization, backOfficeRole);
             await _context.Users.AddRangeAsync(users);
             await _context.SaveChangesAsync();
 
-            var chatActors = CreateBackOfficeChatActors(organization, users, systemBot, chatBot);
+            var chatActors = CreateBackOfficeChatActors(organization, users, systemBot, chatBot, wildBot);
             await _context.ChatActors.AddRangeAsync(chatActors);
             await _context.SaveChangesAsync();
 
@@ -149,7 +149,7 @@ public class ProductAtoms
     /// グローバル Bot を取得または作成
     /// Bot はグローバルに1つだけ存在する
     /// </summary>
-    private async Task<(Bot SystemBot, Bot ChatBot)> GetOrCreateGlobalBotsAsync()
+    private async Task<(Bot SystemBot, Bot ChatBot, Bot WildBot)> GetOrCreateGlobalBotsAsync()
     {
         var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
         var systemBotConstraint = BotPersonaHelper.GetSystemBotConstraint();
@@ -190,7 +190,24 @@ public class ProductAtoms
             await _context.SaveChangesAsync();
         }
 
-        return (systemBot, chatBot);
+        var wildBot = await _context.Bots.FirstOrDefaultAsync(b => b.Type == BotType.WildBot);
+        if (wildBot == null)
+        {
+            wildBot = new Bot
+            {
+                Type = BotType.WildBot,
+                Name = "Wild Bot",
+                IconUrl = "/icons/bot/wild.webp",
+                Persona = BotPersonaHelper.GetWildBotPersona(),
+                Constraint = BotPersonaHelper.GetWildBotConstraint(),
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            await _context.Bots.AddAsync(wildBot);
+            await _context.SaveChangesAsync();
+        }
+
+        return (systemBot, chatBot, wildBot);
     }
 
 
@@ -220,7 +237,7 @@ public class ProductAtoms
         return users;
     }
 
-    private List<ChatActor> CreateBackOfficeChatActors(Organization org, List<User> users, Bot systemBot, Bot chatBot)
+    private List<ChatActor> CreateBackOfficeChatActors(Organization org, List<User> users, Bot systemBot, Bot chatBot, Bot wildBot)
     {
         var chatActors = new List<ChatActor>();
 
@@ -268,6 +285,20 @@ public class ProductAtoms
             UpdatedAt = DateTimeOffset.UtcNow
         };
         chatActors.Add(chatBotActor);
+
+        var wildBotActor = new ChatActor
+        {
+            OrganizationId = org.Id,
+            ActorType = ChatActorType.Bot,
+            UserId = null,
+            BotId = wildBot.Id,
+            DisplayName = wildBot.Name,
+            AvatarType = null,
+            AvatarUrl = wildBot.IconUrl,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+        chatActors.Add(wildBotActor);
 
         return chatActors;
     }

@@ -16,13 +16,13 @@ public enum BotType
     ChatBot = 1,
 
     /// <summary>
-    /// システム通知ボット
+    /// システムボット
     /// </summary>
     SystemBot = 2,
 
     /// <summary>
-    /// タスク管理ボット(将来の拡張用)
+    /// 野生のCoatiボット
     /// </summary>
-    TaskBot = 3,
+    WildBot = 3,
 
 }

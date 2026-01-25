@@ -152,6 +152,8 @@ public class OrganizationService
                 DisplayName = adminUser.Username,
                 AvatarType = adminUser.AvatarType,
                 AvatarUrl = adminUser.UserAvatarPath,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
             };
             _context.ChatActors.Add(adminChatActor);
             await _context.SaveChangesAsync();
@@ -161,6 +163,8 @@ public class OrganizationService
                 ?? throw new InvalidOperationException("ChatBot が見つかりません。Seed データが正しく実行されているか確認してください。");
             var systemBot = await _context.Bots.FirstOrDefaultAsync(b => b.Type == BotType.SystemBot)
                 ?? throw new InvalidOperationException("SystemBot が見つかりません。Seed データが正しく実行されているか確認してください。");
+            var wildBot = await _context.Bots.FirstOrDefaultAsync(b => b.Type == BotType.WildBot)
+            ?? throw new InvalidOperationException("WildBot が見つかりません。Seed データが正しく実行されているか確認してください。");
 
             // Chat ボット用 ChatActor を作成（組織固有の表示情報）
             var chatBotActor = new ChatActor
@@ -170,6 +174,8 @@ public class OrganizationService
                 BotId = chatBot.Id,
                 DisplayName = chatBot.Name,
                 AvatarUrl = chatBot.IconUrl,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
             };
             _context.ChatActors.Add(chatBotActor);
 
@@ -181,8 +187,23 @@ public class OrganizationService
                 BotId = systemBot.Id,
                 DisplayName = systemBot.Name,
                 AvatarUrl = systemBot.IconUrl,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
             };
             _context.ChatActors.Add(systemBotActor);
+
+            // Wild ボット用 ChatActor を作成（組織固有の表示情報）
+            var wildBotActor = new ChatActor
+            {
+                OrganizationId = organization.Id,
+                ActorType = ChatActorType.Bot,
+                BotId = wildBot.Id,
+                DisplayName = wildBot.Name,
+                AvatarUrl = wildBot.IconUrl,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            _context.ChatActors.Add(wildBotActor);
+
             await _context.SaveChangesAsync();
 
             // グループチャットルームを作成（管理者 + Coati Bot）
