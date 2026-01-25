@@ -245,7 +245,7 @@ else
 fi
 echo ""
 
-# Step 5.6: DBリセット（--db-reset オプション指定時のみ）
+# Step 5.6: DBリセットの確認（--db-reset オプション指定時のみ）
 if [ "$DB_RESET_MODE" = "true" ]; then
     echo "========================================="
     echo "  ⚠️  DBリセットモード"
@@ -265,14 +265,6 @@ if [ "$DB_RESET_MODE" = "true" ]; then
     echo "🛑 アプリケーションを停止中..."
     (cd "$OPS_DIR" && sh ./app-down.sh -y)
     echo ""
-
-    echo "🗑️  DBリセット & マイグレーション実行中..."
-    # db-reset-migrate.sh 内の確認プロンプトをスキップするため -y を渡す
-    # カレントディレクトリを ops/ に変更して実行（相対パス参照のため）
-    (cd "$OPS_DIR" && sh ./db-reset-migrate.sh -y)
-    echo ""
-    echo "✅ DBリセット完了"
-    echo ""
 fi
 
 # Step 6: switch-node.sh でデプロイ実行（--no-build オプション使用）
@@ -285,10 +277,10 @@ if [ ! -f "$OPS_DIR/switch-node.sh" ]; then
 fi
 
 # --no-build オプションを使用して、ビルドをスキップ
-# DBリセットモードの場合は --skip-migration も追加（既にマイグレーション済み）
+# DBリセットモードの場合は --db-reset を追加
 SWITCH_OPTS="--no-build"
 if [ "$DB_RESET_MODE" = "true" ]; then
-    SWITCH_OPTS="$SWITCH_OPTS --skip-migration"
+    SWITCH_OPTS="$SWITCH_OPTS --db-reset"
 fi
 
 if (cd "$OPS_DIR" && sh ./switch-node.sh "$TARGET_SLOT" $SWITCH_OPTS); then

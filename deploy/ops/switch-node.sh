@@ -14,6 +14,7 @@ set -eu
 # Options:
 #   --no-build        Skip git pull and build steps (use pre-built images)
 #   --skip-migration  Skip DB migration (use when migration already done)
+#   --db-reset        Reset database before migration (WARNING: deletes all data)
 
 # shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
@@ -23,6 +24,7 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 # オプション解析
 NO_BUILD=false
 SKIP_MIGRATION=false
+DB_RESET=false
 slot=""
 
 for arg in "$@"; do
@@ -33,18 +35,21 @@ for arg in "$@"; do
     --skip-migration)
       SKIP_MIGRATION=true
       ;;
+    --db-reset)
+      DB_RESET=true
+      ;;
     blue|green)
       slot="$arg"
       ;;
     *)
-      echo "Usage: $0 {blue|green} [--no-build] [--skip-migration]" >&2
+      echo "Usage: $0 {blue|green} [--no-build] [--skip-migration] [--db-reset]" >&2
       exit 2
       ;;
   esac
 done
 
 if [ -z "$slot" ]; then
-  echo "Usage: $0 {blue|green} [--no-build] [--skip-migration]" >&2
+  echo "Usage: $0 {blue|green} [--no-build] [--skip-migration] [--db-reset]" >&2
   exit 2
 fi
 
@@ -151,6 +156,15 @@ fi
 
 if [ "$SKIP_MIGRATION" = "true" ]; then
   echo "[Info] 6. DB Migration (SKIPPED: --skip-migration)" >&2
+elif [ "$DB_RESET" = "true" ]; then
+  echo "[Info] 6. DB Reset & Migration (--db-reset)" >&2
+  # Clean up uploads directory
+  echo "[Info] Cleaning up uploads directory..." >&2
+  if [ -d "$DATA_PATH/uploads" ]; then
+    rm -rf "${DATA_PATH:?}/uploads/"*
+    echo "[OK] Uploads directory cleaned." >&2
+  fi
+  DB_RESET_MODE=true compose_migrate run --rm dbmanager
 else
   echo "[Info] 6. DB Migration" >&2
   compose_migrate run --rm dbmanager
