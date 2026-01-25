@@ -195,6 +195,7 @@ public class BotSelector : IBotSelector
     {
         var bots = await _context.Bots
             .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .Where(b => b.Type != BotType.WildBot) // WildBotはランダム選択から除外
             .ToListAsync(cancellationToken);
 
         if (bots.Count == 0)
