@@ -205,68 +205,48 @@ public abstract class BaseSeedAtoms
 
     /// <summary>
     /// ボットのシードデータを投入
-    /// 各組織に ChatBot と SystemBot を作成
+    /// Bot はグローバルに1つだけ存在し、組織ごとに ChatActor で表現される
     /// </summary>
     public async Task SeedBotsAsync()
     {
-        // _targetOrganizationIdsが設定されている場合はその組織のみを対象とする
-        var query = _context.Organizations.AsQueryable();
-        if (_targetOrganizationIds.Any())
-        {
-            query = query.Where(o => _targetOrganizationIds.Contains(o.Id));
-        }
-        var organizations = await query.ToListAsync();
-        if (!organizations.Any())
-        {
-            _logger.LogInformation("No organizations found, skipping bot seeding");
-            return;
-        }
-
         var existingBots = await _context.Bots.ToListAsync();
-        var existingBotsByOrg = existingBots
-            .GroupBy(b => b.OrganizationId)
-            .ToDictionary(g => g.Key, g => g.ToList());
 
         var botsToAdd = new List<Bot>();
 
-        foreach (var org in organizations)
+        // ChatBot がなければ作成（グローバルに1つ）
+        if (!existingBots.Any(b => b.Type == BotType.ChatBot))
         {
-            var orgBots = existingBotsByOrg.GetValueOrDefault(org.Id, []);
-
-            if (!orgBots.Any(b => b.Type == BotType.ChatBot))
+            botsToAdd.Add(new Bot
             {
-                botsToAdd.Add(new Bot
-                {
-                    OrganizationId = org.Id,
-                    Type = BotType.ChatBot,
-                    Name = "Coati Bot",
-                    IconUrl = "/icons/bot/chat.webp",
-                });
-            }
+                Type = BotType.ChatBot,
+                Name = "Coati Bot",
+                IconUrl = "/icons/bot/chat.webp",
+            });
+        }
 
-            if (!orgBots.Any(b => b.Type == BotType.SystemBot))
+        // SystemBot がなければ作成（グローバルに1つ）
+        if (!existingBots.Any(b => b.Type == BotType.SystemBot))
+        {
+            botsToAdd.Add(new Bot
             {
-                botsToAdd.Add(new Bot
-                {
-                    OrganizationId = org.Id,
-                    Type = BotType.SystemBot,
-                    Name = "Butler Bot",
-                    IconUrl = "/icons/bot/system.webp",
-                });
-            }
+                Type = BotType.SystemBot,
+                Name = "Butler Bot",
+                IconUrl = "/icons/bot/system.webp",
+            });
         }
 
         if (botsToAdd.Count > 0)
         {
             _context.Bots.AddRange(botsToAdd);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Added {Count} bots", botsToAdd.Count);
+            _logger.LogInformation("Added {Count} global bots", botsToAdd.Count);
         }
         else
         {
-            _logger.LogInformation("All organizations already have bots, skipping creation");
+            _logger.LogInformation("Global bots already exist, skipping creation");
         }
 
+        // Persona と Constraint を更新
         var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
         var chatBotConstraint = BotPersonaHelper.GetChatBotConstraint();
         var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
@@ -424,26 +404,43 @@ public abstract class BaseSeedAtoms
             });
         }
 
-        // _targetOrganizationIdsが設定されている場合はその組織のボットのみを対象とする
-        var botQuery = _context.Bots
-            .Where(b => !_context.ChatActors.Any(a => a.BotId == b.Id));
+        // Bot 用 ChatActor の作成
+        // Bot はグローバルに存在し、各組織に対して ChatActor を作成する
+        var globalBots = await _context.Bots.ToListAsync();
+        var existingBotActors = await _context.ChatActors
+            .Where(a => a.BotId != null)
+            .Select(a => new { a.OrganizationId, a.BotId })
+            .ToListAsync();
+        var existingBotActorKeys = existingBotActors
+            .Select(a => (a.OrganizationId, a.BotId))
+            .ToHashSet();
+
+        // 対象組織を取得
+        var orgQuery = _context.Organizations.AsQueryable();
         if (_targetOrganizationIds.Any())
         {
-            botQuery = botQuery.Where(b => _targetOrganizationIds.Contains(b.OrganizationId));
+            orgQuery = orgQuery.Where(o => _targetOrganizationIds.Contains(o.Id));
         }
-        var botsWithoutActor = await botQuery.ToListAsync();
+        var organizations = await orgQuery.Select(o => o.Id).ToListAsync();
 
-        foreach (var bot in botsWithoutActor)
+        foreach (var orgId in organizations)
         {
-            chatActorsToAdd.Add(new ChatActor
+            foreach (var bot in globalBots)
             {
-                OrganizationId = bot.OrganizationId,
-                ActorType = ChatActorType.Bot,
-                BotId = bot.Id,
-                DisplayName = bot.Name,
-                AvatarType = null,
-                AvatarUrl = bot.IconUrl,
-            });
+                // この組織にこの Bot の ChatActor がまだない場合は作成
+                if (!existingBotActorKeys.Contains((orgId, bot.Id)))
+                {
+                    chatActorsToAdd.Add(new ChatActor
+                    {
+                        OrganizationId = orgId,
+                        ActorType = ChatActorType.Bot,
+                        BotId = bot.Id,
+                        DisplayName = bot.Name,
+                        AvatarType = null,
+                        AvatarUrl = bot.IconUrl,
+                    });
+                }
+            }
         }
 
         if (!chatActorsToAdd.Any())
@@ -455,7 +452,7 @@ public abstract class BaseSeedAtoms
         await ExecuteBatchInsertAsync(chatActorsToAdd, batchSize, "ChatActors");
 
         _logger.LogInformation("Added {UserCount} ChatActors for users, {BotCount} for bots",
-            usersWithoutActor.Count, botsWithoutActor.Count);
+            usersWithoutActor.Count, chatActorsToAdd.Count - usersWithoutActor.Count);
     }
 }
 

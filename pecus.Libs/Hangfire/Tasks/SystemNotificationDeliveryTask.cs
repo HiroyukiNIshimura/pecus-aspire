@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 using Pecus.Libs.Notifications;
 using System.Text.Json;
 using BotEntity = Pecus.Libs.DB.Models.Bot;
@@ -140,7 +141,7 @@ public class SystemNotificationDeliveryTask
         }
 
         var systemBot = await GetSystemBotAsync(organizationId);
-        if (systemBot?.ChatActor == null)
+        if (systemBot?.ChatActors.Any() != true)
         {
             _logger.LogWarning(
                 "SystemBotが見つかりませんでした: OrganizationId={OrganizationId}",
@@ -148,7 +149,7 @@ public class SystemNotificationDeliveryTask
             return null;
         }
 
-        await EnsureBotIsMemberAsync(systemRoom.Id, systemBot.ChatActor.Id);
+        await EnsureBotIsMemberAsync(systemRoom.Id, systemBot.GetChatActorId());
 
         var messageContent = BuildMessageContent(notification);
         var messageId = await SendBotMessageToSystemRoomAsync(
@@ -227,10 +228,8 @@ public class SystemNotificationDeliveryTask
     private async Task<BotEntity?> GetSystemBotAsync(int organizationId)
     {
         return await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == BotType.SystemBot);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == BotType.SystemBot);
     }
 
     private async Task EnsureBotIsMemberAsync(int roomId, int chatActorId)
@@ -259,7 +258,7 @@ public class SystemNotificationDeliveryTask
         var message = new ChatMessage
         {
             ChatRoomId = room.Id,
-            SenderActorId = systemBot.ChatActor!.Id,
+            SenderActorId = systemBot.GetChatActorId(),
             MessageType = ChatMessageType.System,
             Content = content,
         };

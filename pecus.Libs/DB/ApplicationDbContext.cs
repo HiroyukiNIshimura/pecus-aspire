@@ -1149,11 +1149,12 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey<ChatActor>(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ChatActor と Bot の一対一リレーションシップ（オプショナル）
+            // ChatActor と Bot の多対一リレーションシップ（オプショナル）
+            // 1つのBotが複数組織のChatActorを持てる
             entity
                 .HasOne(a => a.Bot)
-                .WithOne(b => b.ChatActor)
-                .HasForeignKey<ChatActor>(a => a.BotId)
+                .WithMany(b => b.ChatActors)
+                .HasForeignKey(a => a.BotId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // 組織内のアクター一覧取得用
@@ -1165,9 +1166,9 @@ public class ApplicationDbContext : DbContext
                 .IsUnique()
                 .HasFilter("\"UserId\" IS NOT NULL");
 
-            // ボット検索用（ユニーク）
+            // ボット検索用（組織内でユニーク）
             entity
-                .HasIndex(e => e.BotId)
+                .HasIndex(e => new { e.OrganizationId, e.BotId })
                 .IsUnique()
                 .HasFilter("\"BotId\" IS NOT NULL");
 
@@ -1180,23 +1181,17 @@ public class ApplicationDbContext : DbContext
             );
         });
 
-        // Bot エンティティの設定
+        // Bot エンティティの設定（グローバル、組織に属さない）
         modelBuilder.Entity<Bot>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Persona).HasMaxLength(2000);
+            entity.Property(e => e.Constraint).HasMaxLength(2000);
             entity.Property(e => e.IconUrl).HasMaxLength(500);
 
-            // Bot と Organization の多対一リレーションシップ
-            entity
-                .HasOne(b => b.Organization)
-                .WithMany()
-                .HasForeignKey(b => b.OrganizationId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // 組織内のボット一覧取得用
-            entity.HasIndex(e => e.OrganizationId);
+            // BotType でのユニーク制約（同じタイプのBotは1つだけ）
+            entity.HasIndex(e => e.Type).IsUnique();
         });
 
         // SystemNotification エンティティの設定

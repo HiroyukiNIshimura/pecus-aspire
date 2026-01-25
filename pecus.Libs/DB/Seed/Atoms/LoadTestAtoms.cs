@@ -526,15 +526,15 @@ public class LoadTestAtoms : BaseSeedAtoms
             .Where(a => a.UserId != null)
             .ToDictionaryAsync(a => a.UserId!.Value, a => a.Id);
 
-        // BotId → ChatActorId のマッピングを取得
-        var botIdToActorId = await _context.ChatActors
+        // BotId → ChatActorId のマッピングを組織ごとに取得
+        var botActorsByOrganization = await _context.ChatActors
             .Where(a => a.BotId != null)
-            .ToDictionaryAsync(a => a.BotId!.Value, a => a.Id);
-
-        // 組織ごとの Bot を取得
-        var botsByOrganization = await _context.Bots
-            .GroupBy(b => b.OrganizationId)
+            .GroupBy(a => a.OrganizationId)
             .ToDictionaryAsync(g => g.Key, g => g.ToList());
+
+        // グローバル Bot を取得
+        var globalBotsByType = await _context.Bots
+            .ToDictionaryAsync(b => b.Type, b => b);
 
         var chatRoomsToAdd = new List<ChatRoom>();
         var chatRoomMembersToAdd = new List<ChatRoomMember>();
@@ -604,15 +604,16 @@ public class LoadTestAtoms : BaseSeedAtoms
             }
 
             // 組織グループチャットに ChatBot を追加
-            if (botsByOrganization.TryGetValue(org.Id, out var orgBots))
+            if (globalBotsByType.TryGetValue(BotType.ChatBot, out var chatBot) &&
+                botActorsByOrganization.TryGetValue(org.Id, out var orgBotActors))
             {
-                var chatBot = orgBots.FirstOrDefault(b => b.Type == BotType.ChatBot);
-                if (chatBot != null && botIdToActorId.TryGetValue(chatBot.Id, out var chatBotActorId))
+                var chatBotActor = orgBotActors.FirstOrDefault(a => a.BotId == chatBot.Id);
+                if (chatBotActor != null)
                 {
                     chatRoomMembersToAdd.Add(new ChatRoomMember
                     {
                         ChatRoomId = room.Id,
-                        ChatActorId = chatBotActorId,
+                        ChatActorId = chatBotActor.Id,
                         Role = ChatRoomRole.Member,
                     });
                 }
@@ -682,15 +683,16 @@ public class LoadTestAtoms : BaseSeedAtoms
             }
 
             // ワークスペースグループチャットに ChatBot を追加
-            if (botsByOrganization.TryGetValue(workspace.OrganizationId, out var orgBots))
+            if (globalBotsByType.TryGetValue(BotType.ChatBot, out var wsChatBot) &&
+                botActorsByOrganization.TryGetValue(workspace.OrganizationId, out var wsOrgBotActors))
             {
-                var chatBot = orgBots.FirstOrDefault(b => b.Type == BotType.ChatBot);
-                if (chatBot != null && botIdToActorId.TryGetValue(chatBot.Id, out var chatBotActorId))
+                var wsChatBotActor = wsOrgBotActors.FirstOrDefault(a => a.BotId == wsChatBot.Id);
+                if (wsChatBotActor != null)
                 {
                     chatRoomMembersToAdd.Add(new ChatRoomMember
                     {
                         ChatRoomId = room.Id,
-                        ChatActorId = chatBotActorId,
+                        ChatActorId = wsChatBotActor.Id,
                         Role = ChatRoomRole.Member,
                     });
                 }

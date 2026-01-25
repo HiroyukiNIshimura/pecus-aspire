@@ -83,10 +83,8 @@ public abstract class TaskNotificationTaskBase
     protected async Task<DB.Models.Bot?> GetSystemBotAsync(int organizationId)
     {
         return await Context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == BotType.SystemBot);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == BotType.SystemBot);
     }
 
     /// <summary>
@@ -145,7 +143,7 @@ public abstract class TaskNotificationTaskBase
         var message = new ChatMessage
         {
             ChatRoomId = room.Id,
-            SenderActorId = systemBot.ChatActor!.Id,
+            SenderActorId = systemBot.GetChatActorId(),
             MessageType = ChatMessageType.Text,
             Content = content,
         };
@@ -173,7 +171,7 @@ public abstract class TaskNotificationTaskBase
         {
             GroupName = $"organization:{organizationId}",
             EventType = "chat:unread_updated",
-            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, systemBot.ChatActor.Id),
+            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, systemBot.GetChatActorId()),
             SourceType = NotificationSourceType.ChatBot,
             OrganizationId = organizationId,
         });
@@ -295,7 +293,7 @@ public abstract class TaskNotificationTaskBase
             var (messageContent, selectedBot) = await BuildNotificationMessageAsync(organizationId, task, userName, workspaceCode);
 
             // 選択されたBotがあればそれを使用、なければSystemBotを使用
-            if (selectedBot?.ChatActor != null)
+            if (selectedBot?.ChatActors.Any() == true)
             {
                 systemBot = selectedBot;
             }
@@ -304,7 +302,7 @@ public abstract class TaskNotificationTaskBase
                 systemBot = await GetSystemBotAsync(organizationId);
             }
 
-            if (systemBot?.ChatActor == null)
+            if (systemBot?.ChatActors.Any() != true)
             {
                 Logger.LogWarning(
                     "Bot not found for organization: OrganizationId={OrganizationId}",
@@ -314,13 +312,13 @@ public abstract class TaskNotificationTaskBase
             }
 
             // Bot がルームのメンバーか確認し、メンバーでなければ追加
-            await EnsureBotIsMemberAsync(room.Id, systemBot.ChatActor.Id);
+            await EnsureBotIsMemberAsync(room.Id, systemBot.GetChatActorId());
 
             // 入力開始を通知
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,
-                systemBot.ChatActor.Id,
+                systemBot.GetChatActorId(),
                 systemBot.Name,
                 isTyping: true
             );
@@ -332,7 +330,7 @@ public abstract class TaskNotificationTaskBase
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,
-                systemBot.ChatActor.Id,
+                systemBot.GetChatActorId(),
                 systemBot.Name,
                 isTyping: false
             );
@@ -347,14 +345,14 @@ public abstract class TaskNotificationTaskBase
             );
 
             // エラー時も入力終了を通知
-            if (systemBot?.ChatActor != null && room != null)
+            if (systemBot?.ChatActors.Any() == true && room != null)
             {
                 try
                 {
                     await Publisher.PublishChatBotTypingAsync(
                         organizationId,
                         room.Id,
-                        systemBot.ChatActor.Id,
+                        systemBot.GetChatActorId(),
                         systemBot.Name,
                         isTyping: false
                     );

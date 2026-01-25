@@ -100,7 +100,7 @@ public class TaskCommentUrgeTask
             }
 
             systemBot = await GetSystemBotAsync(organizationId);
-            if (systemBot?.ChatActor == null)
+            if (systemBot?.ChatActors.Any() != true)
             {
                 _logger.LogWarning(
                     "SystemBot not found for organization: OrganizationId={OrganizationId}",
@@ -159,10 +159,8 @@ public class TaskCommentUrgeTask
     private async Task<DB.Models.Bot?> GetSystemBotAsync(int organizationId)
     {
         return await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == BotType.SystemBot);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == BotType.SystemBot);
     }
 
     /// <summary>
@@ -186,7 +184,7 @@ public class TaskCommentUrgeTask
         await _publisher.PublishChatBotTypingAsync(
             organizationId,
             dmRoom.Id,
-            systemBot.ChatActor!.Id,
+            systemBot.GetChatActorId(),
             systemBot.Name,
             isTyping: true);
 
@@ -195,7 +193,7 @@ public class TaskCommentUrgeTask
         await _publisher.PublishChatBotTypingAsync(
             organizationId,
             dmRoom.Id,
-            systemBot.ChatActor.Id,
+            systemBot.GetChatActorId(),
             systemBot.Name,
             isTyping: false);
 
@@ -234,7 +232,7 @@ public class TaskCommentUrgeTask
 
         if (existingRoom != null)
         {
-            await EnsureBotIsMemberAsync(existingRoom.Id, systemBot.ChatActor!.Id);
+            await EnsureBotIsMemberAsync(existingRoom.Id, systemBot.GetChatActorId());
             return existingRoom;
         }
 
@@ -252,7 +250,7 @@ public class TaskCommentUrgeTask
                 },
                 new ChatRoomMember
                 {
-                    ChatActorId = systemBot.ChatActor!.Id,
+                    ChatActorId = systemBot.GetChatActorId(),
                     Role = ChatRoomRole.Member
                 }
             ]
@@ -306,7 +304,7 @@ public class TaskCommentUrgeTask
         var message = new ChatMessage
         {
             ChatRoomId = room.Id,
-            SenderActorId = systemBot.ChatActor!.Id,
+            SenderActorId = systemBot.GetChatActorId(),
             MessageType = ChatMessageType.Text,
             Content = content,
         };
@@ -330,7 +328,7 @@ public class TaskCommentUrgeTask
         {
             GroupName = $"organization:{organizationId}",
             EventType = "chat:unread_updated",
-            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, systemBot.ChatActor.Id),
+            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, systemBot.GetChatActorId()),
             SourceType = NotificationSourceType.ChatBot,
             OrganizationId = organizationId,
         });

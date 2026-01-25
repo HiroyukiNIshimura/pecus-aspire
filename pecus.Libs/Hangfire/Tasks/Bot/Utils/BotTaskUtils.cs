@@ -8,6 +8,28 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 public static class BotTaskUtils
 {
     /// <summary>
+    /// Bot から組織のChatActorを取得する（最初の1件）
+    /// </summary>
+    /// <param name="bot">Bot</param>
+    /// <returns>ChatActor、見つからない場合はnull</returns>
+    public static ChatActor? GetChatActor(this DB.Models.Bot bot)
+    {
+        return bot.ChatActors.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Bot から組織のChatActorIdを取得する
+    /// </summary>
+    /// <param name="bot">Bot</param>
+    /// <returns>ChatActorId</returns>
+    /// <exception cref="InvalidOperationException">ChatActorが見つからない場合</exception>
+    public static int GetChatActorId(this DB.Models.Bot bot)
+    {
+        return bot.ChatActors.FirstOrDefault()?.Id
+            ?? throw new InvalidOperationException($"Bot {bot.Id} has no ChatActor loaded");
+    }
+
+    /// <summary>
     /// Bot メッセージ用の SignalR 通知ペイロードを生成する
     /// </summary>
     /// <param name="room">チャットルーム</param>
@@ -19,6 +41,9 @@ public static class BotTaskUtils
         ChatMessage message,
         DB.Models.Bot bot)
     {
+        var chatActor = bot.GetChatActor()
+            ?? throw new InvalidOperationException($"Bot {bot.Id} has no ChatActor loaded");
+
         return new
         {
             RoomId = room.Id,
@@ -26,21 +51,21 @@ public static class BotTaskUtils
             Message = new
             {
                 message.Id,
-                SenderActorId = bot.ChatActor!.Id,
+                SenderActorId = chatActor.Id,
                 message.MessageType,
                 message.Content,
                 message.ReplyToMessageId,
                 message.CreatedAt,
                 Sender = new
                 {
-                    Id = bot.ChatActor.Id,
-                    ActorType = bot.ChatActor.ActorType.ToString(),
+                    chatActor.Id,
+                    ActorType = chatActor.ActorType.ToString(),
                     UserId = (int?)null,
                     BotId = bot.Id,
-                    DisplayName = bot.Name,
-                    AvatarType = bot.ChatActor.AvatarType?.ToString()?.ToLowerInvariant(),
-                    AvatarUrl = bot.IconUrl,
-                    IdentityIconUrl = bot.IconUrl ?? "",
+                    DisplayName = chatActor.DisplayName,
+                    AvatarType = chatActor.AvatarType?.ToString()?.ToLowerInvariant(),
+                    AvatarUrl = chatActor.AvatarUrl ?? bot.IconUrl,
+                    IdentityIconUrl = chatActor.AvatarUrl ?? bot.IconUrl ?? "",
                     IsActive = true,
                 },
             },

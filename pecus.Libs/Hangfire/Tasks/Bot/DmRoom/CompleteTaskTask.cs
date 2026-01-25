@@ -104,7 +104,7 @@ public class CompleteTaskTask
             organizationId = task.WorkspaceItem.Workspace!.OrganizationId;
 
             selectedBot = await SelectRandomBotWithFallbackAsync(organizationId);
-            if (selectedBot?.ChatActor == null)
+            if (selectedBot?.ChatActors.Any() != true)
             {
                 _logger.LogWarning(
                     "No bot available for organization: OrganizationId={OrganizationId}",
@@ -173,10 +173,8 @@ public class CompleteTaskTask
     private async Task<DB.Models.Bot?> GetSystemBotAsync(int organizationId)
     {
         return await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == BotType.SystemBot);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == BotType.SystemBot);
     }
 
     /// <summary>
@@ -331,7 +329,7 @@ public class CompleteTaskTask
 
         if (existingRoom != null)
         {
-            await EnsureBotIsMemberAsync(existingRoom.Id, selectedBot.ChatActor!.Id);
+            await EnsureBotIsMemberAsync(existingRoom.Id, selectedBot.GetChatActorId());
             return existingRoom;
         }
 
@@ -349,7 +347,7 @@ public class CompleteTaskTask
                 },
                 new ChatRoomMember
                 {
-                    ChatActorId = selectedBot.ChatActor!.Id,
+                    ChatActorId = selectedBot.GetChatActorId(),
                     Role = ChatRoomRole.Member
                 }
             ]
@@ -403,7 +401,7 @@ public class CompleteTaskTask
         var message = new ChatMessage
         {
             ChatRoomId = room.Id,
-            SenderActorId = selectedBot.ChatActor!.Id,
+            SenderActorId = selectedBot.GetChatActorId(),
             MessageType = ChatMessageType.Text,
             Content = content,
         };
@@ -426,7 +424,7 @@ public class CompleteTaskTask
         {
             GroupName = $"organization:{organizationId}",
             EventType = "chat:unread_updated",
-            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, selectedBot.ChatActor.Id),
+            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, selectedBot.GetChatActorId()),
             SourceType = NotificationSourceType.ChatBot,
             OrganizationId = organizationId,
         });

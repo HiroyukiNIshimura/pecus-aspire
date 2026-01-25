@@ -329,27 +329,45 @@ public partial class DeveloperAtoms : BaseSeedAtoms
             });
         }
 
-        // 2. ChatActor が未作成のボットを取得して作成
-        // _targetOrganizationIdsが設定されている場合はその組織のボットのみを対象とする
-        var botQuery = _context.Bots
-            .Where(b => !_context.ChatActors.Any(a => a.BotId == b.Id));
+        // 2. Bot 用の ChatActor を作成
+        // Bot はグローバルに存在し、各組織に対して ChatActor を作成する
+        var globalBots = await _context.Bots.ToListAsync();
+        var existingBotActors = await _context.ChatActors
+            .Where(a => a.BotId != null)
+            .Select(a => new { a.OrganizationId, a.BotId })
+            .ToListAsync();
+        var existingBotActorKeys = existingBotActors
+            .Select(a => (a.OrganizationId, a.BotId))
+            .ToHashSet();
+
+        // 対象組織を取得
+        var orgQuery = _context.Organizations.AsQueryable();
         if (_targetOrganizationIds.Any())
         {
-            botQuery = botQuery.Where(b => _targetOrganizationIds.Contains(b.OrganizationId));
+            orgQuery = orgQuery.Where(o => _targetOrganizationIds.Contains(o.Id));
         }
-        var botsWithoutActor = await botQuery.ToListAsync();
+        var targetOrgIds = await orgQuery.Select(o => o.Id).ToListAsync();
 
-        foreach (var bot in botsWithoutActor)
+        int botActorCount = 0;
+        foreach (var orgId in targetOrgIds)
         {
-            chatActorsToAdd.Add(new ChatActor
+            foreach (var bot in globalBots)
             {
-                OrganizationId = bot.OrganizationId,
-                ActorType = ChatActorType.Bot,
-                BotId = bot.Id,
-                DisplayName = bot.Name,
-                AvatarType = null,
-                AvatarUrl = bot.IconUrl,
-            });
+                // この組織にこの Bot の ChatActor がまだない場合は作成
+                if (!existingBotActorKeys.Contains((orgId, bot.Id)))
+                {
+                    chatActorsToAdd.Add(new ChatActor
+                    {
+                        OrganizationId = orgId,
+                        ActorType = ChatActorType.Bot,
+                        BotId = bot.Id,
+                        DisplayName = bot.Name,
+                        AvatarType = null,
+                        AvatarUrl = bot.IconUrl,
+                    });
+                    botActorCount++;
+                }
+            }
         }
 
         if (!chatActorsToAdd.Any())
@@ -370,7 +388,7 @@ public partial class DeveloperAtoms : BaseSeedAtoms
         _logger.LogInformation(
             "Added {UserCount} ChatActors for users, {BotCount} ChatActors for bots",
             usersWithoutActor.Count,
-            botsWithoutActor.Count
+            botActorCount
         );
     }
 
@@ -646,15 +664,15 @@ public partial class DeveloperAtoms : BaseSeedAtoms
             .Where(a => a.UserId != null)
             .ToDictionaryAsync(a => a.UserId!.Value, a => a.Id);
 
-        // BotId → ChatActorId のマッピングを取得
-        var botIdToActorId = await _context.ChatActors
+        // BotId → ChatActorId のマッピングを組織ごとに取得
+        var botActorsByOrganization = await _context.ChatActors
             .Where(a => a.BotId != null)
-            .ToDictionaryAsync(a => a.BotId!.Value, a => a.Id);
-
-        // 組織ごとの Bot を取得
-        var botsByOrganization = await _context.Bots
-            .GroupBy(b => b.OrganizationId)
+            .GroupBy(a => a.OrganizationId)
             .ToDictionaryAsync(g => g.Key, g => g.ToList());
+
+        // グローバル Bot を取得
+        var globalBotsByType = await _context.Bots
+            .ToDictionaryAsync(b => b.Type, b => b);
 
         var chatRoomsToAdd = new List<ChatRoom>();
         var chatRoomMembersToAdd = new List<ChatRoomMember>();
@@ -724,15 +742,16 @@ public partial class DeveloperAtoms : BaseSeedAtoms
             }
 
             // 組織グループチャットに ChatBot を追加
-            if (botsByOrganization.TryGetValue(org.Id, out var orgBots))
+            if (globalBotsByType.TryGetValue(BotType.ChatBot, out var chatBot) &&
+                botActorsByOrganization.TryGetValue(org.Id, out var orgBotActors))
             {
-                var chatBot = orgBots.FirstOrDefault(b => b.Type == BotType.ChatBot);
-                if (chatBot != null && botIdToActorId.TryGetValue(chatBot.Id, out var chatBotActorId))
+                var chatBotActor = orgBotActors.FirstOrDefault(a => a.BotId == chatBot.Id);
+                if (chatBotActor != null)
                 {
                     chatRoomMembersToAdd.Add(new ChatRoomMember
                     {
                         ChatRoomId = room.Id,
-                        ChatActorId = chatBotActorId,
+                        ChatActorId = chatBotActor.Id,
                         Role = ChatRoomRole.Member,
                     });
                 }
@@ -802,15 +821,16 @@ public partial class DeveloperAtoms : BaseSeedAtoms
             }
 
             // ワークスペースグループチャットに ChatBot を追加
-            if (botsByOrganization.TryGetValue(workspace.OrganizationId, out var orgBots))
+            if (globalBotsByType.TryGetValue(BotType.ChatBot, out var wsChatBot) &&
+                botActorsByOrganization.TryGetValue(workspace.OrganizationId, out var wsOrgBotActors))
             {
-                var chatBot = orgBots.FirstOrDefault(b => b.Type == BotType.ChatBot);
-                if (chatBot != null && botIdToActorId.TryGetValue(chatBot.Id, out var chatBotActorId))
+                var wsChatBotActor = wsOrgBotActors.FirstOrDefault(a => a.BotId == wsChatBot.Id);
+                if (wsChatBotActor != null)
                 {
                     chatRoomMembersToAdd.Add(new ChatRoomMember
                     {
                         ChatRoomId = room.Id,
-                        ChatActorId = chatBotActorId,
+                        ChatActorId = wsChatBotActor.Id,
                         Role = ChatRoomRole.Member,
                     });
                 }

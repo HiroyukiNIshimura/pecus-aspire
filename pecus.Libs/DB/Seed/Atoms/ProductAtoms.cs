@@ -87,9 +87,7 @@ public class ProductAtoms
                 throw new InvalidOperationException("Required role (BackOffice) not found.");
             }
 
-            var (systemBot, chatBot) = CreateBackOfficeBots(organization);
-            await _context.Bots.AddRangeAsync(new[] { systemBot, chatBot });
-            await _context.SaveChangesAsync();
+            var (systemBot, chatBot) = await GetOrCreateGlobalBotsAsync();
 
             var users = CreateBackOfficeUsers(organization, backOfficeRole);
             await _context.Users.AddRangeAsync(users);
@@ -147,36 +145,50 @@ public class ProductAtoms
         };
     }
 
-    private (Bot SystemBot, Bot ChatBot) CreateBackOfficeBots(Organization org)
+    /// <summary>
+    /// グローバル Bot を取得または作成
+    /// Bot はグローバルに1つだけ存在する
+    /// </summary>
+    private async Task<(Bot SystemBot, Bot ChatBot)> GetOrCreateGlobalBotsAsync()
     {
         var systemBotPersona = BotPersonaHelper.GetSystemBotPersona();
         var systemBotConstraint = BotPersonaHelper.GetSystemBotConstraint();
         var chatBotPersona = BotPersonaHelper.GetChatBotPersona();
         var chatBotConstraint = BotPersonaHelper.GetChatBotConstraint();
 
-        var systemBot = new Bot
+        var systemBot = await _context.Bots.FirstOrDefaultAsync(b => b.Type == BotType.SystemBot);
+        if (systemBot == null)
         {
-            OrganizationId = org.Id,
-            Type = BotType.SystemBot,
-            Name = "Butler Bot",
-            IconUrl = "/icons/bot/system.webp",
-            Persona = systemBotPersona,
-            Constraint = systemBotConstraint,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
+            systemBot = new Bot
+            {
+                Type = BotType.SystemBot,
+                Name = "Butler Bot",
+                IconUrl = "/icons/bot/system.webp",
+                Persona = systemBotPersona,
+                Constraint = systemBotConstraint,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            await _context.Bots.AddAsync(systemBot);
+            await _context.SaveChangesAsync();
+        }
 
-        var chatBot = new Bot
+        var chatBot = await _context.Bots.FirstOrDefaultAsync(b => b.Type == BotType.ChatBot);
+        if (chatBot == null)
         {
-            OrganizationId = org.Id,
-            Type = BotType.ChatBot,
-            Name = "Coati Bot",
-            IconUrl = "/icons/bot/chat.webp",
-            Persona = chatBotPersona,
-            Constraint = chatBotConstraint,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
+            chatBot = new Bot
+            {
+                Type = BotType.ChatBot,
+                Name = "Coati Bot",
+                IconUrl = "/icons/bot/chat.webp",
+                Persona = chatBotPersona,
+                Constraint = chatBotConstraint,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            await _context.Bots.AddAsync(chatBot);
+            await _context.SaveChangesAsync();
+        }
 
         return (systemBot, chatBot);
     }

@@ -9,6 +9,8 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 
 /// <summary>
 /// Bot選択に関する処理を提供するサービス
+/// Botはグローバル（全組織共通）なので、BotTypeで取得する
+/// 組織固有のChatActorを取得する場合はorganizationIdを指定する
 /// </summary>
 public class BotSelector : IBotSelector
 {
@@ -90,53 +92,78 @@ public class BotSelector : IBotSelector
             return null;
         }
 
-        var bot = await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.ChatActor != null &&
-                b.ChatActor.Id == botActorId,
+        // ChatActorIdからBotを取得（組織フィルタはChatActor側で行う）
+        var chatActor = await _context.ChatActors
+            .Include(ca => ca.Bot)
+            .FirstOrDefaultAsync(ca =>
+                ca.Id == botActorId &&
+                ca.OrganizationId == organizationId &&
+                ca.BotId != null,
                 cancellationToken);
 
-        if (bot == null)
+        if (chatActor?.Bot == null)
         {
             _logger.LogDebug(
                 "Bot not found by ChatActorId: OrganizationId={OrganizationId}, ChatActorId={ChatActorId}",
                 organizationId,
                 botActorId
             );
+            return null;
         }
-        else
+
+        // Botに組織のChatActorをセット
+        chatActor.Bot.ChatActors = new List<DB.Models.ChatActor> { chatActor };
+
+        _logger.LogDebug(
+            "Bot selected by conversation: BotId={BotId}, BotName={BotName}, Confidence={Confidence}, Reasoning={Reasoning}",
+            chatActor.Bot.Id,
+            chatActor.Bot.Name,
+            targetResult.Confidence,
+            targetResult.Reasoning
+        );
+
+        return chatActor.Bot;
+    }
+
+    /// <inheritdoc />
+    public async Task<DB.Models.Bot?> GetBotAsync(
+        BotType botType,
+        CancellationToken cancellationToken = default)
+    {
+        var bot = await _context.Bots
+            .FirstOrDefaultAsync(b => b.Type == botType, cancellationToken);
+
+        if (bot == null)
         {
-            _logger.LogDebug(
-                "Bot selected by conversation: BotId={BotId}, BotName={BotName}, Confidence={Confidence}, Reasoning={Reasoning}",
-                bot.Id,
-                bot.Name,
-                targetResult.Confidence,
-                targetResult.Reasoning
-            );
+            _logger.LogDebug("Bot not found: BotType={BotType}", botType);
         }
 
         return bot;
     }
 
     /// <inheritdoc />
-    public async Task<DB.Models.Bot?> GetBotAsync(
+    public async Task<DB.Models.Bot?> GetBotWithChatActorAsync(
         int organizationId,
         BotType botType,
         CancellationToken cancellationToken = default)
     {
         var bot = await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == botType,
-                cancellationToken);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == botType, cancellationToken);
 
         if (bot == null)
         {
             _logger.LogDebug(
-                "Bot not found: OrganizationId={OrganizationId}, BotType={BotType}",
+                "Bot not found: BotType={BotType}",
+                botType
+            );
+            return null;
+        }
+
+        if (bot.ChatActors.Count == 0)
+        {
+            _logger.LogDebug(
+                "ChatActor not found for Bot: OrganizationId={OrganizationId}, BotType={BotType}",
                 organizationId,
                 botType
             );
@@ -158,7 +185,7 @@ public class BotSelector : IBotSelector
             cancellationToken
         );
 
-        return await GetBotAsync(organizationId, botType, cancellationToken);
+        return await GetBotWithChatActorAsync(organizationId, botType, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -167,16 +194,12 @@ public class BotSelector : IBotSelector
         CancellationToken cancellationToken = default)
     {
         var bots = await _context.Bots
-            .Include(b => b.ChatActor)
-            .Where(b => b.OrganizationId == organizationId)
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
             .ToListAsync(cancellationToken);
 
         if (bots.Count == 0)
         {
-            _logger.LogDebug(
-                "No bots found for organization: OrganizationId={OrganizationId}",
-                organizationId
-            );
+            _logger.LogDebug("No bots found");
             return null;
         }
 
@@ -184,8 +207,7 @@ public class BotSelector : IBotSelector
         var selectedBot = bots[randomIndex];
 
         _logger.LogDebug(
-            "Random bot selected: OrganizationId={OrganizationId}, BotId={BotId}, BotType={BotType}",
-            organizationId,
+            "Random bot selected: BotId={BotId}, BotType={BotType}",
             selectedBot.Id,
             selectedBot.Type
         );

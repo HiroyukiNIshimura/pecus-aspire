@@ -135,12 +135,10 @@ public class TaskCommentHelpWantedTask
             }
 
             bot = await _context.Bots
-                .Include(b => b.ChatActor)
-                .FirstOrDefaultAsync(b =>
-                    b.OrganizationId == organizationId &&
-                    b.Type == BotType.SystemBot);
+                .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+                .FirstOrDefaultAsync(b => b.Type == BotType.SystemBot);
 
-            if (bot?.ChatActor == null)
+            if (bot == null || !bot.ChatActors.Any())
             {
                 _logger.LogWarning(
                     "SystemBot not found for organization: OrganizationId={OrganizationId}",
@@ -149,12 +147,12 @@ public class TaskCommentHelpWantedTask
                 return;
             }
 
-            await EnsureBotIsMemberAsync(room.Id, bot.ChatActor.Id);
+            await EnsureBotIsMemberAsync(room.Id, bot.GetChatActorId());
 
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,
-                bot.ChatActor.Id,
+                bot.GetChatActorId(),
                 bot.Name,
                 isTyping: true
             );
@@ -172,7 +170,7 @@ public class TaskCommentHelpWantedTask
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,
-                bot.ChatActor.Id,
+                bot.GetChatActorId(),
                 bot.Name,
                 isTyping: false
             );
@@ -191,14 +189,14 @@ public class TaskCommentHelpWantedTask
                 commentId
             );
 
-            if (bot?.ChatActor != null && room != null)
+            if (bot?.ChatActors.Any() == true && room != null)
             {
                 try
                 {
                     await _publisher.PublishChatBotTypingAsync(
                         room.OrganizationId,
                         room.Id,
-                        bot.ChatActor.Id,
+                        bot.GetChatActorId(),
                         bot.Name,
                         isTyping: false
                     );
@@ -455,7 +453,7 @@ public class TaskCommentHelpWantedTask
         var message = new ChatMessage
         {
             ChatRoomId = room.Id,
-            SenderActorId = bot.ChatActor!.Id,
+            SenderActorId = bot.GetChatActorId(),
             MessageType = ChatMessageType.Text,
             Content = content,
         };
@@ -480,7 +478,7 @@ public class TaskCommentHelpWantedTask
         {
             GroupName = $"organization:{organizationId}",
             EventType = "chat:unread_updated",
-            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, bot.ChatActor.Id),
+            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, bot.GetChatActorId()),
             SourceType = NotificationSourceType.ChatBot,
             OrganizationId = organizationId,
         });

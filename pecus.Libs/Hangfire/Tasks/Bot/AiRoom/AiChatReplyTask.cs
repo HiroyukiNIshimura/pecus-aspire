@@ -133,19 +133,19 @@ public class AiChatReplyTask
             }
 
             // 宛先判定できなかった場合は従来のBotType判定にフォールバック
-            if (chatBot?.ChatActor == null)
+            if (chatBot?.ChatActors.Any() != true)
             {
-                var botType = await DetermineBotTypeAsync(organizationId, aiClient, triggerContent);
+                var botType = await DetermineBotTypeAsync(aiClient, triggerContent);
                 chatBot = await GetBotByTypeAsync(organizationId, botType);
             }
 
-            if (chatBot?.ChatActor == null)
+            if (chatBot?.ChatActors.Any() != true)
             {
                 _logger.LogWarning(
                     "ChatBot not found for OrganizationId={OrganizationId}. ChatBot={ChatBot}, ChatActor={ChatActor}",
                     organizationId,
                     chatBot != null ? "exists" : "null",
-                    chatBot?.ChatActor != null ? "exists" : "null"
+                    chatBot?.ChatActors.Any() == true ? "exists" : "null"
                 );
                 return;
             }
@@ -155,19 +155,19 @@ public class AiChatReplyTask
             await _publisher.PublishChatBotReadAsync(
                 organizationId,
                 roomId,
-                chatBot.ChatActor.Id,
+                chatBot.GetChatActorId(),
                 readAt,
                 triggerMessageId
             );
 
             // Bot の LastReadAt を更新
-            await UpdateBotLastReadAtAsync(roomId, chatBot.ChatActor.Id, readAt);
+            await UpdateBotLastReadAtAsync(roomId, chatBot.GetChatActorId(), readAt);
 
             // 入力開始を通知
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
                 roomId,
-                chatBot.ChatActor.Id,
+                chatBot.GetChatActorId(),
                 chatBot.Name,
                 isTyping: true
             );
@@ -190,7 +190,7 @@ public class AiChatReplyTask
                 senderUserId,
                 senderUserName,
                 roomId,
-                chatBot.ChatActor.Id
+                chatBot.GetChatActorId()
             );
 
             // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
@@ -210,7 +210,7 @@ public class AiChatReplyTask
             await _publisher.PublishChatBotTypingAsync(
                 organizationId,
                 roomId,
-                chatBot.ChatActor.Id,
+                chatBot.GetChatActorId(),
                 chatBot.Name,
                 isTyping: false
             );
@@ -235,14 +235,14 @@ public class AiChatReplyTask
             );
 
             // エラー時も入力終了を通知
-            if (chatBot?.ChatActor != null)
+            if (chatBot?.ChatActors.Any() == true)
             {
                 try
                 {
                     await _publisher.PublishChatBotTypingAsync(
                         organizationId,
                         roomId,
-                        chatBot.ChatActor.Id,
+                        chatBot.GetChatActorId(),
                         chatBot.Name,
                         isTyping: false
                     );
@@ -251,7 +251,7 @@ public class AiChatReplyTask
                     await _publisher.PublishChatBotErrorAsync(
                         organizationId,
                         roomId,
-                        chatBot.ChatActor.Id,
+                        chatBot.GetChatActorId(),
                         chatBot.Name,
                         "申し訳ありません、応答を生成できませんでした。しばらくしてからもう一度お試しください。"
                     );
@@ -274,7 +274,6 @@ public class AiChatReplyTask
     /// メッセージの内容に基づいて BotType を決定する
     /// </summary>
     private async Task<BotType> DetermineBotTypeAsync(
-        int organizationId,
         IAiClient aiClient,
         string triggerContent)
     {
@@ -344,13 +343,13 @@ public class AiChatReplyTask
             .ToListAsync();
 
         var bots = await _context.Bots
-            .Include(b => b.ChatActor)
-            .Where(b => b.OrganizationId == organizationId && b.ChatActor != null)
-            .Select(b => new
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .Where(b => b.ChatActors.Any())
+            .SelectMany(b => b.ChatActors.Select(ca => new
             {
-                ChatActorId = b.ChatActor!.Id,
+                ChatActorId = ca.Id,
                 b.Name,
-            })
+            }))
             .ToListAsync();
 
         var users = await _context.Users
@@ -400,10 +399,8 @@ public class AiChatReplyTask
     private async Task<DB.Models.Bot?> GetBotByTypeAsync(int organizationId, BotType botType)
     {
         return await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == botType);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == botType);
     }
 
     /// <summary>
@@ -461,10 +458,10 @@ public class AiChatReplyTask
         var otherBotNames = new Dictionary<int, string>();
         if (otherBotActorIds.Count > 0)
         {
-            otherBotNames = await _context.Bots
-                .Include(b => b.ChatActor)
-                .Where(b => b.ChatActor != null && otherBotActorIds.Contains(b.ChatActor.Id))
-                .ToDictionaryAsync(b => b.ChatActor!.Id, b => b.Name);
+            otherBotNames = await _context.ChatActors
+                .Include(ca => ca.Bot)
+                .Where(ca => ca.BotId != null && otherBotActorIds.Contains(ca.Id))
+                .ToDictionaryAsync(ca => ca.Id, ca => ca.Bot!.Name);
         }
 
         var messages = new List<(MessageRole Role, string Content)>();
@@ -513,7 +510,7 @@ public class AiChatReplyTask
         var message = new DB.Models.ChatMessage
         {
             ChatRoomId = roomId,
-            SenderActorId = chatBot.ChatActor!.Id,
+            SenderActorId = chatBot.GetChatActorId(),
             MessageType = ChatMessageType.Text,
             Content = content,
         };
@@ -525,6 +522,8 @@ public class AiChatReplyTask
             .Where(r => r.Id == room.Id)
             .ExecuteUpdateAsync(s => s.SetProperty(r => r.UpdatedAt, DateTimeOffset.UtcNow));
 
+        var chatActor = chatBot.GetChatActor()!;
+
         // SignalR 通知を送信（Redis Pub/Sub 経由）
         var payload = new
         {
@@ -533,21 +532,21 @@ public class AiChatReplyTask
             Message = new
             {
                 message.Id,
-                SenderActorId = chatBot.ChatActor.Id,
+                SenderActorId = chatActor.Id,
                 message.MessageType,
                 message.Content,
                 message.ReplyToMessageId,
                 message.CreatedAt,
                 Sender = new
                 {
-                    Id = chatBot.ChatActor.Id,
-                    ActorType = chatBot.ChatActor.ActorType.ToString(),
+                    chatActor.Id,
+                    ActorType = chatActor.ActorType.ToString(),
                     UserId = (int?)null,
                     BotId = chatBot.Id,
-                    DisplayName = chatBot.Name,
-                    AvatarType = chatBot.ChatActor.AvatarType?.ToString()?.ToLowerInvariant(),
-                    AvatarUrl = chatBot.IconUrl,
-                    IdentityIconUrl = chatBot.IconUrl ?? "",
+                    DisplayName = chatActor.DisplayName,
+                    AvatarType = chatActor.AvatarType?.ToString()?.ToLowerInvariant(),
+                    AvatarUrl = chatActor.AvatarUrl ?? chatBot.IconUrl,
+                    IdentityIconUrl = chatActor.AvatarUrl ?? chatBot.IconUrl ?? "",
                     IsActive = true,
                 },
             },
@@ -570,7 +569,7 @@ public class AiChatReplyTask
             {
                 RoomId = roomId,
                 RoomType = room.Type.ToString(),
-                SenderActorId = chatBot.ChatActor.Id,
+                SenderActorId = chatActor.Id,
             },
             SourceType = NotificationSourceType.ChatBot,
             OrganizationId = organizationId,

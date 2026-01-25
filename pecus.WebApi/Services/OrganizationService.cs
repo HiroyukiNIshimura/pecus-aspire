@@ -156,19 +156,13 @@ public class OrganizationService
             _context.ChatActors.Add(adminChatActor);
             await _context.SaveChangesAsync();
 
-            // Chat ボットを作成
-            var chatBot = new Bot
-            {
-                OrganizationId = organization.Id,
-                Type = BotType.ChatBot,
-                Name = "Coati Bot",
-                IconUrl = "/icons/bot/chat.webp",
-                Persona = BotPersonaHelper.GetChatBotPersona(),
-            };
-            _context.Bots.Add(chatBot);
-            await _context.SaveChangesAsync();
+            // グローバル Bot を取得（Seed で事前に作成済み）
+            var chatBot = await _context.Bots.FirstOrDefaultAsync(b => b.Type == BotType.ChatBot)
+                ?? throw new InvalidOperationException("ChatBot が見つかりません。Seed データが正しく実行されているか確認してください。");
+            var systemBot = await _context.Bots.FirstOrDefaultAsync(b => b.Type == BotType.SystemBot)
+                ?? throw new InvalidOperationException("SystemBot が見つかりません。Seed データが正しく実行されているか確認してください。");
 
-            // Chat ボット用 ChatActor を作成
+            // Chat ボット用 ChatActor を作成（組織固有の表示情報）
             var chatBotActor = new ChatActor
             {
                 OrganizationId = organization.Id,
@@ -179,19 +173,7 @@ public class OrganizationService
             };
             _context.ChatActors.Add(chatBotActor);
 
-            // System ボットを作成
-            var systemBot = new Bot
-            {
-                OrganizationId = organization.Id,
-                Type = BotType.SystemBot,
-                Name = "Butler Bot",
-                IconUrl = "/icons/bot/system.webp",
-                Persona = BotPersonaHelper.GetSystemBotPersona(),
-            };
-            _context.Bots.Add(systemBot);
-            await _context.SaveChangesAsync();
-
-            // System ボット用 ChatActor を作成
+            // System ボット用 ChatActor を作成（組織固有の表示情報）
             var systemBotActor = new ChatActor
             {
                 OrganizationId = organization.Id,

@@ -3,7 +3,9 @@ using Pecus.Libs.DB.Models.Enums;
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
-/// ボットエンティティ
+/// ボットエンティティ（グローバル、全組織共通）
+/// AI動作の定義（ペルソナ・制約）を持つ
+/// 組織ごとの表示情報はChatActorが持つ
 /// </summary>
 public class Bot
 {
@@ -13,17 +15,12 @@ public class Bot
     public int Id { get; set; }
 
     /// <summary>
-    /// 組織ID（外部キー、必須）
-    /// </summary>
-    public int OrganizationId { get; set; }
-
-    /// <summary>
     /// ボットの種類
     /// </summary>
     public BotType Type { get; set; } = BotType.SystemBot;
 
     /// <summary>
-    /// ボット名
+    /// ボット名（デフォルト値、ChatActorで上書き可能）
     /// </summary>
     public string Name { get; set; } = null!;
 
@@ -38,7 +35,7 @@ public class Bot
     public string? Constraint { get; set; }
 
     /// <summary>
-    /// ボットのアイコンURL
+    /// ボットのアイコンURL（デフォルト値、ChatActorで上書き可能）
     /// </summary>
     public string? IconUrl { get; set; }
 
@@ -55,15 +52,10 @@ public class Bot
     // Navigation Properties
 
     /// <summary>
-    /// 組織（ナビゲーションプロパティ）
-    /// </summary>
-    public Organization? Organization { get; set; }
-
-    /// <summary>
     /// チャットアクター（ナビゲーションプロパティ）
-    /// ボット作成時に自動生成される
+    /// 各組織でこのBotを使用するChatActorのコレクション
     /// </summary>
-    public ChatActor? ChatActor { get; set; }
+    public ICollection<ChatActor> ChatActors { get; set; } = new List<ChatActor>();
 
     /// <summary>
     /// 楽観ロック用バージョン（PostgreSQL xmin）

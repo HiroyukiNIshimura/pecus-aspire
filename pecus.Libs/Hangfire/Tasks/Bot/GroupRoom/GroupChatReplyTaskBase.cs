@@ -156,8 +156,7 @@ public abstract class GroupChatReplyTaskBase
     protected async Task<List<DB.Models.Bot>> GetAllBotsAsync(int organizationId)
     {
         return await Context.Bots
-            .Include(b => b.ChatActor)
-            .Where(b => b.OrganizationId == organizationId && b.ChatActor != null)
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
             .ToListAsync();
     }
 
@@ -229,10 +228,10 @@ public abstract class GroupChatReplyTaskBase
 
         var allBots = await GetAllBotsAsync(organizationId);
         var availableBots = allBots
-            .Where(b => b.ChatActor != null)
+            .Where(b => b.ChatActors.Any())
             .Select(b => new AI.Models.BotInfo
             {
-                ChatActorId = b.ChatActor!.Id,
+                ChatActorId = b.GetChatActorId(),
                 Name = b.Name,
                 RoleDescription = b.Type switch
                 {
@@ -302,10 +301,8 @@ public abstract class GroupChatReplyTaskBase
     protected async Task<DB.Models.Bot?> GetBotByTypeAsync(int organizationId, BotType botType)
     {
         return await Context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == botType);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == botType);
     }
 
     /// <summary>
@@ -355,7 +352,7 @@ public abstract class GroupChatReplyTaskBase
         var message = new ChatMessage
         {
             ChatRoomId = room.Id,
-            SenderActorId = bot.ChatActor!.Id,
+            SenderActorId = bot.GetChatActorId(),
             MessageType = ChatMessageType.Text,
             Content = content,
             ReplyToMessageId = replyToMessageId,
@@ -384,7 +381,7 @@ public abstract class GroupChatReplyTaskBase
         {
             GroupName = $"organization:{organizationId}",
             EventType = "chat:unread_updated",
-            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, bot.ChatActor.Id),
+            Payload = BotTaskUtils.BuildUnreadUpdatedPayload(room, bot.GetChatActorId()),
             SourceType = NotificationSourceType.ChatBot,
             OrganizationId = organizationId,
         });
@@ -534,13 +531,16 @@ public abstract class GroupChatReplyTaskBase
 
             if (replyDecision != null && replyDecision.ResponderBotActorId != null)
             {
-                // AI が選択した Bot を使用
-                bot = await Context.Bots
-                    .Include(b => b.ChatActor)
-                    .FirstOrDefaultAsync(b =>
-                        b.OrganizationId == organizationId &&
-                        b.ChatActor != null &&
-                        b.ChatActor.Id == replyDecision.ResponderBotActorId);
+                // AI が選択した Bot を使用（ChatActorIdからBotを取得）
+                var chatActor = await Context.ChatActors
+                    .Include(ca => ca.Bot)
+                        .ThenInclude(b => b!.ChatActors.Where(ca2 => ca2.OrganizationId == organizationId))
+                    .FirstOrDefaultAsync(ca =>
+                        ca.Id == replyDecision.ResponderBotActorId &&
+                        ca.OrganizationId == organizationId &&
+                        ca.BotId != null);
+
+                bot = chatActor?.Bot;
 
                 if (bot == null)
                 {
@@ -558,7 +558,7 @@ public abstract class GroupChatReplyTaskBase
                 bot = await GetBotByTypeAsync(organizationId, selectedBotType);
             }
 
-            if (bot?.ChatActor == null)
+            if (bot == null || !bot.ChatActors.Any())
             {
                 Logger.LogWarning(
                     "Bot | Bot.ChatActor not found for organization: OrganizationId={OrganizationId}, BotName={Name}",
@@ -569,13 +569,13 @@ public abstract class GroupChatReplyTaskBase
             }
 
             // Bot がルームのメンバーか確認し、メンバーでなければ追加
-            await EnsureBotIsMemberAsync(room.Id, bot.ChatActor.Id);
+            await EnsureBotIsMemberAsync(room.Id, bot.GetChatActorId());
 
             // 入力開始を通知
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,
-                bot.ChatActor.Id,
+                bot.GetChatActorId(),
                 bot.Name,
                 isTyping: true
             );
@@ -602,7 +602,7 @@ public abstract class GroupChatReplyTaskBase
             await Publisher.PublishChatBotTypingAsync(
                 organizationId,
                 room.Id,
-                bot.ChatActor.Id,
+                bot.GetChatActorId(),
                 bot.Name,
                 isTyping: false
             );
@@ -619,14 +619,14 @@ public abstract class GroupChatReplyTaskBase
             );
 
             // エラー時も入力終了を通知
-            if (bot?.ChatActor != null && room != null)
+            if (bot != null && bot.ChatActors.Any() && room != null)
             {
                 try
                 {
                     await Publisher.PublishChatBotTypingAsync(
                         organizationId,
                         room.Id,
-                        bot.ChatActor.Id,
+                        bot.GetChatActorId(),
                         bot.Name,
                         isTyping: false
                     );

@@ -79,11 +79,6 @@ public class BatchOrganizationDeletionService
             .Where(u => u.OrganizationId == organizationId)
             .Select(u => u.Id);
 
-        // ボットIDのサブクエリ
-        var botIdsQuery = _context.Bots
-            .Where(b => b.OrganizationId == organizationId)
-            .Select(b => b.Id);
-
         // チャットルームIDのサブクエリ
         var chatRoomIdsQuery = _context.ChatRooms
             .Where(r => r.OrganizationId == organizationId)
@@ -131,21 +126,15 @@ public class BatchOrganizationDeletionService
             batchSize,
             cancellationToken);
 
-        // ChatActor（Bot）
+        // ChatActor（Bot）- Bot はグローバルだが ChatActor は組織ごとに存在
         await DeleteInBatchesAsync(
-            _context.ChatActors.Where(a => a.BotId != null && botIdsQuery.Contains(a.BotId.Value)),
+            _context.ChatActors.Where(a => a.BotId != null && a.OrganizationId == organizationId),
             "ChatActors (Bot)",
             organizationId,
             batchSize,
             cancellationToken);
 
-        // Bot
-        await DeleteInBatchesAsync(
-            _context.Bots.Where(b => b.OrganizationId == organizationId),
-            "Bots",
-            organizationId,
-            batchSize,
-            cancellationToken);
+        // Bot はグローバルに存在するため削除しない
 
         // TaskComment
         await DeleteInBatchesAsync(

@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks.Bot.Utils;
 
 namespace Pecus.Services;
 
@@ -67,26 +68,26 @@ public class BotMessageService
             }
         }
 
-        // Bot と ChatActor を取得
+        // Bot と ChatActor を取得（Bot はグローバル、ChatActor は組織ごと）
         var bot = await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == botType);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == botType);
 
         if (bot == null)
         {
             throw new NotFoundException($"組織ID {organizationId} に {botType} が見つかりません。");
         }
 
-        if (bot.ChatActor == null)
+        if (bot.ChatActors.Any() != true)
         {
             throw new NotFoundException($"{botType} の ChatActor が見つかりません。");
         }
 
-        // Bot がルームのメンバーか確認
+        var chatActorId = bot.GetChatActorId();
+
+        // Bot がルームのメンバか確認
         var isMember = await _context.ChatRoomMembers.AnyAsync(m =>
-            m.ChatRoomId == roomId && m.ChatActorId == bot.ChatActor.Id);
+            m.ChatRoomId == roomId && m.ChatActorId == chatActorId);
 
         if (!isMember)
         {
@@ -96,7 +97,7 @@ public class BotMessageService
         // メッセージ送信（ChatMessageService を利用）
         var message = await _chatMessageService.SendMessageAsync(
             roomId,
-            bot.ChatActor.Id,
+            chatActorId,
             content,
             messageType,
             replyToMessageId
@@ -153,10 +154,12 @@ public class BotMessageService
     {
         // SystemBot を取得
         var systemBot = await GetSystemBotAsync(organizationId);
-        if (systemBot?.ChatActor == null)
+        if (systemBot?.ChatActors.Any() != true)
         {
             throw new NotFoundException($"組織ID {organizationId} に SystemBot が見つかりません。");
         }
+
+        var systemBotActorId = systemBot.GetChatActorId();
 
         // システムルームを取得または作成（SystemBot の UserId は存在しないため、組織の最初のユーザーを使用）
         var systemRoom = await _chatRoomService.GetOrCreateSystemRoomAsync(
@@ -166,14 +169,14 @@ public class BotMessageService
 
         // SystemBot がルームのメンバーでなければ追加
         var isMember = await _context.ChatRoomMembers.AnyAsync(m =>
-            m.ChatRoomId == systemRoom.Id && m.ChatActorId == systemBot.ChatActor.Id);
+            m.ChatRoomId == systemRoom.Id && m.ChatActorId == systemBotActorId);
 
         if (!isMember)
         {
             _context.ChatRoomMembers.Add(new ChatRoomMember
             {
                 ChatRoomId = systemRoom.Id,
-                ChatActorId = systemBot.ChatActor.Id,
+                ChatActorId = systemBotActorId,
                 Role = ChatRoomRole.Member,
             });
             await _context.SaveChangesAsync();
@@ -182,7 +185,7 @@ public class BotMessageService
         // メッセージ送信
         var message = await _chatMessageService.SendMessageAsync(
             systemRoom.Id,
-            systemBot.ChatActor.Id,
+            systemBotActorId,
             content,
             ChatMessageType.System
         );
@@ -231,17 +234,17 @@ public class BotMessageService
     /// <returns>追加された場合は true、既にメンバーの場合は false</returns>
     public async Task<bool> JoinRoomAsync(int organizationId, int roomId, BotType botType)
     {
-        // Bot と ChatActor を取得
+        // Bot と ChatActor を取得（Bot はグローバル、ChatActor は組織ごと）
         var bot = await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == botType);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == botType);
 
-        if (bot?.ChatActor == null)
+        if (bot?.ChatActors.Any() != true)
         {
             throw new NotFoundException($"組織ID {organizationId} に {botType} が見つかりません。");
         }
+
+        var chatActorId = bot.GetChatActorId();
 
         // ルームの存在確認
         var room = await _context.ChatRooms.FindAsync(roomId);
@@ -252,7 +255,7 @@ public class BotMessageService
 
         // 既にメンバーか確認
         var existingMember = await _context.ChatRoomMembers.FirstOrDefaultAsync(m =>
-            m.ChatRoomId == roomId && m.ChatActorId == bot.ChatActor.Id);
+            m.ChatRoomId == roomId && m.ChatActorId == chatActorId);
 
         if (existingMember != null)
         {
@@ -263,7 +266,7 @@ public class BotMessageService
         var member = new ChatRoomMember
         {
             ChatRoomId = roomId,
-            ChatActorId = bot.ChatActor.Id,
+            ChatActorId = chatActorId,
             Role = ChatRoomRole.Member,
         };
 
@@ -274,7 +277,7 @@ public class BotMessageService
             "Bot joined room: BotType={BotType}, RoomId={RoomId}, ChatActorId={ChatActorId}",
             botType,
             roomId,
-            bot.ChatActor.Id
+            chatActorId
         );
 
         return true;
@@ -289,21 +292,21 @@ public class BotMessageService
     /// <returns>退出した場合は true、メンバーでなかった場合は false</returns>
     public async Task<bool> LeaveRoomAsync(int organizationId, int roomId, BotType botType)
     {
-        // Bot と ChatActor を取得
+        // Bot と ChatActor を取得（Bot はグローバル、ChatActor は組織ごと）
         var bot = await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == botType);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == botType);
 
-        if (bot?.ChatActor == null)
+        if (bot?.ChatActors.Any() != true)
         {
             throw new NotFoundException($"組織ID {organizationId} に {botType} が見つかりません。");
         }
 
+        var chatActorId = bot.GetChatActorId();
+
         // メンバーシップを取得
         var member = await _context.ChatRoomMembers.FirstOrDefaultAsync(m =>
-            m.ChatRoomId == roomId && m.ChatActorId == bot.ChatActor.Id);
+            m.ChatRoomId == roomId && m.ChatActorId == chatActorId);
 
         if (member == null)
         {
@@ -317,7 +320,7 @@ public class BotMessageService
             "Bot left room: BotType={BotType}, RoomId={RoomId}, ChatActorId={ChatActorId}",
             botType,
             roomId,
-            bot.ChatActor.Id
+            chatActorId
         );
 
         return true;
@@ -327,27 +330,23 @@ public class BotMessageService
     /// 組織の ChatBot（Coati Bot）を取得する。
     /// </summary>
     /// <param name="organizationId">組織ID</param>
-    /// <returns>Bot エンティティ（ChatActor 含む）</returns>
+    /// <returns>Bot エンティティ（ChatActors 含む）</returns>
     public async Task<Bot?> GetChatBotAsync(int organizationId)
     {
         return await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == BotType.ChatBot);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == BotType.ChatBot);
     }
 
     /// <summary>
     /// 組織の SystemBot（System Bot）を取得する。
     /// </summary>
     /// <param name="organizationId">組織ID</param>
-    /// <returns>Bot エンティティ（ChatActor 含む）</returns>
+    /// <returns>Bot エンティティ（ChatActors 含む）</returns>
     public async Task<Bot?> GetSystemBotAsync(int organizationId)
     {
         return await _context.Bots
-            .Include(b => b.ChatActor)
-            .FirstOrDefaultAsync(b =>
-                b.OrganizationId == organizationId &&
-                b.Type == BotType.SystemBot);
+            .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(b => b.Type == BotType.SystemBot);
     }
 }

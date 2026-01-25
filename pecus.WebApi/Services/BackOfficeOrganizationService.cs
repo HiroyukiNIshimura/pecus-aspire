@@ -30,6 +30,7 @@ public class BackOfficeOrganizationService
 
     /// <summary>
     /// 組織に紐づくボット一覧を取得
+    /// Bot はグローバルに存在するため、全てのグローバル Bot を返す
     /// </summary>
     public async Task<List<BackOfficeBotResponse>> GetBotsByOrganizationIdAsync(int organizationId)
     {
@@ -42,9 +43,9 @@ public class BackOfficeOrganizationService
             throw new NotFoundException("組織が見つかりません。");
         }
 
+        // Bot はグローバルに存在するため、全ての Bot を返す
         var bots = await _context.Bots
             .AsNoTracking()
-            .Where(b => b.OrganizationId == organizationId)
             .OrderBy(b => b.Type)
             .ThenBy(b => b.Name)
             .Select(b => new BackOfficeBotResponse
