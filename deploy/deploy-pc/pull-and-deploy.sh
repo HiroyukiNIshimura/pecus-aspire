@@ -285,7 +285,13 @@ if [ ! -f "$OPS_DIR/switch-node.sh" ]; then
 fi
 
 # --no-build オプションを使用して、ビルドをスキップ
-if sh "$OPS_DIR/switch-node.sh" "$TARGET_SLOT" --no-build; then
+# DBリセットモードの場合は --skip-migration も追加（既にマイグレーション済み）
+SWITCH_OPTS="--no-build"
+if [ "$DB_RESET_MODE" = "true" ]; then
+    SWITCH_OPTS="$SWITCH_OPTS --skip-migration"
+fi
+
+if (cd "$OPS_DIR" && sh ./switch-node.sh "$TARGET_SLOT" $SWITCH_OPTS); then
     echo ""
     echo "✅ デプロイ成功"
 else

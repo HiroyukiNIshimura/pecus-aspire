@@ -12,7 +12,8 @@ set -eu
 # 8. Nginx Switch
 #
 # Options:
-#   --no-build  Skip git pull and build steps (use pre-built images)
+#   --no-build        Skip git pull and build steps (use pre-built images)
+#   --skip-migration  Skip DB migration (use when migration already done)
 
 # shellcheck disable=SC1007
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
@@ -21,6 +22,7 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 
 # オプション解析
 NO_BUILD=false
+SKIP_MIGRATION=false
 slot=""
 
 for arg in "$@"; do
@@ -28,18 +30,21 @@ for arg in "$@"; do
     --no-build)
       NO_BUILD=true
       ;;
+    --skip-migration)
+      SKIP_MIGRATION=true
+      ;;
     blue|green)
       slot="$arg"
       ;;
     *)
-      echo "Usage: $0 {blue|green} [--no-build]" >&2
+      echo "Usage: $0 {blue|green} [--no-build] [--skip-migration]" >&2
       exit 2
       ;;
   esac
 done
 
 if [ -z "$slot" ]; then
-  echo "Usage: $0 {blue|green} [--no-build]" >&2
+  echo "Usage: $0 {blue|green} [--no-build] [--skip-migration]" >&2
   exit 2
 fi
 
@@ -144,8 +149,12 @@ else
   echo "[Info] 5. Skip stopping old slot (not running): $other" >&2
 fi
 
-echo "[Info] 6. DB Migration" >&2
-compose_migrate run --rm dbmanager
+if [ "$SKIP_MIGRATION" = "true" ]; then
+  echo "[Info] 6. DB Migration (SKIPPED: --skip-migration)" >&2
+else
+  echo "[Info] 6. DB Migration" >&2
+  compose_migrate run --rm dbmanager
+fi
 
 echo "[Info] 7. Deploy target BackFire: $target" >&2
 if [ "$NO_BUILD" = "false" ]; then
