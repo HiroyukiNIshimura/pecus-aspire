@@ -263,12 +263,13 @@ if [ "$DB_RESET_MODE" = "true" ]; then
     echo ""
 
     echo "🛑 アプリケーションを停止中..."
-    sh "$OPS_DIR/app-down.sh" -y
+    (cd "$OPS_DIR" && sh ./app-down.sh -y)
     echo ""
 
     echo "🗑️  DBリセット & マイグレーション実行中..."
     # db-reset-migrate.sh 内の確認プロンプトをスキップするため -y を渡す
-    sh "$OPS_DIR/db-reset-migrate.sh" -y
+    # カレントディレクトリを ops/ に変更して実行（相対パス参照のため）
+    (cd "$OPS_DIR" && sh ./db-reset-migrate.sh -y)
     echo ""
     echo "✅ DBリセット完了"
     echo ""
