@@ -50,6 +50,16 @@ public class AiChatReplyTask
     private const int MinToolRelevanceScore = 50;
 
     /// <summary>
+    /// WildBot くじ引きの最小閾値（%）
+    /// </summary>
+    private const int WildBotMinThreshold = 2;
+
+    /// <summary>
+    /// WildBot くじ引きの追加ランダム範囲
+    /// </summary>
+    private const int WildBotThresholdRange = 49;
+
+    /// <summary>
     /// AiChatReplyTask のコンストラクタ
     /// </summary>
     public AiChatReplyTask(
@@ -122,31 +132,25 @@ public class AiChatReplyTask
 
             var useWildBot = false;
             // 2%〜50%のランダムな確率で入力品質を判定
-            if (!string.IsNullOrWhiteSpace(triggerContent))
+            if (!string.IsNullOrWhiteSpace(triggerContent) && TryWildBotLottery(out var threshold))
             {
-                var roll = Random.Shared.Next(100);
-                var threshold = 2 + Random.Shared.Next(49); // 2%〜50%
-
-                if (roll < threshold)
+                // 入力内容に基づき入力品質を判定
+                var inputQualityResult = await _inputQualityAnalyzer.AnalyzeAsync(aiClient, triggerContent);
+                if (inputQualityResult.IsGibberish || inputQualityResult.Type == InputQualityType.ContainsSpecialKeyword)
                 {
-                    // 入力内容に基づき入力品質を判定
-                    var inputQualityResult = await _inputQualityAnalyzer.AnalyzeAsync(aiClient, triggerContent);
-                    if (inputQualityResult.IsGibberish || inputQualityResult.Type == InputQualityType.ContainsSpecialKeyword)
-                    {
-                        //WildBotをで応答させる
-                        useWildBot = true;
-                        chatBot = await GetBotByTypeAsync(organizationId, BotType.WildBot);
+                    //WildBotをで応答させる
+                    useWildBot = true;
+                    chatBot = await GetBotByTypeAsync(organizationId, BotType.WildBot);
 
-                        _logger.LogInformation(
-                            "Input quality check triggered WildBot response: IsGibberish={IsGibberish}, Type={Type}, OrganizationId={OrganizationId}, RoomId={RoomId}, threshold={Threshold}%, TriggerMessageId={TriggerMessageId}",
-                            inputQualityResult.IsGibberish,
-                            inputQualityResult.Type,
-                            organizationId,
-                            roomId,
-                            threshold,
-                            triggerMessageId
-                        );
-                    }
+                    _logger.LogInformation(
+                        "Input quality check triggered WildBot response: IsGibberish={IsGibberish}, Type={Type}, OrganizationId={OrganizationId}, RoomId={RoomId}, threshold={Threshold}%, TriggerMessageId={TriggerMessageId}",
+                        inputQualityResult.IsGibberish,
+                        inputQualityResult.Type,
+                        organizationId,
+                        roomId,
+                        threshold,
+                        triggerMessageId
+                    );
                 }
             }
 
@@ -200,15 +204,6 @@ public class AiChatReplyTask
             // Bot の LastReadAt を更新
             await UpdateBotLastReadAtAsync(roomId, chatBot.GetChatActorId(), readAt);
 
-            // 入力開始を通知
-            await _publisher.PublishChatBotTypingAsync(
-                organizationId,
-                roomId,
-                chatBot.GetChatActorId(),
-                chatBot.Name,
-                isTyping: true
-            );
-
             // 送信者のユーザー名を取得
             var senderUserName = await GetUserNameAsync(senderUserId);
             if (string.IsNullOrEmpty(senderUserName))
@@ -219,6 +214,15 @@ public class AiChatReplyTask
                 );
                 return;
             }
+
+            // 入力開始を通知
+            await _publisher.PublishChatBotTypingAsync(
+                organizationId,
+                roomId,
+                chatBot.GetChatActorId(),
+                chatBot.Name,
+                isTyping: true
+            );
 
             var responseText = string.Empty;
             List<(MessageRole Role, string Content)>? requestMessages = null;
@@ -240,29 +244,24 @@ public class AiChatReplyTask
             }
             else
             {
-                // WildBot 用のメッセージ構築
+                // WildBot 用のロールなど付与しないメッセージ構築
                 requestMessages = new List<(MessageRole Role, string Content)>
                 {
                     (MessageRole.User, triggerContent)
                 };
             }
 
-            if (requestRole == null)
+            if (chatBot.Type != BotType.WildBot && requestRole == null && TryWildBotLottery(out _))
             {
+                //BuildMessagesWithContextAsyncで役割が付与されなかった場合
                 //もう一度Wild Botのくじ引き
-                var roll = Random.Shared.Next(100);
-                var threshold = 2 + Random.Shared.Next(49); // 2%〜50%
-                if (roll < threshold)
-                {
-                    chatBot = await GetBotByTypeAsync(organizationId, BotType.WildBot);
-                    _logger.LogInformation(
-                        "Second WildBot selection succeeded: Roll={Roll}, OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}",
-                        roll,
-                        organizationId,
-                        roomId,
-                        triggerMessageId
-                    );
-                }
+                chatBot = await GetBotByTypeAsync(organizationId, BotType.WildBot);
+                _logger.LogInformation(
+                    "Second WildBot selection succeeded: OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}",
+                    organizationId,
+                    roomId,
+                    triggerMessageId
+                );
             }
 
             // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
@@ -340,6 +339,18 @@ public class AiChatReplyTask
 
             throw;
         }
+    }
+
+    /// <summary>
+    /// WildBot くじ引きを実行する（2%〜50%の確率で当選）
+    /// </summary>
+    /// <param name="threshold">実際に使用された閾値（%）</param>
+    /// <returns>当選した場合は true</returns>
+    private static bool TryWildBotLottery(out int threshold)
+    {
+        var roll = Random.Shared.Next(100);
+        threshold = WildBotMinThreshold + Random.Shared.Next(WildBotThresholdRange);
+        return roll < threshold;
     }
 
     /// <summary>
