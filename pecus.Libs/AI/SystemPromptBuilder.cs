@@ -16,8 +16,9 @@ public sealed class SystemPromptBuilder
     /// </summary>
     /// <param name="persona">ペルソナ設定</param>
     /// <returns>ビルダーインスタンス</returns>
-    public SystemPromptBuilder WithPersona(PersonaConfig persona)
+    public SystemPromptBuilder WithPersona(PersonaConfig? persona)
     {
+        if (persona == null) return this;
         _persona = persona;
         return this;
     }
@@ -27,8 +28,10 @@ public sealed class SystemPromptBuilder
     /// </summary>
     /// <param name="role">役割設定</param>
     /// <returns>ビルダーインスタンス</returns>
-    public SystemPromptBuilder WithRole(RoleConfig role)
+    public SystemPromptBuilder WithRole(RoleConfig? role)
     {
+        if (role == null) return this;
+
         _role = role;
         return this;
     }

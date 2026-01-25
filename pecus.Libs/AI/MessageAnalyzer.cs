@@ -62,6 +62,7 @@ public class MessageAnalyzer : IMessageAnalyzer
         - 質問形式で知識や情報を尋ねている場合はInformationSeekingScoreを高くする
         - 絵文字や感嘆符の使い方も感情の手がかりになる
         - 複数の感情が混在する場合もある（例: 困っているが感謝もしている）
+        - 意味不明な文字列で感情分析不能な場合は全スコアを0にし、PrimaryEmotionを「中立」、Confidenceを0に設定
 
         OthersFocusScore/TargetSubject の判定ヒント:
         - 「今日は何から始める？」「私のタスクは？」→ OthersFocusScore: 0〜20, TargetSubject: Self

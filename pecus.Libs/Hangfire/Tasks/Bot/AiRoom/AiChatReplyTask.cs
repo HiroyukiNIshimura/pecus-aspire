@@ -84,7 +84,7 @@ public class AiChatReplyTask
     /// <param name="senderUserId">メッセージを送信したユーザーのID</param>
     public async Task SendReplyAsync(int organizationId, int roomId, int triggerMessageId, int senderUserId)
     {
-        DB.Models.Bot? chatBot = null;
+        DB.Models.Bot? chatBot = await GetBotByTypeAsync(organizationId, BotType.ChatBot);
 
         try
         {
@@ -127,13 +127,6 @@ public class AiChatReplyTask
                 var roll = Random.Shared.Next(100);
                 var threshold = 2 + Random.Shared.Next(49); // 2%〜50%
 
-                _logger.LogDebug(
-                    "Input quality check probability: Roll={Roll}, Threshold={Threshold}%, Triggered={Triggered}",
-                    roll,
-                    threshold,
-                    roll < threshold
-                );
-
                 if (roll < threshold)
                 {
                     // 入力内容に基づき入力品質を判定
@@ -145,11 +138,13 @@ public class AiChatReplyTask
                         chatBot = await GetBotByTypeAsync(organizationId, BotType.WildBot);
 
                         _logger.LogInformation(
-                            "Input quality check triggered WildBot response: IsGibberish={IsGibberish}, Type={Type}, OrganizationId={OrganizationId}, RoomId={RoomId}",
+                            "Input quality check triggered WildBot response: IsGibberish={IsGibberish}, Type={Type}, OrganizationId={OrganizationId}, RoomId={RoomId}, threshold={Threshold}%, TriggerMessageId={TriggerMessageId}",
                             inputQualityResult.IsGibberish,
                             inputQualityResult.Type,
                             organizationId,
-                            roomId
+                            roomId,
+                            threshold,
+                            triggerMessageId
                         );
                     }
                 }
@@ -226,6 +221,8 @@ public class AiChatReplyTask
             }
 
             var responseText = string.Empty;
+            List<(MessageRole Role, string Content)>? requestMessages = null;
+            RoleConfig? requestRole = null;
 
             if (!useWildBot)
             {
@@ -238,37 +235,48 @@ public class AiChatReplyTask
                     roomId,
                     chatBot.GetChatActorId()
                 );
-
-                // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
-                var systemPrompt = new SystemPromptBuilder()
-                    .WithRawPersona(chatBot.Persona)
-                    .WithRole(role)
-                    .WithRawConstraint(chatBot.Constraint)
-                    .Build();
-
-                // AI API を呼び出して返信を生成
-                responseText = await aiClient.GenerateTextWithMessagesAsync(
-                    messages,
-                    systemPrompt
-                );
+                requestMessages = messages;
+                requestRole = role;
             }
             else
             {
-                // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
-                var systemPrompt = new SystemPromptBuilder()
-                    .WithRawPersona(chatBot.Persona)
-                    .WithRawConstraint(chatBot.Constraint)
-                    .Build();
-
-                // AI API を呼び出して返信を生成
-                responseText = await aiClient.GenerateTextWithMessagesAsync(
-                    new List<(MessageRole Role, string Content)>
-                    {
-                        (MessageRole.User, triggerContent)
-                    },
-                    systemPrompt
-                );
+                // WildBot 用のメッセージ構築
+                requestMessages = new List<(MessageRole Role, string Content)>
+                {
+                    (MessageRole.User, triggerContent)
+                };
             }
+
+            if (requestRole == null)
+            {
+                //もう一度Wild Botのくじ引き
+                var roll = Random.Shared.Next(100);
+                var threshold = 2 + Random.Shared.Next(49); // 2%〜50%
+                if (roll < threshold)
+                {
+                    chatBot = await GetBotByTypeAsync(organizationId, BotType.WildBot);
+                    _logger.LogInformation(
+                        "Second WildBot selection succeeded: Roll={Roll}, OrganizationId={OrganizationId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}",
+                        roll,
+                        organizationId,
+                        roomId,
+                        triggerMessageId
+                    );
+                }
+            }
+
+            // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
+            var systemPrompt = new SystemPromptBuilder()
+                .WithRawPersona(chatBot.Persona)
+                .WithRole(requestRole)
+                .WithRawConstraint(chatBot.Constraint)
+                .Build();
+
+            // AI API を呼び出して返信を生成
+            responseText = await aiClient.GenerateTextWithMessagesAsync(
+                requestMessages,
+                systemPrompt
+            );
 
             // 入力終了を通知
             await _publisher.PublishChatBotTypingAsync(
@@ -460,20 +468,17 @@ public class AiChatReplyTask
     /// <summary>
     /// 指定された BotType の Bot を取得する
     /// </summary>
-    private async Task<DB.Models.Bot?> GetBotByTypeAsync(int organizationId, BotType botType)
+    private async Task<DB.Models.Bot> GetBotByTypeAsync(int organizationId, BotType botType)
     {
-        return await _context.Bots
+        var bot = await _context.Bots
             .Include(b => b.ChatActors.Where(ca => ca.OrganizationId == organizationId))
             .FirstOrDefaultAsync(b => b.Type == botType);
-    }
 
-    /// <summary>
-    /// 組織設定を取得する
-    /// </summary>
-    private async Task<OrganizationSetting?> GetOrganizationSettingAsync(int organizationId)
-    {
-        return await _context.OrganizationSettings
-            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+        if (bot == null)
+        {
+            throw new InvalidOperationException($"Bot of type {botType} not found for OrganizationId={organizationId}");
+        }
+        return bot;
     }
 
     /// <summary>
@@ -663,7 +668,7 @@ public class AiChatReplyTask
     /// 指示を求めている場合はタスク情報を含め、情報を求めている場合は関連情報を含め、
     /// そうでない場合は会話履歴を使用
     /// </summary>
-    private async Task<(List<(MessageRole Role, string Content)> Messages, RoleConfig Role)> BuildMessagesWithContextAsync(
+    private async Task<(List<(MessageRole Role, string Content)> Messages, RoleConfig? Role)> BuildMessagesWithContextAsync(
         IAiClient aiClient,
         string triggerContent,
         int userId,
@@ -675,6 +680,15 @@ public class AiChatReplyTask
 
         // メッセージを分析して適切なコンテキストを取得
         var (context, role) = await TryGetContextAsync(aiClient, triggerContent, userId);
+        if (role == null)
+        {
+            // コンテキストモード: 取得した情報をコンテキストに含めたシンプルな構成
+            var messages = new List<(MessageRole Role, string Content)>
+            {
+                (MessageRole.User, triggerContent)
+            };
+            return (messages, null);
+        }
 
         if (context != null)
         {
@@ -698,7 +712,7 @@ public class AiChatReplyTask
     /// メッセージを分析し、適切なコンテキストとロールを取得する
     /// IAiToolExecutor を使用してツールベースでコンテキストを生成
     /// </summary>
-    private async Task<(string? Context, RoleConfig Role)> TryGetContextAsync(
+    private async Task<(string? Context, RoleConfig? Role)> TryGetContextAsync(
         IAiClient aiClient,
         string triggerContent,
         int userId)
@@ -711,6 +725,11 @@ public class AiChatReplyTask
         try
         {
             var sentimentResult = await _messageAnalyzer.AnalyzeAsync(aiClient, triggerContent);
+            if (sentimentResult.IsNeutral)
+            {
+                _logger.LogDebug("Message sentiment is neutral, skipping context generation");
+                return (null, null);
+            }
 
             _logger.LogDebug(
                 "Message analyzed: GuidanceSeekingScore={GuidanceScore}, InformationSeekingScore={InfoScore}, Topic={Topic}",

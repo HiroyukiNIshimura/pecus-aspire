@@ -113,6 +113,19 @@ public class MessageSentimentResult
     /// 注意が必要かどうか（困っている or ネガティブ or 緊急）
     /// </summary>
     public bool NeedsAttention => IsTroubled || IsNegative || IsUrgent;
+
+    /// <summary>
+    /// 全てのスコアが0（感情分析で特に検出されなかった）
+    /// </summary>
+    public bool IsNeutral =>
+        TroubledScore == 0 &&
+        NegativeScore == 0 &&
+        PositiveScore == 0 &&
+        UrgencyScore == 0 &&
+        GuidanceSeekingScore == 0 &&
+        InformationSeekingScore == 0 &&
+        OthersFocusScore == 0 &&
+        Confidence == 0;
 }
 
 /// <summary>
