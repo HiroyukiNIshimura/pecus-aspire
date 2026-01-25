@@ -347,6 +347,11 @@ GET /api/dev/email-preview/index	テンプレート一覧をHTMLで表示（ブ�
 - HTTPS 対応（本番環境）
 - CSRF 保護（SameSite Cookie）
 
+## 🤖 Botキャラ
+![画像](images/bot_chat.webp)
+![画像](images/bot_system.webp)
+
+
 ## 📄 ライセンス
 
 MIT License
