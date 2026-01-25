@@ -26,6 +26,7 @@ public class AiChatReplyTask
     private readonly IMessageAnalyzer? _messageAnalyzer;
     private readonly IAiToolExecutor? _toolExecutor;
     private readonly IBotTaskGuard _taskGuard;
+    private readonly IInputQualityAnalyzer _inputQualityAnalyzer;
 
     /// <summary>
     /// Bot typing がタイムアウトするまでの時間（秒）
@@ -57,6 +58,7 @@ public class AiChatReplyTask
         SignalRNotificationPublisher publisher,
         ILogger<AiChatReplyTask> logger,
         IBotTaskGuard taskGuard,
+        IInputQualityAnalyzer inputQualityAnalyzer,
         IBotSelector? botSelector = null,
         IMessageAnalyzer? messageAnalyzer = null,
         IAiToolExecutor? toolExecutor = null
@@ -69,6 +71,7 @@ public class AiChatReplyTask
         _botSelector = botSelector;
         _messageAnalyzer = messageAnalyzer;
         _toolExecutor = toolExecutor;
+        _inputQualityAnalyzer = inputQualityAnalyzer;
         _taskGuard = taskGuard;
     }
 
@@ -117,19 +120,58 @@ public class AiChatReplyTask
             var triggerMessage = await _context.ChatMessages.FindAsync(triggerMessageId);
             var triggerContent = triggerMessage?.Content ?? string.Empty;
 
-            // ランダムにボット選択方法を決定（会話履歴分析 or ランダム選択）
-            var useRandomSelection = Random.Shared.Next(2) == 0;
+            var useWildBot = false;
+            // 2%〜50%のランダムな確率で入力品質を判定
+            if (!string.IsNullOrWhiteSpace(triggerContent))
+            {
+                var roll = Random.Shared.Next(100);
+                var threshold = 2 + Random.Shared.Next(49); // 2%〜50%
 
-            if (useRandomSelection && _botSelector != null)
-            {
-                _logger.LogDebug("Using random bot selection for RoomId={RoomId}", roomId);
-                chatBot = await _botSelector.GetRandomBotAsync(organizationId);
+                _logger.LogDebug(
+                    "Input quality check probability: Roll={Roll}, Threshold={Threshold}%, Triggered={Triggered}",
+                    roll,
+                    threshold,
+                    roll < threshold
+                );
+
+                if (roll < threshold)
+                {
+                    // 入力内容に基づき入力品質を判定
+                    var inputQualityResult = await _inputQualityAnalyzer.AnalyzeAsync(aiClient, triggerContent);
+                    if (inputQualityResult.IsGibberish || inputQualityResult.Type == InputQualityType.ContainsSpecialKeyword)
+                    {
+                        //WildBotをで応答させる
+                        useWildBot = true;
+                        chatBot = await GetBotByTypeAsync(organizationId, BotType.WildBot);
+
+                        _logger.LogInformation(
+                            "Input quality check triggered WildBot response: IsGibberish={IsGibberish}, Type={Type}, OrganizationId={OrganizationId}, RoomId={RoomId}",
+                            inputQualityResult.IsGibberish,
+                            inputQualityResult.Type,
+                            organizationId,
+                            roomId
+                        );
+                    }
+                }
             }
-            else
+
+            //ハズレの場合は通常処理へ
+            if (!useWildBot)
             {
-                // 会話履歴を取得して宛先ボットを判定
-                var conversationHistory = await BuildConversationHistoryForTargetAnalysisAsync(roomId, organizationId);
-                chatBot = await SelectBotByConversationAsync(organizationId, aiClient, conversationHistory, triggerContent);
+                // ランダムにボット選択方法を決定（会話履歴分析 or ランダム選択）
+                var useRandomSelection = Random.Shared.Next(2) == 0;
+
+                if (useRandomSelection && _botSelector != null)
+                {
+                    _logger.LogDebug("Using random bot selection for RoomId={RoomId}", roomId);
+                    chatBot = await _botSelector.GetRandomBotAsync(organizationId);
+                }
+                else
+                {
+                    // 会話履歴を取得して宛先ボットを判定
+                    var conversationHistory = await BuildConversationHistoryForTargetAnalysisAsync(roomId, organizationId);
+                    chatBot = await SelectBotByConversationAsync(organizationId, aiClient, conversationHistory, triggerContent);
+                }
             }
 
             // 宛先判定できなかった場合は従来のBotType判定にフォールバック
@@ -183,28 +225,50 @@ public class AiChatReplyTask
                 return;
             }
 
-            // 指示を求めているかどうかを判定し、適切なメッセージとロールを構築
-            var (messages, role) = await BuildMessagesWithContextAsync(
-                aiClient,
-                triggerContent,
-                senderUserId,
-                senderUserName,
-                roomId,
-                chatBot.GetChatActorId()
-            );
+            var responseText = string.Empty;
 
-            // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
-            var systemPrompt = new SystemPromptBuilder()
-                .WithRawPersona(chatBot.Persona)
-                .WithRole(role)
-                .WithRawConstraint(chatBot.Constraint)
-                .Build();
+            if (!useWildBot)
+            {
+                // 指示を求めているかどうかを判定し、適切なメッセージとロールを構築
+                var (messages, role) = await BuildMessagesWithContextAsync(
+                    aiClient,
+                    triggerContent,
+                    senderUserId,
+                    senderUserName,
+                    roomId,
+                    chatBot.GetChatActorId()
+                );
 
-            // AI API を呼び出して返信を生成
-            var responseText = await aiClient.GenerateTextWithMessagesAsync(
-                messages,
-                systemPrompt
-            );
+                // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
+                var systemPrompt = new SystemPromptBuilder()
+                    .WithRawPersona(chatBot.Persona)
+                    .WithRole(role)
+                    .WithRawConstraint(chatBot.Constraint)
+                    .Build();
+
+                // AI API を呼び出して返信を生成
+                responseText = await aiClient.GenerateTextWithMessagesAsync(
+                    messages,
+                    systemPrompt
+                );
+            }
+            else
+            {
+                // Bot のペルソナと行動指針からシステムプロンプトを作成（ランダムな役割を付与）
+                var systemPrompt = new SystemPromptBuilder()
+                    .WithRawPersona(chatBot.Persona)
+                    .WithRawConstraint(chatBot.Constraint)
+                    .Build();
+
+                // AI API を呼び出して返信を生成
+                responseText = await aiClient.GenerateTextWithMessagesAsync(
+                    new List<(MessageRole Role, string Content)>
+                    {
+                        (MessageRole.User, triggerContent)
+                    },
+                    systemPrompt
+                );
+            }
 
             // 入力終了を通知
             await _publisher.PublishChatBotTypingAsync(

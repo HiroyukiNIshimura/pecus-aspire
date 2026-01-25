@@ -8,7 +8,7 @@ namespace Pecus.Libs.AI.Extensions;
 public static class MessageAnalyzerExtensions
 {
     /// <summary>
-    /// MessageAnalyzerをDIコンテナに登録
+    /// 各種AnalyzerをDIコンテナに登録
     /// </summary>
     /// <param name="services">サービスコレクション</param>
     /// <returns>サービスコレクション</returns>
@@ -17,6 +17,7 @@ public static class MessageAnalyzerExtensions
         services.AddScoped<IMessageAnalyzer, MessageAnalyzer>();
         services.AddScoped<IConversationTargetAnalyzer, ConversationTargetAnalyzer>();
         services.AddScoped<IShouldReplyAnalyzer, ShouldReplyAnalyzer>();
+        services.AddScoped<IInputQualityAnalyzer, InputQualityAnalyzer>();
         return services;
     }
 }
