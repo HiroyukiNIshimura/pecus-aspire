@@ -903,6 +903,7 @@ public class WorkspaceTaskService
             ItemCommitter = UserIdentityResponseBuilder.FromNullableUserWithId(task.WorkspaceItem?.CommitterId, task.WorkspaceItem?.Committer),
             CompletedBy = UserIdentityResponseBuilder.FromNullableUserWithId(task.CompletedByUserId, task.CompletedByUser),
             CreatedBy = UserIdentityResponseBuilder.FromUserWithId(task.CreatedByUserId, task.CreatedByUser),
+            Assigned = UserIdentityResponseBuilder.FromUserWithId(task.AssignedUserId, task.AssignedUser),
             Content = task.Content,
             TaskTypeId = task.TaskTypeId,
             TaskTypeCode = task.TaskType?.Code,
