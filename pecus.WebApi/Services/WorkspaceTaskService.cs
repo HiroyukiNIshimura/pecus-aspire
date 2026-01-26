@@ -243,6 +243,12 @@ public class WorkspaceTaskService
             .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
             .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi!.Owner)
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi!.Assignee)
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi!.Committer)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(t =>
                 t.Id == taskId &&
                 t.WorkspaceItemId == itemId &&
@@ -280,6 +286,12 @@ public class WorkspaceTaskService
             .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
             .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi!.Owner)
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi!.Assignee)
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi!.Committer)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(t =>
                 t.Sequence == sequence &&
                 t.WorkspaceItemId == itemId &&
