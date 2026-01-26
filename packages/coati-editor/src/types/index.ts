@@ -7,9 +7,9 @@
  */
 
 import type { LexicalEditor } from 'lexical';
+import type { LinkMatcher } from '../context/AutoLinkContext';
 import type { ExtraOptionsProvider } from '../context/ComponentPickerContext';
 import type { ImageUploadHandler } from '../context/ImageUploadContext';
-import type { LinkMatcher } from '../context/AutoLinkContext';
 
 /**
  * エディタの基本設定
