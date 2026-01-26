@@ -351,6 +351,8 @@ GET /api/dev/email-preview/index	テンプレート一覧をHTMLで表示（ブ�
 ![画像](images/bot_chat.webp)
 ![画像](images/bot_system.webp)
 
+## 🎧 テーマソング
+[コアティ探検家](images/coati.mp4)
 
 ## 📄 ライセンス
 
