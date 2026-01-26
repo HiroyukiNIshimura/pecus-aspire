@@ -27,10 +27,6 @@ export type DashboardTaskSummary = {
      */
     dueThisWeekCount: number;
     /**
-     * 未アサインタスク数（担当者未設定の未完了・未破棄タスク）
-     */
-    unassignedCount: number;
-    /**
      * 総タスク数
      */
     totalCount: number;

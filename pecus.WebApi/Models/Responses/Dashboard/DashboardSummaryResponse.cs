@@ -64,12 +64,6 @@ public class DashboardTaskSummary
     public required int DueThisWeekCount { get; set; }
 
     /// <summary>
-    /// 未アサインタスク数（担当者未設定の未完了・未破棄タスク）
-    /// </summary>
-    [Required]
-    public required int UnassignedCount { get; set; }
-
-    /// <summary>
     /// 総タスク数
     /// </summary>
     [Required]

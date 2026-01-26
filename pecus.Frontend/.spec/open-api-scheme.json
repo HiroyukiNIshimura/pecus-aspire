@@ -16333,7 +16333,7 @@
         "enum": [
           "ChatBot",
           "SystemBot",
-          "TaskBot"
+          "WildBot"
         ],
         "type": "string",
         "description": "ボットの種類を表す列挙型"
@@ -17870,7 +17870,6 @@
           "discardedCount",
           "overdueCount",
           "dueThisWeekCount",
-          "unassignedCount",
           "totalCount"
         ],
         "type": "object",
@@ -17898,11 +17897,6 @@
           "dueThisWeekCount": {
             "type": "integer",
             "description": "今週期限タスク数（今週中に期限の未完了タスク）",
-            "format": "int32"
-          },
-          "unassignedCount": {
-            "type": "integer",
-            "description": "未アサインタスク数（担当者未設定の未完了・未破棄タスク）",
             "format": "int32"
           },
           "totalCount": {

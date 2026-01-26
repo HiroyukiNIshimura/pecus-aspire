@@ -273,7 +273,6 @@ public class DashboardStatisticsService
         var discardedCount = await query.CountAsync(t => t.IsDiscarded);
         var overdueCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart);
         var dueThisWeekCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate >= todayStart && t.DueDate <= endOfWeek);
-        var unassignedCount = await query.CountAsync(t => t.AssignedUserId == 0 && !t.IsCompleted && !t.IsDiscarded);
 
         return new DashboardTaskSummary
         {
@@ -283,7 +282,6 @@ public class DashboardStatisticsService
             DiscardedCount = discardedCount,
             OverdueCount = overdueCount,
             DueThisWeekCount = dueThisWeekCount,
-            UnassignedCount = unassignedCount,
         };
     }
 
