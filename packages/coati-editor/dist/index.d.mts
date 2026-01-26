@@ -318,8 +318,13 @@ interface NotionLikeEditorProps {
      * AIアシスタントなどのカスタム機能を追加するために使用
      */
     extraComponentPickerOptions?: ExtraOptionsProvider;
+    /**
+     * 全画面モード変更時のコールバック
+     * @param isFullscreen - 全画面モードかどうか
+     */
+    onFullscreenChange?: (isFullscreen: boolean) => void;
 }
-declare function NotionLikeEditor({ showToolbar, autoFocus, measureTypingPerf, initialEditorState, initialMarkdown, onChange, onChangePlainText, onChangeHtml, onChangeMarkdown, debounceMs, isCodeShiki, imageUploadHandler, customLinkMatchers, onEditorReady, extraPlugins, extraComponentPickerOptions, }: NotionLikeEditorProps): react_jsx_runtime.JSX.Element;
+declare function NotionLikeEditor({ showToolbar, autoFocus, measureTypingPerf, initialEditorState, initialMarkdown, onChange, onChangePlainText, onChangeHtml, onChangeMarkdown, debounceMs, isCodeShiki, imageUploadHandler, customLinkMatchers, onEditorReady, extraPlugins, extraComponentPickerOptions, onFullscreenChange, }: NotionLikeEditorProps): react_jsx_runtime.JSX.Element;
 
 interface NotionLikeViewerProps {
     /**
@@ -560,6 +565,8 @@ interface CoreEditorProps extends EditorChangeCallbacks {
     extraPlugins?: React.ReactNode;
     /** ComponentPickerPlugin（/メニュー）に追加オプションを提供する関数 */
     extraComponentPickerOptions?: ExtraOptionsProvider;
+    /** 全画面モード変更時のコールバック */
+    onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 /**
  * Pecus固有エディタのProps

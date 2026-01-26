@@ -32,7 +32,7 @@ const BOTS = [
   {
     code: 'CHAT_BOT',
     filename: 'bot_coati.png',
-    prompt: `Character: "Coati", a cute anthropomorphic female Coati (South American raccoon) girl. Close-up of her face. She has brown hair, fluffy round animal ears. She is wearing a green casual adventurer's scarf. Expression: Cheerful, confident, and slightly cheeky/sassy smile (winking or sticking tongue out slightly). She looks friendly and energetic. The composition focuses on her head and shoulders. ${BASE_STYLE}`,
+    prompt: `Character: "Coati", a cute anthropomorphic female Coati (South American coati) girl. Close-up of her face. She has brown hair, fluffy round animal ears. She is wearing a green casual adventurer's scarf. Expression: Cheerful, confident, and slightly cheeky/sassy smile (winking or sticking tongue out slightly). She looks friendly and energetic. The composition focuses on her head and shoulders. ${BASE_STYLE}`,
   },
   {
     code: 'SYSTEM_BOT',
@@ -42,7 +42,8 @@ const BOTS = [
   {
     code: 'WILD_BOT',
     filename: 'bot_wild.png',
-    prompt: `Character: A generic "Wild Coati" (South American raccoon) animal. NOT anthropomorphic. Portrait framing showing the full head, ears, and part of the upper body. It is fluffy, brown with a distinct long snout and big round eyes. Expression: Curious and friendly. The composition is zoomed out enough to clearly identify the animal, showing its raccoon-like mask markings. Cute and mascoty natural animal. ${BASE_STYLE}`,
+    // アニメ調（BASE_STYLE）は維持しつつ、デフォルメを抑えて野生動物としての構造（Feral）を強調する
+    prompt: `Character: A wild Coati (South American raccoon). Feral form (animal shape), NOT anthropomorphic, NO clothes. While keeping the anime art style matching the other characters, the anatomy should be true to a real coati (long snout, small eyes compared to head). Not a "chibi" or "mascot" deformation. Expression: Wild and curious. Portrait framing designed for a circular profile icon. ${BASE_STYLE}`,
   },
 ];
 

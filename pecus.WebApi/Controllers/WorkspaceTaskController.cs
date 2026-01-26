@@ -333,14 +333,14 @@ public class WorkspaceTaskController : BaseSecureController
             }
 
             var changes = TaskUpdateChanges.FromComparison(
-                requestPriority: request.Priority,
-                requestStartDate: request.StartDate,
-                requestDueDate: request.DueDate,
-                requestEstimatedHours: request.EstimatedHours,
-                requestProgressPercentage: request.ProgressPercentage,
-                requestAssignedUserId: request.AssignedUserId,
-                requestIsDiscarded: request.IsDiscarded == true,
-                requestIsCompleted: request.IsCompleted == true,
+                currentPriority: task.Priority,
+                currentStartDate: task.StartDate,
+                currentDueDate: task.DueDate,
+                currentEstimatedHours: task.EstimatedHours,
+                currentProgressPercentage: task.ProgressPercentage,
+                currentAssignedUserId: task.AssignedUserId,
+                currentIsDiscarded: task.IsDiscarded,
+                currentIsCompleted: task.IsCompleted,
                 previousPriority: previousTask.Priority,
                 previousStartDate: previousTask.StartDate,
                 previousDueDate: previousTask.DueDate,

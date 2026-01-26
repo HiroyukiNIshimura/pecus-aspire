@@ -2,6 +2,7 @@ namespace Pecus.Libs.AI;
 
 /// <summary>
 /// ボットのペルソナを取得するヘルパー
+/// このデータはシードとして使用される
 /// </summary>
 public static class BotPersonaHelper
 {

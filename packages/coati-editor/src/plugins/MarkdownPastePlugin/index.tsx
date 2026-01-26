@@ -124,6 +124,12 @@ function getPlainTextFromClipboard(event: ClipboardEvent): string | null {
     return null;
   }
 
+  // Lexical固有のクリップボードデータがある場合は、Lexical標準処理に任せる
+  const lexicalData = clipboardData.getData('application/x-lexical-editor');
+  if (lexicalData && lexicalData.trim().length > 0) {
+    return null;
+  }
+
   // HTML がある場合の判定
   const htmlData = clipboardData.getData('text/html');
   if (htmlData && htmlData.trim().length > 0) {
@@ -134,15 +140,23 @@ function getPlainTextFromClipboard(event: ClipboardEvent): string | null {
       return plainText;
     }
 
-    // 単純な HTML ラッパー（meta, span, div, p, br のみ）の場合はプレーンテキストを優先
-    const isSimpleHtml =
-      /<(meta|span|div|p|br)[^>]*>/i.test(htmlData) && !/<(table|img|a|ul|ol|li|h[1-6])[^>]*>/i.test(htmlData);
-    if (isSimpleHtml) {
-      return plainText;
+    // リッチなHTMLコンテンツを検出するパターン
+    // これらのタグがある場合は、Lexical標準のHTMLペースト処理に任せる
+    const hasRichHtmlContent =
+      /<(table|img|a|ul|ol|li|h[1-6]|strong|b|em|i|u|s|strike|del|blockquote|hr|figure|figcaption|sub|sup|mark)\b/i.test(
+        htmlData,
+      );
+
+    // Lexical固有のデータ属性がある場合も、Lexical標準処理に任せる
+    const hasLexicalData = /data-lexical/i.test(htmlData);
+
+    if (hasRichHtmlContent || hasLexicalData) {
+      // リッチな HTML の場合は通常のペースト処理に任せる
+      return null;
     }
 
-    // リッチな HTML（Word, Google Docs 等）の場合は通常のペースト処理に任せる
-    return null;
+    // 上記に該当しない単純なHTMLラッパーのみの場合はプレーンテキストを返す
+    return plainText;
   }
 
   return plainText;

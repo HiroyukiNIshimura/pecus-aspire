@@ -5,4 +5,4 @@
 /**
  * ボットの種類を表す列挙型
  */
-export type BotType = 'ChatBot' | 'SystemBot' | 'TaskBot';
+export type BotType = 'ChatBot' | 'SystemBot' | 'WildBot';

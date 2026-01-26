@@ -48,6 +48,8 @@ export default function EditWorkspaceItem({
   onOverwrite,
 }: EditWorkspaceItemProps) {
   const notify = useNotify();
+  // 全画面モード状態（エディタからのコールバックで更新）
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { startItemEdit, endItemEdit } = useSignalRContext();
 
   // 最新アイテムデータ
@@ -388,6 +390,7 @@ export default function EditWorkspaceItem({
                         key={editorInitKey}
                         initialEditorState={initialEditorState}
                         onChange={handleEditorChange}
+                        onFullscreenChange={setIsFullscreen}
                         workspaceId={latestItem.workspaceId!}
                         itemId={latestItem.id}
                       />
@@ -395,25 +398,27 @@ export default function EditWorkspaceItem({
                   </div>
 
                   {/* タグ */}
-                  <div className="form-control">
-                    <label htmlFor="tagNames" className="label">
-                      <span className="label-text font-semibold">タグ</span>
-                    </label>
-                    <TagInput
-                      tags={tagNames}
-                      onChange={setTagNames}
-                      disabled={isUpdating}
-                      placeholder="タグを入力..."
-                    />
-                    <div className="label">
-                      <span className="label-text-alt text-xs">
-                        タグを入力してEnterで追加。タグは50文字以内で入力してください。
-                      </span>
+                  {!isFullscreen && (
+                    <div className="form-control">
+                      <label htmlFor="tagNames" className="label">
+                        <span className="label-text font-semibold">タグ</span>
+                      </label>
+                      <TagInput
+                        tags={tagNames}
+                        onChange={setTagNames}
+                        disabled={isUpdating}
+                        placeholder="タグを入力..."
+                      />
+                      <div className="label">
+                        <span className="label-text-alt text-xs">
+                          タグを入力してEnterで追加。タグは50文字以内で入力してください。
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* ステータス（オーナーのみ表示） */}
-                  {currentUserId !== undefined && latestItem.owner?.id === currentUserId && (
+                  {!isFullscreen && currentUserId !== undefined && latestItem.owner?.id === currentUserId && (
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
@@ -442,21 +447,23 @@ export default function EditWorkspaceItem({
                   />
 
                   {/* ボタングループ */}
-                  <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                    <button type="button" onClick={handleClose} className="btn btn-outline" disabled={isUpdating}>
-                      キャンセル
-                    </button>
-                    <button type="submit" className="btn btn-primary" disabled={isUpdating || isConflict}>
-                      {isUpdating ? (
-                        <>
-                          <span className="loading loading-spinner loading-sm"></span>
-                          保存中...
-                        </>
-                      ) : (
-                        '保存'
-                      )}
-                    </button>
-                  </div>
+                  {!isFullscreen && (
+                    <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
+                      <button type="button" onClick={handleClose} className="btn btn-outline" disabled={isUpdating}>
+                        キャンセル
+                      </button>
+                      <button type="submit" className="btn btn-primary" disabled={isUpdating || isConflict}>
+                        {isUpdating ? (
+                          <>
+                            <span className="loading loading-spinner loading-sm"></span>
+                            保存中...
+                          </>
+                        ) : (
+                          '保存'
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </form>
               )}
             </div>
@@ -476,11 +483,13 @@ function EditWorkspaceItemEditor({
   itemId,
   initialEditorState,
   onChange,
+  onFullscreenChange,
 }: {
   workspaceId: number;
   itemId: number;
   initialEditorState?: string;
   onChange?: (editorState: string) => void;
+  onFullscreenChange?: (isFullscreen: boolean) => void;
 }) {
   const imageUploadHandler = useExistingItemImageUploadHandler({
     workspaceId,
@@ -491,6 +500,7 @@ function EditWorkspaceItemEditor({
     <PecusNotionLikeEditor
       initialEditorState={initialEditorState}
       onChange={onChange}
+      onFullscreenChange={onFullscreenChange}
       debounceMs={500}
       autoFocus={false}
       imageUploadHandler={imageUploadHandler}

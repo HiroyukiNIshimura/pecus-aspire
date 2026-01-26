@@ -70,16 +70,16 @@ public record TaskUpdateChanges(
         IsCompletedChanged;
 
     /// <summary>
-    /// 変更情報をリクエストと前回の状態から生成する
+    /// 変更情報を現在の状態と変更前の状態から生成する
     /// </summary>
-    /// <param name="requestPriority">リクエストの優先度</param>
-    /// <param name="requestStartDate">リクエストの開始日</param>
-    /// <param name="requestDueDate">リクエストの期限日</param>
-    /// <param name="requestEstimatedHours">リクエストの予定工数</param>
-    /// <param name="requestProgressPercentage">リクエストの進捗率</param>
-    /// <param name="requestAssignedUserId">リクエストの担当者ID</param>
-    /// <param name="requestIsDiscarded">リクエストの破棄状態</param>
-    /// <param name="requestIsCompleted">リクエストの完了状態</param>
+    /// <param name="currentPriority">現在（更新後）の優先度</param>
+    /// <param name="currentStartDate">現在（更新後）の開始日</param>
+    /// <param name="currentDueDate">現在（更新後）の期限日</param>
+    /// <param name="currentEstimatedHours">現在（更新後）の予定工数</param>
+    /// <param name="currentProgressPercentage">現在（更新後）の進捗率</param>
+    /// <param name="currentAssignedUserId">現在（更新後）の担当者ID</param>
+    /// <param name="currentIsDiscarded">現在（更新後）の破棄状態</param>
+    /// <param name="currentIsCompleted">現在（更新後）の完了状態</param>
     /// <param name="previousPriority">変更前の優先度</param>
     /// <param name="previousStartDate">変更前の開始日</param>
     /// <param name="previousDueDate">変更前の期限日</param>
@@ -90,14 +90,14 @@ public record TaskUpdateChanges(
     /// <param name="previousIsCompleted">変更前の完了状態</param>
     /// <returns>変更情報</returns>
     public static TaskUpdateChanges FromComparison(
-        TaskPriority? requestPriority,
-        DateTimeOffset? requestStartDate,
-        DateTimeOffset requestDueDate,
-        decimal? requestEstimatedHours,
-        int? requestProgressPercentage,
-        int? requestAssignedUserId,
-        bool requestIsDiscarded,
-        bool requestIsCompleted,
+        TaskPriority? currentPriority,
+        DateTimeOffset? currentStartDate,
+        DateTimeOffset currentDueDate,
+        decimal? currentEstimatedHours,
+        int? currentProgressPercentage,
+        int? currentAssignedUserId,
+        bool currentIsDiscarded,
+        bool currentIsCompleted,
         TaskPriority? previousPriority,
         DateTimeOffset? previousStartDate,
         DateTimeOffset previousDueDate,
@@ -109,30 +109,30 @@ public record TaskUpdateChanges(
     )
     {
         return new TaskUpdateChanges(
-            PriorityChanged: requestPriority != previousPriority,
+            PriorityChanged: currentPriority != previousPriority,
             PreviousPriority: previousPriority,
-            NewPriority: requestPriority,
-            StartDateChanged: requestStartDate != previousStartDate,
+            NewPriority: currentPriority,
+            StartDateChanged: currentStartDate != previousStartDate,
             PreviousStartDate: previousStartDate,
-            NewStartDate: requestStartDate,
-            DueDateChanged: requestDueDate != previousDueDate,
+            NewStartDate: currentStartDate,
+            DueDateChanged: currentDueDate != previousDueDate,
             PreviousDueDate: previousDueDate,
-            NewDueDate: requestDueDate,
-            EstimatedHoursChanged: requestEstimatedHours != previousEstimatedHours,
+            NewDueDate: currentDueDate,
+            EstimatedHoursChanged: currentEstimatedHours != previousEstimatedHours,
             PreviousEstimatedHours: previousEstimatedHours,
-            NewEstimatedHours: requestEstimatedHours,
-            ProgressPercentageChanged: requestProgressPercentage != previousProgressPercentage,
+            NewEstimatedHours: currentEstimatedHours,
+            ProgressPercentageChanged: currentProgressPercentage != previousProgressPercentage,
             PreviousProgressPercentage: previousProgressPercentage,
-            NewProgressPercentage: requestProgressPercentage,
-            AssignedUserIdChanged: requestAssignedUserId != previousAssignedUserId,
+            NewProgressPercentage: currentProgressPercentage,
+            AssignedUserIdChanged: currentAssignedUserId != previousAssignedUserId,
             PreviousAssignedUserId: previousAssignedUserId,
-            NewAssignedUserId: requestAssignedUserId,
-            IsDiscardedChanged: requestIsDiscarded != previousIsDiscarded,
+            NewAssignedUserId: currentAssignedUserId,
+            IsDiscardedChanged: currentIsDiscarded != previousIsDiscarded,
             PreviousIsDiscarded: previousIsDiscarded,
-            NewIsDiscarded: requestIsDiscarded,
-            IsCompletedChanged: requestIsCompleted != previousIsCompleted,
+            NewIsDiscarded: currentIsDiscarded,
+            IsCompletedChanged: currentIsCompleted != previousIsCompleted,
             PreviousIsCompleted: previousIsCompleted,
-            NewIsCompleted: requestIsCompleted
+            NewIsCompleted: currentIsCompleted
         );
     }
 }

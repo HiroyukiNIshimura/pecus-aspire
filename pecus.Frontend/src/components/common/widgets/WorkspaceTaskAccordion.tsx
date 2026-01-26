@@ -715,6 +715,7 @@ export default function WorkspaceTaskAccordion({
                 itemAssigneeId={editingTask.itemAssignee?.id}
                 itemCommitterId={editingTask.itemCommitter?.id}
                 itemCommitterName={editingTask.itemCommitter?.username}
+                itemCommitterIsActive={editingTask.itemCommitter?.isActive ?? false}
                 itemCommitterAvatarUrl={editingTask.itemCommitter?.identityIconUrl}
                 showNavigationControls={false}
                 isModal={true}

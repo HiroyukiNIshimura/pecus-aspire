@@ -51,12 +51,12 @@ export default function TaskSummarySection({ taskSummary, itemSummary, workspace
           isWarning={taskSummary.overdueCount > 0}
         />
         <StatCard
-          title="未アサイン"
-          value={taskSummary.unassignedCount}
-          description="担当者未設定"
-          iconClass="icon-[mdi--account-question-outline]"
-          iconColorClass="text-warning"
-          isWarning={taskSummary.unassignedCount > 0}
+          title="今週期限"
+          value={taskSummary.dueThisWeekCount}
+          description="今週中に対応"
+          iconClass="icon-[mdi--calendar-week]"
+          iconColorClass="text-info"
+          isWarning={taskSummary.dueThisWeekCount > 0}
         />
         <StatCard
           title="ワークスペース"

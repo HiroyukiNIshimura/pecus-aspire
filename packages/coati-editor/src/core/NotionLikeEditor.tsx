@@ -131,6 +131,12 @@ export interface NotionLikeEditorProps {
    * AIアシスタントなどのカスタム機能を追加するために使用
    */
   extraComponentPickerOptions?: ExtraOptionsProvider;
+
+  /**
+   * 全画面モード変更時のコールバック
+   * @param isFullscreen - 全画面モードかどうか
+   */
+  onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
 export default function NotionLikeEditor({
@@ -150,6 +156,7 @@ export default function NotionLikeEditor({
   onEditorReady,
   extraPlugins,
   extraComponentPickerOptions,
+  onFullscreenChange,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -243,6 +250,7 @@ export default function NotionLikeEditor({
         onEditorReady={onEditorReady}
         extraPlugins={extraPlugins}
         extraComponentPickerOptions={extraComponentPickerOptions}
+        onFullscreenChange={onFullscreenChange}
       />
     </FullscreenProvider>
   );
@@ -266,6 +274,7 @@ function EditorContainer({
   onEditorReady,
   extraPlugins,
   extraComponentPickerOptions,
+  onFullscreenChange,
 }: {
   settings: ReturnType<
     typeof useMemo<
@@ -289,8 +298,14 @@ function EditorContainer({
   onEditorReady?: (editor: LexicalEditor) => void;
   extraPlugins?: React.ReactNode;
   extraComponentPickerOptions?: ExtraOptionsProvider;
+  onFullscreenChange?: (isFullscreen: boolean) => void;
 }) {
   const { isFullscreen } = useFullscreen();
+
+  // 全画面モード変更時にコールバックを呼び出す
+  useEffect(() => {
+    onFullscreenChange?.(isFullscreen);
+  }, [isFullscreen, onFullscreenChange]);
 
   return (
     <div className={`notion-like-editor ${isFullscreen ? 'fixed inset-0 z-9999 bg-base-100 flex flex-col' : ''}`}>

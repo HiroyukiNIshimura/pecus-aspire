@@ -441,7 +441,9 @@ export default function TaskCommentSection({
                   <div className={`max-w-[75%] ${isOwn ? 'text-right' : 'text-left'}`}>
                     {/* ヘッダー */}
                     <div className={`flex items-center gap-2 mb-1 flex-wrap ${isOwn ? 'justify-end' : ''}`}>
-                      <span className="font-medium text-sm">{comment.user?.username}</span>
+                      <span className={`font-medium text-sm ${!comment.user?.isActive ? 'line-through' : ''}`}>
+                        {comment.user?.username}
+                      </span>
                       {(() => {
                         const type = comment.commentType || 'Normal';
                         const config = commentTypeConfig[type];
