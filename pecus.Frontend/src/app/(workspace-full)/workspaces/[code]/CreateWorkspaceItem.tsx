@@ -30,6 +30,8 @@ export default function CreateWorkspaceItem({
   canEdit = true,
 }: CreateWorkspaceItemProps) {
   const notify = useNotify();
+  // 全画面モード状態（エディタからのコールバックで更新）
+  const [isFullscreen, setIsFullscreen] = useState(false);
   // 一時ファイルアップロード用のセッションID（モーダル表示ごとに生成）
   const sessionId = useMemo(() => crypto.randomUUID(), []);
 
@@ -330,6 +332,7 @@ export default function CreateWorkspaceItem({
                       <PecusNotionLikeEditor
                         onChange={handleEditorChange}
                         onEditorReady={handleEditorReady}
+                        onFullscreenChange={setIsFullscreen}
                         debounceMs={500}
                         autoFocus={false}
                         imageUploadHandler={imageUploadHandler}
@@ -338,84 +341,92 @@ export default function CreateWorkspaceItem({
                   </div>
                 </div>
                 {/* タグ */}
-                <div className="form-control">
-                  <label htmlFor="tags" className="label">
-                    <span className="label-text font-semibold">タグ</span>
-                  </label>
-                  <TagInput
-                    tags={tags}
-                    onChange={setTags}
-                    placeholder="タグを入力..."
-                    disabled={isSubmitting || isSuggestLoading}
-                  />
-                  <div className="label">
-                    <span className="label-text-alt text-xs">
-                      タグを入力してEnterで追加。タグは50文字以内で入力してください。
-                    </span>
-                  </div>
-                </div>
-                {/* 期限日 */}
-                <div className="form-control">
-                  <label htmlFor="dueDate" className="label">
-                    <span className="label-text font-semibold">期限日</span>
-                  </label>
-                  <DatePicker
-                    value={formData.dueDate ?? ''}
-                    onChange={(date) => handleFieldChange('dueDate', date)}
-                    disabled={isSubmitting || isSuggestLoading}
-                    className={`w-full ${shouldShowError('dueDate') ? 'input-error' : ''}`}
-                    placeholder="日付を選択"
-                  />
-                  {shouldShowError('dueDate') && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError('dueDate')}</span>
-                    </div>
-                  )}
-                </div>
-                {/* 優先度 */}
-                <div className="form-control">
-                  <label htmlFor="priority" className="label">
-                    <span className="label-text font-semibold">優先度</span>
-                  </label>
-                  <select
-                    id="priority"
-                    name="priority"
-                    className={`select select-bordered w-full ${shouldShowError('priority') ? 'select-error' : ''}`}
-                    value={formData.priority ?? ''}
-                    onChange={(e) =>
-                      handleFieldChange('priority', e.target.value ? (e.target.value as TaskPriority) : undefined)
-                    }
-                    disabled={isSubmitting || isSuggestLoading}
-                  >
-                    <option value="">未設定</option>
-                    <option value="Low">低</option>
-                    <option value="Medium">中</option>
-                    <option value="High">高</option>
-                    <option value="Critical">緊急</option>
-                  </select>
-                  {shouldShowError('priority') && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError('priority')}</span>
-                    </div>
-                  )}
-                </div>
-                {/* 下書きフラグ */}
-                <div className="form-control">
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="isDraft"
-                      name="isDraft"
-                      className="switch switch-outline switch-warning"
-                      checked={formData.isDraft}
-                      onChange={(e) => handleFieldChange('isDraft', e.target.checked)}
+                {!isFullscreen && (
+                  <div className="form-control">
+                    <label htmlFor="tags" className="label">
+                      <span className="label-text font-semibold">タグ</span>
+                    </label>
+                    <TagInput
+                      tags={tags}
+                      onChange={setTags}
+                      placeholder="タグを入力..."
                       disabled={isSubmitting || isSuggestLoading}
                     />
-                    <label htmlFor="isDraft" className="label-text cursor-pointer">
-                      下書き
-                    </label>
+                    <div className="label">
+                      <span className="label-text-alt text-xs">
+                        タグを入力してEnterで追加。タグは50文字以内で入力してください。
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
+                {/* 期限日 */}
+                {!isFullscreen && (
+                  <div className="form-control">
+                    <label htmlFor="dueDate" className="label">
+                      <span className="label-text font-semibold">期限日</span>
+                    </label>
+                    <DatePicker
+                      value={formData.dueDate ?? ''}
+                      onChange={(date) => handleFieldChange('dueDate', date)}
+                      disabled={isSubmitting || isSuggestLoading}
+                      className={`w-full ${shouldShowError('dueDate') ? 'input-error' : ''}`}
+                      placeholder="日付を選択"
+                    />
+                    {shouldShowError('dueDate') && (
+                      <div className="label">
+                        <span className="label-text-alt text-error">{getFieldError('dueDate')}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* 優先度 */}
+                {!isFullscreen && (
+                  <div className="form-control">
+                    <label htmlFor="priority" className="label">
+                      <span className="label-text font-semibold">優先度</span>
+                    </label>
+                    <select
+                      id="priority"
+                      name="priority"
+                      className={`select select-bordered w-full ${shouldShowError('priority') ? 'select-error' : ''}`}
+                      value={formData.priority ?? ''}
+                      onChange={(e) =>
+                        handleFieldChange('priority', e.target.value ? (e.target.value as TaskPriority) : undefined)
+                      }
+                      disabled={isSubmitting || isSuggestLoading}
+                    >
+                      <option value="">未設定</option>
+                      <option value="Low">低</option>
+                      <option value="Medium">中</option>
+                      <option value="High">高</option>
+                      <option value="Critical">緊急</option>
+                    </select>
+                    {shouldShowError('priority') && (
+                      <div className="label">
+                        <span className="label-text-alt text-error">{getFieldError('priority')}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* 下書きフラグ */}
+                {!isFullscreen && (
+                  <div className="form-control">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="isDraft"
+                        name="isDraft"
+                        className="switch switch-outline switch-warning"
+                        checked={formData.isDraft}
+                        onChange={(e) => handleFieldChange('isDraft', e.target.checked)}
+                        disabled={isSubmitting || isSuggestLoading}
+                      />
+                      <label htmlFor="isDraft" className="label-text cursor-pointer">
+                        下書き
+                      </label>
+                    </div>
+                  </div>
+                )}
                 {/* グローバルエラー表示 */}
                 {globalError && (
                   <div className="alert alert-soft alert-error mb-4">
@@ -425,29 +436,31 @@ export default function CreateWorkspaceItem({
                 )}
 
                 {/* ボタングループ */}
-                <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    className="btn btn-outline"
-                    disabled={isSubmitting || isSuggestLoading}
-                  >
-                    キャンセル
-                  </button>
-                  <button type="submit" className="btn btn-primary" disabled={isSubmitting || isSuggestLoading}>
-                    {isSubmitting ? (
-                      <>
-                        <span className="loading loading-spinner loading-sm"></span>
-                        作成中...
-                      </>
-                    ) : (
-                      <>
-                        <span className="icon-[mdi--content-save-outline] w-5 h-5" aria-hidden="true" />
-                        作成
-                      </>
-                    )}
-                  </button>
-                </div>
+                {!isFullscreen && (
+                  <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
+                    <button
+                      type="button"
+                      onClick={handleClose}
+                      className="btn btn-outline"
+                      disabled={isSubmitting || isSuggestLoading}
+                    >
+                      キャンセル
+                    </button>
+                    <button type="submit" className="btn btn-primary" disabled={isSubmitting || isSuggestLoading}>
+                      {isSubmitting ? (
+                        <>
+                          <span className="loading loading-spinner loading-sm"></span>
+                          作成中...
+                        </>
+                      ) : (
+                        <>
+                          <span className="icon-[mdi--content-save-outline] w-5 h-5" aria-hidden="true" />
+                          作成
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </form>
             </div>
           </div>

@@ -105,6 +105,8 @@ export interface CoreEditorProps extends EditorChangeCallbacks {
   extraPlugins?: React.ReactNode;
   /** ComponentPickerPlugin（/メニュー）に追加オプションを提供する関数 */
   extraComponentPickerOptions?: ExtraOptionsProvider;
+  /** 全画面モード変更時のコールバック */
+  onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
 /**
