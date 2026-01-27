@@ -12,7 +12,7 @@
 @if (!string.IsNullOrWhiteSpace(Model.Description))
 {
     <div class="info">
-        <p style="margin:0; white-space:pre-wrap;">@Model.Description</p>
+        <p class="pre-wrap">@Model.Description</p>
     </div>
 }
 
@@ -27,7 +27,7 @@
     <li>組織: @Model.OrganizationName</li>
 </ul>
 
-<div style="text-align:center; margin:20px 0;">
+<div class="center">
     <a href="@Model.WorkspaceUrl" class="button">ワークスペースを表示</a>
 </div>
 

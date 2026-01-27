@@ -3,7 +3,7 @@
     Layout = "_Layout.html.cshtml";
 }
 
-<h2 style="color: #dc3545;">予定が中止されました</h2>
+<h2 class="danger">予定が中止されました</h2>
 
 <p>@if (Model.IsOccurrenceCancellation)
 {
@@ -32,7 +32,7 @@ else
 
 @if (!string.IsNullOrWhiteSpace(Model.CancellationReason))
 {
-    <div style="margin: 16px 0; padding: 12px; background-color: #f8d7da; border-radius: 4px; border: 1px solid #f5c6cb;">
+    <div class="danger-box">
         <strong>中止理由:</strong><br />
         @Model.CancellationReason
     </div>

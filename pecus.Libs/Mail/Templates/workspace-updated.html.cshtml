@@ -11,7 +11,7 @@
     <strong>変更内容</strong>
     @if (Model.Changes.Any())
     {
-        <ul style="margin:8px 0 0 0; padding-left:20px;">
+        <ul class="inline-list">
             @foreach (var change in Model.Changes)
             {
                 <li>@change</li>
@@ -33,11 +33,11 @@
 @if (!string.IsNullOrWhiteSpace(Model.OldDescription) || !string.IsNullOrWhiteSpace(Model.NewDescription))
 {
     <p><strong>説明:</strong></p>
-    <div style="background-color:#ffebee; padding:10px; margin:5px 0;">
-        <p style="margin:0; white-space:pre-wrap; text-decoration:line-through; color:#666;">@(Model.OldDescription ?? "(なし)")</p>
+    <div class="diff-box removed">
+        <p>@(Model.OldDescription ?? "(なし)")</p>
     </div>
-    <div style="background-color:#e8f5e9; padding:10px; margin:5px 0;">
-        <p style="margin:0; white-space:pre-wrap;">@(Model.NewDescription ?? "(なし)")</p>
+    <div class="diff-box added">
+        <p>@(Model.NewDescription ?? "(なし)")</p>
     </div>
 }
 
@@ -48,7 +48,7 @@
     <li>組織: @Model.OrganizationName</li>
 </ul>
 
-<div style="text-align:center; margin:20px 0;">
+<div class="center">
     <a href="@Model.WorkspaceUrl" class="button">ワークスペースを表示</a>
 </div>
 

@@ -14,8 +14,8 @@
 <p>あなたのアカウントに新しいデバイスからログインがありました。心当たりがない場合は、すぐにパスワードを変更し、サポートまでご連絡ください。</p>
 
 <div class="info">
-    <p style="margin:0 0 8px 0; font-weight:bold;">ログイン情報:</p>
-    <ul style="margin:0; padding-left:20px;">
+    <p class="pre-wrap bold">ログイン情報:</p>
+    <ul class="inline-list">
         <li><strong>日時:</strong> @Model.LoginAt.ToString("yyyy年MM月dd日 HH:mm:ss") (UTC)</li>
         <li><strong>デバイス名:</strong> @Model.DeviceName</li>
         <li><strong>デバイスタイプ:</strong> @Model.DeviceType</li>
@@ -36,7 +36,7 @@
 
 <p>これはあなたのアカウントのセキュリティを保護するための自動通知です。</p>
 
-<div style="text-align:center; margin:24px 0;">
+<div class="center">
     <a href="@Model.SecuritySettingsUrl" class="button">セキュリティ設定を確認</a>
 </div>
 

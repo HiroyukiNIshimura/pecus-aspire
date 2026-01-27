@@ -9,26 +9,26 @@
 
 <p>新しいメールアドレスへの変更を完了するには、下記のボタンをクリックして確認してください。</p>
 
-<div style="text-align: center; margin: 24px 0;">
+<div class="center">
     <a href="@Model.ConfirmationUrl" class="button">メールアドレス変更を確認</a>
 </div>
 
 <p>または、以下のURLをブラウザにコピー＆ペーストしてください：</p>
-<p class="code" style="word-break: break-all; display: block; padding: 12px;">
+<p class="code code-url">
     @Model.ConfirmationUrl
 </p>
 
 <div class="warning">
     <strong>重要：</strong>
-    <ul style="margin: 8px 0; padding-left: 20px;">
+    <ul class="inline-list">
         <li>このリンクは <strong>@Model.TokenExpiresAt.ToString("yyyy年MM月dd日 HH:mm")</strong> まで有効です。</li>
         <li>現在のメールアドレス: <strong>@Model.CurrentEmail</strong></li>
         <li>新しいメールアドレス: <strong>@Model.NewEmail</strong></li>
     </ul>
 </div>
 
-<p style="margin-top: 20px;"><strong>このリクエストに心当たりがない場合は、このメールを無視してください。</strong></p>
+<p class="mt-lg"><strong>このリクエストに心当たりがない場合は、このメールを無視してください。</strong></p>
 
 <p>メールアドレスは自動的には変更されません。セキュリティのため、第三者がアクセスできる可能性がある場合は、パスワードを変更することをお勧めします。</p>
 
-<p class="muted" style="margin-top: 20px;">リクエスト日時: @Model.RequestedAt.ToString("yyyy年MM月dd日 HH:mm:ss")</p>
+<p class="muted mt-lg">リクエスト日時: @Model.RequestedAt.ToString("yyyy年MM月dd日 HH:mm:ss")</p>

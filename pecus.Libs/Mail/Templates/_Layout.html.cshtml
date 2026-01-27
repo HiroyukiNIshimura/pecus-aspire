@@ -177,6 +177,152 @@
         table tr:nth-child(even) td {
             background: #fafafa;
         }
+        table td.label {
+            background: #f9fafb;
+            color: #6b7280;
+            width: 120px;
+        }
+        table td.value {
+            font-weight: 600;
+        }
+        table td.value-right {
+            font-weight: 600;
+            text-align: right;
+        }
+        table tr.warning td {
+            background: #fef3c7;
+        }
+        table tr.warning td.value-right {
+            color: #dc2626;
+        }
+        .text-success {
+            color: #16a34a;
+        }
+        .text-danger {
+            color: #dc2626;
+        }
+        .section-divider {
+            border: none;
+            border-top: 2px solid #3b82f6;
+            margin: 24px 0;
+        }
+        .card-box {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .card-box h4 {
+            margin: 0 0 12px 0;
+            color: #2563eb;
+        }
+        .card-box p {
+            margin: 0 0 8px 0;
+        }
+        .card-box ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .card-box li {
+            margin-bottom: 4px;
+        }
+        .content-box {
+            margin: 12px 0;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+        }
+        .content-box.pre {
+            white-space: pre-wrap;
+        }
+        .update-list {
+            margin: 0;
+            padding: 0 0 0 20px;
+        }
+        .update-list li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        .update-meta {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .center {
+            text-align: center;
+        }
+        .inline-list {
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+        }
+        .diff-box {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .diff-box p {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        .diff-box.removed {
+            background-color: #fee2e2;
+        }
+        .diff-box.removed p {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+        .diff-box.added {
+            background-color: #dcfce7;
+        }
+        .detail-box {
+            margin: 16px 0;
+            padding: 12px;
+            background-color: #f9fafb;
+            border-radius: 4px;
+        }
+        .change-box {
+            margin: 16px 0;
+            padding: 12px;
+            background-color: #fef3c7;
+            border-radius: 4px;
+            border: 1px solid #fbbf24;
+        }
+        .code-url {
+            word-break: break-all;
+            display: block;
+            padding: 12px;
+        }
+        .mt-lg {
+            margin-top: 20px;
+        }
+        .pre-wrap {
+            white-space: pre-wrap;
+            margin: 0;
+        }
+        .info p.pre-wrap,
+        .warning p.pre-wrap {
+            margin: 8px 0 0 0;
+        }
+        .bold {
+            font-weight: 600;
+        }
+        .small-text {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .text-danger {
+            color: #dc2626;
+        }
+        .danger-box {
+            margin: 16px 0;
+            padding: 12px;
+            background-color: #fee2e2;
+            border-radius: 4px;
+            border: 1px solid #fca5a5;
+        }
+        h2.danger {
+            color: #dc2626;
+        }
     </style>
 </head>
 <body>
@@ -195,7 +341,7 @@
             </div>
             <div class="footer">
                 <p>このメールは <a href="@Model.App.SiteUrl">@Model.App.Name</a> から自動送信されています。返信しないでください。</p>
-                <p class="muted" style="margin-top: 12px;">&copy; @Model.App.Year @Model.App.CompanyName. All rights reserved.</p>
+                <p class="muted mt-lg">&copy; @Model.App.Year @Model.App.CompanyName. All rights reserved.</p>
             </div>
         </div>
     </div>
