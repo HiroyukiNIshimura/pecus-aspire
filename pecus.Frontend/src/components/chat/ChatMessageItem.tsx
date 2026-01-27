@@ -84,17 +84,17 @@ function LeftAlignedMessage({
 /** アバター設定マップ */
 const AVATAR_CONFIGS = {
   system: {
-    bgClass: 'bg-lime-100',
+    bgClass: 'bg-amber-100',
     iconClass: 'icon-[tabler--settings-automation]',
     iconColorClass: 'text-success-content',
   },
   ai: {
-    bgClass: 'bg-lime-100',
+    bgClass: 'bg-amber-100',
     iconClass: 'icon-[tabler--robot]',
     iconColorClass: 'text-success-content',
   },
   user: {
-    bgClass: 'bg-lime-100',
+    bgClass: 'bg-amber-100',
     iconClass: 'icon-[tabler--user]',
     iconColorClass: 'text-success-content',
   },
