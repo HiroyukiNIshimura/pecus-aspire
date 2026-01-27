@@ -351,6 +351,10 @@ GET /api/dev/email-preview/index	テンプレート一覧をHTMLで表示（ブ�
 ![画像](images/bot_chat.webp)
 ![画像](images/bot_system.webp)
 
+## 🎧 テーマソング
+
+https://soundcloud.com/j69-1/images_coati?si=6ff9edbebec148018fba7c1ab3ccc14e&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing
+
 ## 📄 ライセンス
 
 MIT License
