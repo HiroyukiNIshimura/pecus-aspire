@@ -8,7 +8,7 @@
 
 .floating-text-format-popup {
   display: flex;
-  background: var(--color-gray-300);
+  background: #9ca3af; /* gray-400: ツールバーと統一、ライト/ダーク両対応 */
   padding: 0px;
   vertical-align: middle;
   position: absolute;
@@ -56,7 +56,7 @@
 }
 
 .floating-text-format-popup button.popup-item.active {
-  background-color: rgba(223, 232, 250, 0.3);
+  background-color: rgba(107, 114, 128, 0.4); /* gray-500/40: アクティブ状態 */
 }
 
 .floating-text-format-popup button.popup-item.active i {
@@ -64,7 +64,7 @@
 }
 
 .floating-text-format-popup .popup-item:hover:not([disabled]) {
-  background-color: #eee;
+  background-color: #6b7280; /* gray-500: ホバー時 */
 }
 
 .floating-text-format-popup select.popup-item {
@@ -78,7 +78,7 @@
   -moz-appearance: none;
   width: 70px;
   font-size: 14px;
-  color: #777;
+  color: #374151; /* gray-700: テキスト色 */
   text-overflow: ellipsis;
 }
 
@@ -92,7 +92,7 @@
   line-height: 20px;
   vertical-align: middle;
   font-size: 14px;
-  color: #777;
+  color: #374151; /* gray-700: テキスト色 */
   text-overflow: ellipsis;
   width: 70px;
   overflow: hidden;
@@ -130,7 +130,7 @@
 
 .floating-text-format-popup .divider {
   width: 1px;
-  background-color: #eee;
+  background-color: #6b7280; /* gray-500: 区切り線 */
   margin: 0 4px;
 }
 

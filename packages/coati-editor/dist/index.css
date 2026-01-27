@@ -537,7 +537,7 @@
 /* src/plugins/FloatingTextFormatToolbarPlugin/index.css */
 .floating-text-format-popup {
   display: flex;
-  background: var(--color-gray-300);
+  background: #9ca3af;
   padding: 0px;
   vertical-align: middle;
   position: absolute;
@@ -579,13 +579,13 @@
   opacity: 0.2;
 }
 .floating-text-format-popup button.popup-item.active {
-  background-color: rgba(223, 232, 250, 0.3);
+  background-color: rgba(107, 114, 128, 0.4);
 }
 .floating-text-format-popup button.popup-item.active i {
   opacity: 1;
 }
 .floating-text-format-popup .popup-item:hover:not([disabled]) {
-  background-color: #eee;
+  background-color: #6b7280;
 }
 .floating-text-format-popup select.popup-item {
   border: 0;
@@ -598,7 +598,7 @@
   -moz-appearance: none;
   width: 70px;
   font-size: 14px;
-  color: #777;
+  color: #374151;
   text-overflow: ellipsis;
 }
 .floating-text-format-popup select.code-language {
@@ -610,7 +610,7 @@
   line-height: 20px;
   vertical-align: middle;
   font-size: 14px;
-  color: #777;
+  color: #374151;
   text-overflow: ellipsis;
   width: 70px;
   overflow: hidden;
@@ -644,7 +644,7 @@
 }
 .floating-text-format-popup .divider {
   width: 1px;
-  background-color: #eee;
+  background-color: #6b7280;
   margin: 0 4px;
 }
 @media (max-width: 1024px) {
