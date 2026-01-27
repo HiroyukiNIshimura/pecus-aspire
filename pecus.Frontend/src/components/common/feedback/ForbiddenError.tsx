@@ -25,8 +25,8 @@ export default function ForbiddenError({
       <div className="text-center px-4 sm:px-6 max-w-md">
         {/* アイコン */}
         <div className="mb-8 flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-base-300 flex items-center justify-center">
-            <span className="icon-[mdi--lock-outline] size-8 text-base-content/60" aria-hidden="true" />
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="icon-[mdi--lock-outline] size-8 text-primary" aria-hidden="true" />
           </div>
         </div>
 
