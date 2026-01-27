@@ -3,7 +3,7 @@
 # ビルド済み @coati/editor/dist を使用（Docker ビルド高速化）
 # ============================================
 
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 WORKDIR /app
 
 # ============================================
