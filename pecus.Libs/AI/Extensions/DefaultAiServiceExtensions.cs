@@ -35,6 +35,8 @@ public static class DefaultAiServiceExtensions
             configuration.GetSection(GeminiSettings.SectionName));
         services.Configure<DeepSeekSettings>(
             configuration.GetSection(DeepSeekSettings.SectionName));
+        services.Configure<KimiSettings>(
+            configuration.GetSection(KimiSettings.SectionName));
 
         // 設定値を取得してバリデーション
         var defaultAiSettings = configuration
@@ -84,6 +86,9 @@ public static class DefaultAiServiceExtensions
             GenerativeApiVendor.DeepSeek => configuration
                 .GetSection(DeepSeekSettings.SectionName)
                 .Get<DeepSeekSettings>()?.TimeoutSeconds ?? 60,
+            GenerativeApiVendor.Kimi => configuration
+                .GetSection(KimiSettings.SectionName)
+                .Get<KimiSettings>()?.TimeoutSeconds ?? 120,
             _ => 60
         };
 
@@ -103,7 +108,8 @@ public static class DefaultAiServiceExtensions
             Provider.OpenAI.OpenAIClient.HttpClientName,
             Provider.Anthropic.AnthropicClient.HttpClientName,
             Provider.Gemini.GeminiClient.HttpClientName,
-            Provider.DeepSeek.DeepSeekClient.HttpClientName
+            Provider.DeepSeek.DeepSeekClient.HttpClientName,
+            Provider.Kimi.KimiClient.HttpClientName
         };
 
         foreach (var clientName in clientNames)

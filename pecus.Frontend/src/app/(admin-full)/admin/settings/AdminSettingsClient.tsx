@@ -34,6 +34,7 @@ const normalizeVendor = (value: unknown): OrganizationSettingResponse['generativ
       case 'Anthropic':
       case 'GoogleGemini':
       case 'DeepSeek':
+      case 'Kimi':
         return value;
       default:
         return 'None';
@@ -52,6 +53,8 @@ const normalizeVendor = (value: unknown): OrganizationSettingResponse['generativ
         return 'GoogleGemini';
       case 4:
         return 'DeepSeek';
+      case 5:
+        return 'Kimi';
       default:
         return 'None';
     }
@@ -120,6 +123,7 @@ const generativeOptions: { value: OrganizationSettingResponse['generativeApiVend
   { value: 'Anthropic', label: 'Anthropic' },
   { value: 'GoogleGemini', label: 'Google Gemini' },
   { value: 'DeepSeek', label: 'DeepSeek' },
+  { value: 'Kimi', label: 'Kimi' },
 ];
 
 const planOptions: { value: OrganizationSettingResponse['plan']; label: string }[] = [

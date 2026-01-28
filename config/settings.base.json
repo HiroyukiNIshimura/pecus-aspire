@@ -107,6 +107,12 @@
       "DefaultMaxTokens": 2048,
       "DefaultTemperature": 0.7
     },
+    "Kimi": {
+      "BaseUrl": "https://api.moonshot.ai/v1",
+      "TimeoutSeconds": 120,
+      "DefaultMaxTokens": 4096,
+      "DefaultTemperature": 0.7
+    },
     "DefaultAi": {
       "Provider": "DeepSeek",
       "Model": "deepseek-chat",

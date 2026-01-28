@@ -4,6 +4,7 @@ using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Provider.Anthropic;
 using Pecus.Libs.AI.Provider.DeepSeek;
 using Pecus.Libs.AI.Provider.Gemini;
+using Pecus.Libs.AI.Provider.Kimi;
 using Pecus.Libs.AI.Provider.OpenAI;
 using Pecus.Libs.DB.Models.Enums;
 
@@ -19,6 +20,7 @@ public class AiClientFactory : IAiClientFactory
     private readonly IOptions<AnthropicSettings> _anthropicSettings;
     private readonly IOptions<GeminiSettings> _geminiSettings;
     private readonly IOptions<DeepSeekSettings> _deepSeekSettings;
+    private readonly IOptions<KimiSettings> _kimiSettings;
     private readonly IOptions<DefaultAiSettings> _defaultAiSettings;
     private readonly ILoggerFactory _loggerFactory;
 
@@ -31,6 +33,7 @@ public class AiClientFactory : IAiClientFactory
         IOptions<AnthropicSettings> anthropicSettings,
         IOptions<GeminiSettings> geminiSettings,
         IOptions<DeepSeekSettings> deepSeekSettings,
+        IOptions<KimiSettings> kimiSettings,
         IOptions<DefaultAiSettings> defaultAiSettings,
         ILoggerFactory loggerFactory)
     {
@@ -39,6 +42,7 @@ public class AiClientFactory : IAiClientFactory
         _anthropicSettings = anthropicSettings;
         _geminiSettings = geminiSettings;
         _deepSeekSettings = deepSeekSettings;
+        _kimiSettings = kimiSettings;
         _defaultAiSettings = defaultAiSettings;
         _loggerFactory = loggerFactory;
     }
@@ -107,6 +111,13 @@ public class AiClientFactory : IAiClientFactory
                 _httpClientFactory,
                 _deepSeekSettings,
                 _loggerFactory.CreateLogger<DeepSeekClient>(),
+                apiKey,
+                model),
+
+            GenerativeApiVendor.Kimi => new KimiClient(
+                _httpClientFactory,
+                _kimiSettings,
+                _loggerFactory.CreateLogger<KimiClient>(),
                 apiKey,
                 model),
 

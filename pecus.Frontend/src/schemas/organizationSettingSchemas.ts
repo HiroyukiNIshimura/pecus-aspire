@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Enum 値の定義（API から生成される型には null が含まれるため、独自に定義）
-const generativeVendors = ['None', 'OpenAi', 'Anthropic', 'GoogleGemini', 'DeepSeek'] as const;
+const generativeVendors = ['None', 'OpenAi', 'Anthropic', 'GoogleGemini', 'DeepSeek', 'Kimi'] as const;
 const organizationPlans = ['Unknown', 'Free', 'Standard', 'Enterprise'] as const;
 const helpNotificationTargets = ['Organization', 'WorkspaceUsers'] as const;
 const groupChatScopes = ['Workspace', 'Organization'] as const;

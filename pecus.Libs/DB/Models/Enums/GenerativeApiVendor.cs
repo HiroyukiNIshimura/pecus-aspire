@@ -28,5 +28,10 @@ public enum GenerativeApiVendor
     /// <summary>
     /// DeepSeek API
     /// </summary>
-    DeepSeek = 4
+    DeepSeek = 4,
+
+    /// <summary>
+    /// Kimi (Moonshot) API
+    /// </summary>
+    Kimi = 5
 }

@@ -407,6 +407,7 @@ builder.Services.AddOpenAIClient(builder.Configuration);
 builder.Services.AddAnthropicClient(builder.Configuration);
 builder.Services.AddDeepSeekClient(builder.Configuration);
 builder.Services.AddGeminiClient(builder.Configuration);
+builder.Services.AddKimiClient(builder.Configuration);
 builder.Services.AddDefaultAiClient(builder.Configuration);
 builder.Services.AddAiClientFactory();
 //-------------
