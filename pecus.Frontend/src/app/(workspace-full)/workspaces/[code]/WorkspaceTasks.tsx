@@ -1010,30 +1010,6 @@ const WorkspaceTasks = ({
               </div>
             </div>
 
-            {/* コメント数 */}
-            <div className="flex items-center gap-2 p-2 bg-primary/10 rounded-md">
-              <div className="w-8 h-8 flex items-center justify-center bg-primary/20 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs text-base-content/60">コメント</p>
-                <p className="text-lg font-bold text-primary">{statistics.commentCount}</p>
-              </div>
-            </div>
-
             {/* 総件数 */}
             <div className="flex items-center gap-2 p-2 bg-secondary/10 rounded-md">
               <div className="w-8 h-8 flex items-center justify-center bg-secondary/20 rounded-full">
@@ -1055,6 +1031,30 @@ const WorkspaceTasks = ({
               <div>
                 <p className="text-xs text-base-content/60">総件数</p>
                 <p className="text-lg font-bold text-secondary">{statistics.totalCount}</p>
+              </div>
+            </div>
+
+            {/* コメント数 */}
+            <div className="flex items-center gap-2 p-2 bg-primary/10 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-primary/20 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-primary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">コメント</p>
+                <p className="text-lg font-bold text-primary">{statistics.commentCount}</p>
               </div>
             </div>
           </div>
