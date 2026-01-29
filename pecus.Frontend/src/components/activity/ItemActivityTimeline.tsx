@@ -118,7 +118,7 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
           {/* ヘッダー */}
           <div className="flex items-center justify-between p-4 border-b border-base-300">
             <h3 className="font-bold text-lg">タイムライン</h3>
-            <button type="button" onClick={onClose} className="btn btn-sm btn-soft btn-secondary btn-circle">
+            <button type="button" onClick={onClose} className="btn btn-sm btn-secondary btn-circle">
               <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>

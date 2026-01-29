@@ -476,7 +476,7 @@ export default function GenerateTasksModal({
           </div>
           <button
             type="button"
-            className="btn btn-sm btn-circle"
+            className="btn btn-sm btn-secondary btn-circle"
             onClick={handleClose}
             aria-label="閉じる"
             disabled={isGenerating || isCreating}
@@ -587,7 +587,7 @@ export default function GenerateTasksModal({
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    className="checkbox checkbox-sm"
+                    className="checkbox checkbox-sm checkbox-secondary"
                     checked={candidates.length > 0 && candidates.every((c) => c.isSelected)}
                     onChange={toggleSelectAll}
                   />
@@ -754,7 +754,7 @@ export default function GenerateTasksModal({
                                 <span className="flex-1 truncate">{candidate.assignee.username}</span>
                                 <button
                                   type="button"
-                                  className="btn btn-xs btn-circle"
+                                  className="btn btn-xs btn-secondary btn-circle"
                                   onClick={() => updateCandidate(candidate.tempId, { assignee: null })}
                                   disabled={!candidate.isSelected}
                                 >

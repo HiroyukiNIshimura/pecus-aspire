@@ -1006,7 +1006,7 @@ const WorkspaceTasks = ({
               </div>
               <div>
                 <p className="text-xs text-base-content/60">破棄</p>
-                <p className="text-lg font-bold text-neutral-content/70">{statistics.discardedCount}</p>
+                <p className="text-lg font-bold text-neutral/70">{statistics.discardedCount}</p>
               </div>
             </div>
 
