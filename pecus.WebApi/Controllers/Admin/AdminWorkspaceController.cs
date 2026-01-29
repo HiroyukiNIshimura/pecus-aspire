@@ -353,7 +353,7 @@ public class AdminWorkspaceController : BaseAdminController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeleteWorkspace(int id)
     {
-        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(userId: CurrentUserId, workspaceId: id, includeInactive: true);
         if (!hasAccess || workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
