@@ -134,6 +134,10 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
 
   /** メンバー追加モーダルを開く */
   const handleAddMember = () => {
+    if (!formData.isActive) {
+      notify.error('無効なワークスペースではメンバーを追加できません。');
+      return;
+    }
     setAddMemberModal(true);
   };
 
@@ -184,6 +188,10 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
 
   /** メンバー削除モーダルを開く */
   const handleRemoveMember = (userId: number, userName: string) => {
+    if (!formData.isActive) {
+      notify.error('無効なワークスペースではメンバーを削除できません。');
+      return;
+    }
     // membersからユーザー情報を取得してemailを設定
     const member = members.find((m) => m.id === userId);
     const email = member?.email || '';
@@ -213,6 +221,10 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
 
   /** ロール変更モーダルを開く */
   const handleChangeRole = (userId: number, userName: string, newRole: NonNullable<WorkspaceRole>) => {
+    if (!formData.isActive) {
+      notify.error('無効なワークスペースではロールを変更できません。');
+      return;
+    }
     // 現在のロールを取得
     const member = members.find((m) => m.id === userId);
     const currentRole: NonNullable<WorkspaceRole> = member?.workspaceRole ?? 'Member';
@@ -462,7 +474,7 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
             {/* メンバー情報 */}
             <WorkspaceMemberList
               members={members}
-              editable={true}
+              editable={formData.isActive}
               ownerId={workspaceDetail.owner?.id}
               onAddMember={handleAddMember}
               onRemoveMember={handleRemoveMember}
