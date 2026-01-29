@@ -413,6 +413,39 @@ export default function GenerateTasksModal({
   // 選択されたタスク数
   const selectedCount = useMemo(() => candidates.filter((c) => c.isSelected).length, [candidates]);
 
+  // 後続タスクマップ（各タスクに依存しているタスクのtempIdリスト）
+  const successorMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const candidate of candidates) {
+      // predecessorTempIdを持つタスクを探し、その先行タスクに後続として登録
+      if (candidate.predecessorTempId) {
+        const existing = map.get(candidate.predecessorTempId) || [];
+        existing.push(candidate.tempId);
+        map.set(candidate.predecessorTempId, existing);
+      }
+      // predecessorTempIds（元データ）からも後続を構築
+      if (candidate.predecessorTempIds && candidate.predecessorTempIds.length > 0) {
+        for (const predId of candidate.predecessorTempIds) {
+          const existing = map.get(predId) || [];
+          if (!existing.includes(candidate.tempId)) {
+            existing.push(candidate.tempId);
+            map.set(predId, existing);
+          }
+        }
+      }
+    }
+    return map;
+  }, [candidates]);
+
+  // tempIdからタスク番号への変換（表示用）
+  const tempIdToIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    for (let i = 0; i < candidates.length; i++) {
+      map.set(candidates[i].tempId, i + 1);
+    }
+    return map;
+  }, [candidates]);
+
   if (!isOpen) return null;
 
   // AI機能が無効の場合
@@ -434,7 +467,7 @@ export default function GenerateTasksModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-4xl min-h-[680px] max-h-[95vh] flex flex-col">
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
           <div className="flex items-center gap-3">
@@ -562,7 +595,7 @@ export default function GenerateTasksModal({
 
               {/* タスク候補リスト */}
               <div className="space-y-2">
-                {candidates.map((candidate) => (
+                {candidates.map((candidate, index) => (
                   <div
                     key={candidate.tempId}
                     className={`card border ${candidate.isSelected ? 'border-primary bg-base-100' : 'border-base-300 bg-base-200/50 opacity-60'}`}
@@ -583,6 +616,9 @@ export default function GenerateTasksModal({
                         }}
                       />
 
+                      {/* タスク番号 */}
+                      <span className="text-xs font-mono text-base-content/50 min-w-[2.5rem]">T-{index + 1}</span>
+
                       {/* タスク内容 */}
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{candidate.content}</p>
@@ -596,13 +632,50 @@ export default function GenerateTasksModal({
                             </span>
                           )}
                           {candidate.isOnCriticalPath && (
-                            <span className="badge badge-xs badge-error" title="クリティカルパス上のタスク">
+                            <span
+                              className="badge badge-xs badge-error"
+                              title={`クリティカルパス上のタスク${
+                                successorMap.get(candidate.tempId)?.length
+                                  ? `（後続: ${successorMap
+                                      .get(candidate.tempId)
+                                      ?.map((id) => `T-${tempIdToIndex.get(id)}`)
+                                      .join(', ')}）`
+                                  : ''
+                              }`}
+                            >
                               🔴 CP
                             </span>
                           )}
                           {candidate.canParallelize && (
                             <span className="badge badge-xs badge-info" title="並行作業可能">
                               ═══
+                            </span>
+                          )}
+                          {/* 後続タスク表示 */}
+                          {successorMap.get(candidate.tempId) && successorMap.get(candidate.tempId)!.length > 0 && (
+                            <span
+                              className="text-base-content/50"
+                              title={`このタスクが完了しないと開始できないタスク: ${successorMap
+                                .get(candidate.tempId)
+                                ?.map((id) => `T-${tempIdToIndex.get(id)}`)
+                                .join(', ')}`}
+                            >
+                              →{' '}
+                              {successorMap
+                                .get(candidate.tempId)
+                                ?.map((id) => `T-${tempIdToIndex.get(id)}`)
+                                .join(', ')}
+                            </span>
+                          )}
+                          {/* 先行タスク表示 */}
+                          {candidate.predecessorTempIds && candidate.predecessorTempIds.length > 0 && (
+                            <span
+                              className="text-base-content/50"
+                              title={`先行タスク: ${candidate.predecessorTempIds
+                                .map((id) => `T-${tempIdToIndex.get(id)}`)
+                                .join(', ')}`}
+                            >
+                              ← {candidate.predecessorTempIds.map((id) => `T-${tempIdToIndex.get(id)}`).join(', ')}
                             </span>
                           )}
                           {candidate.assignee && (
