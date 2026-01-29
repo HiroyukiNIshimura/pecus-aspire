@@ -3,12 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { AssigneeTaskLoadResponse } from '../models/AssigneeTaskLoadResponse';
+import type { BulkCreateTasksRequest } from '../models/BulkCreateTasksRequest';
+import type { BulkCreateTasksResponse } from '../models/BulkCreateTasksResponse';
 import type { CreateWorkspaceTaskRequest } from '../models/CreateWorkspaceTaskRequest';
+import type { GenerateTaskCandidatesRequest } from '../models/GenerateTaskCandidatesRequest';
 import type { PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics } from '../models/PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics';
 import type { SortOrder } from '../models/SortOrder';
 import type { TaskContentSuggestionRequest } from '../models/TaskContentSuggestionRequest';
 import type { TaskContentSuggestionResponse } from '../models/TaskContentSuggestionResponse';
 import type { TaskFlowMapResponse } from '../models/TaskFlowMapResponse';
+import type { TaskGenerationResponse } from '../models/TaskGenerationResponse';
 import type { TaskSortBy } from '../models/TaskSortBy';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { UpdateWorkspaceTaskRequest } from '../models/UpdateWorkspaceTaskRequest';
@@ -260,6 +264,63 @@ export class WorkspaceTaskService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * タスク候補生成（AI）
+     * @param workspaceId ワークスペースID
+     * @param itemId ワークスペースアイテムID
+     * @param requestBody タスク候補生成リクエスト
+     * @returns TaskGenerationResponse OK
+     * @throws ApiError
+     */
+    public static postApiWorkspacesItemsTasksGenerateCandidates(
+        workspaceId: number,
+        itemId: number,
+        requestBody: GenerateTaskCandidatesRequest,
+    ): CancelablePromise<TaskGenerationResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/generate-candidates',
+            path: {
+                'workspaceId': workspaceId,
+                'itemId': itemId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * タスク一括作成
+     * @param workspaceId ワークスペースID
+     * @param itemId ワークスペースアイテムID
+     * @param requestBody 一括作成リクエスト
+     * @returns BulkCreateTasksResponse OK
+     * @throws ApiError
+     */
+    public static postApiWorkspacesItemsTasksBulkCreate(
+        workspaceId: number,
+        itemId: number,
+        requestBody: BulkCreateTasksRequest,
+    ): CancelablePromise<BulkCreateTasksResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/bulk-create',
+            path: {
+                'workspaceId': workspaceId,
+                'itemId': itemId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
                 404: `Not Found`,
                 500: `Internal Server Error`,
             },

@@ -1,0 +1,990 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { searchWorkspaceMembers } from '@/actions/workspace';
+import type { PredecessorTaskOption } from '@/actions/workspaceTask';
+import { bulkCreateTasks, generateTaskCandidates, getPredecessorTaskOptions } from '@/actions/workspaceTask';
+import DatePicker from '@/components/common/filters/DatePicker';
+import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
+import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
+import type {
+  BulkTaskItem,
+  EstimatedSize,
+  GeneratedTaskCandidate,
+  PreviousCandidateRequest,
+  TaskGenerationResponse,
+  TaskPriority,
+  UserSearchResultResponse,
+} from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
+import { useIsAiEnabled } from '@/providers/AppSettingsProvider';
+
+/** 選択されたユーザー情報 */
+interface SelectedUser {
+  id: number;
+  username: string;
+  email: string;
+  identityIconUrl: string | null;
+}
+
+/** 編集可能なタスク候補（フロントエンド管理用） */
+interface EditableTaskCandidate extends GeneratedTaskCandidate {
+  /** 選択状態 */
+  isSelected: boolean;
+  /** 担当者 */
+  assignee: SelectedUser | null;
+  /** 優先度 */
+  priority: TaskPriority | null;
+  /** 期限日（ISO形式） */
+  dueDate: string;
+  /** 開始日（ISO形式） */
+  startDate: string | null;
+  /** 工数（人間が入力） */
+  estimatedHours: number | null;
+  /** タスクタイプID（編集後） */
+  taskTypeId: number | null;
+  /** 先行タスクID（既存タスク）*/
+  predecessorTaskId: number | null;
+  /** 同一バッチ内の先行タスクtempId */
+  predecessorTempId: string | null;
+}
+
+interface GenerateTasksModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  workspaceId: number;
+  itemId: number;
+  /** アイテムの期限日（デフォルト値用） */
+  itemDueDate?: string | null;
+  /** タスクタイプマスタデータ */
+  taskTypes: TaskTypeOption[];
+  /** 現在ログイン中のユーザー */
+  currentUser?: {
+    id: number;
+    username: string;
+    email: string;
+    identityIconUrl: string | null;
+  } | null;
+  /** ワークスペース編集権限があるかどうか */
+  canEdit?: boolean;
+}
+
+/** 規模感のラベルと説明 */
+const sizeLabels: Record<EstimatedSize, { label: string; description: string; className: string }> = {
+  S: { label: 'S', description: '〜4時間', className: 'badge-success' },
+  M: { label: 'M', description: '〜8時間', className: 'badge-info' },
+  L: { label: 'L', description: '〜24時間', className: 'badge-warning' },
+  XL: { label: 'XL', description: '〜40時間', className: 'badge-error' },
+};
+
+export default function GenerateTasksModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  workspaceId,
+  itemId,
+  itemDueDate,
+  taskTypes,
+  currentUser,
+  canEdit = true,
+}: GenerateTasksModalProps) {
+  const notify = useNotify();
+  const isAiEnabled = useIsAiEnabled();
+
+  // ステップ管理: 'input' | 'result'
+  const [step, setStep] = useState<'input' | 'result'>('input');
+
+  // 入力フォーム状態
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [additionalContext, setAdditionalContext] = useState<string>('');
+  const [feedback, setFeedback] = useState<string>('');
+
+  // 生成状態
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [generationResponse, setGenerationResponse] = useState<TaskGenerationResponse | null>(null);
+  const [candidates, setCandidates] = useState<EditableTaskCandidate[]>([]);
+
+  // 作成状態
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  // 先行タスク候補（既存タスク）
+  const [predecessorTaskOptions, setPredecessorTaskOptions] = useState<PredecessorTaskOption[]>([]);
+
+  // 展開されているタスク候補のtempId
+  const [expandedTempId, setExpandedTempId] = useState<string | null>(null);
+
+  // 担当者検索関連（個別タスク用）
+  const [assigneeSearchResults, setAssigneeSearchResults] = useState<UserSearchResultResponse[]>([]);
+  const [isSearchingAssignee, setIsSearchingAssignee] = useState(false);
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [editingAssigneeTempId, setEditingAssigneeTempId] = useState<string | null>(null);
+
+  // 開始日のデフォルト値として今日を設定
+  useEffect(() => {
+    if (isOpen && !startDate) {
+      const today = new Date().toISOString().split('T')[0];
+      setStartDate(today);
+    }
+    if (isOpen && !endDate && itemDueDate) {
+      // ISO形式からyyyy-MM-ddを抽出
+      const dueDate = itemDueDate.split('T')[0];
+      setEndDate(dueDate);
+    }
+  }, [isOpen, startDate, endDate, itemDueDate]);
+
+  // モーダルが開いたら先行タスク候補を取得
+  useEffect(() => {
+    if (isOpen) {
+      (async () => {
+        const result = await getPredecessorTaskOptions(workspaceId, itemId);
+        if (result.success) {
+          setPredecessorTaskOptions(result.data || []);
+        }
+      })();
+    }
+  }, [isOpen, workspaceId, itemId]);
+
+  // body スクロール制御
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // モーダルを閉じる際のリセット
+  const handleClose = useCallback(() => {
+    setStep('input');
+    setStartDate('');
+    setEndDate('');
+    setAdditionalContext('');
+    setFeedback('');
+    setIsGenerating(false);
+    setGenerationError(null);
+    setGenerationResponse(null);
+    setCandidates([]);
+    setIsCreating(false);
+    setCreateError(null);
+    setExpandedTempId(null);
+    onClose();
+  }, [onClose]);
+
+  // AI生成されたタスク候補を編集可能な形式に変換
+  const convertToEditableCandidates = useCallback(
+    (response: TaskGenerationResponse): EditableTaskCandidate[] => {
+      // 開始日から期限日を計算
+      const baseDate = new Date(startDate);
+
+      return response.candidates.map((candidate) => {
+        // 推奨期間から期限日を計算
+        const suggestedDueDate = new Date(baseDate);
+        suggestedDueDate.setDate(
+          baseDate.getDate() + (candidate.suggestedStartDayOffset || 0) + (candidate.suggestedDurationDays || 1),
+        );
+
+        // 推奨開始日を計算
+        const suggestedStartDate = new Date(baseDate);
+        suggestedStartDate.setDate(baseDate.getDate() + (candidate.suggestedStartDayOffset || 0));
+
+        // 先行タスクの解決（AIが返したtempIdから、同一バッチ内の最初の先行タスクを取得）
+        const firstPredecessorTempId =
+          candidate.predecessorTempIds && candidate.predecessorTempIds.length > 0
+            ? candidate.predecessorTempIds[0]
+            : null;
+
+        return {
+          ...candidate,
+          isSelected: true, // デフォルトで選択
+          assignee: currentUser
+            ? {
+                id: currentUser.id,
+                username: currentUser.username,
+                email: currentUser.email,
+                identityIconUrl: currentUser.identityIconUrl,
+              }
+            : null,
+          priority: null,
+          dueDate: suggestedDueDate.toISOString().split('T')[0],
+          startDate: suggestedStartDate.toISOString().split('T')[0],
+          estimatedHours: null,
+          taskTypeId: candidate.suggestedTaskTypeId || null,
+          predecessorTaskId: null,
+          predecessorTempId: firstPredecessorTempId,
+        };
+      });
+    },
+    [startDate, currentUser],
+  );
+
+  // タスク候補を生成
+  const handleGenerate = useCallback(async () => {
+    if (!startDate) {
+      notify.warning('開始日を入力してください');
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationError(null);
+
+    // 前回の候補がある場合はイテレーション用に渡す
+    const previousCandidates: PreviousCandidateRequest[] | undefined =
+      candidates.length > 0
+        ? candidates.map((c) => ({
+            content: c.content,
+            isAccepted: c.isSelected,
+            rejectionReason: c.isSelected ? undefined : '不採用',
+          }))
+        : undefined;
+
+    const result = await generateTaskCandidates(workspaceId, itemId, {
+      startDate,
+      endDate: endDate || undefined,
+      additionalContext: additionalContext || undefined,
+      feedback: feedback || undefined,
+      previousCandidates,
+    });
+
+    if (result.success) {
+      setGenerationResponse(result.data);
+      setCandidates(convertToEditableCandidates(result.data));
+      setStep('result');
+      setFeedback(''); // フィードバックをクリア
+    } else {
+      setGenerationError(result.message);
+    }
+
+    setIsGenerating(false);
+  }, [
+    startDate,
+    endDate,
+    additionalContext,
+    feedback,
+    candidates,
+    workspaceId,
+    itemId,
+    notify,
+    convertToEditableCandidates,
+  ]);
+
+  // タスク候補の選択状態をトグル
+  const toggleCandidateSelection = useCallback((tempId: string) => {
+    setCandidates((prev) => prev.map((c) => (c.tempId === tempId ? { ...c, isSelected: !c.isSelected } : c)));
+  }, []);
+
+  // タスク候補を更新
+  const updateCandidate = useCallback((tempId: string, updates: Partial<EditableTaskCandidate>) => {
+    setCandidates((prev) => prev.map((c) => (c.tempId === tempId ? { ...c, ...updates } : c)));
+  }, []);
+
+  // 担当者検索
+  const handleAssigneeSearch = useCallback(
+    async (query: string, tempId: string) => {
+      setEditingAssigneeTempId(tempId);
+
+      if (query.length < 2) {
+        setAssigneeSearchResults([]);
+        setShowAssigneeDropdown(false);
+        return;
+      }
+
+      setIsSearchingAssignee(true);
+      setShowAssigneeDropdown(true);
+
+      try {
+        const result = await searchWorkspaceMembers(workspaceId, query, true);
+        if (result.success) {
+          setAssigneeSearchResults(result.data || []);
+        }
+      } catch {
+        // エラーは無視
+      } finally {
+        setIsSearchingAssignee(false);
+      }
+    },
+    [workspaceId],
+  );
+
+  // 担当者選択
+  const handleSelectAssignee = useCallback(
+    (user: UserSearchResultResponse, tempId: string) => {
+      updateCandidate(tempId, {
+        assignee: {
+          id: user.id || 0,
+          username: user.username || '',
+          email: user.email || '',
+          identityIconUrl: user.identityIconUrl || null,
+        },
+      });
+      setShowAssigneeDropdown(false);
+      setAssigneeSearchResults([]);
+      setEditingAssigneeTempId(null);
+    },
+    [updateCandidate],
+  );
+
+  // 全選択/全解除
+  const toggleSelectAll = useCallback(() => {
+    const allSelected = candidates.every((c) => c.isSelected);
+    setCandidates((prev) => prev.map((c) => ({ ...c, isSelected: !allSelected })));
+  }, [candidates]);
+
+  // 選択されたタスクを一括作成
+  const handleBulkCreate = useCallback(async () => {
+    const selectedCandidates = candidates.filter((c) => c.isSelected);
+
+    if (selectedCandidates.length === 0) {
+      notify.warning('作成するタスクを1つ以上選択してください');
+      return;
+    }
+
+    // 担当者未設定のチェック
+    const missingAssignee = selectedCandidates.find((c) => !c.assignee);
+    if (missingAssignee) {
+      notify.warning('すべてのタスクに担当者を設定してください');
+      return;
+    }
+
+    // タスクタイプ未設定のチェック
+    const missingTaskType = selectedCandidates.find((c) => !c.taskTypeId);
+    if (missingTaskType) {
+      notify.warning('すべてのタスクにタスクタイプを設定してください');
+      return;
+    }
+
+    setIsCreating(true);
+    setCreateError(null);
+
+    // tempIdからインデックスへのマップを作成（同一バッチ内の先行タスク解決用）
+    const tempIdToIndex = new Map<string, number>();
+    selectedCandidates.forEach((c, index) => {
+      tempIdToIndex.set(c.tempId, index);
+    });
+
+    // BulkTaskItem配列を作成
+    const tasks: BulkTaskItem[] = selectedCandidates.map((c) => {
+      // 先行タスクの解決
+      let predecessorIndex: number | null = null;
+      let predecessorTaskId: number | null = null;
+
+      if (c.predecessorTaskId) {
+        // 既存タスクを先行タスクとして指定
+        predecessorTaskId = c.predecessorTaskId;
+      } else if (c.predecessorTempId) {
+        // 同一バッチ内のタスクを先行タスクとして指定
+        const index = tempIdToIndex.get(c.predecessorTempId);
+        if (index !== undefined) {
+          predecessorIndex = index;
+        }
+      }
+
+      return {
+        content: c.content,
+        taskTypeId: c.taskTypeId!,
+        assignedUserId: c.assignee!.id,
+        priority: c.priority || undefined,
+        startDate: c.startDate || undefined,
+        dueDate: c.dueDate,
+        estimatedHours: c.estimatedHours || undefined,
+        predecessorTaskId: predecessorTaskId || undefined,
+        predecessorIndex: predecessorIndex ?? undefined,
+      };
+    });
+
+    const result = await bulkCreateTasks(workspaceId, itemId, { tasks });
+
+    if (result.success) {
+      notify.success(`${result.data.totalCreated}件のタスクを作成しました`);
+      onSuccess();
+      handleClose();
+    } else {
+      setCreateError(result.message);
+    }
+
+    setIsCreating(false);
+  }, [candidates, workspaceId, itemId, notify, onSuccess, handleClose]);
+
+  // 選択されたタスク数
+  const selectedCount = useMemo(() => candidates.filter((c) => c.isSelected).length, [candidates]);
+
+  if (!isOpen) return null;
+
+  // AI機能が無効の場合
+  if (!isAiEnabled) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="bg-base-100 rounded-box shadow-xl w-full max-w-md p-6">
+          <h2 className="text-xl font-bold mb-4">AI タスク自動生成</h2>
+          <p className="text-base-content/70">AI機能が有効になっていません。管理者にお問い合わせください。</p>
+          <div className="flex justify-end mt-6">
+            <button type="button" className="btn btn-outline" onClick={handleClose}>
+              閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+        {/* ヘッダー */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="icon-[mdi--robot-happy-outline] w-6 h-6 text-primary" aria-hidden="true" />
+            <h2 className="text-xl sm:text-2xl font-bold">AI タスク自動生成</h2>
+          </div>
+          <button
+            type="button"
+            className="btn btn-sm btn-circle"
+            onClick={handleClose}
+            aria-label="閉じる"
+            disabled={isGenerating || isCreating}
+          >
+            <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+          </button>
+        </div>
+
+        {/* ボディ */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {step === 'input' ? (
+            /* 入力フォーム */
+            <div className="space-y-6">
+              {/* プロジェクト期間 */}
+              <div className="card bg-base-200/50 p-4">
+                <h3 className="font-semibold mb-4">プロジェクト期間</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="form-control">
+                    <span className="label">
+                      <span className="label-text font-semibold">
+                        開始日 <span className="text-error">*</span>
+                      </span>
+                    </span>
+                    <DatePicker value={startDate} onChange={setStartDate} disabled={isGenerating} className="w-full" />
+                  </div>
+                  <div className="form-control">
+                    <span className="label">
+                      <span className="label-text font-semibold">完了日</span>
+                    </span>
+                    <DatePicker value={endDate} onChange={setEndDate} disabled={isGenerating} className="w-full" />
+                  </div>
+                </div>
+              </div>
+
+              {/* 追加情報 */}
+              <div className="form-control">
+                <label htmlFor="additionalContext" className="label">
+                  <span className="label-text font-semibold">追加情報（任意）</span>
+                </label>
+                <textarea
+                  id="additionalContext"
+                  className="textarea textarea-bordered w-full h-24"
+                  placeholder="プロジェクトの特別な要件、制約、優先事項などがあれば入力してください"
+                  value={additionalContext}
+                  onChange={(e) => setAdditionalContext(e.target.value)}
+                  disabled={isGenerating}
+                  maxLength={2000}
+                />
+              </div>
+
+              {/* 前回の生成結果へのフィードバック（イテレーション時のみ表示） */}
+              {candidates.length > 0 && (
+                <div className="form-control">
+                  <label htmlFor="feedback" className="label">
+                    <span className="label-text font-semibold">フィードバック（修正依頼）</span>
+                  </label>
+                  <textarea
+                    id="feedback"
+                    className="textarea textarea-bordered w-full h-24"
+                    placeholder="「テストタスクも追加してください」「設計フェーズをもっと細分化してください」など"
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    disabled={isGenerating}
+                    maxLength={2000}
+                  />
+                </div>
+              )}
+
+              {/* エラー表示 */}
+              {generationError && (
+                <div className="alert alert-soft alert-error">
+                  <span>{generationError}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* 生成結果表示 */
+            <div className="space-y-4">
+              {/* AI提案サマリー */}
+              {generationResponse && (
+                <div className="card bg-primary/10 p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="icon-[mdi--lightbulb-outline] w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                      <p className="font-semibold">
+                        推定期間: {generationResponse.totalEstimatedDays}日 / {candidates.length}件のタスク候補
+                      </p>
+                      {generationResponse.criticalPathDescription && (
+                        <p className="text-sm text-base-content/70">{generationResponse.criticalPathDescription}</p>
+                      )}
+                      {generationResponse.suggestions && generationResponse.suggestions.length > 0 && (
+                        <ul className="text-sm text-base-content/70 list-disc list-inside">
+                          {generationResponse.suggestions.map((s) => (
+                            <li key={s}>{s}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 全選択/全解除 */}
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-sm"
+                    checked={candidates.length > 0 && candidates.every((c) => c.isSelected)}
+                    onChange={toggleSelectAll}
+                  />
+                  <span className="text-sm">すべて選択</span>
+                </label>
+                <span className="text-sm text-base-content/70">{selectedCount}件選択中</span>
+              </div>
+
+              {/* タスク候補リスト */}
+              <div className="space-y-2">
+                {candidates.map((candidate) => (
+                  <div
+                    key={candidate.tempId}
+                    className={`card border ${candidate.isSelected ? 'border-primary bg-base-100' : 'border-base-300 bg-base-200/50 opacity-60'}`}
+                  >
+                    {/* ヘッダー行 */}
+                    <div
+                      className="flex items-center gap-3 p-3 cursor-pointer"
+                      onClick={() => setExpandedTempId(expandedTempId === candidate.tempId ? null : candidate.tempId)}
+                    >
+                      {/* 選択チェックボックス */}
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-sm checkbox-primary"
+                        checked={candidate.isSelected}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleCandidateSelection(candidate.tempId);
+                        }}
+                      />
+
+                      {/* タスク内容 */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{candidate.content}</p>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-base-content/70">
+                          {candidate.estimatedSize && (
+                            <span
+                              className={`badge badge-xs ${sizeLabels[candidate.estimatedSize].className}`}
+                              title={sizeLabels[candidate.estimatedSize].description}
+                            >
+                              {sizeLabels[candidate.estimatedSize].label}
+                            </span>
+                          )}
+                          {candidate.isOnCriticalPath && (
+                            <span className="badge badge-xs badge-error" title="クリティカルパス上のタスク">
+                              🔴 CP
+                            </span>
+                          )}
+                          {candidate.canParallelize && (
+                            <span className="badge badge-xs badge-info" title="並行作業可能">
+                              ═══
+                            </span>
+                          )}
+                          {candidate.assignee && (
+                            <span className="flex items-center gap-1">
+                              <UserAvatar
+                                userName={candidate.assignee.username}
+                                isActive={true}
+                                identityIconUrl={candidate.assignee.identityIconUrl}
+                                size={16}
+                                showName={false}
+                              />
+                              <span>{candidate.assignee.username}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 展開アイコン */}
+                      <span
+                        className={`icon-[mdi--chevron-down] w-5 h-5 transition-transform ${expandedTempId === candidate.tempId ? 'rotate-180' : ''}`}
+                        aria-hidden="true"
+                      />
+                    </div>
+
+                    {/* 展開時の詳細編集エリア */}
+                    {expandedTempId === candidate.tempId && (
+                      <div className="border-t border-base-300 p-4 space-y-4">
+                        {/* AI理由 */}
+                        {candidate.rationale && (
+                          <div className="text-sm text-base-content/70 bg-base-200 rounded p-2">
+                            <span className="font-semibold">AI補足:</span> {candidate.rationale}
+                          </div>
+                        )}
+                        {candidate.taskTypeRationale && (
+                          <div className="text-sm text-base-content/70 bg-base-200 rounded p-2">
+                            <span className="font-semibold">タスクタイプ選択理由:</span> {candidate.taskTypeRationale}
+                          </div>
+                        )}
+
+                        {/* 編集フォーム */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* タスクタイプ */}
+                          <div className="form-control">
+                            <span className="label">
+                              <span className="label-text font-semibold">
+                                タスクタイプ <span className="text-error">*</span>
+                              </span>
+                            </span>
+                            <TaskTypeSelect
+                              taskTypes={taskTypes}
+                              value={candidate.taskTypeId}
+                              onChange={(value) => updateCandidate(candidate.tempId, { taskTypeId: value })}
+                              disabled={!candidate.isSelected}
+                            />
+                          </div>
+
+                          {/* 担当者 */}
+                          <div className="form-control relative">
+                            <span className="label">
+                              <span className="label-text font-semibold">
+                                担当者 <span className="text-error">*</span>
+                              </span>
+                            </span>
+                            {candidate.assignee ? (
+                              <div className="flex items-center gap-2 h-12 px-3 border border-base-300 rounded-btn bg-base-100">
+                                <UserAvatar
+                                  userName={candidate.assignee.username}
+                                  isActive={true}
+                                  identityIconUrl={candidate.assignee.identityIconUrl}
+                                  size={24}
+                                  showName={false}
+                                />
+                                <span className="flex-1 truncate">{candidate.assignee.username}</span>
+                                <button
+                                  type="button"
+                                  className="btn btn-xs btn-circle"
+                                  onClick={() => updateCandidate(candidate.tempId, { assignee: null })}
+                                  disabled={!candidate.isSelected}
+                                >
+                                  <span className="icon-[mdi--close] w-3 h-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="relative">
+                                <DebouncedSearchInput
+                                  placeholder="ユーザー名で検索..."
+                                  onSearch={(q) => handleAssigneeSearch(q, candidate.tempId)}
+                                  debounceMs={300}
+                                  disabled={!candidate.isSelected}
+                                />
+                                {/* 検索結果ドロップダウン */}
+                                {showAssigneeDropdown && editingAssigneeTempId === candidate.tempId && (
+                                  <div className="absolute z-10 w-full mt-1 bg-base-100 border border-base-300 rounded-btn shadow-lg max-h-48 overflow-y-auto">
+                                    {isSearchingAssignee ? (
+                                      <div className="p-3 text-center">
+                                        <span className="loading loading-spinner loading-sm" />
+                                      </div>
+                                    ) : assigneeSearchResults.length > 0 ? (
+                                      assigneeSearchResults.map((user) => (
+                                        <button
+                                          key={user.id}
+                                          type="button"
+                                          className="w-full flex items-center gap-2 p-2 hover:bg-base-200 text-left"
+                                          onClick={() => handleSelectAssignee(user, candidate.tempId)}
+                                        >
+                                          <UserAvatar
+                                            userName={user.username || ''}
+                                            isActive={true}
+                                            identityIconUrl={user.identityIconUrl}
+                                            size={24}
+                                            showName={false}
+                                          />
+                                          <div>
+                                            <div className="font-medium">{user.username}</div>
+                                            <div className="text-xs text-base-content/70">{user.email}</div>
+                                          </div>
+                                        </button>
+                                      ))
+                                    ) : (
+                                      <div className="p-3 text-center text-base-content/70">該当なし</div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            {/* 自分を設定リンク */}
+                            {!candidate.assignee && currentUser && (
+                              <button
+                                type="button"
+                                className="text-xs text-primary hover:underline mt-1 text-left"
+                                onClick={() =>
+                                  updateCandidate(candidate.tempId, {
+                                    assignee: {
+                                      id: currentUser.id,
+                                      username: currentUser.username,
+                                      email: currentUser.email,
+                                      identityIconUrl: currentUser.identityIconUrl,
+                                    },
+                                  })
+                                }
+                                disabled={!candidate.isSelected}
+                              >
+                                自分を設定
+                              </button>
+                            )}
+                          </div>
+
+                          {/* 開始日 */}
+                          <div className="form-control">
+                            <span className="label">
+                              <span className="label-text font-semibold">開始日</span>
+                            </span>
+                            <DatePicker
+                              value={candidate.startDate || ''}
+                              onChange={(value) => updateCandidate(candidate.tempId, { startDate: value || null })}
+                              disabled={!candidate.isSelected}
+                              className="w-full"
+                            />
+                          </div>
+
+                          {/* 期限日 */}
+                          <div className="form-control">
+                            <span className="label">
+                              <span className="label-text font-semibold">
+                                期限日 <span className="text-error">*</span>
+                              </span>
+                            </span>
+                            <DatePicker
+                              value={candidate.dueDate}
+                              onChange={(value) => updateCandidate(candidate.tempId, { dueDate: value })}
+                              disabled={!candidate.isSelected}
+                              className="w-full"
+                            />
+                          </div>
+
+                          {/* 工数 */}
+                          <div className="form-control">
+                            <label htmlFor={`estimatedHours-${candidate.tempId}`} className="label">
+                              <span className="label-text font-semibold">工数（時間）</span>
+                            </label>
+                            <input
+                              id={`estimatedHours-${candidate.tempId}`}
+                              type="number"
+                              className="input input-bordered w-full"
+                              placeholder="例: 8"
+                              min={0}
+                              step={0.5}
+                              value={candidate.estimatedHours ?? ''}
+                              onChange={(e) =>
+                                updateCandidate(candidate.tempId, {
+                                  estimatedHours: e.target.value ? Number(e.target.value) : null,
+                                })
+                              }
+                              disabled={!candidate.isSelected}
+                            />
+                            {candidate.estimatedSize && (
+                              <span className="text-xs text-base-content/60 mt-1">
+                                参考: {sizeLabels[candidate.estimatedSize].description}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* 先行タスク */}
+                          <div className="form-control">
+                            <label htmlFor={`predecessor-${candidate.tempId}`} className="label">
+                              <span className="label-text font-semibold">先行タスク</span>
+                            </label>
+                            <select
+                              id={`predecessor-${candidate.tempId}`}
+                              className="select select-bordered w-full"
+                              value={
+                                candidate.predecessorTaskId
+                                  ? `existing:${candidate.predecessorTaskId}`
+                                  : candidate.predecessorTempId
+                                    ? `batch:${candidate.predecessorTempId}`
+                                    : ''
+                              }
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (!value) {
+                                  updateCandidate(candidate.tempId, {
+                                    predecessorTaskId: null,
+                                    predecessorTempId: null,
+                                  });
+                                } else if (value.startsWith('existing:')) {
+                                  updateCandidate(candidate.tempId, {
+                                    predecessorTaskId: Number(value.replace('existing:', '')),
+                                    predecessorTempId: null,
+                                  });
+                                } else if (value.startsWith('batch:')) {
+                                  updateCandidate(candidate.tempId, {
+                                    predecessorTaskId: null,
+                                    predecessorTempId: value.replace('batch:', ''),
+                                  });
+                                }
+                              }}
+                              disabled={!candidate.isSelected}
+                            >
+                              <option value="">なし</option>
+                              {/* 既存タスク */}
+                              {predecessorTaskOptions.length > 0 && (
+                                <optgroup label="既存タスク">
+                                  {predecessorTaskOptions.map((t) => (
+                                    <option key={`existing:${t.id}`} value={`existing:${t.id}`}>
+                                      T-{t.sequence}: {t.content.substring(0, 30)}
+                                      {t.content.length > 30 ? '...' : ''}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              )}
+                              {/* 同一バッチ内のタスク（自分より前のもの） */}
+                              {candidates.filter(
+                                (c) =>
+                                  c.tempId !== candidate.tempId &&
+                                  candidates.indexOf(c) < candidates.indexOf(candidate),
+                              ).length > 0 && (
+                                <optgroup label="今回作成するタスク">
+                                  {candidates
+                                    .filter(
+                                      (c) =>
+                                        c.tempId !== candidate.tempId &&
+                                        candidates.indexOf(c) < candidates.indexOf(candidate),
+                                    )
+                                    .map((c) => (
+                                      <option key={`batch:${c.tempId}`} value={`batch:${c.tempId}`}>
+                                        {c.content.substring(0, 30)}
+                                        {c.content.length > 30 ? '...' : ''}
+                                      </option>
+                                    ))}
+                                </optgroup>
+                              )}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* フィードバック（再生成用） */}
+              <div className="form-control">
+                <label htmlFor="feedbackResult" className="label">
+                  <span className="label-text font-semibold">フィードバック（修正依頼）</span>
+                </label>
+                <textarea
+                  id="feedbackResult"
+                  className="textarea textarea-bordered w-full h-20"
+                  placeholder="「テストタスクも追加してください」「設計フェーズをもっと細分化してください」など"
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  disabled={isGenerating || isCreating}
+                  maxLength={2000}
+                />
+              </div>
+
+              {/* エラー表示 */}
+              {createError && (
+                <div className="alert alert-soft alert-error">
+                  <span>{createError}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* フッター */}
+        <div className="flex gap-2 justify-end p-4 sm:p-6 border-t border-base-300 shrink-0">
+          {step === 'input' ? (
+            <>
+              <button type="button" className="btn btn-outline" onClick={handleClose} disabled={isGenerating}>
+                キャンセル
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleGenerate}
+                disabled={isGenerating || !startDate}
+              >
+                {isGenerating ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm" />
+                    生成中...
+                  </>
+                ) : (
+                  <>
+                    <span className="icon-[mdi--robot-happy-outline] w-5 h-5" aria-hidden="true" />
+                    タスクを生成
+                  </>
+                )}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setStep('input')}
+                disabled={isGenerating || isCreating}
+              >
+                戻る
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleGenerate}
+                disabled={isGenerating || isCreating}
+              >
+                {isGenerating ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm" />
+                    再生成中...
+                  </>
+                ) : (
+                  <>
+                    <span className="icon-[mdi--refresh] w-5 h-5" aria-hidden="true" />
+                    再生成
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleBulkCreate}
+                disabled={isGenerating || isCreating || selectedCount === 0 || !canEdit}
+              >
+                {isCreating ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm" />
+                    作成中...
+                  </>
+                ) : (
+                  <>
+                    <span className="icon-[mdi--check-all] w-5 h-5" aria-hidden="true" />
+                    {selectedCount}件のタスクを作成
+                  </>
+                )}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

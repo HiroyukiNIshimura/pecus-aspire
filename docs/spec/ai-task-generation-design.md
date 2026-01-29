@@ -361,10 +361,10 @@ S/M/L/XL = AI推定の規模感（参考情報）
 | 2 | `TaskGenerationService` 実装 | 1日 | ✅ 完了 |
 | 3 | API エンドポイント実装（候補生成） | 0.5日 | ✅ 完了 |
 | 4 | API エンドポイント実装（一括作成） | 0.5日 | ✅ 完了 |
-| 5 | フロントエンド Server Action | 0.5日 | ⬜ 未着手 |
-| 6 | タスク生成モーダルUI | 2日 | ⬜ 未着手 |
+| 5 | フロントエンド Server Action | 0.5日 | ✅ 完了 |
+| 6 | タスク生成モーダルUI | 2日 | ✅ 完了 |
 | 7 | テスト・調整 | 0.5日 | ⬜ 未着手 |
-| **計** | | **5.5日** | **バックエンド完了** |
+| **計** | | **5.5日** | **実装完了** |
 
 ### 7.1 実装済みファイル（2026-01-29）
 
@@ -381,6 +381,15 @@ S/M/L/XL = AI推定の規模感（参考情報）
 | `pecus.WebApi/Controllers/WorkspaceTaskController.cs` | エンドポイント追加 |
 | `pecus.WebApi/Program.cs` | DI登録追加 |
 
+**フロントエンド（Phase 5-6）**
+
+| ファイル | 説明 |
+|----------|------|
+| `pecus.Frontend/src/actions/workspaceTask.ts` | Server Actions追加（generateTaskCandidates, bulkCreateTasks） |
+| `pecus.Frontend/src/app/(workspace-full)/workspaces/[code]/GenerateTasksModal.tsx` | タスク生成モーダルUI |
+| `pecus.Frontend/src/app/(workspace-full)/workspaces/[code]/WorkspaceTasks.tsx` | AI生成ボタン追加 |
+| `pecus.Frontend/src/app/(workspace-full)/workspaces/[code]/WorkspaceItemDetail.tsx` | itemDueDateをpropsに追加 |
+
 **実装済みAPIエンドポイント**
 
 ```
@@ -390,7 +399,7 @@ POST /api/workspaces/{workspaceId}/items/{itemId}/tasks/bulk-create
 
 **備考**
 - `BulkCreateTasksRequest.BulkTaskItem` には `PredecessorTaskId`（既存タスク参照）と `PredecessorIndex`（同一リクエスト内参照）の両方をサポート
-- ビルド検証済み（エラー0件）
+- バックエンド・フロントエンド共にビルド検証済み（エラー0件）
 
 ---
 

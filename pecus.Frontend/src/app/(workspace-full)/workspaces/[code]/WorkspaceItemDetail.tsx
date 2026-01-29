@@ -1074,6 +1074,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 itemCommitterName={item?.committer?.username}
                 itemCommitterIsActive={item?.committer?.isActive ?? false}
                 itemCommitterAvatarUrl={item?.committer?.identityIconUrl}
+                itemDueDate={item?.dueDate}
                 taskTypes={taskTypes}
                 currentUser={
                   currentUserId

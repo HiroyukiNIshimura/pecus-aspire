@@ -18,7 +18,9 @@ import type {
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { formatShortDateJa } from '@/libs/utils/date';
+import { useIsAiEnabled } from '@/providers/AppSettingsProvider';
 import CreateWorkspaceTaskModal from './CreateWorkspaceTaskModal';
+import GenerateTasksModal from './GenerateTasksModal';
 import TaskCommentModal from './TaskCommentModal';
 
 const hasHelpComment = (task: WorkspaceTaskDetailResponse): boolean => (task.commentTypeCounts?.HelpWanted ?? 0) > 0;
@@ -81,6 +83,8 @@ interface WorkspaceTasksProps {
   itemCommitterIsActive?: boolean;
   /** アイテムのコミッターアバターURL */
   itemCommitterAvatarUrl?: string | null;
+  /** アイテムの期限日（AI生成デフォルト値用） */
+  itemDueDate?: string | null;
   /** タスクタイプマスタデータ */
   taskTypes: TaskTypeOption[];
   /** 現在ログイン中のユーザー（「自分」リンク用） */
@@ -122,6 +126,7 @@ const WorkspaceTasks = ({
   itemCommitterName,
   itemCommitterIsActive,
   itemCommitterAvatarUrl,
+  itemDueDate,
   taskTypes,
   currentUser,
   onShowTaskDetail,
@@ -130,6 +135,7 @@ const WorkspaceTasks = ({
   canEdit = true,
 }: WorkspaceTasksProps) => {
   const notify = useNotify();
+  const isAiEnabled = useIsAiEnabled();
   const [tasks, setTasks] = useState<WorkspaceTaskDetailResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -148,6 +154,9 @@ const WorkspaceTasks = ({
 
   // タスク作成モーダル状態
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // AIタスク生成モーダル状態
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
 
   // コメントモーダル状態
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
@@ -409,6 +418,24 @@ const WorkspaceTasks = ({
           <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
           <span className="hidden sm:inline">フロー</span>
         </button>
+        {/* AIタスク自動生成ボタン */}
+        {isAiEnabled && (
+          <button
+            type="button"
+            className="btn btn-outline btn-secondary btn-sm gap-1"
+            onClick={() => {
+              if (!canEdit) {
+                notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+                return;
+              }
+              setIsGenerateModalOpen(true);
+            }}
+            title="AIでタスクを自動生成"
+          >
+            <span className="icon-[mdi--robot-happy-outline] w-4 h-4" aria-hidden="true" />
+            <span className="hidden sm:inline">AI生成</span>
+          </button>
+        )}
         <button
           type="button"
           className="btn btn-outline btn-primary btn-sm gap-1"
@@ -437,6 +464,19 @@ const WorkspaceTasks = ({
         onSuccess={handleCreateTaskSuccess}
         workspaceId={workspaceId}
         itemId={itemId}
+        taskTypes={taskTypes}
+        currentUser={currentUser}
+        canEdit={canEdit}
+      />
+
+      {/* AIタスク生成モーダル */}
+      <GenerateTasksModal
+        isOpen={isGenerateModalOpen}
+        onClose={() => setIsGenerateModalOpen(false)}
+        onSuccess={handleCreateTaskSuccess}
+        workspaceId={workspaceId}
+        itemId={itemId}
+        itemDueDate={itemDueDate}
         taskTypes={taskTypes}
         currentUser={currentUser}
         canEdit={canEdit}

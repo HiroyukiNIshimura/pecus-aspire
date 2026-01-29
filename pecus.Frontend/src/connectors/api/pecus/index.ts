@@ -49,6 +49,9 @@ export type { BackOfficeUpdateNotificationRequest } from './models/BackOfficeUpd
 export type { BackOfficeUpdateOrganizationRequest } from './models/BackOfficeUpdateOrganizationRequest';
 export type { BadgeVisibility } from './models/BadgeVisibility';
 export type { BotType } from './models/BotType';
+export type { BulkCreateTasksRequest } from './models/BulkCreateTasksRequest';
+export type { BulkCreateTasksResponse } from './models/BulkCreateTasksResponse';
+export type { BulkTaskItem } from './models/BulkTaskItem';
 export type { CancelAgendaRequest } from './models/CancelAgendaRequest';
 export type { ChatMessageItem } from './models/ChatMessageItem';
 export type { ChatMessageReplyItem } from './models/ChatMessageReplyItem';
@@ -77,6 +80,7 @@ export type { ConcurrencyErrorResponseOfWorkspaceTaskDetailResponse } from './mo
 export type { CreateAgendaExceptionRequest } from './models/CreateAgendaExceptionRequest';
 export type { CreateAgendaRequest } from './models/CreateAgendaRequest';
 export type { CreateDmRoomRequest } from './models/CreateDmRoomRequest';
+export type { CreatedTaskInfo } from './models/CreatedTaskInfo';
 export type { CreateOrganizationRequest } from './models/CreateOrganizationRequest';
 export type { CreateSkillRequest } from './models/CreateSkillRequest';
 export type { CreateTagRequest } from './models/CreateTagRequest';
@@ -112,11 +116,14 @@ export type { EmailChangeRequestResponse } from './models/EmailChangeRequestResp
 export type { EmailChangeVerifyResponse } from './models/EmailChangeVerifyResponse';
 export type { EmailTemplateInfo } from './models/EmailTemplateInfo';
 export type { ErrorResponse } from './models/ErrorResponse';
+export type { EstimatedSize } from './models/EstimatedSize';
 export type { FileType } from './models/FileType';
 export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { FocusRecommendationResponse } from './models/FocusRecommendationResponse';
 export type { FocusScorePriority } from './models/FocusScorePriority';
 export type { FocusTaskResponse } from './models/FocusTaskResponse';
+export type { GeneratedTaskCandidate } from './models/GeneratedTaskCandidate';
+export type { GenerateTaskCandidatesRequest } from './models/GenerateTaskCandidatesRequest';
 export type { GenerateTextRequest } from './models/GenerateTextRequest';
 export type { GenerateTextResponse } from './models/GenerateTextResponse';
 export type { GenerativeApiVendor } from './models/GenerativeApiVendor';
@@ -181,6 +188,7 @@ export type { PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatisti
 export type { PagedResponseOfWorkspaceUserDetailResponseAndObject } from './models/PagedResponseOfWorkspaceUserDetailResponseAndObject';
 export type { PendingEmailChangeResponse } from './models/PendingEmailChangeResponse';
 export type { PredecessorTaskInfo } from './models/PredecessorTaskInfo';
+export type { PreviousCandidateRequest } from './models/PreviousCandidateRequest';
 export type { PriorityTaskCount } from './models/PriorityTaskCount';
 export type { ProblemDetails } from './models/ProblemDetails';
 export type { RankingItemDto } from './models/RankingItemDto';
@@ -229,6 +237,7 @@ export type { TaskFlowMapResponse } from './models/TaskFlowMapResponse';
 export type { TaskFlowNode } from './models/TaskFlowNode';
 export type { TaskFlowPredecessorInfo } from './models/TaskFlowPredecessorInfo';
 export type { TaskFlowSummary } from './models/TaskFlowSummary';
+export type { TaskGenerationResponse } from './models/TaskGenerationResponse';
 export type { TaskItemResponse } from './models/TaskItemResponse';
 export type { TaskPriority } from './models/TaskPriority';
 export type { TasksByDueDateResponse } from './models/TasksByDueDateResponse';

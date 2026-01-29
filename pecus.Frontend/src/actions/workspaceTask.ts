@@ -3,9 +3,13 @@
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   AssigneeTaskLoadResponse,
+  BulkCreateTasksRequest,
+  BulkCreateTasksResponse,
   CreateWorkspaceTaskRequest,
+  GenerateTaskCandidatesRequest,
   PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics,
   SortOrder,
+  TaskGenerationResponse,
   TaskSortBy,
   TaskStatusFilter,
   UpdateWorkspaceTaskRequest,
@@ -328,6 +332,61 @@ export async function fetchTaskContentSuggestion(
     console.error('Failed to fetch task content suggestion:', error);
     return handleApiErrorForAction<{ suggestedContent: string }>(error, {
       defaultMessage: 'タスク内容提案の取得に失敗しました。',
+      handled: { not_found: true },
+    });
+  }
+}
+
+/**
+ * AIによるタスク候補生成
+ * アイテム情報からタスク候補を自動生成する
+ */
+export async function generateTaskCandidates(
+  workspaceId: number,
+  itemId: number,
+  request: GenerateTaskCandidatesRequest,
+): Promise<ApiResponse<TaskGenerationResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.workspaceTask.postApiWorkspacesItemsTasksGenerateCandidates(
+      workspaceId,
+      itemId,
+      request,
+    );
+
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to generate task candidates:', error);
+    return handleApiErrorForAction<TaskGenerationResponse>(error, {
+      defaultMessage: 'タスク候補の生成に失敗しました。',
+      handled: { not_found: true },
+    });
+  }
+}
+
+/**
+ * タスク一括作成
+ * 承認されたタスク候補を一括で作成する
+ */
+export async function bulkCreateTasks(
+  workspaceId: number,
+  itemId: number,
+  request: BulkCreateTasksRequest,
+): Promise<ApiResponse<BulkCreateTasksResponse>> {
+  // バリデーション
+  if (!request.tasks || request.tasks.length === 0) {
+    return validationError('作成するタスクを1つ以上選択してください。');
+  }
+
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.workspaceTask.postApiWorkspacesItemsTasksBulkCreate(workspaceId, itemId, request);
+
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to bulk create tasks:', error);
+    return handleApiErrorForAction<BulkCreateTasksResponse>(error, {
+      defaultMessage: 'タスクの一括作成に失敗しました。',
       handled: { not_found: true },
     });
   }
