@@ -63,7 +63,7 @@ export default function TaskFlowMapPage({
   const [data, setData] = useState<TaskFlowMapResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('graph'); // デフォルトはグラフ表示
+  const [viewMode, setViewMode] = useState<ViewMode>('chain'); // デフォルトはチェーン表示
 
   // データ取得
   const fetchData = useCallback(async () => {
