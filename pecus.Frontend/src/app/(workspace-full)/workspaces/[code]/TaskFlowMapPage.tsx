@@ -1,11 +1,25 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
 import { getTaskFlowMap } from '@/actions/workspaceTask';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import TaskFlowMap from '@/components/tasks/TaskFlowMap';
 import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/api/pecus';
+
+/** 表示モード */
+type ViewMode = 'chain' | 'graph';
+
+/** React Flowはクライアントサイドのみで動作するためdynamic importでSSRを無効化 */
+const TaskFlowGraphView = dynamic(() => import('@/components/tasks/flow-graph/TaskFlowGraphView'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-64">
+      <span className="loading loading-spinner loading-lg text-primary" />
+    </div>
+  ),
+});
 
 export interface TaskFlowMapPageProps {
   /** 閉じるコールバック */
@@ -49,6 +63,7 @@ export default function TaskFlowMapPage({
   const [data, setData] = useState<TaskFlowMapResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('graph'); // デフォルトはグラフ表示
 
   // データ取得
   const fetchData = useCallback(async () => {
@@ -122,8 +137,29 @@ export default function TaskFlowMapPage({
               </div>
             )}
           </div>
-          {/* 右側: 戻るボタン */}
-          <div className="shrink-0">
+          {/* 右側: 表示切替と戻るボタン */}
+          <div className="shrink-0 flex items-center gap-2">
+            {/* 表示モード切替タブ */}
+            <div className="tabs tabs-box hidden sm:flex">
+              <button
+                type="button"
+                className={`tab tab-sm gap-1.5 ${viewMode === 'graph' ? 'tab-active' : ''}`}
+                onClick={() => setViewMode('graph')}
+                aria-pressed={viewMode === 'graph'}
+              >
+                <span className="icon-[mdi--graph-outline] size-4" aria-hidden="true" />
+                グラフ
+              </button>
+              <button
+                type="button"
+                className={`tab tab-sm gap-1.5 ${viewMode === 'chain' ? 'tab-active' : ''}`}
+                onClick={() => setViewMode('chain')}
+                aria-pressed={viewMode === 'chain'}
+              >
+                <span className="icon-[mdi--format-list-bulleted] size-4" aria-hidden="true" />
+                チェーン
+              </button>
+            </div>
             <button
               type="button"
               className="btn btn-sm btn-secondary gap-2"
@@ -156,8 +192,35 @@ export default function TaskFlowMapPage({
               </button>
             </div>
           ) : data ? (
-            <div className="bg-base-100 rounded-lg border border-base-300 p-4">
-              <TaskFlowMap data={data} onTaskClick={handleTaskClick} canEditTask={canEditTask} />
+            <div className="bg-base-100 rounded-lg border border-base-300 p-4 h-full flex flex-col">
+              {/* モバイル用表示切替 */}
+              <div className="tabs tabs-box sm:hidden mb-3">
+                <button
+                  type="button"
+                  className={`tab tab-sm gap-1.5 ${viewMode === 'graph' ? 'tab-active' : ''}`}
+                  onClick={() => setViewMode('graph')}
+                  aria-pressed={viewMode === 'graph'}
+                >
+                  <span className="icon-[mdi--graph-outline] size-4" aria-hidden="true" />
+                  グラフ
+                </button>
+                <button
+                  type="button"
+                  className={`tab tab-sm gap-1.5 ${viewMode === 'chain' ? 'tab-active' : ''}`}
+                  onClick={() => setViewMode('chain')}
+                  aria-pressed={viewMode === 'chain'}
+                >
+                  <span className="icon-[mdi--format-list-bulleted] size-4" aria-hidden="true" />
+                  チェーン
+                </button>
+              </div>
+
+              {/* 表示コンテンツ */}
+              {viewMode === 'graph' ? (
+                <TaskFlowGraphView data={data} onTaskClick={handleTaskClick} canEditTask={canEditTask} />
+              ) : (
+                <TaskFlowMap data={data} onTaskClick={handleTaskClick} canEditTask={canEditTask} />
+              )}
             </div>
           ) : (
             <EmptyState iconClass="icon-[mdi--clipboard-text-outline]" message="データがありません" />
