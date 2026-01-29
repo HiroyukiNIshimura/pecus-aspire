@@ -620,7 +620,7 @@ export default function GenerateTasksModal({
                       />
 
                       {/* タスク番号 */}
-                      <span className="text-xs font-mono text-base-content/50 min-w-[2.5rem]">T-{index + 1}</span>
+                      <span className="text-xs font-mono text-base-content/50 min-w-10">T-{index + 1}</span>
 
                       {/* タスク内容 */}
                       <div className="flex-1 min-w-0">
