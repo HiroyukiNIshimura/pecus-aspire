@@ -160,11 +160,6 @@ public class UpdateTaskTask : TaskNotificationTaskBase
                 return (defaultMessage, bot);
             }
 
-            if (generatedMessage.Length > 100)
-            {
-                generatedMessage = generatedMessage[..97] + "...";
-            }
-
             return ($"{defaultMessage}\n\n{generatedMessage}", bot);
         }
         catch (Exception ex)
