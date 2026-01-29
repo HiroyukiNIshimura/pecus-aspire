@@ -467,7 +467,7 @@ export default function GenerateTasksModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-4xl min-h-[680px] max-h-[95vh] flex flex-col">
+      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-4xl min-h-170 max-h-[95vh] flex flex-col">
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
           <div className="flex items-center gap-3">
@@ -490,6 +490,27 @@ export default function GenerateTasksModal({
           {step === 'input' ? (
             /* 入力フォーム */
             <div className="space-y-6">
+              {/* 既存タスクがある場合の警告 */}
+              {predecessorTaskOptions.length > 0 && (
+                <div className="alert alert-soft alert-warning">
+                  <span className="icon-[mdi--alert-outline] w-5 h-5 shrink-0" aria-hidden="true" />
+                  <div className="flex flex-col gap-1">
+                    <span className="font-semibold">既存タスク: {predecessorTaskOptions.length}件</span>
+                    <span className="text-sm">
+                      AIは既存タスクを考慮せず新規タスクを提案します。重複を避けるため、追加情報欄に以下を記載することを推奨します：
+                    </span>
+                    <ul className="text-sm list-disc list-inside ml-2 text-base-content/80">
+                      <li>生成したいフェーズ（例: テストフェーズのみ）</li>
+                      <li>追加された要件の内容</li>
+                      <li>除外したい作業範囲</li>
+                    </ul>
+                    <span className="text-sm text-base-content/70 mt-1">
+                      ※ 提案タスクの番号（T-1等）は一時的なもので、保存時に既存タスクの続きから採番されます
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* プロジェクト期間 */}
               <div className="card bg-base-200/50 p-4">
                 <h3 className="font-semibold mb-4">プロジェクト期間</h3>
@@ -526,24 +547,6 @@ export default function GenerateTasksModal({
                   maxLength={2000}
                 />
               </div>
-
-              {/* 前回の生成結果へのフィードバック（イテレーション時のみ表示） */}
-              {candidates.length > 0 && (
-                <div className="form-control">
-                  <label htmlFor="feedback" className="label">
-                    <span className="label-text font-semibold">フィードバック（修正依頼）</span>
-                  </label>
-                  <textarea
-                    id="feedback"
-                    className="textarea textarea-bordered w-full h-24"
-                    placeholder="「テストタスクも追加してください」「設計フェーズをもっと細分化してください」など"
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    disabled={isGenerating}
-                    maxLength={2000}
-                  />
-                </div>
-              )}
 
               {/* エラー表示 */}
               {generationError && (
