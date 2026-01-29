@@ -368,16 +368,62 @@ S/M/L/XL = AI推定の規模感（参考情報）
 
 ---
 
-## 8. 依存関係・前提条件
+## 8. 実装構成
 
-### 8.1 必要な既存機能
+### 8.1 ファイル配置
+
+```
+pecus.WebApi/
+├── Services/
+│   ├── TaskContentSuggestionService.cs  ← 既存（単一タスク内容提案）
+│   └── TaskGenerationService.cs         ← 新規（複数タスク候補生成）
+├── Requests/
+│   ├── GenerateTaskCandidatesRequest.cs ← 新規
+│   └── BulkCreateTasksRequest.cs        ← 新規
+├── Responses/
+│   └── TaskGenerationResponse.cs        ← 新規
+└── Controllers/
+    └── WorkspaceTaskController.cs       ← エンドポイント追加
+
+pecus.Libs/
+└── AI/
+    └── Prompts/
+        └── Tasks/
+            ├── TaskContentSuggestionPromptTemplate.cs  ← 既存
+            └── TaskGenerationPromptTemplate.cs         ← 新規
+
+pecus.Frontend/
+└── src/
+    ├── actions/
+    │   └── workspaceTaskActions.ts      ← Server Action追加
+    ├── types/
+    │   └── taskGeneration.ts            ← 型定義
+    └── app/(workspace-full)/workspaces/[code]/
+        └── GenerateTasksModal.tsx       ← 新規モーダル
+```
+
+### 8.2 配置方針
+
+| 配置先 | 内容 | 理由 |
+|--------|------|------|
+| `pecus.WebApi/Services/` | `TaskGenerationService` | 既存の `TaskContentSuggestionService` と同じパターン。DB依存が強いビジネスロジック |
+| `pecus.Libs/AI/Prompts/` | プロンプトテンプレート | 将来 BackFire 等からも再利用可能にするため |
+| `pecus.Frontend/src/actions/` | Server Action | API呼び出しの抽象化 |
+
+> **注**: `pecus.Libs/AI/Tools/Implementations/` は MCP ツール（外部システム連携用）のため、本機能には使用しない。
+
+---
+
+## 9. 依存関係・前提条件
+
+### 9.1 必要な既存機能
 
 - ワークスペースメンバー取得API（担当者選択用）
 - タスクタイプ取得API（AI推定用）
 - Lexical→Markdown変換（既存の `LexicalConverter` を使用）
 - AI クライアントファクトリ（既存の `AiClientFactory` を使用）
 
-### 8.2 考慮事項
+### 9.2 考慮事項
 
 - **トークン制限**: 本文が長い場合は要約処理が必要
 - **レート制限**: AI API呼び出しの制限を考慮
@@ -385,7 +431,7 @@ S/M/L/XL = AI推定の規模感（参考情報）
 
 ---
 
-## 9. 将来の拡張
+## 10. 将来の拡張
 
 1. **組織設定での規模→工数マッピング**: 組織ごとにS/M/L/XLの工数デフォルト値を設定可能に（参考値として入力欄にプリセット）
 2. **テンプレート機能**: よく使うタスクパターンをテンプレート化

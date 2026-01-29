@@ -164,6 +164,7 @@ builder.Services.AddScoped<ChatMessageService>();
 builder.Services.AddScoped<BotMessageService>();
 builder.Services.AddScoped<DocumentSuggestionService>();
 builder.Services.AddScoped<TaskContentSuggestionService>();
+builder.Services.AddScoped<TaskGenerationService>();
 builder.Services.AddScoped<IAiAssistantService, AiAssistantService>();
 builder.Services.AddScoped<AchievementService>();
 builder.Services.AddScoped<AgendaService>();

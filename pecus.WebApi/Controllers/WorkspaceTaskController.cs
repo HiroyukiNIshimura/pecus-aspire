@@ -24,6 +24,7 @@ public class WorkspaceTaskController : BaseSecureController
 {
     private readonly WorkspaceTaskService _workspaceTaskService;
     private readonly TaskContentSuggestionService _taskContentSuggestionService;
+    private readonly TaskGenerationService _taskGenerationService;
     private readonly OrganizationAccessHelper _accessHelper;
     private readonly AchievementService _achievementService;
     private readonly ILogger<WorkspaceTaskController> _logger;
@@ -33,6 +34,7 @@ public class WorkspaceTaskController : BaseSecureController
     public WorkspaceTaskController(
         WorkspaceTaskService workspaceTaskService,
         TaskContentSuggestionService taskContentSuggestionService,
+        TaskGenerationService taskGenerationService,
         OrganizationAccessHelper accessHelper,
         AchievementService achievementService,
         ProfileService profileService,
@@ -43,6 +45,7 @@ public class WorkspaceTaskController : BaseSecureController
     {
         _workspaceTaskService = workspaceTaskService;
         _taskContentSuggestionService = taskContentSuggestionService;
+        _taskGenerationService = taskGenerationService;
         _accessHelper = accessHelper;
         _achievementService = achievementService;
         _logger = logger;
@@ -559,6 +562,146 @@ public class WorkspaceTaskController : BaseSecureController
         return TypedResults.Ok(new TaskContentSuggestionResponse
         {
             SuggestedContent = suggestion ?? string.Empty
+        });
+    }
+
+    /// <summary>
+    /// タスク候補生成（AI）
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <param name="request">タスク候補生成リクエスト</param>
+    /// <returns>生成されたタスク候補</returns>
+    [HttpPost("generate-candidates")]
+    [ProducesResponseType(typeof(TaskGenerationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<TaskGenerationResponse>> GenerateTaskCandidates(
+        int workspaceId,
+        int itemId,
+        [FromBody] GenerateTaskCandidatesRequest request)
+    {
+        var workspace = await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
+
+        var response = await _taskGenerationService.GenerateTaskCandidatesAsync(
+            workspace.OrganizationId,
+            workspaceId,
+            itemId,
+            request);
+
+        // AI設定がない場合は空のレスポンスを返す
+        if (response == null)
+        {
+            return TypedResults.Ok(new TaskGenerationResponse
+            {
+                Candidates = [],
+                TotalEstimatedDays = 0,
+                CriticalPathDescription = null,
+                Suggestions = ["組織にAI設定がありません。管理者にお問い合わせください。"]
+            });
+        }
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// タスク一括作成
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <param name="request">一括作成リクエスト</param>
+    /// <returns>作成されたタスクの一覧</returns>
+    [HttpPost("bulk-create")]
+    [ProducesResponseType(typeof(BulkCreateTasksResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<BulkCreateTasksResponse>> BulkCreateTasks(
+        int workspaceId,
+        int itemId,
+        [FromBody] BulkCreateTasksRequest request)
+    {
+        await _accessHelper.RequireWorkspaceEditPermissionAsync(CurrentUserId, workspaceId);
+
+        var createdTasks = new List<CreatedTaskInfo>();
+        var createdTaskIds = new Dictionary<int, int>(); // requestIndex -> taskId
+
+        for (var i = 0; i < request.Tasks.Count; i++)
+        {
+            var taskItem = request.Tasks[i];
+
+            // PredecessorTaskIdとPredecessorIndexの両方が指定されている場合はエラー
+            if (taskItem.PredecessorTaskId.HasValue && taskItem.PredecessorIndex.HasValue)
+            {
+                throw new InvalidOperationException(
+                    $"タスク {i + 1}: PredecessorTaskIdとPredecessorIndexは同時に指定できません。");
+            }
+
+            // 先行タスクIDの解決
+            int? predecessorTaskId = null;
+
+            if (taskItem.PredecessorTaskId.HasValue)
+            {
+                // 既存タスクを先行タスクとして指定
+                predecessorTaskId = taskItem.PredecessorTaskId.Value;
+            }
+            else if (taskItem.PredecessorIndex.HasValue)
+            {
+                // 同一リクエスト内の参照
+                if (taskItem.PredecessorIndex.Value >= i)
+                {
+                    throw new InvalidOperationException(
+                        $"タスク {i + 1} の先行タスクインデックス {taskItem.PredecessorIndex.Value} は自身より前のタスクを指定する必要があります。");
+                }
+
+                if (!createdTaskIds.TryGetValue(taskItem.PredecessorIndex.Value, out var resolvedPredecessorId))
+                {
+                    throw new InvalidOperationException(
+                        $"タスク {i + 1} の先行タスクインデックス {taskItem.PredecessorIndex.Value} が見つかりません。");
+                }
+
+                predecessorTaskId = resolvedPredecessorId;
+            }
+
+            // CreateWorkspaceTaskRequestに変換
+            var createRequest = new CreateWorkspaceTaskRequest
+            {
+                Content = taskItem.Content,
+                TaskTypeId = taskItem.TaskTypeId,
+                AssignedUserId = taskItem.AssignedUserId,
+                Priority = taskItem.Priority,
+                StartDate = taskItem.StartDate.HasValue
+                    ? new DateTimeOffset(taskItem.StartDate.Value.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
+                    : null,
+                DueDate = new DateTimeOffset(taskItem.DueDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                EstimatedHours = taskItem.EstimatedHours,
+                PredecessorTaskId = predecessorTaskId
+            };
+
+            var task = await _workspaceTaskService.CreateWorkspaceTaskAsync(
+                workspaceId,
+                itemId,
+                createRequest,
+                CurrentUserId);
+
+            createdTaskIds[i] = task.Id;
+
+            createdTasks.Add(new CreatedTaskInfo
+            {
+                RequestIndex = i,
+                TaskId = task.Id,
+                Sequence = task.Sequence,
+                Content = task.Content
+            });
+
+            // タスク作成通知（既存のメソッドを再利用）
+            await SendTaskCreatedEmailAsync(task.Id);
+        }
+
+        return TypedResults.Ok(new BulkCreateTasksResponse
+        {
+            CreatedTasks = createdTasks,
+            TotalCreated = createdTasks.Count
         });
     }
 
