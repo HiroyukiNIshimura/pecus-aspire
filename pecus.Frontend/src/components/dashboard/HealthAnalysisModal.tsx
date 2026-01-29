@@ -4,12 +4,14 @@ import { useCallback, useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
 import { analyzeHealth } from '@/actions/dashboard';
 import { getMyWorkspaces } from '@/actions/workspace';
+import AiProgressOverlay from '@/components/common/overlays/AiProgressOverlay';
 import type {
   HealthAnalysisResponse,
   HealthAnalysisScope,
   HealthAnalysisType,
   WorkspaceListItemResponse,
 } from '@/connectors/api/pecus';
+import { useAiSuggestion } from '@/hooks/useAiSuggestion';
 
 interface HealthAnalysisModalProps {
   isOpen: boolean;
@@ -70,7 +72,7 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
 
   // 分析関連
   const [selectedType, setSelectedType] = useState<HealthAnalysisType>('CurrentHealth');
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, startLoading, finishLoading, cancel: cancelAnalysis, checkCancelled } = useAiSuggestion();
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<HealthAnalysisResponse | null>(null);
 
@@ -116,7 +118,6 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
   const handleClose = useCallback(() => {
     setResult(null);
     setError(null);
-    setIsLoading(false);
     setScope('Organization');
     setSelectedWorkspaceId(null);
     setWorkspaces([]);
@@ -132,7 +133,7 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
       return;
     }
 
-    setIsLoading(true);
+    startLoading();
     setError(null);
     setResult(null);
 
@@ -143,15 +144,20 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
         analysisType: selectedType,
       });
 
+      // キャンセルされていた場合は結果を無視
+      if (checkCancelled()) return;
+
       if (response.success) {
         setResult(response.data);
       } else {
         setError(response.message || '分析に失敗しました');
       }
     } catch (err) {
+      // キャンセルされていた場合はエラーも無視
+      if (checkCancelled()) return;
       setError(err instanceof Error ? err.message : '予期しないエラーが発生しました');
     } finally {
-      setIsLoading(false);
+      if (!checkCancelled()) finishLoading();
     }
   };
 
@@ -190,7 +196,9 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
         </div>
 
         {/* ボディ */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 relative">
+          {/* 分析中オーバーレイ */}
+          <AiProgressOverlay isVisible={isLoading} message="AIが分析中..." onCancel={cancelAnalysis} />
           {/* 結果表示 */}
           {result ? (
             <div className="space-y-4">

@@ -11,6 +11,7 @@ import {
 } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/filters/DatePicker';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
+import AiProgressOverlay from '@/components/common/overlays/AiProgressOverlay';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
@@ -19,6 +20,7 @@ import type {
   TaskPriority,
   UserSearchResultResponse,
 } from '@/connectors/api/pecus';
+import { useAiSuggestion } from '@/hooks/useAiSuggestion';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { useIsAiEnabled, useOrganizationSettings } from '@/providers/AppSettingsProvider';
@@ -123,9 +125,14 @@ export default function CreateWorkspaceTaskModal({
   const [taskContent, setTaskContent] = useState<string>('');
 
   // AI提案状態
-  const [isSuggestLoading, setIsSuggestLoading] = useState(false);
+  const {
+    isLoading: isSuggestLoading,
+    startLoading,
+    finishLoading,
+    cancel: cancelSuggestion,
+    checkCancelled,
+  } = useAiSuggestion();
   const [suggestError, setSuggestError] = useState<string | null>(null);
-  const suggestCancelledRef = useRef(false);
 
   // 動的にスキーマを生成（組織設定に基づく）
   const taskSchema = useMemo(
@@ -273,26 +280,17 @@ export default function CreateWorkspaceTaskModal({
     }
   }, [currentUser, shouldShowError, validateField]);
 
-  // タスク内容提案処理のキャンセル
-  const cancelSuggestion = useCallback(() => {
-    if (isSuggestLoading) {
-      suggestCancelledRef.current = true;
-      setIsSuggestLoading(false);
-    }
-  }, [isSuggestLoading]);
-
   // タスク内容提案を取得
   const handleSuggestContent = useCallback(async () => {
     if (!taskTypeId || isSuggestLoading) return;
 
-    suggestCancelledRef.current = false;
-    setIsSuggestLoading(true);
+    startLoading();
     setSuggestError(null);
 
     try {
       const result = await fetchTaskContentSuggestion(workspaceId, itemId, taskTypeId);
 
-      if (suggestCancelledRef.current) return;
+      if (checkCancelled()) return;
 
       if (result.success && result.data.suggestedContent) {
         setTaskContent(result.data.suggestedContent);
@@ -301,29 +299,15 @@ export default function CreateWorkspaceTaskModal({
         setSuggestError(result.message || '提案の取得に失敗しました。');
       }
     } catch {
-      if (!suggestCancelledRef.current) {
+      if (!checkCancelled()) {
         setSuggestError('提案の取得中にエラーが発生しました。');
       }
     } finally {
-      if (!suggestCancelledRef.current) {
-        setIsSuggestLoading(false);
+      if (!checkCancelled()) {
+        finishLoading();
       }
     }
-  }, [workspaceId, itemId, taskTypeId, isSuggestLoading, validateField]);
-
-  // Escキーでタスク内容提案をキャンセル
-  useEffect(() => {
-    if (!isSuggestLoading) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        cancelSuggestion();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isSuggestLoading, cancelSuggestion]);
+  }, [workspaceId, itemId, taskTypeId, isSuggestLoading, validateField, startLoading, finishLoading, checkCancelled]);
 
   // モーダルが閉じられたらエラーとフォームをクリア
   useEffect(() => {
@@ -342,7 +326,6 @@ export default function CreateWorkspaceTaskModal({
       setAssigneeLoadCheck(null);
       setAssigneeLoadError(null);
       setTaskContent('');
-      setIsSuggestLoading(false);
       setSuggestError(null);
     }
   }, [isOpen, resetForm]);
@@ -603,16 +586,12 @@ export default function CreateWorkspaceTaskModal({
               </div>
               <div className="relative">
                 {/* ローディングオーバーレイ */}
-                {isSuggestLoading && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-base-100/80 backdrop-blur-sm rounded-box">
-                    <span className="loading loading-ring loading-lg text-secondary"></span>
-                    <span className="mt-2 text-sm text-base-content/70">AIがタスク内容を生成中...</span>
-                    <button type="button" onClick={cancelSuggestion} className="mt-3 btn btn-sm btn-secondary gap-1">
-                      キャンセル
-                      <kbd className="kbd kbd-xs">Esc</kbd>
-                    </button>
-                  </div>
-                )}
+                <AiProgressOverlay
+                  isVisible={isSuggestLoading}
+                  message="AIがタスク内容を生成中..."
+                  onCancel={cancelSuggestion}
+                  zIndex={10}
+                />
                 <textarea
                   id="content"
                   data-field="content"

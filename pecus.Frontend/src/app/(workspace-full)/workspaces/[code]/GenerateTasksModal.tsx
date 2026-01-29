@@ -6,6 +6,7 @@ import type { PredecessorTaskOption } from '@/actions/workspaceTask';
 import { bulkCreateTasks, generateTaskCandidates, getPredecessorTaskOptions } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/filters/DatePicker';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
+import AiProgressOverlay from '@/components/common/overlays/AiProgressOverlay';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
@@ -17,6 +18,7 @@ import type {
   TaskPriority,
   UserSearchResultResponse,
 } from '@/connectors/api/pecus';
+import { useAiSuggestion } from '@/hooks/useAiSuggestion';
 import { useNotify } from '@/hooks/useNotify';
 import { useIsAiEnabled } from '@/providers/AppSettingsProvider';
 
@@ -103,7 +105,13 @@ export default function GenerateTasksModal({
   const [feedback, setFeedback] = useState<string>('');
 
   // 生成状態
-  const [isGenerating, setIsGenerating] = useState(false);
+  const {
+    isLoading: isGenerating,
+    startLoading: startGenerating,
+    finishLoading: finishGenerating,
+    cancel: cancelGenerating,
+    checkCancelled: checkGeneratingCancelled,
+  } = useAiSuggestion();
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [generationResponse, setGenerationResponse] = useState<TaskGenerationResponse | null>(null);
   const [candidates, setCandidates] = useState<EditableTaskCandidate[]>([]);
@@ -166,7 +174,6 @@ export default function GenerateTasksModal({
     setEndDate('');
     setAdditionalContext('');
     setFeedback('');
-    setIsGenerating(false);
     setGenerationError(null);
     setGenerationResponse(null);
     setCandidates([]);
@@ -230,7 +237,7 @@ export default function GenerateTasksModal({
       return;
     }
 
-    setIsGenerating(true);
+    startGenerating();
     setGenerationError(null);
 
     // 前回の候補がある場合はイテレーション用に渡す
@@ -251,6 +258,9 @@ export default function GenerateTasksModal({
       previousCandidates,
     });
 
+    // キャンセルされていた場合は結果を無視
+    if (checkGeneratingCancelled()) return;
+
     if (result.success) {
       setGenerationResponse(result.data);
       setCandidates(convertToEditableCandidates(result.data));
@@ -260,7 +270,7 @@ export default function GenerateTasksModal({
       setGenerationError(result.message);
     }
 
-    setIsGenerating(false);
+    finishGenerating();
   }, [
     startDate,
     endDate,
@@ -271,6 +281,9 @@ export default function GenerateTasksModal({
     itemId,
     notify,
     convertToEditableCandidates,
+    startGenerating,
+    finishGenerating,
+    checkGeneratingCancelled,
   ]);
 
   // タスク候補の選択状態をトグル
@@ -486,7 +499,9 @@ export default function GenerateTasksModal({
         </div>
 
         {/* ボディ */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 relative">
+          {/* 生成中オーバーレイ */}
+          <AiProgressOverlay isVisible={isGenerating} message="AIがタスク候補を生成中..." onCancel={cancelGenerating} />
           {step === 'input' ? (
             /* 入力フォーム */
             <div className="space-y-6">
