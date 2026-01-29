@@ -355,16 +355,42 @@ S/M/L/XL = AI推定の規模感（参考情報）
 
 ## 7. 実装ステップ
 
-| Phase | 内容 | 見積 |
-|-------|------|------|
-| 1 | プロンプトテンプレート実装 | 0.5日 |
-| 2 | `TaskGenerationService` 実装 | 1日 |
-| 3 | API エンドポイント実装（候補生成） | 0.5日 |
-| 4 | API エンドポイント実装（一括作成） | 0.5日 |
-| 5 | フロントエンド Server Action | 0.5日 |
-| 6 | タスク生成モーダルUI | 2日 |
-| 7 | テスト・調整 | 0.5日 |
-| **計** | | **5.5日** |
+| Phase | 内容 | 見積 | 状況 |
+|-------|------|------|------|
+| 1 | プロンプトテンプレート実装 | 0.5日 | ✅ 完了 |
+| 2 | `TaskGenerationService` 実装 | 1日 | ✅ 完了 |
+| 3 | API エンドポイント実装（候補生成） | 0.5日 | ✅ 完了 |
+| 4 | API エンドポイント実装（一括作成） | 0.5日 | ✅ 完了 |
+| 5 | フロントエンド Server Action | 0.5日 | ⬜ 未着手 |
+| 6 | タスク生成モーダルUI | 2日 | ⬜ 未着手 |
+| 7 | テスト・調整 | 0.5日 | ⬜ 未着手 |
+| **計** | | **5.5日** | **バックエンド完了** |
+
+### 7.1 実装済みファイル（2026-01-29）
+
+**バックエンド（Phase 1-4）**
+
+| ファイル | 説明 |
+|----------|------|
+| `pecus.Libs/AI/Prompts/Tasks/TaskGenerationPromptTemplate.cs` | AIプロンプトテンプレート |
+| `pecus.WebApi/Models/Requests/WorkspaceTask/GenerateTaskCandidatesRequest.cs` | 候補生成リクエストDTO |
+| `pecus.WebApi/Models/Requests/WorkspaceTask/BulkCreateTasksRequest.cs` | 一括作成リクエストDTO |
+| `pecus.WebApi/Models/Responses/WorkspaceTask/TaskGenerationResponse.cs` | AI応答DTO |
+| `pecus.WebApi/Models/Responses/WorkspaceTask/BulkCreateTasksResponse.cs` | 一括作成レスポンスDTO |
+| `pecus.WebApi/Services/TaskGenerationService.cs` | タスク候補生成サービス |
+| `pecus.WebApi/Controllers/WorkspaceTaskController.cs` | エンドポイント追加 |
+| `pecus.WebApi/Program.cs` | DI登録追加 |
+
+**実装済みAPIエンドポイント**
+
+```
+POST /api/workspaces/{workspaceId}/items/{itemId}/tasks/generate-candidates
+POST /api/workspaces/{workspaceId}/items/{itemId}/tasks/bulk-create
+```
+
+**備考**
+- `BulkCreateTasksRequest.BulkTaskItem` には `PredecessorTaskId`（既存タスク参照）と `PredecessorIndex`（同一リクエスト内参照）の両方をサポート
+- ビルド検証済み（エラー0件）
 
 ---
 
