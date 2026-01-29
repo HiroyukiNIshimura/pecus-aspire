@@ -696,6 +696,13 @@ public class WorkspaceTaskController : BaseSecureController
 
             // タスク作成通知（既存のメソッドを再利用）
             await SendTaskCreatedEmailAsync(task.Id);
+
+            // ワークスペースタスク作成通知をバックグラウンドジョブで実行
+            _backgroundJobClient.Enqueue<CreateTaskTask>(x =>
+                           x.NotifyTaskCreatedAsync(
+                              task.Id
+                           )
+                       );
         }
 
         return TypedResults.Ok(new BulkCreateTasksResponse
