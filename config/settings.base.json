@@ -152,19 +152,22 @@
           "MaxTagsPerOrganization": 1000,
           "MaxSkillsPerOrganization": 100,
           "MaxDocumentsPerWorkspace": 500,
-          "MaxAttendeesPerAgenda": 100
+          "MaxAttendeesPerAgenda": 100,
+          "MaxTasksPerItem": 50
         },
         "Standard":{
           "MaxTagsPerOrganization": 1000,
           "MaxSkillsPerOrganization": 100,
           "MaxDocumentsPerWorkspace": 500,
-          "MaxAttendeesPerAgenda": 100
+          "MaxAttendeesPerAgenda": 100,
+          "MaxTasksPerItem": 50
         },
         "Enterprise":{
           "MaxTagsPerOrganization": 1000,
           "MaxSkillsPerOrganization": 100,
           "MaxDocumentsPerWorkspace": 500,
-          "MaxAttendeesPerAgenda": 100
+          "MaxAttendeesPerAgenda": 100,
+          "MaxTasksPerItem": 50
         }
       },
       "FileUpload": {

@@ -80,6 +80,22 @@ public class WorkspaceTaskService
             );
         }
 
+        // アイテムあたりのタスク数上限チェック
+        var organizationSettings = await _context.OrganizationSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+        if (organizationSettings != null)
+        {
+            var limits = LimitsHelper.GetLimitsSettingsForPlan(_config.Limits, organizationSettings.Plan);
+            var existingTaskCount = await _context.WorkspaceTasks
+                .CountAsync(t => t.WorkspaceItemId == itemId && !t.IsDiscarded);
+            if (existingTaskCount >= limits.MaxTasksPerItem)
+            {
+                throw new BadRequestException(
+                    $"アイテムあたりの最大タスク数({limits.MaxTasksPerItem})に達しています。");
+            }
+        }
+
         // 先行タスクのバリデーション（配列対応）
         var predecessorTaskIds = request.PredecessorTaskIds ?? [];
         if (predecessorTaskIds.Length > 0)

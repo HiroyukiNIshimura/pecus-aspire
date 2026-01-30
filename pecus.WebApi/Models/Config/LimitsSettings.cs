@@ -44,5 +44,10 @@ namespace Pecus.Models.Config
         /// アジェンダあたりの最大参加者数
         /// </summary>
         public int MaxAttendeesPerAgenda { get; set; } = 100;
+
+        /// <summary>
+        /// アイテムあたりの最大タスク数
+        /// </summary>
+        public int MaxTasksPerItem { get; set; } = 50;
     }
 }

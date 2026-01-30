@@ -19644,6 +19644,11 @@
             "type": "integer",
             "description": "アジェンダあたりの最大参加者数",
             "format": "int32"
+          },
+          "maxTasksPerItem": {
+            "type": "integer",
+            "description": "アイテムあたりの最大タスク数",
+            "format": "int32"
           }
         },
         "description": "制限設定"

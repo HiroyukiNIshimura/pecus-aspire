@@ -22,5 +22,9 @@ export type LimitsSettings = {
      * アジェンダあたりの最大参加者数
      */
     maxAttendeesPerAgenda?: number;
+    /**
+     * アイテムあたりの最大タスク数
+     */
+    maxTasksPerItem?: number;
 };
 
