@@ -630,24 +630,18 @@ public class WorkspaceTaskController : BaseSecureController
         {
             var taskItem = request.Tasks[i];
 
-            // PredecessorTaskIdsとPredecessorIndicesの両方が指定されている場合はエラー
-            if ((taskItem.PredecessorTaskIds?.Length > 0) && (taskItem.PredecessorIndices?.Length > 0))
-            {
-                throw new InvalidOperationException(
-                    $"タスク {i + 1}: PredecessorTaskIdsとPredecessorIndicesは同時に指定できません。");
-            }
-
-            // 先行タスクID配列の解決
+            // 先行タスクID配列の解決（両方を統合）
             var predecessorTaskIds = new List<int>();
 
+            // 既存タスクを先行タスクとして追加
             if (taskItem.PredecessorTaskIds?.Length > 0)
             {
-                // 既存タスクを先行タスクとして指定
                 predecessorTaskIds.AddRange(taskItem.PredecessorTaskIds);
             }
-            else if (taskItem.PredecessorIndices?.Length > 0)
+
+            // 同一リクエスト内の参照を解決して追加
+            if (taskItem.PredecessorIndices?.Length > 0)
             {
-                // 同一リクエスト内の参照
                 foreach (var predecessorIndex in taskItem.PredecessorIndices)
                 {
                     if (predecessorIndex >= i)
