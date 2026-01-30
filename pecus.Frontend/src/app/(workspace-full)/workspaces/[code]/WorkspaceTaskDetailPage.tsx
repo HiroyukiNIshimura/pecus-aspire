@@ -1393,7 +1393,9 @@ export default function WorkspaceTaskDetailPage({
                                 }}
                                 disabled={isFormDisabled}
                               />
-                              <span className={`text-sm flex-1 ${t.isCompleted ? 'line-through text-base-content/50' : ''}`}>
+                              <span
+                                className={`text-sm flex-1 ${t.isCompleted ? 'line-through text-base-content/50' : ''}`}
+                              >
                                 T-{t.sequence}: {t.content.length > 50 ? `${t.content.substring(0, 50)}...` : t.content}
                                 {t.isCompleted && <span className="ml-1 badge badge-sm badge-success">完了</span>}
                               </span>

@@ -710,8 +710,11 @@ export default function CreateWorkspaceTaskModal({
                           }}
                           disabled={isSubmitting || isLoadingPredecessorTasks}
                         />
-                        <span className={`text-sm flex-1 ${task.isCompleted ? 'line-through text-base-content/50' : ''}`}>
-                          T-{task.sequence}: {task.content.length > 50 ? `${task.content.substring(0, 50)}...` : task.content}
+                        <span
+                          className={`text-sm flex-1 ${task.isCompleted ? 'line-through text-base-content/50' : ''}`}
+                        >
+                          T-{task.sequence}:{' '}
+                          {task.content.length > 50 ? `${task.content.substring(0, 50)}...` : task.content}
                           {task.isCompleted && <span className="ml-1 badge badge-sm badge-success">完了</span>}
                         </span>
                       </label>
