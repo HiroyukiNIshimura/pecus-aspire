@@ -46,9 +46,15 @@ function getTaskTypeIconPath(task: FocusTaskResponse) {
  */
 export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
   const taskUrl = `/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}&task=${task.sequence}`;
-  const predecessorUrl = task.predecessorTask
-    ? `/workspaces/${task.workspaceCode}?itemCode=${task.predecessorTask.workspaceItemCode}&task=${task.predecessorTask.sequence}`
-    : null;
+
+  // 先行タスクへのURLを生成するヘルパー関数
+  const getPredecessorUrl = (pred: { workspaceItemCode?: string | null; sequence?: number }) => {
+    if (!pred.workspaceItemCode) return null;
+    return `/workspaces/${task.workspaceCode}?itemCode=${pred.workspaceItemCode}&task=${pred.sequence}`;
+  };
+
+  // 未完了の先行タスクのみフィルタ
+  const incompletePredecessors = (task.predecessorTasks || []).filter((p) => !p.isCompleted);
 
   return (
     <div className="card bg-base-100 border border-warning/30 shadow-sm opacity-75">
@@ -103,8 +109,8 @@ export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
           )}
         </div>
 
-        {/* 先行タスク情報 */}
-        {task.predecessorTask && (
+        {/* 先行タスク情報（複数対応） */}
+        {incompletePredecessors.length > 0 && (
           <div className="mt-3 p-2 bg-warning/10 border border-warning/30 rounded-lg">
             <div className="flex items-start gap-2">
               <span
@@ -112,16 +118,26 @@ export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
                 aria-hidden="true"
               />
               <div className="text-xs flex-1">
-                <p className="font-semibold text-warning mb-1">先行タスクを完了してください</p>
-                <div className="flex items-center gap-2 text-base-content/70">
-                  {predecessorUrl ? (
-                    <a href={predecessorUrl} className="font-medium text-primary underline hover:text-primary/80">
-                      {task.predecessorTask.workspaceItemCode}
-                    </a>
-                  ) : (
-                    <span className="font-medium">{task.predecessorTask.workspaceItemCode}</span>
-                  )}
-                  <span>「{task.predecessorTask.content}」</span>
+                <p className="font-semibold text-warning mb-1">
+                  先行タスクを完了してください
+                  {incompletePredecessors.length > 1 && ` (${incompletePredecessors.length}件)`}
+                </p>
+                <div className="flex flex-col gap-1">
+                  {incompletePredecessors.map((pred) => {
+                    const predUrl = getPredecessorUrl(pred);
+                    return (
+                      <div key={pred.id} className="flex items-center gap-2 text-base-content/70">
+                        {predUrl ? (
+                          <a href={predUrl} className="font-medium text-primary underline hover:text-primary/80">
+                            {pred.workspaceItemCode}
+                          </a>
+                        ) : (
+                          <span className="font-medium">{pred.workspaceItemCode}</span>
+                        )}
+                        <span className="line-clamp-1">「{pred.content}」</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

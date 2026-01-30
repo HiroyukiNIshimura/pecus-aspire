@@ -46,10 +46,10 @@ interface EditableTaskCandidate extends GeneratedTaskCandidate {
   estimatedHours: number | null;
   /** タスクタイプID（編集後） */
   taskTypeId: number | null;
-  /** 先行タスクID（既存タスク）*/
-  predecessorTaskId: number | null;
-  /** 同一バッチ内の先行タスクtempId */
-  predecessorTempId: string | null;
+  /** 先行タスクID配列（既存タスク）*/
+  predecessorTaskIds: number[];
+  /** 同一バッチ内の先行タスクtempId配列 */
+  predecessorTempIds: string[];
 }
 
 interface GenerateTasksModalProps {
@@ -200,11 +200,8 @@ export default function GenerateTasksModal({
         const suggestedStartDate = new Date(baseDate);
         suggestedStartDate.setDate(baseDate.getDate() + (candidate.suggestedStartDayOffset || 0));
 
-        // 先行タスクの解決（AIが返したtempIdから、同一バッチ内の最初の先行タスクを取得）
-        const firstPredecessorTempId =
-          candidate.predecessorTempIds && candidate.predecessorTempIds.length > 0
-            ? candidate.predecessorTempIds[0]
-            : null;
+        // 先行タスクの解決（AIが返したtempId配列をそのまま保持）
+        const predecessorTempIds = candidate.predecessorTempIds || [];
 
         return {
           ...candidate,
@@ -222,8 +219,8 @@ export default function GenerateTasksModal({
           startDate: suggestedStartDate.toISOString().split('T')[0],
           estimatedHours: null,
           taskTypeId: candidate.suggestedTaskTypeId || null,
-          predecessorTaskId: null,
-          predecessorTempId: firstPredecessorTempId,
+          predecessorTaskIds: [],
+          predecessorTempIds,
         };
       });
     },
@@ -382,18 +379,20 @@ export default function GenerateTasksModal({
 
     // BulkTaskItem配列を作成
     const tasks: BulkTaskItem[] = selectedCandidates.map((c) => {
-      // 先行タスクの解決
-      let predecessorIndex: number | null = null;
-      let predecessorTaskId: number | null = null;
+      // 先行タスクの解決（配列対応）
+      const predecessorIndices: number[] = [];
+      const predecessorTaskIds: number[] = [];
 
-      if (c.predecessorTaskId) {
-        // 既存タスクを先行タスクとして指定
-        predecessorTaskId = c.predecessorTaskId;
-      } else if (c.predecessorTempId) {
-        // 同一バッチ内のタスクを先行タスクとして指定
-        const index = tempIdToIndex.get(c.predecessorTempId);
+      // 既存タスクIDの解決
+      for (const predTaskId of c.predecessorTaskIds) {
+        predecessorTaskIds.push(predTaskId);
+      }
+
+      // 同一バッチ内のタスクの解決
+      for (const predTempId of c.predecessorTempIds) {
+        const index = tempIdToIndex.get(predTempId);
         if (index !== undefined) {
-          predecessorIndex = index;
+          predecessorIndices.push(index);
         }
       }
 
@@ -405,8 +404,8 @@ export default function GenerateTasksModal({
         startDate: c.startDate || undefined,
         dueDate: c.dueDate,
         estimatedHours: c.estimatedHours || undefined,
-        predecessorTaskId: predecessorTaskId || undefined,
-        predecessorIndex: predecessorIndex ?? undefined,
+        predecessorTaskIds: predecessorTaskIds.length > 0 ? predecessorTaskIds : undefined,
+        predecessorIndices: predecessorIndices.length > 0 ? predecessorIndices : undefined,
       };
     });
 
@@ -430,20 +429,12 @@ export default function GenerateTasksModal({
   const successorMap = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const candidate of candidates) {
-      // predecessorTempIdを持つタスクを探し、その先行タスクに後続として登録
-      if (candidate.predecessorTempId) {
-        const existing = map.get(candidate.predecessorTempId) || [];
-        existing.push(candidate.tempId);
-        map.set(candidate.predecessorTempId, existing);
-      }
-      // predecessorTempIds（元データ）からも後続を構築
-      if (candidate.predecessorTempIds && candidate.predecessorTempIds.length > 0) {
-        for (const predId of candidate.predecessorTempIds) {
-          const existing = map.get(predId) || [];
-          if (!existing.includes(candidate.tempId)) {
-            existing.push(candidate.tempId);
-            map.set(predId, existing);
-          }
+      // predecessorTempIds配列から後続を構築
+      for (const predId of candidate.predecessorTempIds) {
+        const existing = map.get(predId) || [];
+        if (!existing.includes(candidate.tempId)) {
+          existing.push(candidate.tempId);
+          map.set(predId, existing);
         }
       }
     }
@@ -896,43 +887,39 @@ export default function GenerateTasksModal({
                             )}
                           </div>
 
-                          {/* 先行タスク */}
+                          {/* 先行タスク（複数選択対応） */}
                           <div className="form-control">
                             <label htmlFor={`predecessor-${candidate.tempId}`} className="label">
-                              <span className="label-text font-semibold">先行タスク</span>
+                              <span className="label-text font-semibold">先行タスク（複数選択可）</span>
                             </label>
                             <select
                               id={`predecessor-${candidate.tempId}`}
-                              className="select select-bordered w-full"
-                              value={
-                                candidate.predecessorTaskId
-                                  ? `existing:${candidate.predecessorTaskId}`
-                                  : candidate.predecessorTempId
-                                    ? `batch:${candidate.predecessorTempId}`
-                                    : ''
-                              }
+                              className="select select-bordered w-full min-h-20"
+                              multiple
+                              value={[
+                                ...candidate.predecessorTaskIds.map((id) => `existing:${id}`),
+                                ...candidate.predecessorTempIds.map((id) => `batch:${id}`),
+                              ]}
                               onChange={(e) => {
-                                const value = e.target.value;
-                                if (!value) {
-                                  updateCandidate(candidate.tempId, {
-                                    predecessorTaskId: null,
-                                    predecessorTempId: null,
-                                  });
-                                } else if (value.startsWith('existing:')) {
-                                  updateCandidate(candidate.tempId, {
-                                    predecessorTaskId: Number(value.replace('existing:', '')),
-                                    predecessorTempId: null,
-                                  });
-                                } else if (value.startsWith('batch:')) {
-                                  updateCandidate(candidate.tempId, {
-                                    predecessorTaskId: null,
-                                    predecessorTempId: value.replace('batch:', ''),
-                                  });
+                                const selectedValues = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                                const newPredecessorTaskIds: number[] = [];
+                                const newPredecessorTempIds: string[] = [];
+
+                                for (const value of selectedValues) {
+                                  if (value.startsWith('existing:')) {
+                                    newPredecessorTaskIds.push(Number(value.replace('existing:', '')));
+                                  } else if (value.startsWith('batch:')) {
+                                    newPredecessorTempIds.push(value.replace('batch:', ''));
+                                  }
                                 }
+
+                                updateCandidate(candidate.tempId, {
+                                  predecessorTaskIds: newPredecessorTaskIds,
+                                  predecessorTempIds: newPredecessorTempIds,
+                                });
                               }}
                               disabled={!candidate.isSelected}
                             >
-                              <option value="">なし</option>
                               {/* 既存タスク */}
                               {predecessorTaskOptions.length > 0 && (
                                 <optgroup label="既存タスク">
@@ -966,6 +953,26 @@ export default function GenerateTasksModal({
                                 </optgroup>
                               )}
                             </select>
+                            {(candidate.predecessorTaskIds.length > 0 || candidate.predecessorTempIds.length > 0) && (
+                              <div className="label">
+                                <span className="label-text-alt text-base-content/60">
+                                  {candidate.predecessorTaskIds.length + candidate.predecessorTempIds.length}件選択中
+                                  <button
+                                    type="button"
+                                    className="btn btn-xs btn-link ml-2"
+                                    onClick={() =>
+                                      updateCandidate(candidate.tempId, {
+                                        predecessorTaskIds: [],
+                                        predecessorTempIds: [],
+                                      })
+                                    }
+                                    disabled={!candidate.isSelected}
+                                  >
+                                    クリア
+                                  </button>
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

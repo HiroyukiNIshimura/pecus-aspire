@@ -89,33 +89,39 @@ export default function CreateWorkspaceTaskModal({
   // タスクタイプ状態
   const [taskTypeId, setTaskTypeId] = useState<number | null>(null);
 
-  // 先行タスク状態
-  const [predecessorTaskId, setPredecessorTaskId] = useState<number | null>(null);
+  // 先行タスク状態（複数選択対応）
+  const [predecessorTaskIds, setPredecessorTaskIds] = useState<number[]>([]);
   const [predecessorTaskOptions, setPredecessorTaskOptions] = useState<PredecessorTaskOption[]>([]);
   const [isLoadingPredecessorTasks, setIsLoadingPredecessorTasks] = useState(false);
 
-  // 先行タスクと期限日の整合性チェック（警告用）
-  const predecessorDueDateWarning = useMemo(() => {
-    if (!predecessorTaskId || !dueDate) return null;
+  // 先行タスクと期限日の整合性チェック（警告用・複数対応）
+  const predecessorDueDateWarnings = useMemo(() => {
+    if (!predecessorTaskIds.length || !dueDate) return [];
 
-    const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predecessorTaskId);
-    if (!selectedPredecessor || !selectedPredecessor.dueDate) return null;
-
+    const warnings: string[] = [];
     const newTaskDueDate = new Date(dueDate);
-    const predecessorDueDate = new Date(selectedPredecessor.dueDate);
 
-    // 先行タスクの期限日が新規タスクの期限日より後の場合
-    if (predecessorDueDate > newTaskDueDate) {
-      const predecessorDueDateStr = predecessorDueDate.toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
-      return `先行タスク「T-${selectedPredecessor.sequence}」の期限日（${predecessorDueDateStr}）が、このタスクの期限日よりも後に設定されています。先行タスクが完了する前に期限日が到来する可能性があります。`;
+    for (const predId of predecessorTaskIds) {
+      const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predId);
+      if (!selectedPredecessor || !selectedPredecessor.dueDate) continue;
+
+      const predecessorDueDate = new Date(selectedPredecessor.dueDate);
+
+      // 先行タスクの期限日が新規タスクの期限日より後の場合
+      if (predecessorDueDate > newTaskDueDate) {
+        const predecessorDueDateStr = predecessorDueDate.toLocaleDateString('ja-JP', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
+        warnings.push(
+          `先行タスク「T-${selectedPredecessor.sequence}」の期限日（${predecessorDueDateStr}）が、このタスクの期限日よりも後に設定されています。`,
+        );
+      }
     }
 
-    return null;
-  }, [predecessorTaskId, dueDate, predecessorTaskOptions]);
+    return warnings;
+  }, [predecessorTaskIds, dueDate, predecessorTaskOptions]);
 
   // 担当者負荷チェック
   const [assigneeLoadCheck, setAssigneeLoadCheck] = useState<AssigneeTaskLoadResponse | null>(null);
@@ -187,7 +193,7 @@ export default function CreateWorkspaceTaskModal({
           startDate: toISODateString(data.startDate),
           dueDate: toISODateString(data.dueDate)!,
           estimatedHours: data.estimatedHours || null,
-          predecessorTaskId: predecessorTaskId,
+          predecessorTaskIds: predecessorTaskIds.length > 0 ? predecessorTaskIds : undefined,
         };
 
         const result = await createWorkspaceTask(workspaceId, itemId, requestData);
@@ -321,7 +327,7 @@ export default function CreateWorkspaceTaskModal({
       setDueDate('');
       setEstimatedHours(0);
       setTaskTypeId(null);
-      setPredecessorTaskId(null);
+      setPredecessorTaskIds([]);
       setPredecessorTaskOptions([]);
       setAssigneeLoadCheck(null);
       setAssigneeLoadError(null);
@@ -666,26 +672,67 @@ export default function CreateWorkspaceTaskModal({
               </div>
             </div>
 
-            {/* 先行タスク */}
+            {/* 先行タスク（複数選択対応） */}
             <div className="form-control">
-              <label htmlFor="predecessorTaskId" className="label">
+              <label htmlFor="predecessorTaskIds" className="label">
                 <span className="label-text font-semibold">先行タスク</span>
-                <span className="label-text-alt text-base-content/60">（このタスクが完了しないと着手できない）</span>
+                <span className="label-text-alt text-base-content/60">
+                  （これらのタスクが完了しないと着手できない・複数選択可）
+                </span>
               </label>
-              <select
-                id="predecessorTaskId"
-                className="select select-bordered"
-                value={predecessorTaskId || ''}
-                onChange={(e) => setPredecessorTaskId(e.target.value ? Number(e.target.value) : null)}
-                disabled={isSubmitting || isLoadingPredecessorTasks}
+              <div
+                id="predecessorTaskIds"
+                className="border border-base-300 rounded-lg p-2 max-h-48 overflow-y-auto bg-base-100"
               >
-                <option value="">なし</option>
-                {predecessorTaskOptions.map((task) => (
-                  <option key={task.id} value={task.id}>
-                    T-{task.sequence}: {task.content.length > 40 ? `${task.content.substring(0, 40)}...` : task.content}
-                  </option>
-                ))}
-              </select>
+                {predecessorTaskOptions.length === 0 ? (
+                  <p className="text-base-content/60 text-sm py-2 text-center">
+                    {isLoadingPredecessorTasks ? '' : '選択可能なタスクがありません'}
+                  </p>
+                ) : (
+                  <div className="space-y-1">
+                    {predecessorTaskOptions.map((task) => (
+                      <label
+                        key={task.id}
+                        className={`flex items-start gap-2 p-2 rounded cursor-pointer hover:bg-base-200 transition-colors ${
+                          predecessorTaskIds.includes(task.id) ? 'bg-primary/10' : ''
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="checkbox checkbox-sm checkbox-primary mt-0.5"
+                          checked={predecessorTaskIds.includes(task.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPredecessorTaskIds([...predecessorTaskIds, task.id]);
+                            } else {
+                              setPredecessorTaskIds(predecessorTaskIds.filter((id) => id !== task.id));
+                            }
+                          }}
+                          disabled={isSubmitting || isLoadingPredecessorTasks}
+                        />
+                        <span className={`text-sm flex-1 ${task.isCompleted ? 'line-through text-base-content/50' : ''}`}>
+                          T-{task.sequence}: {task.content.length > 50 ? `${task.content.substring(0, 50)}...` : task.content}
+                          {task.isCompleted && <span className="ml-1 badge badge-sm badge-success">完了</span>}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {predecessorTaskIds.length > 0 && (
+                <div className="label">
+                  <span className="label-text-alt text-base-content/60">
+                    {predecessorTaskIds.length}件選択中
+                    <button
+                      type="button"
+                      className="btn btn-xs btn-secondary ml-2"
+                      onClick={() => setPredecessorTaskIds([])}
+                    >
+                      クリア
+                    </button>
+                  </span>
+                </div>
+              )}
               {isLoadingPredecessorTasks && (
                 <div className="label">
                   <span className="label-text-alt text-base-content/60">
@@ -694,12 +741,14 @@ export default function CreateWorkspaceTaskModal({
                   </span>
                 </div>
               )}
-              {predecessorDueDateWarning && (
-                <div className="label">
-                  <span className="label-text-alt text-warning flex items-start gap-1">
-                    <span className="icon-[mdi--alert-circle-outline] size-4 shrink-0 mt-0.5" aria-hidden="true" />
-                    <span>{predecessorDueDateWarning}</span>
-                  </span>
+              {predecessorDueDateWarnings.length > 0 && (
+                <div className="label flex-col items-start">
+                  {predecessorDueDateWarnings.map((warning) => (
+                    <span key={warning} className="label-text-alt text-warning flex items-start gap-1">
+                      <span className="icon-[mdi--alert-circle-outline] size-4 shrink-0 mt-0.5" aria-hidden="true" />
+                      <span>{warning}</span>
+                    </span>
+                  ))}
                 </div>
               )}
             </div>

@@ -258,26 +258,41 @@ export async function getPredecessorTaskOptions(
 ): Promise<ApiResponse<PredecessorTaskOption[]>> {
   try {
     const api = await createPecusApiClients();
-    // アクティブなタスクを取得（完了・破棄されていないもの）
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-      workspaceId,
-      itemId,
-      1,
-      50, // 最大50件（APIの制限）
-      'Active',
-    );
+    const pageSize = 50; // APIの上限
+    let allTasks: PredecessorTaskOption[] = [];
+    let currentPage = 1;
+    let hasMore = true;
 
-    const tasks: PredecessorTaskOption[] = (response.data || [])
-      .filter((t) => t.id !== excludeTaskId) // 自タスクを除外
-      .map((t) => ({
-        id: t.id,
-        sequence: t.sequence || 0,
-        content: t.content || '',
-        isCompleted: t.isCompleted || false,
-        dueDate: t.dueDate || null,
-      }));
+    // 全ページを取得するまでループ
+    while (hasMore) {
+      const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
+        workspaceId,
+        itemId,
+        currentPage,
+        pageSize,
+        'All', // 全タスク（Active + Completed + Discarded）
+      );
 
-    return { success: true, data: tasks };
+      const pageTasks = (response.data || [])
+        .filter((t) => t.id !== excludeTaskId && !t.isDiscarded) // 自タスクと破棄タスクを除外
+        .map((t) => ({
+          id: t.id,
+          sequence: t.sequence || 0,
+          content: t.content || '',
+          isCompleted: t.isCompleted || false,
+          dueDate: t.dueDate || null,
+        }));
+
+      allTasks = [...allTasks, ...pageTasks];
+
+      // 次のページがあるかチェック
+      const totalCount = response.totalCount || 0;
+      const totalPages = Math.ceil(totalCount / pageSize);
+      hasMore = currentPage < totalPages;
+      currentPage++;
+    }
+
+    return { success: true, data: allTasks };
   } catch (error) {
     console.error('Failed to get predecessor task options:', error);
     return handleApiErrorForAction<PredecessorTaskOption[]>(error, {

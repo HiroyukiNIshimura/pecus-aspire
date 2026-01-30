@@ -113,8 +113,9 @@ export function useTaskFlowGraph(
     // 後続タスクを持つIDを収集（isLeaf判定用）
     const hasSuccessorIds = new Set<number>();
     for (const task of allTasks) {
-      if (task.predecessorTaskId) {
-        hasSuccessorIds.add(task.predecessorTaskId);
+      // 配列形式: predecessorTaskIds
+      for (const predId of task.predecessorTaskIds || []) {
+        hasSuccessorIds.add(predId);
       }
     }
 
@@ -126,7 +127,7 @@ export function useTaskFlowGraph(
       data: {
         task,
         isCriticalPath: criticalPathIds.has(task.id),
-        isRoot: !task.predecessorTaskId,
+        isRoot: !task.predecessorTaskIds?.length,
         isLeaf: !hasSuccessorIds.has(task.id),
         direction,
       },
@@ -135,24 +136,27 @@ export function useTaskFlowGraph(
     // エッジを作成（先行タスク → 自タスク）
     const edges: Edge[] = [];
     for (const task of allTasks) {
-      if (task.predecessorTaskId && allTasksMap.has(task.predecessorTaskId)) {
-        const isCriticalEdge = criticalPathIds.has(task.id) && criticalPathIds.has(task.predecessorTaskId);
+      // 配列形式: 各先行タスクからエッジを作成
+      for (const predId of task.predecessorTaskIds || []) {
+        if (allTasksMap.has(predId)) {
+          const isCriticalEdge = criticalPathIds.has(task.id) && criticalPathIds.has(predId);
 
-        edges.push({
-          id: `e${task.predecessorTaskId}-${task.id}`,
-          source: String(task.predecessorTaskId),
-          target: String(task.id),
-          type: 'smoothstep',
-          animated: !task.isCompleted && !task.isDiscarded,
-          style: {
-            stroke: isCriticalEdge ? '#f87171' : '#94a3b8', // error色 or slate-400
-            strokeWidth: isCriticalEdge ? 2.5 : 1.5,
-          },
-          markerEnd: {
-            type: 'arrowclosed' as const,
-            color: isCriticalEdge ? '#f87171' : '#94a3b8',
-          },
-        });
+          edges.push({
+            id: `e${predId}-${task.id}`,
+            source: String(predId),
+            target: String(task.id),
+            type: 'smoothstep',
+            animated: !task.isCompleted && !task.isDiscarded,
+            style: {
+              stroke: isCriticalEdge ? '#f87171' : '#94a3b8', // error色 or slate-400
+              strokeWidth: isCriticalEdge ? 2.5 : 1.5,
+            },
+            markerEnd: {
+              type: 'arrowclosed' as const,
+              color: isCriticalEdge ? '#f87171' : '#94a3b8',
+            },
+          });
+        }
       }
     }
 

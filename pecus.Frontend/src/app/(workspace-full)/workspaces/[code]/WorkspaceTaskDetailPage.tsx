@@ -226,8 +226,8 @@ export default function WorkspaceTaskDetailPage({
   const [taskTypeId, setTaskTypeId] = useState<number | null>(null);
   const [priority, setPriority] = useState<TaskPriority>('Medium');
 
-  // 先行タスク状態
-  const [predecessorTaskId, setPredecessorTaskId] = useState<number | null>(null);
+  // 先行タスク状態（複数選択対応）
+  const [predecessorTaskIds, setPredecessorTaskIds] = useState<number[]>([]);
   const [predecessorTaskOptions, setPredecessorTaskOptions] = useState<PredecessorTaskOption[]>([]);
 
   // 動的にスキーマを生成（組織設定に基づく）
@@ -236,44 +236,48 @@ export default function WorkspaceTaskDetailPage({
     [requireEstimateOnTaskCreation],
   );
 
-  // 現在選択中の先行タスクが完了していないかどうかを判定
-  // predecessorTaskIdが変更された場合でも、predecessorTaskOptionsから最新の状態を取得
+  // 現在選択中の先行タスクに未完了のものがあるかどうかを判定（複数対応）
   const isPredecessorIncomplete = useMemo(() => {
-    if (!predecessorTaskId) return false;
-    const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predecessorTaskId);
-    // predecessorTaskOptionsに見つからない場合は、元のtask.predecessorTaskを参照
-    if (selectedPredecessor) {
-      return !selectedPredecessor.isCompleted;
-    }
-    // フォールバック：サーバーから取得した元の先行タスク情報を参照
-    if (task?.predecessorTask && task.predecessorTaskId === predecessorTaskId) {
-      return !task.predecessorTask.isCompleted;
-    }
-    return false;
-  }, [predecessorTaskId, predecessorTaskOptions, task?.predecessorTask, task?.predecessorTaskId]);
+    if (!predecessorTaskIds.length) return false;
+    return predecessorTaskIds.some((predId) => {
+      const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predId);
+      if (selectedPredecessor) {
+        return !selectedPredecessor.isCompleted;
+      }
+      // フォールバック：サーバーから取得した元の先行タスク情報を参照
+      const origPred = task?.predecessorTasks?.find((p) => p.id === predId);
+      return origPred ? !origPred.isCompleted : false;
+    });
+  }, [predecessorTaskIds, predecessorTaskOptions, task?.predecessorTasks]);
 
-  // 先行タスクと期限日の整合性チェック（警告用）
-  const predecessorDueDateWarning = useMemo(() => {
-    if (!predecessorTaskId || !dueDate) return null;
+  // 先行タスクと期限日の整合性チェック（警告用・複数対応）
+  const predecessorDueDateWarnings = useMemo(() => {
+    if (!predecessorTaskIds.length || !dueDate) return [];
 
-    const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predecessorTaskId);
-    if (!selectedPredecessor || !selectedPredecessor.dueDate) return null;
-
+    const warnings: string[] = [];
     const taskDueDate = new Date(dueDate);
-    const predecessorDueDate = new Date(selectedPredecessor.dueDate);
 
-    // 先行タスクの期限日がこのタスクの期限日より後の場合
-    if (predecessorDueDate > taskDueDate) {
-      const predecessorDueDateStr = predecessorDueDate.toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
-      return `先行タスク「T-${selectedPredecessor.sequence}」の期限日（${predecessorDueDateStr}）が、このタスクの期限日よりも後に設定されています。先行タスクが完了する前に期限日が到来する可能性があります。`;
+    for (const predId of predecessorTaskIds) {
+      const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predId);
+      if (!selectedPredecessor || !selectedPredecessor.dueDate) continue;
+
+      const predecessorDueDate = new Date(selectedPredecessor.dueDate);
+
+      // 先行タスクの期限日がこのタスクの期限日より後の場合
+      if (predecessorDueDate > taskDueDate) {
+        const predecessorDueDateStr = predecessorDueDate.toLocaleDateString('ja-JP', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
+        warnings.push(
+          `先行タスク「T-${selectedPredecessor.sequence}」の期限日（${predecessorDueDateStr}）が、このタスクの期限日よりも後に設定されています。`,
+        );
+      }
     }
 
-    return null;
-  }, [predecessorTaskId, dueDate, predecessorTaskOptions]);
+    return warnings;
+  }, [predecessorTaskIds, dueDate, predecessorTaskOptions]);
 
   const effectiveCurrentUserId = currentUser?.id ?? 0;
   effectiveCurrentUserIdRef.current = effectiveCurrentUserId;
@@ -394,8 +398,8 @@ export default function WorkspaceTaskDetailPage({
     setTaskTypeId(taskData.taskTypeId || null);
     setPriority(taskData.priority || 'Medium');
 
-    // 先行タスク
-    setPredecessorTaskId(taskData.predecessorTaskId || null);
+    // 先行タスク（配列）
+    setPredecessorTaskIds(taskData.predecessorTaskIds || []);
   }, []);
 
   // タスクと先行タスク候補を並列で取得
@@ -745,8 +749,8 @@ export default function WorkspaceTaskDetailPage({
           isCompleted: data.isCompleted || false,
           isDiscarded: data.isDiscarded || false,
           discardReason: data.isDiscarded ? data.discardReason : null,
-          predecessorTaskId: predecessorTaskId,
-          clearPredecessorTask: predecessorTaskId === null && task.predecessorTaskId !== null,
+          predecessorTaskIds: predecessorTaskIds.length > 0 ? predecessorTaskIds : undefined,
+          clearPredecessorTasks: predecessorTaskIds.length === 0 && (task.predecessorTaskIds?.length ?? 0) > 0,
           rowVersion: task.rowVersion,
         };
 
@@ -1329,55 +1333,101 @@ export default function WorkspaceTaskDetailPage({
                     </div>
                   </div>
 
-                  {/* 先行タスク */}
+                  {/* 先行タスク（複数選択対応） */}
                   <div className="form-control">
-                    <label htmlFor="predecessorTaskId" className="label">
+                    <label htmlFor="predecessorTaskIds" className="label">
                       <span className="label-text font-semibold">先行タスク</span>
                       {(() => {
-                        // 現在選択中の先行タスクのシーケンス番号を取得
-                        const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predecessorTaskId);
-                        const predecessorSequence = selectedPredecessor?.sequence ?? task?.predecessorTask?.sequence;
-                        if (predecessorSequence && onNavigateToTask) {
-                          return (
-                            <button
-                              type="button"
-                              className="link link-primary text-sm ml-2"
-                              onClick={() => onNavigateToTask(predecessorSequence)}
-                              title={`先行タスク T-${predecessorSequence} を表示`}
-                            >
-                              T-{predecessorSequence} を表示
-                            </button>
-                          );
+                        // 選択中の先行タスクへのリンクを表示（最初の1件のみ）
+                        if (predecessorTaskIds.length > 0 && onNavigateToTask) {
+                          const firstPredId = predecessorTaskIds[0];
+                          const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === firstPredId);
+                          const predecessorSequence =
+                            selectedPredecessor?.sequence ??
+                            task?.predecessorTasks?.find((p) => p.id === firstPredId)?.sequence;
+                          if (predecessorSequence) {
+                            return (
+                              <button
+                                type="button"
+                                className="link link-primary text-sm ml-2"
+                                onClick={() => onNavigateToTask(predecessorSequence)}
+                                title={`先行タスク T-${predecessorSequence} を表示`}
+                              >
+                                T-{predecessorSequence} を表示
+                                {predecessorTaskIds.length > 1 && ` (他${predecessorTaskIds.length - 1}件)`}
+                              </button>
+                            );
+                          }
                         }
                         return null;
                       })()}
                       <span className="label-text-alt text-base-content/60">
-                        （このタスクが完了しないと着手できない）
+                        （これらのタスクが完了しないと着手できない・複数選択可）
                       </span>
                     </label>
-                    <select
-                      id="predecessorTaskId"
-                      className="select select-bordered"
-                      value={predecessorTaskId || ''}
-                      onChange={(e) => setPredecessorTaskId(e.target.value ? Number(e.target.value) : null)}
-                      disabled={isFormDisabled}
+                    <div
+                      id="predecessorTaskIds"
+                      className="border border-base-300 rounded-lg p-2 max-h-48 overflow-y-auto bg-base-100"
                     >
-                      <option value="">なし</option>
-                      {predecessorTaskOptions.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          T-{t.sequence}: {t.content.length > 40 ? `${t.content.substring(0, 40)}...` : t.content}
-                        </option>
-                      ))}
-                    </select>
-                    {predecessorDueDateWarning && (
+                      {predecessorTaskOptions.length === 0 ? (
+                        <p className="text-base-content/60 text-sm py-2 text-center">選択可能なタスクがありません</p>
+                      ) : (
+                        <div className="space-y-1">
+                          {predecessorTaskOptions.map((t) => (
+                            <label
+                              key={t.id}
+                              className={`flex items-start gap-2 p-2 rounded cursor-pointer hover:bg-base-200 transition-colors ${
+                                predecessorTaskIds.includes(t.id) ? 'bg-primary/10' : ''
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                className="checkbox checkbox-sm checkbox-primary mt-0.5"
+                                checked={predecessorTaskIds.includes(t.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setPredecessorTaskIds([...predecessorTaskIds, t.id]);
+                                  } else {
+                                    setPredecessorTaskIds(predecessorTaskIds.filter((id) => id !== t.id));
+                                  }
+                                }}
+                                disabled={isFormDisabled}
+                              />
+                              <span className={`text-sm flex-1 ${t.isCompleted ? 'line-through text-base-content/50' : ''}`}>
+                                T-{t.sequence}: {t.content.length > 50 ? `${t.content.substring(0, 50)}...` : t.content}
+                                {t.isCompleted && <span className="ml-1 badge badge-sm badge-success">完了</span>}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {predecessorTaskIds.length > 0 && (
                       <div className="label">
-                        <span className="label-text-alt text-warning flex items-start gap-1">
-                          <span
-                            className="icon-[mdi--alert-circle-outline] size-4 shrink-0 mt-0.5"
-                            aria-hidden="true"
-                          />
-                          <span>{predecessorDueDateWarning}</span>
+                        <span className="label-text-alt text-base-content/60">
+                          {predecessorTaskIds.length}件選択中
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-secondary ml-2"
+                            onClick={() => setPredecessorTaskIds([])}
+                            disabled={isFormDisabled}
+                          >
+                            クリア
+                          </button>
                         </span>
+                      </div>
+                    )}
+                    {predecessorDueDateWarnings.length > 0 && (
+                      <div className="label flex-col items-start">
+                        {predecessorDueDateWarnings.map((warning) => (
+                          <span key={warning} className="label-text-alt text-warning flex items-start gap-1">
+                            <span
+                              className="icon-[mdi--alert-circle-outline] size-4 shrink-0 mt-0.5"
+                              aria-hidden="true"
+                            />
+                            <span>{warning}</span>
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>

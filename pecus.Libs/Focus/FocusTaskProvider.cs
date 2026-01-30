@@ -123,16 +123,19 @@ public class FocusTaskProvider : IFocusTaskProvider
 
         // 後続タスク数をカウント（配列内に自身のIDを含むタスクをカウント）
         var taskIds = tasks.Select(t => t.Id).ToList();
-        var successorCounts = await _context.WorkspaceTasks
+        // EF Core が PostgreSQL 配列の SelectMany を SQL に変換できないため、2段階で処理
+        var successorTasksForCount = await _context.WorkspaceTasks
             .Where(t => t.PredecessorTaskIds.Length > 0
                 && t.PredecessorTaskIds.Any(pid => taskIds.Contains(pid))
                 && !t.IsCompleted
                 && !t.IsDiscarded)
-            .SelectMany(t => t.PredecessorTaskIds)
+            .Select(t => t.PredecessorTaskIds)
+            .ToListAsync(cancellationToken);
+        var successorCounts = successorTasksForCount
+            .SelectMany(pids => pids)
             .Where(pid => taskIds.Contains(pid))
             .GroupBy(pid => pid)
-            .Select(g => new { TaskId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.TaskId, x => x.Count, cancellationToken);
+            .ToDictionary(g => g.Key, g => g.Count());
 
         // 先行タスクIDをすべて収集
         var allPredecessorIds = tasks
@@ -277,33 +280,37 @@ public class FocusTaskProvider : IFocusTaskProvider
 
         // 後続タスク数をカウント（配列内に自身のIDを含むタスクをカウント）
         var taskIds = tasks.Select(t => t.Id).ToList();
-        var successorCounts = await _context.WorkspaceTasks
+        // EF Core が PostgreSQL 配列の SelectMany を SQL に変換できないため、2段階で処理
+        var successorTasksForCount = await _context.WorkspaceTasks
             .Where(t => t.PredecessorTaskIds.Length > 0
                 && t.PredecessorTaskIds.Any(pid => taskIds.Contains(pid))
                 && !t.IsCompleted
                 && !t.IsDiscarded)
-            .SelectMany(t => t.PredecessorTaskIds)
+            .Select(t => t.PredecessorTaskIds)
+            .ToListAsync(cancellationToken);
+        var successorCounts = successorTasksForCount
+            .SelectMany(pids => pids)
             .Where(pid => taskIds.Contains(pid))
             .GroupBy(pid => pid)
-            .Select(g => new { TaskId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.TaskId, x => x.Count, cancellationToken);
+            .ToDictionary(g => g.Key, g => g.Count());
 
         // 後続タスクの先頭1件を取得（配列内に自身のIDを含むタスク）
-        var firstSuccessors = await _context.WorkspaceTasks
+        // EF Core が PostgreSQL 配列の SelectMany を SQL に変換できないため、2段階で処理
+        var successorTasksRaw = await _context.WorkspaceTasks
             .Include(t => t.WorkspaceItem)
             .Where(t => t.PredecessorTaskIds.Length > 0
                 && t.PredecessorTaskIds.Any(pid => taskIds.Contains(pid))
                 && !t.IsCompleted
                 && !t.IsDiscarded)
+            .ToListAsync(cancellationToken);
+        var firstSuccessors = successorTasksRaw
             .SelectMany(t => t.PredecessorTaskIds.Select(pid => new { PredecessorId = pid, Successor = t }))
             .Where(x => taskIds.Contains(x.PredecessorId))
             .GroupBy(x => x.PredecessorId)
-            .Select(g => new
-            {
-                PredecessorTaskId = g.Key,
-                FirstSuccessor = g.OrderBy(x => x.Successor.Id).First().Successor
-            })
-            .ToDictionaryAsync(x => x.PredecessorTaskId, x => x.FirstSuccessor, cancellationToken);
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderBy(x => x.Successor.Id).First().Successor
+            );
 
         // 先行タスクIDをすべて収集
         var allPredecessorIds = tasks
