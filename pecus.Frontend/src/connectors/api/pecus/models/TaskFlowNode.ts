@@ -57,9 +57,9 @@ export type TaskFlowNode = {
      */
     canStart: boolean;
     /**
-     * 先行タスクID
+     * 先行タスクID配列
      */
-    predecessorTaskId?: number | null;
+    predecessorTaskIds?: Array<number>;
     predecessorTask?: TaskFlowPredecessorInfo;
     /**
      * 後続タスク数

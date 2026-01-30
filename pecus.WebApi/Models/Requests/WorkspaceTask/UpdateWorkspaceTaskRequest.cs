@@ -76,15 +76,15 @@ public class UpdateWorkspaceTaskRequest
     public string? DiscardReason { get; set; }
 
     /// <summary>
-    /// 先行タスクID（このタスクが完了しないと着手できない）
-    /// nullを設定すると先行タスクを解除
+    /// 先行タスクID配列（これらのタスクがすべて完了しないと着手できない）
+    /// nullの場合は変更なし、空配列の場合は先行タスクを解除
     /// </summary>
-    public int? PredecessorTaskId { get; set; }
+    public int[]? PredecessorTaskIds { get; set; }
 
     /// <summary>
-    /// 先行タスクを解除するかどうか（trueの場合、PredecessorTaskIdをnullに設定）
+    /// 先行タスクを解除するかどうか（trueの場合、PredecessorTaskIdsを空配列に設定）
     /// </summary>
-    public bool ClearPredecessorTask { get; set; } = false;
+    public bool ClearPredecessorTasks { get; set; } = false;
 
     /// <summary>
     /// 楽観的ロック用のRowVersion（必須）

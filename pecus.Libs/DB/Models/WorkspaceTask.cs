@@ -115,9 +115,10 @@ public class WorkspaceTask
     public string? DiscardReason { get; set; }
 
     /// <summary>
-    /// 先行タスクID（このタスクが完了しないと着手できない）
+    /// 先行タスクID配列（これらのタスクがすべて完了しないと着手できない）
+    /// PostgreSQL integer[] 配列型
     /// </summary>
-    public int? PredecessorTaskId { get; set; }
+    public int[] PredecessorTaskIds { get; set; } = [];
 
     /// <summary>
     /// 作成日時
@@ -182,17 +183,6 @@ public class WorkspaceTask
     /// 添付ファイル
     /// </summary>
     public ICollection<WorkspaceItemAttachment> Attachments { get; set; } = new List<WorkspaceItemAttachment>();
-
-    /// <summary>
-    /// 先行タスク
-    /// </summary>
-    [ForeignKey(nameof(PredecessorTaskId))]
-    public WorkspaceTask? PredecessorTask { get; set; }
-
-    /// <summary>
-    /// このタスクを先行タスクとしている後続タスク
-    /// </summary>
-    public ICollection<WorkspaceTask> SuccessorTasks { get; set; } = new List<WorkspaceTask>();
 
     /// <summary>
     /// 楽観的ロック用バージョン番号（PostgreSQL の xmin システムカラム）

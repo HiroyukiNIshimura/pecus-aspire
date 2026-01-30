@@ -117,10 +117,13 @@ export type WorkspaceTaskDetailResponse = {
      */
     commentTypeCounts?: Record<string, number>;
     /**
-     * 先行タスクID（このタスクが完了しないと着手できない）
+     * 先行タスクID配列（これらのタスクがすべて完了しないと着手できない）
      */
-    predecessorTaskId?: number | null;
-    predecessorTask?: PredecessorTaskInfo;
+    predecessorTaskIds?: Array<number>;
+    /**
+     * 先行タスク情報リスト
+     */
+    predecessorTasks?: Array<PredecessorTaskInfo>;
     /**
      * このタスクを待っている後続タスク数
      */

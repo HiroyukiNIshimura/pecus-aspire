@@ -1502,7 +1502,7 @@ public partial class DeveloperAtoms : BaseSeedAtoms
                         var predecessorId = assigneeTasks[i - 1];
                         var taskId = assigneeTasks[i];
 
-                        updateStatements.Add($"UPDATE \"WorkspaceTasks\" SET \"PredecessorTaskId\" = {predecessorId} WHERE \"Id\" = {taskId}");
+                        updateStatements.Add($"UPDATE \"WorkspaceTasks\" SET \"PredecessorTaskIds\" = ARRAY[{predecessorId}] WHERE \"Id\" = {taskId}");
                         predecessorsSet++;
 
                         // バッチ実行（1000件ごと）

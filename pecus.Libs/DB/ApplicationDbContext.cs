@@ -886,8 +886,9 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wt => wt.DueDate);
             entity.HasIndex(wt => wt.Priority);
             entity.HasIndex(wt => wt.TaskTypeId);
-            // 先行タスクで「このタスクを待っているタスク一覧」を高速検索
-            entity.HasIndex(wt => wt.PredecessorTaskId);
+            // 先行タスク配列検索用 GIN インデックス
+            entity.HasIndex(wt => wt.PredecessorTaskIds)
+                .HasAnnotation("Npgsql:IndexMethod", "gin");
             // 複合インデックス（頻繁な検索パターン用）
             entity.HasIndex(wt => new { wt.AssignedUserId, wt.IsCompleted });
             entity.HasIndex(wt => new { wt.WorkspaceId, wt.IsCompleted });
@@ -899,17 +900,10 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wt => new { wt.OrganizationId, wt.CreatedAt });
             entity.HasIndex(wt => new { wt.OrganizationId, wt.CompletedAt });
 
-            // 先行タスクの自己参照外部キー
-            entity
-                .HasOne(wt => wt.PredecessorTask)
-                .WithMany(wt => wt.SuccessorTasks)
-                .HasForeignKey(wt => wt.PredecessorTaskId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // 循環参照防止: PredecessorTaskId != Id
+            // 自己参照防止: PredecessorTaskIds に自身の Id を含んではならない
             entity.ToTable(t => t.HasCheckConstraint(
                 "CK_WorkspaceTask_NoSelfReference",
-                "\"PredecessorTaskId\" IS NULL OR \"PredecessorTaskId\" != \"Id\""));
+                "NOT (\"Id\" = ANY(\"PredecessorTaskIds\"))"));
         });
 
         // TaskCommentエンティティの設定

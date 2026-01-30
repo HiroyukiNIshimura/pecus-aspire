@@ -630,37 +630,40 @@ public class WorkspaceTaskController : BaseSecureController
         {
             var taskItem = request.Tasks[i];
 
-            // PredecessorTaskIdとPredecessorIndexの両方が指定されている場合はエラー
-            if (taskItem.PredecessorTaskId.HasValue && taskItem.PredecessorIndex.HasValue)
+            // PredecessorTaskIdsとPredecessorIndicesの両方が指定されている場合はエラー
+            if ((taskItem.PredecessorTaskIds?.Length > 0) && (taskItem.PredecessorIndices?.Length > 0))
             {
                 throw new InvalidOperationException(
-                    $"タスク {i + 1}: PredecessorTaskIdとPredecessorIndexは同時に指定できません。");
+                    $"タスク {i + 1}: PredecessorTaskIdsとPredecessorIndicesは同時に指定できません。");
             }
 
-            // 先行タスクIDの解決
-            int? predecessorTaskId = null;
+            // 先行タスクID配列の解決
+            var predecessorTaskIds = new List<int>();
 
-            if (taskItem.PredecessorTaskId.HasValue)
+            if (taskItem.PredecessorTaskIds?.Length > 0)
             {
                 // 既存タスクを先行タスクとして指定
-                predecessorTaskId = taskItem.PredecessorTaskId.Value;
+                predecessorTaskIds.AddRange(taskItem.PredecessorTaskIds);
             }
-            else if (taskItem.PredecessorIndex.HasValue)
+            else if (taskItem.PredecessorIndices?.Length > 0)
             {
                 // 同一リクエスト内の参照
-                if (taskItem.PredecessorIndex.Value >= i)
+                foreach (var predecessorIndex in taskItem.PredecessorIndices)
                 {
-                    throw new InvalidOperationException(
-                        $"タスク {i + 1} の先行タスクインデックス {taskItem.PredecessorIndex.Value} は自身より前のタスクを指定する必要があります。");
-                }
+                    if (predecessorIndex >= i)
+                    {
+                        throw new InvalidOperationException(
+                            $"タスク {i + 1} の先行タスクインデックス {predecessorIndex} は自身より前のタスクを指定する必要があります。");
+                    }
 
-                if (!createdTaskIds.TryGetValue(taskItem.PredecessorIndex.Value, out var resolvedPredecessorId))
-                {
-                    throw new InvalidOperationException(
-                        $"タスク {i + 1} の先行タスクインデックス {taskItem.PredecessorIndex.Value} が見つかりません。");
-                }
+                    if (!createdTaskIds.TryGetValue(predecessorIndex, out var resolvedPredecessorId))
+                    {
+                        throw new InvalidOperationException(
+                            $"タスク {i + 1} の先行タスクインデックス {predecessorIndex} が見つかりません。");
+                    }
 
-                predecessorTaskId = resolvedPredecessorId;
+                    predecessorTaskIds.Add(resolvedPredecessorId);
+                }
             }
 
             // CreateWorkspaceTaskRequestに変換
@@ -675,7 +678,7 @@ public class WorkspaceTaskController : BaseSecureController
                     : null,
                 DueDate = new DateTimeOffset(taskItem.DueDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
                 EstimatedHours = taskItem.EstimatedHours,
-                PredecessorTaskId = predecessorTaskId
+                PredecessorTaskIds = predecessorTaskIds.Count > 0 ? predecessorTaskIds.ToArray() : null
             };
 
             var task = await _workspaceTaskService.CreateWorkspaceTaskAsync(
@@ -761,15 +764,8 @@ public class WorkspaceTaskController : BaseSecureController
             UpdatedAt = task.UpdatedAt,
             CommentCount = commentCount,
             CommentTypeCounts = commentTypeCounts ?? new Dictionary<TaskCommentType, int>(),
-            PredecessorTaskId = task.PredecessorTaskId,
-            PredecessorTask = task.PredecessorTask != null ? new PredecessorTaskInfo
-            {
-                Id = task.PredecessorTask.Id,
-                Sequence = task.PredecessorTask.Sequence,
-                Content = task.PredecessorTask.Content,
-                IsCompleted = task.PredecessorTask.IsCompleted,
-                WorkspaceItemCode = null  // 一覧では不要
-            } : null,
+            PredecessorTaskIds = task.PredecessorTaskIds,
+            PredecessorTasks = [], // 一覧では先行タスク詳細は不要
             RowVersion = task.RowVersion,
         };
     }

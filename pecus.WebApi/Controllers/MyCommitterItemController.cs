@@ -277,15 +277,8 @@ public class MyCommitterItemController : BaseSecureController
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
             CommentCount = commentCount,
-            PredecessorTaskId = task.PredecessorTaskId,
-            PredecessorTask = task.PredecessorTask != null ? new PredecessorTaskInfo
-            {
-                Id = task.PredecessorTask.Id,
-                Sequence = task.PredecessorTask.Sequence,
-                Content = task.PredecessorTask.Content,
-                IsCompleted = task.PredecessorTask.IsCompleted,
-                WorkspaceItemCode = null
-            } : null,
+            PredecessorTaskIds = task.PredecessorTaskIds,
+            PredecessorTasks = [],
             RowVersion = task.RowVersion,
         };
     }

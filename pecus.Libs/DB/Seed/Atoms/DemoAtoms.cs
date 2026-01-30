@@ -873,7 +873,7 @@ public class DemoAtoms
             var predecessorIndex = taskPhases[i].PredecessorIndex;
             if (predecessorIndex.HasValue && predecessorIndex.Value >= 0 && predecessorIndex.Value < tasks.Count)
             {
-                tasks[i].PredecessorTaskId = tasks[predecessorIndex.Value].Id;
+                tasks[i].PredecessorTaskIds = [tasks[predecessorIndex.Value].Id];
                 hasUpdates = true;
             }
         }

@@ -64,15 +64,14 @@ public class BulkTaskItem
     public decimal? EstimatedHours { get; set; }
 
     /// <summary>
-    /// 既存タスクを先行タスクとして指定する場合のタスクID
-    /// PredecessorIndexとの併用不可（どちらか一方のみ指定）
+    /// 既存タスクを先行タスクとして指定する場合のタスクID配列
+    /// PredecessorIndicesとの併用不可（どちらか一方のみ指定）
     /// </summary>
-    public int? PredecessorTaskId { get; set; }
+    public int[]? PredecessorTaskIds { get; set; }
 
     /// <summary>
-    /// 同一リクエスト内での先行タスクのインデックス（0始まり）
-    /// PredecessorTaskIdとの併用不可（どちらか一方のみ指定）
+    /// 同一リクエスト内での先行タスクのインデックス配列（0始まり）
+    /// PredecessorTaskIdsとの併用不可（どちらか一方のみ指定）
     /// </summary>
-    [Range(0, int.MaxValue, ErrorMessage = "先行タスクインデックスは0以上で指定してください。")]
-    public int? PredecessorIndex { get; set; }
+    public int[]? PredecessorIndices { get; set; }
 }

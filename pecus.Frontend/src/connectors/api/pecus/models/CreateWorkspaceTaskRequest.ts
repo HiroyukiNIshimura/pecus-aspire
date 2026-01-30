@@ -33,8 +33,8 @@ export type CreateWorkspaceTaskRequest = {
      */
     estimatedHours?: number | null;
     /**
-     * 先行タスクID（このタスクが完了しないと着手できない）
+     * 先行タスクID配列（これらのタスクがすべて完了しないと着手できない）
      */
-    predecessorTaskId?: number | null;
+    predecessorTaskIds?: Array<number> | null;
 };
 

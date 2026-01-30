@@ -84,7 +84,14 @@ export type FocusTaskResponse = {
      */
     successorCount: number;
     successorTask?: SuccessorTaskInfo;
-    predecessorTask?: PredecessorTaskInfo;
+    /**
+     * 先行タスクIDの配列
+     */
+    predecessorTaskIds?: Array<number>;
+    /**
+     * 先行タスク情報リスト
+     */
+    predecessorTasks?: Array<PredecessorTaskInfo>;
     scoreDetail?: TaskScoreDetail;
 };
 

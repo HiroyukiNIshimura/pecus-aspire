@@ -58,6 +58,11 @@ public interface IFocusTaskProvider
 }
 
 /// <summary>
+/// 先行タスク情報（内部用）
+/// </summary>
+file sealed record PredecessorInfo(int Id, bool IsCompleted, string? Content, string? ItemCode);
+
+/// <summary>
 /// やることリストのタスク取得サービス実装
 /// </summary>
 public class FocusTaskProvider : IFocusTaskProvider
@@ -95,8 +100,6 @@ public class FocusTaskProvider : IFocusTaskProvider
             .Include(t => t.WorkspaceItem)
                 .ThenInclude(i => i.Workspace)
             .Include(t => t.TaskType)
-            .Include(t => t.PredecessorTask!)
-                .ThenInclude(p => p.WorkspaceItem)
             .Where(t => t.AssignedUserId == userId
                 && !t.IsCompleted
                 && !t.IsDiscarded
@@ -118,16 +121,32 @@ public class FocusTaskProvider : IFocusTaskProvider
             };
         }
 
-        // 後続タスク数をカウント
+        // 後続タスク数をカウント（配列内に自身のIDを含むタスクをカウント）
         var taskIds = tasks.Select(t => t.Id).ToList();
         var successorCounts = await _context.WorkspaceTasks
-            .Where(t => t.PredecessorTaskId != null
-                && taskIds.Contains(t.PredecessorTaskId.Value)
+            .Where(t => t.PredecessorTaskIds.Length > 0
+                && t.PredecessorTaskIds.Any(pid => taskIds.Contains(pid))
                 && !t.IsCompleted
                 && !t.IsDiscarded)
-            .GroupBy(t => t.PredecessorTaskId!.Value)
+            .SelectMany(t => t.PredecessorTaskIds)
+            .Where(pid => taskIds.Contains(pid))
+            .GroupBy(pid => pid)
             .Select(g => new { TaskId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.TaskId, x => x.Count, cancellationToken);
+
+        // 先行タスクIDをすべて収集
+        var allPredecessorIds = tasks
+            .SelectMany(t => t.PredecessorTaskIds)
+            .Distinct()
+            .ToList();
+
+        // 先行タスクの完了状態を一括取得
+        var predecessorCompletionMap = allPredecessorIds.Count > 0
+            ? await _context.WorkspaceTasks
+                .Where(t => allPredecessorIds.Contains(t.Id))
+                .Select(t => new PredecessorInfo(t.Id, t.IsCompleted, t.Content, t.WorkspaceItem.Code))
+                .ToDictionaryAsync(x => x.Id, cancellationToken)
+            : new Dictionary<int, PredecessorInfo>();
 
         // タスクをスコアリング
         var scoredTasks = tasks.Select(task =>
@@ -141,7 +160,26 @@ public class FocusTaskProvider : IFocusTaskProvider
                 deadlineWeight,
                 successorImpactWeight
             );
-            var canStart = task.PredecessorTask == null || task.PredecessorTask.IsCompleted;
+
+            // 着手可能判定: 先行タスクがない、または全ての先行タスクが完了済み
+            var canStart = task.PredecessorTaskIds.Length == 0
+                || task.PredecessorTaskIds.All(pid =>
+                    predecessorCompletionMap.TryGetValue(pid, out var pred) && pred.IsCompleted);
+
+            // 先行タスク情報（最初の未完了先行タスクを表示用に取得）
+            string? predecessorItemCode = null;
+            string? predecessorContent = null;
+            if (!canStart && task.PredecessorTaskIds.Length > 0)
+            {
+                var blockingPredecessor = task.PredecessorTaskIds
+                    .Select(pid => predecessorCompletionMap.TryGetValue(pid, out var p) ? p : null)
+                    .FirstOrDefault(p => p != null && !p.IsCompleted);
+                if (blockingPredecessor != null)
+                {
+                    predecessorItemCode = blockingPredecessor.ItemCode;
+                    predecessorContent = blockingPredecessor.Content;
+                }
+            }
 
             return new FocusTaskInfo
             {
@@ -162,8 +200,8 @@ public class FocusTaskProvider : IFocusTaskProvider
                 TotalScore = totalScore,
                 SuccessorCount = successorCount,
                 CanStart = canStart,
-                PredecessorItemCode = task.PredecessorTask?.WorkspaceItem.Code,
-                PredecessorContent = task.PredecessorTask?.Content
+                PredecessorItemCode = predecessorItemCode,
+                PredecessorContent = predecessorContent
             };
         }).ToList();
 
@@ -216,8 +254,6 @@ public class FocusTaskProvider : IFocusTaskProvider
                 .ThenInclude(i => i.Workspace)
                     .ThenInclude(w => w!.Genre)
             .Include(t => t.TaskType)
-            .Include(t => t.PredecessorTask!)
-                .ThenInclude(p => p.WorkspaceItem)
             .Where(t => t.AssignedUserId == userId
                 && !t.IsCompleted
                 && !t.IsDiscarded
@@ -239,31 +275,49 @@ public class FocusTaskProvider : IFocusTaskProvider
             };
         }
 
-        // 後続タスク数をカウント
+        // 後続タスク数をカウント（配列内に自身のIDを含むタスクをカウント）
         var taskIds = tasks.Select(t => t.Id).ToList();
         var successorCounts = await _context.WorkspaceTasks
-            .Where(t => t.PredecessorTaskId != null
-                && taskIds.Contains(t.PredecessorTaskId.Value)
+            .Where(t => t.PredecessorTaskIds.Length > 0
+                && t.PredecessorTaskIds.Any(pid => taskIds.Contains(pid))
                 && !t.IsCompleted
                 && !t.IsDiscarded)
-            .GroupBy(t => t.PredecessorTaskId!.Value)
+            .SelectMany(t => t.PredecessorTaskIds)
+            .Where(pid => taskIds.Contains(pid))
+            .GroupBy(pid => pid)
             .Select(g => new { TaskId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.TaskId, x => x.Count, cancellationToken);
 
-        // 後続タスクの先頭1件を取得
+        // 後続タスクの先頭1件を取得（配列内に自身のIDを含むタスク）
         var firstSuccessors = await _context.WorkspaceTasks
             .Include(t => t.WorkspaceItem)
-            .Where(t => t.PredecessorTaskId != null
-                && taskIds.Contains(t.PredecessorTaskId.Value)
+            .Where(t => t.PredecessorTaskIds.Length > 0
+                && t.PredecessorTaskIds.Any(pid => taskIds.Contains(pid))
                 && !t.IsCompleted
                 && !t.IsDiscarded)
-            .GroupBy(t => t.PredecessorTaskId!.Value)
+            .SelectMany(t => t.PredecessorTaskIds.Select(pid => new { PredecessorId = pid, Successor = t }))
+            .Where(x => taskIds.Contains(x.PredecessorId))
+            .GroupBy(x => x.PredecessorId)
             .Select(g => new
             {
                 PredecessorTaskId = g.Key,
-                FirstSuccessor = g.OrderBy(t => t.Id).First()
+                FirstSuccessor = g.OrderBy(x => x.Successor.Id).First().Successor
             })
             .ToDictionaryAsync(x => x.PredecessorTaskId, x => x.FirstSuccessor, cancellationToken);
+
+        // 先行タスクIDをすべて収集
+        var allPredecessorIds = tasks
+            .SelectMany(t => t.PredecessorTaskIds)
+            .Distinct()
+            .ToList();
+
+        // 先行タスクの完了状態を一括取得
+        var predecessorCompletionMap = allPredecessorIds.Count > 0
+            ? await _context.WorkspaceTasks
+                .Where(t => allPredecessorIds.Contains(t.Id))
+                .Select(t => new { t.Id, t.IsCompleted })
+                .ToDictionaryAsync(x => x.Id, x => x.IsCompleted, cancellationToken)
+            : new Dictionary<int, bool>();
 
         // タスクをスコアリング
         var scoredTasks = tasks.Select(task =>
@@ -284,7 +338,10 @@ public class FocusTaskProvider : IFocusTaskProvider
                 successorImpactWeight
             );
 
-            var canStart = task.PredecessorTask == null || task.PredecessorTask.IsCompleted;
+            // 着手可能判定: 先行タスクがない、または全ての先行タスクが完了済み
+            var canStart = task.PredecessorTaskIds.Length == 0
+                || task.PredecessorTaskIds.All(pid =>
+                    predecessorCompletionMap.TryGetValue(pid, out var isCompleted) && isCompleted);
 
             return new FocusTaskDetailInfo
             {
@@ -362,7 +419,7 @@ public class FocusTaskProvider : IFocusTaskProvider
             };
         }
 
-        // 他のメンバーのタスクで、期限が近い or ブロック中のものを取得
+        // 他のメンバーのタスクで、期限が近い or 先行タスクがあるものを取得
         // AssignedUserId != null チェックは nullable int との比較のため警告が出るが、
         // EF Core のクエリ変換では正しく動作するため抑制
 #pragma warning disable CS0472
@@ -372,8 +429,6 @@ public class FocusTaskProvider : IFocusTaskProvider
                 .ThenInclude(i => i.Workspace)
             .Include(t => t.TaskType)
             .Include(t => t.AssignedUser)
-            .Include(t => t.PredecessorTask!)
-                .ThenInclude(p => p.WorkspaceItem)
             .Where(t => t.AssignedUserId != currentUserId
                 && t.AssignedUserId != null
                 && !t.IsCompleted
@@ -383,7 +438,7 @@ public class FocusTaskProvider : IFocusTaskProvider
                 && t.WorkspaceItem.Workspace != null
                 && t.WorkspaceItem.Workspace.IsActive
                 && userWorkspaceIds.Contains(t.WorkspaceId)
-                && (t.DueDate <= nearDeadline || (t.PredecessorTask != null && !t.PredecessorTask.IsCompleted)))
+                && (t.DueDate <= nearDeadline || t.PredecessorTaskIds.Length > 0))
             .OrderBy(t => t.DueDate)
             .Take(limit * 2) // ブロック中除外分を考慮して多めに取得
             .ToListAsync(cancellationToken);
@@ -401,9 +456,39 @@ public class FocusTaskProvider : IFocusTaskProvider
             };
         }
 
+        // 先行タスクIDをすべて収集
+        var allPredecessorIds = tasks
+            .SelectMany(t => t.PredecessorTaskIds)
+            .Distinct()
+            .ToList();
+
+        // 先行タスクの完了状態と情報を一括取得
+        var predecessorInfoMap = allPredecessorIds.Count > 0
+            ? await _context.WorkspaceTasks
+                .Include(t => t.WorkspaceItem)
+                .Where(t => allPredecessorIds.Contains(t.Id))
+                .ToDictionaryAsync(t => t.Id, cancellationToken)
+            : new Dictionary<int, DB.Models.WorkspaceTask>();
+
+        // 着手可能判定用のヘルパー関数
+        bool CanStartTask(DB.Models.WorkspaceTask task)
+        {
+            return task.PredecessorTaskIds.Length == 0
+                || task.PredecessorTaskIds.All(pid =>
+                    predecessorInfoMap.TryGetValue(pid, out var pred) && pred.IsCompleted);
+        }
+
+        // 最初の未完了先行タスクを取得するヘルパー関数
+        DB.Models.WorkspaceTask? GetBlockingPredecessor(DB.Models.WorkspaceTask task)
+        {
+            return task.PredecessorTaskIds
+                .Select(pid => predecessorInfoMap.TryGetValue(pid, out var p) ? p : null)
+                .FirstOrDefault(p => p != null && !p.IsCompleted);
+        }
+
         // タスクを変換
         var focusTasks = tasks
-            .Where(t => t.PredecessorTask == null || t.PredecessorTask.IsCompleted)
+            .Where(CanStartTask)
             .Select(task => new FocusTaskInfo
             {
                 Id = task.Id,
@@ -429,29 +514,33 @@ public class FocusTaskProvider : IFocusTaskProvider
             .ToList();
 
         var waitingTasks = tasks
-            .Where(t => t.PredecessorTask != null && !t.PredecessorTask.IsCompleted)
-            .Select(task => new FocusTaskInfo
+            .Where(t => !CanStartTask(t))
+            .Select(task =>
             {
-                Id = task.Id,
-                Sequence = task.Sequence,
-                WorkspaceItemId = task.WorkspaceItemId,
-                WorkspaceId = task.WorkspaceId,
-                WorkspaceCode = task.WorkspaceItem.Workspace?.Code,
-                WorkspaceName = task.WorkspaceItem.Workspace?.Name,
-                ItemCode = task.WorkspaceItem.Code,
-                Content = task.Content,
-                ItemSubject = task.WorkspaceItem.Subject,
-                TaskTypeName = task.TaskType?.Name,
-                Priority = task.Priority,
-                DueDate = task.DueDate,
-                EstimatedHours = task.EstimatedHours,
-                ProgressPercentage = task.ProgressPercentage,
-                TotalScore = 0,
-                SuccessorCount = 0,
-                CanStart = false,
-                PredecessorItemCode = task.PredecessorTask?.WorkspaceItem.Code,
-                PredecessorContent = task.PredecessorTask?.Content,
-                AssignedUserName = task.AssignedUser?.Username
+                var blockingPredecessor = GetBlockingPredecessor(task);
+                return new FocusTaskInfo
+                {
+                    Id = task.Id,
+                    Sequence = task.Sequence,
+                    WorkspaceItemId = task.WorkspaceItemId,
+                    WorkspaceId = task.WorkspaceId,
+                    WorkspaceCode = task.WorkspaceItem.Workspace?.Code,
+                    WorkspaceName = task.WorkspaceItem.Workspace?.Name,
+                    ItemCode = task.WorkspaceItem.Code,
+                    Content = task.Content,
+                    ItemSubject = task.WorkspaceItem.Subject,
+                    TaskTypeName = task.TaskType?.Name,
+                    Priority = task.Priority,
+                    DueDate = task.DueDate,
+                    EstimatedHours = task.EstimatedHours,
+                    ProgressPercentage = task.ProgressPercentage,
+                    TotalScore = 0,
+                    SuccessorCount = 0,
+                    CanStart = false,
+                    PredecessorItemCode = blockingPredecessor?.WorkspaceItem.Code,
+                    PredecessorContent = blockingPredecessor?.Content,
+                    AssignedUserName = task.AssignedUser?.Username
+                };
             })
             .Take(limit)
             .ToList();

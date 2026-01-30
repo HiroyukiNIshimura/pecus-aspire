@@ -125,16 +125,8 @@ public class FocusRecommendationService
                     Content = info.FirstSuccessor.Content
                 }
                 : null,
-            PredecessorTask = task.PredecessorTask != null
-                ? new PredecessorTaskInfo
-                {
-                    Id = task.PredecessorTask.Id,
-                    Sequence = task.PredecessorTask.Sequence,
-                    WorkspaceItemCode = task.PredecessorTask.WorkspaceItem.Code,
-                    Content = task.PredecessorTask.Content,
-                    IsCompleted = task.PredecessorTask.IsCompleted
-                }
-                : null,
+            PredecessorTaskIds = task.PredecessorTaskIds,
+            PredecessorTasks = [],
             ScoreDetail = new TaskScoreDetail
             {
                 PriorityScore = info.ScoreDetail.PriorityScore,

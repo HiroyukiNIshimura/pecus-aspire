@@ -119,9 +119,14 @@ public class FocusTaskResponse
     public SuccessorTaskInfo? SuccessorTask { get; set; }
 
     /// <summary>
-    /// 先行タスク情報（存在する場合）
+    /// 先行タスクIDの配列
     /// </summary>
-    public PredecessorTaskInfo? PredecessorTask { get; set; }
+    public int[] PredecessorTaskIds { get; set; } = [];
+
+    /// <summary>
+    /// 先行タスク情報リスト
+    /// </summary>
+    public List<PredecessorTaskInfo> PredecessorTasks { get; set; } = [];
 
     /// <summary>
     /// スコア詳細（デバッグ・説明用）

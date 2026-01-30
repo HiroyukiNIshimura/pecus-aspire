@@ -80,15 +80,19 @@ public class WorkspaceTaskService
             );
         }
 
-        // 先行タスクのバリデーション
-        if (request.PredecessorTaskId.HasValue)
+        // 先行タスクのバリデーション（配列対応）
+        var predecessorTaskIds = request.PredecessorTaskIds ?? [];
+        if (predecessorTaskIds.Length > 0)
         {
-            var predecessorTask = await _context.WorkspaceTasks
-                .FirstOrDefaultAsync(t => t.Id == request.PredecessorTaskId.Value && t.WorkspaceId == workspaceId);
+            var validIds = await _context.WorkspaceTasks
+                .Where(t => predecessorTaskIds.Contains(t.Id) && t.WorkspaceId == workspaceId)
+                .Select(t => t.Id)
+                .ToListAsync();
 
-            if (predecessorTask == null)
+            var invalidIds = predecessorTaskIds.Except(validIds).ToList();
+            if (invalidIds.Count > 0)
             {
-                throw new InvalidOperationException("指定された先行タスクが見つかりません。");
+                throw new InvalidOperationException($"指定された先行タスクが見つかりません: {string.Join(", ", invalidIds)}");
             }
         }
 
@@ -111,7 +115,7 @@ public class WorkspaceTaskService
                     ""StartDate"",
                     ""DueDate"",
                     ""EstimatedHours"",
-                    ""PredecessorTaskId"",
+                    ""PredecessorTaskIds"",
                     ""CreatedAt"",
                     ""UpdatedAt""
                 )
@@ -128,11 +132,11 @@ public class WorkspaceTaskService
                     {request.StartDate},
                     {request.DueDate},
                     {request.EstimatedHours},
-                    {request.PredecessorTaskId},
+                    {predecessorTaskIds},
                     {DateTime.UtcNow},
                     {DateTime.UtcNow}
                 )
-                RETURNING ""xmin"", ""Id"", ""WorkspaceItemId"", ""WorkspaceId"", ""OrganizationId"", ""Sequence"", ""AssignedUserId"", ""CreatedByUserId"", ""CompletedByUserId"",""Content"", ""TaskTypeId"", ""Priority"", ""StartDate"", ""DueDate"", ""EstimatedHours"", ""PredecessorTaskId"", ""IsCompleted"", ""CompletedAt"", ""IsDiscarded"", ""DiscardedAt"", ""DiscardReason"", ""ActualHours"", ""ProgressPercentage"", ""CreatedAt"", ""UpdatedAt""
+                RETURNING ""xmin"", ""Id"", ""WorkspaceItemId"", ""WorkspaceId"", ""OrganizationId"", ""Sequence"", ""AssignedUserId"", ""CreatedByUserId"", ""CompletedByUserId"",""Content"", ""TaskTypeId"", ""Priority"", ""StartDate"", ""DueDate"", ""EstimatedHours"", ""PredecessorTaskIds"", ""IsCompleted"", ""CompletedAt"", ""IsDiscarded"", ""DiscardedAt"", ""DiscardReason"", ""ActualHours"", ""ProgressPercentage"", ""CreatedAt"", ""UpdatedAt""
             ")
             .ToListAsync();
 
@@ -342,7 +346,6 @@ public class WorkspaceTaskService
             .Include(t => t.CreatedByUser)
             .Include(t => t.CompletedByUser)
             .Include(t => t.TaskType)
-            .Include(t => t.PredecessorTask)
             .Where(t => t.WorkspaceItemId == itemId && t.WorkspaceId == workspaceId);
 
         // ステータスフィルタ
@@ -600,35 +603,41 @@ public class WorkspaceTaskService
             task.DiscardReason = request.DiscardReason;
         }
 
-        // 先行タスクの更新
-        if (request.ClearPredecessorTask)
+        // 先行タスクの更新（配列型対応）
+        if (request.ClearPredecessorTasks)
         {
-            task.PredecessorTaskId = null;
+            task.PredecessorTaskIds = [];
         }
-        else if (request.PredecessorTaskId.HasValue)
+        else if (request.PredecessorTaskIds != null)
         {
             // 自己参照チェック
-            if (request.PredecessorTaskId.Value == task.Id)
+            if (request.PredecessorTaskIds.Contains(task.Id))
             {
                 throw new InvalidOperationException("タスクは自身を先行タスクに設定できません。");
             }
 
             // 先行タスクの存在確認
-            var predecessorTask = await _context.WorkspaceTasks
-                .FirstOrDefaultAsync(t => t.Id == request.PredecessorTaskId.Value && t.WorkspaceId == workspaceId);
+            var validIds = await _context.WorkspaceTasks
+                .Where(t => request.PredecessorTaskIds.Contains(t.Id) && t.WorkspaceId == workspaceId)
+                .Select(t => t.Id)
+                .ToListAsync();
 
-            if (predecessorTask == null)
+            var invalidIds = request.PredecessorTaskIds.Except(validIds).ToList();
+            if (invalidIds.Count > 0)
             {
-                throw new InvalidOperationException("指定された先行タスクが見つかりません。");
+                throw new InvalidOperationException($"指定された先行タスクが見つかりません: {string.Join(", ", invalidIds)}");
             }
 
             // 循環参照チェック
-            if (await HasCircularDependencyAsync(task.Id, request.PredecessorTaskId.Value))
+            foreach (var predecessorId in request.PredecessorTaskIds)
             {
-                throw new InvalidOperationException("先行タスクの設定により循環参照が発生します。");
+                if (await HasCircularDependencyAsync(task.Id, predecessorId))
+                {
+                    throw new InvalidOperationException($"先行タスク {predecessorId} の設定により循環参照が発生します。");
+                }
             }
 
-            task.PredecessorTaskId = request.PredecessorTaskId.Value;
+            task.PredecessorTaskIds = request.PredecessorTaskIds;
         }
 
         task.UpdatedAt = DateTime.UtcNow;
@@ -890,14 +899,14 @@ public class WorkspaceTaskService
     /// <param name="listIndex">リスト内でのインデックス（Reactのkey用）</param>
     /// <param name="commentCount">コメント数</param>
     /// <param name="commentTypeCounts">コメントタイプ別件数</param>
-    /// <param name="predecessorInfo">先行タスク情報</param>
+    /// <param name="predecessorInfoList">先行タスク情報リスト</param>
     /// <param name="successorTaskCount">後続タスク数</param>
     private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(
         WorkspaceTask task,
         int listIndex = 0,
         int commentCount = 0,
         Dictionary<TaskCommentType, int>? commentTypeCounts = null,
-        PredecessorTaskInfo? predecessorInfo = null,
+        List<PredecessorTaskInfo>? predecessorInfoList = null,
         int successorTaskCount = 0
     )
     {
@@ -936,8 +945,8 @@ public class WorkspaceTaskService
             UpdatedAt = task.UpdatedAt,
             CommentCount = commentCount,
             CommentTypeCounts = commentTypeCounts ?? new Dictionary<TaskCommentType, int>(),
-            PredecessorTaskId = task.PredecessorTaskId,
-            PredecessorTask = predecessorInfo,
+            PredecessorTaskIds = task.PredecessorTaskIds,
+            PredecessorTasks = predecessorInfoList ?? [],
             SuccessorTaskCount = successorTaskCount,
             RowVersion = task.RowVersion,
         };
@@ -1573,21 +1582,36 @@ public class WorkspaceTaskService
     /// <returns>循環参照が発生する場合はtrue</returns>
     private async Task<bool> HasCircularDependencyAsync(int taskId, int predecessorId)
     {
-        var currentId = (int?)predecessorId;
+        // BFS で循環を検出（配列型対応）
         var visited = new HashSet<int> { taskId };
+        var queue = new Queue<int>();
+        queue.Enqueue(predecessorId);
 
-        while (currentId.HasValue)
+        while (queue.Count > 0)
         {
-            if (visited.Contains(currentId.Value))
+            var currentId = queue.Dequeue();
+
+            if (visited.Contains(currentId))
             {
                 return true; // 循環検出
             }
 
-            visited.Add(currentId.Value);
+            visited.Add(currentId);
+
             var task = await _context.WorkspaceTasks
                 .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Id == currentId.Value);
-            currentId = task?.PredecessorTaskId;
+                .FirstOrDefaultAsync(t => t.Id == currentId);
+
+            if (task != null)
+            {
+                foreach (var pid in task.PredecessorTaskIds)
+                {
+                    if (!visited.Contains(pid))
+                    {
+                        queue.Enqueue(pid);
+                    }
+                }
+            }
         }
 
         return false;
@@ -1635,10 +1659,11 @@ public class WorkspaceTaskService
         // タスクIDからタスクへのマップを作成
         var taskMap = tasks.ToDictionary(t => t.Id);
 
-        // 後続タスク数を計算
+        // 後続タスク数を計算（配列型対応）
         var successorCounts = tasks
-            .Where(t => t.PredecessorTaskId.HasValue)
-            .GroupBy(t => t.PredecessorTaskId!.Value)
+            .Where(t => t.PredecessorTaskIds.Length > 0)
+            .SelectMany(t => t.PredecessorTaskIds.Select(pid => pid))
+            .GroupBy(pid => pid)
             .ToDictionary(g => g.Key, g => g.Count());
 
         // 依存チェーンを構築（WorkspaceTask のリストとして）
@@ -1772,16 +1797,17 @@ public class WorkspaceTaskService
         Dictionary<int, WorkspaceTask> taskMap
     )
     {
-        // 後続タスクのマップを構築（親タスクID → 子タスクのリスト）
+        // 後続タスクのマップを構築（親タスクID → 子タスクのリスト）（配列型対応）
         var successorMap = tasks
-            .Where(t => t.PredecessorTaskId.HasValue)
-            .GroupBy(t => t.PredecessorTaskId!.Value)
-            .ToDictionary(g => g.Key, g => g.ToList());
+            .Where(t => t.PredecessorTaskIds.Length > 0)
+            .SelectMany(t => t.PredecessorTaskIds.Select(pid => new { PredecessorId = pid, Successor = t }))
+            .GroupBy(x => x.PredecessorId)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Successor).ToList());
 
         var allPaths = new List<List<WorkspaceTask>>();
 
         // 先行タスクを持たないタスク（チェーンの起点）を特定
-        var rootTasks = tasks.Where(t => !t.PredecessorTaskId.HasValue).ToList();
+        var rootTasks = tasks.Where(t => t.PredecessorTaskIds.Length == 0).ToList();
 
         // 後続タスクを持つルートタスクからすべてのパスを探索
         foreach (var rootTask in rootTasks.Where(t => successorMap.ContainsKey(t.Id)))
@@ -1792,7 +1818,7 @@ public class WorkspaceTaskService
 
         // 先行タスクを持つが、その先行タスクがこのアイテム内にないタスク（孤立した起点）
         var orphanRoots = tasks
-            .Where(t => t.PredecessorTaskId.HasValue && !taskMap.ContainsKey(t.PredecessorTaskId.Value))
+            .Where(t => t.PredecessorTaskIds.Length > 0 && t.PredecessorTaskIds.All(pid => !taskMap.ContainsKey(pid)))
             .ToList();
 
         foreach (var orphanRoot in orphanRoots)
@@ -1851,23 +1877,28 @@ public class WorkspaceTaskService
         Dictionary<int, int> successorCounts
     )
     {
-        // 先行タスク情報を取得
+        // 先行タスク情報を取得（配列型対応：最初の先行タスクを表示用に取得）
         TaskFlowPredecessorInfo? predecessorInfo = null;
-        if (task.PredecessorTaskId.HasValue && taskMap.TryGetValue(task.PredecessorTaskId.Value, out var predecessorTask))
+        foreach (var predecessorId in task.PredecessorTaskIds)
         {
-            predecessorInfo = new TaskFlowPredecessorInfo
+            if (taskMap.TryGetValue(predecessorId, out var predecessorTask))
             {
-                Id = predecessorTask.Id,
-                Sequence = predecessorTask.Sequence,
-                Content = predecessorTask.Content,
-                IsCompleted = predecessorTask.IsCompleted,
-            };
+                predecessorInfo = new TaskFlowPredecessorInfo
+                {
+                    Id = predecessorTask.Id,
+                    Sequence = predecessorTask.Sequence,
+                    Content = predecessorTask.Content,
+                    IsCompleted = predecessorTask.IsCompleted,
+                };
+                break;
+            }
         }
 
-        // 着手可能かどうかを判定
+        // 着手可能かどうかを判定（すべての先行タスクが完了済み）
         var canStart = !task.IsCompleted && !task.IsDiscarded &&
-            (!task.PredecessorTaskId.HasValue ||
-             (taskMap.TryGetValue(task.PredecessorTaskId.Value, out var pred) && pred.IsCompleted));
+            (task.PredecessorTaskIds.Length == 0 ||
+             task.PredecessorTaskIds.All(pid =>
+                 taskMap.TryGetValue(pid, out var pred) && pred.IsCompleted));
 
         return new TaskFlowNode
         {
@@ -1885,7 +1916,7 @@ public class WorkspaceTaskService
             Assigned = UserIdentityResponseBuilder.FromUserWithId(task.AssignedUserId, task.AssignedUser),
             CompletedBy = UserIdentityResponseBuilder.FromNullableUserWithId(task.CompletedByUserId, task.CompletedByUser),
             CanStart = canStart,
-            PredecessorTaskId = task.PredecessorTaskId,
+            PredecessorTaskIds = task.PredecessorTaskIds,
             PredecessorTask = predecessorInfo,
             SuccessorCount = successorCounts.GetValueOrDefault(task.Id, 0),
             DurationDays = null, // 期間なしバージョン
@@ -1924,23 +1955,28 @@ public class WorkspaceTaskService
         DateTimeOffset? previousDueDate
     )
     {
-        // 先行タスク情報を取得
+        // 先行タスク情報を取得（配列型対応：最初の先行タスクを表示用に取得）
         TaskFlowPredecessorInfo? predecessorInfo = null;
-        if (task.PredecessorTaskId.HasValue && taskMap.TryGetValue(task.PredecessorTaskId.Value, out var predecessorTask))
+        foreach (var predecessorId in task.PredecessorTaskIds)
         {
-            predecessorInfo = new TaskFlowPredecessorInfo
+            if (taskMap.TryGetValue(predecessorId, out var predecessorTask))
             {
-                Id = predecessorTask.Id,
-                Sequence = predecessorTask.Sequence,
-                Content = predecessorTask.Content,
-                IsCompleted = predecessorTask.IsCompleted,
-            };
+                predecessorInfo = new TaskFlowPredecessorInfo
+                {
+                    Id = predecessorTask.Id,
+                    Sequence = predecessorTask.Sequence,
+                    Content = predecessorTask.Content,
+                    IsCompleted = predecessorTask.IsCompleted,
+                };
+                break;
+            }
         }
 
-        // 着手可能かどうかを判定
+        // 着手可能かどうかを判定（すべての先行タスクが完了済み）
         var canStart = !task.IsCompleted && !task.IsDiscarded &&
-            (!task.PredecessorTaskId.HasValue ||
-             (taskMap.TryGetValue(task.PredecessorTaskId.Value, out var pred) && pred.IsCompleted));
+            (task.PredecessorTaskIds.Length == 0 ||
+             task.PredecessorTaskIds.All(pid =>
+                 taskMap.TryGetValue(pid, out var pred) && pred.IsCompleted));
 
         // 期間を計算（完了・破棄済みはnull）
         decimal? durationDays = null;
@@ -1985,7 +2021,7 @@ public class WorkspaceTaskService
             Assigned = UserIdentityResponseBuilder.FromUserWithId(task.AssignedUserId, task.AssignedUser),
             CompletedBy = UserIdentityResponseBuilder.FromNullableUserWithId(task.CompletedByUserId, task.CompletedByUser),
             CanStart = canStart,
-            PredecessorTaskId = task.PredecessorTaskId,
+            PredecessorTaskIds = task.PredecessorTaskIds,
             PredecessorTask = predecessorInfo,
             SuccessorCount = successorCounts.GetValueOrDefault(task.Id, 0),
             DurationDays = durationDays,
@@ -2008,21 +2044,21 @@ public class WorkspaceTaskService
         // アクティブタスク（未完了・未破棄）
         var activeTasks = tasks.Where(t => !t.IsCompleted && !t.IsDiscarded).ToList();
 
-        // 着手可能タスク（先行タスクなし or 先行タスク完了済み）
-        var readyCount = activeTasks.Count(t =>
-            !t.PredecessorTaskId.HasValue ||
-            (taskMap.TryGetValue(t.PredecessorTaskId.Value, out var pred) && pred.IsCompleted));
+        // ヘルパー関数：すべての先行タスクが完了済みかどうか（配列型対応）
+        bool AllPredecessorsCompleted(WorkspaceTask t) =>
+            t.PredecessorTaskIds.Length == 0 ||
+            t.PredecessorTaskIds.All(pid =>
+                taskMap.TryGetValue(pid, out var pred) && pred.IsCompleted);
 
-        // 待機中タスク（先行タスク未完了）
-        var waitingCount = activeTasks.Count(t =>
-            t.PredecessorTaskId.HasValue &&
-            taskMap.TryGetValue(t.PredecessorTaskId.Value, out var pred) && !pred.IsCompleted);
+        // 着手可能タスク（先行タスクなし or すべての先行タスク完了済み）
+        var readyCount = activeTasks.Count(AllPredecessorsCompleted);
+
+        // 待機中タスク（少なくとも1つの先行タスクが未完了）
+        var waitingCount = activeTasks.Count(t => !AllPredecessorsCompleted(t));
 
         // 進行中タスク（進捗 > 0 かつ未完了・着手可能）
         var inProgressCount = activeTasks.Count(t =>
-            t.ProgressPercentage > 0 &&
-            (!t.PredecessorTaskId.HasValue ||
-             (taskMap.TryGetValue(t.PredecessorTaskId.Value, out var pred) && pred.IsCompleted)));
+            t.ProgressPercentage > 0 && AllPredecessorsCompleted(t));
 
         return new TaskFlowSummary
         {

@@ -172,14 +172,14 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     public Dictionary<TaskCommentType, int> CommentTypeCounts { get; set; } = new();
 
     /// <summary>
-    /// 先行タスクID（このタスクが完了しないと着手できない）
+    /// 先行タスクID配列（これらのタスクがすべて完了しないと着手できない）
     /// </summary>
-    public int? PredecessorTaskId { get; set; }
+    public int[] PredecessorTaskIds { get; set; } = [];
 
     /// <summary>
-    /// 先行タスク情報
+    /// 先行タスク情報リスト
     /// </summary>
-    public PredecessorTaskInfo? PredecessorTask { get; set; }
+    public List<PredecessorTaskInfo> PredecessorTasks { get; set; } = [];
 
     /// <summary>
     /// このタスクを待っている後続タスク数

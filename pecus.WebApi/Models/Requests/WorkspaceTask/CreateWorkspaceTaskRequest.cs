@@ -51,7 +51,7 @@ public class CreateWorkspaceTaskRequest
     public decimal? EstimatedHours { get; set; }
 
     /// <summary>
-    /// 先行タスクID（このタスクが完了しないと着手できない）
+    /// 先行タスクID配列（これらのタスクがすべて完了しないと着手できない）
     /// </summary>
-    public int? PredecessorTaskId { get; set; }
+    public int[]? PredecessorTaskIds { get; set; }
 }

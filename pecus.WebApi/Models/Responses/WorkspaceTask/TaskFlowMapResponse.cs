@@ -160,12 +160,12 @@ public class TaskFlowNode
     public required bool CanStart { get; set; }
 
     /// <summary>
-    /// 先行タスクID
+    /// 先行タスクID配列
     /// </summary>
-    public int? PredecessorTaskId { get; set; }
+    public int[] PredecessorTaskIds { get; set; } = [];
 
     /// <summary>
-    /// 先行タスク情報（待機中の場合）
+    /// 先行タスク情報（待機中の場合、最初の未完了先行タスク）
     /// </summary>
     public TaskFlowPredecessorInfo? PredecessorTask { get; set; }
 

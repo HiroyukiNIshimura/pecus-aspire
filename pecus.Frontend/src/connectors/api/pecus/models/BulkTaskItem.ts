@@ -33,14 +33,14 @@ export type BulkTaskItem = {
      */
     estimatedHours?: number | null;
     /**
-     * 既存タスクを先行タスクとして指定する場合のタスクID
-     * PredecessorIndexとの併用不可（どちらか一方のみ指定）
+     * 既存タスクを先行タスクとして指定する場合のタスクID配列
+     * PredecessorIndicesとの併用不可（どちらか一方のみ指定）
      */
-    predecessorTaskId?: number | null;
+    predecessorTaskIds?: Array<number> | null;
     /**
-     * 同一リクエスト内での先行タスクのインデックス（0始まり）
-     * PredecessorTaskIdとの併用不可（どちらか一方のみ指定）
+     * 同一リクエスト内での先行タスクのインデックス配列（0始まり）
+     * PredecessorTaskIdsとの併用不可（どちらか一方のみ指定）
      */
-    predecessorIndex?: number | null;
+    predecessorIndices?: Array<number> | null;
 };
 
