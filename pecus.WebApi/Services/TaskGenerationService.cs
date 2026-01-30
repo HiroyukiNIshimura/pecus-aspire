@@ -83,6 +83,11 @@ public class TaskGenerationService
             throw new InvalidOperationException("利用可能なタスクタイプがありません。");
         }
 
+        // ワークスペースのメンバー数を取得
+        var memberCount = await _context.WorkspaceUsers
+            .AsNoTracking()
+            .CountAsync(wu => wu.WorkspaceId == workspaceId, cancellationToken);
+
         // アイテム本文をMarkdownに変換
         var itemBodyMarkdown = await ExtractMarkdownFromBodyAsync(item.Body, cancellationToken);
 
@@ -94,6 +99,7 @@ public class TaskGenerationService
         // プロンプト入力の構築
         var promptInput = new TaskGenerationInput(
             WorkspaceGenre: item.Workspace?.Genre?.Name,
+            MemberCount: memberCount,
             ItemSubject: item.Subject,
             ItemBodyMarkdown: itemBodyMarkdown,
             StartDate: request.StartDate,

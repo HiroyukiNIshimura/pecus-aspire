@@ -6,6 +6,7 @@ namespace Pecus.Libs.AI.Prompts.Tasks;
 /// タスク生成の入力パラメータ
 /// </summary>
 /// <param name="WorkspaceGenre">ワークスペースのジャンル名</param>
+/// <param name="MemberCount">ワークスペースのメンバー数</param>
 /// <param name="ItemSubject">アイテム件名</param>
 /// <param name="ItemBodyMarkdown">アイテム本文（Markdown形式）</param>
 /// <param name="StartDate">プロジェクト開始日</param>
@@ -16,6 +17,7 @@ namespace Pecus.Libs.AI.Prompts.Tasks;
 /// <param name="PreviousCandidates">前回生成されたタスク候補（任意）</param>
 public record TaskGenerationInput(
     string? WorkspaceGenre,
+    int MemberCount,
     string ItemSubject,
     string? ItemBodyMarkdown,
     DateOnly StartDate,
@@ -121,6 +123,7 @@ public class TaskGenerationPromptTemplate : IPromptTemplate<TaskGenerationInput>
         {
             content.AppendLine($"- ジャンル: {input.WorkspaceGenre}");
         }
+        content.AppendLine($"- メンバー数: {input.MemberCount}人");
         content.AppendLine($"- 件名: {input.ItemSubject}");
         content.AppendLine($"- 期間: {input.StartDate:yyyy-MM-dd} 〜 {input.EndDate:yyyy-MM-dd}");
         content.AppendLine();
