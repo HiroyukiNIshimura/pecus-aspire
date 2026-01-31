@@ -952,6 +952,7 @@ export default function WorkspaceDetailClient({
 
       // サイドバーのアイテムリストをリロード（新規作成されたアイテムを選択状態に設定）
       sidebarComponentRef.current?.refreshItems(itemId);
+      mobileSidebarComponentRef.current?.refreshItems(itemId);
     },
     [router, pathname],
   );
