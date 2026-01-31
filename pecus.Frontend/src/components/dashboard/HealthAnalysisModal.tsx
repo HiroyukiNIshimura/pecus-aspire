@@ -241,23 +241,23 @@ export default function HealthAnalysisModal({ isOpen, onClose }: HealthAnalysisM
                 <legend className="label">
                   <span className="label-text font-semibold">診断対象</span>
                 </legend>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
-                    className={`btn flex-1 ${scope === 'Organization' ? 'btn-primary' : 'btn-outline'}`}
+                    className={`btn flex-1 whitespace-nowrap ${scope === 'Organization' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setScope('Organization')}
                     disabled={isLoading}
                   >
-                    <span className="icon-[mdi--domain] size-5" aria-hidden="true" />
+                    <span className="icon-[mdi--domain] size-5 shrink-0" aria-hidden="true" />
                     組織全体
                   </button>
                   <button
                     type="button"
-                    className={`btn flex-1 ${scope === 'Workspace' ? 'btn-primary' : 'btn-outline'}`}
+                    className={`btn flex-1 whitespace-nowrap ${scope === 'Workspace' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setScope('Workspace')}
                     disabled={isLoading || (hasFetchedWorkspaces && workspaces.length === 0)}
                   >
-                    <span className="icon-[mdi--folder-outline] size-5" aria-hidden="true" />
+                    <span className="icon-[mdi--folder-outline] size-5 shrink-0" aria-hidden="true" />
                     ワークスペース
                   </button>
                 </div>
