@@ -285,6 +285,7 @@ public class WorkspaceItemTempAttachmentService
         {
             NewFilePath = newFilePath,
             DownloadUrl = downloadUrl,
+            OriginalFileName = originalFileName,
             ThumbnailMediumPath = newThumbnailMediumPath,
             ThumbnailSmallPath = newThumbnailSmallPath,
             FileSize = tempFileInfo.FileSize
@@ -438,6 +439,10 @@ public class PromotedFileInfo
 {
     public required string NewFilePath { get; set; }
     public required string DownloadUrl { get; set; }
+    /// <summary>
+    /// 元のファイル名（UUID プレフィックスなし）
+    /// </summary>
+    public required string OriginalFileName { get; set; }
     public string? ThumbnailMediumPath { get; set; }
     public string? ThumbnailSmallPath { get; set; }
     public long FileSize { get; set; }

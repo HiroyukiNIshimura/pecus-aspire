@@ -54,6 +54,31 @@ public class WorkspaceItemAttachmentController : BaseSecureController
     }
 
     /// <summary>
+    /// サムネイルのファイルパスをダウンロードURL形式に変換
+    /// サムネイルファイルが実際に存在する場合のみURLを返す
+    /// </summary>
+    /// <param name="thumbnailPath">サムネイルのファイルパス</param>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <returns>サムネイルのダウンロードURL（パスがnullまたはファイルが存在しない場合はnull）</returns>
+    private static string? ConvertThumbnailPathToUrl(string? thumbnailPath, int workspaceId, int itemId)
+    {
+        if (string.IsNullOrEmpty(thumbnailPath))
+        {
+            return null;
+        }
+
+        // サムネイルファイルが実際に存在するかチェック
+        if (!System.IO.File.Exists(thumbnailPath))
+        {
+            return null;
+        }
+
+        var fileName = Path.GetFileName(thumbnailPath);
+        return $"/api/workspaces/{workspaceId}/items/{itemId}/attachments/download/{fileName}";
+    }
+
+    /// <summary>
     /// ワークスペースアイテムに添付ファイルをアップロード
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
@@ -173,8 +198,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
             FileSize = attachment.FileSize,
             MimeType = attachment.MimeType,
             DownloadUrl = attachment.DownloadUrl,
-            ThumbnailMediumUrl = attachment.ThumbnailMediumPath,
-            ThumbnailSmallUrl = attachment.ThumbnailSmallPath,
+            ThumbnailMediumUrl = ConvertThumbnailPathToUrl(attachment.ThumbnailMediumPath, workspaceId, itemId),
+            ThumbnailSmallUrl = ConvertThumbnailPathToUrl(attachment.ThumbnailSmallPath, workspaceId, itemId),
             UploadedAt = attachment.UploadedAt,
             UploadedBy = new UserIdentityResponse
             {
@@ -223,7 +248,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId, taskId);
 
         var response = attachments
-            .Select(static a => new WorkspaceItemAttachmentResponse
+            .Select(a => new WorkspaceItemAttachmentResponse
             {
                 Id = a.Id,
                 WorkspaceItemId = a.WorkspaceItemId,
@@ -232,8 +257,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
                 FileSize = a.FileSize,
                 MimeType = a.MimeType,
                 DownloadUrl = a.DownloadUrl,
-                ThumbnailMediumUrl = a.ThumbnailMediumPath,
-                ThumbnailSmallUrl = a.ThumbnailSmallPath,
+                ThumbnailMediumUrl = ConvertThumbnailPathToUrl(a.ThumbnailMediumPath, workspaceId, itemId),
+                ThumbnailSmallUrl = ConvertThumbnailPathToUrl(a.ThumbnailSmallPath, workspaceId, itemId),
                 UploadedAt = a.UploadedAt,
                 UploadedBy = new UserIdentityResponse
                 {
@@ -366,10 +391,27 @@ public class WorkspaceItemAttachmentController : BaseSecureController
             throw new NotFoundException("ファイルが見つかりません。");
         }
 
+        // サムネイルファイル名の場合（_small または _medium サフィックス）
+        var isThumbnail = fileName.Contains("_small.") || fileName.Contains("_medium.");
+
         // DBから添付ファイル情報を取得して、権限チェックを行う
         var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId);
+
+        // サムネイルの場合は元のファイル名で検索
+        var searchFileName = fileName;
+        if (isThumbnail)
+        {
+            // サムネイルファイル名から元のファイル名を推測
+            // 例: abc123_image_small.png → abc123_image.png
+            searchFileName = fileName
+                .Replace("_small.", ".")
+                .Replace("_medium.", ".");
+        }
+
         var attachment = attachments.FirstOrDefault(a =>
-            a.FilePath == filePath || Path.GetFileName(a.FilePath) == fileName
+            a.FilePath == filePath
+            || Path.GetFileName(a.FilePath) == fileName
+            || Path.GetFileName(a.FilePath) == searchFileName
         );
 
         if (attachment == null)
@@ -379,12 +421,14 @@ public class WorkspaceItemAttachmentController : BaseSecureController
 
         // ファイルを読み込んで返す
         var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+        // サムネイルの場合は拡張子からMIMEタイプを推測
         var contentType = attachment.MimeType ?? "application/octet-stream";
 
+        // サムネイルの場合はファイル名をそのまま使用（ダウンロードではなくインライン表示用）
         return TypedResults.File(
             fileContents: fileBytes,
             contentType: contentType,
-            fileDownloadName: attachment.FileName
+            fileDownloadName: isThumbnail ? null : attachment.FileName
         );
     }
 }

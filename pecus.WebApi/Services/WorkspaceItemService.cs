@@ -211,7 +211,7 @@ public class WorkspaceItemService
                         var attachment = new WorkspaceItemAttachment
                         {
                             WorkspaceItemId = item.Id,
-                            FileName = Path.GetFileName(promotedInfo.NewFilePath),
+                            FileName = promotedInfo.OriginalFileName,
                             FileSize = promotedInfo.FileSize,
                             MimeType = mimeType,
                             FilePath = promotedInfo.NewFilePath,
@@ -917,7 +917,7 @@ public class WorkspaceItemService
                     var attachment = new WorkspaceItemAttachment
                     {
                         WorkspaceItemId = item.Id,
-                        FileName = Path.GetFileName(promotedInfo.NewFilePath),
+                        FileName = promotedInfo.OriginalFileName,
                         FileSize = promotedInfo.FileSize,
                         MimeType = mimeType,
                         FilePath = promotedInfo.NewFilePath,
