@@ -73,8 +73,6 @@ export async function uploadWorkspaceItemAttachment(
     // ファイル名を安全なASCII名に変換（HTTPヘッダーで非ASCII文字はエラーになるため）
     const safeFileName = getSafeFileName(originalFileName || 'upload');
 
-    console.log('Uploading file:', originalFileName, '->', safeFileName, file.size, file.type);
-
     // 認証済みAxiosインスタンスを作成
     const axios = await createAuthenticatedAxios();
 

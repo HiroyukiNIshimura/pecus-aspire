@@ -218,14 +218,6 @@ export async function toggleWorkspaceActive(
     // 最新のワークスペース情報を取得してrowVersionを取得
     const detailResponse = await api.workspace.getApiWorkspaces1(workspaceId);
 
-    console.log('Toggle workspace:', {
-      workspaceId,
-      isActive,
-      rowVersion: detailResponse.rowVersion,
-      rowVersionType: typeof detailResponse.rowVersion,
-      currentIsActive: detailResponse.isActive,
-    });
-
     // rowVersionが存在しない、または0の場合はエラー
     if (!detailResponse.rowVersion || detailResponse.rowVersion === 0) {
       console.error('Invalid rowVersion:', detailResponse.rowVersion);
