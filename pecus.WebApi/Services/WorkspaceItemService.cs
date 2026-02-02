@@ -888,6 +888,88 @@ public class WorkspaceItemService
             // RawBody は Hangfire ジョブで非同期更新（SaveChanges 後にエンキュー）
         }
 
+        // 一時添付ファイルの正式化処理（更新時）
+        if (
+            !string.IsNullOrEmpty(request.TempSessionId)
+            && request.TempAttachmentIds != null
+            && request.TempAttachmentIds.Count != 0
+        )
+        {
+            var urlReplacements = new Dictionary<string, string>();
+
+            foreach (var tempFileId in request.TempAttachmentIds)
+            {
+                try
+                {
+                    // 一時ファイルを正式な場所に移動
+                    var promotedInfo = await _tempAttachmentService.PromoteTempFileAsync(
+                        workspaceId: workspaceId,
+                        sessionId: request.TempSessionId,
+                        tempFileId: tempFileId,
+                        workspaceItemId: item.Id
+                    );
+
+                    // 一時ファイル情報を取得してMIMEタイプを判定
+                    var extension = Path.GetExtension(promotedInfo.NewFilePath).ToLowerInvariant();
+                    var mimeType = GetMimeTypeFromExtension(extension);
+
+                    // WorkspaceItemAttachmentレコードを作成
+                    var attachment = new WorkspaceItemAttachment
+                    {
+                        WorkspaceItemId = item.Id,
+                        FileName = Path.GetFileName(promotedInfo.NewFilePath),
+                        FileSize = promotedInfo.FileSize,
+                        MimeType = mimeType,
+                        FilePath = promotedInfo.NewFilePath,
+                        DownloadUrl = promotedInfo.DownloadUrl,
+                        ThumbnailMediumPath = promotedInfo.ThumbnailMediumPath,
+                        ThumbnailSmallPath = promotedInfo.ThumbnailSmallPath,
+                        UploadedAt = DateTime.UtcNow,
+                        UploadedByUserId = userId,
+                    };
+                    _context.WorkspaceItemAttachments.Add(attachment);
+
+                    // 一時URLから正式URLへの置換マップを作成
+                    var tempUrlPattern = $"/api/workspaces/{workspaceId}/temp-attachments/{request.TempSessionId}/{tempFileId}";
+                    urlReplacements[tempUrlPattern] = promotedInfo.DownloadUrl;
+
+                    _logger.LogDebug(
+                        "Promoted temp file {TempFileId} to attachment for item {ItemId} (update)",
+                        tempFileId,
+                        item.Id
+                    );
+                }
+                catch (FileNotFoundException ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Temp file not found during promotion (update): {TempFileId}",
+                        tempFileId
+                    );
+                    // 一時ファイルが見つからない場合は無視して続行
+                }
+            }
+
+            // コンテンツ内のURLを置換
+            if (urlReplacements.Count != 0 && !string.IsNullOrEmpty(item.Body))
+            {
+                var updatedBody = item.Body;
+                foreach (var (tempUrl, permanentUrl) in urlReplacements)
+                {
+                    // 部分一致で置換（拡張子付きのURLも置換対象）
+                    updatedBody = ReplaceUrlInContent(updatedBody, tempUrl, permanentUrl);
+                }
+
+                if (updatedBody != item.Body)
+                {
+                    item.Body = updatedBody;
+                }
+            }
+
+            // 一時ファイルセッションをクリーンアップ
+            _tempAttachmentService.CleanupSessionFiles(workspaceId, request.TempSessionId);
+        }
+
         if (request.AssigneeId.HasValue)
         {
             // Assigneeが指定されている場合、メンバーチェック

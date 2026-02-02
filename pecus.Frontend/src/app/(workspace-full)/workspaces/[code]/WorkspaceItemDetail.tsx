@@ -344,6 +344,15 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       loadAttachments();
     }, [workspaceId, itemId]);
 
+    // 添付ファイル一覧を再取得する関数
+    const refreshAttachments = useCallback(async () => {
+      const result = await fetchWorkspaceItemAttachments(workspaceId, itemId);
+      if (result.success) {
+        setAttachments(result.data);
+        setAttachmentCount(result.data.length);
+      }
+    }, [workspaceId, itemId]);
+
     // スクロールターゲットが指定されている場合のスクロール処理（propsベース）
     useEffect(() => {
       if (isLoading || !item || !scrollTarget) return;
@@ -485,6 +494,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             isDraft: request.isDraft,
             tagNames: request.tagNames,
             rowVersion: rowVersionRef.current,
+            tempSessionId: request.tempSessionId,
+            tempAttachmentIds: request.tempAttachmentIds,
           });
 
           if (!result.success) {
@@ -504,6 +515,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           setItem(result.data);
           // サイドバーを更新
           onSidebarRefresh?.();
+          // 添付ファイル一覧を再取得（一時ファイルが正式化された場合に対応）
+          await refreshAttachments();
           // モーダルを閉じる
           setIsEditModalOpen(false);
           notify.success('アイテムを更新しました。');
@@ -521,7 +534,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           setIsItemUpdating(false);
         }
       },
-      [item, workspaceId, itemId, onSidebarRefresh, notify, itemUpdateError],
+      [item, workspaceId, itemId, onSidebarRefresh, notify, itemUpdateError, refreshAttachments],
     );
 
     // 競合時の上書き更新ハンドラー
@@ -541,6 +554,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             isDraft: request.isDraft,
             tagNames: request.tagNames,
             rowVersion: latestRowVersion,
+            tempSessionId: request.tempSessionId,
+            tempAttachmentIds: request.tempAttachmentIds,
           });
 
           if (!result.success) {
@@ -560,6 +575,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           setItem(result.data);
           // サイドバーを更新
           onSidebarRefresh?.();
+          // 添付ファイル一覧を再取得（一時ファイルが正式化された場合に対応）
+          await refreshAttachments();
           // モーダルを閉じる
           setIsEditModalOpen(false);
           notify.success('アイテムを更新しました。');
@@ -576,7 +593,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           setIsItemUpdating(false);
         }
       },
-      [item, workspaceId, itemId, onSidebarRefresh, notify, itemUpdateError],
+      [item, workspaceId, itemId, onSidebarRefresh, notify, itemUpdateError, refreshAttachments],
     );
 
     // PIN操作ハンドラー

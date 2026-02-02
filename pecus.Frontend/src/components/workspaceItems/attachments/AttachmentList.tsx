@@ -37,7 +37,7 @@ interface AttachmentListProps {
 function convertToProxyUrl(downloadUrl: string | undefined): string {
   if (!downloadUrl) return '#';
   // "/download/" を削除してNext.jsプロキシ形式に変換
-  return downloadUrl.replace('/attachments/download/', '/attachments/') + '?download=true';
+  return `${downloadUrl.replace('/attachments/download/', '/attachments/')}?download=true`;
 }
 
 /**

@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import TagInput from '@/components/common/forms/TagInput';
-import { PecusNotionLikeEditor, useExistingItemImageUploadHandler } from '@/components/editor';
+import { PecusNotionLikeEditor, useNewItemImageUploadHandler } from '@/components/editor';
 import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { useSignalRContext } from '@/providers/SignalRProvider';
@@ -17,6 +17,10 @@ export interface ItemUpdateRequest {
   body: string | null;
   isDraft: boolean;
   tagNames: string[];
+  /** 一時添付ファイルのセッションID */
+  tempSessionId?: string;
+  /** 一時添付ファイルIDのリスト */
+  tempAttachmentIds?: string[];
 }
 
 interface EditWorkspaceItemProps {
@@ -51,6 +55,12 @@ export default function EditWorkspaceItem({
   // 全画面モード状態（エディタからのコールバックで更新）
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { startItemEdit, endItemEdit } = useSignalRContext();
+
+  // 一時ファイルアップロード用のセッションID（モーダル表示ごとに生成）
+  const sessionId = useMemo(() => crypto.randomUUID(), []);
+
+  // アップロードされた一時ファイルIDのリスト
+  const [tempFileIds, setTempFileIds] = useState<string[]>([]);
 
   // 最新アイテムデータ
   const [latestItem, setLatestItem] = useState<WorkspaceItemDetailResponse>(item);
@@ -120,12 +130,14 @@ export default function EditWorkspaceItem({
       }
 
       try {
-        // 親に更新を委譲
+        // 親に更新を委譲（一時ファイル情報を含む）
         await onUpdate({
           subject: result.data.subject,
           body: editorValue || null,
           isDraft: formData.isDraft,
           tagNames: tagNames,
+          tempSessionId: tempFileIds.length > 0 ? sessionId : undefined,
+          tempAttachmentIds: tempFileIds.length > 0 ? tempFileIds : undefined,
         });
         // 成功時は親でonCloseを呼ぶ
       } catch (err: unknown) {
@@ -237,6 +249,8 @@ export default function EditWorkspaceItem({
           body: editorValue || null,
           isDraft: formData.isDraft,
           tagNames: tagNames,
+          tempSessionId: tempFileIds.length > 0 ? sessionId : undefined,
+          tempAttachmentIds: tempFileIds.length > 0 ? tempFileIds : undefined,
         },
         latestRowVersion,
       );
@@ -392,7 +406,15 @@ export default function EditWorkspaceItem({
                         onChange={handleEditorChange}
                         onFullscreenChange={setIsFullscreen}
                         workspaceId={latestItem.workspaceId!}
-                        itemId={latestItem.id}
+                        sessionId={sessionId}
+                        onTempFileUploaded={(tempFileId) => {
+                          setTempFileIds((prev) => {
+                            if (!prev.includes(tempFileId)) {
+                              return [...prev, tempFileId];
+                            }
+                            return prev;
+                          });
+                        }}
                       />
                     </div>
                   </div>
@@ -476,24 +498,28 @@ export default function EditWorkspaceItem({
 
 /**
  * 既存アイテム編集用のエディタコンポーネント
- * 画像アップロードハンドラーを設定した状態でNotionLikeEditorをラップ
+ * 一時ファイルアップロードハンドラーを設定した状態でNotionLikeEditorをラップ
  */
 function EditWorkspaceItemEditor({
   workspaceId,
-  itemId,
+  sessionId,
   initialEditorState,
   onChange,
   onFullscreenChange,
+  onTempFileUploaded,
 }: {
   workspaceId: number;
-  itemId: number;
+  sessionId: string;
   initialEditorState?: string;
   onChange?: (editorState: string) => void;
   onFullscreenChange?: (isFullscreen: boolean) => void;
+  onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
 }) {
-  const imageUploadHandler = useExistingItemImageUploadHandler({
+  // 一時ファイルアップロードハンドラー（更新時も新規作成と同じ仕組みを使用）
+  const imageUploadHandler = useNewItemImageUploadHandler({
     workspaceId,
-    itemId,
+    sessionId,
+    onTempFileUploaded,
   });
 
   return (
