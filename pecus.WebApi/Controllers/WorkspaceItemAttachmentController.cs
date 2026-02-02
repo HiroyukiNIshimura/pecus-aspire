@@ -55,21 +55,14 @@ public class WorkspaceItemAttachmentController : BaseSecureController
 
     /// <summary>
     /// サムネイルのファイルパスをダウンロードURL形式に変換
-    /// サムネイルファイルが実際に存在する場合のみURLを返す
     /// </summary>
     /// <param name="thumbnailPath">サムネイルのファイルパス</param>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">アイテムID</param>
-    /// <returns>サムネイルのダウンロードURL（パスがnullまたはファイルが存在しない場合はnull）</returns>
+    /// <returns>サムネイルのダウンロードURL（パスがnullの場合はnull）</returns>
     private static string? ConvertThumbnailPathToUrl(string? thumbnailPath, int workspaceId, int itemId)
     {
         if (string.IsNullOrEmpty(thumbnailPath))
-        {
-            return null;
-        }
-
-        // サムネイルファイルが実際に存在するかチェック
-        if (!System.IO.File.Exists(thumbnailPath))
         {
             return null;
         }

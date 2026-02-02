@@ -87,6 +87,8 @@ export default function AttachmentListItem({
 }: AttachmentListItemProps) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  // サムネイル読み込み状態: 'loading' | 'loaded' | 'error'
+  const [imgState, setImgState] = useState<'loading' | 'loaded' | 'error'>('loading');
 
   const { iconClass, colorClass } = getFileIconInfo(attachment.fileName);
   // 画像ファイルかどうかを判定
@@ -140,12 +142,20 @@ export default function AttachmentListItem({
     <div className="flex items-center gap-3 p-3 bg-base-200 rounded-lg hover:bg-base-content/10 transition-colors group">
       {/* ファイルタイプアイコンまたはサムネイル */}
       {isImage && thumbnailUrl ? (
-        <img
-          src={thumbnailUrl}
-          alt={attachment.fileName || '画像'}
-          className="size-10 rounded object-cover shrink-0 bg-base-300"
-          loading="lazy"
-        />
+        <>
+          {/* 読み込み中はスケルトン表示 */}
+          {imgState === 'loading' && <div className="size-10 rounded shrink-0 bg-base-300 animate-pulse" />}
+          {/* サムネイル画像 */}
+          <img
+            src={thumbnailUrl}
+            alt={attachment.fileName || '画像'}
+            className={`size-10 rounded object-cover shrink-0 bg-base-300 ${imgState !== 'loaded' ? 'hidden' : ''}`}
+            onLoad={() => setImgState('loaded')}
+            onError={() => setImgState('error')}
+          />
+          {/* エラー時はアイコン表示 */}
+          {imgState === 'error' && <span className={`${iconClass} size-6 ${colorClass} shrink-0`} aria-hidden="true" />}
+        </>
       ) : (
         <span className={`${iconClass} size-6 ${colorClass} shrink-0`} aria-hidden="true" />
       )}
