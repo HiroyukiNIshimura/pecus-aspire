@@ -16,12 +16,31 @@ public class FileDownloadController : BaseSecureController
 {
     private readonly ILogger<FileDownloadController> _logger;
     private readonly PecusConfig _config;
+    private readonly IWebHostEnvironment _environment;
 
-    public FileDownloadController(ProfileService profileService, PecusConfig config, ILogger<FileDownloadController> logger)
+    public FileDownloadController(
+        ProfileService profileService,
+        PecusConfig config,
+        ILogger<FileDownloadController> logger,
+        IWebHostEnvironment environment)
         : base(profileService, logger)
     {
         _logger = logger;
         _config = config;
+        _environment = environment;
+    }
+
+    /// <summary>
+    /// ストレージのベースパスを取得（絶対パス or ContentRootPath + 相対パス）
+    /// </summary>
+    private string GetStorageBasePath()
+    {
+        var storagePath = _config.FileUpload.StoragePath;
+        if (Path.IsPathRooted(storagePath))
+        {
+            return storagePath;
+        }
+        return Path.Combine(_environment.ContentRootPath, storagePath);
     }
 
     /// <summary>
@@ -37,7 +56,7 @@ public class FileDownloadController : BaseSecureController
         bool useOriginal)
     {
         // 組織IDを使用してファイルパスを構築
-        var uploadsPath = _config.FileUpload.StoragePath;
+        var uploadsPath = GetStorageBasePath();
         var filePath = Path.Combine(
             uploadsPath,
             "organizations",
@@ -98,7 +117,7 @@ public class FileDownloadController : BaseSecureController
     )
     {
         // 組織IDを使用してファイルパスを構築
-        var uploadsPath = _config.FileUpload.StoragePath;
+        var uploadsPath = GetStorageBasePath();
         var filePath = Path.Combine(
             uploadsPath,
             "organizations",

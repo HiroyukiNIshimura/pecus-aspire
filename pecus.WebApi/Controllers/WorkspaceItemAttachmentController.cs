@@ -20,6 +20,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
     private readonly OrganizationAccessHelper _accessHelper;
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly IWebHostEnvironment _environment;
 
     public WorkspaceItemAttachmentController(
         WorkspaceItemAttachmentService attachmentService,
@@ -27,7 +28,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         ILogger<WorkspaceItemAttachmentController> logger,
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
-        ProfileService profileService
+        ProfileService profileService,
+        IWebHostEnvironment environment
     )
         : base(profileService, logger)
     {
@@ -35,6 +37,20 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         _accessHelper = accessHelper;
         _config = config;
         _backgroundJobClient = backgroundJobClient;
+        _environment = environment;
+    }
+
+    /// <summary>
+    /// ストレージのベースパスを取得（絶対パス or ContentRootPath + 相対パス）
+    /// </summary>
+    private string GetStorageBasePath()
+    {
+        var storagePath = _config.FileUpload.StoragePath;
+        if (Path.IsPathRooted(storagePath))
+        {
+            return storagePath;
+        }
+        return Path.Combine(_environment.ContentRootPath, storagePath);
     }
 
     /// <summary>
@@ -75,8 +91,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
 
         // ファイルを保存するパスを生成
         var uploadsDir = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            _config.FileUpload.StoragePath,
+            GetStorageBasePath(),
             "workspaces",
             workspaceId.ToString(),
             "items",
@@ -337,8 +352,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
 
         // ファイルパスを構築
         var filePath = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            _config.FileUpload.StoragePath,
+            GetStorageBasePath(),
             "workspaces",
             workspaceId.ToString(),
             "items",
