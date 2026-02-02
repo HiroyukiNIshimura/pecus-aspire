@@ -63,7 +63,7 @@ public class TaskGenerationPromptTemplate : IPromptTemplate<TaskGenerationInput>
                - 10件を超える指定は無視し、最大10件とする
             2. 各タスクは具体的で実行可能な単位に分割する
             3. 依存関係を明確にし、クリティカルパスを特定する
-            4. 並行作業可能なタスクを識別する
+            4. メンバー数に基づき、並行作業可能なタスクを適切に識別する
             5. 規模感（S/M/L/XL）を現実的に見積もる
               - S: 半日以内（〜4時間）
               - M: 1日程度（〜8時間）
