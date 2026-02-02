@@ -116,5 +116,5 @@
     "CDPATH",
     "webapi"
   ],
-  "chat.useAgentSkills": false
+  "chat.useAgentSkills": true
 }
