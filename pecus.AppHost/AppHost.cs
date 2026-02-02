@@ -177,7 +177,7 @@ try
         .WithEnvironment("NODE_TLS_REJECT_UNAUTHORIZED", "0");
 
     // Prometheus が有効な場合、フロントエンドに参照を追加
-    if (prometheus != null)
+    if (prometheus is not null)
     {
         var prometheusUrl = $"http://localhost:{prometheusPort}";
         frontendBuilder
