@@ -629,7 +629,8 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       )}
                   </div>
 
-                  <div className="form-control">
+                  {/* プランフィールドは一時的に非表示（データ送信は維持） */}
+                  <div className="form-control hidden">
                     <label className="label" htmlFor="select-plan">
                       <span className="label-text font-semibold">
                         プラン <span className="text-error">*</span>
