@@ -31,6 +31,9 @@
 
 <!-- ❌ <dialog> 要素 -->
 <dialog open>
+
+<!-- ❌ onClick でオーバーレイを閉じる（ドラッグ操作で意図せず閉じる） -->
+<div className="fixed inset-0 ..." onClick={onClose}>
 ```
 
 **このプロジェクトでは上記は一切使用しない。下記の div ベース実装のみ許可。**
@@ -41,7 +44,15 @@
 
 ```tsx
 {/* オーバーレイ: 固定位置・中央揃え・半透明背景 */}
-<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+<div
+  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  onMouseDown={(e) => {
+    // オーバーレイ自身が直接クリックされた場合のみ閉じる
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }}
+>
 
   {/* コンテナ: 白背景・角丸・影・最大高さ制限・flex縦並び */}
   <div className="bg-base-100 rounded-box shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
@@ -62,6 +73,31 @@
   </div>
 </div>
 ```
+
+### ⚠️ オーバーレイクリックの注意点
+
+**❌ 禁止パターン**: `onClick` でオーバーレイを閉じる
+```tsx
+// ❌ ドラッグ操作中にカーソルが外に出るとモーダルが閉じてしまう
+<div className="fixed inset-0 ..." onClick={onClose}>
+  <div onClick={(e) => e.stopPropagation()}>
+```
+
+**✅ 正しいパターン**: `onMouseDown` + `e.target === e.currentTarget` チェック
+```tsx
+// ✅ マウスボタンを押した瞬間のみ判定、ドラッグ操作でも閉じない
+<div
+  className="fixed inset-0 ..."
+  onMouseDown={(e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }}
+>
+  <div> {/* stopPropagation 不要 */}
+```
+
+**理由**: ラジオボタンやスライダー等をクリック＆ドラッグ中にカーソルがモーダル外に出ると、`onClick` では `mouseup` がオーバーレイで発生してモーダルが閉じてしまう。`onMouseDown` + ターゲットチェックでこの問題を回避できる。
 
 ---
 

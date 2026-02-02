@@ -107,14 +107,11 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
   return (
     <>
       {/* 背景オーバーレイ */}
-      <div className="fixed inset-0 bg-black/50 z-60" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/50 z-60" onMouseDown={onClose} aria-hidden="true" />
 
       {/* モーダル */}
       <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
-        <div
-          className="bg-base-100 rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="bg-base-100 rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
           {/* ヘッダー */}
           <div className="flex items-center justify-between p-4 border-b border-base-300">
             <h3 className="font-bold text-lg">タイムライン</h3>
