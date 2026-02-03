@@ -980,77 +980,127 @@ export default function GenerateTasksModal({
 
                           {/* 先行タスク（複数選択対応） */}
                           <div className="form-control">
-                            <label htmlFor={`predecessor-${candidate.tempId}`} className="label">
+                            <span className="label">
                               <span className="label-text font-semibold">先行タスク（複数選択可）</span>
-                            </label>
-                            <select
-                              id={`predecessor-${candidate.tempId}`}
-                              className="select select-bordered w-full min-h-20"
-                              multiple
-                              value={[
-                                ...candidate.predecessorTaskIds.map((id) => `existing:${id}`),
-                                ...candidate.predecessorTempIds.map((id) => `batch:${id}`),
-                              ]}
-                              onChange={(e) => {
-                                const selectedValues = Array.from(e.target.selectedOptions, (opt) => opt.value);
-                                const newPredecessorTaskIds: number[] = [];
-                                const newPredecessorTempIds: string[] = [];
-
-                                for (const value of selectedValues) {
-                                  if (value.startsWith('existing:')) {
-                                    newPredecessorTaskIds.push(Number(value.replace('existing:', '')));
-                                  } else if (value.startsWith('batch:')) {
-                                    newPredecessorTempIds.push(value.replace('batch:', ''));
-                                  }
-                                }
-
-                                updateCandidate(candidate.tempId, {
-                                  predecessorTaskIds: newPredecessorTaskIds,
-                                  predecessorTempIds: newPredecessorTempIds,
-                                });
-                              }}
-                              disabled={!candidate.isSelected}
-                            >
-                              {/* 既存タスク */}
-                              {predecessorTaskOptions.length > 0 && (
-                                <optgroup label="既存タスク">
-                                  {predecessorTaskOptions.map((t) => (
-                                    <option key={`existing:${t.id}`} value={`existing:${t.id}`}>
-                                      T-{t.sequence}: {t.content.substring(0, 30)}
-                                      {t.content.length > 30 ? '...' : ''}
-                                    </option>
-                                  ))}
-                                </optgroup>
-                              )}
-                              {/* 同一バッチ内のタスク（自分より前のもの） */}
-                              {candidates.filter(
+                              <span className="label-text-alt text-base-content/60">完了しないと着手できない</span>
+                            </span>
+                            <div className="border border-base-300 rounded-lg p-2 max-h-48 overflow-y-auto bg-base-100">
+                              {predecessorTaskOptions.length === 0 &&
+                              candidates.filter(
                                 (c) =>
                                   c.tempId !== candidate.tempId &&
                                   candidates.indexOf(c) < candidates.indexOf(candidate),
-                              ).length > 0 && (
-                                <optgroup label="今回作成するタスク">
-                                  {candidates
-                                    .filter(
-                                      (c) =>
-                                        c.tempId !== candidate.tempId &&
-                                        candidates.indexOf(c) < candidates.indexOf(candidate),
-                                    )
-                                    .map((c) => (
-                                      <option key={`batch:${c.tempId}`} value={`batch:${c.tempId}`}>
-                                        {c.content.substring(0, 30)}
-                                        {c.content.length > 30 ? '...' : ''}
-                                      </option>
-                                    ))}
-                                </optgroup>
+                              ).length === 0 ? (
+                                <p className="text-base-content/60 text-sm py-2 text-center">
+                                  選択可能なタスクがありません
+                                </p>
+                              ) : (
+                                <div className="space-y-1">
+                                  {/* 既存タスク */}
+                                  {predecessorTaskOptions.length > 0 && (
+                                    <>
+                                      <div className="text-xs font-semibold text-base-content/70 px-2 pt-1">
+                                        既存タスク
+                                      </div>
+                                      {predecessorTaskOptions.map((t) => (
+                                        <label
+                                          key={`existing:${t.id}`}
+                                          className={`flex items-start gap-2 p-2 rounded cursor-pointer hover:bg-base-200 transition-colors ${
+                                            candidate.predecessorTaskIds.includes(t.id) ? 'bg-primary/10' : ''
+                                          }`}
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            className="checkbox checkbox-sm checkbox-primary mt-0.5"
+                                            checked={candidate.predecessorTaskIds.includes(t.id)}
+                                            onChange={(e) => {
+                                              if (e.target.checked) {
+                                                updateCandidate(candidate.tempId, {
+                                                  predecessorTaskIds: [...candidate.predecessorTaskIds, t.id],
+                                                });
+                                              } else {
+                                                updateCandidate(candidate.tempId, {
+                                                  predecessorTaskIds: candidate.predecessorTaskIds.filter(
+                                                    (id) => id !== t.id,
+                                                  ),
+                                                });
+                                              }
+                                            }}
+                                            disabled={!candidate.isSelected}
+                                          />
+                                          <span
+                                            className={`text-sm flex-1 ${t.isCompleted ? 'line-through text-base-content/50' : ''}`}
+                                          >
+                                            T-{t.sequence}:{' '}
+                                            {t.content.length > 40 ? `${t.content.substring(0, 40)}...` : t.content}
+                                            {t.isCompleted && (
+                                              <span className="ml-1 badge badge-sm badge-success">完了</span>
+                                            )}
+                                          </span>
+                                        </label>
+                                      ))}
+                                    </>
+                                  )}
+                                  {/* 同一バッチ内のタスク（自分より前のもの） */}
+                                  {candidates.filter(
+                                    (c) =>
+                                      c.tempId !== candidate.tempId &&
+                                      candidates.indexOf(c) < candidates.indexOf(candidate),
+                                  ).length > 0 && (
+                                    <>
+                                      <div className="text-xs font-semibold text-base-content/70 px-2 pt-2">
+                                        今回作成するタスク
+                                      </div>
+                                      {candidates
+                                        .filter(
+                                          (c) =>
+                                            c.tempId !== candidate.tempId &&
+                                            candidates.indexOf(c) < candidates.indexOf(candidate),
+                                        )
+                                        .map((c, idx) => (
+                                          <label
+                                            key={`batch:${c.tempId}`}
+                                            className={`flex items-start gap-2 p-2 rounded cursor-pointer hover:bg-base-200 transition-colors ${
+                                              candidate.predecessorTempIds.includes(c.tempId) ? 'bg-primary/10' : ''
+                                            }`}
+                                          >
+                                            <input
+                                              type="checkbox"
+                                              className="checkbox checkbox-sm checkbox-primary mt-0.5"
+                                              checked={candidate.predecessorTempIds.includes(c.tempId)}
+                                              onChange={(e) => {
+                                                if (e.target.checked) {
+                                                  updateCandidate(candidate.tempId, {
+                                                    predecessorTempIds: [...candidate.predecessorTempIds, c.tempId],
+                                                  });
+                                                } else {
+                                                  updateCandidate(candidate.tempId, {
+                                                    predecessorTempIds: candidate.predecessorTempIds.filter(
+                                                      (id) => id !== c.tempId,
+                                                    ),
+                                                  });
+                                                }
+                                              }}
+                                              disabled={!candidate.isSelected}
+                                            />
+                                            <span className="text-sm flex-1">
+                                              #{idx + 1}:{' '}
+                                              {c.content.length > 40 ? `${c.content.substring(0, 40)}...` : c.content}
+                                            </span>
+                                          </label>
+                                        ))}
+                                    </>
+                                  )}
+                                </div>
                               )}
-                            </select>
+                            </div>
                             {(candidate.predecessorTaskIds.length > 0 || candidate.predecessorTempIds.length > 0) && (
                               <div className="label">
                                 <span className="label-text-alt text-base-content/60">
                                   {candidate.predecessorTaskIds.length + candidate.predecessorTempIds.length}件選択中
                                   <button
                                     type="button"
-                                    className="btn btn-xs btn-link ml-2"
+                                    className="btn btn-xs btn-secondary ml-2"
                                     onClick={() =>
                                       updateCandidate(candidate.tempId, {
                                         predecessorTaskIds: [],
