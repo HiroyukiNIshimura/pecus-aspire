@@ -21,28 +21,28 @@ function getWorkloadStyles(level: WorkloadLevel) {
   switch (level) {
     case 'Overloaded':
       return {
-        badge: 'badge-error',
+        badge: 'badge-error badge-soft',
         text: 'text-error',
         icon: 'icon-[mdi--alert-octagon]',
         label: '過負荷',
       };
     case 'High':
       return {
-        badge: 'badge-warning',
+        badge: 'badge-warning badge-soft',
         text: 'text-warning',
         icon: 'icon-[mdi--alert-circle-outline]',
-        label: '高',
+        label: '高負荷',
       };
     case 'Medium':
       return {
-        badge: 'badge-info',
+        badge: 'badge-info badge-soft',
         text: 'text-info',
         icon: 'icon-[mdi--information-outline]',
-        label: '中',
+        label: '中負荷',
       };
     default:
       return {
-        badge: 'badge-success',
+        badge: 'badge-success badge-soft',
         text: 'text-success',
         icon: 'icon-[mdi--check-circle-outline]',
         label: '低負荷',
