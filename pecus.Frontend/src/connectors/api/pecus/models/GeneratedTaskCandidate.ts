@@ -23,6 +23,14 @@ export type GeneratedTaskCandidate = {
      * タスクタイプ選択理由（AIが判断根拠を説明）
      */
     taskTypeRationale?: string | null;
+    /**
+     * AIが推奨する担当者ユーザーID（nullの場合はリクエストユーザーにフォールバック）
+     */
+    suggestedAssigneeId?: number | null;
+    /**
+     * 担当者選択理由（AIが判断根拠を説明）
+     */
+    assigneeRationale?: string | null;
     estimatedSize?: EstimatedSize;
     /**
      * 先行タスクの一時ID（依存関係）

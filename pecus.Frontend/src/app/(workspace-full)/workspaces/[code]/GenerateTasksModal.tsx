@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { fetchWorkspaceMembers } from '@/actions/agenda';
 import { searchWorkspaceMembers } from '@/actions/workspace';
 import type { PredecessorTaskOption } from '@/actions/workspaceTask';
 import { bulkCreateTasks, generateTaskCandidates, getPredecessorTaskOptions } from '@/actions/workspaceTask';
@@ -132,6 +133,11 @@ export default function GenerateTasksModal({
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [editingAssigneeTempId, setEditingAssigneeTempId] = useState<string | null>(null);
 
+  // ワークスペースメンバー一覧（AI担当者推薦の解決用）
+  const [workspaceMembers, setWorkspaceMembers] = useState<
+    { userId: number; userName: string; email: string; identityIconUrl: string | null }[]
+  >([]);
+
   // 開始日のデフォルト値として今日を設定
   useEffect(() => {
     if (isOpen && !startDate) {
@@ -145,13 +151,20 @@ export default function GenerateTasksModal({
     }
   }, [isOpen, startDate, endDate, itemDueDate]);
 
-  // モーダルが開いたら先行タスク候補を取得
+  // モーダルが開いたら先行タスク候補とメンバー一覧を取得
   useEffect(() => {
     if (isOpen) {
       (async () => {
         const result = await getPredecessorTaskOptions(workspaceId, itemId);
         if (result.success) {
           setPredecessorTaskOptions(result.data || []);
+        }
+      })();
+      // メンバー一覧を取得（AI担当者推薦の解決用）
+      (async () => {
+        const result = await fetchWorkspaceMembers(workspaceId);
+        if (result.success) {
+          setWorkspaceMembers(result.data || []);
         }
       })();
     }
@@ -203,17 +216,33 @@ export default function GenerateTasksModal({
         // 先行タスクの解決（AIが返したtempId配列をそのまま保持）
         const predecessorTempIds = candidate.predecessorTempIds || [];
 
+        // AI推薦の担当者IDからユーザー情報を解決
+        let assignee: SelectedUser | null = null;
+        if (candidate.suggestedAssigneeId) {
+          const member = workspaceMembers.find((m) => m.userId === candidate.suggestedAssigneeId);
+          if (member) {
+            assignee = {
+              id: member.userId,
+              username: member.userName,
+              email: member.email,
+              identityIconUrl: member.identityIconUrl,
+            };
+          }
+        }
+        // フォールバック: 担当者が解決できなかった場合は現在のユーザーを設定
+        if (!assignee && currentUser) {
+          assignee = {
+            id: currentUser.id,
+            username: currentUser.username,
+            email: currentUser.email,
+            identityIconUrl: currentUser.identityIconUrl,
+          };
+        }
+
         return {
           ...candidate,
           isSelected: true, // デフォルトで選択
-          assignee: currentUser
-            ? {
-                id: currentUser.id,
-                username: currentUser.username,
-                email: currentUser.email,
-                identityIconUrl: currentUser.identityIconUrl,
-              }
-            : null,
+          assignee,
           priority: null,
           dueDate: suggestedDueDate.toISOString().split('T')[0],
           startDate: suggestedStartDate.toISOString().split('T')[0],
@@ -224,7 +253,7 @@ export default function GenerateTasksModal({
         };
       });
     },
-    [startDate, currentUser],
+    [startDate, currentUser, workspaceMembers],
   );
 
   // タスク候補を生成
@@ -492,7 +521,11 @@ export default function GenerateTasksModal({
         {/* ボディ */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 relative">
           {/* 生成中オーバーレイ */}
-          <AiProgressOverlay isVisible={isGenerating} message="AIがタスク候補を生成中..." onCancel={cancelGenerating} />
+          <AiProgressOverlay
+            isVisible={isGenerating}
+            message="AIがタスク候補を生成中...（1分程度かかる場合があります）"
+            onCancel={cancelGenerating}
+          />
           {step === 'input' ? (
             /* 入力フォーム */
             <div className="space-y-6">
@@ -721,6 +754,11 @@ export default function GenerateTasksModal({
                         {candidate.taskTypeRationale && (
                           <div className="text-sm text-base-content/70 bg-base-200 rounded p-2">
                             <span className="font-semibold">タスクタイプ選択理由:</span> {candidate.taskTypeRationale}
+                          </div>
+                        )}
+                        {candidate.assigneeRationale && (
+                          <div className="text-sm text-base-content/70 bg-base-200 rounded p-2">
+                            <span className="font-semibold">担当者選択理由:</span> {candidate.assigneeRationale}
                           </div>
                         )}
 

@@ -587,6 +587,7 @@ public class WorkspaceTaskController : BaseSecureController
             workspace.OrganizationId,
             workspaceId,
             itemId,
+            CurrentUserId,
             request);
 
         // AI設定がない場合は空のレスポンスを返す

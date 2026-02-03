@@ -54,6 +54,16 @@ public class GeneratedTaskCandidate
     public string? TaskTypeRationale { get; set; }
 
     /// <summary>
+    /// AIが推奨する担当者ユーザーID（nullの場合はリクエストユーザーにフォールバック）
+    /// </summary>
+    public int? SuggestedAssigneeId { get; set; }
+
+    /// <summary>
+    /// 担当者選択理由（AIが判断根拠を説明）
+    /// </summary>
+    public string? AssigneeRationale { get; set; }
+
+    /// <summary>
     /// 規模感（参考情報として表示のみ、タスク作成には使用しない）
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter<EstimatedSize>))]

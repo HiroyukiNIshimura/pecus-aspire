@@ -18978,6 +18978,17 @@
             "description": "タスクタイプ選択理由（AIが判断根拠を説明）",
             "nullable": true
           },
+          "suggestedAssigneeId": {
+            "type": "integer",
+            "description": "AIが推奨する担当者ユーザーID（nullの場合はリクエストユーザーにフォールバック）",
+            "format": "int32",
+            "nullable": true
+          },
+          "assigneeRationale": {
+            "type": "string",
+            "description": "担当者選択理由（AIが判断根拠を説明）",
+            "nullable": true
+          },
           "estimatedSize": {
             "$ref": "#/components/schemas/EstimatedSize"
           },

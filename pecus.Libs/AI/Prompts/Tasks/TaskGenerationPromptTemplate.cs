@@ -7,6 +7,8 @@ namespace Pecus.Libs.AI.Prompts.Tasks;
 /// </summary>
 /// <param name="WorkspaceGenre">ワークスペースのジャンル名</param>
 /// <param name="MemberCount">ワークスペースのメンバー数</param>
+/// <param name="Members">ワークスペースメンバーの詳細情報（スキル・タスク負荷）</param>
+/// <param name="RequestingUserId">リクエストしたユーザーID（担当者フォールバック用）</param>
 /// <param name="ItemSubject">アイテム件名</param>
 /// <param name="ItemBodyMarkdown">アイテム本文（Markdown形式）</param>
 /// <param name="StartDate">プロジェクト開始日</param>
@@ -18,6 +20,8 @@ namespace Pecus.Libs.AI.Prompts.Tasks;
 public record TaskGenerationInput(
     string? WorkspaceGenre,
     int MemberCount,
+    IReadOnlyList<MemberInfo> Members,
+    int RequestingUserId,
     string ItemSubject,
     string? ItemBodyMarkdown,
     DateOnly StartDate,
@@ -27,6 +31,14 @@ public record TaskGenerationInput(
     string? Feedback,
     IReadOnlyList<PreviousCandidateInfo>? PreviousCandidates
 );
+
+/// <summary>
+/// メンバー情報（担当者選択用）
+/// </summary>
+/// <param name="Id">ユーザーID</param>
+/// <param name="Skills">保有スキル一覧</param>
+/// <param name="ActiveTaskCount">直近1ヶ月の未完了タスク数</param>
+public record MemberInfo(int Id, IReadOnlyList<string> Skills, int ActiveTaskCount);
 
 /// <summary>
 /// タスクタイプ情報
@@ -73,8 +85,13 @@ public class TaskGenerationPromptTemplate : IPromptTemplate<TaskGenerationInput>
               - 各タスクの性質に最も合致するタスクタイプIDを指定
               - 該当するものがない場合はnullを指定
               - 選択理由を taskTypeRationale に記載
-            7. 日本語で記述する
-            8. rationale（理由）は簡潔に50文字以内で記述する
+            7. 担当者はチームメンバー一覧から最適な人を選択する
+              - スキルマッチ: タスク内容に関連するスキルを持つメンバーを優先
+              - 負荷分散: 現在のタスク数が少ないメンバーを優先
+              - 該当者がいない場合は suggestedAssigneeId を null にする（フォールバック担当者が自動適用される）
+              - 選択理由を assigneeRationale に記載
+            8. 日本語で記述する
+            9. rationale（理由）は簡潔に50文字以内で記述する
 
             ## クリティカルパス判定基準
             クリティカルパスとは「プロジェクト開始から完了までの最長経路」です。
@@ -95,6 +112,8 @@ public class TaskGenerationPromptTemplate : IPromptTemplate<TaskGenerationInput>
                   "content": "タスク内容",
                   "suggestedTaskTypeId": 1,
                   "taskTypeRationale": "タスクタイプ選択の理由",
+                  "suggestedAssigneeId": 1,
+                  "assigneeRationale": "担当者選択の理由",
                   "estimatedSize": "M",
                   "predecessorTempIds": [],
                   "isOnCriticalPath": true,
@@ -127,6 +146,24 @@ public class TaskGenerationPromptTemplate : IPromptTemplate<TaskGenerationInput>
         content.AppendLine($"- 件名: {input.ItemSubject}");
         content.AppendLine($"- 期間: {input.StartDate:yyyy-MM-dd} 〜 {input.EndDate:yyyy-MM-dd}");
         content.AppendLine();
+
+        // チームメンバー情報
+        if (input.Members.Count > 0)
+        {
+            content.AppendLine("## チームメンバー");
+            content.AppendLine("以下のメンバーから各タスクに最適な担当者を選択してください。");
+            content.AppendLine();
+            content.AppendLine("| ID | スキル | 現在のタスク数 |");
+            content.AppendLine("|----|--------|----------------|");
+            foreach (var member in input.Members)
+            {
+                var skills = member.Skills.Count > 0 ? string.Join(", ", member.Skills) : "-";
+                content.AppendLine($"| {member.Id} | {skills} | {member.ActiveTaskCount} |");
+            }
+            content.AppendLine();
+            content.AppendLine($"※ 該当者がいない場合のフォールバック担当者ID: {input.RequestingUserId}");
+            content.AppendLine();
+        }
 
         // 詳細内容
         if (!string.IsNullOrWhiteSpace(input.ItemBodyMarkdown))

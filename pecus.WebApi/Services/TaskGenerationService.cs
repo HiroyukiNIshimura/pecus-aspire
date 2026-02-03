@@ -40,6 +40,7 @@ public class TaskGenerationService
     /// <param name="organizationId">組織ID</param>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">アイテムID</param>
+    /// <param name="requestingUserId">リクエストしたユーザーID（担当者フォールバック用）</param>
     /// <param name="request">生成リクエスト</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>生成されたタスク候補。組織にAI設定がない場合はnull</returns>
@@ -47,6 +48,7 @@ public class TaskGenerationService
         int organizationId,
         int workspaceId,
         int itemId,
+        int requestingUserId,
         GenerateTaskCandidatesRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -88,6 +90,40 @@ public class TaskGenerationService
             .AsNoTracking()
             .CountAsync(wu => wu.WorkspaceId == workspaceId, cancellationToken);
 
+        // ワークスペースメンバーの詳細情報を取得（スキル付き）
+        var membersWithSkills = await _context.WorkspaceUsers
+            .AsNoTracking()
+            .Where(wu => wu.WorkspaceId == workspaceId)
+            .Select(wu => new
+            {
+                wu.UserId,
+                Skills = wu.User.UserSkills
+                    .Select(us => us.Skill.Name)
+                    .ToList()
+            })
+            .ToListAsync(cancellationToken);
+
+        // 直近1ヶ月以内のアクティブタスク数を取得
+        var oneMonthAgo = DateTimeOffset.UtcNow.AddMonths(-1);
+        var taskCounts = await _context.WorkspaceTasks
+            .AsNoTracking()
+            .Where(t => t.WorkspaceId == workspaceId
+                && !t.IsCompleted
+                && !t.IsDiscarded
+                && t.CreatedAt >= oneMonthAgo)
+            .GroupBy(t => t.AssignedUserId)
+            .Select(g => new { UserId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.UserId, x => x.Count, cancellationToken);
+
+        // メンバー情報を統合
+        var members = membersWithSkills
+            .Select(m => new MemberInfo(
+                m.UserId,
+                m.Skills,
+                taskCounts.GetValueOrDefault(m.UserId, 0)
+            ))
+            .ToList();
+
         // アイテム本文をMarkdownに変換
         var itemBodyMarkdown = await ExtractMarkdownFromBodyAsync(item.Body, cancellationToken);
 
@@ -100,6 +136,8 @@ public class TaskGenerationService
         var promptInput = new TaskGenerationInput(
             WorkspaceGenre: item.Workspace?.Genre?.Name,
             MemberCount: memberCount,
+            Members: members,
+            RequestingUserId: requestingUserId,
             ItemSubject: item.Subject,
             ItemBodyMarkdown: itemBodyMarkdown,
             StartDate: request.StartDate,
@@ -113,7 +151,7 @@ public class TaskGenerationService
         );
 
         // AIでタスク候補を生成
-        var response = await GenerateWithAiAsync(aiClient, promptInput, cancellationToken);
+        var response = await GenerateWithAiAsync(aiClient, promptInput, requestingUserId, cancellationToken);
 
         _logger.LogInformation(
             "タスク候補を生成しました。OrganizationId={OrganizationId}, WorkspaceId={WorkspaceId}, ItemId={ItemId}, CandidateCount={Count}",
@@ -128,6 +166,7 @@ public class TaskGenerationService
     private async Task<TaskGenerationResponse> GenerateWithAiAsync(
         IAiClient aiClient,
         TaskGenerationInput input,
+        int requestingUserId,
         CancellationToken cancellationToken)
     {
         var template = new TaskGenerationPromptTemplate();
@@ -143,6 +182,9 @@ public class TaskGenerationService
                 persona: null,
                 cancellationToken);
 
+            // 有効なメンバーIDのセットを作成（フォールバック検証用）
+            var validMemberIds = input.Members.Select(m => m.Id).ToHashSet();
+
             // レスポンスの変換
             return new TaskGenerationResponse
             {
@@ -152,6 +194,15 @@ public class TaskGenerationService
                     Content = c.Content ?? string.Empty,
                     SuggestedTaskTypeId = c.SuggestedTaskTypeId,
                     TaskTypeRationale = c.TaskTypeRationale,
+                    // 担当者ID: AIが指定したIDが有効なメンバーならそのまま、そうでなければリクエストユーザーにフォールバック
+                    SuggestedAssigneeId = c.SuggestedAssigneeId.HasValue && validMemberIds.Contains(c.SuggestedAssigneeId.Value)
+                        ? c.SuggestedAssigneeId.Value
+                        : requestingUserId,
+                    AssigneeRationale = c.SuggestedAssigneeId.HasValue && validMemberIds.Contains(c.SuggestedAssigneeId.Value)
+                        ? c.AssigneeRationale
+                        : c.SuggestedAssigneeId.HasValue
+                            ? "指定された担当者がワークスペースメンバーでないためリクエストユーザーにフォールバック"
+                            : "該当者がいないためリクエストユーザーにフォールバック",
                     EstimatedSize = ParseEstimatedSize(c.EstimatedSize),
                     PredecessorTempIds = c.PredecessorTempIds ?? [],
                     IsOnCriticalPath = c.IsOnCriticalPath,
@@ -248,6 +299,8 @@ public class TaskGenerationService
         public string? Content { get; set; }
         public int? SuggestedTaskTypeId { get; set; }
         public string? TaskTypeRationale { get; set; }
+        public int? SuggestedAssigneeId { get; set; }
+        public string? AssigneeRationale { get; set; }
         public string? EstimatedSize { get; set; }
         public List<string>? PredecessorTempIds { get; set; }
         public bool IsOnCriticalPath { get; set; }
