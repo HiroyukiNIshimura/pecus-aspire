@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { getUsersWorkload } from '@/actions/admin/user';
 import { fetchWorkspaceMembers } from '@/actions/agenda';
 import { searchWorkspaceMembers } from '@/actions/workspace';
 import type { PredecessorTaskOption } from '@/actions/workspaceTask';
@@ -9,6 +10,7 @@ import DatePicker from '@/components/common/filters/DatePicker';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import AiProgressOverlay from '@/components/common/overlays/AiProgressOverlay';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
+import WorkloadIndicator from '@/components/common/widgets/user/WorkloadIndicator';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   BulkTaskItem,
@@ -18,6 +20,7 @@ import type {
   TaskGenerationResponse,
   TaskPriority,
   UserSearchResultResponse,
+  UserWorkloadInfo,
 } from '@/connectors/api/pecus';
 import { useAiSuggestion } from '@/hooks/useAiSuggestion';
 import { useNotify } from '@/hooks/useNotify';
@@ -138,6 +141,9 @@ export default function GenerateTasksModal({
     { userId: number; userName: string; email: string; identityIconUrl: string | null }[]
   >([]);
 
+  // 担当者の負荷情報
+  const [workloadMap, setWorkloadMap] = useState<Record<string, UserWorkloadInfo>>({});
+
   // 開始日のデフォルト値として今日を設定
   useEffect(() => {
     if (isOpen && !startDate) {
@@ -180,6 +186,30 @@ export default function GenerateTasksModal({
     };
   }, [isOpen]);
 
+  // 候補の担当者が変更されたら負荷情報を取得
+  useEffect(() => {
+    if (candidates.length === 0) {
+      setWorkloadMap({});
+      return;
+    }
+
+    const fetchWorkload = async () => {
+      // 候補から担当者IDを抽出（重複除去）
+      const assigneeIds = [...new Set(candidates.filter((c) => c.assignee?.id).map((c) => c.assignee!.id))];
+      if (assigneeIds.length === 0) {
+        setWorkloadMap({});
+        return;
+      }
+
+      const result = await getUsersWorkload(assigneeIds);
+      if (result.success && result.data?.workloads) {
+        setWorkloadMap(result.data.workloads);
+      }
+    };
+
+    fetchWorkload();
+  }, [candidates]);
+
   // モーダルを閉じる際のリセット
   const handleClose = useCallback(() => {
     setStep('input');
@@ -190,6 +220,7 @@ export default function GenerateTasksModal({
     setGenerationError(null);
     setGenerationResponse(null);
     setCandidates([]);
+    setWorkloadMap({});
     setIsCreating(false);
     setCreateError(null);
     setExpandedTempId(null);
@@ -338,8 +369,16 @@ export default function GenerateTasksModal({
 
       try {
         const result = await searchWorkspaceMembers(workspaceId, query, true);
-        if (result.success) {
-          setAssigneeSearchResults(result.data || []);
+        if (result.success && result.data) {
+          setAssigneeSearchResults(result.data);
+          // 検索結果のユーザーの負荷情報を取得
+          const userIds = result.data.map((u) => u.id).filter((id): id is number => id !== undefined);
+          if (userIds.length > 0) {
+            const workloadResult = await getUsersWorkload(userIds);
+            if (workloadResult.success && workloadResult.data) {
+              setWorkloadMap((prev) => ({ ...prev, ...workloadResult.data }));
+            }
+          }
         }
       } catch {
         // エラーは無視
@@ -730,6 +769,14 @@ export default function GenerateTasksModal({
                                 showName={false}
                               />
                               <span>{candidate.assignee.username}</span>
+                              {/* 負荷バッジ */}
+                              {workloadMap[String(candidate.assignee.id)] && (
+                                <WorkloadIndicator
+                                  workload={workloadMap[String(candidate.assignee.id)]}
+                                  compact
+                                  size="sm"
+                                />
+                              )}
                             </span>
                           )}
                         </div>
@@ -796,6 +843,9 @@ export default function GenerateTasksModal({
                                   showName={false}
                                 />
                                 <span className="flex-1 truncate">{candidate.assignee.username}</span>
+                                {workloadMap[candidate.assignee.id] && (
+                                  <WorkloadIndicator workload={workloadMap[candidate.assignee.id]} compact size="sm" />
+                                )}
                                 <button
                                   type="button"
                                   className="btn btn-xs btn-secondary btn-circle"
@@ -815,7 +865,7 @@ export default function GenerateTasksModal({
                                 />
                                 {/* 検索結果ドロップダウン */}
                                 {showAssigneeDropdown && editingAssigneeTempId === candidate.tempId && (
-                                  <div className="absolute z-10 w-full mt-1 bg-base-100 border border-base-300 rounded-btn shadow-lg max-h-48 overflow-y-auto">
+                                  <div className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-btn shadow-lg max-h-48 overflow-y-auto">
                                     {isSearchingAssignee ? (
                                       <div className="p-3 text-center">
                                         <span className="loading loading-spinner loading-sm" />
@@ -835,10 +885,13 @@ export default function GenerateTasksModal({
                                             size={24}
                                             showName={false}
                                           />
-                                          <div>
+                                          <div className="flex-1">
                                             <div className="font-medium">{user.username}</div>
                                             <div className="text-xs text-base-content/70">{user.email}</div>
                                           </div>
+                                          {user.id && workloadMap[user.id] && (
+                                            <WorkloadIndicator workload={workloadMap[user.id]} compact size="sm" />
+                                          )}
                                         </button>
                                       ))
                                     ) : (
