@@ -1,10 +1,12 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { getUsersWorkload } from '@/actions/admin/user';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import MemberActionMenu from '@/components/common/widgets/user/MemberActionMenu';
 import MemberCard from '@/components/common/widgets/user/MemberCard';
 import MemberInfoMenu from '@/components/common/widgets/user/MemberInfoMenu';
-import type { WorkspaceRole } from '@/connectors/api/pecus';
+import type { UserWorkloadInfo, WorkspaceRole } from '@/connectors/api/pecus';
 
 /** null を除外したワークスペースロール型 */
 export type WorkspaceRoleValue = NonNullable<WorkspaceRole>;
@@ -52,6 +54,8 @@ interface WorkspaceMemberListProps {
   onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRoleValue) => void;
   /** ハイライト表示するユーザーIDのセット（新規追加時など） */
   highlightedUserIds?: Set<number>;
+  /** 負荷情報を表示するかどうか（デフォルト: true） */
+  showWorkload?: boolean;
 }
 
 /**
@@ -67,7 +71,39 @@ export default function WorkspaceMemberList({
   onRemoveMember,
   onChangeRole,
   highlightedUserIds,
+  showWorkload = true,
 }: WorkspaceMemberListProps) {
+  // 負荷情報の状態
+  const [workloadMap, setWorkloadMap] = useState<Record<string, UserWorkloadInfo>>({});
+  const [isLoadingWorkload, setIsLoadingWorkload] = useState(false);
+
+  // メンバーリストが変更されたら負荷情報を取得
+  useEffect(() => {
+    if (!showWorkload || members.length === 0) {
+      setWorkloadMap({});
+      return;
+    }
+
+    const fetchWorkload = async () => {
+      setIsLoadingWorkload(true);
+      try {
+        const userIds = members.map(getMemberId).filter((id) => id > 0);
+        if (userIds.length === 0) return;
+
+        const result = await getUsersWorkload(userIds);
+        if (result.success && result.data?.workloads) {
+          setWorkloadMap(result.data.workloads);
+        }
+      } catch (error) {
+        console.error('Failed to fetch workload:', error);
+      } finally {
+        setIsLoadingWorkload(false);
+      }
+    };
+
+    fetchWorkload();
+  }, [members, showWorkload]);
+
   // 最終ログイン日時でソート（新しい順、nullは最後）
   const sortedMembers = [...members].sort((a, b) => {
     const dateA = a.lastLoginAt ? new Date(a.lastLoginAt).getTime() : 0;
@@ -107,6 +143,8 @@ export default function WorkspaceMemberList({
               const memberId = getMemberId(member);
               const memberName = member.username ?? member.userName ?? '';
               const isOwner = ownerId !== undefined && memberId === ownerId;
+              // 負荷情報を取得（IDは文字列キー）
+              const workload = showWorkload ? workloadMap[String(memberId)] : undefined;
 
               return (
                 <MemberCard
@@ -114,6 +152,24 @@ export default function WorkspaceMemberList({
                   member={member}
                   isWorkspaceOwner={isOwner}
                   isHighlighted={highlightedUserIds?.has(memberId) ?? false}
+                  workload={
+                    showWorkload
+                      ? workload
+                        ? {
+                            assignedUserId: workload.userId,
+                            overdueCount: workload.overdueCount,
+                            dueTodayCount: workload.dueTodayCount,
+                            dueThisWeekCount: workload.dueThisWeekCount,
+                            totalActiveCount: workload.totalActiveCount,
+                            activeItemCount: workload.activeItemCount,
+                            activeWorkspaceCount: workload.activeWorkspaceCount,
+                            workloadLevel: workload.workloadLevel,
+                          }
+                        : isLoadingWorkload
+                          ? undefined // ロード中はundefinedで表示しない
+                          : null // ロード完了後にデータなし
+                      : undefined
+                  }
                   actionSlot={
                     <div className="flex items-center gap-1">
                       {/* 情報メニュー（常に表示） */}

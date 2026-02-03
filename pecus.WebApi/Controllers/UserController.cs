@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
+using Pecus.Models.Requests.User;
+using Pecus.Models.Responses.User;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -167,6 +169,27 @@ public class UserController : BaseSecureController
     public async Task<Ok<List<UserSkillDetailResponse>>> GetUserSkills(int userId)
     {
         var response = await _userService.GetUserSkillsAsync(userId);
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// 複数ユーザーの負荷状況を一括取得
+    /// </summary>
+    /// <remarks>
+    /// 指定した複数のユーザーIDに対して、現在の負荷状況を一括で取得します。
+    /// メンバーリスト表示時など、複数ユーザーの負荷を効率的に取得する際に使用します。
+    /// 最大50ユーザーまで指定可能です。
+    /// </remarks>
+    /// <param name="request">ユーザーIDのリスト</param>
+    /// <returns>ユーザーIDをキーとした負荷情報の辞書</returns>
+    [HttpPost("workload")]
+    [ProducesResponseType(typeof(UsersWorkloadResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<UsersWorkloadResponse>> GetUsersWorkload([FromBody] GetUsersWorkloadRequest request)
+    {
+        var workloadDict = await _userService.GetUsersWorkloadAsync(CurrentOrganizationId, request.UserIds);
+        var response = new UsersWorkloadResponse { Workloads = workloadDict };
         return TypedResults.Ok(response);
     }
 }

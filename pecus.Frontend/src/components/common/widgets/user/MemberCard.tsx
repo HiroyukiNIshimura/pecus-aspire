@@ -107,15 +107,11 @@ export default function MemberCard({
           ) : (
             <span className={`badge badge-xs ${config.badgeClass}`}>{config.label}</span>
           )}
+          {/* 負荷バッジ（ロールバッジの横にコンパクト表示） */}
+          {workload && <WorkloadIndicator workload={workload} compact size="sm" />}
           {/* 非アクティブ表示 */}
           {member.isActive === false && <span className="text-xs text-base-content/50">(非アクティブ)</span>}
         </div>
-        {/* 負荷情報（渡された場合のみ表示） */}
-        {workload && (
-          <div className="mt-1">
-            <WorkloadIndicator workload={workload} size="sm" />
-          </div>
-        )}
       </div>
 
       {/* アクションスロット（3点メニューなど） - カード右端に配置 */}

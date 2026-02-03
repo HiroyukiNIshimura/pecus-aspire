@@ -2,10 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { GetUsersWorkloadRequest } from '../models/GetUsersWorkloadRequest';
 import type { PagedResponseOfOrganizationMemberItem } from '../models/PagedResponseOfOrganizationMemberItem';
 import type { UserAchievementResponse } from '../models/UserAchievementResponse';
 import type { UserSearchResultResponse } from '../models/UserSearchResultResponse';
 import type { UserSkillDetailResponse } from '../models/UserSkillDetailResponse';
+import type { UsersWorkloadResponse } from '../models/UsersWorkloadResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -96,6 +98,29 @@ export class UserService {
                 'userId': userId,
             },
             errors: {
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 複数ユーザーの負荷状況を一括取得
+     * 指定した複数のユーザーIDに対して、現在の負荷状況を一括で取得します。
+     * メンバーリスト表示時など、複数ユーザーの負荷を効率的に取得する際に使用します。
+     * 最大50ユーザーまで指定可能です。
+     * @param requestBody ユーザーIDのリスト
+     * @returns UsersWorkloadResponse OK
+     * @throws ApiError
+     */
+    public static postApiUsersWorkload(
+        requestBody: GetUsersWorkloadRequest,
+    ): CancelablePromise<UsersWorkloadResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/users/workload',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
                 500: `Internal Server Error`,
             },
         });

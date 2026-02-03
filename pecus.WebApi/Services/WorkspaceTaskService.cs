@@ -6,6 +6,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Utils;
 using Pecus.Models.Config;
 using Pecus.Models.Enums;
 
@@ -258,7 +259,7 @@ public class WorkspaceTaskService
         var isExceeded = threshold > 0 && projectedTaskCount > threshold;
 
         // 負荷レベルを計算
-        var workloadLevel = CalculateWorkloadLevel(overdueCount, dueTodayCount, dueThisWeekCount, activeWorkspaceCount);
+        var workloadLevel = WorkloadCalculator.CalculateWorkloadLevel(overdueCount, dueTodayCount, dueThisWeekCount, activeWorkspaceCount);
 
         return new AssigneeTaskLoadResponse
         {
@@ -277,25 +278,6 @@ public class WorkspaceTaskService
             ActiveWorkspaceCount = activeWorkspaceCount,
             WorkloadLevel = workloadLevel,
         };
-    }
-
-    /// <summary>
-    /// 負荷レベルを計算
-    /// </summary>
-    private static string CalculateWorkloadLevel(int overdueCount, int dueTodayCount, int dueThisWeekCount, int activeWorkspaceCount)
-    {
-        // 期限切れがあれば即「過負荷」
-        if (overdueCount > 0) return "Overloaded";
-
-        // スコア計算（重み付け）
-        var score =
-            dueThisWeekCount * 2 +      // 今週のタスク数
-            dueTodayCount * 3 +          // 今日期限（緊急）
-            activeWorkspaceCount * 1.5;  // コンテキストスイッチ
-
-        if (score >= 15) return "High";
-        if (score >= 8) return "Medium";
-        return "Low";
     }
 
     /// <summary>

@@ -45,7 +45,7 @@ function getWorkloadStyles(level: WorkloadLevel) {
         badge: 'badge-success',
         text: 'text-success',
         icon: 'icon-[mdi--check-circle-outline]',
-        label: '低',
+        label: '低負荷',
       };
   }
 }
@@ -57,10 +57,31 @@ export default function WorkloadIndicator({ workload, compact = false, size = 's
   const level = (workload.workloadLevel as WorkloadLevel) || 'Low';
   const styles = getWorkloadStyles(level);
 
+  // ツールチップ用の詳細情報を構築
+  const buildTooltip = () => {
+    const parts: string[] = [`負荷: ${styles.label}`];
+    if ((workload.overdueCount ?? 0) > 0) {
+      parts.push(`期限切れ: ${workload.overdueCount}件`);
+    }
+    if ((workload.dueTodayCount ?? 0) > 0) {
+      parts.push(`今日期限: ${workload.dueTodayCount}件`);
+    }
+    if ((workload.dueThisWeekCount ?? 0) > 0) {
+      parts.push(`今週期限: ${workload.dueThisWeekCount}件`);
+    }
+    if ((workload.totalActiveCount ?? 0) > 0) {
+      parts.push(`アクティブタスク: ${workload.totalActiveCount}件`);
+    }
+    if ((workload.activeWorkspaceCount ?? 0) > 0) {
+      parts.push(`他ワークスペース: ${workload.activeWorkspaceCount}`);
+    }
+    return parts.join('\n');
+  };
+
   if (compact) {
-    // コンパクト表示：バッジのみ
+    // コンパクト表示：バッジのみ（詳細はツールチップ）
     return (
-      <span className={`badge ${styles.badge} ${size === 'sm' ? 'badge-sm' : ''}`} title={`負荷: ${styles.label}`}>
+      <span className={`badge ${styles.badge} ${size === 'sm' ? 'badge-sm' : ''}`} title={buildTooltip()}>
         {styles.label}
       </span>
     );

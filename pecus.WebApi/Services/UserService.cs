@@ -7,6 +7,7 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
 using Pecus.Models.Requests.User;
+using Pecus.Models.Responses.User;
 using System.Security.Cryptography;
 
 namespace Pecus.Services;
@@ -1188,6 +1189,72 @@ public class UserService
         var users = await PaginationHelper.ApplyPaginationAsync(query, page, pageSize);
 
         return (users, totalCount);
+    }
+
+    /// <summary>
+    /// 複数ユーザーの負荷情報を一括取得
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="userIds">対象ユーザーIDリスト</param>
+    /// <returns>ユーザーID別の負荷情報</returns>
+    public async Task<Dictionary<int, UserWorkloadInfo>> GetUsersWorkloadAsync(
+        int organizationId,
+        int[] userIds
+    )
+    {
+        // 現在時刻と今週末の計算
+        var now = DateTimeOffset.UtcNow;
+        var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
+        var todayEnd = todayStart.AddDays(1);
+        // 週末（日曜日の終わり）を計算
+        var daysUntilEndOfWeek = ((int)DayOfWeek.Sunday - (int)now.DayOfWeek + 7) % 7;
+        if (daysUntilEndOfWeek == 0) daysUntilEndOfWeek = 7; // 日曜日の場合は次の日曜日
+        var endOfWeek = todayStart.AddDays(daysUntilEndOfWeek + 1);
+
+        // 対象ユーザーの未完了タスクを一括取得
+        var userTasks = await _context.WorkspaceTasks
+            .Where(t => t.OrganizationId == organizationId)
+            .Where(t => userIds.Contains(t.AssignedUserId))
+            .Where(t => !t.IsCompleted && !t.IsDiscarded)
+            .Select(t => new
+            {
+                t.AssignedUserId,
+                t.DueDate,
+                t.WorkspaceItemId,
+                t.WorkspaceId
+            })
+            .ToListAsync();
+
+        // ユーザーごとに集計
+        var result = new Dictionary<int, UserWorkloadInfo>();
+
+        foreach (var userId in userIds)
+        {
+            var tasks = userTasks.Where(t => t.AssignedUserId == userId).ToList();
+
+            var overdueCount = tasks.Count(t => t.DueDate < todayStart);
+            var dueTodayCount = tasks.Count(t => t.DueDate >= todayStart && t.DueDate < todayEnd);
+            var dueThisWeekCount = tasks.Count(t => t.DueDate >= todayStart && t.DueDate < endOfWeek);
+            var totalActiveCount = tasks.Count;
+            var activeItemCount = tasks.Select(t => t.WorkspaceItemId).Distinct().Count();
+            var activeWorkspaceCount = tasks.Select(t => t.WorkspaceId).Distinct().Count();
+
+            var workloadLevel = WorkloadCalculator.CalculateWorkloadLevel(overdueCount, dueTodayCount, dueThisWeekCount, activeWorkspaceCount);
+
+            result[userId] = new UserWorkloadInfo
+            {
+                UserId = userId,
+                OverdueCount = overdueCount,
+                DueTodayCount = dueTodayCount,
+                DueThisWeekCount = dueThisWeekCount,
+                TotalActiveCount = totalActiveCount,
+                ActiveItemCount = activeItemCount,
+                ActiveWorkspaceCount = activeWorkspaceCount,
+                WorkloadLevel = workloadLevel,
+            };
+        }
+
+        return result;
     }
 
 }

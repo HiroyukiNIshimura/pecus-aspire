@@ -1,10 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { searchUsersForWorkspace } from '@/actions/admin/user';
+import { getUsersWorkload, searchUsersForWorkspace } from '@/actions/admin/user';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { UserSearchResultResponse, WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
+import { WorkloadBadge } from '@/components/common/widgets/user/WorkloadIndicator';
+import type {
+  UserSearchResultResponse,
+  UserWorkloadInfo,
+  WorkspaceRole,
+  WorkspaceUserItem,
+} from '@/connectors/api/pecus';
 
 /** null を除外したワークスペースロール型 */
 type WorkspaceRoleValue = NonNullable<WorkspaceRole>;
@@ -120,6 +126,9 @@ export default function AddMemberModal({
   const [searchResults, setSearchResults] = useState<UserSearchResultResponse[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // 負荷情報の状態
+  const [workloadMap, setWorkloadMap] = useState<Record<string, UserWorkloadInfo>>({});
+
   // 選択状態
   const [selectedUser, setSelectedUser] = useState<UserSearchResultResponse | null>(null);
   const [selectedRole, setSelectedRole] = useState<WorkspaceRoleValue>('Member');
@@ -153,6 +162,7 @@ export default function AddMemberModal({
 
     if (!query.trim()) {
       setSearchResults([]);
+      setWorkloadMap({});
       return;
     }
 
@@ -161,12 +171,23 @@ export default function AddMemberModal({
       const result = await searchUsersForWorkspace(query);
       if (result.success && result.data) {
         setSearchResults(result.data);
+
+        // 検索結果のユーザーIDで負荷情報を取得
+        const userIds = result.data.map((u) => u.id!).filter((id) => id > 0);
+        if (userIds.length > 0) {
+          const workloadResult = await getUsersWorkload(userIds);
+          if (workloadResult.success && workloadResult.data?.workloads) {
+            setWorkloadMap(workloadResult.data.workloads);
+          }
+        }
       } else {
         setSearchResults([]);
+        setWorkloadMap({});
       }
     } catch (error) {
       console.error('Search failed:', error);
       setSearchResults([]);
+      setWorkloadMap({});
     } finally {
       setIsSearching(false);
     }
@@ -177,6 +198,7 @@ export default function AddMemberModal({
     if (!isOpen) {
       setSearchQuery('');
       setSearchResults([]);
+      setWorkloadMap({});
       setSelectedUser(null);
       setSelectedRole('Member');
     }
@@ -263,6 +285,12 @@ export default function AddMemberModal({
                   <div>
                     <p className="font-semibold">{selectedUser.username}</p>
                     <p className="text-sm text-base-content/70">{selectedUser.email}</p>
+                    {/* 負荷バッジ */}
+                    {workloadMap[String(selectedUser.id)] && (
+                      <div className="mt-1">
+                        <WorkloadBadge level={workloadMap[String(selectedUser.id)].workloadLevel} />
+                      </div>
+                    )}
                   </div>
                 </div>
                 <button
@@ -452,6 +480,12 @@ export default function AddMemberModal({
                           <div className="min-w-0 flex-1">
                             <p className="font-semibold truncate">{user.username || '(名前なし)'}</p>
                             <p className="text-sm text-base-content/70 truncate">{user.email}</p>
+                            {/* 負荷バッジ */}
+                            {workloadMap[String(user.id)] && (
+                              <div className="mt-1">
+                                <WorkloadBadge level={workloadMap[String(user.id)].workloadLevel} />
+                              </div>
+                            )}
                             {/* スキル表示 */}
                             {user.skills && user.skills.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1.5">

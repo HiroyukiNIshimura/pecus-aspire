@@ -5019,6 +5019,69 @@
         ]
       }
     },
+    "/api/users/workload": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "複数ユーザーの負荷状況を一括取得",
+        "description": "指定した複数のユーザーIDに対して、現在の負荷状況を一括で取得します。\nメンバーリスト表示時など、複数ユーザーの負荷を効率的に取得する際に使用します。\n最大50ユーザーまで指定可能です。",
+        "requestBody": {
+          "description": "ユーザーIDのリスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetUsersWorkloadRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetUsersWorkloadRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetUsersWorkloadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersWorkloadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/workspaces": {
       "post": {
         "tags": [
@@ -19223,6 +19286,25 @@
         },
         "description": "利用可能なAIモデル一覧取得レスポンス"
       },
+      "GetUsersWorkloadRequest": {
+        "required": [
+          "userIds"
+        ],
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "maxItems": 50,
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "取得対象のユーザーIDリスト（最大50件）"
+          }
+        },
+        "description": "複数ユーザーの負荷情報取得リクエスト"
+      },
       "GroupChatScope": {
         "enum": [
           "Workspace",
@@ -25055,6 +25137,64 @@
           }
         },
         "description": "ユーザー統計情報レスポンス"
+      },
+      "UsersWorkloadResponse": {
+        "type": "object",
+        "properties": {
+          "workloads": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/UserWorkloadInfo"
+            },
+            "description": "ユーザーID別の負荷情報"
+          }
+        },
+        "description": "複数ユーザーの負荷情報レスポンス"
+      },
+      "UserWorkloadInfo": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
+          },
+          "overdueCount": {
+            "type": "integer",
+            "description": "期限切れタスク数",
+            "format": "int32"
+          },
+          "dueTodayCount": {
+            "type": "integer",
+            "description": "今日期限のタスク数",
+            "format": "int32"
+          },
+          "dueThisWeekCount": {
+            "type": "integer",
+            "description": "今週期限のタスク数",
+            "format": "int32"
+          },
+          "totalActiveCount": {
+            "type": "integer",
+            "description": "未完了タスク総数",
+            "format": "int32"
+          },
+          "activeItemCount": {
+            "type": "integer",
+            "description": "担当中のアイテム数（コンテキストスイッチ指標）",
+            "format": "int32"
+          },
+          "activeWorkspaceCount": {
+            "type": "integer",
+            "description": "担当中のワークスペース数（コンテキストスイッチ指標）",
+            "format": "int32"
+          },
+          "workloadLevel": {
+            "type": "string",
+            "description": "負荷レベル: Low, Medium, High, Overloaded"
+          }
+        },
+        "description": "ユーザー負荷情報"
       },
       "WeeklyTaskTrend": {
         "required": [

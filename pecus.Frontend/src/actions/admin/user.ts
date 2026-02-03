@@ -8,6 +8,7 @@ import type {
   SuccessResponse,
   UserDetailResponse,
   UserSearchResultResponse,
+  UsersWorkloadResponse,
 } from '@/connectors/api/pecus';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
@@ -158,5 +159,28 @@ export async function getRoles(): Promise<ApiResponse<RoleListItemResponse[]>> {
   } catch (error) {
     console.error('Failed to fetch roles:', error);
     return handleApiErrorForAction(error, { defaultMessage: 'ロール一覧の取得に失敗しました' });
+  }
+}
+
+/**
+ * Server Action: 複数ユーザーの負荷情報を一括取得
+ * メンバーリスト表示時など、複数ユーザーの負荷を効率的に取得
+ * @param userIds ユーザーIDの配列（最大50件）
+ */
+export async function getUsersWorkload(userIds: number[]): Promise<ApiResponse<UsersWorkloadResponse>> {
+  try {
+    if (!userIds || userIds.length === 0) {
+      return { success: true, data: { workloads: {} } };
+    }
+
+    // 最大50件に制限
+    const limitedIds = userIds.slice(0, 50);
+
+    const api = createPecusApiClients();
+    const response = await api.user.postApiUsersWorkload({ userIds: limitedIds });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch users workload:', error);
+    return handleApiErrorForAction(error, { defaultMessage: 'ユーザーの負荷情報の取得に失敗しました' });
   }
 }
