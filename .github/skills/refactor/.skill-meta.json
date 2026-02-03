@@ -1,0 +1,9 @@
+{
+  "name": "refactor",
+  "source": "github-awesome-copilot",
+  "description": "Surgical code refactoring to improve maintainability without changing behavior.",
+  "description_ja": "Refactor",
+  "whenToUse": "Use this skill when:; Code is hard to understand or maintain; Functions/classes are too large; Code smells need addressing; Adding features is difficult due to code structure",
+  "categories": [],
+  "installedAt": "2026-02-02T03:14:45.810Z"
+}

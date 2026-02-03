@@ -149,8 +149,7 @@ export async function deleteDevice(deviceId: number): Promise<ApiResponse<Messag
 
     // Redis セッションも削除（publicId がある場合）
     if (devicePublicId) {
-      const deletedCount = await ServerSessionManager.destroySessionsByDevicePublicId(devicePublicId);
-      console.log(`[deleteDevice] Destroyed ${deletedCount} Redis sessions for device: ${devicePublicId}`);
+      await ServerSessionManager.destroySessionsByDevicePublicId(devicePublicId);
     }
 
     return { success: true, data: response };
@@ -203,8 +202,6 @@ export async function logoutOtherDevices(): Promise<
 
     // Redis から他のセッションを削除
     const deletedSessionCount = await ServerSessionManager.destroyOtherSessions(session.sessionId, session.user.id);
-
-    console.log(`[logoutOtherDevices] Deleted ${deletedDeviceCount} devices, ${deletedSessionCount} sessions`);
 
     return {
       success: true,

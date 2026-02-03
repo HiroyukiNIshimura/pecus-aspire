@@ -9,7 +9,8 @@
 @import 'https://fonts.googleapis.com/css?family=Reenie+Beanie';
 
 .notion-like-editor .editor-placeholder {
-  color: var(--color-primary-content);
+  color: var(--color-base-content);
+  opacity: 0.5;
   padding-left: 1rem;
 }
 .notion-like-editor .editor-shell {

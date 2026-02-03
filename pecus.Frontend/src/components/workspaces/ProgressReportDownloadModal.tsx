@@ -92,8 +92,10 @@ export default function ProgressReportDownloadModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
       }}
     >
       <div className="bg-base-100 rounded-box shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">

@@ -34,10 +34,11 @@ interface AttachmentListProps {
  * バックエンド形式: /api/workspaces/{id}/items/{itemId}/attachments/download/{fileName}
  * Next.js形式: /api/workspaces/{id}/items/{itemId}/attachments/{fileName}
  */
-function convertToProxyUrl(downloadUrl: string | undefined): string {
-  if (!downloadUrl) return '#';
+function convertToProxyUrl(downloadUrl: string | undefined | null, isDownload = false): string | undefined {
+  if (!downloadUrl) return undefined;
   // "/download/" を削除してNext.jsプロキシ形式に変換
-  return downloadUrl.replace('/attachments/download/', '/attachments/') + '?download=true';
+  const proxyUrl = downloadUrl.replace('/attachments/download/', '/attachments/');
+  return isDownload ? `${proxyUrl}?download=true` : proxyUrl;
 }
 
 /**
@@ -69,7 +70,8 @@ export default function AttachmentList({ attachments, uploadingFiles, onDelete, 
           attachment={attachment}
           onDelete={() => onDelete(attachment.id)}
           canDelete={canDelete(attachment)}
-          downloadUrl={convertToProxyUrl(attachment.downloadUrl)}
+          downloadUrl={convertToProxyUrl(attachment.downloadUrl, true) || '#'}
+          thumbnailUrl={convertToProxyUrl(attachment.thumbnailSmallUrl)}
         />
       ))}
     </div>

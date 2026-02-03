@@ -13,6 +13,8 @@ interface AttachmentListItemProps {
   canDelete: boolean;
   /** ダウンロードURL */
   downloadUrl: string;
+  /** サムネイルURL（画像の場合のみ） */
+  thumbnailUrl?: string;
 }
 
 /**
@@ -76,11 +78,21 @@ function formatFileSize(bytes: number | undefined): string {
  * 個別の添付ファイル行コンポーネント
  * インライン削除確認UIを内包
  */
-export default function AttachmentListItem({ attachment, onDelete, canDelete, downloadUrl }: AttachmentListItemProps) {
+export default function AttachmentListItem({
+  attachment,
+  onDelete,
+  canDelete,
+  downloadUrl,
+  thumbnailUrl,
+}: AttachmentListItemProps) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  // サムネイル読み込み状態: 'loading' | 'loaded' | 'error'
+  const [imgState, setImgState] = useState<'loading' | 'loaded' | 'error'>('loading');
 
   const { iconClass, colorClass } = getFileIconInfo(attachment.fileName);
+  // 画像ファイルかどうかを判定
+  const isImage = attachment.mimeType?.startsWith('image/');
 
   const handleDeleteClick = () => {
     setIsConfirmingDelete(true);
@@ -128,8 +140,25 @@ export default function AttachmentListItem({ attachment, onDelete, canDelete, do
   // 通常表示
   return (
     <div className="flex items-center gap-3 p-3 bg-base-200 rounded-lg hover:bg-base-content/10 transition-colors group">
-      {/* ファイルタイプアイコン */}
-      <span className={`${iconClass} size-6 ${colorClass} shrink-0`} aria-hidden="true" />
+      {/* ファイルタイプアイコンまたはサムネイル */}
+      {isImage && thumbnailUrl ? (
+        <>
+          {/* 読み込み中はスケルトン表示 */}
+          {imgState === 'loading' && <div className="size-10 rounded shrink-0 bg-base-300 animate-pulse" />}
+          {/* サムネイル画像 */}
+          <img
+            src={thumbnailUrl}
+            alt={attachment.fileName || '画像'}
+            className={`size-10 rounded object-cover shrink-0 bg-base-300 ${imgState !== 'loaded' ? 'hidden' : ''}`}
+            onLoad={() => setImgState('loaded')}
+            onError={() => setImgState('error')}
+          />
+          {/* エラー時はアイコン表示 */}
+          {imgState === 'error' && <span className={`${iconClass} size-6 ${colorClass} shrink-0`} aria-hidden="true" />}
+        </>
+      ) : (
+        <span className={`${iconClass} size-6 ${colorClass} shrink-0`} aria-hidden="true" />
+      )}
 
       {/* ファイル情報 */}
       <div className="flex-1 min-w-0">

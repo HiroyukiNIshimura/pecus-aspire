@@ -1,5 +1,5 @@
-using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Models.Requests.WorkspaceItem;
 
@@ -65,4 +65,15 @@ public class UpdateWorkspaceItemRequest
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
     public required uint RowVersion { get; set; }
+
+    /// <summary>
+    /// 一時添付ファイルのセッションID（エディタでアップロードした画像を正式化するため）
+    /// </summary>
+    [MaxLength(50, ErrorMessage = "セッションIDは50文字以内で入力してください。")]
+    public string? TempSessionId { get; set; }
+
+    /// <summary>
+    /// 一時添付ファイルIDのリスト（コンテンツ内で参照されている一時ファイル）
+    /// </summary>
+    public List<string>? TempAttachmentIds { get; set; }
 }

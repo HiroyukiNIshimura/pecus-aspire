@@ -13,16 +13,32 @@ public class FileUploadService
     private readonly ApplicationDbContext _context;
     private readonly PecusConfig _config;
     private readonly ILogger<FileUploadService> _logger;
+    private readonly IWebHostEnvironment _environment;
 
     public FileUploadService(
         ApplicationDbContext context,
         PecusConfig config,
-        ILogger<FileUploadService> logger
+        ILogger<FileUploadService> logger,
+        IWebHostEnvironment environment
     )
     {
         _context = context;
         _config = config;
         _logger = logger;
+        _environment = environment;
+    }
+
+    /// <summary>
+    /// ストレージのベースパスを取得（絶対パス or ContentRootPath + 相対パス）
+    /// </summary>
+    private string GetStorageBasePath()
+    {
+        var storagePath = _config.FileUpload.StoragePath;
+        if (Path.IsPathRooted(storagePath))
+        {
+            return storagePath;
+        }
+        return Path.Combine(_environment.ContentRootPath, storagePath);
     }
 
     /// <summary>
@@ -79,7 +95,7 @@ public class FileUploadService
             fileType,
             resourceId,
             extension,
-            _config.FileUpload.StoragePath
+            GetStorageBasePath()
         );
 
         // ディレクトリを作成

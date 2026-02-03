@@ -58,12 +58,16 @@ export default function CreateTagModal({ isOpen, onClose, onSuccess }: CreateTag
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       {/* モーダルコンテナ */}
-      <div
-        className="bg-base-100 rounded-box shadow-xl w-full max-w-md max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
         {/* モーダルヘッダー */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
           <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">

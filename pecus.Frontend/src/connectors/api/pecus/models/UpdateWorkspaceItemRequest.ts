@@ -48,5 +48,13 @@ export type UpdateWorkspaceItemRequest = {
      * アイテムの楽観的ロック用のRowVersion
      */
     rowVersion: number;
+    /**
+     * 一時添付ファイルのセッションID（エディタでアップロードした画像を正式化するため）
+     */
+    tempSessionId?: string | null;
+    /**
+     * 一時添付ファイルIDのリスト（コンテンツ内で参照されている一時ファイル）
+     */
+    tempAttachmentIds?: Array<string> | null;
 };
 

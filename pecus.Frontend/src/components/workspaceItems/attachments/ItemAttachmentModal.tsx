@@ -205,12 +205,16 @@ export default function ItemAttachmentModal({
   return (
     <>
       {/* オーバーレイ */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+      >
         {/* モーダルコンテナ */}
-        <div
-          className="bg-base-100 rounded-box shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="bg-base-100 rounded-box shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
           {/* ヘッダー */}
           <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
             <div className="flex items-center gap-3 flex-wrap">

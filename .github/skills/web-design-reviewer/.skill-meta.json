@@ -1,0 +1,9 @@
+{
+  "name": "web-design-reviewer",
+  "source": "github-awesome-copilot",
+  "description": "Web Design Reviewer",
+  "description_ja": "Web Design Reviewer",
+  "whenToUse": "This skill enables visual inspection and validation of website design quality, identifying and fixing issues at the source code level.",
+  "categories": [],
+  "installedAt": "2026-02-02T03:16:13.155Z"
+}

@@ -130,7 +130,9 @@ public class OrganizationAccessHelper
                     .ThenInclude(wu => wu.User);
         }
 
-        var workspace = await query.FirstOrDefaultAsync(w => w.Id == workspaceId);
+        var workspace = await query
+            .Where(w => w.Id == workspaceId)
+            .FirstOrDefaultAsync();
 
         if (workspace == null || workspace.OrganizationId != organizationId.Value)
         {
@@ -175,7 +177,8 @@ public class OrganizationAccessHelper
         {
             var workspace = await _context.Workspaces
                 .AsNoTracking()
-                .FirstOrDefaultAsync(w => w.Id == workspaceId);
+                .Where(w => w.Id == workspaceId)
+                .FirstOrDefaultAsync();
             if (workspace == null || !workspace.IsActive)
             {
                 return false;
@@ -213,7 +216,8 @@ public class OrganizationAccessHelper
         var workspace = await _context.Workspaces
             .Include(w => w.Organization)
             .Include(w => w.Genre)
-            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+            .Where(w => w.Id == workspaceId)
+            .FirstOrDefaultAsync();
 
         if (workspace == null || workspace.OrganizationId != organizationId.Value)
         {
@@ -298,7 +302,8 @@ public class OrganizationAccessHelper
         var workspace = await _context.Workspaces
             .Include(w => w.Organization)
             .Include(w => w.Genre)
-            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+            .Where(w => w.Id == workspaceId)
+            .FirstOrDefaultAsync();
 
         if (workspace == null || workspace.OrganizationId != organizationId.Value)
         {

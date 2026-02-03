@@ -38,12 +38,16 @@ export default function TaskCommentModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       {/* モーダルコンテナ */}
-      <div
-        className="bg-base-100 rounded-box shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="bg-base-100 rounded-box shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
         {/* モーダルヘッダー */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-base-300 shrink-0">
           <div className="flex items-center gap-2 min-w-0">

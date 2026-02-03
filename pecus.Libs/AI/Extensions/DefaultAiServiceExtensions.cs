@@ -4,6 +4,10 @@ using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Provider.Default;
 using Pecus.Libs.DB.Models.Enums;
 
+// RemoveAllResilienceHandlers は実験的APIだが、ServiceDefaults のデフォルトタイムアウト(30秒)を
+// 上書きするために必要。AI APIは応答に60-120秒かかることがある。
+#pragma warning disable EXTEXP0001
+
 namespace Pecus.Libs.AI.Extensions;
 
 /// <summary>
@@ -114,19 +118,24 @@ public static class DefaultAiServiceExtensions
 
         foreach (var clientName in clientNames)
         {
+            // 注意: ServiceDefaults の ConfigureHttpClientDefaults で設定されるデフォルトの
+            // ResilienceHandler (30秒タイムアウト) を無効化し、AI用の長いタイムアウトを適用
             services.AddHttpClient(clientName, (sp, client) =>
             {
                 client.Timeout = timeout;
-            }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
                 AutomaticDecompression = System.Net.DecompressionMethods.GZip
             })
+            // デフォルトの ResilienceHandler を削除し、AI用の設定で上書き
+            .RemoveAllResilienceHandlers()
             // LLM API は応答に時間がかかるため、Resilience Handler のタイムアウトをカスタマイズ
             .AddStandardResilienceHandler(options =>
             {
-                // 各リクエスト試行のタイムアウト（デフォルト: 10秒 → 60秒）
+                // 各リクエスト試行のタイムアウト（デフォルト: 10秒 → カスタム設定）
                 options.AttemptTimeout.Timeout = timeout;
-                // リクエスト全体のタイムアウト（デフォルト: 30秒 → 120秒）
+                // リクエスト全体のタイムアウト（デフォルト: 30秒 → カスタム設定の2倍）
                 options.TotalRequestTimeout.Timeout = timeout * 2;
                 // サーキットブレーカーのサンプリング期間も延長
                 options.CircuitBreaker.SamplingDuration = timeout * 2;

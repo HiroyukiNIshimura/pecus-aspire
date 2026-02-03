@@ -14,8 +14,6 @@ public class WorkspaceItemTempAttachmentService
     private readonly ILogger<WorkspaceItemTempAttachmentService> _logger;
     private readonly PecusConfig _config;
 
-    private const string TempUploadFolder = "uploads/temp";
-
     public WorkspaceItemTempAttachmentService(
         IWebHostEnvironment environment,
         ILogger<WorkspaceItemTempAttachmentService> logger,
@@ -24,6 +22,19 @@ public class WorkspaceItemTempAttachmentService
         _environment = environment;
         _logger = logger;
         _config = config;
+    }
+
+    /// <summary>
+    /// ストレージのベースパスを取得（絶対パス or ContentRootPath + 相対パス）
+    /// </summary>
+    private string GetStorageBasePath()
+    {
+        var storagePath = _config.FileUpload.StoragePath;
+        if (Path.IsPathRooted(storagePath))
+        {
+            return storagePath;
+        }
+        return Path.Combine(_environment.ContentRootPath, storagePath);
     }
 
     /// <summary>
@@ -72,10 +83,10 @@ public class WorkspaceItemTempAttachmentService
         var originalFileName = Path.GetFileName(file.FileName);
         var storedFileName = $"{tempFileId}_{originalFileName}";
 
-        // 一時フォルダパス: uploads/temp/{workspaceId}/{sessionId}/
+        // 一時フォルダパス: {StoragePath}/temp/{workspaceId}/{sessionId}/
         var tempFolder = Path.Combine(
-            _environment.ContentRootPath,
-            TempUploadFolder,
+            GetStorageBasePath(),
+            "temp",
             workspaceId.ToString(),
             sessionId);
 
@@ -83,9 +94,12 @@ public class WorkspaceItemTempAttachmentService
 
         var filePath = Path.Combine(tempFolder, storedFileName);
 
-        // ファイルを保存
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+        // ファイルを保存（ストリームを確実にクローズしてからサムネイル生成）
+        await using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+        {
+            await file.CopyToAsync(stream);
+            await stream.FlushAsync();
+        }
 
         // 画像の場合はサムネイルも生成（一時ファイルはDB保存しないため同期生成）
         if (ThumbnailHelper.IsImageFile(file.ContentType))
@@ -142,8 +156,8 @@ public class WorkspaceItemTempAttachmentService
     public string? GetTempFilePath(int workspaceId, string sessionId, string fileName)
     {
         var filePath = Path.Combine(
-            _environment.ContentRootPath,
-            TempUploadFolder,
+            GetStorageBasePath(),
+            "temp",
             workspaceId.ToString(),
             sessionId,
             fileName);
@@ -161,8 +175,8 @@ public class WorkspaceItemTempAttachmentService
     public TempFileInfo? GetTempFileInfo(int workspaceId, string sessionId, string tempFileId)
     {
         var tempFolder = Path.Combine(
-            _environment.ContentRootPath,
-            TempUploadFolder,
+            GetStorageBasePath(),
+            "temp",
             workspaceId.ToString(),
             sessionId);
 
@@ -230,10 +244,10 @@ public class WorkspaceItemTempAttachmentService
         var newFileId = Guid.NewGuid().ToString();
         var newFileName = $"{newFileId}_{originalFileName}";
 
-        // 正式フォルダパス: uploads/workspaces/{workspaceId}/items/{itemId}/
+        // 正式フォルダパス: {StoragePath}/workspaces/{workspaceId}/items/{itemId}/
         var permanentFolder = Path.Combine(
-            _environment.ContentRootPath,
-            "uploads/workspaces",
+            GetStorageBasePath(),
+            "workspaces",
             workspaceId.ToString(),
             "items",
             workspaceItemId.ToString());
@@ -271,6 +285,7 @@ public class WorkspaceItemTempAttachmentService
         {
             NewFilePath = newFilePath,
             DownloadUrl = downloadUrl,
+            OriginalFileName = originalFileName,
             ThumbnailMediumPath = newThumbnailMediumPath,
             ThumbnailSmallPath = newThumbnailSmallPath,
             FileSize = tempFileInfo.FileSize
@@ -285,8 +300,8 @@ public class WorkspaceItemTempAttachmentService
     public void CleanupSessionFiles(int workspaceId, string sessionId)
     {
         var tempFolder = Path.Combine(
-            _environment.ContentRootPath,
-            TempUploadFolder,
+            GetStorageBasePath(),
+            "temp",
             workspaceId.ToString(),
             sessionId);
 
@@ -306,7 +321,7 @@ public class WorkspaceItemTempAttachmentService
     /// <returns>削除したセッション数</returns>
     public int CleanupOldTempFiles(int olderThanHours = 24)
     {
-        var tempRoot = Path.Combine(_environment.ContentRootPath, TempUploadFolder);
+        var tempRoot = Path.Combine(GetStorageBasePath(), "temp");
 
         if (!Directory.Exists(tempRoot))
         {
@@ -356,28 +371,51 @@ public class WorkspaceItemTempAttachmentService
     }
 
     /// <summary>
-    /// サムネイルを作成
+    /// サムネイルを作成（リトライ付き）
     /// </summary>
     /// <param name="sourcePath">元画像パス</param>
     /// <param name="destinationPath">サムネイル保存先パス</param>
     /// <param name="maxWidth">最大幅</param>
     /// <param name="maxHeight">最大高さ</param>
+    /// <param name="maxRetries">最大リトライ回数</param>
     private static async Task CreateThumbnailAsync(
         string sourcePath,
         string destinationPath,
         int maxWidth,
-        int maxHeight)
+        int maxHeight,
+        int maxRetries = 3)
     {
-        using var image = await Image.LoadAsync(sourcePath);
-
-        // アスペクト比を維持してリサイズ
-        image.Mutate(x => x.Resize(new ResizeOptions
+        for (var attempt = 0; attempt < maxRetries; attempt++)
         {
-            Size = new Size(maxWidth, maxHeight),
-            Mode = ResizeMode.Max
-        }));
+            try
+            {
+                // FileShare.Read を指定してファイルを開く（他プロセスとの競合を回避）
+                await using var sourceStream = new FileStream(
+                    sourcePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    bufferSize: 4096,
+                    useAsync: true);
 
-        await image.SaveAsync(destinationPath);
+                using var image = await Image.LoadAsync(sourceStream);
+
+                // アスペクト比を維持してリサイズ
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Size = new Size(maxWidth, maxHeight),
+                    Mode = ResizeMode.Max
+                }));
+
+                await image.SaveAsync(destinationPath);
+                return;
+            }
+            catch (IOException) when (attempt < maxRetries - 1)
+            {
+                // ファイルがまだロックされている場合は少し待ってリトライ
+                await Task.Delay(100 * (attempt + 1));
+            }
+        }
     }
 }
 
@@ -401,6 +439,10 @@ public class PromotedFileInfo
 {
     public required string NewFilePath { get; set; }
     public required string DownloadUrl { get; set; }
+    /// <summary>
+    /// 元のファイル名（UUID プレフィックスなし）
+    /// </summary>
+    public required string OriginalFileName { get; set; }
     public string? ThumbnailMediumPath { get; set; }
     public string? ThumbnailSmallPath { get; set; }
     public long FileSize { get; set; }
