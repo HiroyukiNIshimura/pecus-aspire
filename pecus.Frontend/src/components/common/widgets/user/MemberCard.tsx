@@ -1,8 +1,9 @@
 'use client';
 
 import type { MemberItem } from '@/components/workspaces/WorkspaceMemberList';
-import type { WorkspaceRole } from '@/connectors/api/pecus';
+import type { AssigneeTaskLoadResponse, WorkspaceRole } from '@/connectors/api/pecus';
 import AvatarImage from './AvatarImage';
+import WorkloadIndicator from './WorkloadIndicator';
 
 /** null を除外したワークスペースロール型 */
 type WorkspaceRoleValue = NonNullable<WorkspaceRole>;
@@ -37,6 +38,8 @@ export interface MemberCardProps {
   onNameClick?: (userId: number, userName: string) => void;
   /** 右端に配置するアクション要素（3点メニューなど） */
   actionSlot?: React.ReactNode;
+  /** 負荷情報（表示する場合に渡す） */
+  workload?: AssigneeTaskLoadResponse | null;
 }
 
 /**
@@ -51,6 +54,7 @@ export default function MemberCard({
   onIconClick,
   onNameClick,
   actionSlot,
+  workload,
 }: MemberCardProps) {
   const memberId = getMemberId(member);
   const memberName = getMemberName(member);
@@ -106,6 +110,12 @@ export default function MemberCard({
           {/* 非アクティブ表示 */}
           {member.isActive === false && <span className="text-xs text-base-content/50">(非アクティブ)</span>}
         </div>
+        {/* 負荷情報（渡された場合のみ表示） */}
+        {workload && (
+          <div className="mt-1">
+            <WorkloadIndicator workload={workload} size="sm" />
+          </div>
+        )}
       </div>
 
       {/* アクションスロット（3点メニューなど） - カード右端に配置 */}

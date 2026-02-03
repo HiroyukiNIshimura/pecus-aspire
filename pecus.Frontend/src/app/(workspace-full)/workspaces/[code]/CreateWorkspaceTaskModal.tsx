@@ -572,6 +572,100 @@ export default function CreateWorkspaceTaskModal({
                   <span className="label-text-alt text-error">{getFieldError('assignedUserId')}</span>
                 </div>
               )}
+
+              {/* 担当者負荷チェック結果（担当者の直下に表示） */}
+              {assigneeLoadCheck && selectedAssignee && (
+                <div className="mt-2 space-y-2">
+                  {/* 負荷サマリー（常に表示） */}
+                  <div
+                    className={`alert alert-soft ${
+                      assigneeLoadCheck.workloadLevel === 'Overloaded'
+                        ? 'alert-error'
+                        : assigneeLoadCheck.workloadLevel === 'High'
+                          ? 'alert-warning'
+                          : assigneeLoadCheck.workloadLevel === 'Medium'
+                            ? 'alert-info'
+                            : 'alert-success'
+                    }`}
+                  >
+                    <span
+                      className={`size-5 ${
+                        assigneeLoadCheck.workloadLevel === 'Overloaded'
+                          ? 'icon-[mdi--alert-octagon]'
+                          : assigneeLoadCheck.workloadLevel === 'High'
+                            ? 'icon-[mdi--alert-circle-outline]'
+                            : assigneeLoadCheck.workloadLevel === 'Medium'
+                              ? 'icon-[mdi--information-outline]'
+                              : 'icon-[mdi--check-circle-outline]'
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold">{selectedAssignee.username} の負荷:</span>
+                        <span
+                          className={`badge ${
+                            assigneeLoadCheck.workloadLevel === 'Overloaded'
+                              ? 'badge-error'
+                              : assigneeLoadCheck.workloadLevel === 'High'
+                                ? 'badge-warning'
+                                : assigneeLoadCheck.workloadLevel === 'Medium'
+                                  ? 'badge-info'
+                                  : 'badge-success'
+                          }`}
+                        >
+                          {assigneeLoadCheck.workloadLevel === 'Overloaded'
+                            ? '過負荷'
+                            : assigneeLoadCheck.workloadLevel === 'High'
+                              ? '高'
+                              : assigneeLoadCheck.workloadLevel === 'Medium'
+                                ? '中'
+                                : '低'}
+                        </span>
+                      </div>
+                      <div className="text-sm mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                        {(assigneeLoadCheck.overdueCount ?? 0) > 0 && (
+                          <span className="text-error font-medium">⚠️ 期限切れ {assigneeLoadCheck.overdueCount}件</span>
+                        )}
+                        <span>📅 今週 {assigneeLoadCheck.dueThisWeekCount ?? 0}件</span>
+                        <span>📋 未完了 {assigneeLoadCheck.totalActiveCount ?? 0}件</span>
+                        <span>🔀 {assigneeLoadCheck.activeWorkspaceCount ?? 0}WS横断</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* エラー表示 */}
+                  {assigneeLoadError && (
+                    <div className="alert alert-soft alert-warning">
+                      <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+                      <span>{assigneeLoadError}</span>
+                    </div>
+                  )}
+
+                  {/* 閾値超過警告（既存ロジック維持） */}
+                  {assigneeLoadCheck.isExceeded && (
+                    <div className="alert alert-soft alert-warning">
+                      <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+                      <div>
+                        <p className="font-semibold">同じ期限日の担当タスクが閾値を超えています。</p>
+                        <p className="text-sm">
+                          {selectedAssignee.username} のタスクが同じ期限日 {dueDate} に{' '}
+                          {assigneeLoadCheck.projectedTaskCount} 件 （閾値 {assigneeLoadCheck.threshold}{' '}
+                          件）と集中しています。担当者の負荷を考慮して、期限日の調整や担当者の変更を検討してください。
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* エラーのみ表示（負荷情報がない場合） */}
+              {assigneeLoadError && !assigneeLoadCheck && (
+                <div className="mt-2 alert alert-soft alert-warning">
+                  <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+                  <span>{assigneeLoadError}</span>
+                </div>
+              )}
             </div>
 
             {/* タスク内容 */}
@@ -759,31 +853,6 @@ export default function CreateWorkspaceTaskModal({
                 </div>
               )}
             </div>
-
-            {/* 担当者負荷チェック結果（エラーまたは閾値超過時のみ表示） */}
-            {(assigneeLoadError || (assigneeLoadCheck?.isExceeded && selectedAssignee)) && (
-              <div className="space-y-2">
-                {assigneeLoadError && (
-                  <div className="alert alert-soft alert-warning">
-                    <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
-                    <span>{assigneeLoadError}</span>
-                  </div>
-                )}
-                {assigneeLoadCheck?.isExceeded && selectedAssignee && (
-                  <div className="alert alert-soft alert-warning">
-                    <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
-                    <div>
-                      <p className="font-semibold">同じ期限日の担当タスクが閾値を超えています。</p>
-                      <p className="text-sm">
-                        {selectedAssignee.username} のタスクが同じ期限日 {dueDate} に{' '}
-                        {assigneeLoadCheck.projectedTaskCount} 件 （閾値 {assigneeLoadCheck.threshold}{' '}
-                        件）と集中しています。担当者の負荷を考慮して、期限日の調整や担当者の変更を検討してください。
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* 予定工数 */}
             <div className="form-control">

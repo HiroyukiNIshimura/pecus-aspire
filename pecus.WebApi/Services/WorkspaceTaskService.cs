@@ -223,15 +223,42 @@ public class WorkspaceTaskService
         var startOfDay = new DateTimeOffset(localDate, request.DueDate.Offset).ToUniversalTime();
         var endOfDay = startOfDay.AddDays(1);
 
-        var activeTaskCount = await _context.WorkspaceTasks
+        // 現在時刻と今週末の計算
+        var now = DateTimeOffset.UtcNow;
+        var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
+        var todayEnd = todayStart.AddDays(1);
+        // 週末（日曜日の終わり）を計算
+        var daysUntilEndOfWeek = ((int)DayOfWeek.Sunday - (int)now.DayOfWeek + 7) % 7;
+        if (daysUntilEndOfWeek == 0) daysUntilEndOfWeek = 7; // 日曜日の場合は次の日曜日
+        var endOfWeek = todayStart.AddDays(daysUntilEndOfWeek + 1); // 日曜日の終わり
+
+        // 組織内の担当者の未完了タスクを一括で集計
+        var userActiveTasks = await _context.WorkspaceTasks
             .Where(t => t.OrganizationId == organization.Id)
             .Where(t => t.AssignedUserId == request.AssignedUserId)
             .Where(t => !t.IsCompleted && !t.IsDiscarded)
-            .Where(t => t.DueDate >= startOfDay && t.DueDate < endOfDay)
-            .CountAsync();
+            .Select(t => new
+            {
+                t.DueDate,
+                t.WorkspaceItemId,
+                t.WorkspaceId
+            })
+            .ToListAsync();
+
+        // 各種カウントを計算
+        var activeTaskCount = userActiveTasks.Count(t => t.DueDate >= startOfDay && t.DueDate < endOfDay);
+        var overdueCount = userActiveTasks.Count(t => t.DueDate < todayStart);
+        var dueTodayCount = userActiveTasks.Count(t => t.DueDate >= todayStart && t.DueDate < todayEnd);
+        var dueThisWeekCount = userActiveTasks.Count(t => t.DueDate >= todayStart && t.DueDate < endOfWeek);
+        var totalActiveCount = userActiveTasks.Count;
+        var activeItemCount = userActiveTasks.Select(t => t.WorkspaceItemId).Distinct().Count();
+        var activeWorkspaceCount = userActiveTasks.Select(t => t.WorkspaceId).Distinct().Count();
 
         var projectedTaskCount = activeTaskCount + 1;
         var isExceeded = threshold > 0 && projectedTaskCount > threshold;
+
+        // 負荷レベルを計算
+        var workloadLevel = CalculateWorkloadLevel(overdueCount, dueTodayCount, dueThisWeekCount, activeWorkspaceCount);
 
         return new AssigneeTaskLoadResponse
         {
@@ -241,7 +268,34 @@ public class WorkspaceTaskService
             ActiveTaskCount = activeTaskCount,
             ProjectedTaskCount = projectedTaskCount,
             IsExceeded = isExceeded,
+            // 拡張フィールド
+            OverdueCount = overdueCount,
+            DueTodayCount = dueTodayCount,
+            DueThisWeekCount = dueThisWeekCount,
+            TotalActiveCount = totalActiveCount,
+            ActiveItemCount = activeItemCount,
+            ActiveWorkspaceCount = activeWorkspaceCount,
+            WorkloadLevel = workloadLevel,
         };
+    }
+
+    /// <summary>
+    /// 負荷レベルを計算
+    /// </summary>
+    private static string CalculateWorkloadLevel(int overdueCount, int dueTodayCount, int dueThisWeekCount, int activeWorkspaceCount)
+    {
+        // 期限切れがあれば即「過負荷」
+        if (overdueCount > 0) return "Overloaded";
+
+        // スコア計算（重み付け）
+        var score =
+            dueThisWeekCount * 2 +      // 今週のタスク数
+            dueTodayCount * 3 +          // 今日期限（緊急）
+            activeWorkspaceCount * 1.5;  // コンテキストスイッチ
+
+        if (score >= 15) return "High";
+        if (score >= 8) return "Medium";
+        return "Low";
     }
 
     /// <summary>

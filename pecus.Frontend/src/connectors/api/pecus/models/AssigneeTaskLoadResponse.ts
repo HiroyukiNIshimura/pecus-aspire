@@ -30,5 +30,33 @@ export type AssigneeTaskLoadResponse = {
      * しきい値を超過しているか
      */
     isExceeded?: boolean;
+    /**
+     * 期限切れタスク数（組織全体）
+     */
+    overdueCount?: number;
+    /**
+     * 今日期限のタスク数（組織全体）
+     */
+    dueTodayCount?: number;
+    /**
+     * 今週期限のタスク数（組織全体）
+     */
+    dueThisWeekCount?: number;
+    /**
+     * 未完了タスク総数（組織全体）
+     */
+    totalActiveCount?: number;
+    /**
+     * 担当中のアイテム数（コンテキストスイッチ指標）
+     */
+    activeItemCount?: number;
+    /**
+     * 担当中のワークスペース数（コンテキストスイッチ指標）
+     */
+    activeWorkspaceCount?: number;
+    /**
+     * 負荷レベル: Low, Medium, High, Overloaded
+     */
+    workloadLevel?: string;
 };
 

@@ -34,4 +34,41 @@ public class AssigneeTaskLoadResponse
     /// しきい値を超過しているか
     /// </summary>
     public bool IsExceeded { get; set; }
+
+    // ===== 負荷状況の詳細情報（拡張） =====
+
+    /// <summary>
+    /// 期限切れタスク数（組織全体）
+    /// </summary>
+    public int OverdueCount { get; set; }
+
+    /// <summary>
+    /// 今日期限のタスク数（組織全体）
+    /// </summary>
+    public int DueTodayCount { get; set; }
+
+    /// <summary>
+    /// 今週期限のタスク数（組織全体）
+    /// </summary>
+    public int DueThisWeekCount { get; set; }
+
+    /// <summary>
+    /// 未完了タスク総数（組織全体）
+    /// </summary>
+    public int TotalActiveCount { get; set; }
+
+    /// <summary>
+    /// 担当中のアイテム数（コンテキストスイッチ指標）
+    /// </summary>
+    public int ActiveItemCount { get; set; }
+
+    /// <summary>
+    /// 担当中のワークスペース数（コンテキストスイッチ指標）
+    /// </summary>
+    public int ActiveWorkspaceCount { get; set; }
+
+    /// <summary>
+    /// 負荷レベル: Low, Medium, High, Overloaded
+    /// </summary>
+    public string WorkloadLevel { get; set; } = "Low";
 }
