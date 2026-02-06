@@ -111,7 +111,7 @@ export default function EquationComponent({ equation, inline, nodeKey }: Equatio
       {showEquationEditor && isEditable ? (
         <EquationEditor equation={equationValue} setEquation={setEquationValue} inline={inline} ref={inputRef} />
       ) : (
-        <ErrorBoundary onError={(e) => editor._onError(e)} fallback={null}>
+        <ErrorBoundary onError={(e) => editor._onError(e as any)} fallback={null}>
           <KatexRenderer
             equation={equationValue}
             inline={inline}

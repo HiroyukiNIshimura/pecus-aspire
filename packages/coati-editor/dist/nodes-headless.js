@@ -389,8 +389,8 @@ var init_EmojiNode = __esm({
 });
 
 // ../../node_modules/react-error-boundary/dist/react-error-boundary.js
-function C(r = [], t = []) {
-  return r.length !== t.length || r.some((e, o) => !Object.is(e, t[o]));
+function C(r = [], e = []) {
+  return r.length !== e.length || r.some((t, o) => !Object.is(t, e[o]));
 }
 var import_react5, h, c, m;
 var init_react_error_boundary = __esm({
@@ -404,44 +404,44 @@ var init_react_error_boundary = __esm({
       error: null
     };
     m = class extends import_react5.Component {
-      constructor(t) {
-        super(t), this.resetErrorBoundary = this.resetErrorBoundary.bind(this), this.state = c;
+      constructor(e) {
+        super(e), this.resetErrorBoundary = this.resetErrorBoundary.bind(this), this.state = c;
       }
-      static getDerivedStateFromError(t) {
-        return { didCatch: true, error: t };
+      static getDerivedStateFromError(e) {
+        return { didCatch: true, error: e };
       }
-      resetErrorBoundary(...t) {
-        const { error: e } = this.state;
-        e !== null && (this.props.onReset?.({
-          args: t,
+      resetErrorBoundary(...e) {
+        const { error: t } = this.state;
+        t !== null && (this.props.onReset?.({
+          args: e,
           reason: "imperative-api"
         }), this.setState(c));
       }
-      componentDidCatch(t, e) {
-        this.props.onError?.(t, e);
+      componentDidCatch(e, t) {
+        this.props.onError?.(e, t);
       }
-      componentDidUpdate(t, e) {
-        const { didCatch: o } = this.state, { resetKeys: n } = this.props;
-        o && e.error !== null && C(t.resetKeys, n) && (this.props.onReset?.({
-          next: n,
-          prev: t.resetKeys,
+      componentDidUpdate(e, t) {
+        const { didCatch: o } = this.state, { resetKeys: s } = this.props;
+        o && t.error !== null && C(e.resetKeys, s) && (this.props.onReset?.({
+          next: s,
+          prev: e.resetKeys,
           reason: "keys"
         }), this.setState(c));
       }
       render() {
-        const { children: t, fallbackRender: e, FallbackComponent: o, fallback: n } = this.props, { didCatch: s, error: a } = this.state;
-        let i = t;
-        if (s) {
+        const { children: e, fallbackRender: t, FallbackComponent: o, fallback: s } = this.props, { didCatch: n, error: a } = this.state;
+        let i = e;
+        if (n) {
           const u = {
             error: a,
             resetErrorBoundary: this.resetErrorBoundary
           };
-          if (typeof e == "function")
-            i = e(u);
+          if (typeof t == "function")
+            i = t(u);
           else if (o)
             i = (0, import_react5.createElement)(o, u);
-          else if (n !== void 0)
-            i = n;
+          else if (s !== void 0)
+            i = s;
           else
             throw a;
         }
@@ -449,7 +449,7 @@ var init_react_error_boundary = __esm({
           h.Provider,
           {
             value: {
-              didCatch: s,
+              didCatch: n,
               error: a,
               resetErrorBoundary: this.resetErrorBoundary
             }
