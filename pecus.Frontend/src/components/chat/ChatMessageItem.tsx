@@ -29,27 +29,26 @@ function Avatar({
   config: AvatarConfig;
 }) {
   return (
-    <div
-      className={`flex-shrink-0 size-12 rounded-full ${config.bgClass} flex items-center justify-center transition-transform duration-200 hover:scale-150 cursor-pointer`}
-    >
-      {iconUrl ? (
-        <img src={iconUrl} alt={username ?? ''} className="size-12 rounded-full" />
-      ) : (
-        <span className={`${config.iconClass} size-5 ${config.iconColorClass}`} aria-hidden="true" />
-      )}
+    <div className="chat-avatar avatar">
+      <div className={`size-10 rounded-full ${config.bgClass} flex items-center justify-center`}>
+        {iconUrl ? (
+          <img src={iconUrl} alt={username ?? ''} className="size-10 rounded-full" />
+        ) : (
+          <span className={`${config.iconClass} size-5 ${config.iconColorClass}`} aria-hidden="true" />
+        )}
+      </div>
     </div>
   );
 }
 
 /** メッセージ本文コンポーネント */
-function MessageContent({ content, className }: { content: string | null | undefined; className: string }) {
-  return <div className={className} dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }} />;
-}
-
-/** タイムスタンプコンポーネント */
-function Timestamp({ createdAt }: { createdAt: string | null | undefined }) {
-  if (!createdAt) return null;
-  return <div className="text-xs text-base-content/50 mt-1">{formatRelativeTime(createdAt)}</div>;
+function MessageContent({ content }: { content: string | null | undefined }) {
+  return (
+    <div
+      className="chat-bubble wrap-break-word whitespace-pre-wrap [&_a]:text-primary [&_a]:underline [&_a:hover]:text-info-content"
+      dangerouslySetInnerHTML={{ __html: convertToLinks(content ?? '') }}
+    />
+  );
 }
 
 /** 左寄せメッセージ（相手・システム・AI用）*/
@@ -65,18 +64,13 @@ function LeftAlignedMessage({
   createdAt: string | null | undefined;
 }) {
   return (
-    <div className="flex justify-start my-2">
-      <div className="flex items-start gap-2 max-w-4/5">
-        {avatar}
-        <div>
-          <div className="text-xs text-base-content/70 mb-1">{displayName}</div>
-          <MessageContent
-            content={content}
-            className="bg-neutral text-neutral-content px-3 py-2 rounded-lg rounded-tl-none wrap-break-word whitespace-pre-wrap [&_a]:text-primary [&_a]:underline [&_a:hover]:text-info-content"
-          />
-          <Timestamp createdAt={createdAt} />
-        </div>
+    <div className="chat chat-receiver">
+      {avatar}
+      <div className="chat-header text-base-content">
+        {displayName}
+        {createdAt && <time className="text-base-content/50 ml-2">{formatRelativeTime(createdAt)}</time>}
       </div>
+      <MessageContent content={content} />
     </div>
   );
 }
@@ -140,22 +134,18 @@ export default function ChatMessageItemComponent({
   // 通常メッセージ（自分）
   if (isOwnMessage) {
     return (
-      <div className="flex justify-end my-2">
-        <div className="max-w-4/5">
-          <MessageContent
-            content={content}
-            className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none wrap-break-word whitespace-pre-wrap [&_a]:text-primary-content [&_a]:underline [&_a:hover]:text-info-content"
-          />
-          <div className="flex items-center justify-end gap-2 mt-1">
-            <span className="text-xs text-base-content/50">{createdAt && formatRelativeTime(createdAt)}</span>
-            {showReadStatus && (
-              <span className="text-xs text-success font-medium flex items-center gap-0.5">
-                <span className="icon-[tabler--checks] size-3.5" aria-hidden="true" />
-                既読
-              </span>
-            )}
-          </div>
+      <div className="chat chat-sender">
+        <div className="chat-header text-base-content">
+          {sender?.username || 'あなた'}
+          {createdAt && <time className="text-base-content/50 ml-2">{formatRelativeTime(createdAt)}</time>}
         </div>
+        <MessageContent content={content} />
+        {showReadStatus && (
+          <div className="chat-footer text-base-content/50">
+            既読
+            <span className="icon-[tabler--checks] text-success align-bottom ml-1" aria-hidden="true" />
+          </div>
+        )}
       </div>
     );
   }

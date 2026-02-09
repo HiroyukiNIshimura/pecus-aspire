@@ -74,7 +74,7 @@ export default function ChatBottomDrawer({
           {selectedRoomId ? (
             <ChatMessageArea roomId={selectedRoomId} currentUserId={currentUserId} />
           ) : (
-            <div className="flex-1 flex items-center justify-center text-base-content/50">
+            <div className="flex-1 flex items-center justify-center text-base-content/50 bg-base-200/60">
               <div className="text-center">
                 <span className="icon-[tabler--message-circle] size-12 mb-2" aria-hidden="true" />
                 <p>ルームを選択してください</p>

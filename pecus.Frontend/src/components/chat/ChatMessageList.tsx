@@ -81,7 +81,7 @@ export default function ChatMessageList({
 
   if (messages.length === 0 && !loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center bg-base-200/60">
         <EmptyState
           iconClass="icon-[tabler--message-circle]"
           message="メッセージを入力して会話を始めましょう"
@@ -92,7 +92,7 @@ export default function ChatMessageList({
   }
 
   return (
-    <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-2" onScroll={handleScroll}>
+    <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-2 bg-base-200/60" onScroll={handleScroll}>
       {/* ローディング（過去メッセージ読み込み中） */}
       {loading && hasMore && (
         <div className="flex justify-center py-2">

@@ -47,7 +47,7 @@ export default function ChatTypingIndicator({ typingUsers, botTyping }: ChatTypi
   const dotColorClass = botTyping ? 'bg-violet-400' : 'bg-emerald-400';
 
   return (
-    <div className="flex items-center gap-2 px-4 py-1 text-sm text-base-content/60">
+    <div className="flex items-center gap-2 px-4 py-1 text-sm text-base-content/60 bg-base-200/60">
       {/* アニメーションドット */}
       <div className="flex items-center gap-0.5">
         <span className={`w-1.5 h-1.5 ${dotColorClass} rounded-full animate-bounce [animation-delay:-0.3s]`} />
