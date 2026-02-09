@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getUnnotifiedAchievements, markAllAchievementsNotified } from '@/actions/achievement';
 import { searchWorkspaceMembers } from '@/actions/workspace';
@@ -980,7 +979,7 @@ export default function WorkspaceTaskDetailPage({
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
             {/* アジェンダ作成ボタン */}
-            <Link
+            <a
               href="/agendas/new"
               target="_blank"
               rel="noopener noreferrer"
@@ -989,7 +988,7 @@ export default function WorkspaceTaskDetailPage({
             >
               <span className="icon-[mdi--calendar-plus] size-4" aria-hidden="true" />
               <span className="hidden sm:inline">イベント作成</span>
-            </Link>
+            </a>
             {/* 添付ファイルボタン */}
             {task && (
               <button
