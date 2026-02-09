@@ -544,7 +544,7 @@ export default function TaskCommentSection({
       </div>
 
       {/* 新規コメント入力エリア */}
-      <div className="p-3 border-t border-base-300 flex-shrink-0 bg-base-100">
+      <div className="pt-3 pb-3 sm:p-3 border-t border-base-300 flex-shrink-0 bg-base-100">
         {/* テキストエリアと送信ボタン */}
         <div className="flex gap-2 items-start">
           <div className="flex-1">
@@ -578,10 +578,10 @@ export default function TaskCommentSection({
           </button>
         </div>
         {/* コメントタイプ選択と文字数 */}
-        <div className="flex justify-between items-center mt-2">
+        <div className="flex justify-between items-center mt-2 gap-2">
           {availableCommentTypes.length > 1 ? (
             <select
-              className="select select-bordered select-xs w-auto min-w-0"
+              className="select select-bordered select-sm w-auto min-w-32"
               value={newCommentType ?? 'Normal'}
               onChange={(e) => setNewCommentType(e.target.value as TaskCommentType)}
               disabled={isSubmitting}

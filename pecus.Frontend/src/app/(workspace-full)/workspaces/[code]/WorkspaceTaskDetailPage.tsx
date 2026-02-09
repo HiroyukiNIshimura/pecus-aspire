@@ -936,10 +936,11 @@ export default function WorkspaceTaskDetailPage({
       <div className="card-body">
         {/* ヘッダー */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <span className="icon-[mdi--clipboard-text-outline] size-6" aria-hidden="true" />
-              タスク詳細
+              <span className="hidden sm:inline">タスク詳細</span>
+              <span className="sm:hidden">タスク</span>
               {task?.sequence && workspaceCode && itemCode && (
                 <button
                   type="button"
@@ -957,12 +958,12 @@ export default function WorkspaceTaskDetailPage({
             </h2>
             {/* ナビゲーションインジケーター */}
             {showNavigationControls && navigation && navigation.totalCount > 1 && (canGoPrev || canGoNext) && (
-              <span className="text-sm text-base-content/60">
+              <span className="hidden sm:inline text-sm text-base-content/60">
                 {currentPosition} / {navigation.totalCount}
               </span>
             )}
             {/* コミッター表示 */}
-            <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
+            <div className="hidden md:flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
               <span className="text-base-content/50">コミッター:</span>
               {itemCommitterName ? (
                 <UserAvatar
@@ -977,16 +978,17 @@ export default function WorkspaceTaskDetailPage({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             {/* アジェンダ作成ボタン */}
             <Link
               href="/agendas/new"
               target="_blank"
+              rel="noopener noreferrer"
               className="btn btn-outline btn-sm gap-1"
               title="新規イベントを作成（別タブで開きます）"
             >
               <span className="icon-[mdi--calendar-plus] size-4" aria-hidden="true" />
-              イベント作成
+              <span className="hidden sm:inline">イベント作成</span>
             </Link>
             {/* 添付ファイルボタン */}
             {task && (
@@ -998,7 +1000,7 @@ export default function WorkspaceTaskDetailPage({
                 title="添付ファイル"
               >
                 <span className="icon-[mdi--paperclip] size-4" aria-hidden="true" />
-                添付
+                <span className="hidden sm:inline">添付</span>
                 {attachmentCount > 0 && <span className="badge badge-secondary badge-sm">{attachmentCount}</span>}
               </button>
             )}
@@ -1012,11 +1014,11 @@ export default function WorkspaceTaskDetailPage({
                 title="タスクフローマップを表示"
               >
                 <span className="icon-[mdi--sitemap] size-4" aria-hidden="true" />
-                フロー
+                <span className="hidden sm:inline">フロー</span>
               </button>
             )}
             {showNavigationControls && (canGoPrev || canGoNext) && (
-              <>
+              <div className="flex items-center gap-2">
                 {/* 前へボタン */}
                 <button
                   type="button"
@@ -1039,7 +1041,7 @@ export default function WorkspaceTaskDetailPage({
                 >
                   <span className="icon-[mdi--chevron-right] size-5" aria-hidden="true" />
                 </button>
-              </>
+              </div>
             )}
             {/* 戻る/閉じるボタン */}
             {isModal ? (
@@ -1061,7 +1063,7 @@ export default function WorkspaceTaskDetailPage({
                 aria-label="アイテム詳細に戻る"
               >
                 <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
-                アイテム
+                <span className="hidden sm:inline">アイテム</span>
               </button>
             )}
           </div>
@@ -1738,7 +1740,7 @@ export default function WorkspaceTaskDetailPage({
                   )}
 
                   {/* ボタングループ */}
-                  <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
+                  <div className="flex gap-2 justify-end pt-4 border-t border-base-300 flex-wrap">
                     <button
                       type="button"
                       className="btn btn-outline"
