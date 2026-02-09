@@ -396,7 +396,7 @@ export default function TaskCommentSection({
   }, []);
 
   return (
-    <div className="flex flex-col h-full flex-1 min-h-0">
+    <div className="flex flex-col h-full flex-1 min-h-0 bg-base-200/60">
       {/* ヘッダー */}
       <div className="flex items-center gap-2 p-3 border-b border-base-300 flex-shrink-0">
         <span className="icon-[mdi--message-outline] text-primary w-5 h-5" aria-hidden="true" />
@@ -419,126 +419,106 @@ export default function TaskCommentSection({
           <>
             {comments.map((comment) => {
               const isOwn = comment.user?.id === currentUserId;
+              const type = comment.commentType || 'Normal';
+              const config = commentTypeConfig[type];
+
               return (
                 <div
                   key={comment.id}
-                  className={`flex gap-3 ${comment.isDeleted ? 'opacity-50' : ''} ${isOwn ? 'justify-end' : 'justify-start'}`}
+                  className={`chat ${isOwn ? 'chat-sender' : 'chat-receiver'} ${comment.isDeleted ? 'opacity-50' : ''}`}
                 >
-                  {/* アバター（相手のみ左側に表示） */}
-                  {!isOwn && (
-                    <div className="flex-shrink-0 pt-0.5">
+                  {/* アバター */}
+                  <div className="chat-avatar avatar">
+                    <div className="size-10 rounded-full">
                       <UserAvatar
                         userName={comment.user?.username}
                         isActive={comment.user?.isActive ?? false}
                         identityIconUrl={comment.user?.identityIconUrl}
-                        size={36}
+                        size={40}
                         showName={false}
                       />
                     </div>
-                  )}
-
-                  {/* コメント本体 */}
-                  <div className={`max-w-[75%] ${isOwn ? 'text-right' : 'text-left'}`}>
-                    {/* ヘッダー */}
-                    <div className={`flex items-center gap-2 mb-1 flex-wrap ${isOwn ? 'justify-end' : ''}`}>
-                      <span className={`font-medium text-sm ${!comment.user?.isActive ? 'line-through' : ''}`}>
-                        {comment.user?.username}
-                      </span>
-                      {(() => {
-                        const type = comment.commentType || 'Normal';
-                        const config = commentTypeConfig[type];
-                        return config ? (
-                          <span className={`badge badge-sm ${config.color}`} title={config.label}>
-                            <span className={`${config.iconClass} size-3 mr-0.5`} aria-hidden="true" />
-                            {config.label}
-                          </span>
-                        ) : null;
-                      })()}
-                      <span className="text-xs text-base-content/50">
-                        {comment.createdAt ? formatDateTime(comment.createdAt) : ''}
-                      </span>
-                    </div>
-
-                    {/* 内容 */}
-                    {editingCommentId === comment.id ? (
-                      // 編集モード（内容のみ編集可、コメントタイプは変更不可）
-                      <div className="space-y-2">
-                        <textarea
-                          className="textarea textarea-bordered textarea-sm w-full"
-                          value={editingContent}
-                          onChange={(e) => setEditingContent(e.target.value)}
-                          rows={2}
-                          disabled={isSubmitting}
-                        />
-                        <div className="flex items-center gap-1.5 justify-end">
-                          <button
-                            type="button"
-                            className="btn btn-xs btn-secondary"
-                            onClick={handleCancelEdit}
-                            disabled={isSubmitting}
-                          >
-                            キャンセル
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-xs btn-primary"
-                            onClick={() => handleSaveEdit(comment)}
-                            disabled={isSubmitting}
-                          >
-                            {isSubmitting ? <span className="loading loading-spinner loading-xs"></span> : '保存'}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      // 表示モード
-                      <div
-                        className={`rounded-2xl px-3 py-2 inline-block text-left ${isOwn ? 'bg-primary/20' : 'bg-base-200'}`}
-                      >
-                        {comment.isDeleted ? (
-                          <span className="italic text-base-content/50 text-sm">このコメントは削除されました</span>
-                        ) : (
-                          <div
-                            className="text-sm whitespace-pre-wrap"
-                            dangerouslySetInnerHTML={{ __html: convertToLinks(comment.content ?? '') }}
-                          />
-                        )}
-                      </div>
-                    )}
-
-                    {/* アクションボタン（自分のコメントかつ削除されていない場合のみ） */}
-                    {!comment.isDeleted && isOwn && editingCommentId !== comment.id && (
-                      <div className="flex items-center gap-1 mt-1 justify-end">
-                        <button
-                          type="button"
-                          className="btn btn-xs btn-soft btn-secondary p-1 min-h-0 h-auto"
-                          onClick={() => handleStartEdit(comment)}
-                          title="編集"
-                        >
-                          <span className="icon-[mdi--pencil-outline] w-4 h-4" aria-hidden="true" />
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-xs btn-soft btn-secondary p-1 min-h-0 h-auto"
-                          onClick={() => handleDeleteClick(comment)}
-                          title="削除"
-                        >
-                          <span className="icon-[mdi--delete-outline] w-4 h-4" aria-hidden="true" />
-                        </button>
-                      </div>
-                    )}
                   </div>
 
-                  {/* アバター（自分のみ右側に表示） */}
-                  {isOwn && (
-                    <div className="flex-shrink-0 pt-0.5">
-                      <UserAvatar
-                        userName={comment.user?.username}
-                        isActive={comment.user?.isActive ?? false}
-                        identityIconUrl={comment.user?.identityIconUrl}
-                        size={36}
-                        showName={false}
+                  {/* ヘッダー */}
+                  <div className="chat-header text-base-content">
+                    <span className={`font-medium ${!comment.user?.isActive ? 'line-through' : ''}`}>
+                      {comment.user?.username}
+                    </span>
+                    {config && (
+                      <span className={`badge badge-sm ${config.color} ml-2`} title={config.label}>
+                        <span className={`${config.iconClass} size-3 mr-0.5`} aria-hidden="true" />
+                        {config.label}
+                      </span>
+                    )}
+                    <time className="text-base-content/50 ml-2">
+                      {comment.createdAt ? formatDateTime(comment.createdAt) : ''}
+                    </time>
+                  </div>
+
+                  {/* 内容 */}
+                  {editingCommentId === comment.id ? (
+                    // 編集モード（内容のみ編集可、コメントタイプは変更不可）
+                    <div className="space-y-2 mt-2">
+                      <textarea
+                        className="textarea textarea-bordered textarea-sm w-full"
+                        value={editingContent}
+                        onChange={(e) => setEditingContent(e.target.value)}
+                        rows={2}
+                        disabled={isSubmitting}
                       />
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <button
+                          type="button"
+                          className="btn btn-xs btn-secondary"
+                          onClick={handleCancelEdit}
+                          disabled={isSubmitting}
+                        >
+                          キャンセル
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-xs btn-primary"
+                          onClick={() => handleSaveEdit(comment)}
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? <span className="loading loading-spinner loading-xs"></span> : '保存'}
+                        </button>
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      {/* 表示モード */}
+                      <div className="chat-bubble whitespace-pre-wrap">
+                        {comment.isDeleted ? (
+                          <span className="italic text-base-content/50">このコメントは削除されました</span>
+                        ) : (
+                          <div dangerouslySetInnerHTML={{ __html: convertToLinks(comment.content ?? '') }} />
+                        )}
+                      </div>
+
+                      {/* アクションボタン（自分のコメントかつ削除されていない場合のみ） */}
+                      {!comment.isDeleted && isOwn && (
+                        <div className="chat-footer text-base-content/50">
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-soft btn-secondary p-1 min-h-0 h-auto"
+                            onClick={() => handleStartEdit(comment)}
+                            title="編集"
+                          >
+                            <span className="icon-[mdi--pencil-outline] w-4 h-4" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-soft btn-secondary p-1 min-h-0 h-auto ml-1"
+                            onClick={() => handleDeleteClick(comment)}
+                            title="削除"
+                          >
+                            <span className="icon-[mdi--delete-outline] w-4 h-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               );
