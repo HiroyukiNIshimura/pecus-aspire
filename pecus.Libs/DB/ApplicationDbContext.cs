@@ -217,6 +217,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<AgendaReminderLog> AgendaReminderLogs { get; set; }
 
     /// <summary>
+    /// 外部公開API用のAPIキーテーブル
+    /// </summary>
+    public DbSet<ExternalApiKey> ExternalApiKeys { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -1427,6 +1432,32 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => new { e.AgendaId, e.UserId, e.OccurrenceStartAt, e.MinutesBefore }).IsUnique();
         });
 
+        // ExternalApiKey エンティティの設定
+        modelBuilder.Entity<ExternalApiKey>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // キーハッシュのユニークインデックス
+            entity.HasIndex(e => e.KeyHash).IsUnique();
+
+            // 組織 + 失効状態の複合インデックス（一覧取得の高速化）
+            entity.HasIndex(e => new { e.OrganizationId, e.IsRevoked });
+
+            // Organization とのリレーション
+            entity
+                .HasOne(e => e.Organization)
+                .WithMany()
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CreatedByUser とのリレーション
+            entity
+                .HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）
         ConfigureRowVersionForAllEntities(modelBuilder);
     }
@@ -1460,5 +1491,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Bot>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<AchievementMaster>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<Agenda>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExternalApiKey>().Property(e => e.RowVersion).IsRowVersion();
     }
 }

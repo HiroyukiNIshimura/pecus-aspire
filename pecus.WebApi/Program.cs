@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Pecus.Authentication;
 using Pecus.Filters;
 using Pecus.Hubs;
 using Pecus.Libs;
@@ -126,6 +127,7 @@ builder.Services.AddScoped<OrganizationAccessHelper>();
 
 // Libs の共通サービスの登録
 builder.Services.AddScoped<BatchOrganizationDeletionService>();
+builder.Services.AddScoped<ExternalApiKeyService>();
 
 // サービスの登録
 builder.Services.AddScoped<UserService>();
@@ -347,7 +349,9 @@ builder
                 }
             }
         };
-    });
+    })
+    .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(
+        ApiKeyAuthenticationOptions.SchemeName, _ => { });
 
 builder.Services.AddControllers(options =>
 {
