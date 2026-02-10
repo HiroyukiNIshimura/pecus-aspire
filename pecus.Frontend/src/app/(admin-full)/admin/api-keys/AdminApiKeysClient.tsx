@@ -46,8 +46,8 @@ export default function AdminApiKeysClient({ initialKeys }: Props) {
           keyPrefix: result.data.keyPrefix,
           expiresAt: result.data.expiresAt,
           isRevoked: false,
-          lastUsedAt: null,
           createdByUserId: 0,
+          createdByUserName: currentUser?.username ?? '',
           createdAt: result.data.createdAt,
           isExpired: false,
         },
@@ -67,7 +67,18 @@ export default function AdminApiKeysClient({ initialKeys }: Props) {
         notify.error(result.message);
         return;
       }
-      setKeys((prev) => prev.map((k) => (k.id === key.id ? { ...k, isRevoked: true } : k)));
+      setKeys((prev) =>
+        prev.map((k) =>
+          k.id === key.id
+            ? {
+                ...k,
+                isRevoked: true,
+                revokedByUserName: currentUser?.username ?? '',
+                revokedAt: new Date().toISOString(),
+              }
+            : k,
+        ),
+      );
       setRevokeTarget(null);
       notify.success('APIキーを失効させました。');
     } finally {

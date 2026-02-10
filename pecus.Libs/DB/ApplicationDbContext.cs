@@ -1456,6 +1456,13 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // RevokedByUser とのリレーション
+            entity
+                .HasOne(e => e.RevokedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.RevokedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）

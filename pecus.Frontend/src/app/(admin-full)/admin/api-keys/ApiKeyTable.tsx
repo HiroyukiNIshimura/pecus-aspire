@@ -30,8 +30,10 @@ export default function ApiKeyTable({ keys, onRevoke, isSubmitting }: Props) {
             <th>キー（先頭）</th>
             <th>状態</th>
             <th>有効期限</th>
-            <th>最終使用</th>
+            <th>発行者</th>
             <th>作成日</th>
+            <th>失効者</th>
+            <th>失効日</th>
             <th />
           </tr>
         </thead>
@@ -46,8 +48,10 @@ export default function ApiKeyTable({ keys, onRevoke, isSubmitting }: Props) {
                 <StatusBadge isRevoked={key.isRevoked} isExpired={key.isExpired} />
               </td>
               <td className="text-sm">{formatDate(key.expiresAt)}</td>
-              <td className="text-sm">{key.lastUsedAt ? formatDate(key.lastUsedAt) : '—'}</td>
+              <td className="text-sm">{key.createdByUserName}</td>
               <td className="text-sm">{formatDate(key.createdAt)}</td>
+              <td className="text-sm">{key.revokedByUserName ?? '—'}</td>
+              <td className="text-sm">{key.revokedAt ? formatDate(key.revokedAt) : '—'}</td>
               <td>
                 {!key.isRevoked && (
                   <button

@@ -49,9 +49,12 @@ public class AdminExternalApiKeyController : BaseAdminController
             KeyPrefix = k.KeyPrefix,
             ExpiresAt = k.ExpiresAt,
             IsRevoked = k.IsRevoked,
-            LastUsedAt = k.LastUsedAt,
             CreatedByUserId = k.CreatedByUserId,
+            CreatedByUserName = k.CreatedByUser?.Username ?? "(不明)",
             CreatedAt = k.CreatedAt,
+            RevokedByUserId = k.RevokedByUserId,
+            RevokedByUserName = k.RevokedByUser?.Username,
+            RevokedAt = k.RevokedAt,
             IsExpired = k.ExpiresAt < DateTimeOffset.UtcNow,
         }).ToList();
 
@@ -107,7 +110,7 @@ public class AdminExternalApiKeyController : BaseAdminController
         int keyId,
         CancellationToken cancellationToken)
     {
-        await _apiKeyService.RevokeAsync(keyId, CurrentOrganizationId, cancellationToken);
+        await _apiKeyService.RevokeAsync(keyId, CurrentOrganizationId, CurrentUserId, cancellationToken);
 
         return TypedResults.Ok(new SuccessResponse
         {

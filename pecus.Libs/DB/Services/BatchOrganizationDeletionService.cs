@@ -366,6 +366,14 @@ public class BatchOrganizationDeletionService
             batchSize,
             cancellationToken);
 
+        // ExternalApiKey
+        await DeleteInBatchesAsync(
+            _context.ExternalApiKeys.Where(k => k.OrganizationId == organizationId),
+            "ExternalApiKeys",
+            organizationId,
+            batchSize,
+            cancellationToken);
+
         // User
         await DeleteInBatchesAsync(
             _context.Users.Where(u => u.OrganizationId == organizationId),

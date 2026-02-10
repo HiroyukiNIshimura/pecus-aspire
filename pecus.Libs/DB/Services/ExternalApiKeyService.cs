@@ -112,10 +112,6 @@ public class ExternalApiKeyService
             return null;
         }
 
-        // 最終使用日時を更新
-        entity.LastUsedAt = DateTimeOffset.UtcNow;
-        await _context.SaveChangesAsync(cancellationToken);
-
         return entity;
     }
 
@@ -124,10 +120,12 @@ public class ExternalApiKeyService
     /// </summary>
     /// <param name="keyId">APIキーID</param>
     /// <param name="organizationId">組織ID（所属確認用）</param>
+    /// <param name="revokedByUserId">失効操作者のユーザーID</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     public async Task RevokeAsync(
         int keyId,
         int organizationId,
+        int revokedByUserId,
         CancellationToken cancellationToken = default)
     {
         var entity = await _context.ExternalApiKeys
@@ -137,9 +135,11 @@ public class ExternalApiKeyService
             ?? throw new KeyNotFoundException($"API key not found: {keyId}");
 
         entity.IsRevoked = true;
+        entity.RevokedByUserId = revokedByUserId;
+        entity.RevokedAt = DateTimeOffset.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("External API key revoked: KeyId={KeyId}", keyId);
+        _logger.LogInformation("External API key revoked: KeyId={KeyId}, RevokedBy={UserId}", keyId, revokedByUserId);
     }
 
     /// <summary>
@@ -153,6 +153,8 @@ public class ExternalApiKeyService
         CancellationToken cancellationToken = default)
     {
         return await _context.ExternalApiKeys
+            .Include(e => e.CreatedByUser)
+            .Include(e => e.RevokedByUser)
             .Where(e => e.OrganizationId == organizationId)
             .OrderByDescending(e => e.CreatedAt)
             .ToListAsync(cancellationToken);

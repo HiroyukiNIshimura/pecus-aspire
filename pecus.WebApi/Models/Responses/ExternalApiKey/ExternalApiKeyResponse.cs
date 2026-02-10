@@ -38,21 +38,37 @@ public class ExternalApiKeyResponse
     public required bool IsRevoked { get; set; }
 
     /// <summary>
-    /// 最終使用日時
-    /// </summary>
-    public DateTimeOffset? LastUsedAt { get; set; }
-
-    /// <summary>
     /// 作成者ユーザーID
     /// </summary>
     [Required]
     public required int CreatedByUserId { get; set; }
 
     /// <summary>
+    /// 作成者ユーザー名
+    /// </summary>
+    [Required]
+    public required string CreatedByUserName { get; set; }
+
+    /// <summary>
     /// 作成日時
     /// </summary>
     [Required]
     public required DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>
+    /// 失効者ユーザーID
+    /// </summary>
+    public int? RevokedByUserId { get; set; }
+
+    /// <summary>
+    /// 失効者ユーザー名
+    /// </summary>
+    public string? RevokedByUserName { get; set; }
+
+    /// <summary>
+    /// 失効日時
+    /// </summary>
+    public DateTimeOffset? RevokedAt { get; set; }
 
     /// <summary>
     /// 有効期限切れかどうか

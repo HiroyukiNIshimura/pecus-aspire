@@ -18989,6 +18989,7 @@
           "expiresAt",
           "isRevoked",
           "createdByUserId",
+          "createdByUserName",
           "createdAt",
           "isExpired"
         ],
@@ -19016,21 +19017,36 @@
             "type": "boolean",
             "description": "失効済みフラグ"
           },
-          "lastUsedAt": {
-            "type": "string",
-            "description": "最終使用日時",
-            "format": "date-time",
-            "nullable": true
-          },
           "createdByUserId": {
             "type": "integer",
             "description": "作成者ユーザーID",
             "format": "int32"
           },
+          "createdByUserName": {
+            "type": "string",
+            "description": "作成者ユーザー名"
+          },
           "createdAt": {
             "type": "string",
             "description": "作成日時",
             "format": "date-time"
+          },
+          "revokedByUserId": {
+            "type": "integer",
+            "description": "失効者ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "revokedByUserName": {
+            "type": "string",
+            "description": "失効者ユーザー名",
+            "nullable": true
+          },
+          "revokedAt": {
+            "type": "string",
+            "description": "失効日時",
+            "format": "date-time",
+            "nullable": true
           },
           "isExpired": {
             "type": "boolean",

@@ -55,9 +55,14 @@ public class ExternalApiKey
     public bool IsRevoked { get; set; }
 
     /// <summary>
-    /// 最終使用日時（UTC）
+    /// 失効者ユーザーID
     /// </summary>
-    public DateTimeOffset? LastUsedAt { get; set; }
+    public int? RevokedByUserId { get; set; }
+
+    /// <summary>
+    /// 失効日時（UTC）
+    /// </summary>
+    public DateTimeOffset? RevokedAt { get; set; }
 
     /// <summary>
     /// 作成者ユーザーID
@@ -84,6 +89,12 @@ public class ExternalApiKey
     /// </summary>
     [ForeignKey(nameof(CreatedByUserId))]
     public User CreatedByUser { get; set; } = null!;
+
+    /// <summary>
+    /// 失効者ユーザー（ナビゲーションプロパティ）
+    /// </summary>
+    [ForeignKey(nameof(RevokedByUserId))]
+    public User? RevokedByUser { get; set; }
 
     /// <summary>
     /// 楽観的ロック用バージョン番号（PostgreSQL の xmin システムカラム）

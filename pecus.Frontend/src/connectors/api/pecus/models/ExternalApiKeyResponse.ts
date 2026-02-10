@@ -27,17 +27,29 @@ export type ExternalApiKeyResponse = {
      */
     isRevoked: boolean;
     /**
-     * 最終使用日時
-     */
-    lastUsedAt?: string | null;
-    /**
      * 作成者ユーザーID
      */
     createdByUserId: number;
     /**
+     * 作成者ユーザー名
+     */
+    createdByUserName: string;
+    /**
      * 作成日時
      */
     createdAt: string;
+    /**
+     * 失効者ユーザーID
+     */
+    revokedByUserId?: number | null;
+    /**
+     * 失効者ユーザー名
+     */
+    revokedByUserName?: string | null;
+    /**
+     * 失効日時
+     */
+    revokedAt?: string | null;
     /**
      * 有効期限切れかどうか
      */
