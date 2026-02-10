@@ -14,7 +14,7 @@ export default async function EditOrganizationPage() {
 
   if (!authResult.success) {
     if (authResult.error === 'forbidden') {
-      return <ForbiddenError backUrl="/admin" backLabel="管理画面に戻る" />;
+      return <ForbiddenError backUrl="/" backLabel="ダッシュボードに戻る" />;
     }
     return <FetchError message={authResult.message} backUrl="/admin" backLabel="管理画面に戻る" />;
   }
@@ -22,7 +22,7 @@ export default async function EditOrganizationPage() {
   const organizationResult = await getOrganizationDetail();
   if (!organizationResult.success) {
     if (organizationResult.error === 'forbidden') {
-      return <ForbiddenError backUrl="/admin" backLabel="管理画面に戻る" />;
+      return <ForbiddenError backUrl="/" backLabel="ダッシュボードに戻る" />;
     }
     if (organizationResult.error === 'not_found') {
       notFound();

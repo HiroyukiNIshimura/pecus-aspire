@@ -15,7 +15,7 @@ export default async function AdminPage() {
     if (result.error === 'forbidden') {
       return <ForbiddenError backUrl="/" backLabel="ダッシュボードに戻る" />;
     }
-    return <FetchError message={result.message} backUrl="/" backLabel="ダッシュボードに戻る" />;
+    return <FetchError message={result.message} backUrl="/admin" backLabel="管理画面に戻る" />;
   }
 
   return <AdminClient initialOrganization={result.data} fetchError={null} />;

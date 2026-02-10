@@ -13,6 +13,7 @@ const menuItems = [
   { href: '/admin/users', label: 'ユーザー', iconClass: 'icon-[mdi--account-group-outline]' },
   { href: '/admin/skills', label: 'スキル', iconClass: 'icon-[mdi--badge-account-outline]' },
   { href: '/admin/tags', label: 'タグ', iconClass: 'icon-[mdi--tag-outline]' },
+  { href: '/admin/api-keys', label: 'APIキー', iconClass: 'icon-[mdi--key-outline]' },
 ];
 
 export default function AdminSidebar({ sidebarOpen }: AdminSidebarProps) {
