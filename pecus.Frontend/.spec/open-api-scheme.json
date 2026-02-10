@@ -10718,6 +10718,72 @@
         ]
       }
     },
+    "/api/external/ping": {
+      "post": {
+        "tags": [
+          "External API"
+        ],
+        "summary": "疎通確認用エンドポイント",
+        "description": "受け取ったメッセージをそのまま返却します。\r\nAPIキー認証の疎通確認に使用してください。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/entrance/auth/login": {
       "post": {
         "tags": [
@@ -21951,6 +22017,44 @@
         },
         "description": "未使用メールアドレス変更トークン情報レスポンス"
       },
+      "PingRequest": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "エコーバックする文字列"
+          }
+        },
+        "description": "Pingリクエスト（疎通確認用）"
+      },
+      "PingResponse": {
+        "required": [
+          "message",
+          "organizationCode",
+          "timestamp"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "エコーバックされたメッセージ"
+          },
+          "organizationCode": {
+            "type": "string",
+            "description": "認証されたAPIキーの組織コード"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "サーバー応答時刻（UTC）",
+            "format": "date-time"
+          }
+        },
+        "description": "Pingレスポンス"
+      },
       "PredecessorTaskInfo": {
         "type": "object",
         "properties": {
@@ -25377,6 +25481,41 @@
         },
         "description": "ユーザー負荷情報"
       },
+      "ValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
       "WeeklyTaskTrend": {
         "required": [
           "weekStart",
@@ -26815,6 +26954,9 @@
     },
     {
       "name": "Profile"
+    },
+    {
+      "name": "External API"
     },
     {
       "name": "Entrance - Auth"

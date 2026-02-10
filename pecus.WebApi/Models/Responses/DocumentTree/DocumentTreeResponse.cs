@@ -1,4 +1,4 @@
-namespace Pecus.WebApi.Models.Responses;
+namespace Pecus.Models.Responses.DocumentTree;
 
 /// <summary>
 /// ドキュメントツリーのアイテム情報

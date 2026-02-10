@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Models.Requests;
 using Pecus.Services;
-using Pecus.WebApi.Models.Requests;
 
 namespace Pecus.Controllers;
 

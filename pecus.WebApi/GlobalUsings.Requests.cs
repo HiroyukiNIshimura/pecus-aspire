@@ -1,6 +1,13 @@
+global using Pecus.Models.Requests.Activity;
+global using Pecus.Models.Requests.Agenda;
+global using Pecus.Models.Requests.AiAssistant;
+global using Pecus.Models.Requests.BackOffice;
 global using Pecus.Models.Requests.Chat;
 global using Pecus.Models.Requests.Common;
+global using Pecus.Models.Requests.Dashboard;
+global using Pecus.Models.Requests.External;
 global using Pecus.Models.Requests.ExternalApiKey;
+global using Pecus.Models.Requests.File;
 global using Pecus.Models.Requests.Genre;
 global using Pecus.Models.Requests.Organization;
 global using Pecus.Models.Requests.Permission;

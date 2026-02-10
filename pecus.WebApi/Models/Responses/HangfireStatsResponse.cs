@@ -1,4 +1,4 @@
-namespace pecus.WebApi.Models.Responses;
+namespace Pecus.Models.Responses;
 
 /// <summary>
 ///     Hangfireの統計情報レスポンス

@@ -2,7 +2,7 @@ using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Pecus.Models.Responses.Workspace;
+namespace Pecus.Models.Responses.WorkspaceItem;
 
 /// <summary>
 /// ワークスペースアイテム統計情報レスポンス

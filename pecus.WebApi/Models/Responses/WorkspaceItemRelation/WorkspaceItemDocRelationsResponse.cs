@@ -1,7 +1,7 @@
 ﻿using Pecus.Libs.DB.Models.Enums;
 using System.Text.Json.Serialization;
 
-namespace Pecus.WebApi.Models.Responses;
+namespace Pecus.Models.Responses.WorkspaceItemRelation;
 
 /// <summary>
 /// ワークスペースアイテム関連レスポンス

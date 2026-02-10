@@ -1,6 +1,6 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Mvc;
-using pecus.WebApi.Models.Responses;
+using Pecus.Models.Responses;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Backend;

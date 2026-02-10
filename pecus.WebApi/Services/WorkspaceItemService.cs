@@ -10,7 +10,7 @@ using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
 using Pecus.Models.Enums;
-using Pecus.WebApi.Models.Requests;
+using Pecus.Models.Requests;
 
 namespace Pecus.Services;
 

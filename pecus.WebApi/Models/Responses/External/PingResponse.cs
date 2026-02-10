@@ -1,4 +1,4 @@
-namespace Pecus.WebApi.Models.Responses.External;
+namespace Pecus.Models.Responses.External;
 
 /// <summary>
 /// Pingレスポンス

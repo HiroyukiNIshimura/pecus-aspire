@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Pecus.WebApi.Models.Requests;
+namespace Pecus.Models.Requests.WorkspaceItemRelation;
 
 /// <summary>
 /// アイテムの親更新リクエスト

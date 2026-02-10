@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Pecus.Models.Requests.Common;
+namespace Pecus.Models.Requests.File;
 
 /// <summary>
 /// ファイルアップロードリクエスト
