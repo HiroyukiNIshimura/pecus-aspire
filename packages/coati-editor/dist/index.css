@@ -3122,10 +3122,9 @@ i.icon.plus {
   padding: 6px 8px;
   position: relative;
   outline: none;
-  overflow: auto;
 }
 .NotionLikeViewerTheme__tableCell > * {
-  overflow: inherit;
+  overflow: visible;
 }
 .NotionLikeViewerTheme__tableCellHeader {
   background-color: var(--color-base-200);

@@ -36,14 +36,13 @@
   padding: 6px 8px;
   position: relative;
   outline: none;
-  overflow: auto;
 }
 /*
   A firefox workaround to allow scrolling of overflowing table cell
   ref: https://bugzilla.mozilla.org/show_bug.cgi?id=1904159
 */
 .NotionLikeViewerTheme__tableCell > * {
-  overflow: inherit;
+  overflow: visible;
 }
 .NotionLikeViewerTheme__tableCellHeader {
   background-color: var(--color-base-200);
