@@ -20,6 +20,7 @@ public static class CleanupJobScheduler
         ConfigureChatCleanupJob(recurringJobManager, configuration);
         ConfigureUploadsCleanupJob(recurringJobManager, configuration);
         ConfigureAgendaCleanupJob(recurringJobManager, configuration);
+        ConfigureExternalApiKeyCleanupJob(recurringJobManager, configuration);
     }
 
     /// <summary>
@@ -203,6 +204,28 @@ public static class CleanupJobScheduler
         recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
             "AgendaCleanup",
             task => task.CleanupOldAgendasAsync(batchSize, olderThanDays),
+            settings.CronExpression
+        );
+    }
+
+    /// <summary>
+    /// 失効済みAPIキークリーンアップジョブを設定します
+    /// </summary>
+    /// <param name="recurringJobManager">Hangfire定期ジョブマネージャー</param>
+    /// <param name="configuration">設定</param>
+    private static void ConfigureExternalApiKeyCleanupJob(IRecurringJobManager recurringJobManager, IConfiguration configuration)
+    {
+        var settings = configuration.GetSection("ExternalApiKeyCleanup").Get<ExternalApiKeyCleanupSettings>() ?? new ExternalApiKeyCleanupSettings();
+
+        if (!settings.Enabled)
+        {
+            recurringJobManager.RemoveIfExists("ExternalApiKeyCleanup");
+            return;
+        }
+
+        recurringJobManager.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
+            "ExternalApiKeyCleanup",
+            task => task.CleanupRevokedExternalApiKeysAsync(settings.BatchSize, settings.OlderThanDays),
             settings.CronExpression
         );
     }

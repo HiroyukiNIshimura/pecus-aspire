@@ -183,3 +183,29 @@ public class AgendaCleanupSettings
     /// </summary>
     public string CronExpression { get; set; } = "0 6 * * *";
 }
+
+/// <summary>
+/// 失効済みAPIキークリーンアップの設定
+/// </summary>
+public class ExternalApiKeyCleanupSettings
+{
+    /// <summary>
+    /// ジョブを有効にするかどうか
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// バッチサイズ
+    /// </summary>
+    public int BatchSize { get; set; } = 1000;
+
+    /// <summary>
+    /// 失効後に残す日数（この日数より古いものを削除）
+    /// </summary>
+    public int OlderThanDays { get; set; } = 30;
+
+    /// <summary>
+    /// Cron式（デフォルト: 毎日2:00）
+    /// </summary>
+    public string CronExpression { get; set; } = "0 2 * * *";
+}

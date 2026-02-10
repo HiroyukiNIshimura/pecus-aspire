@@ -225,7 +225,7 @@
       "BatchSize": 1000,
       "OlderThanDays": 30,
       "VeryOldDays": 365,
-      "CronExpression": "30 2 * * *"
+      "CronExpression": "15 2 * * *"
     },
     "EmailChangeTokenCleanup": {
       "Enabled": true,
@@ -270,6 +270,12 @@
       "BatchSize": 1000,
       "OlderThanDays": 0,
       "CronExpression": "0 6 * * *"
+    },
+    "ExternalApiKeyCleanup": {
+      "Enabled": true,
+      "BatchSize": 1000,
+      "OlderThanDays": 30,
+      "CronExpression": "30 2 * * *"
     },
     "AgendaEmail": {
       "Enabled": true,

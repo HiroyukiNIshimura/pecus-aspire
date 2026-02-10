@@ -254,6 +254,41 @@ public class CleanupTasks
     }
 
     /// <summary>
+    /// 失効済みの外部APIキーをバッチで削除します。
+    /// - IsRevoked==true かつ RevokedAt が保持期間(olderThanDays)を超えたもの
+    /// </summary>
+    /// <param name="batchSize">一度に削除する件数</param>
+    /// <param name="olderThanDays">失効後に残す日数（この日数より古いものを削除）</param>
+    public async Task CleanupRevokedExternalApiKeysAsync(int batchSize = 1000, int olderThanDays = 30)
+    {
+        _logger.LogInformation("ExternalApiKey cleanup started. batchSize={BatchSize} olderThanDays={OlderThanDays}", batchSize, olderThanDays);
+
+        var cutoff = DateTimeOffset.UtcNow.AddDays(-olderThanDays);
+        var totalDeleted = 0;
+
+        while (true)
+        {
+            var items = await _context.ExternalApiKeys
+                .Where(k => k.IsRevoked && k.RevokedAt != null && k.RevokedAt <= cutoff)
+                .OrderBy(k => k.RevokedAt)
+                .Take(batchSize)
+                .ToListAsync();
+
+            if (items.Count == 0) break;
+
+            _context.ExternalApiKeys.RemoveRange(items);
+            await _context.SaveChangesAsync();
+
+            totalDeleted += items.Count;
+            _logger.LogInformation("Deleted {Count} revoked external API key records in this batch", items.Count);
+
+            await Task.Delay(200);
+        }
+
+        _logger.LogInformation("ExternalApiKey cleanup completed. totalDeleted={TotalDeleted}", totalDeleted);
+    }
+
+    /// <summary>
     /// 古いアジェンダと関連データを組織単位でバッチ削除します。
     /// - 単発イベント: EndAt が cutoff 以前
     /// - 繰り返し（終了日指定）: RecurrenceEndDate が cutoff 以前
