@@ -86,10 +86,7 @@ export default function AdminApiKeysClient({ initialKeys }: Props) {
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-20 bg-black bg-opacity-50 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
+          <div className="fixed inset-0 z-20 bg-black bg-opacity-50 md:hidden" onClick={() => setSidebarOpen(false)} />
         )}
 
         {/* Main Content */}
