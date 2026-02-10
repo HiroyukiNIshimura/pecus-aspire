@@ -19,6 +19,6 @@ export type WorkspaceItemDocRelationResponse = {
      * 関連先アイテムID
      */
     toItemId?: number;
-    relationType?: RelationType;
+    relationType?: RelationType | null;
 };
 

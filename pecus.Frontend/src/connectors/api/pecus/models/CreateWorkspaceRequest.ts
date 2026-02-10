@@ -10,7 +10,7 @@ export type CreateWorkspaceRequest = {
     name: string;
     description?: string | null;
     genreId: number;
-    mode?: WorkspaceMode;
+    mode?: WorkspaceMode | null;
     /**
      * オーナーユーザーID（任意）
      */

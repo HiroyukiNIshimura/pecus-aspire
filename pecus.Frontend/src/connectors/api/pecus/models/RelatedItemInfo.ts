@@ -28,7 +28,7 @@ export type RelatedItemInfo = {
      * コード
      */
     code?: string;
-    relationType?: RelationType;
+    relationType?: RelationType | null;
     /**
      * 関連の方向（このアイテムから見て）
      * "from": このアイテムが関連元

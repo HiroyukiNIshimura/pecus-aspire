@@ -15,7 +15,7 @@ export type WorkspaceUserDetailResponse = {
      * メールアドレス
      */
     email: string;
-    workspaceRole?: WorkspaceRole;
+    workspaceRole?: WorkspaceRole | null;
     /**
      * 参加日時
      */

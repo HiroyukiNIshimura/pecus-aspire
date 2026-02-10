@@ -81,6 +81,8 @@ export type { CreateAgendaExceptionRequest } from './models/CreateAgendaExceptio
 export type { CreateAgendaRequest } from './models/CreateAgendaRequest';
 export type { CreateDmRoomRequest } from './models/CreateDmRoomRequest';
 export type { CreatedTaskInfo } from './models/CreatedTaskInfo';
+export type { CreateExternalApiKeyRequest } from './models/CreateExternalApiKeyRequest';
+export type { CreateExternalApiKeyResponse } from './models/CreateExternalApiKeyResponse';
 export type { CreateOrganizationRequest } from './models/CreateOrganizationRequest';
 export type { CreateSkillRequest } from './models/CreateSkillRequest';
 export type { CreateTagRequest } from './models/CreateTagRequest';
@@ -117,6 +119,7 @@ export type { EmailChangeVerifyResponse } from './models/EmailChangeVerifyRespon
 export type { EmailTemplateInfo } from './models/EmailTemplateInfo';
 export type { ErrorResponse } from './models/ErrorResponse';
 export type { EstimatedSize } from './models/EstimatedSize';
+export type { ExternalApiKeyResponse } from './models/ExternalApiKeyResponse';
 export type { FileType } from './models/FileType';
 export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { FocusRecommendationResponse } from './models/FocusRecommendationResponse';
@@ -307,6 +310,7 @@ export type { WorkspaceUserItem } from './models/WorkspaceUserItem';
 
 export { AchievementService } from './services/AchievementService';
 export { ActivityService } from './services/ActivityService';
+export { AdminExternalApiKeysService } from './services/AdminExternalApiKeysService';
 export { AdminOrganizationService } from './services/AdminOrganizationService';
 export { AdminSkillService } from './services/AdminSkillService';
 export { AdminTagService } from './services/AdminTagService';

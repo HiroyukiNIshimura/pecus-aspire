@@ -26,8 +26,8 @@ export type UserSettingResponse = {
      * 言語設定（TODO：未使用）
      */
     language: string;
-    landingPage?: LandingPage;
-    focusScorePriority?: FocusScorePriority;
+    landingPage?: LandingPage | null;
+    focusScorePriority?: FocusScorePriority | null;
     /**
      * やることピックアップタスクの表示件数（5-20）
      */
@@ -36,8 +36,8 @@ export type UserSettingResponse = {
      * 待機中タスクの表示件数（5-20）
      */
     waitingTasksLimit: number;
-    badgeVisibility?: BadgeVisibility;
-    pendingLandingPageRecommendation?: LandingPage;
+    badgeVisibility?: BadgeVisibility | null;
+    pendingLandingPageRecommendation?: LandingPage | null;
     /**
      * ユーザーが最後にランディングページ設定を変更した日時
      */

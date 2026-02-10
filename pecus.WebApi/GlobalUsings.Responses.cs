@@ -1,6 +1,7 @@
 global using Pecus.Models.Responses.Achievement;
 global using Pecus.Models.Responses.Chat;
 global using Pecus.Models.Responses.Common;
+global using Pecus.Models.Responses.ExternalApiKey;
 global using Pecus.Models.Responses.Organization;
 global using Pecus.Models.Responses.Permission;
 global using Pecus.Models.Responses.Role;

@@ -23,8 +23,8 @@ export type ChatRoomItem = {
      * ワークスペースID（ワークスペースグループチャットの場合）
      */
     workspaceId?: number | null;
-    otherUser?: UserIdentityResponse;
-    latestMessage?: ChatMessageItem;
+    otherUser?: UserIdentityResponse | null;
+    latestMessage?: ChatMessageItem | null;
     /**
      * 未読メッセージ数
      */

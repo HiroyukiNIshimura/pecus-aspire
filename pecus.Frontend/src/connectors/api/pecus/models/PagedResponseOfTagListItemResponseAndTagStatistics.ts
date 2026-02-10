@@ -8,7 +8,7 @@ import type { TagStatistics } from './TagStatistics';
  * ページネーション付きレスポンス（統計情報付き）
  */
 export type PagedResponseOfTagListItemResponseAndTagStatistics = {
-    summary?: TagStatistics;
+    summary?: TagStatistics | null;
     /**
      * データのリスト
      */

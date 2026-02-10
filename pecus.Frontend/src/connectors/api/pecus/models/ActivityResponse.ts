@@ -29,7 +29,7 @@ export type ActivityResponse = {
      * ワークスペースのジャンルアイコン
      */
     workspaceGenreIcon?: string | null;
-    workspaceMode?: WorkspaceMode;
+    workspaceMode?: WorkspaceMode | null;
     /**
      * アイテムID
      */
@@ -42,7 +42,7 @@ export type ActivityResponse = {
      * アイテム件名
      */
     itemSubject?: string;
-    user?: UserIdentityResponse;
+    user?: UserIdentityResponse | null;
     actionType?: ActivityActionType;
     /**
      * 操作の詳細データ（JSON文字列）

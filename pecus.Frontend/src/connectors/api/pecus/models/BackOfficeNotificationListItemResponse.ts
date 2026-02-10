@@ -15,7 +15,7 @@ export type BackOfficeNotificationListItemResponse = {
      * 件名
      */
     subject: string;
-    type?: SystemNotificationType;
+    type?: SystemNotificationType | null;
     /**
      * 公開開始日時
      */

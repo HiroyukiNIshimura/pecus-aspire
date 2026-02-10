@@ -19,7 +19,7 @@ export type UpdateWorkspaceTaskRequest = {
      * 担当ユーザーID
      */
     assignedUserId?: number | null;
-    priority?: TaskPriority;
+    priority?: TaskPriority | null;
     /**
      * 開始日時(ISO 8601 形式)
      */

@@ -28,6 +28,6 @@ export type SummaryWorkspaceResponse = {
      * ジャンルのアイコン（例: FontAwesome のクラス名）
      */
     genreIcon?: string | null;
-    mode?: WorkspaceMode;
+    mode?: WorkspaceMode | null;
 };
 

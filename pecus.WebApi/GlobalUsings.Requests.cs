@@ -1,5 +1,6 @@
 global using Pecus.Models.Requests.Chat;
 global using Pecus.Models.Requests.Common;
+global using Pecus.Models.Requests.ExternalApiKey;
 global using Pecus.Models.Requests.Genre;
 global using Pecus.Models.Requests.Organization;
 global using Pecus.Models.Requests.Permission;

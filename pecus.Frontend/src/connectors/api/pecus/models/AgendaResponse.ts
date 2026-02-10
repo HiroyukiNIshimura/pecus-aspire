@@ -15,7 +15,7 @@ export type AgendaResponse = {
     isAllDay: boolean;
     location?: string | null;
     url?: string | null;
-    recurrenceType?: RecurrenceType;
+    recurrenceType?: RecurrenceType | null;
     /**
      * 繰り返し間隔
      */
@@ -53,12 +53,12 @@ export type AgendaResponse = {
      * 中止日時
      */
     cancelledAt?: string | null;
-    cancelledBy?: UserIdentityResponse;
+    cancelledBy?: UserIdentityResponse | null;
     createdByUserId: number;
     createdAt: string;
     updatedAt: string;
     rowVersion: number;
-    createdBy?: UserIdentityResponse;
+    createdBy?: UserIdentityResponse | null;
     attendees?: Array<AgendaAttendeeResponse>;
 };
 

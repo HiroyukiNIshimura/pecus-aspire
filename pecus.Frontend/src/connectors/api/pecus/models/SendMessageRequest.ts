@@ -11,7 +11,7 @@ export type SendMessageRequest = {
      * メッセージ内容
      */
     content: string;
-    messageType?: ChatMessageType;
+    messageType?: ChatMessageType | null;
     /**
      * 返信先メッセージID
      */

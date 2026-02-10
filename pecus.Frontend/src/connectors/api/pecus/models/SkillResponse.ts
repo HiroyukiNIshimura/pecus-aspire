@@ -15,6 +15,6 @@ export type SkillResponse = {
      * メッセージ
      */
     message: string;
-    skill?: SkillDetailResponse;
+    skill?: SkillDetailResponse | null;
 };
 

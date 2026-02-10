@@ -19,7 +19,7 @@ export type BackOfficeNotificationDetailResponse = {
      * 本文（Markdown形式）
      */
     body: string;
-    type?: SystemNotificationType;
+    type?: SystemNotificationType | null;
     /**
      * 公開開始日時
      */

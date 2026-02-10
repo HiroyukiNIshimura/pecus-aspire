@@ -41,7 +41,7 @@ export type TaskWithItemResponse = {
      * タスク種類アイコン
      */
     taskTypeIcon?: string | null;
-    priority?: TaskPriority;
+    priority?: TaskPriority | null;
     /**
      * 開始日時
      */
@@ -100,8 +100,8 @@ export type TaskWithItemResponse = {
      */
     workspaceCode: string;
     itemOwner?: UserIdentityResponse;
-    itemAssignee?: UserIdentityResponse;
-    itemCommitter?: UserIdentityResponse;
+    itemAssignee?: UserIdentityResponse | null;
+    itemCommitter?: UserIdentityResponse | null;
     /**
      * コメントタイプ別件数
      */

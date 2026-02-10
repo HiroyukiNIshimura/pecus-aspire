@@ -35,7 +35,7 @@ export type WorkspaceItemDetailResponse = {
      * ジャンル名
      */
     genreName?: string | null;
-    workspaceMode?: WorkspaceMode;
+    workspaceMode?: WorkspaceMode | null;
     /**
      * コード
      */
@@ -49,9 +49,9 @@ export type WorkspaceItemDetailResponse = {
      */
     body?: string | null;
     owner?: UserIdentityResponse;
-    assignee?: UserIdentityResponse;
-    committer?: UserIdentityResponse;
-    priority?: TaskPriority;
+    assignee?: UserIdentityResponse | null;
+    committer?: UserIdentityResponse | null;
+    priority?: TaskPriority | null;
     /**
      * 期限日時
      */

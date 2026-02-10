@@ -38,7 +38,7 @@ export type OrganizationSettingResponse = {
      */
     generativeApiModel?: string | null;
     plan: OrganizationPlan;
-    helpNotificationTarget?: HelpNotificationTarget;
+    helpNotificationTarget?: HelpNotificationTarget | null;
     /**
      * タスク作成時に見積もりを必須とするか
      */
@@ -51,8 +51,8 @@ export type OrganizationSettingResponse = {
      * ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
      */
     dashboardHelpCommentMaxCount: number;
-    groupChatScope?: GroupChatScope;
-    defaultWorkspaceMode?: WorkspaceMode;
+    groupChatScope?: GroupChatScope | null;
+    defaultWorkspaceMode?: WorkspaceMode | null;
     /**
      * Gamification機能の有効/無効
      */

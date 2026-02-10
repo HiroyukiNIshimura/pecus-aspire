@@ -5,6 +5,7 @@ import { OpenAPI } from "./pecus/core/OpenAPI";
 import {
   AchievementService,
   ActivityService,
+  AdminExternalApiKeysService,
   AdminOrganizationService,
   AdminSkillService,
   AdminTagService,
@@ -64,6 +65,7 @@ export function createApiClientInstances() {
   return {
     achievement: AchievementService,
     activity: ActivityService,
+    adminExternalApiKeys: AdminExternalApiKeysService,
     adminOrganization: AdminOrganizationService,
     adminSkill: AdminSkillService,
     adminTag: AdminTagService,

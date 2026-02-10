@@ -25,8 +25,8 @@ export type UserPublicSettings = {
      * リアルタイム通知の可否
      */
     canReceiveRealtimeNotification: boolean;
-    landingPage?: LandingPage;
-    focusScorePriority?: FocusScorePriority;
+    landingPage?: LandingPage | null;
+    focusScorePriority?: FocusScorePriority | null;
     /**
      * フォーカス推奨タスクの表示件数
      */
@@ -35,7 +35,7 @@ export type UserPublicSettings = {
      * 待機中タスクの表示件数
      */
     waitingTasksLimit: number;
-    badgeVisibility?: BadgeVisibility;
-    pendingLandingPageRecommendation?: LandingPage;
+    badgeVisibility?: BadgeVisibility | null;
+    pendingLandingPageRecommendation?: LandingPage | null;
 };
 

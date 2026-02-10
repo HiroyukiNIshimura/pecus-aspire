@@ -19,7 +19,7 @@ export type CreateWorkspaceItemRequest = {
      * 作業中のユーザーID（NULL可）
      */
     assigneeId?: number | null;
-    priority?: TaskPriority;
+    priority?: TaskPriority | null;
     /**
      * 期限日時(ISO 8601 形式)
      */

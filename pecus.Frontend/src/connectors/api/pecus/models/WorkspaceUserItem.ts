@@ -11,7 +11,7 @@ export type WorkspaceUserItem = {
      * メールアドレス
      */
     email: string;
-    workspaceRole?: WorkspaceRole;
+    workspaceRole?: WorkspaceRole | null;
     /**
      * 最終ログイン日時
      */

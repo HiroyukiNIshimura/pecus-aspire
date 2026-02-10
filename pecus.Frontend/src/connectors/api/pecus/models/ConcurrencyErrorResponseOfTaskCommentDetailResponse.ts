@@ -7,7 +7,7 @@ import type { TaskCommentDetailResponse } from './TaskCommentDetailResponse';
  * 競合エラーレスポンス（409 Conflict）
  */
 export type ConcurrencyErrorResponseOfTaskCommentDetailResponse = {
-    current?: TaskCommentDetailResponse;
+    current?: TaskCommentDetailResponse | null;
     /**
      * HTTPステータスコード
      */

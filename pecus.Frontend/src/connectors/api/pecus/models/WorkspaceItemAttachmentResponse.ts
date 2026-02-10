@@ -49,6 +49,6 @@ export type WorkspaceItemAttachmentResponse = {
      */
     uploadedAt?: string;
     uploadedBy?: UserIdentityResponse;
-    task?: WorkspaceItemAttachmentTask;
+    task?: WorkspaceItemAttachmentTask | null;
 };
 

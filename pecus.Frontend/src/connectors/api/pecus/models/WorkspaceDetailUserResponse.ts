@@ -23,7 +23,7 @@ export type WorkspaceDetailUserResponse = {
      * アイデンティティアイコン URL
      */
     identityIconUrl?: string | null;
-    workspaceRole?: WorkspaceRole;
+    workspaceRole?: WorkspaceRole | null;
     /**
      * アクティブフラグ
      */

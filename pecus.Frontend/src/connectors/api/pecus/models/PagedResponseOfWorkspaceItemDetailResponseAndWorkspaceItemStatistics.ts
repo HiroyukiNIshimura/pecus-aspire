@@ -8,7 +8,7 @@ import type { WorkspaceItemStatistics } from './WorkspaceItemStatistics';
  * ページネーション付きレスポンス（統計情報付き）
  */
 export type PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics = {
-    summary?: WorkspaceItemStatistics;
+    summary?: WorkspaceItemStatistics | null;
     /**
      * データのリスト
      */

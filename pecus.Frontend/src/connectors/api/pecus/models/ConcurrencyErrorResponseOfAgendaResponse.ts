@@ -7,7 +7,7 @@ import type { AgendaResponse } from './AgendaResponse';
  * 競合エラーレスポンス（409 Conflict）
  */
 export type ConcurrencyErrorResponseOfAgendaResponse = {
-    current?: AgendaResponse;
+    current?: AgendaResponse | null;
     /**
      * HTTPステータスコード
      */

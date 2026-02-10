@@ -59,6 +59,6 @@ export type AgendaExceptionResponse = {
      * 作成日時
      */
     createdAt?: string;
-    createdBy?: UserIdentityResponse;
+    createdBy?: UserIdentityResponse | null;
 };
 

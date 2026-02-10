@@ -8,6 +8,6 @@ import type { WorkspaceRole } from './WorkspaceRole';
  */
 export type AddUserToWorkspaceRequest = {
     userId: number;
-    workspaceRole?: WorkspaceRole;
+    workspaceRole?: WorkspaceRole | null;
 };
 

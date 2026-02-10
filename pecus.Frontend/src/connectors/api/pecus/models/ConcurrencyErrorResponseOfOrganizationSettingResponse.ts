@@ -7,7 +7,7 @@ import type { OrganizationSettingResponse } from './OrganizationSettingResponse'
  * 競合エラーレスポンス（409 Conflict）
  */
 export type ConcurrencyErrorResponseOfOrganizationSettingResponse = {
-    current?: OrganizationSettingResponse;
+    current?: OrganizationSettingResponse | null;
     /**
      * HTTPステータスコード
      */

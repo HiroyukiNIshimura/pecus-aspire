@@ -32,7 +32,7 @@ export type MyCommitterWorkspaceResponse = {
      * ジャンル名
      */
     genreName?: string | null;
-    mode?: WorkspaceMode;
+    mode?: WorkspaceMode | null;
     /**
      * コミッターになっているアイテム数
      */

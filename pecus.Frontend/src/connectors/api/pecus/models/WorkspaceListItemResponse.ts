@@ -44,7 +44,7 @@ export type WorkspaceListItemResponse = {
      * ジャンルのアイコン（例: FontAwesome のクラス名）
      */
     genreIcon?: string | null;
-    mode?: WorkspaceMode;
+    mode?: WorkspaceMode | null;
     /**
      * アクティブなアイテム数
      */
@@ -69,6 +69,6 @@ export type WorkspaceListItemResponse = {
      * 参加しているユーザー一覧
      */
     members?: Array<WorkspaceUserItem> | null;
-    owner?: WorkspaceUserItem;
+    owner?: WorkspaceUserItem | null;
 };
 

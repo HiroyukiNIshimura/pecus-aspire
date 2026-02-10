@@ -7,7 +7,7 @@ import type { TagDetailResponse } from './TagDetailResponse';
  * 競合エラーレスポンス（409 Conflict）
  */
 export type ConcurrencyErrorResponseOfTagDetailResponse = {
-    current?: TagDetailResponse;
+    current?: TagDetailResponse | null;
     /**
      * HTTPステータスコード
      */

@@ -55,6 +55,6 @@ export type OrganizationResponse = {
      * 楽観的ロック用のRowVersion
      */
     rowVersion: number;
-    setting?: OrganizationSettingResponse;
+    setting?: OrganizationSettingResponse | null;
 };
 
