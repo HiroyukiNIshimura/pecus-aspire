@@ -64,6 +64,7 @@ public class ApiKeyAuthenticationHandler(
             new Claim(ClaimTypes.Name, entity.Name),
             new Claim("api_key_id", entity.Id.ToString()),
             new Claim("organization_id", entity.OrganizationId.ToString()),
+            new Claim("organization_code", entity.Organization?.Code ?? ""),
             new Claim("auth_scheme", ApiKeyAuthenticationOptions.SchemeName),
         };
 
