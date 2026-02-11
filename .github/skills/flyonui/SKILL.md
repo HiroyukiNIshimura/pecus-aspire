@@ -195,11 +195,11 @@ Always start with FlyonUI semantic classes, then extend with Tailwind utilities:
 ## References & Resources
 
 ### Project Documentation
-- [Layout Template Guidelines](../../docs/layout-template.md) — Proper structure for page layouts
-- [Tailwind Arbitrary Values](../../docs/tailwind-arbitrary-values.md) — When/how to use arbitrary values
-- [Frontend Guidelines](../../docs/frontend-guidelines.md) — Code style and best practices
-- [UI Component Guidelines](../../docs/ui-component-guidelines.md) — Component architecture patterns
-- [FlyonUI Color System](../../docs/Flyonui-color.md) — Color naming conventions
+- [Layout Template Guidelines](../../../docs/layout-template.md) — Proper structure for page layouts
+- [Tailwind Arbitrary Values](../../../docs/tailwind-arbitrary-values.md) — When/how to use arbitrary values
+- [Frontend Guidelines](../../../docs/frontend-guidelines.md) — Code style and best practices
+- [UI Component Guidelines](../../../docs/ui-component-guidelines.md) — Component architecture patterns
+- [FlyonUI Color System](../../../docs/Flyonui-color.md) — Color naming conventions
 
 ### External Resources
 - [FlyonUI Official Docs](https://flyonui.com) — Component library documentation
