@@ -200,6 +200,7 @@ Always start with FlyonUI semantic classes, then extend with Tailwind utilities:
 - [Frontend Guidelines](../../../docs/frontend-guidelines.md) — Code style and best practices
 - [UI Component Guidelines](../../../docs/ui-component-guidelines.md) — Component architecture patterns
 - [FlyonUI Color System](../../../docs/Flyonui-color.md) — Color naming conventions
+- [modal-dialog-template](../../../docs/modal-dialog-template.md) — Modal implementation patterns
 
 ### External Resources
 - [FlyonUI Official Docs](https://flyonui.com) — Component library documentation
