@@ -16,12 +16,13 @@ import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/m
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { mergeRegister } from '@lexical/utils';
 import {
-  $getRoot,
+  $createParagraphNode,
   $getSelection,
   $isRangeSelection,
   COMMAND_PRIORITY_EDITOR,
   createCommand,
   type LexicalCommand,
+  type LexicalNode,
 } from 'lexical';
 import type { JSX } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -180,47 +181,77 @@ export default function AiAssistantPlugin(): JSX.Element | null {
 
   const handleSubmit = useCallback(
     async (userPrompt: string) => {
-      // 現在のエディタ内容をMarkdownに変換（カーソル位置はドキュメント末尾として扱う）
-      let markdownWithCursor = '';
-
+      // 現在のエディタ内容をMarkdownとして取得（AIに文脈を伝える）
+      let currentMarkdown = '';
       editor.getEditorState().read(() => {
-        const markdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
-        // カーソルマーカーを末尾に配置（AIに文脈を提供）
-        markdownWithCursor = `${markdown}\n${CURSOR_MARKER}`;
+        currentMarkdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
       });
 
+      // AI用のコンテキストマークダウンを作成（カーソル位置を末尾として伝える）
+      const markdownForAi = `${currentMarkdown}\n${CURSOR_MARKER}`;
+
       const result = await generateAiText({
-        markdown: markdownWithCursor,
+        markdown: markdownForAi,
         cursorMarker: CURSOR_MARKER,
         userPrompt,
       });
 
-      editor.update(
-        () => {
-          let textToInsert: string;
-          if (result.success && result.data?.generatedText) {
-            textToInsert = result.data.generatedText;
+      // 生成テキストを取得
+      let textToInsert: string;
+      if (result.success && result.data?.generatedText) {
+        textToInsert = result.data.generatedText;
+      } else {
+        textToInsert = ERROR_MESSAGE;
+      }
+
+      // MarkdownPastePluginと同様の方式で挿入
+      editor.update(() => {
+        const selection = $getSelection();
+
+        if (!$isRangeSelection(selection)) {
+          return;
+        }
+
+        // 選択範囲を削除（選択テキストを置換する場合）
+        selection.removeText();
+
+        // 現在のノードを取得
+        const anchorNode = selection.anchor.getNode();
+
+        // 空の段落ノードを作成してマークダウンを変換
+        const paragraphNode = $createParagraphNode();
+
+        // マークダウンを Lexical ノードに変換
+        $convertFromMarkdownString(textToInsert, PLAYGROUND_TRANSFORMERS, paragraphNode, true);
+
+        // 変換されたノードを現在の位置に挿入
+        const children = paragraphNode.getChildren();
+
+        if (children.length > 0) {
+          // 現在のノードが空の段落の場合は置換、そうでなければ後に挿入
+          const topLevelNode = anchorNode.getTopLevelElement();
+
+          if (topLevelNode) {
+            // 全ての変換されたノードを挿入
+            let lastInserted: LexicalNode = topLevelNode;
+            for (const child of children) {
+              lastInserted.insertAfter(child);
+              lastInserted = child;
+            }
+
+            // 元の空の段落を削除（必要に応じて）
+            if (topLevelNode.getTextContent().trim() === '') {
+              topLevelNode.remove();
+            }
+
+            // カーソルを最後に挿入したノードの末尾に移動
+            lastInserted.selectEnd();
           } else {
-            textToInsert = ERROR_MESSAGE;
+            // フォールバック: 直接挿入
+            selection.insertNodes(children);
           }
-
-          const selection = $getSelection();
-
-          if ($isRangeSelection(selection)) {
-            // 現在の選択範囲（カーソル位置）にテキストを直接挿入
-            selection.insertRawText(textToInsert);
-          } else {
-            // 選択がない場合はドキュメント末尾に追加
-            const currentMarkdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
-            const newMarkdown = `${currentMarkdown}\n${textToInsert}`;
-
-            const root = $getRoot();
-            root.clear();
-            $convertFromMarkdownString(newMarkdown, PLAYGROUND_TRANSFORMERS);
-          }
-        },
-        { skipTransforms: true },
-      );
+        }
+      });
 
       setIsOpen(false);
       setAnchorRect(null);
