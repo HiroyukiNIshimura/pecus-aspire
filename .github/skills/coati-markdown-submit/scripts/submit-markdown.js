@@ -1,5 +1,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const dotenv = require('dotenv');
+
+dotenv.config({
+  path: path.resolve(process.cwd(), '.env'),
+});
 
 function getArg(name) {
   const index = process.argv.indexOf(`--${name}`);
