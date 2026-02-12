@@ -267,9 +267,20 @@ main().catch((error) => {
 
 ```
 
+## .envの作成
+スクリプト実行前に、以下のような `.env` ファイルをプロジェクトルートに作成します。
+
+```env
+COATI_API_BASE_URL=https://coati.bright-l.0am.jp/backend/api
+COATI_WORKSPACE_ID=xxxxxxxxxxxxxxxx
+COATI_OWNER_LOGIN_ID=xxxxxxxxxxxxxxxx
+COATI_API_KEY=xxxxxxxxxxxxxxxx
+```
+
 ## 実行プロンプト
 ある程度完成した設計ドキュメントをCoatiに送信する場合、以下のようなプロンプトを使用します。
 ドキュメントをコンテキストに入れた状態なら...
 「このドキュメントをCoatiに送信して」
 
 > まあ、1つのファイルであれば手動でスクリプト実行しちゃった方が速いのですが、複数ファイルに分かれている場合や、エージェントに任せたい場合はこのスキルを呼び出すイメージです。
+
