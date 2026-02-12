@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using Pecus.Libs.DB.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests.WorkspaceItem;
 

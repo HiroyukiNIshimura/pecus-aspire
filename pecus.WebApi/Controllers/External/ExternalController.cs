@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Authentication;
 using Pecus.Models.Requests.External;
+using Pecus.Models.Responses.External;
+using Pecus.Services;
 
 namespace Pecus.Controllers.External;
 
@@ -18,7 +20,7 @@ namespace Pecus.Controllers.External;
 [Authorize(AuthenticationSchemes = ApiKeyAuthenticationOptions.SchemeName)]
 [Produces("application/json")]
 [Tags("External API")]
-public class ExternalController : ControllerBase
+public class ExternalController(IExternalWorkspaceItemService externalWorkspaceItemService) : ControllerBase
 {
     /// <summary>
     /// 認証済みAPIキーの組織IDを取得
@@ -47,5 +49,40 @@ public class ExternalController : ControllerBase
             Timestamp = DateTimeOffset.UtcNow,
         });
     }
-}
 
+    /// <summary>
+    /// 指定したワークスペースにアイテムを作成する
+    /// </summary>
+    /// <remarks>
+    /// Markdown形式の本文をLexical JSON形式に変換して保存します。
+    /// オーナーはワークスペースのメンバーである必要があります。
+    /// </remarks>
+    /// <param name="workspaceCode">ワークスペースコード</param>
+    /// <param name="request">作成リクエスト</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>作成されたアイテム情報</returns>
+    /// <response code="201">アイテムの作成に成功</response>
+    /// <response code="400">リクエストが不正</response>
+    /// <response code="401">認証エラー</response>
+    /// <response code="404">ワークスペースまたはユーザーが見つからない</response>
+    [HttpPost("workspaces/{workspaceCode}/items")]
+    [ProducesResponseType(typeof(CreateExternalWorkspaceItemResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<Created<CreateExternalWorkspaceItemResponse>> CreateWorkspaceItem(
+        [FromRoute] string workspaceCode,
+        [FromBody] CreateExternalWorkspaceItemRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await externalWorkspaceItemService.CreateItemAsync(
+            CurrentOrganizationId,
+            workspaceCode,
+            request,
+            cancellationToken);
+
+        return TypedResults.Created(
+            $"/api/external/workspaces/{workspaceCode}/items/{result.ItemNumber}",
+            result);
+    }
+}

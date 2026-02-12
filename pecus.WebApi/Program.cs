@@ -129,6 +129,9 @@ builder.Services.AddScoped<OrganizationAccessHelper>();
 builder.Services.AddScoped<BatchOrganizationDeletionService>();
 builder.Services.AddScoped<ExternalApiKeyService>();
 
+// 外部API用サービスの登録
+builder.Services.AddScoped<IExternalWorkspaceItemService, ExternalWorkspaceItemService>();
+
 // サービスの登録
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ProfileService>();

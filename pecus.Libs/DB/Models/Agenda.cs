@@ -174,4 +174,3 @@ public class Agenda
     /// </summary>
     public ICollection<AgendaException> Exceptions { get; set; } = new List<AgendaException>();
 }
-
