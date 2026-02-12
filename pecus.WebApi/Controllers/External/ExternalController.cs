@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Authentication;
-using Pecus.Models.Requests.External;
-using Pecus.Models.Responses.External;
 using Pecus.Services;
 
 namespace Pecus.Controllers.External;
@@ -20,7 +18,8 @@ namespace Pecus.Controllers.External;
 [Authorize(AuthenticationSchemes = ApiKeyAuthenticationOptions.SchemeName)]
 [Produces("application/json")]
 [Tags("External API")]
-public class ExternalController(IExternalWorkspaceItemService externalWorkspaceItemService) : ControllerBase
+public class ExternalController(
+    IExternalWorkspaceItemService externalWorkspaceItemService) : ControllerBase
 {
     /// <summary>
     /// 認証済みAPIキーの組織IDを取得

@@ -6,6 +6,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Lexical;
 using Pecus.Models.Requests.External;
 using Pecus.Models.Responses.External;
@@ -118,6 +119,10 @@ public class ExternalWorkspaceItemService(
             // Activity 記録ジョブをエンキュー
             backgroundJobClient.Enqueue<ActivityTasks>(x =>
                 x.RecordActivityAsync(workspace.Id, item.Id, owner.Id, ActivityActionType.Created, null));
+
+            // アイテム作成通知ボットジョブをエンキュー
+            backgroundJobClient.Enqueue<CreateItemTask>(x =>
+                x.NotifyItemCreatedAsync(item.Id));
 
             return new CreateExternalWorkspaceItemResponse
             {
