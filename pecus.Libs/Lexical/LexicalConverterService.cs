@@ -6,7 +6,7 @@ using Pecus.Lexical.Grpc;
 namespace Pecus.Libs.Lexical;
 
 /// <summary>
-/// gRPC 経由で Lexical JSON を各形式に変換するサービス
+/// gRPC 経由で Lexical JSON を各形式またはMarkdownをLexical JSONに変換するサービス
 /// </summary>
 public class LexicalConverterService : ILexicalConverterService, IDisposable
 {
