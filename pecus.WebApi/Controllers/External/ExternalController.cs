@@ -58,7 +58,6 @@ public class ExternalController(
     /// </remarks>
     /// <param name="workspaceCode">ワークスペースコード</param>
     /// <param name="request">作成リクエスト</param>
-    /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>作成されたアイテム情報</returns>
     /// <response code="201">アイテムの作成に成功</response>
     /// <response code="400">リクエストが不正</response>
@@ -71,14 +70,12 @@ public class ExternalController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Created<CreateExternalWorkspaceItemResponse>> CreateWorkspaceItem(
         [FromRoute] string workspaceCode,
-        [FromBody] CreateExternalWorkspaceItemRequest request,
-        CancellationToken cancellationToken)
+        [FromBody] CreateExternalWorkspaceItemRequest request)
     {
         var result = await externalWorkspaceItemService.CreateItemAsync(
             CurrentOrganizationId,
             workspaceCode,
-            request,
-            cancellationToken);
+            request);
 
         return TypedResults.Created(
             $"/api/external/workspaces/{workspaceCode}/items/{result.ItemNumber}",
