@@ -180,52 +180,13 @@ export default function AiAssistantPlugin(): JSX.Element | null {
 
   const handleSubmit = useCallback(
     async (userPrompt: string) => {
+      // 現在のエディタ内容をMarkdownに変換（カーソル位置はドキュメント末尾として扱う）
       let markdownWithCursor = '';
-      let insertPosition = 0;
 
       editor.getEditorState().read(() => {
-        const selection = $getSelection();
         const markdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
-
-        if (!$isRangeSelection(selection)) {
-          markdownWithCursor = markdown + CURSOR_MARKER;
-          insertPosition = markdown.length;
-          return;
-        }
-
-        const anchor = selection.anchor;
-        const anchorNode = anchor.getNode();
-        const anchorOffset = anchor.offset;
-
-        const lines = markdown.split('\n');
-        let currentPosition = 0;
-        let found = false;
-
-        const textContent = anchorNode.getTextContent();
-        const beforeCursor = textContent.slice(0, anchorOffset);
-
-        for (let i = 0; i < lines.length && !found; i++) {
-          const line = lines[i];
-
-          if (line.includes(beforeCursor) || (beforeCursor === '' && line === '')) {
-            const lineStart = markdown.indexOf(line, currentPosition);
-            if (lineStart !== -1) {
-              const posInLine = beforeCursor ? line.indexOf(beforeCursor) + beforeCursor.length : 0;
-              insertPosition = lineStart + posInLine;
-              found = true;
-            }
-          }
-
-          if (!found) {
-            currentPosition += line.length + 1;
-          }
-        }
-
-        if (!found) {
-          insertPosition = markdown.length;
-        }
-
-        markdownWithCursor = markdown.slice(0, insertPosition) + CURSOR_MARKER + markdown.slice(insertPosition);
+        // カーソルマーカーを末尾に配置（AIに文脈を提供）
+        markdownWithCursor = `${markdown}\n${CURSOR_MARKER}`;
       });
 
       const result = await generateAiText({
@@ -233,8 +194,6 @@ export default function AiAssistantPlugin(): JSX.Element | null {
         cursorMarker: CURSOR_MARKER,
         userPrompt,
       });
-
-      const savedInsertPosition = insertPosition;
 
       editor.update(
         () => {
@@ -245,31 +204,19 @@ export default function AiAssistantPlugin(): JSX.Element | null {
             textToInsert = ERROR_MESSAGE;
           }
 
-          // 現在のコンテンツをMarkdownとして取得
-          const currentMarkdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
+          const selection = $getSelection();
 
-          // カーソル位置にテキストを挿入
-          const newMarkdown =
-            currentMarkdown.slice(0, savedInsertPosition) + textToInsert + currentMarkdown.slice(savedInsertPosition);
+          if ($isRangeSelection(selection)) {
+            // 現在の選択範囲（カーソル位置）にテキストを直接挿入
+            selection.insertRawText(textToInsert);
+          } else {
+            // 選択がない場合はドキュメント末尾に追加
+            const currentMarkdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
+            const newMarkdown = `${currentMarkdown}\n${textToInsert}`;
 
-          // ルートをクリアして新しいマークダウンを変換
-          const root = $getRoot();
-          root.clear();
-          $convertFromMarkdownString(newMarkdown, PLAYGROUND_TRANSFORMERS);
-
-          // 挿入したテキストの末尾にカーソルを移動
-          const newCursorPosition = savedInsertPosition + textToInsert.length;
-          let charCount = 0;
-          const children = root.getAllTextNodes();
-
-          for (const textNode of children) {
-            const nodeLength = textNode.getTextContentSize();
-            if (charCount + nodeLength >= newCursorPosition) {
-              const offset = newCursorPosition - charCount;
-              textNode.select(offset, offset);
-              break;
-            }
-            charCount += nodeLength;
+            const root = $getRoot();
+            root.clear();
+            $convertFromMarkdownString(newMarkdown, PLAYGROUND_TRANSFORMERS);
           }
         },
         { skipTransforms: true },
