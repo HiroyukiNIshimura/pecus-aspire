@@ -151,10 +151,15 @@ export default function ProfileClient({
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
+      <div className="mb-1">
         <h1 className="text-3xl font-bold">プロフィール設定</h1>
         <p className="text-base-content/70">アカウント情報とセキュリティ設定を管理してください</p>
       </div>
+      <div className="mb-5">
+        <span className="text-base-content">ログインID:</span>
+        <span className="ml-2 font-mono text-base-content/70">{user.loginId}</span>
+      </div>
+
       {fetchError && (
         <div className="mb-4 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning">
           {fetchError}
