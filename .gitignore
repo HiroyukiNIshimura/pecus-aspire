@@ -173,3 +173,5 @@ config/settings.base.prod.json
 
 # Local data directory (uploads, notifications, etc.)
 data/
+
+.env
