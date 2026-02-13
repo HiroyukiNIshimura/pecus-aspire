@@ -1149,15 +1149,20 @@ export default function GenerateTasksModal({
         </div>
 
         {/* フッター */}
-        <div className="flex gap-2 justify-end p-4 sm:p-6 border-t border-base-300 shrink-0">
+        <div className="flex flex-col sm:flex-row gap-2 sm:justify-end p-4 sm:p-6 border-t border-base-300 shrink-0">
           {step === 'input' ? (
             <>
-              <button type="button" className="btn btn-outline" onClick={handleClose} disabled={isGenerating}>
+              <button
+                type="button"
+                className="btn btn-outline w-full sm:w-auto order-2 sm:order-1"
+                onClick={handleClose}
+                disabled={isGenerating}
+              >
                 キャンセル
               </button>
               <button
                 type="button"
-                className="btn btn-primary"
+                className="btn btn-primary w-full sm:w-auto order-1 sm:order-2"
                 onClick={handleGenerate}
                 disabled={isGenerating || !startDate}
               >
@@ -1178,7 +1183,7 @@ export default function GenerateTasksModal({
             <>
               <button
                 type="button"
-                className="btn btn-outline"
+                className="btn btn-outline w-full sm:w-auto order-3 sm:order-1"
                 onClick={() => setStep('input')}
                 disabled={isGenerating || isCreating}
               >
@@ -1186,7 +1191,7 @@ export default function GenerateTasksModal({
               </button>
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary w-full sm:w-auto order-2 sm:order-2"
                 onClick={handleGenerate}
                 disabled={isGenerating || isCreating}
               >
@@ -1204,7 +1209,7 @@ export default function GenerateTasksModal({
               </button>
               <button
                 type="button"
-                className="btn btn-primary"
+                className="btn btn-primary w-full sm:w-auto order-1 sm:order-3"
                 onClick={handleBulkCreate}
                 disabled={isGenerating || isCreating || selectedCount === 0 || !canEdit}
               >
