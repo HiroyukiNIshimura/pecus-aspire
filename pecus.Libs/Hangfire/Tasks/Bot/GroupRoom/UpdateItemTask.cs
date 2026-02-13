@@ -1,6 +1,7 @@
 using DiffPlex;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.AI;
@@ -37,6 +38,7 @@ public class UpdateItemTask : ItemNotificationTaskBase
     private readonly ILexicalConverterService? _lexicalConverterService;
     private readonly IAiClientFactory? _aiClientFactory;
     private readonly IBotSelector? _botSelector;
+    private readonly IBackgroundJobClient? _backgroundJobClient;
 
     /// <summary>
     /// UpdateItemTask のコンストラクタ
@@ -48,12 +50,14 @@ public class UpdateItemTask : ItemNotificationTaskBase
         ILogger<UpdateItemTask> logger,
         ILexicalConverterService? lexicalConverterService = null,
         IAiClientFactory? aiClientFactory = null,
-        IBotSelector? botSelector = null)
+        IBotSelector? botSelector = null,
+        IBackgroundJobClient? backgroundJobClient = null)
         : base(context, publisher, taskGuard, logger)
     {
         _lexicalConverterService = lexicalConverterService;
         _aiClientFactory = aiClientFactory;
         _botSelector = botSelector;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     /// <inheritdoc />
@@ -206,13 +210,46 @@ public class UpdateItemTask : ItemNotificationTaskBase
     }
 
     /// <summary>
-    /// アイテム更新時のメッセージ通知を実行する
+    /// アイテム更新時のメッセージ通知を実行する（デバウンス対応）
     /// </summary>
     /// <param name="itemId">更新されたアイテムのID</param>
     /// <param name="actionType">アクションタイプ</param>
+    /// <param name="scheduledUpdatedAt">スケジュール時点のアイテム更新日時（デバウンス判定用）</param>
     /// <param name="details">更新内容の詳細（JSON形式）</param>
-    public async Task NotifyItemUpdatedAsync(int itemId, ActivityActionType actionType, string? details = null)
+    /// <remarks>
+    /// デバウンス機能: スケジュール時の UpdatedAt と実行時の UpdatedAt を比較し、
+    /// 異なる場合は後続の更新があったとみなして通知をスキップする。
+    /// これにより、連続編集時の通知を最後の1回のみに抑制できる。
+    /// Bot通知とメール通知の両方を処理する。
+    /// メール通知はBot機能の有効/無効に関係なく送信される。
+    /// </remarks>
+    public async Task NotifyItemUpdatedAsync(
+        int itemId,
+        ActivityActionType actionType,
+        DateTimeOffset scheduledUpdatedAt,
+        string? details = null)
     {
+        // デバウンスチェック: スケジュール時点から更新があればスキップ
+        var item = await Context.WorkspaceItems
+            .Include(wi => wi.Workspace)
+            .Include(wi => wi.Owner)
+            .FirstOrDefaultAsync(wi => wi.Id == itemId);
+
+        if (item == null)
+        {
+            Logger.LogDebug("Item {ItemId} not found, skipping notification", itemId);
+            return;
+        }
+
+        if (item.UpdatedAt != scheduledUpdatedAt)
+        {
+            Logger.LogDebug(
+                "Item {ItemId} was updated after scheduling (scheduled: {ScheduledAt}, current: {CurrentAt}), skipping notification",
+                itemId, scheduledUpdatedAt, item.UpdatedAt);
+            return;
+        }
+
+        // Bot通知を実行（Bot機能が無効な組織では ExecuteNotificationAsync 内でスキップされる）
         await ExecuteNotificationAsync(itemId, actionType, details);
     }
 

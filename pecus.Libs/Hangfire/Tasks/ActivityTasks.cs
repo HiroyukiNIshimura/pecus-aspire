@@ -88,18 +88,37 @@ public class ActivityTasks
             // Activity 記録失敗でもメール配信は続行するためスローしない
         }
 
-        // メール通知をキューに追加
-        await EnqueueItemNotificationEmailsAsync(workspaceId, itemId, userId, actionType);
+        // BodyUpdated/SubjectUpdated のメール通知は UpdateItemTask でデバウンス処理するためスキップ
+        if (actionType == ActivityActionType.BodyUpdated || actionType == ActivityActionType.SubjectUpdated)
+        {
+            _logger.LogDebug(
+                "Skipping email notification for {ActionType} (handled by UpdateItemTask with debounce). WorkspaceId={WorkspaceId}, ItemId={ItemId}",
+                actionType, workspaceId, itemId);
+            return;
+        }
+
+        // メール通知をキューに追加（デバウンスなしで即座に送信）
+        await SendItemNotificationEmailsAsync(workspaceId, itemId, userId, actionType);
     }
 
     /// <summary>
-    /// アイテム通知メールをワークスペースメンバー全員に配信
+    /// アイテム通知メールをワークスペースメンバー全員に配信（デバウンス対応）
     /// </summary>
-    private async Task EnqueueItemNotificationEmailsAsync(
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <param name="actorUserId">操作ユーザーID</param>
+    /// <param name="actionType">アクションタイプ</param>
+    /// <param name="scheduledUpdatedAt">スケジュール時のアイテム更新日時（デバウンス判定用、nullの場合はチェックしない）</param>
+    /// <remarks>
+    /// scheduledUpdatedAt が指定されている場合、実行時のアイテム UpdatedAt と比較し、
+    /// 異なる場合は後続の更新があったとみなしてメール送信をスキップする。
+    /// </remarks>
+    public async Task SendItemNotificationEmailsAsync(
         int workspaceId,
         int itemId,
         int? actorUserId,
-        ActivityActionType actionType
+        ActivityActionType actionType,
+        DateTimeOffset? scheduledUpdatedAt = null
     )
     {
         try
@@ -117,6 +136,15 @@ public class ActivityTasks
                     workspaceId,
                     itemId
                 );
+                return;
+            }
+
+            // デバウンスチェック: スケジュール時点から更新があればスキップ
+            if (scheduledUpdatedAt.HasValue && item.UpdatedAt != scheduledUpdatedAt.Value)
+            {
+                _logger.LogDebug(
+                    "Item was updated after scheduling email (scheduled: {ScheduledAt}, current: {CurrentAt}), skipping email notification. ItemId={ItemId}",
+                    scheduledUpdatedAt.Value, item.UpdatedAt, itemId);
                 return;
             }
 
