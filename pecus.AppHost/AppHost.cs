@@ -108,8 +108,8 @@ try
     }
 
     // Lexical Converter (Node.js gRPC Service)
-    var lexicalConverter = builder.AddNpmApp("lexicalconverter", "../pecus.LexicalConverter", "start:dev")
-        .WithNpmPackageInstallation()
+    var lexicalConverter = builder.AddJavaScriptApp("lexicalconverter", "../pecus.LexicalConverter")
+        .WithRunScript("start:dev")
         .WithHttpEndpoint(targetPort: lexicalConverterPort, name: "grpc", isProxied: false)
         .WithHttpEndpoint(targetPort: lexicalConverterMetricsPort, name: "metrics", isProxied: false)
         .WithEnvironment("GRPC_PORT", lexicalConverterPort.ToString())
@@ -166,12 +166,12 @@ try
     var pecusApi = pecusApiBuilder;
 
     // Frontendの設定(開発環境モード)
-    var frontendBuilder = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")
+    var frontendBuilder = builder.AddJavaScriptApp("frontend", "../pecus.Frontend")
+        .WithRunScript("dev")
         .WithReference(pecusApi)
         .WithReference(redisFrontend)
         .WaitFor(redisFrontend)
         .WaitFor(pecusApi)
-        .WithNpmPackageInstallation()
         .WithExternalHttpEndpoints()
         // 開発環境: Aspire の自己署名証明書を許可
         .WithEnvironment("NODE_TLS_REJECT_UNAUTHORIZED", "0");
