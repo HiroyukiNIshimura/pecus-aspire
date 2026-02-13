@@ -90,7 +90,6 @@
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/canvas-confetti": "^1.9.0",
-    "@types/ioredis": "^5.0.0",
     "@types/lodash-es": "^4.17.12",
     "@types/mark.js": "^8.11.12",
     "@types/yaireo__tagify": "^4.27.0",
