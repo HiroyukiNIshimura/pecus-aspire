@@ -8,6 +8,7 @@
  * @see https://payloadcms.com/docs/rich-text/converting-markdown#markdown-to-richtext
  */
 
+import { $isCodeNode } from '@lexical/code';
 import { $convertFromMarkdownString } from '@lexical/markdown';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
@@ -167,6 +168,33 @@ export default function MarkdownPastePlugin(): null {
 
   const handlePaste = useCallback(
     (event: ClipboardEvent): boolean => {
+      // コードブロック内へのペーストはマークダウン変換をスキップ
+      const isInsideCodeBlock = editor.getEditorState().read(() => {
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection)) {
+          return false;
+        }
+        const anchorNode = selection.anchor.getNode();
+        // 現在のノードまたは祖先にCodeNodeがあるかチェック
+        let node = anchorNode;
+        while (node !== null) {
+          if ($isCodeNode(node)) {
+            return true;
+          }
+          const parent = node.getParent();
+          if (parent === null) {
+            break;
+          }
+          node = parent;
+        }
+        return false;
+      });
+
+      if (isInsideCodeBlock) {
+        // コードブロック内の場合は通常のペースト処理に委譲
+        return false;
+      }
+
       const plainText = getPlainTextFromClipboard(event);
 
       if (!plainText) {
