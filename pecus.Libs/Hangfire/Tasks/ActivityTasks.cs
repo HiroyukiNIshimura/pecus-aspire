@@ -108,9 +108,9 @@ public class ActivityTasks
     /// <param name="itemId">アイテムID</param>
     /// <param name="actorUserId">操作ユーザーID</param>
     /// <param name="actionType">アクションタイプ</param>
-    /// <param name="scheduledUpdatedAt">スケジュール時のアイテム更新日時（デバウンス判定用、nullの場合はチェックしない）</param>
+    /// <param name="scheduledRowVersion">スケジュール時のRowVersion（デバウンス判定用、nullの場合はチェックしない）</param>
     /// <remarks>
-    /// scheduledUpdatedAt が指定されている場合、実行時のアイテム UpdatedAt と比較し、
+    /// scheduledRowVersion が指定されている場合、実行時のアイテム RowVersion と比較し、
     /// 異なる場合は後続の更新があったとみなしてメール送信をスキップする。
     /// </remarks>
     public async Task SendItemNotificationEmailsAsync(
@@ -118,7 +118,7 @@ public class ActivityTasks
         int itemId,
         int? actorUserId,
         ActivityActionType actionType,
-        DateTimeOffset? scheduledUpdatedAt = null
+        uint? scheduledRowVersion = null
     )
     {
         try
@@ -140,11 +140,11 @@ public class ActivityTasks
             }
 
             // デバウンスチェック: スケジュール時点から更新があればスキップ
-            if (scheduledUpdatedAt.HasValue && item.UpdatedAt != scheduledUpdatedAt.Value)
+            if (scheduledRowVersion.HasValue && item.RowVersion != scheduledRowVersion.Value)
             {
                 _logger.LogDebug(
-                    "Item was updated after scheduling email (scheduled: {ScheduledAt}, current: {CurrentAt}), skipping email notification. ItemId={ItemId}",
-                    scheduledUpdatedAt.Value, item.UpdatedAt, itemId);
+                    "Item was updated after scheduling email (scheduled RowVersion: {ScheduledRowVersion}, current: {CurrentRowVersion}), skipping email notification. ItemId={ItemId}",
+                    scheduledRowVersion.Value, item.RowVersion, itemId);
                 return;
             }
 

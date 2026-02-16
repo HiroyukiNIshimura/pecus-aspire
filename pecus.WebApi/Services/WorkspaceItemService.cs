@@ -1109,16 +1109,16 @@ public class WorkspaceItemService
         var userOrgId = await _accessHelper.GetUserOrganizationIdAsync(userId);
 
         // Activity記録（変更があった場合のみ、型安全なビルダーを使用）
-        // 本文・件名更新は Bot 通知のデバウンス用に UpdatedAt を渡す
+        // 本文・件名更新は Bot 通知のデバウンス用に RowVersion を渡す
         EnqueueActivityIfChanged(workspaceId, itemId, userId,
             ActivityActionType.BodyUpdated,
             ActivityDetailsBuilder.BuildBodyChangeDetails(snapshot.Body, item.Body),
-            item.UpdatedAt);
+            item.RowVersion);
 
         EnqueueActivityIfChanged(workspaceId, itemId, userId,
             ActivityActionType.SubjectUpdated,
             ActivityDetailsBuilder.BuildStringChangeDetails(snapshot.Subject, item.Subject),
-            item.UpdatedAt);
+            item.RowVersion);
 
         // 担当者・コミッター変更: ユーザー名を取得してから記録
         string? newAssigneeName = null;
@@ -1882,14 +1882,14 @@ public class WorkspaceItemService
     /// <param name="userId">操作ユーザーID</param>
     /// <param name="actionType">アクションタイプ</param>
     /// <param name="details">ActivityDetailsBuilder で生成されたJSON（nullなら変更なし）</param>
-    /// <param name="itemUpdatedAt">アイテムの更新日時（Bot通知デバウンス用、Body/Subject更新時は必須）</param>
+    /// <param name="rowVersion">アイテムのRowVersion（Bot通知デバウンス用、Body/Subject更新時は必須）</param>
     private void EnqueueActivityIfChanged(
         int workspaceId,
         int itemId,
         int userId,
         ActivityActionType actionType,
         string? details,
-        DateTimeOffset? itemUpdatedAt = null)
+        uint? rowVersion = null)
     {
         if (details == null) return;
 
@@ -1900,10 +1900,10 @@ public class WorkspaceItemService
         // Body/Subject更新時のみBot通知タスクをスケジュール（3分後にデバウンス実行）
         if (actionType == ActivityActionType.BodyUpdated || actionType == ActivityActionType.SubjectUpdated)
         {
-            if (!itemUpdatedAt.HasValue)
+            if (!rowVersion.HasValue)
             {
                 _logger.LogWarning(
-                    "itemUpdatedAt is required for {ActionType} notification, skipping Bot notification",
+                    "rowVersion is required for {ActionType} notification, skipping Bot notification",
                     actionType);
                 return;
             }
@@ -1913,7 +1913,7 @@ public class WorkspaceItemService
                 x => x.NotifyItemUpdatedAsync(
                     itemId,
                     actionType,
-                    itemUpdatedAt.Value,
+                    rowVersion.Value,
                     details
                 ),
                 TimeSpan.FromMinutes(3)
@@ -1926,7 +1926,7 @@ public class WorkspaceItemService
                     itemId,
                     userId,
                     actionType,
-                    itemUpdatedAt.Value
+                    rowVersion.Value
                 ),
                 TimeSpan.FromMinutes(3)
             );
