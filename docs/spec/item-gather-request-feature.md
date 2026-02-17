@@ -45,22 +45,26 @@
 **処理フロー**:
 1. ユーザー認証: ログイン中のユーザーIDを取得
 2. 権限チェック: ワークスペースのアクティブメンバーかどうかを確認
-3. アイテム情報を取得: アイテムコード、ワークスペースコード、件名を取得
-4. 送信者情報を取得: ユーザー名、アイコンURLを取得
-5. ワークスペースグループにブロードキャスト:
-   - 送信先: `workspace:{workspaceId}` グループ
+3. アイテム情報を取得: アイテムコード、ワークスペースコード、件名、組織IDを取得
+4. ワークスペースのアクティブメンバーIDリストを取得（クライアント側フィルタリング用）
+5. 送信者情報を取得: ユーザー名、アイコンURLを取得
+6. 組織グループにブロードキャスト:
+   - 送信先: `organization:{organizationId}` グループ
    - 送信者自身を除外: `Clients.GroupExcept(groupName, Context.ConnectionId)`
+   - クライアント側で `MemberIds` を使ってワークスペースメンバーかどうかをフィルタリング
    - イベント名: `item:gather_request`
    - ペイロード:
      ```csharp
      {
+         WorkspaceId = workspaceId,
          ItemId = itemId,
          ItemCode = itemCode,
          WorkspaceCode = workspaceCode,
          ItemSubject = subject,
          SenderUserId = userId,
          SenderUserName = userName,
-         SenderIdentityIconUrl = iconUrl
+         SenderIdentityIconUrl = iconUrl,
+         MemberIds = memberIds
      }
      ```
 
@@ -106,20 +110,22 @@ public async Task RequestItemGather(int workspaceId, int itemId)
         _logger.LogDebug(
             "SignalR: Item {ItemId} is rate limited for gather request (remaining={RemainingSeconds}s)",
             itemId, remainingSeconds);
-        throw new HubException($"このアイテムへの召集通知は {Math.Ceiling(remainingSeconds)} 秒後に送信できます。");
+        // フロントエンドで判定しやすいよう RATE_LIMIT:秒数 のフォーマットでエラーを返す
+        throw new HubException($"RATE_LIMIT:{remainingSeconds}");
     }
 
     // レート制限情報を更新（30秒のTTL）
     await _presenceService.SetRateLimitAsync(rateLimitKey, now, TimeSpan.FromSeconds(30));
 
-    // アイテム情報を取得
+    // アイテム情報を取得（組織IDも含む）
     var itemInfo = await _context.WorkspaceItems
         .Where(i => i.Id == itemId && i.WorkspaceId == workspaceId)
         .Select(i => new
         {
             i.Code,
             i.Subject,
-            WorkspaceCode = i.Workspace.Code
+            WorkspaceCode = i.Workspace.Code,
+            OrganizationId = i.Workspace.OrganizationId
         })
         .FirstOrDefaultAsync();
 
@@ -130,6 +136,12 @@ public async Task RequestItemGather(int workspaceId, int itemId)
             itemId, workspaceId);
         return;
     }
+
+    // ワークスペースのアクティブメンバーIDリストを取得（クライアント側でフィルタリング用）
+    var memberIds = await _context.WorkspaceUsers
+        .Where(wu => wu.WorkspaceId == workspaceId && wu.User.IsActive)
+        .Select(wu => wu.UserId)
+        .ToListAsync();
 
     // 送信者情報を取得
     var user = await _context.Users
@@ -157,27 +169,30 @@ public async Task RequestItemGather(int workspaceId, int itemId)
         user.Email,
         user.UserAvatarPath);
 
-    // ワークスペースグループにブロードキャスト（送信者を除く）
-    var groupName = $"workspace:{workspaceId}";
+    // 組織グループにブロードキャスト（送信者を除く）
+    // クライアント側で MemberIds を使ってワークスペースメンバーかどうかをフィルタリング
+    var groupName = $"organization:{itemInfo.OrganizationId}";
     await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
     {
         EventType = "item:gather_request",
         Payload = new
         {
+            WorkspaceId = workspaceId,
             ItemId = itemId,
             ItemCode = itemInfo.Code,
             WorkspaceCode = itemInfo.WorkspaceCode,
             ItemSubject = itemInfo.Subject,
             SenderUserId = userId,
             SenderUserName = user.Username,
-            SenderIdentityIconUrl = identityIconUrl
+            SenderIdentityIconUrl = identityIconUrl,
+            MemberIds = memberIds
         },
         Timestamp = DateTimeOffset.UtcNow
     });
 
     _logger.LogDebug(
-        "SignalR: User {UserId} requested item gather for {ItemId} in workspace {WorkspaceId}",
-        userId, itemId, workspaceId);
+        "SignalR: User {UserId} requested item gather for {ItemId} in workspace {WorkspaceId} (sent to organization:{OrganizationId})",
+        userId, itemId, workspaceId, itemInfo.OrganizationId);
 }
 ```
 
@@ -319,9 +334,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
+import { useCurrentUserId } from '@/providers/AppSettingsProvider';
 import { useSignalRContext, type SignalRNotification } from '@/providers/SignalRProvider';
 
 interface GatherRequest {
+  workspaceId: number;
   itemId: number;
   itemCode: string;
   workspaceCode: string;
@@ -329,6 +346,7 @@ interface GatherRequest {
   senderUserId: number;
   senderUserName: string;
   senderIdentityIconUrl: string | null;
+  memberIds: number[];
 }
 
 /**
@@ -337,27 +355,37 @@ interface GatherRequest {
 export function ItemGatherNotification() {
   const router = useRouter();
   const { onNotification } = useSignalRContext();
+  const currentUserId = useCurrentUserId();
   const [request, setRequest] = useState<GatherRequest | null>(null);
 
   useEffect(() => {
     const unsubscribe = onNotification((notification: SignalRNotification) => {
       if (notification.eventType === 'item:gather_request') {
         const payload = notification.payload as GatherRequest;
-        // モーダル表示中は新規通知を無視（最初の召集に集中）
-        if (!request) {
-          setRequest(payload);
+
+        // ワークスペースメンバーかどうかをフィルタリング
+        if (!payload.memberIds || !payload.memberIds.includes(currentUserId)) {
+          return;
         }
+
+        // モーダル表示中は新規通知を無視（最初の召集に集中）
+        setRequest((prevRequest) => {
+          if (prevRequest) {
+            return prevRequest;
+          }
+          return payload;
+        });
       }
     });
 
     return unsubscribe;
-  }, [onNotification, request]);
+  }, [onNotification, currentUserId]);
 
   const handleAccept = () => {
     if (!request) return;
 
     // アイテムページに遷移
-    const url = `/workspaces/${request.workspaceCode}?item=${request.itemCode}`;
+    const url = `/workspaces/${request.workspaceCode}?itemCode=${request.itemCode}`;
     router.push(url);
 
     // ダイアログを閉じる
@@ -441,13 +469,17 @@ export function ItemGatherNotification() {
 }
 ```
 
-**レイアウトに統合** (`pecus.Frontend/src/app/(workspace-full)/layout.tsx`):
+**レイアウトに統合** (`pecus.Frontend/src/app/(workspace-full)/layout.tsx` および `pecus.Frontend/src/app/(dashboard)/layout.tsx`):
+
+ワークスペースを開いていないユーザー（ダッシュボード画面など）にも通知が届くよう、複数のレイアウトにコンポーネントを配置:
+
 ```tsx
 import { ItemGatherNotification } from '@/components/notifications/ItemGatherNotification';
 
-export default function WorkspaceFullLayout({ children }: { children: React.ReactNode }) {
+// (workspace-full)/layout.tsx および (dashboard)/layout.tsx の両方に追加
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="workspace-full-layout">
+    <div className="layout">
       {children}
 
       {/* アイテム召集通知 */}
@@ -479,7 +511,8 @@ export default function WorkspaceFullLayout({ children }: { children: React.Reac
   - **アイテム単位で30秒以内の再送信を拒否**
   - **複数人が同時に召集ボタンを押しても、最初の1人のみ有効**
 - **エラーハンドリング**: レート制限に引っかかった場合、`HubException` をスローしてクライアントに通知
-- **残り時間の通知**: エラーメッセージに残り秒数を含める
+  - **エラーフォーマット**: `RATE_LIMIT:秒数` 形式で返し、フロントエンドで判定しやすくする
+- **残り時間の通知**: フロントエンドでエラーメッセージをパースして残り秒数を表示
 
 ### SignalRPresenceService への追加メソッド例
 ```csharp
