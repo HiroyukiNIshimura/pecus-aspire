@@ -115,10 +115,11 @@
 
 /* src/plugins/CollapsiblePlugin/Collapsible.css */
 .Collapsible__container {
-  background: #fcfcfc;
-  border: 1px solid #eee;
+  background: var(--color-base-200);
+  border: 1px solid var(--color-base-300);
   border-radius: 10px;
   margin-bottom: 8px;
+  color: var(--color-base-content);
 }
 .Collapsible__title {
   cursor: pointer;
@@ -127,6 +128,7 @@
   font-weight: bold;
   list-style: none;
   outline: none;
+  color: var(--color-base-content);
 }
 .Collapsible__title::marker,
 .Collapsible__title::-webkit-details-marker {
@@ -136,7 +138,7 @@
   border-style: solid;
   border-color: transparent;
   border-width: 4px 6px 4px 6px;
-  border-left-color: #000;
+  border-left-color: var(--color-base-content);
   display: block;
   content: "";
   position: absolute;
@@ -147,7 +149,7 @@
 .Collapsible__container[open] > .Collapsible__title:before {
   border-color: transparent;
   border-width: 6px 4px 0 4px;
-  border-top-color: #000;
+  border-top-color: var(--color-base-content);
 }
 .Collapsible__content {
   padding: 0 5px 5px 20px;
@@ -352,9 +354,9 @@
   margin-top: var(--editor-input-padding, 28px);
   margin-bottom: var(--editor-input-padding, 28px);
   border: none;
-  border-top: 1px dashed var(--editor-color-secondary, #eeeeee);
-  border-bottom: 1px dashed var(--editor-color-secondary, #eeeeee);
-  background-color: var(--editor-color-secondary, #eeeeee);
+  border-top: 1px dashed var(--color-base-300);
+  border-bottom: 1px dashed var(--color-base-300);
+  background-color: var(--color-base-200);
 }
 [type=page-break]::before {
   content: "";
@@ -362,11 +364,14 @@
   top: 50%;
   left: calc(var(--editor-input-padding, 28px) + 12px);
   transform: translateY(-50%);
-  opacity: 0.5;
-  background-size: cover;
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-scissors" viewBox="0 0 16 16" transform="matrix(-1, 0, 0, 1, 0, 0)rotate(270)">%0A  <path d="M3.5 3.5c-.614-.884-.074-1.962.858-2.5L8 7.226 11.642 1c.932.538 1.472 1.616.858 2.5L8.81 8.61l1.556 2.661a2.5 2.5 0 1 1-.794.637L8 9.73l-1.572 2.177a2.5 2.5 0 1 1-.794-.637L7.19 8.61 3.5 3.5zm2.5 10a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0zm7 0a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0z"/>%0A</svg>');
+  opacity: 0.7;
   width: 16px;
   height: 16px;
+  background-color: var(--color-base-content);
+  mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-scissors" viewBox="0 0 16 16" transform="matrix(-1, 0, 0, 1, 0, 0)rotate(270)">%0A  <path d="M3.5 3.5c-.614-.884-.074-1.962.858-2.5L8 7.226 11.642 1c.932.538 1.472 1.616.858 2.5L8.81 8.61l1.556 2.661a2.5 2.5 0 1 1-.794.637L8 9.73l-1.572 2.177a2.5 2.5 0 1 1-.794-.637L7.19 8.61 3.5 3.5zm2.5 10a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0zm7 0a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0z"/>%0A</svg>');
+  mask-size: cover;
+  -webkit-mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-scissors" viewBox="0 0 16 16" transform="matrix(-1, 0, 0, 1, 0, 0)rotate(270)">%0A  <path d="M3.5 3.5c-.614-.884-.074-1.962.858-2.5L8 7.226 11.642 1c.932.538 1.472 1.616.858 2.5L8.81 8.61l1.556 2.661a2.5 2.5 0 1 1-.794.637L8 9.73l-1.572 2.177a2.5 2.5 0 1 1-.794-.637L7.19 8.61 3.5 3.5zm2.5 10a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0zm7 0a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0z"/>%0A</svg>');
+  -webkit-mask-size: cover;
 }
 [type=page-break]::after {
   position: absolute;
@@ -375,11 +380,11 @@
   transform: translate(-50%, -50%);
   display: block;
   padding: 2px 6px;
-  border: 1px solid #ccc;
-  background-color: #fff;
+  border: 1px solid var(--color-base-300);
+  background-color: var(--color-base-100);
   content: "PAGE BREAK";
   font-size: 12px;
-  color: #000;
+  color: var(--color-base-content);
   font-weight: 600;
 }
 .selected[type=page-break] {
@@ -831,7 +836,8 @@
   resize: none;
   cursor: text;
   font-size: 24px;
-  caret-color: rgb(5, 5, 5);
+  caret-color: #1f2937;
+  color: #1f2937;
   display: block;
   position: relative;
   outline: 0;
@@ -842,7 +848,7 @@
 }
 .StickyNode__placeholder {
   font-size: 24px;
-  color: var(--color-gray-400);
+  color: #9ca3af;
   overflow: hidden;
   position: absolute;
   text-overflow: ellipsis;
@@ -856,7 +862,7 @@
 }
 .StickyEditorTheme__paragraph {
   margin: 0;
-  color: var(--color-gray-900);
+  color: #1f2937;
   font-size: large;
 }
 
@@ -2908,35 +2914,23 @@ i.icon.plus {
   margin: 25px;
   padding: 20px 10px;
   position: relative;
-  border: 1px solid var(--color-base-300);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   font-family: "Reenie Beanie", cursive;
   font-size: 24px;
   border-bottom-right-radius: 60px 5px;
   display: block;
   cursor: move;
+  box-shadow: 2px 3px 8px rgba(0, 0, 0, 0.15);
 }
 .notion-like-editor .sticky-note-container .sticky-note:after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  right: -0px;
-  bottom: 20px;
-  width: 120px;
-  height: 25px;
-  background: rgba(0, 0, 0, 0.2);
-  box-shadow: 2px 15px 5px rgba(0, 0, 0, 0.4);
-  transform:
-    matrix(
-      -1, -0.1,
-      0, 1,
-      0, 0);
+  display: none;
 }
 .notion-like-editor .sticky-note-container .sticky-note.yellow {
-  border-top: 1px solid var(--color-yellow-300);
+  border-top: 1px solid rgba(202, 138, 4, 0.3);
   background: oklch(95% 0.08 90);
 }
 .notion-like-editor .sticky-note-container .sticky-note.pink {
-  border-top: 1px solid var(--color-red-300);
+  border-top: 1px solid rgba(239, 68, 68, 0.3);
   background: oklch(95% 0.08 0);
 }
 .notion-like-editor .sticky-note-container.dragging {
@@ -2955,6 +2949,7 @@ i.icon.plus {
   font-size: 10px;
   cursor: pointer;
   opacity: 0.5;
+  color: #374151;
 }
 .notion-like-editor .sticky-note-container .sticky-note .delete:hover {
   font-weight: bold;
@@ -2968,6 +2963,7 @@ i.icon.plus {
   right: 25px;
   cursor: pointer;
   opacity: 0.5;
+  color: #374151;
 }
 .notion-like-editor .sticky-note-container .sticky-note .color:hover {
   opacity: 1;

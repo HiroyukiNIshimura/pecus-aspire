@@ -18,9 +18,9 @@
   margin-bottom: var(--editor-input-padding, 28px);
 
   border: none;
-  border-top: 1px dashed var(--editor-color-secondary, #eeeeee);
-  border-bottom: 1px dashed var(--editor-color-secondary, #eeeeee);
-  background-color: var(--editor-color-secondary, #eeeeee);
+  border-top: 1px dashed var(--color-base-300);
+  border-bottom: 1px dashed var(--color-base-300);
+  background-color: var(--color-base-200);
 }
 
 [type='page-break']::before {
@@ -30,12 +30,15 @@
   top: 50%;
   left: calc(var(--editor-input-padding, 28px) + 12px);
   transform: translateY(-50%);
-  opacity: 0.5;
+  opacity: 0.7;
 
-  background-size: cover;
-  background-image: url(../../images/icons/scissors.svg);
   width: 16px;
   height: 16px;
+  background-color: var(--color-base-content);
+  mask-image: url(../../images/icons/scissors.svg);
+  mask-size: cover;
+  -webkit-mask-image: url(../../images/icons/scissors.svg);
+  -webkit-mask-size: cover;
 }
 
 [type='page-break']::after {
@@ -46,12 +49,12 @@
 
   display: block;
   padding: 2px 6px;
-  border: 1px solid #ccc;
-  background-color: #fff;
+  border: 1px solid var(--color-base-300);
+  background-color: var(--color-base-100);
 
   content: 'PAGE BREAK';
   font-size: 12px;
-  color: #000;
+  color: var(--color-base-content);
   font-weight: 600;
 }
 

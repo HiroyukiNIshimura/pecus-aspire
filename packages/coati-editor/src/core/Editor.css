@@ -1549,34 +1549,26 @@ i.bold {
   margin: 25px;
   padding: 20px 10px;
   position: relative;
-  border: 1px solid var(--color-base-300);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   font-family: 'Reenie Beanie', cursive;
   font-size: 24px;
   border-bottom-right-radius: 60px 5px;
   display: block;
   cursor: move;
+  box-shadow: 2px 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 .notion-like-editor .sticky-note-container .sticky-note:after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  right: -0px;
-  bottom: 20px;
-  width: 120px;
-  height: 25px;
-  background: rgba(0, 0, 0, 0.2);
-  box-shadow: 2px 15px 5px rgba(0, 0, 0, 0.4);
-  transform: matrix(-1, -0.1, 0, 1, 0, 0);
+  display: none;
 }
 
 .notion-like-editor .sticky-note-container .sticky-note.yellow {
-  border-top: 1px solid var(--color-yellow-300);
+  border-top: 1px solid rgba(202, 138, 4, 0.3);
   background: oklch(95% 0.08 90);
 }
 
 .notion-like-editor .sticky-note-container .sticky-note.pink {
-  border-top: 1px solid var(--color-red-300);
+  border-top: 1px solid rgba(239, 68, 68, 0.3);
   background: oklch(95% 0.08 0);
 }
 
@@ -1598,6 +1590,7 @@ i.bold {
   font-size: 10px;
   cursor: pointer;
   opacity: 0.5;
+  color: #374151;
 }
 
 .notion-like-editor .sticky-note-container .sticky-note .delete:hover {
@@ -1613,6 +1606,7 @@ i.bold {
   right: 25px;
   cursor: pointer;
   opacity: 0.5;
+  color: #374151;
 }
 
 .notion-like-editor .sticky-note-container .sticky-note .color:hover {

@@ -8,10 +8,11 @@
  */
 
 .Collapsible__container {
-  background: #fcfcfc;
-  border: 1px solid #eee;
+  background: var(--color-base-200);
+  border: 1px solid var(--color-base-300);
   border-radius: 10px;
   margin-bottom: 8px;
+  color: var(--color-base-content);
 }
 
 .Collapsible__title {
@@ -21,6 +22,7 @@
   font-weight: bold;
   list-style: none;
   outline: none;
+  color: var(--color-base-content);
 }
 
 .Collapsible__title::marker,
@@ -32,7 +34,7 @@
   border-style: solid;
   border-color: transparent;
   border-width: 4px 6px 4px 6px;
-  border-left-color: #000;
+  border-left-color: var(--color-base-content);
   display: block;
   content: '';
   position: absolute;
@@ -44,7 +46,7 @@
 .Collapsible__container[open] > .Collapsible__title:before {
   border-color: transparent;
   border-width: 6px 4px 0 4px;
-  border-top-color: #000;
+  border-top-color: var(--color-base-content);
 }
 
 .Collapsible__content {
