@@ -471,6 +471,58 @@ export default function WorkspaceFullLayout({ children }: { children: React.Reac
 
 ---
 
+## スケールアウト対応
+
+### 現在の設計によるスケールアウト可能性
+
+✅ **この方式はスケールアウトに対応しています**
+
+#### SignalR Redisバックプレーン
+- **既存実装**: `pecus.WebApi/Program.cs` で SignalR + Redis バックプレーンを設定済み
+- **実装コード**:
+  ```csharp
+  .AddStackExchangeRedis(redisConnectionString, options =>
+  {
+      options.Configuration.ChannelPrefix = RedisChannel.Literal("coati-signalr");
+  })
+  ```
+- **動作**: 複数のWebApiインスタンスが起動していても、Redisを経由してメッセージがすべてのサーバーに配信される
+
+#### プレゼンス管理もRedisベース
+- **SignalRPresenceService**: ユーザーのプレゼンス情報（誰がどのワークスペースにいるか）をRedisで管理
+- **スケールアウト対応**: 複数サーバー間で状態を共有
+
+#### スケールアウト時の動作フロー
+1. ユーザーA（Server 1に接続）が「召集」ボタンをクリック
+2. Server 1の`NotificationHub.RequestItemGather`が呼ばれる
+3. `Clients.GroupExcept`でワークスペースグループにメッセージを送信
+4. **Redisバックプレーンが他のサーバー（Server 2, 3...）にメッセージを配信**
+5. 各サーバーに接続中のユーザーB, C, D...に通知が届く（ユーザーAは除外）
+
+### メンバー数が多い場合の考慮事項
+
+#### パフォーマンスへの影響
+- **グループブロードキャスト**: `Clients.GroupExcept` はワークスペースグループ全員に配信
+  - 100人規模: 問題なし
+  - 1000人規模: Redisのパフォーマンス次第だが、通常は問題なし
+  - 10000人規模: チャネルの最適化やメッセージサイズの圧縮を検討
+
+#### 推奨事項
+1. **Redisのモニタリング**: 通知送信時の Redis Pub/Sub の遅延を監視
+2. **接続数の監視**: SignalR の同時接続数を監視（Azure SignalR Serviceへの移行も検討可能）
+3. **メッセージサイズの最適化**: ペイロードに必要最小限のデータのみを含める（現在の設計は最適化済み）
+
+#### さらなる最適化案（大規模運用時）
+- **Azure SignalR Service**: 数万〜数十万の同時接続に対応
+- **通知の間引き**: 短時間に複数回の召集通知が来た場合、クライアント側で最新のもののみ表示
+- **通知対象の絞り込み**: 特定のメンバーのみに通知（将来の拡張案として記載済み）
+
+### 結論
+**現在の設計（SignalR + Redisバックプレーン）で、数百人規模のワークスペースでも問題なくスケールアウト可能です。**
+さらに大規模な運用（数千人以上）が必要な場合は、Azure SignalR Serviceへの移行を検討してください。
+
+---
+
 ## 将来の拡張案
 
 - **通知履歴**: 過去の召集リクエストを履歴として記録
