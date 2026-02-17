@@ -800,4 +800,38 @@ public class SignalRPresenceService
 
         return [.. userIds];
     }
+
+    #region レート制限管理
+
+    private const string RateLimitPrefix = "presence:rate_limit:";
+
+    /// <summary>
+    /// レート制限情報を取得
+    /// </summary>
+    /// <param name="key">レート制限キー（例: gather_rate_limit:{itemId}）</param>
+    /// <returns>最後に実行した日時（UTC）、存在しない場合はnull</returns>
+    public async Task<DateTimeOffset?> GetRateLimitAsync(string key)
+    {
+        var redisKey = $"{RateLimitPrefix}{key}";
+        var value = await _db.StringGetAsync(redisKey);
+        if (value.HasValue && DateTimeOffset.TryParse(value.ToString(), out var timestamp))
+        {
+            return timestamp;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// レート制限情報を設定
+    /// </summary>
+    /// <param name="key">レート制限キー（例: gather_rate_limit:{itemId}）</param>
+    /// <param name="timestamp">実行日時（UTC）</param>
+    /// <param name="expiry">有効期限（TTL）</param>
+    public async Task SetRateLimitAsync(string key, DateTimeOffset timestamp, TimeSpan expiry)
+    {
+        var redisKey = $"{RateLimitPrefix}{key}";
+        await _db.StringSetAsync(redisKey, timestamp.ToString("O"), expiry);
+    }
+
+    #endregion
 }

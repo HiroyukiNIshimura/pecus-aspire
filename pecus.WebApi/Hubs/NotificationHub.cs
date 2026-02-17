@@ -1797,4 +1797,122 @@ public class NotificationHub : Hub
     }
 
     #endregion
+
+    #region アイテムページ召集機能
+
+    /// <summary>
+    /// アイテムページへのメンバー召集リクエストを送信する。
+    /// ワークスペースのアクティブメンバー（送信者を除く）に通知を送信する。
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    public async Task RequestItemGather(int workspaceId, int itemId)
+    {
+        if (workspaceId <= 0 || itemId <= 0)
+        {
+            throw new HubException("Invalid workspaceId or itemId");
+        }
+
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        // ワークスペースのアクティブメンバーかチェック
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(userId, workspaceId);
+        if (!isMember)
+        {
+            _logger.LogDebug(
+                "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skip item gather request",
+                userId, workspaceId);
+            return;
+        }
+
+        // レート制限チェック（連打対策）: アイテム単位で30秒以内に複数回送信できないようにする
+        // ユーザーIDを含めないことで、複数人が同時に召集ボタンを押した場合も最初の1人のみ有効
+        var rateLimitKey = $"gather_rate_limit:{itemId}";
+        var lastGatherTime = await _presenceService.GetRateLimitAsync(rateLimitKey);
+        var now = DateTimeOffset.UtcNow;
+        if (lastGatherTime.HasValue && (now - lastGatherTime.Value).TotalSeconds < 30)
+        {
+            var remainingSeconds = 30 - (now - lastGatherTime.Value).TotalSeconds;
+            _logger.LogDebug(
+                "SignalR: Item {ItemId} is rate limited for gather request (remaining={RemainingSeconds}s)",
+                itemId, remainingSeconds);
+            throw new HubException($"このアイテムへの召集通知は {Math.Ceiling(remainingSeconds)} 秒後に送信できます。");
+        }
+
+        // レート制限情報を更新（30秒のTTL）
+        await _presenceService.SetRateLimitAsync(rateLimitKey, now, TimeSpan.FromSeconds(30));
+
+        // アイテム情報を取得
+        var itemInfo = await _context.WorkspaceItems
+            .Where(i => i.Id == itemId && i.WorkspaceId == workspaceId)
+            .Select(i => new
+            {
+                i.Code,
+                i.Subject,
+                WorkspaceCode = i.Workspace.Code
+            })
+            .FirstOrDefaultAsync();
+
+        if (itemInfo == null)
+        {
+            _logger.LogWarning(
+                "SignalR: Item {ItemId} not found in workspace {WorkspaceId}, skip gather request",
+                itemId, workspaceId);
+            return;
+        }
+
+        // 送信者情報を取得
+        var user = await _context.Users
+            .Where(u => u.Id == userId && u.IsActive)
+            .Select(u => new
+            {
+                u.Id,
+                u.Username,
+                u.Email,
+                u.AvatarType,
+                u.UserAvatarPath
+            })
+            .FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            _logger.LogWarning("SignalR: User {UserId} not found when sending gather request", userId);
+            return;
+        }
+
+        var identityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+            user.AvatarType,
+            user.Id,
+            user.Username,
+            user.Email,
+            user.UserAvatarPath);
+
+        // ワークスペースグループにブロードキャスト（送信者を除く）
+        var groupName = $"workspace:{workspaceId}";
+        await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+        {
+            EventType = "item:gather_request",
+            Payload = new
+            {
+                ItemId = itemId,
+                ItemCode = itemInfo.Code,
+                WorkspaceCode = itemInfo.WorkspaceCode,
+                ItemSubject = itemInfo.Subject,
+                SenderUserId = userId,
+                SenderUserName = user.Username,
+                SenderIdentityIconUrl = identityIconUrl
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} requested item gather for {ItemId} in workspace {WorkspaceId}",
+            userId, itemId, workspaceId);
+    }
+
+    #endregion
 }

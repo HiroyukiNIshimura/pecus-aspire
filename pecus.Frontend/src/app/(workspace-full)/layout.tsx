@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import ChatProvider from '@/components/chat/ChatProvider';
+import { ItemGatherNotification } from '@/components/notifications/ItemGatherNotification';
 import {
   createPecusApiClients,
   detect401ValidationError,
@@ -55,6 +56,8 @@ export default async function WorkspaceFullLayout({ children }: WorkspaceFullLay
           {children}
           {/* Chat Bottom Drawer (PC only) */}
           {appSettings.currentUser.id !== 0 && <ChatProvider currentUserId={appSettings.currentUser.id} />}
+          {/* Item Gather Notification */}
+          <ItemGatherNotification />
         </AchievementCelebrationProvider>
       </AppSettingsProvider>
     </SignalRProvider>

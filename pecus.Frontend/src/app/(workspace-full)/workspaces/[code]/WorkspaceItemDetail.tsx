@@ -207,7 +207,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     ref,
   ) {
     const notify = useNotify();
-    const { joinItem, leaveItem, connectionState } = useSignalRContext();
+    const { joinItem, leaveItem, connectionState, requestItemGather } = useSignalRContext();
     // ドキュメントモードかどうか
     const isDocumentMode = workspaceMode === 'Document';
     const [item, setItem] = useState<WorkspaceItemDetailResponse | null>(null);
@@ -251,6 +251,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
     const [attachments, setAttachments] = useState<WorkspaceItemAttachmentResponse[]>([]);
     const [attachmentCount, setAttachmentCount] = useState(0);
+
+    // 召集機能の状態
+    const [isGathering, setIsGathering] = useState(false);
+    const [lastGatherTime, setLastGatherTime] = useState<number>(0);
+    const GATHER_COOLDOWN_MS = 30000; // 30秒
 
     // ハイライト用のコンテナ ref
     const highlightContainerRef = useRef<HTMLDivElement>(null);
@@ -619,6 +624,35 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       }
     };
 
+    // メンバー召集ハンドラー（連打対策あり）
+    const handleGatherRequest = async () => {
+      if (!item) {
+        return;
+      }
+
+      // クールダウン期間チェック
+      const now = Date.now();
+      const timeSinceLastGather = now - lastGatherTime;
+      if (timeSinceLastGather < GATHER_COOLDOWN_MS) {
+        const remainingSeconds = Math.ceil((GATHER_COOLDOWN_MS - timeSinceLastGather) / 1000);
+        notify.info(`召集通知は${remainingSeconds}秒後に再度送信できます。`);
+        return;
+      }
+
+      setIsGathering(true);
+      try {
+        await requestItemGather(workspaceId, itemId);
+        setLastGatherTime(now);
+        notify.success('メンバーに召集を通知しました。');
+      } catch (error) {
+        // エラーメッセージを表示（レート制限のエラーも含む）
+        const errorMessage = error instanceof Error ? error.message : '召集の通知に失敗しました。';
+        notify.error(errorMessage);
+      } finally {
+        setIsGathering(false);
+      }
+    };
+
     const effectiveCurrentUserId = currentUserId ?? 0;
     const isOwner = item && currentUserId !== undefined && item.owner?.id === currentUserId;
     const isDraftAndNotOwner = item?.isDraft && !isOwner;
@@ -854,6 +888,21 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 title="タイムラインを表示"
               >
                 <span className="icon-[mdi--history] size-4" aria-hidden="true" />
+              </button>
+              {/* メンバー召集ボタン */}
+              <button
+                type="button"
+                onClick={handleGatherRequest}
+                className="btn btn-secondary btn-sm gap-1"
+                title="メンバーをこのページに召集"
+                disabled={isGathering}
+              >
+                {isGathering ? (
+                  <span className="loading loading-spinner loading-xs" />
+                ) : (
+                  <span className="icon-[mdi--account-multiple-plus] size-4" aria-hidden="true" />
+                )}
+                召集
               </button>
               {/* 添付ファイルボタン */}
               <button

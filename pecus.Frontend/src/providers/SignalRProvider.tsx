@@ -259,6 +259,9 @@ interface SignalRContextValue {
   /** ワークスペース編集状態を取得 */
   getWorkspaceEditStatus: (workspaceId: number) => Promise<WorkspaceEditStatus>;
 
+  /** アイテムページへのメンバー召集をリクエスト */
+  requestItemGather: (workspaceId: number, itemId: number) => Promise<void>;
+
   /** ワークスペース編集開始イベント購読 */
   onWorkspaceEditStarted: (handler: (payload: WorkspaceEditStartedPayload) => void) => () => void;
 
@@ -820,6 +823,25 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   }, []);
 
   /**
+   * アイテムページへのメンバー召集をリクエスト
+   */
+  const requestItemGather = useCallback(async (workspaceId: number, itemId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      console.warn('[SignalR] Cannot request item gather: not connected');
+      throw new Error('SignalR接続が確立されていません');
+    }
+
+    try {
+      await connection.invoke('RequestItemGather', workspaceId, itemId);
+      console.log(`[SignalR] Requested item gather: workspace=${workspaceId}, item=${itemId}`);
+    } catch (error) {
+      console.error('[SignalR] Failed to request item gather:', error);
+      throw error;
+    }
+  }, []);
+
+  /**
    * ワークスペース編集開始イベント購読
    */
   const onWorkspaceEditStarted = useCallback(
@@ -987,6 +1009,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     getTaskEditStatus,
     onTaskEditStarted,
     onTaskEditEnded,
+    requestItemGather,
     currentGroups,
   };
 
