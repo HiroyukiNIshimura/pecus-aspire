@@ -95,16 +95,18 @@ public async Task RequestItemGather(int workspaceId, int itemId)
         return;
     }
 
-    // レート制限チェック（連打対策）: 同じユーザーが同じアイテムに対して30秒以内に複数回送信できないようにする
-    var rateLimitKey = $"gather_rate_limit:{userId}:{itemId}";
+    // レート制限チェック（連打対策）: アイテム単位で30秒以内に複数回送信できないようにする
+    // ユーザーIDを含めないことで、複数人が同時に召集ボタンを押した場合も最初の1人のみ有効
+    var rateLimitKey = $"gather_rate_limit:{itemId}";
     var lastGatherTime = await _presenceService.GetRateLimitAsync(rateLimitKey);
     var now = DateTimeOffset.UtcNow;
     if (lastGatherTime.HasValue && (now - lastGatherTime.Value).TotalSeconds < 30)
     {
+        var remainingSeconds = 30 - (now - lastGatherTime.Value).TotalSeconds;
         _logger.LogDebug(
-            "SignalR: User {UserId} is rate limited for item gather request (itemId={ItemId})",
-            userId, itemId);
-        throw new HubException("召集通知は30秒に1回のみ送信できます。");
+            "SignalR: Item {ItemId} is rate limited for gather request (remaining={RemainingSeconds}s)",
+            itemId, remainingSeconds);
+        throw new HubException($"このアイテムへの召集通知は {Math.Ceiling(remainingSeconds)} 秒後に送信できます。");
     }
 
     // レート制限情報を更新（30秒のTTL）
@@ -341,12 +343,15 @@ export function ItemGatherNotification() {
     const unsubscribe = onNotification((notification: SignalRNotification) => {
       if (notification.eventType === 'item:gather_request') {
         const payload = notification.payload as GatherRequest;
-        setRequest(payload);
+        // モーダル表示中は新規通知を無視（最初の召集に集中）
+        if (!request) {
+          setRequest(payload);
+        }
       }
     });
 
     return unsubscribe;
-  }, [onNotification]);
+  }, [onNotification, request]);
 
   const handleAccept = () => {
     if (!request) return;
@@ -460,25 +465,29 @@ export default function WorkspaceFullLayout({ children }: { children: React.Reac
 1. `NotificationHub.cs` に `RequestItemGather` メソッドを追加
 2. ビルド＆テスト
 
-###連打対策（レート制限）
+## 連打対策（レート制限）
 
-### フロントエンド対策
+### フロントエンド対策（ユーザー単位）
 - **クールダウン期間**: 同じユーザーが同じアイテムに対して30秒以内に再送信できないようにする
 - **ローカル状態管理**: `lastGatherTime` state で最後の送信時刻を記録
 - **ユーザーフィードバック**: クールダウン中は残り秒数を表示して再送信可能までの時間を通知
 
-### バックエンド対策
+### バックエンド対策（アイテム単位・グローバル）
 - **Redisベースのレート制限**: `SignalRPresenceService` にレート制限機能を追加
-  - キー: `gather_rate_limit:{userId}:{itemId}`
+  - キー: `gather_rate_limit:{itemId}` **（ユーザーIDを含めない）**
   - TTL: 30秒
-  - 同じキーで30秒以内の再送信を拒否
+  - **アイテム単位で30秒以内の再送信を拒否**
+  - **複数人が同時に召集ボタンを押しても、最初の1人のみ有効**
 - **エラーハンドリング**: レート制限に引っかかった場合、`HubException` をスローしてクライアントに通知
+- **残り時間の通知**: エラーメッセージに残り秒数を含める
 
 ### SignalRPresenceService への追加メソッド例
 ```csharp
 /// <summary>
 /// レート制限情報を取得
 /// </summary>
+/// <param name="key">レート制限キー（例: gather_rate_limit:{itemId}）</param>
+/// <returns>最後に実行した日時（UTC）、存在しない場合はnull</returns>
 public async Task<DateTimeOffset?> GetRateLimitAsync(string key)
 {
     var value = await _redis.GetDatabase().StringGetAsync(key);
@@ -492,15 +501,53 @@ public async Task<DateTimeOffset?> GetRateLimitAsync(string key)
 /// <summary>
 /// レート制限情報を設定
 /// </summary>
+/// <param name="key">レート制限キー（例: gather_rate_limit:{itemId}）</param>
+/// <param name="timestamp">実行日時（UTC）</param>
+/// <param name="expiry">有効期限（TTL）</param>
 public async Task SetRateLimitAsync(string key, DateTimeOffset timestamp, TimeSpan expiry)
 {
     await _redis.GetDatabase().StringSetAsync(key, timestamp.ToString("O"), expiry);
 }
 ```
 
-### 受信者側の対策
-- **通知の上書き**: 短時間に同じ送信者から複数の召集通知が来た場合、最新のもののみ表示（既に実装例に含まれている）
-- **キューイング**: 複数の異なる送信者からの通知が来た場合、順次表示するか最新のもののみ表示
+### 受信者側の対策（モーダル表示中の制御）
+- **最初の通知のみ表示**: モーダルが既に表示されている場合、新規通知を無視
+  - `if (!request) { setRequest(payload); }` でチェック
+  - 最初の召集に集中できる
+  - 後続の通知スパムを防止
+- **理由**: バックエンドでアイテム単位のレート制限があるため、複数の通知が来るケースは稀だが、タイミング次第で複数の通知が届く可能性があるため
+
+### 同時召集シナリオへの対応
+
+**シナリオ**: ユーザーA、B、Cがほぼ同時に召集ボタンをクリック
+
+```
+時刻 00:00 → ユーザーA、B、Cがほぼ同時にクリック
+
+バックエンド側（アイテム単位のレート制限）:
+├─ A: gather_rate_limit:{itemId} → OK（送信成功）
+├─ B: gather_rate_limit:{itemId} → NG（レート制限エラー）
+└─ C: gather_rate_limit:{itemId} → NG（レート制限エラー）
+
+ユーザーB、Cの画面:
+└─ 「このアイテムへの召集通知は ○ 秒後に送信できます。」と表示
+
+受信者Dの画面:
+└─ 通知A受信 → setRequest(A) ← Aさんのみ表示
+
+結果: 最初にボタンを押したAさんの召集のみ有効
+```
+
+**メリット**:
+- ✅ 通知スパムを完全に防止
+- ✅ 受信者は1つの通知に集中できる
+- ✅ サーバー負荷を軽減
+- ✅ シンプルで理解しやすい
+
+**トレードオフ**:
+- ❌ 複数人が同時に「このページを共有したい」と思っても、最初の1人のみ実行可能
+- ❌ 後から押したユーザーは30秒待つ必要がある
+- ✅ ただし、このケースは稀で、むしろ混乱を防ぐ方が重要
 
 ---
 
@@ -510,7 +557,7 @@ public async Task SetRateLimitAsync(string key, DateTimeOffset timestamp, TimeSp
 - **権限チェック**: `OrganizationAccessHelper.IsActiveWorkspaceMemberAsync` で確認
 - **送信者除外**: 送信者自身には通知を送らない（`Clients.GroupExcept`）
 - **アクセス権限**: ワークスペースのメンバーであれば誰でも召集通知を送信できる（編集権限は不要）
-- **レート制限**: 同じユーザーが同じアイテムに対して30秒以内に複数回送信できないようにする（連打対策
+- **レート制限**: アイテム単位で30秒以内に複数回送信できないようにする（連打対策・同時召集対策）
 
 ### フェーズ3: 結合テスト
 1. 2つのブラウザを開いて同じワークスペースに参加
