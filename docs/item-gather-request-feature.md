@@ -1,0 +1,480 @@
+# アイテムページへのメンバー召集機能 実装計画
+
+## 概要
+アイテム詳細ページから、ワークスペースのアクティブメンバーに対して「このページに集まって欲しい」というリアルタイム通知を送信し、メンバーが承諾すると該当のアイテムページに遷移する機能。
+
+## ユースケース
+- オンライン会議で司会者が特定のアイテムページを参加者と共有したい
+- 編集中のユーザーの邪魔にならないように、控えめな通知として表示
+- ユーザーは「はい」「いいえ」を選択でき、「はい」で該当ページに遷移
+
+---
+
+## 既存のSignalR実装の確認
+
+### バックエンド
+- **NotificationHub.cs** (`pecus.WebApi/Hubs/NotificationHub.cs`)
+  - SignalRハブの実装、グループ管理とプレゼンス管理を担当
+  - グループ構造: `organization:{id}`, `workspace:{id}`, `item:{id}`, `task:{id}`
+  - プレゼンス情報はRedisで管理（SignalRPresenceService）
+
+- **NotificationService.cs** (`pecus.WebApi/Services/NotificationService.cs`)
+  - SignalRで通知を送信するヘルパーサービス
+  - `SendToWorkspaceAsync`: ワークスペースの全メンバーに通知
+
+### フロントエンド
+- **SignalRProvider.tsx** (`pecus.Frontend/src/providers/SignalRProvider.tsx`)
+  - SignalR接続の管理、通知の購読、グループ参加/離脱のAPIを提供
+  - `onNotification`: 通知ハンドラーを登録
+  - `joinWorkspace`, `leaveWorkspace` など
+
+---
+
+## 実装計画
+
+### 1. バックエンド実装
+
+#### 1.1 NotificationHub.cs に新しいメソッドを追加
+
+**メソッド名**: `RequestItemGather`
+
+**パラメータ**:
+- `int workspaceId`: ワークスペースID
+- `int itemId`: アイテムID
+
+**処理フロー**:
+1. ユーザー認証: ログイン中のユーザーIDを取得
+2. 権限チェック: ワークスペースのアクティブメンバーかどうかを確認
+3. アイテム情報を取得: アイテムコード、ワークスペースコード、件名を取得
+4. 送信者情報を取得: ユーザー名、アイコンURLを取得
+5. ワークスペースグループにブロードキャスト:
+   - 送信先: `workspace:{workspaceId}` グループ
+   - 送信者自身を除外: `Clients.GroupExcept(groupName, Context.ConnectionId)`
+   - イベント名: `item:gather_request`
+   - ペイロード:
+     ```csharp
+     {
+         ItemId = itemId,
+         ItemCode = itemCode,
+         WorkspaceCode = workspaceCode,
+         ItemSubject = subject,
+         SenderUserId = userId,
+         SenderUserName = userName,
+         SenderIdentityIconUrl = iconUrl
+     }
+     ```
+
+**実装例**:
+```csharp
+/// <summary>
+/// アイテムページへのメンバー召集リクエストを送信する。
+/// ワークスペースのアクティブメンバー（送信者を除く）に通知を送信する。
+/// </summary>
+/// <param name="workspaceId">ワークスペースID</param>
+/// <param name="itemId">アイテムID</param>
+public async Task RequestItemGather(int workspaceId, int itemId)
+{
+    if (workspaceId <= 0 || itemId <= 0)
+    {
+        throw new HubException("Invalid workspaceId or itemId");
+    }
+
+    var userId = GetUserId();
+    if (userId == 0)
+    {
+        throw new HubException("Unauthorized");
+    }
+
+    // ワークスペースのアクティブメンバーかチェック
+    var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(userId, workspaceId);
+    if (!isMember)
+    {
+        _logger.LogDebug(
+            "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skip item gather request",
+            userId, workspaceId);
+        return;
+    }
+
+    // アイテム情報を取得
+    var itemInfo = await _context.WorkspaceItems
+        .Where(i => i.Id == itemId && i.WorkspaceId == workspaceId)
+        .Select(i => new
+        {
+            i.Code,
+            i.Subject,
+            WorkspaceCode = i.Workspace.Code
+        })
+        .FirstOrDefaultAsync();
+
+    if (itemInfo == null)
+    {
+        _logger.LogWarning(
+            "SignalR: Item {ItemId} not found in workspace {WorkspaceId}, skip gather request",
+            itemId, workspaceId);
+        return;
+    }
+
+    // 送信者情報を取得
+    var user = await _context.Users
+        .Where(u => u.Id == userId && u.IsActive)
+        .Select(u => new
+        {
+            u.Id,
+            u.Username,
+            u.Email,
+            u.AvatarType,
+            u.UserAvatarPath
+        })
+        .FirstOrDefaultAsync();
+
+    if (user == null)
+    {
+        _logger.LogWarning("SignalR: User {UserId} not found when sending gather request", userId);
+        return;
+    }
+
+    var identityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+        user.AvatarType,
+        user.Id,
+        user.Username,
+        user.Email,
+        user.UserAvatarPath);
+
+    // ワークスペースグループにブロードキャスト（送信者を除く）
+    var groupName = $"workspace:{workspaceId}";
+    await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+    {
+        EventType = "item:gather_request",
+        Payload = new
+        {
+            ItemId = itemId,
+            ItemCode = itemInfo.Code,
+            WorkspaceCode = itemInfo.WorkspaceCode,
+            ItemSubject = itemInfo.Subject,
+            SenderUserId = userId,
+            SenderUserName = user.Username,
+            SenderIdentityIconUrl = identityIconUrl
+        },
+        Timestamp = DateTimeOffset.UtcNow
+    });
+
+    _logger.LogDebug(
+        "SignalR: User {UserId} requested item gather for {ItemId} in workspace {WorkspaceId}",
+        userId, itemId, workspaceId);
+}
+```
+
+---
+
+### 2. フロントエンド実装
+
+#### 2.1 SignalRProvider.tsx に新しいメソッドを追加
+
+**メソッド名**: `requestItemGather`
+
+**実装箇所**: `SignalRContextValue` インターフェースと `SignalRProvider` コンポーネント
+
+**実装例**:
+```typescript
+// SignalRContextValue インターフェースに追加
+interface SignalRContextValue {
+  // ... 既存のプロパティ ...
+
+  /** アイテムページへのメンバー召集をリクエスト */
+  requestItemGather: (workspaceId: number, itemId: number) => Promise<void>;
+}
+
+// SignalRProvider コンポーネント内に追加
+const requestItemGather = useCallback(async (workspaceId: number, itemId: number) => {
+  const connection = connectionRef.current;
+  if (!connection || connection.state !== HubConnectionState.Connected) {
+    console.warn('[SignalR] Cannot request item gather: not connected');
+    return;
+  }
+
+  try {
+    await connection.invoke('RequestItemGather', workspaceId, itemId);
+    console.log(`[SignalR] Requested item gather: workspace=${workspaceId}, item=${itemId}`);
+  } catch (error) {
+    console.error('[SignalR] Failed to request item gather:', error);
+  }
+}, []);
+
+// Context value に追加
+const value = {
+  // ... 既存のプロパティ ...
+  requestItemGather,
+};
+```
+
+#### 2.2 WorkspaceItemDetail.tsx に「メンバーを召集」ボタンを追加
+
+**実装箇所**: アクションボタンエリア（PINボタン、タイムラインボタンの近く）
+
+**実装例**:
+```tsx
+import { useSignalRContext } from '@/providers/SignalRProvider';
+
+const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemDetailProps>(
+  function WorkspaceItemDetail(props, ref) {
+    const { requestItemGather } = useSignalRContext();
+    const [isGathering, setIsGathering] = useState(false);
+
+    // メンバー召集ハンドラー
+    const handleGatherRequest = async () => {
+      if (!item) {
+        return;
+      }
+
+      setIsGathering(true);
+      try {
+        await requestItemGather(workspaceId, itemId);
+        notify.success('メンバーに召集を通知しました。');
+      } catch (error) {
+        notify.error('召集の通知に失敗しました。');
+      } finally {
+        setIsGathering(false);
+      }
+    };
+
+    return (
+      <div className="card">
+        <div className="card-body">
+          {/* ... 既存のコード ... */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* ... 既存のボタン ... */}
+
+            {/* メンバー召集ボタン */}
+            <button
+              type="button"
+              onClick={handleGatherRequest}
+              className="btn btn-secondary btn-sm gap-1"
+              title="メンバーをこのページに召集"
+              disabled={isGathering}
+            >
+              {isGathering ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <span className="icon-[mdi--account-multiple-plus] size-4" aria-hidden="true" />
+              )}
+              召集
+            </button>
+          </div>
+          {/* ... 既存のコード ... */}
+        </div>
+      </div>
+    );
+  }
+);
+```
+
+#### 2.3 レイアウトまたはProviderで通知を受信して表示
+
+**実装箇所**: `pecus.Frontend/src/app/(workspace-full)/layout.tsx` または専用の通知コンポーネント
+
+**通知の表示方法**:
+- カスタムダイアログ（モーダル）として表示
+- 「〇〇さんがこのページに集まって欲しいと通知しました」
+- 「はい」「いいえ」ボタン
+- 「はい」をクリックで該当ページに遷移
+- 「いいえ」または×ボタンでダイアログを閉じる
+
+**実装例** (`pecus.Frontend/src/components/notifications/ItemGatherNotification.tsx` を新規作成):
+```tsx
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
+import { useSignalRContext, type SignalRNotification } from '@/providers/SignalRProvider';
+
+interface GatherRequest {
+  itemId: number;
+  itemCode: string;
+  workspaceCode: string;
+  itemSubject: string | null;
+  senderUserId: number;
+  senderUserName: string;
+  senderIdentityIconUrl: string | null;
+}
+
+/**
+ * アイテムページへの召集通知を表示するコンポーネント
+ */
+export function ItemGatherNotification() {
+  const router = useRouter();
+  const { onNotification } = useSignalRContext();
+  const [request, setRequest] = useState<GatherRequest | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onNotification((notification: SignalRNotification) => {
+      if (notification.eventType === 'item:gather_request') {
+        const payload = notification.payload as GatherRequest;
+        setRequest(payload);
+      }
+    });
+
+    return unsubscribe;
+  }, [onNotification]);
+
+  const handleAccept = () => {
+    if (!request) return;
+
+    // アイテムページに遷移
+    const url = `/workspaces/${request.workspaceCode}?item=${request.itemCode}`;
+    router.push(url);
+
+    // ダイアログを閉じる
+    setRequest(null);
+  };
+
+  const handleDecline = () => {
+    setRequest(null);
+  };
+
+  if (!request) return null;
+
+  return (
+    <>
+      {/* モーダル背景オーバーレイ */}
+      <div className="fixed inset-0 bg-black/50 z-60" aria-hidden="true" />
+
+      {/* モーダルコンテンツ */}
+      <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
+        <div className="bg-base-100 rounded-lg shadow-xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="p-6">
+            {/* ヘッダー */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg">ページ召集の通知</h3>
+              <button
+                type="button"
+                onClick={handleDecline}
+                className="btn btn-sm btn-circle btn-ghost"
+                aria-label="閉じる"
+              >
+                <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+              </button>
+            </div>
+
+            {/* 送信者情報 */}
+            <div className="mb-4">
+              <UserAvatar
+                userName={request.senderUserName}
+                isActive={true}
+                identityIconUrl={request.senderIdentityIconUrl}
+                size={32}
+                nameClassName="font-semibold"
+              />
+              <p className="mt-2 text-sm text-base-content/70">
+                {request.senderUserName} さんがこのページに集まって欲しいと通知しました
+              </p>
+            </div>
+
+            {/* アイテム情報 */}
+            <div className="bg-base-200 p-3 rounded-lg mb-4">
+              <p className="text-xs text-base-content/50 font-mono mb-1">
+                #{request.itemCode}
+              </p>
+              <p className="font-semibold">
+                {request.itemSubject || '（件名未設定）'}
+              </p>
+            </div>
+
+            {/* アクションボタン */}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleDecline}
+                className="btn btn-secondary"
+              >
+                いいえ
+              </button>
+              <button
+                type="button"
+                onClick={handleAccept}
+                className="btn btn-primary"
+              >
+                はい
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+```
+
+**レイアウトに統合** (`pecus.Frontend/src/app/(workspace-full)/layout.tsx`):
+```tsx
+import { ItemGatherNotification } from '@/components/notifications/ItemGatherNotification';
+
+export default function WorkspaceFullLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="workspace-full-layout">
+      {children}
+
+      {/* アイテム召集通知 */}
+      <ItemGatherNotification />
+    </div>
+  );
+}
+```
+
+---
+
+## 実装手順
+
+### フェーズ1: バックエンド実装
+1. `NotificationHub.cs` に `RequestItemGather` メソッドを追加
+2. ビルド＆テスト
+
+### フェーズ2: フロントエンド実装
+1. `SignalRProvider.tsx` に `requestItemGather` メソッドを追加
+2. `ItemGatherNotification.tsx` コンポーネントを新規作成
+3. レイアウトに `ItemGatherNotification` を統合
+4. `WorkspaceItemDetail.tsx` に「召集」ボタンを追加
+5. ビルド＆テスト
+
+### フェーズ3: 結合テスト
+1. 2つのブラウザを開いて同じワークスペースに参加
+2. 片方のブラウザで「召集」ボタンをクリック
+3. もう片方のブラウザで通知が表示されることを確認
+4. 「はい」をクリックして該当ページに遷移することを確認
+
+---
+
+## セキュリティとアクセス制御
+
+- **ワークスペースメンバーシップ**: 送信者はワークスペースのアクティブメンバーである必要がある（Viewer権限でも送信可能）
+- **権限チェック**: `OrganizationAccessHelper.IsActiveWorkspaceMemberAsync` で確認
+- **送信者除外**: 送信者自身には通知を送らない（`Clients.GroupExcept`）
+- **アクセス権限**: ワークスペースのメンバーであれば誰でも召集通知を送信できる（編集権限は不要）
+
+---
+
+## 注意事項
+
+- 通知はワークスペースに参加中（ページを開いている）のメンバーにのみ送信される
+- SignalR接続が切断されている場合、通知は受信できない（永続的な通知ではない）
+- ユーザーが「いいえ」を選択した場合、ログなどは記録しない（UX重視）
+- アイテムがアーカイブされている場合も通知は送信される（ビューアー権限で閲覧可能なため）
+
+---
+
+## UI/UXの考慮事項
+
+- **通知のタイミング**: リアルタイムでモーダルとして表示（邪魔にならないように中央に表示）
+- **通知の優先度**: 編集中のユーザーに対しても表示するが、保存やキャンセルを促す内容ではない
+- **通知の自動消去**: ユーザーが明示的に「はい」「いいえ」を選択するまで表示し続ける
+- **複数通知**: 複数の召集リクエストが同時に来た場合、最新のものを表示（古いものは上書き）
+
+---
+
+## 将来の拡張案
+
+- **通知履歴**: 過去の召集リクエストを履歴として記録
+- **召集理由**: 送信者が理由やメッセージを追加できるようにする
+- **召集対象の絞り込み**: 特定のメンバーのみに通知
+- **通知の遅延送信**: 指定時刻に通知を送信
+- **アプリ内通知センター**: 未読の召集リクエストを一覧表示
