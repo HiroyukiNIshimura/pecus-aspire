@@ -646,12 +646,13 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
         notify.success('メンバーに召集を通知しました。');
       } catch (error) {
         // RATE_LIMIT:秒数 形式のエラーはレート制限として情報通知で表示
-        if (error instanceof Error && error.message.startsWith('RATE_LIMIT:')) {
-          const seconds = error.message.split(':')[1];
+        const errorMessage = error instanceof Error ? error.message : '';
+        const rateLimitMatch = errorMessage.match(/RATE_LIMIT:(\d+)/);
+        if (rateLimitMatch) {
+          const seconds = rateLimitMatch[1];
           notify.info(`召集通知は${seconds}秒後に再度送信できます。`);
         } else {
-          const errorMessage = error instanceof Error ? error.message : '召集の通知に失敗しました。';
-          notify.error(errorMessage);
+          notify.error(errorMessage || '召集の通知に失敗しました。');
         }
       } finally {
         setIsGathering(false);
