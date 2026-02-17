@@ -1869,7 +1869,7 @@ public class NotificationHub : Hub
 
         // ワークスペースのアクティブメンバーIDリストを取得（クライアント側でフィルタリング用）
         var memberIds = await _context.WorkspaceUsers
-            .Where(wu => wu.WorkspaceId == workspaceId && wu.IsActive)
+            .Where(wu => wu.WorkspaceId == workspaceId && wu.User.IsActive)
             .Select(wu => wu.UserId)
             .ToListAsync();
 
