@@ -6,6 +6,7 @@
  *
  */
 
+//import { $isCodeNode } from '@lexical/code';
 import { AutoLinkPlugin, createLinkMatcherWithRegExp } from '@lexical/react/LexicalAutoLinkPlugin';
 import type { JSX } from 'react';
 import { useMemo } from 'react';
@@ -26,6 +27,8 @@ const BASE_MATCHERS = [
   }),
 ];
 
+//const EXCLUDE_PARENTS = [$isCodeNode];
+
 export default function LexicalAutoLinkPlugin(): JSX.Element {
   const customMatchers = useCustomLinkMatchers();
 
@@ -36,5 +39,6 @@ export default function LexicalAutoLinkPlugin(): JSX.Element {
     return [...BASE_MATCHERS, ...customMatchers];
   }, [customMatchers]);
 
+  //TODO exclude code nodes and other nodes that should not be auto-linked
   return <AutoLinkPlugin matchers={matchers} />;
 }

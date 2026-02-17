@@ -46,11 +46,12 @@ type PointerDraggingDirection = 'right' | 'bottom';
 
 const MIN_ROW_HEIGHT = 33;
 const MIN_COLUMN_WIDTH = 92;
+const ACTIVE_RESIZER_COLOR = '#76b6ff';
 
 function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
   const targetRef = useRef<HTMLElement | null>(null);
   const resizerRef = useRef<HTMLDivElement | null>(null);
-  const tableRectRef = useRef<DOMRect | null>(null);
+  const tableRectRef = useRef<ClientRect | null>(null);
   const [hasTable, setHasTable] = useState(false);
 
   const pointerStartPosRef = useRef<PointerPosition | null>(null);
@@ -58,11 +59,13 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
 
   const [activeCell, updateActiveCell] = useState<TableDOMCell | null>(null);
   const [draggingDirection, updateDraggingDirection] = useState<PointerDraggingDirection | null>(null);
+  const [hoveredDirection, updateHoveredDirection] = useState<PointerDraggingDirection | null>(null);
 
   const resetState = useCallback(() => {
     updateActiveCell(null);
     targetRef.current = null;
     updateDraggingDirection(null);
+    updateHoveredDirection(null);
     pointerStartPosRef.current = null;
     tableRectRef.current = null;
   }, []);
@@ -181,11 +184,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
     return false;
   };
 
-  const getCellNodeHeight = (cell: TableCellNode, activeEditor: LexicalEditor): number | undefined => {
-    const domCellNode = activeEditor.getElementByKey(cell.getKey());
-    return domCellNode?.clientHeight;
-  };
-
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   const updateRowHeight = useCallback(
     (heightChange: number) => {
       if (!activeCell) {
@@ -231,8 +230,13 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
         { tag: SKIP_SCROLL_INTO_VIEW_TAG },
       );
     },
-    [activeCell, editor, getCellNodeHeight],
+    [activeCell, editor],
   );
+
+  const getCellNodeHeight = (cell: TableCellNode, activeEditor: LexicalEditor): number | undefined => {
+    const domCellNode = activeEditor.getElementByKey(cell.getKey());
+    return domCellNode?.clientHeight;
+  };
 
   const getCellColumnIndex = (tableCellNode: TableCellNode, tableMap: TableMapType) => {
     for (let row = 0; row < tableMap.length; row++) {
@@ -244,6 +248,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
     }
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   const updateColumnWidth = useCallback(
     (widthChange: number) => {
       if (!activeCell) {
@@ -279,9 +284,10 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
         { tag: SKIP_SCROLL_INTO_VIEW_TAG },
       );
     },
-    [activeCell, editor, getCellColumnIndex],
+    [activeCell, editor],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   const pointerUpHandler = useCallback(
     (direction: PointerDraggingDirection) => {
       const handler = (event: PointerEvent) => {
@@ -314,7 +320,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
       };
       return handler;
     },
-    [activeCell, resetState, updateColumnWidth, updateRowHeight, isHeightChanging],
+    [activeCell, resetState, updateColumnWidth, updateRowHeight],
   );
 
   const toggleResize = useCallback(
@@ -339,6 +345,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
     [activeCell, pointerUpHandler],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   const getResizers = useCallback(() => {
     if (activeCell) {
       const { height, width, top, left } = activeCell.elem.getBoundingClientRect();
@@ -346,7 +353,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
       const zoneWidth = 16; // Pixel width of the zone where you can drag the edge
       const styles: Record<string, CSSProperties> = {
         bottom: {
-          backgroundColor: 'none',
+          backgroundColor: 'transparent',
           cursor: 'row-resize',
           height: `${zoneWidth}px`,
           left: `${window.scrollX + left}px`,
@@ -354,7 +361,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
           width: `${width}px`,
         },
         right: {
-          backgroundColor: 'none',
+          backgroundColor: 'transparent',
           cursor: 'col-resize',
           height: `${height}px`,
           left: `${window.scrollX + left + width - zoneWidth / 2}px`,
@@ -380,6 +387,18 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
 
         styles[draggingDirection].backgroundColor = '#adf';
         styles[draggingDirection].mixBlendMode = 'unset';
+      } else if (!draggingDirection && hoveredDirection === 'right') {
+        const halfZoneWidth = zoneWidth / 2;
+        const highlightWidth = 2;
+        const highlightStart = halfZoneWidth - highlightWidth / 2;
+        styles.right.backgroundImage = `linear-gradient(90deg, transparent ${highlightStart}px, ${ACTIVE_RESIZER_COLOR} ${highlightStart}px, ${ACTIVE_RESIZER_COLOR} ${
+          highlightStart + highlightWidth
+        }px, transparent ${highlightStart + highlightWidth}px)`;
+        styles.right.mixBlendMode = 'unset';
+        if (tableRect) {
+          styles.right.top = `${window.scrollY + tableRect.top}px`;
+          styles.right.height = `${tableRect.height}px`;
+        }
       }
 
       return styles;
@@ -391,17 +410,35 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
       right: null,
       top: null,
     };
-  }, [activeCell, draggingDirection, pointerCurrentPos, isHeightChanging]);
+  }, [activeCell, draggingDirection, hoveredDirection, pointerCurrentPos]);
+
+  const handlePointerEnter = useCallback(
+    (direction: PointerDraggingDirection): PointerEventHandler<HTMLDivElement> =>
+      () => {
+        if (!draggingDirection) {
+          updateHoveredDirection(direction);
+        }
+      },
+    [draggingDirection],
+  );
+
+  const handlePointerLeave = useCallback(() => {
+    if (!draggingDirection) {
+      updateHoveredDirection(null);
+    }
+  }, [draggingDirection]);
 
   const resizerStyles = getResizers();
 
   return (
-    <div ref={resizerRef} className="notion-like-editor table-cell-resizer-container">
+    <div ref={resizerRef}>
       {activeCell != null && (
         <>
           <div
             className="TableCellResizer__resizer TableCellResizer__ui"
             style={resizerStyles.right || undefined}
+            onPointerEnter={handlePointerEnter('right')}
+            onPointerLeave={handlePointerLeave}
             onPointerDown={toggleResize('right')}
           />
           <div
