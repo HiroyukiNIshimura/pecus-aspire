@@ -869,6 +869,21 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             </div>
             {/* アクションボタン */}
             <div className="flex items-center gap-2 flex-wrap">
+              {/* メンバー召集ボタン */}
+              <button
+                type="button"
+                onClick={handleGatherRequest}
+                className="btn btn-secondary btn-sm gap-1"
+                title="メンバーをこのページに召集"
+                disabled={isGathering}
+              >
+                {isGathering ? (
+                  <span className="loading loading-spinner loading-xs" />
+                ) : (
+                  <span className="icon-[mdi--account-multiple-plus] size-4" aria-hidden="true" />
+                )}
+                召集
+              </button>
               {/* PINボタン */}
               <button
                 type="button"
@@ -894,21 +909,6 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 title="タイムラインを表示"
               >
                 <span className="icon-[mdi--history] size-4" aria-hidden="true" />
-              </button>
-              {/* メンバー召集ボタン */}
-              <button
-                type="button"
-                onClick={handleGatherRequest}
-                className="btn btn-secondary btn-sm gap-1"
-                title="メンバーをこのページに召集"
-                disabled={isGathering}
-              >
-                {isGathering ? (
-                  <span className="loading loading-spinner loading-xs" />
-                ) : (
-                  <span className="icon-[mdi--account-multiple-plus] size-4" aria-hidden="true" />
-                )}
-                召集
               </button>
               {/* 添付ファイルボタン */}
               <button
