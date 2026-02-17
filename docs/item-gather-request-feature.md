@@ -95,6 +95,21 @@ public async Task RequestItemGather(int workspaceId, int itemId)
         return;
     }
 
+    // レート制限チェック（連打対策）: 同じユーザーが同じアイテムに対して30秒以内に複数回送信できないようにする
+    var rateLimitKey = $"gather_rate_limit:{userId}:{itemId}";
+    var lastGatherTime = await _presenceService.GetRateLimitAsync(rateLimitKey);
+    var now = DateTimeOffset.UtcNow;
+    if (lastGatherTime.HasValue && (now - lastGatherTime.Value).TotalSeconds < 30)
+    {
+        _logger.LogDebug(
+            "SignalR: User {UserId} is rate limited for item gather request (itemId={ItemId})",
+            userId, itemId);
+        throw new HubException("召集通知は30秒に1回のみ送信できます。");
+    }
+
+    // レート制限情報を更新（30秒のTTL）
+    await _presenceService.SetRateLimitAsync(rateLimitKey, now, TimeSpan.FromSeconds(30));
+
     // アイテム情報を取得
     var itemInfo = await _context.WorkspaceItems
         .Where(i => i.Id == itemId && i.WorkspaceId == workspaceId)
@@ -211,6 +226,8 @@ const value = {
 
 **実装箇所**: アクションボタンエリア（PINボタン、タイムラインボタンの近く）
 
+**連打対策**: クールダウン期間を設定し、短時間に複数回送信できないようにする
+
 **実装例**:
 ```tsx
 import { useSignalRContext } from '@/providers/SignalRProvider';
@@ -219,16 +236,30 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
   function WorkspaceItemDetail(props, ref) {
     const { requestItemGather } = useSignalRContext();
     const [isGathering, setIsGathering] = useState(false);
+    const [lastGatherTime, setLastGatherTime] = useState<number>(0);
 
-    // メンバー召集ハンドラー
+    // クールダウン期間（ミリ秒）
+    const GATHER_COOLDOWN_MS = 30000; // 30秒
+
+    // メンバー召集ハンドラー（連打対策あり）
     const handleGatherRequest = async () => {
       if (!item) {
+        return;
+      }
+
+      // クールダウン期間チェック
+      const now = Date.now();
+      const timeSinceLastGather = now - lastGatherTime;
+      if (timeSinceLastGather < GATHER_COOLDOWN_MS) {
+        const remainingSeconds = Math.ceil((GATHER_COOLDOWN_MS - timeSinceLastGather) / 1000);
+        notify.info(`召集通知は${remainingSeconds}秒後に再度送信できます。`);
         return;
       }
 
       setIsGathering(true);
       try {
         await requestItemGather(workspaceId, itemId);
+        setLastGatherTime(now);
         notify.success('メンバーに召集を通知しました。');
       } catch (error) {
         notify.error('召集の通知に失敗しました。');
@@ -429,12 +460,57 @@ export default function WorkspaceFullLayout({ children }: { children: React.Reac
 1. `NotificationHub.cs` に `RequestItemGather` メソッドを追加
 2. ビルド＆テスト
 
-### フェーズ2: フロントエンド実装
-1. `SignalRProvider.tsx` に `requestItemGather` メソッドを追加
-2. `ItemGatherNotification.tsx` コンポーネントを新規作成
-3. レイアウトに `ItemGatherNotification` を統合
-4. `WorkspaceItemDetail.tsx` に「召集」ボタンを追加
-5. ビルド＆テスト
+###連打対策（レート制限）
+
+### フロントエンド対策
+- **クールダウン期間**: 同じユーザーが同じアイテムに対して30秒以内に再送信できないようにする
+- **ローカル状態管理**: `lastGatherTime` state で最後の送信時刻を記録
+- **ユーザーフィードバック**: クールダウン中は残り秒数を表示して再送信可能までの時間を通知
+
+### バックエンド対策
+- **Redisベースのレート制限**: `SignalRPresenceService` にレート制限機能を追加
+  - キー: `gather_rate_limit:{userId}:{itemId}`
+  - TTL: 30秒
+  - 同じキーで30秒以内の再送信を拒否
+- **エラーハンドリング**: レート制限に引っかかった場合、`HubException` をスローしてクライアントに通知
+
+### SignalRPresenceService への追加メソッド例
+```csharp
+/// <summary>
+/// レート制限情報を取得
+/// </summary>
+public async Task<DateTimeOffset?> GetRateLimitAsync(string key)
+{
+    var value = await _redis.GetDatabase().StringGetAsync(key);
+    if (value.HasValue && DateTimeOffset.TryParse(value, out var timestamp))
+    {
+        return timestamp;
+    }
+    return null;
+}
+
+/// <summary>
+/// レート制限情報を設定
+/// </summary>
+public async Task SetRateLimitAsync(string key, DateTimeOffset timestamp, TimeSpan expiry)
+{
+    await _redis.GetDatabase().StringSetAsync(key, timestamp.ToString("O"), expiry);
+}
+```
+
+### 受信者側の対策
+- **通知の上書き**: 短時間に同じ送信者から複数の召集通知が来た場合、最新のもののみ表示（既に実装例に含まれている）
+- **キューイング**: 複数の異なる送信者からの通知が来た場合、順次表示するか最新のもののみ表示
+
+---
+
+## セキュリティとアクセス制御
+
+- **ワークスペースメンバーシップ**: 送信者はワークスペースのアクティブメンバーである必要がある（Viewer権限でも送信可能）
+- **権限チェック**: `OrganizationAccessHelper.IsActiveWorkspaceMemberAsync` で確認
+- **送信者除外**: 送信者自身には通知を送らない（`Clients.GroupExcept`）
+- **アクセス権限**: ワークスペースのメンバーであれば誰でも召集通知を送信できる（編集権限は不要）
+- **レート制限**: 同じユーザーが同じアイテムに対して30秒以内に複数回送信できないようにする（連打対策
 
 ### フェーズ3: 結合テスト
 1. 2つのブラウザを開いて同じワークスペースに参加
