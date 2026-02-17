@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import DashboardLayoutClient from '@/components/common/layout/DashboardLayoutClient';
+import { ItemGatherNotification } from '@/components/notifications/ItemGatherNotification';
 import {
   createPecusApiClients,
   detect401ValidationError,
@@ -48,6 +49,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
       <AppSettingsProvider settings={appSettings}>
         <AchievementCelebrationProvider>
           <DashboardLayoutClient userInfo={appSettings.currentUser}>{children}</DashboardLayoutClient>
+          {/* Item Gather Notification */}
+          <ItemGatherNotification />
         </AchievementCelebrationProvider>
       </AppSettingsProvider>
     </SignalRProvider>

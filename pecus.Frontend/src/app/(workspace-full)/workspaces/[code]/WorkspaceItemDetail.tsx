@@ -645,9 +645,14 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
         setLastGatherTime(now);
         notify.success('メンバーに召集を通知しました。');
       } catch (error) {
-        // エラーメッセージを表示（レート制限のエラーも含む）
-        const errorMessage = error instanceof Error ? error.message : '召集の通知に失敗しました。';
-        notify.error(errorMessage);
+        // RATE_LIMIT:秒数 形式のエラーはレート制限として情報通知で表示
+        if (error instanceof Error && error.message.startsWith('RATE_LIMIT:')) {
+          const seconds = error.message.split(':')[1];
+          notify.info(`召集通知は${seconds}秒後に再度送信できます。`);
+        } else {
+          const errorMessage = error instanceof Error ? error.message : '召集の通知に失敗しました。';
+          notify.error(errorMessage);
+        }
       } finally {
         setIsGathering(false);
       }

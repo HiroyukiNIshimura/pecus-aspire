@@ -3,9 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
+import { useCurrentUserId } from '@/providers/AppSettingsProvider';
 import { type SignalRNotification, useSignalRContext } from '@/providers/SignalRProvider';
 
 interface GatherRequest {
+  workspaceId: number;
   itemId: number;
   itemCode: string;
   workspaceCode: string;
@@ -13,6 +15,7 @@ interface GatherRequest {
   senderUserId: number;
   senderUserName: string;
   senderIdentityIconUrl: string | null;
+  memberIds: number[];
 }
 
 /**
@@ -21,38 +24,39 @@ interface GatherRequest {
 export function ItemGatherNotification() {
   const router = useRouter();
   const { onNotification } = useSignalRContext();
+  const currentUserId = useCurrentUserId();
   const [request, setRequest] = useState<GatherRequest | null>(null);
 
   useEffect(() => {
-    console.log('[ItemGatherNotification] Registering notification handler');
     const unsubscribe = onNotification((notification: SignalRNotification) => {
-      console.log('[ItemGatherNotification] Notification received:', notification.eventType, notification);
       if (notification.eventType === 'item:gather_request') {
         const payload = notification.payload as GatherRequest;
-        console.log('[ItemGatherNotification] Gather request payload:', payload);
+
+        // ワークスペースメンバーかどうかをフィルタリング
+        if (!payload.memberIds || !payload.memberIds.includes(currentUserId)) {
+          return;
+        }
+
         // モーダル表示中は新規通知を無視（最初の召集に集中）
         setRequest((prevRequest) => {
           if (prevRequest) {
-            console.log('[ItemGatherNotification] Modal already open, ignoring new request');
             return prevRequest;
           }
-          console.log('[ItemGatherNotification] Setting new request');
           return payload;
         });
       }
     });
 
     return () => {
-      console.log('[ItemGatherNotification] Unregistering notification handler');
       unsubscribe();
     };
-  }, [onNotification]); // request を依存配列から削除
+  }, [onNotification, currentUserId]);
 
   const handleAccept = () => {
     if (!request) return;
 
     // アイテムページに遷移
-    const url = `/workspaces/${request.workspaceCode}?item=${request.itemCode}`;
+    const url = `/workspaces/${request.workspaceCode}?itemCode=${request.itemCode}`;
     router.push(url);
 
     // ダイアログを閉じる

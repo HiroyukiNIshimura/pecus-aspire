@@ -1836,24 +1836,26 @@ public class NotificationHub : Hub
         var now = DateTimeOffset.UtcNow;
         if (lastGatherTime.HasValue && (now - lastGatherTime.Value).TotalSeconds < 30)
         {
-            var remainingSeconds = 30 - (now - lastGatherTime.Value).TotalSeconds;
+            var remainingSeconds = (int)Math.Ceiling(30 - (now - lastGatherTime.Value).TotalSeconds);
             _logger.LogDebug(
                 "SignalR: Item {ItemId} is rate limited for gather request (remaining={RemainingSeconds}s)",
                 itemId, remainingSeconds);
-            throw new HubException($"このアイテムへの召集通知は {Math.Ceiling(remainingSeconds)} 秒後に送信できます。");
+            // フロントエンドで判定しやすいよう RATE_LIMIT:秒数 のフォーマットでエラーを返す
+            throw new HubException($"RATE_LIMIT:{remainingSeconds}");
         }
 
         // レート制限情報を更新（30秒のTTL）
         await _presenceService.SetRateLimitAsync(rateLimitKey, now, TimeSpan.FromSeconds(30));
 
-        // アイテム情報を取得
+        // アイテム情報を取得（組織IDも含む）
         var itemInfo = await _context.WorkspaceItems
             .Where(i => i.Id == itemId && i.WorkspaceId == workspaceId)
             .Select(i => new
             {
                 i.Code,
                 i.Subject,
-                WorkspaceCode = i.Workspace.Code
+                WorkspaceCode = i.Workspace.Code,
+                OrganizationId = i.Workspace.OrganizationId
             })
             .FirstOrDefaultAsync();
 
@@ -1864,6 +1866,12 @@ public class NotificationHub : Hub
                 itemId, workspaceId);
             return;
         }
+
+        // ワークスペースのアクティブメンバーIDリストを取得（クライアント側でフィルタリング用）
+        var memberIds = await _context.WorkspaceUsers
+            .Where(wu => wu.WorkspaceId == workspaceId && wu.IsActive)
+            .Select(wu => wu.UserId)
+            .ToListAsync();
 
         // 送信者情報を取得
         var user = await _context.Users
@@ -1891,27 +1899,30 @@ public class NotificationHub : Hub
             user.Email,
             user.UserAvatarPath);
 
-        // ワークスペースグループにブロードキャスト（送信者を除く）
-        var groupName = $"workspace:{workspaceId}";
+        // 組織グループにブロードキャスト（送信者を除く）
+        // クライアント側で MemberIds を使ってワークスペースメンバーかどうかをフィルタリング
+        var groupName = $"organization:{itemInfo.OrganizationId}";
         await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
         {
             EventType = "item:gather_request",
             Payload = new
             {
+                WorkspaceId = workspaceId,
                 ItemId = itemId,
                 ItemCode = itemInfo.Code,
                 WorkspaceCode = itemInfo.WorkspaceCode,
                 ItemSubject = itemInfo.Subject,
                 SenderUserId = userId,
                 SenderUserName = user.Username,
-                SenderIdentityIconUrl = identityIconUrl
+                SenderIdentityIconUrl = identityIconUrl,
+                MemberIds = memberIds
             },
             Timestamp = DateTimeOffset.UtcNow
         });
 
         _logger.LogDebug(
-            "SignalR: User {UserId} requested item gather for {ItemId} in workspace {WorkspaceId}",
-            userId, itemId, workspaceId);
+            "SignalR: User {UserId} requested item gather for {ItemId} in workspace {WorkspaceId} (sent to organization:{OrganizationId})",
+            userId, itemId, workspaceId, itemInfo.OrganizationId);
     }
 
     #endregion
