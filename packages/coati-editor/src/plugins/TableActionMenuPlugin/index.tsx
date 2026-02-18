@@ -473,11 +473,14 @@ function TableActionMenu({
   }
 
   return createPortal(
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className="notion-like-editor nle-dropdown"
       ref={dropDownRef}
+      role="menu"
       onClick={(e) => {
+        e.stopPropagation();
+      }}
+      onKeyDown={(e) => {
         e.stopPropagation();
       }}
     >

@@ -408,6 +408,7 @@ function useDraggableBlockMenu(
   }
   return createPortal(
     <>
+      {/** biome-ignore lint/a11y/noStaticElementInteractions: false */}
       <div draggable={true} onDragStart={onDragStart} onDragEnd={onDragEnd}>
         {isEditable && menuComponent}
       </div>

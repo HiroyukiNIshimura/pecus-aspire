@@ -230,7 +230,7 @@
 }
 
 .notion-like-editor.typeahead-popover.component-picker-menu {
-  z-index: 2000;
+  z-index: 50;
   background: var(--color-base-100);
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -323,7 +323,7 @@
 }
 
 .notion-like-editor.typeahead-popover.component-picker-menu {
-  z-index: 2000;
+  z-index: 50;
   width: 250px;
 }
 .notion-like-editor i.palette {
@@ -759,7 +759,7 @@ i.bold {
 }
 
 .notion-like-editor.nle-dropdown {
-  z-index: 2000;
+  z-index: 50;
   display: block;
   position: fixed;
   box-shadow:
@@ -1380,7 +1380,7 @@ i.bold {
   height: 36px;
   position: sticky;
   top: 0;
-  z-index: 2000;
+  z-index: 50;
   -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
 }
 

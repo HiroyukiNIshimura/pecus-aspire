@@ -34,7 +34,6 @@ import LinkPlugin from '../plugins/LinkPlugin';
 import PageBreakPlugin from '../plugins/PageBreakPlugin';
 import SpecialTextPlugin from '../plugins/SpecialTextPlugin';
 import TabFocusPlugin from '../plugins/TabFocusPlugin';
-import TableCellResizer from '../plugins/TableCellResizer';
 import TableOfContentsPlugin from '../plugins/TableOfContentsPlugin';
 import TwitterPlugin from '../plugins/TwitterPlugin';
 import YouTubePlugin from '../plugins/YouTubePlugin';
@@ -100,7 +99,6 @@ export default function Viewer() {
         hasHorizontalScroll={tableHorizontalScroll}
         hasTabHandler={hasTabHandler}
       />
-      <TableCellResizer />
       <ImagesPlugin />
       <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
       <AutoLinkPlugin />

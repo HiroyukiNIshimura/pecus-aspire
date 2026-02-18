@@ -169,7 +169,7 @@ export default function Editor({ isFullscreen = false }: { isFullscreen?: boolea
           hasHorizontalScroll={tableHorizontalScroll}
           hasTabHandler={hasTabHandler}
         />
-        <TableCellResizer />
+        {floatingAnchorElem && <TableCellResizer anchorElem={floatingAnchorElem} />}
         <ImagesPlugin />
         <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
         <TwitterPlugin />
