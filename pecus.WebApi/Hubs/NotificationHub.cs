@@ -1850,12 +1850,13 @@ public class NotificationHub : Hub
         // アイテム情報を取得（組織IDも含む）
         var itemInfo = await _context.WorkspaceItems
             .Where(i => i.Id == itemId && i.WorkspaceId == workspaceId)
+            .Include(i => i.Workspace)
             .Select(i => new
             {
                 i.Code,
                 i.Subject,
-                WorkspaceCode = i.Workspace.Code,
-                OrganizationId = i.Workspace.OrganizationId
+                WorkspaceCode = i.Workspace!.Code,
+                OrganizationId = i.Workspace!.OrganizationId
             })
             .FirstOrDefaultAsync();
 
