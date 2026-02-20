@@ -1,7 +1,6 @@
 /**
  * Markdown Transformers
- * フロントエンドの MarkdownTransformers/index.ts を参考に実装
- * @see pecus.Frontend/src/components/editor/plugins/MarkdownTransformers/index.ts
+ * @see packages/coati-editor/src/plugins/MarkdownTransformers/index.ts
  */
 
 import {
@@ -199,6 +198,7 @@ export const TABLE: ElementTransformer = {
     }
 
     const output: string[] = [];
+    let isFirstRow = true;
 
     for (const row of node.getChildren()) {
       const rowOutput = [];
@@ -217,8 +217,10 @@ export const TABLE: ElementTransformer = {
       }
 
       output.push(`| ${rowOutput.join(' | ')} |`);
-      if (isHeaderRow) {
+      // ヘッダー状態がある場合 OR 最初の行の場合に区切り行を出力
+      if (isHeaderRow || isFirstRow) {
         output.push(`| ${rowOutput.map((_) => '---').join(' | ')} |`);
+        isFirstRow = false;
       }
     }
 
