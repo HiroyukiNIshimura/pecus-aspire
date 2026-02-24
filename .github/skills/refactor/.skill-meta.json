@@ -2,8 +2,7 @@
   "name": "refactor",
   "source": "github-awesome-copilot",
   "description": "Surgical code refactoring to improve maintainability without changing behavior. Covers extracting functions, renaming variables, breaking down god functions, improving type safety, eliminating code smells, and applying design patterns. Less drastic than repo-rebuilder; use for gradual improvements.",
-  "description_ja": "Refactor",
   "whenToUse": "Use this skill when:; Code is hard to understand or maintain; Functions/classes are too large; Code smells need addressing; Adding features is difficult due to code structure",
   "categories": [],
-  "installedAt": "2026-02-10T01:51:45.332Z"
+  "installedAt": "2026-02-24T02:23:27.554Z"
 }
