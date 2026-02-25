@@ -142,7 +142,6 @@ pecus.Tools.PackageManager/
 
 ### 今後の拡張予定
 
-- [ ] `update` コマンド: パッケージの自動更新
 - [ ] `analyze` コマンド: 依存関係グラフの視覚化
 - [ ] `report` コマンド: Markdown/HTML レポート生成
 - [ ] CI/CD 統合: GitHub Actions でスケジュール実行
