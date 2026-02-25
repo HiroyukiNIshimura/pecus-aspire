@@ -30,14 +30,21 @@ public class UpdateCommand : Command
             getDefaultValue: () => true
         );
 
+        var includeAllOption = new Option<bool>(
+            name: "--all",
+            description: "Minor/Major も含めて更新（既定: Patch のみ）",
+            getDefaultValue: () => false
+        );
+
         AddOption(solutionOption);
         AddOption(modeOption);
         AddOption(includeAutoReferencesOption);
+        AddOption(includeAllOption);
 
-        this.SetHandler(ExecuteAsync, solutionOption, modeOption, includeAutoReferencesOption);
+        this.SetHandler(ExecuteAsync, solutionOption, modeOption, includeAutoReferencesOption, includeAllOption);
     }
 
-    private async Task ExecuteAsync(FileInfo solutionFile, string mode, bool includeAutoReferences)
+    private async Task ExecuteAsync(FileInfo solutionFile, string mode, bool includeAutoReferences, bool includeAll)
     {
         if (!solutionFile.Exists)
         {
@@ -60,7 +67,7 @@ public class UpdateCommand : Command
             if (string.Equals(mode, "prompt", StringComparison.OrdinalIgnoreCase))
             {
                 AnsiConsole.MarkupLine("[yellow]プロンプトモードで更新を開始します。指示に従って選択してください。[/]");
-                await outdatedService.RunUpgradeAsync(solutionFile.FullName, mode, includeAutoReferences);
+                await outdatedService.RunUpgradeAsync(solutionFile.FullName, mode, includeAutoReferences, includeAll);
                 return;
             }
 
@@ -71,7 +78,8 @@ public class UpdateCommand : Command
                     var (stdout, stderr) = await outdatedService.RunUpgradeAsync(
                         solutionFile.FullName,
                         mode,
-                        includeAutoReferences
+                        includeAutoReferences,
+                        includeAll
                     );
 
                     ctx.Status("結果を表示中...");

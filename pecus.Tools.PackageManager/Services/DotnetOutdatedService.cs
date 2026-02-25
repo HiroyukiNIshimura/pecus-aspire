@@ -24,6 +24,7 @@ public class DotnetOutdatedService
         string solutionPath,
         string upgradeMode,
         bool includeAutoReferences,
+        bool includeAll,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Upgrading packages: {SolutionPath}", solutionPath);
@@ -48,11 +49,12 @@ public class DotnetOutdatedService
         };
 
         var includeAutoReferencesArg = includeAutoReferences ? " --include-auto-references" : string.Empty;
+        var versionLockArg = includeAll ? string.Empty : " --version-lock Minor";
 
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"outdated \"{solutionPath}\"{includeAutoReferencesArg} {upgradeArg}",
+            Arguments = $"outdated \"{solutionPath}\"{includeAutoReferencesArg}{versionLockArg} {upgradeArg}",
             RedirectStandardOutput = normalizedMode != "prompt",
             RedirectStandardError = normalizedMode != "prompt",
             UseShellExecute = false,

@@ -78,8 +78,11 @@ dotnet run --project pecus.Tools.PackageManager -- check --solution path/to/solu
 #### パッケージ更新
 
 ```bash
-# 自動更新（既定: auto）
+# 自動更新（既定: Patch のみ）
 dotnet run --project pecus.Tools.PackageManager -- update
+
+# Minor/Major も含めて更新
+dotnet run --project pecus.Tools.PackageManager -- update --all
 
 # プロンプト更新（対話式）
 dotnet run --project pecus.Tools.PackageManager -- update --mode prompt
@@ -95,6 +98,7 @@ dotnet run --project pecus.Tools.PackageManager -- update --solution path/to/sol
 | `--solution` | ソリューションファイルのパスを指定します。省略時は `pecus.sln` を使用します。 | `--solution path/to/solution.sln` |
 | `--mode` | 更新モード。`auto`（自動）または `prompt`（対話式）を指定します。 | `--mode prompt` |
 | `--include-auto-references` | 自動参照パッケージを含めます（既定: true）。 | `--include-auto-references false` |
+| `--all` | Minor/Major も含めて更新します（既定は Patch のみ）。 | `--all` |
 
 ### 出力例
 
