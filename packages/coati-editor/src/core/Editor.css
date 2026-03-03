@@ -1409,7 +1409,7 @@ i.bold {
 }
 
 .notion-like-editor .toolbar .toolbar-item:focus {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid #74829a;
 }
 
 .notion-like-editor button.toolbar-item {
@@ -1458,7 +1458,7 @@ i.bold {
 }
 
 .notion-like-editor .toolbar-item:hover:not([disabled]) {
-  background-color: var(--color-accent-content);
+  background-color: #74829a; /* gray-400: ライト/ダーク両対応 */
 }
 
 .notion-like-editor .toolbar-item.font-family .text {

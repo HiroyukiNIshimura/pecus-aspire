@@ -1,4 +1,0 @@
-次のLexicalアップデートで
-- AutoLinkPluginのコードを変更して、コードノード内のURL
-- TableHoverActionPluginのコードを変更して、テーブルのセルにホバーアクションを追加
-- List系のコードを変更して、リストアイテムの入れ子構造バグを修正

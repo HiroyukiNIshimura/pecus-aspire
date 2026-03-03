@@ -145,6 +145,7 @@ public partial class DeveloperAtoms
 
         var items = await _context.WorkspaceItems
             .Where(i => i.Workspace!.OrganizationId == users[0].OrganizationId)
+            .OrderBy(i => i.Id)
             .Take(2)
             .ToListAsync();
 
