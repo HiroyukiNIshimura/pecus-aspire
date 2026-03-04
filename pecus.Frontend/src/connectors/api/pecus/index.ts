@@ -263,6 +263,7 @@ export type { UpdateNotificationSettingRequest } from './models/UpdateNotificati
 export type { UpdatePasswordRequest } from './models/UpdatePasswordRequest';
 export type { UpdateProfileRequest } from './models/UpdateProfileRequest';
 export type { UpdateReadPositionRequest } from './models/UpdateReadPositionRequest';
+export type { UpdateSiblingOrderRequest } from './models/UpdateSiblingOrderRequest';
 export type { UpdateSkillRequest } from './models/UpdateSkillRequest';
 export type { UpdateTagRequest } from './models/UpdateTagRequest';
 export type { UpdateTaskCommentRequest } from './models/UpdateTaskCommentRequest';

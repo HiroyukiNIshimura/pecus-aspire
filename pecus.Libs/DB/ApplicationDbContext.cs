@@ -436,6 +436,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Subject).IsRequired(); // TEXT型として扱う
             entity.Property(e => e.IsArchived).HasDefaultValue(false);
             entity.Property(e => e.IsDraft).HasDefaultValue(true);
+            entity.Property(e => e.SortOrder).HasDefaultValue(0);
 
             // WorkspaceItem と Workspace の多対一リレーションシップ
             entity

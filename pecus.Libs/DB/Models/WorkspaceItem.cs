@@ -78,6 +78,11 @@ public class WorkspaceItem
     public int? UpdatedByUserId { get; set; }
 
     /// <summary>
+    /// ドキュメントツリー内の兄弟間ソート順
+    /// </summary>
+    public int SortOrder { get; set; }
+
+    /// <summary>
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; }

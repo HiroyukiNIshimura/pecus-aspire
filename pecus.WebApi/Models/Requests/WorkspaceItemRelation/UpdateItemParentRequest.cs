@@ -19,6 +19,13 @@ public class UpdateItemParentRequest
     public int? NewParentItemId { get; set; }
 
     /// <summary>
+    /// 新しい親の子リスト内での挿入位置インデックス（0始まり）。
+    /// null の場合は末尾に追加。
+    /// </summary>
+    [Range(0, int.MaxValue)]
+    public int? InsertAtIndex { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
     [Required]

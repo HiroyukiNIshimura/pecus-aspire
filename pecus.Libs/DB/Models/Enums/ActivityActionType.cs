@@ -81,5 +81,9 @@ public enum ActivityActionType
     /// <summary>
     /// タスク期限変更
     /// </summary>
-    TaskDueDateChanged
+    TaskDueDateChanged,
+    /// <summary>
+    /// ソート順変更
+    /// </summary>
+    SortOrderChanged
 }

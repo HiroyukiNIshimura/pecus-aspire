@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noArrayIndexKey: false positive
 'use client';
 
 import Image from 'next/image';

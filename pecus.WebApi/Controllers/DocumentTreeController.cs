@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
+using Pecus.Models.Responses;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -41,5 +42,31 @@ public class DocumentTreeController : BaseSecureController
     {
         var response = await _itemService.GetDocumentTreeAsync(workspaceId, CurrentUserId);
         return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// ドキュメントツリー内の兄弟間ソート順を変更
+    /// </summary>
+    /// <remarks>
+    /// 同じ親を持つ兄弟リスト内での並び順を変更します。
+    /// NewIndex は 0始まりのインデックスで、移動先の位置を指定します。
+    /// </remarks>
+    [HttpPut("sibling-order")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<Ok<SuccessResponse>> UpdateSiblingOrder(
+        int workspaceId,
+        [FromBody] UpdateSiblingOrderRequest request
+    )
+    {
+        await _itemService.UpdateSiblingOrderAsync(workspaceId, request, CurrentUserId);
+
+        return TypedResults.Ok(new SuccessResponse
+        {
+            StatusCode = StatusCodes.Status200OK,
+            Message = "ソート順を変更しました。"
+        });
     }
 }

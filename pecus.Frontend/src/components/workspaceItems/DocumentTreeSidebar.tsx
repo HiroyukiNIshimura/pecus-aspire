@@ -4,7 +4,7 @@ import { type DropOptions, type NodeModel, Tree } from '@minoru/react-dnd-treevi
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { fetchDocumentTree, updateItemParent } from '@/actions/workspaceRelation';
+import { fetchDocumentTree, updateItemParent, updateSiblingOrder } from '@/actions/workspaceRelation';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import type { DocumentTreeItemResponse } from '@/connectors/api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -91,19 +91,21 @@ export default function DocumentTreeSidebar({
   }, [items, isLoading, isDropping]);
 
   // ドロップ時の処理
-  const handleDrop = async (newTree: CustomNodeModel[], options: DropOptions) => {
+  const handleDrop = async (newTree: CustomNodeModel[], options: DropOptions<DocumentTreeItemResponse>) => {
     // 編集権限がない場合は通知を表示して処理中断
     if (!canEdit) {
       notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
       return;
     }
 
-    const { dragSourceId, dropTargetId } = options;
+    const { dragSourceId, dropTargetId, dragSource, destinationIndex } = options;
 
-    // 親子関係の更新
-    // dropTargetId が 0 の場合はルートへの移動
-    const newParentId = dropTargetId === 0 ? null : Number(dropTargetId);
     const targetItemId = Number(dragSourceId);
+    const newParentId = dropTargetId === 0 ? null : Number(dropTargetId);
+    const oldParentId = dragSource?.parent === 0 ? null : Number(dragSource?.parent);
+
+    // 親が変わったかどうかを判定
+    const parentChanged = newParentId !== oldParentId;
 
     // ドロップ処理中フラグをON（楽観的更新を維持）
     setIsDropping(true);
@@ -115,11 +117,24 @@ export default function DocumentTreeSidebar({
       const draggedItem = items.find((item) => item.id === targetItemId);
       const rowVersion = draggedItem?.rowVersion ?? 0;
 
-      const updateResult = await updateItemParent(workspaceId, {
-        itemId: targetItemId,
-        newParentItemId: newParentId,
-        rowVersion,
-      });
+      let updateResult: { success: boolean; message?: string };
+
+      if (parentChanged) {
+        // 親変更 → insertAtIndex 付きで親更新API
+        updateResult = await updateItemParent(workspaceId, {
+          itemId: targetItemId,
+          newParentItemId: newParentId,
+          insertAtIndex: destinationIndex ?? null,
+          rowVersion,
+        });
+      } else {
+        // 兄弟間移動 → ソート順変更API
+        updateResult = await updateSiblingOrder(workspaceId, {
+          itemId: targetItemId,
+          newIndex: destinationIndex ?? 0,
+          rowVersion,
+        });
+      }
 
       if (!updateResult.success) {
         notifyRef.current.error(updateResult.message || 'アイテムの移動に失敗しました。');
@@ -128,7 +143,7 @@ export default function DocumentTreeSidebar({
         return;
       }
 
-      notifyRef.current.success('アイテムを移動しました。');
+      notifyRef.current.success(parentChanged ? 'アイテムを移動しました。' : '並び順を変更しました。');
 
       // ツリー情報を再取得
       await loadDocumentTree();
@@ -137,7 +152,7 @@ export default function DocumentTreeSidebar({
         await onItemMoved();
       }
     } catch (err) {
-      console.error('Failed to update parent:', err);
+      console.error('Failed to update tree:', err);
       notifyRef.current.error('アイテムの移動に失敗しました。');
       // エラー時はツリーを再取得して元に戻す
       await loadDocumentTree();

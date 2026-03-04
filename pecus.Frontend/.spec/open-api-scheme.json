@@ -3190,6 +3190,93 @@
         ]
       }
     },
+    "/api/workspaces/{workspaceId}/document-tree/sibling-order": {
+      "put": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ドキュメントツリー内の兄弟間ソート順を変更",
+        "description": "同じ親を持つ兄弟リスト内での並び順を変更します。\nNewIndex は 0始まりのインデックスで、移動先の位置を指定します。",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSiblingOrderRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSiblingOrderRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSiblingOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/downloads/{FileType}/{ResourceId}/{FileName}": {
       "get": {
         "tags": [
@@ -15202,7 +15289,8 @@
           "TaskDiscarded",
           "TaskAssigneeChanged",
           "TaskReopened",
-          "TaskDueDateChanged"
+          "TaskDueDateChanged",
+          "SortOrderChanged"
         ],
         "type": "string",
         "description": "アクティビティのアクション種類を表す列挙型"
@@ -24414,6 +24502,14 @@
             "format": "int32",
             "nullable": true
           },
+          "insertAtIndex": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "description": "新しい親の子リスト内での挿入位置インデックス（0始まり）。\nnull の場合は末尾に追加。",
+            "format": "int32",
+            "nullable": true
+          },
           "rowVersion": {
             "type": "integer",
             "description": "楽観的ロック用のRowVersion",
@@ -24514,6 +24610,34 @@
           }
         },
         "description": "既読位置更新リクエスト"
+      },
+      "UpdateSiblingOrderRequest": {
+        "required": [
+          "itemId",
+          "newIndex",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "description": "移動するアイテムID",
+            "format": "int32"
+          },
+          "newIndex": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "description": "挿入位置インデックス（0始まり、同じ親を持つ兄弟リスト内での位置）",
+            "format": "int32"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "uint32"
+          }
+        },
+        "description": "ドキュメントツリー内の兄弟間ソート順変更リクエスト"
       },
       "UpdateSkillRequest": {
         "required": [

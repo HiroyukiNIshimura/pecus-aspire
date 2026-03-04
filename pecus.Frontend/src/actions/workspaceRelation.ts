@@ -1,7 +1,7 @@
 'use server';
 
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { DocumentTreeResponse, UpdateItemParentRequest } from '@/connectors/api/pecus';
+import type { DocumentTreeResponse, UpdateItemParentRequest, UpdateSiblingOrderRequest } from '@/connectors/api/pecus';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
@@ -40,6 +40,27 @@ export async function updateItemParent(
     console.error('updateItemParent error:', error);
     return handleApiErrorForAction<void>(error, {
       defaultMessage: 'アイテムの移動に失敗しました。',
+    });
+  }
+}
+
+/**
+ * ドキュメントツリー内の兄弟間ソート順を変更
+ * @param workspaceId ワークスペースID
+ * @param request 更新リクエスト
+ */
+export async function updateSiblingOrder(
+  workspaceId: number,
+  request: UpdateSiblingOrderRequest,
+): Promise<ApiResponse<void>> {
+  try {
+    const { workspace } = createPecusApiClients();
+    await workspace.putApiWorkspacesDocumentTreeSiblingOrder(workspaceId, request);
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error('updateSiblingOrder error:', error);
+    return handleApiErrorForAction<void>(error, {
+      defaultMessage: '並び順の変更に失敗しました。',
     });
   }
 }

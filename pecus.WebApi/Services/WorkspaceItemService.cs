@@ -2048,6 +2048,18 @@ public class WorkspaceItemService
                 _context.WorkspaceItemRelations.Add(newRelation);
             }
 
+            // 新しい親の下での SortOrder を設定
+            var newSiblings = await GetSiblingsOrderedAsync(workspaceId, request.NewParentItemId, item.Id);
+            var insertIndex = request.InsertAtIndex.HasValue
+                ? Math.Clamp(request.InsertAtIndex.Value, 0, newSiblings.Count)
+                : newSiblings.Count; // null なら末尾
+
+            newSiblings.Insert(insertIndex, item);
+            for (var i = 0; i < newSiblings.Count; i++)
+            {
+                newSiblings[i].SortOrder = (i + 1) * 1000;
+            }
+
             // アイテム自体の更新（RowVersion更新のため）
             // 実質的な変更はないが、EntityState.ModifiedにしてRowVersionを進める
             // またはUpdatedBy/UpdatedAtを更新する
@@ -2174,7 +2186,8 @@ public class WorkspaceItemService
         var items = await _context.WorkspaceItems
             .Where(wi => wi.WorkspaceId == workspaceId && !wi.IsArchived)
             .Take(limits.MaxDocumentsPerWorkspace)
-            .OrderBy(wi => wi.ItemNumber)
+            .OrderBy(wi => wi.SortOrder)
+            .ThenBy(wi => wi.ItemNumber)
             .Select(wi => new
             {
                 wi.Id,
@@ -2182,6 +2195,7 @@ public class WorkspaceItemService
                 wi.Subject,
                 wi.IsDraft,
                 wi.ItemNumber,
+                wi.SortOrder,
                 wi.RowVersion
             })
             .ToListAsync();
@@ -2248,14 +2262,14 @@ public class WorkspaceItemService
         var filteredItems = items.Where(i => !itemsToExclude.Contains(i.Id)).ToList();
 
         // レスポンス構築
-        var treeItems = filteredItems.Select((item, index) => new DocumentTreeItemResponse
+        var treeItems = filteredItems.Select(item => new DocumentTreeItemResponse
         {
             Id = item.Id,
             Code = item.Code,
             Subject = item.Subject ?? "（件名なし）",
             ParentId = parentRelations.TryGetValue(item.Id, out var parentId) ? parentId : null,
             IsDraft = item.IsDraft,
-            SortOrder = index, // 現状はItemNumber順をそのまま使用
+            SortOrder = item.SortOrder,
             RowVersion = item.RowVersion
         }).ToList();
 
@@ -2317,5 +2331,121 @@ public class WorkspaceItemService
                  organizationSettings.Plan
         );
         return limits;
+    }
+
+    /// <summary>
+    /// ドキュメントツリー内の兄弟間ソート順を変更
+    /// </summary>
+    public async Task UpdateSiblingOrderAsync(
+        int workspaceId,
+        UpdateSiblingOrderRequest request,
+        int userId)
+    {
+        await _accessHelper.EnsureWorkspaceAccessAsync(workspaceId, userId);
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var item = await _context.WorkspaceItems
+                .FirstOrDefaultAsync(wi => wi.Id == request.ItemId && wi.WorkspaceId == workspaceId);
+
+            if (item == null)
+            {
+                throw new NotFoundException("アイテムが見つかりません。");
+            }
+
+            // 楽観的ロックチェック
+            _context.Entry(item).Property(e => e.RowVersion).OriginalValue = request.RowVersion;
+
+            // 現在の親を特定（ParentOf: From=Parent, To=Child）
+            var parentRelation = await _context.WorkspaceItemRelations
+                .FirstOrDefaultAsync(r => r.ToItemId == item.Id && r.RelationType == RelationType.ParentOf);
+
+            int? parentId = parentRelation?.FromItemId;
+
+            // 同じ親を持つ兄弟を SortOrder 順で取得（自分を除く）
+            var siblings = await GetSiblingsOrderedAsync(workspaceId, parentId, item.Id);
+
+            // 挿入位置を正規化
+            var insertIndex = Math.Clamp(request.NewIndex, 0, siblings.Count);
+
+            // 新しい順番で SortOrder を再採番
+            siblings.Insert(insertIndex, item);
+            for (var i = 0; i < siblings.Count; i++)
+            {
+                siblings[i].SortOrder = (i + 1) * 1000;
+            }
+
+            item.UpdatedByUserId = userId;
+            item.UpdatedAt = DateTimeOffset.UtcNow;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync();
+                throw new ConcurrencyException<WorkspaceItemDetailResponse>("同時実行制御エラーが発生しました。", null);
+            }
+
+            await transaction.CommitAsync();
+
+            // Activity記録
+            _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+                x.RecordActivityAsync(workspaceId, item.Id, userId, ActivityActionType.SortOrderChanged, null));
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await transaction.RollbackAsync();
+            throw new ConcurrencyException<WorkspaceItemDetailResponse>("同時実行制御エラーが発生しました。", null);
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 同じ親を持つ兄弟アイテムを SortOrder 順で取得（指定アイテムを除外）
+    /// </summary>
+    private async Task<List<WorkspaceItem>> GetSiblingsOrderedAsync(int workspaceId, int? parentId, int excludeItemId)
+    {
+        if (parentId.HasValue)
+        {
+            // 親がいる場合: ParentOf リレーションで子を特定
+            var childIds = await _context.WorkspaceItemRelations
+                .Where(r => r.FromItemId == parentId.Value && r.RelationType == RelationType.ParentOf)
+                .Select(r => r.ToItemId)
+                .ToListAsync();
+
+            return await _context.WorkspaceItems
+                .Where(wi => childIds.Contains(wi.Id)
+                    && wi.Id != excludeItemId
+                    && wi.WorkspaceId == workspaceId
+                    && !wi.IsArchived)
+                .OrderBy(wi => wi.SortOrder)
+                .ThenBy(wi => wi.ItemNumber)
+                .ToListAsync();
+        }
+        else
+        {
+            // ルートアイテム: 親を持たないアイテム
+            var childItemIds = await _context.WorkspaceItemRelations
+                .Where(r => r.RelationType == RelationType.ParentOf)
+                .Select(r => r.ToItemId)
+                .Distinct()
+                .ToListAsync();
+
+            return await _context.WorkspaceItems
+                .Where(wi => wi.WorkspaceId == workspaceId
+                    && !wi.IsArchived
+                    && wi.Id != excludeItemId
+                    && !childItemIds.Contains(wi.Id))
+                .OrderBy(wi => wi.SortOrder)
+                .ThenBy(wi => wi.ItemNumber)
+                .ToListAsync();
+        }
     }
 }

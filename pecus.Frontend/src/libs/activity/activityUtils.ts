@@ -22,6 +22,7 @@ export const actionTypeConfig: Record<ActivityActionType, { icon: string; badgeC
   TaskAssigneeChanged: { icon: 'icon-[mdi--account-switch]', badgeClass: 'badge-info' },
   TaskReopened: { icon: 'icon-[mdi--refresh]', badgeClass: 'badge-warning' },
   TaskDueDateChanged: { icon: 'icon-[mdi--calendar-clock]', badgeClass: 'badge-info' },
+  SortOrderChanged: { icon: 'icon-[mdi--swap-vertical]', badgeClass: 'badge-info' },
 };
 
 /** アクションタイプの日本語ラベル */
@@ -45,6 +46,7 @@ export const actionTypeLabels: Record<ActivityActionType, string> = {
   TaskAssigneeChanged: 'タスク担当者を変更',
   TaskReopened: 'タスクを再開',
   TaskDueDateChanged: 'タスク期限を変更',
+  SortOrderChanged: '並び順を変更',
 };
 
 /** デフォルトのアクション設定 */

@@ -9,6 +9,7 @@ import type { DocumentTreeResponse } from '../models/DocumentTreeResponse';
 import type { PagedResponseOfWorkspaceListItemResponse } from '../models/PagedResponseOfWorkspaceListItemResponse';
 import type { SetWorkspaceSkillsRequest } from '../models/SetWorkspaceSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
+import type { UpdateSiblingOrderRequest } from '../models/UpdateSiblingOrderRequest';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
 import type { UserSearchResultResponse } from '../models/UserSearchResultResponse';
@@ -41,6 +42,34 @@ export class WorkspaceService {
             errors: {
                 400: `Bad Request`,
                 404: `Not Found`,
+            },
+        });
+    }
+    /**
+     * ドキュメントツリー内の兄弟間ソート順を変更
+     * 同じ親を持つ兄弟リスト内での並び順を変更します。
+     * NewIndex は 0始まりのインデックスで、移動先の位置を指定します。
+     * @param workspaceId
+     * @param requestBody
+     * @returns SuccessResponse OK
+     * @throws ApiError
+     */
+    public static putApiWorkspacesDocumentTreeSiblingOrder(
+        workspaceId: number,
+        requestBody: UpdateSiblingOrderRequest,
+    ): CancelablePromise<SuccessResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/workspaces/{workspaceId}/document-tree/sibling-order',
+            path: {
+                'workspaceId': workspaceId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                409: `Conflict`,
             },
         });
     }
