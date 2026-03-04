@@ -47,8 +47,11 @@ ENV NODE_ENV=production
 ENV TZ=Asia/Tokyo
 RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# Copy packages (実ファイルのみ、シンボリックリンク問題を回避)
+COPY --from=deps /app/packages/coati-editor/package.json ./packages/coati-editor/
+COPY --from=deps /app/packages/coati-editor/dist ./packages/coati-editor/dist
+
 # Copy node_modules from deps stage
-COPY --from=deps /app/packages ./packages
 COPY --from=deps /app/node_modules ./node_modules
 
 # Copy built files
