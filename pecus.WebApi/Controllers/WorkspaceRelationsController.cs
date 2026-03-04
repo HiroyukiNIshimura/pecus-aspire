@@ -23,30 +23,6 @@ public class WorkspaceRelationsController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペース内の全アイテムリレーションを取得
-    /// </summary>
-    [HttpGet]
-    [ProducesResponseType(typeof(WorkspaceDocRelationsResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<Ok<WorkspaceDocRelationsResponse>> GetWorkspaceRelations(int workspaceId)
-    {
-        var relations = await _itemService.GetWorkspaceRelationsAsync(workspaceId, CurrentUserId);
-
-        var response = new WorkspaceDocRelationsResponse
-        {
-            Relations = relations.Select(r => new WorkspaceItemDocRelationResponse
-            {
-                Id = r.Id,
-                FromItemId = r.FromItemId,
-                ToItemId = r.ToItemId,
-                RelationType = r.RelationType
-            }).ToList()
-        };
-
-        return TypedResults.Ok(response);
-    }
-
-    /// <summary>
     /// アイテムの親を変更（移動）
     /// </summary>
     [HttpPut("parent")]

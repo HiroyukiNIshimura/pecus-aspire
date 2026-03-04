@@ -15,18 +15,14 @@ namespace Pecus.Controllers;
 public class DocumentTreeController : BaseSecureController
 {
     private readonly WorkspaceItemService _itemService;
-    private readonly OrganizationAccessHelper _accessHelper;
-
     public DocumentTreeController(
         WorkspaceItemService itemService,
-        OrganizationAccessHelper accessHelper,
         ILogger<DocumentTreeController> logger,
         ProfileService profileService
     )
         : base(profileService, logger)
     {
         _itemService = itemService;
-        _accessHelper = accessHelper;
     }
 
     /// <summary>
