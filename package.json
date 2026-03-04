@@ -6,13 +6,41 @@
     "pecus.Frontend",
     "pecus.LexicalConverter"
   ],
+  "scripts": {
+    "update:check": "ncu",
+    "update": "ncu -u"
+  },
   "dependencies": {
-    "dotenv": "^16.6.0",
-    "jsdom": "^27.0.1",
+    "dotenv": "^17.3.1",
+    "jsdom": "^28.1.0",
     "prom-client": "^15.1.3"
   },
   "devDependencies": {
-    "@types/jsdom": "^27.0.0",
+    "@types/jsdom": "^28.0.0",
     "sharp": "^0.34.5"
+  },
+  "overrides": {
+    "jsdom": "^28.1.0",
+    "lexical": "0.41.0",
+    "@lexical/clipboard": "0.41.0",
+    "@lexical/code": "0.41.0",
+    "@lexical/code-shiki": "0.41.0",
+    "@lexical/extension": "0.41.0",
+    "@lexical/file": "0.41.0",
+    "@lexical/hashtag": "0.41.0",
+    "@lexical/headless": "0.41.0",
+    "@lexical/html": "0.41.0",
+    "@lexical/link": "0.41.0",
+    "@lexical/list": "0.41.0",
+    "@lexical/mark": "0.41.0",
+    "@lexical/markdown": "0.41.0",
+    "@lexical/overflow": "0.41.0",
+    "@lexical/plain-text": "0.41.0",
+    "@lexical/react": "0.41.0",
+    "@lexical/rich-text": "0.41.0",
+    "@lexical/selection": "0.41.0",
+    "@lexical/table": "0.41.0",
+    "@lexical/tailwind": "0.41.0",
+    "@lexical/utils": "0.41.0"
   }
 }

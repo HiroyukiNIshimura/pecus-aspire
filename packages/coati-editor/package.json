@@ -40,8 +40,8 @@
     "update": "ncu -u"
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
