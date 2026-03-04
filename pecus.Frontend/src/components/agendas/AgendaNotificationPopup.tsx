@@ -357,7 +357,7 @@ export default function AgendaNotificationPopup({
         {/* フッター */}
         <div className="border-t border-base-300 p-2">
           <Link href="/agendas" onClick={onClose} className="btn btn-secondary btn-sm w-full">
-            <span className="icon-[mdi--calendar-event] size-4" aria-hidden="true" />
+            <span className="icon-[mdi--calendar-multiple-check] size-4" aria-hidden="true" />
             イベント一覧を見る
           </Link>
         </div>
