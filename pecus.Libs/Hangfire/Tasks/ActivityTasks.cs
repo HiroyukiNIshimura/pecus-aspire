@@ -88,6 +88,12 @@ public class ActivityTasks
             // Activity 記録失敗でもメール配信は続行するためスローしない
         }
 
+        // SortOrderChanged はアイテムの内容変更ではないため、メール通知はスキップ
+        if (actionType == ActivityActionType.SortOrderChanged)
+        {
+            return;
+        }
+
         // BodyUpdated/SubjectUpdated のメール通知は UpdateItemTask でデバウンス処理するためスキップ
         if (actionType == ActivityActionType.BodyUpdated || actionType == ActivityActionType.SubjectUpdated)
         {
