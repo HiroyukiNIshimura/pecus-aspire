@@ -33,8 +33,8 @@ export async function updateItemParent(
   request: UpdateItemParentRequest,
 ): Promise<ApiResponse<void>> {
   try {
-    const { workspaceItem } = createPecusApiClients();
-    await workspaceItem.putApiWorkspacesRelationsParent(workspaceId, request);
+    const { workspace } = createPecusApiClients();
+    await workspace.putApiWorkspacesDocumentTreeParent(workspaceId, request);
     return { success: true, data: undefined };
   } catch (error) {
     console.error('updateItemParent error:', error);

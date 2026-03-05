@@ -89,8 +89,11 @@ public class ActivityTasks
         }
 
         // SortOrderChanged はアイテムの内容変更ではないため、メール通知はスキップ
-        if (actionType == ActivityActionType.SortOrderChanged)
+        if (actionType == ActivityActionType.SortOrderChanged || actionType == ActivityActionType.ParentChanged)
         {
+            _logger.LogDebug(
+                "Skipping email notification for {ActionType} as it does not affect item content. WorkspaceId={WorkspaceId}, ItemId={ItemId}",
+                actionType, workspaceId, itemId);
             return;
         }
 

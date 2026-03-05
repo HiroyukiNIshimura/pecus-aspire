@@ -9,6 +9,7 @@ import type { DocumentTreeResponse } from '../models/DocumentTreeResponse';
 import type { PagedResponseOfWorkspaceListItemResponse } from '../models/PagedResponseOfWorkspaceListItemResponse';
 import type { SetWorkspaceSkillsRequest } from '../models/SetWorkspaceSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
+import type { UpdateItemParentRequest } from '../models/UpdateItemParentRequest';
 import type { UpdateSiblingOrderRequest } from '../models/UpdateSiblingOrderRequest';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
@@ -61,6 +62,32 @@ export class WorkspaceService {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/workspaces/{workspaceId}/document-tree/sibling-order',
+            path: {
+                'workspaceId': workspaceId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                409: `Conflict`,
+            },
+        });
+    }
+    /**
+     * アイテムの親を変更（移動）
+     * @param workspaceId
+     * @param requestBody
+     * @returns SuccessResponse OK
+     * @throws ApiError
+     */
+    public static putApiWorkspacesDocumentTreeParent(
+        workspaceId: number,
+        requestBody: UpdateItemParentRequest,
+    ): CancelablePromise<SuccessResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/workspaces/{workspaceId}/document-tree/parent',
             path: {
                 'workspaceId': workspaceId,
             },

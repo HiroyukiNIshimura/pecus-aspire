@@ -13,7 +13,6 @@ import type { PagedResponseOfWorkspaceItemDetailResponse } from '../models/Paged
 import type { SetTagsToItemRequest } from '../models/SetTagsToItemRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { TaskPriority } from '../models/TaskPriority';
-import type { UpdateItemParentRequest } from '../models/UpdateItemParentRequest';
 import type { UpdateWorkspaceItemAssigneeRequest } from '../models/UpdateWorkspaceItemAssigneeRequest';
 import type { UpdateWorkspaceItemAttributeRequest } from '../models/UpdateWorkspaceItemAttributeRequest';
 import type { UpdateWorkspaceItemRequest } from '../models/UpdateWorkspaceItemRequest';
@@ -707,32 +706,6 @@ export class WorkspaceItemService {
                 404: `Not Found`,
                 409: `Conflict`,
                 500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * アイテムの親を変更（移動）
-     * @param workspaceId
-     * @param requestBody
-     * @returns SuccessResponse OK
-     * @throws ApiError
-     */
-    public static putApiWorkspacesRelationsParent(
-        workspaceId: number,
-        requestBody: UpdateItemParentRequest,
-    ): CancelablePromise<SuccessResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/workspaces/{workspaceId}/relations/parent',
-            path: {
-                'workspaceId': workspaceId,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                404: `Not Found`,
-                409: `Conflict`,
             },
         });
     }

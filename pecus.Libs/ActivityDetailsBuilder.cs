@@ -137,6 +137,34 @@ public static class ActivityDetailsBuilder
     }
 
     /// <summary>
+    /// 親アイテム変更用の Details を生成
+    /// </summary>
+    /// <param name="newParentCode">新しい親アイテムのコード（例: "123"）</param>
+    /// <param name="oldParentCode">古い親アイテムのコード（例: "456"）</param>
+    public static string BuildParentChangedDetails(string? newParentCode, string? oldParentCode)
+    {
+        return JsonSerializer.Serialize(new
+        {
+            newParentCode,
+            oldParentCode
+        }, JsonOptions);
+    }
+
+    /// <summary>
+    /// 並び順変更用の Details を生成
+    /// </summary>
+    /// <param name="newSortOrder">新しい並び順</param>
+    /// <param name="oldSortOrder">古い並び順</param>
+    public static string BuildSortOrderChangedDetails(int? newSortOrder, int? oldSortOrder)
+    {
+        return JsonSerializer.Serialize(new
+        {
+            newSortOrder = newSortOrder.HasValue ? newSortOrder.Value + 1 : newSortOrder,
+            oldSortOrder = oldSortOrder.HasValue ? oldSortOrder.Value + 1 : oldSortOrder
+        }, JsonOptions);
+    }
+
+    /// <summary>
     /// 関連削除用の Details を生成
     /// </summary>
     /// <param name="relatedItemCode">関連先アイテムのコード（例: "123"）</param>

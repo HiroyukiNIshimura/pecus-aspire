@@ -69,4 +69,27 @@ public class DocumentTreeController : BaseSecureController
             Message = "ソート順を変更しました。"
         });
     }
+
+    /// <summary>
+    /// アイテムの親を変更（移動）
+    /// </summary>
+    [HttpPut("parent")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<Ok<SuccessResponse>> UpdateItemParent(
+        int workspaceId,
+        [FromBody] UpdateItemParentRequest request
+    )
+    {
+        await _itemService.UpdateItemParentAsync(workspaceId, request, CurrentUserId);
+
+        return TypedResults.Ok(new SuccessResponse
+        {
+            StatusCode = StatusCodes.Status200OK,
+            Message = "アイテムの親を変更しました。"
+        });
+    }
+
 }

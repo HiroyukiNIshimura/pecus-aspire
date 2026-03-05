@@ -23,6 +23,7 @@ export const actionTypeConfig: Record<ActivityActionType, { icon: string; badgeC
   TaskReopened: { icon: 'icon-[mdi--refresh]', badgeClass: 'badge-warning' },
   TaskDueDateChanged: { icon: 'icon-[mdi--calendar-clock]', badgeClass: 'badge-info' },
   SortOrderChanged: { icon: 'icon-[mdi--swap-vertical]', badgeClass: 'badge-info' },
+  ParentChanged: { icon: 'icon-[mdi--folder-move]', badgeClass: 'badge-info' },
 };
 
 /** アクションタイプの日本語ラベル */
@@ -47,6 +48,7 @@ export const actionTypeLabels: Record<ActivityActionType, string> = {
   TaskReopened: 'タスクを再開',
   TaskDueDateChanged: 'タスク期限を変更',
   SortOrderChanged: '並び順を変更',
+  ParentChanged: '親アイテムを変更',
 };
 
 /** デフォルトのアクション設定 */
@@ -116,6 +118,13 @@ export function formatDetails(actionType: ActivityActionType, details: string | 
         const oldTaskDate = parsed.old ? formatDate(parsed.old) : 'なし';
         const newTaskDate = parsed.new ? formatDate(parsed.new) : 'なし';
         return `${parsed.content}: ${oldTaskDate} → ${newTaskDate}`;
+      }
+      case 'SortOrderChanged':
+        return `新しい順序: ${parsed.oldSortOrder} → ${parsed.newSortOrder}`;
+      case 'ParentChanged': {
+        const newParent = parsed.newParentCode ? `#${parsed.newParentCode}` : 'なし';
+        const oldParent = parsed.oldParentCode ? `#${parsed.oldParentCode}` : 'なし';
+        return `親アイテムコード: ${oldParent} → ${newParent}`;
       }
       default:
         return null;

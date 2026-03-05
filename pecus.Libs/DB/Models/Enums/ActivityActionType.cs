@@ -84,6 +84,12 @@ public enum ActivityActionType
     TaskDueDateChanged,
     /// <summary>
     /// ソート順変更
+    /// ドキュメントの場合のみ
     /// </summary>
-    SortOrderChanged
+    SortOrderChanged,
+    /// <summary>
+    /// 親アイテム変更
+    /// ドキュメントの場合のみ
+    /// </summary>
+    ParentChanged
 }
