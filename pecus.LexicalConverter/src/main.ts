@@ -39,6 +39,18 @@ async function bootstrap() {
       package: 'pecus.lexical',
       protoPath: protoPath,
       url: `${host}:${port}`,
+      loader: {
+        keepCase: true,
+      },
+      // 最大メッセージサイズを20MBへ拡張 (デフォルト4MB)。長文の保存に対応。
+      // [懸念と対策] 巨大なJSONのパースと変換はCPUバウンドな処理であり、同時に多数の
+      // リクエストが到達するとメモリ・CPUスパイクが発生する可能性がありますが、
+      // 呼び出し元(Hangfire)で並列数が制御され、失敗時も自動リトライされる設計になっています。
+      // 常時高負荷となる場合は、このコンテナのスケールアウトを検討してください。
+      channelOptions: {
+        'grpc.max_receive_message_length': 20 * 1024 * 1024,
+        'grpc.max_send_message_length': 20 * 1024 * 1024,
+      },
     },
   });
 
