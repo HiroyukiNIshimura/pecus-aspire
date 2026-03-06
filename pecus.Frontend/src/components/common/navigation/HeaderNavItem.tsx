@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -11,6 +12,7 @@ interface HeaderNavItemProps {
 /**
  * ヘッダーのナビゲーションアイテム (Client Component)
  * usePathname() でアクティブ状態を判定するため Client Component
+ * Next.js の Link を使用してクライアントサイドナビゲーションを実現
  */
 export default function HeaderNavItem({ href, children }: HeaderNavItemProps) {
   const pathname = usePathname();
@@ -18,7 +20,7 @@ export default function HeaderNavItem({ href, children }: HeaderNavItemProps) {
 
   return (
     <li className={isActive ? 'bg-base-200' : ''}>
-      <a href={href}>{children}</a>
+      <Link href={href}>{children}</Link>
     </li>
   );
 }

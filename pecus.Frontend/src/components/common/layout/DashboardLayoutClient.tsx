@@ -1,7 +1,7 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { type ReactNode, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { type ReactNode, useEffect, useState } from 'react';
 import ChatProvider from '@/components/chat/ChatProvider';
 import LandingPageRecommendationBanner from '@/components/common/feedback/LandingPageRecommendationBanner';
 import AppHeader from '@/components/common/layout/AppHeader';
@@ -9,6 +9,7 @@ import DashboardSidebar from '@/components/common/layout/DashboardSidebar.server
 import type { CurrentUserInfo } from '@/connectors/api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAppSettings } from '@/providers/AppSettingsProvider';
+import { getLandingPageUrl } from '@/utils/landingPage';
 
 interface DashboardLayoutClientProps {
   children: ReactNode;
@@ -22,8 +23,33 @@ interface DashboardLayoutClientProps {
 export default function DashboardLayoutClient({ children, userInfo }: DashboardLayoutClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const isMobile = useIsMobile();
   const settings = useAppSettings();
+
+  // ランディングページリダイレクト処理
+  // - ダッシュボード（/）へのアクセス時のみ実行
+  // - 初回アクセス（新しいタブ、URL直接入力、ブックマーク等）時のみリダイレクト
+  // - サイドバーからのナビゲーション時はsessionStorageにフラグがあるためスキップ
+  useEffect(() => {
+    // ダッシュボードページ以外では何もしない
+    if (pathname !== '/') return;
+
+    const LANDING_CHECKED_KEY = '__landing_checked';
+
+    // 既にこのセッションでチェック済みならスキップ
+    if (sessionStorage.getItem(LANDING_CHECKED_KEY)) return;
+
+    // フラグを設定（リダイレクトするしないに関わらず）
+    sessionStorage.setItem(LANDING_CHECKED_KEY, '1');
+
+    // ランディングページがダッシュボード以外に設定されている場合はリダイレクト
+    const landingPage = settings?.user?.landingPage;
+    if (landingPage && landingPage !== 'Dashboard') {
+      // ソフトナビゲーションで遷移（共通レイアウトは再レンダリングされない）
+      router.replace(getLandingPageUrl(landingPage));
+    }
+  }, [pathname, settings?.user?.landingPage, router]);
 
   // スマホ用チャットページでは AppHeader/Sidebar を非表示
   // /chat または /chat/rooms/* のパスで、スマホ表示の場合
