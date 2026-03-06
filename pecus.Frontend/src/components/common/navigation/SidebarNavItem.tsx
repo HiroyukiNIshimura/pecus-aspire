@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 interface SidebarNavItemProps {
@@ -12,6 +13,9 @@ interface SidebarNavItemProps {
 /**
  * サイドバーのナビゲーションアイテム
  * usePathname() でアクティブ状態を判定するため Client Component
+ * Next.js の Link を使用してクライアントサイドナビゲーションを実現
+ * （ハードナビゲーションを避けることで、SSRのリダイレクトロジックが
+ * 毎回実行されることを防止）
  */
 export default function SidebarNavItem({ href, label, iconClass, sidebarOpen }: SidebarNavItemProps) {
   const pathname = usePathname();
@@ -19,14 +23,14 @@ export default function SidebarNavItem({ href, label, iconClass, sidebarOpen }: 
 
   return (
     <li className="w-full">
-      <a
+      <Link
         href={href}
         className={`${isActive ? 'menu-active' : ''} flex items-center justify-center md:flex-col md:items-center md:justify-center lg:flex-row lg:justify-start lg:items-center ${sidebarOpen ? 'flex-row justify-start' : 'flex-col'} w-full`}
         title={label}
       >
         <span className={`${iconClass} size-5`} aria-hidden="true" />
         <span className={`${sidebarOpen ? 'inline' : 'hidden'} md:hidden lg:inline`}>{label}</span>
-      </a>
+      </Link>
     </li>
   );
 }
