@@ -1,5 +1,3 @@
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   AchievementRankingResponse,
@@ -12,73 +10,15 @@ import type {
   DashboardTaskTrendResponse,
   DashboardWorkspaceBreakdownResponse,
 } from '@/connectors/api/pecus';
-import { getLandingPageUrl } from '@/utils/landingPage';
 import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * 内部ナビゲーションかどうかを判定
- * Refererが同一オリジンの場合は内部ナビゲーションとみなす
- */
-async function isInternalNavigation(): Promise<boolean> {
-  const headersList = await headers();
-  const referer = headersList.get('referer');
-
-  if (!referer) {
-    // Refererがない = 直接URL入力、ブックマーク、新規タブ = 外部アクセス
-    return false;
-  }
-
-  // 同一オリジンからのアクセスかチェック
-  const host = headersList.get('host');
-  if (host) {
-    try {
-      const refererUrl = new URL(referer);
-      // Refererのホストが現在のホストと一致すれば内部ナビゲーション
-      return refererUrl.host === host;
-    } catch {
-      return false;
-    }
-  }
-
-  return false;
-}
-
 // Server-side page (SSR). Fetch required data here and pass to client component.
+// ランディングページへのリダイレクトはログイン時（LoginFormClient.tsx）で処理済み
+// ダッシュボードページ自体ではリダイレクトを行わない
 export default async function Dashboard() {
   const api = createPecusApiClients();
-
-  // ランディングページ設定を取得し、ダッシュボード以外が設定されていればリダイレクト
-  // ただし、内部ナビゲーション（サイドバーからのクリック等）の場合はリダイレクトしない
-  // これにより「起動時のデフォルトページ」としてのみ機能する
-  const isInternal = await isInternalNavigation();
-  if (!isInternal) {
-    try {
-      const appSettings = await api.profile.getApiProfileAppSettings();
-      // バックオフィスユーザーの場合、デフォルトランディングページは /backoffice
-      // ただし、明示的にダッシュボードにアクセスしている場合（リファラーなしの直接アクセス除く）は許可
-      // 注: バックオフィスユーザーも一般ダッシュボードにアクセス可能とする
-      if (appSettings.currentUser.isBackOffice) {
-        // バックオフィスユーザーのデフォルトランディングは /backoffice だが、
-        // ダッシュボードへの明示的なアクセスは許可（ヘッダーナビからの遷移等）
-        // ここでは初回ログイン直後のみリダイレクト（LoginFormClient.tsx で処理済み）
-        // ダッシュボードページを直接開いた場合はそのまま表示を許可
-      } else {
-        const landingPage = appSettings.user?.landingPage;
-        if (landingPage && landingPage !== 'Dashboard') {
-          redirect(getLandingPageUrl(landingPage));
-        }
-      }
-    } catch (error) {
-      // Next.js の redirect() は NEXT_REDIRECT エラーをスローするため、再スローが必要
-      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
-        throw error;
-      }
-      // 取得失敗時はダッシュボードを表示（ログインページへのリダイレクトはlayoutで処理）
-      console.error('Dashboard: failed to check landing page setting', error);
-    }
-  }
 
   let summary: DashboardSummaryResponse | null = null;
   let tasksByPriority: DashboardTasksByPriorityResponse | null = null;

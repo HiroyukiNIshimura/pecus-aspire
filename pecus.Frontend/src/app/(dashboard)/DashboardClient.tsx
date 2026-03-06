@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import {
   BadgeRankingCard,
   HelpCommentsCard,
@@ -22,7 +23,8 @@ import type {
   DashboardTaskTrendResponse,
   DashboardWorkspaceBreakdownResponse,
 } from '@/connectors/api/pecus';
-import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
+import { useOrganizationSettings, useUserSettings } from '@/providers/AppSettingsProvider';
+import { getLandingPageUrl } from '@/utils/landingPage';
 
 interface DashboardClientProps {
   fetchError?: string | null;
@@ -59,6 +61,28 @@ export default function DashboardClient({
   badgeRanking,
 }: DashboardClientProps) {
   const orgSettings = useOrganizationSettings();
+  const userSettings = useUserSettings();
+
+  // ランディングページリダイレクト処理
+  // - 初回アクセス（新しいタブ、URL直接入力、ブックマーク等）時のみ実行
+  // - サイドバーからのクライアントサイドナビゲーション時はsessionStorageにフラグがあるためスキップ
+  useEffect(() => {
+    const LANDING_CHECKED_KEY = '__landing_checked';
+
+    // 既にこのセッションでチェック済みならスキップ
+    if (sessionStorage.getItem(LANDING_CHECKED_KEY)) {
+      return;
+    }
+
+    // フラグを設定（リダイレクトするしないに関わらず）
+    sessionStorage.setItem(LANDING_CHECKED_KEY, '1');
+
+    // ランディングページがダッシュボード以外に設定されている場合はリダイレクト
+    const landingPage = userSettings.landingPage;
+    if (landingPage && landingPage !== 'Dashboard') {
+      window.location.href = getLandingPageUrl(landingPage);
+    }
+  }, [userSettings.landingPage]);
 
   // ダッシュボードでのランキング表示条件（CheckVisibilityAccessAsync 準拠）:
   // - Gamification が有効
