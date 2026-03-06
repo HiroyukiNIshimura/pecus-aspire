@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import type { AssigneeTaskLoadResponse } from '@/connectors/api/pecus';
 import UserBadgesPopover from './UserBadgesPopover';
 import UserSkillsPopover from './UserSkillsPopover';
+import UserWorkloadPopover from './UserWorkloadPopover';
 
 /**
  * メンバー情報メニューのProps
@@ -12,6 +14,8 @@ export interface MemberInfoMenuProps {
   userId: number;
   /** メンバーのユーザー名 */
   userName: string;
+  /** 負荷情報（表示する場合に渡す） */
+  workload?: AssigneeTaskLoadResponse | null;
 }
 
 /**
@@ -20,10 +24,11 @@ export interface MemberInfoMenuProps {
  * - バッジ表示
  * ※権限に関係なく誰でも使用可能
  */
-export default function MemberInfoMenu({ userId, userName }: MemberInfoMenuProps) {
+export default function MemberInfoMenu({ userId, userName, workload }: MemberInfoMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [skillsPopover, setSkillsPopover] = useState<{ anchorRect: DOMRect } | null>(null);
   const [badgesPopover, setBadgesPopover] = useState<{ anchorRect: DOMRect } | null>(null);
+  const [workloadPopover, setWorkloadPopover] = useState<{ anchorRect: DOMRect } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // メニュー外クリックで閉じる
@@ -53,6 +58,12 @@ export default function MemberInfoMenu({ userId, userName }: MemberInfoMenuProps
     const rect = e.currentTarget.getBoundingClientRect();
     setIsMenuOpen(false);
     setBadgesPopover({ anchorRect: rect });
+  };
+
+  const handleViewWorkload = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setIsMenuOpen(false);
+    setWorkloadPopover({ anchorRect: rect });
   };
 
   return (
@@ -88,6 +99,16 @@ export default function MemberInfoMenu({ userId, userName }: MemberInfoMenuProps
               <span className="icon-[mdi--medal] size-4 text-warning" aria-hidden="true" />
               バッジを見る
             </button>
+            {workload && (
+              <button
+                type="button"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-base-200 rounded flex items-center gap-2 whitespace-nowrap"
+                onClick={handleViewWorkload}
+              >
+                <span className="icon-[mdi--chart-box-outline] size-4 text-info" aria-hidden="true" />
+                負荷を見る
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -109,6 +130,17 @@ export default function MemberInfoMenu({ userId, userName }: MemberInfoMenuProps
         userName={userName}
         anchorRect={badgesPopover?.anchorRect}
       />
+
+      {/* 負荷表示ポップオーバー */}
+      {workload && (
+        <UserWorkloadPopover
+          isOpen={workloadPopover !== null}
+          onClose={() => setWorkloadPopover(null)}
+          userName={userName}
+          workload={workload}
+          anchorRect={workloadPopover?.anchorRect}
+        />
+      )}
     </div>
   );
 }

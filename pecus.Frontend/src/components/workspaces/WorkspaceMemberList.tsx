@@ -173,7 +173,7 @@ export default function WorkspaceMemberList({
                   actionSlot={
                     <div className="flex items-center gap-1">
                       {/* 情報メニュー（常に表示） */}
-                      <MemberInfoMenu userId={memberId} userName={memberName} />
+                      <MemberInfoMenu userId={memberId} userName={memberName} workload={workload ?? undefined} />
                       {/* アクションメニュー（編集可能かつオーナー以外の場合のみ） */}
                       {editable && !isOwner && (
                         <MemberActionMenu

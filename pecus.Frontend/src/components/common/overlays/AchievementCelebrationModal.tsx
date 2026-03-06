@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: false positive with .map() */
 'use client';
 
 import confetti from 'canvas-confetti';
