@@ -27,6 +27,8 @@ public class LexicalConverterService : ILexicalConverterService, IDisposable
         _logger = logger;
 
         // 最大メッセージサイズを20MBへ拡張 (デフォルト4MB)
+        // ※ストリーミング通信を採用しない理由：Lexicalの仕様上、変換処理時にJSON全量をメモリに展開して
+        // 仮想DOMを構築する必要があるため、チャンク分割してもメモリ節約の恩恵が得られずオーバーヘッドが増すため。
         // [懸念事項] 20MBのLexical JSON変換が並列で多数実行されると、Node.js側(LexicalConverter)で
         // 一時的なCPU/メモリのスパイクが発生する可能性があります。
         // [対策] WebApiでは非同期でHangfireキューに入れているためユーザーレスポンスには影響しません。
