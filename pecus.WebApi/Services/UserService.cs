@@ -1211,9 +1211,15 @@ public class UserService
         if (daysUntilEndOfWeek == 0) daysUntilEndOfWeek = 7; // 日曜日の場合は次の日曜日
         var endOfWeek = todayStart.AddDays(daysUntilEndOfWeek + 1);
 
-        // 対象ユーザーの未完了タスクを一括取得
+        // アクティブなワークスペースIDを取得
+        var activeWorkspaceIds = await _context.Workspaces
+            .Where(w => w.OrganizationId == organizationId && w.IsActive)
+            .Select(w => w.Id)
+            .ToListAsync();
+
+        // 対象ユーザーのアクティブなワークスペースの未完了タスクを一括取得
         var userTasks = await _context.WorkspaceTasks
-            .Where(t => t.OrganizationId == organizationId)
+            .Where(t => activeWorkspaceIds.Contains(t.WorkspaceId))
             .Where(t => userIds.Contains(t.AssignedUserId))
             .Where(t => !t.IsCompleted && !t.IsDiscarded)
             .Select(t => new

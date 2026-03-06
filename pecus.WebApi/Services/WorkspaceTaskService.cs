@@ -233,9 +233,15 @@ public class WorkspaceTaskService
         if (daysUntilEndOfWeek == 0) daysUntilEndOfWeek = 7; // 日曜日の場合は次の日曜日
         var endOfWeek = todayStart.AddDays(daysUntilEndOfWeek + 1); // 日曜日の終わり
 
-        // 組織内の担当者の未完了タスクを一括で集計
+        // アクティブなワークスペースIDを取得
+        var activeWorkspaceIds = await _context.Workspaces
+            .Where(w => w.OrganizationId == organization.Id && w.IsActive)
+            .Select(w => w.Id)
+            .ToListAsync();
+
+        // 組織内のアクティブなワークスペースの担当者の未完了タスクを一括で集計
         var userActiveTasks = await _context.WorkspaceTasks
-            .Where(t => t.OrganizationId == organization.Id)
+            .Where(t => activeWorkspaceIds.Contains(t.WorkspaceId))
             .Where(t => t.AssignedUserId == request.AssignedUserId)
             .Where(t => !t.IsCompleted && !t.IsDiscarded)
             .Select(t => new
