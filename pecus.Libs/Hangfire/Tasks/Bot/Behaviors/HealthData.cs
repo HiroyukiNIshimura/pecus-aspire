@@ -1,74 +1,120 @@
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Statistics.Models;
 
 namespace Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
 
 /// <summary>
-/// 健康状態データ（匿名化済み統計情報）
+/// 健康状態データの基底型（匿名化済み統計情報）
 /// </summary>
-public record HealthData
+public abstract record HealthData
 {
     /// <summary>総メンバー数（ワークスペースメンバーまたは組織ユーザー）</summary>
     public int TotalMembers { get; init; }
 
-    /// <summary>タスク総数</summary>
-    public int TotalTasks { get; init; }
-
-    /// <summary>完了タスク数</summary>
-    public int CompletedTasks { get; init; }
-
-    /// <summary>期限切れタスク数</summary>
-    public int OverdueTasks { get; init; }
-
-    /// <summary>今週作成されたタスク数</summary>
-    public int TasksCreatedThisWeek { get; init; }
-
-    /// <summary>今週完了したタスク数</summary>
-    public int TasksCompletedThisWeek { get; init; }
-
-    /// <summary>未完了タスクの平均滞留日数</summary>
-    public double AverageTaskAgeDays { get; init; }
-
     /// <summary>直近7日間のアクティビティ数</summary>
     public int ActivitiesThisWeek { get; init; }
+
+    /// <summary>ワークスペースモード（組織全体診断の場合は null）</summary>
+    public WorkspaceMode? WorkspaceMode { get; init; }
+
+    /// <summary>AI向けの要約テキストを生成</summary>
+    public abstract string ToSummary();
+}
+
+/// <summary>
+/// プロジェクト管理ワークスペースの健康状態データ
+/// </summary>
+public sealed record TaskWorkspaceHealthData : HealthData
+{
+    /// <summary>タスク統計</summary>
+    public required TaskStatistics TaskStats { get; init; }
 
     /// <summary>週次トレンド（オプション）</summary>
     public TaskTrend? Trend { get; init; }
 
-    // --- ドキュメントモード用の統計（オプション） ---
-
-    /// <summary>ドキュメント統計（ドキュメントモードの場合に設定）</summary>
-    public ItemStatistics? DocumentStats { get; init; }
-
-    /// <summary>ワークスペースモード（診断時の参考情報）</summary>
-    public string? WorkspaceMode { get; init; }
-
-    /// <summary>完了率（0-100）</summary>
-    public double CompletionRate => TotalTasks > 0
-        ? Math.Round((double)CompletedTasks / TotalTasks * 100, 1)
-        : 0;
-
-    /// <summary>AI向けの要約テキストを生成</summary>
-    public string ToSummary()
+    /// <inheritdoc />
+    public override string ToSummary()
     {
         var baseSummary = $"""
             チーム人員:
             - 総メンバー数: {TotalMembers}人
 
             タスク状況:
-            - 総数: {TotalTasks}件（完了: {CompletedTasks}件、完了率: {CompletionRate}%）
-            - 期限切れ: {OverdueTasks}件
-            - 今週の新規: {TasksCreatedThisWeek}件、今週の完了: {TasksCompletedThisWeek}件
-            - 未完了タスクの平均滞留日数: {AverageTaskAgeDays:F1}日
+            - 総数: {TaskStats.TotalCount}件（完了: {TaskStats.CompletedCount}件、完了率: {TaskStats.CompletionRate}%）
+            - 期限切れ: {TaskStats.OverdueCount}件
+            - 今週の新規: {TaskStats.CreatedThisWeekCount}件、今週の完了: {TaskStats.CompletedThisWeekCount}件
+            - 未完了タスクの平均滞留日数: {TaskStats.AverageTaskAgeDays:F1}日
 
             チーム活動:
             - 直近7日間のアクティビティ: {ActivitiesThisWeek}件
             """;
 
-        // ドキュメント統計がある場合は追加
-        if (DocumentStats != null)
+        if (Trend != null)
         {
-            baseSummary += $"""
+            baseSummary += $"\n\n{Trend.ToSummary()}";
+        }
 
+        return baseSummary;
+    }
+}
+
+/// <summary>
+/// ドキュメント管理ワークスペースの健康状態データ
+/// </summary>
+public sealed record DocumentWorkspaceHealthData : HealthData
+{
+    /// <summary>ドキュメント統計</summary>
+    public required ItemStatistics DocumentStats { get; init; }
+
+    /// <inheritdoc />
+    public override string ToSummary()
+    {
+        return $"""
+            チーム人員:
+            - 総メンバー数: {TotalMembers}人
+
+            ドキュメント状況:
+            - 総数: {DocumentStats.TotalCount}件（公開: {DocumentStats.PublishedCount}件、下書き: {DocumentStats.DraftCount}件）
+            - 長期未更新（30日以上）: {DocumentStats.StaleCount}件
+            - 今週の新規作成: {DocumentStats.CreatedThisWeekCount}件、今週の更新: {DocumentStats.UpdatedThisWeekCount}件
+            - 公開記事の平均経過日数（最終更新から）: {DocumentStats.AverageItemAgeDays:F1}日
+            - 直近30日間のユニーク編集者: {DocumentStats.UniqueContributorCount}人
+
+            チーム活動:
+            - 直近7日間のアクティビティ: {ActivitiesThisWeek}件
+            """;
+    }
+}
+
+/// <summary>
+/// 組織全体の健康状態データ（タスク + ドキュメント）
+/// </summary>
+public sealed record OrganizationHealthData : HealthData
+{
+    /// <summary>タスク統計</summary>
+    public required TaskStatistics TaskStats { get; init; }
+
+    /// <summary>ドキュメント統計</summary>
+    public required ItemStatistics DocumentStats { get; init; }
+
+    /// <summary>週次トレンド（オプション）</summary>
+    public TaskTrend? Trend { get; init; }
+
+    /// <inheritdoc />
+    public override string ToSummary()
+    {
+        var baseSummary = $"""
+            チーム人員:
+            - 総メンバー数: {TotalMembers}人
+
+            タスク状況:
+            - 総数: {TaskStats.TotalCount}件（完了: {TaskStats.CompletedCount}件、完了率: {TaskStats.CompletionRate}%）
+            - 期限切れ: {TaskStats.OverdueCount}件
+            - 今週の新規: {TaskStats.CreatedThisWeekCount}件、今週の完了: {TaskStats.CompletedThisWeekCount}件
+            - 未完了タスクの平均滞留日数: {TaskStats.AverageTaskAgeDays:F1}日
+
+            チーム活動:
+            - 直近7日間のアクティビティ: {ActivitiesThisWeek}件
 
             ドキュメント状況:
             - 総数: {DocumentStats.TotalCount}件（公開: {DocumentStats.PublishedCount}件、下書き: {DocumentStats.DraftCount}件）
@@ -77,7 +123,6 @@ public record HealthData
             - 公開記事の平均経過日数（最終更新から）: {DocumentStats.AverageItemAgeDays:F1}日
             - 直近30日間のユニーク編集者: {DocumentStats.UniqueContributorCount}人
             """;
-        }
 
         if (Trend != null)
         {

@@ -63,8 +63,22 @@ public class HealthAnalysisService
         HealthAnalysisRequest request,
         CancellationToken cancellationToken = default)
     {
-        // キャッシュキーを生成
-        var cacheKey = BuildCacheKey(organizationId, request);
+        // ワークスペース情報を先に取得（キャッシュキーにモード情報を含めるため）
+        string? workspaceName = null;
+        WorkspaceMode? workspaceMode = null;
+        if (request.Scope == HealthAnalysisScope.Workspace && request.WorkspaceId.HasValue)
+        {
+            var workspace = await _context.Workspaces
+                .AsNoTracking()
+                .Where(w => w.Id == request.WorkspaceId.Value)
+                .Select(w => new { w.Name, w.Mode })
+                .FirstOrDefaultAsync(cancellationToken);
+            workspaceName = workspace?.Name;
+            workspaceMode = workspace?.Mode;
+        }
+
+        // キャッシュキーを生成（モード情報を含める）
+        var cacheKey = BuildCacheKey(organizationId, request, workspaceMode);
         var db = _redis.GetDatabase();
 
         // キャッシュを確認
@@ -94,22 +108,12 @@ public class HealthAnalysisService
 
         // 健康データを取得
         HealthData healthData;
-        string? workspaceName = null;
-        WorkspaceMode? workspaceMode = null;
 
         if (request.Scope == HealthAnalysisScope.Workspace && request.WorkspaceId.HasValue)
         {
-            // 先にワークスペース情報を取得してモードを確認
-            var workspace = await _context.Workspaces
-                .AsNoTracking()
-                .Where(w => w.Id == request.WorkspaceId.Value)
-                .Select(w => new { w.Name, w.Mode })
-                .FirstOrDefaultAsync(cancellationToken);
-            workspaceName = workspace?.Name;
-            workspaceMode = workspace?.Mode;
-
-            // モードを渡してデータ取得（ドキュメントモードの場合は追加統計も取得）
-            healthData = await _healthDataProvider.GetWorkspaceHealthDataAsync(request.WorkspaceId.Value, workspaceMode);
+            healthData = workspaceMode == WorkspaceMode.Document
+                ? await _healthDataProvider.GetDocumentWorkspaceHealthDataAsync(request.WorkspaceId.Value)
+                : await _healthDataProvider.GetTaskWorkspaceHealthDataAsync(request.WorkspaceId.Value);
         }
         else
         {
@@ -161,12 +165,26 @@ public class HealthAnalysisService
     /// <summary>
     /// キャッシュキーを生成
     /// </summary>
-    private static string BuildCacheKey(int organizationId, HealthAnalysisRequest request)
+    private static string BuildCacheKey(
+        int organizationId,
+        HealthAnalysisRequest request,
+        WorkspaceMode? workspaceMode)
     {
         var workspaceIdPart = request.Scope == HealthAnalysisScope.Workspace && request.WorkspaceId.HasValue
             ? request.WorkspaceId.Value.ToString()
             : "all";
-        return $"{CacheKeyPrefix}:{organizationId}:{request.Scope}:{workspaceIdPart}:{request.AnalysisType}";
+
+        var scopeModePart = request.Scope == HealthAnalysisScope.Organization
+            ? "organization"
+            : workspaceMode switch
+            {
+                WorkspaceMode.Document => "workspace-document",
+                WorkspaceMode.Normal => "workspace-task",
+                _ => "workspace-unknown",
+            };
+
+        // v2: workspaceMode をキーに含めることでモード変更時のキャッシュ不整合を防ぐ
+        return $"{CacheKeyPrefix}:v2:{organizationId}:{scopeModePart}:{workspaceIdPart}:{request.AnalysisType}";
     }
 
     /// <summary>

@@ -10,16 +10,19 @@ namespace Pecus.Libs.Hangfire.Tasks.Bot.Behaviors;
 public interface IHealthDataProvider
 {
     /// <summary>
-    /// ワークスペースの健康状態データを取得する
+    /// プロジェクト管理ワークスペースの健康状態データを取得する
     /// </summary>
-    /// <param name="workspaceId">ワークスペースID</param>
-    /// <param name="workspaceMode">ワークスペースモード（オプション、指定時はモードに応じた統計を含める）</param>
-    Task<HealthData> GetWorkspaceHealthDataAsync(int workspaceId, WorkspaceMode? workspaceMode = null);
+    Task<TaskWorkspaceHealthData> GetTaskWorkspaceHealthDataAsync(int workspaceId);
+
+    /// <summary>
+    /// ドキュメント管理ワークスペースの健康状態データを取得する
+    /// </summary>
+    Task<DocumentWorkspaceHealthData> GetDocumentWorkspaceHealthDataAsync(int workspaceId);
 
     /// <summary>
     /// 組織の健康状態データを取得する
     /// </summary>
-    Task<HealthData> GetOrganizationHealthDataAsync(int organizationId);
+    Task<OrganizationHealthData> GetOrganizationHealthDataAsync(int organizationId);
 }
 
 /// <summary>
@@ -39,7 +42,7 @@ public class HealthDataProvider : IHealthDataProvider
     }
 
     /// <inheritdoc />
-    public async Task<HealthData> GetWorkspaceHealthDataAsync(int workspaceId, WorkspaceMode? workspaceMode = null)
+    public async Task<TaskWorkspaceHealthData> GetTaskWorkspaceHealthDataAsync(int workspaceId)
     {
         var oneWeekAgo = StatisticsDateHelper.GetDaysAgo(7);
 
@@ -48,31 +51,36 @@ public class HealthDataProvider : IHealthDataProvider
         var activityCount = await _statisticsCollector.GetWorkspaceActivityCountAsync(workspaceId, oneWeekAgo);
         var trend = await _statisticsCollector.GetWorkspaceTaskTrendAsync(workspaceId, 4);
 
-        // ドキュメントモードの場合はドキュメント統計も取得
-        ItemStatistics? documentStats = null;
-        if (workspaceMode == WorkspaceMode.Document)
-        {
-            documentStats = await _statisticsCollector.GetWorkspaceItemStatisticsAsync(workspaceId);
-        }
-
-        return new HealthData
+        return new TaskWorkspaceHealthData
         {
             TotalMembers = memberCount,
-            TotalTasks = taskStats.TotalCount,
-            CompletedTasks = taskStats.CompletedCount,
-            OverdueTasks = taskStats.OverdueCount,
-            TasksCreatedThisWeek = taskStats.CreatedThisWeekCount,
-            TasksCompletedThisWeek = taskStats.CompletedThisWeekCount,
-            AverageTaskAgeDays = taskStats.AverageTaskAgeDays,
+            TaskStats = taskStats,
             ActivitiesThisWeek = activityCount,
             Trend = trend,
-            DocumentStats = documentStats,
-            WorkspaceMode = workspaceMode?.ToString(),
+            WorkspaceMode = WorkspaceMode.Normal,
         };
     }
 
     /// <inheritdoc />
-    public async Task<HealthData> GetOrganizationHealthDataAsync(int organizationId)
+    public async Task<DocumentWorkspaceHealthData> GetDocumentWorkspaceHealthDataAsync(int workspaceId)
+    {
+        var oneWeekAgo = StatisticsDateHelper.GetDaysAgo(7);
+
+        var documentStats = await _statisticsCollector.GetWorkspaceItemStatisticsAsync(workspaceId);
+        var memberCount = await _statisticsCollector.GetWorkspaceMemberCountAsync(workspaceId);
+        var activityCount = await _statisticsCollector.GetWorkspaceActivityCountAsync(workspaceId, oneWeekAgo);
+
+        return new DocumentWorkspaceHealthData
+        {
+            TotalMembers = memberCount,
+            DocumentStats = documentStats,
+            ActivitiesThisWeek = activityCount,
+            WorkspaceMode = WorkspaceMode.Document,
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<OrganizationHealthData> GetOrganizationHealthDataAsync(int organizationId)
     {
         var oneWeekAgo = StatisticsDateHelper.GetDaysAgo(7);
 
@@ -84,15 +92,10 @@ public class HealthDataProvider : IHealthDataProvider
         // 組織全体の場合もドキュメント統計を含める（バランス診断用）
         var documentStats = await _statisticsCollector.GetOrganizationItemStatisticsAsync(organizationId);
 
-        return new HealthData
+        return new OrganizationHealthData
         {
             TotalMembers = memberCount,
-            TotalTasks = taskStats.TotalCount,
-            CompletedTasks = taskStats.CompletedCount,
-            OverdueTasks = taskStats.OverdueCount,
-            TasksCreatedThisWeek = taskStats.CreatedThisWeekCount,
-            TasksCompletedThisWeek = taskStats.CompletedThisWeekCount,
-            AverageTaskAgeDays = taskStats.AverageTaskAgeDays,
+            TaskStats = taskStats,
             ActivitiesThisWeek = activityCount,
             Trend = trend,
             DocumentStats = documentStats,

@@ -84,13 +84,12 @@ public class WorkspaceHealthBehavior : IBotBehavior
             .Select(w => w.Mode)
             .FirstOrDefaultAsync();
 
-        // モードを渡してデータ取得（ドキュメントモードの場合は追加統計も取得）
-        var healthData = await _healthDataProvider.GetWorkspaceHealthDataAsync(
-            context.WorkspaceId.Value,
-            workspaceMode);
-
         // モードに応じた視点を選択
         var isDocumentMode = workspaceMode == WorkspaceMode.Document;
+        HealthData healthData = isDocumentMode
+            ? await _healthDataProvider.GetDocumentWorkspaceHealthDataAsync(context.WorkspaceId.Value)
+            : await _healthDataProvider.GetTaskWorkspaceHealthDataAsync(context.WorkspaceId.Value);
+
         var perspectives = isDocumentMode ? DocumentPerspectives : ProjectPerspectives;
         var perspective = _perspectiveRotator.GetNext(Name, context.WorkspaceId.Value, perspectives);
 
