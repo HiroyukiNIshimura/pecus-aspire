@@ -12,6 +12,19 @@ using System.Text.Json;
 namespace Pecus.Services;
 
 /// <summary>
+/// 組織の健康診断における主要な用途スタイル
+/// </summary>
+internal enum OrganizationUsageStyle
+{
+    /// <summary>ナレッジベース（ドキュメント）中心</summary>
+    Document,
+    /// <summary>プロジェクト管理（タスク）中心</summary>
+    Tasks,
+    /// <summary>ドキュメントとプロジェクト管理のハイブリッド</summary>
+    Hybrid,
+}
+
+/// <summary>
 /// 健康診断サービス
 /// 生成AIを使用して組織/ワークスペースの健康状態を分析
 /// Redis キャッシュにより AI 呼び出しコストを削減
@@ -66,6 +79,8 @@ public class HealthAnalysisService
         // ワークスペース情報を先に取得（キャッシュキーにモード情報を含めるため）
         string? workspaceName = null;
         WorkspaceMode? workspaceMode = null;
+        OrganizationUsageStyle? organizationUsageStyle = null;
+
         if (request.Scope == HealthAnalysisScope.Workspace && request.WorkspaceId.HasValue)
         {
             var workspace = await _context.Workspaces
@@ -76,9 +91,14 @@ public class HealthAnalysisService
             workspaceName = workspace?.Name;
             workspaceMode = workspace?.Mode;
         }
+        else if (request.Scope == HealthAnalysisScope.Organization)
+        {
+            // 組織の使途スタイルを判定
+            organizationUsageStyle = await DetermineOrganizationUsageStyleAsync(organizationId, cancellationToken);
+        }
 
-        // キャッシュキーを生成（モード情報を含める）
-        var cacheKey = BuildCacheKey(organizationId, request, workspaceMode);
+        // キャッシュキーを生成（モード情報・用途スタイルを含める）
+        var cacheKey = BuildCacheKey(organizationId, request, workspaceMode, organizationUsageStyle);
         var db = _redis.GetDatabase();
 
         // キャッシュを確認
@@ -121,7 +141,7 @@ public class HealthAnalysisService
         }
 
         // プロンプトを構築
-        var systemPrompt = BuildSystemPrompt(request.AnalysisType, request.Scope, workspaceName, workspaceMode);
+        var systemPrompt = BuildSystemPrompt(request.AnalysisType, request.Scope, workspaceName, workspaceMode, organizationUsageStyle);
         var userPrompt = BuildUserPrompt(healthData, request.AnalysisType);
 
         try
@@ -168,14 +188,21 @@ public class HealthAnalysisService
     private static string BuildCacheKey(
         int organizationId,
         HealthAnalysisRequest request,
-        WorkspaceMode? workspaceMode)
+        WorkspaceMode? workspaceMode,
+        OrganizationUsageStyle? organizationUsageStyle = null)
     {
         var workspaceIdPart = request.Scope == HealthAnalysisScope.Workspace && request.WorkspaceId.HasValue
             ? request.WorkspaceId.Value.ToString()
             : "all";
 
         var scopeModePart = request.Scope == HealthAnalysisScope.Organization
-            ? "organization"
+            ? organizationUsageStyle switch
+            {
+                OrganizationUsageStyle.Document => "organization-document",
+                OrganizationUsageStyle.Tasks => "organization-tasks",
+                OrganizationUsageStyle.Hybrid => "organization-hybrid",
+                _ => "organization-unknown",
+            }
             : workspaceMode switch
             {
                 WorkspaceMode.Document => "workspace-document",
@@ -183,8 +210,8 @@ public class HealthAnalysisService
                 _ => "workspace-unknown",
             };
 
-        // v2: workspaceMode をキーに含めることでモード変更時のキャッシュ不整合を防ぐ
-        return $"{CacheKeyPrefix}:v2:{organizationId}:{scopeModePart}:{workspaceIdPart}:{request.AnalysisType}";
+        // v3: organizationUsageStyle をキーに含めることでスタイル変更時のキャッシュ不整合を防ぐ
+        return $"{CacheKeyPrefix}:v3:{organizationId}:{scopeModePart}:{workspaceIdPart}:{request.AnalysisType}";
     }
 
     /// <summary>
@@ -201,60 +228,118 @@ public class HealthAnalysisService
     }
 
     /// <summary>
-    /// ワークスペースモードに応じた評価コンテキストを構築
+    /// ワークスペースモード・組織用途スタイルに応じた評価コンテキストを構築
     /// </summary>
     /// <remarks>
+    /// ワークスペース診断：
     /// - ドキュメントモード: 情報の鮮度・循環・継続性を評価
-    /// - 組織全体: プロジェクトとドキュメントのバランスを評価
     /// - 通常モード: 従来のタスク進行評価（追加コンテキストなし）
+    ///
+    /// 組織全体診断：
+    /// - Document スタイル: ナレッジベースとしての機能性を評価
+    /// - Tasks スタイル: プロジェクト管理としての機能性を評価
+    /// - Hybrid スタイル: バランスを評価
     /// </remarks>
-    private static string BuildModeContext(HealthAnalysisScope scope, WorkspaceMode? workspaceMode)
+    private static string BuildModeContext(HealthAnalysisScope scope, WorkspaceMode? workspaceMode, OrganizationUsageStyle? organizationUsageStyle = null)
     {
-        // ドキュメントモードのワークスペース
-        if (scope == HealthAnalysisScope.Workspace && workspaceMode == WorkspaceMode.Document)
+        // ワークスペース診断
+        if (scope == HealthAnalysisScope.Workspace)
         {
-            return """
+            return workspaceMode switch
+            {
+                WorkspaceMode.Document => """
 
-            【重要：評価の基準】
-            このワークスペースは「ドキュメント管理（ナレッジベース）」モードです。
-            通常のプロジェクト管理とは異なり、以下の観点で健康状態を診断してください：
+                【重要：評価の基準】
+                このワークスペースは「ドキュメント管理（ナレッジベース）」モードです。
+                通常のプロジェクト管理とは異なり、以下の観点で健康状態を診断してください：
 
-            📚 ドキュメントの健康指標：
-            - 情報の鮮度（長期間更新されていない記事はないか）
-            - 知識の循環（特定の記事だけ孤立していないか、活用されているか）
-            - 更新の継続性（ナレッジの蓄積が止まっていないか）
-            - 貢献の分散（特定の人だけが編集していないか）
+                📚 ドキュメントの健康指標：
+                - 情報の鮮度（長期間更新されていない記事はないか）
+                - 知識の循環（特定の記事だけ孤立していないか、活用されているか）
+                - 更新の継続性（ナレッジの蓄積が止まっていないか）
+                - 貢献の分散（特定の人だけが編集していないか）
 
-            ⚠️ 言い換えルール：
-            - 「タスクの遅れ」→「情報の陳腐化」「更新の停滞」
-            - 「期限切れ」→「長期未更新」「放置された記事」
-            - 「完了率」→「更新頻度」「活性度」
-            - 「担当者未設定」→「管理者不在のドキュメント」
-            """;
+                ⚠️ 言い換えルール：
+                - 「タスクの遅れ」→「情報の陳腐化」「更新の停滞」
+                - 「期限切れ」→「長期未更新」「放置された記事」
+                - 「完了率」→「更新頻度」「活性度」
+                - 「担当者未設定」→「管理者不在のドキュメント」
+                """,
+                WorkspaceMode.Normal => """
+
+                【重要：評価の基準】
+                このワークスペースは「プロジェクト管理（タスク管理）」モードです。
+                以下の観点で健康状態を診断してください：
+
+                🎯 評価の重点：
+                - タスク消化率（完了率、今週の進捗）
+                - 期限遵守（期限超過タスクの量）
+                - アサイン状況（担当者未設定のタスクはないか）
+                - メンバーの稼働状況（均等に作業が配分されているか）
+
+                ドキュメント更新の頻度は、このワークスペースでの評価ポイントになりません。
+                """,
+                _ => "",
+            };
         }
 
         // 組織全体の診断
         if (scope == HealthAnalysisScope.Organization)
         {
-            return """
+            return organizationUsageStyle switch
+            {
+                OrganizationUsageStyle.Document => """
 
-            【重要：評価の基準】
-            組織全体の診断です。この組織には「プロジェクト管理」と「ドキュメント管理」の両方のワークスペースが含まれています。
+                【重要：評価の基準】
+                この組織は「ナレッジベース（ドキュメント管理）」中心で利用されています。
+                以下の観点で健康状態を診断してください：
 
-            🔍 2つの観点でバランスを見てください：
-            1. プロジェクトの進行状況（タスク消化率、期限遵守など）
-            2. ナレッジの蓄積状況（ドキュメントの更新頻度、情報の鮮度）
+                📚 評価の重点：
+                - 情報の鮮度（長期間更新されていないドキュメントはないか）
+                - 知識の循環（ドキュメント同士の関連付けはどうか、活用されているか）
+                - 更新の継続性（新しい知識の蓄積は止まっていないか）
+                - 貢献の分散（特定の人だけが編集していないか）
 
-            ⚖️ バランスの診断ポイント：
-            - 開発は進んでいるがドキュメントが放置 → 属人化リスク、技術的負債の蓄積
-            - ドキュメント整備ばかりで開発停滞 → 分析麻痺、過剰な計画主義
-            - 両方が健全 → 持続可能な開発体制
+                タスクの完了度やアサイン状況は、この組織での評価ポイントになりません。
+                """,
+                OrganizationUsageStyle.Tasks => """
 
-            診断結果には、このバランスについても一言触れてください。
-            """;
+                【重要：評価の基準】
+                この組織は「プロジェクト管理（タスク管理）」中心で利用されています。
+                以下の観点で健康状態を診断してください：
+
+                🎯 評価の重点：
+                - タスク消化率（完了率、今週の進捗）
+                - 期限遵守（期限超過タスクの量）
+                - アサイン状況（担当者未設定のタスクはないか）
+                - メンバーの稼働状況（均等に作業が配分されているか）
+
+                ドキュメント更新の頻度は、この組織での評価ポイントになりません。
+                ナレッジベースとして機能していなくても、プロジェクト進行が健全なら問題ないと判断してください。
+                """,
+                OrganizationUsageStyle.Hybrid or _ => """
+
+                【重要：評価の基準】
+                この組織は「プロジェクト管理」と「ドキュメント管理」の両方を活用しています。
+                以下の観点でバランスを見てください：
+
+                🔍 2つの観点でバランスを見る：
+                1. プロジェクトの進行状況（タスク消化率、期限遵守など）
+                2. ナレッジの蓄積状況（ドキュメントの更新頻度、情報の鮮度）
+
+                ⚖️ 理想的な状態：
+                - タスク進捗とドキュメント更新が両立している
+                - 仕事の記録と知識の蓄積が同時に進んでいる
+
+                ⚠️ 気をつけたい状態：
+                - 開発は進むがドキュメントが放置 → 属人化リスク、技術的負債の蓄積
+                - ドキュメント整備に注力しすぎてタスク進捗が停滞 → 分析麻痺、計画倒れ
+
+                診断結果では、両方の観点から状況を評価し、改善の優先順位を提示してください。
+                """,
+            };
         }
 
-        // 通常のプロジェクト管理モード（追加コンテキストなし）
         return "";
     }
 
@@ -265,14 +350,15 @@ public class HealthAnalysisService
         HealthAnalysisType analysisType,
         HealthAnalysisScope scope,
         string? workspaceName,
-        WorkspaceMode? workspaceMode)
+        WorkspaceMode? workspaceMode,
+        OrganizationUsageStyle? organizationUsageStyle = null)
     {
         var targetName = scope == HealthAnalysisScope.Workspace && workspaceName != null
             ? $"ワークスペース「{workspaceName}」"
             : "組織全体";
 
-        // モードに応じた評価軸の定義を生成
-        var modeContext = BuildModeContext(scope, workspaceMode);
+        // モード・用途スタイルに応じた評価軸の定義を生成
+        var modeContext = BuildModeContext(scope, workspaceMode, organizationUsageStyle);
 
         var basePrompt = $"""
             あなたは組織の頼れるアドバイザーです。
@@ -405,6 +491,47 @@ public class HealthAnalysisService
 
             上記データに基づいて、{typeLabel}を行ってください。
             """;
+    }
+
+    /// <summary>
+    /// 組織内のワークスペース Mode 分布から、組織の使途スタイルを判定
+    /// </summary>
+    /// <remarks>
+    /// - Document ワークスペースが70%以上 → Document
+    /// - Normal（タスク）ワークスペースが70%以上 → Tasks
+    /// - それ以外 → Hybrid
+    /// </remarks>
+    private async Task<OrganizationUsageStyle> DetermineOrganizationUsageStyleAsync(
+        int organizationId,
+        CancellationToken cancellationToken)
+    {
+        var workspaceFractions = await _context.Workspaces
+            .AsNoTracking()
+            .Where(w => w.OrganizationId == organizationId)
+            .GroupBy(w => w.Mode)
+            .Select(g => new { Mode = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        if (workspaceFractions.Count == 0)
+        {
+            return OrganizationUsageStyle.Hybrid;
+        }
+
+        var totalCount = workspaceFractions.Sum(x => x.Count);
+        var documentCount = workspaceFractions.FirstOrDefault(x => x.Mode == WorkspaceMode.Document)?.Count ?? 0;
+        var taskCount = workspaceFractions.FirstOrDefault(x => x.Mode == WorkspaceMode.Normal)?.Count ?? 0;
+
+        var documentRatio = (double)documentCount / totalCount;
+        var taskRatio = (double)taskCount / totalCount;
+
+        const double ThresholdRatio = 0.7;
+
+        return (documentRatio, taskRatio) switch
+        {
+            ( >= ThresholdRatio, _) => OrganizationUsageStyle.Document,
+            (_, >= ThresholdRatio) => OrganizationUsageStyle.Tasks,
+            _ => OrganizationUsageStyle.Hybrid,
+        };
     }
 
     /// <summary>
