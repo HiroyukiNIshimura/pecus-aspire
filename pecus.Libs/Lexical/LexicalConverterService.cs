@@ -97,13 +97,28 @@ public class LexicalConverterService : ILexicalConverterService, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to convert Markdown to Lexical JSON");
+            var errorMessage = ex.Message;
+            var detailedMessage = ex.ToString();
+
+            if (ex.InnerException != null)
+            {
+                errorMessage = $"{errorMessage} (Inner: {ex.InnerException.Message})";
+            }
+
+            _logger.LogError(
+                ex,
+                "Failed to convert Markdown to Lexical JSON. Exception: {ExceptionType}, Message: {Message}, InnerException: {InnerException}, Details: {Details}",
+                ex.GetType().FullName,
+                ex.Message ?? "(null)",
+                ex.InnerException?.GetType().FullName ?? "(none)",
+                detailedMessage
+            );
 
             return new LexicalConvertResult
             {
                 Success = false,
                 Result = string.Empty,
-                ErrorMessage = ex.Message,
+                ErrorMessage = string.IsNullOrEmpty(errorMessage) ? ex.GetType().Name : errorMessage,
                 ProcessingTimeMs = 0
             };
         }
@@ -172,13 +187,30 @@ public class LexicalConverterService : ILexicalConverterService, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to convert Lexical JSON to {Type}", type);
+            var errorMessage = ex.Message;
+            var detailedMessage = ex.ToString(); // スタックトレース含む完全な情報
+
+            // InnerExceptionがある場合はそれも含める
+            if (ex.InnerException != null)
+            {
+                errorMessage = $"{errorMessage} (Inner: {ex.InnerException.Message})";
+            }
+
+            _logger.LogError(
+                ex,
+                "Failed to convert Lexical JSON to {Type}. Exception: {ExceptionType}, Message: {Message}, InnerException: {InnerException}, Details: {Details}",
+                type,
+                ex.GetType().FullName,
+                ex.Message ?? "(null)",
+                ex.InnerException?.GetType().FullName ?? "(none)",
+                detailedMessage
+            );
 
             return new LexicalConvertResult
             {
                 Success = false,
                 Result = string.Empty,
-                ErrorMessage = ex.Message,
+                ErrorMessage = string.IsNullOrEmpty(errorMessage) ? ex.GetType().Name : errorMessage,
                 ProcessingTimeMs = 0
             };
         }
