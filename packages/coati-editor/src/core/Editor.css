@@ -400,8 +400,8 @@ i.bold {
   background-image: url(../images/icons/caret-right-fill.svg);
 }
 
-.notion-like-editor .icon.nle-dropdown-more,
-.notion-like-editor i.icon.nle-dropdown-more {
+.notion-like-editor .icon.dropdown-more,
+.notion-like-editor i.icon.dropdown-more {
   background-image: url(../images/icons/dropdown-more.svg);
 }
 
@@ -471,21 +471,25 @@ i.bold {
   background-image: url(../images/icons/youtube.svg);
 }
 
+.notion-like-editor .icon.left-align,
 .notion-like-editor i.left-align,
 .notion-like-editor i.icon.left-align {
   background-image: url(../images/icons/text-left.svg);
 }
 
+.notion-like-editor .icon.center-align,
 .notion-like-editor i.center-align,
 .notion-like-editor i.icon.center-align {
   background-image: url(../images/icons/text-center.svg);
 }
 
+.notion-like-editor .icon.right-align,
 .notion-like-editor i.right-align,
 .notion-like-editor i.icon.right-align {
   background-image: url(../images/icons/text-right.svg);
 }
 
+.notion-like-editor .icon.justify-align,
 .notion-like-editor i.justify-align,
 .notion-like-editor i.icon.justify-align {
   background-image: url(../images/icons/justify.svg);

@@ -132,6 +132,7 @@ function DropDownItems({
 
   return (
     <DropDownContext.Provider value={contextValue}>
+      {/** biome-ignore lint/a11y/noStaticElementInteractions: false positive */}
       <div className="notion-like-editor nle-dropdown" ref={dropDownRef} onKeyDown={handleKeyDown}>
         {children}
       </div>

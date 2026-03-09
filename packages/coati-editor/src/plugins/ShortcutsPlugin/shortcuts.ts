@@ -180,7 +180,7 @@ export function isDecreaseFontSize(event: KeyboardEvent): boolean {
 
 export function isClearFormatting(event: KeyboardEvent): boolean {
   const { code } = event;
-  return code === 'Backslash' && isModifierMatch(event, CONTROL_OR_META);
+  return (code === 'Backslash' || code === 'IntlYen') && isModifierMatch(event, CONTROL_OR_META);
 }
 
 export function isInsertLink(event: KeyboardEvent): boolean {
