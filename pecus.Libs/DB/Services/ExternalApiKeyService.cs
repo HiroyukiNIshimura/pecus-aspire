@@ -112,6 +112,12 @@ public class ExternalApiKeyService
             return null;
         }
 
+        if (entity.IsRevoked)
+        {
+            _logger.LogWarning("Revoked API key used: KeyId={KeyId}", entity.Id);
+            return null;
+        }
+
         return entity;
     }
 

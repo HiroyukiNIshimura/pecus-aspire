@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Pecus.Authentication;
+using Pecus.Libs.DB;
 using Pecus.Services;
 
 namespace Pecus.Controllers.External;
@@ -13,20 +12,18 @@ namespace Pecus.Controllers.External;
 /// X-API-KEY ヘッダーによるAPIキー認証が必要です。
 /// 組織スコープで動作し、認証されたキーの所属組織のデータのみアクセス可能です。
 /// </remarks>
-[ApiController]
-[Route("api/external")]
-[Authorize(AuthenticationSchemes = ApiKeyAuthenticationOptions.SchemeName)]
-[Produces("application/json")]
-[Tags("External API")]
-public class ExternalController(
-    IExternalWorkspaceItemService externalWorkspaceItemService) : ControllerBase
+public class ExternalController : BaseExternalApiController
 {
-    /// <summary>
-    /// 認証済みAPIキーの組織IDを取得
-    /// </summary>
-    protected int CurrentOrganizationId =>
-        int.Parse(User.FindFirst("organization_id")?.Value
-            ?? throw new InvalidOperationException("organization_id claim not found"));
+    private readonly IExternalWorkspaceItemService _externalWorkspaceItemService;
+
+    public ExternalController(
+        IExternalWorkspaceItemService externalWorkspaceItemService,
+        ApplicationDbContext context,
+        ILogger<ExternalController> logger)
+        : base(context, logger)
+    {
+        _externalWorkspaceItemService = externalWorkspaceItemService;
+    }
 
     /// <summary>
     /// 疎通確認用エンドポイント
@@ -44,7 +41,7 @@ public class ExternalController(
         return TypedResults.Ok(new PingResponse
         {
             Message = request.Message,
-            OrganizationCode = User.FindFirst("organization_code")?.Value ?? "",
+            OrganizationCode = GetOrganizationCode(),
             Timestamp = DateTimeOffset.UtcNow,
         });
     }
@@ -72,8 +69,8 @@ public class ExternalController(
         [FromRoute] string workspaceCode,
         [FromBody] CreateExternalWorkspaceItemRequest request)
     {
-        var result = await externalWorkspaceItemService.CreateItemAsync(
-            CurrentOrganizationId,
+        var result = await _externalWorkspaceItemService.CreateItemAsync(
+            CurrentOrganizationId,  // 基底クラスのプロパティを使用
             workspaceCode,
             request);
 
