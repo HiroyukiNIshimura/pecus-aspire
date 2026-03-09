@@ -1947,7 +1947,7 @@ i.icon.plus {
 }
 .notion-like-editor .icon.font-color,
 .notion-like-editor i.icon.font-color {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 512 512"><path fill="%23777" d="M221.631 109 109.92 392h58.055l24.079-61h127.892l24.079 61h58.055L290.369 109Zm-8.261 168L256 169l42.63 108Z"/></svg>');
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 512 512"><path fill="currentColor" d="M221.631 109 109.92 392h58.055l24.079-61h127.892l24.079 61h58.055L290.369 109Zm-8.261 168L256 169l42.63 108Z"/></svg>');
 }
 .notion-like-editor .icon.font-family,
 .notion-like-editor i.icon.font-family {
@@ -1955,7 +1955,7 @@ i.icon.plus {
 }
 .notion-like-editor .icon.bg-color,
 .notion-like-editor i.icon.bg-color {
-  background-image: url('data:image/svg+xml,<svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="%23fff" fill-opacity=".01" d="M0 0h48v48H0z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M37 37a4 4 0 0 0 4-4c0-1.473-1.333-3.473-4-6-2.667 2.527-4 4.527-4 6a4 4 0 0 0 4 4Z" fill="%23777"/><path d="m20.854 5.504 3.535 3.536" stroke="%23777" stroke-width="4" stroke-linecap="round"/><path d="M23.682 8.333 8.125 23.889 19.44 35.203l15.556-15.557L23.682 8.333Z" stroke="%23777" stroke-width="4" stroke-linejoin="round"/><path d="m12 20.073 16.961 5.577M4 43h40" stroke="%23777" stroke-width="4" stroke-linecap="round"/></svg>');
+  background-image: url('data:image/svg+xml,<svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="%23fff" fill-opacity=".01" d="M0 0h48v48H0z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M37 37a4 4 0 0 0 4-4c0-1.473-1.333-3.473-4-6-2.667 2.527-4 4.527-4 6a4 4 0 0 0 4 4Z" fill="currentColor"/><path d="m20.854 5.504 3.535 3.536" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M23.682 8.333 8.125 23.889 19.44 35.203l15.556-15.557L23.682 8.333Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m12 20.073 16.961 5.577M4 43h40" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>');
 }
 .notion-like-editor .icon.table {
   background-color: var(--color-neutral);
@@ -2330,16 +2330,16 @@ i.icon.plus {
   height: 1px;
 }
 @media screen and (max-width: 1100px) {
-  .notion-like-editor .nle-dropdown-button-text {
+  .notion-like-editor .dropdown-button-text {
     display: none !important;
   }
-  .notion-like-editor.dialog-dropdown > .nle-dropdown-button-text {
+  .notion-like-editor .dialog-dropdown > .dropdown-button-text {
     display: flex !important;
   }
-  .notion-like-editor .font-size .nle-dropdown-button-text {
+  .notion-like-editor .font-size .dropdown-button-text {
     display: flex !important;
   }
-  .notion-like-editor.code-language .nle-dropdown-button-text {
+  .notion-like-editor .code-language .dropdown-button-text {
     display: flex !important;
   }
 }
@@ -2849,7 +2849,7 @@ i.icon.plus {
 .notion-like-editor .toolbar-item.font-size-input {
   font-weight: bold;
   font-size: 14px;
-  color: #f3f4f6;
+  color: #374151;
   border-radius: 5px;
   border-color: #9ca3af;
   height: 15px;
@@ -2868,7 +2868,7 @@ i.icon.plus {
   height: 20px;
   text-align: left;
   padding-right: 10px;
-  color: #d9e1ef;
+  color: #374151;
 }
 .notion-like-editor .toolbar .toolbar-item .icon {
   display: flex;
@@ -3062,7 +3062,7 @@ i.icon.plus {
   display: flex;
   align-items: center;
 }
-.notion-like-editor .toolbar .block-controls .nle-dropdown-button-text {
+.notion-like-editor .toolbar .block-controls .dropdown-button-text {
   width: 7em;
   text-align: left;
   overflow: hidden;
