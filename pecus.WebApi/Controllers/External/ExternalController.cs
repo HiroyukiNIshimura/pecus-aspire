@@ -7,6 +7,7 @@ namespace Pecus.Controllers.External;
 
 /// <summary>
 /// 外部公開APIコントローラー（APIキー認証）
+/// 外部APIに関してはまだ仕様が固まっていないため、暫定的にこのコントローラーにまとめて実装しています。
 /// </summary>
 /// <remarks>
 /// X-API-KEY ヘッダーによるAPIキー認証が必要です。
