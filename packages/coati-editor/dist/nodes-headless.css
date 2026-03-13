@@ -269,7 +269,7 @@
 .NotionLikeEditorTheme__textBold {
   font-weight: bold;
 }
-.NotionLikeEditorTheme__paragraph mark {
+.NotionLikeEditorTheme__paragraph mark:not(.NotionLikeEditorTheme__mark) {
   background-color: unset;
 }
 .NotionLikeEditorTheme__textHighlight {
@@ -800,21 +800,22 @@
   color: var(--color-error);
 }
 .NotionLikeEditorTheme__mark {
-  background: color-mix(in oklab, var(--color-warning) 14%, transparent);
-  border-bottom: 2px solid color-mix(in oklab, var(--color-warning) 30%, transparent);
+  background: color-mix(in oklab, var(--color-warning) 30%, transparent);
+  border-bottom: 2px solid color-mix(in oklab, var(--color-warning) 60%, transparent);
   padding-bottom: 2px;
+  border-radius: 2px;
 }
 .NotionLikeEditorTheme__markOverlap {
-  background: color-mix(in oklab, var(--color-warning) 30%, transparent);
-  border-bottom: 2px solid color-mix(in oklab, var(--color-warning) 70%, transparent);
+  background: color-mix(in oklab, var(--color-warning) 45%, transparent);
+  border-bottom: 2px solid color-mix(in oklab, var(--color-warning) 80%, transparent);
 }
 .NotionLikeEditorTheme__mark.selected {
-  background: color-mix(in oklab, var(--color-warning) 50%, transparent);
+  background: color-mix(in oklab, var(--color-warning) 55%, transparent);
   border-bottom: 2px solid var(--color-warning);
 }
 .NotionLikeEditorTheme__markOverlap.selected {
   background: color-mix(in oklab, var(--color-warning) 70%, transparent);
-  border-bottom: 2px solid color-mix(in oklab, var(--color-warning) 70%, transparent);
+  border-bottom: 2px solid var(--color-warning);
 }
 .NotionLikeEditorTheme__embedBlock {
   user-select: none;
