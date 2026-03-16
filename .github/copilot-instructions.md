@@ -4,8 +4,8 @@ applyTo: "*"
 ## Pecus Aspire — AI エージェント最小指示書
 
 メタ情報
-- 版: v1.3
-- 更新日: 2026-01-10
+- 版: v1.4
+- 更新日: 2026-03-16
 - 文書責任: Pecus Aspire Maintainers
 
 ## 短い要約（エージェント向け / 必読）
@@ -18,8 +18,10 @@ applyTo: "*"
 ### プロジェクト基本情報
 - 開発コード: `pecus`、アプリケーション名: `Coati`
 - エントリ: `pecus.AppHost/AppHost.cs`（Aspire がサービスの起動順・依存を管理）
-- 主要プロジェクト: `pecus.WebApi`, `pecus.BackFire`, `pecus.DbManager`, `pecus.Libs`, `pecus.Frontend`
+- 主要プロジェクト: `pecus.WebApi`, `pecus.BackFire`, `pecus.DbManager`, `pecus.Libs`, `pecus.Frontend`, `pecus.LexicalConverter`, `pecus.Protos`
+- 共有パッケージ: `packages/coati-editor`（Lexical ベースリッチテキストエディタ）
 - 技術スタック: .NET 10 / EF Core 10 / .NET Aspire 13.1 / Next.js 16.1 / React 19.2 / Tailwind CSS 4.1 / FlyonUI 2.4
+- テスト基盤: なし（テストプロジェクト・テストファイルは存在しない。エージェントはテスト作成を提案しないこと）
 
 ### 絶対禁止事項
 - **API クライアント生成（`npm run full:api`）の実行禁止** — 人間の開発者のみが実行。必ず作業を中断して報告
@@ -29,6 +31,33 @@ applyTo: "*"
 - **横断変更の無断実施禁止** — 複数プロジェクトを触る場合は承認を得る
 - **リファクタリング時の業務ロジック変更禁止** — 変更が必要な場合は報告
 
+
+## サービスアーキテクチャ（Aspire 依存関係）
+
+```
+PostgreSQL (pgroonga) ─┬─→ dbmanager (マイグレーション・シード)
+Redis (バックエンド)   ─┤   ↓
+LexicalConverter (gRPC)─┼─→ backfire (Hangfire バックグラウンドジョブ)
+                        └─→ pecusapi (REST API) ←─ dbmanager, backfire
+Redis (フロントエンド)  ──→ frontend (Next.js SSR) ←─ pecusapi
+```
+
+- **Redis は 2 インスタンス**: バックエンド用（キャッシュ・SignalR backplane）とフロントエンド用（セッション管理）
+- 起動順・依存は `pecus.AppHost/AppHost.cs` で定義
+
+## フロントエンド ルートグループ構造
+
+```
+src/app/
+  (workspace-full)/   — ワークスペース関連ページ
+  (dashboard)/        — ダッシュボード
+  (admin-full)/       — 管理者ページ
+  (profile)/          — プロフィール
+  (entrance)/         — ログイン・サインアップ
+  (backoffice-full)/  — バックオフィス
+  api/                — API Routes
+  help/               — ヘルプページ
+```
 
 ## 参照ドキュメント
 
@@ -47,8 +76,10 @@ applyTo: "*"
 
 ## 開発フロー／コマンド
 
+- 環境セットアップ: `node scripts/generate-appsettings.js -D`（開発用設定ファイル生成。各プロジェクトの `appsettings.json` を生成）
 - バックエンド: `dotnet format pecus.sln` → `dotnet clean pecus.sln`→ `dotnet build pecus.sln` → `dotnet run --project pecus.AppHost`（エージェントの実行禁止）
 - フロントエンド: `cd pecus.Frontend` → `npm run lint` → `npm run format` → `npx tsc --noEmit` → `npm run build`（エージェントの実行禁止） → `npm run dev`（エージェントの実行禁止）
+- 共有パッケージ: `cd packages/coati-editor && npm run build`（エディタ変更時）
 - API クライアント生成: `npm run full:api`（エージェントの実行禁止）
 
 ## プロジェクト特有のルール（必ず守る）

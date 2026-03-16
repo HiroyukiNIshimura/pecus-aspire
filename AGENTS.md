@@ -16,5 +16,6 @@
 | [lexical-converter-grpc](.github/skills/lexical-converter-grpc/SKILL.md) | gRPC 経由で Lexical JSON を HTML/Markdown/PlainText に変換、または Markdown を Lexical JSON に変換する手順と実装ガイド。 \| gRPC 経由で Lexical JSON を各形式（HTML/Markdown/PlainText）に変換、または Markdown を Lexical JSON に変換するためのスキル。 |
 | [make-skill-template](.github/skills/make-skill-template/SKILL.md) | Create new Agent Skills for GitHub Copilot from prompts or by duplicating this template. Use when... \| A meta-skill for creating new Agent Skills. Use this skill when you need to scaffold a new skill ... |
 | [refactor](.github/skills/refactor/SKILL.md) | Surgical code refactoring to improve maintainability without changing behavior. Covers extracting... \| Use this skill when:; Code is hard to understand or maintain; Functions/classes are too large; Co... |
+| [suggest-awesome-github-copilot-instructions](.github/skills/suggest-awesome-github-copilot-instructions/SKILL.md) | Suggest relevant GitHub Copilot instruction files from the awesome-copilot repository based on cu... \| Analyze current repository context and suggest relevant copilot-instruction files from the [GitHu... |
 
 <!-- skill-ninja-END -->
