@@ -6,6 +6,7 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 
 namespace Pecus.Libs.Hangfire.Tasks;
 
@@ -18,6 +19,7 @@ public class AgendaEmailTask
     private readonly ApplicationDbContext _context;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _config;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly ILogger<AgendaEmailTask> _logger;
 
     /// <summary>
@@ -27,11 +29,13 @@ public class AgendaEmailTask
         ApplicationDbContext context,
         IEmailService emailService,
         IConfiguration config,
+        FrontendUrlResolver frontendUrlResolver,
         ILogger<AgendaEmailTask> logger)
     {
         _context = context;
         _emailService = emailService;
         _config = config;
+        _frontendUrlResolver = frontendUrlResolver;
         _logger = logger;
     }
 
@@ -120,7 +124,7 @@ public class AgendaEmailTask
             return;
         }
 
-        var baseUrl = _config["App:BaseUrl"] ?? "https://app.example.com";
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         var agendaUrl = $"{baseUrl}/agendas/{agenda.Id}";
 
         switch (notification.Type)
