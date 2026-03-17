@@ -26,6 +26,8 @@ interface AgendaFormClientProps {
   editScope?: EditScope;
   /** 対象回のインデックス（繰り返しアジェンダで特定回を編集する場合） */
   occurrenceIndex?: number;
+  /** 対象回の開始日時（通知・メール deep link 用） */
+  occurrenceStartAt?: string;
 }
 
 export default function AgendaFormClient({
@@ -34,6 +36,7 @@ export default function AgendaFormClient({
   currentUserId,
   editScope,
   occurrenceIndex,
+  occurrenceStartAt,
 }: AgendaFormClientProps) {
   const router = useRouter();
   const notify = useNotify();
@@ -113,7 +116,10 @@ export default function AgendaFormClient({
           if (result.success) {
             notify.success('この回を更新しました');
             // 元のアジェンダの詳細ページへ遷移（インデックスを維持）
-            router.push(`/agendas/${initialData.id}?occurrence=${occurrenceIndex}`);
+            const occurrenceQuery = occurrenceStartAt
+              ? encodeURIComponent(occurrenceStartAt)
+              : occurrenceIndex.toString();
+            router.push(`/agendas/${initialData.id}?occurrence=${occurrenceQuery}`);
           } else {
             setError(result.message ?? 'この回の更新に失敗しました。');
           }
@@ -158,7 +164,11 @@ export default function AgendaFormClient({
   };
 
   const pageTitle = getPageTitle();
-  const backUrl = mode === 'edit' && initialData ? `/agendas/${initialData.id}` : '/agendas';
+  const occurrenceBackQuery =
+    mode === 'edit' && initialData && (occurrenceStartAt || occurrenceIndex !== undefined)
+      ? `?occurrence=${encodeURIComponent(occurrenceStartAt ?? occurrenceIndex!.toString())}`
+      : '';
+  const backUrl = mode === 'edit' && initialData ? `/agendas/${initialData.id}${occurrenceBackQuery}` : '/agendas';
 
   return (
     <div className="flex flex-1 flex-col p-4 md:p-6">

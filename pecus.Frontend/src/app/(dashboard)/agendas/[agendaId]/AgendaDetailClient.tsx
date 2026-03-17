@@ -18,6 +18,8 @@ interface AgendaDetailClientProps {
   fetchError: string | null;
   /** 特定回のインデックス（タイムラインからのリンク経由） */
   occurrenceIndex?: number;
+  /** 特定回の開始日時（通知・メール deep link 用） */
+  occurrenceStartAt?: string;
 }
 
 export default function AgendaDetailClient({
@@ -25,6 +27,7 @@ export default function AgendaDetailClient({
   exceptions: initialExceptions,
   fetchError,
   occurrenceIndex,
+  occurrenceStartAt,
 }: AgendaDetailClientProps) {
   const { currentUser } = useAppSettings();
   const router = useRouter();
@@ -159,6 +162,10 @@ export default function AgendaDetailClient({
   const handleEditScopeSelect = (scope: EditScope) => {
     setIsEditScopeModalOpen(false);
 
+    const occurrenceQuery = occurrenceStartAt
+      ? encodeURIComponent(occurrenceStartAt)
+      : effectiveOccurrenceIndex.toString();
+
     switch (scope) {
       case 'all':
         // シリーズ全体の編集
@@ -167,13 +174,13 @@ export default function AgendaDetailClient({
       case 'this-and-future':
         // この回以降の編集（シリーズ分割）
         // 編集ページにscope=fromパラメータを追加
-        router.push(`/agendas/${currentAgenda.id}/edit?scope=from&occurrence=${effectiveOccurrenceIndex}`);
+        router.push(`/agendas/${currentAgenda.id}/edit?scope=from&occurrence=${occurrenceQuery}`);
         break;
       case 'this-only':
         // この回のみの編集（例外作成）
         // 特定回の編集ページへ遷移（現時点では未実装のためアラート表示）
         // TODO: 特定回の編集ページが実装されたら遷移先を変更
-        router.push(`/agendas/${currentAgenda.id}/edit?scope=single&occurrence=${effectiveOccurrenceIndex}`);
+        router.push(`/agendas/${currentAgenda.id}/edit?scope=single&occurrence=${occurrenceQuery}`);
         break;
     }
   };

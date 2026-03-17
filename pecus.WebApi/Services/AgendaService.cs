@@ -10,6 +10,8 @@ using Pecus.Models.Responses.Agenda;
 
 namespace Pecus.Services;
 
+public sealed record AgendaDetailResult(AgendaResponse Agenda, int? ResolvedOccurrenceIndex);
+
 public class AgendaService
 {
     private readonly ApplicationDbContext _context;
@@ -109,6 +111,44 @@ public class AgendaService
         }
 
         return ToResponse(agenda, occurrenceIndex);
+    }
+
+    /// <summary>
+    /// アジェンダ詳細取得（occurrenceStartAt 解決結果付き）
+    /// </summary>
+    public async Task<AgendaDetailResult> GetByIdResolvedAsync(
+        long id,
+        int organizationId,
+        int? occurrenceIndex = null,
+        DateTimeOffset? occurrenceStartAt = null)
+    {
+        var query = _context.Agendas
+            .AsNoTracking()
+            .Include(a => a.CreatedByUser)
+            .Include(a => a.CancelledByUser)
+            .Include(a => a.Attendees)
+                .ThenInclude(at => at.User)
+            .Include(a => a.AttendanceResponses)
+            .Include(a => a.Exceptions)
+            .Where(a => a.Id == id && a.OrganizationId == organizationId);
+
+        var agenda = await query.FirstOrDefaultAsync();
+
+        if (agenda == null)
+        {
+            throw new NotFoundException("アジェンダが見つかりません。");
+        }
+
+        var resolvedOccurrenceIndex = occurrenceStartAt.HasValue
+            ? ResolveOccurrenceIndexByStartAt(agenda, occurrenceStartAt.Value)
+            : occurrenceIndex;
+
+        if (occurrenceStartAt.HasValue && !resolvedOccurrenceIndex.HasValue)
+        {
+            throw new BadRequestException("指定された開始日時に対応する回が見つかりません。");
+        }
+
+        return new AgendaDetailResult(ToResponse(agenda, resolvedOccurrenceIndex), resolvedOccurrenceIndex);
     }
 
     /// <summary>
@@ -1473,6 +1513,29 @@ public class AgendaService
             .OrderByDescending(o => o)
             .Cast<DateTimeOffset?>()
             .FirstOrDefault();
+    }
+
+    private static int? ResolveOccurrenceIndexByStartAt(Agenda agenda, DateTimeOffset occurrenceStartAt)
+    {
+        static DateTimeOffset Normalize(DateTimeOffset value) => value.ToUniversalTime();
+
+        if (Normalize(agenda.StartAt) == Normalize(occurrenceStartAt))
+        {
+            return 0;
+        }
+
+        var rangeEnd = occurrenceStartAt > agenda.StartAt
+            ? occurrenceStartAt.AddYears(1)
+            : agenda.StartAt.AddYears(10);
+
+        var occurrences = RecurrenceHelper.ExpandOccurrencesWithIndex(
+            agenda,
+            agenda.StartAt,
+            rangeEnd,
+            maxOccurrences: 5000);
+
+        var occurrence = occurrences.FirstOrDefault(o => Normalize(o.StartAt) == Normalize(occurrenceStartAt));
+        return occurrence?.Index;
     }
 
     private AgendaResponse ToResponse(Agenda agenda, int? occurrenceIndex = null)

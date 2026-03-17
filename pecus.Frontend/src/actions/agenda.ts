@@ -19,6 +19,16 @@ import type {
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
+export interface AgendaDetailFetchData {
+  agenda: AgendaResponse;
+  resolvedOccurrenceIndex?: number;
+}
+
+export interface AgendaOccurrenceQueryOptions {
+  occurrenceIndex?: number;
+  occurrenceStartAt?: string;
+}
+
 /**
  * 直近のアジェンダオカレンス一覧を取得（タイムライン表示用）
  * @deprecated 代わりに fetchRecentOccurrencesPaginated を使用してください
@@ -236,28 +246,43 @@ export async function updateOccurrence(
 /**
  * アジェンダ詳細を取得
  * @param agendaId アジェンダID
- * @param occurrenceIndex 特定回のインデックス（指定すると例外情報を適用した値を返す）
+ * @param options 特定回指定オプション
  */
 export async function fetchAgendaById(
   agendaId: number,
-  occurrenceIndex?: number,
-): Promise<ApiResponse<AgendaResponse>> {
+  options?: AgendaOccurrenceQueryOptions,
+): Promise<ApiResponse<AgendaDetailFetchData>> {
   try {
-    const api = await createPecusApiClients();
-    // occurrenceIndexが指定されている場合はクエリパラメータとして追加
-    // NOTE: APIクライアント再生成後は api.agenda.getApiAgendas1(agendaId, occurrenceIndex) を使用
-    if (occurrenceIndex !== undefined) {
-      const axios = await createAuthenticatedAxios();
-      const response = await axios.get<AgendaResponse>(`/api/agendas/${agendaId}`, {
-        params: { occurrenceIndex },
-      });
-      return { success: true, data: response.data };
+    const axios = await createAuthenticatedAxios();
+    const params: Record<string, number | string> = {};
+    if (options?.occurrenceStartAt) {
+      params.occurrenceStartAt = options.occurrenceStartAt;
+    } else if (options?.occurrenceIndex !== undefined) {
+      params.occurrenceIndex = options.occurrenceIndex;
     }
-    const result = await api.agenda.getApiAgendas1(agendaId);
-    return { success: true, data: result };
+
+    const response = await axios.get<AgendaResponse>(`/api/agendas/${agendaId}`, {
+      params,
+    });
+
+    const resolvedOccurrenceIndexHeader = response.headers['x-resolved-occurrence-index'];
+    const resolvedOccurrenceIndex =
+      typeof resolvedOccurrenceIndexHeader === 'string'
+        ? Number.parseInt(resolvedOccurrenceIndexHeader, 10)
+        : Array.isArray(resolvedOccurrenceIndexHeader) && resolvedOccurrenceIndexHeader[0]
+          ? Number.parseInt(resolvedOccurrenceIndexHeader[0], 10)
+          : undefined;
+
+    return {
+      success: true,
+      data: {
+        agenda: response.data,
+        resolvedOccurrenceIndex: Number.isNaN(resolvedOccurrenceIndex) ? undefined : resolvedOccurrenceIndex,
+      },
+    };
   } catch (error: unknown) {
     console.error('fetchAgendaById error:', error);
-    return handleApiErrorForAction<AgendaResponse>(error, {
+    return handleApiErrorForAction<AgendaDetailFetchData>(error, {
       defaultMessage: 'アジェンダの取得に失敗しました。',
     });
   }

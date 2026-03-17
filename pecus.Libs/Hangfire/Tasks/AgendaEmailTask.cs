@@ -125,7 +125,7 @@ public class AgendaEmailTask
         }
 
         var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
-        var agendaUrl = $"{baseUrl}/agendas/{agenda.Id}";
+        var agendaUrl = BuildAgendaUrl(baseUrl, agenda.Id, notification.OccurrenceStartAt);
 
         switch (notification.Type)
         {
@@ -365,5 +365,17 @@ public class AgendaEmailTask
         _logger.LogDebug(
             "不参加通知メール送信完了: NotificationId={NotificationId}, To={To}",
             notification.Id, user.Email);
+    }
+
+    private static string BuildAgendaUrl(string baseUrl, long agendaId, DateTimeOffset? occurrenceStartAt)
+    {
+        var agendaUrl = $"{baseUrl}/agendas/{agendaId}";
+        if (!occurrenceStartAt.HasValue)
+        {
+            return agendaUrl;
+        }
+
+        var encodedOccurrence = Uri.EscapeDataString(occurrenceStartAt.Value.ToString("O"));
+        return $"{agendaUrl}?occurrence={encodedOccurrence}";
     }
 }

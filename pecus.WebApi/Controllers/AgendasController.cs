@@ -130,19 +130,27 @@ public class AgendasController : BaseSecureController
     /// アジェンダ詳細取得
     /// </summary>
     /// <remarks>
-    /// occurrenceIndexを指定すると、その回の例外情報を適用した値を返します。
+    /// occurrenceStartAt または occurrenceIndex を指定すると、その回の例外情報を適用した値を返します。
     /// </remarks>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(AgendaResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<AgendaResponse>> GetById(long id, [FromQuery] int? occurrenceIndex = null)
+    public async Task<Ok<AgendaResponse>> GetById(
+        long id,
+        [FromQuery] DateTimeOffset? occurrenceStartAt = null,
+        [FromQuery] int? occurrenceIndex = null)
     {
         if (!await _accessHelper.CanAccessOrganizationAsync(CurrentUserId, CurrentOrganizationId))
             throw new NotFoundException("組織が見つかりません。");
 
-        var result = await _agendaService.GetByIdAsync(id, CurrentOrganizationId, occurrenceIndex);
-        return TypedResults.Ok(result);
+        var result = await _agendaService.GetByIdResolvedAsync(id, CurrentOrganizationId, occurrenceIndex, occurrenceStartAt);
+        if (result.ResolvedOccurrenceIndex.HasValue)
+        {
+            HttpContext.Response.Headers.Append("X-Resolved-Occurrence-Index", result.ResolvedOccurrenceIndex.Value.ToString());
+        }
+
+        return TypedResults.Ok(result.Agenda);
     }
 
     /// <summary>

@@ -24,7 +24,10 @@ export default async function EditAgendaPage({ params, searchParams }: EditAgend
   const { agendaId } = await params;
   const { scope, occurrence } = await searchParams;
   const agendaIdNum = parseInt(agendaId, 10);
-  const occurrenceIndex = occurrence ? parseInt(occurrence, 10) : undefined;
+  const occurrenceParam = occurrence?.trim() || undefined;
+  const isOccurrenceIndex = occurrenceParam ? /^\d+$/.test(occurrenceParam) : false;
+  const occurrenceIndex = occurrenceParam && isOccurrenceIndex ? parseInt(occurrenceParam, 10) : undefined;
+  const occurrenceStartAt = occurrenceParam && !isOccurrenceIndex ? occurrenceParam : undefined;
 
   if (Number.isNaN(agendaIdNum)) {
     redirect('/agendas');
@@ -41,19 +44,25 @@ export default async function EditAgendaPage({ params, searchParams }: EditAgend
       redirect('/signin');
     }
 
-    // アジェンダ詳細取得（インデックスがある場合は例外適用済みデータを取得）
-    const agendaResult = await fetchAgendaById(agendaIdNum, occurrenceIndex);
+    // アジェンダ詳細取得（occurrenceStartAt / occurrenceIndex がある場合は例外適用済みデータを取得）
+    const agendaResult = await fetchAgendaById(agendaIdNum, {
+      occurrenceIndex,
+      occurrenceStartAt,
+    });
     if (!agendaResult.success) {
       redirect('/agendas');
     }
 
+    const resolvedOccurrenceIndex = agendaResult.data.resolvedOccurrenceIndex ?? occurrenceIndex;
+
     return (
       <AgendaFormClient
         mode="edit"
-        initialData={agendaResult.data}
+        initialData={agendaResult.data.agenda}
         currentUserId={userResult.data.id}
         editScope={scope}
-        occurrenceIndex={occurrenceIndex}
+        occurrenceIndex={resolvedOccurrenceIndex}
+        occurrenceStartAt={occurrenceStartAt}
       />
     );
   } catch (error) {

@@ -23,7 +23,10 @@ export default async function AgendaDetailPage({ params, searchParams }: AgendaD
   const { agendaId } = await params;
   const { occurrence } = await searchParams;
   const agendaIdNum = parseInt(agendaId, 10);
-  const occurrenceIndex = occurrence ? parseInt(occurrence, 10) : undefined;
+  const occurrenceParam = occurrence?.trim() || undefined;
+  const isOccurrenceIndex = occurrenceParam ? /^\d+$/.test(occurrenceParam) : false;
+  const occurrenceIndex = occurrenceParam && isOccurrenceIndex ? parseInt(occurrenceParam, 10) : undefined;
+  const occurrenceStartAt = occurrenceParam && !isOccurrenceIndex ? occurrenceParam : undefined;
 
   if (Number.isNaN(agendaIdNum)) {
     redirect('/agendas');
@@ -38,10 +41,15 @@ export default async function AgendaDetailPage({ params, searchParams }: AgendaD
     const api = createPecusApiClients();
     await api.profile.getApiProfileAppSettings();
 
-    // アジェンダ詳細取得（occurrenceIndexを渡して例外情報を適用）
-    const agendaResult = await fetchAgendaById(agendaIdNum, occurrenceIndex);
+    // アジェンダ詳細取得（occurrenceStartAt / occurrenceIndex を渡して例外情報を適用）
+    const agendaResult = await fetchAgendaById(agendaIdNum, {
+      occurrenceIndex,
+      occurrenceStartAt,
+    });
     if (agendaResult.success) {
-      agenda = agendaResult.data;
+      agenda = agendaResult.data.agenda;
+
+      const resolvedOccurrenceIndex = agendaResult.data.resolvedOccurrenceIndex;
 
       // 繰り返しアジェンダの場合、例外一覧も取得
       const recurrenceType = agenda.recurrenceType as RecurrenceType | undefined;
@@ -51,6 +59,17 @@ export default async function AgendaDetailPage({ params, searchParams }: AgendaD
           exceptions = exceptionsResult.data;
         }
       }
+
+      return (
+        <AgendaDetailClient
+          key={`${agendaIdNum}-${occurrenceStartAt ?? resolvedOccurrenceIndex ?? occurrenceIndex ?? 'base'}`}
+          agenda={agenda}
+          exceptions={exceptions}
+          fetchError={fetchError}
+          occurrenceIndex={resolvedOccurrenceIndex ?? occurrenceIndex}
+          occurrenceStartAt={occurrenceStartAt}
+        />
+      );
     } else {
       fetchError = agendaResult.message ?? 'アジェンダの取得に失敗しました。';
     }
@@ -72,13 +91,5 @@ export default async function AgendaDetailPage({ params, searchParams }: AgendaD
     redirect('/agendas');
   }
 
-  return (
-    <AgendaDetailClient
-      key={`${agendaIdNum}-${occurrenceIndex ?? 0}`}
-      agenda={agenda}
-      exceptions={exceptions}
-      fetchError={fetchError}
-      occurrenceIndex={occurrenceIndex}
-    />
-  );
+  return null;
 }
