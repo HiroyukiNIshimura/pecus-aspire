@@ -1056,6 +1056,9 @@ public class WorkspaceItemService
                 );
 
                 // タグが存在しない場合は作成
+                // 注意: ここで SaveChangesAsync を呼ぶとアイテムの変更も保存されてしまい、
+                // xmin が変わって最終 SaveChangesAsync の楽観的ロックが失敗するため、
+                // 生SQL で INSERT して既存コンテキストへの影響を回避する
                 if (tag == null)
                 {
                     tag = new Tag
@@ -1066,8 +1069,16 @@ public class WorkspaceItemService
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                     };
-                    _context.Tags.Add(tag);
-                    await _context.SaveChangesAsync();
+                    var now = DateTime.UtcNow;
+                    var insertedId = await _context.Database
+                        .SqlQuery<int>($"""
+                            INSERT INTO "Tags" ("OrganizationId", "Name", "CreatedByUserId", "CreatedAt", "UpdatedAt", "IsActive")
+                            VALUES ({organizationId}, {tagName}, {userId}, {now}, {now}, true)
+                            RETURNING "Id"
+                            """)
+                        .FirstAsync();
+                    tag.Id = insertedId;
+                    _context.Entry(tag).State = Microsoft.EntityFrameworkCore.EntityState.Unchanged;
                 }
 
                 // アイテムとタグを関連付け

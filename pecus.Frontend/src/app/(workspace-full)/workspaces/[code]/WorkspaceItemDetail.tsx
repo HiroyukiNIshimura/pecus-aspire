@@ -285,6 +285,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
         const result = await fetchLatestWorkspaceItem(workspaceId, itemId);
 
         if (result.success) {
+          rowVersionRef.current = result.data.rowVersion;
           setItem(result.data);
         } else {
           setError(result.message || 'アイテムの取得に失敗しました。');
@@ -460,13 +461,21 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               onArchiveComplete?.();
             }
           } else {
-            setAttributeError(result.message || '更新に失敗しました。');
+            // コンフリクト時は最新データで rowVersionRef と item を更新して復旧
+            if ('error' in result && result.error === 'conflict') {
+              const conflictResult = result as { latest?: { data?: WorkspaceItemDetailResponse } };
+              if (conflictResult.latest?.data) {
+                rowVersionRef.current = conflictResult.latest.data.rowVersion;
+                setItem(conflictResult.latest.data);
+              }
+              setAttributeError('別のユーザーが先に更新しました。再度お試しください。');
+            } else {
+              setAttributeError(result.message || '更新に失敗しました。');
+            }
             throw new Error(result.message || '更新に失敗しました。');
           }
         } catch (err) {
-          if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
-            setAttributeError('別のユーザーが先に更新しました。ページをリロードしてください。');
-          } else if (err instanceof Error && !attributeError) {
+          if (err instanceof Error && !attributeError) {
             setAttributeError(err.message);
           }
           throw err;
@@ -612,6 +621,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           : await addWorkspaceItemPin(workspaceId, itemId);
 
         if (result.success) {
+          rowVersionRef.current = result.data.rowVersion;
           setItem(result.data);
           notify.success(result.data.isPinned ? 'PINを追加しました。' : 'PINを解除しました。');
         } else {
