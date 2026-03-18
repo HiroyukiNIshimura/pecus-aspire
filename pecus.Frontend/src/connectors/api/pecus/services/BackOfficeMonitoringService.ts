@@ -6,7 +6,7 @@ import type { HangfireStatsResponse } from '../models/HangfireStatsResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class MonitoringService {
+export class BackOfficeMonitoringService {
     /**
      * Hangfireのジョブ統計を取得します
      * @returns HangfireStatsResponse 統計情報

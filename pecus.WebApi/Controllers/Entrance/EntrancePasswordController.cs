@@ -13,6 +13,7 @@ namespace Pecus.Controllers.Entrance;
 /// <summary>
 /// パスワード設定コントローラー（公開エンドポイント）
 /// </summary>
+[ApiController]
 [Route("api/entrance/password")]
 [Produces("application/json")]
 [AllowAnonymous]

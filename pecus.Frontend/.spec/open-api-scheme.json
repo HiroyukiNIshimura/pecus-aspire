@@ -22,23 +22,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AchievementCollectionResponse"
-                  }
-                }
-              },
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AchievementCollectionResponse"
-                  }
-                }
-              },
-              "text/json": {
                 "schema": {
                   "type": "array",
                   "items": {
@@ -49,7 +33,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -69,23 +56,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/UserAchievementResponse"
-                  }
-                }
-              },
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/UserAchievementResponse"
-                  }
-                }
-              },
-              "text/json": {
                 "schema": {
                   "type": "array",
                   "items": {
@@ -96,7 +67,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -117,23 +91,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewAchievementResponse"
-                  }
-                }
-              },
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewAchievementResponse"
-                  }
-                }
-              },
-              "text/json": {
                 "schema": {
                   "type": "array",
                   "items": {
@@ -144,7 +102,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -176,22 +137,15 @@
         ],
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "No Content",
+            "content": {
+              "application/json": { }
+            }
           },
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -199,7 +153,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -218,10 +175,16 @@
         "description": "一括で全ての未通知実績を通知済みにします。\nコレクションページを開いた際などに使用します。",
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "No Content",
+            "content": {
+              "application/json": { }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -253,17 +216,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/AchievementRankingResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AchievementRankingResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AchievementRankingResponse"
                 }
@@ -271,7 +224,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -829,7 +785,7 @@
           "Agenda"
         ],
         "summary": "アジェンダ詳細取得",
-        "description": "occurrenceIndexを指定すると、その回の例外情報を適用した値を返します。",
+        "description": "occurrenceStartAt または occurrenceIndex を指定すると、その回の例外情報を適用した値を返します。",
         "parameters": [
           {
             "name": "id",
@@ -838,6 +794,14 @@
             "schema": {
               "type": "integer",
               "format": "int64"
+            }
+          },
+          {
+            "name": "occurrenceStartAt",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
             }
           },
           {
@@ -1785,7 +1749,7 @@
     "/api/ai-assistant/generate": {
       "post": {
         "tags": [
-          "AiAssistant"
+          "AI - Assistant"
         ],
         "summary": "エディタのカーソル位置に挿入するテキストを生成",
         "requestBody": {
@@ -1813,17 +1777,7 @@
           "200": {
             "description": "テキスト生成成功",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenerateTextResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenerateTextResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GenerateTextResponse"
                 }
@@ -1831,7 +1785,10 @@
             }
           },
           "503": {
-            "description": "AI機能が利用できない（組織設定が未構成）"
+            "description": "AI機能が利用できない（組織設定が未構成）",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -8517,7 +8474,7 @@
     "/api/workspaces/{workspaceId}/temp-attachments/{sessionId}": {
       "post": {
         "tags": [
-          "WorkspaceItemTempAttachment"
+          "Workspace - Attachments"
         ],
         "summary": "一時添付ファイルをアップロード（アイテム作成前用）",
         "parameters": [
@@ -8561,17 +8518,7 @@
           "201": {
             "description": "Created",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TempAttachmentResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TempAttachmentResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TempAttachmentResponse"
                 }
@@ -8581,17 +8528,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -8601,17 +8538,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -8627,7 +8554,7 @@
       },
       "delete": {
         "tags": [
-          "WorkspaceItemTempAttachment"
+          "Workspace - Attachments"
         ],
         "summary": "セッションの一時ファイルをすべて削除",
         "parameters": [
@@ -8653,22 +8580,15 @@
         ],
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "No Content",
+            "content": {
+              "application/json": { }
+            }
           },
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -8686,7 +8606,7 @@
     "/api/workspaces/{workspaceId}/temp-attachments/{sessionId}/{fileName}": {
       "get": {
         "tags": [
-          "WorkspaceItemTempAttachment"
+          "Workspace - Attachments"
         ],
         "summary": "一時添付ファイルを取得（プレビュー用）",
         "parameters": [
@@ -8721,22 +8641,15 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
           },
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -9647,23 +9560,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DeviceResponse"
-                  }
-                }
-              },
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DeviceResponse"
-                  }
-                }
-              },
-              "text/json": {
                 "schema": {
                   "type": "array",
                   "items": {
@@ -9676,17 +9573,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -9694,7 +9581,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -9740,17 +9630,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceListResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceListResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeviceListResponse"
                 }
@@ -9760,17 +9640,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -9778,7 +9648,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -9810,17 +9683,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MessageResponse"
                 }
@@ -9830,17 +9693,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -9848,7 +9701,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -9890,17 +9746,7 @@
           "200": {
             "description": "確認メールを送信しました",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EmailChangeRequestResponse"
                 }
@@ -9910,17 +9756,7 @@
           "400": {
             "description": "リクエストが無効です（パスワード不一致、重複メールアドレスなど）",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -9930,17 +9766,7 @@
           "404": {
             "description": "ユーザーが見つかりません",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -9948,7 +9774,10 @@
             }
           },
           "500": {
-            "description": "サーバーエラー"
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -9979,17 +9808,7 @@
           "200": {
             "description": "メールアドレスの変更が完了しました",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EmailChangeVerifyResponse"
                 }
@@ -9999,17 +9818,7 @@
           "400": {
             "description": "トークンが無効または期限切れです",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10019,17 +9828,7 @@
           "404": {
             "description": "ユーザーまたはトークンが見つかりません",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10037,7 +9836,10 @@
             }
           },
           "500": {
-            "description": "サーバーエラー"
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -10058,17 +9860,7 @@
           "200": {
             "description": "トークン情報を取得しました（存在する場合）",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PendingEmailChangeResponse"
                 }
@@ -10076,10 +9868,16 @@
             }
           },
           "204": {
-            "description": "有効なトークンが存在しません"
+            "description": "有効なトークンが存在しません",
+            "content": {
+              "application/json": { }
+            }
           },
           "500": {
-            "description": "サーバーエラー"
+            "description": "サーバーエラー",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -10100,17 +9898,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDetailResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDetailResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserDetailResponse"
                 }
@@ -10120,17 +9908,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -10138,7 +9916,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -10178,17 +9959,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDetailResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDetailResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserDetailResponse"
                 }
@@ -10198,17 +9969,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10218,17 +9979,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -10238,17 +9989,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
                 }
@@ -10256,7 +9997,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -10298,17 +10042,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserSettingResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserSettingResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserSettingResponse"
                 }
@@ -10318,17 +10052,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10338,17 +10062,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10358,17 +10072,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserSettingResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserSettingResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserSettingResponse"
                 }
@@ -10376,7 +10080,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -10418,17 +10125,7 @@
           "200": {
             "description": "スキルを設定しました",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuccessResponse"
                 }
@@ -10438,17 +10135,7 @@
           "400": {
             "description": "リクエストが無効です",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10458,17 +10145,7 @@
           "404": {
             "description": "ユーザーが見つかりません",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10478,17 +10155,7 @@
           "409": {
             "description": "競合: スキル情報が別のユーザーにより更新されています",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ConcurrencyErrorResponseOfUserDetailResponse"
                 }
@@ -10535,17 +10202,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MessageResponse"
                 }
@@ -10555,17 +10212,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10575,17 +10222,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -10593,7 +10230,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -10614,17 +10254,7 @@
           "200": {
             "description": "公開設定を返します",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/AppPublicSettingsResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AppPublicSettingsResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AppPublicSettingsResponse"
                 }
@@ -10634,17 +10264,7 @@
           "404": {
             "description": "組織に所属していません",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10691,17 +10311,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserSettingResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserSettingResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserSettingResponse"
                 }
@@ -10711,17 +10321,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10731,17 +10331,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -10749,7 +10339,10 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
           }
         },
         "security": [
@@ -10762,7 +10355,7 @@
     "/api/external/ping": {
       "post": {
         "tags": [
-          "External API"
+          "External"
         ],
         "summary": "疎通確認用エンドポイント",
         "description": "受け取ったメッセージをそのまま返却します。\nAPIキー認証の疎通確認に使用してください。",
@@ -10828,7 +10421,7 @@
     "/api/external/workspaces/{workspaceCode}/items": {
       "post": {
         "tags": [
-          "External API"
+          "External"
         ],
         "summary": "指定したワークスペースにアイテムを作成する",
         "description": "Markdown形式の本文をLexical JSON形式に変換して保存します。\nオーナーはワークスペースのメンバーである必要があります。",
@@ -11238,227 +10831,6 @@
             "description": "Internal Server Error",
             "content": {
               "application/json": { }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/dev/email-preview": {
-      "get": {
-        "tags": [
-          "EmailPreview"
-        ],
-        "summary": "利用可能なテンプレート一覧を取得",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EmailTemplateInfo"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EmailTemplateInfo"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EmailTemplateInfo"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/dev/email-preview/{templateName}": {
-      "get": {
-        "tags": [
-          "EmailPreview"
-        ],
-        "summary": "指定したテンプレートのHTMLプレビューを取得\nダミーデータを使用してレンダリング",
-        "parameters": [
-          {
-            "name": "templateName",
-            "in": "path",
-            "description": "テンプレート名",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/dev/email-preview/{templateName}/text": {
-      "get": {
-        "tags": [
-          "EmailPreview"
-        ],
-        "summary": "指定したテンプレートのテキスト版プレビューを取得",
-        "parameters": [
-          {
-            "name": "templateName",
-            "in": "path",
-            "description": "テンプレート名",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/dev/email-preview/index": {
-      "get": {
-        "tags": [
-          "EmailPreview"
-        ],
-        "summary": "プレビュー用の簡易インデックスページを返す",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
             }
           }
         },
@@ -12539,24 +11911,14 @@
     "/api/backend/monitoring/hangfire-stats": {
       "get": {
         "tags": [
-          "Monitoring"
+          "BackOffice - Monitoring"
         ],
         "summary": "Hangfireのジョブ統計を取得します",
         "responses": {
           "200": {
             "description": "統計情報",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/HangfireStatsResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HangfireStatsResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HangfireStatsResponse"
                 }
@@ -19177,29 +18539,6 @@
           }
         },
         "description": "メールアドレス変更確認レスポンス"
-      },
-      "EmailTemplateInfo": {
-        "required": [
-          "name",
-          "displayName",
-          "description"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "テンプレート名（識別子）"
-          },
-          "displayName": {
-            "type": "string",
-            "description": "表示名"
-          },
-          "description": {
-            "type": "string",
-            "description": "説明"
-          }
-        },
-        "description": "メールテンプレートの情報"
       },
       "ErrorResponse": {
         "required": [
@@ -27088,7 +26427,7 @@
       "name": "Agenda"
     },
     {
-      "name": "AiAssistant"
+      "name": "AI - Assistant"
     },
     {
       "name": "Chat"
@@ -27127,7 +26466,7 @@
       "name": "WorkspaceItem"
     },
     {
-      "name": "WorkspaceItemTempAttachment"
+      "name": "Workspace - Attachments"
     },
     {
       "name": "WorkspaceTask"
@@ -27136,7 +26475,7 @@
       "name": "Profile"
     },
     {
-      "name": "External API"
+      "name": "External"
     },
     {
       "name": "Entrance - Auth"
@@ -27145,16 +26484,13 @@
       "name": "Entrance - Password"
     },
     {
-      "name": "EmailPreview"
-    },
-    {
       "name": "BackOffice - Organizations"
     },
     {
       "name": "BackOffice - Notifications"
     },
     {
-      "name": "Monitoring"
+      "name": "BackOffice - Monitoring"
     },
     {
       "name": "Admin - External API Keys"

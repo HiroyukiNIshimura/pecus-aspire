@@ -249,7 +249,7 @@ import type { HangfireStatsResponse } from '@/connectors/api/pecus';
 export async function getHangfireStatus(): Promise<ApiResponse<HangfireStatsResponse>> {
   try {
     const api = await createPecusApiClients();
-    const response = await api.monitoring.getApiBackendMonitoringHangfireStats();
+    const response = await api.backOfficeMonitoring.getApiBackendMonitoringHangfireStats();
     return {
       success: true,
       data: response,

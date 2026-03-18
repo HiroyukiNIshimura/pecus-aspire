@@ -9,7 +9,7 @@ import type { PingResponse } from '../models/PingResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class ExternalApiService {
+export class ExternalService {
     /**
      * 疎通確認用エンドポイント
      * 受け取ったメッセージをそのまま返却します。

@@ -7,7 +7,7 @@ import type { TempAttachmentResponse } from '../models/TempAttachmentResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class WorkspaceItemTempAttachmentService {
+export class WorkspaceAttachmentsService {
     /**
      * 一時添付ファイルをアップロード（アイテム作成前用）
      * @param workspaceId ワークスペースID

@@ -73,7 +73,7 @@ export default function LoginFormClient() {
 
         if (result.success) {
           // BackOffice ロールを持つユーザーは /backoffice にリダイレクト
-          const isBackOfficeUser = result.data?.roles?.some((role) => role.name === 'BackOffice');
+          const isBackOfficeUser = result.data?.roles?.some((role: { name: string }) => role.name === 'BackOffice');
           const redirectUrl = isBackOfficeUser ? '/backoffice' : getLandingPageUrl(result.data?.landingPage);
           // ハードナビゲーションでCookieを確実に反映
           window.location.href = redirectUrl;

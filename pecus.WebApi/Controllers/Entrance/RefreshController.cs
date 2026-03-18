@@ -8,6 +8,10 @@ using Pecus.Services;
 
 namespace Pecus.Controllers.Entrance;
 
+/// <summary>
+/// リフレッシュトークンコントローラー（公開エンドポイント）
+/// </summary>
+[ApiController]
 [Route("api/entrance")]
 [Produces("application/json")]
 [Tags("Entrance - Auth")]

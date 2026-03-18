@@ -9,7 +9,7 @@ export default async function BackOfficePage() {
   const api = createPecusApiClients();
 
   // BackOffice権限チェックを兼ねてHangfire統計を取得
-  const result = await handleServerFetch(() => api.monitoring.getApiBackendMonitoringHangfireStats());
+  const result = await handleServerFetch(() => api.backOfficeMonitoring.getApiBackendMonitoringHangfireStats());
 
   if (!result.success) {
     if (result.error === 'forbidden') {

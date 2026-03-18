@@ -141,14 +141,16 @@ export class AgendaService {
     }
     /**
      * アジェンダ詳細取得
-     * occurrenceIndexを指定すると、その回の例外情報を適用した値を返します。
+     * occurrenceStartAt または occurrenceIndex を指定すると、その回の例外情報を適用した値を返します。
      * @param id
+     * @param occurrenceStartAt
      * @param occurrenceIndex
      * @returns AgendaResponse OK
      * @throws ApiError
      */
     public static getApiAgendas1(
         id: number,
+        occurrenceStartAt?: string,
         occurrenceIndex?: number,
     ): CancelablePromise<AgendaResponse> {
         return __request(OpenAPI, {
@@ -158,6 +160,7 @@ export class AgendaService {
                 'id': id,
             },
             query: {
+                'occurrenceStartAt': occurrenceStartAt,
                 'occurrenceIndex': occurrenceIndex,
             },
             errors: {
