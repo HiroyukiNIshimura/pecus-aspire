@@ -8,7 +8,6 @@ using Pecus.Services;
 
 namespace Pecus.Controllers.Entrance;
 
-[ApiController]
 [Route("api/entrance")]
 [Produces("application/json")]
 [Tags("Entrance - Auth")]

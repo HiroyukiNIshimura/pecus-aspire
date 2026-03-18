@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Pecus.Services;
 
@@ -8,7 +9,9 @@ namespace Pecus.Controllers.Backend;
 /// バックオフィス専用コントローラー基盤クラス
 /// BackOffice ロール（内部サービス用）での認可を提供します。
 /// </summary>
+[ApiController]
 [Authorize(Roles = "BackOffice")]
+[Produces("application/json")]
 public abstract class BaseBackendController : BaseSecureController, IAsyncActionFilter
 {
     protected BaseBackendController(

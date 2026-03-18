@@ -11,6 +11,8 @@ namespace Pecus.Controllers;
 /// エディタ内でのAIテキスト生成機能を提供
 /// </summary>
 [Route("api/ai-assistant")]
+[Produces("application/json")]
+[Tags("AI - Assistant")]
 public class AiAssistantController : BaseSecureController
 {
     private readonly IAiAssistantService _aiAssistantService;

@@ -12,7 +12,6 @@ namespace Pecus.Controllers.Entrance;
 /// <summary>
 /// 認証コントローラー（公開エンドポイント）
 /// </summary>
-[ApiController]
 [Route("api/entrance/auth")]
 [Produces("application/json")]
 [AllowAnonymous]

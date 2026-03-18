@@ -9,6 +9,8 @@ namespace Pecus.Controllers.Backend;
 ///     バックオフィス向けモニタリングコントローラー
 /// </summary>
 [Route("api/backend/monitoring")]
+[Produces("application/json")]
+[Tags("BackOffice - Monitoring")]
 public class MonitoringController : BaseBackendController
 {
     private readonly ILogger<MonitoringController> _logger;

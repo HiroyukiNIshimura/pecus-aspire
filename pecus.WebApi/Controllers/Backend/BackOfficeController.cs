@@ -15,7 +15,6 @@ namespace Pecus.Controllers.Backend;
 /// <summary>
 /// バックオフィス用コントローラー（組織管理）
 /// </summary>
-[ApiController]
 [Route("api/backoffice/organizations")]
 [Produces("application/json")]
 [Tags("BackOffice - Organizations")]

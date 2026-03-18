@@ -10,8 +10,8 @@ namespace Pecus.Controllers.Dev;
 /// 開発用：メールテンプレートプレビューエンドポイント
 /// ブラウザでメールの表示を確認するためのコントローラー
 /// </summary>
-[ApiController]
 [Route("api/dev/email-preview")]
+[Produces("application/json")]
 [AllowAnonymous]
 public class EmailPreviewController : ControllerBase
 {

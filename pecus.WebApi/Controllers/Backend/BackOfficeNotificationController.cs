@@ -9,7 +9,6 @@ namespace Pecus.Controllers.Backend;
 /// <summary>
 /// バックオフィス用コントローラー（システム通知管理）
 /// </summary>
-[ApiController]
 [Route("api/backoffice/notifications")]
 [Produces("application/json")]
 [Tags("BackOffice - Notifications")]

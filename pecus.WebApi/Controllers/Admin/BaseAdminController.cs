@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Admin;
@@ -11,7 +12,9 @@ namespace Pecus.Controllers.Admin;
 /// Admin ロールを持つユーザーのみアクセスできます。
 /// 認証ユーザーの有効性チェックは自動的に実行されます。
 /// </remarks>
+[ApiController]
 [Authorize(Roles = "Admin,BackOffice")]
+[Produces("application/json")]
 [Tags("Admin")]
 public abstract class BaseAdminController : BaseSecureController
 {

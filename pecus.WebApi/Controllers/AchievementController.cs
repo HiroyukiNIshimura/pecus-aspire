@@ -12,6 +12,7 @@ namespace Pecus.Controllers;
 /// ユーザーの実績コレクション、取得済み実績の参照、通知済みマークなどを提供します。
 /// </remarks>
 [Route("api/achievements")]
+[Produces("application/json")]
 [Tags("Achievement")]
 public class AchievementController : BaseSecureController
 {

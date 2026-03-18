@@ -19,6 +19,7 @@ namespace Pecus.Controllers;
 /// CurrentUserId と CurrentUser をアクション内で安全に利用できます。
 /// </remarks>
 [ApiController]
+[Produces("application/json")]
 [Authorize]
 public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
 {

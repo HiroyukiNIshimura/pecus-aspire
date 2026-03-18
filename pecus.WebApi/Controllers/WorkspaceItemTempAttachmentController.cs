@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Services;
@@ -9,23 +8,23 @@ namespace Pecus.Controllers;
 /// <summary>
 /// ワークスペースアイテム作成前の一時添付ファイル管理
 /// </summary>
-[ApiController]
 [Route("api/workspaces/{workspaceId}/temp-attachments")]
-[Authorize]
-public class WorkspaceItemTempAttachmentController : ControllerBase
+[Tags("Workspace - Attachments")]
+public class WorkspaceItemTempAttachmentController : BaseSecureController
 {
     private readonly WorkspaceItemTempAttachmentService _tempAttachmentService;
     private readonly OrganizationAccessHelper _accessHelper;
 
     public WorkspaceItemTempAttachmentController(
         WorkspaceItemTempAttachmentService tempAttachmentService,
-        OrganizationAccessHelper accessHelper)
+        OrganizationAccessHelper accessHelper,
+        ProfileService profileService,
+        ILogger<WorkspaceItemTempAttachmentController> logger)
+        : base(profileService, logger)
     {
         _tempAttachmentService = tempAttachmentService;
         _accessHelper = accessHelper;
     }
-
-    private int CurrentUserId => JwtBearerUtil.GetUserIdFromPrincipal(User);
 
     /// <summary>
     /// 一時添付ファイルをアップロード（アイテム作成前用）
