@@ -13,6 +13,16 @@ public record AiToolContext
     public required int UserId { get; init; }
 
     /// <summary>
+    /// 組織ID（アジェンダ取得等に使用）
+    /// </summary>
+    public int? OrganizationId { get; init; }
+
+    /// <summary>
+    /// ユーザーのタイムゾーン（IANA形式、例: "Asia/Tokyo"）
+    /// </summary>
+    public string? UserTimeZone { get; init; }
+
+    /// <summary>
     /// ユーザーのメッセージ（トリガー）
     /// </summary>
     public string? UserMessage { get; init; }

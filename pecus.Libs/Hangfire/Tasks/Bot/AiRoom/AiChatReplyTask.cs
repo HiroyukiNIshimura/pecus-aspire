@@ -237,7 +237,8 @@ public class AiChatReplyTask
                     senderUserId,
                     senderUserName,
                     roomId,
-                    chatBot.GetChatActorId()
+                    chatBot.GetChatActorId(),
+                    organizationId
                 );
                 requestMessages = messages;
                 requestRole = role;
@@ -685,12 +686,13 @@ public class AiChatReplyTask
         int userId,
         string senderUserName,
         int roomId,
-        int botActorId)
+        int botActorId,
+        int organizationId)
     {
         var userNamePrompt = $"Userを示す二人称は、{senderUserName}さんです。";
 
         // メッセージを分析して適切なコンテキストを取得
-        var (context, role) = await TryGetContextAsync(aiClient, triggerContent, userId);
+        var (context, role) = await TryGetContextAsync(aiClient, triggerContent, userId, organizationId);
         if (role == null)
         {
             // コンテキストモード: 取得した情報をコンテキストに含めたシンプルな構成
@@ -726,7 +728,8 @@ public class AiChatReplyTask
     private async Task<(string? Context, RoleConfig? Role)> TryGetContextAsync(
         IAiClient aiClient,
         string triggerContent,
-        int userId)
+        int userId,
+        int organizationId)
     {
         if (_messageAnalyzer == null || _toolExecutor == null)
         {
@@ -749,9 +752,17 @@ public class AiChatReplyTask
                 sentimentResult.InformationTopic
             );
 
+            // ユーザーのタイムゾーンを取得
+            var userTimeZone = await _context.UserSettings
+                .Where(s => s.UserId == userId)
+                .Select(s => s.TimeZone)
+                .FirstOrDefaultAsync() ?? "Asia/Tokyo";
+
             var toolContext = new AiToolContext
             {
                 UserId = userId,
+                OrganizationId = organizationId,
+                UserTimeZone = userTimeZone,
                 UserMessage = triggerContent,
                 SentimentResult = sentimentResult
             };

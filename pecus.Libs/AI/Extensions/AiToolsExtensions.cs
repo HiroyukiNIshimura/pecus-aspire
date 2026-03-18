@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Pecus.Libs.AI.Tools;
 using Pecus.Libs.AI.Tools.Implementations;
+using Pecus.Libs.Focus;
 
 namespace Pecus.Libs.AI.Extensions;
 
@@ -17,6 +18,7 @@ public static class AiToolsExtensions
     /// <returns>サービスコレクション</returns>
     public static IServiceCollection AddAiTools(this IServiceCollection services)
     {
+        services.AddScoped<IAgendaProvider, AgendaProvider>();
         services.AddScoped<IAiTool, GetUserTasksTool>();
         services.AddScoped<IAiTool, SearchInformationTool>();
         services.AddScoped<IAiTool, SuggestSimilarTaskExpertsTool>();

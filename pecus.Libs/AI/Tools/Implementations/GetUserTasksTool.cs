@@ -7,10 +7,12 @@ namespace Pecus.Libs.AI.Tools.Implementations;
 /// <summary>
 /// ユーザーのタスク情報を取得するツール
 /// 感情分析の OthersFocusScore に応じて、自分のタスクかチームのタスクかを切り替える
+/// 今日のアジェンダがあれば併せてコンテキストに含める
 /// </summary>
 public class GetUserTasksTool : IAiTool
 {
     private readonly IFocusTaskProvider _focusTaskProvider;
+    private readonly IAgendaProvider _agendaProvider;
 
     /// <inheritdoc />
     public string Name => "get_user_tasks";
@@ -25,9 +27,13 @@ public class GetUserTasksTool : IAiTool
     /// GetUserTasksTool のコンストラクタ
     /// </summary>
     /// <param name="focusTaskProvider">タスク取得プロバイダー</param>
-    public GetUserTasksTool(IFocusTaskProvider focusTaskProvider)
+    /// <param name="agendaProvider">アジェンダ取得プロバイダー</param>
+    public GetUserTasksTool(
+        IFocusTaskProvider focusTaskProvider,
+        IAgendaProvider agendaProvider)
     {
         _focusTaskProvider = focusTaskProvider;
+        _agendaProvider = agendaProvider;
     }
 
     /// <inheritdoc />
@@ -107,13 +113,31 @@ public class GetUserTasksTool : IAiTool
             prompt = BuildMyTaskContextPrompt(taskResult);
         }
 
+        // 今日のアジェンダを取得してプロンプトに追加
+        var agendaCount = 0;
+        var userTimeZone = context.UserTimeZone ?? "Asia/Tokyo";
+        if (context.OrganizationId.HasValue)
+        {
+            var todayAgendas = await _agendaProvider.GetTodayAgendasAsync(
+                context.OrganizationId.Value,
+                context.UserId,
+                userTimeZone,
+                cancellationToken);
+
+            if (todayAgendas.Count > 0)
+            {
+                agendaCount = todayAgendas.Count;
+                prompt = prompt + "\n\n" + BuildAgendaContextPrompt(todayAgendas, userTimeZone);
+            }
+        }
+
         return new AiToolResult
         {
             Success = true,
             ToolName = Name,
             ContextPrompt = prompt,
             SuggestedRole = RoleRandomizer.SecretaryRole,
-            DebugInfo = $"Found {taskResult.TotalTaskCount} tasks (isTeamFocus={isTeamFocus})"
+            DebugInfo = $"Found {taskResult.TotalTaskCount} tasks, {agendaCount} agendas (isTeamFocus={isTeamFocus})"
         };
     }
 
@@ -226,6 +250,40 @@ public class GetUserTasksTool : IAiTool
         sb.AppendLine("この情報を参考に、ユーザーがどのタスクを手伝えそうか提案してください。");
         sb.AppendLine("担当者に声をかける、一緒に作業する、などの具体的なアクションを提案してください。");
         sb.AppendLine("タスク名には[コード]を含めてください。");
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// 今日のアジェンダ情報からコンテキストプロンプトを生成する
+    /// </summary>
+    private static string BuildAgendaContextPrompt(List<TodayAgendaInfo> agendas, string userTimeZone)
+    {
+        var tz = TimeZoneInfo.FindSystemTimeZoneById(userTimeZone);
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("【参考情報】今日の予定:");
+
+        foreach (var agenda in agendas)
+        {
+            if (agenda.IsAllDay)
+            {
+                sb.AppendLine($"  - [終日] {agenda.Title}");
+            }
+            else
+            {
+                var localStart = TimeZoneInfo.ConvertTime(agenda.StartAt, tz);
+                var localEnd = TimeZoneInfo.ConvertTime(agenda.EndAt, tz);
+                sb.AppendLine($"  - {localStart:HH:mm}〜{localEnd:HH:mm} {agenda.Title}");
+            }
+
+            if (!string.IsNullOrEmpty(agenda.Location))
+            {
+                sb.AppendLine($"    場所: {agenda.Location}");
+            }
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("予定とタスクの両方を考慮して、今日の過ごし方をアドバイスしてください。");
 
         return sb.ToString();
     }
