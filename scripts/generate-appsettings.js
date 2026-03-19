@@ -320,6 +320,10 @@ function generateDockerEnv(infra, _shared, _projects) {
     '# Optional: Postgres backup retention days',
     `BACKUP_KEEP_DAYS=${backupKeepDays}`,
     '',
+    '# Container user ID (match host coati user: id coati)',
+    `CONTAINER_UID=${process.env.CONTAINER_UID || infra.container?.uid || '1001'}`,
+    `CONTAINER_GID=${process.env.CONTAINER_GID || infra.container?.gid || '1001'}`,
+    '',
   ];
 
   const deployEnvPath = path.join(ROOT_DIR, 'deploy', '.env');
