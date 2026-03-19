@@ -76,7 +76,7 @@ AI支援による高度なタスク管理、リアルタイムコラボレーシ
 - **Hangfireダッシュボード** - バックグラウンドジョブの監視・管理
 
 ## 🪧 デモサイト
-https://coati.bright-l.0am.jp
+https://coati.0t0.jp
 
 ログイン: user1@demo.coati.none、user2@demo.coati.none、user3@demo.coati.none
 パスワード: P@ssw0rd
