@@ -36,10 +36,25 @@ CONTAINER_GID=1000
 データディレクトリの権限を設定：
 
 ```bash
-sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data
+# データディレクトリを作成
+sudo mkdir -p /var/docker/coati/data/{postgres,redis,redis-frontend,uploads,notifications,backups/postgres}
+sudo mkdir -p /var/docker/coati/data/logs/{webapi-blue,webapi-green,backfire-blue,backfire-green,dbmanager}
+
+# PostgreSQL 以外のディレクトリを coati ユーザーに設定
+sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/redis
+sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/redis-frontend
+sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/uploads
+sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/notifications
+sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/logs
+sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/backups
 ```
 
-**注意**: UID が一致しないとログファイルや Redis のデータが書き込めません。
+**注意**:
+- UID が一致しないとログファイルや Redis のデータが書き込めません
+- `postgres/` ディレクトリは **chown しないこと**（PostgreSQL は postgres ユーザーで動作し、初回起動時に自動で権限設定される）
+
+> **📋 自動化予定**: 上記の手動コマンドは `setup-data-dirs.sh` で自動化予定。
+> 詳細は [docs/deploy-permission-improvement-plan.md](../../docs/deploy-permission-improvement-plan.md) を参照。
 
 ### 2. 環境変数の設定
 
