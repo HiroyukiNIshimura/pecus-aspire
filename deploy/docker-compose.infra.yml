@@ -27,6 +27,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: pecus-redis
+    user: "${CONTAINER_UID:-1001}:${CONTAINER_GID:-1001}"
     restart: unless-stopped
     command: redis-server --appendonly yes
     volumes:
@@ -45,6 +46,7 @@ services:
   redis-frontend:
     image: redis:7-alpine
     container_name: pecus-redis-frontend
+    user: "${CONTAINER_UID:-1001}:${CONTAINER_GID:-1001}"
     restart: unless-stopped
     command: redis-server --appendonly yes
     volumes:

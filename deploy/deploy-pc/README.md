@@ -16,7 +16,32 @@
 
 ## 初回セットアップ
 
-### 1. 環境変数の設定
+### 1. コンテナ実行ユーザーの UID 設定
+
+コンテナはデフォルトで UID 1001 で動作します。ホスト側のデータディレクトリと権限を合わせるため、`coati` ユーザーの UID を確認して設定します。
+
+```bash
+# coati ユーザーの UID/GID を確認
+id coati
+# 例: uid=1000(coati) gid=1000(coati) ...
+```
+
+`deploy/.env` に UID/GID を設定（generate-appsettings.js で生成される場合は `config/settings.base.prod.json` に設定）：
+
+```bash
+CONTAINER_UID=1000  # id coati の結果に合わせる
+CONTAINER_GID=1000
+```
+
+データディレクトリの権限を設定：
+
+```bash
+sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data
+```
+
+**注意**: UID が一致しないとログファイルや Redis のデータが書き込めません。
+
+### 2. 環境変数の設定
 
 ```bash
 cd deploy/deploy-pc
@@ -33,7 +58,7 @@ BUILD_PC_IP=192.168.1.100
 REGISTRY_PORT=5000
 ```
 
-### 2. Docker Daemon の設定
+### 3. Docker Daemon の設定
 
 ```bash
 sudo ./setup-docker-daemon.sh

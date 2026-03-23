@@ -24,6 +24,12 @@
       "_comment": "本番環境では監視を有効化推奨",
       "enabled": true,
       "diskMountPoints": ["/", "/var/your-app/data"]
+    },
+
+    "container": {
+      "_comment": "コンテナ実行ユーザー（ホスト側の coati ユーザーの UID/GID に合わせる: id coati）",
+      "uid": "1001",
+      "gid": "1001"
     }
   },
 
