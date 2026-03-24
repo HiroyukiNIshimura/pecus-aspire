@@ -197,7 +197,7 @@ confirm_yes() {
 check_data_dirs() {
   # データディレクトリの存在と書き込み権限をチェック（警告のみ、停止しない）
   # postgres/ は PostgreSQL が管理するためチェック対象外
-  dirs="redis redis-frontend uploads notifications logs/webapi-blue logs/webapi-green logs/backfire-blue logs/backfire-green logs/dbmanager backups/postgres"
+  dirs="redis redis-frontend uploads notifications logs/webapi-blue logs/webapi-green logs/backfire-blue logs/backfire-green logs/dbmanager backups/postgres prometheus"
   missing=false
 
   for d in $dirs; do

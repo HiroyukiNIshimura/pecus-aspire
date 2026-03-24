@@ -46,6 +46,7 @@ mkdir -p "$DATA_PATH/logs/backfire-blue"
 mkdir -p "$DATA_PATH/logs/backfire-green"
 mkdir -p "$DATA_PATH/logs/dbmanager"
 mkdir -p "$DATA_PATH/backups/postgres"
+mkdir -p "$DATA_PATH/prometheus"
 
 # 権限設定（PostgreSQL 以外）
 # ⚠️ postgres/ は chown しない（PostgreSQL は postgres ユーザーで動作）
@@ -55,6 +56,7 @@ chown -R "$COATI_UID:$COATI_GID" "$DATA_PATH/uploads"
 chown -R "$COATI_UID:$COATI_GID" "$DATA_PATH/notifications"
 chown -R "$COATI_UID:$COATI_GID" "$DATA_PATH/logs"
 chown -R "$COATI_UID:$COATI_GID" "$DATA_PATH/backups"
+chown -R "$COATI_UID:$COATI_GID" "$DATA_PATH/prometheus"
 
 # PostgreSQL は postgres ユーザー（UID 70 または 999）で動作
 # 初回起動時に Docker が自動で権限設定するため、空のままにしておく
