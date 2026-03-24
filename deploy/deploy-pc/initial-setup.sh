@@ -46,6 +46,11 @@ else
   echo "[Info] ユーザー '$COATI_USER' を作成します..."
   useradd -m -s /bin/bash "$COATI_USER"
   echo "[OK] ユーザー '$COATI_USER' を作成しました"
+
+  # パスワード設定
+  echo ""
+  echo "🔑 '$COATI_USER' ユーザーのパスワードを設定してください"
+  passwd "$COATI_USER"
 fi
 
 # docker グループに追加（既に追加されていれば無害）
