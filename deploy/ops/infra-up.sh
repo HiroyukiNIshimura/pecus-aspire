@@ -31,6 +31,9 @@ done
 ensure_env_file
 ensure_active_slot_conf
 
+# データディレクトリの事前チェック（警告のみ）
+check_data_dirs || true
+
 # --no-build の場合、lexicalconverter イメージの存在を確認
 if [ "$build_flag" = "--no-build" ]; then
   echo "[Info] Checking for pre-built lexicalconverter image..."

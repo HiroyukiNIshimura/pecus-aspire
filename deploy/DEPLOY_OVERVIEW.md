@@ -44,7 +44,9 @@
 
 ### 6. deploy-pc/
 - デプロイ専用PC用スクリプト群（ビルドPC分離アーキテクチャ）
+- **initial-setup.sh**: 初回セットアップ一括実行（root 実行。coati ユーザー作成、UID/GID 設定、Docker daemon 設定、データディレクトリ作成）
 - **setup-docker-daemon.sh**: Docker daemon 設定（insecure-registries 追加）
+- **setup-data-dirs.sh**: データディレクトリ作成と権限設定（root 実行）
 - **pull-and-deploy.sh**: イメージプル & Blue-Greenデプロイ実行
 - **.env.example**: 環境変数テンプレート
 
@@ -68,10 +70,11 @@
 
 **デプロイPC側:**
 1. `cd deploy/deploy-pc`
-2. `./setup-docker-daemon.sh`（初回のみ、sudo 必要）
-3. `./pull-and-deploy.sh` でイメージプル & デプロイ
+2. `.env.example` を `.env` にコピーし、`BUILD_PC_IP` 等を編集
+3. `sudo ./initial-setup.sh`（初回のみ。coati ユーザー作成、Docker daemon 設定、データディレクトリ作成を一括実行）
+4. 以降は `coati` ユーザーで操作: `./pull-and-deploy.sh` でイメージプル & デプロイ
    - 内部で `switch-node.sh --no-build` を実行
-4. `cd ../ops && ./status.sh` で稼働状況確認
+5. `cd ../ops && ./status.sh` で稼働状況確認
 
 ---
 
@@ -81,9 +84,25 @@
 
 ---
 
+## 環境セットアップチェックリスト
+
+| # | 項目 | コマンド / 確認方法 |
+|---|------|-------------------|
+| 1 | `.env` ファイル準備 | `cp .env.example .env` → 編集 |
+| 2 | 初回セットアップ実行 | `sudo ./deploy-pc/initial-setup.sh` |
+| 3 | coati ユーザー存在確認 | `id coati` |
+| 4 | データディレクトリ確認 | `ls -la /var/docker/coati/data/` |
+| 5 | Docker daemon 設定確認 | `docker info \| grep -i insecure` |
+| 6 | インフラ起動 | `cd ops && ./infra-up.sh` |
+| 7 | 稼働状況確認 | `./status.sh` |
+
+---
+
 ## 注意事項
 - `.env`/`.env.example` で環境変数を管理。未生成時は `scripts/generate-appsettings.js` で自動生成
 - Blue/Green切替・運用は必ず `ops/` スクリプト経由で実施（手動docker compose操作は非推奨）
+- **すべての運用操作は `coati` ユーザーで実行**（root が必要なのは `initial-setup.sh` のみ）
+- コンテナ内プロセスは `CONTAINER_UID`/`CONTAINER_GID`（`.env` で定義）で動作。ホスト側の `coati` ユーザーと一致させること
 - 詳細は各スクリプト・composeファイルのコメント参照
 
 ---

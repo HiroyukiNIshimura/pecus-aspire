@@ -115,6 +115,9 @@ echo ""
 # Step 2: 設定ファイルから deploy/.env を生成
 echo "⚙️  deploy/.env を生成しています..."
 if [ -f "$REPO_ROOT/scripts/generate-appsettings.js" ]; then
+    # nvm 経由の node を使用
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
     node "$REPO_ROOT/scripts/generate-appsettings.js" -P
     echo ""
 else

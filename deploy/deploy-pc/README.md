@@ -16,75 +16,49 @@
 
 ## 初回セットアップ
 
-### 1. コンテナ実行ユーザーの UID 設定
-
-コンテナはデフォルトで UID 1001 で動作します。ホスト側のデータディレクトリと権限を合わせるため、`coati` ユーザーの UID を確認して設定します。
-
-```bash
-# coati ユーザーの UID/GID を確認
-id coati
-# 例: uid=1000(coati) gid=1000(coati) ...
-```
-
-`deploy/.env` に UID/GID を設定（generate-appsettings.js で生成される場合は `config/settings.base.prod.json` に設定）：
+`initial-setup.sh` を root で実行すると、以下をすべて自動で行います:
+- `coati` ユーザーの作成（既存ならスキップ）
+- `CONTAINER_UID` / `CONTAINER_GID` の自動検出と `.env` への書き込み
+- Docker daemon 設定（insecure-registries）
+- データディレクトリの作成と権限設定
+- アプリケーション設定ファイルの生成
 
 ```bash
-CONTAINER_UID=1000  # id coati の結果に合わせる
-CONTAINER_GID=1000
-```
-
-データディレクトリの権限を設定：
-
-```bash
-# データディレクトリを作成
-sudo mkdir -p /var/docker/coati/data/{postgres,redis,redis-frontend,uploads,notifications,backups/postgres}
-sudo mkdir -p /var/docker/coati/data/logs/{webapi-blue,webapi-green,backfire-blue,backfire-green,dbmanager}
-
-# PostgreSQL 以外のディレクトリを coati ユーザーに設定
-sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/redis
-sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/redis-frontend
-sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/uploads
-sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/notifications
-sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/logs
-sudo chown -R $(id -u coati):$(id -g coati) /var/docker/coati/data/backups
-```
-
-**注意**:
-- UID が一致しないとログファイルや Redis のデータが書き込めません
-- `postgres/` ディレクトリは **chown しないこと**（PostgreSQL は postgres ユーザーで動作し、初回起動時に自動で権限設定される）
-
-> **📋 自動化予定**: 上記の手動コマンドは `setup-data-dirs.sh` で自動化予定。
-> 詳細は [docs/deploy-permission-improvement-plan.md](../../docs/deploy-permission-improvement-plan.md) を参照。
-
-### 2. 環境変数の設定
-
-```bash
+# 1. .env ファイルを準備（初回のみ）
 cd deploy/deploy-pc
 cp .env.example .env
+# → BUILD_PC_IP, REGISTRY_PORT 等を編集
+
+# 2. 初期セットアップ実行（root 権限）
+sudo ./initial-setup.sh
+
+# 3. 以降はすべて coati ユーザーで操作
+su - coati
+cd /path/to/deploy/deploy-pc
+./pull-and-deploy.sh
 ```
 
-`.env` ファイルを編集:
+> **注意**: `.env` が存在しない場合、`initial-setup.sh` はテンプレートからコピーして終了します。
+> `.env` を編集してから再実行してください。
+
+### 手動セットアップ（個別実行が必要な場合）
+
+個別にスクリプトを実行する場合：
 
 ```bash
-# ビルドPCのIPアドレスまたはホスト名
-BUILD_PC_IP=192.168.1.100
-
-# レジストリポート（ビルドPC側と同じ）
-REGISTRY_PORT=5000
-```
-
-### 3. Docker Daemon の設定
-
-```bash
+# Docker daemon 設定のみ（ビルドPC の IP 変更時など）
 sudo ./setup-docker-daemon.sh
+
+# データディレクトリ作成のみ（ディレクトリ追加が必要な場合）
+sudo ./setup-data-dirs.sh
 ```
 
-このスクリプトは以下を実行します:
-- `/etc/docker/daemon.json` に `insecure-registries` を追加
-- Docker デーモンの再起動
-- 設定の動作確認
+### UID/GID について
 
-**注意**: このスクリプトは sudo 権限が必要です。
+- コンテナ内プロセスは `coati` ユーザーの UID/GID で動作します
+- `initial-setup.sh` が自動で `id -u coati` / `id -g coati` を検出し、`.env` の `CONTAINER_UID` / `CONTAINER_GID` に設定します
+- UID が一致しないとログファイルや Redis のデータが書き込めません
+- `postgres/` ディレクトリは **chown しないこと**（PostgreSQL は postgres ユーザーで動作し、初回起動時に自動設定される）
 
 ---
 
