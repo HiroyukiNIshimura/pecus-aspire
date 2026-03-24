@@ -15,7 +15,8 @@ set -eu
 #   4. Docker daemon 設定（insecure-registries）
 #   5. データディレクトリ作成 & 権限設定
 #   6. nvm & Node.js LTS インストール（coati ユーザーで実行）
-#   7. アプリケーション設定ファイル生成（coati ユーザーで実行）
+#   7. プロジェクトディレクトリの所有権を coati に設定
+#   8. アプリケーション設定ファイル生成（coati ユーザーで実行）
 #
 # 以降の運用は coati ユーザーで:
 #   su - coati
@@ -120,11 +121,20 @@ su - "$COATI_USER" -c '. "$HOME/.nvm/nvm.sh" && nvm install --lts && nvm alias d
 echo "[OK] Node.js LTS をインストールしました"
 
 # ----------------------------------------
-# 8. 設定ファイル生成（coati ユーザーで実行）
+# 8. プロジェクトディレクトリの所有権設定
+# ----------------------------------------
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+echo ""
+echo "📂 プロジェクトディレクトリの所有権を設定..."
+chown -R "$COATI_UID:$COATI_GID" "$REPO_ROOT"
+echo "[OK] $REPO_ROOT を $COATI_USER に設定しました"
+
+# ----------------------------------------
+# 9. 設定ファイル生成（coati ユーザーで実行）
 # ----------------------------------------
 echo ""
 echo "⚙️ 設定ファイル生成..."
-su - "$COATI_USER" -c '. "$HOME/.nvm/nvm.sh" && cd '"'$(cd "$SCRIPT_DIR/../.." && pwd)'"' && node scripts/generate-appsettings.js -P'
+su - "$COATI_USER" -c '. "$HOME/.nvm/nvm.sh" && cd '"'$REPO_ROOT'"' && node scripts/generate-appsettings.js -P'
 
 echo ""
 echo "========================================="
