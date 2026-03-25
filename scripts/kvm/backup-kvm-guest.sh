@@ -32,7 +32,9 @@
 
 # バックアップ先のUSBは/mnt/backupにマウントされているものとする。
 
+# ログ出力用の基準時刻（スクリプト開始時点）
 date=$(/usr/bin/date +"%Y/%m/%d %H:%M:%S")
+# バックアップ処理ログの出力先
 log="/var/log/backup-kvm-guest.log"
 # ログローテートは logrotate で管理する。
 # /etc/logrotate.d/backup-kvm-guest に以下を作成:
@@ -43,14 +45,26 @@ log="/var/log/backup-kvm-guest.log"
 #       missingok
 #       notifempty
 #   }
+# スナップショット対象の LVM Volume Group 名
 vg="dall-vg"
+# スナップショット対象の Logical Volume 名
 lv="srv"
+# 作成した LVM スナップショットのマウント先
 snap_dir="/var/lib/kvm/snap"
+# バックアップ先 USB HDD のマウントポイント（autofs 管理）
 usb_mount_dir="/mnt/backup"
+# 元 LV のマウントポイント（snap_dir 内の相対パス計算に使用）
 lv_mount="/srv"
+# バックアップ対象の VM イメージ配置ディレクトリ
 images="/srv/vm"
+# 実際のバックアップ格納先ディレクトリ
 backup_dir="${usb_mount_dir}/vm"
+# スナップショット容量の追加余裕値（GB）
 snap_extra_gb="1"
+# fsfreeze 済み VM 一覧（thaw 対象管理用）
+frozen_vms=""
+# thaw 実行済みフラグ（trap 二重実行防止）
+thaw_completed=0
 
 
 remove_snapshot (){
@@ -95,6 +109,69 @@ check_usb_mount (){
   /usr/bin/echo 0
  fi
 }
+
+thaw_vms (){
+ if [ "${thaw_completed}" -eq 1 ]; then
+  return 0
+ fi
+
+ if [ -z "${frozen_vms}" ]; then
+  return 0
+ fi
+
+ thaw_completed=1
+ for vm in ${frozen_vms}; do
+  thaw_result=$(/usr/bin/virsh domfsthaw "${vm}" 2>&1)
+  if [ $? -ne 0 ]; then
+   /usr/bin/echo "${date} failed to thaw filesystem on ${vm}: ${thaw_result}" >> ${log}
+  else
+   /usr/bin/echo "${date} filesystem thawed on ${vm}" >> ${log}
+  fi
+ done
+}
+
+freeze_target_vms (){
+ frozen_vms=""
+ thaw_completed=0
+
+ running_vms=$(/usr/bin/virsh list --name 2>&1)
+ if [ $? -ne 0 ]; then
+  /usr/bin/echo "${date} failed to list running VMs: ${running_vms}" >> ${log}
+  return 1
+ fi
+
+ for vm in ${running_vms}; do
+  if [ -z "${vm}" ]; then
+   continue
+  fi
+
+  vm_disks=$(/usr/bin/virsh domblklist --details "${vm}" 2>/dev/null | /usr/bin/awk '$3 == "disk" {print $4}')
+  for disk in ${vm_disks}; do
+   case "${disk}" in
+    "${images}"/*)
+     freeze_result=$(/usr/bin/virsh domfsfreeze "${vm}" 2>&1)
+     if [ $? -ne 0 ]; then
+      /usr/bin/echo "${date} failed to freeze filesystem on ${vm}: ${freeze_result}" >> ${log}
+      thaw_vms
+      return 1
+     fi
+
+     frozen_vms="${frozen_vms} ${vm}"
+     /usr/bin/echo "${date} filesystem frozen on ${vm}" >> ${log}
+     break
+     ;;
+   esac
+  done
+ done
+
+ return 0
+}
+
+cleanup_on_exit (){
+ thaw_vms
+}
+
+trap 'cleanup_on_exit' EXIT INT TERM
 
 
 #
@@ -181,8 +258,17 @@ if [ "${exists_snapshot}" -eq 1 ]; then
   remove_snapshot
 fi
 
-lvcreate=$(/usr/sbin/lvcreate -s -L "${snap_size}GB" -n ${lv}.snap /dev/${vg}/${lv} 2>&1)
+freeze_target_vms
 if [ $? -ne 0 ]; then
+ /usr/bin/echo "${date} failed to freeze target VMs" >> ${log}
+ exit 1
+fi
+
+lvcreate=$(/usr/sbin/lvcreate -s -L "${snap_size}GB" -n ${lv}.snap /dev/${vg}/${lv} 2>&1)
+lvcreate_status=$?
+thaw_vms
+
+if [ "${lvcreate_status}" -ne 0 ]; then
  /usr/bin/echo "${date} failed to create snapshot: ${lvcreate}" >> ${log}
  exit 1
 fi
