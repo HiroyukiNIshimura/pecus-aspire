@@ -412,6 +412,9 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       [resetInfiniteScroll],
     );
 
+    const hasActiveFilters =
+      searchQuery.trim().length > 0 || Object.values(filters).some((value) => value !== null && value !== undefined && value !== '');
+
     return (
       <aside className="w-full bg-base-200 border-r border-base-300 flex flex-col h-full">
         {/* ヘッダー */}
@@ -577,7 +580,10 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           />
         ) : items.length === 0 ? (
           <div className="p-4 text-center text-base-content/70">
-            <p className="text-sm">{searchQuery ? '該当するアイテムがありません' : 'アイテムがありません'}</p>
+            <p className="text-sm">{hasActiveFilters ? '該当するアイテムがありません' : 'まだアイテムがありません'}</p>
+            <p className="text-xs text-base-content/50 mt-1">
+              {hasActiveFilters ? '検索条件やフィルター条件を変更してみてください' : '「追加」ボタンからアイテムを作成してみましょう'}
+            </p>
           </div>
         ) : (
           <div ref={scrollContainerRef} className="overflow-y-auto bg-base-200 flex-1 min-h-0">

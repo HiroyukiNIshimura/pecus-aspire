@@ -530,6 +530,8 @@ const WorkspaceTasks = ({
     );
   }
 
+  const hasActiveFilters = taskStatus !== null || selectedAssignee !== null;
+
   return (
     <div className="mt-6">
       {renderHeader()}
@@ -660,7 +662,12 @@ const WorkspaceTasks = ({
         </div>
       </div>
       {tasks.length === 0 ? (
-        <EmptyState iconClass="icon-[mdi--clipboard-check-outline]" message="タスクを追加しましょう" size="sm" />
+        <EmptyState
+          iconClass="icon-[mdi--clipboard-check-outline]"
+          message={hasActiveFilters ? '該当するタスクがありません' : 'タスクを追加しましょう'}
+          description={hasActiveFilters ? 'フィルタ条件を変更してみてください' : undefined}
+          size="sm"
+        />
       ) : (
         <div className="relative px-9">
           {/* 左矢印 */}

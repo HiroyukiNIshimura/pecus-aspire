@@ -324,6 +324,8 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
     }
   }, [fetchError, notify]);
 
+  const hasActiveFilters = activeFilter !== 'All' || showArchived || selectedWorkspaceIds.length > 0;
+
   return (
     <>
       {/* ページヘッダー */}
@@ -533,8 +535,12 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
           {items.length === 0 ? (
             <EmptyState
               iconClass="icon-[mdi--file-document-outline]"
-              message="該当するアイテムがありません"
-              description="フィルタ条件を変更してみてください"
+              message={hasActiveFilters ? '該当するアイテムがありません' : 'まだアイテムがありません'}
+              description={
+                hasActiveFilters
+                  ? 'フィルタ条件を変更してみてください'
+                  : 'ワークスペースからアイテムを作成してみましょう'
+              }
             />
           ) : (
             <>

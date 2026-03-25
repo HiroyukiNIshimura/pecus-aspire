@@ -153,6 +153,8 @@ export default function WorkspacesClient({
     handleFilterChange();
   };
 
+  const hasActiveFilters = filterName !== '' || filterGenreId !== null;
+
   return (
     <>
       <LoadingOverlay isLoading={showLoading} message="検索中..." />
@@ -279,8 +281,12 @@ export default function WorkspacesClient({
           {workspaces.length === 0 ? (
             <EmptyState
               iconClass="icon-[mdi--folder-open-outline]"
-              message="ワークスペースが見つかりません"
-              description="フィルタ条件を変更してみてください"
+              message={hasActiveFilters ? 'ワークスペースが見つかりません' : 'まだワークスペースがありません'}
+              description={
+                hasActiveFilters
+                  ? 'フィルタ条件を変更してみてください'
+                  : '「新規作成」ボタンからワークスペースを作成しましょう'
+              }
             />
           ) : (
             <>
