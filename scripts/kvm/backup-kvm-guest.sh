@@ -50,6 +50,7 @@ usb_mount_dir="/mnt/backup"
 lv_mount="/srv"
 images="/srv/vm"
 backup_dir="${usb_mount_dir}/vm"
+snap_extra_gb="1"
 
 
 remove_snapshot (){
@@ -168,7 +169,7 @@ if [ ! -e "${snap_dir}" ]; then
 fi
 
 img_size=$(/usr/bin/du -bs "${images}" | /usr/bin/sed -r "s/^([0-9]+).+$/\1/")
-snap_size=$(/usr/bin/echo "scale=0; ${img_size} / (4 * 1024 * 1024 * 1024) + 1" | /usr/bin/bc)
+snap_size=$(/usr/bin/echo "scale=0; ${img_size} / (4 * 1024 * 1024 * 1024) + ${snap_extra_gb}" | /usr/bin/bc)
 
 
 #
