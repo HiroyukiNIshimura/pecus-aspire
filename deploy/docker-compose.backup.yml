@@ -7,6 +7,7 @@ services:
   pgbackup:
     image: postgres:18-alpine
     container_name: pecus-pgbackup
+    user: "${CONTAINER_UID:-1001}:${CONTAINER_GID:-1001}"
     restart: "no"
     environment:
       PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}

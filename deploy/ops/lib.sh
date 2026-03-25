@@ -193,3 +193,27 @@ confirm_yes() {
     exit 3
   fi
 }
+
+check_data_dirs() {
+  # データディレクトリの存在と書き込み権限をチェック（警告のみ、停止しない）
+  # postgres/ は PostgreSQL が管理するためチェック対象外
+  dirs="redis redis-frontend uploads notifications logs/webapi-blue logs/webapi-green logs/backfire-blue logs/backfire-green logs/dbmanager backups/postgres prometheus"
+  missing=false
+
+  for d in $dirs; do
+    target="$DATA_PATH/$d"
+    if [ ! -d "$target" ]; then
+      echo "[Warn] ディレクトリが存在しません: $target" >&2
+      missing=true
+    elif [ ! -w "$target" ]; then
+      echo "[Warn] 書き込み権限がありません: $target (owner: $(stat -c '%U:%G' "$target" 2>/dev/null || stat -f '%Su:%Sg' "$target" 2>/dev/null))" >&2
+      missing=true
+    fi
+  done
+
+  if [ "$missing" = "true" ]; then
+    echo "[Warn] 一部のデータディレクトリに問題があります。sudo setup-data-dirs.sh を実行してください" >&2
+    return 1
+  fi
+  return 0
+}
