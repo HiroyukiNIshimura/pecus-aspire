@@ -189,15 +189,11 @@ export default function WorkspacesClient({
           </div>
           <button
             type="button"
-            className={`btn btn-primary transition-all duration-300 ${
-              isCreateButtonHighlighted
-                ? 'ring-2 ring-primary/60 ring-offset-1 ring-offset-base-100 shadow-md brightness-110'
-                : ''
-            }`}
+            className="btn btn-primary transition-colors duration-300"
             onClick={() => setIsCreateModalOpen(true)}
           >
             <span
-              className={`icon-[mdi--plus-circle-outline] w-5 h-5 ${isCreateButtonHighlighted ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:1.8s]' : ''}`}
+              className={`icon-[mdi--plus-circle-outline] w-5 h-5 ${isCreateButtonHighlighted ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:2s] scale-105' : ''}`}
               aria-hidden="true"
             />
             新規作成

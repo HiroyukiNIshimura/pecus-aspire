@@ -543,15 +543,11 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                       setSelectedItemId('new');
                       onCreateNew?.();
                     }}
-                    className={`btn btn-primary btn-sm gap-1 transition-all duration-300 ${
-                      isCreateButtonHighlighted
-                        ? 'ring-2 ring-primary/60 ring-offset-1 ring-offset-base-200 shadow-md brightness-110'
-                        : ''
-                    }`}
+                    className="btn btn-primary btn-sm gap-1 transition-colors duration-300"
                     title="アイテムを追加"
                   >
                     <span
-                      className={`icon-[mdi--plus-circle-outline] w-4 h-4 ${isCreateButtonHighlighted ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:1.8s]' : ''}`}
+                      className={`icon-[mdi--plus-circle-outline] w-4 h-4 ${isCreateButtonHighlighted ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:2s] scale-105' : ''}`}
                       aria-hidden="true"
                     />
                     <span>追加</span>

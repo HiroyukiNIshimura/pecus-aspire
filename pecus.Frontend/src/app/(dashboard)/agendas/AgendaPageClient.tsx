@@ -75,18 +75,11 @@ export default function AgendaPageClient({ initialOccurrences, initialNextCursor
           <h1 className="text-2xl font-bold text-base-content">📅 今後の予定</h1>
           <p className="text-sm text-base-content/60 mt-1">予定されているアジェンダを確認・管理できます</p>
         </div>
-        <Link
-          href="/agendas/new"
-          className={`btn btn-primary transition-all duration-300 ${
-            isCreateButtonHighlighted
-              ? 'ring-2 ring-primary/60 ring-offset-1 ring-offset-base-100 shadow-md brightness-110'
-              : ''
-          }`}
-        >
+        <Link href="/agendas/new" className="btn btn-primary transition-colors duration-300">
           <span
             className={`icon-[tabler--plus] size-5 ${
               isCreateButtonHighlighted
-                ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:1.8s]'
+                ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:2s] scale-105'
                 : ''
             }`}
           />

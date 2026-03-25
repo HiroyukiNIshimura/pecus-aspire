@@ -439,11 +439,7 @@ const WorkspaceTasks = ({
         )}
         <button
           type="button"
-          className={`btn btn-outline btn-primary btn-sm gap-1 transition-all duration-300 ${
-            isCreateButtonHighlighted
-              ? 'ring-2 ring-primary/60 ring-offset-1 ring-offset-base-100 shadow-md brightness-110'
-              : ''
-          }`}
+          className="btn btn-outline btn-primary btn-sm gap-1 transition-colors duration-300"
           onClick={() => {
             if (!canEdit) {
               notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
@@ -455,7 +451,7 @@ const WorkspaceTasks = ({
           <span
             className={`icon-[mdi--plus-circle-outline] w-4 h-4 ${
               isCreateButtonHighlighted
-                ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:1.8s]'
+                ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:2s] scale-105'
                 : ''
             }`}
             aria-hidden="true"
