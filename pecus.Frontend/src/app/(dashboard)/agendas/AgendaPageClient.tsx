@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { fetchRecentOccurrencesPaginated } from '@/actions/agenda';
 import AgendaTimeline from '@/components/agendas/AgendaTimeline';
 import type { AgendaOccurrenceResponse } from '@/connectors/api/pecus';
@@ -17,6 +17,7 @@ export default function AgendaPageClient({ initialOccurrences, initialNextCursor
   const [occurrences, setOccurrences] = useState<AgendaOccurrenceResponse[]>(initialOccurrences);
   const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
   const [error, setError] = useState<string | null>(fetchError);
+  const [isCreateButtonHighlighted, setIsCreateButtonHighlighted] = useState(false);
 
   // 追加読み込み
   const loadMore = useCallback(async () => {
@@ -37,6 +38,24 @@ export default function AgendaPageClient({ initialOccurrences, initialNextCursor
     rootMargin: '200px',
   });
 
+  const shouldTemporarilyHighlightCreate = !isLoading && occurrences.length === 0;
+
+  useEffect(() => {
+    if (!shouldTemporarilyHighlightCreate) {
+      setIsCreateButtonHighlighted(false);
+      return;
+    }
+
+    setIsCreateButtonHighlighted(true);
+    const timerId = window.setTimeout(() => {
+      setIsCreateButtonHighlighted(false);
+    }, 10000);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [shouldTemporarilyHighlightCreate]);
+
   // 参加状況更新後にローカル状態を更新
   const handleAttendanceUpdate = (agendaId: number, occurrenceIndex: number, newStatus: string) => {
     setOccurrences((prev) =>
@@ -56,8 +75,21 @@ export default function AgendaPageClient({ initialOccurrences, initialNextCursor
           <h1 className="text-2xl font-bold text-base-content">📅 今後の予定</h1>
           <p className="text-sm text-base-content/60 mt-1">予定されているアジェンダを確認・管理できます</p>
         </div>
-        <Link href="/agendas/new" className="btn btn-primary">
-          <span className="icon-[tabler--plus] size-5" />
+        <Link
+          href="/agendas/new"
+          className={`btn btn-primary transition-all duration-300 ${
+            isCreateButtonHighlighted
+              ? 'ring-2 ring-primary/60 ring-offset-1 ring-offset-base-100 shadow-md brightness-110'
+              : ''
+          }`}
+        >
+          <span
+            className={`icon-[tabler--plus] size-5 ${
+              isCreateButtonHighlighted
+                ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:1.8s]'
+                : ''
+            }`}
+          />
           新規作成
         </Link>
       </div>

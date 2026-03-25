@@ -157,6 +157,7 @@ const WorkspaceTasks = ({
 
   // AIタスク生成モーダル状態
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const [isCreateButtonHighlighted, setIsCreateButtonHighlighted] = useState(false);
 
   // コメントモーダル状態
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
@@ -438,7 +439,11 @@ const WorkspaceTasks = ({
         )}
         <button
           type="button"
-          className="btn btn-outline btn-primary btn-sm gap-1"
+          className={`btn btn-outline btn-primary btn-sm gap-1 transition-all duration-300 ${
+            isCreateButtonHighlighted
+              ? 'ring-2 ring-primary/60 ring-offset-1 ring-offset-base-100 shadow-md brightness-110'
+              : ''
+          }`}
           onClick={() => {
             if (!canEdit) {
               notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
@@ -447,7 +452,14 @@ const WorkspaceTasks = ({
             setIsCreateModalOpen(true);
           }}
         >
-          <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
+          <span
+            className={`icon-[mdi--plus-circle-outline] w-4 h-4 ${
+              isCreateButtonHighlighted
+                ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:1.8s]'
+                : ''
+            }`}
+            aria-hidden="true"
+          />
           <span className="hidden sm:inline">タスク追加</span>
         </button>
       </div>
@@ -517,6 +529,25 @@ const WorkspaceTasks = ({
     return <span className={`badge badge-xs ${badge.className}`}>{badge.label}</span>;
   };
 
+  const hasActiveFilters = taskStatus !== null || selectedAssignee !== null;
+  const shouldTemporarilyHighlightCreate = tasks.length === 0 && !hasActiveFilters && !isLoading && canEdit;
+
+  useEffect(() => {
+    if (!shouldTemporarilyHighlightCreate) {
+      setIsCreateButtonHighlighted(false);
+      return;
+    }
+
+    setIsCreateButtonHighlighted(true);
+    const timerId = window.setTimeout(() => {
+      setIsCreateButtonHighlighted(false);
+    }, 10000);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [shouldTemporarilyHighlightCreate, workspaceId, itemId]);
+
   // 初回ローディング（データがまだない場合）
   if (isLoading && tasks.length === 0) {
     return (
@@ -529,8 +560,6 @@ const WorkspaceTasks = ({
       </div>
     );
   }
-
-  const hasActiveFilters = taskStatus !== null || selectedAssignee !== null;
 
   return (
     <div className="mt-6">

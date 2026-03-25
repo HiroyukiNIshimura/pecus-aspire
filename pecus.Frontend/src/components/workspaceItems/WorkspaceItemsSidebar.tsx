@@ -117,6 +117,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const [totalCount, setTotalCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [isSearching, setIsSearching] = useState(false);
+    const [isCreateButtonHighlighted, setIsCreateButtonHighlighted] = useState(false);
 
     // フィルタードローワーの状態
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
@@ -415,6 +416,24 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const hasActiveFilters =
       searchQuery.trim().length > 0 ||
       Object.values(filters).some((value) => value !== null && value !== undefined && value !== '');
+    const shouldTemporarilyHighlightCreate =
+      !isSelectionMode && !isLoading && items.length === 0 && !hasActiveFilters && canEdit;
+
+    useEffect(() => {
+      if (!shouldTemporarilyHighlightCreate) {
+        setIsCreateButtonHighlighted(false);
+        return;
+      }
+
+      setIsCreateButtonHighlighted(true);
+      const timerId = window.setTimeout(() => {
+        setIsCreateButtonHighlighted(false);
+      }, 10000);
+
+      return () => {
+        window.clearTimeout(timerId);
+      };
+    }, [shouldTemporarilyHighlightCreate, workspaceId]);
 
     return (
       <aside className="w-full bg-base-200 border-r border-base-300 flex flex-col h-full">
@@ -513,22 +532,31 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                     </button>
                   </div>
                 )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!canEdit) {
-                      notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
-                      return;
-                    }
-                    setSelectedItemId('new');
-                    onCreateNew?.();
-                  }}
-                  className="btn btn-primary btn-sm gap-1 ml-auto"
-                  title="アイテムを追加"
-                >
-                  <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
-                  <span>追加</span>
-                </button>
+                <div className="relative ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!canEdit) {
+                        notify.info('あなたのワークスペースに対する役割が閲覧専用のため、この操作は実行できません。');
+                        return;
+                      }
+                      setSelectedItemId('new');
+                      onCreateNew?.();
+                    }}
+                    className={`btn btn-primary btn-sm gap-1 transition-all duration-300 ${
+                      isCreateButtonHighlighted
+                        ? 'ring-2 ring-primary/60 ring-offset-1 ring-offset-base-200 shadow-md brightness-110'
+                        : ''
+                    }`}
+                    title="アイテムを追加"
+                  >
+                    <span
+                      className={`icon-[mdi--plus-circle-outline] w-4 h-4 ${isCreateButtonHighlighted ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:1.8s]' : ''}`}
+                      aria-hidden="true"
+                    />
+                    <span>追加</span>
+                  </button>
+                </div>
               </div>
 
               {/* 検索ボックス */}
