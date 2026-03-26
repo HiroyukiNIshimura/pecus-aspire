@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Entrance;
@@ -23,6 +24,7 @@ public class EntranceAuthController : ControllerBase
     private readonly RefreshTokenService _refreshService;
     private readonly TokenBlacklistService _blacklistService;
     private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly ILogger<EntranceAuthController> _logger;
 
     public EntranceAuthController(
@@ -30,12 +32,14 @@ public class EntranceAuthController : ControllerBase
         RefreshTokenService refreshService,
         TokenBlacklistService blacklistService,
         IBackgroundJobClient backgroundJobClient,
+        FrontendUrlResolver frontendUrlResolver,
         ILogger<EntranceAuthController> logger)
     {
         _userService = userService;
         _refreshService = refreshService;
         _blacklistService = blacklistService;
         _backgroundJobClient = backgroundJobClient;
+        _frontendUrlResolver = frontendUrlResolver;
         _logger = logger;
     }
 
@@ -149,7 +153,8 @@ public class EntranceAuthController : ControllerBase
             );
 
             // バックグラウンドでメール送信
-            var securitySettingsUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/settings/security";
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
+            var securitySettingsUrl = $"{baseUrl}/settings/security";
 
             var model = new SecurityNotificationEmailModel
             {
