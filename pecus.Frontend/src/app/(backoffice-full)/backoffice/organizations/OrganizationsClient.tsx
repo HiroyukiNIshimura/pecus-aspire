@@ -87,7 +87,7 @@ export default function OrganizationsClient({ initialData, fetchError }: Organiz
                   {data?.totalCount !== undefined && `全 ${data.totalCount} 件`}
                 </span>
                 <button type="button" className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
-                  <span className="icon-[mdi--plus] size-5" aria-hidden="true" />
+                  <span className="icon-[mdi--plus-circle-outline] size-5" aria-hidden="true" />
                   新規作成
                 </button>
               </div>

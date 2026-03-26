@@ -71,7 +71,7 @@ export default function CreateTagModal({ isOpen, onClose, onSuccess }: CreateTag
         {/* モーダルヘッダー */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
           <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-            <span className="icon-[mdi--tag-plus-outline] w-6 h-6" aria-hidden="true" />
+            <span className="icon-[mdi--plus-circle-outline] w-6 h-6" aria-hidden="true" />
             新規タグ作成
           </h2>
           <button

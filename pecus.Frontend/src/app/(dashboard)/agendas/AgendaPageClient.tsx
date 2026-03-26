@@ -77,7 +77,7 @@ export default function AgendaPageClient({ initialOccurrences, initialNextCursor
         </div>
         <Link href="/agendas/new" className="btn btn-primary transition-colors duration-300">
           <span
-            className={`icon-[tabler--plus] size-5 ${
+            className={`icon-[mdi--plus-circle-outline] size-5 ${
               isCreateButtonHighlighted
                 ? 'motion-safe:animate-bounce motion-reduce:animate-none [animation-duration:2s] scale-105'
                 : ''

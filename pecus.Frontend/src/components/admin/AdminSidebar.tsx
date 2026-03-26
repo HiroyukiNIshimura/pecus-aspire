@@ -11,7 +11,7 @@ const menuItems = [
   { href: '/admin/settings', label: '設定', iconClass: 'icon-[mdi--cog-outline]' },
   { href: '/admin/workspaces', label: 'ワークスペース', iconClass: 'icon-[mdi--view-grid-outline]' },
   { href: '/admin/users', label: 'ユーザー', iconClass: 'icon-[mdi--account-group-outline]' },
-  { href: '/admin/skills', label: 'スキル', iconClass: 'icon-[mdi--badge-account-outline]' },
+  { href: '/admin/skills', label: 'スキル', iconClass: 'icon-[mdi--face-man-shimmer-outline]' },
   { href: '/admin/tags', label: 'タグ', iconClass: 'icon-[mdi--tag-outline]' },
   { href: '/admin/api-keys', label: 'APIキー', iconClass: 'icon-[mdi--key-outline]' },
 ];

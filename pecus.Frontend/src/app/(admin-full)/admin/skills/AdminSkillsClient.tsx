@@ -208,7 +208,7 @@ export default function AdminSkillsClient() {
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">スキル管理</h1>
               <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
-                <span className="icon-[mdi--tag-plus-outline] w-5 h-5" aria-hidden="true" />
+                <span className="icon-[mdi--face-man-shimmer-outline] w-5 h-5" aria-hidden="true" />
                 新規スキル追加
               </button>
             </div>
