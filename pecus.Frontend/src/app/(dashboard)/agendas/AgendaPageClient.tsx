@@ -71,9 +71,12 @@ export default function AgendaPageClient({ initialOccurrences, initialNextCursor
     <div className="max-w-4xl mx-auto">
       {/* ヘッダー */}
       <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-base-content">📅 今後の予定</h1>
-          <p className="text-sm text-base-content/60 mt-1">予定されているアジェンダを確認・管理できます</p>
+        <div className="flex items-center gap-3">
+          <span className="icon-[mdi--calendar-multiple-check] text-primary w-8 h-8" aria-hidden="true" />
+          <div>
+            <h1 className="text-2xl font-bold">今後の予定</h1>
+            <p className="text-base-content/70 mt-1">予定されているアジェンダを確認・管理できます</p>
+          </div>
         </div>
         <Link href="/agendas/new" className="btn btn-primary transition-colors duration-300">
           <span

@@ -102,7 +102,7 @@ export default function CommitterDashboardClient({
       {/* ページヘッダー */}
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <span className="icon-[mdi--account-check-outline] text-primary w-8 h-8" aria-hidden="true" />
+          <span className="icon-[mdi--checkbox-outline] text-primary w-8 h-8" aria-hidden="true" />
           <div>
             <h1 className="text-2xl font-bold">コミッター</h1>
             <p className="text-base-content/70 mt-1">あなたがコミッターを担当するアイテムのタスク一覧（期日順）</p>
