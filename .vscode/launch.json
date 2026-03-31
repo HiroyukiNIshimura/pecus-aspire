@@ -2,10 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run AppHost (https)",
-      "type": "dotnet",
+      "type": "aspire",
       "request": "launch",
-      "projectPath": "${workspaceFolder}/pecus.AppHost/pecus.AppHost.csproj",
+      "name": "Aspire: Launch default apphost",
+      "program": "${workspaceFolder}/pecus.AppHost/pecus.AppHost.csproj",
       "preLaunchTask": "generate-appsettings"
     }
   ]
