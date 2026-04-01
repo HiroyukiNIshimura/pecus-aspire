@@ -25,6 +25,7 @@ function FigmaComponent({ className, format, nodeKey, documentID }: FigmaCompone
   return (
     <BlockWithAlignableContents className={className} format={format} nodeKey={nodeKey}>
       <iframe
+        title={`Figma Embed - ${documentID}`}
         width="560"
         height="315"
         src={`https://www.figma.com/embed?embed_host=lexical&url=\
