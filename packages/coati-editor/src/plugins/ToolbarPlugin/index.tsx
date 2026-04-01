@@ -32,11 +32,9 @@ import {
 } from '@lexical/utils';
 import {
   $addUpdateTag,
-  $createParagraphNode,
   $getNodeByKey,
   $getRoot,
   $getSelection,
-  $insertNodes,
   $isElementNode,
   $isNodeSelection,
   $isRangeSelection,
