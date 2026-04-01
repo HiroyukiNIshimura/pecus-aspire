@@ -24,13 +24,13 @@
   cursor: not-allowed;
 }
 
-.notion-like-editor input[type='number']::-webkit-outer-spin-button,
-.notion-like-editor input[type='number']::-webkit-inner-spin-button {
+.notion-like-editor input[type="number"]::-webkit-outer-spin-button,
+.notion-like-editor input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-.notion-like-editor input[type='number'] {
+.notion-like-editor input[type="number"] {
   -moz-appearance: textfield;
 }
 

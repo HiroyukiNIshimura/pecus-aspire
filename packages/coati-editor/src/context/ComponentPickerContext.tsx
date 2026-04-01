@@ -6,7 +6,7 @@
 'use client';
 
 import type { LexicalEditor } from 'lexical';
-import { createContext, useContext, type ReactNode, type JSX } from 'react';
+import { createContext, type JSX, type ReactNode, useContext } from 'react';
 
 export interface ComponentPickerOptionConfig {
   title: string;

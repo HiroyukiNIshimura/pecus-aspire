@@ -7,7 +7,7 @@
  *
  */
 
- :root {
+:root {
   --inline-code-bg: #f6e9c7;
   --inline-code-fg: #b94a00;
 }
@@ -15,7 +15,6 @@
   --inline-code-bg: #2d2d2d;
   --inline-code-fg: #ffb86c;
 }
-
 
 .NotionLikeEditorTheme__paragraph {
   margin: 0 0 0.5em 0;
@@ -92,7 +91,7 @@
 }
 
 .NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textUnderline::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
@@ -101,7 +100,7 @@
 }
 
 .NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textStrikethrough::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
@@ -111,7 +110,7 @@
 
 .NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textUnderlineStrikethrough::before,
 .NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textUnderlineStrikethrough::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
@@ -172,7 +171,7 @@
   position: absolute;
 }
 .NotionLikeEditorTheme__blockCursor:after {
-  content: '';
+  content: "";
   display: block;
   position: absolute;
   top: -2px;
@@ -266,7 +265,7 @@
 }
 .NotionLikeEditorTheme__tableFrozenRow tr:nth-of-type(1) > th:after,
 .NotionLikeEditorTheme__tableFrozenRow tr:nth-of-type(1) > td:after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   bottom: 0;
@@ -286,7 +285,7 @@
   left: 0;
 }
 .NotionLikeEditorTheme__tableFrozenColumn tr > :first-child::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -350,7 +349,7 @@
   top: 0;
   background-color: highlight;
   mix-blend-mode: multiply;
-  content: '';
+  content: "";
   pointer-events: none;
 }
 .NotionLikeEditorTheme__tableAddColumns {
@@ -367,7 +366,7 @@
   background-position: center;
   background-repeat: no-repeat;
   display: block;
-  content: ' ';
+  content: " ";
   position: absolute;
   top: 0;
   left: 0;
@@ -393,7 +392,7 @@
   background-position: center;
   background-repeat: no-repeat;
   display: block;
-  content: ' ';
+  content: " ";
   position: absolute;
   top: 0;
   left: 0;
@@ -514,7 +513,7 @@
 }
 .NotionLikeEditorTheme__listItemUnchecked:before,
 .NotionLikeEditorTheme__listItemChecked:before {
-  content: '\200B';
+  content: "\200B";
   width: 0.9em;
   height: 0.9em;
   top: 50%;
@@ -544,7 +543,7 @@
   background-repeat: no-repeat;
 }
 .NotionLikeEditorTheme__listItemChecked:after {
-  content: '';
+  content: "";
   cursor: pointer;
   border-color: var(--color-primary-content);
   border-style: solid;
@@ -568,16 +567,17 @@
   color: var(--color-neutral-content);
 }
 .NotionLikeEditorTheme__tokenDeleted {
-  border-image: linear-gradient(to right, var(--color-error) 50%, color-mix(in oklab, var(--color-error) 80%, transparent) 50%) fill 0/0/0
-    100vw;
+  border-image:
+    linear-gradient(to right, var(--color-error) 50%, color-mix(in oklab, var(--color-error) 80%, transparent) 50%) fill
+    0 / 0 / 0 100vw;
 }
 .NotionLikeEditorTheme__tokenInserted {
-  border-image: linear-gradient(to right, var(--color-success) 50%, color-mix(in oklab, var(--color-success) 80%, transparent) 50%) fill 0/0/0
-    100vw;
+  border-image:
+    linear-gradient(to right, var(--color-success) 50%, color-mix(in oklab, var(--color-success) 80%, transparent) 50%)
+    fill 0 / 0 / 0 100vw;
 }
 .NotionLikeEditorTheme__tokenUnchanged {
-  border-image: linear-gradient(to right, var(--color-base-300) 50%, var(--color-base-200) 50%) fill 0/0/0
-    100vw;
+  border-image: linear-gradient(to right, var(--color-base-300) 50%, var(--color-base-200) 50%) fill 0 / 0 / 0 100vw;
 }
 .NotionLikeEditorTheme__tokenPunctuation {
   color: var(--color-neutral);
@@ -645,7 +645,7 @@
   cursor: pointer;
 }
 .NotionLikeEditorTheme__hr:after {
-  content: '';
+  content: "";
   display: block;
   height: 2px;
   background-color: var(--color-neutral);

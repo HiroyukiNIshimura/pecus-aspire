@@ -1109,22 +1109,26 @@ function MentionsTypeaheadMenuItem({
   if (isSelected) {
     className += " selected";
   }
-  return /* @__PURE__ */ jsxs4(
-    "li",
-    {
-      tabIndex: -1,
-      className,
-      ref: option.setRefElement,
-      "aria-selected": isSelected,
-      id: `typeahead-item-${index}`,
-      onMouseEnter,
-      onClick,
-      children: [
-        option.picture,
-        /* @__PURE__ */ jsx11("span", { className: "text", children: option.name })
-      ]
-    },
-    option.key
+  return (
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: off
+    // biome-ignore lint/a11y/useKeyWithClickEvents: off
+    /* @__PURE__ */ jsxs4(
+      "li",
+      {
+        tabIndex: -1,
+        className,
+        ref: option.setRefElement,
+        "aria-selected": isSelected,
+        id: `typeahead-item-${index}`,
+        onMouseEnter,
+        onClick,
+        children: [
+          option.picture,
+          /* @__PURE__ */ jsx11("span", { className: "text", children: option.name })
+        ]
+      },
+      option.key
+    )
   );
 }
 function NewMentionsPlugin() {

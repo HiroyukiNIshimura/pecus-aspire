@@ -214,6 +214,7 @@ function MoveWrapper({ className, style, onChange, children }: MoveWrapperProps)
   };
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: off
     <div ref={divRef} className={className} style={style} onMouseDown={onMouseDown}>
       {children}
     </div>

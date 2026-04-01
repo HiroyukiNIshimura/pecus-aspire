@@ -1056,22 +1056,26 @@ function MentionsTypeaheadMenuItem({
   if (isSelected) {
     className += " selected";
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
-    "li",
-    {
-      tabIndex: -1,
-      className,
-      ref: option.setRefElement,
-      "aria-selected": isSelected,
-      id: `typeahead-item-${index}`,
-      onMouseEnter,
-      onClick,
-      children: [
-        option.picture,
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "text", children: option.name })
-      ]
-    },
-    option.key
+  return (
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: off
+    // biome-ignore lint/a11y/useKeyWithClickEvents: off
+    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
+      "li",
+      {
+        tabIndex: -1,
+        className,
+        ref: option.setRefElement,
+        "aria-selected": isSelected,
+        id: `typeahead-item-${index}`,
+        onMouseEnter,
+        onClick,
+        children: [
+          option.picture,
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "text", children: option.name })
+        ]
+      },
+      option.key
+    )
   );
 }
 function NewMentionsPlugin() {

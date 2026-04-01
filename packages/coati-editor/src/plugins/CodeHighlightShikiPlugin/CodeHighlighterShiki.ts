@@ -118,7 +118,7 @@ function updateCodeGutter(node: CodeNode, editor: LexicalEditor): void {
   let count = 1;
   for (let i = 0; i < childrenLength; i++) {
     if ($isLineBreakNode(children[i])) {
-      gutter += '\n' + ++count;
+      gutter += `\n${++count}`;
     }
   }
   codeElement.setAttribute('data-gutter', gutter);

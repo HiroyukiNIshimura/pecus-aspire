@@ -1,7 +1,7 @@
 .draggable-block-menu {
   border-radius: 6px;
-  padding: 3px 4px;          /* 4px 5px -> 3px 4px でコンパクトに */
-  margin-left: -6px;        /* コンテンツにかぶらないよう左へオフセット */
+  padding: 3px 4px; /* 4px 5px -> 3px 4px でコンパクトに */
+  margin-left: -6px; /* コンテンツにかぶらないよう左へオフセット */
   cursor: grab;
   opacity: 0;
   position: absolute;
@@ -10,19 +10,19 @@
   will-change: transform;
   display: flex;
   gap: 4px;
-  border: none;                 /* ここを変更: 枠線なしに */
-  box-shadow: none;                      /* 影なし */
+  border: none; /* ここを変更: 枠線なしに */
+  box-shadow: none; /* 影なし */
   transform: translateY(1px) scale(0.98); /* ふわっと出す初期姿勢 */
   transition:
     background-color 160ms ease,
     box-shadow 160ms ease,
     border-color 160ms ease,
     opacity 160ms ease,
-    transform 160ms ease;                 /* transform もアニメ対象に */
+    transform 160ms ease; /* transform もアニメ対象に */
 }
 
 .draggable-block-menu:hover {
-  box-shadow: none;                      /* 影なし（ホバー時も） */
+  box-shadow: none; /* 影なし（ホバー時も） */
   transform: translateY(0) scale(1);
 }
 
@@ -62,19 +62,19 @@
 }
 
 /* ライトテーマ（フラット・淡色） */
-:root:not([data-theme='dark']) .draggable-block-menu {
+:root:not([data-theme="dark"]) .draggable-block-menu {
   background-color: var(--color-base-200); /* ← 変更 */
-  box-shadow: none;                      /* 影なし */
+  box-shadow: none; /* 影なし */
 }
 
 /* ダークテーマ（フラット・淡色） */
-[data-theme='dark'] .draggable-block-menu {
+[data-theme="dark"] .draggable-block-menu {
   background-color: var(--color-base-200); /* ← 変更 */
-  box-shadow: none;                      /* 影なし */
+  box-shadow: none; /* 影なし */
 }
 
 /* アクティブ時はわずかに押し込む */
-[data-theme='dark'] .draggable-block-menu:active {
+[data-theme="dark"] .draggable-block-menu:active {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.32);
   transform: translateY(1px);
 }
@@ -91,14 +91,14 @@
   will-change: transform;
 }
 
-:root:not([data-theme='dark']) .draggable-block-menu .icon,
-:root:not([data-theme='dark']) .draggable-block-menu .icon-plus {
-  filter: none;              /* 黒アイコンそのまま */
-  opacity: 0.95;             /* 視認性を少しだけ上げる */
+:root:not([data-theme="dark"]) .draggable-block-menu .icon,
+:root:not([data-theme="dark"]) .draggable-block-menu .icon-plus {
+  filter: none; /* 黒アイコンそのまま */
+  opacity: 0.95; /* 視認性を少しだけ上げる */
 }
 
-[data-theme='dark'] .draggable-block-menu .icon,
-[data-theme='dark'] .draggable-block-menu .icon-plus {
+[data-theme="dark"] .draggable-block-menu .icon,
+[data-theme="dark"] .draggable-block-menu .icon-plus {
   filter: invert(1) brightness(1.2) contrast(1.05); /* 白寄りに固定 */
   opacity: 0.95;
 }

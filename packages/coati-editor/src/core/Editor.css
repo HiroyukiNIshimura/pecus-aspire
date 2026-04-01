@@ -6,7 +6,7 @@
  *
  */
 
-@import 'https://fonts.googleapis.com/css?family=Reenie+Beanie';
+@import "https://fonts.googleapis.com/css?family=Reenie+Beanie";
 
 .notion-like-editor .editor-placeholder {
   color: var(--color-base-content);
@@ -114,7 +114,7 @@
 }
 
 .notion-like-editor .editor-dev-button::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 10px;
   right: 10px;
@@ -162,7 +162,7 @@
 }
 
 .notion-like-editor .test-recorder-button::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 8px;
   right: 8px;
@@ -268,6 +268,7 @@
   background: var(--color-info);
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: off */
 .notion-like-editor.typeahead-popover.component-picker-menu li {
   margin: 0 8px 0 8px;
   padding: 8px;
@@ -328,7 +329,6 @@
 }
 .notion-like-editor i.palette {
   background-image: url(../images/icons/palette.svg);
-
 }
 .notion-like-editor i.bucket {
   background-image: url(../images/icons/paint-bucket.svg);
@@ -391,7 +391,7 @@ i.bold {
 }
 
 .notion-like-editor .icon.plus,
- i.icon.plus {
+i.icon.plus {
   background-image: url(../images/icons/plus.svg);
 }
 
@@ -438,7 +438,7 @@ i.bold {
 .notion-like-editor i.table,
 .notion-like-editor i.icon.table {
   background-image: url(../images/icons/table.svg);
-  border-radius:0;
+  border-radius: 0;
 }
 
 .notion-like-editor i.close,
@@ -638,7 +638,6 @@ i.bold {
   background-color: var(--color-info);
 }
 
-
 .notion-like-editor .link-editor .link-view {
   display: block;
   width: calc(100% - 24px);
@@ -834,6 +833,7 @@ i.bold {
   background-color: var(--color-base-200);
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: off */
 .notion-like-editor.nle-dropdown .item .text {
   display: flex;
   line-height: 20px;
@@ -841,6 +841,7 @@ i.bold {
   min-width: 150px;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: off */
 .notion-like-editor.nle-dropdown .item .icon {
   display: flex;
   width: 20px;
@@ -1018,11 +1019,11 @@ i.bold {
   transition: transform 0.2s;
 }
 
-.notion-like-editor .switch button[aria-checked='true'] {
+.notion-like-editor .switch button[aria-checked="true"] {
   background-color: var(--color-primary);
 }
 
-.notion-like-editor .switch button[aria-checked='true'] span {
+.notion-like-editor .switch button[aria-checked="true"] span {
   transform: translateX(20px);
 }
 
@@ -1126,7 +1127,9 @@ i.bold {
   background-color: var(--color-primary);
   border: 1px solid var(--color-base-100);
   border-radius: 0;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-n {
@@ -1465,6 +1468,7 @@ i.bold {
   background-color: #74829a; /* gray-400: ライト/ダーク両対応 */
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: off */
 .notion-like-editor .toolbar-item.font-family .text {
   display: block;
   max-width: 40px;
@@ -1487,6 +1491,8 @@ i.bold {
   width: 24px;
   align-self: center;
 }
+
+/* biome-ignore lint/style/noDescendingSpecificity: off */
 .notion-like-editor .toolbar .toolbar-item .text {
   display: flex;
   line-height: 20px;
@@ -1499,7 +1505,7 @@ i.bold {
   padding-right: 10px;
   color: #374151;
 }
-
+/* biome-ignore lint/style/noDescendingSpecificity: off */
 .notion-like-editor .toolbar .toolbar-item .icon {
   display: flex;
   width: 20px;
@@ -1554,7 +1560,7 @@ i.bold {
   padding: 20px 10px;
   position: relative;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  font-family: 'Reenie Beanie', cursive;
+  font-family: "Reenie Beanie", cursive;
   font-size: 24px;
   border-bottom-right-radius: 60px 5px;
   display: block;
@@ -1661,7 +1667,7 @@ i.bold {
   .notion-like-editor .github-corner:hover .octo-arm {
     animation: none;
   }
-
+  /* biome-ignore lint/style/noDescendingSpecificity: off */
   .notion-like-editor .github-corner .octo-arm {
     animation: octocat-wave 560ms ease-in-out;
   }
@@ -1758,5 +1764,5 @@ i.bold {
   outline: 2px solid rgb(60, 132, 244);
 } */
 .notion-like-editor .dateTimePill:hover {
-  background:  color-mix(in oklab, var(--color-success, var(--color-neutral)) 90%, #000) !important;
+  background: color-mix(in oklab, var(--color-success, var(--color-neutral)) 90%, #000) !important;
 }

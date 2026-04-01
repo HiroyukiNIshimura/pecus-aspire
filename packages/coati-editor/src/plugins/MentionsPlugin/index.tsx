@@ -563,6 +563,8 @@ function MentionsTypeaheadMenuItem({
     className += ' selected';
   }
   return (
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: off
+    // biome-ignore lint/a11y/useKeyWithClickEvents: off
     <li
       key={option.key}
       tabIndex={-1}

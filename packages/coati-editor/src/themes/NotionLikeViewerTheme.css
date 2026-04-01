@@ -1,29 +1,30 @@
 /* NotionLikeViewerTheme: Table styles (copied from NotionLikeEditorTheme__table*) */
 .NotionLikeViewerTheme__tableScrollableWrapper {
-	overflow-x: auto;
-	margin: 0px 25px 30px 0px;
+  overflow-x: auto;
+  margin: 0px 25px 30px 0px;
 }
 .NotionLikeViewerTheme__tableScrollableWrapper > .NotionLikeViewerTheme__table {
-	/* Remove the table's vertical margin and put it on the wrapper */
-	margin-top: 0;
-	margin-bottom: 0;
+  /* Remove the table's vertical margin and put it on the wrapper */
+  margin-top: 0;
+  margin-bottom: 0;
 }
 .NotionLikeViewerTheme__tableAlignmentCenter {
-	margin-left: auto;
-	margin-right: auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 .NotionLikeViewerTheme__tableAlignmentRight {
-	margin-left: auto;
+  margin-left: auto;
 }
+/* biome-ignore lint/style/noDescendingSpecificity: off */
 .NotionLikeViewerTheme__table {
-	border-collapse: collapse;
-	border-spacing: 0;
-	overflow-y: scroll;
-	overflow-x: scroll;
-	table-layout: auto;
-	width: 90%;
-	margin-top: 25px;
-	margin-bottom: 30px;
+  border-collapse: collapse;
+  border-spacing: 0;
+  overflow-y: scroll;
+  overflow-x: scroll;
+  table-layout: auto;
+  width: 90%;
+  margin-top: 25px;
+  margin-bottom: 30px;
 }
 
 .NotionLikeViewerTheme__tableCell {

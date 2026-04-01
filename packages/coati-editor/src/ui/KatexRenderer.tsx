@@ -47,6 +47,7 @@ export default function KatexRenderer({
         height="0"
         alt=""
       />
+      {/** biome-ignore lint/a11y/useSemanticElements: off */}
       <span role="button" tabIndex={-1} onDoubleClick={onDoubleClick} ref={katexElementRef} />
       <img
         src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"

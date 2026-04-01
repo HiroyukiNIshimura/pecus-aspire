@@ -33,9 +33,7 @@ export default function InsertMarkdownPlugin(): null {
           const currentMarkdown = $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
 
           // 現在のコンテンツと新しいマークダウンを結合
-          const combinedMarkdown = currentMarkdown.trim()
-            ? `${currentMarkdown.trim()}\n\n${markdown}`
-            : markdown;
+          const combinedMarkdown = currentMarkdown.trim() ? `${currentMarkdown.trim()}\n\n${markdown}` : markdown;
 
           // ルートをクリアして結合したマークダウンを変換
           const root = $getRoot();
