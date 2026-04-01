@@ -45,8 +45,8 @@ export default function TaskTrendChart({ data, mode }: TaskTrendChartProps) {
         {weeklyTrends.length === 0 ? (
           <EmptyState iconClass="icon-[mdi--chart-line-variant]" message="トレンドデータがありません" size="sm" />
         ) : (
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full min-w-0">
+            <ResponsiveContainer width="100%" height={256} minWidth={0}>
               <LineChart data={chartData} margin={{ top: 5, right: isDocumentMode ? 20 : 60, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-base-300" />
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} className="text-base-content/70" />
