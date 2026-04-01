@@ -31,6 +31,7 @@ import { HorizontalRulePlugin } from '../plugins/HorizontalRulePlugin';
 import ImagesPlugin from '../plugins/ImagesPlugin';
 import { LayoutPlugin } from '../plugins/LayoutPlugin/LayoutPlugin';
 import LinkPlugin from '../plugins/LinkPlugin';
+import MermaidPlugin from '../plugins/MermaidPlugin';
 import PageBreakPlugin from '../plugins/PageBreakPlugin';
 import SpecialTextPlugin from '../plugins/SpecialTextPlugin';
 import TabFocusPlugin from '../plugins/TabFocusPlugin';
@@ -112,6 +113,7 @@ export default function Viewer() {
       <TabFocusPlugin />
       <TabIndentationPlugin maxIndent={7} />
       <CollapsiblePlugin />
+      <MermaidPlugin />
       <PageBreakPlugin />
       <LayoutPlugin />
       {floatingAnchorElem && <CodeActionMenuPlugin anchorElem={floatingAnchorElem} showOnlyCopy={true} />}

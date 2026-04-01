@@ -69,7 +69,6 @@ import { useFullscreen } from '../../context/FullscreenContext';
 import { useSettings } from '../../context/SettingsContext';
 import { blockTypeToBlockName, useToolbarState } from '../../context/ToolbarContext';
 import useModal from '../../hooks/useModal';
-import { $createMermaidNode } from '../../nodes/MermaidNode';
 import { $createStickyNode } from '../../nodes/StickyNode';
 import DropDown, { DropDownItem } from '../../ui/DropDown';
 import DropdownColorPicker from '../../ui/DropdownColorPicker';
@@ -82,6 +81,7 @@ import { INSERT_DATETIME_COMMAND } from '../DateTimePlugin';
 import { InsertEquationDialog } from '../EquationsPlugin';
 import { InsertImageDialog } from '../ImagesPlugin';
 import InsertLayoutDialog from '../LayoutPlugin/InsertLayoutDialog';
+import { INSERT_MERMAID_COMMAND } from '../MermaidPlugin';
 import { INSERT_PAGE_BREAK } from '../PageBreakPlugin';
 import { SHORTCUTS } from '../ShortcutsPlugin/shortcuts';
 import { InsertTableDialog } from '../TablePlugin';
@@ -188,13 +188,6 @@ const FONT_SIZE_OPTIONS: [string, string][] = [
   ['19px', '19px'],
   ['20px', '20px'],
 ];
-
-const DEFAULT_MERMAID_SOURCE = [
-  'flowchart TD',
-  '  A[Start] --> B{Decision}',
-  '  B -->|Yes| C[Done]',
-  '  B -->|No| D[Retry]',
-].join('\n');
 
 const ELEMENT_FORMAT_OPTIONS: {
   [key in Exclude<ElementFormatType, ''>]: {
@@ -1216,18 +1209,7 @@ export default function ToolbarPlugin({
                 </DropDownItem>
                 <DropDownItem
                   onClick={() => {
-                    activeEditor.update(() => {
-                      $addUpdateTag(SKIP_SELECTION_FOCUS_TAG);
-                      const mermaidNode = $createMermaidNode(DEFAULT_MERMAID_SOURCE);
-                      $insertNodes([mermaidNode]);
-
-                      const parent = mermaidNode.getParent();
-                      if ($isRootOrShadowRoot(parent)) {
-                        const paragraphNode = $createParagraphNode();
-                        mermaidNode.insertAfter(paragraphNode);
-                        paragraphNode.select();
-                      }
-                    });
+                    dispatchToolbarCommand(INSERT_MERMAID_COMMAND, {});
                   }}
                   className="item"
                 >
