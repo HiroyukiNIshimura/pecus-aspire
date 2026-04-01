@@ -2591,6 +2591,241 @@ var init_ImageNode2 = __esm({
   }
 });
 
+// src/nodes/MermaidNode.css
+var init_MermaidNode = __esm({
+  "src/nodes/MermaidNode.css"() {
+  }
+});
+
+// src/nodes/MermaidComponent.tsx
+var MermaidComponent_exports = {};
+__export(MermaidComponent_exports, {
+  default: () => MermaidComponent
+});
+import { useLexicalComposerContext as useLexicalComposerContext7 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalEditable as useLexicalEditable3 } from "@lexical/react/useLexicalEditable";
+import { $getNodeByKey as $getNodeByKey5 } from "lexical";
+import { useEffect as useEffect9, useMemo as useMemo5, useRef as useRef6, useState as useState6 } from "react";
+import { jsx as jsx16, jsxs as jsxs7 } from "react/jsx-runtime";
+function getIsDark() {
+  if (typeof document === "undefined") return false;
+  return document.documentElement.getAttribute("data-theme") === "dark";
+}
+function normalizeError(error) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "Mermaid diagram rendering failed.";
+}
+function MermaidComponent({ code, nodeKey }) {
+  const [editor] = useLexicalComposerContext7();
+  const isEditable = useLexicalEditable3();
+  const [source, setSource] = useState6(code);
+  const [svg, setSvg] = useState6("");
+  const [errorMessage, setErrorMessage] = useState6("");
+  const [isRendering, setIsRendering] = useState6(false);
+  const hasSource = useMemo5(() => source.trim().length > 0, [source]);
+  const [isDark, setIsDark] = useState6(getIsDark);
+  const renderCountRef = useRef6(0);
+  useEffect9(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(getIsDark());
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+  useEffect9(() => {
+    setSource(code);
+  }, [code]);
+  useEffect9(() => {
+    if (!hasSource) {
+      setSvg("");
+      setErrorMessage("");
+      setIsRendering(false);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setIsRendering(true);
+      try {
+        const mermaidModule = await import("mermaid");
+        const mermaid = mermaidModule.default;
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: "strict",
+          theme: isDark ? "dark" : "default"
+        });
+        renderCountRef.current += 1;
+        const id = `mermaid-${nodeKey.replace(/[^a-zA-Z0-9_-]/g, "")}-${renderCountRef.current}`;
+        const renderResult = await mermaid.render(id, source);
+        if (!cancelled) {
+          setSvg(renderResult.svg);
+          setErrorMessage("");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setSvg("");
+          setErrorMessage(normalizeError(error));
+        }
+      } finally {
+        if (!cancelled) {
+          setIsRendering(false);
+        }
+      }
+    }, RENDER_DELAY_MS);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [hasSource, source, nodeKey, isDark]);
+  const handleSourceChange = (event) => {
+    const nextValue = event.target.value;
+    setSource(nextValue);
+    if (!isEditable) {
+      return;
+    }
+    editor.update(() => {
+      const node = $getNodeByKey5(nodeKey);
+      if ($isMermaidNode(node)) {
+        node.setCode(nextValue);
+      }
+    });
+  };
+  return /* @__PURE__ */ jsxs7("div", { className: "editor-mermaid-container", "data-lexical-mermaid-node": "true", children: [
+    isEditable && /* @__PURE__ */ jsxs7("div", { className: "editor-mermaid-input-area", children: [
+      /* @__PURE__ */ jsx16("label", { htmlFor: `mermaid-source-${nodeKey}`, className: "editor-mermaid-label", children: "Mermaid" }),
+      /* @__PURE__ */ jsx16(
+        "textarea",
+        {
+          id: `mermaid-source-${nodeKey}`,
+          className: "editor-mermaid-textarea",
+          value: source,
+          onChange: handleSourceChange,
+          spellCheck: false,
+          "aria-label": "Mermaid source",
+          placeholder: "flowchart TD\\n  A[Start] --> B[End]"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxs7("div", { className: "editor-mermaid-preview-area", children: [
+      isRendering && /* @__PURE__ */ jsx16("div", { className: "editor-mermaid-status", children: "Rendering diagram..." }),
+      !hasSource && isEditable && /* @__PURE__ */ jsx16("div", { className: "editor-mermaid-status", children: "Write Mermaid syntax to preview." }),
+      !!errorMessage && /* @__PURE__ */ jsx16("div", { className: "editor-mermaid-error", children: errorMessage }),
+      !errorMessage && hasSource && !isRendering && /* @__PURE__ */ jsx16(
+        "div",
+        {
+          className: "editor-mermaid-preview",
+          dangerouslySetInnerHTML: { __html: svg }
+        }
+      )
+    ] })
+  ] });
+}
+var RENDER_DELAY_MS;
+var init_MermaidComponent = __esm({
+  "src/nodes/MermaidComponent.tsx"() {
+    "use strict";
+    init_MermaidNode2();
+    init_MermaidNode();
+    RENDER_DELAY_MS = 180;
+  }
+});
+
+// src/nodes/MermaidNode.tsx
+import { $applyNodeReplacement as $applyNodeReplacement6, DecoratorNode as DecoratorNode4 } from "lexical";
+import * as React4 from "react";
+import { jsx as jsx17 } from "react/jsx-runtime";
+function $convertMermaidElement(domNode) {
+  if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
+    return null;
+  }
+  const codeElement = domNode.querySelector('pre[data-lexical-mermaid-source="true"]');
+  const code = codeElement?.textContent ?? domNode.textContent ?? "";
+  const node = $createMermaidNode(code);
+  return { node };
+}
+function $createMermaidNode(code = "") {
+  return $applyNodeReplacement6(new MermaidNode(code));
+}
+function $isMermaidNode(node) {
+  return node instanceof MermaidNode;
+}
+var MermaidComponent2, MermaidNode;
+var init_MermaidNode2 = __esm({
+  "src/nodes/MermaidNode.tsx"() {
+    "use strict";
+    MermaidComponent2 = React4.lazy(() => Promise.resolve().then(() => (init_MermaidComponent(), MermaidComponent_exports)));
+    MermaidNode = class _MermaidNode extends DecoratorNode4 {
+      __code;
+      static getType() {
+        return "mermaid";
+      }
+      static clone(node) {
+        return new _MermaidNode(node.__code, node.__key);
+      }
+      constructor(code, key) {
+        super(key);
+        this.__code = code;
+      }
+      static importJSON(serializedNode) {
+        return $createMermaidNode(serializedNode.code).updateFromJSON(serializedNode);
+      }
+      exportJSON() {
+        return {
+          ...super.exportJSON(),
+          code: this.getCode()
+        };
+      }
+      static importDOM() {
+        return {
+          div: (domNode) => {
+            if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
+              return null;
+            }
+            return {
+              conversion: $convertMermaidElement,
+              priority: 2
+            };
+          }
+        };
+      }
+      exportDOM() {
+        const element = document.createElement("div");
+        element.setAttribute("data-lexical-mermaid", "true");
+        const source = document.createElement("pre");
+        source.setAttribute("data-lexical-mermaid-source", "true");
+        source.textContent = this.__code;
+        element.appendChild(source);
+        return { element };
+      }
+      createDOM(_config) {
+        const element = document.createElement("div");
+        element.className = "editor-mermaid";
+        return element;
+      }
+      updateDOM() {
+        return false;
+      }
+      getTextContent() {
+        return this.__code;
+      }
+      getCode() {
+        return this.__code;
+      }
+      setCode(code) {
+        const writable = this.getWritable();
+        writable.__code = code;
+      }
+      decorate() {
+        return /* @__PURE__ */ jsx17(MermaidComponent2, { code: this.__code, nodeKey: this.__key });
+      }
+      isIsolated() {
+        return true;
+      }
+    };
+  }
+});
+
 // src/nodes/StickyNode.css
 var init_StickyNode = __esm({
   "src/nodes/StickyNode.css"() {
@@ -2755,15 +2990,15 @@ var StickyComponent_exports = {};
 __export(StickyComponent_exports, {
   default: () => StickyComponent
 });
-import { useLexicalComposerContext as useLexicalComposerContext8 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext9 } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary as LexicalErrorBoundary2 } from "@lexical/react/LexicalErrorBoundary";
 import { LexicalNestedComposer as LexicalNestedComposer2 } from "@lexical/react/LexicalNestedComposer";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { calculateZoomLevel as calculateZoomLevel2 } from "@lexical/utils";
-import { $getNodeByKey as $getNodeByKey5 } from "lexical";
-import { useEffect as useEffect10, useLayoutEffect, useRef as useRef6, useState as useState6 } from "react";
+import { $getNodeByKey as $getNodeByKey6 } from "lexical";
+import { useEffect as useEffect11, useLayoutEffect, useRef as useRef7, useState as useState7 } from "react";
 import { createPortal as createPortal2 } from "react-dom";
-import { jsx as jsx17, jsxs as jsxs7 } from "react/jsx-runtime";
+import { jsx as jsx19, jsxs as jsxs8 } from "react/jsx-runtime";
 function positionSticky(stickyElem, positioning) {
   const style = stickyElem.style;
   style.top = `${positioning.y}px`;
@@ -2776,10 +3011,10 @@ function StickyComponent({
   color,
   caption
 }) {
-  const [editor] = useLexicalComposerContext8();
-  const stickyContainerRef = useRef6(null);
-  const [portalContainer, setPortalContainer] = useState6(null);
-  const positioningRef = useRef6({
+  const [editor] = useLexicalComposerContext9();
+  const stickyContainerRef = useRef7(null);
+  const [portalContainer, setPortalContainer] = useState7(null);
+  const positioningRef = useRef7({
     isDragging: false,
     offsetX: 0,
     offsetY: 0,
@@ -2787,7 +3022,7 @@ function StickyComponent({
     x: 0,
     y: 0
   });
-  useEffect10(() => {
+  useEffect11(() => {
     const rootElement = editor.getRootElement();
     if (rootElement) {
       const scrollerContainer = rootElement.closest(".editor-scroller");
@@ -2798,7 +3033,7 @@ function StickyComponent({
       }
     }
   }, [editor]);
-  useEffect10(() => {
+  useEffect11(() => {
     const stickyContainer = stickyContainerRef.current;
     if (!stickyContainer) return;
     const stopFlyonuiEvents = (e) => {
@@ -2811,7 +3046,7 @@ function StickyComponent({
       stickyContainer.removeEventListener("focusout", stopFlyonuiEvents);
     };
   }, []);
-  useEffect10(() => {
+  useEffect11(() => {
     const position = positioningRef.current;
     position.x = x;
     position.y = y2;
@@ -2865,7 +3100,7 @@ function StickyComponent({
       removeRootListener();
     };
   }, [editor]);
-  useEffect10(() => {
+  useEffect11(() => {
     const stickyContainer = stickyContainerRef.current;
     if (stickyContainer !== null) {
       setTimeout(() => {
@@ -2901,7 +3136,7 @@ function StickyComponent({
       positioning.isDragging = false;
       stickyContainer.classList.remove("dragging");
       editor.update(() => {
-        const node = $getNodeByKey5(nodeKey);
+        const node = $getNodeByKey6(nodeKey);
         if ($isStickyNode(node)) {
           node.setPosition(positioning.x, positioning.y);
         }
@@ -2912,7 +3147,7 @@ function StickyComponent({
   };
   const handleDelete = () => {
     editor.update(() => {
-      const node = $getNodeByKey5(nodeKey);
+      const node = $getNodeByKey6(nodeKey);
       if ($isStickyNode(node)) {
         node.remove();
       }
@@ -2920,14 +3155,14 @@ function StickyComponent({
   };
   const handleColorChange = () => {
     editor.update(() => {
-      const node = $getNodeByKey5(nodeKey);
+      const node = $getNodeByKey6(nodeKey);
       if ($isStickyNode(node)) {
         node.toggleColor();
       }
     });
   };
   useSharedHistoryContext();
-  const stickyContent = /* @__PURE__ */ jsx17("div", { ref: stickyContainerRef, className: "sticky-note-container", children: /* @__PURE__ */ jsxs7(
+  const stickyContent = /* @__PURE__ */ jsx19("div", { ref: stickyContainerRef, className: "sticky-note-container", children: /* @__PURE__ */ jsxs8(
     "div",
     {
       className: `sticky-note ${color}`,
@@ -2951,8 +3186,8 @@ function StickyComponent({
         }
       },
       children: [
-        /* @__PURE__ */ jsx17("button", { type: "button", onClick: handleDelete, className: "delete", "aria-label": "Delete sticky note", title: "Delete", children: "X" }),
-        /* @__PURE__ */ jsx17(
+        /* @__PURE__ */ jsx19("button", { type: "button", onClick: handleDelete, className: "delete", "aria-label": "Delete sticky note", title: "Delete", children: "X" }),
+        /* @__PURE__ */ jsx19(
           "button",
           {
             type: "button",
@@ -2960,13 +3195,13 @@ function StickyComponent({
             className: "color",
             "aria-label": "Change sticky note color",
             title: "Color",
-            children: /* @__PURE__ */ jsx17("i", { className: "bucket" })
+            children: /* @__PURE__ */ jsx19("i", { className: "bucket" })
           }
         ),
-        /* @__PURE__ */ jsx17(LexicalNestedComposer2, { initialEditor: caption, initialTheme: StickyEditorTheme_default, children: /* @__PURE__ */ jsx17(
+        /* @__PURE__ */ jsx19(LexicalNestedComposer2, { initialEditor: caption, initialTheme: StickyEditorTheme_default, children: /* @__PURE__ */ jsx19(
           PlainTextPlugin,
           {
-            contentEditable: /* @__PURE__ */ jsx17(
+            contentEditable: /* @__PURE__ */ jsx19(
               LexicalContentEditable,
               {
                 placeholder: "What's up?",
@@ -2997,9 +3232,9 @@ var init_StickyComponent = __esm({
 });
 
 // src/nodes/StickyNode.tsx
-import { $setSelection as $setSelection4, createEditor as createEditor2, DecoratorNode as DecoratorNode5 } from "lexical";
-import * as React4 from "react";
-import { jsx as jsx18 } from "react/jsx-runtime";
+import { $setSelection as $setSelection4, createEditor as createEditor2, DecoratorNode as DecoratorNode6 } from "lexical";
+import * as React5 from "react";
+import { jsx as jsx20 } from "react/jsx-runtime";
 function $isStickyNode(node) {
   return node instanceof StickyNode;
 }
@@ -3010,8 +3245,8 @@ var StickyComponent2, StickyNode;
 var init_StickyNode2 = __esm({
   "src/nodes/StickyNode.tsx"() {
     "use strict";
-    StickyComponent2 = React4.lazy(() => Promise.resolve().then(() => (init_StickyComponent(), StickyComponent_exports)));
-    StickyNode = class _StickyNode extends DecoratorNode5 {
+    StickyComponent2 = React5.lazy(() => Promise.resolve().then(() => (init_StickyComponent(), StickyComponent_exports)));
+    StickyNode = class _StickyNode extends DecoratorNode6 {
       __x;
       __y;
       __color;
@@ -3072,7 +3307,7 @@ var init_StickyNode2 = __esm({
         writable.__color = writable.__color === "pink" ? "yellow" : "pink";
       }
       decorate(_editor, _config) {
-        return /* @__PURE__ */ jsx18(
+        return /* @__PURE__ */ jsx20(
           StickyComponent2,
           {
             color: this.__color,
@@ -3089,123 +3324,6 @@ var init_StickyNode2 = __esm({
     };
   }
 });
-
-// src/nodes/AutocompleteNode.tsx
-import { TextNode } from "lexical";
-
-// src/plugins/AutocompletePlugin/index.tsx
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $isAtNodeEnd } from "@lexical/selection";
-import { mergeRegister } from "@lexical/utils";
-import {
-  $addUpdateTag,
-  $createTextNode,
-  $getNodeByKey,
-  $getSelection,
-  $isRangeSelection,
-  $isTextNode,
-  $setSelection,
-  COMMAND_PRIORITY_LOW,
-  HISTORY_MERGE_TAG,
-  KEY_ARROW_RIGHT_COMMAND,
-  KEY_TAB_COMMAND
-} from "lexical";
-import { useCallback as useCallback2, useEffect as useEffect2 } from "react";
-
-// src/context/ToolbarContext.tsx
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { jsx } from "react/jsx-runtime";
-var DEFAULT_FONT_SIZE = 15;
-var INITIAL_TOOLBAR_STATE = {
-  bgColor: "#fff",
-  blockType: "paragraph",
-  canRedo: false,
-  canUndo: false,
-  codeLanguage: "",
-  codeTheme: "",
-  elementFormat: "left",
-  fontColor: "#000",
-  fontFamily: "Arial",
-  // Current font size in px
-  fontSize: `${DEFAULT_FONT_SIZE}px`,
-  // Font size input value - for controlled input
-  fontSizeInputValue: `${DEFAULT_FONT_SIZE}`,
-  isBold: false,
-  isCode: false,
-  isHighlight: false,
-  isImageCaption: false,
-  isItalic: false,
-  isLink: false,
-  isRTL: false,
-  isStrikethrough: false,
-  isSubscript: false,
-  isSuperscript: false,
-  isUnderline: false,
-  isLowercase: false,
-  isUppercase: false,
-  isCapitalize: false,
-  rootType: "root",
-  listStartNumber: null
-};
-var Context = createContext(void 0);
-
-// src/plugins/AutocompletePlugin/index.tsx
-var uuid = Math.random().toString(36).replace(/[^a-z]+/g, "").substring(0, 5);
-
-// src/nodes/AutocompleteNode.tsx
-var AutocompleteNode = class _AutocompleteNode extends TextNode {
-  /**
-   * A unique uuid is generated for each session and assigned to the instance.
-   * This helps to:
-   * - Ensures max one Autocomplete node per session.
-   * - Ensure that when collaboration is enabled, this node is not shown in
-   *   other sessions.
-   * See https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/AutocompletePlugin/index.tsx
-   */
-  __uuid;
-  static clone(node) {
-    return new _AutocompleteNode(node.__text, node.__uuid, node.__key);
-  }
-  static getType() {
-    return "autocomplete";
-  }
-  static importDOM() {
-    return null;
-  }
-  static importJSON(serializedNode) {
-    return $createAutocompleteNode(serializedNode.text, serializedNode.uuid).updateFromJSON(serializedNode);
-  }
-  exportJSON() {
-    return {
-      ...super.exportJSON(),
-      uuid: this.__uuid
-    };
-  }
-  constructor(text, uuid2, key) {
-    super(text, key);
-    this.__uuid = uuid2;
-  }
-  updateDOM(_prevNode, _dom, _config) {
-    return false;
-  }
-  exportDOM(_) {
-    return { element: null };
-  }
-  excludeFromCopy() {
-    return true;
-  }
-  createDOM(config) {
-    const dom = super.createDOM(config);
-    dom.classList.add(config.theme.autocomplete);
-    if (this.__uuid !== uuid) {
-      dom.style.display = "none";
-    }
-    return dom;
-  }
-};
-function $createAutocompleteNode(text, uuid2) {
-  return new AutocompleteNode(text, uuid2).setMode("token");
-}
 
 // src/plugins/CollapsiblePlugin/CollapsibleContainerNode.ts
 import { IS_CHROME } from "@lexical/utils";
@@ -3510,6 +3628,123 @@ function $isCollapsibleTitleNode(node) {
   return node instanceof CollapsibleTitleNode;
 }
 
+// src/nodes/AutocompleteNode.tsx
+import { TextNode } from "lexical";
+
+// src/plugins/AutocompletePlugin/index.tsx
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $isAtNodeEnd } from "@lexical/selection";
+import { mergeRegister } from "@lexical/utils";
+import {
+  $addUpdateTag,
+  $createTextNode,
+  $getNodeByKey,
+  $getSelection,
+  $isRangeSelection,
+  $isTextNode,
+  $setSelection,
+  COMMAND_PRIORITY_LOW,
+  HISTORY_MERGE_TAG,
+  KEY_ARROW_RIGHT_COMMAND,
+  KEY_TAB_COMMAND
+} from "lexical";
+import { useCallback as useCallback2, useEffect as useEffect2 } from "react";
+
+// src/context/ToolbarContext.tsx
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { jsx } from "react/jsx-runtime";
+var DEFAULT_FONT_SIZE = 15;
+var INITIAL_TOOLBAR_STATE = {
+  bgColor: "#fff",
+  blockType: "paragraph",
+  canRedo: false,
+  canUndo: false,
+  codeLanguage: "",
+  codeTheme: "",
+  elementFormat: "left",
+  fontColor: "#000",
+  fontFamily: "Arial",
+  // Current font size in px
+  fontSize: `${DEFAULT_FONT_SIZE}px`,
+  // Font size input value - for controlled input
+  fontSizeInputValue: `${DEFAULT_FONT_SIZE}`,
+  isBold: false,
+  isCode: false,
+  isHighlight: false,
+  isImageCaption: false,
+  isItalic: false,
+  isLink: false,
+  isRTL: false,
+  isStrikethrough: false,
+  isSubscript: false,
+  isSuperscript: false,
+  isUnderline: false,
+  isLowercase: false,
+  isUppercase: false,
+  isCapitalize: false,
+  rootType: "root",
+  listStartNumber: null
+};
+var Context = createContext(void 0);
+
+// src/plugins/AutocompletePlugin/index.tsx
+var uuid = Math.random().toString(36).replace(/[^a-z]+/g, "").substring(0, 5);
+
+// src/nodes/AutocompleteNode.tsx
+var AutocompleteNode = class _AutocompleteNode extends TextNode {
+  /**
+   * A unique uuid is generated for each session and assigned to the instance.
+   * This helps to:
+   * - Ensures max one Autocomplete node per session.
+   * - Ensure that when collaboration is enabled, this node is not shown in
+   *   other sessions.
+   * See https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/AutocompletePlugin/index.tsx
+   */
+  __uuid;
+  static clone(node) {
+    return new _AutocompleteNode(node.__text, node.__uuid, node.__key);
+  }
+  static getType() {
+    return "autocomplete";
+  }
+  static importDOM() {
+    return null;
+  }
+  static importJSON(serializedNode) {
+    return $createAutocompleteNode(serializedNode.text, serializedNode.uuid).updateFromJSON(serializedNode);
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      uuid: this.__uuid
+    };
+  }
+  constructor(text, uuid2, key) {
+    super(text, key);
+    this.__uuid = uuid2;
+  }
+  updateDOM(_prevNode, _dom, _config) {
+    return false;
+  }
+  exportDOM(_) {
+    return { element: null };
+  }
+  excludeFromCopy() {
+    return true;
+  }
+  createDOM(config) {
+    const dom = super.createDOM(config);
+    dom.classList.add(config.theme.autocomplete);
+    if (this.__uuid !== uuid) {
+      dom.style.display = "none";
+    }
+    return dom;
+  }
+};
+function $createAutocompleteNode(text, uuid2) {
+  return new AutocompleteNode(text, uuid2).setMode("token");
+}
+
 // src/nodes/headless.ts
 init_DateTimeNode2();
 init_EmojiNode();
@@ -3523,6 +3758,7 @@ function FigmaComponent({ className, format, nodeKey, documentID }) {
   return /* @__PURE__ */ jsx8(BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ jsx8(
     "iframe",
     {
+      title: `Figma Embed - ${documentID}`,
       width: "560",
       height: "315",
       src: `https://www.figma.com/embed?embed_host=lexical&url=        https://www.figma.com/file/${documentID}`,
@@ -3739,23 +3975,42 @@ function $isLayoutItemNode(node) {
 
 // src/nodes/headless.ts
 init_MentionNode();
+init_MermaidNode2();
+
+// src/nodes/NotionLikeEditorNodes.ts
+import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import { HashtagNode as HashtagNode2 } from "@lexical/hashtag";
+import { AutoLinkNode, LinkNode as LinkNode2 } from "@lexical/link";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { MarkNode } from "@lexical/mark";
+import { OverflowNode } from "@lexical/overflow";
+import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
+init_DateTimeNode2();
+init_EmojiNode();
+init_EquationNode();
+init_ImageNode2();
+init_KeywordNode();
+init_MentionNode();
+init_MermaidNode2();
 
 // src/nodes/PageBreakNode/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext7 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext8 } from "@lexical/react/LexicalComposerContext";
 import { useLexicalNodeSelection as useLexicalNodeSelection3 } from "@lexical/react/useLexicalNodeSelection";
 import { mergeRegister as mergeRegister4 } from "@lexical/utils";
 import {
   CLICK_COMMAND as CLICK_COMMAND2,
   COMMAND_PRIORITY_HIGH as COMMAND_PRIORITY_HIGH2,
   COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW3,
-  DecoratorNode as DecoratorNode4
+  DecoratorNode as DecoratorNode5
 } from "lexical";
-import { useEffect as useEffect9 } from "react";
-import { jsx as jsx16 } from "react/jsx-runtime";
+import { useEffect as useEffect10 } from "react";
+import { jsx as jsx18 } from "react/jsx-runtime";
 function PageBreakComponent({ nodeKey }) {
-  const [editor] = useLexicalComposerContext7();
+  const [editor] = useLexicalComposerContext8();
   const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection3(nodeKey);
-  useEffect9(() => {
+  useEffect10(() => {
     return mergeRegister4(
       editor.registerCommand(
         CLICK_COMMAND2,
@@ -3774,7 +4029,7 @@ function PageBreakComponent({ nodeKey }) {
       )
     );
   }, [clearSelection, editor, isSelected, nodeKey, setSelected]);
-  useEffect9(() => {
+  useEffect10(() => {
     const pbElem = editor.getElementByKey(nodeKey);
     if (pbElem !== null) {
       pbElem.className = isSelected ? "selected" : "";
@@ -3782,7 +4037,7 @@ function PageBreakComponent({ nodeKey }) {
   }, [editor, isSelected, nodeKey]);
   return null;
 }
-var PageBreakNode = class _PageBreakNode extends DecoratorNode4 {
+var PageBreakNode = class _PageBreakNode extends DecoratorNode5 {
   static getType() {
     return "page-break";
   }
@@ -3822,7 +4077,7 @@ var PageBreakNode = class _PageBreakNode extends DecoratorNode4 {
     return false;
   }
   decorate() {
-    return /* @__PURE__ */ jsx16(PageBreakComponent, { nodeKey: this.__key });
+    return /* @__PURE__ */ jsx18(PageBreakComponent, { nodeKey: this.__key });
   }
 };
 function $convertPageBreakElement() {
@@ -3837,7 +4092,7 @@ function $isPageBreakNode(node) {
 
 // src/nodes/SpecialTextNode.tsx
 import { addClassNamesToElement as addClassNamesToElement3 } from "@lexical/utils";
-import { $applyNodeReplacement as $applyNodeReplacement6, TextNode as TextNode7 } from "lexical";
+import { $applyNodeReplacement as $applyNodeReplacement7, TextNode as TextNode7 } from "lexical";
 var SpecialTextNode = class _SpecialTextNode extends TextNode7 {
   static getType() {
     return "specialText";
@@ -3870,20 +4125,20 @@ var SpecialTextNode = class _SpecialTextNode extends TextNode7 {
   }
 };
 function $createSpecialTextNode(text = "") {
-  return $applyNodeReplacement6(new SpecialTextNode(text));
+  return $applyNodeReplacement7(new SpecialTextNode(text));
 }
 function $isSpecialTextNode(node) {
   return node instanceof SpecialTextNode;
 }
 
-// src/nodes/headless.ts
+// src/nodes/NotionLikeEditorNodes.ts
 init_StickyNode2();
 
 // src/nodes/TweetNode.tsx
 import { BlockWithAlignableContents as BlockWithAlignableContents2 } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode as DecoratorBlockNode2 } from "@lexical/react/LexicalDecoratorBlockNode";
-import { useCallback as useCallback6, useEffect as useEffect11, useRef as useRef7, useState as useState7 } from "react";
-import { jsx as jsx19, jsxs as jsxs8 } from "react/jsx-runtime";
+import { useCallback as useCallback6, useEffect as useEffect12, useRef as useRef8, useState as useState8 } from "react";
+import { jsx as jsx21, jsxs as jsxs9 } from "react/jsx-runtime";
 var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
 function $convertTweetElement(domNode) {
   const id = domNode.getAttribute("data-lexical-tweet-id");
@@ -3903,9 +4158,9 @@ function TweetComponent({
   onLoad,
   tweetID
 }) {
-  const containerRef = useRef7(null);
-  const previousTweetIDRef = useRef7("");
-  const [isTweetLoading, setIsTweetLoading] = useState7(false);
+  const containerRef = useRef8(null);
+  const previousTweetIDRef = useRef8("");
+  const [isTweetLoading, setIsTweetLoading] = useState8(false);
   const createTweet = useCallback6(async () => {
     try {
       await window.twttr.widgets.createTweet(tweetID, containerRef.current);
@@ -3920,7 +4175,7 @@ function TweetComponent({
       }
     }
   }, [onError, onLoad, tweetID]);
-  useEffect11(() => {
+  useEffect12(() => {
     if (tweetID !== previousTweetIDRef.current) {
       setIsTweetLoading(true);
       if (isTwitterScriptLoading) {
@@ -3940,9 +4195,9 @@ function TweetComponent({
       }
     }
   }, [createTweet, onError, tweetID]);
-  return /* @__PURE__ */ jsxs8(BlockWithAlignableContents2, { className, format, nodeKey, children: [
+  return /* @__PURE__ */ jsxs9(BlockWithAlignableContents2, { className, format, nodeKey, children: [
     isTweetLoading ? loadingComponent : null,
-    /* @__PURE__ */ jsx19("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
+    /* @__PURE__ */ jsx21("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
   ] });
 }
 var TweetNode = class _TweetNode extends DecoratorBlockNode2 {
@@ -3998,7 +4253,7 @@ var TweetNode = class _TweetNode extends DecoratorBlockNode2 {
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ jsx19(
+    return /* @__PURE__ */ jsx21(
       TweetComponent,
       {
         className,
@@ -4020,9 +4275,9 @@ function $isTweetNode(node) {
 // src/nodes/YouTubeNode.tsx
 import { BlockWithAlignableContents as BlockWithAlignableContents3 } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode as DecoratorBlockNode3 } from "@lexical/react/LexicalDecoratorBlockNode";
-import { jsx as jsx20 } from "react/jsx-runtime";
+import { jsx as jsx22 } from "react/jsx-runtime";
 function YouTubeComponent({ className, format, nodeKey, videoID }) {
-  return /* @__PURE__ */ jsx20(BlockWithAlignableContents3, { className, format, nodeKey, children: /* @__PURE__ */ jsx20(
+  return /* @__PURE__ */ jsx22(BlockWithAlignableContents3, { className, format, nodeKey, children: /* @__PURE__ */ jsx22(
     "iframe",
     {
       width: "560",
@@ -4107,7 +4362,7 @@ var YouTubeNode = class _YouTubeNode extends DecoratorBlockNode3 {
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ jsx20(YouTubeComponent, { className, format: this.__format, nodeKey: this.getKey(), videoID: this.__id });
+    return /* @__PURE__ */ jsx22(YouTubeComponent, { className, format: this.__format, nodeKey: this.getKey(), videoID: this.__id });
   }
 };
 function $createYouTubeNode(videoID) {
@@ -4118,22 +4373,6 @@ function $isYouTubeNode(node) {
 }
 
 // src/nodes/NotionLikeEditorNodes.ts
-import { CodeHighlightNode, CodeNode } from "@lexical/code";
-import { HashtagNode as HashtagNode2 } from "@lexical/hashtag";
-import { AutoLinkNode, LinkNode as LinkNode2 } from "@lexical/link";
-import { ListItemNode, ListNode } from "@lexical/list";
-import { MarkNode } from "@lexical/mark";
-import { OverflowNode } from "@lexical/overflow";
-import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
-init_DateTimeNode2();
-init_EmojiNode();
-init_EquationNode();
-init_ImageNode2();
-init_KeywordNode();
-init_MentionNode();
-init_StickyNode2();
 var NotionLikeEditorNodes = [
   HeadingNode,
   ListNode,
@@ -4166,10 +4405,14 @@ var NotionLikeEditorNodes = [
   PageBreakNode,
   LayoutContainerNode,
   LayoutItemNode,
+  MermaidNode,
   SpecialTextNode,
   DateTimeNode
 ];
 var NotionLikeEditorNodes_default = NotionLikeEditorNodes;
+
+// src/nodes/headless.ts
+init_StickyNode2();
 export {
   $createAutocompleteNode,
   $createCollapsibleContainerNode,
@@ -4184,6 +4427,7 @@ export {
   $createLayoutContainerNode,
   $createLayoutItemNode,
   $createMentionNode,
+  $createMermaidNode,
   $createPageBreakNode,
   $createSpecialTextNode,
   $createStickyNode,
@@ -4201,6 +4445,7 @@ export {
   $isLayoutContainerNode,
   $isLayoutItemNode,
   $isMentionNode,
+  $isMermaidNode,
   $isPageBreakNode,
   $isSpecialTextNode,
   $isStickyNode,
@@ -4219,6 +4464,7 @@ export {
   LayoutContainerNode,
   LayoutItemNode,
   MentionNode,
+  MermaidNode,
   NotionLikeEditorNodes_default as NotionLikeEditorNodes,
   PageBreakNode,
   SpecialTextNode,

@@ -1,41 +1,7 @@
 import * as lexical from 'lexical';
-import { TextNode, Spread, SerializedTextNode, NodeKey, EditorConfig, LexicalEditor, DOMExportOutput, ElementNode, RangeSelection, DOMConversionMap, SerializedElementNode, LexicalNode, DecoratorNode, StateConfigValue, StateValueOrUpdater, SerializedLexicalNode, ElementFormatType, SerializedEditor, LexicalUpdateJSON, Klass } from 'lexical';
+import { ElementNode, NodeKey, RangeSelection, EditorConfig, LexicalEditor, DOMConversionMap, Spread, SerializedElementNode, DOMExportOutput, LexicalNode, TextNode, SerializedTextNode, DecoratorNode, StateConfigValue, StateValueOrUpdater, SerializedLexicalNode, ElementFormatType, SerializedEditor, LexicalUpdateJSON, Klass } from 'lexical';
 import { JSX } from 'react';
 import { DecoratorBlockNode, SerializedDecoratorBlockNode } from '@lexical/react/LexicalDecoratorBlockNode';
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedAutocompleteNode = Spread<{
-    uuid: string;
-}, SerializedTextNode>;
-declare class AutocompleteNode extends TextNode {
-    /**
-     * A unique uuid is generated for each session and assigned to the instance.
-     * This helps to:
-     * - Ensures max one Autocomplete node per session.
-     * - Ensure that when collaboration is enabled, this node is not shown in
-     *   other sessions.
-     * See https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/AutocompletePlugin/index.tsx
-     */
-    __uuid: string;
-    static clone(node: AutocompleteNode): AutocompleteNode;
-    static getType(): 'autocomplete';
-    static importDOM(): null;
-    static importJSON(serializedNode: SerializedAutocompleteNode): AutocompleteNode;
-    exportJSON(): SerializedAutocompleteNode;
-    constructor(text: string, uuid: string, key?: NodeKey);
-    updateDOM(_prevNode: this, _dom: HTMLElement, _config: EditorConfig): boolean;
-    exportDOM(_: LexicalEditor): DOMExportOutput;
-    excludeFromCopy(): boolean;
-    createDOM(config: EditorConfig): HTMLElement;
-}
-declare function $createAutocompleteNode(text: string, uuid: string): AutocompleteNode;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -104,6 +70,40 @@ declare class CollapsibleTitleNode extends ElementNode {
 }
 declare function $createCollapsibleTitleNode(): CollapsibleTitleNode;
 declare function $isCollapsibleTitleNode(node: LexicalNode | null | undefined): node is CollapsibleTitleNode;
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+
+type SerializedAutocompleteNode = Spread<{
+    uuid: string;
+}, SerializedTextNode>;
+declare class AutocompleteNode extends TextNode {
+    /**
+     * A unique uuid is generated for each session and assigned to the instance.
+     * This helps to:
+     * - Ensures max one Autocomplete node per session.
+     * - Ensure that when collaboration is enabled, this node is not shown in
+     *   other sessions.
+     * See https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/AutocompletePlugin/index.tsx
+     */
+    __uuid: string;
+    static clone(node: AutocompleteNode): AutocompleteNode;
+    static getType(): 'autocomplete';
+    static importDOM(): null;
+    static importJSON(serializedNode: SerializedAutocompleteNode): AutocompleteNode;
+    exportJSON(): SerializedAutocompleteNode;
+    constructor(text: string, uuid: string, key?: NodeKey);
+    updateDOM(_prevNode: this, _dom: HTMLElement, _config: EditorConfig): boolean;
+    exportDOM(_: LexicalEditor): DOMExportOutput;
+    excludeFromCopy(): boolean;
+    createDOM(config: EditorConfig): HTMLElement;
+}
+declare function $createAutocompleteNode(text: string, uuid: string): AutocompleteNode;
 
 declare const dateTimeState: lexical.StateConfig<"dateTime", Date>;
 declare class DateTimeNode extends DecoratorNode<JSX.Element> {
@@ -368,6 +368,39 @@ declare class MentionNode extends TextNode {
 declare function $createMentionNode(mentionName: string, textContent?: string): MentionNode;
 declare function $isMentionNode(node: LexicalNode | null | undefined): node is MentionNode;
 
+type SerializedMermaidNode = Spread<{
+    code: string;
+}, SerializedLexicalNode>;
+declare class MermaidNode extends DecoratorNode<JSX.Element> {
+    __code: string;
+    static getType(): string;
+    static clone(node: MermaidNode): MermaidNode;
+    constructor(code: string, key?: NodeKey);
+    static importJSON(serializedNode: SerializedMermaidNode): MermaidNode;
+    exportJSON(): SerializedMermaidNode;
+    static importDOM(): DOMConversionMap | null;
+    exportDOM(): DOMExportOutput;
+    createDOM(_config: EditorConfig): HTMLElement;
+    updateDOM(): false;
+    getTextContent(): string;
+    getCode(): string;
+    setCode(code: string): void;
+    decorate(): JSX.Element;
+    isIsolated(): true;
+}
+declare function $createMermaidNode(code?: string): MermaidNode;
+declare function $isMermaidNode(node: LexicalNode | null | undefined): node is MermaidNode;
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+
+declare const NotionLikeEditorNodes: Array<Klass<LexicalNode>>;
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -513,14 +546,4 @@ declare class YouTubeNode extends DecoratorBlockNode {
 declare function $createYouTubeNode(videoID: string): YouTubeNode;
 declare function $isYouTubeNode(node: YouTubeNode | LexicalNode | null | undefined): node is YouTubeNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-declare const NotionLikeEditorNodes: Array<Klass<LexicalNode>>;
-
-export { $createAutocompleteNode, $createCollapsibleContainerNode, $createCollapsibleContentNode, $createCollapsibleTitleNode, $createDateTimeNode, $createEmojiNode, $createEquationNode, $createFigmaNode, $createImageNode, $createKeywordNode, $createLayoutContainerNode, $createLayoutItemNode, $createMentionNode, $createPageBreakNode, $createSpecialTextNode, $createStickyNode, $createTweetNode, $createYouTubeNode, $isCollapsibleContainerNode, $isCollapsibleContentNode, $isCollapsibleTitleNode, $isDateTimeNode, $isEmojiNode, $isEquationNode, $isFigmaNode, $isImageNode, $isKeywordNode, $isLayoutContainerNode, $isLayoutItemNode, $isMentionNode, $isPageBreakNode, $isSpecialTextNode, $isStickyNode, $isTweetNode, $isYouTubeNode, AutocompleteNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, DateTimeNode, EmojiNode, EquationNode, FigmaNode, ImageNode, type ImagePayload, KeywordNode, LayoutContainerNode, LayoutItemNode, MentionNode, NotionLikeEditorNodes, PageBreakNode, type SerializedImageNode, SpecialTextNode, StickyNode, TweetNode, YouTubeNode };
+export { $createAutocompleteNode, $createCollapsibleContainerNode, $createCollapsibleContentNode, $createCollapsibleTitleNode, $createDateTimeNode, $createEmojiNode, $createEquationNode, $createFigmaNode, $createImageNode, $createKeywordNode, $createLayoutContainerNode, $createLayoutItemNode, $createMentionNode, $createMermaidNode, $createPageBreakNode, $createSpecialTextNode, $createStickyNode, $createTweetNode, $createYouTubeNode, $isCollapsibleContainerNode, $isCollapsibleContentNode, $isCollapsibleTitleNode, $isDateTimeNode, $isEmojiNode, $isEquationNode, $isFigmaNode, $isImageNode, $isKeywordNode, $isLayoutContainerNode, $isLayoutItemNode, $isMentionNode, $isMermaidNode, $isPageBreakNode, $isSpecialTextNode, $isStickyNode, $isTweetNode, $isYouTubeNode, AutocompleteNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, DateTimeNode, EmojiNode, EquationNode, FigmaNode, ImageNode, type ImagePayload, KeywordNode, LayoutContainerNode, LayoutItemNode, MentionNode, MermaidNode, NotionLikeEditorNodes, PageBreakNode, type SerializedImageNode, SpecialTextNode, StickyNode, TweetNode, YouTubeNode };

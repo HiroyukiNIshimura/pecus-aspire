@@ -6,11 +6,11 @@
  *
  */
 
+import { $isCodeNode } from '@lexical/code';
 import {
-  $isCodeNode,
   getCodeLanguageOptions as getCodeLanguageOptionsPrism,
   normalizeCodeLanguage as normalizeCodeLanguagePrism,
-} from '@lexical/code';
+} from '@lexical/code-prism';
 import {
   getCodeLanguageOptions as getCodeLanguageOptionsShiki,
   getCodeThemeOptions as getCodeThemeOptionsShiki,
@@ -32,9 +32,11 @@ import {
 } from '@lexical/utils';
 import {
   $addUpdateTag,
+  $createParagraphNode,
   $getNodeByKey,
   $getRoot,
   $getSelection,
+  $insertNodes,
   $isElementNode,
   $isNodeSelection,
   $isRangeSelection,
@@ -67,6 +69,7 @@ import { useFullscreen } from '../../context/FullscreenContext';
 import { useSettings } from '../../context/SettingsContext';
 import { blockTypeToBlockName, useToolbarState } from '../../context/ToolbarContext';
 import useModal from '../../hooks/useModal';
+import { $createMermaidNode } from '../../nodes/MermaidNode';
 import { $createStickyNode } from '../../nodes/StickyNode';
 import DropDown, { DropDownItem } from '../../ui/DropDown';
 import DropdownColorPicker from '../../ui/DropdownColorPicker';
@@ -185,6 +188,13 @@ const FONT_SIZE_OPTIONS: [string, string][] = [
   ['19px', '19px'],
   ['20px', '20px'],
 ];
+
+const DEFAULT_MERMAID_SOURCE = [
+  'flowchart TD',
+  '  A[Start] --> B{Decision}',
+  '  B -->|Yes| C[Done]',
+  '  B -->|No| D[Retry]',
+].join('\n');
 
 const ELEMENT_FORMAT_OPTIONS: {
   [key in Exclude<ElementFormatType, ''>]: {
@@ -1203,6 +1213,26 @@ export default function ToolbarPlugin({
                 >
                   <i className="icon equation" />
                   <span className="text">Equation</span>
+                </DropDownItem>
+                <DropDownItem
+                  onClick={() => {
+                    activeEditor.update(() => {
+                      $addUpdateTag(SKIP_SELECTION_FOCUS_TAG);
+                      const mermaidNode = $createMermaidNode(DEFAULT_MERMAID_SOURCE);
+                      $insertNodes([mermaidNode]);
+
+                      const parent = mermaidNode.getParent();
+                      if ($isRootOrShadowRoot(parent)) {
+                        const paragraphNode = $createParagraphNode();
+                        mermaidNode.insertAfter(paragraphNode);
+                        paragraphNode.select();
+                      }
+                    });
+                  }}
+                  className="item"
+                >
+                  <i className="icon diagram-2" />
+                  <span className="text">Mermaid</span>
                 </DropDownItem>
                 <DropDownItem
                   onClick={() => {

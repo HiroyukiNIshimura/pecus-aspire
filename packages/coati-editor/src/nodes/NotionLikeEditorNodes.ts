@@ -29,6 +29,7 @@ import { KeywordNode } from './KeywordNode';
 import { LayoutContainerNode } from './LayoutContainerNode';
 import { LayoutItemNode } from './LayoutItemNode';
 import { MentionNode } from './MentionNode';
+import { MermaidNode } from './MermaidNode';
 import { PageBreakNode } from './PageBreakNode';
 import { SpecialTextNode } from './SpecialTextNode';
 import { StickyNode } from './StickyNode';
@@ -67,6 +68,7 @@ const NotionLikeEditorNodes: Array<Klass<LexicalNode>> = [
   PageBreakNode,
   LayoutContainerNode,
   LayoutItemNode,
+  MermaidNode,
   SpecialTextNode,
   DateTimeNode,
 ];
