@@ -131,7 +131,7 @@ function main() {
       if (!fs.existsSync(dir)) continue;
       try {
         run('npm install', dir);
-      } catch (e) {
+      } catch (_e) {
         console.error(`  npm install 失敗: ${relDir}`);
         process.exit(1);
       }
@@ -144,7 +144,7 @@ function main() {
     console.log('\ncoati-editor をビルドします...\n');
     try {
       run('npm run build', editorDir);
-    } catch (e) {
+    } catch (_e) {
       console.error('  coati-editor ビルド失敗');
       process.exit(1);
     }
