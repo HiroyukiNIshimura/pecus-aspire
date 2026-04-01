@@ -27,7 +27,7 @@ export default function UserMenu({
     } else {
       // Server Action を使用してログアウト
       await logout();
-      window.location.href = '/signin';
+      // redirect は logout() Server Action 内で実行されるため、ここには到達しない
     }
   };
 

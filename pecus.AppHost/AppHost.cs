@@ -172,11 +172,12 @@ try
         .WithReference(redisFrontend)
         .WaitFor(redisFrontend)
         .WaitFor(pecusApi)
+        .WithHttpEndpoint(port: 3000, env: "PORT")
         .WithExternalHttpEndpoints()
         // 開発環境: Aspire の自己署名証明書を許可
         .WithEnvironment("NODE_TLS_REJECT_UNAUTHORIZED", "0");
 
-    // Prometheus が有効な場合、フロントエンドに参照を追加
+    // Prometheus が有効な場合、フロントエンドに参照を追加q
     if (prometheus is not null)
     {
         var prometheusUrl = $"http://localhost:{prometheusPort}";

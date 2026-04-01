@@ -162,8 +162,8 @@ export class ServerSessionManager {
 
       if (!sessionJson) {
         // Redis にセッションがない（期限切れ or 削除済み）
-        // Cookie も削除しておく
-        await ServerSessionManager.clearSessionCookie();
+        // Cookie 削除は Server Action / Route Handler からのみ可能なため、ここでは行わない
+        // 残存 Cookie は次回ログイン（createSession）またはログアウト（destroySession）時にクリアされる
         return null;
       }
 

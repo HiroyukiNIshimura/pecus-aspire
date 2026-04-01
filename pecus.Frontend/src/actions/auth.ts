@@ -1,6 +1,7 @@
 'use server';
 
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { LoginResponse, RoleInfoResponse } from '@/connectors/api/pecus';
 import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
@@ -149,12 +150,14 @@ export async function logout(): Promise<ApiResponse<null>> {
 
     // Redis セッションと Cookie を削除
     await ServerSessionManager.destroySession();
-
-    return { success: true, data: null };
   } catch (error) {
     console.error('Failed to logout:', error);
     return handleApiErrorForAction<null>(error, {
       defaultMessage: 'ログアウトに失敗しました',
     });
   }
+  // redirect() は try/catch の外で呼ぶ（Next.js の NEXT_REDIRECT を catch させないため）
+  // Server Action からの redirect はページ再レンダリングをスキップするため、
+  // セッション破棄後に RSC が 401 エラーを出す問題を防ぐ
+  redirect('/signin');
 }
