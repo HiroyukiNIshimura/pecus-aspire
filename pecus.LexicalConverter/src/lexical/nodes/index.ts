@@ -31,7 +31,6 @@ export {
   $createLayoutContainerNode,
   $createLayoutItemNode,
   // MentionNode
-  $createMentionNode,
   // PageBreakNode
   $createPageBreakNode,
   // SpecialTextNode
@@ -53,7 +52,6 @@ export {
   $isKeywordNode,
   $isLayoutContainerNode,
   $isLayoutItemNode,
-  $isMentionNode,
   $isPageBreakNode,
   $isSpecialTextNode,
   $isStickyNode,
@@ -71,7 +69,6 @@ export {
   KeywordNode,
   LayoutContainerNode,
   LayoutItemNode,
-  MentionNode,
   // NotionLikeEditorNodes（全ノードの配列）
   NotionLikeEditorNodes,
   NotionLikeEditorNodes as CustomNodes,
