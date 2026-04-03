@@ -3289,12 +3289,12 @@ init_MermaidNode2();
 
 // src/nodes/NotionLikeEditorNodes.ts
 import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import { HorizontalRuleNode } from "@lexical/extension";
 import { HashtagNode as HashtagNode2 } from "@lexical/hashtag";
 import { AutoLinkNode, LinkNode as LinkNode2 } from "@lexical/link";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { MarkNode } from "@lexical/mark";
 import { OverflowNode } from "@lexical/overflow";
-import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 init_DateTimeNode2();

@@ -3297,12 +3297,12 @@ init_MermaidNode2();
 
 // src/nodes/NotionLikeEditorNodes.ts
 var import_code = require("@lexical/code");
+var import_extension = require("@lexical/extension");
 var import_hashtag2 = require("@lexical/hashtag");
 var import_link2 = require("@lexical/link");
 var import_list = require("@lexical/list");
 var import_mark = require("@lexical/mark");
 var import_overflow = require("@lexical/overflow");
-var import_LexicalHorizontalRuleNode = require("@lexical/react/LexicalHorizontalRuleNode");
 var import_rich_text = require("@lexical/rich-text");
 var import_table = require("@lexical/table");
 init_DateTimeNode2();
@@ -3705,7 +3705,7 @@ var NotionLikeEditorNodes = [
   EquationNode,
   AutocompleteNode,
   KeywordNode,
-  import_LexicalHorizontalRuleNode.HorizontalRuleNode,
+  import_extension.HorizontalRuleNode,
   TweetNode,
   YouTubeNode,
   FigmaNode,

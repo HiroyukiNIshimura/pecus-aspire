@@ -7,10 +7,10 @@
  */
 
 import { $createCodeNode } from '@lexical/code';
+import { INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/extension';
 import { INSERT_CHECK_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from '@lexical/list';
 import { INSERT_EMBED_COMMAND } from '@lexical/react/LexicalAutoEmbedPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/react/LexicalHorizontalRuleNode';
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
