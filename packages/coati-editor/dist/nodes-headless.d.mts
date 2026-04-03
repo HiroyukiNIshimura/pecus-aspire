@@ -340,34 +340,6 @@ declare class LayoutItemNode extends ElementNode {
 declare function $createLayoutItemNode(): LayoutItemNode;
 declare function $isLayoutItemNode(node: LexicalNode | null | undefined): node is LayoutItemNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedMentionNode = Spread<{
-    mentionName: string;
-}, SerializedTextNode>;
-declare class MentionNode extends TextNode {
-    __mention: string;
-    static getType(): string;
-    static clone(node: MentionNode): MentionNode;
-    static importJSON(serializedNode: SerializedMentionNode): MentionNode;
-    constructor(mentionName: string, text?: string, key?: NodeKey);
-    exportJSON(): SerializedMentionNode;
-    createDOM(config: EditorConfig): HTMLElement;
-    exportDOM(): DOMExportOutput;
-    static importDOM(): DOMConversionMap | null;
-    isTextEntity(): true;
-    canInsertTextBefore(): boolean;
-    canInsertTextAfter(): boolean;
-}
-declare function $createMentionNode(mentionName: string, textContent?: string): MentionNode;
-declare function $isMentionNode(node: LexicalNode | null | undefined): node is MentionNode;
-
 type SerializedMermaidNode = Spread<{
     code: string;
 }, SerializedLexicalNode>;
@@ -546,4 +518,4 @@ declare class YouTubeNode extends DecoratorBlockNode {
 declare function $createYouTubeNode(videoID: string): YouTubeNode;
 declare function $isYouTubeNode(node: YouTubeNode | LexicalNode | null | undefined): node is YouTubeNode;
 
-export { $createAutocompleteNode, $createCollapsibleContainerNode, $createCollapsibleContentNode, $createCollapsibleTitleNode, $createDateTimeNode, $createEmojiNode, $createEquationNode, $createFigmaNode, $createImageNode, $createKeywordNode, $createLayoutContainerNode, $createLayoutItemNode, $createMentionNode, $createMermaidNode, $createPageBreakNode, $createSpecialTextNode, $createStickyNode, $createTweetNode, $createYouTubeNode, $isCollapsibleContainerNode, $isCollapsibleContentNode, $isCollapsibleTitleNode, $isDateTimeNode, $isEmojiNode, $isEquationNode, $isFigmaNode, $isImageNode, $isKeywordNode, $isLayoutContainerNode, $isLayoutItemNode, $isMentionNode, $isMermaidNode, $isPageBreakNode, $isSpecialTextNode, $isStickyNode, $isTweetNode, $isYouTubeNode, AutocompleteNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, DateTimeNode, EmojiNode, EquationNode, FigmaNode, ImageNode, type ImagePayload, KeywordNode, LayoutContainerNode, LayoutItemNode, MentionNode, MermaidNode, NotionLikeEditorNodes, PageBreakNode, type SerializedImageNode, SpecialTextNode, StickyNode, TweetNode, YouTubeNode };
+export { $createAutocompleteNode, $createCollapsibleContainerNode, $createCollapsibleContentNode, $createCollapsibleTitleNode, $createDateTimeNode, $createEmojiNode, $createEquationNode, $createFigmaNode, $createImageNode, $createKeywordNode, $createLayoutContainerNode, $createLayoutItemNode, $createMermaidNode, $createPageBreakNode, $createSpecialTextNode, $createStickyNode, $createTweetNode, $createYouTubeNode, $isCollapsibleContainerNode, $isCollapsibleContentNode, $isCollapsibleTitleNode, $isDateTimeNode, $isEmojiNode, $isEquationNode, $isFigmaNode, $isImageNode, $isKeywordNode, $isLayoutContainerNode, $isLayoutItemNode, $isMermaidNode, $isPageBreakNode, $isSpecialTextNode, $isStickyNode, $isTweetNode, $isYouTubeNode, AutocompleteNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, DateTimeNode, EmojiNode, EquationNode, FigmaNode, ImageNode, type ImagePayload, KeywordNode, LayoutContainerNode, LayoutItemNode, MermaidNode, NotionLikeEditorNodes, PageBreakNode, type SerializedImageNode, SpecialTextNode, StickyNode, TweetNode, YouTubeNode };

@@ -629,694 +629,6 @@ var init_LinkPlugin = __esm({
   }
 });
 
-// src/nodes/MentionNode.ts
-import {
-  $applyNodeReplacement as $applyNodeReplacement4,
-  TextNode as TextNode4
-} from "lexical";
-function $convertMentionElement(domNode) {
-  const textContent = domNode.textContent;
-  const mentionName = domNode.getAttribute("data-lexical-mention-name");
-  if (textContent !== null) {
-    const node = $createMentionNode(typeof mentionName === "string" ? mentionName : textContent, textContent);
-    return {
-      node
-    };
-  }
-  return null;
-}
-function $createMentionNode(mentionName, textContent) {
-  const mentionNode = new MentionNode(mentionName, textContent ?? mentionName);
-  mentionNode.setMode("segmented").toggleDirectionless();
-  return $applyNodeReplacement4(mentionNode);
-}
-var mentionStyle, MentionNode;
-var init_MentionNode = __esm({
-  "src/nodes/MentionNode.ts"() {
-    "use strict";
-    mentionStyle = "background-color: rgba(24, 119, 232, 0.2)";
-    MentionNode = class _MentionNode extends TextNode4 {
-      __mention;
-      static getType() {
-        return "mention";
-      }
-      static clone(node) {
-        return new _MentionNode(node.__mention, node.__text, node.__key);
-      }
-      static importJSON(serializedNode) {
-        return $createMentionNode(serializedNode.mentionName).updateFromJSON(serializedNode);
-      }
-      constructor(mentionName, text, key) {
-        super(text ?? mentionName, key);
-        this.__mention = mentionName;
-      }
-      exportJSON() {
-        return {
-          ...super.exportJSON(),
-          mentionName: this.__mention
-        };
-      }
-      createDOM(config) {
-        const dom = super.createDOM(config);
-        dom.style.cssText = mentionStyle;
-        dom.className = "mention";
-        dom.spellcheck = false;
-        return dom;
-      }
-      exportDOM() {
-        const element = document.createElement("span");
-        element.setAttribute("data-lexical-mention", "true");
-        if (this.__text !== this.__mention) {
-          element.setAttribute("data-lexical-mention-name", this.__mention);
-        }
-        element.textContent = this.__text;
-        return { element };
-      }
-      static importDOM() {
-        return {
-          span: (domNode) => {
-            if (!domNode.hasAttribute("data-lexical-mention")) {
-              return null;
-            }
-            return {
-              conversion: $convertMentionElement,
-              priority: 1
-            };
-          }
-        };
-      }
-      isTextEntity() {
-        return true;
-      }
-      canInsertTextBefore() {
-        return false;
-      }
-      canInsertTextAfter() {
-        return false;
-      }
-    };
-  }
-});
-
-// src/plugins/MentionsPlugin/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext3 } from "@lexical/react/LexicalComposerContext";
-import { MenuOption } from "@lexical/react/LexicalNodeMenuPlugin";
-import {
-  LexicalTypeaheadMenuPlugin,
-  useBasicTypeaheadTriggerMatch
-} from "@lexical/react/LexicalTypeaheadMenuPlugin";
-import { useCallback as useCallback2, useEffect as useEffect4, useMemo as useMemo2, useState as useState2 } from "react";
-import * as ReactDOM from "react-dom";
-import { jsx as jsx7, jsxs as jsxs3 } from "react/jsx-runtime";
-function useMentionLookupService(mentionString) {
-  const [results, setResults] = useState2([]);
-  useEffect4(() => {
-    const cachedResults = mentionsCache.get(mentionString);
-    if (mentionString == null) {
-      setResults([]);
-      return;
-    }
-    if (cachedResults === null) {
-      return;
-    } else if (cachedResults !== void 0) {
-      setResults(cachedResults);
-      return;
-    }
-    mentionsCache.set(mentionString, null);
-    dummyLookupService.search(mentionString, (newResults) => {
-      mentionsCache.set(mentionString, newResults);
-      setResults(newResults);
-    });
-  }, [mentionString]);
-  return results;
-}
-function checkForAtSignMentions(text, minMatchLength) {
-  let match = AtSignMentionsRegex.exec(text);
-  if (match === null) {
-    match = AtSignMentionsRegexAliasRegex.exec(text);
-  }
-  if (match !== null) {
-    const maybeLeadingWhitespace = match[1];
-    const matchingString = match[3];
-    if (matchingString.length >= minMatchLength) {
-      return {
-        leadOffset: match.index + maybeLeadingWhitespace.length,
-        matchingString,
-        replaceableString: match[2]
-      };
-    }
-  }
-  return null;
-}
-function getPossibleQueryMatch(text) {
-  return checkForAtSignMentions(text, 1);
-}
-function MentionsTypeaheadMenuItem({
-  index,
-  isSelected,
-  onClick,
-  onMouseEnter,
-  option
-}) {
-  let className = "item";
-  if (isSelected) {
-    className += " selected";
-  }
-  return (
-    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: off
-    // biome-ignore lint/a11y/useKeyWithClickEvents: off
-    /* @__PURE__ */ jsxs3(
-      "li",
-      {
-        tabIndex: -1,
-        className,
-        ref: option.setRefElement,
-        "aria-selected": isSelected,
-        id: `typeahead-item-${index}`,
-        onMouseEnter,
-        onClick,
-        children: [
-          option.picture,
-          /* @__PURE__ */ jsx7("span", { className: "text", children: option.name })
-        ]
-      },
-      option.key
-    )
-  );
-}
-function NewMentionsPlugin() {
-  const [editor] = useLexicalComposerContext3();
-  const [queryString, setQueryString] = useState2(null);
-  const results = useMentionLookupService(queryString);
-  const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch("/", {
-    minLength: 0
-  });
-  const options = useMemo2(
-    () => results.map((result) => new MentionTypeaheadOption(result, /* @__PURE__ */ jsx7("i", { className: "icon user" }))).slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
-    [results]
-  );
-  const onSelectOption = useCallback2(
-    (selectedOption, nodeToReplace, closeMenu) => {
-      editor.update(() => {
-        const mentionNode = $createMentionNode(selectedOption.name);
-        if (nodeToReplace) {
-          nodeToReplace.replace(mentionNode);
-        }
-        mentionNode.select();
-        closeMenu();
-      });
-    },
-    [editor]
-  );
-  const checkForMentionMatch = useCallback2(
-    (text) => {
-      const slashMatch = checkForSlashTriggerMatch(text, editor);
-      if (slashMatch !== null) {
-        return null;
-      }
-      return getPossibleQueryMatch(text);
-    },
-    [checkForSlashTriggerMatch, editor]
-  );
-  return /* @__PURE__ */ jsx7(
-    LexicalTypeaheadMenuPlugin,
-    {
-      onQueryChange: setQueryString,
-      onSelectOption,
-      triggerFn: checkForMentionMatch,
-      options,
-      menuRenderFn: (anchorElementRef, { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }) => anchorElementRef.current && results.length ? ReactDOM.createPortal(
-        /* @__PURE__ */ jsx7("div", { className: "notion-like-editor typeahead-popover mentions-menu", children: /* @__PURE__ */ jsx7("ul", { children: options.map((option, i) => /* @__PURE__ */ jsx7(
-          MentionsTypeaheadMenuItem,
-          {
-            index: i,
-            isSelected: selectedIndex === i,
-            onClick: () => {
-              setHighlightedIndex(i);
-              selectOptionAndCleanUp(option);
-            },
-            onMouseEnter: () => {
-              setHighlightedIndex(i);
-            },
-            option
-          },
-          option.key
-        )) }) }),
-        anchorElementRef.current
-      ) : null
-    }
-  );
-}
-var PUNCTUATION, NAME, DocumentMentionsRegex, PUNC, TRIGGERS, VALID_CHARS, VALID_JOINS, LENGTH_LIMIT, AtSignMentionsRegex, ALIAS_LENGTH_LIMIT, AtSignMentionsRegexAliasRegex, SUGGESTION_LIST_LENGTH_LIMIT, mentionsCache, dummyMentionsData, dummyLookupService, MentionTypeaheadOption;
-var init_MentionsPlugin = __esm({
-  "src/plugins/MentionsPlugin/index.tsx"() {
-    "use strict";
-    init_MentionNode();
-    PUNCTUATION = `\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%'"~=<>_:;`;
-    NAME = `\\b[A-Z][^\\s${PUNCTUATION}]`;
-    DocumentMentionsRegex = {
-      NAME,
-      PUNCTUATION
-    };
-    PUNC = DocumentMentionsRegex.PUNCTUATION;
-    TRIGGERS = ["@"].join("");
-    VALID_CHARS = `[^${TRIGGERS}${PUNC}\\s]`;
-    VALID_JOINS = "(?:\\.[ |$]| |[" + PUNC + "]|)";
-    LENGTH_LIMIT = 75;
-    AtSignMentionsRegex = new RegExp(
-      `(^|\\s|\\()([${TRIGGERS}]((?:${VALID_CHARS}${VALID_JOINS}){0,${LENGTH_LIMIT}}))$`
-    );
-    ALIAS_LENGTH_LIMIT = 50;
-    AtSignMentionsRegexAliasRegex = new RegExp(
-      `(^|\\s|\\()([${TRIGGERS}]((?:${VALID_CHARS}){0,${ALIAS_LENGTH_LIMIT}}))$`
-    );
-    SUGGESTION_LIST_LENGTH_LIMIT = 5;
-    mentionsCache = /* @__PURE__ */ new Map();
-    dummyMentionsData = [
-      "Aayla Secura",
-      "Adi Gallia",
-      "Admiral Dodd Rancit",
-      "Admiral Firmus Piett",
-      "Admiral Gial Ackbar",
-      "Admiral Ozzel",
-      "Admiral Raddus",
-      "Admiral Terrinald Screed",
-      "Admiral Trench",
-      "Admiral U.O. Statura",
-      "Agen Kolar",
-      "Agent Kallus",
-      "Aiolin and Morit Astarte",
-      "Aks Moe",
-      "Almec",
-      "Alton Kastle",
-      "Amee",
-      "AP-5",
-      "Armitage Hux",
-      "Artoo",
-      "Arvel Crynyd",
-      "Asajj Ventress",
-      "Aurra Sing",
-      "AZI-3",
-      "Bala-Tik",
-      "Barada",
-      "Bargwill Tomder",
-      "Baron Papanoida",
-      "Barriss Offee",
-      "Baze Malbus",
-      "Bazine Netal",
-      "BB-8",
-      "BB-9E",
-      "Ben Quadinaros",
-      "Berch Teller",
-      "Beru Lars",
-      "Bib Fortuna",
-      "Biggs Darklighter",
-      "Black Krrsantan",
-      "Bo-Katan Kryze",
-      "Boba Fett",
-      "Bobbajo",
-      "Bodhi Rook",
-      "Borvo the Hutt",
-      "Boss Nass",
-      "Bossk",
-      "Breha Antilles-Organa",
-      "Bren Derlin",
-      "Brendol Hux",
-      "BT-1",
-      "C-3PO",
-      "C1-10P",
-      "Cad Bane",
-      "Caluan Ematt",
-      "Captain Gregor",
-      "Captain Phasma",
-      "Captain Quarsh Panaka",
-      "Captain Rex",
-      "Carlist Rieekan",
-      "Casca Panzoro",
-      "Cassian Andor",
-      "Cassio Tagge",
-      "Cham Syndulla",
-      "Che Amanwe Papanoida",
-      "Chewbacca",
-      "Chi Eekway Papanoida",
-      "Chief Chirpa",
-      "Chirrut \xCEmwe",
-      "Ciena Ree",
-      "Cin Drallig",
-      "Clegg Holdfast",
-      "Cliegg Lars",
-      "Coleman Kcaj",
-      "Coleman Trebor",
-      "Colonel Kaplan",
-      "Commander Bly",
-      "Commander Cody (CC-2224)",
-      "Commander Fil (CC-3714)",
-      "Commander Fox",
-      "Commander Gree",
-      "Commander Jet",
-      "Commander Wolffe",
-      "Conan Antonio Motti",
-      "Conder Kyl",
-      "Constable Zuvio",
-      "Cord\xE9",
-      "Cpatain Typho",
-      "Crix Madine",
-      "Cut Lawquane",
-      "Dak Ralter",
-      "Dapp",
-      "Darth Bane",
-      "Darth Maul",
-      "Darth Tyranus",
-      "Daultay Dofine",
-      "Del Meeko",
-      "Delian Mors",
-      "Dengar",
-      "Depa Billaba",
-      "Derek Klivian",
-      "Dexter Jettster",
-      "Dine\xE9 Ellberger",
-      "DJ",
-      "Doctor Aphra",
-      "Doctor Evazan",
-      "Dogma",
-      "Dorm\xE9",
-      "Dr. Cylo",
-      "Droidbait",
-      "Droopy McCool",
-      "Dryden Vos",
-      "Dud Bolt",
-      "Ebe E. Endocott",
-      "Echuu Shen-Jon",
-      "Eeth Koth",
-      "Eighth Brother",
-      "Eirta\xE9",
-      "Eli Vanto",
-      "Ell\xE9",
-      "Ello Asty",
-      "Embo",
-      "Eneb Ray",
-      "Enfys Nest",
-      "EV-9D9",
-      "Evaan Verlaine",
-      "Even Piell",
-      "Ezra Bridger",
-      "Faro Argyus",
-      "Feral",
-      "Fifth Brother",
-      "Finis Valorum",
-      "Finn",
-      "Fives",
-      "FN-1824",
-      "FN-2003",
-      "Fodesinbeed Annodue",
-      "Fulcrum",
-      "FX-7",
-      "GA-97",
-      "Galen Erso",
-      "Gallius Rax",
-      'Garazeb "Zeb" Orrelios',
-      "Gardulla the Hutt",
-      "Garrick Versio",
-      "Garven Dreis",
-      "Gavyn Sykes",
-      "Gideon Hask",
-      "Gizor Dellso",
-      "Gonk droid",
-      "Grand Inquisitor",
-      "Greeata Jendowanian",
-      "Greedo",
-      "Greer Sonnel",
-      "Grievous",
-      "Grummgar",
-      "Gungi",
-      "Hammerhead",
-      "Han Solo",
-      "Harter Kalonia",
-      "Has Obbit",
-      "Hera Syndulla",
-      "Hevy",
-      "Hondo Ohnaka",
-      "Huyang",
-      "Iden Versio",
-      "IG-88",
-      "Ima-Gun Di",
-      "Inquisitors",
-      "Inspector Thanoth",
-      "Jabba",
-      "Jacen Syndulla",
-      "Jan Dodonna",
-      "Jango Fett",
-      "Janus Greejatus",
-      "Jar Jar Binks",
-      "Jas Emari",
-      "Jaxxon",
-      "Jek Tono Porkins",
-      "Jeremoch Colton",
-      "Jira",
-      "Jobal Naberrie",
-      "Jocasta Nu",
-      "Joclad Danva",
-      "Joh Yowza",
-      "Jom Barell",
-      "Joph Seastriker",
-      "Jova Tarkin",
-      "Jubnuk",
-      "Jyn Erso",
-      "K-2SO",
-      "Kanan Jarrus",
-      "Karbin",
-      "Karina the Great",
-      "Kes Dameron",
-      "Ketsu Onyo",
-      "Ki-Adi-Mundi",
-      "King Katuunko",
-      "Kit Fisto",
-      "Kitster Banai",
-      "Klaatu",
-      "Klik-Klak",
-      "Korr Sella",
-      "Kylo Ren",
-      "L3-37",
-      "Lama Su",
-      "Lando Calrissian",
-      "Lanever Villecham",
-      "Leia Organa",
-      "Letta Turmond",
-      "Lieutenant Kaydel Ko Connix",
-      "Lieutenant Thire",
-      "Lobot",
-      "Logray",
-      "Lok Durd",
-      "Longo Two-Guns",
-      "Lor San Tekka",
-      "Lorth Needa",
-      "Lott Dod",
-      "Luke Skywalker",
-      "Lumat",
-      "Luminara Unduli",
-      "Lux Bonteri",
-      "Lyn Me",
-      "Lyra Erso",
-      "Mace Windu",
-      "Malakili",
-      "Mama the Hutt",
-      "Mars Guo",
-      "Mas Amedda",
-      "Mawhonic",
-      "Max Rebo",
-      "Maximilian Veers",
-      "Maz Kanata",
-      "ME-8D9",
-      "Meena Tills",
-      "Mercurial Swift",
-      "Mina Bonteri",
-      "Miraj Scintel",
-      "Mister Bones",
-      "Mod Terrik",
-      "Moden Canady",
-      "Mon Mothma",
-      "Moradmin Bast",
-      "Moralo Eval",
-      "Morley",
-      "Mother Talzin",
-      "Nahdar Vebb",
-      "Nahdonnis Praji",
-      "Nien Nunb",
-      "Niima the Hutt",
-      "Nines",
-      "Norra Wexley",
-      "Nute Gunray",
-      "Nuvo Vindi",
-      "Obi-Wan Kenobi",
-      "Odd Ball",
-      "Ody Mandrell",
-      "Omi",
-      "Onaconda Farr",
-      "Oola",
-      "OOM-9",
-      "Oppo Rancisis",
-      "Orn Free Taa",
-      "Oro Dassyne",
-      "Orrimarko",
-      "Osi Sobeck",
-      "Owen Lars",
-      "Pablo-Jill",
-      "Padm\xE9 Amidala",
-      "Pagetti Rook",
-      "Paige Tico",
-      "Paploo",
-      "Petty Officer Thanisson",
-      "Pharl McQuarrie",
-      "Plo Koon",
-      "Po Nudo",
-      "Poe Dameron",
-      "Poggle the Lesser",
-      "Pong Krell",
-      "Pooja Naberrie",
-      "PZ-4CO",
-      "Quarrie",
-      "Quay Tolsite",
-      "Queen Apailana",
-      "Queen Jamillia",
-      "Queen Neeyutnee",
-      "Qui-Gon Jinn",
-      "Quiggold",
-      "Quinlan Vos",
-      "R2-D2",
-      "R2-KT",
-      "R3-S6",
-      "R4-P17",
-      "R5-D4",
-      "RA-7",
-      "Rab\xE9",
-      "Rako Hardeen",
-      "Ransolm Casterfo",
-      "Rappertunie",
-      "Ratts Tyerell",
-      "Raymus Antilles",
-      "Ree-Yees",
-      "Reeve Panzoro",
-      "Rey",
-      "Ric Oli\xE9",
-      "Riff Tamson",
-      "Riley",
-      "Rinnriyin Di",
-      "Rio Durant",
-      "Rogue Squadron",
-      "Romba",
-      "Roos Tarpals",
-      "Rose Tico",
-      "Rotta the Hutt",
-      "Rukh",
-      "Rune Haako",
-      "Rush Clovis",
-      "Ruwee Naberrie",
-      "Ryoo Naberrie",
-      "Sab\xE9",
-      "Sabine Wren",
-      "Sach\xE9",
-      "Saelt-Marae",
-      "Saesee Tiin",
-      "Salacious B. Crumb",
-      "San Hill",
-      "Sana Starros",
-      "Sarco Plank",
-      "Sarkli",
-      "Satine Kryze",
-      "Savage Opress",
-      "Sebulba",
-      "Senator Organa",
-      "Sergeant Kreel",
-      "Seventh Sister",
-      "Shaak Ti",
-      "Shara Bey",
-      "Shmi Skywalker",
-      "Shu Mai",
-      "Sidon Ithano",
-      "Sifo-Dyas",
-      "Sim Aloo",
-      "Siniir Rath Velus",
-      "Sio Bibble",
-      "Sixth Brother",
-      "Slowen Lo",
-      "Sly Moore",
-      "Snaggletooth",
-      "Snap Wexley",
-      "Snoke",
-      "Sola Naberrie",
-      "Sora Bulq",
-      "Strono Tuggs",
-      "Sy Snootles",
-      "Tallissan Lintra",
-      "Tarfful",
-      "Tasu Leech",
-      "Taun We",
-      "TC-14",
-      "Tee Watt Kaa",
-      "Teebo",
-      "Teedo",
-      "Teemto Pagalies",
-      "Temiri Blagg",
-      "Tessek",
-      "Tey How",
-      "Thane Kyrell",
-      "The Bendu",
-      "The Smuggler",
-      "Thrawn",
-      "Tiaan Jerjerrod",
-      "Tion Medon",
-      "Tobias Beckett",
-      "Tulon Voidgazer",
-      "Tup",
-      "U9-C4",
-      "Unkar Plutt",
-      "Val Beckett",
-      "Vanden Willard",
-      "Vice Admiral Amilyn Holdo",
-      "Vober Dand",
-      "WAC-47",
-      "Wag Too",
-      "Wald",
-      "Walrus Man",
-      "Warok",
-      "Wat Tambor",
-      "Watto",
-      "Wedge Antilles",
-      "Wes Janson",
-      "Wicket W. Warrick",
-      "Wilhuff Tarkin",
-      "Wollivan",
-      "Wuher",
-      "Wullf Yularen",
-      "Xamuel Lennox",
-      "Yaddle",
-      "Yarael Poof",
-      "Yoda",
-      "Zam Wesell",
-      "Zev Senesca",
-      "Ziro the Hutt",
-      "Zuckuss"
-    ];
-    dummyLookupService = {
-      search(string, callback) {
-        setTimeout(() => {
-          const results = dummyMentionsData.filter((mention) => mention.toLowerCase().includes(string.toLowerCase()));
-          callback(results);
-        }, 500);
-      }
-    };
-    MentionTypeaheadOption = class extends MenuOption {
-      name;
-      picture;
-      constructor(name, picture) {
-        super(name);
-        this.name = name;
-        this.picture = picture;
-      }
-    };
-  }
-});
-
 // src/ui/ContentEditable.css
 var init_ContentEditable = __esm({
   "src/ui/ContentEditable.css"() {
@@ -1325,14 +637,14 @@ var init_ContentEditable = __esm({
 
 // src/ui/ContentEditable.tsx
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { jsx as jsx8 } from "react/jsx-runtime";
+import { jsx as jsx7 } from "react/jsx-runtime";
 function LexicalContentEditable({ className, placeholder, placeholderClassName }) {
-  return /* @__PURE__ */ jsx8(
+  return /* @__PURE__ */ jsx7(
     ContentEditable,
     {
       className: className ?? "ContentEditable__root",
       "aria-placeholder": placeholder,
-      placeholder: /* @__PURE__ */ jsx8("div", { className: placeholderClassName ?? "ContentEditable__placeholder", children: placeholder })
+      placeholder: /* @__PURE__ */ jsx7("div", { className: placeholderClassName ?? "ContentEditable__placeholder", children: placeholder })
     }
   );
 }
@@ -1346,7 +658,7 @@ var init_ContentEditable2 = __esm({
 // src/ui/ImageResizer.tsx
 import { calculateZoomLevel } from "@lexical/utils";
 import { useRef as useRef3 } from "react";
-import { jsx as jsx9, jsxs as jsxs4 } from "react/jsx-runtime";
+import { jsx as jsx8, jsxs as jsxs3 } from "react/jsx-runtime";
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
@@ -1488,8 +800,8 @@ function ImageResizer({
       document.removeEventListener("pointerup", handlePointerUp);
     }
   };
-  return /* @__PURE__ */ jsxs4("div", { ref: controlWrapperRef, children: [
-    !showCaption && captionsEnabled && /* @__PURE__ */ jsx9(
+  return /* @__PURE__ */ jsxs3("div", { ref: controlWrapperRef, children: [
+    !showCaption && captionsEnabled && /* @__PURE__ */ jsx8(
       "button",
       {
         type: "button",
@@ -1501,7 +813,7 @@ function ImageResizer({
         children: "Add Caption"
       }
     ),
-    /* @__PURE__ */ jsx9(
+    /* @__PURE__ */ jsx8(
       "div",
       {
         className: "image-resizer image-resizer-n",
@@ -1510,7 +822,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx9(
+    /* @__PURE__ */ jsx8(
       "div",
       {
         className: "image-resizer image-resizer-ne",
@@ -1519,7 +831,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx9(
+    /* @__PURE__ */ jsx8(
       "div",
       {
         className: "image-resizer image-resizer-e",
@@ -1528,7 +840,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx9(
+    /* @__PURE__ */ jsx8(
       "div",
       {
         className: "image-resizer image-resizer-se",
@@ -1537,7 +849,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx9(
+    /* @__PURE__ */ jsx8(
       "div",
       {
         className: "image-resizer image-resizer-s",
@@ -1546,7 +858,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx9(
+    /* @__PURE__ */ jsx8(
       "div",
       {
         className: "image-resizer image-resizer-sw",
@@ -1555,7 +867,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx9(
+    /* @__PURE__ */ jsx8(
       "div",
       {
         className: "image-resizer image-resizer-w",
@@ -1564,7 +876,7 @@ function ImageResizer({
         }
       }
     ),
-    /* @__PURE__ */ jsx9(
+    /* @__PURE__ */ jsx8(
       "div",
       {
         className: "image-resizer image-resizer-nw",
@@ -1594,7 +906,7 @@ __export(ImageComponent_exports, {
   RIGHT_CLICK_IMAGE_COMMAND: () => RIGHT_CLICK_IMAGE_COMMAND,
   default: () => ImageComponent
 });
-import { useLexicalComposerContext as useLexicalComposerContext4 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext3 } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { HashtagPlugin } from "@lexical/react/LexicalHashtagPlugin";
 import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
@@ -1619,11 +931,11 @@ import {
   KEY_ESCAPE_COMMAND as KEY_ESCAPE_COMMAND2,
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND2
 } from "lexical";
-import { Suspense, useCallback as useCallback3, useEffect as useEffect5, useMemo as useMemo3, useRef as useRef4, useState as useState3 } from "react";
-import { jsx as jsx10, jsxs as jsxs5 } from "react/jsx-runtime";
+import { Suspense, useCallback as useCallback2, useEffect as useEffect4, useMemo as useMemo2, useRef as useRef4, useState as useState2 } from "react";
+import { jsx as jsx9, jsxs as jsxs4 } from "react/jsx-runtime";
 function DisableCaptionOnBlur({ setShowCaption }) {
-  const [editor] = useLexicalComposerContext4();
-  useEffect5(
+  const [editor] = useLexicalComposerContext3();
+  useEffect4(
     () => editor.registerCommand(
       BLUR_COMMAND,
       () => {
@@ -1638,8 +950,8 @@ function DisableCaptionOnBlur({ setShowCaption }) {
   return null;
 }
 function CaptionOnChangePlugin({ parentEditor, nodeKey }) {
-  const [captionEditor] = useLexicalComposerContext4();
-  useEffect5(() => {
+  const [captionEditor] = useLexicalComposerContext3();
+  useEffect4(() => {
     return captionEditor.registerUpdateListener(({ dirtyElements, dirtyLeaves, tags }) => {
       if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
         return;
@@ -1698,13 +1010,13 @@ function LazyImage({
 }) {
   const isSVGImage = isSVG(src);
   const status = useSuspenseImage(src);
-  useEffect5(() => {
+  useEffect4(() => {
     if (status.error) {
       onError();
     }
   }, [status.error, onError]);
   if (status.error) {
-    return /* @__PURE__ */ jsx10(BrokenImage, {});
+    return /* @__PURE__ */ jsx9(BrokenImage, {});
   }
   const calculateDimensions = () => {
     if (!isSVGImage) {
@@ -1736,7 +1048,7 @@ function LazyImage({
     };
   };
   const imageStyle = calculateDimensions();
-  return /* @__PURE__ */ jsx10(
+  return /* @__PURE__ */ jsx9(
     "img",
     {
       className: className || void 0,
@@ -1750,7 +1062,7 @@ function LazyImage({
   );
 }
 function BrokenImage() {
-  return /* @__PURE__ */ jsx10(
+  return /* @__PURE__ */ jsx9(
     "img",
     {
       src: image_broken_default,
@@ -1781,19 +1093,19 @@ function ImageComponent({
   const imageRef = useRef4(null);
   const buttonRef = useRef4(null);
   const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection(nodeKey);
-  const [isResizing, setIsResizing] = useState3(false);
-  const [editor] = useLexicalComposerContext4();
+  const [isResizing, setIsResizing] = useState2(false);
+  const [editor] = useLexicalComposerContext3();
   const activeEditorRef = useRef4(null);
-  const [isLoadError, setIsLoadError] = useState3(false);
+  const [isLoadError, setIsLoadError] = useState2(false);
   const isEditable = useLexicalEditable2();
-  const isInNodeSelection = useMemo3(
+  const isInNodeSelection = useMemo2(
     () => isSelected && editor.getEditorState().read(() => {
       const selection = $getSelection2();
       return $isNodeSelection2(selection) && selection.has(nodeKey);
     }),
     [editor, isSelected, nodeKey]
   );
-  const $onEnter = useCallback3(
+  const $onEnter = useCallback2(
     (event) => {
       const latestSelection = $getSelection2();
       const buttonElem = buttonRef.current;
@@ -1813,7 +1125,7 @@ function ImageComponent({
     },
     [caption, nodeKey, showCaption]
   );
-  const $onEscape = useCallback3(
+  const $onEscape = useCallback2(
     (event) => {
       if (activeEditorRef.current === caption || buttonRef.current === event.target) {
         $setSelection(null);
@@ -1830,7 +1142,7 @@ function ImageComponent({
     },
     [caption, editor, setSelected]
   );
-  const onClick = useCallback3(
+  const onClick = useCallback2(
     (payload) => {
       const event = payload;
       if (isResizing) {
@@ -1849,7 +1161,7 @@ function ImageComponent({
     },
     [isResizing, isSelected, setSelected, clearSelection]
   );
-  const onRightClick = useCallback3(
+  const onRightClick = useCallback2(
     (event) => {
       editor.getEditorState().read(() => {
         const latestSelection = $getSelection2();
@@ -1861,7 +1173,7 @@ function ImageComponent({
     },
     [editor]
   );
-  useEffect5(() => {
+  useEffect4(() => {
     return mergeRegister2(
       editor.registerCommand(
         SELECTION_CHANGE_COMMAND2,
@@ -1884,7 +1196,7 @@ function ImageComponent({
       )
     );
   }, [editor]);
-  useEffect5(() => {
+  useEffect4(() => {
     let rootCleanup = noop;
     return mergeRegister2(
       editor.registerCommand(CLICK_COMMAND, onClick, COMMAND_PRIORITY_LOW),
@@ -1934,8 +1246,8 @@ function ImageComponent({
   useSharedHistoryContext();
   const draggable = isInNodeSelection && !isResizing;
   const isFocused = (isSelected || isResizing) && isEditable;
-  return /* @__PURE__ */ jsxs5(Suspense, { fallback: null, children: [
-    /* @__PURE__ */ jsx10("div", { draggable, children: isLoadError ? /* @__PURE__ */ jsx10(BrokenImage, {}) : /* @__PURE__ */ jsx10(
+  return /* @__PURE__ */ jsxs4(Suspense, { fallback: null, children: [
+    /* @__PURE__ */ jsx9("div", { draggable, children: isLoadError ? /* @__PURE__ */ jsx9(BrokenImage, {}) : /* @__PURE__ */ jsx9(
       LazyImage,
       {
         className: isFocused ? `focused ${isInNodeSelection ? "draggable" : ""}` : null,
@@ -1948,17 +1260,16 @@ function ImageComponent({
         onError: () => setIsLoadError(true)
       }
     ) }),
-    showCaption && /* @__PURE__ */ jsx10("div", { className: "image-caption-container", children: /* @__PURE__ */ jsxs5(LexicalNestedComposer, { initialEditor: caption, children: [
-      /* @__PURE__ */ jsx10(CaptionOnChangePlugin, { parentEditor: editor, nodeKey }),
-      /* @__PURE__ */ jsx10(DisableCaptionOnBlur, { setShowCaption }),
-      /* @__PURE__ */ jsx10(NewMentionsPlugin, {}),
-      /* @__PURE__ */ jsx10(LinkPlugin, {}),
-      /* @__PURE__ */ jsx10(EmojisPlugin, {}),
-      /* @__PURE__ */ jsx10(HashtagPlugin, {}),
-      /* @__PURE__ */ jsx10(
+    showCaption && /* @__PURE__ */ jsx9("div", { className: "image-caption-container", children: /* @__PURE__ */ jsxs4(LexicalNestedComposer, { initialEditor: caption, children: [
+      /* @__PURE__ */ jsx9(CaptionOnChangePlugin, { parentEditor: editor, nodeKey }),
+      /* @__PURE__ */ jsx9(DisableCaptionOnBlur, { setShowCaption }),
+      /* @__PURE__ */ jsx9(LinkPlugin, {}),
+      /* @__PURE__ */ jsx9(EmojisPlugin, {}),
+      /* @__PURE__ */ jsx9(HashtagPlugin, {}),
+      /* @__PURE__ */ jsx9(
         RichTextPlugin,
         {
-          contentEditable: /* @__PURE__ */ jsx10(
+          contentEditable: /* @__PURE__ */ jsx9(
             LexicalContentEditable,
             {
               placeholder: "Enter a caption...",
@@ -1970,7 +1281,7 @@ function ImageComponent({
         }
       )
     ] }) }),
-    resizable && isInNodeSelection && isFocused && /* @__PURE__ */ jsx10(
+    resizable && isInNodeSelection && isFocused && /* @__PURE__ */ jsx9(
       ImageResizer,
       {
         showCaption,
@@ -1995,7 +1306,6 @@ var init_ImageComponent = __esm({
     init_image_broken();
     init_EmojisPlugin();
     init_LinkPlugin();
-    init_MentionsPlugin();
     init_ContentEditable2();
     init_ImageResizer();
     init_ImageNode2();
@@ -2010,7 +1320,7 @@ import { HashtagNode } from "@lexical/hashtag";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import { LinkNode } from "@lexical/link";
 import {
-  $applyNodeReplacement as $applyNodeReplacement5,
+  $applyNodeReplacement as $applyNodeReplacement4,
   $createRangeSelection,
   $extendCaretToRange,
   $getChildCaret,
@@ -2026,10 +1336,10 @@ import {
   ParagraphNode,
   RootNode,
   SKIP_DOM_SELECTION_TAG,
-  TextNode as TextNode5
+  TextNode as TextNode4
 } from "lexical";
 import * as React2 from "react";
-import { jsx as jsx11 } from "react/jsx-runtime";
+import { jsx as jsx10 } from "react/jsx-runtime";
 function isGoogleDocCheckboxImg(img) {
   return img.parentElement != null && img.parentElement.tagName === "LI" && img.previousSibling === null && img.getAttribute("aria-roledescription") === "checkbox";
 }
@@ -2062,7 +1372,7 @@ function $createImageNode({
   caption,
   key
 }) {
-  return $applyNodeReplacement5(
+  return $applyNodeReplacement4(
     new ImageNode(src, altText, maxWidth, width, height, showCaption, caption, captionsEnabled, key)
   );
 }
@@ -2203,7 +1513,7 @@ var init_ImageNode2 = __esm({
         this.__showCaption = showCaption || false;
         this.__caption = caption || createEditor({
           namespace: "Playground/ImageNodeCaption",
-          nodes: [RootNode, TextNode5, LineBreakNode, ParagraphNode, LinkNode, EmojiNode, HashtagNode, KeywordNode]
+          nodes: [RootNode, TextNode4, LineBreakNode, ParagraphNode, LinkNode, EmojiNode, HashtagNode, KeywordNode]
         });
         this.__captionsEnabled = captionsEnabled || captionsEnabled === void 0;
       }
@@ -2248,7 +1558,7 @@ var init_ImageNode2 = __esm({
         return this.__altText;
       }
       decorate() {
-        return /* @__PURE__ */ jsx11(
+        return /* @__PURE__ */ jsx10(
           ImageComponent2,
           {
             src: this.__src,
@@ -2298,8 +1608,8 @@ import { $createTextNode, $isParagraphNode as $isParagraphNode2, $isTextNode } f
 // src/nodes/TweetNode.tsx
 import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode";
-import { useCallback as useCallback4, useEffect as useEffect6, useRef as useRef5, useState as useState4 } from "react";
-import { jsx as jsx12, jsxs as jsxs6 } from "react/jsx-runtime";
+import { useCallback as useCallback3, useEffect as useEffect5, useRef as useRef5, useState as useState3 } from "react";
+import { jsx as jsx11, jsxs as jsxs5 } from "react/jsx-runtime";
 var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
 function $convertTweetElement(domNode) {
   const id = domNode.getAttribute("data-lexical-tweet-id");
@@ -2321,8 +1631,8 @@ function TweetComponent({
 }) {
   const containerRef = useRef5(null);
   const previousTweetIDRef = useRef5("");
-  const [isTweetLoading, setIsTweetLoading] = useState4(false);
-  const createTweet = useCallback4(async () => {
+  const [isTweetLoading, setIsTweetLoading] = useState3(false);
+  const createTweet = useCallback3(async () => {
     try {
       await window.twttr.widgets.createTweet(tweetID, containerRef.current);
       setIsTweetLoading(false);
@@ -2336,7 +1646,7 @@ function TweetComponent({
       }
     }
   }, [onError, onLoad, tweetID]);
-  useEffect6(() => {
+  useEffect5(() => {
     if (tweetID !== previousTweetIDRef.current) {
       setIsTweetLoading(true);
       if (isTwitterScriptLoading) {
@@ -2356,9 +1666,9 @@ function TweetComponent({
       }
     }
   }, [createTweet, onError, tweetID]);
-  return /* @__PURE__ */ jsxs6(BlockWithAlignableContents, { className, format, nodeKey, children: [
+  return /* @__PURE__ */ jsxs5(BlockWithAlignableContents, { className, format, nodeKey, children: [
     isTweetLoading ? loadingComponent : null,
-    /* @__PURE__ */ jsx12("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
+    /* @__PURE__ */ jsx11("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
   ] });
 }
 var TweetNode = class _TweetNode extends DecoratorBlockNode {
@@ -2414,7 +1724,7 @@ var TweetNode = class _TweetNode extends DecoratorBlockNode {
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ jsx12(
+    return /* @__PURE__ */ jsx11(
       TweetComponent,
       {
         className,

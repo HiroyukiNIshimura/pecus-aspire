@@ -46,9 +46,6 @@ export { $createKeywordNode, $isKeywordNode, KeywordNode } from './KeywordNode';
 export { $createLayoutContainerNode, $isLayoutContainerNode, LayoutContainerNode } from './LayoutContainerNode';
 export { $createLayoutItemNode, $isLayoutItemNode, LayoutItemNode } from './LayoutItemNode';
 
-// MentionNode
-export { $createMentionNode, $isMentionNode, MentionNode } from './MentionNode';
-
 // MermaidNode
 export { $createMermaidNode, $isMermaidNode, MermaidNode } from './MermaidNode';
 // NotionLikeEditorNodes（全ノードの配列）

@@ -54,7 +54,6 @@ import LinkPlugin from '../plugins/LinkPlugin';
 import MarkdownPastePlugin from '../plugins/MarkdownPastePlugin';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import { MaxLengthPlugin } from '../plugins/MaxLengthPlugin';
-import MentionsPlugin from '../plugins/MentionsPlugin';
 import MermaidPlugin from '../plugins/MermaidPlugin';
 import PageBreakPlugin from '../plugins/PageBreakPlugin';
 import ShortcutsPlugin from '../plugins/ShortcutsPlugin';
@@ -143,7 +142,6 @@ export default function Editor({ isFullscreen = false }: { isFullscreen?: boolea
         <ComponentPickerPlugin />
         <EmojiPickerPlugin />
         <AutoEmbedPlugin />
-        <MentionsPlugin />
         <EmojisPlugin />
         <HashtagPlugin />
         <AutoLinkPlugin />

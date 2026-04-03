@@ -42,7 +42,6 @@ import { useSharedHistoryContext } from '../context/SharedHistoryContext';
 import brokenImage from '../images/image-broken.svg';
 import EmojisPlugin from '../plugins/EmojisPlugin';
 import LinkPlugin from '../plugins/LinkPlugin';
-import MentionsPlugin from '../plugins/MentionsPlugin';
 import ContentEditable from '../ui/ContentEditable';
 import ImageResizer from '../ui/ImageResizer';
 import { $isCaptionEditorEmpty, $isImageNode } from './ImageNode';
@@ -471,7 +470,6 @@ export default function ImageComponent({
           <LexicalNestedComposer initialEditor={caption}>
             <CaptionOnChangePlugin parentEditor={editor} nodeKey={nodeKey} />
             <DisableCaptionOnBlur setShowCaption={setShowCaption} />
-            <MentionsPlugin />
             <LinkPlugin />
             <EmojisPlugin />
             <HashtagPlugin />

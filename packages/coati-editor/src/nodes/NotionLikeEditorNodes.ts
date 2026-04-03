@@ -28,7 +28,6 @@ import { ImageNode } from './ImageNode';
 import { KeywordNode } from './KeywordNode';
 import { LayoutContainerNode } from './LayoutContainerNode';
 import { LayoutItemNode } from './LayoutItemNode';
-import { MentionNode } from './MentionNode';
 import { MermaidNode } from './MermaidNode';
 import { PageBreakNode } from './PageBreakNode';
 import { SpecialTextNode } from './SpecialTextNode';
@@ -52,7 +51,6 @@ const NotionLikeEditorNodes: Array<Klass<LexicalNode>> = [
   OverflowNode,
   StickyNode,
   ImageNode,
-  MentionNode,
   EmojiNode,
   EquationNode,
   AutocompleteNode,
