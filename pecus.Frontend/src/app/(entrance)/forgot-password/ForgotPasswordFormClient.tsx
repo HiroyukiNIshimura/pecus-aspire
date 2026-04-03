@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { requestPasswordResetAction } from '@/actions/password';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { requestPasswordResetSchema } from '@/schemas/signInSchemas';
@@ -9,20 +9,36 @@ import { requestPasswordResetSchema } from '@/schemas/signInSchemas';
 export default function ForgotPasswordFormClient() {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [email, setEmail] = useState<string>('');
+  const [cooldownSeconds, setCooldownSeconds] = useState<number>(0);
+
+  const isCooldownActive = cooldownSeconds > 0;
+
+  useEffect(() => {
+    if (!isCooldownActive) {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setCooldownSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [isCooldownActive]);
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: requestPasswordResetSchema,
     onSubmit: async (data) => {
+      setCooldownSeconds(60);
       const result = await requestPasswordResetAction(data);
       if (result.success) {
-        setSuccessMessage(result.data.message);
+        setSuccessMessage(
+          'パスワードリセットメールを送信しました。メールを確認してください。しばらく待ってもメールが届かない場合は、迷惑メールフォルダも確認してください。メールが届かない場合は60秒後に再度リクエストできます。',
+        );
         // フォームをリセット
         formRef.current?.reset();
         setEmail('');
-        // 5秒後にメッセージをクリア
-        setTimeout(() => {
-          setSuccessMessage('');
-        }, 5000);
       }
     },
   });
@@ -86,7 +102,7 @@ export default function ForgotPasswordFormClient() {
 
           {/* 送信ボタン */}
           <div className="w-full mt-6">
-            <button className="btn btn-accent w-full" type="submit" disabled={isSubmitting}>
+            <button className="btn btn-accent w-full" type="submit" disabled={isSubmitting || isCooldownActive}>
               {isSubmitting ? (
                 <>
                   <span className="loading loading-spinner loading-sm"></span>
@@ -96,6 +112,11 @@ export default function ForgotPasswordFormClient() {
                 'リセットメールを送信'
               )}
             </button>
+            {isCooldownActive && (
+              <p className="text-center text-sm text-base-content mt-2">
+                再送信できるまであと {cooldownSeconds} 秒です。
+              </p>
+            )}
           </div>
         </form>
 

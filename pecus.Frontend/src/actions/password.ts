@@ -43,7 +43,7 @@ export async function requestPasswordResetAction(
     return {
       success: true,
       data: {
-        message: result.message || 'パスワードリセットメールを送信しました。メールを確認してください。',
+        message: result.message,
       },
     };
   } catch (error) {

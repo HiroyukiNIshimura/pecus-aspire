@@ -123,7 +123,7 @@ public class EntrancePasswordController : ControllerBase
             );
         }
 
-        // セキュリティのため、常に成功メッセージを返す
+        // セキュリティのため（ユーザーの存在チェックができてしまうので）、常に成功メッセージを返す
         return TypedResults.Ok(
             new SuccessResponse { Message = "パスワードリセットメールが送信されました。" }
         );
