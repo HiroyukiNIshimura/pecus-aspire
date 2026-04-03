@@ -1304,7 +1304,9 @@ function LazyImage({
   width,
   height,
   maxWidth,
-  onError
+  onError,
+  isViewerZoomable,
+  onOpenPreview
 }) {
   const isSVGImage = isSVG(src);
   const status = useSuspenseImage(src);
@@ -1349,12 +1351,32 @@ function LazyImage({
   return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
     "img",
     {
-      className: className || void 0,
+      className: isViewerZoomable ? `${className ?? ""} viewer-zoomable`.trim() : className || void 0,
       src,
       alt: altText,
       ref: imageRef,
       style: imageStyle,
       onError,
+      onClick: (event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        onOpenPreview();
+      },
+      role: isViewerZoomable ? "button" : void 0,
+      tabIndex: isViewerZoomable ? 0 : void 0,
+      "aria-label": isViewerZoomable ? `${altText || "Image"} \u3092\u62E1\u5927\u8868\u793A` : void 0,
+      onKeyDown: (event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenPreview();
+        }
+      },
       draggable: "false"
     }
   );
@@ -1395,7 +1417,9 @@ function ImageComponent({
   const [editor] = (0, import_LexicalComposerContext5.useLexicalComposerContext)();
   const activeEditorRef = (0, import_react12.useRef)(null);
   const [isLoadError, setIsLoadError] = (0, import_react12.useState)(false);
+  const [isPreviewOpen, setIsPreviewOpen] = (0, import_react12.useState)(false);
   const isEditable = (0, import_useLexicalEditable2.useLexicalEditable)();
+  const isViewerZoomable = !isEditable && !isLoadError;
   const isInNodeSelection = (0, import_react12.useMemo)(
     () => isSelected && editor.getEditorState().read(() => {
       const selection = (0, import_lexical14.$getSelection)();
@@ -1447,6 +1471,10 @@ function ImageComponent({
         return true;
       }
       if (event.target === imageRef.current) {
+        if (!isEditable && !isLoadError) {
+          setIsPreviewOpen(true);
+          return true;
+        }
         if (event.shiftKey) {
           setSelected(!isSelected);
         } else {
@@ -1457,7 +1485,7 @@ function ImageComponent({
       }
       return false;
     },
-    [isResizing, isSelected, setSelected, clearSelection]
+    [isResizing, isSelected, setSelected, clearSelection, isEditable, isLoadError]
   );
   const onRightClick = (0, import_react12.useCallback)(
     (event) => {
@@ -1541,6 +1569,23 @@ function ImageComponent({
   const onResizeStart = () => {
     setIsResizing(true);
   };
+  const closePreview = (0, import_react12.useCallback)(() => {
+    setIsPreviewOpen(false);
+  }, []);
+  (0, import_react12.useEffect)(() => {
+    if (!isPreviewOpen) {
+      return;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closePreview();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPreviewOpen, closePreview]);
   useSharedHistoryContext();
   const draggable = isInNodeSelection && !isResizing;
   const isFocused = (isSelected || isResizing) && isEditable;
@@ -1555,7 +1600,9 @@ function ImageComponent({
         width,
         height,
         maxWidth,
-        onError: () => setIsLoadError(true)
+        onError: () => setIsLoadError(true),
+        isViewerZoomable,
+        onOpenPreview: () => setIsPreviewOpen(true)
       }
     ) }),
     showCaption && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "image-caption-container", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_LexicalNestedComposer.LexicalNestedComposer, { initialEditor: caption, children: [
@@ -1592,10 +1639,54 @@ function ImageComponent({
         onResizeEnd,
         captionsEnabled: !isLoadError && captionsEnabled
       }
+    ),
+    isPreviewOpen && typeof document !== "undefined" && (0, import_react_dom.createPortal)(
+      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
+        "div",
+        {
+          className: "image-preview-overlay",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": "\u753B\u50CF\u30D7\u30EC\u30D3\u30E5\u30FC",
+          tabIndex: -1,
+          onClick: (event) => {
+            if (event.target === event.currentTarget) {
+              closePreview();
+            }
+          },
+          onKeyDown: (event) => {
+            if (event.key === "Escape") {
+              closePreview();
+            }
+          },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+              "button",
+              {
+                type: "button",
+                className: "image-preview-close",
+                onClick: closePreview,
+                "aria-label": "\u9589\u3058\u308B",
+                children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" })
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+              "img",
+              {
+                src,
+                alt: altText,
+                className: "image-preview-content",
+                draggable: "false"
+              }
+            )
+          ]
+        }
+      ),
+      document.body
     )
   ] });
 }
-var import_LexicalComposerContext5, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection2, import_utils7, import_lexical14, import_react12, import_jsx_runtime13, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
+var import_LexicalComposerContext5, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection2, import_utils7, import_lexical14, import_react12, import_react_dom, import_jsx_runtime13, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
 var init_ImageComponent = __esm({
   "src/nodes/ImageComponent.tsx"() {
     "use strict";
@@ -1610,6 +1701,7 @@ var init_ImageComponent = __esm({
     import_utils7 = require("@lexical/utils");
     import_lexical14 = require("lexical");
     import_react12 = require("react");
+    import_react_dom = require("react-dom");
     init_SharedHistoryContext();
     init_image_broken();
     init_EmojisPlugin();
@@ -2487,9 +2579,9 @@ function StickyComponent({
   if (!portalContainer) {
     return null;
   }
-  return (0, import_react_dom.createPortal)(stickyContent, portalContainer);
+  return (0, import_react_dom2.createPortal)(stickyContent, portalContainer);
 }
-var import_LexicalComposerContext8, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils12, import_lexical22, import_react15, import_react_dom, import_jsx_runtime18;
+var import_LexicalComposerContext8, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils12, import_lexical22, import_react15, import_react_dom2, import_jsx_runtime18;
 var init_StickyComponent = __esm({
   "src/nodes/StickyComponent.tsx"() {
     "use strict";
@@ -2501,7 +2593,7 @@ var init_StickyComponent = __esm({
     import_utils12 = require("@lexical/utils");
     import_lexical22 = require("lexical");
     import_react15 = require("react");
-    import_react_dom = require("react-dom");
+    import_react_dom2 = require("react-dom");
     init_SharedHistoryContext();
     init_StickyEditorTheme2();
     init_ContentEditable2();

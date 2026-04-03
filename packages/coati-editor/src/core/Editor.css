@@ -1040,6 +1040,10 @@ i.icon.plus {
   cursor: default;
 }
 
+.notion-like-editor .editor-shell .editor-image img.viewer-zoomable {
+  cursor: zoom-in;
+}
+
 .notion-like-editor .editor-shell .editor-image img.focused {
   outline: 2px solid var(--color-primary);
   user-select: none;
@@ -1190,6 +1194,48 @@ i.icon.plus {
   width: 10px;
   height: 10px;
   cursor: nw-resize;
+}
+
+.image-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgb(0 0 0 / 75%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.image-preview-content {
+  width: min(96vw, 1600px);
+  max-width: none;
+  max-height: 92vh;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+  cursor: zoom-out;
+}
+
+.image-preview-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  background: rgb(0 0 0 / 40%);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.image-preview-close:hover {
+  background: rgb(0 0 0 / 60%);
 }
 
 .notion-like-editor .emoji {

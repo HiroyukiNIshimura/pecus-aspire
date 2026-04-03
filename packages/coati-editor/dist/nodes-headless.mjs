@@ -1256,6 +1256,7 @@ import {
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND2
 } from "lexical";
 import { Suspense, useCallback as useCallback4, useEffect as useEffect7, useMemo as useMemo3, useRef as useRef5, useState as useState4 } from "react";
+import { createPortal } from "react-dom";
 import { jsx as jsx13, jsxs as jsxs5 } from "react/jsx-runtime";
 function DisableCaptionOnBlur({ setShowCaption }) {
   const [editor] = useLexicalComposerContext5();
@@ -1330,7 +1331,9 @@ function LazyImage({
   width,
   height,
   maxWidth,
-  onError
+  onError,
+  isViewerZoomable,
+  onOpenPreview
 }) {
   const isSVGImage = isSVG(src);
   const status = useSuspenseImage(src);
@@ -1375,12 +1378,32 @@ function LazyImage({
   return /* @__PURE__ */ jsx13(
     "img",
     {
-      className: className || void 0,
+      className: isViewerZoomable ? `${className ?? ""} viewer-zoomable`.trim() : className || void 0,
       src,
       alt: altText,
       ref: imageRef,
       style: imageStyle,
       onError,
+      onClick: (event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        onOpenPreview();
+      },
+      role: isViewerZoomable ? "button" : void 0,
+      tabIndex: isViewerZoomable ? 0 : void 0,
+      "aria-label": isViewerZoomable ? `${altText || "Image"} \u3092\u62E1\u5927\u8868\u793A` : void 0,
+      onKeyDown: (event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenPreview();
+        }
+      },
       draggable: "false"
     }
   );
@@ -1421,7 +1444,9 @@ function ImageComponent({
   const [editor] = useLexicalComposerContext5();
   const activeEditorRef = useRef5(null);
   const [isLoadError, setIsLoadError] = useState4(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState4(false);
   const isEditable = useLexicalEditable2();
+  const isViewerZoomable = !isEditable && !isLoadError;
   const isInNodeSelection = useMemo3(
     () => isSelected && editor.getEditorState().read(() => {
       const selection = $getSelection3();
@@ -1473,6 +1498,10 @@ function ImageComponent({
         return true;
       }
       if (event.target === imageRef.current) {
+        if (!isEditable && !isLoadError) {
+          setIsPreviewOpen(true);
+          return true;
+        }
         if (event.shiftKey) {
           setSelected(!isSelected);
         } else {
@@ -1483,7 +1512,7 @@ function ImageComponent({
       }
       return false;
     },
-    [isResizing, isSelected, setSelected, clearSelection]
+    [isResizing, isSelected, setSelected, clearSelection, isEditable, isLoadError]
   );
   const onRightClick = useCallback4(
     (event) => {
@@ -1567,6 +1596,23 @@ function ImageComponent({
   const onResizeStart = () => {
     setIsResizing(true);
   };
+  const closePreview = useCallback4(() => {
+    setIsPreviewOpen(false);
+  }, []);
+  useEffect7(() => {
+    if (!isPreviewOpen) {
+      return;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closePreview();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPreviewOpen, closePreview]);
   useSharedHistoryContext();
   const draggable = isInNodeSelection && !isResizing;
   const isFocused = (isSelected || isResizing) && isEditable;
@@ -1581,7 +1627,9 @@ function ImageComponent({
         width,
         height,
         maxWidth,
-        onError: () => setIsLoadError(true)
+        onError: () => setIsLoadError(true),
+        isViewerZoomable,
+        onOpenPreview: () => setIsPreviewOpen(true)
       }
     ) }),
     showCaption && /* @__PURE__ */ jsx13("div", { className: "image-caption-container", children: /* @__PURE__ */ jsxs5(LexicalNestedComposer, { initialEditor: caption, children: [
@@ -1618,6 +1666,50 @@ function ImageComponent({
         onResizeEnd,
         captionsEnabled: !isLoadError && captionsEnabled
       }
+    ),
+    isPreviewOpen && typeof document !== "undefined" && createPortal(
+      /* @__PURE__ */ jsxs5(
+        "div",
+        {
+          className: "image-preview-overlay",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": "\u753B\u50CF\u30D7\u30EC\u30D3\u30E5\u30FC",
+          tabIndex: -1,
+          onClick: (event) => {
+            if (event.target === event.currentTarget) {
+              closePreview();
+            }
+          },
+          onKeyDown: (event) => {
+            if (event.key === "Escape") {
+              closePreview();
+            }
+          },
+          children: [
+            /* @__PURE__ */ jsx13(
+              "button",
+              {
+                type: "button",
+                className: "image-preview-close",
+                onClick: closePreview,
+                "aria-label": "\u9589\u3058\u308B",
+                children: /* @__PURE__ */ jsx13("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" })
+              }
+            ),
+            /* @__PURE__ */ jsx13(
+              "img",
+              {
+                src,
+                alt: altText,
+                className: "image-preview-content",
+                draggable: "false"
+              }
+            )
+          ]
+        }
+      ),
+      document.body
     )
   ] });
 }
@@ -2308,7 +2400,7 @@ import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { calculateZoomLevel as calculateZoomLevel2 } from "@lexical/utils";
 import { $getNodeByKey as $getNodeByKey6 } from "lexical";
 import { useEffect as useEffect10, useLayoutEffect, useRef as useRef7, useState as useState6 } from "react";
-import { createPortal } from "react-dom";
+import { createPortal as createPortal2 } from "react-dom";
 import { jsx as jsx18, jsxs as jsxs7 } from "react/jsx-runtime";
 function positionSticky(stickyElem, positioning) {
   const style = stickyElem.style;
@@ -2529,7 +2621,7 @@ function StickyComponent({
   if (!portalContainer) {
     return null;
   }
-  return createPortal(stickyContent, portalContainer);
+  return createPortal2(stickyContent, portalContainer);
 }
 var init_StickyComponent = __esm({
   "src/nodes/StickyComponent.tsx"() {

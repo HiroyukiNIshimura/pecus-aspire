@@ -37,6 +37,7 @@ import {
   SELECTION_CHANGE_COMMAND,
 } from 'lexical';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { useSharedHistoryContext } from '../context/SharedHistoryContext';
 import brokenImage from '../images/image-broken.svg';
@@ -142,6 +143,8 @@ function LazyImage({
   height,
   maxWidth,
   onError,
+  isViewerZoomable,
+  onOpenPreview,
 }: {
   altText: string;
   className: string | null;
@@ -151,6 +154,8 @@ function LazyImage({
   src: string;
   width: 'inherit' | number;
   onError: () => void;
+  isViewerZoomable: boolean;
+  onOpenPreview?: () => void;
 }): JSX.Element {
   const isSVGImage = isSVG(src);
   const status = useSuspenseImage(src);
@@ -208,12 +213,32 @@ function LazyImage({
 
   return (
     <img
-      className={className || undefined}
+      className={isViewerZoomable ? `${className ?? ''} viewer-zoomable`.trim() : className || undefined}
       src={src}
       alt={altText}
       ref={imageRef}
       style={imageStyle}
       onError={onError}
+      onClick={(event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        onOpenPreview();
+      }}
+      role={isViewerZoomable ? 'button' : undefined}
+      tabIndex={isViewerZoomable ? 0 : undefined}
+      aria-label={isViewerZoomable ? `${altText || 'Image'} を拡大表示` : undefined}
+      onKeyDown={(event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onOpenPreview();
+        }
+      }}
       draggable="false"
     />
   );
@@ -267,7 +292,9 @@ export default function ImageComponent({
   const [editor] = useLexicalComposerContext();
   const activeEditorRef = useRef<LexicalEditor | null>(null);
   const [isLoadError, setIsLoadError] = useState<boolean>(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
   const isEditable = useLexicalEditable();
+  const isViewerZoomable = !isEditable && !isLoadError;
   const isInNodeSelection = useMemo(
     () =>
       isSelected &&
@@ -330,6 +357,11 @@ export default function ImageComponent({
         return true;
       }
       if (event.target === imageRef.current) {
+        if (!isEditable && !isLoadError) {
+          setIsPreviewOpen(true);
+          return true;
+        }
+
         if (event.shiftKey) {
           setSelected(!isSelected);
         } else {
@@ -341,7 +373,7 @@ export default function ImageComponent({
 
       return false;
     },
-    [isResizing, isSelected, setSelected, clearSelection],
+    [isResizing, isSelected, setSelected, clearSelection, isEditable, isLoadError],
   );
 
   const onRightClick = useCallback(
@@ -439,6 +471,27 @@ export default function ImageComponent({
     setIsResizing(true);
   };
 
+  const closePreview = useCallback(() => {
+    setIsPreviewOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isPreviewOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closePreview();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPreviewOpen, closePreview]);
+
   useSharedHistoryContext();
   // const {
   //   settings: { showNestedEditorTreeView },
@@ -461,6 +514,8 @@ export default function ImageComponent({
             height={height}
             maxWidth={maxWidth}
             onError={() => setIsLoadError(true)}
+            isViewerZoomable={isViewerZoomable}
+            onOpenPreview={() => setIsPreviewOpen(true)}
           />
         )}
       </div>
@@ -499,6 +554,34 @@ export default function ImageComponent({
           captionsEnabled={!isLoadError && captionsEnabled}
         />
       )}
+
+      {isPreviewOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="image-preview-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="画像プレビュー"
+            tabIndex={-1}
+            onClick={(event) => {
+              if (event.target === event.currentTarget) {
+                closePreview();
+              }
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                closePreview();
+              }
+            }}
+          >
+            <button type="button" className="image-preview-close" onClick={closePreview} aria-label="閉じる">
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+            </button>
+            <img src={src} alt={altText} className="image-preview-content" draggable="false" />
+          </div>,
+          document.body,
+        )}
     </Suspense>
   );
 }

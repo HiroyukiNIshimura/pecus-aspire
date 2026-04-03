@@ -932,6 +932,7 @@ import {
   SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND2
 } from "lexical";
 import { Suspense, useCallback as useCallback2, useEffect as useEffect4, useMemo as useMemo2, useRef as useRef4, useState as useState2 } from "react";
+import { createPortal } from "react-dom";
 import { jsx as jsx9, jsxs as jsxs4 } from "react/jsx-runtime";
 function DisableCaptionOnBlur({ setShowCaption }) {
   const [editor] = useLexicalComposerContext3();
@@ -1006,7 +1007,9 @@ function LazyImage({
   width,
   height,
   maxWidth,
-  onError
+  onError,
+  isViewerZoomable,
+  onOpenPreview
 }) {
   const isSVGImage = isSVG(src);
   const status = useSuspenseImage(src);
@@ -1051,12 +1054,32 @@ function LazyImage({
   return /* @__PURE__ */ jsx9(
     "img",
     {
-      className: className || void 0,
+      className: isViewerZoomable ? `${className ?? ""} viewer-zoomable`.trim() : className || void 0,
       src,
       alt: altText,
       ref: imageRef,
       style: imageStyle,
       onError,
+      onClick: (event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        onOpenPreview();
+      },
+      role: isViewerZoomable ? "button" : void 0,
+      tabIndex: isViewerZoomable ? 0 : void 0,
+      "aria-label": isViewerZoomable ? `${altText || "Image"} \u3092\u62E1\u5927\u8868\u793A` : void 0,
+      onKeyDown: (event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenPreview();
+        }
+      },
       draggable: "false"
     }
   );
@@ -1097,7 +1120,9 @@ function ImageComponent({
   const [editor] = useLexicalComposerContext3();
   const activeEditorRef = useRef4(null);
   const [isLoadError, setIsLoadError] = useState2(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState2(false);
   const isEditable = useLexicalEditable2();
+  const isViewerZoomable = !isEditable && !isLoadError;
   const isInNodeSelection = useMemo2(
     () => isSelected && editor.getEditorState().read(() => {
       const selection = $getSelection2();
@@ -1149,6 +1174,10 @@ function ImageComponent({
         return true;
       }
       if (event.target === imageRef.current) {
+        if (!isEditable && !isLoadError) {
+          setIsPreviewOpen(true);
+          return true;
+        }
         if (event.shiftKey) {
           setSelected(!isSelected);
         } else {
@@ -1159,7 +1188,7 @@ function ImageComponent({
       }
       return false;
     },
-    [isResizing, isSelected, setSelected, clearSelection]
+    [isResizing, isSelected, setSelected, clearSelection, isEditable, isLoadError]
   );
   const onRightClick = useCallback2(
     (event) => {
@@ -1243,6 +1272,23 @@ function ImageComponent({
   const onResizeStart = () => {
     setIsResizing(true);
   };
+  const closePreview = useCallback2(() => {
+    setIsPreviewOpen(false);
+  }, []);
+  useEffect4(() => {
+    if (!isPreviewOpen) {
+      return;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closePreview();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPreviewOpen, closePreview]);
   useSharedHistoryContext();
   const draggable = isInNodeSelection && !isResizing;
   const isFocused = (isSelected || isResizing) && isEditable;
@@ -1257,7 +1303,9 @@ function ImageComponent({
         width,
         height,
         maxWidth,
-        onError: () => setIsLoadError(true)
+        onError: () => setIsLoadError(true),
+        isViewerZoomable,
+        onOpenPreview: () => setIsPreviewOpen(true)
       }
     ) }),
     showCaption && /* @__PURE__ */ jsx9("div", { className: "image-caption-container", children: /* @__PURE__ */ jsxs4(LexicalNestedComposer, { initialEditor: caption, children: [
@@ -1294,6 +1342,50 @@ function ImageComponent({
         onResizeEnd,
         captionsEnabled: !isLoadError && captionsEnabled
       }
+    ),
+    isPreviewOpen && typeof document !== "undefined" && createPortal(
+      /* @__PURE__ */ jsxs4(
+        "div",
+        {
+          className: "image-preview-overlay",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": "\u753B\u50CF\u30D7\u30EC\u30D3\u30E5\u30FC",
+          tabIndex: -1,
+          onClick: (event) => {
+            if (event.target === event.currentTarget) {
+              closePreview();
+            }
+          },
+          onKeyDown: (event) => {
+            if (event.key === "Escape") {
+              closePreview();
+            }
+          },
+          children: [
+            /* @__PURE__ */ jsx9(
+              "button",
+              {
+                type: "button",
+                className: "image-preview-close",
+                onClick: closePreview,
+                "aria-label": "\u9589\u3058\u308B",
+                children: /* @__PURE__ */ jsx9("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" })
+              }
+            ),
+            /* @__PURE__ */ jsx9(
+              "img",
+              {
+                src,
+                alt: altText,
+                className: "image-preview-content",
+                draggable: "false"
+              }
+            )
+          ]
+        }
+      ),
+      document.body
     )
   ] });
 }
