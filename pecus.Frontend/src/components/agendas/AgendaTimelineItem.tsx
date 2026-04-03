@@ -140,7 +140,7 @@ export default function AgendaTimelineItem({ occurrence, onAttendanceUpdate }: A
                 onClick={(e) => e.stopPropagation()}
               >
                 <span className="icon-[tabler--link] size-4" />
-                オンライン
+                URL
               </a>
             )}
 
