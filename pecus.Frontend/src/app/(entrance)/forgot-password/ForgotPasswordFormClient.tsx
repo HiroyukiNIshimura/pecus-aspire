@@ -27,6 +27,20 @@ export default function ForgotPasswordFormClient() {
     };
   }, [isCooldownActive]);
 
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccessMessage('');
+    }, 60000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [successMessage]);
+
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: requestPasswordResetSchema,
     onSubmit: async (data) => {
@@ -44,7 +58,7 @@ export default function ForgotPasswordFormClient() {
   });
 
   return (
-    <div className="card w-full max-w-sm shadow-lg bg-base-100">
+    <div className="card w-full max-w-md shadow-lg bg-base-100">
       <div className="card-body">
         <h2 className="card-title text-center w-full mb-6">パスワードをリセット</h2>
 
