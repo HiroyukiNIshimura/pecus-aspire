@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB;
 using Pecus.Libs.Focus.Models;
+using Pecus.Libs.Utils;
 
 namespace Pecus.Libs.Focus;
 
@@ -48,8 +49,8 @@ public class AgendaProvider : IAgendaProvider
         CancellationToken cancellationToken = default)
     {
         // ユーザーのローカル日付で「今日」を判定
-        var tz = TimeZoneInfo.FindSystemTimeZoneById(userTimeZone);
-        var localNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
+        var tz = TimeZoneUtils.ResolveTimeZoneOrDefault(userTimeZone);
+        var localNow = TimeZoneUtils.ConvertUtcToUserTime(DateTimeOffset.UtcNow, userTimeZone);
         var localTodayStart = localNow.Date;
         var todayStart = new DateTimeOffset(localTodayStart, tz.GetUtcOffset(localTodayStart));
         var todayEnd = todayStart.AddDays(1);
