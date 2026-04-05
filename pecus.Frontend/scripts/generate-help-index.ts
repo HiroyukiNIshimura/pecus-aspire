@@ -33,8 +33,7 @@ function generateHelpIndex() {
       .replace(/\n+/g, ' ')
       .trim();
 
-    const headings =
-      content.match(/^#{1,3}\s+.+$/gm)?.map((h) => h.replace(/^#+\s+/, '')) || [];
+    const headings = content.match(/^#{1,3}\s+.+$/gm)?.map((h) => h.replace(/^#+\s+/, '')) || [];
 
     const title = headings[0] || file.replace(/^\d+-/, '').replace('.md', '');
     const description = headings.slice(1, 3).join(' / ') || '';

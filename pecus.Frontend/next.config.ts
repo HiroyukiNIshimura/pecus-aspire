@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
-import path from "node:path";
+import path from 'node:path';
+import type { NextConfig } from 'next';
 
 // Next.js 設定ファイルは pecus.Frontend ディレクトリから実行される
 const projectRoot = process.cwd();

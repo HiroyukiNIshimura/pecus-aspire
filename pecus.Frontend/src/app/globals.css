@@ -4,7 +4,7 @@
   themes: all;
 }
 @import "flyonui/variants.css";
-@import 'notyf/notyf.min.css';
+@import "notyf/notyf.min.css";
 @import "flyonui/src/vendor/notyf.css";
 @import "flatpickr/dist/flatpickr.min.css";
 @import "flyonui/src/vendor/flatpickr.css";
@@ -12,14 +12,14 @@
 @plugin "@iconify/tailwind4";
 @import "react-day-picker/style.css";
 
-html, body {
+html,
+body {
   height: 100%;
   width: 100%;
   margin: 0%;
   padding: 0%;
-  overflow: hidden
+  overflow: hidden;
 }
-
 
 /* font-mono クラスを上書き（HackGen を使用） */
 .font-mono {
@@ -29,10 +29,10 @@ html, body {
 /* Editor の DayPicker 用カスタムプロパティ
 https://daypicker.dev/docs/styling#css-variables */
 .rdp-root {
-  --rdp-accent-color: var(--color-accent)
+  --rdp-accent-color: var(--color-accent);
 }
 [data-theme="dark"] .rdp-root {
-  --rdp-accent-color: var(--color-accent)
+  --rdp-accent-color: var(--color-accent);
 }
 
 /* ワークスペース参加者表示用アニメーション */
@@ -67,7 +67,8 @@ https://daypicker.dev/docs/styling#css-variables */
 
 /* ふわふわ浮遊アニメーション */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -93,7 +94,8 @@ https://daypicker.dev/docs/styling#css-variables */
 
 /* 編集ステータス表示向けの穏やかな点滅アニメーション */
 @keyframes gentleBlink {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

@@ -9,6 +9,7 @@ import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import MultiSelectDropdown from '@/components/common/filters/MultiSelectDropdown';
 import type { UserDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDateTime } from '@/libs/utils/date';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 
 interface Skill {
@@ -142,10 +143,10 @@ export default function EditUserClient({
     }
   };
 
-  const formatDate = (dateString?: string): string => {
+  const formatDateDisplay = (dateString?: string): string => {
     if (!dateString) return '-';
     try {
-      return new Date(dateString).toLocaleString('ja-JP');
+      return formatDateTime(dateString);
     } catch {
       return dateString;
     }
@@ -348,7 +349,7 @@ export default function EditUserClient({
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
-                    <p className="text-lg font-semibold">{formatDate(userDetail.createdAt)}</p>
+                    <p className="text-lg font-semibold">{formatDateDisplay(userDetail.createdAt)}</p>
                   </div>
 
                   <div>

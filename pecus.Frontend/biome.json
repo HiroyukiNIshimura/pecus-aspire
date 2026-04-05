@@ -9,14 +9,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": [
-      "src/**/*.ts",
-      "src/**/*.tsx",
-      "src/**/*.js",
-      "src/**/*.jsx",
-      "!src/connectors",
-      "!public/**"
-    ]
+    "includes": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx", "!src/connectors", "!public"]
   },
   "formatter": {
     "enabled": true,
@@ -49,7 +42,7 @@
         "noImgElement": "off"
       },
       "complexity": {
-        "noStaticOnlyClass":"off"
+        "noStaticOnlyClass": "off"
       },
       "correctness": {
         "useExhaustiveDependencies": "off"

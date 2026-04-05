@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Markdown from 'react-markdown';
 import type { AgendaExceptionResponse, AgendaResponse, AttendanceStatus, RecurrenceType } from '@/connectors/api/pecus';
 import { remarkItemCodeLinks } from '@/libs/markdown/remarkItemCodeLinks';
+import { formatDate, formatDateTime, formatTime } from '@/libs/utils/date';
 
 interface AgendaDetailProps {
   agenda: AgendaResponse;
@@ -47,29 +48,25 @@ export function AgendaDetail({
   // 「この回以降」セクションの展開状態
   const [isBulkExpanded, setIsBulkExpanded] = useState(false);
 
-  const formatDateTime = (dateStr: string, isAllDay: boolean) => {
-    const date = new Date(dateStr);
+  // 日時フォーマット（終日判定を含む）
+  const formatAgendaDateTime = (dateStr: string, isAllDay: boolean) => {
     if (isAllDay) {
-      return date.toLocaleDateString('ja-JP', {
+      // 終日の場合は日付のみ（曜日付き） - date-fns の個別フォーマットを使用
+      return new Date(dateStr).toLocaleDateString('ja-JP', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
         weekday: 'short',
       });
     }
-    return date.toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    // 通常は日時（date-fns 経由）
+    return formatDateTime(dateStr);
   };
 
-  const formatDateRange = () => {
-    const startFormatted = formatDateTime(agenda.startAt, agenda.isAllDay);
-    const endFormatted = formatDateTime(agenda.endAt, agenda.isAllDay);
+  // 期間フォーマット（開始〜終了）
+  const formatAgendaDateRange = () => {
+    const startFormatted = formatAgendaDateTime(agenda.startAt, agenda.isAllDay);
+    const endFormatted = formatAgendaDateTime(agenda.endAt, agenda.isAllDay);
 
     if (agenda.isAllDay) {
       const startDate = new Date(agenda.startAt).toDateString();
@@ -83,10 +80,7 @@ export function AgendaDetail({
     const startDate = new Date(agenda.startAt).toDateString();
     const endDate = new Date(agenda.endAt).toDateString();
     if (startDate === endDate) {
-      const endTime = new Date(agenda.endAt).toLocaleTimeString('ja-JP', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      const endTime = formatTime(agenda.endAt);
       return `${startFormatted} 〜 ${endTime}`;
     }
     return `${startFormatted} 〜 ${endFormatted}`;
@@ -121,11 +115,9 @@ export function AgendaDetail({
         <div className="mt-4 flex items-start gap-3">
           <span className="icon-[tabler--calendar] size-5 text-base-content/70 mt-0.5" />
           <div>
-            <p className="font-medium">{formatDateRange()}</p>
+            <p className="font-medium">{formatAgendaDateRange()}</p>
             {isRecurring && agenda.recurrenceEndDate && (
-              <p className="text-sm text-base-content/60">
-                繰り返し終了: {new Date(agenda.recurrenceEndDate).toLocaleDateString('ja-JP')}
-              </p>
+              <p className="text-sm text-base-content/60">繰り返し終了: {formatDate(agenda.recurrenceEndDate)}</p>
             )}
             {isRecurring && agenda.recurrenceCount && (
               <p className="text-sm text-base-content/60">{agenda.recurrenceCount}回まで繰り返し</p>
@@ -272,9 +264,7 @@ export function AgendaDetail({
                     <p className="mt-1 text-sm text-base-content/60">{ex.cancellationReason}</p>
                   )}
                   {ex.modifiedStartAt && (
-                    <p className="mt-1 text-sm text-base-content/60">
-                      → {new Date(ex.modifiedStartAt).toLocaleString('ja-JP')}
-                    </p>
+                    <p className="mt-1 text-sm text-base-content/60">→ {formatDateTime(ex.modifiedStartAt)}</p>
                   )}
                 </div>
               ))}
@@ -285,10 +275,9 @@ export function AgendaDetail({
         {/* 作成者・更新日時 */}
         <div className="mt-6 text-sm text-base-content/50">
           <p>
-            作成者: {agenda.createdBy?.username ?? '不明'} ・ 作成日:{' '}
-            {new Date(agenda.createdAt).toLocaleDateString('ja-JP')}
+            作成者: {agenda.createdBy?.username ?? '不明'} ・ 作成日: {formatDate(agenda.createdAt)}
           </p>
-          <p>最終更新: {new Date(agenda.updatedAt).toLocaleDateString('ja-JP')}</p>
+          <p>最終更新: {formatDate(agenda.updatedAt)}</p>
         </div>
       </div>
     </div>
