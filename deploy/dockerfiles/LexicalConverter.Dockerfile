@@ -35,6 +35,7 @@ COPY pecus.LexicalConverter/ ./pecus.LexicalConverter/
 
 WORKDIR /app/pecus.LexicalConverter
 RUN npm run build
+RUN test -f dist/main.js && test -f dist/ignore-css.js
 
 # ============================================
 # Final stage
@@ -56,10 +57,11 @@ COPY --from=deps /app/node_modules ./node_modules
 
 # Copy built files
 COPY --from=build /app/pecus.LexicalConverter/dist ./dist
+RUN test -f /app/dist/main.js && test -f /app/dist/ignore-css.js
 
 # Copy proto files
 COPY pecus.Protos/ /app/protos/
 
 EXPOSE 5100
 
-CMD ["node", "-e", "require.extensions['.css']=()=>{};require('./dist/main.js')"]
+CMD ["node", "-r", "./dist/ignore-css.js", "./dist/main.js"]
