@@ -1906,25 +1906,8 @@ function ImageComponent2({
             }
           },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
-              "button",
-              {
-                type: "button",
-                className: "image-preview-close",
-                onClick: closePreview,
-                "aria-label": "\u9589\u3058\u308B",
-                children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
-              "img",
-              {
-                src,
-                alt: altText,
-                className: "image-preview-content",
-                draggable: "false"
-              }
-            )
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("button", { type: "button", className: "image-preview-close", onClick: closePreview, "aria-label": "\u9589\u3058\u308B", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("img", { src, alt: altText, className: "image-preview-content", draggable: "false" })
           ]
         }
       ),

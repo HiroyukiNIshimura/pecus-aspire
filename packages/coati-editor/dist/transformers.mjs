@@ -1363,25 +1363,8 @@ function ImageComponent({
             }
           },
           children: [
-            /* @__PURE__ */ jsx9(
-              "button",
-              {
-                type: "button",
-                className: "image-preview-close",
-                onClick: closePreview,
-                "aria-label": "\u9589\u3058\u308B",
-                children: /* @__PURE__ */ jsx9("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" })
-              }
-            ),
-            /* @__PURE__ */ jsx9(
-              "img",
-              {
-                src,
-                alt: altText,
-                className: "image-preview-content",
-                draggable: "false"
-              }
-            )
+            /* @__PURE__ */ jsx9("button", { type: "button", className: "image-preview-close", onClick: closePreview, "aria-label": "\u9589\u3058\u308B", children: /* @__PURE__ */ jsx9("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" }) }),
+            /* @__PURE__ */ jsx9("img", { src, alt: altText, className: "image-preview-content", draggable: "false" })
           ]
         }
       ),
