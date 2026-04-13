@@ -57,6 +57,7 @@
     "dotnet add package": true,
     //"npm run build":true
   },
+  "typescript.tsdk": "node_modules/typescript/lib",
   "files.associations": {
     "appsettings*.json": "jsonc"
   },
