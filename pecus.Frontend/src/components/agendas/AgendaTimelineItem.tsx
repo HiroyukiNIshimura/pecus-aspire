@@ -3,19 +3,12 @@
 import Link from 'next/link';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { AgendaOccurrenceResponse, RecurrenceType } from '@/connectors/api/pecus';
+import { formatTime } from '@/libs/utils/date';
 import QuickAttendanceButtons from './QuickAttendanceButtons';
 
 interface AgendaTimelineItemProps {
   occurrence: AgendaOccurrenceResponse;
   onAttendanceUpdate: (agendaId: number, occurrenceIndex: number, newStatus: string) => void;
-}
-
-/** 時刻をフォーマット */
-function formatTime(dateString: string): string {
-  return new Date(dateString).toLocaleTimeString('ja-JP', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 /** 繰り返しタイプのラベル */

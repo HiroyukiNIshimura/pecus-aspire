@@ -53,7 +53,7 @@ function extractConflictTypesFromOpenAPI(spec) {
       }
       // allOf形式の場合
       else if (schema.allOf) {
-        schema.allOf.forEach(item => {
+        schema.allOf.forEach((item) => {
           if (item.$ref) {
             const schemaName = item.$ref.split('/').pop();
             processConcurrencyErrorSchema(schemaName, spec, conflictTypes);
@@ -99,13 +99,13 @@ function processConcurrencyErrorSchema(schemaName, spec, conflictTypes) {
     currentTypeName = currentSchema.$ref.split('/').pop();
   } else if (currentSchema.allOf) {
     // allOf 形式の場合、最初の $ref を取得
-    const refItem = currentSchema.allOf.find(item => item.$ref);
+    const refItem = currentSchema.allOf.find((item) => item.$ref);
     if (refItem) {
       currentTypeName = refItem.$ref.split('/').pop();
     }
   } else if (currentSchema.oneOf) {
     // oneOf 形式の場合（nullable 対応）、$ref を含むアイテムを探す
-    const refItem = currentSchema.oneOf.find(item => item.$ref);
+    const refItem = currentSchema.oneOf.find((item) => item.$ref);
     if (refItem) {
       currentTypeName = refItem.$ref.split('/').pop();
     }
@@ -149,9 +149,7 @@ function inferEntityName(typeName) {
   }
 
   // 接尾辞を削除
-  let name = typeName
-    .replace(/DetailResponse$/, '')
-    .replace(/Response$/, '');
+  const name = typeName.replace(/DetailResponse$/, '').replace(/Response$/, '');
 
   if (!name) {
     return null;
@@ -172,9 +170,7 @@ function generateConflictTypesFile(conflictTypes) {
     .filter((value, index, self) => self.indexOf(value) === index) // 重複排除
     .sort();
 
-  const imports = typeNames
-    .map(type => `  ${type},`)
-    .join('\n');
+  const imports = typeNames.map((type) => `  ${type},`).join('\n');
 
   // Union型を生成（エンティティ名でソート）
   const unionTypes = Array.from(conflictTypes.entries())
@@ -289,7 +285,6 @@ async function main() {
 
     console.log(`✅ 生成完了: ${outputPath}`);
     console.log(`   ファイルサイズ: ${fs.statSync(outputPath).size} bytes`);
-
   } catch (error) {
     console.error('❌ エラーが発生しました:');
     console.error(`   ${error.message}`);

@@ -19,6 +19,7 @@ import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import type { HangfireStatsResponse } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { formatDateTime, formatTime } from '@/libs/utils/date';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
 
@@ -429,7 +430,7 @@ function MetricsChart({ title, series, unit, yAxisDomain = ['auto', 'auto'], col
                   border: '1px solid var(--color-base-300)',
                   borderRadius: '0.5rem',
                 }}
-                labelFormatter={(ts) => new Date(ts as number).toLocaleString('ja-JP')}
+                labelFormatter={(ts) => formatDateTime(new Date(ts as number))}
                 formatter={(value) => [`${Number(value).toFixed(2)} ${unit}`, '']}
               />
               <Legend />
@@ -697,9 +698,7 @@ export default function MonitoringClient({
               <h1 className="text-3xl font-bold">システム状況</h1>
               <div className="flex items-center gap-4">
                 {resources?.timestamp && (
-                  <span className="text-xs text-base-content/60">
-                    最終更新: {new Date(resources.timestamp).toLocaleTimeString('ja-JP')}
-                  </span>
+                  <span className="text-xs text-base-content/60">最終更新: {formatTime(resources.timestamp)}</span>
                 )}
                 <button
                   type="button"

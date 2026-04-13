@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { fetchNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '@/actions/agenda';
 import type { AgendaNotificationResponse, AgendaNotificationType } from '@/connectors/api/pecus';
-import { formatRelativeTime } from '@/libs/utils/date';
+import { formatDate, formatRelativeTime } from '@/libs/utils/date';
 
 /**
  * 通知ポップアップのProps
@@ -81,18 +81,11 @@ function formatNotificationDate(dateString?: string): string {
 }
 
 /**
- * イベント開始日時をフォーマット
+ * イベント開始日時をフォーマット（日付 + 曜日 + 時刻）
  */
 function formatOccurrenceDate(dateString?: string | null): string {
   if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ja-JP', {
-    month: 'numeric',
-    day: 'numeric',
-    weekday: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return formatDate(dateString, 'M月d日(eee) HH:mm');
 }
 
 /**

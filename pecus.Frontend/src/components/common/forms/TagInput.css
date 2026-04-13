@@ -40,7 +40,7 @@
 
 /* 入力フィールドのラッパー */
 .tagify {
-  --tags-border-color:  color-mix(in oklab, #ceccd6 40%, #00000000);
+  --tags-border-color: color-mix(in oklab, #ceccd6 40%, #00000000);
   --tags-focus-border-color: var(--color-primary);
   --tags-hover-border-color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
   --placeholder-color: color-mix(in oklab, var(--color-base-content) 50%, transparent);

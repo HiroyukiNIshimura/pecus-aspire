@@ -1,4 +1,4 @@
-import { IStaticMethods } from "flyonui/flyonui";
+import { IStaticMethods } from 'flyonui/flyonui';
 
 declare global {
   interface Window {
@@ -7,5 +7,3 @@ declare global {
     HSAccordion: typeof HSAccordion;
   }
 }
-
-export {};

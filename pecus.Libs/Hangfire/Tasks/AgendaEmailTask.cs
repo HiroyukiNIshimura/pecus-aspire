@@ -7,6 +7,7 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
+using Pecus.Libs.Utils;
 
 namespace Pecus.Libs.Hangfire.Tasks;
 
@@ -52,6 +53,7 @@ public class AgendaEmailTask
             .Include(n => n.Agenda)
                 .ThenInclude(a => a!.CancelledByUser)
             .Include(n => n.User)
+                .ThenInclude(u => u!.Setting)
             .Include(n => n.CreatedByUser)
             .Where(n => !n.IsEmailSent && n.Agenda != null)
             .OrderBy(n => n.CreatedAt)
@@ -191,6 +193,7 @@ public class AgendaEmailTask
         Organization organization,
         string agendaUrl)
     {
+        var (displayStartAt, displayEndAt) = ResolveDisplayDateRange(notification, agenda, user.Setting?.TimeZone);
         var invitedBy = notification.CreatedByUser ?? agenda.CreatedByUser;
         var recurrenceDesc = agenda.RecurrenceType != null && agenda.RecurrenceType != RecurrenceType.None
             ? RecurrenceHelper.GetRecurrenceDescription(agenda)
@@ -200,10 +203,8 @@ public class AgendaEmailTask
         {
             UserName = user.Username,
             AgendaTitle = agenda.Title,
-            StartAt = notification.OccurrenceStartAt ?? agenda.StartAt,
-            EndAt = notification.OccurrenceStartAt.HasValue
-                ? notification.OccurrenceStartAt.Value + (agenda.EndAt - agenda.StartAt)
-                : agenda.EndAt,
+            StartAt = displayStartAt,
+            EndAt = displayEndAt,
             IsAllDay = agenda.IsAllDay,
             Location = agenda.Location,
             Url = agenda.Url,
@@ -232,16 +233,15 @@ public class AgendaEmailTask
         Organization organization,
         string agendaUrl)
     {
+        var (displayStartAt, displayEndAt) = ResolveDisplayDateRange(notification, agenda, user.Setting?.TimeZone);
         var updatedBy = notification.CreatedByUser;
 
         var model = new AgendaUpdatedEmailModel
         {
             UserName = user.Username,
             AgendaTitle = agenda.Title,
-            StartAt = notification.OccurrenceStartAt ?? agenda.StartAt,
-            EndAt = notification.OccurrenceStartAt.HasValue
-                ? notification.OccurrenceStartAt.Value + (agenda.EndAt - agenda.StartAt)
-                : agenda.EndAt,
+            StartAt = displayStartAt,
+            EndAt = displayEndAt,
             IsAllDay = agenda.IsAllDay,
             Location = agenda.Location,
             Url = agenda.Url,
@@ -268,16 +268,15 @@ public class AgendaEmailTask
         User user,
         Organization organization)
     {
+        var (displayStartAt, displayEndAt) = ResolveDisplayDateRange(notification, agenda, user.Setting?.TimeZone);
         var cancelledBy = agenda.CancelledByUser ?? notification.CreatedByUser;
 
         var model = new AgendaCancelledEmailModel
         {
             UserName = user.Username,
             AgendaTitle = agenda.Title,
-            OriginalStartAt = notification.OccurrenceStartAt ?? agenda.StartAt,
-            OriginalEndAt = notification.OccurrenceStartAt.HasValue
-                ? notification.OccurrenceStartAt.Value + (agenda.EndAt - agenda.StartAt)
-                : agenda.EndAt,
+            OriginalStartAt = displayStartAt,
+            OriginalEndAt = displayEndAt,
             IsAllDay = agenda.IsAllDay,
             CancellationReason = agenda.CancellationReason ?? notification.Message,
             IsOccurrenceCancellation = notification.Type == AgendaNotificationType.OccurrenceCancelled,
@@ -306,14 +305,13 @@ public class AgendaEmailTask
         Organization organization,
         string agendaUrl)
     {
+        var (displayStartAt, displayEndAt) = ResolveDisplayDateRange(notification, agenda, user.Setting?.TimeZone);
         var model = new AgendaReminderEmailModel
         {
             UserName = user.Username,
             AgendaTitle = agenda.Title,
-            StartAt = notification.OccurrenceStartAt ?? agenda.StartAt,
-            EndAt = notification.OccurrenceStartAt.HasValue
-                ? notification.OccurrenceStartAt.Value + (agenda.EndAt - agenda.StartAt)
-                : agenda.EndAt,
+            StartAt = displayStartAt,
+            EndAt = displayEndAt,
             IsAllDay = agenda.IsAllDay,
             Location = agenda.Location,
             Url = agenda.Url,
@@ -340,6 +338,7 @@ public class AgendaEmailTask
         Organization organization,
         string agendaUrl)
     {
+        var (displayStartAt, displayEndAt) = ResolveDisplayDateRange(notification, agenda, user.Setting?.TimeZone);
         var declinedBy = notification.CreatedByUser;
         var isOccurrence = notification.OccurrenceStartAt.HasValue
             && notification.OccurrenceStartAt.Value != agenda.StartAt;
@@ -348,10 +347,8 @@ public class AgendaEmailTask
         {
             UserName = user.Username,
             AgendaTitle = agenda.Title,
-            StartAt = notification.OccurrenceStartAt ?? agenda.StartAt,
-            EndAt = notification.OccurrenceStartAt.HasValue
-                ? notification.OccurrenceStartAt.Value + (agenda.EndAt - agenda.StartAt)
-                : agenda.EndAt,
+            StartAt = displayStartAt,
+            EndAt = displayEndAt,
             IsAllDay = agenda.IsAllDay,
             DeclinedByName = declinedBy?.Username ?? "不明",
             IsOccurrenceDeclined = isOccurrence,
@@ -377,5 +374,20 @@ public class AgendaEmailTask
 
         var encodedOccurrence = Uri.EscapeDataString(occurrenceStartAt.Value.ToString("O"));
         return $"{agendaUrl}?occurrence={encodedOccurrence}";
+    }
+
+    private static (DateTimeOffset StartAt, DateTimeOffset EndAt) ResolveDisplayDateRange(
+        AgendaNotification notification,
+        Agenda agenda,
+        string? userTimeZone)
+    {
+        var startAtUtc = notification.OccurrenceStartAt ?? agenda.StartAt;
+        var endAtUtc = notification.OccurrenceStartAt.HasValue
+            ? notification.OccurrenceStartAt.Value + (agenda.EndAt - agenda.StartAt)
+            : agenda.EndAt;
+
+        return (
+            TimeZoneUtils.ConvertUtcToUserTime(startAtUtc, userTimeZone),
+            TimeZoneUtils.ConvertUtcToUserTime(endAtUtc, userTimeZone));
     }
 }
