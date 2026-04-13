@@ -175,3 +175,5 @@ config/settings.base.prod.json
 data/
 
 .env
+
+*.lscache
