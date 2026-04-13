@@ -33,9 +33,11 @@ deploy/proxy-nginx/
 pecus.Frontend/build/
 pecus.Frontend/.next/
 pecus.Frontend/node_modules/
+pecus.Frontend/*.tsbuildinfo
 
 # LexicalConverter build artifacts (must be rebuilt inside Docker)
 pecus.LexicalConverter/dist/
+pecus.LexicalConverter/node_modules/
 pecus.LexicalConverter/*.tsbuildinfo
 
 # Editor package - exclude source, keep only dist
