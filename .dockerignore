@@ -34,6 +34,10 @@ pecus.Frontend/build/
 pecus.Frontend/.next/
 pecus.Frontend/node_modules/
 
+# LexicalConverter build artifacts (must be rebuilt inside Docker)
+pecus.LexicalConverter/dist/
+pecus.LexicalConverter/*.tsbuildinfo
+
 # Editor package - exclude source, keep only dist
 packages/coati-editor/src/
 packages/coati-editor/node_modules/

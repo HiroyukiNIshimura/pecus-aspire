@@ -4,7 +4,7 @@
   "description": "Lexical JSON to HTML/Markdown/PlainText converter gRPC service",
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --incremental false",
     "start": "node -r ./dist/ignore-css.js dist/main.js",
     "start:dev": "ts-node -r tsconfig-paths/register -r ./src/ignore-css.ts src/main.ts",
     "start:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register src/main.ts",
