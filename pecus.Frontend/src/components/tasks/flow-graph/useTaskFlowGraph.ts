@@ -167,4 +167,4 @@ export function useTaskFlowGraph(
   }, [data, direction]);
 }
 
-export { NODE_WIDTH, NODE_HEIGHT };
+export { NODE_HEIGHT, NODE_WIDTH };

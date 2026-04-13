@@ -14,7 +14,11 @@ import {
   ImageNode,
   TweetNode,
 } from '@coati/editor';
-import { $createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode } from '@lexical/extension';
+import {
+  $createHorizontalRuleNode,
+  $isHorizontalRuleNode,
+  HorizontalRuleNode,
+} from '@lexical/extension';
 import {
   $convertFromMarkdownString,
   $convertToMarkdownString,
@@ -173,7 +177,7 @@ const $createTableCell = (textContent: string): ReturnType<typeof $createTableCe
  */
 const mapToTableCells = (textContent: string): Array<TableCellNode> | null => {
   const match = textContent.match(TABLE_ROW_REG_EXP);
-  if (!match || !match[1]) {
+  if (!match?.[1]) {
     return null;
   }
   return match[1].split('|').map((text) => $createTableCell(text));
@@ -209,7 +213,9 @@ export const TABLE: ElementTransformer = {
       let isHeaderRow = false;
       for (const cell of row.getChildren()) {
         if ($isTableCellNode(cell)) {
-          rowOutput.push($convertToMarkdownString(PLAYGROUND_TRANSFORMERS, cell).replace(/\n/g, '\\n').trim());
+          rowOutput.push(
+            $convertToMarkdownString(PLAYGROUND_TRANSFORMERS, cell).replace(/\n/g, '\\n').trim(),
+          );
           if (cell.__headerState === TableCellHeaderStates.ROW) {
             isHeaderRow = true;
           }

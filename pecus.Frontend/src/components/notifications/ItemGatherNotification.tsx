@@ -31,7 +31,7 @@ export function ItemGatherNotification() {
         const payload = notification.payload as GatherRequest;
 
         // ワークスペースメンバーかどうかをフィルタリング
-        if (!payload.memberIds || !payload.memberIds.includes(currentUserId)) {
+        if (!payload.memberIds?.includes(currentUserId)) {
           return;
         }
 

@@ -90,7 +90,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
   };
 
   const handleDelete = async () => {
-    if (!data || !data.code) return;
+    if (!data?.code) return;
 
     const result = await deleteBackOfficeOrganization(data.id, data.code, data.rowVersion);
 

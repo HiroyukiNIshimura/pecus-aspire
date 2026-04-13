@@ -258,7 +258,7 @@ export default function WorkspaceTaskDetailPage({
 
     for (const predId of predecessorTaskIds) {
       const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predId);
-      if (!selectedPredecessor || !selectedPredecessor.dueDate) continue;
+      if (!selectedPredecessor?.dueDate) continue;
 
       const predecessorDueDate = new Date(selectedPredecessor.dueDate);
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const PECUS_SERVICES_DIR = path.join(__dirname, '..', 'src', 'connectors', 'api', 'pecus', 'services');
 const OUTPUT_FILE = path.join(__dirname, '..', 'src', 'connectors', 'api', 'PecusApiClient.generated.ts');
@@ -82,7 +82,9 @@ function main() {
       .sort();
 
     console.log(`📋 Found ${files.length} Service files:`);
-    files.forEach((file) => console.log(`  - ${file}`));
+    for (const file of files) {
+      console.log(`  - ${file}`);
+    }
 
     const serviceClasses = files.map(getServiceClassName);
     console.log(`🏗️  Generated ${serviceClasses.length} Service class names`);

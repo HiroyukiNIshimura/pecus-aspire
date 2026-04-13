@@ -6,8 +6,8 @@
  * src/connectors/api/ConflictDataTypes.generated.ts を生成します。
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const openApiSpecPath = path.join(__dirname, '../.spec/open-api-scheme.json');
 const outputPath = path.join(__dirname, '../src/connectors/api/ConflictDataTypes.generated.ts');

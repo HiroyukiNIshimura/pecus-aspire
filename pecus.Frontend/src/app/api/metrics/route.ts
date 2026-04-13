@@ -29,7 +29,7 @@ const activeConnections = new client.Gauge({
   registers: [register],
 });
 
-export { httpRequestsTotal, httpRequestDuration, activeConnections, register };
+export { activeConnections, httpRequestDuration, httpRequestsTotal, register };
 
 export async function GET() {
   try {

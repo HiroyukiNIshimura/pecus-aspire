@@ -54,7 +54,7 @@ export default function FragmentLinkPlugin(): JSX.Element | null {
       const href = anchor.getAttribute('href');
 
       // #で始まるフラグメントリンクのみ処理
-      if (!href || !href.startsWith('#')) {
+      if (!href?.startsWith('#')) {
         return;
       }
 

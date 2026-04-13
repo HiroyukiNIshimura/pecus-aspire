@@ -752,7 +752,7 @@ function TableCellActionMenuContainer({
     if (tableObserver === null || tableCellParentNodeDOM === null) {
       return disable();
     }
-    const enabled = !tableObserver || !tableObserver.isSelecting;
+    const enabled = !tableObserver?.isSelecting;
     menu.classList.toggle('table-cell-action-button-container--active', enabled);
     menu.classList.toggle('table-cell-action-button-container--inactive', !enabled);
     if (enabled) {
