@@ -20,7 +20,7 @@
 - **フレームワーク**: React（Next.js）
 - **型安全**: TypeScript
 - **状態管理**: jotai
-- **UIライブラリ**: Tailwind CSS(4.1.18) + FlyonUI(2.4.1)
+- **UIライブラリ**: Tailwind CSS + FlyonUI（daisyUIは禁止）
 - **API通信**: OpenAPI/Swagger定義から自動生成された型安全なクライアント（`openapi-typescript-codegen`）
 - **認証**: pecus.WebApiのJWT認証と連携（Redis ベースのサーバーサイドセッション、Cookie には sessionId のみ保存）
 - **ルーティング**: SPAルーター（Next.jsのApp Router）

@@ -20,7 +20,7 @@ applyTo: "*"
 - エントリ: `pecus.AppHost/AppHost.cs`（Aspire がサービスの起動順・依存を管理）
 - 主要プロジェクト: `pecus.WebApi`, `pecus.BackFire`, `pecus.DbManager`, `pecus.Libs`, `pecus.Frontend`, `pecus.LexicalConverter`, `pecus.Protos`
 - 共有パッケージ: `packages/coati-editor`（Lexical ベースリッチテキストエディタ）
-- 技術スタック: .NET 10 / EF Core 10 / .NET Aspire 13.1 / Next.js 16.1 / React 19.2 / Tailwind CSS 4.1 / FlyonUI 2.4
+- 技術スタック: .NET 10 / EF Core 10 / .NET Aspire 13.2 / Next.js 16.2 / React 19.2 / Tailwind CSS 4.2 / FlyonUI 2.4
 - テスト基盤: なし（テストプロジェクト・テストファイルは存在しない。エージェントはテスト作成を提案しないこと）
 
 ### 絶対禁止事項
