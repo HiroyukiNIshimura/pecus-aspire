@@ -83,10 +83,10 @@ REGISTRY_PORT=5000
 ### 古いイメージのクリーンアップ
 
 ```bash
-# 30日以前のイメージを削除
-./cleanup-old-images.sh 30
+# リポジトリごとに最新3件を保持し、残りを削除
+./cleanup-old-images.sh 3
 
-# デフォルト（7日）
+# デフォルト（.env の KEEP_LATEST、未設定時は5件）
 ./cleanup-old-images.sh
 ```
 
