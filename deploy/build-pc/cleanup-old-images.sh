@@ -56,13 +56,7 @@ for REPO in $REPOSITORIES; do
     DATE_TAGS=$(echo "$TAGS" | grep -E '^[0-9]{14}$' | sort -r || echo "")
     NON_DATE_TAGS=$(echo "$TAGS" | grep -Ev '^[0-9]{14}$' || echo "")
 
-    # 非日付タグ（latest等）は常に保持
-    for TAG in $NON_DATE_TAGS; do
-        [ -z "$TAG" ] && continue
-        echo "   🛡️  Kept: $TAG (固定タグ)"
-        KEPT_COUNT=$((KEPT_COUNT + 1))
-    done
-
+    # 非日付タグ（latest等）は削除対象外のため無視
     # 日付タグを処理: 最新N件を保持、残りを削除
     INDEX=0
     for TAG in $DATE_TAGS; do
