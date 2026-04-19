@@ -54,7 +54,6 @@ for REPO in $REPOSITORIES; do
 
     # 日付形式タグを降順ソート（新しい順）
     DATE_TAGS=$(echo "$TAGS" | grep -E '^[0-9]{14}$' | sort -r || echo "")
-    NON_DATE_TAGS=$(echo "$TAGS" | grep -Ev '^[0-9]{14}$' || echo "")
 
     # 非日付タグ（latest等）は削除対象外のため無視
     # 日付タグを処理: 最新N件を保持、残りを削除
