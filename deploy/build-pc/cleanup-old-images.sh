@@ -59,7 +59,7 @@ for REPO in $REPOSITORIES; do
     # 非日付タグ（latest等）は常に保持
     for TAG in $NON_DATE_TAGS; do
         [ -z "$TAG" ] && continue
-        echo "   ⏩ Skipped: $TAG (日付形式でない)"
+        echo "   🛡️  Kept: $TAG (固定タグ)"
         KEPT_COUNT=$((KEPT_COUNT + 1))
     done
 
