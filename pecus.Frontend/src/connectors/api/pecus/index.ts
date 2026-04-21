@@ -86,6 +86,7 @@ export type { CreateExternalApiKeyResponse } from './models/CreateExternalApiKey
 export type { CreateExternalWorkspaceItemRequest } from './models/CreateExternalWorkspaceItemRequest';
 export type { CreateExternalWorkspaceItemResponse } from './models/CreateExternalWorkspaceItemResponse';
 export type { CreateOrganizationRequest } from './models/CreateOrganizationRequest';
+export type { CreatePersonalItemNoteRequest } from './models/CreatePersonalItemNoteRequest';
 export type { CreateSkillRequest } from './models/CreateSkillRequest';
 export type { CreateTagRequest } from './models/CreateTagRequest';
 export type { CreateTaskCommentRequest } from './models/CreateTaskCommentRequest';
@@ -192,6 +193,7 @@ export type { PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics } f
 export type { PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics } from './models/PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics';
 export type { PagedResponseOfWorkspaceUserDetailResponseAndObject } from './models/PagedResponseOfWorkspaceUserDetailResponseAndObject';
 export type { PendingEmailChangeResponse } from './models/PendingEmailChangeResponse';
+export type { PersonalItemNoteResponse } from './models/PersonalItemNoteResponse';
 export type { PingRequest } from './models/PingRequest';
 export type { PingResponse } from './models/PingResponse';
 export type { PredecessorTaskInfo } from './models/PredecessorTaskInfo';
@@ -260,6 +262,7 @@ export type { UpdateFromOccurrenceRequest } from './models/UpdateFromOccurrenceR
 export type { UpdateItemParentRequest } from './models/UpdateItemParentRequest';
 export type { UpdateNotificationSettingRequest } from './models/UpdateNotificationSettingRequest';
 export type { UpdatePasswordRequest } from './models/UpdatePasswordRequest';
+export type { UpdatePersonalItemNoteRequest } from './models/UpdatePersonalItemNoteRequest';
 export type { UpdateProfileRequest } from './models/UpdateProfileRequest';
 export type { UpdateReadPositionRequest } from './models/UpdateReadPositionRequest';
 export type { UpdateSiblingOrderRequest } from './models/UpdateSiblingOrderRequest';
@@ -334,6 +337,7 @@ export { FileService } from './services/FileService';
 export { FocusService } from './services/FocusService';
 export { MasterService } from './services/MasterService';
 export { MyService } from './services/MyService';
+export { PersonalItemNoteService } from './services/PersonalItemNoteService';
 export { ProfileService } from './services/ProfileService';
 export { TagService } from './services/TagService';
 export { TaskCommentService } from './services/TaskCommentService';
