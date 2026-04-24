@@ -279,7 +279,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
       if (searchTerms.length > 0) {
         // 配列で渡すと各単語を個別にハイライト
-        marker.mark(searchTerms);
+        marker.mark(searchTerms, {
+          exclude: ['.notion-like-editor'], // Lexicalビューアーを除外
+        });
       }
     }, [searchTerms, item]);
 
