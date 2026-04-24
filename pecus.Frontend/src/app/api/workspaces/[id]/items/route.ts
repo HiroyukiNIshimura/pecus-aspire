@@ -31,6 +31,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const priority = (searchParams.get('priority') as TaskPriority) || undefined;
     const pinned = searchParams.get('pinned') !== null ? searchParams.get('pinned') === 'true' : undefined;
     const hasDueDate = searchParams.get('hasDueDate') !== null ? searchParams.get('hasDueDate') === 'true' : undefined;
+    const hasPersonalNote = searchParams.get('hasPersonalNote') !== null ? searchParams.get('hasPersonalNote') === 'true' : undefined;
 
     if (Number.isNaN(workspaceId)) {
       return badRequestError('Invalid workspace ID');
@@ -50,6 +51,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       priority,
       pinned,
       hasDueDate,
+      hasPersonalNote,
       searchQuery,
     );
 

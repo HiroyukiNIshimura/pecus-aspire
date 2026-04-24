@@ -212,6 +212,9 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       if (appliedFilters.hasDueDate !== null && appliedFilters.hasDueDate !== undefined) {
         params.set('hasDueDate', String(appliedFilters.hasDueDate));
       }
+      if (appliedFilters.hasPersonalNote !== null && appliedFilters.hasPersonalNote !== undefined) {
+        params.set('hasPersonalNote', String(appliedFilters.hasPersonalNote));
+      }
 
       const queryString = params.toString();
       return queryString ? `${baseUrlWithoutParams}?${queryString}` : baseUrlWithoutParams;

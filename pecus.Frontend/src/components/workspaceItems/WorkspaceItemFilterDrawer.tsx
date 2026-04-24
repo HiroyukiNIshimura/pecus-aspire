@@ -24,6 +24,8 @@ export interface WorkspaceItemFilters {
   pinned?: boolean | null;
   /** 期限日が設定されているかどうか */
   hasDueDate?: boolean | null;
+  /** 個人メモが存在するかどうか */
+  hasPersonalNote?: boolean | null;
 }
 
 /** 選択されたユーザー情報 */
@@ -224,6 +226,7 @@ export default function WorkspaceItemFilterDrawer({
       isArchived: null,
       pinned: null,
       hasDueDate: null,
+      hasPersonalNote: null,
     };
     setFilters(resetFilters);
     setSelectedAssignee(null);
@@ -542,6 +545,14 @@ export default function WorkspaceItemFilterDrawer({
             name="filter-has-due-date"
             value={filters.hasDueDate}
             onChange={(value) => setFilters({ ...filters, hasDueDate: value })}
+          />
+
+          {/* 個人メモ有無フィルター */}
+          <BooleanFilterGroup
+            label="個人メモあり"
+            name="filter-has-personal-note"
+            value={filters.hasPersonalNote}
+            onChange={(value) => setFilters({ ...filters, hasPersonalNote: value })}
           />
         </div>
 
