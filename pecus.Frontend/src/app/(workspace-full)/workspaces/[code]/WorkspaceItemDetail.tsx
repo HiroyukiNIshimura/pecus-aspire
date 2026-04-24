@@ -16,6 +16,7 @@ import {
 /** エクスポート形式 */
 type ExportFormat = 'markdown' | 'html' | 'json';
 
+import { fetchPersonalItemNote } from '@/actions/personalItemNote';
 import { fetchWorkspaceItemAttachments } from '@/actions/workspaceItemAttachment';
 import ItemActivityTimeline from '@/components/activity/ItemActivityTimeline';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
@@ -23,6 +24,7 @@ import ItemEditStatus from '@/components/common/feedback/ItemEditStatus';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
 import { ItemAttachmentModal } from '@/components/workspaceItems/attachments';
+import PersonalItemNoteDrawer from '@/components/workspaceItems/PersonalItemNoteDrawer';
 import WorkspaceItemDrawer, { type ItemAttributeUpdateRequest } from '@/components/workspaceItems/WorkspaceItemDrawer';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
@@ -40,7 +42,6 @@ import { useNotify } from '@/hooks/useNotify';
 import { formatDate, formatDateTime } from '@/libs/utils/date';
 import { type ItemEditStatus as ItemEditState, useSignalRContext } from '@/providers/SignalRProvider';
 import EditWorkspaceItem, { type ItemUpdateRequest } from './EditWorkspaceItem';
-import { PersonalItemNoteSection } from '@/components/workspaceItems/PersonalItemNoteSection';
 import WorkspaceTasks from './WorkspaceTasks';
 
 /**
@@ -217,6 +218,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isDrawerClosing, setIsDrawerClosing] = useState(false);
+    const [isMemoDrawerOpen, setIsMemoDrawerOpen] = useState(false);
+    const [isMemoDrawerClosing, setIsMemoDrawerClosing] = useState(false);
     const [isPinLoading, setIsPinLoading] = useState(false);
     const [isTimelineOpen, setIsTimelineOpen] = useState(false);
     const [isExporting, setIsExporting] = useState<ExportFormat | null>(null);
@@ -252,6 +255,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
     const [attachments, setAttachments] = useState<WorkspaceItemAttachmentResponse[]>([]);
     const [attachmentCount, setAttachmentCount] = useState(0);
+
+    // 個人メモ存在フラグ
+    const [hasMemo, setHasMemo] = useState(false);
 
     // 召集機能の状態
     const [isGathering, setIsGathering] = useState(false);
@@ -351,6 +357,17 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       loadAttachments();
     }, [workspaceId, itemId]);
 
+    // 個人メモの存在確認
+    useEffect(() => {
+      const checkMemo = async () => {
+        const result = await fetchPersonalItemNote(workspaceId, itemId);
+        if (result.success) {
+          setHasMemo(result.data !== null);
+        }
+      };
+      checkMemo();
+    }, [workspaceId, itemId]);
+
     // 添付ファイル一覧を再取得する関数
     const refreshAttachments = useCallback(async () => {
       const result = await fetchWorkspaceItemAttachments(workspaceId, itemId);
@@ -389,6 +406,15 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
         setIsDrawerOpen(false);
         setIsDrawerClosing(false);
       }, 250); // アニメーション時間と合わせる
+    };
+
+    const openMemoDrawer = () => setIsMemoDrawerOpen(true);
+    const closeMemoDrawer = () => {
+      setIsMemoDrawerClosing(true);
+      setTimeout(() => {
+        setIsMemoDrawerOpen(false);
+        setIsMemoDrawerClosing(false);
+      }, 250);
     };
 
     // ドローワーからの属性更新ハンドラー（一元管理）
@@ -931,6 +957,18 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <span className="icon-[mdi--paperclip] size-4" aria-hidden="true" />
                 {attachmentCount > 0 && <span className="text-xs">{attachmentCount}</span>}
               </button>
+              {/* 個人メモボタン */}
+              <button
+                type="button"
+                onClick={openMemoDrawer}
+                className={`btn btn-secondary btn-sm gap-1 ${hasMemo ? 'btn-warning' : ''}`}
+                title="個人メモ"
+              >
+                <span
+                  className={`${hasMemo ? 'icon-[mdi--note]' : 'icon-[mdi--note-outline]'} size-4`}
+                  aria-hidden="true"
+                />
+              </button>
               {/* タスクフローマップボタン（ドキュメントモードでは非表示） */}
               {!isDocumentMode && onShowFlowMap && (
                 <button
@@ -1078,9 +1116,6 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               </div>
             )}
           </div>
-
-          {/* 個人メモ */}
-          <PersonalItemNoteSection workspaceId={workspaceId} itemId={itemId} />
 
           {/* 関連アイテム（ドキュメントモードでは非表示） */}
           {!isDocumentMode && (
@@ -1302,6 +1337,16 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           isUpdating={isAttributeUpdating}
           error={attributeError}
           onAttributeUpdate={handleAttributeUpdate}
+        />
+
+        {/* 個人メモドロワー */}
+        <PersonalItemNoteDrawer
+          workspaceId={workspaceId}
+          itemId={itemId}
+          isOpen={isMemoDrawerOpen}
+          isClosing={isMemoDrawerClosing}
+          onClose={closeMemoDrawer}
+          onNoteStateChange={setHasMemo}
         />
 
         {/* タイムラインモーダル */}

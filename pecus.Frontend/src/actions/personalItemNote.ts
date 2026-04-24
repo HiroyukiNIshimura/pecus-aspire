@@ -64,10 +64,7 @@ export async function updatePersonalItemNote(
   }
 }
 
-export async function deletePersonalItemNote(
-  workspaceId: number,
-  itemId: number,
-): Promise<ApiResponse<null>> {
+export async function deletePersonalItemNote(workspaceId: number, itemId: number): Promise<ApiResponse<null>> {
   try {
     const api = createPecusApiClients();
     await api.personalItemNote.deleteApiWorkspacesItemsPersonalNote(workspaceId, itemId);
