@@ -63,6 +63,12 @@ public class GetWorkspaceItemsRequest
     public bool? HasDueDate { get; set; }
 
     /// <summary>
+    /// 個人メモが存在するかどうか（true: メモあり、false: メモなし）
+    /// </summary>
+    /// <value></value>
+    public bool? HasPersonalNote { get; set; }
+
+    /// <summary>
     /// あいまい検索クエリ（Subject, RawBody を対象）
     /// pgroonga を使用して日本語のゆらぎやタイポにも対応
     /// </summary>

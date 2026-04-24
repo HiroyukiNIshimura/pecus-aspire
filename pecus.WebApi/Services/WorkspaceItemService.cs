@@ -378,6 +378,8 @@ public class WorkspaceItemService
     /// <param name="priority">優先度フィルタ</param>
     /// <param name="pinnedByUserId">PINしているユーザーIDフィルタ</param>
     /// <param name="hasDueDate">期限が設定されているかどうか</param>
+    /// <param name="hasPersonalNote">個人メモが存在するかどうか（true: あり、false: なし）</param>
+    /// <param name="personalNoteUserId">個人メモフィルター対象のユーザーID</param>
     /// <param name="searchQuery">あいまい検索クエリ（Subject, RawBody を対象、pgroonga 使用）</param>
     public async Task<(List<WorkspaceItem> Items, int TotalCount)> GetWorkspaceItemsAsync(
         int workspaceId,
@@ -391,6 +393,8 @@ public class WorkspaceItemService
         TaskPriority? priority = null,
         int? pinnedByUserId = null,
         bool? hasDueDate = null,
+        bool? hasPersonalNote = null,
+        int? personalNoteUserId = null,
         string? searchQuery = null
     )
     {
@@ -409,6 +413,8 @@ public class WorkspaceItemService
                 priority: priority,
                 pinnedByUserId: pinnedByUserId,
                 hasDueDate: hasDueDate,
+                hasPersonalNote: hasPersonalNote,
+                personalNoteUserId: personalNoteUserId,
                 searchQuery: searchQuery
             );
         }
@@ -468,6 +474,14 @@ public class WorkspaceItemService
                 : query.Where(wi => wi.DueDate == null);
         }
 
+        if (hasPersonalNote.HasValue && personalNoteUserId.HasValue)
+        {
+            var userId = personalNoteUserId.Value;
+            query = hasPersonalNote.Value
+                ? query.Where(wi => _context.PersonalItemNotes.Any(n => n.WorkspaceItemId == wi.Id && n.UserId == userId))
+                : query.Where(wi => !_context.PersonalItemNotes.Any(n => n.WorkspaceItemId == wi.Id && n.UserId == userId));
+        }
+
         var totalCount = await query.CountAsync();
 
         // ページネーション
@@ -505,6 +519,8 @@ public class WorkspaceItemService
         TaskPriority? priority,
         int? pinnedByUserId,
         bool? hasDueDate,
+        bool? hasPersonalNote,
+        int? personalNoteUserId,
         string searchQuery
     )
     {
@@ -568,6 +584,16 @@ public class WorkspaceItemService
             filterClauses.Add(hasDueDate.Value
                 ? @"wi.""DueDate"" IS NOT NULL"
                 : @"wi.""DueDate"" IS NULL");
+        }
+
+        if (hasPersonalNote.HasValue && personalNoteUserId.HasValue)
+        {
+            var existsClause = hasPersonalNote.Value
+                ? $@"EXISTS (SELECT 1 FROM ""PersonalItemNotes"" n WHERE n.""WorkspaceItemId"" = wi.""Id"" AND n.""UserId"" = {{{paramIndex}}})"
+                : $@"NOT EXISTS (SELECT 1 FROM ""PersonalItemNotes"" n WHERE n.""WorkspaceItemId"" = wi.""Id"" AND n.""UserId"" = {{{paramIndex}}})";
+            filterClauses.Add(existsClause);
+            parameters.Add(personalNoteUserId.Value);
+            paramIndex++;
         }
 
         var filterClause = string.Join(" AND ", filterClauses);

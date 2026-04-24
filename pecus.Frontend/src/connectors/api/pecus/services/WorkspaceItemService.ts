@@ -184,6 +184,7 @@ export class WorkspaceItemService {
      * @param priority 優先度
      * @param pinned ピン留めされているかどうか
      * @param hasDueDate 期限が設定されているかどうか
+     * @param hasPersonalNote 個人メモが存在するかどうか（true: メモあり、false: メモなし）
      * @param searchQuery あいまい検索クエリ（Subject, RawBody を対象）
      * pgroonga を使用して日本語のゆらぎやタイポにも対応
      * @returns PagedResponseOfWorkspaceItemDetailResponse OK
@@ -201,6 +202,7 @@ export class WorkspaceItemService {
         priority?: TaskPriority,
         pinned?: boolean,
         hasDueDate?: boolean,
+        hasPersonalNote?: boolean,
         searchQuery?: string,
     ): CancelablePromise<PagedResponseOfWorkspaceItemDetailResponse> {
         return __request(OpenAPI, {
@@ -220,6 +222,7 @@ export class WorkspaceItemService {
                 'Priority': priority,
                 'Pinned': pinned,
                 'HasDueDate': hasDueDate,
+                'HasPersonalNote': hasPersonalNote,
                 'SearchQuery': searchQuery,
             },
             errors: {

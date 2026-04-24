@@ -170,6 +170,13 @@ public class WorkspaceItemController : BaseSecureController
             pinnedByUserId = CurrentUserId;
         }
 
+        // HasPersonalNoteフィルタを使用する場合は現在のユーザーIDが必要
+        int? personalNoteUserId = null;
+        if (request.HasPersonalNote.HasValue)
+        {
+            personalNoteUserId = CurrentUserId;
+        }
+
         var pageSize = request.PageSize ?? _config.Pagination.DefaultPageSize;
         var (items, totalCount) = await _workspaceItemService.GetWorkspaceItemsAsync(
             workspaceId: workspaceId,
@@ -183,6 +190,8 @@ public class WorkspaceItemController : BaseSecureController
             priority: request.Priority,
             pinnedByUserId: pinnedByUserId,
             hasDueDate: request.HasDueDate,
+            hasPersonalNote: request.HasPersonalNote,
+            personalNoteUserId: personalNoteUserId,
             searchQuery: request.SearchQuery
         );
 
