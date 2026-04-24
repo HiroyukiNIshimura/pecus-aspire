@@ -40,6 +40,7 @@ import { useNotify } from '@/hooks/useNotify';
 import { formatDate, formatDateTime } from '@/libs/utils/date';
 import { type ItemEditStatus as ItemEditState, useSignalRContext } from '@/providers/SignalRProvider';
 import EditWorkspaceItem, { type ItemUpdateRequest } from './EditWorkspaceItem';
+import { PersonalItemNoteSection } from '@/components/workspaceItems/PersonalItemNoteSection';
 import WorkspaceTasks from './WorkspaceTasks';
 
 /**
@@ -1077,6 +1078,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               </div>
             )}
           </div>
+
+          {/* 個人メモ */}
+          <PersonalItemNoteSection workspaceId={workspaceId} itemId={itemId} />
 
           {/* 関連アイテム（ドキュメントモードでは非表示） */}
           {!isDocumentMode && (

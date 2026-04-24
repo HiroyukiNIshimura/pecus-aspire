@@ -15,6 +15,7 @@ global using Pecus.Models.Responses.Genre;
 global using Pecus.Models.Responses.Master;
 global using Pecus.Models.Responses.Organization;
 global using Pecus.Models.Responses.Permission;
+global using Pecus.Models.Responses.PersonalItemNote;
 global using Pecus.Models.Responses.Role;
 global using Pecus.Models.Responses.Skill;
 global using Pecus.Models.Responses.Tag;

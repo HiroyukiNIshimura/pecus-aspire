@@ -1,4 +1,7 @@
-﻿using Hangfire;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -23,9 +26,6 @@ using Pecus.Models.Config;
 using Pecus.OpenApi;
 using Pecus.Services;
 using StackExchange.Redis;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -150,6 +150,7 @@ builder.Services.AddScoped<WorkspaceItemTagService>();
 builder.Services.AddScoped<WorkspaceItemRelationService>();
 builder.Services.AddScoped<WorkspaceTaskService>();
 builder.Services.AddScoped<TaskCommentService>();
+builder.Services.AddScoped<PersonalItemNoteService>();
 builder.Services.AddScoped<GenreService>();
 builder.Services.AddScoped<FileUploadService>();
 builder.Services.AddScoped<TagService>();

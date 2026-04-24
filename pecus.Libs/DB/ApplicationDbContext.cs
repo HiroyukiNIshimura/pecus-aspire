@@ -132,6 +132,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<TaskComment> TaskComments { get; set; }
 
     /// <summary>
+    /// 個人メモテーブル（本人のみがアクセス可能なプライベートメモ）
+    /// </summary>
+    public DbSet<PersonalItemNote> PersonalItemNotes { get; set; }
+
+    /// <summary>
     /// リフレッシュトークンテーブル
     /// </summary>
     public DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -1433,6 +1438,38 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => new { e.AgendaId, e.UserId, e.OccurrenceStartAt, e.MinutesBefore }).IsUnique();
         });
 
+        // PersonalItemNote エンティティの設定
+        modelBuilder.Entity<PersonalItemNote>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.WorkspaceItemId).IsRequired();
+
+            // PersonalItemNote と WorkspaceItem の多対一リレーションシップ
+            entity
+                .HasOne(n => n.WorkspaceItem)
+                .WithMany()
+                .HasForeignKey(n => n.WorkspaceItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // PersonalItemNote と User の多対一リレーションシップ
+            entity
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 1ユーザー × 1アイテムにつきメモは1件のみ
+            entity.HasIndex(n => new { n.WorkspaceItemId, n.UserId })
+                .IsUnique()
+                .HasDatabaseName("IX_PersonalItemNotes_WorkspaceItemId_UserId_Unique");
+
+            // ユーザー別メモ一覧取得用インデックス
+            entity.HasIndex(n => n.UserId);
+            entity.HasIndex(n => new { n.UserId, n.UpdatedAt });
+        });
+
         // ExternalApiKey エンティティの設定
         modelBuilder.Entity<ExternalApiKey>(entity =>
         {
@@ -1500,5 +1537,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<AchievementMaster>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<Agenda>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<ExternalApiKey>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<PersonalItemNote>().Property(e => e.RowVersion).IsRowVersion();
     }
 }

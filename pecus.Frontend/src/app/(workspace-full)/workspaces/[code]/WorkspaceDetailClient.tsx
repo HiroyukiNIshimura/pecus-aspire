@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import { getAchievementRanking } from '@/actions/achievement';
 import { deleteWorkspace } from '@/actions/deleteWorkspace';
 import {
@@ -1277,7 +1278,9 @@ export default function WorkspaceDetailClient({
                 {/* 説明 */}
                 {currentWorkspaceDetail.description && (
                   <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none prose-headings:mt-3 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 mb-4 text-base-content/70">
-                    <Markdown remarkPlugins={[remarkItemCodeLinks]}>{currentWorkspaceDetail.description}</Markdown>
+                    <Markdown remarkPlugins={[remarkBreaks, remarkItemCodeLinks]}>
+                      {currentWorkspaceDetail.description}
+                    </Markdown>
                   </div>
                 )}
 

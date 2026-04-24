@@ -11,6 +11,7 @@ global using Pecus.Models.Requests.File;
 global using Pecus.Models.Requests.Genre;
 global using Pecus.Models.Requests.Organization;
 global using Pecus.Models.Requests.Permission;
+global using Pecus.Models.Requests.PersonalItemNote;
 global using Pecus.Models.Requests.Role;
 global using Pecus.Models.Requests.Skill;
 global using Pecus.Models.Requests.Tag;
