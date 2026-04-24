@@ -10,6 +10,7 @@ import {
   updatePersonalItemNote,
 } from '@/actions/personalItemNote';
 import type { PersonalItemNoteResponse } from '@/connectors/api/pecus';
+import { formatDateTime } from '@/libs/utils/date';
 
 type Mode = 'loading' | 'view' | 'creating' | 'editing' | 'confirm-delete';
 
@@ -180,6 +181,13 @@ export default function PersonalItemNoteDrawer({
               <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none prose-headings:mt-3 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 bg-base-200 rounded-lg p-3">
                 <Markdown remarkPlugins={[remarkBreaks]}>{note.content ?? ''}</Markdown>
               </div>
+              {/* 更新日時 */}
+              {note.updatedAt && (
+                <div>
+                  <span className="text-xs text-base-content/70">更新日時</span>
+                  <p className="text-xs font-semibold">{formatDateTime(note.updatedAt)}</p>
+                </div>
+              )}
               <div className="flex justify-end gap-2 mt-2">
                 <button type="button" onClick={handleStartEdit} className="btn btn-secondary btn-xs gap-1">
                   <span className="icon-[mdi--pencil] w-3.5 h-3.5" aria-hidden="true" />
