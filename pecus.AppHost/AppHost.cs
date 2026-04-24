@@ -174,6 +174,8 @@ try
         .WaitFor(pecusApi)
         .WithHttpEndpoint(port: 3000, env: "PORT")
         .WithExternalHttpEndpoints()
+        // VS Code/拡張から注入される NODE_OPTIONS (js-debug bootloader) の影響を防ぐ
+        .WithEnvironment("NODE_OPTIONS", "")
         // 開発環境: Aspire の自己署名証明書を許可
         .WithEnvironment("NODE_TLS_REJECT_UNAUTHORIZED", "0");
 
