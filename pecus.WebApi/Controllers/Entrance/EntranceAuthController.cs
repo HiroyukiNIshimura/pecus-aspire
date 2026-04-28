@@ -154,7 +154,7 @@ public class EntranceAuthController : ControllerBase
 
             // バックグラウンドでメール送信
             var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
-            var securitySettingsUrl = $"{baseUrl}/settings/security";
+            var securitySettingsUrl = $"{baseUrl}/profile?t=devices";
 
             var model = new SecurityNotificationEmailModel
             {
