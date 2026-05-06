@@ -55,7 +55,9 @@ import { validationError } from './types';
  * ページネーションで全件取得する
  * @deprecated getMyWorkspacesPaged を使用してください
  */
-export async function getMyWorkspaces(input: GetMyWorkspacesInput = {}): Promise<ApiResponse<WorkspaceListItemResponse[]>> {
+export async function getMyWorkspaces(
+  input: GetMyWorkspacesInput = {},
+): Promise<ApiResponse<WorkspaceListItemResponse[]>> {
   const parseResult = getMyWorkspacesInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
