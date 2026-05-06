@@ -50,7 +50,7 @@ export const createNotificationBaseSchema = z.object({
   subject: z.string().min(1, '件名は必須です').max(200, '件名は200文字以内で入力してください'),
   body: z.string().min(1, '本文は必須です'),
   type: z.enum(systemNotificationTypes, {
-    message: '通知種類を選択してください',
+    error: '通知種類を選択してください',
   }),
   publishDate: z.string().min(1, '公開日は必須です'),
   publishTime: z.string().min(1, '公開時間は必須です'),
@@ -70,7 +70,7 @@ export const createNotificationSchema = createNotificationBaseSchema
       return publishDateTime >= now;
     },
     {
-      message: '公開日時は現在以降の日時を設定してください',
+      error: '公開日時は現在以降の日時を設定してください',
       path: ['publishDate'],
     },
   )
@@ -80,7 +80,7 @@ export const createNotificationSchema = createNotificationBaseSchema
       return true;
     },
     {
-      message: '終了日を設定した場合、終了時間も必須です',
+      error: '終了日を設定した場合、終了時間も必須です',
       path: ['endTime'],
     },
   )
@@ -92,7 +92,7 @@ export const createNotificationSchema = createNotificationBaseSchema
       return endDateTime > publishDateTime;
     },
     {
-      message: '終了日時は公開日時より後に設定してください',
+      error: '終了日時は公開日時より後に設定してください',
       path: ['endDate'],
     },
   );

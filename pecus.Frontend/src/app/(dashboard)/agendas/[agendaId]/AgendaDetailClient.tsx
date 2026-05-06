@@ -90,7 +90,7 @@ export default function AgendaDetailClient({
 
     setError(null);
     startTransition(async () => {
-      const result = await updateAttendance(currentAgenda.id, newStatus);
+      const result = await updateAttendance({ agendaId: currentAgenda.id, status: newStatus });
       if (result.success) {
         // 参加状況をローカルで更新
         setCurrentAgenda((prev) => ({

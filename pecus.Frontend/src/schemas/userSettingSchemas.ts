@@ -12,18 +12,18 @@ export const userSettingSchema = z.object({
   language: z.string().default('ja'),
   landingPage: z
     .enum(landingPages, {
-      message: 'ログイン後のページを選択してください。',
+      error: 'ログイン後のページを選択してください。',
     })
     .optional(),
   focusScorePriority: z
     .enum(focusScorePriorities, {
-      message: 'スコアリング優先要素を選択してください。',
+      error: 'スコアリング優先要素を選択してください。',
     })
     .optional(),
   focusTasksLimit: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? 10 : Number(val)),
     z
-      .number({ message: 'やることピックアップタスク表示件数は必須です。' })
+      .number({ error: 'やることピックアップタスク表示件数は必須です。' })
       .int('やることピックアップタスク表示件数は整数で入力してください。')
       .min(5, 'やることピックアップタスク表示件数は5以上で入力してください。')
       .max(20, 'やることピックアップタスク表示件数は20以下で入力してください。'),
@@ -31,7 +31,7 @@ export const userSettingSchema = z.object({
   waitingTasksLimit: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? 10 : Number(val)),
     z
-      .number({ message: '待機中タスク表示件数は必須です。' })
+      .number({ error: '待機中タスク表示件数は必須です。' })
       .int('待機中タスク表示件数は整数で入力してください。')
       .min(5, '待機中タスク表示件数は5以上で入力してください。')
       .max(20, '待機中タスク表示件数は20以下で入力してください。'),
@@ -40,7 +40,7 @@ export const userSettingSchema = z.object({
     (val) => (val === '' || val === null ? undefined : val),
     z
       .enum(badgeVisibilities, {
-        message: 'バッジの公開範囲を選択してください。',
+        error: 'バッジの公開範囲を選択してください。',
       })
       .optional(),
   ),

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { AttendanceStatus } from '@/connectors/api/pecus';
 
 /**
  * アジェンダ作成/編集用スキーマ
@@ -29,7 +30,9 @@ const recurrenceTypeSchema = z.enum([
 /**
  * 繰り返し終了タイプ
  */
-const recurrenceEndTypeSchema = z.enum(['date', 'count', 'never']);
+const recurrenceEndTypeSchema = z.enum(['date', 'count', 'never'], {
+  error: '繰り返し終了タイプが不正です。',
+});
 
 /**
  * アジェンダ作成スキーマ
@@ -55,7 +58,7 @@ export const createAgendaSchema = z
             return false;
           }
         },
-        { message: '有効なURLを入力してください。' },
+        { error: '有効なURLを入力してください。' },
       )
       .optional()
       .default(''),
@@ -92,7 +95,7 @@ export const createAgendaSchema = z
       return end >= start;
     },
     {
-      message: '終了日時は開始日時以降に設定してください。',
+      error: '終了日時は開始日時以降に設定してください。',
       path: ['endAt'],
     },
   )
@@ -105,7 +108,7 @@ export const createAgendaSchema = z
       return true;
     },
     {
-      message: '繰り返し終了日を指定してください。',
+      error: '繰り返し終了日を指定してください。',
       path: ['recurrenceEndDate'],
     },
   )
@@ -118,12 +121,34 @@ export const createAgendaSchema = z
       return true;
     },
     {
-      message: '繰り返し回数を指定してください。',
+      error: '繰り返し回数を指定してください。',
       path: ['recurrenceCount'],
     },
   );
 
 export type CreateAgendaInput = z.infer<typeof createAgendaSchema>;
+
+const attendanceStatusValues = [
+  'Pending',
+  'Accepted',
+  'Declined',
+  'Tentative',
+] as const satisfies readonly AttendanceStatus[];
+
+/**
+ * 参加状況更新スキーマ
+ */
+export const attendanceStatusSchema = z.enum(attendanceStatusValues, {
+  // v4 では error パラメータを使用
+  error: '参加状況が不正です。',
+});
+
+export const updateAttendanceInputSchema = z.object({
+  agendaId: z.number().int().positive('アジェンダIDが不正です。'),
+  status: attendanceStatusSchema,
+});
+
+export type UpdateAttendanceInput = z.infer<typeof updateAttendanceInputSchema>;
 
 /**
  * アジェンダ更新スキーマ（作成と同じルール）

@@ -48,7 +48,7 @@ export const setPasswordSchema = z
     confirmPassword: z.string().min(1, 'パスワード確認は必須です。'),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'パスワードが一致しません。',
+    error: 'パスワードが一致しません。',
     path: ['confirmPassword'],
   });
 
@@ -73,7 +73,7 @@ export const resetPasswordSchema = z
     confirmPassword: z.string().min(1, 'パスワード確認は必須です。'),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'パスワードが一致しません。',
+    error: 'パスワードが一致しません。',
     path: ['confirmPassword'],
   });
 

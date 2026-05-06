@@ -23,7 +23,7 @@ const genreIdPreprocess = z.preprocess(
     return Number.isNaN(num) ? undefined : num;
   },
   z
-    .number({ message: 'ジャンルは必須です。' })
+    .number({ error: 'ジャンルは必須です。' })
     .int('ジャンルを選択してください。')
     .positive('ジャンルを選択してください。'),
 );

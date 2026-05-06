@@ -56,7 +56,7 @@ export default function QuickAttendanceButtons({
       // 単発アジェンダの場合はシリーズ全体（＝そのアジェンダ自体）を更新
       const result = isRecurring
         ? await updateOccurrenceAttendance(agendaId, occurrenceIndex, newStatus)
-        : await updateAttendance(agendaId, newStatus);
+        : await updateAttendance({ agendaId, status: newStatus });
 
       if (result.success) {
         onUpdate(agendaId, occurrenceIndex, newStatus);

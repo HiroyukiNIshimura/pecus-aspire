@@ -16,8 +16,10 @@ import type {
   UpdateAttendanceRequest,
   UpdateFromOccurrenceRequest,
 } from '@/connectors/api/pecus';
+import { type UpdateAttendanceInput, updateAttendanceInputSchema } from '@/schemas/agendaSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 export interface AgendaDetailFetchData {
   agenda: AgendaResponse;
@@ -87,11 +89,17 @@ export async function fetchOccurrences(
 /**
  * 参加状況を更新
  */
-export async function updateAttendance(agendaId: number, status: AttendanceStatus): Promise<ApiResponse<void>> {
+export async function updateAttendance(input: UpdateAttendanceInput): Promise<ApiResponse<void>> {
+  const parseResult = updateAttendanceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const request: UpdateAttendanceRequest = { status };
-    await api.agenda.patchApiAgendasAttendance(agendaId, request);
+    const request: UpdateAttendanceRequest = { status: parseResult.data.status };
+    await api.agenda.patchApiAgendasAttendance(parseResult.data.agendaId, request);
     return { success: true, data: undefined };
   } catch (error: unknown) {
     console.error('updateAttendance error:', error);

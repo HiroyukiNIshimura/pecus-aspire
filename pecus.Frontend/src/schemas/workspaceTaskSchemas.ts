@@ -29,7 +29,7 @@ const estimatedHoursRequiredSchema = z.preprocess(
     return Number.isNaN(num) ? undefined : num;
   },
   z
-    .number({ message: '予定工数は必須です。0より大きい値を入力してください。' })
+    .number({ error: '予定工数は必須です。0より大きい値を入力してください。' })
     .positive('予定工数は0より大きい値を入力してください。'),
 );
 
@@ -45,7 +45,7 @@ export const createWorkspaceTaskSchema = z.object({
       return Number.isNaN(num) ? undefined : num;
     },
     z
-      .number({ message: 'タスク種類を選択してください。' })
+      .number({ error: 'タスク種類を選択してください。' })
       .int('タスク種類を選択してください。')
       .positive('タスク種類を選択してください。'),
   ),
@@ -55,12 +55,9 @@ export const createWorkspaceTaskSchema = z.object({
       const num = Number(val);
       return Number.isNaN(num) ? undefined : num;
     },
-    z
-      .number({ message: '担当者は必須です。' })
-      .int('担当者を選択してください。')
-      .positive('担当者を選択してください。'),
+    z.number({ error: '担当者は必須です。' }).int('担当者を選択してください。').positive('担当者を選択してください。'),
   ),
-  priority: z.enum(['Low', 'Medium', 'High', 'Critical']).default('Medium'),
+  priority: z.enum(['Low', 'Medium', 'High', 'Critical'], { error: '優先度が不正です。' }).default('Medium'),
   startDate: z.string().optional().nullable(),
   dueDate: z
     .string()
@@ -72,7 +69,7 @@ export const createWorkspaceTaskSchema = z.object({
         const dueDate = new Date(val);
         return dueDate >= today;
       },
-      { message: '期限日は今日以降の日付を指定してください。' },
+      { error: '期限日は今日以降の日付を指定してください。' },
     ),
   estimatedHours: estimatedHoursOptionalSchema,
 });
@@ -110,7 +107,7 @@ const updateWorkspaceTaskBaseSchema = z.object({
       return Number.isNaN(num) ? undefined : num;
     },
     z
-      .number({ message: 'タスク種類を選択してください。' })
+      .number({ error: 'タスク種類を選択してください。' })
       .int('タスク種類を選択してください。')
       .positive('タスク種類を選択してください。'),
   ),
@@ -120,12 +117,9 @@ const updateWorkspaceTaskBaseSchema = z.object({
       const num = Number(val);
       return Number.isNaN(num) ? undefined : num;
     },
-    z
-      .number({ message: '担当者は必須です。' })
-      .int('担当者を選択してください。')
-      .positive('担当者を選択してください。'),
+    z.number({ error: '担当者は必須です。' }).int('担当者を選択してください。').positive('担当者を選択してください。'),
   ),
-  priority: z.enum(['Low', 'Medium', 'High', 'Critical']).default('Medium'),
+  priority: z.enum(['Low', 'Medium', 'High', 'Critical'], { error: '優先度が不正です。' }).default('Medium'),
   startDate: z.string().optional().nullable(),
   // 更新時は必須チェックのみ（過去日許容）
   dueDate: z.string().min(1, '期限日は必須です。'),
@@ -161,7 +155,7 @@ function applyDiscardReasonRefine<T extends typeof updateWorkspaceTaskBaseSchema
       return true;
     },
     {
-      message: '破棄する場合は破棄理由を入力してください。',
+      error: '破棄する場合は破棄理由を入力してください。',
       path: ['discardReason'],
     },
   );

@@ -13,7 +13,7 @@ export const editWorkspaceSchema = z.object({
       return Number.isNaN(num) ? undefined : num;
     },
     z
-      .number({ message: 'ジャンルは必須です。' })
+      .number({ error: 'ジャンルは必須です。' })
       .int('ジャンルを選択してください。')
       .positive('ジャンルを選択してください。'),
   ),
@@ -75,7 +75,7 @@ export const createWorkspaceItemSchema = z.object({
     .optional(),
   priority: z.preprocess(
     (val) => (val === '' ? undefined : val),
-    z.enum(['Low', 'Medium', 'High', 'Critical']).optional(),
+    z.enum(['Low', 'Medium', 'High', 'Critical'], { error: '優先度が不正です。' }).optional(),
   ),
   isDraft: z.boolean().default(true),
 });
