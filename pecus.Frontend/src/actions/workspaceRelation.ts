@@ -35,9 +35,7 @@ export async function fetchDocumentTree(workspaceId: number): Promise<ApiRespons
  * @param workspaceId ワークスペースID
  * @param request 更新リクエスト
  */
-export async function updateItemParent(
-  input: UpdateItemParentInput,
-): Promise<ApiResponse<void>> {
+export async function updateItemParent(input: UpdateItemParentInput): Promise<ApiResponse<void>> {
   const parseResult = updateItemParentInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -61,9 +59,7 @@ export async function updateItemParent(
  * @param workspaceId ワークスペースID
  * @param request 更新リクエスト
  */
-export async function updateSiblingOrder(
-  input: UpdateSiblingOrderInput,
-): Promise<ApiResponse<void>> {
+export async function updateSiblingOrder(input: UpdateSiblingOrderInput): Promise<ApiResponse<void>> {
   const parseResult = updateSiblingOrderInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');

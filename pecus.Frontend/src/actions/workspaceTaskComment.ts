@@ -9,10 +9,10 @@ import type {
 } from '@/connectors/api/pecus';
 import {
   type CreateTaskCommentInput,
-  type DeleteTaskCommentInput,
-  type UpdateTaskCommentInput,
   createTaskCommentInputSchema,
+  type DeleteTaskCommentInput,
   deleteTaskCommentInputSchema,
+  type UpdateTaskCommentInput,
   updateTaskCommentInputSchema,
 } from '@/schemas/workspaceTaskCommentSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
@@ -75,9 +75,7 @@ export async function getTaskComment(
 /**
  * タスクコメントを作成
  */
-export async function createTaskComment(
-  input: CreateTaskCommentInput,
-): Promise<ApiResponse<TaskCommentResponse>> {
+export async function createTaskComment(input: CreateTaskCommentInput): Promise<ApiResponse<TaskCommentResponse>> {
   const parseResult = createTaskCommentInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -105,9 +103,7 @@ export async function createTaskComment(
 /**
  * タスクコメントを更新（作成者のみ）
  */
-export async function updateTaskComment(
-  input: UpdateTaskCommentInput,
-): Promise<ApiResponse<TaskCommentResponse>> {
+export async function updateTaskComment(input: UpdateTaskCommentInput): Promise<ApiResponse<TaskCommentResponse>> {
   const parseResult = updateTaskCommentInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -152,9 +148,7 @@ export async function updateTaskComment(
 /**
  * タスクコメントを削除（作成者のみ）
  */
-export async function deleteTaskComment(
-  input: DeleteTaskCommentInput,
-): Promise<ApiResponse<TaskCommentResponse>> {
+export async function deleteTaskComment(input: DeleteTaskCommentInput): Promise<ApiResponse<TaskCommentResponse>> {
   const parseResult = deleteTaskCommentInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');

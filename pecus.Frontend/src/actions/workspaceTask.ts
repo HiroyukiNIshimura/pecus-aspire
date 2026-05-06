@@ -14,14 +14,14 @@ import type {
 } from '@/connectors/api/pecus';
 import {
   type BulkCreateTasksInput,
+  bulkCreateTasksInputSchema,
   type CheckAssigneeTaskLoadInput,
   type CreateWorkspaceTaskActionInput,
-  type GenerateTaskCandidatesInput,
-  type UpdateWorkspaceTaskActionInput,
-  bulkCreateTasksInputSchema,
   checkAssigneeTaskLoadInputSchema,
   createWorkspaceTaskActionInputSchema,
+  type GenerateTaskCandidatesInput,
   generateTaskCandidatesInputSchema,
+  type UpdateWorkspaceTaskActionInput,
   updateWorkspaceTaskActionInputSchema,
 } from '@/schemas/workspaceTaskSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
@@ -407,9 +407,7 @@ export async function generateTaskCandidates(
  * タスク一括作成
  * 承認されたタスク候補を一括で作成する
  */
-export async function bulkCreateTasks(
-  input: BulkCreateTasksInput,
-): Promise<ApiResponse<BulkCreateTasksResponse>> {
+export async function bulkCreateTasks(input: BulkCreateTasksInput): Promise<ApiResponse<BulkCreateTasksResponse>> {
   const parseResult = bulkCreateTasksInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
