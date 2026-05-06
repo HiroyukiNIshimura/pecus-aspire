@@ -8,8 +8,15 @@ import type {
   OrganizationResponse,
   OrganizationSettingResponse,
 } from '@/connectors/api/pecus';
+import {
+  type UpdateOrganizationInput,
+  type UpdateOrganizationSettingInput,
+  updateOrganizationInputSchema,
+  updateOrganizationSettingInputSchema,
+} from '@/schemas/adminOrganizationSchemas';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
+import { validationError } from '../types';
 
 /**
  * Server Action: 自組織の詳細情報を取得
@@ -29,19 +36,16 @@ export async function getOrganizationDetail(): Promise<ApiResponse<OrganizationR
  * Server Action: 自組織の情報を更新
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function updateOrganization(request: {
-  name?: string;
-  code?: string;
-  description?: string;
-  representativeName?: string;
-  phoneNumber?: string;
-  email?: string;
-  isActive?: boolean;
-  rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
-}): Promise<ApiResponse<OrganizationResponse>> {
+export async function updateOrganization(input: UpdateOrganizationInput): Promise<ApiResponse<OrganizationResponse>> {
+  const parseResult = updateOrganizationInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminOrganization.putApiAdminOrganization(request);
+    const response = await api.adminOrganization.putApiAdminOrganization(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -69,31 +73,28 @@ export async function updateOrganization(request: {
  * Server Action: 自組織の設定を更新
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function updateOrganizationSetting(request: {
-  taskOverdueThreshold?: number;
-  weeklyReportDeliveryDay?: number;
-  mailFromAddress?: string | null;
-  mailFromName?: string | null;
-  generativeApiVendor: OrganizationSettingResponse['generativeApiVendor'];
-  plan: OrganizationSettingResponse['plan'];
-  helpNotificationTarget?: OrganizationSettingResponse['helpNotificationTarget'];
-  generativeApiKey?: string | null;
-  generativeApiModel?: string | null;
-  requireEstimateOnTaskCreation?: boolean;
-  enforcePredecessorCompletion?: boolean;
-  dashboardHelpCommentMaxCount?: number;
-  groupChatScope?: OrganizationSettingResponse['groupChatScope'];
-  defaultWorkspaceMode?: OrganizationSettingResponse['defaultWorkspaceMode'];
-  gamificationEnabled?: boolean;
-  gamificationBadgeVisibility?: OrganizationSettingResponse['gamificationBadgeVisibility'];
-  gamificationAllowUserOverride?: boolean;
-  botGroupChatMessagesEnabled?: boolean;
-  rowVersion: number;
-}): Promise<ApiResponse<OrganizationSettingResponse>> {
+export async function updateOrganizationSetting(
+  input: UpdateOrganizationSettingInput,
+): Promise<ApiResponse<OrganizationSettingResponse>> {
+  const parseResult = updateOrganizationSettingInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const payload: AdminUpdateOrganizationSettingRequest & { generativeApiKey?: string | null } = {
-      ...request,
+      ...parseResult.data,
+      mailFromAddress: parseResult.data.mailFromAddress ? String(parseResult.data.mailFromAddress) : null,
+      mailFromName: parseResult.data.mailFromName ? String(parseResult.data.mailFromName) : null,
+      generativeApiKey:
+        parseResult.data.generativeApiVendor === 'None' ? null : (parseResult.data.generativeApiKey ?? null),
+      generativeApiModel:
+        parseResult.data.generativeApiVendor === 'None' ? null : (parseResult.data.generativeApiModel ?? null),
+      helpNotificationTarget: parseResult.data.helpNotificationTarget ?? undefined,
+      groupChatScope: parseResult.data.groupChatScope ?? undefined,
+      defaultWorkspaceMode: parseResult.data.defaultWorkspaceMode ?? undefined,
     };
 
     const response = await api.adminOrganization.putApiAdminOrganizationSetting(payload);

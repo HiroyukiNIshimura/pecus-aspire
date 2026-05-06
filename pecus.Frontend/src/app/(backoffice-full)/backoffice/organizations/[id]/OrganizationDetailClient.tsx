@@ -69,12 +69,15 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     if (!data) return;
 
     startTransition(async () => {
-      const result = await updateBackOfficeOrganization(data.id, {
-        representativeName: editForm.representativeName || undefined,
-        phoneNumber: editForm.phoneNumber || undefined,
-        email: editForm.email || undefined,
-        isActive: editForm.isActive,
-        rowVersion: data.rowVersion,
+      const result = await updateBackOfficeOrganization({
+        id: data.id,
+        request: {
+          representativeName: editForm.representativeName || undefined,
+          phoneNumber: editForm.phoneNumber || undefined,
+          email: editForm.email || undefined,
+          isActive: editForm.isActive,
+          rowVersion: data.rowVersion,
+        },
       });
 
       if (result.success) {
@@ -92,7 +95,11 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
   const handleDelete = async () => {
     if (!data?.code) return;
 
-    const result = await deleteBackOfficeOrganization(data.id, data.code, data.rowVersion);
+    const result = await deleteBackOfficeOrganization({
+      id: data.id,
+      confirmOrganizationCode: data.code,
+      rowVersion: data.rowVersion,
+    });
 
     if (result.success) {
       notify.success('組織を削除しました');
@@ -107,7 +114,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     if (!data) return;
 
     try {
-      const result = await resendOrganizationCreatedEmail(data.id);
+      const result = await resendOrganizationCreatedEmail({ organizationId: data.id });
       if (result.success) {
         notify.success('組織登録完了メールを再送しました。');
       } else {

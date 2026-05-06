@@ -90,11 +90,14 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
           return;
         }
 
-        const result = await updateWorkspace(workspaceDetail.id!, {
-          name: data.name,
-          description: data.description || undefined,
-          genreId: typeof data.genreId === 'string' ? parseInt(data.genreId, 10) : data.genreId,
-          rowVersion: workspaceDetail.rowVersion,
+        const result = await updateWorkspace({
+          workspaceId: workspaceDetail.id!,
+          request: {
+            name: data.name,
+            description: data.description || undefined,
+            genreId: typeof data.genreId === 'string' ? parseInt(data.genreId, 10) : data.genreId,
+            rowVersion: workspaceDetail.rowVersion,
+          },
         });
 
         if (result.success) {
@@ -154,7 +157,11 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
     role: NonNullable<WorkspaceRole>,
     identityIconUrl: string | null,
   ) => {
-    const result = await addWorkspaceMember(workspaceDetail.id!, userId, role);
+    const result = await addWorkspaceMember({
+      workspaceId: workspaceDetail.id!,
+      userId,
+      workspaceRole: role,
+    });
 
     if (result.success) {
       // メンバー一覧に追加
@@ -206,7 +213,10 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
   /** メンバー削除を実行 */
   const handleRemoveMemberConfirm = async () => {
     const { userId, userName } = removeMemberModal;
-    const result = await removeWorkspaceMember(workspaceDetail.id!, userId);
+    const result = await removeWorkspaceMember({
+      workspaceId: workspaceDetail.id!,
+      userId,
+    });
 
     if (result.success) {
       // メンバー一覧から削除
@@ -257,7 +267,11 @@ export default function EditWorkspaceClient({ workspaceDetail, genres, fetchErro
   /** ロール変更を実行 */
   const handleChangeRoleConfirm = async () => {
     const { userId, userName, newRole } = changeRoleModal;
-    const result = await updateWorkspaceMemberRole(workspaceDetail.id!, userId, newRole);
+    const result = await updateWorkspaceMemberRole({
+      workspaceId: workspaceDetail.id!,
+      userId,
+      workspaceRole: newRole,
+    });
 
     if (result.success) {
       // メンバー一覧のロールを更新

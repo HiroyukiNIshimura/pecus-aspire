@@ -93,13 +93,16 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
     const endAt = editForm.endDate ? `${editForm.endDate}T${editForm.endTime || '23:59'}:00` : undefined;
 
     startTransition(async () => {
-      const result = await updateBackOfficeNotification(data.id, {
-        subject: editForm.subject || undefined,
-        body: editForm.body || undefined,
-        type: (editForm.type as BackOfficeNotificationDetailResponse['type']) || undefined,
-        publishAt,
-        endAt,
-        rowVersion: data.rowVersion,
+      const result = await updateBackOfficeNotification({
+        id: data.id,
+        request: {
+          subject: editForm.subject || undefined,
+          body: editForm.body || undefined,
+          type: (editForm.type as BackOfficeNotificationDetailResponse['type']) || undefined,
+          publishAt,
+          endAt,
+          rowVersion: data.rowVersion,
+        },
       });
 
       if (result.success) {
@@ -117,7 +120,11 @@ export default function NotificationDetailClient({ initialData, fetchError }: No
   const handleDelete = async (deleteMessages: boolean) => {
     if (!data) return;
 
-    const result = await deleteBackOfficeNotification(data.id, data.rowVersion, deleteMessages);
+    const result = await deleteBackOfficeNotification({
+      id: data.id,
+      rowVersion: data.rowVersion,
+      deleteMessages,
+    });
 
     if (result.success) {
       notify.success('通知を削除しました');

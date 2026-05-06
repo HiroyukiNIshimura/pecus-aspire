@@ -42,7 +42,8 @@ export default function EditSkillClient({ skillDetail, fetchError }: EditSkillCl
           return;
         }
 
-        const result = await updateSkill(skillDetail.id!, {
+        const result = await updateSkill({
+          id: skillDetail.id!,
           name: data.name,
           description: data.description || undefined,
           isActive: data.isActive,

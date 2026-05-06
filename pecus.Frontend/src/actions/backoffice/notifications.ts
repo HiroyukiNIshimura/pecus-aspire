@@ -2,13 +2,20 @@
 
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
-  BackOfficeCreateNotificationRequest,
   BackOfficeNotificationDetailResponse,
-  BackOfficeUpdateNotificationRequest,
   PagedResponseOfBackOfficeNotificationListItemResponse,
 } from '@/connectors/api/pecus';
+import {
+  type CreateBackOfficeNotificationInput,
+  createBackOfficeNotificationInputSchema,
+  type DeleteBackOfficeNotificationInput,
+  deleteBackOfficeNotificationInputSchema,
+  type UpdateBackOfficeNotificationInput,
+  updateBackOfficeNotificationInputSchema,
+} from '@/schemas/backofficeNotificationSchemas';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
+import { validationError } from '../types';
 
 /**
  * Server Action: BackOffice - システム通知一覧を取得（ページネーション付き）
@@ -48,11 +55,17 @@ export async function getBackOfficeNotificationDetail(
  * Server Action: BackOffice - システム通知を作成
  */
 export async function createBackOfficeNotification(
-  request: BackOfficeCreateNotificationRequest,
+  input: CreateBackOfficeNotificationInput,
 ): Promise<ApiResponse<BackOfficeNotificationDetailResponse>> {
+  const parseResult = createBackOfficeNotificationInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeNotifications.postApiBackofficeNotifications(request);
+    const response = await api.backOfficeNotifications.postApiBackofficeNotifications(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create backoffice notification:', error);
@@ -64,12 +77,20 @@ export async function createBackOfficeNotification(
  * Server Action: BackOffice - システム通知を更新（公開前のみ）
  */
 export async function updateBackOfficeNotification(
-  id: number,
-  request: BackOfficeUpdateNotificationRequest,
+  input: UpdateBackOfficeNotificationInput,
 ): Promise<ApiResponse<BackOfficeNotificationDetailResponse>> {
+  const parseResult = updateBackOfficeNotificationInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeNotifications.putApiBackofficeNotifications(id, request);
+    const response = await api.backOfficeNotifications.putApiBackofficeNotifications(
+      parseResult.data.id,
+      parseResult.data.request,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update backoffice notification:', error);
@@ -83,15 +104,19 @@ export async function updateBackOfficeNotification(
  * @param rowVersion 楽観的ロック用バージョン番号
  */
 export async function deleteBackOfficeNotification(
-  id: number,
-  rowVersion: number,
-  deleteMessages: boolean = false,
+  input: DeleteBackOfficeNotificationInput,
 ): Promise<ApiResponse<void>> {
+  const parseResult = deleteBackOfficeNotificationInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    await api.backOfficeNotifications.deleteApiBackofficeNotifications(id, {
-      deleteMessages,
-      rowVersion,
+    await api.backOfficeNotifications.deleteApiBackofficeNotifications(parseResult.data.id, {
+      deleteMessages: parseResult.data.deleteMessages ?? false,
+      rowVersion: parseResult.data.rowVersion,
     });
     return { success: true, data: undefined };
   } catch (error) {

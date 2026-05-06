@@ -83,12 +83,15 @@ export default function EditUserClient({
     setIsSubmitting(true);
     try {
       // 1つのAPIで全項目を一括更新
-      const result = await updateUser(userDetail.id!, {
-        username: username.trim(),
-        isActive,
-        skillIds: selectedSkillIds,
-        roleIds: selectedRoleIds,
-        rowVersion: userDetail.rowVersion!,
+      const result = await updateUser({
+        userId: userDetail.id!,
+        request: {
+          username: username.trim(),
+          isActive,
+          skillIds: selectedSkillIds,
+          roleIds: selectedRoleIds,
+          rowVersion: userDetail.rowVersion!,
+        },
       });
 
       if (result.success) {
@@ -117,7 +120,7 @@ export default function EditUserClient({
 
   const handleRequestPasswordReset = async () => {
     try {
-      const result = await requestPasswordReset(userDetail.id!);
+      const result = await requestPasswordReset({ userId: userDetail.id! });
       if (result.success) {
         notify.success('パスワードリセットメールを送信しました。');
       } else {
@@ -131,7 +134,7 @@ export default function EditUserClient({
 
   const handleResendPasswordSetup = async () => {
     try {
-      const result = await resendPasswordSetup(userDetail.id!);
+      const result = await resendPasswordSetup({ userId: userDetail.id! });
       if (result.success) {
         notify.success('パスワード設定メールを再送しました。');
       } else {

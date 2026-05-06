@@ -286,13 +286,14 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
           const result = await updateOrganizationSetting({
             taskOverdueThreshold: data.taskOverdueThreshold,
             weeklyReportDeliveryDay: data.weeklyReportDeliveryDay,
-            mailFromAddress: data.mailFromAddress ? String(data.mailFromAddress) : null,
-            mailFromName: data.mailFromName ? String(data.mailFromName) : null,
+            mailFromAddress: data.mailFromAddress ? String(data.mailFromAddress) : '',
+            mailFromName: data.mailFromName ? String(data.mailFromName) : '',
             generativeApiVendor: data.generativeApiVendor,
             plan: data.plan,
             helpNotificationTarget: data.helpNotificationTarget ?? undefined,
-            generativeApiKey: data.generativeApiVendor === 'None' ? null : (data.generativeApiKey ?? null),
-            generativeApiModel: data.generativeApiVendor === 'None' ? null : (data.generativeApiModel ?? null),
+            generativeApiKey: data.generativeApiVendor === 'None' ? undefined : (data.generativeApiKey ?? undefined),
+            generativeApiModel:
+              data.generativeApiVendor === 'None' ? undefined : (data.generativeApiModel ?? undefined),
             requireEstimateOnTaskCreation: data.requireEstimateOnTaskCreation ?? false,
             enforcePredecessorCompletion: data.enforcePredecessorCompletion ?? false,
             dashboardHelpCommentMaxCount: data.dashboardHelpCommentMaxCount ?? 6,
@@ -1001,15 +1002,19 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       const result = await updateOrganizationSetting({
                         taskOverdueThreshold: formData.taskOverdueThreshold,
                         weeklyReportDeliveryDay: formData.weeklyReportDeliveryDay,
-                        mailFromAddress: formData.mailFromAddress ? String(formData.mailFromAddress) : null,
-                        mailFromName: formData.mailFromName ? String(formData.mailFromName) : null,
+                        mailFromAddress: formData.mailFromAddress ? String(formData.mailFromAddress) : '',
+                        mailFromName: formData.mailFromName ? String(formData.mailFromName) : '',
                         generativeApiVendor: formData.generativeApiVendor,
                         plan: formData.plan,
                         helpNotificationTarget: formData.helpNotificationTarget ?? undefined,
                         generativeApiKey:
-                          formData.generativeApiVendor === 'None' ? null : (formData.generativeApiKey ?? null),
+                          formData.generativeApiVendor === 'None'
+                            ? undefined
+                            : (formData.generativeApiKey ?? undefined),
                         generativeApiModel:
-                          formData.generativeApiVendor === 'None' ? null : (formData.generativeApiModel ?? null),
+                          formData.generativeApiVendor === 'None'
+                            ? undefined
+                            : (formData.generativeApiModel ?? undefined),
                         requireEstimateOnTaskCreation: formData.requireEstimateOnTaskCreation ?? false,
                         enforcePredecessorCompletion: formData.enforcePredecessorCompletion ?? false,
                         dashboardHelpCommentMaxCount: formData.dashboardHelpCommentMaxCount ?? 6,

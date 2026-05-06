@@ -549,7 +549,7 @@ export default function AdminWorkspacesClient({ initialGenres }: AdminWorkspaces
         }}
         onConfirm={async () => {
           if (!workspaceToDelete) return;
-          const result = await deleteWorkspace(workspaceToDelete.id);
+          const result = await deleteWorkspace({ workspaceId: workspaceToDelete.id });
           if (result.success) {
             handleFilterChange();
             notify.success('ワークスペースを削除しました');

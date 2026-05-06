@@ -4,15 +4,25 @@ import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   BackOfficeBotResponse,
   BackOfficeOrganizationDetailResponse,
-  BackOfficeUpdateBotPersonaRequest,
-  BackOfficeUpdateOrganizationRequest,
-  CreateOrganizationRequest,
   OrganizationWithAdminResponse,
   PagedResponseOfBackOfficeOrganizationListItemResponse,
   SuccessResponse,
 } from '@/connectors/api/pecus';
+import {
+  type CreateBackOfficeOrganizationInput,
+  createBackOfficeOrganizationInputSchema,
+  type DeleteBackOfficeOrganizationInput,
+  deleteBackOfficeOrganizationInputSchema,
+  type ResendOrganizationCreatedEmailInput,
+  resendOrganizationCreatedEmailInputSchema,
+  type UpdateBackOfficeBotPersonaInput,
+  type UpdateBackOfficeOrganizationInput,
+  updateBackOfficeBotPersonaInputSchema,
+  updateBackOfficeOrganizationInputSchema,
+} from '@/schemas/backofficeOrganizationSchemas';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
+import { validationError } from '../types';
 
 /**
  * Server Action: BackOffice - 組織一覧を取得（ページネーション付き）
@@ -51,12 +61,20 @@ export async function getBackOfficeOrganizationDetail(
  * Server Action: BackOffice - 組織を更新
  */
 export async function updateBackOfficeOrganization(
-  id: number,
-  request: BackOfficeUpdateOrganizationRequest,
+  input: UpdateBackOfficeOrganizationInput,
 ): Promise<ApiResponse<BackOfficeOrganizationDetailResponse>> {
+  const parseResult = updateBackOfficeOrganizationInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.putApiBackofficeOrganizations(id, request);
+    const response = await api.backOfficeOrganizations.putApiBackofficeOrganizations(
+      parseResult.data.id,
+      parseResult.data.request,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update backoffice organization:', error);
@@ -69,15 +87,19 @@ export async function updateBackOfficeOrganization(
  * 確認用に組織コードの入力が必要
  */
 export async function deleteBackOfficeOrganization(
-  id: number,
-  confirmOrganizationCode: string,
-  rowVersion: number,
+  input: DeleteBackOfficeOrganizationInput,
 ): Promise<ApiResponse<void>> {
+  const parseResult = deleteBackOfficeOrganizationInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    await api.backOfficeOrganizations.deleteApiBackofficeOrganizations(id, {
-      confirmOrganizationCode,
-      rowVersion,
+    await api.backOfficeOrganizations.deleteApiBackofficeOrganizations(parseResult.data.id, {
+      confirmOrganizationCode: parseResult.data.confirmOrganizationCode,
+      rowVersion: parseResult.data.rowVersion,
     });
     return { success: true, data: undefined };
   } catch (error) {
@@ -90,11 +112,17 @@ export async function deleteBackOfficeOrganization(
  * Server Action: BackOffice - 組織を新規作成（管理者ユーザーも同時作成）
  */
 export async function createBackOfficeOrganization(
-  request: CreateOrganizationRequest,
+  input: CreateBackOfficeOrganizationInput,
 ): Promise<ApiResponse<OrganizationWithAdminResponse>> {
+  const parseResult = createBackOfficeOrganizationInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.postApiBackofficeOrganizations(request);
+    const response = await api.backOfficeOrganizations.postApiBackofficeOrganizations(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create backoffice organization:', error);
@@ -105,10 +133,20 @@ export async function createBackOfficeOrganization(
 /**
  * Server Action: BackOffice - 組織登録完了メールを再送
  */
-export async function resendOrganizationCreatedEmail(organizationId: number): Promise<ApiResponse<SuccessResponse>> {
+export async function resendOrganizationCreatedEmail(
+  input: ResendOrganizationCreatedEmailInput,
+): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = resendOrganizationCreatedEmailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.postApiBackofficeOrganizationsResendCreatedEmail(organizationId);
+    const response = await api.backOfficeOrganizations.postApiBackofficeOrganizationsResendCreatedEmail(
+      parseResult.data.organizationId,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to resend organization created email:', error);
@@ -136,16 +174,20 @@ export async function getBackOfficeOrganizationBots(
  * Server Action: BackOffice - ボットのPersona/Constraintを更新
  */
 export async function updateBackOfficeBotPersona(
-  organizationId: number,
-  botId: number,
-  request: BackOfficeUpdateBotPersonaRequest,
+  input: UpdateBackOfficeBotPersonaInput,
 ): Promise<ApiResponse<BackOfficeBotResponse>> {
+  const parseResult = updateBackOfficeBotPersonaInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.backOfficeOrganizations.putApiBackofficeOrganizationsBotsPersona(
-      organizationId,
-      botId,
-      request,
+      parseResult.data.organizationId,
+      parseResult.data.botId,
+      parseResult.data.request,
     );
     return { success: true, data: response };
   } catch (error) {

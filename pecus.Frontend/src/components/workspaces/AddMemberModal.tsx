@@ -168,7 +168,7 @@ export default function AddMemberModal({
 
     setIsSearching(true);
     try {
-      const result = await searchUsersForWorkspace(query);
+      const result = await searchUsersForWorkspace({ query });
       if (result.success && result.data) {
         setSearchResults(result.data);
 

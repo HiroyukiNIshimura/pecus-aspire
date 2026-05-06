@@ -2,7 +2,6 @@
 
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
-  AdminUpdateUserRequest,
   PagedResponseOfUserDetailResponseAndUserStatistics,
   RoleListItemResponse,
   SuccessResponse,
@@ -10,8 +9,21 @@ import type {
   UserSearchResultResponse,
   UsersWorkloadResponse,
 } from '@/connectors/api/pecus';
+import {
+  type CreateUserWithoutPasswordInput,
+  createUserWithoutPasswordInputSchema,
+  type RequestPasswordResetInput,
+  type ResendPasswordSetupInput,
+  requestPasswordResetInputSchema,
+  resendPasswordSetupInputSchema,
+  type SearchUsersForWorkspaceInput,
+  searchUsersForWorkspaceInputSchema,
+  type UpdateUserInput,
+  updateUserInputSchema,
+} from '@/schemas/adminUserSchemas';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
+import { validationError } from '../types';
 
 /**
  * Server Action: ユーザー一覧を取得
@@ -36,14 +48,18 @@ export async function getUsers(
 /**
  * Server Action: パスワードなしでユーザーを作成（招待）
  */
-export async function createUserWithoutPassword(request: {
-  email: string;
-  username: string;
-  roles: number[];
-}): Promise<ApiResponse<UserDetailResponse>> {
+export async function createUserWithoutPassword(
+  input: CreateUserWithoutPasswordInput,
+): Promise<ApiResponse<UserDetailResponse>> {
+  const parseResult = createUserWithoutPasswordInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.postApiAdminUsersCreateWithoutPassword(request);
+    const response = await api.adminUser.postApiAdminUsersCreateWithoutPassword(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create user:', error);
@@ -55,13 +71,16 @@ export async function createUserWithoutPassword(request: {
  * Server Action: ユーザー情報を一括更新（管理者用）
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function updateUser(
-  userId: number,
-  request: AdminUpdateUserRequest,
-): Promise<ApiResponse<UserDetailResponse>> {
+export async function updateUser(input: UpdateUserInput): Promise<ApiResponse<UserDetailResponse>> {
+  const parseResult = updateUserInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.putApiAdminUsers(userId, request);
+    const response = await api.adminUser.putApiAdminUsers(parseResult.data.userId, parseResult.data.request);
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -73,10 +92,12 @@ export async function updateUser(
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'user',
-          data: current as UserDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'user',
+              data: current,
+            }
+          : undefined,
       };
     }
     console.error('Failed to update user:', error);
@@ -87,10 +108,16 @@ export async function updateUser(
 /**
  * Server Action: パスワードリセットをリクエスト
  */
-export async function requestPasswordReset(userId: number): Promise<ApiResponse<SuccessResponse>> {
+export async function requestPasswordReset(input: RequestPasswordResetInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = requestPasswordResetInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.postApiAdminUsersRequestPasswordReset(userId);
+    const response = await api.adminUser.postApiAdminUsersRequestPasswordReset(parseResult.data.userId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to request password reset:', error);
@@ -101,10 +128,16 @@ export async function requestPasswordReset(userId: number): Promise<ApiResponse<
 /**
  * Server Action: パスワード設定メールを再送（新規ユーザー用）
  */
-export async function resendPasswordSetup(userId: number): Promise<ApiResponse<SuccessResponse>> {
+export async function resendPasswordSetup(input: ResendPasswordSetupInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = resendPasswordSetupInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.postApiAdminUsersResendPasswordSetup(userId);
+    const response = await api.adminUser.postApiAdminUsersResendPasswordSetup(parseResult.data.userId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to resend password setup email:', error);
@@ -131,16 +164,24 @@ export async function getUserDetail(userId: number): Promise<ApiResponse<UserDet
  * pgroonga を使用したあいまい検索で、日本語の漢字のゆらぎやタイポにも対応
  */
 export async function searchUsersForWorkspace(
-  query: string,
-  limit: number = 20,
+  input: SearchUsersForWorkspaceInput,
 ): Promise<ApiResponse<UserSearchResultResponse[]>> {
-  try {
-    if (!query || query.length < 2) {
+  const parseResult = searchUsersForWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const hasTooShortQuery = parseResult.error.issues.some(
+      (issue) => issue.path[0] === 'query' && issue.code === 'too_small',
+    );
+    if (hasTooShortQuery) {
       return { success: true, data: [] };
     }
 
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
+  try {
     const api = createPecusApiClients();
-    const response = await api.user.getApiUsersSearch(query, limit);
+    const response = await api.user.getApiUsersSearch(parseResult.data.query, parseResult.data.limit ?? 20);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to search users:', error);

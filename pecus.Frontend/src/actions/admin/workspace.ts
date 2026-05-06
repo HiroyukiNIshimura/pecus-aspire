@@ -11,8 +11,27 @@ import type {
   WorkspaceDetailResponse,
   WorkspaceUserDetailResponse,
 } from '@/connectors/api/pecus';
+import {
+  type ActivateWorkspaceInput,
+  type AddWorkspaceMemberInput,
+  activateWorkspaceInputSchema,
+  addWorkspaceMemberInputSchema,
+  type CreateWorkspaceInput,
+  createWorkspaceInputSchema,
+  type DeactivateWorkspaceInput,
+  type DeleteWorkspaceInput,
+  deactivateWorkspaceInputSchema,
+  deleteWorkspaceInputSchema,
+  type RemoveWorkspaceMemberInput,
+  removeWorkspaceMemberInputSchema,
+  type UpdateWorkspaceInput,
+  type UpdateWorkspaceMemberRoleInput,
+  updateWorkspaceInputSchema,
+  updateWorkspaceMemberRoleInputSchema,
+} from '@/schemas/adminWorkspaceSchemas';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
+import { validationError } from '../types';
 
 /**
  * Server Action: ワークスペース一覧を取得
@@ -49,15 +68,16 @@ export async function getWorkspaceDetail(workspaceId: number): Promise<ApiRespon
 /**
  * Server Action: ワークスペースを作成
  */
-export async function createWorkspace(request: {
-  organizationId: number;
-  name: string;
-  description?: string;
-  genreId: number;
-}): Promise<ApiResponse<WorkspaceDetailResponse>> {
+export async function createWorkspace(input: CreateWorkspaceInput): Promise<ApiResponse<WorkspaceDetailResponse>> {
+  const parseResult = createWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.postApiAdminWorkspaces(request);
+    const response = await api.adminWorkspace.postApiAdminWorkspaces(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create workspace:', error);
@@ -69,18 +89,19 @@ export async function createWorkspace(request: {
  * Server Action: ワークスペースを更新
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function updateWorkspace(
-  workspaceId: number,
-  request: {
-    name: string;
-    description?: string;
-    genreId: number;
-    rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
-  },
-): Promise<ApiResponse<WorkspaceDetailResponse>> {
+export async function updateWorkspace(input: UpdateWorkspaceInput): Promise<ApiResponse<WorkspaceDetailResponse>> {
+  const parseResult = updateWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.putApiAdminWorkspaces(workspaceId, request);
+    const response = await api.adminWorkspace.putApiAdminWorkspaces(
+      parseResult.data.workspaceId,
+      parseResult.data.request,
+    );
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -92,10 +113,12 @@ export async function updateWorkspace(
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'workspace',
-          data: current as WorkspaceDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'workspace',
+              data: current,
+            }
+          : undefined,
       };
     }
 
@@ -107,10 +130,16 @@ export async function updateWorkspace(
 /**
  * Server Action: ワークスペースを削除
  */
-export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deleteWorkspace(input: DeleteWorkspaceInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = deleteWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.deleteApiAdminWorkspaces(workspaceId);
+    const response = await api.adminWorkspace.deleteApiAdminWorkspaces(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete workspace:', error);
@@ -122,13 +151,19 @@ export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<
  * Server Action: ワークスペースを有効化
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function activateWorkspace(
-  workspaceId: number,
-  rowVersion: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function activateWorkspace(input: ActivateWorkspaceInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = activateWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.patchApiAdminWorkspacesActivate(workspaceId, rowVersion);
+    const response = await api.adminWorkspace.patchApiAdminWorkspacesActivate(
+      parseResult.data.workspaceId,
+      parseResult.data.rowVersion,
+    );
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -140,10 +175,12 @@ export async function activateWorkspace(
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'workspace',
-          data: current as WorkspaceDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'workspace',
+              data: current,
+            }
+          : undefined,
       };
     }
 
@@ -156,13 +193,19 @@ export async function activateWorkspace(
  * Server Action: ワークスペースを無効化
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function deactivateWorkspace(
-  workspaceId: number,
-  rowVersion: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function deactivateWorkspace(input: DeactivateWorkspaceInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = deactivateWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.patchApiAdminWorkspacesDeactivate(workspaceId, rowVersion);
+    const response = await api.adminWorkspace.patchApiAdminWorkspacesDeactivate(
+      parseResult.data.workspaceId,
+      parseResult.data.rowVersion,
+    );
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -174,10 +217,12 @@ export async function deactivateWorkspace(
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'workspace',
-          data: current as WorkspaceDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'workspace',
+              data: current,
+            }
+          : undefined,
       };
     }
 
@@ -189,13 +234,19 @@ export async function deactivateWorkspace(
 /**
  * Server Action: ワークスペースからメンバーを削除
  */
-export async function removeWorkspaceMember(
-  workspaceId: number,
-  userId: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function removeWorkspaceMember(input: RemoveWorkspaceMemberInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = removeWorkspaceMemberInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.deleteApiAdminWorkspacesUsers(workspaceId, userId);
+    const response = await api.adminWorkspace.deleteApiAdminWorkspacesUsers(
+      parseResult.data.workspaceId,
+      parseResult.data.userId,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to remove workspace member:', error);
@@ -207,15 +258,23 @@ export async function removeWorkspaceMember(
  * Server Action: ワークスペースメンバーのロールを変更
  */
 export async function updateWorkspaceMemberRole(
-  workspaceId: number,
-  userId: number,
-  workspaceRole: 'Owner' | 'Member' | 'Viewer',
+  input: UpdateWorkspaceMemberRoleInput,
 ): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  const parseResult = updateWorkspaceMemberRoleInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.patchApiAdminWorkspacesUsersRole(workspaceId, userId, {
-      workspaceRole,
-    });
+    const response = await api.adminWorkspace.patchApiAdminWorkspacesUsersRole(
+      parseResult.data.workspaceId,
+      parseResult.data.userId,
+      {
+        workspaceRole: parseResult.data.workspaceRole,
+      },
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update workspace member role:', error);
@@ -239,15 +298,19 @@ export async function updateWorkspaceMemberRole(
  * Server Action: ワークスペースにメンバーを追加
  */
 export async function addWorkspaceMember(
-  workspaceId: number,
-  userId: number,
-  workspaceRole: 'Owner' | 'Member' | 'Viewer',
+  input: AddWorkspaceMemberInput,
 ): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  const parseResult = addWorkspaceMemberInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.postApiAdminWorkspacesUsers(workspaceId, {
-      userId,
-      workspaceRole,
+    const response = await api.adminWorkspace.postApiAdminWorkspacesUsers(parseResult.data.workspaceId, {
+      userId: parseResult.data.userId,
+      workspaceRole: parseResult.data.workspaceRole,
     });
     return { success: true, data: response };
   } catch (error) {

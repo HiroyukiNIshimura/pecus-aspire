@@ -62,7 +62,7 @@ export default function AdminApiKeysClient({ initialKeys }: Props) {
   const handleRevoke = async (key: ExternalApiKeyResponse) => {
     setIsSubmitting(true);
     try {
-      const result = await revokeExternalApiKey(key.id);
+      const result = await revokeExternalApiKey({ keyId: key.id });
       if (!result.success) {
         notify.error(result.message);
         return;

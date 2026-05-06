@@ -57,7 +57,11 @@ export default function BotListSection({ organizationId }: BotListSectionProps) 
   ): Promise<{ success: boolean; message?: string }> => {
     return new Promise((resolve) => {
       startTransition(async () => {
-        const result = await updateBackOfficeBotPersona(organizationId, botId, request);
+        const result = await updateBackOfficeBotPersona({
+          organizationId,
+          botId,
+          request,
+        });
         if (result.success) {
           setBots((prev) => prev.map((b) => (b.id === botId ? result.data : b)));
           setIsEditModalOpen(false);

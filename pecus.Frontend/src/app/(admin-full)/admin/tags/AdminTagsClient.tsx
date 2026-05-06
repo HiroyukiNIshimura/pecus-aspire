@@ -539,7 +539,7 @@ export default function AdminTagsClient() {
         }}
         onConfirm={async () => {
           if (!tagToDelete) return;
-          const result = await deleteTag(tagToDelete.id);
+          const result = await deleteTag({ id: tagToDelete.id });
           if (result.success) {
             handleFilterChange();
             notify.success('タグを削除しました');

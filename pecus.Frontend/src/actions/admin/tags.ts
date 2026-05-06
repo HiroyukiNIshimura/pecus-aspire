@@ -7,8 +7,21 @@ import type {
   TagDetailResponse,
   TagResponse,
 } from '@/connectors/api/pecus';
+import {
+  type ActivateTagInput,
+  activateTagInputSchema,
+  type CreateTagInput,
+  createTagInputSchema,
+  type DeactivateTagInput,
+  type DeleteTagInput,
+  deactivateTagInputSchema,
+  deleteTagInputSchema,
+  type UpdateTagInput,
+  updateTagInputSchema,
+} from '@/schemas/adminTagSchemas';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
+import { validationError } from '../types';
 
 /**
  * Server Action: タグ一覧を取得（ページネーション対応）
@@ -44,10 +57,16 @@ export async function getTagDetail(id: number): Promise<ApiResponse<TagDetailRes
 /**
  * Server Action: タグを作成
  */
-export async function createTag(request: { name: string; description?: string }): Promise<ApiResponse<TagResponse>> {
+export async function createTag(input: CreateTagInput): Promise<ApiResponse<TagResponse>> {
+  const parseResult = createTagInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminTag.postApiAdminTags(request);
+    const response = await api.adminTag.postApiAdminTags(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create tag:', error);
@@ -59,27 +78,26 @@ export async function createTag(request: { name: string; description?: string })
  * Server Action: タグを更新
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function updateTag(
-  id: number,
-  request: {
-    name: string;
-    isActive?: boolean;
-    rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
-  },
-): Promise<ApiResponse<TagResponse | TagDetailResponse>> {
+export async function updateTag(input: UpdateTagInput): Promise<ApiResponse<TagResponse | TagDetailResponse>> {
+  const parseResult = updateTagInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    let response = await api.adminTag.putApiAdminTags(id, {
-      name: request.name,
-      rowVersion: request.rowVersion,
+    let response = await api.adminTag.putApiAdminTags(parseResult.data.id, {
+      name: parseResult.data.name,
+      rowVersion: parseResult.data.rowVersion,
     });
 
     // isActive が指定されている場合、activate/deactivate を呼び出す
-    if (request.isActive !== undefined) {
-      if (request.isActive) {
-        response = await api.adminTag.patchApiAdminTagsActivate(id);
+    if (parseResult.data.isActive !== undefined) {
+      if (parseResult.data.isActive) {
+        response = await api.adminTag.patchApiAdminTagsActivate(parseResult.data.id);
       } else {
-        response = await api.adminTag.patchApiAdminTagsDeactivate(id);
+        response = await api.adminTag.patchApiAdminTagsDeactivate(parseResult.data.id);
       }
     }
 
@@ -94,10 +112,12 @@ export async function updateTag(
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'tag',
-          data: current as TagDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'tag',
+              data: current,
+            }
+          : undefined,
       };
     }
 
@@ -109,10 +129,16 @@ export async function updateTag(
 /**
  * Server Action: タグを削除
  */
-export async function deleteTag(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deleteTag(input: DeleteTagInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = deleteTagInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminTag.deleteApiAdminTags(id);
+    const response = await api.adminTag.deleteApiAdminTags(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete tag:', error);
@@ -123,10 +149,16 @@ export async function deleteTag(id: number): Promise<ApiResponse<SuccessResponse
 /**
  * Server Action: タグを有効化
  */
-export async function activateTag(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function activateTag(input: ActivateTagInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = activateTagInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminTag.patchApiAdminTagsActivate(id);
+    const response = await api.adminTag.patchApiAdminTagsActivate(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
@@ -137,10 +169,12 @@ export async function activateTag(id: number): Promise<ApiResponse<SuccessRespon
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'tag',
-          data: current as TagDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'tag',
+              data: current,
+            }
+          : undefined,
       };
     }
     console.error('Failed to activate tag:', error);
@@ -151,10 +185,16 @@ export async function activateTag(id: number): Promise<ApiResponse<SuccessRespon
 /**
  * Server Action: タグを無効化
  */
-export async function deactivateTag(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deactivateTag(input: DeactivateTagInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = deactivateTagInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminTag.patchApiAdminTagsDeactivate(id);
+    const response = await api.adminTag.patchApiAdminTagsDeactivate(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
@@ -165,10 +205,12 @@ export async function deactivateTag(id: number): Promise<ApiResponse<SuccessResp
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'tag',
-          data: current as TagDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'tag',
+              data: current,
+            }
+          : undefined,
       };
     }
     console.error('Failed to deactivate tag:', error);

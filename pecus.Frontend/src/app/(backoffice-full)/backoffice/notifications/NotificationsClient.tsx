@@ -73,7 +73,7 @@ export default function NotificationsClient({ initialData, fetchError }: Notific
     const result = await createBackOfficeNotification({
       subject: formData.subject,
       body: formData.body,
-      type: formData.type,
+      type: formData.type ?? 'Info',
       publishAt: formData.publishAt,
       endAt: formData.endAt,
     });

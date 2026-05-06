@@ -543,7 +543,7 @@ export default function AdminSkillsClient() {
         }}
         onConfirm={async () => {
           if (!skillToDelete) return;
-          const result = await deleteSkill(skillToDelete.id);
+          const result = await deleteSkill({ id: skillToDelete.id });
           if (result.success) {
             handleFilterChange();
             notify.success('スキルを削除しました');

@@ -8,8 +8,21 @@ import type {
   SkillResponse,
   SuccessResponse,
 } from '@/connectors/api/pecus';
+import {
+  type ActivateSkillInput,
+  activateSkillInputSchema,
+  type CreateSkillInput,
+  createSkillInputSchema,
+  type DeactivateSkillInput,
+  type DeleteSkillInput,
+  deactivateSkillInputSchema,
+  deleteSkillInputSchema,
+  type UpdateSkillInput,
+  updateSkillInputSchema,
+} from '@/schemas/adminSkillSchemas';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
+import { validationError } from '../types';
 
 /**
  * Server Action: スキル一覧を取得（ページネーション対応）
@@ -82,13 +95,16 @@ export async function getSkillDetail(id: number): Promise<ApiResponse<SkillDetai
 /**
  * Server Action: スキルを作成
  */
-export async function createSkill(request: {
-  name: string;
-  description?: string;
-}): Promise<ApiResponse<SkillResponse>> {
+export async function createSkill(input: CreateSkillInput): Promise<ApiResponse<SkillResponse>> {
+  const parseResult = createSkillInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminSkill.postApiAdminSkills(request);
+    const response = await api.adminSkill.postApiAdminSkills(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create skill:', error);
@@ -100,29 +116,27 @@ export async function createSkill(request: {
  * Server Action: スキルを更新
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function updateSkill(
-  id: number,
-  request: {
-    name: string;
-    description?: string;
-    isActive?: boolean;
-    rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
-  },
-): Promise<ApiResponse<SkillResponse | SkillDetailResponse>> {
+export async function updateSkill(input: UpdateSkillInput): Promise<ApiResponse<SkillResponse | SkillDetailResponse>> {
+  const parseResult = updateSkillInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    let response = await api.adminSkill.putApiAdminSkills(id, {
-      name: request.name,
-      description: request.description,
-      rowVersion: request.rowVersion,
+    let response = await api.adminSkill.putApiAdminSkills(parseResult.data.id, {
+      name: parseResult.data.name,
+      description: parseResult.data.description,
+      rowVersion: parseResult.data.rowVersion,
     });
 
     // isActive が指定されている場合、activate/deactivate を呼び出す
-    if (request.isActive !== undefined) {
-      if (request.isActive) {
-        response = await api.adminSkill.patchApiAdminSkillsActivate(id);
+    if (parseResult.data.isActive !== undefined) {
+      if (parseResult.data.isActive) {
+        response = await api.adminSkill.patchApiAdminSkillsActivate(parseResult.data.id);
       } else {
-        response = await api.adminSkill.patchApiAdminSkillsDeactivate(id);
+        response = await api.adminSkill.patchApiAdminSkillsDeactivate(parseResult.data.id);
       }
     }
 
@@ -137,10 +151,12 @@ export async function updateSkill(
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'skill',
-          data: current as SkillDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'skill',
+              data: current,
+            }
+          : undefined,
       };
     }
 
@@ -152,10 +168,16 @@ export async function updateSkill(
 /**
  * Server Action: スキルを削除
  */
-export async function deleteSkill(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deleteSkill(input: DeleteSkillInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = deleteSkillInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminSkill.deleteApiAdminSkills(id);
+    const response = await api.adminSkill.deleteApiAdminSkills(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete skill:', error);
@@ -167,10 +189,16 @@ export async function deleteSkill(id: number): Promise<ApiResponse<SuccessRespon
 /**
  * Server Action: スキルを有効化
  */
-export async function activateSkill(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function activateSkill(input: ActivateSkillInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = activateSkillInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminSkill.patchApiAdminSkillsActivate(id);
+    const response = await api.adminSkill.patchApiAdminSkillsActivate(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
@@ -181,10 +209,12 @@ export async function activateSkill(id: number): Promise<ApiResponse<SuccessResp
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'skill',
-          data: current as SkillDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'skill',
+              data: current,
+            }
+          : undefined,
       };
     }
     console.error('Failed to activate skill:', error);
@@ -195,10 +225,16 @@ export async function activateSkill(id: number): Promise<ApiResponse<SuccessResp
 /**
  * Server Action: スキルを無効化
  */
-export async function deactivateSkill(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deactivateSkill(input: DeactivateSkillInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = deactivateSkillInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminSkill.patchApiAdminSkillsDeactivate(id);
+    const response = await api.adminSkill.patchApiAdminSkillsDeactivate(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
@@ -209,10 +245,12 @@ export async function deactivateSkill(id: number): Promise<ApiResponse<SuccessRe
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
-        latest: {
-          type: 'skill',
-          data: current as SkillDetailResponse,
-        },
+        latest: current
+          ? {
+              type: 'skill',
+              data: current,
+            }
+          : undefined,
       };
     }
     console.error('Failed to deactivate skill:', error);

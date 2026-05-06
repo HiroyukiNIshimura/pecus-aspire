@@ -320,7 +320,7 @@ export default function WorkspaceItemFilterDrawer({
               }
               setIsSearchingAssignee(true);
               try {
-                const result = await searchUsersForWorkspace(query);
+                const result = await searchUsersForWorkspace({ query });
                 if (result.success && result.data) {
                   setAssigneeSearchResults(result.data);
                 } else {
@@ -383,7 +383,7 @@ export default function WorkspaceItemFilterDrawer({
               }
               setIsSearchingOwner(true);
               try {
-                const result = await searchUsersForWorkspace(query);
+                const result = await searchUsersForWorkspace({ query });
                 if (result.success && result.data) {
                   setOwnerSearchResults(result.data);
                 } else {
@@ -445,7 +445,7 @@ export default function WorkspaceItemFilterDrawer({
               }
               setIsSearchingCommitter(true);
               try {
-                const result = await searchUsersForWorkspace(query);
+                const result = await searchUsersForWorkspace({ query });
                 if (result.success && result.data) {
                   setCommitterSearchResults(result.data);
                 } else {

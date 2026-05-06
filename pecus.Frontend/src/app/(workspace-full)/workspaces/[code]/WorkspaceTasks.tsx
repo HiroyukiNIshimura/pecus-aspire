@@ -243,7 +243,7 @@ const WorkspaceTasks = ({
     setShowAssigneeDropdown(true);
 
     try {
-      const result = await searchUsersForWorkspace(query);
+      const result = await searchUsersForWorkspace({ query });
       if (result.success) {
         setAssigneeSearchResults(result.data || []);
         setShowAssigneeDropdown(true);

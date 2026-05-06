@@ -41,7 +41,8 @@ export default function EditTagClient({ tagDetail, fetchError }: EditTagClientPr
           return;
         }
 
-        const result = await updateTag(tagDetail.id!, {
+        const result = await updateTag({
+          id: tagDetail.id!,
           name: data.name,
           isActive: data.isActive,
           rowVersion: tagDetail.rowVersion,

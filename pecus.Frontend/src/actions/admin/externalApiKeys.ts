@@ -7,8 +7,15 @@ import type {
   ExternalApiKeyResponse,
   SuccessResponse,
 } from '@/connectors/api/pecus';
+import {
+  type CreateExternalApiKeyInput,
+  createExternalApiKeyInputSchema,
+  type RevokeExternalApiKeyInput,
+  revokeExternalApiKeyInputSchema,
+} from '@/schemas/externalApiKeySchemas';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
+import { validationError } from '../types';
 
 /**
  * 自組織のAPIキー一覧を取得
@@ -30,10 +37,20 @@ export async function getExternalApiKeys(): Promise<ApiResponse<Array<ExternalAp
  * APIキーを新規発行
  */
 export async function createExternalApiKey(
-  request: CreateExternalApiKeyRequest,
+  input: CreateExternalApiKeyInput,
 ): Promise<ApiResponse<CreateExternalApiKeyResponse>> {
+  const parseResult = createExternalApiKeyInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
+    const request: CreateExternalApiKeyRequest = {
+      name: parseResult.data.name,
+      expirationDays: parseResult.data.expirationDays,
+    };
     const response = await api.adminExternalApiKeys.postApiAdminExternalApiKeys(request);
     return { success: true, data: response };
   } catch (error) {
@@ -47,10 +64,16 @@ export async function createExternalApiKey(
 /**
  * APIキーを失効させる
  */
-export async function revokeExternalApiKey(keyId: number): Promise<ApiResponse<SuccessResponse>> {
+export async function revokeExternalApiKey(input: RevokeExternalApiKeyInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = revokeExternalApiKeyInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminExternalApiKeys.deleteApiAdminExternalApiKeys(keyId);
+    const response = await api.adminExternalApiKeys.deleteApiAdminExternalApiKeys(parseResult.data.keyId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to revoke external API key:', error);
