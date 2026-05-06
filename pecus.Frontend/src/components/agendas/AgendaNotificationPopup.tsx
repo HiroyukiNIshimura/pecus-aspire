@@ -160,7 +160,7 @@ export default function AgendaNotificationPopup({
    */
   const handleNotificationClick = async (notification: AgendaNotificationResponse) => {
     if (!notification.isRead && notification.id) {
-      await markNotificationAsRead(notification.id);
+      await markNotificationAsRead({ notificationId: notification.id });
       onCountChange?.();
     }
     onClose();
@@ -176,7 +176,7 @@ export default function AgendaNotificationPopup({
     const unreadIds = notifications.filter((n) => !n.isRead && n.id).map((n) => n.id!);
 
     if (unreadIds.length > 0) {
-      const result = await markAllNotificationsAsRead(unreadIds);
+      const result = await markAllNotificationsAsRead({ notificationIds: unreadIds });
       if (result.success) {
         setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
         onCountChange?.();

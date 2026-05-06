@@ -95,7 +95,7 @@ export default function AgendaFormClient({
             sendNotification: formData.sendNotification,
           };
 
-          const result = await updateAgendaFromOccurrence(initialData.id, request);
+          const result = await updateAgendaFromOccurrence({ agendaId: initialData.id, request });
           if (result.success) {
             notify.success('予定を更新しました');
             // 新しく作成されたシリーズの詳細ページへ遷移
@@ -105,13 +105,17 @@ export default function AgendaFormClient({
           }
         } else if (editScope === 'single' && occurrenceIndex !== undefined) {
           // 「この回のみ」更新（例外作成）
-          const result = await updateOccurrence(initialData.id, occurrenceIndex, {
-            title: formData.title,
-            location: formData.location || undefined,
-            url: formData.url || undefined,
-            description: formData.description || undefined,
-            startAt: formData.startAt,
-            endAt: formData.endAt,
+          const result = await updateOccurrence({
+            agendaId: initialData.id,
+            occurrenceIndex,
+            modifications: {
+              title: formData.title,
+              location: formData.location || undefined,
+              url: formData.url || undefined,
+              description: formData.description || undefined,
+              startAt: formData.startAt,
+              endAt: formData.endAt,
+            },
           });
           if (result.success) {
             notify.success('この回を更新しました');
@@ -143,7 +147,7 @@ export default function AgendaFormClient({
             sendNotification: formData.sendNotification,
           };
 
-          const result = await updateAgenda(initialData.id, request);
+          const result = await updateAgenda({ agendaId: initialData.id, request });
           if (result.success) {
             notify.success('予定を更新しました');
             router.push(`/agendas/${result.data.id}`);

@@ -80,7 +80,7 @@ export function CancelOccurrenceModal({
     setIsSubmitting(true);
     setError(null);
 
-    const result = await cancelOccurrence(agendaId, occurrenceIndex, reason.trim() || undefined);
+    const result = await cancelOccurrence({ agendaId, occurrenceIndex, reason: reason.trim() || undefined });
 
     if (result.success) {
       notify.success('この回を中止しました');

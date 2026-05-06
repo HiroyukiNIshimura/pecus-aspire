@@ -55,7 +55,7 @@ export default function QuickAttendanceButtons({
       // 繰り返しアジェンダの場合は特定回の参加状況を更新
       // 単発アジェンダの場合はシリーズ全体（＝そのアジェンダ自体）を更新
       const result = isRecurring
-        ? await updateOccurrenceAttendance(agendaId, occurrenceIndex, newStatus)
+        ? await updateOccurrenceAttendance({ agendaId, occurrenceIndex, status: newStatus })
         : await updateAttendance({ agendaId, status: newStatus });
 
       if (result.success) {

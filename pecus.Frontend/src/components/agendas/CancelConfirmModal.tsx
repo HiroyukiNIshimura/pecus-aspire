@@ -80,7 +80,7 @@ export function CancelConfirmModal({
     setIsSubmitting(true);
     setError(null);
 
-    const result = await cancelAgenda(agendaId, rowVersion, reason.trim() || undefined);
+    const result = await cancelAgenda({ agendaId, rowVersion, reason: reason.trim() || undefined });
 
     if (result.success) {
       notify.success(isRecurring ? 'シリーズを中止しました' : '予定を中止しました');

@@ -143,12 +143,91 @@ export const attendanceStatusSchema = z.enum(attendanceStatusValues, {
   error: '参加状況が不正です。',
 });
 
+// ---- 共通プリミティブスキーマ ----
+export const agendaIdSchema = z.number().int().positive('アジェンダIDが不正です。');
+const occurrenceIndexSchema = z.number().int().min(0, 'オカレンスインデックスが不正です。');
+
+// ---- updateAttendance ----
 export const updateAttendanceInputSchema = z.object({
-  agendaId: z.number().int().positive('アジェンダIDが不正です。'),
+  agendaId: agendaIdSchema,
   status: attendanceStatusSchema,
 });
 
 export type UpdateAttendanceInput = z.infer<typeof updateAttendanceInputSchema>;
+
+// ---- updateOccurrenceAttendance ----
+export const updateOccurrenceAttendanceInputSchema = z.object({
+  agendaId: agendaIdSchema,
+  occurrenceIndex: occurrenceIndexSchema,
+  status: attendanceStatusSchema,
+});
+
+export type UpdateOccurrenceAttendanceInput = z.infer<typeof updateOccurrenceAttendanceInputSchema>;
+
+// ---- resetOccurrenceAttendance ----
+export const resetOccurrenceAttendanceInputSchema = z.object({
+  agendaId: agendaIdSchema,
+  occurrenceIndex: occurrenceIndexSchema,
+});
+
+export type ResetOccurrenceAttendanceInput = z.infer<typeof resetOccurrenceAttendanceInputSchema>;
+
+// ---- updateAttendanceFromOccurrence ----
+export const updateAttendanceFromOccurrenceInputSchema = z.object({
+  agendaId: agendaIdSchema,
+  occurrenceIndex: occurrenceIndexSchema,
+  status: attendanceStatusSchema,
+});
+
+export type UpdateAttendanceFromOccurrenceInput = z.infer<typeof updateAttendanceFromOccurrenceInputSchema>;
+
+// ---- cancelAgenda ----
+export const cancelAgendaInputSchema = z.object({
+  agendaId: agendaIdSchema,
+  rowVersion: z.number().int().min(0, '行バージョンが不正です。'),
+  reason: z.string().max(1000, '理由は1000文字以内で入力してください。').optional(),
+});
+
+export type CancelAgendaInput = z.infer<typeof cancelAgendaInputSchema>;
+
+// ---- cancelOccurrence ----
+export const cancelOccurrenceInputSchema = z.object({
+  agendaId: agendaIdSchema,
+  occurrenceIndex: occurrenceIndexSchema,
+  reason: z.string().max(1000, '理由は1000文字以内で入力してください。').optional(),
+});
+
+export type CancelOccurrenceInput = z.infer<typeof cancelOccurrenceInputSchema>;
+
+// ---- updateOccurrence ----
+export const updateOccurrenceInputSchema = z.object({
+  agendaId: agendaIdSchema,
+  occurrenceIndex: occurrenceIndexSchema,
+  modifications: z.object({
+    title: z.string().max(200, 'タイトルは200文字以内で入力してください。').optional(),
+    location: z.string().max(200, '場所は200文字以内で入力してください。').optional(),
+    url: z.string().max(2000, 'URLは2000文字以内で入力してください。').optional(),
+    description: z.string().optional(),
+    startAt: z.string().optional(),
+    endAt: z.string().optional(),
+  }),
+});
+
+export type UpdateOccurrenceInput = z.infer<typeof updateOccurrenceInputSchema>;
+
+// ---- markNotificationAsRead ----
+export const markNotificationAsReadInputSchema = z.object({
+  notificationId: z.number().int().positive('通知IDが不正です。'),
+});
+
+export type MarkNotificationAsReadInput = z.infer<typeof markNotificationAsReadInputSchema>;
+
+// ---- markAllNotificationsAsRead ----
+export const markAllNotificationsAsReadInputSchema = z.object({
+  notificationIds: z.array(z.number().int().positive('通知IDが不正です。')).optional(),
+});
+
+export type MarkAllNotificationsAsReadInput = z.infer<typeof markAllNotificationsAsReadInputSchema>;
 
 /**
  * アジェンダ更新スキーマ（作成と同じルール）

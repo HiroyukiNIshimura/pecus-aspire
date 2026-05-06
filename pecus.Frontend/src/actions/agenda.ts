@@ -8,7 +8,6 @@ import type {
   AgendaOccurrenceResponse,
   AgendaOccurrencesResponse,
   AgendaResponse,
-  AttendanceStatus,
   CancelAgendaRequest,
   CreateAgendaExceptionRequest,
   CreateAgendaRequest,
@@ -16,7 +15,27 @@ import type {
   UpdateAttendanceRequest,
   UpdateFromOccurrenceRequest,
 } from '@/connectors/api/pecus';
-import { type UpdateAttendanceInput, updateAttendanceInputSchema } from '@/schemas/agendaSchemas';
+import {
+  agendaIdSchema,
+  type CancelAgendaInput,
+  type CancelOccurrenceInput,
+  cancelAgendaInputSchema,
+  cancelOccurrenceInputSchema,
+  type MarkAllNotificationsAsReadInput,
+  type MarkNotificationAsReadInput,
+  markAllNotificationsAsReadInputSchema,
+  markNotificationAsReadInputSchema,
+  type ResetOccurrenceAttendanceInput,
+  resetOccurrenceAttendanceInputSchema,
+  type UpdateAttendanceFromOccurrenceInput,
+  type UpdateAttendanceInput,
+  type UpdateOccurrenceAttendanceInput,
+  type UpdateOccurrenceInput,
+  updateAttendanceFromOccurrenceInputSchema,
+  updateAttendanceInputSchema,
+  updateOccurrenceAttendanceInputSchema,
+  updateOccurrenceInputSchema,
+} from '@/schemas/agendaSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 import { validationError } from './types';
@@ -113,14 +132,22 @@ export async function updateAttendance(input: UpdateAttendanceInput): Promise<Ap
  * 特定回の参加状況を更新
  */
 export async function updateOccurrenceAttendance(
-  agendaId: number,
-  occurrenceIndex: number,
-  status: AttendanceStatus,
+  input: UpdateOccurrenceAttendanceInput,
 ): Promise<ApiResponse<AgendaResponse>> {
+  const parseResult = updateOccurrenceAttendanceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const request: UpdateAttendanceRequest = { status };
-    const result = await api.agenda.patchApiAgendasOccurrencesAttendance(agendaId, occurrenceIndex, request);
+    const request: UpdateAttendanceRequest = { status: parseResult.data.status };
+    const result = await api.agenda.patchApiAgendasOccurrencesAttendance(
+      parseResult.data.agendaId,
+      parseResult.data.occurrenceIndex,
+      request,
+    );
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('updateOccurrenceAttendance error:', error);
@@ -134,12 +161,20 @@ export async function updateOccurrenceAttendance(
  * 特定回の参加状況をリセット（シリーズデフォルトに戻す）
  */
 export async function resetOccurrenceAttendance(
-  agendaId: number,
-  occurrenceIndex: number,
+  input: ResetOccurrenceAttendanceInput,
 ): Promise<ApiResponse<AgendaResponse>> {
+  const parseResult = resetOccurrenceAttendanceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const result = await api.agenda.deleteApiAgendasOccurrencesAttendance(agendaId, occurrenceIndex);
+    const result = await api.agenda.deleteApiAgendasOccurrencesAttendance(
+      parseResult.data.agendaId,
+      parseResult.data.occurrenceIndex,
+    );
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('resetOccurrenceAttendance error:', error);
@@ -153,14 +188,22 @@ export async function resetOccurrenceAttendance(
  * 特定回以降の参加状況を一括更新
  */
 export async function updateAttendanceFromOccurrence(
-  agendaId: number,
-  occurrenceIndex: number,
-  status: AttendanceStatus,
+  input: UpdateAttendanceFromOccurrenceInput,
 ): Promise<ApiResponse<AgendaResponse>> {
+  const parseResult = updateAttendanceFromOccurrenceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const request: UpdateAttendanceRequest = { status };
-    const result = await api.agenda.patchApiAgendasOccurrencesAttendanceFrom(agendaId, occurrenceIndex, request);
+    const request: UpdateAttendanceRequest = { status: parseResult.data.status };
+    const result = await api.agenda.patchApiAgendasOccurrencesAttendanceFrom(
+      parseResult.data.agendaId,
+      parseResult.data.occurrenceIndex,
+      request,
+    );
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('updateAttendanceFromOccurrence error:', error);
@@ -173,11 +216,17 @@ export async function updateAttendanceFromOccurrence(
 /**
  * アジェンダをキャンセル（シリーズ全体）
  */
-export async function cancelAgenda(agendaId: number, rowVersion: number, reason?: string): Promise<ApiResponse<void>> {
+export async function cancelAgenda(input: CancelAgendaInput): Promise<ApiResponse<void>> {
+  const parseResult = cancelAgendaInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const request: CancelAgendaRequest = { reason, rowVersion };
-    await api.agenda.patchApiAgendasCancel(agendaId, request);
+    const request: CancelAgendaRequest = { reason: parseResult.data.reason, rowVersion: parseResult.data.rowVersion };
+    await api.agenda.patchApiAgendasCancel(parseResult.data.agendaId, request);
     return { success: true, data: undefined };
   } catch (error: unknown) {
     console.error('cancelAgenda error:', error);
@@ -190,19 +239,21 @@ export async function cancelAgenda(agendaId: number, rowVersion: number, reason?
 /**
  * 特定回をキャンセル（例外作成）
  */
-export async function cancelOccurrence(
-  agendaId: number,
-  occurrenceIndex: number,
-  reason?: string,
-): Promise<ApiResponse<void>> {
+export async function cancelOccurrence(input: CancelOccurrenceInput): Promise<ApiResponse<void>> {
+  const parseResult = cancelOccurrenceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const request: CreateAgendaExceptionRequest = {
-      occurrenceIndex,
+      occurrenceIndex: parseResult.data.occurrenceIndex,
       isCancelled: true,
-      cancellationReason: reason,
+      cancellationReason: parseResult.data.reason,
     };
-    await api.agenda.postApiAgendasExceptions(agendaId, request);
+    await api.agenda.postApiAgendasExceptions(parseResult.data.agendaId, request);
     return { success: true, data: undefined };
   } catch (error: unknown) {
     console.error('cancelOccurrence error:', error);
@@ -216,22 +267,18 @@ export async function cancelOccurrence(
  * 特定回を変更（この回のみ - 例外作成）
  * 指定された回のみを変更し、他の回には影響を与えません。
  */
-export async function updateOccurrence(
-  agendaId: number,
-  occurrenceIndex: number,
-  modifications: {
-    title?: string;
-    location?: string;
-    url?: string;
-    description?: string;
-    startAt?: string;
-    endAt?: string;
-  },
-): Promise<ApiResponse<AgendaExceptionResponse>> {
+export async function updateOccurrence(input: UpdateOccurrenceInput): Promise<ApiResponse<AgendaExceptionResponse>> {
+  const parseResult = updateOccurrenceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
+    const { modifications } = parseResult.data;
     const request: CreateAgendaExceptionRequest = {
-      occurrenceIndex,
+      occurrenceIndex: parseResult.data.occurrenceIndex,
       isCancelled: false,
       modifiedTitle: modifications.title,
       modifiedLocation: modifications.location,
@@ -241,7 +288,7 @@ export async function updateOccurrence(
       modifiedEndAt: modifications.endAt,
       sendNotification: true,
     };
-    const result = await api.agenda.postApiAgendasExceptions(agendaId, request);
+    const result = await api.agenda.postApiAgendasExceptions(parseResult.data.agendaId, request);
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('updateOccurrence error:', error);
@@ -331,13 +378,18 @@ export async function createAgenda(request: CreateAgendaRequest): Promise<ApiRes
 /**
  * アジェンダを更新（シリーズ全体）
  */
-export async function updateAgenda(
-  agendaId: number,
-  request: UpdateAgendaRequest,
-): Promise<ApiResponse<AgendaResponse>> {
+export async function updateAgenda(input: {
+  agendaId: number;
+  request: UpdateAgendaRequest;
+}): Promise<ApiResponse<AgendaResponse>> {
+  const idResult = agendaIdSchema.safeParse(input.agendaId);
+  if (!idResult.success) {
+    return validationError('アジェンダIDが不正です。');
+  }
+
   try {
     const api = await createPecusApiClients();
-    const result = await api.agenda.putApiAgendas(agendaId, request);
+    const result = await api.agenda.putApiAgendas(idResult.data, input.request);
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('updateAgenda error:', error);
@@ -352,13 +404,18 @@ export async function updateAgenda(
  * 指定された回を境にシリーズを分割し、新しいシリーズを作成します。
  * 元のシリーズは分割地点の前の回で終了します。
  */
-export async function updateAgendaFromOccurrence(
-  agendaId: number,
-  request: UpdateFromOccurrenceRequest,
-): Promise<ApiResponse<AgendaResponse>> {
+export async function updateAgendaFromOccurrence(input: {
+  agendaId: number;
+  request: UpdateFromOccurrenceRequest;
+}): Promise<ApiResponse<AgendaResponse>> {
+  const idResult = agendaIdSchema.safeParse(input.agendaId);
+  if (!idResult.success) {
+    return validationError('アジェンダIDが不正です。');
+  }
+
   try {
     const api = await createPecusApiClients();
-    const result = await api.agenda.putApiAgendasFrom(agendaId, request);
+    const result = await api.agenda.putApiAgendasFrom(idResult.data, input.request);
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('updateAgendaFromOccurrence error:', error);
@@ -409,10 +466,16 @@ export async function fetchNotifications(
 /**
  * 通知を既読にする（個別）
  */
-export async function markNotificationAsRead(notificationId: number): Promise<ApiResponse<void>> {
+export async function markNotificationAsRead(input: MarkNotificationAsReadInput): Promise<ApiResponse<void>> {
+  const parseResult = markNotificationAsReadInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    await api.agendaNotification.postApiAgendasNotificationsRead(notificationId);
+    await api.agendaNotification.postApiAgendasNotificationsRead(parseResult.data.notificationId);
     return { success: true, data: undefined };
   } catch (error: unknown) {
     console.error('markNotificationAsRead error:', error);
@@ -426,12 +489,18 @@ export async function markNotificationAsRead(notificationId: number): Promise<Ap
  * 通知を一括既読にする
  */
 export async function markAllNotificationsAsRead(
-  notificationIds?: number[],
+  input: MarkAllNotificationsAsReadInput = {},
 ): Promise<ApiResponse<{ markedCount: number }>> {
+  const parseResult = markAllNotificationsAsReadInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const result = await api.agendaNotification.postApiAgendasNotificationsRead1({
-      notificationIds: notificationIds ?? null,
+      notificationIds: parseResult.data.notificationIds ?? null,
     });
     return { success: true, data: { markedCount: result.markedCount ?? 0 } };
   } catch (error: unknown) {

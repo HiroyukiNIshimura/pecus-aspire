@@ -109,7 +109,11 @@ export default function AgendaDetailClient({
 
     setError(null);
     startTransition(async () => {
-      const result = await updateOccurrenceAttendance(currentAgenda.id, occurrenceIndex, newStatus);
+      const result = await updateOccurrenceAttendance({
+        agendaId: currentAgenda.id,
+        occurrenceIndex,
+        status: newStatus,
+      });
       if (result.success) {
         setCurrentAgenda(result.data);
       } else {
@@ -124,7 +128,11 @@ export default function AgendaDetailClient({
 
     setError(null);
     startTransition(async () => {
-      const result = await updateAttendanceFromOccurrence(currentAgenda.id, occurrenceIndex, newStatus);
+      const result = await updateAttendanceFromOccurrence({
+        agendaId: currentAgenda.id,
+        occurrenceIndex,
+        status: newStatus,
+      });
       if (result.success) {
         setCurrentAgenda(result.data);
       } else {
