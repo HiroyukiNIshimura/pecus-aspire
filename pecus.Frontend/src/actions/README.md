@@ -2,7 +2,7 @@
 
 このディレクトリには Next.js Server Actions が含まれています。Server Actions は `'use server'` ディレクティブを使用してサーバー側で実行される関数です。
 
-## 構成
+## 構成例
 
 ```
 actions/
