@@ -9,8 +9,8 @@ import type {
 } from '@/connectors/api/pecus';
 import {
   type MarkAchievementNotifiedInput,
-  markAchievementNotifiedInputSchema,
   type MarkAllAchievementsNotifiedInput,
+  markAchievementNotifiedInputSchema,
   markAllAchievementsNotifiedInputSchema,
 } from '@/schemas/achievementSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
