@@ -351,20 +351,31 @@ export const fetchNotificationsInputSchema = z.object({
     .min(1, '取得件数が不正です。')
     .max(100, '取得件数が不正です。')
     .optional(),
-  beforeId: z.number({ error: '通知IDが不正です。' }).int('通知IDが不正です。').positive('通知IDが不正です。').optional(),
+  beforeId: z
+    .number({ error: '通知IDが不正です。' })
+    .int('通知IDが不正です。')
+    .positive('通知IDが不正です。')
+    .optional(),
   unreadOnly: z.boolean({ error: '未読条件が不正です。' }).optional(),
 });
 
 export type FetchNotificationsInput = z.infer<typeof fetchNotificationsInputSchema>;
 
 export const fetchWorkspaceMembersInputSchema = z.object({
-  workspaceId: z.number({ error: 'ワークスペースIDが不正です。' }).int('ワークスペースIDが不正です。').positive('ワークスペースIDが不正です。'),
+  workspaceId: z
+    .number({ error: 'ワークスペースIDが不正です。' })
+    .int('ワークスペースIDが不正です。')
+    .positive('ワークスペースIDが不正です。'),
 });
 
 export type FetchWorkspaceMembersInput = z.infer<typeof fetchWorkspaceMembersInputSchema>;
 
 export const fetchOrganizationMembersInputSchema = z.object({
-  maxAttendees: z.number({ error: '最大人数が不正です。' }).int('最大人数が不正です。').positive('最大人数が不正です。').optional(),
+  maxAttendees: z
+    .number({ error: '最大人数が不正です。' })
+    .int('最大人数が不正です。')
+    .positive('最大人数が不正です。')
+    .optional(),
 });
 
 export type FetchOrganizationMembersInput = z.infer<typeof fetchOrganizationMembersInputSchema>;

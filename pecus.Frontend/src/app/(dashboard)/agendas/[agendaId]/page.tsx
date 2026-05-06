@@ -42,13 +42,13 @@ export default async function AgendaDetailPage({ params, searchParams }: AgendaD
     await api.profile.getApiProfileAppSettings();
 
     // アジェンダ詳細取得（occurrenceStartAt / occurrenceIndex を渡して例外情報を適用）
-      const agendaResult = await fetchAgendaById({
-        agendaId: agendaIdNum,
-        options: {
-          occurrenceStartAt,
-          occurrenceIndex,
-        },
-      });
+    const agendaResult = await fetchAgendaById({
+      agendaId: agendaIdNum,
+      options: {
+        occurrenceStartAt,
+        occurrenceIndex,
+      },
+    });
     if (agendaResult.success) {
       agenda = agendaResult.data.agenda;
 
@@ -57,7 +57,7 @@ export default async function AgendaDetailPage({ params, searchParams }: AgendaD
       // 繰り返しアジェンダの場合、例外一覧も取得
       const recurrenceType = agenda.recurrenceType as RecurrenceType | undefined;
       if (recurrenceType && recurrenceType !== 'None') {
-          const exceptionsResult = await fetchAgendaExceptions({ agendaId: agendaIdNum });
+        const exceptionsResult = await fetchAgendaExceptions({ agendaId: agendaIdNum });
         if (exceptionsResult.success) {
           exceptions = exceptionsResult.data;
         }

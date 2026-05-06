@@ -27,9 +27,9 @@ import {
   type FetchAgendaExceptionsInput,
   type FetchNotificationsInput,
   type FetchOccurrencesInput,
+  type FetchOrganizationMembersInput,
   type FetchRecentOccurrencesInput,
   type FetchRecentOccurrencesPaginatedInput,
-  type FetchOrganizationMembersInput,
   type FetchWorkspaceMembersInput,
   fetchAgendaByIdInputSchema,
   fetchAgendaExceptionsInputSchema,
@@ -127,9 +127,7 @@ export async function fetchRecentOccurrencesPaginated(
 /**
  * 期間指定でアジェンダオカレンス一覧を取得
  */
-export async function fetchOccurrences(
-  input: FetchOccurrencesInput,
-): Promise<ApiResponse<AgendaOccurrenceResponse[]>> {
+export async function fetchOccurrences(input: FetchOccurrencesInput): Promise<ApiResponse<AgendaOccurrenceResponse[]>> {
   const parseResult = fetchOccurrencesInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -346,9 +344,7 @@ export async function updateOccurrence(input: UpdateOccurrenceInput): Promise<Ap
  * @param agendaId アジェンダID
  * @param options 特定回指定オプション
  */
-export async function fetchAgendaById(
-  input: FetchAgendaByIdInput,
-): Promise<ApiResponse<AgendaDetailFetchData>> {
+export async function fetchAgendaById(input: FetchAgendaByIdInput): Promise<ApiResponse<AgendaDetailFetchData>> {
   const parseResult = fetchAgendaByIdInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
