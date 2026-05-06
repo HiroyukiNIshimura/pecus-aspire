@@ -71,3 +71,31 @@ export const searchUsersForWorkspaceInputSchema = z.object({
 });
 
 export type SearchUsersForWorkspaceInput = z.infer<typeof searchUsersForWorkspaceInputSchema>;
+
+export const getUsersInputSchema = z.object({
+  page: z
+    .number({ error: 'ページ番号が不正です。' })
+    .int('ページ番号が不正です。')
+    .positive('ページ番号が不正です。')
+    .optional(),
+  isActive: z.boolean({ error: 'アクティブ状態が不正です。' }).optional(),
+  username: z.string({ error: 'ユーザー名フィルタが不正です。' }).max(100, 'ユーザー名フィルタが不正です。').optional(),
+  skillIds: z.array(z.number().int().positive('スキルIDが不正です。')).optional(),
+  skillFilterMode: z.enum(['and', 'or'], { error: 'スキル絞り込み条件が不正です。' }).optional(),
+});
+
+export type GetUsersInput = z.infer<typeof getUsersInputSchema>;
+
+export const getUserDetailInputSchema = z.object({
+  userId: userIdSchema,
+});
+
+export type GetUserDetailInput = z.infer<typeof getUserDetailInputSchema>;
+
+export const getUsersWorkloadInputSchema = z.object({
+  userIds: z
+    .array(z.number().int().positive('ユーザーIDが不正です。'), { error: 'ユーザーID配列が不正です。' })
+    .max(50, 'ユーザーIDは最大50件まで指定できます。'),
+});
+
+export type GetUsersWorkloadInput = z.infer<typeof getUsersWorkloadInputSchema>;

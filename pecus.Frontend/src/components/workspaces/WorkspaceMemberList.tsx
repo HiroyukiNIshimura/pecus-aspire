@@ -90,7 +90,7 @@ export default function WorkspaceMemberList({
         const userIds = members.map(getMemberId).filter((id) => id > 0);
         if (userIds.length === 0) return;
 
-        const result = await getUsersWorkload(userIds);
+        const result = await getUsersWorkload({ userIds });
         if (result.success && result.data?.workloads) {
           setWorkloadMap(result.data.workloads);
         }

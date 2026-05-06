@@ -12,6 +12,12 @@ import type {
 import {
   type CreateUserWithoutPasswordInput,
   createUserWithoutPasswordInputSchema,
+  type GetUserDetailInput,
+  type GetUsersInput,
+  type GetUsersWorkloadInput,
+  getUserDetailInputSchema,
+  getUsersInputSchema,
+  getUsersWorkloadInputSchema,
   type RequestPasswordResetInput,
   type ResendPasswordSetupInput,
   requestPasswordResetInputSchema,
@@ -29,15 +35,23 @@ import { validationError } from '../types';
  * Server Action: ユーザー一覧を取得
  */
 export async function getUsers(
-  page: number = 1,
-  isActive?: boolean,
-  username?: string,
-  skillIds?: number[],
-  skillFilterMode: string = 'and',
+  input: GetUsersInput = {},
 ): Promise<ApiResponse<PagedResponseOfUserDetailResponseAndUserStatistics>> {
+  const parseResult = getUsersInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers1(page, isActive, username, skillIds, skillFilterMode);
+    const response = await api.adminUser.getApiAdminUsers1(
+      parseResult.data.page ?? 1,
+      parseResult.data.isActive,
+      parseResult.data.username,
+      parseResult.data.skillIds,
+      parseResult.data.skillFilterMode ?? 'and',
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch users:', error);
@@ -148,10 +162,16 @@ export async function resendPasswordSetup(input: ResendPasswordSetupInput): Prom
 /**
  * Server Action: ユーザー情報を取得
  */
-export async function getUserDetail(userId: number): Promise<ApiResponse<UserDetailResponse>> {
+export async function getUserDetail(input: GetUserDetailInput): Promise<ApiResponse<UserDetailResponse>> {
+  const parseResult = getUserDetailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers(userId);
+    const response = await api.adminUser.getApiAdminUsers(parseResult.data.userId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch user detail:', error);
@@ -208,17 +228,20 @@ export async function getRoles(): Promise<ApiResponse<RoleListItemResponse[]>> {
  * メンバーリスト表示時など、複数ユーザーの負荷を効率的に取得
  * @param userIds ユーザーIDの配列（最大50件）
  */
-export async function getUsersWorkload(userIds: number[]): Promise<ApiResponse<UsersWorkloadResponse>> {
+export async function getUsersWorkload(input: GetUsersWorkloadInput): Promise<ApiResponse<UsersWorkloadResponse>> {
+  const parseResult = getUsersWorkloadInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
-    if (!userIds || userIds.length === 0) {
+    if (!parseResult.data.userIds || parseResult.data.userIds.length === 0) {
       return { success: true, data: { workloads: {} } };
     }
 
-    // 最大50件に制限
-    const limitedIds = userIds.slice(0, 50);
-
     const api = createPecusApiClients();
-    const response = await api.user.postApiUsersWorkload({ userIds: limitedIds });
+    const response = await api.user.postApiUsersWorkload({ userIds: parseResult.data.userIds });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch users workload:', error);

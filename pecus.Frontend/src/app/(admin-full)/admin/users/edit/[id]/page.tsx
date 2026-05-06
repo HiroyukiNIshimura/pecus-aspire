@@ -29,7 +29,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     return <FetchError message={authResult.message} backUrl="/admin/users" backLabel="ユーザー一覧に戻る" />;
   }
 
-  const userDetailResult = await getUserDetail(userId);
+  const userDetailResult = await getUserDetail({ userId });
   if (!userDetailResult.success) {
     if (userDetailResult.error === 'forbidden') {
       return <ForbiddenError backUrl="/admin/users" backLabel="ユーザー一覧に戻る" />;

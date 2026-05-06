@@ -175,7 +175,7 @@ export default function AddMemberModal({
         // 検索結果のユーザーIDで負荷情報を取得
         const userIds = result.data.map((u) => u.id!).filter((id) => id > 0);
         if (userIds.length > 0) {
-          const workloadResult = await getUsersWorkload(userIds);
+          const workloadResult = await getUsersWorkload({ userIds });
           if (workloadResult.success && workloadResult.data?.workloads) {
             setWorkloadMap(workloadResult.data.workloads);
           }

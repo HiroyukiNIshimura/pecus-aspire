@@ -25,7 +25,13 @@ export async function GET(request: NextRequest) {
     // SkillFilterMode の取得（デフォルトは 'and'）
     const skillFilterMode = searchParams.get('SkillFilterMode') || 'and';
 
-    const result = await getUsers(page, isActive, username, skillIds, skillFilterMode);
+    const result = await getUsers({
+      page,
+      isActive,
+      username,
+      skillIds,
+      skillFilterMode: skillFilterMode === 'or' ? 'or' : 'and',
+    });
 
     if (result.success) {
       return NextResponse.json(result.data, { status: 200 });

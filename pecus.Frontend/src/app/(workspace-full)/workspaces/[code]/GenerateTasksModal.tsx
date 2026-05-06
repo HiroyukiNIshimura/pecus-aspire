@@ -201,7 +201,7 @@ export default function GenerateTasksModal({
         return;
       }
 
-      const result = await getUsersWorkload(assigneeIds);
+      const result = await getUsersWorkload({ userIds: assigneeIds });
       if (result.success && result.data?.workloads) {
         setWorkloadMap(result.data.workloads);
       }
@@ -378,7 +378,7 @@ export default function GenerateTasksModal({
           // 検索結果のユーザーの負荷情報を取得
           const userIds = result.data.map((u) => u.id).filter((id): id is number => id !== undefined);
           if (userIds.length > 0) {
-            const workloadResult = await getUsersWorkload(userIds);
+            const workloadResult = await getUsersWorkload({ userIds });
             if (workloadResult.success && workloadResult.data) {
               setWorkloadMap((prev) => ({ ...prev, ...workloadResult.data }));
             }
