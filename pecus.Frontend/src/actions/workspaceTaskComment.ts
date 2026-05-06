@@ -57,9 +57,7 @@ export async function getTaskComments(
 /**
  * タスクコメントの詳細を取得
  */
-export async function getTaskComment(
-  input: GetTaskCommentInput,
-): Promise<ApiResponse<TaskCommentDetailResponse>> {
+export async function getTaskComment(input: GetTaskCommentInput): Promise<ApiResponse<TaskCommentDetailResponse>> {
   const parseResult = getTaskCommentInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
