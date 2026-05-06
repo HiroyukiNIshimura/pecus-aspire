@@ -2,15 +2,22 @@
 
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
-  CreateTaskCommentRequest,
   PagedResponseOfTaskCommentDetailResponse,
   TaskCommentDetailResponse,
   TaskCommentResponse,
   TaskCommentType,
-  UpdateTaskCommentRequest,
 } from '@/connectors/api/pecus';
+import {
+  type CreateTaskCommentInput,
+  type DeleteTaskCommentInput,
+  type UpdateTaskCommentInput,
+  createTaskCommentInputSchema,
+  deleteTaskCommentInputSchema,
+  updateTaskCommentInputSchema,
+} from '@/schemas/workspaceTaskCommentSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 /**
  * タスクコメント一覧を取得
@@ -69,14 +76,22 @@ export async function getTaskComment(
  * タスクコメントを作成
  */
 export async function createTaskComment(
-  workspaceId: number,
-  itemId: number,
-  taskId: number,
-  request: CreateTaskCommentRequest,
+  input: CreateTaskCommentInput,
 ): Promise<ApiResponse<TaskCommentResponse>> {
+  const parseResult = createTaskCommentInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const response = await api.taskComment.postApiWorkspacesItemsTasksComments(workspaceId, itemId, taskId, request);
+    const response = await api.taskComment.postApiWorkspacesItemsTasksComments(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.taskId,
+      parseResult.data.request,
+    );
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -91,20 +106,22 @@ export async function createTaskComment(
  * タスクコメントを更新（作成者のみ）
  */
 export async function updateTaskComment(
-  workspaceId: number,
-  itemId: number,
-  taskId: number,
-  commentId: number,
-  request: UpdateTaskCommentRequest,
+  input: UpdateTaskCommentInput,
 ): Promise<ApiResponse<TaskCommentResponse>> {
+  const parseResult = updateTaskCommentInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const response = await api.taskComment.putApiWorkspacesItemsTasksComments(
-      workspaceId,
-      itemId,
-      taskId,
-      commentId,
-      request,
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.taskId,
+      parseResult.data.commentId,
+      parseResult.data.request,
     );
 
     return { success: true, data: response };
@@ -136,20 +153,22 @@ export async function updateTaskComment(
  * タスクコメントを削除（作成者のみ）
  */
 export async function deleteTaskComment(
-  workspaceId: number,
-  itemId: number,
-  taskId: number,
-  commentId: number,
-  rowVersion: number,
+  input: DeleteTaskCommentInput,
 ): Promise<ApiResponse<TaskCommentResponse>> {
+  const parseResult = deleteTaskCommentInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const response = await api.taskComment.deleteApiWorkspacesItemsTasksComments(
-      workspaceId,
-      itemId,
-      taskId,
-      commentId,
-      { rowVersion },
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.taskId,
+      parseResult.data.commentId,
+      { rowVersion: parseResult.data.rowVersion },
     );
 
     return { success: true, data: response };

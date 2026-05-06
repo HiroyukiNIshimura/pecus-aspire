@@ -66,7 +66,7 @@ export default function DevicesTab({
 
     setDeletingId(targetDevice.id);
     try {
-      const result = await deleteDevice(targetDevice.id);
+      const result = await deleteDevice({ deviceId: targetDevice.id });
       if (result.success) {
         notify.success('端末を削除しました。');
         await onRefreshDevices?.();

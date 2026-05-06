@@ -82,12 +82,12 @@ export default function ChatRoomMessageClient({
       const latestMessage = messages[messages.length - 1];
       if (latestMessage) {
         console.log('[ChatRoomMessageClient] Updating read position with messageId:', latestMessage.id);
-        const result = await updateReadPosition(room.id, undefined, latestMessage.id);
+        const result = await updateReadPosition({ roomId: room.id, readMessageId: latestMessage.id });
         console.log('[ChatRoomMessageClient] updateReadPosition result:', result);
       } else {
         // メッセージがない場合も既読位置を更新（タイムスタンプのみ）
         console.log('[ChatRoomMessageClient] Updating read position without messageId');
-        await updateReadPosition(room.id);
+        await updateReadPosition({ roomId: room.id });
       }
     };
     updateRead();
@@ -128,7 +128,7 @@ export default function ChatRoomMessageClient({
     async (content: string) => {
       setSending(true);
       try {
-        const result = await sendChatMessage(room.id, content);
+        const result = await sendChatMessage({ roomId: room.id, content });
         if (result.success && result.data) {
           // senderUserId が null/undefined の場合は currentUserId を使用
           // API レスポンスのシリアライズ時に null になる場合があるため
@@ -177,7 +177,7 @@ export default function ChatRoomMessageClient({
       };
       setMessages((prev) => [...prev, newMessage]);
       // 既読位置を更新
-      updateReadPosition(room.id);
+      updateReadPosition({ roomId: room.id });
     },
     [room.id, currentUserId],
   );

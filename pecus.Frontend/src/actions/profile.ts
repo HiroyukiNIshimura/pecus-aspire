@@ -7,40 +7,60 @@ import {
 } from '@/connectors/api/PecusApiClient';
 import type {
   AppPublicSettingsResponse,
-  AvatarType,
-  BadgeVisibility,
   EmailChangeRequestResponse,
   EmailChangeVerifyResponse,
-  FocusScorePriority,
-  LandingPage,
   MessageResponse,
   SuccessResponse,
   UserDetailResponse,
   UserSettingResponse,
 } from '@/connectors/api/pecus';
-import type { UpdateEmailFormInput, UpdatePasswordFormInput, UpdateSkillsFormInput } from '@/schemas/profileSchemas';
+import {
+  type DeleteAvatarFileInput,
+  type DeleteDeviceInput,
+  deleteAvatarFileInputSchema,
+  deleteDeviceInputSchema,
+  type LogoutOtherDevicesInput,
+  logoutOtherDevicesInputSchema,
+  type RespondToLandingPageRecommendationInput,
+  respondToLandingPageRecommendationInputSchema,
+  type UpdateEmailFormInput,
+  type UpdatePasswordFormInput,
+  type UpdateProfileActionInput,
+  type UpdateSkillsFormInput,
+  type UpdateUserSettingInput,
+  type UploadAvatarFileInput,
+  updateEmailFormSchema,
+  updatePasswordFormSchema,
+  updateProfileActionInputSchema,
+  updateSkillsFormSchema,
+  updateUserSettingInputSchema,
+  uploadAvatarFileInputSchema,
+  type VerifyEmailChangeInput,
+  verifyEmailChangeInputSchema,
+} from '@/schemas/profileSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 /**
  * Server Action: プロフィールを更新（ユーザー名、アバター）
  * 楽観的ロックで競合を検出
  */
-export async function updateProfile(request: {
-  username?: string;
-  avatarType?: AvatarType;
-  userAvatarPath?: string;
-  skillIds?: number[];
-  rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
-}): Promise<ApiResponse<UserDetailResponse>> {
+export async function updateProfile(input: UpdateProfileActionInput): Promise<ApiResponse<UserDetailResponse>> {
+  const parseResult = updateProfileActionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfile({
-      username: request.username,
-      avatarType: request.avatarType,
-      userAvatarPath: request.userAvatarPath,
-      skillIds: request.skillIds,
-      rowVersion: request.rowVersion,
+      username: parseResult.data.username,
+      avatarType: parseResult.data.avatarType,
+      userAvatarPath: parseResult.data.userAvatarPath,
+      skillIds: parseResult.data.skillIds,
+      rowVersion: parseResult.data.rowVersion,
     });
     return { success: true, data: response };
   } catch (error) {
@@ -74,11 +94,17 @@ export async function updateProfile(request: {
 export async function requestEmailChange(
   input: UpdateEmailFormInput,
 ): Promise<ApiResponse<EmailChangeRequestResponse>> {
+  const parseResult = updateEmailFormSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.profile.postApiProfileEmailRequestChange({
-      newEmail: input.newEmail,
-      currentPassword: input.currentPassword,
+      newEmail: parseResult.data.newEmail,
+      currentPassword: parseResult.data.currentPassword,
     });
 
     return { success: true, data: response };
@@ -94,10 +120,18 @@ export async function requestEmailChange(
  * Server Action: メールアドレス変更を確認（トークン検証）
  * @param token 確認トークン
  */
-export async function verifyEmailChange(token: string): Promise<ApiResponse<EmailChangeVerifyResponse>> {
+export async function verifyEmailChange(
+  input: VerifyEmailChangeInput,
+): Promise<ApiResponse<EmailChangeVerifyResponse>> {
+  const parseResult = verifyEmailChangeInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.profile.getApiProfileEmailVerify(token);
+    const response = await api.profile.getApiProfileEmailVerify(parseResult.data.token);
 
     return { success: true, data: response };
   } catch (error) {
@@ -113,11 +147,17 @@ export async function verifyEmailChange(token: string): Promise<ApiResponse<Emai
  * @param input クライアント側で Zod 検証済みのデータ
  */
 export async function updateUserPassword(input: UpdatePasswordFormInput): Promise<ApiResponse<MessageResponse>> {
+  const parseResult = updatePasswordFormSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.profile.patchApiProfilePassword({
-      currentPassword: input.currentPassword,
-      newPassword: input.newPassword,
+      currentPassword: parseResult.data.currentPassword,
+      newPassword: parseResult.data.newPassword,
     });
 
     return { success: true, data: response };
@@ -134,18 +174,24 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
  *
  * バックエンドでデバイスを削除し、該当デバイスの Redis セッションも削除する
  */
-export async function deleteDevice(deviceId: number): Promise<ApiResponse<MessageResponse>> {
+export async function deleteDevice(input: DeleteDeviceInput): Promise<ApiResponse<MessageResponse>> {
+  const parseResult = deleteDeviceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const { ServerSessionManager } = await import('@/libs/serverSession');
     const api = createPecusApiClients();
 
     // まずデバイス一覧を取得して対象デバイスの publicId を確認
     const devices = await api.profile.getApiProfileDevices();
-    const targetDevice = devices.find((d) => d.id === deviceId);
+    const targetDevice = devices.find((d) => d.id === parseResult.data.deviceId);
     const devicePublicId = targetDevice?.publicId;
 
     // バックエンドでデバイスを削除
-    const response = await api.profile.deleteApiProfileDevices(deviceId);
+    const response = await api.profile.deleteApiProfileDevices(parseResult.data.deviceId);
 
     // Redis セッションも削除（publicId がある場合）
     if (devicePublicId) {
@@ -167,9 +213,15 @@ export async function deleteDevice(deviceId: number): Promise<ApiResponse<Messag
  * 現在のセッションを除く、同一ユーザーの全セッションを Redis から削除し、
  * バックエンドで他のデバイスを無効化する
  */
-export async function logoutOtherDevices(): Promise<
-  ApiResponse<{ deletedSessionCount: number; deletedDeviceCount: number }>
-> {
+export async function logoutOtherDevices(
+  input: LogoutOtherDevicesInput,
+): Promise<ApiResponse<{ deletedSessionCount: number; deletedDeviceCount: number }>> {
+  const parseResult = logoutOtherDevicesInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const { ServerSessionManager } = await import('@/libs/serverSession');
 
@@ -220,10 +272,16 @@ export async function logoutOtherDevices(): Promise<
  * @param input クライアント側で Zod 検証済みのデータ
  */
 export async function setUserSkills(input: UpdateSkillsFormInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = updateSkillsFormSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfileSkills({
-      skillIds: input.skillIds ?? null,
+      skillIds: parseResult.data.skillIds ?? null,
       userRowVersion: null, // optional: 簡略化のため送信しない
     });
 
@@ -250,17 +308,19 @@ export async function setUserSkills(input: UpdateSkillsFormInput): Promise<ApiRe
  * Server Action: アバターファイルをアップロード
  * @param fileData ファイル情報オブジェクト
  */
-export async function uploadAvatarFile(fileData: {
-  fileName: string;
-  fileType: string;
-  arrayBuffer: ArrayBuffer;
-}): Promise<
+export async function uploadAvatarFile(input: UploadAvatarFileInput): Promise<
   | {
       success: true;
       data: { fileUrl?: string; fileSize: number; contentType?: string; rowVersion?: number };
     }
   | { success: false; error: string; message: string }
 > {
+  const parseResult = uploadAvatarFileInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
 
@@ -277,12 +337,12 @@ export async function uploadAvatarFile(fileData: {
     const formData = new FormData();
 
     // ArrayBufferをBufferに変換してFormDataに追加
-    const buffer = Buffer.from(fileData.arrayBuffer);
+    const buffer = Buffer.from(parseResult.data.arrayBuffer);
     formData.append('FileType', 'Avatar');
     formData.append('ResourceId', userResponse.id.toString());
     formData.append('File', buffer, {
-      filename: fileData.fileName,
-      contentType: fileData.fileType,
+      filename: parseResult.data.fileName,
+      contentType: parseResult.data.fileType,
     });
 
     // Axiosで直接POSTリクエスト
@@ -316,13 +376,20 @@ export async function uploadAvatarFile(fileData: {
  * Server Action: アップロード済みアバター画像を削除
  * @param fileData ファイル情報（ファイル名、リソースID）
  */
-export async function deleteAvatarFile(fileData: {
-  fileName: string;
-  resourceId: number;
-}): Promise<ApiResponse<MessageResponse>> {
+export async function deleteAvatarFile(input: DeleteAvatarFileInput): Promise<ApiResponse<MessageResponse>> {
+  const parseResult = deleteAvatarFileInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.file.deleteApiDownloadsIcons('Avatar', fileData.resourceId, fileData.fileName);
+    const response = await api.file.deleteApiDownloadsIcons(
+      'Avatar',
+      parseResult.data.resourceId,
+      parseResult.data.fileName,
+    );
 
     return { success: true, data: response };
   } catch (error) {
@@ -337,31 +404,26 @@ export async function deleteAvatarFile(fileData: {
  * Server Action: ユーザー設定を更新
  * 楽観的ロックで競合を検出
  */
-export async function updateUserSetting(request: {
-  canReceiveEmail: boolean;
-  canReceiveRealtimeNotification: boolean;
-  timeZone: string;
-  language: string;
-  landingPage?: LandingPage;
-  focusScorePriority?: FocusScorePriority;
-  focusTasksLimit: number;
-  waitingTasksLimit: number;
-  badgeVisibility?: BadgeVisibility;
-  rowVersion: number;
-}): Promise<ApiResponse<UserSettingResponse>> {
+export async function updateUserSetting(input: UpdateUserSettingInput): Promise<ApiResponse<UserSettingResponse>> {
+  const parseResult = updateUserSettingInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfileSetting({
-      canReceiveEmail: request.canReceiveEmail,
-      canReceiveRealtimeNotification: request.canReceiveRealtimeNotification,
-      timeZone: request.timeZone,
-      language: request.language,
-      landingPage: request.landingPage,
-      focusScorePriority: request.focusScorePriority,
-      focusTasksLimit: request.focusTasksLimit,
-      waitingTasksLimit: request.waitingTasksLimit,
-      badgeVisibility: request.badgeVisibility,
-      rowVersion: request.rowVersion,
+      canReceiveEmail: parseResult.data.canReceiveEmail,
+      canReceiveRealtimeNotification: parseResult.data.canReceiveRealtimeNotification,
+      timeZone: parseResult.data.timeZone,
+      language: parseResult.data.language,
+      landingPage: parseResult.data.landingPage,
+      focusScorePriority: parseResult.data.focusScorePriority,
+      focusTasksLimit: parseResult.data.focusTasksLimit,
+      waitingTasksLimit: parseResult.data.waitingTasksLimit,
+      badgeVisibility: parseResult.data.badgeVisibility,
+      rowVersion: parseResult.data.rowVersion,
     });
     return { success: true, data: response };
   } catch (error) {
@@ -418,12 +480,18 @@ export async function fetchAppSettings(): Promise<ApiResponse<AppPublicSettingsR
  * @returns 更新後のユーザー設定
  */
 export async function respondToLandingPageRecommendation(
-  action: 'Accept' | 'Reject',
+  input: RespondToLandingPageRecommendationInput,
 ): Promise<ApiResponse<UserSettingResponse>> {
+  const parseResult = respondToLandingPageRecommendationInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.profile.postApiProfileLandingPageRecommendationRespond({
-      action,
+      action: parseResult.data.action,
     });
     return { success: true, data: response };
   } catch (error) {

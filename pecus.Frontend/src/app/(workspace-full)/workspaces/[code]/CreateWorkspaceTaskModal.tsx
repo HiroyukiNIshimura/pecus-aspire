@@ -196,7 +196,7 @@ export default function CreateWorkspaceTaskModal({
           predecessorTaskIds: predecessorTaskIds.length > 0 ? predecessorTaskIds : undefined,
         };
 
-        const result = await createWorkspaceTask(workspaceId, itemId, requestData);
+        const result = await createWorkspaceTask({ workspaceId, itemId, request: requestData });
 
         if (!result.success) {
           setServerErrors([{ key: 0, message: result.message }]);
@@ -222,7 +222,7 @@ export default function CreateWorkspaceTaskModal({
       setShowAssigneeDropdown(true);
 
       try {
-        const result = await searchWorkspaceMembers(workspaceId, query, true);
+        const result = await searchWorkspaceMembers({ workspaceId, query, excludeViewer: true });
         if (result.success) {
           setAssigneeSearchResults(result.data || []);
           setShowAssigneeDropdown(true);
@@ -355,7 +355,12 @@ export default function CreateWorkspaceTaskModal({
         return;
       }
 
-      const result = await checkAssigneeTaskLoad(workspaceId, itemId, selectedAssignee.id, dueDateISO);
+      const result = await checkAssigneeTaskLoad({
+        workspaceId,
+        itemId,
+        assignedUserId: selectedAssignee.id,
+        dueDate: dueDateISO,
+      });
 
       if (cancelled) return;
 

@@ -55,7 +55,7 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
   const handleJoinWorkspace = async () => {
     if (!joinModal.workspace) return;
 
-    const result = await joinWorkspace(joinModal.workspace.workspaceId);
+    const result = await joinWorkspace({ workspaceId: joinModal.workspace.workspaceId });
 
     if (result.success) {
       notify.success(`${joinModal.workspace.workspaceName} に参加しました`);

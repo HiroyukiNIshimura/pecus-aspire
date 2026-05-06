@@ -33,7 +33,7 @@ export function LandingPageRecommendationBanner({
 
   const handleAccept = () => {
     startTransition(async () => {
-      const result = await respondToLandingPageRecommendation('Accept');
+      const result = await respondToLandingPageRecommendation({ action: 'Accept' });
       if (result.success) {
         notify.success(`起動ページを「${recommendationName}」に変更しました`);
         setIsVisible(false);
@@ -47,7 +47,7 @@ export function LandingPageRecommendationBanner({
 
   const handleReject = () => {
     startTransition(async () => {
-      const result = await respondToLandingPageRecommendation('Reject');
+      const result = await respondToLandingPageRecommendation({ action: 'Reject' });
       if (result.success) {
         setIsVisible(false);
         onSettingsUpdated?.();

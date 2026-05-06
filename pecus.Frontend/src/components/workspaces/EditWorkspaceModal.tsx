@@ -37,7 +37,8 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
       onSubmit: async (data) => {
         if (!workspaceDetail) return;
 
-        const result = await updateWorkspace(workspaceDetail.id, {
+        const result = await updateWorkspace({
+          workspaceId: workspaceDetail.id,
           name: data.name,
           description: data.description || undefined,
           genreId: typeof data.genreId === 'string' ? parseInt(data.genreId, 10) : data.genreId,
@@ -266,7 +267,8 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                   const genreIdStr = formDataObj.get('genreId') as string;
                   const genreId = genreIdStr ? parseInt(genreIdStr, 10) : (workspaceDetail.genreId ?? 0);
 
-                  const result = await updateWorkspace(workspaceDetail.id, {
+                  const result = await updateWorkspace({
+                    workspaceId: workspaceDetail.id,
                     name,
                     description: description || undefined,
                     genreId,

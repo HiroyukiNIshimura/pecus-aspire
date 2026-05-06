@@ -3,28 +3,37 @@
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   AddWorkspaceItemRelationResponse,
-  CreateWorkspaceItemRequest,
   ItemSortBy,
   MyItemRelationType,
   PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics,
   RelationType,
   SortOrder,
   SuccessResponse,
-  UpdateWorkspaceItemAssigneeRequest,
-  UpdateWorkspaceItemAttributeRequest,
-  UpdateWorkspaceItemRequest,
-  UpdateWorkspaceItemStatusRequest,
   WorkspaceItemDetailResponse,
   WorkspaceItemResponse,
 } from '@/connectors/api/pecus';
+import {
+  type AddWorkspaceItemRelationsInput,
+  addWorkspaceItemRelationsInputSchema,
+  type CreateWorkspaceItemInput,
+  createWorkspaceItemInputSchema,
+  type RemoveWorkspaceItemRelationInput,
+  removeWorkspaceItemRelationInputSchema,
+  type UpdateWorkspaceItemAssigneeInput,
+  type UpdateWorkspaceItemAttributeInput,
+  type UpdateWorkspaceItemInput,
+  type UpdateWorkspaceItemStatusInput,
+  updateWorkspaceItemAssigneeInputSchema,
+  updateWorkspaceItemAttributeInputSchema,
+  updateWorkspaceItemInputSchema,
+  updateWorkspaceItemStatusInputSchema,
+  type WorkspaceItemAttributeType,
+  type WorkspaceItemPinInput,
+  workspaceItemPinInputSchema,
+} from '@/schemas/workspaceItemSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
-import { serverError } from './types';
-
-/**
- * ワークスペースアイテム属性の種類
- */
-export type WorkspaceItemAttributeType = 'assignee' | 'committer' | 'priority' | 'duedate' | 'archive';
+import { serverError, validationError } from './types';
 
 /**
  * Server Action: マイアイテム一覧を取得（ワークスペース横断）
@@ -106,12 +115,20 @@ export async function fetchWorkspaceItemByCode(
  * Server Action: ワークスペースアイテムを作成
  */
 export async function createWorkspaceItem(
-  workspaceId: number,
-  request: CreateWorkspaceItemRequest,
+  input: CreateWorkspaceItemInput,
 ): Promise<ApiResponse<WorkspaceItemResponse>> {
+  const parseResult = createWorkspaceItemInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.postApiWorkspacesItems(workspaceId, request);
+    const response = await api.workspaceItem.postApiWorkspacesItems(
+      parseResult.data.workspaceId,
+      parseResult.data.request,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create workspace item:', error);
@@ -126,13 +143,21 @@ export async function createWorkspaceItem(
  * Server Action: ワークスペースアイテムを更新
  */
 export async function updateWorkspaceItem(
-  workspaceId: number,
-  itemId: number,
-  request: UpdateWorkspaceItemRequest,
+  input: UpdateWorkspaceItemInput,
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  const parseResult = updateWorkspaceItemInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItems(workspaceId, itemId, request);
+    const response = await api.workspaceItem.patchApiWorkspacesItems(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.request,
+    );
     if (response.workspaceItem) {
       return { success: true, data: response.workspaceItem };
     }
@@ -165,12 +190,20 @@ export async function updateWorkspaceItem(
  * Server Action: ワークスペースアイテムにPINを追加
  */
 export async function addWorkspaceItemPin(
-  workspaceId: number,
-  itemId: number,
+  input: WorkspaceItemPinInput,
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  const parseResult = workspaceItemPinInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.postApiWorkspacesItemsPin(workspaceId, itemId);
+    const response = await api.workspaceItem.postApiWorkspacesItemsPin(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+    );
 
     if (response.workspaceItem) {
       return {
@@ -193,12 +226,20 @@ export async function addWorkspaceItemPin(
  * Server Action: ワークスペースアイテムからPINを削除
  */
 export async function removeWorkspaceItemPin(
-  workspaceId: number,
-  itemId: number,
+  input: WorkspaceItemPinInput,
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  const parseResult = workspaceItemPinInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.deleteApiWorkspacesItemsPin(workspaceId, itemId);
+    const response = await api.workspaceItem.deleteApiWorkspacesItemsPin(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+    );
 
     if (response.workspaceItem) {
       return {
@@ -221,13 +262,21 @@ export async function removeWorkspaceItemPin(
  * Server Action: ワークスペースアイテムの担当者を更新
  */
 export async function updateWorkspaceItemAssignee(
-  workspaceId: number,
-  itemId: number,
-  request: UpdateWorkspaceItemAssigneeRequest,
+  input: UpdateWorkspaceItemAssigneeInput,
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  const parseResult = updateWorkspaceItemAssigneeInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItemsAssignee(workspaceId, itemId, request);
+    const response = await api.workspaceItem.patchApiWorkspacesItemsAssignee(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.request,
+    );
 
     // レスポンスからアイテムデータを取得
     if (response.workspaceItem) {
@@ -272,13 +321,21 @@ export async function updateWorkspaceItemAssignee(
  * @param request 更新リクエスト
  */
 export async function updateWorkspaceItemStatus(
-  workspaceId: number,
-  itemId: number,
-  request: UpdateWorkspaceItemStatusRequest,
+  input: UpdateWorkspaceItemStatusInput,
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  const parseResult = updateWorkspaceItemStatusInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItemsStatus(workspaceId, itemId, request);
+    const response = await api.workspaceItem.patchApiWorkspacesItemsStatus(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.request,
+    );
 
     if (response.workspaceItem) {
       return {
@@ -323,17 +380,25 @@ export async function updateWorkspaceItemStatus(
  * @param request 更新リクエスト
  */
 export async function updateWorkspaceItemAttribute(
-  workspaceId: number,
-  itemId: number,
-  attribute: WorkspaceItemAttributeType,
-  request: UpdateWorkspaceItemAttributeRequest,
+  input: UpdateWorkspaceItemAttributeInput,
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  const parseResult = updateWorkspaceItemAttributeInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItems1(workspaceId, itemId, attribute, {
-      value: request.value,
-      rowVersion: request.rowVersion,
-    });
+    const response = await api.workspaceItem.patchApiWorkspacesItems1(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.attribute,
+      {
+        value: parseResult.data.request.value,
+        rowVersion: parseResult.data.request.rowVersion,
+      },
+    );
 
     // レスポンスからアイテムデータを取得
     if (response.workspaceItem) {
@@ -345,7 +410,7 @@ export async function updateWorkspaceItemAttribute(
 
     return serverError('アイテムの取得に失敗しました。');
   } catch (error) {
-    console.error(`Failed to update workspace item ${attribute}:`, error);
+    console.error(`Failed to update workspace item ${parseResult.data.attribute}:`, error);
 
     // 409 Conflict: 並行更新による競合
     const concurrency = detectConcurrencyError(error);
@@ -372,7 +437,7 @@ export async function updateWorkspaceItemAttribute(
       duedate: '期限日',
       archive: 'アーカイブ状態',
     };
-    const attrName = attributeNames[attribute] || attribute;
+    const attrName = attributeNames[parseResult.data.attribute] || parseResult.data.attribute;
 
     return handleApiErrorForAction<WorkspaceItemDetailResponse>(error, {
       defaultMessage: `${attrName}の更新に失敗しました。`,
@@ -389,20 +454,23 @@ export async function updateWorkspaceItemAttribute(
  * @param relationType 関連タイプ（デフォルト: Related）
  */
 export async function addWorkspaceItemRelations(
-  workspaceId: number,
-  itemId: number,
-  toItemIds: number[],
-  relationType: RelationType = 'Related',
+  input: AddWorkspaceItemRelationsInput,
 ): Promise<ApiResponse<AddWorkspaceItemRelationResponse[]>> {
+  const parseResult = addWorkspaceItemRelationsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
 
     // 全ての関連追加を並列で実行
     const results = await Promise.all(
-      toItemIds.map((toItemId) =>
-        api.workspaceItem.postApiWorkspacesItemsRelations(workspaceId, itemId, {
+      parseResult.data.toItemIds.map((toItemId) =>
+        api.workspaceItem.postApiWorkspacesItemsRelations(parseResult.data.workspaceId, parseResult.data.itemId, {
           toItemId,
-          relationType,
+          relationType: parseResult.data.relationType ?? ('Related' as RelationType),
         }),
       ),
     );
@@ -424,13 +492,21 @@ export async function addWorkspaceItemRelations(
  * @param relationId 関連ID
  */
 export async function removeWorkspaceItemRelation(
-  workspaceId: number,
-  itemId: number,
-  relationId: number,
+  input: RemoveWorkspaceItemRelationInput,
 ): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = removeWorkspaceItemRelationInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.deleteApiWorkspacesItemsRelations(workspaceId, itemId, relationId);
+    const response = await api.workspaceItem.deleteApiWorkspacesItemsRelations(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.relationId,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to remove workspace item relation:', error);

@@ -243,7 +243,7 @@ export default function TaskCommentSection({
         commentType: newCommentType,
       };
 
-      const result = await createTaskComment(workspaceId, itemId, taskId, request);
+      const result = await createTaskComment({ workspaceId, itemId, taskId, request });
       if (result.success) {
         notify.success('コメントを投稿しました');
         setNewComment('');
@@ -293,9 +293,15 @@ export default function TaskCommentSection({
 
       setIsSubmitting(true);
       try {
-        const result = await updateTaskComment(workspaceId, itemId, taskId, comment.id, {
-          content: editingContent.trim(),
-          rowVersion: comment.rowVersion,
+        const result = await updateTaskComment({
+          workspaceId,
+          itemId,
+          taskId,
+          commentId: comment.id,
+          request: {
+            content: editingContent.trim(),
+            rowVersion: comment.rowVersion,
+          },
         });
 
         if (result.success) {
@@ -345,13 +351,13 @@ export default function TaskCommentSection({
 
     setIsSubmitting(true);
     try {
-      const result = await deleteTaskComment(
+      const result = await deleteTaskComment({
         workspaceId,
         itemId,
         taskId,
-        deleteTargetComment.id,
-        deleteTargetComment.rowVersion,
-      );
+        commentId: deleteTargetComment.id,
+        rowVersion: deleteTargetComment.rowVersion,
+      });
 
       if (result.success) {
         notify.success('コメントを削除しました');

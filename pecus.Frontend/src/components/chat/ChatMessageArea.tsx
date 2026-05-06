@@ -185,9 +185,9 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         // 最新メッセージIDで既読位置を更新
         const latestMessage = messagesResult.data.messages[messagesResult.data.messages.length - 1];
         if (latestMessage) {
-          await updateReadPosition(roomId, undefined, latestMessage.id);
+          await updateReadPosition({ roomId, readMessageId: latestMessage.id });
         } else {
-          await updateReadPosition(roomId);
+          await updateReadPosition({ roomId });
         }
       }
     } catch (error) {
@@ -220,7 +220,7 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
       // 入力終了を通知
       sendChatTyping(roomId, false);
       try {
-        const result = await sendChatMessage(roomId, content);
+        const result = await sendChatMessage({ roomId, content });
         if (result.success && result.data) {
           // senderUserId が null/undefined の場合は currentUserId を使用
           // API レスポンスのシリアライズ時に null になる場合があるため
@@ -296,7 +296,7 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
       };
       setMessages((prev) => [...prev, newMessage]);
       // 既読位置を更新（新しいメッセージIDを含む）
-      updateReadPosition(roomId, undefined, payload.message.id);
+      updateReadPosition({ roomId, readMessageId: payload.message.id });
 
       // メッセージを受信したら、その送信者の入力中表示を消す
       if (payload.message.sender?.userId) {

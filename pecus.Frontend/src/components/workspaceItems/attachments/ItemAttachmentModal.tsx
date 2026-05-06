@@ -156,7 +156,7 @@ export default function ItemAttachmentModal({
           setUploadingFiles((prev) => prev.map((f) => (f.id === tempId ? { ...f, progress: 50 } : f)));
 
           // Server Actionを呼び出し
-          const result = await uploadWorkspaceItemAttachment(workspaceId, itemId, formData, taskId);
+          const result = await uploadWorkspaceItemAttachment({ workspaceId, itemId, formData, taskId });
 
           if (!result.success) {
             throw new Error(result.message || 'アップロードに失敗しました');
@@ -180,7 +180,7 @@ export default function ItemAttachmentModal({
   // ファイル削除処理
   const handleDelete = useCallback(
     async (attachmentId: number) => {
-      const result = await deleteWorkspaceItemAttachment(workspaceId, itemId, attachmentId);
+      const result = await deleteWorkspaceItemAttachment({ workspaceId, itemId, attachmentId });
 
       if (result.success) {
         setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));

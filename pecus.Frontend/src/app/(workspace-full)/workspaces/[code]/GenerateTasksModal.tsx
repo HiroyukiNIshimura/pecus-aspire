@@ -307,12 +307,16 @@ export default function GenerateTasksModal({
           }))
         : undefined;
 
-    const result = await generateTaskCandidates(workspaceId, itemId, {
-      startDate,
-      endDate: endDate || undefined,
-      additionalContext: additionalContext || undefined,
-      feedback: feedback || undefined,
-      previousCandidates,
+    const result = await generateTaskCandidates({
+      workspaceId,
+      itemId,
+      request: {
+        startDate,
+        endDate: endDate || undefined,
+        additionalContext: additionalContext || undefined,
+        feedback: feedback || undefined,
+        previousCandidates,
+      },
     });
 
     // キャンセルされていた場合は結果を無視
@@ -368,7 +372,7 @@ export default function GenerateTasksModal({
       setShowAssigneeDropdown(true);
 
       try {
-        const result = await searchWorkspaceMembers(workspaceId, query, true);
+        const result = await searchWorkspaceMembers({ workspaceId, query, excludeViewer: true });
         if (result.success && result.data) {
           setAssigneeSearchResults(result.data);
           // 検索結果のユーザーの負荷情報を取得
@@ -477,7 +481,7 @@ export default function GenerateTasksModal({
       };
     });
 
-    const result = await bulkCreateTasks(workspaceId, itemId, { tasks });
+    const result = await bulkCreateTasks({ workspaceId, itemId, request: { tasks } });
 
     if (result.success) {
       notify.success(`${result.data.totalCreated}件のタスクを作成しました`);

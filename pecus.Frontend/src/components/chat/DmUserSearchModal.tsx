@@ -65,7 +65,7 @@ export default function DmUserSearchModal({
       setLoading(true);
       setError(null);
 
-      const result = await searchUsers(searchQuery, 20);
+      const result = await searchUsers({ query: searchQuery, limit: 20 });
 
       if (result.success) {
         // 既存DMがあるユーザーを除外

@@ -435,31 +435,49 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
           switch (request.type) {
             case 'assignee':
-              result = await updateWorkspaceItemAssignee(workspaceId, itemId, {
-                assigneeId: request.value as number | null,
-                rowVersion: rowVersionRef.current,
+              result = await updateWorkspaceItemAssignee({
+                workspaceId,
+                itemId,
+                request: {
+                  assigneeId: request.value as number | null,
+                  rowVersion: rowVersionRef.current,
+                },
               });
               break;
 
             case 'committer':
-              result = await updateWorkspaceItemAttribute(workspaceId, itemId, 'committer', {
-                value: (request.value as number | null) ?? undefined,
-                rowVersion: rowVersionRef.current,
+              result = await updateWorkspaceItemAttribute({
+                workspaceId,
+                itemId,
+                attribute: 'committer',
+                request: {
+                  value: (request.value as number | null) ?? undefined,
+                  rowVersion: rowVersionRef.current,
+                },
               });
               break;
 
             case 'archive':
-              result = await updateWorkspaceItemStatus(workspaceId, itemId, {
-                isArchived: request.value as boolean,
-                keepChildrenRelation: request.keepChildrenRelation,
-                rowVersion: rowVersionRef.current,
+              result = await updateWorkspaceItemStatus({
+                workspaceId,
+                itemId,
+                request: {
+                  isArchived: request.value as boolean,
+                  keepChildrenRelation: request.keepChildrenRelation,
+                  rowVersion: rowVersionRef.current,
+                },
               });
               break;
 
             case 'dueDate':
-              result = await updateWorkspaceItemAttribute(workspaceId, itemId, 'duedate', {
-                value: (request.value as string | null) ?? undefined,
-                rowVersion: rowVersionRef.current,
+              result = await updateWorkspaceItemAttribute({
+                workspaceId,
+                itemId,
+                attribute: 'duedate',
+                request: {
+                  value: (request.value as string | null) ?? undefined,
+                  rowVersion: rowVersionRef.current,
+                },
               });
               break;
 
@@ -467,9 +485,14 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               const priorityValue = request.value
                 ? PRIORITY_TO_NUMBER[request.value as NonNullable<TaskPriority>]
                 : null;
-              result = await updateWorkspaceItemAttribute(workspaceId, itemId, 'priority', {
-                value: priorityValue ?? undefined,
-                rowVersion: rowVersionRef.current,
+              result = await updateWorkspaceItemAttribute({
+                workspaceId,
+                itemId,
+                attribute: 'priority',
+                request: {
+                  value: priorityValue ?? undefined,
+                  rowVersion: rowVersionRef.current,
+                },
               });
               break;
             }
@@ -531,14 +554,18 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
         setItemUpdateError(null);
 
         try {
-          const result = await updateWorkspaceItem(workspaceId, itemId, {
-            subject: request.subject,
-            body: request.body,
-            isDraft: request.isDraft,
-            tagNames: request.tagNames,
-            rowVersion: rowVersionRef.current,
-            tempSessionId: request.tempSessionId,
-            tempAttachmentIds: request.tempAttachmentIds,
+          const result = await updateWorkspaceItem({
+            workspaceId,
+            itemId,
+            request: {
+              subject: request.subject,
+              body: request.body,
+              isDraft: request.isDraft,
+              tagNames: request.tagNames,
+              rowVersion: rowVersionRef.current,
+              tempSessionId: request.tempSessionId,
+              tempAttachmentIds: request.tempAttachmentIds,
+            },
           });
 
           if (!result.success) {
@@ -591,14 +618,18 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
         setItemUpdateError(null);
 
         try {
-          const result = await updateWorkspaceItem(workspaceId, itemId, {
-            subject: request.subject,
-            body: request.body,
-            isDraft: request.isDraft,
-            tagNames: request.tagNames,
-            rowVersion: latestRowVersion,
-            tempSessionId: request.tempSessionId,
-            tempAttachmentIds: request.tempAttachmentIds,
+          const result = await updateWorkspaceItem({
+            workspaceId,
+            itemId,
+            request: {
+              subject: request.subject,
+              body: request.body,
+              isDraft: request.isDraft,
+              tagNames: request.tagNames,
+              rowVersion: latestRowVersion,
+              tempSessionId: request.tempSessionId,
+              tempAttachmentIds: request.tempAttachmentIds,
+            },
           });
 
           if (!result.success) {
@@ -646,8 +677,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       setIsPinLoading(true);
       try {
         const result = item.isPinned
-          ? await removeWorkspaceItemPin(workspaceId, itemId)
-          : await addWorkspaceItemPin(workspaceId, itemId);
+          ? await removeWorkspaceItemPin({ workspaceId, itemId })
+          : await addWorkspaceItemPin({ workspaceId, itemId });
 
         if (result.success) {
           rowVersionRef.current = result.data.rowVersion;
@@ -773,7 +804,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
       setIsDeleting(true);
       try {
-        const result = await removeWorkspaceItemRelation(workspaceId, itemId, deleteRelationModal.relation.relationId);
+        const result = await removeWorkspaceItemRelation({
+          workspaceId,
+          itemId,
+          relationId: deleteRelationModal.relation.relationId,
+        });
 
         if (result.success) {
           notify.success('関連を削除しました。');

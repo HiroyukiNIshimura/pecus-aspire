@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import type {
+  BulkCreateTasksRequest,
+  CreateWorkspaceTaskRequest,
+  GenerateTaskCandidatesRequest,
+  UpdateWorkspaceTaskRequest,
+} from '@/connectors/api/pecus';
 
 /**
  * タスク優先度の選択肢
@@ -186,3 +192,79 @@ export function updateWorkspaceTaskSchemaWithRequiredEstimate(
   }) as unknown as typeof updateWorkspaceTaskBaseSchema;
   return applyDiscardReasonRefine(extendedSchema) as unknown as typeof updateWorkspaceTaskSchema;
 }
+
+const workspaceIdSchema = z
+  .number({ error: 'ワークスペースIDが不正です。' })
+  .int('ワークスペースIDが不正です。')
+  .positive('ワークスペースIDが不正です。');
+
+const itemIdSchema = z
+  .number({ error: 'アイテムIDが不正です。' })
+  .int('アイテムIDが不正です。')
+  .positive('アイテムIDが不正です。');
+
+const taskIdSchema = z
+  .number({ error: 'タスクIDが不正です。' })
+  .int('タスクIDが不正です。')
+  .positive('タスクIDが不正です。');
+
+const assignedUserIdSchema = z
+  .number({ error: '担当者を選択してください。' })
+  .int('担当者を選択してください。')
+  .positive('担当者を選択してください。');
+
+const dueDateSchema = z.string({ error: '期限日を選択してください。' }).min(1, '期限日を選択してください。');
+
+export const createWorkspaceTaskActionInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  request: z.custom<CreateWorkspaceTaskRequest>((value) => typeof value === 'object' && value !== null, {
+    error: 'タスク作成リクエストが不正です。',
+  }),
+});
+
+export type CreateWorkspaceTaskActionInput = z.infer<typeof createWorkspaceTaskActionInputSchema>;
+
+export const updateWorkspaceTaskActionInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  taskId: taskIdSchema,
+  request: z.custom<UpdateWorkspaceTaskRequest>((value) => typeof value === 'object' && value !== null, {
+    error: 'タスク更新リクエストが不正です。',
+  }),
+});
+
+export type UpdateWorkspaceTaskActionInput = z.infer<typeof updateWorkspaceTaskActionInputSchema>;
+
+export const checkAssigneeTaskLoadInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  assignedUserId: assignedUserIdSchema,
+  dueDate: dueDateSchema,
+});
+
+export type CheckAssigneeTaskLoadInput = z.infer<typeof checkAssigneeTaskLoadInputSchema>;
+
+export const generateTaskCandidatesInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  request: z.custom<GenerateTaskCandidatesRequest>((value) => typeof value === 'object' && value !== null, {
+    error: 'タスク候補生成リクエストが不正です。',
+  }),
+});
+
+export type GenerateTaskCandidatesInput = z.infer<typeof generateTaskCandidatesInputSchema>;
+
+export const bulkCreateTasksInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  request: z
+    .custom<BulkCreateTasksRequest>((value) => typeof value === 'object' && value !== null, {
+      error: '一括作成リクエストが不正です。',
+    })
+    .refine((value) => Array.isArray(value.tasks) && value.tasks.length > 0, {
+      error: '作成するタスクを1つ以上選択してください。',
+    }),
+});
+
+export type BulkCreateTasksInput = z.infer<typeof bulkCreateTasksInputSchema>;

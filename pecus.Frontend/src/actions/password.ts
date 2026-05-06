@@ -24,14 +24,13 @@ import { validationError } from './types';
 export async function requestPasswordResetAction(
   input: RequestPasswordResetInput,
 ): Promise<ApiResponse<MessageResponse>> {
-  try {
-    // サーバーサイド検証（クライアント検証を信頼しない）
-    const parseResult = await requestPasswordResetSchema.safeParseAsync(input);
-    if (!parseResult.success) {
-      const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
-      return validationError(errorMessages);
-    }
+  const parseResult = requestPasswordResetSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
 
+  try {
     // API クライアント生成
     const clients = await createPecusApiClients();
 
@@ -62,14 +61,13 @@ export async function requestPasswordResetAction(
  * @returns ApiResponse<MessageResponse> 形式の統一レスポンス
  */
 export async function setPasswordAction(input: SetPasswordInput): Promise<ApiResponse<MessageResponse>> {
-  try {
-    // サーバーサイド検証
-    const parseResult = await setPasswordSchema.safeParseAsync(input);
-    if (!parseResult.success) {
-      const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
-      return validationError(errorMessages);
-    }
+  const parseResult = setPasswordSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
 
+  try {
     // API クライアント生成（認証不要なので公開エンドポイント）
     const clients = await createPecusApiClients();
 
@@ -101,14 +99,13 @@ export async function setPasswordAction(input: SetPasswordInput): Promise<ApiRes
  * @returns ApiResponse<MessageResponse> 形式の統一レスポンス
  */
 export async function resetPasswordAction(input: ResetPasswordInput): Promise<ApiResponse<MessageResponse>> {
-  try {
-    // サーバーサイド検証
-    const parseResult = await resetPasswordSchema.safeParseAsync(input);
-    if (!parseResult.success) {
-      const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
-      return validationError(errorMessages);
-    }
+  const parseResult = resetPasswordSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
 
+  try {
     // API クライアント生成（認証不要なので公開エンドポイント）
     const clients = await createPecusApiClients();
 

@@ -11,8 +11,23 @@ import type {
   DmCandidateUserItem,
   UserSearchResultResponse,
 } from '@/connectors/api/pecus';
+import {
+  type CreateOrGetAiRoomInput,
+  type CreateOrGetDmRoomInput,
+  createOrGetAiRoomInputSchema,
+  createOrGetDmRoomInputSchema,
+  type NotifyTypingInput,
+  notifyTypingInputSchema,
+  type SearchUsersInput,
+  type SendChatMessageInput,
+  searchUsersInputSchema,
+  sendChatMessageInputSchema,
+  type UpdateReadPositionInput,
+  updateReadPositionInputSchema,
+} from '@/schemas/chatSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 /**
  * Server Action: チャットルーム一覧を取得
@@ -47,10 +62,16 @@ export async function getChatRoomDetail(roomId: number): Promise<ApiResponse<Cha
  * 既存のDMルームがあればそれを返し、なければ新規作成
  * @param targetUserId DM相手のユーザーID
  */
-export async function createOrGetDmRoom(targetUserId: number): Promise<ApiResponse<ChatRoomDetailResponse>> {
+export async function createOrGetDmRoom(input: CreateOrGetDmRoomInput): Promise<ApiResponse<ChatRoomDetailResponse>> {
+  const parseResult = createOrGetDmRoomInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.chat.postApiChatRoomsDm({ targetUserId });
+    const response = await api.chat.postApiChatRoomsDm({ targetUserId: parseResult.data.targetUserId });
     return { success: true, data: response };
   } catch (error) {
     console.error('createOrGetDmRoom error:', error);
@@ -62,7 +83,13 @@ export async function createOrGetDmRoom(targetUserId: number): Promise<ApiRespon
  * Server Action: AI ルームを作成または取得
  * 既存の AI ルームがあればそれを返し、なければ新規作成
  */
-export async function createOrGetAiRoom(): Promise<ApiResponse<ChatRoomDetailResponse>> {
+export async function createOrGetAiRoom(input: CreateOrGetAiRoomInput): Promise<ApiResponse<ChatRoomDetailResponse>> {
+  const parseResult = createOrGetAiRoomInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.chat.postApiChatRoomsAi();
@@ -110,16 +137,18 @@ export async function getChatMessages(
 /**
  * Server Action: メッセージを送信
  */
-export async function sendChatMessage(
-  roomId: number,
-  content: string,
-  replyToMessageId?: number,
-): Promise<ApiResponse<ChatMessageItem>> {
+export async function sendChatMessage(input: SendChatMessageInput): Promise<ApiResponse<ChatMessageItem>> {
+  const parseResult = sendChatMessageInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.chat.postApiChatRoomsMessages(roomId, {
-      content,
-      replyToMessageId,
+    const response = await api.chat.postApiChatRoomsMessages(parseResult.data.roomId, {
+      content: parseResult.data.content,
+      replyToMessageId: parseResult.data.replyToMessageId,
     });
     return { success: true, data: response };
   } catch (error) {
@@ -134,16 +163,18 @@ export async function sendChatMessage(
  * @param readAt 既読日時（ISO 8601形式）。省略時は現在時刻
  * @param readMessageId 既読したメッセージID（省略可能）
  */
-export async function updateReadPosition(
-  roomId: number,
-  readAt?: string,
-  readMessageId?: number,
-): Promise<ApiResponse<void>> {
+export async function updateReadPosition(input: UpdateReadPositionInput): Promise<ApiResponse<void>> {
+  const parseResult = updateReadPositionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    await api.chat.putApiChatRoomsRead(roomId, {
-      readAt: readAt ?? new Date().toISOString(),
-      readMessageId,
+    await api.chat.putApiChatRoomsRead(parseResult.data.roomId, {
+      readAt: parseResult.data.readAt ?? new Date().toISOString(),
+      readMessageId: parseResult.data.readMessageId,
     });
     return { success: true, data: undefined };
   } catch (error) {
@@ -157,10 +188,16 @@ export async function updateReadPosition(
  * @param roomId ルームID
  * @param isTyping 入力中かどうか
  */
-export async function notifyTyping(roomId: number, isTyping: boolean): Promise<ApiResponse<void>> {
+export async function notifyTyping(input: NotifyTypingInput): Promise<ApiResponse<void>> {
+  const parseResult = notifyTypingInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    await api.chat.postApiChatRoomsTyping(roomId, { isTyping });
+    await api.chat.postApiChatRoomsTyping(parseResult.data.roomId, { isTyping: parseResult.data.isTyping });
     return { success: true, data: undefined };
   } catch (error) {
     console.error('notifyTyping error:', error);
@@ -191,10 +228,21 @@ export async function getDmCandidateUsers(limit = 10): Promise<ApiResponse<DmCan
  * @param query 検索クエリ（2文字以上）
  * @param limit 取得件数（デフォルト20、最大50）
  */
-export async function searchUsers(query: string, limit = 20): Promise<ApiResponse<UserSearchResultResponse[]>> {
+export async function searchUsers(input: SearchUsersInput): Promise<ApiResponse<UserSearchResultResponse[]>> {
+  const parseResult = searchUsersInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const hasTooSmall = parseResult.error.issues.some((issue) => issue.code === 'too_small');
+    if (hasTooSmall) {
+      return { success: true, data: [] };
+    }
+
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.user.getApiUsersSearch(query, limit);
+    const response = await api.user.getApiUsersSearch(parseResult.data.query, parseResult.data.limit ?? 20);
     return { success: true, data: response };
   } catch (error) {
     console.error('searchUsers error:', error);

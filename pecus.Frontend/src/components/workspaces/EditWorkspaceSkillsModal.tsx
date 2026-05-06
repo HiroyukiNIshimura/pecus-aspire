@@ -81,7 +81,11 @@ export default function EditWorkspaceSkillsModal({
     setServerError(null);
 
     try {
-      const result = await setWorkspaceSkills(workspace.id, selectedSkillIds, currentRowVersion);
+      const result = await setWorkspaceSkills({
+        workspaceId: workspace.id,
+        skillIds: selectedSkillIds,
+        rowVersion: currentRowVersion,
+      });
 
       if (result.success) {
         // 更新後にワークスペース詳細を再取得して最新のrowVersionを取得
@@ -234,7 +238,11 @@ export default function EditWorkspaceSkillsModal({
               setServerError(null);
 
               try {
-                const result = await setWorkspaceSkills(workspace.id, selectedSkillIds, latestRowVersion);
+                const result = await setWorkspaceSkills({
+                  workspaceId: workspace.id,
+                  skillIds: selectedSkillIds,
+                  rowVersion: latestRowVersion,
+                });
 
                 if (result.success) {
                   const detailResult = await getWorkspaceDetail(workspace.id);

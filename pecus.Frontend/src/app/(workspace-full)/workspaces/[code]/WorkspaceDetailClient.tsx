@@ -530,7 +530,7 @@ export default function WorkspaceDetailClient({
     role: WorkspaceRole,
     identityIconUrl: string | null,
   ) => {
-    const result = await addMemberToWorkspace(workspaceDetail.id, userId, role);
+    const result = await addMemberToWorkspace({ workspaceId: workspaceDetail.id, userId, workspaceRole: role });
 
     if (result.success) {
       // メンバー一覧に追加
@@ -576,7 +576,7 @@ export default function WorkspaceDetailClient({
   /** メンバー削除を実行 */
   const handleRemoveMemberConfirm = async () => {
     const { userId, userName } = removeMemberModal;
-    const result = await removeMemberFromWorkspace(workspaceDetail.id, userId);
+    const result = await removeMemberFromWorkspace({ workspaceId: workspaceDetail.id, userId });
 
     if (result.success) {
       setMembers((prev) => prev.filter((m) => m.id !== userId));
@@ -620,7 +620,7 @@ export default function WorkspaceDetailClient({
   /** ロール変更を実行 */
   const handleChangeRoleConfirm = async () => {
     const { userId, userName, newRole } = changeRoleModal;
-    const result = await updateMemberRoleInWorkspace(workspaceDetail.id, userId, newRole);
+    const result = await updateMemberRoleInWorkspace({ workspaceId: workspaceDetail.id, userId, newRole });
 
     if (result.success) {
       setMembers((prev) => prev.map((m) => (m.id === userId ? { ...m, workspaceRole: newRole } : m)));
@@ -689,7 +689,10 @@ export default function WorkspaceDetailClient({
     setOpenActionMenu(false);
 
     try {
-      const result = await toggleWorkspaceActive(currentWorkspaceDetail.id, !currentWorkspaceDetail.isActive);
+      const result = await toggleWorkspaceActive({
+        workspaceId: currentWorkspaceDetail.id,
+        isActive: !currentWorkspaceDetail.isActive,
+      });
 
       if (result.success) {
         // ローカルの状態を更新
@@ -719,7 +722,7 @@ export default function WorkspaceDetailClient({
   /** 削除を実行 */
   const handleDeleteConfirm = async () => {
     try {
-      const result = await deleteWorkspace(currentWorkspaceDetail.id);
+      const result = await deleteWorkspace({ workspaceId: currentWorkspaceDetail.id });
 
       if (result.success) {
         notify.success('ワークスペースを削除しました。');
@@ -1006,7 +1009,11 @@ export default function WorkspaceDetailClient({
       }
 
       try {
-        const result = await addWorkspaceItemRelations(workspaceDetail.id, selectedItemId, selectedIds);
+        const result = await addWorkspaceItemRelations({
+          workspaceId: workspaceDetail.id,
+          itemId: selectedItemId,
+          toItemIds: selectedIds,
+        });
 
         if (result.success) {
           notify.success(`${selectedIds.length} 件のアイテムを関連付けました。`);

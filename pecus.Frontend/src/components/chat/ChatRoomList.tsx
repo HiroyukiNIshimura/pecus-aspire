@@ -63,7 +63,7 @@ export default function ChatRoomList({ rooms, loading = false, onRoomCreated, on
   const handleStartDm = async (userId: number) => {
     setStartingDm(userId);
     try {
-      const result = await createOrGetDmRoom(userId);
+      const result = await createOrGetDmRoom({ targetUserId: userId });
       if (result.success) {
         selectRoom(result.data.id);
         // DM候補リストから削除（既存DMになったため）
@@ -87,7 +87,7 @@ export default function ChatRoomList({ rooms, loading = false, onRoomCreated, on
   const handleStartAiChat = async () => {
     setStartingAi(true);
     try {
-      const result = await createOrGetAiRoom();
+      const result = await createOrGetAiRoom({});
       if (result.success) {
         selectRoom(result.data.id);
         onRoomCreated?.();

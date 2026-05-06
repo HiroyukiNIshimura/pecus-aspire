@@ -41,7 +41,7 @@ export function useStartDm(options: UseStartDmOptions = {}): UseStartDmReturn {
       setError(null);
 
       try {
-        const result = await createOrGetDmRoom(targetUserId);
+        const result = await createOrGetDmRoom({ targetUserId });
 
         if (!result.success) {
           setError(result.message || 'DMルームの作成に失敗しました');

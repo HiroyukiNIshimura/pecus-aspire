@@ -17,6 +17,26 @@ import type {
   WorkspaceRole,
   WorkspaceUserDetailResponse,
 } from '@/connectors/api/pecus';
+import {
+  type AddMemberToWorkspaceInput,
+  addMemberToWorkspaceInputSchema,
+  type CreateWorkspaceActionInput,
+  createWorkspaceActionInputSchema,
+  type JoinWorkspaceInput,
+  joinWorkspaceInputSchema,
+  type RemoveMemberFromWorkspaceInput,
+  removeMemberFromWorkspaceInputSchema,
+  type SearchWorkspaceMembersInput,
+  type SetWorkspaceSkillsInput,
+  searchWorkspaceMembersInputSchema,
+  setWorkspaceSkillsInputSchema,
+  type ToggleWorkspaceActiveInput,
+  toggleWorkspaceActiveInputSchema,
+  type UpdateMemberRoleInWorkspaceInput,
+  type UpdateWorkspaceActionInput,
+  updateMemberRoleInWorkspaceInputSchema,
+  updateWorkspaceActionInputSchema,
+} from '@/schemas/workspaceSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 import { validationError } from './types';
@@ -124,16 +144,23 @@ export async function fetchWorkspaces(
 /**
  * Server Action: ワークスペースを作成（一般ユーザー用）
  */
-export async function createWorkspace(request: {
-  name: string;
-  code?: string;
-  description?: string;
-  genreId: number;
-  mode?: WorkspaceMode;
-}): Promise<ApiResponse<WorkspaceFullDetailResponse>> {
+export async function createWorkspace(
+  input: CreateWorkspaceActionInput,
+): Promise<ApiResponse<WorkspaceFullDetailResponse>> {
+  const parseResult = createWorkspaceActionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.postApiWorkspaces(request);
+    const response = await api.workspace.postApiWorkspaces({
+      name: parseResult.data.name,
+      description: parseResult.data.description,
+      genreId: parseResult.data.genreId,
+      mode: parseResult.data.mode as WorkspaceMode | undefined,
+    });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create workspace:', error);
@@ -167,21 +194,21 @@ export async function getWorkspaceDetail(workspaceId: number): Promise<ApiRespon
  * Server Action: ワークスペースを更新
  */
 export async function updateWorkspace(
-  workspaceId: number,
-  request: {
-    name: string;
-    description?: string;
-    genreId: number;
-    rowVersion: number;
-  },
+  input: UpdateWorkspaceActionInput,
 ): Promise<ApiResponse<WorkspaceFullDetailResponse>> {
+  const parseResult = updateWorkspaceActionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.putApiWorkspaces(workspaceId, {
-      name: request.name,
-      description: request.description,
-      genreId: request.genreId,
-      rowVersion: request.rowVersion,
+    const response = await api.workspace.putApiWorkspaces(parseResult.data.workspaceId, {
+      name: parseResult.data.name,
+      description: parseResult.data.description,
+      genreId: parseResult.data.genreId,
+      rowVersion: parseResult.data.rowVersion,
     });
     return { success: true, data: response };
   } catch (error) {
@@ -209,14 +236,19 @@ export async function updateWorkspace(
  * Server Action: ワークスペースの有効/無効を切り替え
  */
 export async function toggleWorkspaceActive(
-  workspaceId: number,
-  isActive: boolean,
+  input: ToggleWorkspaceActiveInput,
 ): Promise<ApiResponse<WorkspaceFullDetailResponse>> {
+  const parseResult = toggleWorkspaceActiveInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
 
     // 最新のワークスペース情報を取得してrowVersionを取得
-    const detailResponse = await api.workspace.getApiWorkspaces1(workspaceId);
+    const detailResponse = await api.workspace.getApiWorkspaces1(parseResult.data.workspaceId);
 
     // rowVersionが存在しない、または0の場合はエラー
     if (!detailResponse.rowVersion || detailResponse.rowVersion === 0) {
@@ -225,9 +257,9 @@ export async function toggleWorkspaceActive(
     }
 
     // isActiveに応じて適切なエンドポイントを呼び出す
-    const response = isActive
-      ? await api.workspace.postApiWorkspacesActivate(workspaceId, detailResponse.rowVersion)
-      : await api.workspace.postApiWorkspacesDeactivate(workspaceId, detailResponse.rowVersion);
+    const response = parseResult.data.isActive
+      ? await api.workspace.postApiWorkspacesActivate(parseResult.data.workspaceId, detailResponse.rowVersion)
+      : await api.workspace.postApiWorkspacesDeactivate(parseResult.data.workspaceId, detailResponse.rowVersion);
 
     return { success: true, data: response };
   } catch (error) {
@@ -257,15 +289,22 @@ export async function toggleWorkspaceActive(
  * Server Action: ワークスペースにメンバーを追加（Owner権限が必要）
  */
 export async function addMemberToWorkspace(
-  workspaceId: number,
-  userId: number,
-  workspaceRole: WorkspaceRole,
+  input: AddMemberToWorkspaceInput,
 ): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  const parseResult = addMemberToWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+  if (parseResult.data.workspaceRole === null) {
+    return validationError('ロールが不正です。');
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.postApiWorkspacesMembers(workspaceId, {
-      userId,
-      workspaceRole,
+    const response = await api.workspace.postApiWorkspacesMembers(parseResult.data.workspaceId, {
+      userId: parseResult.data.userId,
+      workspaceRole: parseResult.data.workspaceRole as WorkspaceRole,
     });
     return { success: true, data: response };
   } catch (error) {
@@ -280,10 +319,16 @@ export async function addMemberToWorkspace(
 /**
  * Server Action: ワークスペースからメンバーを削除（Owner権限または自分自身）
  */
-export async function removeMemberFromWorkspace(workspaceId: number, userId: number): Promise<ApiResponse<void>> {
+export async function removeMemberFromWorkspace(input: RemoveMemberFromWorkspaceInput): Promise<ApiResponse<void>> {
+  const parseResult = removeMemberFromWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    await api.workspace.deleteApiWorkspacesMembers(workspaceId, userId);
+    await api.workspace.deleteApiWorkspacesMembers(parseResult.data.workspaceId, parseResult.data.userId);
     return { success: true, data: undefined };
   } catch (error) {
     console.error('Failed to remove member from workspace:', error);
@@ -298,15 +343,26 @@ export async function removeMemberFromWorkspace(workspaceId: number, userId: num
  * Server Action: ワークスペースメンバーのロールを変更（Owner権限が必要）
  */
 export async function updateMemberRoleInWorkspace(
-  workspaceId: number,
-  userId: number,
-  newRole: WorkspaceRole,
+  input: UpdateMemberRoleInWorkspaceInput,
 ): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  const parseResult = updateMemberRoleInWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+  if (parseResult.data.newRole === null) {
+    return validationError('ロールが不正です。');
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.patchApiWorkspacesMembersRole(workspaceId, userId, {
-      workspaceRole: newRole,
-    });
+    const response = await api.workspace.patchApiWorkspacesMembersRole(
+      parseResult.data.workspaceId,
+      parseResult.data.userId,
+      {
+        workspaceRole: parseResult.data.newRole as WorkspaceRole,
+      },
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update member role:', error);
@@ -333,16 +389,18 @@ export async function updateMemberRoleInWorkspace(
  * Server Action: ワークスペースのスキルを設定（Owner権限が必要）
  * 既存のスキルを洗い替えします（指定されたスキル以外は削除されます）
  */
-export async function setWorkspaceSkills(
-  workspaceId: number,
-  skillIds: number[],
-  rowVersion: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function setWorkspaceSkills(input: SetWorkspaceSkillsInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = setWorkspaceSkillsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.putApiWorkspacesSkills(workspaceId, {
-      skillIds,
-      rowVersion,
+    const response = await api.workspace.putApiWorkspacesSkills(parseResult.data.workspaceId, {
+      skillIds: parseResult.data.skillIds,
+      rowVersion: parseResult.data.rowVersion,
     });
     return { success: true, data: response };
   } catch (error) {
@@ -376,18 +434,27 @@ export async function setWorkspaceSkills(
  * @param limit 取得件数上限（デフォルト20）
  */
 export async function searchWorkspaceMembers(
-  workspaceId: number,
-  query: string,
-  excludeViewer: boolean = false,
-  limit: number = 20,
+  input: SearchWorkspaceMembersInput,
 ): Promise<ApiResponse<UserSearchResultResponse[]>> {
-  try {
-    if (!query || query.length < 2) {
+  const parseResult = searchWorkspaceMembersInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const hasTooSmall = parseResult.error.issues.some((issue) => issue.code === 'too_small');
+    if (hasTooSmall) {
       return { success: true, data: [] };
     }
 
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
+  try {
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspacesMembersSearch(workspaceId, query, limit, excludeViewer);
+    const response = await api.workspace.getApiWorkspacesMembersSearch(
+      parseResult.data.workspaceId,
+      parseResult.data.query,
+      parseResult.data.limit ?? 20,
+      parseResult.data.excludeViewer ?? false,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to search workspace members:', error);
@@ -422,10 +489,16 @@ export async function getWorkspaceTaskTrend(
  * Server Action: ワークスペースに閲覧メンバーとして参加
  * @param workspaceId ワークスペースID
  */
-export async function joinWorkspace(workspaceId: number): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+export async function joinWorkspace(input: JoinWorkspaceInput): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  const parseResult = joinWorkspaceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.postApiWorkspacesJoin(workspaceId);
+    const response = await api.workspace.postApiWorkspacesJoin(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to join workspace:', error);

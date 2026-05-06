@@ -121,18 +121,24 @@ export default function DocumentTreeSidebar({
 
       if (parentChanged) {
         // 親変更 → insertAtIndex 付きで親更新API
-        updateResult = await updateItemParent(workspaceId, {
-          itemId: targetItemId,
-          newParentItemId: newParentId,
-          insertAtIndex: destinationIndex ?? null,
-          rowVersion,
+        updateResult = await updateItemParent({
+          workspaceId,
+          request: {
+            itemId: targetItemId,
+            newParentItemId: newParentId,
+            insertAtIndex: destinationIndex ?? null,
+            rowVersion,
+          },
         });
       } else {
         // 兄弟間移動 → ソート順変更API
-        updateResult = await updateSiblingOrder(workspaceId, {
-          itemId: targetItemId,
-          newIndex: destinationIndex ?? 0,
-          rowVersion,
+        updateResult = await updateSiblingOrder({
+          workspaceId,
+          request: {
+            itemId: targetItemId,
+            newIndex: destinationIndex ?? 0,
+            rowVersion,
+          },
         });
       }
 

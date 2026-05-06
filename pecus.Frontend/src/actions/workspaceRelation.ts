@@ -1,9 +1,16 @@
 'use server';
 
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { DocumentTreeResponse, UpdateItemParentRequest, UpdateSiblingOrderRequest } from '@/connectors/api/pecus';
+import type { DocumentTreeResponse } from '@/connectors/api/pecus';
+import {
+  type UpdateItemParentInput,
+  type UpdateSiblingOrderInput,
+  updateItemParentInputSchema,
+  updateSiblingOrderInputSchema,
+} from '@/schemas/workspaceRelationSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 /**
  * ドキュメントツリーを取得
@@ -29,12 +36,17 @@ export async function fetchDocumentTree(workspaceId: number): Promise<ApiRespons
  * @param request 更新リクエスト
  */
 export async function updateItemParent(
-  workspaceId: number,
-  request: UpdateItemParentRequest,
+  input: UpdateItemParentInput,
 ): Promise<ApiResponse<void>> {
+  const parseResult = updateItemParentInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const { workspace } = createPecusApiClients();
-    await workspace.putApiWorkspacesDocumentTreeParent(workspaceId, request);
+    await workspace.putApiWorkspacesDocumentTreeParent(parseResult.data.workspaceId, parseResult.data.request);
     return { success: true, data: undefined };
   } catch (error) {
     console.error('updateItemParent error:', error);
@@ -50,12 +62,17 @@ export async function updateItemParent(
  * @param request 更新リクエスト
  */
 export async function updateSiblingOrder(
-  workspaceId: number,
-  request: UpdateSiblingOrderRequest,
+  input: UpdateSiblingOrderInput,
 ): Promise<ApiResponse<void>> {
+  const parseResult = updateSiblingOrderInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const { workspace } = createPecusApiClients();
-    await workspace.putApiWorkspacesDocumentTreeSiblingOrder(workspaceId, request);
+    await workspace.putApiWorkspacesDocumentTreeSiblingOrder(parseResult.data.workspaceId, parseResult.data.request);
     return { success: true, data: undefined };
   } catch (error) {
     console.error('updateSiblingOrder error:', error);

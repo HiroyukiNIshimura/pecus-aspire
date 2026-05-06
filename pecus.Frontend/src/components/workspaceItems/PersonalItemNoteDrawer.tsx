@@ -80,8 +80,8 @@ export default function PersonalItemNoteDrawer({
     setError(null);
 
     const result = note
-      ? await updatePersonalItemNote(workspaceId, itemId, draftContent)
-      : await createPersonalItemNote(workspaceId, itemId, draftContent);
+      ? await updatePersonalItemNote({ workspaceId, itemId, content: draftContent })
+      : await createPersonalItemNote({ workspaceId, itemId, content: draftContent });
 
     setIsSaving(false);
 
@@ -97,7 +97,7 @@ export default function PersonalItemNoteDrawer({
   const handleDelete = async () => {
     setIsSaving(true);
     setError(null);
-    const result = await deletePersonalItemNote(workspaceId, itemId);
+    const result = await deletePersonalItemNote({ workspaceId, itemId });
     setIsSaving(false);
     if (result.success) {
       setNote(null);

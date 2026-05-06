@@ -4,13 +4,12 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { LoginResponse, RoleInfoResponse } from '@/connectors/api/pecus';
-import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
-import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
 import { getApiBaseUrl } from '@/libs/env';
 import { type CreateSessionInput, type ServerSessionData, ServerSessionManager } from '@/libs/serverSession';
+import { type LoginActionInput, loginActionInputSchema } from '@/schemas/signInSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
-import { serverError } from './types';
+import { serverError, validationError } from './types';
 
 /**
  * Server Action: ログイン
@@ -18,17 +17,13 @@ import { serverError } from './types';
  * 認証成功時、Redis にセッションを作成し、Cookie には sessionId のみ保存。
  * トークンはブラウザに送信されない（Redis 内に保持）。
  */
-export async function login(request: {
-  loginIdentifier: string;
-  password: string;
-  deviceName?: string;
-  deviceType: DeviceType;
-  os: OSPlatform;
-  userAgent?: string;
-  appVersion?: string;
-  timezone?: string;
-  location?: string;
-}): Promise<ApiResponse<LoginResponse>> {
+export async function login(input: LoginActionInput): Promise<ApiResponse<LoginResponse>> {
+  const parseResult = loginActionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     // Next.js のヘッダーからクライアントIPを取得
     const headersList = await headers();
@@ -40,15 +35,15 @@ export async function login(request: {
 
     const api = createPecusApiClients();
     const response = await api.entranceAuth.postApiEntranceAuthLogin({
-      loginIdentifier: request.loginIdentifier,
-      password: request.password,
-      deviceName: request.deviceName,
-      deviceType: request.deviceType,
-      os: request.os,
-      userAgent: request.userAgent,
-      appVersion: request.appVersion,
-      timezone: request.timezone,
-      location: request.location,
+      loginIdentifier: parseResult.data.loginIdentifier,
+      password: parseResult.data.password,
+      deviceName: parseResult.data.deviceName,
+      deviceType: parseResult.data.deviceType,
+      os: parseResult.data.os,
+      userAgent: parseResult.data.userAgent,
+      appVersion: parseResult.data.appVersion,
+      timezone: parseResult.data.timezone,
+      location: parseResult.data.location,
       ipAddress: clientIp,
     });
 
@@ -74,13 +69,13 @@ export async function login(request: {
       },
       device: {
         publicId: response.device?.publicId ?? undefined,
-        name: request.deviceName,
-        type: request.deviceType ?? undefined,
-        os: request.os ?? undefined,
-        userAgent: request.userAgent,
-        appVersion: request.appVersion,
-        timezone: request.timezone,
-        location: request.location,
+        name: parseResult.data.deviceName,
+        type: parseResult.data.deviceType ?? undefined,
+        os: parseResult.data.os ?? undefined,
+        userAgent: parseResult.data.userAgent,
+        appVersion: parseResult.data.appVersion,
+        timezone: parseResult.data.timezone,
+        location: parseResult.data.location,
         ipAddress: clientIp,
       },
     };

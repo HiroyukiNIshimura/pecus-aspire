@@ -2,20 +2,10 @@
 
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { GenerateTextResponse } from '@/connectors/api/pecus';
+import { type GenerateAiTextInput, generateAiTextInputSchema } from '@/schemas/aiAssistantSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
-
-/**
- * AIアシスタント生成リクエスト
- */
-export interface GenerateAiTextRequest {
-  /** エディタ全体のMarkdownコンテンツ（カーソル位置マーカー含む） */
-  markdown: string;
-  /** カーソル位置を示すマーカー文字列 */
-  cursorMarker: string;
-  /** ユーザーからの指示（何を生成してほしいか） */
-  userPrompt: string;
-}
+import { validationError } from './types';
 
 /**
  * Server Action: AIアシスタントによるテキスト生成
@@ -23,16 +13,22 @@ export interface GenerateAiTextRequest {
  * エディタのカーソル位置に挿入する最適なテキストを生成する。
  * 組織のAI設定が未構成の場合はエラーを返す。
  *
- * @param request 生成リクエスト
+ * @param input 生成リクエスト
  * @returns 生成されたテキスト（Markdown形式）
  */
-export async function generateAiText(request: GenerateAiTextRequest): Promise<ApiResponse<GenerateTextResponse>> {
+export async function generateAiText(input: GenerateAiTextInput): Promise<ApiResponse<GenerateTextResponse>> {
+  const parseResult = generateAiTextInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.aiAssistant.postApiAiAssistantGenerate({
-      markdown: request.markdown,
-      cursorMarker: request.cursorMarker,
-      userPrompt: request.userPrompt,
+      markdown: parseResult.data.markdown,
+      cursorMarker: parseResult.data.cursorMarker,
+      userPrompt: parseResult.data.userPrompt,
     });
 
     return { success: true, data: response };

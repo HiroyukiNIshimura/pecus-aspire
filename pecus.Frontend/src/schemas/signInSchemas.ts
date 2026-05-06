@@ -15,6 +15,31 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+const deviceTypeSchema = z
+  .enum(['Browser', 'MobileApp', 'DesktopApp', 'Other'], { error: 'デバイスタイプが不正です。' })
+  .nullable();
+
+const osPlatformSchema = z
+  .enum(['Unknown', 'Windows', 'MacOS', 'Linux', 'iOS', 'Android'], { error: 'OS情報が不正です。' })
+  .nullable();
+
+/**
+ * Server Action login 用の入力検証スキーマ
+ */
+export const loginActionInputSchema = z.object({
+  loginIdentifier: loginSchema.shape.loginIdentifier,
+  password: loginSchema.shape.password,
+  deviceName: z.string().max(255, 'デバイス名は255文字以内で入力してください。').optional(),
+  deviceType: deviceTypeSchema,
+  os: osPlatformSchema,
+  userAgent: z.string().max(1000, 'ユーザーエージェントが長すぎます。').optional(),
+  appVersion: z.string().max(100, 'アプリバージョンが長すぎます。').optional(),
+  timezone: z.string().max(100, 'タイムゾーンが長すぎます。').optional(),
+  location: z.string().max(255, 'ロケーションは255文字以内で入力してください。').optional(),
+});
+
+export type LoginActionInput = z.infer<typeof loginActionInputSchema>;
+
 /**
  * パスワードリセットリクエスト検証スキーマ
  * - メールアドレス: 有効なメール形式で1〜255文字

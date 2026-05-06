@@ -119,7 +119,7 @@ export default function CreateWorkspaceItem({
           tempAttachmentIds: tempFileIds.length > 0 ? tempFileIds : undefined,
         };
 
-        const result = await createWorkspaceItem(workspaceId, request);
+        const result = await createWorkspaceItem({ workspaceId, request });
 
         if (result.success) {
           notify.success('アイテムを作成しました。');

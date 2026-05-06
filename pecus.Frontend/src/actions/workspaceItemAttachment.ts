@@ -2,8 +2,15 @@
 
 import { createAuthenticatedAxios, createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import {
+  type DeleteWorkspaceItemAttachmentInput,
+  deleteWorkspaceItemAttachmentInputSchema,
+  type UploadWorkspaceItemAttachmentInput,
+  uploadWorkspaceItemAttachmentInputSchema,
+} from '@/schemas/workspaceItemAttachmentSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 /**
  * アップロード結果の型
@@ -53,12 +60,16 @@ function getSafeFileName(originalName: string): string {
  * @param taskId ワークスペースタスクID（オプション）
  */
 export async function uploadWorkspaceItemAttachment(
-  workspaceId: number,
-  itemId: number,
-  formData: FormData,
-  taskId?: number,
+  input: UploadWorkspaceItemAttachmentInput,
 ): Promise<ApiResponse<UploadAttachmentResult>> {
+  const parseResult = uploadWorkspaceItemAttachmentInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
+    const { workspaceId, itemId, formData, taskId } = parseResult.data;
     const file = formData.get('file') as File | Blob | null;
     const originalFileName = (file instanceof File ? file.name : null) || (formData.get('fileName') as string | null);
 
@@ -167,11 +178,16 @@ export async function fetchWorkspaceItemAttachments(
  * @param attachmentId 添付ファイルID
  */
 export async function deleteWorkspaceItemAttachment(
-  workspaceId: number,
-  itemId: number,
-  attachmentId: number,
+  input: DeleteWorkspaceItemAttachmentInput,
 ): Promise<ApiResponse<void>> {
+  const parseResult = deleteWorkspaceItemAttachmentInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
+    const { workspaceId, itemId, attachmentId } = parseResult.data;
     const api = createPecusApiClients();
     await api.workspaceItem.deleteApiWorkspacesItemsAttachments(workspaceId, itemId, attachmentId);
     return { success: true, data: undefined };

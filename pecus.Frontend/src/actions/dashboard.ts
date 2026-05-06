@@ -11,8 +11,10 @@ import type {
   HealthAnalysisRequest,
   HealthAnalysisResponse,
 } from '@/connectors/api/pecus';
+import { type AnalyzeHealthInput, analyzeHealthInputSchema } from '@/schemas/dashboardSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 /**
  * 組織のダッシュボードサマリを取得
@@ -127,9 +129,20 @@ export async function fetchHelpComments(): Promise<ApiResponse<DashboardHelpComm
  * AIによるワークスペース/組織の健康状態分析を実行
  * @param request 分析リクエスト（スコープ、分析タイプ、ワークスペースID等）
  */
-export async function analyzeHealth(request: HealthAnalysisRequest): Promise<ApiResponse<HealthAnalysisResponse>> {
+export async function analyzeHealth(input: AnalyzeHealthInput): Promise<ApiResponse<HealthAnalysisResponse>> {
+  const parseResult = analyzeHealthInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
+    const request: HealthAnalysisRequest = {
+      scope: parseResult.data.scope,
+      workspaceId: parseResult.data.workspaceId,
+      analysisType: parseResult.data.analysisType,
+    };
     const response = await api.dashboard.postApiDashboardHealthAnalysis(request);
 
     return { success: true, data: response };

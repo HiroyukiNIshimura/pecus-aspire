@@ -3,19 +3,27 @@
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   AssigneeTaskLoadResponse,
-  BulkCreateTasksRequest,
   BulkCreateTasksResponse,
-  CreateWorkspaceTaskRequest,
-  GenerateTaskCandidatesRequest,
   PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics,
   SortOrder,
   TaskGenerationResponse,
   TaskSortBy,
   TaskStatusFilter,
-  UpdateWorkspaceTaskRequest,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskResponse,
 } from '@/connectors/api/pecus';
+import {
+  type BulkCreateTasksInput,
+  type CheckAssigneeTaskLoadInput,
+  type CreateWorkspaceTaskActionInput,
+  type GenerateTaskCandidatesInput,
+  type UpdateWorkspaceTaskActionInput,
+  bulkCreateTasksInputSchema,
+  checkAssigneeTaskLoadInputSchema,
+  createWorkspaceTaskActionInputSchema,
+  generateTaskCandidatesInputSchema,
+  updateWorkspaceTaskActionInputSchema,
+} from '@/schemas/workspaceTaskSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 import { validationError } from './types';
@@ -147,13 +155,21 @@ export async function getWorkspaceTask(
  * ワークスペースタスクを作成
  */
 export async function createWorkspaceTask(
-  workspaceId: number,
-  itemId: number,
-  request: CreateWorkspaceTaskRequest,
+  input: CreateWorkspaceTaskActionInput,
 ): Promise<ApiResponse<WorkspaceTaskResponse>> {
+  const parseResult = createWorkspaceTaskActionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasks(workspaceId, itemId, request);
+    const response = await api.workspaceTask.postApiWorkspacesItemsTasks(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.request,
+    );
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -168,14 +184,22 @@ export async function createWorkspaceTask(
  * ワークスペースタスクを更新
  */
 export async function updateWorkspaceTask(
-  workspaceId: number,
-  itemId: number,
-  taskId: number,
-  request: UpdateWorkspaceTaskRequest,
+  input: UpdateWorkspaceTaskActionInput,
 ): Promise<ApiResponse<WorkspaceTaskResponse>> {
+  const parseResult = updateWorkspaceTaskActionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const response = await api.workspaceTask.putApiWorkspacesItemsTasks(workspaceId, itemId, taskId, request);
+    const response = await api.workspaceTask.putApiWorkspacesItemsTasks(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.taskId,
+      parseResult.data.request,
+    );
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -206,25 +230,21 @@ export async function updateWorkspaceTask(
  * 担当者の期限日別タスク負荷をチェック
  */
 export async function checkAssigneeTaskLoad(
-  workspaceId: number,
-  itemId: number,
-  assignedUserId?: number,
-  dueDate?: string,
+  input: CheckAssigneeTaskLoadInput,
 ): Promise<ApiResponse<AssigneeTaskLoadResponse>> {
-  if (!assignedUserId) {
-    return validationError('担当者を選択してください。');
-  }
-  if (!dueDate) {
-    return validationError('期限日を選択してください。');
+  const parseResult = checkAssigneeTaskLoadInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
   }
 
   try {
     const api = await createPecusApiClients();
     const response = await api.workspaceTask.getApiWorkspacesItemsTasksAssigneeLoadCheck(
-      workspaceId,
-      itemId,
-      assignedUserId,
-      dueDate,
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.assignedUserId,
+      parseResult.data.dueDate,
     );
 
     return { success: true, data: response };
@@ -357,16 +377,20 @@ export async function fetchTaskContentSuggestion(
  * アイテム情報からタスク候補を自動生成する
  */
 export async function generateTaskCandidates(
-  workspaceId: number,
-  itemId: number,
-  request: GenerateTaskCandidatesRequest,
+  input: GenerateTaskCandidatesInput,
 ): Promise<ApiResponse<TaskGenerationResponse>> {
+  const parseResult = generateTaskCandidatesInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const response = await api.workspaceTask.postApiWorkspacesItemsTasksGenerateCandidates(
-      workspaceId,
-      itemId,
-      request,
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.request,
     );
 
     return { success: true, data: response };
@@ -384,18 +408,21 @@ export async function generateTaskCandidates(
  * 承認されたタスク候補を一括で作成する
  */
 export async function bulkCreateTasks(
-  workspaceId: number,
-  itemId: number,
-  request: BulkCreateTasksRequest,
+  input: BulkCreateTasksInput,
 ): Promise<ApiResponse<BulkCreateTasksResponse>> {
-  // バリデーション
-  if (!request.tasks || request.tasks.length === 0) {
-    return validationError('作成するタスクを1つ以上選択してください。');
+  const parseResult = bulkCreateTasksInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
   }
 
   try {
     const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasksBulkCreate(workspaceId, itemId, request);
+    const response = await api.workspaceTask.postApiWorkspacesItemsTasksBulkCreate(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.request,
+    );
 
     return { success: true, data: response };
   } catch (error) {

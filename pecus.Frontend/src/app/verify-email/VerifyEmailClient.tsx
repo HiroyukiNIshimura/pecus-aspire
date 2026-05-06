@@ -24,7 +24,7 @@ export default function VerifyEmailClient() {
 
     // トークン検証を実行
     const verify = async () => {
-      const result = await verifyEmailChange(token);
+      const result = await verifyEmailChange({ token });
 
       if (result.success) {
         setState('success');

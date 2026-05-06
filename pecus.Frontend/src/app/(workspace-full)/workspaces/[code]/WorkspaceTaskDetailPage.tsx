@@ -753,7 +753,12 @@ export default function WorkspaceTaskDetailPage({
           rowVersion: task.rowVersion,
         };
 
-        const result = await updateWorkspaceTask(workspaceId, itemId, task.id, requestData);
+        const result = await updateWorkspaceTask({
+          workspaceId,
+          itemId,
+          taskId: task.id,
+          request: requestData,
+        });
 
         if (!result.success) {
           if (result.error === 'conflict') {
@@ -817,7 +822,7 @@ export default function WorkspaceTaskDetailPage({
       setShowAssigneeDropdown(true);
 
       try {
-        const result = await searchWorkspaceMembers(workspaceId, query, true);
+        const result = await searchWorkspaceMembers({ workspaceId, query, excludeViewer: true });
         if (result.success) {
           setAssigneeSearchResults(result.data || []);
           setShowAssigneeDropdown(true);
