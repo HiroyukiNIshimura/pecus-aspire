@@ -168,7 +168,7 @@ export default function GenerateTasksModal({
       })();
       // メンバー一覧を取得（AI担当者推薦の解決用）
       (async () => {
-        const result = await fetchWorkspaceMembers(workspaceId);
+        const result = await fetchWorkspaceMembers({ workspaceId });
         if (result.success) {
           setWorkspaceMembers(result.data || []);
         }

@@ -183,7 +183,7 @@ export default function AttendeeSelector({
       setIsExpanding(true);
       setShowWorkspaceDropdown(false);
       try {
-        const result = await fetchWorkspaceMembers(workspace.id);
+        const result = await fetchWorkspaceMembers({ workspaceId: workspace.id });
         if (result.success && result.data) {
           const newAttendees: SelectedAttendee[] = [];
           const currentRemaining = maxAttendees - selectedAttendees.length;
@@ -224,7 +224,7 @@ export default function AttendeeSelector({
 
     setIsExpanding(true);
     try {
-      const result = await fetchOrganizationMembers(maxAttendees);
+      const result = await fetchOrganizationMembers({ maxAttendees });
       if (result.success && result.data) {
         const newAttendees: SelectedAttendee[] = [];
         const currentRemaining = maxAttendees - selectedAttendees.length;

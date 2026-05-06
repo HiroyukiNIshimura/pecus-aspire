@@ -45,9 +45,12 @@ export default async function EditAgendaPage({ params, searchParams }: EditAgend
     }
 
     // アジェンダ詳細取得（occurrenceStartAt / occurrenceIndex がある場合は例外適用済みデータを取得）
-    const agendaResult = await fetchAgendaById(agendaIdNum, {
-      occurrenceIndex,
-      occurrenceStartAt,
+    const agendaResult = await fetchAgendaById({
+      agendaId: agendaIdNum,
+      options: {
+        occurrenceIndex,
+        occurrenceStartAt,
+      },
     });
     if (!agendaResult.success) {
       redirect('/agendas');

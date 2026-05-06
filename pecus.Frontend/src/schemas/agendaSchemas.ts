@@ -318,3 +318,53 @@ export const fetchRecentOccurrencesPaginatedInputSchema = z.object({
 });
 
 export type FetchRecentOccurrencesPaginatedInput = z.infer<typeof fetchRecentOccurrencesPaginatedInputSchema>;
+
+export const fetchOccurrencesInputSchema = z.object({
+  startAt: z.string({ error: '開始日時が不正です。' }).min(1, '開始日時が不正です。'),
+  endAt: z.string({ error: '終了日時が不正です。' }).min(1, '終了日時が不正です。'),
+});
+
+export type FetchOccurrencesInput = z.infer<typeof fetchOccurrencesInputSchema>;
+
+export const fetchAgendaByIdInputSchema = z.object({
+  agendaId: agendaIdSchema,
+  options: z
+    .object({
+      occurrenceIndex: occurrenceIndexSchema.optional(),
+      occurrenceStartAt: z.string({ error: 'オカレンス日時が不正です。' }).optional(),
+    })
+    .optional(),
+});
+
+export type FetchAgendaByIdInput = z.infer<typeof fetchAgendaByIdInputSchema>;
+
+export const fetchAgendaExceptionsInputSchema = z.object({
+  agendaId: agendaIdSchema,
+});
+
+export type FetchAgendaExceptionsInput = z.infer<typeof fetchAgendaExceptionsInputSchema>;
+
+export const fetchNotificationsInputSchema = z.object({
+  limit: z
+    .number({ error: '取得件数が不正です。' })
+    .int('取得件数が不正です。')
+    .min(1, '取得件数が不正です。')
+    .max(100, '取得件数が不正です。')
+    .optional(),
+  beforeId: z.number({ error: '通知IDが不正です。' }).int('通知IDが不正です。').positive('通知IDが不正です。').optional(),
+  unreadOnly: z.boolean({ error: '未読条件が不正です。' }).optional(),
+});
+
+export type FetchNotificationsInput = z.infer<typeof fetchNotificationsInputSchema>;
+
+export const fetchWorkspaceMembersInputSchema = z.object({
+  workspaceId: z.number({ error: 'ワークスペースIDが不正です。' }).int('ワークスペースIDが不正です。').positive('ワークスペースIDが不正です。'),
+});
+
+export type FetchWorkspaceMembersInput = z.infer<typeof fetchWorkspaceMembersInputSchema>;
+
+export const fetchOrganizationMembersInputSchema = z.object({
+  maxAttendees: z.number({ error: '最大人数が不正です。' }).int('最大人数が不正です。').positive('最大人数が不正です。').optional(),
+});
+
+export type FetchOrganizationMembersInput = z.infer<typeof fetchOrganizationMembersInputSchema>;

@@ -114,7 +114,7 @@ export default function AgendaNotificationPopup({
       setIsLoading(true);
       setError(null);
 
-      const result = await fetchNotifications(5, undefined, true);
+      const result = await fetchNotifications({ limit: 5, unreadOnly: true });
       if (result.success) {
         setNotifications(result.data);
       } else {

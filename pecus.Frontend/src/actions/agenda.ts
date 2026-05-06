@@ -23,10 +23,22 @@ import {
   cancelAgendaInputSchema,
   cancelOccurrenceInputSchema,
   createAgendaActionInputSchema,
+  type FetchAgendaByIdInput,
+  type FetchAgendaExceptionsInput,
+  type FetchNotificationsInput,
+  type FetchOccurrencesInput,
   type FetchRecentOccurrencesInput,
   type FetchRecentOccurrencesPaginatedInput,
+  type FetchOrganizationMembersInput,
+  type FetchWorkspaceMembersInput,
+  fetchAgendaByIdInputSchema,
+  fetchAgendaExceptionsInputSchema,
+  fetchNotificationsInputSchema,
+  fetchOccurrencesInputSchema,
+  fetchOrganizationMembersInputSchema,
   fetchRecentOccurrencesInputSchema,
   fetchRecentOccurrencesPaginatedInputSchema,
+  fetchWorkspaceMembersInputSchema,
   type MarkAllNotificationsAsReadInput,
   type MarkNotificationAsReadInput,
   markAllNotificationsAsReadInputSchema,
@@ -116,12 +128,17 @@ export async function fetchRecentOccurrencesPaginated(
  * 期間指定でアジェンダオカレンス一覧を取得
  */
 export async function fetchOccurrences(
-  startAt: string,
-  endAt: string,
+  input: FetchOccurrencesInput,
 ): Promise<ApiResponse<AgendaOccurrenceResponse[]>> {
+  const parseResult = fetchOccurrencesInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const result = await api.agenda.getApiAgendasOccurrences(startAt, endAt);
+    const result = await api.agenda.getApiAgendasOccurrences(parseResult.data.startAt, parseResult.data.endAt);
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('fetchOccurrences error:', error);
@@ -330,20 +347,25 @@ export async function updateOccurrence(input: UpdateOccurrenceInput): Promise<Ap
  * @param options 特定回指定オプション
  */
 export async function fetchAgendaById(
-  agendaId: number,
-  options?: AgendaOccurrenceQueryOptions,
+  input: FetchAgendaByIdInput,
 ): Promise<ApiResponse<AgendaDetailFetchData>> {
+  const parseResult = fetchAgendaByIdInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     // X-Resolved-Occurrence-Index を参照する必要があるため、レスポンス本文のみを返す生成APIクライアントではなく createAuthenticatedAxios を使用する
     const axios = await createAuthenticatedAxios();
     const params: Record<string, number | string> = {};
-    if (options?.occurrenceStartAt) {
-      params.occurrenceStartAt = options.occurrenceStartAt;
-    } else if (options?.occurrenceIndex !== undefined) {
-      params.occurrenceIndex = options.occurrenceIndex;
+    if (parseResult.data.options?.occurrenceStartAt) {
+      params.occurrenceStartAt = parseResult.data.options.occurrenceStartAt;
+    } else if (parseResult.data.options?.occurrenceIndex !== undefined) {
+      params.occurrenceIndex = parseResult.data.options.occurrenceIndex;
     }
 
-    const response = await axios.get<AgendaResponse>(`/api/agendas/${agendaId}`, {
+    const response = await axios.get<AgendaResponse>(`/api/agendas/${parseResult.data.agendaId}`, {
       params,
     });
 
@@ -373,10 +395,18 @@ export async function fetchAgendaById(
 /**
  * アジェンダの例外一覧を取得（繰り返しアジェンダ用）
  */
-export async function fetchAgendaExceptions(agendaId: number): Promise<ApiResponse<AgendaExceptionResponse[]>> {
+export async function fetchAgendaExceptions(
+  input: FetchAgendaExceptionsInput,
+): Promise<ApiResponse<AgendaExceptionResponse[]>> {
+  const parseResult = fetchAgendaExceptionsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const result = await api.agenda.getApiAgendasExceptions(agendaId);
+    const result = await api.agenda.getApiAgendasExceptions(parseResult.data.agendaId);
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('fetchAgendaExceptions error:', error);
@@ -480,13 +510,21 @@ export async function fetchNotificationCount(): Promise<ApiResponse<AgendaNotifi
  * 通知一覧を取得
  */
 export async function fetchNotifications(
-  limit: number = 50,
-  beforeId?: number,
-  unreadOnly: boolean = false,
+  input: FetchNotificationsInput = {},
 ): Promise<ApiResponse<AgendaNotificationResponse[]>> {
+  const parseResult = fetchNotificationsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const result = await api.agendaNotification.getApiAgendasNotifications(limit, beforeId, unreadOnly);
+    const result = await api.agendaNotification.getApiAgendasNotifications(
+      parseResult.data.limit ?? 50,
+      parseResult.data.beforeId,
+      parseResult.data.unreadOnly ?? false,
+    );
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('fetchNotifications error:', error);
@@ -740,11 +778,17 @@ export async function searchUsers(
  * ワークスペースのメンバー一覧を取得（メンバー展開用）
  */
 export async function fetchWorkspaceMembers(
-  workspaceId: number,
+  input: FetchWorkspaceMembersInput,
 ): Promise<ApiResponse<{ userId: number; userName: string; email: string; identityIconUrl: string | null }[]>> {
+  const parseResult = fetchWorkspaceMembersInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const workspace = await api.workspace.getApiWorkspaces1(workspaceId);
+    const workspace = await api.workspace.getApiWorkspaces1(parseResult.data.workspaceId);
     const members =
       workspace.members?.map((m) => ({
         userId: m.id!,
@@ -773,13 +817,20 @@ const DEFAULT_MAX_ATTENDEES = 100;
  * @param maxAttendees 取得する最大人数（デフォルト: 100）
  */
 export async function fetchOrganizationMembers(
-  maxAttendees: number = DEFAULT_MAX_ATTENDEES,
+  input: FetchOrganizationMembersInput = {},
 ): Promise<ApiResponse<{ userId: number; userName: string; email: string; identityIconUrl: string | null }[]>> {
+  const parseResult = fetchOrganizationMembersInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const allMembers: { userId: number; userName: string; email: string; identityIconUrl: string | null }[] = [];
     let currentPage = 1;
     let hasNextPage = true;
+    const maxAttendees = parseResult.data.maxAttendees ?? DEFAULT_MAX_ATTENDEES;
 
     // maxAttendeesに達するまでページを取得
     while (hasNextPage && allMembers.length < maxAttendees) {
