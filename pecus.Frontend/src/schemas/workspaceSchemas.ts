@@ -141,3 +141,19 @@ export const getMyWorkspacesPagedInputSchema = z.object({
 });
 
 export type GetMyWorkspacesPagedInput = z.infer<typeof getMyWorkspacesPagedInputSchema>;
+
+export const fetchWorkspacesInputSchema = z.object({
+  page: z
+    .number({ error: 'ページ番号が不正です。' })
+    .int('ページ番号が不正です。')
+    .positive('ページ番号が不正です。')
+    .optional(),
+  genreId: z
+    .number({ error: 'ジャンルIDが不正です。' })
+    .int('ジャンルIDが不正です。')
+    .positive('ジャンルIDが不正です。')
+    .optional(),
+  name: z.string({ error: 'ワークスペース名が不正です。' }).max(100, 'ワークスペース名が長すぎます。').optional(),
+});
+
+export type FetchWorkspacesInput = z.infer<typeof fetchWorkspacesInputSchema>;

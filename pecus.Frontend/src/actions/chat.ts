@@ -16,7 +16,9 @@ import {
   type CreateOrGetDmRoomInput,
   createOrGetAiRoomInputSchema,
   createOrGetDmRoomInputSchema,
+  type GetChatMessagesInput,
   type GetDmCandidateUsersInput,
+  getChatMessagesInputSchema,
   getDmCandidateUsersInputSchema,
   type NotifyTypingInput,
   notifyTypingInputSchema,
@@ -121,14 +123,20 @@ export async function getChatUnreadCounts(): Promise<ApiResponse<ChatUnreadCount
 /**
  * Server Action: メッセージ一覧を取得
  */
-export async function getChatMessages(
-  roomId: number,
-  limit?: number,
-  cursor?: number,
-): Promise<ApiResponse<ChatMessagesResponse>> {
+export async function getChatMessages(input: GetChatMessagesInput): Promise<ApiResponse<ChatMessagesResponse>> {
+  const parseResult = getChatMessagesInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.chat.getApiChatRoomsMessages(roomId, limit, cursor);
+    const response = await api.chat.getApiChatRoomsMessages(
+      parseResult.data.roomId,
+      parseResult.data.limit,
+      parseResult.data.cursor,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('getChatMessages error:', error);

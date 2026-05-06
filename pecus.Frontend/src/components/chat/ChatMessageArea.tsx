@@ -145,7 +145,7 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
   const fetchRoomAndMessages = useCallback(async () => {
     setLoading(true);
     try {
-      const [roomResult, messagesResult] = await Promise.all([getChatRoomDetail(roomId), getChatMessages(roomId)]);
+      const [roomResult, messagesResult] = await Promise.all([getChatRoomDetail(roomId), getChatMessages({ roomId })]);
 
       if (roomResult.success && roomResult.data) {
         setRoom(roomResult.data);
@@ -202,7 +202,7 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
     if (!hasMore || !nextCursor) return;
 
     try {
-      const result = await getChatMessages(roomId, 50, nextCursor);
+      const result = await getChatMessages({ roomId, limit: 50, cursor: nextCursor });
       if (result.success && result.data) {
         setMessages((prev) => [...result.data!.messages, ...prev]);
         setHasMore(result.data.hasMore ?? false);

@@ -75,7 +75,11 @@ export default function WorkspacesClient({
   const loadMoreWorkspaces = async () => {
     try {
       const nextPage = currentPage + 1;
-      const result = await fetchWorkspaces(nextPage, filterGenreId ?? undefined, filterName || undefined);
+      const result = await fetchWorkspaces({
+        page: nextPage,
+        genreId: filterGenreId ?? undefined,
+        name: filterName || undefined,
+      });
 
       if (result.success && result.data) {
         setWorkspaces((prev) => [...prev, ...(result.data.data || [])]);
@@ -94,7 +98,11 @@ export default function WorkspacesClient({
   const handleFilterChange = withDelayedLoading(async () => {
     resetInfiniteScroll();
     try {
-      const result = await fetchWorkspaces(1, filterGenreId ?? undefined, filterName || undefined);
+      const result = await fetchWorkspaces({
+        page: 1,
+        genreId: filterGenreId ?? undefined,
+        name: filterName || undefined,
+      });
 
       if (result.success && result.data) {
         setWorkspaces(result.data.data || []);
@@ -131,7 +139,7 @@ export default function WorkspacesClient({
     // リセット後の値で直接検索を実行（stateの非同期更新を待たない）
     await withDelayedLoading(async () => {
       try {
-        const result = await fetchWorkspaces(1);
+        const result = await fetchWorkspaces({ page: 1 });
 
         if (result.success && result.data) {
           setWorkspaces(result.data.data || []);

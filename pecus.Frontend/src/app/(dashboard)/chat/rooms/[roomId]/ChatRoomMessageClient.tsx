@@ -110,7 +110,7 @@ export default function ChatRoomMessageClient({
 
     setLoadingMore(true);
     try {
-      const result = await getChatMessages(room.id, 50, nextCursor);
+      const result = await getChatMessages({ roomId: room.id, limit: 50, cursor: nextCursor });
       if (result.success && result.data) {
         setMessages((prev) => [...result.data!.messages, ...prev]);
         setHasMore(result.data.hasMore ?? false);

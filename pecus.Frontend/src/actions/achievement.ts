@@ -8,6 +8,8 @@ import type {
   UserAchievementResponse,
 } from '@/connectors/api/pecus';
 import {
+  type GetAchievementRankingInput,
+  getAchievementRankingInputSchema,
   type MarkAchievementNotifiedInput,
   type MarkAllAchievementsNotifiedInput,
   markAchievementNotifiedInputSchema,
@@ -100,12 +102,20 @@ export async function markAllAchievementsNotified(input: MarkAllAchievementsNoti
 
 /**
  * Server Action: バッジ獲得ランキングを取得
- * @param workspaceId ワークスペースID（指定時はそのワークスペース内でのランキング）
+ * @param input.workspaceId ワークスペースID（指定時はそのワークスペース内でのランキング）
  */
-export async function getAchievementRanking(workspaceId?: number): Promise<ApiResponse<AchievementRankingResponse>> {
+export async function getAchievementRanking(
+  input: GetAchievementRankingInput,
+): Promise<ApiResponse<AchievementRankingResponse>> {
+  const parseResult = getAchievementRankingInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievementsRanking(workspaceId);
+    const response = await api.achievement.getApiAchievementsRanking(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     return handleApiErrorForAction(error, { defaultMessage: 'ランキングの取得に失敗しました' });

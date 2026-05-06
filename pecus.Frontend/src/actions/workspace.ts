@@ -22,6 +22,8 @@ import {
   addMemberToWorkspaceInputSchema,
   type CreateWorkspaceActionInput,
   createWorkspaceActionInputSchema,
+  type FetchWorkspacesInput,
+  fetchWorkspacesInputSchema,
   type GetMyWorkspacesPagedInput,
   getMyWorkspacesPagedInputSchema,
   type JoinWorkspaceInput,
@@ -137,13 +139,22 @@ export async function getMyWorkspacesPaged(
  * @param name ワークスペース名（フィルタ用）
  */
 export async function fetchWorkspaces(
-  page: number = 1,
-  genreId?: number,
-  name?: string,
+  input: FetchWorkspacesInput,
 ): Promise<ApiResponse<PagedResponseOfWorkspaceListItemResponse>> {
+  const parseResult = fetchWorkspacesInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(page, genreId, name, undefined);
+    const response = await api.workspace.getApiWorkspaces(
+      parseResult.data.page ?? 1,
+      parseResult.data.genreId,
+      parseResult.data.name,
+      undefined,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);

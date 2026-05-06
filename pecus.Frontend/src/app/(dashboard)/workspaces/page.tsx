@@ -28,7 +28,7 @@ export default async function WorkspacesPage() {
     const [genresResult, statisticsResult, workspacesResult] = await Promise.all([
       api.master.getApiMasterGenres(),
       api.workspace.getApiWorkspacesStatistics(),
-      fetchWorkspaces(1),
+      fetchWorkspaces({ page: 1 }),
     ]);
 
     genres = genresResult;

@@ -66,3 +66,20 @@ export const getDmCandidateUsersInputSchema = z.object({
 });
 
 export type GetDmCandidateUsersInput = z.infer<typeof getDmCandidateUsersInputSchema>;
+
+export const getChatMessagesInputSchema = z.object({
+  roomId: z.number({ error: 'ルームIDが不正です。' }).int('ルームIDが不正です。').positive('ルームIDが不正です。'),
+  limit: z
+    .number({ error: '取得件数が不正です。' })
+    .int('取得件数が不正です。')
+    .min(1, '取得件数が不正です。')
+    .max(200, '取得件数が不正です。')
+    .optional(),
+  cursor: z
+    .number({ error: 'カーソルが不正です。' })
+    .int('カーソルが不正です。')
+    .positive('カーソルが不正です。')
+    .optional(),
+});
+
+export type GetChatMessagesInput = z.infer<typeof getChatMessagesInputSchema>;

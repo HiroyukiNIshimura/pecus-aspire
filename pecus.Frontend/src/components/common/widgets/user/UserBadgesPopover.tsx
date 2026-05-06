@@ -88,7 +88,7 @@ export default function UserBadgesPopover({ isOpen, onClose, userId, userName, a
       setIsLoading(true);
       setError(null);
 
-      const result = await getUserAchievements(userId);
+      const result = await getUserAchievements({ userId });
       if (result.success) {
         setBadges(result.data);
       } else {

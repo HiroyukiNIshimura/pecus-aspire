@@ -51,7 +51,7 @@ export default function UserSkillsPopover({ isOpen, onClose, userId, userName, a
       setIsLoading(true);
       setError(null);
 
-      const result = await getUserSkills(userId);
+      const result = await getUserSkills({ userId });
       if (result.success) {
         setSkills(result.data);
       } else {

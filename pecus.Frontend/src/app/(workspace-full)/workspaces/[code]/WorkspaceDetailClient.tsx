@@ -266,7 +266,7 @@ export default function WorkspaceDetailClient({
     const fetchRanking = async () => {
       setBadgeRankingLoading(true);
       try {
-        const result = await getAchievementRanking(currentWorkspaceDetail.id);
+        const result = await getAchievementRanking({ workspaceId: currentWorkspaceDetail.id });
         if (result.success) {
           setBadgeRanking(result.data);
         }
