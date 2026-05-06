@@ -27,7 +27,7 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
     return <FetchError message={authResult.message} backUrl="/admin/workspaces" backLabel="ワークスペース一覧に戻る" />;
   }
 
-  const workspaceResult = await getWorkspaceDetail(workspaceId);
+  const workspaceResult = await getWorkspaceDetail({ workspaceId });
   if (!workspaceResult.success) {
     if (workspaceResult.error === 'forbidden') {
       return <ForbiddenError backUrl="/admin/workspaces" backLabel="ワークスペース一覧に戻る" />;

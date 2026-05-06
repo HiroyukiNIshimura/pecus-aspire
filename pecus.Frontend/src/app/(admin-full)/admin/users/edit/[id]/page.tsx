@@ -43,7 +43,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
   let skills: SkillListItemResponse[] = [];
   let roles: RoleResponse[] = [];
 
-  const skillsResult = await getAllSkills(true);
+  const skillsResult = await getAllSkills({ isActive: true });
   if (skillsResult.success) {
     skills = skillsResult.data || [];
   }

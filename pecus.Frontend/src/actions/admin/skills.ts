@@ -17,6 +17,12 @@ import {
   type DeleteSkillInput,
   deactivateSkillInputSchema,
   deleteSkillInputSchema,
+  type GetAllSkillsInput,
+  getAllSkillsInputSchema,
+  type GetSkillDetailInput,
+  getSkillDetailInputSchema,
+  type GetSkillsInput,
+  getSkillsInputSchema,
   type UpdateSkillInput,
   updateSkillInputSchema,
 } from '@/schemas/adminSkillSchemas';
@@ -28,12 +34,16 @@ import { validationError } from '../types';
  * Server Action: スキル一覧を取得（ページネーション対応）
  */
 export async function getSkills(
-  page: number = 1,
-  isActive: boolean = true,
+  input: GetSkillsInput = {},
 ): Promise<ApiResponse<PagedResponseOfSkillListItemResponseAndSkillStatistics>> {
+  const parseResult = getSkillsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
   try {
     const api = createPecusApiClients();
-    const response = await api.adminSkill.getApiAdminSkills(page, isActive);
+    const response = await api.adminSkill.getApiAdminSkills(parseResult.data.page, parseResult.data.isActive);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch skills:', error);
@@ -45,7 +55,12 @@ export async function getSkills(
  * Server Action: 全スキルを取得（フィルター用）
  * 複数ページを自動取得して結合
  */
-export async function getAllSkills(isActive: boolean = true): Promise<ApiResponse<SkillListItemResponse[]>> {
+export async function getAllSkills(input: GetAllSkillsInput = {}): Promise<ApiResponse<SkillListItemResponse[]>> {
+  const parseResult = getAllSkillsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
   try {
     const api = createPecusApiClients();
     const allSkills: SkillListItemResponse[] = [];
@@ -53,7 +68,7 @@ export async function getAllSkills(isActive: boolean = true): Promise<ApiRespons
     let hasMore = true;
 
     while (hasMore) {
-      const response = await api.adminSkill.getApiAdminSkills(currentPage, isActive);
+      const response = await api.adminSkill.getApiAdminSkills(currentPage, parseResult.data.isActive);
 
       if (response.data && response.data.length > 0) {
         allSkills.push(...response.data);
@@ -81,10 +96,15 @@ export async function getAllSkills(isActive: boolean = true): Promise<ApiRespons
 /**
  * Server Action: スキル情報を取得
  */
-export async function getSkillDetail(id: number): Promise<ApiResponse<SkillDetailResponse>> {
+export async function getSkillDetail(input: GetSkillDetailInput): Promise<ApiResponse<SkillDetailResponse>> {
+  const parseResult = getSkillDetailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
   try {
     const api = createPecusApiClients();
-    const response = await api.adminSkill.getApiAdminSkills1(id);
+    const response = await api.adminSkill.getApiAdminSkills1(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch skill detail:', error);

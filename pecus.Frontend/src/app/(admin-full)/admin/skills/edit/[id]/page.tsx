@@ -26,7 +26,7 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
     return <FetchError message={authResult.message} backUrl="/admin/skills" backLabel="スキル一覧に戻る" />;
   }
 
-  const skillResult = await getSkillDetail(skillId);
+  const skillResult = await getSkillDetail({ id: skillId });
   if (!skillResult.success) {
     if (skillResult.error === 'forbidden') {
       return <ForbiddenError backUrl="/admin/skills" backLabel="スキル一覧に戻る" />;

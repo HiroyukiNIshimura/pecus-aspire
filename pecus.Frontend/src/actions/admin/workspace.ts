@@ -22,6 +22,10 @@ import {
   type DeleteWorkspaceInput,
   deactivateWorkspaceInputSchema,
   deleteWorkspaceInputSchema,
+  type GetAdminWorkspaceDetailInput,
+  getAdminWorkspaceDetailInputSchema,
+  type GetAdminWorkspacesInput,
+  getAdminWorkspacesInputSchema,
   type RemoveWorkspaceMemberInput,
   removeWorkspaceMemberInputSchema,
   type UpdateWorkspaceInput,
@@ -37,13 +41,20 @@ import { validationError } from '../types';
  * Server Action: ワークスペース一覧を取得
  */
 export async function getWorkspaces(
-  page: number = 1,
-  isActive?: boolean,
-  genreId?: number,
+  input: GetAdminWorkspacesInput = {},
 ): Promise<ApiResponse<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics>> {
+  const parseResult = getAdminWorkspacesInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces(page, isActive, genreId);
+    const response = await api.adminWorkspace.getApiAdminWorkspaces(
+      parseResult.data.page,
+      parseResult.data.isActive,
+      parseResult.data.genreId,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
@@ -54,10 +65,15 @@ export async function getWorkspaces(
 /**
  * Server Action: ワークスペース詳細を取得
  */
-export async function getWorkspaceDetail(workspaceId: number): Promise<ApiResponse<WorkspaceDetailResponse>> {
+export async function getWorkspaceDetail(input: GetAdminWorkspaceDetailInput): Promise<ApiResponse<WorkspaceDetailResponse>> {
+  const parseResult = getAdminWorkspaceDetailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces1(workspaceId);
+    const response = await api.adminWorkspace.getApiAdminWorkspaces1(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace detail:', error);

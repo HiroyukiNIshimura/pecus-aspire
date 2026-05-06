@@ -26,7 +26,7 @@ export default async function EditTagPage({ params }: { params: Promise<{ id: st
     return <FetchError message={authResult.message} backUrl="/admin/tags" backLabel="タグ一覧に戻る" />;
   }
 
-  const tagResult = await getTagDetail(tagId);
+  const tagResult = await getTagDetail({ id: tagId });
   if (!tagResult.success) {
     if (tagResult.error === 'forbidden') {
       return <ForbiddenError backUrl="/admin/tags" backLabel="タグ一覧に戻る" />;

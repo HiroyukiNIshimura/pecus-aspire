@@ -96,3 +96,22 @@ export const addWorkspaceMemberInputSchema = z.object({
 });
 
 export type AddWorkspaceMemberInput = z.infer<typeof addWorkspaceMemberInputSchema>;
+
+const genreIdSchema = z
+  .number({ error: 'ジャンルIDが不正です。' })
+  .int('ジャンルIDが不正です。')
+  .positive('ジャンルIDが不正です。');
+
+export const getAdminWorkspacesInputSchema = z.object({
+  page: z.number({ error: 'ページ番号が不正です。' }).int('ページ番号が不正です。').positive('ページ番号が不正です。').optional().default(1),
+  isActive: z.boolean().optional(),
+  genreId: genreIdSchema.optional(),
+});
+
+export type GetAdminWorkspacesInput = z.input<typeof getAdminWorkspacesInputSchema>;
+
+export const getAdminWorkspaceDetailInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+});
+
+export type GetAdminWorkspaceDetailInput = z.infer<typeof getAdminWorkspaceDetailInputSchema>;

@@ -16,6 +16,10 @@ import {
   type DeleteTagInput,
   deactivateTagInputSchema,
   deleteTagInputSchema,
+  type GetTagDetailInput,
+  getTagDetailInputSchema,
+  type GetTagsInput,
+  getTagsInputSchema,
   type UpdateTagInput,
   updateTagInputSchema,
 } from '@/schemas/adminTagSchemas';
@@ -27,12 +31,16 @@ import { validationError } from '../types';
  * Server Action: タグ一覧を取得（ページネーション対応）
  */
 export async function getTags(
-  page: number = 1,
-  isActive: boolean = true,
+  input: GetTagsInput = {},
 ): Promise<ApiResponse<PagedResponseOfTagListItemResponseAndTagStatistics>> {
+  const parseResult = getTagsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
   try {
     const api = createPecusApiClients();
-    const response = await api.adminTag.getApiAdminTags(page, isActive);
+    const response = await api.adminTag.getApiAdminTags(parseResult.data.page, parseResult.data.isActive);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch tags:', error);
@@ -43,10 +51,15 @@ export async function getTags(
 /**
  * Server Action: タグ情報を取得
  */
-export async function getTagDetail(id: number): Promise<ApiResponse<TagDetailResponse>> {
+export async function getTagDetail(input: GetTagDetailInput): Promise<ApiResponse<TagDetailResponse>> {
+  const parseResult = getTagDetailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
   try {
     const api = createPecusApiClients();
-    const response = await api.adminTag.getApiAdminTags1(id);
+    const response = await api.adminTag.getApiAdminTags1(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch tag detail:', error);
