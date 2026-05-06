@@ -126,6 +126,18 @@ export const searchWorkspaceMembersInputSchema = z.object({
 
 export type SearchWorkspaceMembersInput = z.infer<typeof searchWorkspaceMembersInputSchema>;
 
+export const getWorkspaceTaskTrendInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  weeks: z
+    .number({ error: '週数が不正です。' })
+    .int('週数が不正です。')
+    .min(4, '週数は4〜12の範囲で指定してください。')
+    .max(12, '週数は4〜12の範囲で指定してください。')
+    .optional(),
+});
+
+export type GetWorkspaceTaskTrendInput = z.infer<typeof getWorkspaceTaskTrendInputSchema>;
+
 export const joinWorkspaceInputSchema = z.object({
   workspaceId: workspaceIdSchema,
 });

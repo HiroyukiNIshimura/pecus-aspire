@@ -283,7 +283,7 @@ export default function WorkspaceDetailClient({
     const fetchTrend = async () => {
       setTaskTrendLoading(true);
       try {
-        const result = await getWorkspaceTaskTrend(currentWorkspaceDetail.id);
+        const result = await getWorkspaceTaskTrend({ workspaceId: currentWorkspaceDetail.id });
         if (result.success) {
           setTaskTrend(result.data);
         }

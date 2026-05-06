@@ -14,7 +14,7 @@ export default async function NotificationDetailPage({ params }: PageProps) {
   const { id } = await params;
   const notificationId = Number.parseInt(id, 10);
 
-  const result = await getBackOfficeNotificationDetail(notificationId);
+  const result = await getBackOfficeNotificationDetail({ id: notificationId });
 
   if (!result.success) {
     if (result.error === 'forbidden') {

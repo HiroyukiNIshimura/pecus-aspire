@@ -14,7 +14,7 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
   const page = params.page ? Number.parseInt(params.page, 10) : 1;
   const includeDeleted = params.includeDeleted === 'true';
 
-  const result = await getBackOfficeNotifications(page, 20, includeDeleted);
+  const result = await getBackOfficeNotifications({ page, pageSize: 20, includeDeleted });
 
   if (!result.success) {
     if (result.error === 'forbidden') {

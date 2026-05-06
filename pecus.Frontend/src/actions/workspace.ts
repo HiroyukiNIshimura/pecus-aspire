@@ -27,6 +27,8 @@ import {
   type GetMyWorkspacesInput,
   type GetMyWorkspacesPagedInput,
   type GetWorkspaceDetailInput,
+  type GetWorkspaceTaskTrendInput,
+  getWorkspaceTaskTrendInputSchema,
   getMyWorkspacesInputSchema,
   getMyWorkspacesPagedInputSchema,
   getWorkspaceDetailInputSchema,
@@ -513,12 +515,20 @@ export async function searchWorkspaceMembers(
  * @param weeks 取得する週数（4〜12、デフォルト8）
  */
 export async function getWorkspaceTaskTrend(
-  workspaceId: number,
-  weeks: number = 8,
+  input: GetWorkspaceTaskTrendInput,
 ): Promise<ApiResponse<DashboardTaskTrendResponse>> {
+  const parseResult = getWorkspaceTaskTrendInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspacesTaskTrend(workspaceId, weeks);
+    const response = await api.workspace.getApiWorkspacesTaskTrend(
+      parseResult.data.workspaceId,
+      parseResult.data.weeks ?? 8,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace task trend:', error);

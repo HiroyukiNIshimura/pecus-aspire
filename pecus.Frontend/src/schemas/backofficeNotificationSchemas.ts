@@ -10,6 +10,30 @@ const rowVersionSchema = z
   .int('行バージョンが不正です。')
   .min(0, '行バージョンが不正です。');
 
+const pageSchema = z
+  .number({ error: 'ページ番号が不正です。' })
+  .int('ページ番号が不正です。')
+  .positive('ページ番号が不正です。');
+
+const pageSizeSchema = z
+  .number({ error: 'ページサイズが不正です。' })
+  .int('ページサイズが不正です。')
+  .positive('ページサイズが不正です。');
+
+export const getBackOfficeNotificationsInputSchema = z.object({
+  page: pageSchema.optional(),
+  pageSize: pageSizeSchema.optional(),
+  includeDeleted: z.boolean({ error: '削除済み表示フラグが不正です。' }).optional(),
+});
+
+export type GetBackOfficeNotificationsInput = z.infer<typeof getBackOfficeNotificationsInputSchema>;
+
+export const getBackOfficeNotificationDetailInputSchema = z.object({
+  id: notificationIdSchema,
+});
+
+export type GetBackOfficeNotificationDetailInput = z.infer<typeof getBackOfficeNotificationDetailInputSchema>;
+
 const systemNotificationTypeSchema = z.enum(
   ['EmergencyMaintenance', 'ScheduledMaintenance', 'Important', 'Info', 'IncidentReport'],
   { error: '通知種別が不正です。' },

@@ -10,6 +10,10 @@ import {
   createBackOfficeNotificationInputSchema,
   type DeleteBackOfficeNotificationInput,
   deleteBackOfficeNotificationInputSchema,
+  type GetBackOfficeNotificationDetailInput,
+  type GetBackOfficeNotificationsInput,
+  getBackOfficeNotificationDetailInputSchema,
+  getBackOfficeNotificationsInputSchema,
   type UpdateBackOfficeNotificationInput,
   updateBackOfficeNotificationInputSchema,
 } from '@/schemas/backofficeNotificationSchemas';
@@ -21,13 +25,21 @@ import { validationError } from '../types';
  * Server Action: BackOffice - システム通知一覧を取得（ページネーション付き）
  */
 export async function getBackOfficeNotifications(
-  page?: number,
-  pageSize?: number,
-  includeDeleted?: boolean,
+  input: GetBackOfficeNotificationsInput = {},
 ): Promise<ApiResponse<PagedResponseOfBackOfficeNotificationListItemResponse>> {
+  const parseResult = getBackOfficeNotificationsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeNotifications.getApiBackofficeNotifications(page, pageSize, includeDeleted);
+    const response = await api.backOfficeNotifications.getApiBackofficeNotifications(
+      parseResult.data.page,
+      parseResult.data.pageSize,
+      parseResult.data.includeDeleted,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice notifications:', error);
@@ -39,11 +51,17 @@ export async function getBackOfficeNotifications(
  * Server Action: BackOffice - システム通知詳細を取得
  */
 export async function getBackOfficeNotificationDetail(
-  id: number,
+  input: GetBackOfficeNotificationDetailInput,
 ): Promise<ApiResponse<BackOfficeNotificationDetailResponse>> {
+  const parseResult = getBackOfficeNotificationDetailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeNotifications.getApiBackofficeNotifications1(id);
+    const response = await api.backOfficeNotifications.getApiBackofficeNotifications1(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice notification detail:', error);
