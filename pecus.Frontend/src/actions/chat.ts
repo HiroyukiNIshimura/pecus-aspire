@@ -212,7 +212,9 @@ export async function notifyTyping(input: NotifyTypingInput): Promise<ApiRespons
  * 既存DMがない、最近アクティブなユーザーを取得
  * @param limit 取得件数（デフォルト10、最大50）
  */
-export async function getDmCandidateUsers(input: GetDmCandidateUsersInput): Promise<ApiResponse<DmCandidateUserItem[]>> {
+export async function getDmCandidateUsers(
+  input: GetDmCandidateUsersInput,
+): Promise<ApiResponse<DmCandidateUserItem[]>> {
   const parseResult = getDmCandidateUsersInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');

@@ -95,7 +95,9 @@ export interface PagedWorkspacesResponse {
  *
  * @param page ページ番号（1始まり）
  */
-export async function getMyWorkspacesPaged(input: GetMyWorkspacesPagedInput): Promise<ApiResponse<PagedWorkspacesResponse>> {
+export async function getMyWorkspacesPaged(
+  input: GetMyWorkspacesPagedInput,
+): Promise<ApiResponse<PagedWorkspacesResponse>> {
   const parseResult = getMyWorkspacesPagedInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
