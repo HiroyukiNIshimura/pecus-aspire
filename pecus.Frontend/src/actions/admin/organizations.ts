@@ -3,12 +3,13 @@
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   AdminUpdateOrganizationSettingRequest,
-  GetAvailableModelsRequest,
   GetAvailableModelsResponse,
   OrganizationResponse,
   OrganizationSettingResponse,
 } from '@/connectors/api/pecus';
 import {
+  type GetAvailableModelsInput,
+  getAvailableModelsInputSchema,
   type UpdateOrganizationInput,
   type UpdateOrganizationSettingInput,
   updateOrganizationInputSchema,
@@ -140,14 +141,18 @@ export async function getOrganization(): Promise<ApiResponse<OrganizationRespons
  * @param apiKey - APIキー
  */
 export async function getAvailableModels(
-  vendor: GetAvailableModelsRequest['vendor'],
-  apiKey: string,
+  input: GetAvailableModelsInput,
 ): Promise<ApiResponse<GetAvailableModelsResponse>> {
+  const parseResult = getAvailableModelsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
   try {
     const api = createPecusApiClients();
     const response = await api.adminOrganization.postApiAdminOrganizationAvailableModels({
-      vendor,
-      apiKey,
+      vendor: parseResult.data.vendor,
+      apiKey: parseResult.data.apiKey,
     });
     return { success: true, data: response };
   } catch (error) {

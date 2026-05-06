@@ -25,3 +25,12 @@ export const updateOrganizationSettingInputSchema = organizationSettingSchemaWit
 });
 
 export type UpdateOrganizationSettingInput = z.infer<typeof updateOrganizationSettingInputSchema>;
+
+export const getAvailableModelsInputSchema = z.object({
+  vendor: z.enum(['None', 'OpenAi', 'Anthropic', 'GoogleGemini', 'DeepSeek', 'Kimi'], {
+    error: 'ベンダーが不正です。',
+  }),
+  apiKey: z.string({ error: 'APIキーは必須です。' }).min(1, 'APIキーは必須です。'),
+});
+
+export type GetAvailableModelsInput = z.infer<typeof getAvailableModelsInputSchema>;

@@ -226,7 +226,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
       setModelError(null);
 
       try {
-        const result = await getAvailableModels(vendor, apiKey);
+        const result = await getAvailableModels({ vendor, apiKey });
         if (result.success && result.data) {
           if (result.data.success && result.data.models) {
             setAvailableModels(result.data.models);
