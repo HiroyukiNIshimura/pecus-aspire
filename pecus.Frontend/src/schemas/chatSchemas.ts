@@ -1,5 +1,17 @@
 import { z } from 'zod';
 
+export const getChatRoomsInputSchema = z.object({
+  type: z.enum(['Dm', 'Ai'], { error: 'ルーム種別が不正です。' }).optional(),
+});
+
+export type GetChatRoomsInput = z.infer<typeof getChatRoomsInputSchema>;
+
+export const getChatRoomDetailInputSchema = z.object({
+  roomId: z.number({ error: 'ルームIDが不正です。' }).int('ルームIDが不正です。').positive('ルームIDが不正です。'),
+});
+
+export type GetChatRoomDetailInput = z.infer<typeof getChatRoomDetailInputSchema>;
+
 export const createOrGetDmRoomInputSchema = z.object({
   targetUserId: z
     .number({ error: 'ユーザーIDが不正です。' })

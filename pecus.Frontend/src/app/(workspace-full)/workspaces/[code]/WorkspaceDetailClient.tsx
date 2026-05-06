@@ -320,7 +320,10 @@ export default function WorkspaceDetailClient({
       if (itemCodeParam) {
         // 現在表示中のアイテムコードと異なる場合はアイテムIDを解決
         if (itemCodeParam !== selectedItemCode) {
-          const itemResult = await fetchWorkspaceItemByCode(currentWorkspaceDetail.id, itemCodeParam);
+          const itemResult = await fetchWorkspaceItemByCode({
+            workspaceId: currentWorkspaceDetail.id,
+            itemCode: itemCodeParam,
+          });
           if (itemResult.success && itemResult.data) {
             setSelectedItemId(itemResult.data.id);
             setSelectedItemCode(itemCodeParam);
@@ -466,8 +469,12 @@ export default function WorkspaceDetailClient({
       try {
         // シーケンス番号で直接タスクを取得（1件取得API）
         const [taskResult, itemResult] = await Promise.all([
-          getWorkspaceTaskBySequence(currentWorkspaceDetail.id, selectedItemId, pendingTaskSequence),
-          fetchLatestWorkspaceItem(currentWorkspaceDetail.id, selectedItemId),
+          getWorkspaceTaskBySequence({
+            workspaceId: currentWorkspaceDetail.id,
+            itemId: selectedItemId,
+            sequence: pendingTaskSequence,
+          }),
+          fetchLatestWorkspaceItem({ workspaceId: currentWorkspaceDetail.id, itemId: selectedItemId }),
         ]);
 
         if (taskResult.success && taskResult.data) {
@@ -982,7 +989,7 @@ export default function WorkspaceDetailClient({
     }
 
     // 現在のアイテムの関連アイテムIDリストを取得
-    const result = await fetchLatestWorkspaceItem(workspaceDetail.id, selectedItemId);
+    const result = await fetchLatestWorkspaceItem({ workspaceId: workspaceDetail.id, itemId: selectedItemId });
     const excludeIds: number[] = [selectedItemId];
 
     if (result.success && result.data.relatedItems) {

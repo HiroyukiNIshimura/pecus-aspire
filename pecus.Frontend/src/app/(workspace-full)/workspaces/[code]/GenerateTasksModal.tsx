@@ -161,7 +161,7 @@ export default function GenerateTasksModal({
   useEffect(() => {
     if (isOpen) {
       (async () => {
-        const result = await getPredecessorTaskOptions(workspaceId, itemId);
+        const result = await getPredecessorTaskOptions({ workspaceId, itemId });
         if (result.success) {
           setPredecessorTaskOptions(result.data || []);
         }

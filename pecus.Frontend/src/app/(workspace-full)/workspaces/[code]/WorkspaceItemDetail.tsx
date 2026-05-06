@@ -291,7 +291,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
         setIsLoading(true);
         setError(null);
 
-        const result = await fetchLatestWorkspaceItem(workspaceId, itemId);
+        const result = await fetchLatestWorkspaceItem({ workspaceId, itemId });
 
         if (result.success) {
           rowVersionRef.current = result.data.rowVersion;

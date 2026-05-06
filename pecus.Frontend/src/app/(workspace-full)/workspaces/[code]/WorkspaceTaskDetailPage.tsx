@@ -410,8 +410,8 @@ export default function WorkspaceTaskDetailPage({
       try {
         // タスクデータ、先行タスク候補、未通知バッジを並列で取得
         const [taskResult, predecessorResult, achievementResult] = await Promise.all([
-          getWorkspaceTask(workspaceId, itemId, targetTaskId),
-          getPredecessorTaskOptions(workspaceId, itemId, targetTaskId),
+          getWorkspaceTask({ workspaceId, itemId, taskId: targetTaskId }),
+          getPredecessorTaskOptions({ workspaceId, itemId, excludeTaskId: targetTaskId }),
           getUnnotifiedAchievements(),
         ]);
 

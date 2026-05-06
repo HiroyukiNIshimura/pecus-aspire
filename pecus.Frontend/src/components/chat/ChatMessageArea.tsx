@@ -145,7 +145,10 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
   const fetchRoomAndMessages = useCallback(async () => {
     setLoading(true);
     try {
-      const [roomResult, messagesResult] = await Promise.all([getChatRoomDetail(roomId), getChatMessages({ roomId })]);
+      const [roomResult, messagesResult] = await Promise.all([
+        getChatRoomDetail({ roomId }),
+        getChatMessages({ roomId }),
+      ]);
 
       if (roomResult.success && roomResult.data) {
         setRoom(roomResult.data);

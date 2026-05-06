@@ -16,11 +16,21 @@ import {
   type CreateWorkspaceTaskActionInput,
   checkAssigneeTaskLoadInputSchema,
   createWorkspaceTaskActionInputSchema,
+  type FetchTaskContentSuggestionInput,
+  fetchTaskContentSuggestionInputSchema,
   type GenerateTaskCandidatesInput,
   type GetAllWorkspaceTasksInput,
+  type GetPredecessorTaskOptionsInput,
+  type GetTaskFlowMapInput,
+  type GetWorkspaceTaskBySequenceInput,
+  type GetWorkspaceTaskInput,
   type GetWorkspaceTasksInput,
   generateTaskCandidatesInputSchema,
   getAllWorkspaceTasksInputSchema,
+  getPredecessorTaskOptionsInputSchema,
+  getTaskFlowMapInputSchema,
+  getWorkspaceTaskBySequenceInputSchema,
+  getWorkspaceTaskInputSchema,
   getWorkspaceTasksInputSchema,
   type UpdateWorkspaceTaskActionInput,
   updateWorkspaceTaskActionInputSchema,
@@ -33,13 +43,21 @@ import { validationError } from './types';
  * シーケンス番号でタスクを1件取得
  */
 export async function getWorkspaceTaskBySequence(
-  workspaceId: number,
-  itemId: number,
-  sequence: number,
+  input: GetWorkspaceTaskBySequenceInput,
 ): Promise<ApiResponse<WorkspaceTaskDetailResponse>> {
+  const parseResult = getWorkspaceTaskBySequenceInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasksSequence(workspaceId, itemId, sequence);
+    const response = await api.workspaceTask.getApiWorkspacesItemsTasksSequence(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.sequence,
+    );
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -137,13 +155,21 @@ export async function getAllWorkspaceTasks(
  * タスクの詳細を取得
  */
 export async function getWorkspaceTask(
-  workspaceId: number,
-  itemId: number,
-  taskId: number,
+  input: GetWorkspaceTaskInput,
 ): Promise<ApiResponse<WorkspaceTaskDetailResponse>> {
+  const parseResult = getWorkspaceTaskInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasks1(workspaceId, itemId, taskId);
+    const response = await api.workspaceTask.getApiWorkspacesItemsTasks1(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.taskId,
+    );
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -275,10 +301,14 @@ export interface PredecessorTaskOption {
  * @param excludeTaskId 除外するタスクID（編集中の自タスク）
  */
 export async function getPredecessorTaskOptions(
-  workspaceId: number,
-  itemId: number,
-  excludeTaskId?: number,
+  input: GetPredecessorTaskOptionsInput,
 ): Promise<ApiResponse<PredecessorTaskOption[]>> {
+  const parseResult = getPredecessorTaskOptionsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const pageSize = 50; // APIの上限
@@ -289,15 +319,15 @@ export async function getPredecessorTaskOptions(
     // 全ページを取得するまでループ
     while (hasMore) {
       const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-        workspaceId,
-        itemId,
+        parseResult.data.workspaceId,
+        parseResult.data.itemId,
         currentPage,
         pageSize,
         'All', // 全タスク（Active + Completed + Discarded）
       );
 
       const pageTasks = (response.data || [])
-        .filter((t) => t.id !== excludeTaskId && !t.isDiscarded) // 自タスクと破棄タスクを除外
+        .filter((t) => t.id !== parseResult.data.excludeTaskId && !t.isDiscarded) // 自タスクと破棄タスクを除外
         .map((t) => ({
           id: t.id,
           sequence: t.sequence || 0,
@@ -329,12 +359,20 @@ export async function getPredecessorTaskOptions(
  * アイテム内のタスク依存関係を可視化するためのデータを取得
  */
 export async function getTaskFlowMap(
-  workspaceId: number,
-  itemId: number,
+  input: GetTaskFlowMapInput,
 ): Promise<ApiResponse<import('@/connectors/api/pecus').TaskFlowMapResponse>> {
+  const parseResult = getTaskFlowMapInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasksFlowMap(workspaceId, itemId);
+    const response = await api.workspaceTask.getApiWorkspacesItemsTasksFlowMap(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+    );
 
     return { success: true, data: response };
   } catch (error) {
@@ -350,15 +388,23 @@ export async function getTaskFlowMap(
  * AIがアイテム情報とタスクタイプからタスク内容を提案（プレーンテキスト）
  */
 export async function fetchTaskContentSuggestion(
-  workspaceId: number,
-  itemId: number,
-  taskTypeId: number,
+  input: FetchTaskContentSuggestionInput,
 ): Promise<ApiResponse<{ suggestedContent: string }>> {
+  const parseResult = fetchTaskContentSuggestionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasksContentSuggestion(workspaceId, itemId, {
-      taskTypeId,
-    });
+    const response = await api.workspaceTask.postApiWorkspacesItemsTasksContentSuggestion(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      {
+        taskTypeId: parseResult.data.taskTypeId,
+      },
+    );
 
     return {
       success: true,

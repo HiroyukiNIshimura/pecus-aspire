@@ -157,7 +157,7 @@ export default function CreateWorkspaceTaskModal({
   const fetchPredecessorTasks = useCallback(async () => {
     setIsLoadingPredecessorTasks(true);
     try {
-      const result = await getPredecessorTaskOptions(workspaceId, itemId);
+      const result = await getPredecessorTaskOptions({ workspaceId, itemId });
       if (result.success) {
         setPredecessorTaskOptions(result.data || []);
       }
@@ -294,7 +294,7 @@ export default function CreateWorkspaceTaskModal({
     setSuggestError(null);
 
     try {
-      const result = await fetchTaskContentSuggestion(workspaceId, itemId, taskTypeId);
+      const result = await fetchTaskContentSuggestion({ workspaceId, itemId, taskTypeId });
 
       if (checkCancelled()) return;
 

@@ -142,6 +142,18 @@ export const getMyWorkspacesPagedInputSchema = z.object({
 
 export type GetMyWorkspacesPagedInput = z.infer<typeof getMyWorkspacesPagedInputSchema>;
 
+export const getMyWorkspacesInputSchema = z.object({
+  mode: workspaceModeSchema.optional(),
+});
+
+export type GetMyWorkspacesInput = z.infer<typeof getMyWorkspacesInputSchema>;
+
+export const getWorkspaceDetailInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+});
+
+export type GetWorkspaceDetailInput = z.infer<typeof getWorkspaceDetailInputSchema>;
+
 export const fetchWorkspacesInputSchema = z.object({
   page: z
     .number({ error: 'ページ番号が不正です。' })

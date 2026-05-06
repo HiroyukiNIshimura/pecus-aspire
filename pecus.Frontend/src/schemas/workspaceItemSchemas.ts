@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import type {
   CreateWorkspaceItemRequest,
+  ItemSortBy,
+  MyItemRelationType,
   RelationType,
+  SortOrder,
   UpdateWorkspaceItemAssigneeRequest,
   UpdateWorkspaceItemAttributeRequest,
   UpdateWorkspaceItemRequest,
@@ -23,11 +26,71 @@ const relationIdSchema = z
   .int('関連IDが不正です。')
   .positive('関連IDが不正です。');
 
+const pageSchema = z
+  .number({ error: 'ページ番号が不正です。' })
+  .int('ページ番号が不正です。')
+  .positive('ページ番号が不正です。');
+
+const itemCodeSchema = z.string({ error: 'アイテムコードが不正です。' }).min(1, 'アイテムコードが不正です。');
+
+const titleSchema = z.string({ error: '件名が不正です。' }).min(1, '件名が不正です。').max(300, '件名が長すぎます。');
+
 const workspaceItemAttributeTypeSchema = z.enum(['assignee', 'committer', 'priority', 'duedate', 'archive'], {
   error: '属性が不正です。',
 });
 
 export type WorkspaceItemAttributeType = z.infer<typeof workspaceItemAttributeTypeSchema>;
+
+export const fetchMyItemsInputSchema = z.object({
+  page: pageSchema.optional(),
+  relation: z
+    .custom<MyItemRelationType>((value) => value === undefined || typeof value === 'string', {
+      error: '関連タイプが不正です。',
+    })
+    .optional(),
+  includeArchived: z.boolean({ error: 'アーカイブ条件が不正です。' }).optional(),
+  workspaceIds: z.array(workspaceIdSchema, { error: 'ワークスペースIDが不正です。' }).optional(),
+  sortBy: z
+    .custom<ItemSortBy>((value) => value === undefined || typeof value === 'string', {
+      error: 'ソート項目が不正です。',
+    })
+    .optional(),
+  order: z
+    .custom<SortOrder>((value) => value === undefined || typeof value === 'string', {
+      error: 'ソート順が不正です。',
+    })
+    .optional(),
+});
+
+export type FetchMyItemsInput = z.infer<typeof fetchMyItemsInputSchema>;
+
+export const fetchLatestWorkspaceItemInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+});
+
+export type FetchLatestWorkspaceItemInput = z.infer<typeof fetchLatestWorkspaceItemInputSchema>;
+
+export const fetchWorkspaceItemByCodeInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemCode: itemCodeSchema,
+});
+
+export type FetchWorkspaceItemByCodeInput = z.infer<typeof fetchWorkspaceItemByCodeInputSchema>;
+
+export const fetchChildrenCountInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+});
+
+export type FetchChildrenCountInput = z.infer<typeof fetchChildrenCountInputSchema>;
+
+export const fetchDocumentSuggestionInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  title: titleSchema,
+});
+
+export type FetchDocumentSuggestionInput = z.infer<typeof fetchDocumentSuggestionInputSchema>;
 
 export const createWorkspaceItemInputSchema = z.object({
   workspaceId: workspaceIdSchema,

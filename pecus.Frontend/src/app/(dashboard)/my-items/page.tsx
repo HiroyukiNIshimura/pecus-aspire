@@ -25,7 +25,7 @@ export default async function MyItemsPage() {
     userResponse = await api.profile.getApiProfile();
 
     // マイアイテムを取得（初回は All で取得）
-    const itemsResult = await fetchMyItems(1);
+    const itemsResult = await fetchMyItems({ page: 1 });
     if (itemsResult.success) {
       initialItems = itemsResult.data;
     } else {

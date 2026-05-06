@@ -171,7 +171,7 @@ export default function CreateWorkspaceItem({
     setGlobalError(null);
 
     try {
-      const result = await fetchDocumentSuggestion(workspaceId, trimmedSubject);
+      const result = await fetchDocumentSuggestion({ workspaceId, title: trimmedSubject });
 
       // キャンセルされていた場合は結果を無視
       if (checkCancelled()) return;

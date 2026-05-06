@@ -72,7 +72,7 @@ export default function ChatFullScreenClient({
   // ルーム一覧を再取得
   const fetchRooms = useCallback(async () => {
     try {
-      const result = await getChatRooms();
+      const result = await getChatRooms({});
       if (result.success && result.data) {
         setRooms(result.data);
       }

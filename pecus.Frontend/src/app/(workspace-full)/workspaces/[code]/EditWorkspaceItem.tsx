@@ -174,7 +174,7 @@ export default function EditWorkspaceItem({
       setItemLoadError(null);
 
       try {
-        const result = await fetchLatestWorkspaceItem(item.workspaceId || 0, item.id);
+        const result = await fetchLatestWorkspaceItem({ workspaceId: item.workspaceId || 0, itemId: item.id });
 
         if (result.success) {
           setLatestItem(result.data);

@@ -89,7 +89,7 @@ export default function EditWorkspaceSkillsModal({
 
       if (result.success) {
         // 更新後にワークスペース詳細を再取得して最新のrowVersionを取得
-        const detailResult = await getWorkspaceDetail(workspace.id);
+        const detailResult = await getWorkspaceDetail({ workspaceId: workspace.id });
 
         if (detailResult.success) {
           notify.success('スキルを更新しました。');
@@ -245,7 +245,7 @@ export default function EditWorkspaceSkillsModal({
                 });
 
                 if (result.success) {
-                  const detailResult = await getWorkspaceDetail(workspace.id);
+                  const detailResult = await getWorkspaceDetail({ workspaceId: workspace.id });
                   if (detailResult.success) {
                     notify.success('スキルを更新しました。');
                     onSuccess(detailResult.data);

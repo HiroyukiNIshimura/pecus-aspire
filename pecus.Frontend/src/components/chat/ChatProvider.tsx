@@ -60,7 +60,7 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
     console.log('[ChatProvider] fetchRooms called');
     setLoading(true);
     try {
-      const result = await getChatRooms();
+      const result = await getChatRooms({});
       console.log('[ChatProvider] getChatRooms result:', result);
       if (result.success && result.data) {
         setRooms(result.data);

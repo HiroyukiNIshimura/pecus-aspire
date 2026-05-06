@@ -75,7 +75,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
       setIsLoading(true);
       setServerErrors([]);
 
-      const result = await getWorkspaceDetail(workspace.id);
+      const result = await getWorkspaceDetail({ workspaceId: workspace.id });
 
       if (result.success) {
         setWorkspaceDetail(result.data);

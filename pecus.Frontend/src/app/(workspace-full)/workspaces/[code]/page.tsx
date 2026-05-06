@@ -42,7 +42,7 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
 
     // itemCode が指定されている場合、アイテムIDを解決
     if (itemCode && workspaceDetail) {
-      const itemResult = await fetchWorkspaceItemByCode(workspaceDetail.id, itemCode);
+      const itemResult = await fetchWorkspaceItemByCode({ workspaceId: workspaceDetail.id, itemCode });
       if (itemResult.success && itemResult.data) {
         initialItemId = itemResult.data.id;
       }

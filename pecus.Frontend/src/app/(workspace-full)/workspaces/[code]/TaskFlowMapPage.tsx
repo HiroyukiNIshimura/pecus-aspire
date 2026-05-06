@@ -70,7 +70,7 @@ export default function TaskFlowMapPage({
     setLoading(true);
     setError(null);
     try {
-      const result = await getTaskFlowMap(workspaceId, itemId);
+      const result = await getTaskFlowMap({ workspaceId, itemId });
       if (result.success) {
         setData(result.data);
       } else {

@@ -152,7 +152,7 @@ export default function WorkspaceItemDrawer({
     if (workspaceMode === 'Document') {
       setIsLoadingChildren(true);
       try {
-        const result = await fetchChildrenCount(item.workspaceId ?? 0, item.id);
+        const result = await fetchChildrenCount({ workspaceId: item.workspaceId ?? 0, itemId: item.id });
         if (result.success && result.data) {
           const { childrenCount: count, totalDescendantsCount: total } = result.data;
           if (count > 0) {

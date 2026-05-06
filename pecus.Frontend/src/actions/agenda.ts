@@ -334,6 +334,7 @@ export async function fetchAgendaById(
   options?: AgendaOccurrenceQueryOptions,
 ): Promise<ApiResponse<AgendaDetailFetchData>> {
   try {
+    // X-Resolved-Occurrence-Index を参照する必要があるため、レスポンス本文のみを返す生成APIクライアントではなく createAuthenticatedAxios を使用する
     const axios = await createAuthenticatedAxios();
     const params: Record<string, number | string> = {};
     if (options?.occurrenceStartAt) {

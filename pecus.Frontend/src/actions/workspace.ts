@@ -24,8 +24,12 @@ import {
   createWorkspaceActionInputSchema,
   type FetchWorkspacesInput,
   fetchWorkspacesInputSchema,
+  type GetMyWorkspacesInput,
   type GetMyWorkspacesPagedInput,
+  type GetWorkspaceDetailInput,
+  getMyWorkspacesInputSchema,
   getMyWorkspacesPagedInputSchema,
+  getWorkspaceDetailInputSchema,
   type JoinWorkspaceInput,
   joinWorkspaceInputSchema,
   type RemoveMemberFromWorkspaceInput,
@@ -51,7 +55,13 @@ import { validationError } from './types';
  * ページネーションで全件取得する
  * @deprecated getMyWorkspacesPaged を使用してください
  */
-export async function getMyWorkspaces(mode?: WorkspaceMode): Promise<ApiResponse<WorkspaceListItemResponse[]>> {
+export async function getMyWorkspaces(input: GetMyWorkspacesInput = {}): Promise<ApiResponse<WorkspaceListItemResponse[]>> {
+  const parseResult = getMyWorkspacesInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const allWorkspaces: WorkspaceListItemResponse[] = [];
@@ -60,7 +70,7 @@ export async function getMyWorkspaces(mode?: WorkspaceMode): Promise<ApiResponse
 
     // 全ページを取得
     while (hasMore) {
-      const response = await api.workspace.getApiWorkspaces(page, undefined, undefined, mode);
+      const response = await api.workspace.getApiWorkspaces(page, undefined, undefined, parseResult.data.mode);
 
       if (response.data && response.data.length > 0) {
         allWorkspaces.push(...response.data);
@@ -198,10 +208,18 @@ export async function createWorkspace(
 /**
  * Server Action: ワークスペース詳細を取得
  */
-export async function getWorkspaceDetail(workspaceId: number): Promise<ApiResponse<WorkspaceFullDetailResponse>> {
+export async function getWorkspaceDetail(
+  input: GetWorkspaceDetailInput,
+): Promise<ApiResponse<WorkspaceFullDetailResponse>> {
+  const parseResult = getWorkspaceDetailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces1(workspaceId);
+    const response = await api.workspace.getApiWorkspaces1(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to get workspace detail:', error);

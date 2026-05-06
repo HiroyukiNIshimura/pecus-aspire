@@ -211,6 +211,16 @@ const taskIdSchema = z
   .int('タスクIDが不正です。')
   .positive('タスクIDが不正です。');
 
+const sequenceSchema = z
+  .number({ error: 'シーケンス番号が不正です。' })
+  .int('シーケンス番号が不正です。')
+  .positive('シーケンス番号が不正です。');
+
+const taskTypeIdSchema = z
+  .number({ error: 'タスク種別IDが不正です。' })
+  .int('タスク種別IDが不正です。')
+  .positive('タスク種別IDが不正です。');
+
 const assignedUserIdSchema = z
   .number({ error: '担当者を選択してください。' })
   .int('担当者を選択してください。')
@@ -258,6 +268,45 @@ export const getWorkspaceTasksInputSchema = z.object({
 });
 
 export type GetWorkspaceTasksInput = z.infer<typeof getWorkspaceTasksInputSchema>;
+
+export const getWorkspaceTaskBySequenceInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  sequence: sequenceSchema,
+});
+
+export type GetWorkspaceTaskBySequenceInput = z.infer<typeof getWorkspaceTaskBySequenceInputSchema>;
+
+export const getWorkspaceTaskInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  taskId: taskIdSchema,
+});
+
+export type GetWorkspaceTaskInput = z.infer<typeof getWorkspaceTaskInputSchema>;
+
+export const getPredecessorTaskOptionsInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  excludeTaskId: taskIdSchema.optional(),
+});
+
+export type GetPredecessorTaskOptionsInput = z.infer<typeof getPredecessorTaskOptionsInputSchema>;
+
+export const getTaskFlowMapInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+});
+
+export type GetTaskFlowMapInput = z.infer<typeof getTaskFlowMapInputSchema>;
+
+export const fetchTaskContentSuggestionInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  taskTypeId: taskTypeIdSchema,
+});
+
+export type FetchTaskContentSuggestionInput = z.infer<typeof fetchTaskContentSuggestionInputSchema>;
 
 export const getAllWorkspaceTasksInputSchema = z.object({
   workspaceId: workspaceIdSchema,

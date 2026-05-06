@@ -111,14 +111,14 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
       const relationParam = activeFilter === 'All' ? undefined : activeFilter;
       const includeArchivedParam = showArchived ? true : undefined;
       const workspaceIdsParam = selectedWorkspaceIds.length > 0 ? selectedWorkspaceIds : undefined;
-      const result = await fetchMyItems(
-        nextPage,
-        relationParam,
-        includeArchivedParam,
-        workspaceIdsParam,
+      const result = await fetchMyItems({
+        page: nextPage,
+        relation: relationParam,
+        includeArchived: includeArchivedParam,
+        workspaceIds: workspaceIdsParam,
         sortBy,
-        sortOrder,
-      );
+        order: sortOrder,
+      });
 
       if (result.success) {
         setItems((prev) => [...prev, ...(result.data.data || [])]);
@@ -154,7 +154,14 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
         const relationParam = filter === 'All' ? undefined : filter;
         const includeArchivedParam = showArchived ? true : undefined;
         const workspaceIdsParam = selectedWorkspaceIds.length > 0 ? selectedWorkspaceIds : undefined;
-        const result = await fetchMyItems(1, relationParam, includeArchivedParam, workspaceIdsParam, sortBy, sortOrder);
+        const result = await fetchMyItems({
+          page: 1,
+          relation: relationParam,
+          includeArchived: includeArchivedParam,
+          workspaceIds: workspaceIdsParam,
+          sortBy,
+          order: sortOrder,
+        });
 
         if (result.success) {
           setItems(result.data.data || []);
@@ -185,7 +192,14 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
       const relationParam = activeFilter === 'All' ? undefined : activeFilter;
       const includeArchivedParam = newShowArchived ? true : undefined;
       const workspaceIdsParam = selectedWorkspaceIds.length > 0 ? selectedWorkspaceIds : undefined;
-      const result = await fetchMyItems(1, relationParam, includeArchivedParam, workspaceIdsParam, sortBy, sortOrder);
+      const result = await fetchMyItems({
+        page: 1,
+        relation: relationParam,
+        includeArchived: includeArchivedParam,
+        workspaceIds: workspaceIdsParam,
+        sortBy,
+        order: sortOrder,
+      });
 
       if (result.success) {
         setItems(result.data.data || []);
@@ -219,7 +233,14 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
         const relationParam = activeFilter === 'All' ? undefined : activeFilter;
         const includeArchivedParam = showArchived ? true : undefined;
         const workspaceIdsParam = newSelectedIds.length > 0 ? newSelectedIds : undefined;
-        const result = await fetchMyItems(1, relationParam, includeArchivedParam, workspaceIdsParam, sortBy, sortOrder);
+        const result = await fetchMyItems({
+          page: 1,
+          relation: relationParam,
+          includeArchived: includeArchivedParam,
+          workspaceIds: workspaceIdsParam,
+          sortBy,
+          order: sortOrder,
+        });
 
         if (result.success) {
           setItems(result.data.data || []);
@@ -251,7 +272,14 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
     try {
       const relationParam = activeFilter === 'All' ? undefined : activeFilter;
       const includeArchivedParam = showArchived ? true : undefined;
-      const result = await fetchMyItems(1, relationParam, includeArchivedParam, undefined, sortBy, sortOrder);
+      const result = await fetchMyItems({
+        page: 1,
+        relation: relationParam,
+        includeArchived: includeArchivedParam,
+        workspaceIds: undefined,
+        sortBy,
+        order: sortOrder,
+      });
 
       if (result.success) {
         setItems(result.data.data || []);
@@ -283,14 +311,14 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
         const relationParam = activeFilter === 'All' ? undefined : activeFilter;
         const includeArchivedParam = showArchived ? true : undefined;
         const workspaceIdsParam = selectedWorkspaceIds.length > 0 ? selectedWorkspaceIds : undefined;
-        const result = await fetchMyItems(
-          1,
-          relationParam,
-          includeArchivedParam,
-          workspaceIdsParam,
-          newSortBy,
-          finalSortOrder,
-        );
+        const result = await fetchMyItems({
+          page: 1,
+          relation: relationParam,
+          includeArchived: includeArchivedParam,
+          workspaceIds: workspaceIdsParam,
+          sortBy: newSortBy,
+          order: finalSortOrder,
+        });
 
         if (result.success) {
           setItems(result.data.data || []);

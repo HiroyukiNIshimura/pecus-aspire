@@ -3,11 +3,8 @@
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   AddWorkspaceItemRelationResponse,
-  ItemSortBy,
-  MyItemRelationType,
   PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics,
   RelationType,
-  SortOrder,
   SuccessResponse,
   WorkspaceItemDetailResponse,
   WorkspaceItemResponse,
@@ -17,6 +14,16 @@ import {
   addWorkspaceItemRelationsInputSchema,
   type CreateWorkspaceItemInput,
   createWorkspaceItemInputSchema,
+  type FetchChildrenCountInput,
+  type FetchDocumentSuggestionInput,
+  type FetchLatestWorkspaceItemInput,
+  type FetchMyItemsInput,
+  type FetchWorkspaceItemByCodeInput,
+  fetchChildrenCountInputSchema,
+  fetchDocumentSuggestionInputSchema,
+  fetchLatestWorkspaceItemInputSchema,
+  fetchMyItemsInputSchema,
+  fetchWorkspaceItemByCodeInputSchema,
   type RemoveWorkspaceItemRelationInput,
   removeWorkspaceItemRelationInputSchema,
   type UpdateWorkspaceItemAssigneeInput,
@@ -45,22 +52,23 @@ import { serverError, validationError } from './types';
  * @param order ソート順序（Asc, Desc）
  */
 export async function fetchMyItems(
-  page: number = 1,
-  relation?: MyItemRelationType,
-  includeArchived?: boolean,
-  workspaceIds?: number[],
-  sortBy?: ItemSortBy,
-  order?: SortOrder,
+  input: FetchMyItemsInput,
 ): Promise<ApiResponse<PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics>> {
+  const parseResult = fetchMyItemsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     const response = await api.my.getApiMyWorkspaceItems(
-      page,
-      relation,
-      includeArchived,
-      workspaceIds,
-      sortBy ?? undefined,
-      order ?? undefined,
+      parseResult.data.page ?? 1,
+      parseResult.data.relation,
+      parseResult.data.includeArchived,
+      parseResult.data.workspaceIds,
+      parseResult.data.sortBy ?? undefined,
+      parseResult.data.order ?? undefined,
     );
     return { success: true, data: response };
   } catch (error) {
@@ -75,12 +83,20 @@ export async function fetchMyItems(
  * Server Action: 最新のワークスペースアイテムを取得
  */
 export async function fetchLatestWorkspaceItem(
-  workspaceId: number,
-  itemId: number,
+  input: FetchLatestWorkspaceItemInput,
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  const parseResult = fetchLatestWorkspaceItemInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItems1(workspaceId, itemId);
+    const response = await api.workspaceItem.getApiWorkspacesItems1(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace item:', error);
@@ -95,12 +111,20 @@ export async function fetchLatestWorkspaceItem(
  * Server Action: ワークスペースアイテムをコードで取得
  */
 export async function fetchWorkspaceItemByCode(
-  workspaceId: number,
-  itemCode: string,
+  input: FetchWorkspaceItemByCodeInput,
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  const parseResult = fetchWorkspaceItemByCodeInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItemsCode(workspaceId, itemCode);
+    const response = await api.workspaceItem.getApiWorkspacesItemsCode(
+      parseResult.data.workspaceId,
+      parseResult.data.itemCode,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace item by code:', error);
@@ -523,12 +547,20 @@ export async function removeWorkspaceItemRelation(
  * @param itemId アイテムID
  */
 export async function fetchChildrenCount(
-  workspaceId: number,
-  itemId: number,
+  input: FetchChildrenCountInput,
 ): Promise<ApiResponse<{ childrenCount: number; totalDescendantsCount: number }>> {
+  const parseResult = fetchChildrenCountInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItemsChildrenCount(workspaceId, itemId);
+    const response = await api.workspaceItem.getApiWorkspacesItemsChildrenCount(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+    );
     return {
       success: true,
       data: {
@@ -552,12 +584,19 @@ export async function fetchChildrenCount(
  * @param title 件名
  */
 export async function fetchDocumentSuggestion(
-  workspaceId: number,
-  title: string,
+  input: FetchDocumentSuggestionInput,
 ): Promise<ApiResponse<{ suggestedContent: string }>> {
+  const parseResult = fetchDocumentSuggestionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.postApiWorkspacesItemsDocumentSuggestion(workspaceId, { title });
+    const response = await api.workspaceItem.postApiWorkspacesItemsDocumentSuggestion(parseResult.data.workspaceId, {
+      title: parseResult.data.title,
+    });
     return {
       success: true,
       data: {

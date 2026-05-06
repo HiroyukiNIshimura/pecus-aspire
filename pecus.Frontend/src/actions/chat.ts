@@ -17,8 +17,12 @@ import {
   createOrGetAiRoomInputSchema,
   createOrGetDmRoomInputSchema,
   type GetChatMessagesInput,
+  type GetChatRoomDetailInput,
+  type GetChatRoomsInput,
   type GetDmCandidateUsersInput,
   getChatMessagesInputSchema,
+  getChatRoomDetailInputSchema,
+  getChatRoomsInputSchema,
   getDmCandidateUsersInputSchema,
   type NotifyTypingInput,
   notifyTypingInputSchema,
@@ -36,10 +40,16 @@ import { validationError } from './types';
 /**
  * Server Action: チャットルーム一覧を取得
  */
-export async function getChatRooms(type?: ChatRoomType): Promise<ApiResponse<ChatRoomItem[]>> {
+export async function getChatRooms(input: GetChatRoomsInput = {}): Promise<ApiResponse<ChatRoomItem[]>> {
+  const parseResult = getChatRoomsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.chat.getApiChatRooms(type);
+    const response = await api.chat.getApiChatRooms(parseResult.data.type as ChatRoomType | undefined);
     return { success: true, data: response };
   } catch (error) {
     console.error('getChatRooms error:', error);
@@ -50,10 +60,16 @@ export async function getChatRooms(type?: ChatRoomType): Promise<ApiResponse<Cha
 /**
  * Server Action: ルーム詳細を取得
  */
-export async function getChatRoomDetail(roomId: number): Promise<ApiResponse<ChatRoomDetailResponse>> {
+export async function getChatRoomDetail(input: GetChatRoomDetailInput): Promise<ApiResponse<ChatRoomDetailResponse>> {
+  const parseResult = getChatRoomDetailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.chat.getApiChatRooms1(roomId);
+    const response = await api.chat.getApiChatRooms1(parseResult.data.roomId);
     return { success: true, data: response };
   } catch (error) {
     console.error('getChatRoomDetail error:', error);
