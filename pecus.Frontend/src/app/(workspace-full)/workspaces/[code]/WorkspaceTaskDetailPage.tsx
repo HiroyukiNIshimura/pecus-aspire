@@ -432,7 +432,7 @@ export default function WorkspaceTaskDetailPage({
           console.log('[Achievement] showing celebration for', achievementResult.data.length, 'badges');
           showCelebration(achievementResult.data);
           // 通知済みにマーク
-          await markAllAchievementsNotified();
+          await markAllAchievementsNotified({});
         }
       } catch {
         notifyRef.current.error('タスクの取得中にエラーが発生しました');

@@ -31,6 +31,12 @@ import {
   type UpdateAttendanceInput,
   type UpdateOccurrenceAttendanceInput,
   type UpdateOccurrenceInput,
+  type CreateAgendaActionInput,
+  createAgendaActionInputSchema,
+  type SearchAttendeesInput,
+  searchAttendeesInputSchema,
+  type SearchUsersInput,
+  searchUsersInputSchema,
   updateAttendanceFromOccurrenceInputSchema,
   updateAttendanceInputSchema,
   updateOccurrenceAttendanceInputSchema,
@@ -362,10 +368,16 @@ export async function fetchAgendaExceptions(agendaId: number): Promise<ApiRespon
 /**
  * アジェンダを作成
  */
-export async function createAgenda(request: CreateAgendaRequest): Promise<ApiResponse<AgendaResponse>> {
+export async function createAgenda(input: CreateAgendaActionInput): Promise<ApiResponse<AgendaResponse>> {
+  const parseResult = createAgendaActionInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const result = await api.agenda.postApiAgendas(request);
+    const result = await api.agenda.postApiAgendas(parseResult.data as CreateAgendaRequest);
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('createAgenda error:', error);
@@ -528,13 +540,23 @@ export interface AttendeeSearchResult {
 /**
  * 参加者候補を検索（ユーザー・ワークスペース統合検索）
  */
-export async function searchAttendees(query: string): Promise<ApiResponse<AttendeeSearchResult[]>> {
+export async function searchAttendees(input: SearchAttendeesInput): Promise<ApiResponse<AttendeeSearchResult[]>> {
+  const parseResult = searchAttendeesInputSchema.safeParse(input);
+
   try {
     const api = await createPecusApiClients();
     const results: AttendeeSearchResult[] = [];
 
     // 空検索または2文字未満の場合は組織全体のみ表示
-    if (!query || query.length < 2) {
+    if (!parseResult.success) {
+      const hasTooShortQuery = parseResult.error.issues.some(
+        (issue) => issue.path[0] === 'query' && issue.code === 'too_small',
+      );
+      if (!hasTooShortQuery) {
+        const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+        return validationError(errorMessages);
+      }
+
       // 組織全体を候補に追加
       const orgUsers = await api.user.getApiUsersSearch('', 1000);
       results.push({
@@ -547,7 +569,7 @@ export async function searchAttendees(query: string): Promise<ApiResponse<Attend
     }
 
     // ユーザー検索
-    const users = await api.user.getApiUsersSearch(query, 10);
+    const users = await api.user.getApiUsersSearch(parseResult.data.query, 10);
     for (const user of users) {
       results.push({
         type: 'user',
@@ -559,7 +581,7 @@ export async function searchAttendees(query: string): Promise<ApiResponse<Attend
     }
 
     // ワークスペース検索
-    const workspaces = await api.workspace.getApiWorkspaces(1, undefined, query, undefined);
+    const workspaces = await api.workspace.getApiWorkspaces(1, undefined, parseResult.data.query, undefined);
     for (const ws of workspaces.data ?? []) {
       results.push({
         type: 'workspace',
@@ -570,7 +592,11 @@ export async function searchAttendees(query: string): Promise<ApiResponse<Attend
     }
 
     // 組織全体も候補に追加（検索ワードに「組織」または「全体」が含まれる場合）
-    if (query.includes('組織') || query.includes('全体') || query.includes('全員')) {
+    if (
+      parseResult.data.query.includes('組織') ||
+      parseResult.data.query.includes('全体') ||
+      parseResult.data.query.includes('全員')
+    ) {
       const orgUsers = await api.user.getApiUsersSearch('', 1000);
       results.push({
         type: 'organization',
@@ -656,15 +682,24 @@ export async function fetchOrganizationMemberCount(): Promise<ApiResponse<number
  * ユーザーのみを検索（名前・メールで）
  */
 export async function searchUsers(
-  query: string,
+  input: SearchUsersInput,
 ): Promise<ApiResponse<{ userId: number; userName: string; email: string; identityIconUrl: string | null }[]>> {
-  try {
-    if (!query || query.length < 1) {
+  const parseResult = searchUsersInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const hasTooShortQuery = parseResult.error.issues.some(
+      (issue) => issue.path[0] === 'query' && issue.code === 'too_small',
+    );
+    if (hasTooShortQuery) {
       return { success: true, data: [] };
     }
 
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
+  try {
     const api = await createPecusApiClients();
-    const users = await api.user.getApiUsersSearch(query, 10);
+    const users = await api.user.getApiUsersSearch(parseResult.data.query, 10);
     const results = users.map((u) => ({
       userId: u.id!,
       userName: u.username!,

@@ -7,8 +7,15 @@ import type {
   NewAchievementResponse,
   UserAchievementResponse,
 } from '@/connectors/api/pecus';
+import {
+  type MarkAchievementNotifiedInput,
+  markAchievementNotifiedInputSchema,
+  type MarkAllAchievementsNotifiedInput,
+  markAllAchievementsNotifiedInputSchema,
+} from '@/schemas/achievementSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 /**
  * Server Action: 全実績マスタを取得（コレクションページ用）
@@ -55,10 +62,16 @@ export async function getUnnotifiedAchievements(): Promise<ApiResponse<NewAchiev
  * Server Action: 実績を通知済みにマーク
  * バッジ取得演出を表示した後に呼び出す
  */
-export async function markAchievementNotified(achievementId: number): Promise<ApiResponse<void>> {
+export async function markAchievementNotified(input: MarkAchievementNotifiedInput): Promise<ApiResponse<void>> {
+  const parseResult = markAchievementNotifiedInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    await api.achievement.postApiAchievementsMeNotify(achievementId);
+    await api.achievement.postApiAchievementsMeNotify(parseResult.data.achievementId);
     return { success: true, data: undefined };
   } catch (error) {
     return handleApiErrorForAction(error, { defaultMessage: '通知済みマークに失敗しました' });
@@ -69,7 +82,13 @@ export async function markAchievementNotified(achievementId: number): Promise<Ap
  * Server Action: 全ての未通知実績を通知済みにマーク
  * バッジ取得演出を表示した後に呼び出す（一括処理用）
  */
-export async function markAllAchievementsNotified(): Promise<ApiResponse<void>> {
+export async function markAllAchievementsNotified(input: MarkAllAchievementsNotifiedInput): Promise<ApiResponse<void>> {
+  const parseResult = markAllAchievementsNotifiedInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
     await api.achievement.postApiAchievementsMeNotifyAll();

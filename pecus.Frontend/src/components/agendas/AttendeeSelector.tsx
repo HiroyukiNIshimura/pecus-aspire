@@ -116,7 +116,7 @@ export default function AttendeeSelector({
 
       setIsSearching(true);
       try {
-        const result = await searchUsers(searchQuery);
+        const result = await searchUsers({ query: searchQuery });
         if (result.success && result.data) {
           // 現在のユーザーを除外
           const filtered = result.data.filter((u) => u.userId !== currentUserId);

@@ -19,7 +19,7 @@ export function AchievementCelebrationProvider({ children }: { children: React.R
       closeCelebration();
 
       // バックグラウンドで通知済みマーク
-      await Promise.allSettled(achievementIds.map((id) => markAchievementNotified(id)));
+      await Promise.allSettled(achievementIds.map((id) => markAchievementNotified({ achievementId: id })));
     },
     [closeCelebration],
   );

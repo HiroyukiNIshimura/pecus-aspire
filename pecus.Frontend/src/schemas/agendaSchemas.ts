@@ -235,3 +235,63 @@ export type MarkAllNotificationsAsReadInput = z.infer<typeof markAllNotification
 export const updateAgendaSchema = createAgendaSchema;
 
 export type UpdateAgendaInput = z.infer<typeof updateAgendaSchema>;
+
+// ---- createAgenda (Action input) ----
+const recurrenceTypeActionSchema = z.enum([
+  'None',
+  'Daily',
+  'Weekly',
+  'Biweekly',
+  'MonthlyByDate',
+  'MonthlyByWeekday',
+  'Yearly',
+]);
+
+export const createAgendaActionInputSchema = z.object({
+  title: z.string({ error: 'タイトルは必須です。' }).min(1, 'タイトルは必須です。'),
+  description: z.string().optional().nullable(),
+  startAt: z.string({ error: '開始日時は必須です。' }).min(1, '開始日時は必須です。'),
+  endAt: z.string({ error: '終了日時は必須です。' }).min(1, '終了日時は必須です。'),
+  isAllDay: z.boolean().optional(),
+  location: z.string().optional().nullable(),
+  url: z.string().optional().nullable(),
+  recurrenceType: recurrenceTypeActionSchema.optional().nullable(),
+  recurrenceInterval: z.number().int().positive().optional(),
+  recurrenceWeekOfMonth: z.number().int().min(1).max(5).optional().nullable(),
+  recurrenceEndDate: z.string().optional().nullable(),
+  recurrenceCount: z.number().int().positive().optional().nullable(),
+  reminders: z.array(z.number().int().nonnegative('リマインダー値が不正です。')).optional().nullable(),
+  attendees: z
+    .array(
+      z.object({
+        userId: z.number().int().positive('ユーザーIDが不正です。').optional(),
+        isOptional: z.boolean().optional(),
+      }),
+    )
+    .optional(),
+  sendNotification: z.boolean().optional(),
+});
+
+export type CreateAgendaActionInput = z.infer<typeof createAgendaActionInputSchema>;
+
+// ---- searchAttendees ----
+export const searchAttendeesInputSchema = z.object({
+  query: z
+    .string({ error: '検索キーワードを入力してください。' })
+    .trim()
+    .min(2, '検索キーワードは2文字以上で入力してください。')
+    .max(100, '検索キーワードは100文字以内で入力してください。'),
+});
+
+export type SearchAttendeesInput = z.infer<typeof searchAttendeesInputSchema>;
+
+// ---- searchUsers ----
+export const searchUsersInputSchema = z.object({
+  query: z
+    .string({ error: '検索キーワードを入力してください。' })
+    .trim()
+    .min(1, '検索キーワードを入力してください。')
+    .max(100, '検索キーワードは100文字以内で入力してください。'),
+});
+
+export type SearchUsersInput = z.infer<typeof searchUsersInputSchema>;
