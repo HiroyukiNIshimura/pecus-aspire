@@ -13,7 +13,7 @@ export default async function OrganizationsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const page = params.page ? Number.parseInt(params.page, 10) : 1;
 
-  const result = await getBackOfficeOrganizations(page, 20);
+  const result = await getBackOfficeOrganizations({ page, pageSize: 20 });
 
   if (!result.success) {
     if (result.error === 'forbidden') {

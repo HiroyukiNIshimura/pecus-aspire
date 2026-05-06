@@ -15,6 +15,35 @@ const rowVersionSchema = z
   .int('行バージョンが不正です。')
   .min(0, '行バージョンが不正です。');
 
+const pageSchema = z
+  .number({ error: 'ページ番号が不正です。' })
+  .int('ページ番号が不正です。')
+  .positive('ページ番号が不正です。');
+
+const pageSizeSchema = z
+  .number({ error: 'ページサイズが不正です。' })
+  .int('ページサイズが不正です。')
+  .positive('ページサイズが不正です。');
+
+export const getBackOfficeOrganizationsInputSchema = z.object({
+  page: pageSchema.optional(),
+  pageSize: pageSizeSchema.optional(),
+});
+
+export type GetBackOfficeOrganizationsInput = z.infer<typeof getBackOfficeOrganizationsInputSchema>;
+
+export const getBackOfficeOrganizationDetailInputSchema = z.object({
+  id: organizationIdSchema,
+});
+
+export type GetBackOfficeOrganizationDetailInput = z.infer<typeof getBackOfficeOrganizationDetailInputSchema>;
+
+export const getBackOfficeOrganizationBotsInputSchema = z.object({
+  organizationId: organizationIdSchema,
+});
+
+export type GetBackOfficeOrganizationBotsInput = z.infer<typeof getBackOfficeOrganizationBotsInputSchema>;
+
 export const updateBackOfficeOrganizationInputSchema = z.object({
   id: organizationIdSchema,
   request: z.object({

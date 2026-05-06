@@ -14,7 +14,7 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
   const { id } = await params;
   const organizationId = Number.parseInt(id, 10);
 
-  const result = await getBackOfficeOrganizationDetail(organizationId);
+  const result = await getBackOfficeOrganizationDetail({ id: organizationId });
 
   if (!result.success) {
     if (result.error === 'forbidden') {

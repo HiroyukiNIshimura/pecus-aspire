@@ -13,6 +13,12 @@ import {
   createBackOfficeOrganizationInputSchema,
   type DeleteBackOfficeOrganizationInput,
   deleteBackOfficeOrganizationInputSchema,
+  type GetBackOfficeOrganizationBotsInput,
+  type GetBackOfficeOrganizationDetailInput,
+  type GetBackOfficeOrganizationsInput,
+  getBackOfficeOrganizationBotsInputSchema,
+  getBackOfficeOrganizationDetailInputSchema,
+  getBackOfficeOrganizationsInputSchema,
   type ResendOrganizationCreatedEmailInput,
   resendOrganizationCreatedEmailInputSchema,
   type UpdateBackOfficeBotPersonaInput,
@@ -28,12 +34,20 @@ import { validationError } from '../types';
  * Server Action: BackOffice - 組織一覧を取得（ページネーション付き）
  */
 export async function getBackOfficeOrganizations(
-  page?: number,
-  pageSize?: number,
+  input: GetBackOfficeOrganizationsInput = {},
 ): Promise<ApiResponse<PagedResponseOfBackOfficeOrganizationListItemResponse>> {
+  const parseResult = getBackOfficeOrganizationsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizations(page, pageSize);
+    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizations(
+      parseResult.data.page,
+      parseResult.data.pageSize,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice organizations:', error);
@@ -45,11 +59,17 @@ export async function getBackOfficeOrganizations(
  * Server Action: BackOffice - 組織詳細を取得
  */
 export async function getBackOfficeOrganizationDetail(
-  id: number,
+  input: GetBackOfficeOrganizationDetailInput,
 ): Promise<ApiResponse<BackOfficeOrganizationDetailResponse>> {
+  const parseResult = getBackOfficeOrganizationDetailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizations1(id);
+    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizations1(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice organization detail:', error);
@@ -158,11 +178,19 @@ export async function resendOrganizationCreatedEmail(
  * Server Action: BackOffice - 組織のボット一覧を取得
  */
 export async function getBackOfficeOrganizationBots(
-  organizationId: number,
+  input: GetBackOfficeOrganizationBotsInput,
 ): Promise<ApiResponse<BackOfficeBotResponse[]>> {
+  const parseResult = getBackOfficeOrganizationBotsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizationsBots(organizationId);
+    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizationsBots(
+      parseResult.data.organizationId,
+    );
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch organization bots:', error);

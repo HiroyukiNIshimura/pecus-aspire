@@ -22,7 +22,7 @@ export default async function ActivityPage() {
     userResponse = await api.profile.getApiProfile();
 
     // 初回は「今日」のアクティビティを取得
-    const activitiesResult = await fetchMyActivities(1, 'Today');
+    const activitiesResult = await fetchMyActivities({ page: 1, period: 'Today' });
     if (activitiesResult.success) {
       initialActivities = activitiesResult.data;
     } else {

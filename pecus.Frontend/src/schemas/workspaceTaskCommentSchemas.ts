@@ -48,6 +48,15 @@ export const getTaskCommentsInputSchema = z.object({
 
 export type GetTaskCommentsInput = z.infer<typeof getTaskCommentsInputSchema>;
 
+export const getTaskCommentInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  taskId: taskIdSchema,
+  commentId: commentIdSchema,
+});
+
+export type GetTaskCommentInput = z.infer<typeof getTaskCommentInputSchema>;
+
 export const createTaskCommentInputSchema = z.object({
   workspaceId: workspaceIdSchema,
   itemId: itemIdSchema,

@@ -48,7 +48,7 @@ export default function ActivityClient({
   // 追加データ読み込み
   const loadMore = useCallback(async () => {
     try {
-      const result = await fetchMyActivities(page, selectedPeriod);
+      const result = await fetchMyActivities({ page, period: selectedPeriod });
       if (result.success) {
         setActivities((prev) => [...prev, ...(result.data.data || [])]);
         setHasMore(page < (result.data.totalPages || 1));
@@ -83,7 +83,7 @@ export default function ActivityClient({
       resetInfiniteScroll();
 
       try {
-        const result = await fetchMyActivities(1, period);
+        const result = await fetchMyActivities({ page: 1, period });
         if (result.success) {
           setActivities(result.data.data || []);
           setHasMore(1 < (result.data.totalPages || 1));

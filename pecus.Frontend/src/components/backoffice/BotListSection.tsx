@@ -29,7 +29,7 @@ export default function BotListSection({ organizationId }: BotListSectionProps) 
     const fetchBots = async () => {
       setIsLoading(true);
       setError(null);
-      const result = await getBackOfficeOrganizationBots(organizationId);
+      const result = await getBackOfficeOrganizationBots({ organizationId });
       if (result.success) {
         setBots(result.data);
       } else {

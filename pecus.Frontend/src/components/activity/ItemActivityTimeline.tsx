@@ -31,7 +31,7 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
   // データ取得
   const loadActivities = useCallback(async () => {
     try {
-      const result = await fetchItemActivities(workspaceId, itemId, page);
+      const result = await fetchItemActivities({ workspaceId, itemId, page });
 
       if (!result.success) {
         setError(result.message || 'アクティビティの取得に失敗しました。');

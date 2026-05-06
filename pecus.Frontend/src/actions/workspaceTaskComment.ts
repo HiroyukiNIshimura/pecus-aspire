@@ -11,7 +11,9 @@ import {
   createTaskCommentInputSchema,
   type DeleteTaskCommentInput,
   deleteTaskCommentInputSchema,
+  type GetTaskCommentInput,
   type GetTaskCommentsInput,
+  getTaskCommentInputSchema,
   getTaskCommentsInputSchema,
   type UpdateTaskCommentInput,
   updateTaskCommentInputSchema,
@@ -56,14 +58,22 @@ export async function getTaskComments(
  * タスクコメントの詳細を取得
  */
 export async function getTaskComment(
-  workspaceId: number,
-  itemId: number,
-  taskId: number,
-  commentId: number,
+  input: GetTaskCommentInput,
 ): Promise<ApiResponse<TaskCommentDetailResponse>> {
+  const parseResult = getTaskCommentInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const response = await api.taskComment.getApiWorkspacesItemsTasksComments1(workspaceId, itemId, taskId, commentId);
+    const response = await api.taskComment.getApiWorkspacesItemsTasksComments1(
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.taskId,
+      parseResult.data.commentId,
+    );
 
     return { success: true, data: response };
   } catch (error: unknown) {
