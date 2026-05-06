@@ -23,8 +23,8 @@ import {
   deactivateWorkspaceInputSchema,
   deleteWorkspaceInputSchema,
   type GetAdminWorkspaceDetailInput,
-  getAdminWorkspaceDetailInputSchema,
   type GetAdminWorkspacesInput,
+  getAdminWorkspaceDetailInputSchema,
   getAdminWorkspacesInputSchema,
   type RemoveWorkspaceMemberInput,
   removeWorkspaceMemberInputSchema,
@@ -65,7 +65,9 @@ export async function getWorkspaces(
 /**
  * Server Action: ワークスペース詳細を取得
  */
-export async function getWorkspaceDetail(input: GetAdminWorkspaceDetailInput): Promise<ApiResponse<WorkspaceDetailResponse>> {
+export async function getWorkspaceDetail(
+  input: GetAdminWorkspaceDetailInput,
+): Promise<ApiResponse<WorkspaceDetailResponse>> {
   const parseResult = getAdminWorkspaceDetailInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');

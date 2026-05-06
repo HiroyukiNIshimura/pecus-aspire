@@ -53,7 +53,12 @@ export const deactivateSkillInputSchema = z.object({
 export type DeactivateSkillInput = z.infer<typeof deactivateSkillInputSchema>;
 
 export const getSkillsInputSchema = z.object({
-  page: z.number({ error: 'ページ番号が不正です。' }).int('ページ番号が不正です。').positive('ページ番号が不正です。').optional().default(1),
+  page: z
+    .number({ error: 'ページ番号が不正です。' })
+    .int('ページ番号が不正です。')
+    .positive('ページ番号が不正です。')
+    .optional()
+    .default(1),
   isActive: z.boolean().optional().default(true),
 });
 
