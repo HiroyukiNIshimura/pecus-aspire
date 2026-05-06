@@ -23,7 +23,7 @@ export default function AgendaPageClient({ initialOccurrences, initialNextCursor
   const loadMore = useCallback(async () => {
     if (!nextCursor) return;
 
-    const result = await fetchRecentOccurrencesPaginated(20, nextCursor);
+    const result = await fetchRecentOccurrencesPaginated({ limit: 20, cursor: nextCursor });
     if (result.success) {
       setOccurrences((prev) => [...prev, ...result.data.items]);
       setNextCursor(result.data.nextCursor ?? null);

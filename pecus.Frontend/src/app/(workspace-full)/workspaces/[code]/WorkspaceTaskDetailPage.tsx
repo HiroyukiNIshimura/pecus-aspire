@@ -620,14 +620,14 @@ export default function WorkspaceTaskDetailPage({
     if (currentPage < totalPages) {
       setIsLoadingTask(true);
       try {
-        const result = await getWorkspaceTasks(
+        const result = await getWorkspaceTasks({
           workspaceId,
           itemId,
-          currentPage + 1,
+          page: currentPage + 1,
           pageSize,
-          statusFilter,
+          status: statusFilter,
           assignedUserId,
-        );
+        });
 
         if (result.success && result.data.data && result.data.data.length > 0) {
           const newTasks = result.data.data;
@@ -669,14 +669,14 @@ export default function WorkspaceTaskDetailPage({
     if (currentPage > 1) {
       setIsLoadingTask(true);
       try {
-        const result = await getWorkspaceTasks(
+        const result = await getWorkspaceTasks({
           workspaceId,
           itemId,
-          currentPage - 1,
+          page: currentPage - 1,
           pageSize,
-          statusFilter,
+          status: statusFilter,
           assignedUserId,
-        );
+        });
 
         if (result.success && result.data.data && result.data.data.length > 0) {
           const newTasks = result.data.data;

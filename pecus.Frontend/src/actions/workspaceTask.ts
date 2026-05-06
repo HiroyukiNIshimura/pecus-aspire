@@ -5,10 +5,7 @@ import type {
   AssigneeTaskLoadResponse,
   BulkCreateTasksResponse,
   PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics,
-  SortOrder,
   TaskGenerationResponse,
-  TaskSortBy,
-  TaskStatusFilter,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskResponse,
 } from '@/connectors/api/pecus';
@@ -17,8 +14,12 @@ import {
   bulkCreateTasksInputSchema,
   type CheckAssigneeTaskLoadInput,
   type CreateWorkspaceTaskActionInput,
+  type GetAllWorkspaceTasksInput,
+  type GetWorkspaceTasksInput,
   checkAssigneeTaskLoadInputSchema,
   createWorkspaceTaskActionInputSchema,
+  getAllWorkspaceTasksInputSchema,
+  getWorkspaceTasksInputSchema,
   type GenerateTaskCandidatesInput,
   generateTaskCandidatesInputSchema,
   type UpdateWorkspaceTaskActionInput,
@@ -53,26 +54,25 @@ export async function getWorkspaceTaskBySequence(
  * ワークスペースアイテムのタスク一覧を取得
  */
 export async function getWorkspaceTasks(
-  workspaceId: number,
-  itemId: number,
-  page: number = 1,
-  pageSize: number = 10,
-  status?: TaskStatusFilter,
-  assignedUserId?: number,
-  sortBy?: TaskSortBy,
-  order?: SortOrder,
+  input: GetWorkspaceTasksInput,
 ): Promise<ApiResponse<PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics>> {
+  const parseResult = getWorkspaceTasksInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-      workspaceId,
-      itemId,
-      page,
-      pageSize,
-      status,
-      assignedUserId,
-      sortBy,
-      order,
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.page ?? 1,
+      parseResult.data.pageSize ?? 10,
+      parseResult.data.status,
+      parseResult.data.assignedUserId,
+      parseResult.data.sortBy,
+      parseResult.data.order,
     );
 
     return { success: true, data: response };
@@ -89,11 +89,14 @@ export async function getWorkspaceTasks(
  * @deprecated サーバーサイドページングを使用してください
  */
 export async function getAllWorkspaceTasks(
-  workspaceId: number,
-  itemId: number,
-  status?: TaskStatusFilter,
-  assignedUserId?: number,
+  input: GetAllWorkspaceTasksInput,
 ): Promise<ApiResponse<WorkspaceTaskDetailResponse[]>> {
+  const parseResult = getAllWorkspaceTasksInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const allTasks: WorkspaceTaskDetailResponse[] = [];
@@ -104,12 +107,12 @@ export async function getAllWorkspaceTasks(
     // 全ページを取得
     while (hasMore) {
       const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-        workspaceId,
-        itemId,
+        parseResult.data.workspaceId,
+        parseResult.data.itemId,
         page,
         pageSize,
-        status,
-        assignedUserId,
+        parseResult.data.status,
+        parseResult.data.assignedUserId,
       );
 
       if (response.data && response.data.length > 0) {

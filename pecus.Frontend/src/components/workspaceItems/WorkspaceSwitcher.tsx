@@ -46,7 +46,7 @@ export default function WorkspaceSwitcher({ currentWorkspaceCode, currentWorkspa
   // ワークスペース一覧を読み込む
   const loadWorkspaces = useCallback(async () => {
     const nextPage = currentPage + 1;
-    const result = await getMyWorkspacesPaged(nextPage);
+    const result = await getMyWorkspacesPaged({ page: nextPage });
 
     if (result.success) {
       setWorkspaces((prev) => {

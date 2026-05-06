@@ -131,3 +131,13 @@ export const joinWorkspaceInputSchema = z.object({
 });
 
 export type JoinWorkspaceInput = z.infer<typeof joinWorkspaceInputSchema>;
+
+export const getMyWorkspacesPagedInputSchema = z.object({
+  page: z
+    .number({ error: 'ページ番号が不正です。' })
+    .int('ページ番号が不正です。')
+    .positive('ページ番号が不正です。')
+    .optional(),
+});
+
+export type GetMyWorkspacesPagedInput = z.infer<typeof getMyWorkspacesPagedInputSchema>;

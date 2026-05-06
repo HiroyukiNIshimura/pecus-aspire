@@ -21,7 +21,7 @@ export default async function AgendasPage() {
     await api.profile.getApiProfileAppSettings();
 
     // 直近のオカレンスを取得（初回は20件）
-    const result = await fetchRecentOccurrencesPaginated(20);
+    const result = await fetchRecentOccurrencesPaginated({ limit: 20 });
     if (result.success) {
       initialOccurrences = result.data.items;
       initialNextCursor = result.data.nextCursor ?? null;

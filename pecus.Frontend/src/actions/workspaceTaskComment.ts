@@ -5,13 +5,14 @@ import type {
   PagedResponseOfTaskCommentDetailResponse,
   TaskCommentDetailResponse,
   TaskCommentResponse,
-  TaskCommentType,
 } from '@/connectors/api/pecus';
 import {
   type CreateTaskCommentInput,
   createTaskCommentInputSchema,
   type DeleteTaskCommentInput,
   deleteTaskCommentInputSchema,
+  type GetTaskCommentsInput,
+  getTaskCommentsInputSchema,
   type UpdateTaskCommentInput,
   updateTaskCommentInputSchema,
 } from '@/schemas/workspaceTaskCommentSchemas';
@@ -23,22 +24,23 @@ import { validationError } from './types';
  * タスクコメント一覧を取得
  */
 export async function getTaskComments(
-  workspaceId: number,
-  itemId: number,
-  taskId: number,
-  page: number = 1,
-  commentType?: TaskCommentType,
-  includeDeleted?: boolean,
+  input: GetTaskCommentsInput,
 ): Promise<ApiResponse<PagedResponseOfTaskCommentDetailResponse>> {
+  const parseResult = getTaskCommentsInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
     const response = await api.taskComment.getApiWorkspacesItemsTasksComments(
-      workspaceId,
-      itemId,
-      taskId,
-      page,
-      commentType,
-      includeDeleted,
+      parseResult.data.workspaceId,
+      parseResult.data.itemId,
+      parseResult.data.taskId,
+      parseResult.data.page ?? 1,
+      parseResult.data.commentType,
+      parseResult.data.includeDeleted,
     );
 
     return { success: true, data: response };

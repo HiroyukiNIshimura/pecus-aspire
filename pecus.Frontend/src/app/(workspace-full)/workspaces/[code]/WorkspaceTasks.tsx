@@ -175,16 +175,16 @@ const WorkspaceTasks = ({
       setIsLoading(true);
 
       // サーバー側でフィルタリング
-      const result = await getWorkspaceTasks(
+      const result = await getWorkspaceTasks({
         workspaceId,
         itemId,
         page,
-        ITEMS_PER_PAGE,
-        toApiTaskStatusFilter(status),
-        assigneeId ?? undefined,
-        sort ?? sortBy,
-        order ?? sortOrder,
-      );
+        pageSize: ITEMS_PER_PAGE,
+        status: toApiTaskStatusFilter(status),
+        assignedUserId: assigneeId ?? undefined,
+        sortBy: sort ?? sortBy,
+        order: order ?? sortOrder,
+      });
 
       if (result.success) {
         setTasks(result.data.data || []);

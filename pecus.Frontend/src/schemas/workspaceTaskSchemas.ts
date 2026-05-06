@@ -3,6 +3,9 @@ import type {
   BulkCreateTasksRequest,
   CreateWorkspaceTaskRequest,
   GenerateTaskCandidatesRequest,
+  SortOrder,
+  TaskSortBy,
+  TaskStatusFilter,
   UpdateWorkspaceTaskRequest,
 } from '@/connectors/api/pecus';
 
@@ -214,6 +217,56 @@ const assignedUserIdSchema = z
   .positive('担当者を選択してください。');
 
 const dueDateSchema = z.string({ error: '期限日を選択してください。' }).min(1, '期限日を選択してください。');
+
+const pageSchema = z
+  .number({ error: 'ページ番号が不正です。' })
+  .int('ページ番号が不正です。')
+  .positive('ページ番号が不正です。');
+
+const pageSizeSchema = z
+  .number({ error: 'ページサイズが不正です。' })
+  .int('ページサイズが不正です。')
+  .positive('ページサイズが不正です。');
+
+const taskStatusFilterSchema = z
+  .custom<TaskStatusFilter>((value) => value === undefined || typeof value === 'string', {
+    error: 'タスク状態フィルターが不正です。',
+  })
+  .optional();
+
+const taskSortBySchema = z
+  .custom<TaskSortBy>((value) => value === undefined || typeof value === 'string', {
+    error: 'ソート項目が不正です。',
+  })
+  .optional();
+
+const sortOrderSchema = z
+  .custom<SortOrder>((value) => value === undefined || typeof value === 'string', {
+    error: 'ソート順が不正です。',
+  })
+  .optional();
+
+export const getWorkspaceTasksInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  page: pageSchema.optional(),
+  pageSize: pageSizeSchema.optional(),
+  status: taskStatusFilterSchema,
+  assignedUserId: assignedUserIdSchema.optional(),
+  sortBy: taskSortBySchema,
+  order: sortOrderSchema,
+});
+
+export type GetWorkspaceTasksInput = z.infer<typeof getWorkspaceTasksInputSchema>;
+
+export const getAllWorkspaceTasksInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  status: taskStatusFilterSchema,
+  assignedUserId: assignedUserIdSchema.optional(),
+});
+
+export type GetAllWorkspaceTasksInput = z.infer<typeof getAllWorkspaceTasksInputSchema>;
 
 export const createWorkspaceTaskActionInputSchema = z.object({
   workspaceId: workspaceIdSchema,

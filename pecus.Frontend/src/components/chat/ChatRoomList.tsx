@@ -43,7 +43,7 @@ export default function ChatRoomList({ rooms, loading = false, onRoomCreated, on
     if (activeTab !== 'dm') return;
     setCandidatesLoading(true);
     try {
-      const result = await getDmCandidateUsers(10);
+      const result = await getDmCandidateUsers({ limit: 10 });
       if (result.success) {
         setDmCandidates(result.data);
       }

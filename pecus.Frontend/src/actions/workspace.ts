@@ -22,6 +22,8 @@ import {
   addMemberToWorkspaceInputSchema,
   type CreateWorkspaceActionInput,
   createWorkspaceActionInputSchema,
+  type GetMyWorkspacesPagedInput,
+  getMyWorkspacesPagedInputSchema,
   type JoinWorkspaceInput,
   joinWorkspaceInputSchema,
   type RemoveMemberFromWorkspaceInput,
@@ -93,19 +95,27 @@ export interface PagedWorkspacesResponse {
  *
  * @param page ページ番号（1始まり）
  */
-export async function getMyWorkspacesPaged(page: number = 1): Promise<ApiResponse<PagedWorkspacesResponse>> {
+export async function getMyWorkspacesPaged(input: GetMyWorkspacesPagedInput): Promise<ApiResponse<PagedWorkspacesResponse>> {
+  const parseResult = getMyWorkspacesPagedInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
+  const parsedPage = parseResult.data.page ?? 1;
+
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(page, undefined, undefined, undefined);
+    const response = await api.workspace.getApiWorkspaces(parsedPage, undefined, undefined, undefined);
 
     return {
       success: true,
       data: {
         data: response.data || [],
-        currentPage: response.currentPage || page,
+        currentPage: response.currentPage || parsedPage,
         totalPages: response.totalPages || 1,
         totalCount: response.totalCount || 0,
-        hasMore: (response.currentPage || page) < (response.totalPages || 1),
+        hasMore: (response.currentPage || parsedPage) < (response.totalPages || 1),
       },
     };
   } catch (error) {

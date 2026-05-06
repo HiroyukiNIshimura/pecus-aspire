@@ -159,7 +159,14 @@ export default function TaskCommentSection({
       setIsLoading(true);
       try {
         // includeDeleted: true で削除済みコメントも含めて取得
-        const result = await getTaskComments(workspaceId, itemId, taskId, pageNum, undefined, true);
+        const result = await getTaskComments({
+          workspaceId,
+          itemId,
+          taskId,
+          page: pageNum,
+          commentType: undefined,
+          includeDeleted: true,
+        });
         if (result.success) {
           const newComments = result.data.data || [];
           if (append) {

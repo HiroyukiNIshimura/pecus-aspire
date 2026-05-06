@@ -23,6 +23,10 @@ import {
   cancelAgendaInputSchema,
   cancelOccurrenceInputSchema,
   createAgendaActionInputSchema,
+  type FetchRecentOccurrencesInput,
+  type FetchRecentOccurrencesPaginatedInput,
+  fetchRecentOccurrencesInputSchema,
+  fetchRecentOccurrencesPaginatedInputSchema,
   type MarkAllNotificationsAsReadInput,
   type MarkNotificationAsReadInput,
   markAllNotificationsAsReadInputSchema,
@@ -60,10 +64,18 @@ export interface AgendaOccurrenceQueryOptions {
  * 直近のアジェンダオカレンス一覧を取得（タイムライン表示用）
  * @deprecated 代わりに fetchRecentOccurrencesPaginated を使用してください
  */
-export async function fetchRecentOccurrences(limit: number = 50): Promise<ApiResponse<AgendaOccurrenceResponse[]>> {
+export async function fetchRecentOccurrences(
+  input: FetchRecentOccurrencesInput,
+): Promise<ApiResponse<AgendaOccurrenceResponse[]>> {
+  const parseResult = fetchRecentOccurrencesInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const result = await api.agenda.getApiAgendasOccurrencesRecent(limit);
+    const result = await api.agenda.getApiAgendasOccurrencesRecent(parseResult.data.limit ?? 50);
     return { success: true, data: result.items };
   } catch (error: unknown) {
     console.error('fetchRecentOccurrences error:', error);
@@ -77,12 +89,20 @@ export async function fetchRecentOccurrences(limit: number = 50): Promise<ApiRes
  * 直近のアジェンダオカレンス一覧を取得（ページネーション対応）
  */
 export async function fetchRecentOccurrencesPaginated(
-  limit: number = 20,
-  cursor?: string,
+  input: FetchRecentOccurrencesPaginatedInput,
 ): Promise<ApiResponse<AgendaOccurrencesResponse>> {
+  const parseResult = fetchRecentOccurrencesPaginatedInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = await createPecusApiClients();
-    const result = await api.agenda.getApiAgendasOccurrencesRecent(limit, cursor);
+    const result = await api.agenda.getApiAgendasOccurrencesRecent(
+      parseResult.data.limit ?? 20,
+      parseResult.data.cursor,
+    );
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('fetchRecentOccurrencesPaginated error:', error);

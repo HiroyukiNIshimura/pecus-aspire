@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { CreateTaskCommentRequest, UpdateTaskCommentRequest } from '@/connectors/api/pecus';
+import type { CreateTaskCommentRequest, TaskCommentType, UpdateTaskCommentRequest } from '@/connectors/api/pecus';
 
 const workspaceIdSchema = z
   .number({ error: 'ワークスペースIDが不正です。' })
@@ -25,6 +25,28 @@ const rowVersionSchema = z
   .number({ error: '行バージョンが不正です。' })
   .int('行バージョンが不正です。')
   .nonnegative('行バージョンが不正です。');
+
+const pageSchema = z
+  .number({ error: 'ページ番号が不正です。' })
+  .int('ページ番号が不正です。')
+  .positive('ページ番号が不正です。');
+
+const taskCommentTypeSchema = z
+  .custom<TaskCommentType>((value) => value === undefined || typeof value === 'string', {
+    error: 'コメント種別が不正です。',
+  })
+  .optional();
+
+export const getTaskCommentsInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  itemId: itemIdSchema,
+  taskId: taskIdSchema,
+  page: pageSchema.optional(),
+  commentType: taskCommentTypeSchema,
+  includeDeleted: z.boolean({ error: '削除表示フラグが不正です。' }).optional(),
+});
+
+export type GetTaskCommentsInput = z.infer<typeof getTaskCommentsInputSchema>;
 
 export const createTaskCommentInputSchema = z.object({
   workspaceId: workspaceIdSchema,

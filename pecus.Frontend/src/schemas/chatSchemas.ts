@@ -55,3 +55,14 @@ export const searchUsersInputSchema = z.object({
 });
 
 export type SearchUsersInput = z.infer<typeof searchUsersInputSchema>;
+
+export const getDmCandidateUsersInputSchema = z.object({
+  limit: z
+    .number({ error: '取得件数が不正です。' })
+    .int('取得件数が不正です。')
+    .min(1, '取得件数が不正です。')
+    .max(50, '取得件数が不正です。')
+    .optional(),
+});
+
+export type GetDmCandidateUsersInput = z.infer<typeof getDmCandidateUsersInputSchema>;

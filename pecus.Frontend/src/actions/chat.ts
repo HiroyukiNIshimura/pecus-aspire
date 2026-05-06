@@ -16,6 +16,8 @@ import {
   type CreateOrGetDmRoomInput,
   createOrGetAiRoomInputSchema,
   createOrGetDmRoomInputSchema,
+  type GetDmCandidateUsersInput,
+  getDmCandidateUsersInputSchema,
   type NotifyTypingInput,
   notifyTypingInputSchema,
   type SearchUsersInput,
@@ -210,10 +212,16 @@ export async function notifyTyping(input: NotifyTypingInput): Promise<ApiRespons
  * 既存DMがない、最近アクティブなユーザーを取得
  * @param limit 取得件数（デフォルト10、最大50）
  */
-export async function getDmCandidateUsers(limit = 10): Promise<ApiResponse<DmCandidateUserItem[]>> {
+export async function getDmCandidateUsers(input: GetDmCandidateUsersInput): Promise<ApiResponse<DmCandidateUserItem[]>> {
+  const parseResult = getDmCandidateUsersInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
   try {
     const api = createPecusApiClients();
-    const response = await api.chat.getApiChatDmCandidates(limit);
+    const response = await api.chat.getApiChatDmCandidates(parseResult.data.limit ?? 10);
     return { success: true, data: response };
   } catch (error) {
     console.error('getDmCandidateUsers error:', error);

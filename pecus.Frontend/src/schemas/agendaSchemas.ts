@@ -295,3 +295,26 @@ export const searchUsersInputSchema = z.object({
 });
 
 export type SearchUsersInput = z.infer<typeof searchUsersInputSchema>;
+
+export const fetchRecentOccurrencesInputSchema = z.object({
+  limit: z
+    .number({ error: '取得件数が不正です。' })
+    .int('取得件数が不正です。')
+    .min(1, '取得件数が不正です。')
+    .max(100, '取得件数が不正です。')
+    .optional(),
+});
+
+export type FetchRecentOccurrencesInput = z.infer<typeof fetchRecentOccurrencesInputSchema>;
+
+export const fetchRecentOccurrencesPaginatedInputSchema = z.object({
+  limit: z
+    .number({ error: '取得件数が不正です。' })
+    .int('取得件数が不正です。')
+    .min(1, '取得件数が不正です。')
+    .max(100, '取得件数が不正です。')
+    .optional(),
+  cursor: z.string({ error: 'カーソルが不正です。' }).optional(),
+});
+
+export type FetchRecentOccurrencesPaginatedInput = z.infer<typeof fetchRecentOccurrencesPaginatedInputSchema>;
