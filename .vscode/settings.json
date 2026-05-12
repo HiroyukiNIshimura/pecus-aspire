@@ -55,7 +55,9 @@
     "dotnet build": true,
     "dotnet ef": true,
     "dotnet add package": true,
-    //"npm run build":true
+    //"npm run build":true,
+    "cat": true,
+    "ls": true
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "files.associations": {
