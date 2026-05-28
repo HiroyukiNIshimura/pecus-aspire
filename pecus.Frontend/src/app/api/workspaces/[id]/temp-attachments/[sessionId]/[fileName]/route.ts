@@ -36,8 +36,14 @@ export async function GET(
       responseType: 'arraybuffer',
     });
 
-    // Content-Type を取得（バックエンドからのレスポンスヘッダー）
-    const contentType = response.headers['content-type'] || 'application/octet-stream';
+    // Content-Type を取得（バックエンドからのレスポンスヘッダーを文字列へ正規化）
+    const rawContentType = response.headers['content-type'];
+    const contentType =
+      typeof rawContentType === 'string'
+        ? rawContentType
+        : Array.isArray(rawContentType)
+          ? (rawContentType[0] ?? 'application/octet-stream')
+          : 'application/octet-stream';
 
     // ファイルの内容をそのまま返す
     return new NextResponse(Buffer.from(response.data), {

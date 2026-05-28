@@ -46,8 +46,14 @@ export async function GET(
       responseType: 'arraybuffer',
     });
 
-    // バックエンドから返されるContent-Typeを取得
-    const contentType = response.headers['content-type'] || 'image/webp';
+    // バックエンドから返されるContent-Typeを取得（NextResponseヘッダー用に文字列へ正規化）
+    const rawContentType = response.headers['content-type'];
+    const contentType =
+      typeof rawContentType === 'string'
+        ? rawContentType
+        : Array.isArray(rawContentType)
+          ? (rawContentType[0] ?? 'image/webp')
+          : 'image/webp';
 
     // キャッシュヘッダーを設定（1時間キャッシュ）
     return new NextResponse(response.data, {

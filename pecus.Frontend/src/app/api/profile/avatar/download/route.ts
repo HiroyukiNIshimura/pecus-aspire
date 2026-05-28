@@ -31,8 +31,14 @@ export async function GET(request: NextRequest) {
       responseType: 'arraybuffer',
     });
 
-    // バックエンドから返されるContent-Typeを取得
-    const contentType = response.headers['content-type'] || 'image/jpeg';
+    // バックエンドから返されるContent-Typeを取得（文字列へ正規化）
+    const rawContentType = response.headers['content-type'];
+    const contentType =
+      typeof rawContentType === 'string'
+        ? rawContentType
+        : Array.isArray(rawContentType)
+          ? (rawContentType[0] ?? 'image/jpeg')
+          : 'image/jpeg';
 
     // Content-Typeから適切な拡張子を判定
     const extMap: Record<string, string> = {

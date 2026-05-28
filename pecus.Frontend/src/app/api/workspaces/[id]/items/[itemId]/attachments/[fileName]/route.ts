@@ -41,8 +41,14 @@ export async function GET(
       },
     );
 
-    // Content-Type を取得（デフォルトは application/octet-stream）
-    const contentType = response.headers['content-type'] || 'application/octet-stream';
+    // Content-Type を取得（文字列へ正規化、デフォルトは application/octet-stream）
+    const rawContentType = response.headers['content-type'];
+    const contentType =
+      typeof rawContentType === 'string'
+        ? rawContentType
+        : Array.isArray(rawContentType)
+          ? (rawContentType[0] ?? 'application/octet-stream')
+          : 'application/octet-stream';
 
     // バックエンドからの Content-Disposition ヘッダーを取得
     // ASP.NET Core は `content-disposition: attachment; filename=<originalFileName>` を返す
