@@ -30,7 +30,9 @@ COPY pecus.Frontend/package.json ./pecus.Frontend/
 #   そのため、musl 向けネイティブバイナリを明示的に追加しておく。
 RUN npm ci --workspace=pecus.Frontend --include=optional \
 	&& cd /app/pecus.Frontend \
-	&& npm install --no-save lightningcss-linux-x64-musl@1.31.1
+	  && npm install --no-save \
+       lightningcss-linux-x64-musl@1.31.1 \
+       @tailwindcss/oxide-linux-x64-musl@4.2.1
 
 # ============================================
 # Build stage - deps を直接継承してコピーを削減
