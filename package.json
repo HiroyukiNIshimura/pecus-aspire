@@ -21,7 +21,8 @@
     "sharp": "^0.34.5"
   },
   "overrides": {
-    "jsdom": "^29.0.2",
+    "@types/jsdom": "^28.0.3",
+    "jsdom": "^29.1.1",
     "lexical": "0.44.0",
     "@lexical/clipboard": "0.44.0",
     "@lexical/code": "0.44.0",
