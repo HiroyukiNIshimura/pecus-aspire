@@ -137,7 +137,7 @@
     "AllowedHosts": "*",
     "Pecus": {
       "Jwt": {
-        "IssuerSigningKey": "P8v9IoORqBUelu6dxWXMfmKtnyjG1NhZ4awCT7EcQAbDi0zLgrY2s5pFkSJHV3",
+        "IssuerSigningKey": "CHANGE_ME_JWT_ISSUER_SIGNING_KEY_IN_PRODUCTION",
         "ValidIssuer": "http://localhost/",
         "ValidAudience": "https://localhost/",
         "ExpiresMinutes": 15
