@@ -18620,7 +18620,7 @@ var $createTableCell = (textContent) => {
 };
 var mapToTableCells = (textContent) => {
   const match = textContent.match(TABLE_ROW_REG_EXP);
-  if (!match || !match[1]) {
+  if (!match?.[1]) {
     return null;
   }
   return match[1].split("|").map((text) => $createTableCell(text));
