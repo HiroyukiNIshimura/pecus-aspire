@@ -23,7 +23,14 @@ COPY packages/coati-editor/dist ./packages/coati-editor/dist
 COPY pecus.Frontend/package.json ./pecus.Frontend/
 
 # ワークスペース全体の依存関係をインストール
-RUN npm ci --workspace=pecus.Frontend
+# NOTE:
+#   package-lock.json が macOS で生成されると lightningcss の Linux 向け optional package
+#   エントリが欠落することがあり、Alpine(musl) 本番ビルドで
+#   "Cannot find module '../lightningcss.linux-x64-musl.node'" が発生する。
+#   そのため、musl 向けネイティブバイナリを明示的に追加しておく。
+RUN npm ci --workspace=pecus.Frontend --include=optional \
+	&& cd /app/pecus.Frontend \
+	&& npm install --no-save lightningcss-linux-x64-musl@1.31.1
 
 # ============================================
 # Build stage - deps を直接継承してコピーを削減
