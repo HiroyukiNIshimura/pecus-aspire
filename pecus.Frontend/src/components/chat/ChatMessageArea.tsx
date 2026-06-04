@@ -575,18 +575,24 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
   }
 
   const mentionCandidates: MentionCandidate[] = (room?.members ?? [])
-    .filter((member) => !!member.username)
     .filter((member) => member.id !== currentUserId)
-    .map((member, index) => {
+    .reduce<MentionCandidate[]>((acc, member, index) => {
+      const username = member.username?.trim();
+      if (!username) {
+        return acc;
+      }
+
       const isBot = member.id === 0;
       const suffix = isBot ? 'Bot' : member.email || `User#${member.id}`;
 
-      return {
-        key: `${member.id}-${member.username}-${index}`,
-        value: member.username,
-        label: `${member.username} (${suffix})`,
-      };
-    })
+      acc.push({
+        key: `${member.id}-${username}-${index}`,
+        value: username,
+        label: `${username} (${suffix})`,
+      });
+
+      return acc;
+    }, [])
     .sort((a, b) => {
       const aIsBot = a.label.includes('(Bot)');
       const bIsBot = b.label.includes('(Bot)');
