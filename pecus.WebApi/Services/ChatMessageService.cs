@@ -95,6 +95,25 @@ public class ChatMessageService
 
         await _context.SaveChangesAsync();
 
+        // メンションを抽出・保存
+        var mentionedActors = await ExtractMentionedActorsAsync(roomId: room.Id, content: message.Content);
+        if (senderActorId.HasValue)
+        {
+            mentionedActors = mentionedActors.Where(actor => actor.Id != senderActorId.Value).ToList();
+        }
+
+        if (mentionedActors.Count > 0)
+        {
+            var mentions = mentionedActors.Select(actor => new ChatMessageMention
+            {
+                ChatMessageId = message.Id,
+                MentionedActorId = actor.Id,
+            });
+
+            _context.ChatMessageMentions.AddRange(mentions);
+            await _context.SaveChangesAsync();
+        }
+
         // Navigation Property を読み込み
         if (senderActorId.HasValue)
         {
@@ -115,9 +134,21 @@ public class ChatMessageService
         {
             await _context.Entry(message).Reference(m => m.ReplyToMessage).LoadAsync();
         }
+        await _context
+            .Entry(message)
+            .Collection(m => m.Mentions)
+            .Query()
+            .Include(mention => mention.MentionedActor)
+                .ThenInclude(actor => actor.User)
+            .Include(mention => mention.MentionedActor)
+                .ThenInclude(actor => actor.Bot)
+            .LoadAsync();
 
         // SignalR 通知を送信
         await SendMessageNotificationAsync(room, message);
+
+        // メンション通知を送信
+        await SendMentionNotificationsAsync(room, message, mentionedActors);
 
         _logger.LogDebug(
             "Message sent: MessageId={MessageId}, RoomId={RoomId}, SenderActorId={SenderActorId}",
@@ -179,6 +210,12 @@ public class ChatMessageService
             .Include(m => m.SenderActor)
                 .ThenInclude(a => a!.Bot)
             .Include(m => m.ReplyToMessage)
+            .Include(m => m.Mentions)
+                .ThenInclude(mention => mention.MentionedActor)
+                    .ThenInclude(actor => actor.User)
+            .Include(m => m.Mentions)
+                .ThenInclude(mention => mention.MentionedActor)
+                    .ThenInclude(actor => actor.Bot)
             .Where(m => m.ChatRoomId == roomId);
 
         if (cursor.HasValue)
@@ -220,6 +257,12 @@ public class ChatMessageService
             .Include(m => m.SenderActor)
                 .ThenInclude(a => a!.Bot)
             .Include(m => m.ReplyToMessage)
+            .Include(m => m.Mentions)
+                .ThenInclude(mention => mention.MentionedActor)
+                    .ThenInclude(actor => actor.User)
+            .Include(m => m.Mentions)
+                .ThenInclude(mention => mention.MentionedActor)
+                    .ThenInclude(actor => actor.Bot)
             .Where(m => m.ChatRoomId == roomId && m.Id > afterMessageId)
             .OrderBy(m => m.Id)
             .Take(limit)
@@ -239,6 +282,12 @@ public class ChatMessageService
             .Include(m => m.SenderActor)
                 .ThenInclude(a => a!.Bot)
             .Include(m => m.ReplyToMessage)
+            .Include(m => m.Mentions)
+                .ThenInclude(mention => mention.MentionedActor)
+                    .ThenInclude(actor => actor.User)
+            .Include(m => m.Mentions)
+                .ThenInclude(mention => mention.MentionedActor)
+                    .ThenInclude(actor => actor.Bot)
             .FirstOrDefaultAsync(m => m.Id == messageId);
     }
 
@@ -258,6 +307,12 @@ public class ChatMessageService
                 .ThenInclude(a => a!.User)
             .Include(m => m.SenderActor)
                 .ThenInclude(a => a!.Bot)
+            .Include(m => m.Mentions)
+                .ThenInclude(mention => mention.MentionedActor)
+                    .ThenInclude(actor => actor.User)
+            .Include(m => m.Mentions)
+                .ThenInclude(mention => mention.MentionedActor)
+                    .ThenInclude(actor => actor.Bot)
             .Where(m => m.ChatRoomId == roomId)
             .OrderByDescending(m => m.Id)
             .FirstOrDefaultAsync();
@@ -271,6 +326,163 @@ public class ChatMessageService
     public async Task<int> GetMessageCountAsync(int roomId)
     {
         return await _context.ChatMessages.CountAsync(m => m.ChatRoomId == roomId);
+    }
+
+    #endregion
+
+    #region メンション
+
+    /// <summary>
+    /// メッセージ本文からメンション対象を抽出し、対象ユーザーに通知する
+    /// </summary>
+    private async Task SendMentionNotificationsAsync(
+        ChatRoom room,
+        ChatMessage message,
+        List<ChatActor> mentionedActors
+    )
+    {
+        if (mentionedActors.Count == 0)
+        {
+            return;
+        }
+
+        var actorIdSet = mentionedActors.Select(actor => actor.Id).ToHashSet();
+        var mentionedMembers = await _context
+            .ChatRoomMembers.Include(member => member.ChatActor)
+            .Where(member => member.ChatRoomId == room.Id && actorIdSet.Contains(member.ChatActorId))
+            .ToListAsync();
+
+        foreach (var member in mentionedMembers)
+        {
+            // MVP: ミュート中は通知しない（All / MentionsOnly は通知）
+            if (member.NotificationSetting == ChatNotificationSetting.Muted)
+            {
+                continue;
+            }
+
+            var mentionedUserId = member.ChatActor.UserId;
+            if (!mentionedUserId.HasValue)
+            {
+                // Bot メンションは保存対象に含めるが、リアルタイム通知対象は人ユーザーのみ
+                continue;
+            }
+
+            var payload = new
+            {
+                RoomId = room.Id,
+                MessageId = message.Id,
+                MentionedUserId = mentionedUserId.Value,
+                SenderActorId = message.SenderActorId,
+                SenderDisplayName = message.SenderActor?.DisplayName,
+                Preview = BuildMentionPreview(message.Content),
+                CreatedAt = message.CreatedAt,
+            };
+
+            await _hubContext
+                .Clients.Group($"user:{mentionedUserId.Value}")
+                .SendAsync(
+                    "ReceiveNotification",
+                    new
+                    {
+                        EventType = "chat:user_mentioned",
+                        Payload = payload,
+                        Timestamp = DateTimeOffset.UtcNow,
+                    }
+                );
+        }
+    }
+
+    /// <summary>
+    /// メッセージ本文からルームメンバーに一致するメンションを抽出
+    /// </summary>
+    private async Task<List<ChatActor>> ExtractMentionedActorsAsync(int roomId, string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return [];
+        }
+
+        var roomActors = await _context
+            .ChatRoomMembers.Include(member => member.ChatActor)
+            .Where(member => member.ChatRoomId == roomId)
+            .Select(member => member.ChatActor)
+            .ToListAsync();
+
+        // 同名が複数いる場合は誤通知防止のため無視
+        var actorMap = roomActors
+            .GroupBy(actor => actor.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        if (actorMap.Count == 0)
+        {
+            return [];
+        }
+
+        var candidates = actorMap
+            .Values.Where(actor => !string.IsNullOrWhiteSpace(actor.DisplayName))
+            .OrderByDescending(actor => actor.DisplayName.Length)
+            .ToList();
+
+        var result = new List<ChatActor>();
+
+        for (var i = 0; i < content.Length; i++)
+        {
+            if (content[i] != '@')
+            {
+                continue;
+            }
+
+            // @ の前は文頭または空白のみを有効とする
+            if (i > 0 && !char.IsWhiteSpace(content[i - 1]))
+            {
+                continue;
+            }
+
+            foreach (var actor in candidates)
+            {
+                var displayName = actor.DisplayName;
+                var start = i + 1;
+
+                if (start + displayName.Length > content.Length)
+                {
+                    continue;
+                }
+
+                var slice = content.AsSpan(start, displayName.Length);
+                if (!slice.Equals(displayName.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // 表示名の直後は文末または空白のみを有効とする
+                var end = start + displayName.Length;
+                if (end < content.Length && !char.IsWhiteSpace(content[end]))
+                {
+                    continue;
+                }
+
+                result.Add(actor);
+                break;
+            }
+        }
+
+        return result.DistinctBy(actor => actor.Id).ToList();
+    }
+
+    /// <summary>
+    /// 通知用プレビューを作成
+    /// </summary>
+    private static string BuildMentionPreview(string content)
+    {
+        const int maxLength = 80;
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return string.Empty;
+        }
+
+        var normalized = content.Replace("\r", " ").Replace("\n", " ").Trim();
+        return normalized.Length <= maxLength ? normalized : normalized[..maxLength] + "...";
     }
 
     #endregion

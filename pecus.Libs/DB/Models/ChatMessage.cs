@@ -57,4 +57,9 @@ public class ChatMessage
     /// 返信先メッセージ
     /// </summary>
     public ChatMessage? ReplyToMessage { get; set; }
+
+    /// <summary>
+    /// メンション一覧
+    /// </summary>
+    public ICollection<ChatMessageMention> Mentions { get; set; } = [];
 }

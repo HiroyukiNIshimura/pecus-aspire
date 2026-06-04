@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import ProfileLayoutClient from '@/components/common/layout/ProfileLayoutClient';
+import { ChatMentionNotification } from '@/components/notifications/ChatMentionNotification';
 import {
   createPecusApiClients,
   detect401ValidationError,
@@ -46,6 +47,7 @@ export default async function ProfileLayout({ children }: ProfileLayoutProps) {
     <SignalRProvider>
       <AppSettingsProvider settings={appSettings}>
         <ProfileLayoutClient>{children}</ProfileLayoutClient>
+        <ChatMentionNotification />
       </AppSettingsProvider>
     </SignalRProvider>
   );

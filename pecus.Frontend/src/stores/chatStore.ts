@@ -32,6 +32,9 @@ interface ChatState {
   // 未読数
   unreadCounts: UnreadCounts;
 
+  // 自分宛メンションの未確認数（グローバル通知用）
+  mentionUnreadCount: number;
+
   // Actions
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -39,6 +42,8 @@ interface ChatState {
   selectRoom: (roomId: number | null) => void;
   setActiveTab: (tab: ChatTab) => void;
   setUnreadCounts: (counts: UnreadCounts) => void;
+  incrementMentionUnread: () => void;
+  resetMentionUnread: () => void;
   resetChat: () => void;
 }
 
@@ -59,6 +64,7 @@ export const useChatStore = create<ChatState>((set) => ({
   selectedRoomId: null,
   activeTab: 'dm',
   unreadCounts: initialUnreadCounts,
+  mentionUnreadCount: 0,
 
   // Actions
   openDrawer: () => set({ isDrawerOpen: true }),
@@ -81,11 +87,19 @@ export const useChatStore = create<ChatState>((set) => ({
 
   setUnreadCounts: (counts) => set({ unreadCounts: counts }),
 
+  incrementMentionUnread: () =>
+    set((state) => ({
+      mentionUnreadCount: state.mentionUnreadCount + 1,
+    })),
+
+  resetMentionUnread: () => set({ mentionUnreadCount: 0 }),
+
   resetChat: () =>
     set({
       isDrawerOpen: false,
       selectedRoomId: null,
       activeTab: 'dm',
       unreadCounts: initialUnreadCounts,
+      mentionUnreadCount: 0,
     }),
 }));

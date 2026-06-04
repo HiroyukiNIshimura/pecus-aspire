@@ -97,10 +97,11 @@ export function useNotify() {
     });
   };
 
-  const info = (message: string) => {
+  const info = (message: string, duration?: number) => {
     notyfRef.current?.open({
       type: 'info',
       message,
+      ...(duration !== undefined ? { duration } : {}),
     });
   };
 

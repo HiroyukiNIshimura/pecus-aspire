@@ -49,6 +49,11 @@ public class ChatMessageItem
     public ChatMessageReplyItem? ReplyTo { get; set; }
 
     /// <summary>
+    /// メンション一覧
+    /// </summary>
+    public List<ChatMentionItem> Mentions { get; set; } = [];
+
+    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTimeOffset CreatedAt { get; set; }

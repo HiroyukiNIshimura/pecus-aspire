@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { ChatMentionNotification } from '@/components/notifications/ChatMentionNotification';
 import {
   createPecusApiClients,
   detect401ValidationError,
@@ -50,7 +51,10 @@ export default async function BackOfficeFullLayout({ children }: BackOfficeFullL
 
   return (
     <SignalRProvider>
-      <AppSettingsProvider settings={appSettings}>{children}</AppSettingsProvider>
+      <AppSettingsProvider settings={appSettings}>
+        {children}
+        <ChatMentionNotification />
+      </AppSettingsProvider>
     </SignalRProvider>
   );
 }

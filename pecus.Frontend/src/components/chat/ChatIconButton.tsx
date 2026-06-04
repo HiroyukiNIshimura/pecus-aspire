@@ -14,12 +14,14 @@ export default function ChatIconButton() {
   const router = useRouter();
   const pathname = usePathname();
   const isMobile = useIsMobile();
-  const { toggleDrawer } = useChatStore();
+  const { toggleDrawer, resetMentionUnread } = useChatStore();
 
   // チャットページにいるかどうか
   const isOnChatPage = pathname?.startsWith('/chat');
 
   const handleClick = () => {
+    resetMentionUnread();
+
     // isMobile === false (PC判定確定) の場合のみドロワー
     // null (初期化中) または true (スマホ) はフル画面遷移
     if (isMobile === false) {

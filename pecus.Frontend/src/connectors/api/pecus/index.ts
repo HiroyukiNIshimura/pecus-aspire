@@ -53,6 +53,8 @@ export type { BulkCreateTasksRequest } from './models/BulkCreateTasksRequest';
 export type { BulkCreateTasksResponse } from './models/BulkCreateTasksResponse';
 export type { BulkTaskItem } from './models/BulkTaskItem';
 export type { CancelAgendaRequest } from './models/CancelAgendaRequest';
+export type { ChatActorType } from './models/ChatActorType';
+export type { ChatMentionItem } from './models/ChatMentionItem';
 export type { ChatMessageItem } from './models/ChatMessageItem';
 export type { ChatMessageReplyItem } from './models/ChatMessageReplyItem';
 export type { ChatMessagesResponse } from './models/ChatMessagesResponse';

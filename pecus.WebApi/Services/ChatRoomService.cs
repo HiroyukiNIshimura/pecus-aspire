@@ -556,6 +556,13 @@ public class ChatRoomService
             query = query.Where(m => m.CreatedAt > member.LastReadAt.Value);
         }
 
+        if (member.NotificationSetting == ChatNotificationSetting.MentionsOnly)
+        {
+            query = query.Where(m =>
+                m.Mentions.Any(mention => mention.MentionedActorId == member.ChatActorId)
+            );
+        }
+
         return await query.CountAsync();
     }
 
@@ -587,6 +594,13 @@ public class ChatRoomService
             if (member.LastReadAt.HasValue)
             {
                 query = query.Where(m => m.CreatedAt > member.LastReadAt.Value);
+            }
+
+            if (member.NotificationSetting == ChatNotificationSetting.MentionsOnly)
+            {
+                query = query.Where(m =>
+                    m.Mentions.Any(mention => mention.MentionedActorId == member.ChatActorId)
+                );
             }
 
             totalUnread += await query.CountAsync();
@@ -633,6 +647,13 @@ public class ChatRoomService
             if (member.LastReadAt.HasValue)
             {
                 query = query.Where(m => m.CreatedAt > member.LastReadAt.Value);
+            }
+
+            if (member.NotificationSetting == ChatNotificationSetting.MentionsOnly)
+            {
+                query = query.Where(m =>
+                    m.Mentions.Any(mention => mention.MentionedActorId == member.ChatActorId)
+                );
             }
 
             var count = await query.CountAsync();

@@ -721,6 +721,21 @@ public class ChatController : BaseSecureController
             };
         }
 
+        if (message.Mentions.Count > 0)
+        {
+            item.Mentions = message
+                .Mentions.Select(mention => new ChatMentionItem
+                {
+                    Id = mention.Id,
+                    MentionedActorId = mention.MentionedActorId,
+                    MentionedUserId = mention.MentionedActor.UserId,
+                    MentionedBotId = mention.MentionedActor.BotId,
+                    DisplayName = mention.MentionedActor.DisplayName,
+                    ActorType = mention.MentionedActor.ActorType,
+                })
+                .ToList();
+        }
+
         return item;
     }
 

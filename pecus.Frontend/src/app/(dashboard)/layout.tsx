@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import DashboardLayoutClient from '@/components/common/layout/DashboardLayoutClient';
+import { ChatMentionNotification } from '@/components/notifications/ChatMentionNotification';
 import { ItemGatherNotification } from '@/components/notifications/ItemGatherNotification';
 import {
   createPecusApiClients,
@@ -49,6 +50,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
       <AppSettingsProvider settings={appSettings}>
         <AchievementCelebrationProvider>
           <DashboardLayoutClient userInfo={appSettings.currentUser}>{children}</DashboardLayoutClient>
+          <ChatMentionNotification />
           {/* Item Gather Notification */}
           <ItemGatherNotification />
         </AchievementCelebrationProvider>

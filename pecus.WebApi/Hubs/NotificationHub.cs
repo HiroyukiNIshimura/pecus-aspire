@@ -69,6 +69,19 @@ public class NotificationHub : Hub
         // Redis に接続情報を登録（組織情報も含む）
         await _presenceService.RegisterConnectionAsync(Context.ConnectionId, userId, organizationId);
 
+        // 個別通知用グループに参加
+        if (userId != 0)
+        {
+            var userGroupName = $"user:{userId}";
+            await Groups.AddToGroupAsync(Context.ConnectionId, userGroupName);
+
+            _logger.LogDebug(
+                "SignalR: User {UserId} joined {GroupName}. ConnectionId={ConnectionId}",
+                userId,
+                userGroupName,
+                Context.ConnectionId);
+        }
+
         if (organizationId.HasValue)
         {
             var groupName = $"organization:{organizationId.Value}";

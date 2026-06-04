@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ChatMentionItem } from './ChatMentionItem';
 import type { ChatMessageReplyItem } from './ChatMessageReplyItem';
 import type { ChatMessageType } from './ChatMessageType';
 import type { UserIdentityResponse } from './UserIdentityResponse';
@@ -28,6 +29,10 @@ export type ChatMessageItem = {
      */
     replyToMessageId?: number | null;
     replyTo?: ChatMessageReplyItem | null;
+    /**
+     * メンション一覧
+     */
+    mentions?: Array<ChatMentionItem>;
     /**
      * 作成日時
      */

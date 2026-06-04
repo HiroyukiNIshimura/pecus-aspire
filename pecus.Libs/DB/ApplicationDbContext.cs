@@ -167,6 +167,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<ChatMessage> ChatMessages { get; set; }
 
     /// <summary>
+    /// チャットメッセージメンションテーブル
+    /// </summary>
+    public DbSet<ChatMessageMention> ChatMessageMentions { get; set; }
+
+    /// <summary>
     /// チャットアクター（ユーザー/ボット統一参照）テーブル
     /// </summary>
     public DbSet<ChatActor> ChatActors { get; set; }
@@ -1131,6 +1136,35 @@ public class ApplicationDbContext : DbContext
 
             // ルーム内のメッセージ一覧取得用（日時降順）
             entity.HasIndex(e => new { e.ChatRoomId, e.CreatedAt });
+        });
+
+        // ChatMessageMention エンティティの設定
+        modelBuilder.Entity<ChatMessageMention>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // ChatMessageMention と ChatMessage の多対一リレーションシップ
+            entity
+                .HasOne(m => m.ChatMessage)
+                .WithMany(message => message.Mentions)
+                .HasForeignKey(m => m.ChatMessageId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ChatMessageMention と ChatActor の多対一リレーションシップ
+            entity
+                .HasOne(m => m.MentionedActor)
+                .WithMany()
+                .HasForeignKey(m => m.MentionedActorId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // メッセージごとのメンション取得用
+            entity.HasIndex(e => e.ChatMessageId);
+
+            // アクター宛メンション検索用
+            entity.HasIndex(e => new { e.MentionedActorId, e.CreatedAt });
+
+            // 同一メッセージ内の重複メンション防止
+            entity.HasIndex(e => new { e.ChatMessageId, e.MentionedActorId }).IsUnique();
         });
 
         // ChatActor エンティティの設定

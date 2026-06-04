@@ -5,6 +5,7 @@ import { getChatMessages, getChatRoomDetail, sendChatMessage, updateReadPosition
 import type { ChatMessageItem, ChatRoomDetailResponse } from '@/connectors/api/pecus';
 import { useSignalREvent } from '@/hooks/useSignalR';
 import { useSignalRContext } from '@/providers/SignalRProvider';
+import type { MentionCandidate } from './ChatMessageInput';
 import ChatMessageInput from './ChatMessageInput';
 import ChatMessageList from './ChatMessageList';
 import ChatTypingIndicator from './ChatTypingIndicator';
@@ -79,6 +80,27 @@ interface ChatBotErrorPayload {
   errorMessage: string;
 }
 
+/** SignalR chat:user_mentioned イベントのペイロード型 */
+interface ChatUserMentionedPayload {
+  roomId: number;
+  messageId: number;
+  mentionedUserId: number;
+  senderActorId?: number | null;
+  senderDisplayName?: string | null;
+  preview?: string | null;
+  createdAt?: string;
+}
+
+interface ChatUserMentionedPayloadPascal {
+  RoomId?: number;
+  MessageId?: number;
+  MentionedUserId?: number;
+  SenderActorId?: number | null;
+  SenderDisplayName?: string | null;
+  Preview?: string | null;
+  CreatedAt?: string;
+}
+
 /** 入力中ユーザー情報 */
 interface TypingUser {
   userId: number;
@@ -119,6 +141,8 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
 
   // Bot エラー状態管理
   const [botError, setBotError] = useState<string | null>(null);
+  const [mentionNotification, setMentionNotification] = useState<string | null>(null);
+  const mentionNotificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 既読状態管理（DM用）: 相手が読んだ最新のメッセージID
   const [lastReadMessageId, setLastReadMessageId] = useState<number | null>(null);
@@ -137,6 +161,10 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
       if (botTypingRef.current) {
         clearTimeout(botTypingRef.current.timeoutId);
         botTypingRef.current = null;
+      }
+
+      if (mentionNotificationTimeoutRef.current) {
+        clearTimeout(mentionNotificationTimeoutRef.current);
       }
     };
   }, [roomId, joinChat, leaveChat]);
@@ -264,6 +292,12 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
     }
     setBotTyping(null);
     setBotError(null);
+    setMentionNotification(null);
+
+    if (mentionNotificationTimeoutRef.current) {
+      clearTimeout(mentionNotificationTimeoutRef.current);
+      mentionNotificationTimeoutRef.current = null;
+    }
 
     fetchRoomAndMessages();
   }, [fetchRoomAndMessages]);
@@ -485,6 +519,42 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
 
   useSignalREvent<ChatBotErrorPayload>('chat:bot_error', handleBotError);
 
+  // SignalR: 自分宛メンション通知
+  const handleUserMentioned = useCallback(
+    (payload: ChatUserMentionedPayload) => {
+      const raw = payload as ChatUserMentionedPayload & ChatUserMentionedPayloadPascal;
+
+      const mentionedUserId = Number(raw.mentionedUserId ?? raw.MentionedUserId ?? -1);
+      if (!Number.isFinite(mentionedUserId) || mentionedUserId !== currentUserId) {
+        return;
+      }
+
+      const notificationRoomId = Number(raw.roomId ?? raw.RoomId ?? -1);
+
+      // 同一ルーム閲覧中は通知ノイズを抑止
+      if (Number.isFinite(notificationRoomId) && notificationRoomId === roomId) {
+        return;
+      }
+
+      const senderName = raw.senderDisplayName ?? raw.SenderDisplayName ?? '誰か';
+      const previewText = raw.preview ?? raw.Preview;
+      const preview = previewText ? `: ${previewText}` : '';
+      setMentionNotification(`${senderName} さんがあなたをメンションしました${preview}`);
+
+      if (mentionNotificationTimeoutRef.current) {
+        clearTimeout(mentionNotificationTimeoutRef.current);
+      }
+
+      mentionNotificationTimeoutRef.current = setTimeout(() => {
+        setMentionNotification(null);
+        mentionNotificationTimeoutRef.current = null;
+      }, 5000);
+    },
+    [currentUserId, roomId],
+  );
+
+  useSignalREvent<ChatUserMentionedPayload>('chat:user_mentioned', handleUserMentioned);
+
   // ルーム名を取得
   const getRoomName = () => {
     if (!room) return 'ルーム';
@@ -504,6 +574,31 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
     );
   }
 
+  const mentionCandidates: MentionCandidate[] = (room?.members ?? [])
+    .filter((member) => !!member.username)
+    .filter((member) => member.id !== currentUserId)
+    .map((member, index) => {
+      const isBot = member.id === 0;
+      const suffix = isBot ? 'Bot' : member.email || `User#${member.id}`;
+
+      return {
+        key: `${member.id}-${member.username}-${index}`,
+        value: member.username,
+        label: `${member.username} (${suffix})`,
+      };
+    })
+    .sort((a, b) => {
+      const aIsBot = a.label.includes('(Bot)');
+      const bIsBot = b.label.includes('(Bot)');
+
+      if (aIsBot !== bIsBot) {
+        return aIsBot ? 1 : -1;
+      }
+
+      return a.label.localeCompare(b.label, 'ja');
+    })
+    .filter((candidate, index, array) => array.findIndex((item) => item.label === candidate.label) === index);
+
   return (
     <div className="flex flex-col h-full">
       {/* ヘッダー */}
@@ -522,6 +617,14 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         showReadStatus={room?.type === 'Dm' || room?.type === 'Ai'}
       />
 
+      {/* メンション通知 */}
+      {mentionNotification && (
+        <div className="flex items-center gap-2 px-4 py-2 text-sm text-secondary-content bg-secondary/10">
+          <span className="icon-[tabler--at] size-4" aria-hidden="true" />
+          <span>{mentionNotification}</span>
+        </div>
+      )}
+
       {/* 入力中インジケーター */}
       <ChatTypingIndicator typingUsers={typingUsers} botTyping={botTyping} />
 
@@ -534,7 +637,12 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
       )}
 
       {/* 入力欄 */}
-      <ChatMessageInput onSend={handleSend} onTyping={handleTyping} disabled={sending} />
+      <ChatMessageInput
+        onSend={handleSend}
+        onTyping={handleTyping}
+        disabled={sending}
+        mentionCandidates={mentionCandidates}
+      />
     </div>
   );
 }
