@@ -42,6 +42,11 @@ public class BotBehaviorContext
     public required DB.Models.Bot Bot { get; init; }
 
     /// <summary>
+    /// トリガーメッセージが Bot への明示メンションを含むか
+    /// </summary>
+    public bool IsExplicitBotMention { get; init; }
+
+    /// <summary>
     /// AI クライアント（利用可能な場合）
     /// </summary>
     public IAiClient? AiClient { get; init; }

@@ -85,7 +85,24 @@ public abstract class GroupChatReplyTaskBase
     protected async Task<ChatMessage?> GetTriggerMessageAsync(int messageId)
     {
         return await Context.ChatMessages
+            .Include(m => m.Mentions)
+                .ThenInclude(mention => mention.MentionedActor)
             .FirstOrDefaultAsync(m => m.Id == messageId);
+    }
+
+    /// <summary>
+    /// トリガーメッセージ内の Bot への明示メンション ActorId を取得する
+    /// </summary>
+    /// <param name="triggerMessage">トリガーメッセージ</param>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>明示メンションされた Bot の ActorId。存在しない場合は null</returns>
+    protected int? GetExplicitMentionedBotActorId(ChatMessage triggerMessage, int organizationId)
+    {
+        return triggerMessage.Mentions
+            .Select(mention => mention.MentionedActor)
+            .Where(actor => actor.OrganizationId == organizationId && actor.BotId.HasValue)
+            .Select(actor => (int?)actor.Id)
+            .FirstOrDefault();
     }
 
     /// <summary>
@@ -306,6 +323,25 @@ public abstract class GroupChatReplyTaskBase
     }
 
     /// <summary>
+    /// 指定した ChatActorId に紐づく Bot を取得する
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="chatActorId">チャットアクターID</param>
+    /// <returns>Bot。見つからない場合は null</returns>
+    protected async Task<DB.Models.Bot?> GetBotByActorIdAsync(int organizationId, int chatActorId)
+    {
+        var chatActor = await Context.ChatActors
+            .Include(ca => ca.Bot)
+                .ThenInclude(b => b!.ChatActors.Where(ca2 => ca2.OrganizationId == organizationId))
+            .FirstOrDefaultAsync(ca =>
+                ca.Id == chatActorId &&
+                ca.OrganizationId == organizationId &&
+                ca.BotId != null);
+
+        return chatActor?.Bot;
+    }
+
+    /// <summary>
     /// Bot がルームのメンバーであることを確認し、メンバーでなければ追加する
     /// </summary>
     /// <param name="roomId">チャットルームID</param>
@@ -415,7 +451,8 @@ public abstract class GroupChatReplyTaskBase
         ChatRoom room,
         ChatMessage triggerMessage,
         User senderUser,
-        DB.Models.Bot bot);
+        DB.Models.Bot bot,
+        bool isExplicitBotMention);
 
     /// <summary>
     /// タスク名を取得する（ログ出力用、継承クラスで実装）
@@ -463,26 +500,10 @@ public abstract class GroupChatReplyTaskBase
         DB.Models.Bot? bot = null;
         ChatRoom? room = null;
 
-        // 生成AIでこのタイミングで発言すべきかどうかを判定する処理
-        var replyDecision = await EvaluateShouldReplyAsync(
-            organizationId,
-            roomId,
-            triggerMessageId
-        );
-
-        if (replyDecision != null && !replyDecision.ShouldAnyoneReply)
-        {
-            Logger.LogDebug(
-                "Skipping reply based on AI analysis: RoomId={RoomId}, Reasoning={Reasoning}, Confidence={Confidence}",
-                roomId,
-                replyDecision.Reasoning,
-                replyDecision.Confidence
-            );
-            return;
-        }
-
         try
         {
+            var decisionSource = "Fallback";
+
             // チャットルームを取得
             room = await GetChatRoomWithDetailsAsync(roomId);
 
@@ -517,6 +538,42 @@ public abstract class GroupChatReplyTaskBase
                 return;
             }
 
+            var explicitMentionedBotActorId = GetExplicitMentionedBotActorId(
+                triggerMessage,
+                organizationId
+            );
+
+            // 生成AIでこのタイミングで発言すべきかどうかを判定する処理
+            var replyDecision = await EvaluateShouldReplyAsync(
+                organizationId,
+                roomId,
+                triggerMessageId
+            );
+
+            if (replyDecision != null && !replyDecision.ShouldAnyoneReply)
+            {
+                if (explicitMentionedBotActorId.HasValue)
+                {
+                    Logger.LogInformation(
+                        "Overriding AI no-reply decision due to explicit bot mention: RoomId={RoomId}, TriggerMessageId={TriggerMessageId}, MentionedBotActorId={MentionedBotActorId}, Confidence={Confidence}",
+                        roomId,
+                        triggerMessageId,
+                        explicitMentionedBotActorId.Value,
+                        replyDecision.Confidence
+                    );
+                }
+                else
+                {
+                    Logger.LogDebug(
+                        "Skipping reply based on AI analysis: RoomId={RoomId}, Reasoning={Reasoning}, Confidence={Confidence}",
+                        roomId,
+                        replyDecision.Reasoning,
+                        replyDecision.Confidence
+                    );
+                    return;
+                }
+            }
+
             // 送信者ユーザーを取得
             var senderUser = await GetSenderUserAsync(senderUserId);
 
@@ -529,18 +586,28 @@ public abstract class GroupChatReplyTaskBase
                 return;
             }
 
-            if (replyDecision != null && replyDecision.ResponderBotActorId != null)
+            if (explicitMentionedBotActorId.HasValue)
+            {
+                bot = await GetBotByActorIdAsync(organizationId, explicitMentionedBotActorId.Value);
+                decisionSource = "ExplicitMention";
+
+                if (bot == null)
+                {
+                    Logger.LogWarning(
+                        "Explicit mentioned bot actor not found, falling back to AI/default selection: MentionedBotActorId={MentionedBotActorId}, RoomId={RoomId}, TriggerMessageId={TriggerMessageId}",
+                        explicitMentionedBotActorId.Value,
+                        roomId,
+                        triggerMessageId
+                    );
+                    decisionSource = "Fallback";
+                }
+            }
+
+            if (bot == null && replyDecision != null && replyDecision.ResponderBotActorId != null)
             {
                 // AI が選択した Bot を使用（ChatActorIdからBotを取得）
-                var chatActor = await Context.ChatActors
-                    .Include(ca => ca.Bot)
-                        .ThenInclude(b => b!.ChatActors.Where(ca2 => ca2.OrganizationId == organizationId))
-                    .FirstOrDefaultAsync(ca =>
-                        ca.Id == replyDecision.ResponderBotActorId &&
-                        ca.OrganizationId == organizationId &&
-                        ca.BotId != null);
-
-                bot = chatActor?.Bot;
+                bot = await GetBotByActorIdAsync(organizationId, replyDecision.ResponderBotActorId.Value);
+                decisionSource = "AI";
 
                 if (bot == null)
                 {
@@ -548,6 +615,7 @@ public abstract class GroupChatReplyTaskBase
                         "AI selected bot not found, falling back to DetermineBotTypeAsync: ResponderBotActorId={ResponderBotActorId}",
                         replyDecision.ResponderBotActorId
                     );
+                    decisionSource = "Fallback";
                 }
             }
 
@@ -556,6 +624,7 @@ public abstract class GroupChatReplyTaskBase
                 // 使用する BotType を決定
                 var selectedBotType = await DetermineBotTypeAsync(organizationId, triggerMessage);
                 bot = await GetBotByTypeAsync(organizationId, selectedBotType);
+                decisionSource = "Fallback";
             }
 
             if (bot == null || !bot.ChatActors.Any())
@@ -567,6 +636,15 @@ public abstract class GroupChatReplyTaskBase
                 );
                 return;
             }
+
+            Logger.LogInformation(
+                "Group chat bot selected: RoomId={RoomId}, TriggerMessageId={TriggerMessageId}, BotActorId={BotActorId}, DecisionSource={DecisionSource}, MentionedBotActorId={MentionedBotActorId}",
+                room.Id,
+                triggerMessageId,
+                bot.GetChatActorId(),
+                decisionSource,
+                explicitMentionedBotActorId
+            );
 
             // Bot がルームのメンバーか確認し、メンバーでなければ追加
             await EnsureBotIsMemberAsync(room.Id, bot.GetChatActorId());
@@ -581,7 +659,14 @@ public abstract class GroupChatReplyTaskBase
             );
 
             // 返信メッセージを生成
-            var messageContent = await BuildReplyMessageAsync(organizationId, room, triggerMessage, senderUser, bot);
+            var messageContent = await BuildReplyMessageAsync(
+                organizationId,
+                room,
+                triggerMessage,
+                senderUser,
+                bot,
+                explicitMentionedBotActorId.HasValue
+            );
 
             // 空文字またはnullの場合はメッセージ送信をスキップ（Silent behavior等）
             if (!string.IsNullOrEmpty(messageContent))

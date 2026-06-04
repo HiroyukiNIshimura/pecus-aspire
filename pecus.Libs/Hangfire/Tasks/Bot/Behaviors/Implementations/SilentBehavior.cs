@@ -17,7 +17,7 @@ public class SilentBehavior : IBotBehavior
     /// <inheritdoc />
     public Task<bool> CanExecuteAsync(BotBehaviorContext context)
     {
-        return Task.FromResult(true);
+        return Task.FromResult(!context.IsExplicitBotMention);
     }
 
     /// <inheritdoc />

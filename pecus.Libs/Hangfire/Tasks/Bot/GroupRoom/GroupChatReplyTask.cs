@@ -97,7 +97,8 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
         ChatRoom room,
         ChatMessage triggerMessage,
         User senderUser,
-        DB.Models.Bot bot)
+        DB.Models.Bot bot,
+        bool isExplicitBotMention)
     {
         // 組織設定を取得
         var setting = await GetOrganizationSettingAsync(organizationId);
@@ -125,6 +126,7 @@ public class GroupChatReplyTask : GroupChatReplyTaskBase
                 TriggerMessage = triggerMessage,
                 SenderUser = senderUser,
                 Bot = bot,
+                IsExplicitBotMention = isExplicitBotMention,
                 AiClient = aiClient,
                 DbContext = Context,
                 GetRecentMessagesAsync = GetRecentMessagesAsync,
