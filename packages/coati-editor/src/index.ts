@@ -91,6 +91,7 @@ export { HorizontalRulePlugin } from './plugins/HorizontalRulePlugin';
 export { default as ImagesPlugin } from './plugins/ImagesPlugin';
 // プラグイン（よく使われるもの）
 export { INSERT_MARKDOWN_COMMAND } from './plugins/InsertMarkdownPlugin';
+export { OPEN_MARKDOWN_PREVIEW_COMMAND } from './plugins/MarkdownPreviewPlugin';
 export { PLAYGROUND_TRANSFORMERS } from './plugins/MarkdownTransformers';
 export { default as SearchHighlightPlugin, SEARCH_HIGHLIGHT_ID } from './plugins/SearchHighlightPlugin';
 export { TableContext } from './plugins/TablePlugin';
@@ -125,6 +126,7 @@ export { default as Switch } from './ui/Switch';
 export { default as TextInput } from './ui/TextInput';
 // Utils
 export { default as emojiList } from './utils/emoji-list';
+export { default as getMarkdownFromEditorState } from './utils/getMarkdownFromEditorState';
 export { getSelectedNode } from './utils/getSelectedNode';
 export { default as joinClasses } from './utils/joinClasses';
 export { sanitizeUrl, validateUrl } from './utils/url';

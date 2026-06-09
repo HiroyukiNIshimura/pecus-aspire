@@ -42,6 +42,7 @@ import {
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
+  COMMAND_PRIORITY_NORMAL,
   type CommandPayloadType,
   type ElementFormatType,
   FORMAT_ELEMENT_COMMAND,
@@ -71,6 +72,7 @@ import { $createStickyNode } from '../../nodes/StickyNode';
 import DropDown, { DropDownItem } from '../../ui/DropDown';
 import DropdownColorPicker from '../../ui/DropdownColorPicker';
 import { isKeyboardInput } from '../../utils/focusUtils';
+import getMarkdownFromEditorState from '../../utils/getMarkdownFromEditorState';
 import { getSelectedNode } from '../../utils/getSelectedNode';
 import { sanitizeUrl } from '../../utils/url';
 import { EmbedConfigs } from '../AutoEmbedPlugin';
@@ -79,6 +81,7 @@ import { INSERT_DATETIME_COMMAND } from '../DateTimePlugin';
 import { InsertEquationDialog } from '../EquationsPlugin';
 import { InsertImageDialog } from '../ImagesPlugin';
 import InsertLayoutDialog from '../LayoutPlugin/InsertLayoutDialog';
+import { OPEN_MARKDOWN_PREVIEW_COMMAND } from '../MarkdownPreviewPlugin';
 import { INSERT_MERMAID_COMMAND } from '../MermaidPlugin';
 import { INSERT_PAGE_BREAK } from '../PageBreakPlugin';
 import { SHORTCUTS } from '../ShortcutsPlugin/shortcuts';
@@ -555,6 +558,24 @@ function findScrollableParent(element: HTMLElement): HTMLElement | null {
   return null;
 }
 
+function MarkdownPreviewDialog({ markdown }: { markdown: string }) {
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-3 w-full min-w-0">
+      <p className="text-sm text-base-content/70">
+        ここに表示された Markdown は読み取り専用です。必要な部分をマウスで選択してそのままコピーできます。
+      </p>
+      <textarea
+        readOnly
+        value={markdown}
+        className="textarea textarea-bordered w-full flex-1 min-h-[68vh] font-mono text-sm leading-6"
+        style={{ height: 'min(68vh, 780px)' }}
+        aria-label="Markdownプレビュー"
+        spellCheck={false}
+      />
+    </div>
+  );
+}
+
 export default function ToolbarPlugin({
   editor,
   activeEditor,
@@ -571,6 +592,28 @@ export default function ToolbarPlugin({
   const [isEditable, setIsEditable] = useState(() => editor.isEditable());
   const { toolbarState, updateToolbarState } = useToolbarState();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
+
+  const openMarkdownPreview = useCallback(() => {
+    const markdown = getMarkdownFromEditorState(activeEditor.getEditorState());
+    showModal('Markdown Preview', () => <MarkdownPreviewDialog markdown={markdown} />, false, {
+      width: 'min(96vw, 1400px)',
+      maxWidth: 'none',
+      height: 'min(92vh, 920px)',
+      display: 'flex',
+      flexDirection: 'column',
+    });
+  }, [activeEditor, showModal]);
+
+  useEffect(() => {
+    return activeEditor.registerCommand(
+      OPEN_MARKDOWN_PREVIEW_COMMAND,
+      () => {
+        openMarkdownPreview();
+        return true;
+      },
+      COMMAND_PRIORITY_NORMAL,
+    );
+  }, [activeEditor, openMarkdownPreview]);
 
   const dispatchToolbarCommand = <T extends LexicalCommand<unknown>>(
     command: T,
@@ -1292,6 +1335,16 @@ export default function ToolbarPlugin({
         editor={activeEditor}
         isRTL={toolbarState.isRTL}
       />
+      <Divider />
+      <button
+        type="button"
+        onClick={openMarkdownPreview}
+        className="toolbar-item spaced"
+        aria-label={`Markdownプレビューを表示 (${SHORTCUTS.MARKDOWN_PREVIEW})`}
+        title={`Markdownプレビューを表示 (${SHORTCUTS.MARKDOWN_PREVIEW})`}
+      >
+        <span className="text">Markdown</span>
+      </button>
       <Divider />
       <button
         type="button"

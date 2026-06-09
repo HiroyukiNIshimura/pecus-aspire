@@ -49,6 +49,7 @@ export const SHORTCUTS = Object.freeze({
   ITALIC: IS_APPLE ? '⌘+I' : 'Ctrl+I',
   UNDERLINE: IS_APPLE ? '⌘+U' : 'Ctrl+U',
   INSERT_LINK: IS_APPLE ? '⌘+K' : 'Ctrl+K',
+  MARKDOWN_PREVIEW: IS_APPLE ? '⌘+Shift+M' : 'Ctrl+Shift+M',
 });
 
 const CONTROL_OR_META = { ctrlKey: !IS_APPLE, metaKey: IS_APPLE };
@@ -191,4 +192,9 @@ export function isInsertLink(event: KeyboardEvent): boolean {
 export function isAddComment(event: KeyboardEvent): boolean {
   const { code } = event;
   return code === 'KeyM' && isModifierMatch(event, { ...CONTROL_OR_META, altKey: true });
+}
+
+export function isOpenMarkdownPreview(event: KeyboardEvent): boolean {
+  const { code } = event;
+  return code === 'KeyM' && isModifierMatch(event, { ...CONTROL_OR_META, shiftKey: true });
 }

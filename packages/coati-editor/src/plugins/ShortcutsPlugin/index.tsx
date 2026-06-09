@@ -22,6 +22,7 @@ import { type Dispatch, useEffect } from 'react';
 
 import { useToolbarState } from '../../context/ToolbarContext';
 import { sanitizeUrl } from '../../utils/url';
+import { OPEN_MARKDOWN_PREVIEW_COMMAND } from '../MarkdownPreviewPlugin';
 import {
   clearFormatting,
   formatBulletList,
@@ -53,6 +54,7 @@ import {
   isJustifyAlign,
   isLeftAlign,
   isLowercase,
+  isOpenMarkdownPreview,
   isOutdent,
   isRightAlign,
   isStrikeThrough,
@@ -127,6 +129,8 @@ export default function ShortcutsPlugin({
         const url = toolbarState.isLink ? null : sanitizeUrl('https://');
         setIsLinkEditMode(!toolbarState.isLink);
         editor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
+      } else if (isOpenMarkdownPreview(event)) {
+        editor.dispatchCommand(OPEN_MARKDOWN_PREVIEW_COMMAND, undefined);
       } else {
         // No match for any of the event handlers
         return false;

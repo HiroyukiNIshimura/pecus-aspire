@@ -7,7 +7,7 @@
  */
 
 import { isDOMNode } from 'lexical';
-import type { JSX } from 'react';
+import type { CSSProperties, JSX } from 'react';
 import { type ReactNode, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -16,9 +16,11 @@ function PortalImpl({
   children,
   title,
   closeOnClickOutside,
+  contentStyle,
 }: {
   children: ReactNode;
   closeOnClickOutside: boolean;
+  contentStyle?: CSSProperties;
   onClose: () => void;
   title: string;
 }) {
@@ -71,7 +73,10 @@ function PortalImpl({
         tabIndex={-1}
         ref={modalRef}
       >
-        <div className="bg-base-100 rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
+        <div
+          className="bg-base-100 rounded-lg shadow-xl max-h-[95vh] overflow-hidden flex flex-col"
+          style={contentStyle}
+        >
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <h2 className="text-2xl font-bold flex items-center gap-2">{title}</h2>
@@ -79,7 +84,7 @@ function PortalImpl({
               <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>
-          <div className="p-6">{children}</div>
+          <div className="p-6 flex-1 min-h-0 overflow-hidden">{children}</div>
         </div>
       </div>
     </>
@@ -91,14 +96,16 @@ export default function Modal({
   children,
   title,
   closeOnClickOutside = false,
+  contentStyle,
 }: {
   children: ReactNode;
   closeOnClickOutside?: boolean;
+  contentStyle?: CSSProperties;
   onClose: () => void;
   title: string;
 }): JSX.Element {
   return createPortal(
-    <PortalImpl onClose={onClose} title={title} closeOnClickOutside={closeOnClickOutside}>
+    <PortalImpl onClose={onClose} title={title} closeOnClickOutside={closeOnClickOutside} contentStyle={contentStyle}>
       {children}
     </PortalImpl>,
     document.body,

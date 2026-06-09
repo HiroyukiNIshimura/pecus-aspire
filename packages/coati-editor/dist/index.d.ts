@@ -1,7 +1,7 @@
 import * as react_jsx_runtime from 'react/jsx-runtime';
-import { LexicalEditor, ElementFormatType, LexicalCommand, EditorThemeClasses, RangeSelection, TextNode, ElementNode } from 'lexical';
+import { LexicalEditor, ElementFormatType, LexicalCommand, EditorThemeClasses, EditorState, RangeSelection, TextNode, ElementNode } from 'lexical';
 import * as react from 'react';
-import { JSX, ReactNode, HTMLInputTypeAttribute } from 'react';
+import { JSX, ReactNode, CSSProperties, HTMLInputTypeAttribute } from 'react';
 import { HistoryState } from '@lexical/react/LexicalHistoryPlugin';
 import { LinkMatcher } from '@lexical/react/LexicalAutoLinkPlugin';
 export { $createAutocompleteNode, $createCollapsibleContainerNode, $createCollapsibleContentNode, $createCollapsibleTitleNode, $createDateTimeNode, $createEmojiNode, $createEquationNode, $createFigmaNode, $createImageNode, $createKeywordNode, $createLayoutContainerNode, $createLayoutItemNode, $createMermaidNode, $createPageBreakNode, $createSpecialTextNode, $createStickyNode, $createTweetNode, $createYouTubeNode, $isCollapsibleContainerNode, $isCollapsibleContentNode, $isCollapsibleTitleNode, $isDateTimeNode, $isEmojiNode, $isEquationNode, $isFigmaNode, $isImageNode, $isKeywordNode, $isLayoutContainerNode, $isLayoutItemNode, $isMermaidNode, $isPageBreakNode, $isSpecialTextNode, $isStickyNode, $isTweetNode, $isYouTubeNode, AutocompleteNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, DateTimeNode, EmojiNode, EquationNode, FigmaNode, ImageNode, KeywordNode, LayoutContainerNode, LayoutItemNode, MermaidNode, NotionLikeEditorNodes, PageBreakNode, SpecialTextNode, StickyNode, TweetNode, YouTubeNode } from './nodes-headless.js';
@@ -368,7 +368,7 @@ declare function Viewer(): react_jsx_runtime.JSX.Element;
 
 declare function useModal(): [
     JSX.Element | null,
-    (title: string, showModal: (onClose: () => void) => JSX.Element) => void
+    (title: string, showModal: (onClose: () => void) => JSX.Element, closeOnClickOutside?: boolean, contentStyle?: CSSProperties) => void
 ];
 
 /**
@@ -414,6 +414,11 @@ declare const INSERT_MARKDOWN_COMMAND: LexicalCommand<string>;
  */
 
 declare const PLAYGROUND_TRANSFORMERS: Array<Transformer>;
+
+/**
+ * Markdown プレビューを開くためのコマンド
+ */
+declare const OPEN_MARKDOWN_PREVIEW_COMMAND: LexicalCommand<void>;
 
 /**
  * SearchHighlightPlugin
@@ -768,9 +773,10 @@ declare function KatexRenderer({ equation, inline, onDoubleClick, }: Readonly<{
  *
  */
 
-declare function Modal({ onClose, children, title, closeOnClickOutside, }: {
+declare function Modal({ onClose, children, title, closeOnClickOutside, contentStyle, }: {
     children: ReactNode;
     closeOnClickOutside?: boolean;
+    contentStyle?: CSSProperties;
     onClose: () => void;
     title: string;
 }): JSX.Element;
@@ -849,6 +855,14 @@ declare const _default: ({
     skin_tones: boolean;
 })[];
 
+/**
+ * Lexical EditorState を Coati 独自の Markdown 変換ルールで文字列化する
+ *
+ * @param editorState - Markdown 化したい EditorState
+ * @returns Markdown 文字列
+ */
+declare function getMarkdownFromEditorState(editorState: EditorState): string;
+
 declare function getSelectedNode(selection: RangeSelection): TextNode | ElementNode;
 
 /**
@@ -878,4 +892,4 @@ declare function validateUrl(url: string): boolean;
 
 declare const PACKAGE_VERSION = "0.1.0";
 
-export { Button, ColorPicker, type ComponentPickerOptionConfig, ComponentPickerProvider, LexicalContentEditable as ContentEditable, type CoreEditorProps, DialogActions, DialogButtonsList, DropDown, DropDownItem, DropdownColorPicker, Editor, type EditorChangeCallbacks, type EditorContext, type EditorSettings, _default$1 as EquationEditor, type ExtraOptionsProvider, FileInput, FlashMessage, FlashMessageContext, FragmentLinkPlugin, FullscreenProvider, HorizontalRulePlugin, INSERT_MARKDOWN_COMMAND, ImageResizer, type ImageUploadHandler, ImageUploadProvider, type ImageUploadResult, ImagesPlugin, KatexEquationAlterer, KatexRenderer, Modal, NotionLikeEditor, type NotionLikeEditorProps, theme$2 as NotionLikeEditorTheme, NotionLikeViewer, type NotionLikeViewerProps, theme$1 as NotionLikeViewerTheme, PACKAGE_VERSION, PLAYGROUND_TRANSFORMERS, type PecusEditorProps, SEARCH_HIGHLIGHT_ID, SearchHighlightPlugin, Select, SettingsContext, SharedHistoryContext, type ShowFlashMessage, theme as StickyEditorTheme, Switch, TableContext, TextInput, ToolbarContext, Viewer, blockTypeToBlockName, _default as emojiList, getSelectedNode, joinClasses, sanitizeUrl, useComponentPickerContext, useFlashMessageContext, useFullscreen, useImageUpload, useModal, useReport, useSettings, useSharedHistoryContext, useToolbarState, validateUrl };
+export { Button, ColorPicker, type ComponentPickerOptionConfig, ComponentPickerProvider, LexicalContentEditable as ContentEditable, type CoreEditorProps, DialogActions, DialogButtonsList, DropDown, DropDownItem, DropdownColorPicker, Editor, type EditorChangeCallbacks, type EditorContext, type EditorSettings, _default$1 as EquationEditor, type ExtraOptionsProvider, FileInput, FlashMessage, FlashMessageContext, FragmentLinkPlugin, FullscreenProvider, HorizontalRulePlugin, INSERT_MARKDOWN_COMMAND, ImageResizer, type ImageUploadHandler, ImageUploadProvider, type ImageUploadResult, ImagesPlugin, KatexEquationAlterer, KatexRenderer, Modal, NotionLikeEditor, type NotionLikeEditorProps, theme$2 as NotionLikeEditorTheme, NotionLikeViewer, type NotionLikeViewerProps, theme$1 as NotionLikeViewerTheme, OPEN_MARKDOWN_PREVIEW_COMMAND, PACKAGE_VERSION, PLAYGROUND_TRANSFORMERS, type PecusEditorProps, SEARCH_HIGHLIGHT_ID, SearchHighlightPlugin, Select, SettingsContext, SharedHistoryContext, type ShowFlashMessage, theme as StickyEditorTheme, Switch, TableContext, TextInput, ToolbarContext, Viewer, blockTypeToBlockName, _default as emojiList, getMarkdownFromEditorState, getSelectedNode, joinClasses, sanitizeUrl, useComponentPickerContext, useFlashMessageContext, useFullscreen, useImageUpload, useModal, useReport, useSettings, useSharedHistoryContext, useToolbarState, validateUrl };

@@ -6,18 +6,24 @@
  *
  */
 
-import type { JSX } from 'react';
+import type { CSSProperties, JSX } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
 import Modal from '../ui/Modal';
 
 export default function useModal(): [
   JSX.Element | null,
-  (title: string, showModal: (onClose: () => void) => JSX.Element) => void,
+  (
+    title: string,
+    showModal: (onClose: () => void) => JSX.Element,
+    closeOnClickOutside?: boolean,
+    contentStyle?: CSSProperties,
+  ) => void,
 ] {
   const [modalContent, setModalContent] = useState<null | {
     closeOnClickOutside: boolean;
     content: JSX.Element;
+    contentStyle?: CSSProperties;
     title: string;
   }>(null);
 
@@ -29,9 +35,9 @@ export default function useModal(): [
     if (modalContent === null) {
       return null;
     }
-    const { title, content, closeOnClickOutside } = modalContent;
+    const { title, content, closeOnClickOutside, contentStyle } = modalContent;
     return (
-      <Modal onClose={onClose} title={title} closeOnClickOutside={closeOnClickOutside}>
+      <Modal onClose={onClose} title={title} closeOnClickOutside={closeOnClickOutside} contentStyle={contentStyle}>
         {content}
       </Modal>
     );
@@ -43,10 +49,12 @@ export default function useModal(): [
       // eslint-disable-next-line no-shadow
       getContent: (onClose: () => void) => JSX.Element,
       closeOnClickOutside = false,
+      contentStyle?: CSSProperties,
     ) => {
       setModalContent({
         closeOnClickOutside,
         content: getContent(onClose),
+        contentStyle,
         title,
       });
     },
