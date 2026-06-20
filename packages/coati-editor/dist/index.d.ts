@@ -1,4 +1,3 @@
-import * as react_jsx_runtime from 'react/jsx-runtime';
 import { LexicalEditor, ElementFormatType, LexicalCommand, EditorThemeClasses, EditorState, RangeSelection, TextNode, ElementNode } from 'lexical';
 import * as react from 'react';
 import { JSX, ReactNode, CSSProperties, HTMLInputTypeAttribute } from 'react';
@@ -22,7 +21,7 @@ interface ComponentPickerContextValue {
 declare function ComponentPickerProvider({ children, extraOptions, }: {
     children: ReactNode;
     extraOptions?: ExtraOptionsProvider;
-}): react_jsx_runtime.JSX.Element;
+}): JSX.Element;
 declare function useComponentPickerContext(): ComponentPickerContextValue;
 
 /**
@@ -46,7 +45,7 @@ interface FullscreenContextType {
 }
 declare function FullscreenProvider({ children }: {
     children: ReactNode;
-}): react_jsx_runtime.JSX.Element;
+}): react.JSX.Element;
 declare function useFullscreen(): FullscreenContextType;
 
 /**
@@ -84,7 +83,7 @@ interface ImageUploadProviderProps {
     children: ReactNode;
     handler: ImageUploadHandler | null;
 }
-declare function ImageUploadProvider({ children, handler }: ImageUploadProviderProps): react_jsx_runtime.JSX.Element;
+declare function ImageUploadProvider({ children, handler }: ImageUploadProviderProps): react.JSX.Element;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -235,7 +234,7 @@ declare const useToolbarState: () => ContextShape;
  */
 declare function Editor({ isFullscreen }: {
     isFullscreen?: boolean;
-}): react_jsx_runtime.JSX.Element;
+}): react.JSX.Element;
 
 interface NotionLikeEditorProps {
     /**
@@ -324,7 +323,7 @@ interface NotionLikeEditorProps {
      */
     onFullscreenChange?: (isFullscreen: boolean) => void;
 }
-declare function NotionLikeEditor({ showToolbar, autoFocus, measureTypingPerf, initialEditorState, initialMarkdown, onChange, onChangePlainText, onChangeHtml, onChangeMarkdown, debounceMs, isCodeShiki, imageUploadHandler, customLinkMatchers, onEditorReady, extraPlugins, extraComponentPickerOptions, onFullscreenChange, }: NotionLikeEditorProps): react_jsx_runtime.JSX.Element;
+declare function NotionLikeEditor({ showToolbar, autoFocus, measureTypingPerf, initialEditorState, initialMarkdown, onChange, onChangePlainText, onChangeHtml, onChangeMarkdown, debounceMs, isCodeShiki, imageUploadHandler, customLinkMatchers, onEditorReady, extraPlugins, extraComponentPickerOptions, onFullscreenChange, }: NotionLikeEditorProps): react.JSX.Element;
 
 interface NotionLikeViewerProps {
     /**
@@ -347,7 +346,7 @@ interface NotionLikeViewerProps {
      */
     searchTerms?: string[];
 }
-declare function NotionLikeViewer({ initialViewerState, isCodeShiki, customLinkMatchers, searchTerms, }: NotionLikeViewerProps): react_jsx_runtime.JSX.Element;
+declare function NotionLikeViewer({ initialViewerState, isCodeShiki, customLinkMatchers, searchTerms, }: NotionLikeViewerProps): react.JSX.Element;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -356,7 +355,7 @@ declare function NotionLikeViewer({ initialViewerState, isCodeShiki, customLinkM
  * LICENSE file in the root directory of this source tree.
  *
  */
-declare function Viewer(): react_jsx_runtime.JSX.Element;
+declare function Viewer(): react.JSX.Element;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -384,6 +383,14 @@ declare function FragmentLinkPlugin(): JSX.Element | null;
 
 declare function HorizontalRulePlugin(): null;
 
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+
 declare function ImagesPlugin(): JSX.Element | null;
 declare global {
     interface DragEvent {
@@ -406,6 +413,11 @@ declare global {
 declare const INSERT_MARKDOWN_COMMAND: LexicalCommand<string>;
 
 /**
+ * Markdown プレビューを開くためのコマンド
+ */
+declare const OPEN_MARKDOWN_PREVIEW_COMMAND: LexicalCommand<void>;
+
+/**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -414,11 +426,6 @@ declare const INSERT_MARKDOWN_COMMAND: LexicalCommand<string>;
  */
 
 declare const PLAYGROUND_TRANSFORMERS: Array<Transformer>;
-
-/**
- * Markdown プレビューを開くためのコマンド
- */
-declare const OPEN_MARKDOWN_PREVIEW_COMMAND: LexicalCommand<void>;
 
 /**
  * SearchHighlightPlugin
@@ -439,7 +446,7 @@ declare function SearchHighlightPlugin({ searchTerms }: SearchHighlightPluginPro
 
 declare function TableContext({ children }: {
     children: JSX.Element;
-}): react_jsx_runtime.JSX.Element;
+}): JSX.Element;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -641,12 +648,20 @@ type Props$4 = Readonly<{
 declare function DialogButtonsList({ children }: Props$4): JSX.Element;
 declare function DialogActions({ 'data-test-id': dataTestId, children }: Props$4): JSX.Element;
 
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+
 declare function DropDownItem({ children, className, onClick, title, }: {
     children: react.ReactNode;
     className: string;
     onClick: (event: react.MouseEvent<HTMLButtonElement>) => void;
     title?: string;
-}): react_jsx_runtime.JSX.Element;
+}): JSX.Element;
 declare function DropDown({ disabled, buttonLabel, buttonAriaLabel, buttonClassName, buttonIconClassName, children, stopCloseOnClickSelf, }: {
     disabled?: boolean;
     buttonAriaLabel?: string;
@@ -675,7 +690,7 @@ type Props$3 = {
     color: string;
     onChange?: (color: string, skipHistoryStack: boolean, skipRefocus: boolean) => void;
 };
-declare function DropdownColorPicker({ disabled, stopCloseOnClickSelf, color, onChange, ...rest }: Props$3): react_jsx_runtime.JSX.Element;
+declare function DropdownColorPicker({ disabled, stopCloseOnClickSelf, color, onChange, ...rest }: Props$3): react.JSX.Element;
 
 type BaseEquationEditorProps = {
     equation: string;
