@@ -27,12 +27,16 @@
 作成日時 (JST): @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")
 ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)
 
-@if (!string.IsNullOrWhiteSpace(Model.BodyText))
+@if (!string.IsNullOrWhiteSpace(Model.BodyPreviewText))
 {
 @:
-@:アイテム本文:
+@:本文プレビュー:
+@if (Model.IsBodyPreviewTruncated)
+{
+@:（冒頭のみ表示しています。続きはアイテム詳細をご確認ください。）
+}
 @:--------------------
-@: @Model.BodyText
+@Model.BodyPreviewText
 @:--------------------
 @:
 }

@@ -47,18 +47,23 @@
     </ul>
 }
 
-@if (!string.IsNullOrWhiteSpace(Model.BodyHtml) || !string.IsNullOrWhiteSpace(Model.BodyText))
+@if (!string.IsNullOrWhiteSpace(Model.BodyPreviewHtml) || !string.IsNullOrWhiteSpace(Model.BodyPreviewText))
 {
-    <h3>本文</h3>
-    @if (!string.IsNullOrWhiteSpace(Model.BodyHtml))
+    <h3>本文プレビュー</h3>
+    @if (Model.IsBodyPreviewTruncated)
+    {
+        <p class="small-text">冒頭のみ表示しています。続きはアイテム詳細をご確認ください。</p>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.BodyPreviewHtml))
     {
         <div class="content-box">
-            @(new RawString(Model.BodyHtml))
+            @(new RawString(Model.BodyPreviewHtml))
         </div>
     }
-    else if (!string.IsNullOrWhiteSpace(Model.BodyText))
+    else if (!string.IsNullOrWhiteSpace(Model.BodyPreviewText))
     {
-        <div class="content-box pre">@Model.BodyText</div>
+        <div class="content-box pre">@Model.BodyPreviewText</div>
     }
 }
 

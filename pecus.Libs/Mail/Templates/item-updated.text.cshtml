@@ -24,12 +24,16 @@
 @:--------------------
 }
 
-@if (!string.IsNullOrWhiteSpace(Model.BodyText))
+@if (!string.IsNullOrWhiteSpace(Model.BodyPreviewText))
 {
 @:
-@:本文:
+@:本文プレビュー:
+@if (Model.IsBodyPreviewTruncated)
+{
+@:（冒頭のみ表示しています。続きはアイテム詳細をご確認ください。）
+}
 @:--------------------
-@Model.BodyText
+@Model.BodyPreviewText
 @:--------------------
 }
 

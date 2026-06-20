@@ -200,8 +200,9 @@ public static class EmailPreviewDataFactory
         ItemCode = "ITEM-001",
         ItemType = "要件",
         Channel = "バックログ",
-        BodyText = "ユーザー管理機能について、以下の要件を検討します。\n・ユーザー登録\n・ユーザー編集\n・ユーザー削除",
-        BodyHtml = "<p>ユーザー管理機能について、以下の要件を検討します。</p><ul><li>ユーザー登録</li><li>ユーザー編集</li><li>ユーザー削除</li></ul>",
+        BodyPreviewText = "ユーザー管理機能について、以下の要件を検討します。\n・ユーザー登録\n・ユーザー編集",
+        BodyPreviewHtml = "<p>ユーザー管理機能について、以下の要件を検討します。</p><ul><li>ユーザー登録</li><li>ユーザー編集</li></ul>",
+        IsBodyPreviewTruncated = true,
         CreatedByName = "山田 花子",
         CreatedAt = now,
         WorkspaceName = "プロジェクトA",
@@ -215,25 +216,15 @@ public static class EmailPreviewDataFactory
         ItemTitle = "【要件定義】ユーザー管理機能の仕様検討",
         ItemCode = "ITEM-001",
         ItemType = "要件",
-        BodyText = "更新された本文です。",
+        BodyPreviewText = "ユーザー編集権限の条件を整理し、承認フローの説明を追加しました。\n・管理者のみロール変更可能\n・監査ログを記録",
+        BodyPreviewHtml = "<p>ユーザー編集権限の条件を整理し、承認フローの説明を追加しました。</p><ul><li>管理者のみロール変更可能</li><li>監査ログを記録</li></ul>",
+        IsBodyPreviewTruncated = true,
         Activities =
         [
             new ItemActivityEntry
             {
-                EffectMessage = "担当者が変更されました",
+                EffectMessage = "本文が更新されました",
                 UpdatedByName = "山田 花子",
-                UpdatedAt = now.AddMinutes(-30),
-            },
-            new ItemActivityEntry
-            {
-                EffectMessage = "期限が変更されました",
-                UpdatedByName = "山田 花子",
-                UpdatedAt = now.AddMinutes(-15),
-            },
-            new ItemActivityEntry
-            {
-                EffectMessage = "タスクが追加されました",
-                UpdatedByName = "鈴木 一郎",
                 UpdatedAt = now,
             },
         ],

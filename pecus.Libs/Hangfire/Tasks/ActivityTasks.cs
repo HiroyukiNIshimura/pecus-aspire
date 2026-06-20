@@ -5,6 +5,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Lexical;
+using Pecus.Libs.Mail;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 
@@ -193,31 +194,38 @@ public class ActivityTasks
                 return;
             }
 
-            // 本文のプレーンテキストとHTMLを取得
-            string? bodyText = null;
-            string? bodyHtml = null;
+            // 本文プレビューのプレーンテキストとHTMLを取得
+            string? bodyPreviewText = null;
+            string? bodyPreviewHtml = null;
+            var isBodyPreviewTruncated = false;
 
-            if (!string.IsNullOrEmpty(item.Body))
+            if (ShouldIncludeBodyPreview(actionType) && !string.IsNullOrEmpty(item.Body))
             {
                 try
                 {
-                    var plainTextResult = await _lexicalConverter.ToPlainTextAsync(item.Body);
-                    if (plainTextResult.Success)
+                    var bodyPreviewSource = ItemNotificationBodyPreviewBuilder.Create(item.Body);
+                    if (bodyPreviewSource != null)
                     {
-                        bodyText = plainTextResult.Result;
-                    }
+                        isBodyPreviewTruncated = bodyPreviewSource.IsTruncated;
 
-                    var htmlResult = await _lexicalConverter.ToHtmlAsync(item.Body);
-                    if (htmlResult.Success)
-                    {
-                        bodyHtml = htmlResult.Result;
+                        var plainTextResult = await _lexicalConverter.ToPlainTextAsync(bodyPreviewSource.LexicalJson);
+                        if (plainTextResult.Success)
+                        {
+                            bodyPreviewText = plainTextResult.Result;
+                        }
+
+                        var htmlResult = await _lexicalConverter.ToHtmlAsync(bodyPreviewSource.LexicalJson);
+                        if (htmlResult.Success)
+                        {
+                            bodyPreviewHtml = htmlResult.Result;
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogWarning(
                         ex,
-                        "Failed to convert item body for notification email. ItemId={ItemId}",
+                        "Failed to build item body preview for notification email. ItemId={ItemId}",
                         itemId
                     );
                 }
@@ -242,8 +250,9 @@ public class ActivityTasks
                         UserName = user.Username,
                         ItemTitle = item.Subject,
                         ItemCode = item.Code,
-                        BodyText = bodyText,
-                        BodyHtml = bodyHtml,
+                        BodyPreviewText = bodyPreviewText,
+                        BodyPreviewHtml = bodyPreviewHtml,
+                        IsBodyPreviewTruncated = isBodyPreviewTruncated,
                         CreatedByName = actorUser?.Username ?? item.Owner?.Username ?? "",
                         CreatedAt = item.CreatedAt,
                         WorkspaceName = workspace.Name,
@@ -269,8 +278,9 @@ public class ActivityTasks
                         UserName = user.Username,
                         ItemTitle = item.Subject,
                         ItemCode = item.Code,
-                        BodyText = bodyText,
-                        BodyHtml = bodyHtml,
+                        BodyPreviewText = bodyPreviewText,
+                        BodyPreviewHtml = bodyPreviewHtml,
+                        IsBodyPreviewTruncated = isBodyPreviewTruncated,
                         WorkspaceName = workspace.Name,
                         WorkspaceCode = workspace.Code ?? "",
                         ItemUrl = itemUrl,
@@ -314,5 +324,10 @@ public class ActivityTasks
             );
             // メール配信のエラーは再スローしない（Activity記録が成功していればOK）
         }
+    }
+
+    private static bool ShouldIncludeBodyPreview(ActivityActionType actionType)
+    {
+        return actionType == ActivityActionType.Created || actionType == ActivityActionType.BodyUpdated;
     }
 }

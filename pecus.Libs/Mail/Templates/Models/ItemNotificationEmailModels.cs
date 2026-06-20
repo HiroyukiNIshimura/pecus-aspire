@@ -25,11 +25,14 @@ public class ItemCreatedEmailModel : EmailTemplateModelBase, IEmailTemplateModel
     /// <summary>チャンネル（任意）</summary>
     public string? Channel { get; set; }
 
-    /// <summary>アイテム本文（プレーンテキスト）</summary>
-    public string? BodyText { get; set; }
+    /// <summary>アイテム本文プレビュー（プレーンテキスト）</summary>
+    public string? BodyPreviewText { get; set; }
 
-    /// <summary>アイテム本文（HTML）</summary>
-    public string? BodyHtml { get; set; }
+    /// <summary>アイテム本文プレビュー（HTML）</summary>
+    public string? BodyPreviewHtml { get; set; }
+
+    /// <summary>本文プレビューが冒頭のみの短縮表示かどうか</summary>
+    public bool IsBodyPreviewTruncated { get; set; }
 
     /// <summary>作成者名</summary>
     public string CreatedByName { get; set; } = string.Empty;
@@ -71,11 +74,14 @@ public class ItemUpdatedEmailModel : EmailTemplateModelBase, IEmailTemplateModel
     /// <summary>アイテム種別（任意）</summary>
     public string? ItemType { get; set; }
 
-    /// <summary>アイテム本文（プレーンテキスト、概要表示用）</summary>
-    public string? BodyText { get; set; }
+    /// <summary>アイテム本文プレビュー（プレーンテキスト、概要表示用）</summary>
+    public string? BodyPreviewText { get; set; }
 
-    /// <summary>アイテム本文（HTML、概要表示用）</summary>
-    public string? BodyHtml { get; set; }
+    /// <summary>アイテム本文プレビュー（HTML、概要表示用）</summary>
+    public string? BodyPreviewHtml { get; set; }
+
+    /// <summary>本文プレビューが冒頭のみの短縮表示かどうか</summary>
+    public bool IsBodyPreviewTruncated { get; set; }
 
     /// <summary>
     /// アクティビティのリスト（複数の変更をまとめて通知可能）
