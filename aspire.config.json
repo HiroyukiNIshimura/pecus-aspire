@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "pecus.AppHost/pecus.AppHost.csproj"
+  }
+}

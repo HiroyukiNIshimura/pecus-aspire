@@ -11,20 +11,20 @@
     <PackageReference Include="DiffPlex" Version="1.9.0" />
     <PackageReference Include="Faker.Net" Version="2.0.163" />
     <PackageReference Include="Bogus" Version="35.6.5" />
-    <PackageReference Include="Google.Protobuf" Version="3.35.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.35.1" />
     <PackageReference Include="Grpc.Net.Client" Version="2.80.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.80.0" PrivateAssets="all" />
+    <PackageReference Include="Grpc.Tools" Version="2.81.1" PrivateAssets="all" />
     <PackageReference Include="Hangfire.Core" Version="1.8.23" />
     <PackageReference Include="MailKit" Version="4.17.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.6.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="RazorLight" Version="2.3.1" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
+    <PackageReference Include="StackExchange.Redis" Version="3.0.0" />
     <PackageReference Include="YamlDotNet" Version="18.0.0" />
   </ItemGroup>
 
