@@ -273,6 +273,15 @@ public abstract class ItemNotificationTaskBase
                 return;
             }
 
+            if (item.IsDraft)
+            {
+                Logger.LogDebug(
+                    "Item is in draft state, skipping bot notification. ItemId={ItemId}, TaskName={TaskName}",
+                    itemId,
+                    TaskName);
+                return;
+            }
+
             var workspaceCode = item.Workspace.Code ?? item.Workspace.Name;
             var updatedByUser = item.UpdatedByUser?.Username ?? "不明なユーザー";
 

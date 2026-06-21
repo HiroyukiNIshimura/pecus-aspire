@@ -158,6 +158,15 @@ public class ActivityTasks
                 return;
             }
 
+            if (item.IsDraft)
+            {
+                _logger.LogDebug(
+                    "Item is in draft state, skipping email notification. ItemId={ItemId}, ActionType={ActionType}",
+                    itemId,
+                    actionType);
+                return;
+            }
+
             // ワークスペース情報を取得
             var workspace = item.Workspace;
             if (workspace == null || string.IsNullOrEmpty(workspace.Code))
