@@ -37,8 +37,17 @@ public static class ItemNotificationBodyPreviewBuilder
             return null;
         }
 
+        var meaningfulChildren = childNodes
+            .Where(HasMeaningfulContent)
+            .ToList();
+
+        if (meaningfulChildren.Count == 0)
+        {
+            return null;
+        }
+
         var previewChildren = new JsonArray();
-        foreach (var childNode in childNodes.Take(maxBlocks))
+        foreach (var childNode in meaningfulChildren.Take(maxBlocks))
         {
             previewChildren.Add(CloneNode(childNode));
         }
@@ -61,8 +70,44 @@ public static class ItemNotificationBodyPreviewBuilder
 
         return new ItemNotificationBodyPreviewSource(
             LexicalJson: previewDocument.ToJsonString(),
-            IsTruncated: childNodes.Count > maxBlocks
+            IsTruncated: meaningfulChildren.Count > maxBlocks
         );
+    }
+
+    private static bool HasMeaningfulContent(JsonNode? node)
+    {
+        if (node is not JsonObject objectNode)
+        {
+            return false;
+        }
+
+        var type = objectNode["type"]?.GetValue<string>();
+        if (string.Equals(type, "horizontalrule", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(type, "linebreak", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var text = objectNode["text"]?.GetValue<string>();
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            return true;
+        }
+
+        if (objectNode["children"] is not JsonArray childNodes)
+        {
+            return false;
+        }
+
+        foreach (var childNode in childNodes)
+        {
+            if (HasMeaningfulContent(childNode))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static JsonNode? CloneNode(JsonNode? node)
