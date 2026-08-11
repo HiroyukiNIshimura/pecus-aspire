@@ -27,11 +27,6 @@ async function bootstrap() {
 
   await appContext.close();
 
-  // HTTP サーバー（メトリクス・ヘルスチェック用）を起動
-  const httpApp = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-  await httpApp.listen(metricsPort, '0.0.0.0');
-  console.log(`📊 Metrics server is running on http://0.0.0.0:${metricsPort}/metrics`);
-
   // gRPCマイクロサービスとして起動
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.GRPC,
@@ -54,6 +49,13 @@ async function bootstrap() {
   await app.listen();
 
   console.log(`🚀 LexicalConverterService is running on ${host}:${port}`);
+
+  // HTTP サーバー（メトリクス・ヘルスチェック用）は gRPC が listen を開始した後に起動する。
+  // Aspire の WaitFor は /health の応答をレディネス判定に使うため、先に /health が 200 を返すと
+  // gRPC がまだ listen していない状態で依存サービス(dbmanager 等)が起動し Connection refused となる。
+  const httpApp = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  await httpApp.listen(metricsPort, '0.0.0.0');
+  console.log(`📊 Metrics server is running on http://0.0.0.0:${metricsPort}/metrics`);
 }
 
 bootstrap();

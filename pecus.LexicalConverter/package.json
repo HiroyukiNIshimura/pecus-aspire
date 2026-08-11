@@ -6,8 +6,8 @@
   "scripts": {
     "build": "tsc --incremental false",
     "start": "node -r ./dist/ignore-css.js dist/main.js",
-    "start:dev": "ts-node -r tsconfig-paths/register -r ./src/ignore-css.ts src/main.ts",
-    "start:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register src/main.ts",
+    "start:dev": "npm run build && node -r ./dist/ignore-css.js dist/main.js",
+    "start:debug": "npm run build && node --inspect-brk -r ./dist/ignore-css.js dist/main.js",
     "lint": "biome lint src/",
     "lint:fix": "biome lint --fix src/",
     "format": "biome format --write src/",
@@ -50,8 +50,6 @@
     "@biomejs/biome": "^2.5.7",
     "@types/node": "^26.2.0",
     "npm-check-updates": "^23.0.2",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^7.0.2"
   }
 }
