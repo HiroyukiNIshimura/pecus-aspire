@@ -1,14 +1,21 @@
 import type {
-  DOMConversionMap,
   DOMConversionOutput,
   DOMExportOutput,
   EditorConfig,
   LexicalNode,
-  NodeKey,
   SerializedLexicalNode,
   Spread,
+  StateConfigValue,
 } from 'lexical';
-import { $applyNodeReplacement, DecoratorNode } from 'lexical';
+import {
+  $applyNodeReplacement,
+  $create,
+  $getState,
+  $setState,
+  buildImportMap,
+  createState,
+  DecoratorNode,
+} from 'lexical';
 import type { JSX } from 'react';
 import * as React from 'react';
 
@@ -20,6 +27,10 @@ export type SerializedMermaidNode = Spread<
   },
   SerializedLexicalNode
 >;
+
+const codeState = createState('code', {
+  parse: (v) => (typeof v === 'string' ? v : ''),
+});
 
 function $convertMermaidElement(domNode: HTMLElement): DOMConversionOutput | null {
   if (domNode.getAttribute('data-lexical-mermaid') !== 'true') {
@@ -33,45 +44,23 @@ function $convertMermaidElement(domNode: HTMLElement): DOMConversionOutput | nul
 }
 
 export class MermaidNode extends DecoratorNode<JSX.Element> {
-  __code: string;
+  $config() {
+    return this.config('mermaid', {
+      extends: DecoratorNode,
+      importDOM: buildImportMap({
+        div: (domNode) => {
+          if (domNode.getAttribute('data-lexical-mermaid') !== 'true') {
+            return null;
+          }
 
-  static getType(): string {
-    return 'mermaid';
-  }
-
-  static clone(node: MermaidNode): MermaidNode {
-    return new MermaidNode(node.__code, node.__key);
-  }
-
-  constructor(code: string, key?: NodeKey) {
-    super(key);
-    this.__code = code;
-  }
-
-  static importJSON(serializedNode: SerializedMermaidNode): MermaidNode {
-    return $createMermaidNode(serializedNode.code).updateFromJSON(serializedNode);
-  }
-
-  exportJSON(): SerializedMermaidNode {
-    return {
-      ...super.exportJSON(),
-      code: this.getCode(),
-    };
-  }
-
-  static importDOM(): DOMConversionMap | null {
-    return {
-      div: (domNode: HTMLElement) => {
-        if (domNode.getAttribute('data-lexical-mermaid') !== 'true') {
-          return null;
-        }
-
-        return {
-          conversion: $convertMermaidElement,
-          priority: 2,
-        };
-      },
-    };
+          return {
+            conversion: $convertMermaidElement,
+            priority: 2,
+          };
+        },
+      }),
+      stateConfigs: [{ flat: true, stateConfig: codeState }],
+    });
   }
 
   exportDOM(): DOMExportOutput {
@@ -80,7 +69,7 @@ export class MermaidNode extends DecoratorNode<JSX.Element> {
 
     const source = document.createElement('pre');
     source.setAttribute('data-lexical-mermaid-source', 'true');
-    source.textContent = this.__code;
+    source.textContent = this.getCode();
 
     element.appendChild(source);
     return { element };
@@ -97,20 +86,19 @@ export class MermaidNode extends DecoratorNode<JSX.Element> {
   }
 
   getTextContent(): string {
-    return this.__code;
+    return this.getCode();
   }
 
-  getCode(): string {
-    return this.__code;
+  getCode(): StateConfigValue<typeof codeState> {
+    return $getState(this, codeState);
   }
 
-  setCode(code: string): void {
-    const writable = this.getWritable();
-    writable.__code = code;
+  setCode(code: string): this {
+    return $setState(this, codeState, code);
   }
 
   decorate(): JSX.Element {
-    return <MermaidComponent code={this.__code} nodeKey={this.__key} />;
+    return <MermaidComponent code={this.getCode()} nodeKey={this.__key} />;
   }
 
   isIsolated(): true {
@@ -119,7 +107,7 @@ export class MermaidNode extends DecoratorNode<JSX.Element> {
 }
 
 export function $createMermaidNode(code = ''): MermaidNode {
-  return $applyNodeReplacement(new MermaidNode(code));
+  return $applyNodeReplacement($setState($create(MermaidNode), codeState, code));
 }
 
 export function $isMermaidNode(node: LexicalNode | null | undefined): node is MermaidNode {

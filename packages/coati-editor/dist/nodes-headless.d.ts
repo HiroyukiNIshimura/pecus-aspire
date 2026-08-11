@@ -1,32 +1,22 @@
 import * as lexical from 'lexical';
-import { ElementNode, NodeKey, RangeSelection, EditorConfig, LexicalEditor, DOMConversionMap, Spread, SerializedElementNode, DOMExportOutput, LexicalNode, TextNode, SerializedTextNode, DecoratorNode, StateConfigValue, StateValueOrUpdater, SerializedLexicalNode, ElementFormatType, SerializedEditor, LexicalUpdateJSON, Klass } from 'lexical';
+import { ElementNode, RangeSelection, EditorConfig, LexicalEditor, DOMExportOutput, LexicalNode, TextNode, Spread, SerializedTextNode, StateConfigValue, StateValueOrUpdater, DecoratorNode, NodeKey, LexicalUpdateJSON, SerializedEditor, SerializedLexicalNode, Klass } from 'lexical';
 import { JSX } from 'react';
-import { DecoratorBlockNode, SerializedDecoratorBlockNode } from '@lexical/react/LexicalDecoratorBlockNode';
+import { DecoratorBlockNode } from '@lexical/react/LexicalDecoratorBlockNode';
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedCollapsibleContainerNode = Spread<{
-    open: boolean;
-}, SerializedElementNode>;
 declare class CollapsibleContainerNode extends ElementNode {
-    __open: boolean;
-    constructor(open: boolean, key?: NodeKey);
-    static getType(): string;
-    static clone(node: CollapsibleContainerNode): CollapsibleContainerNode;
+    $config(): lexical.StaticNodeConfigRecord<"collapsible-container", {
+        extends: typeof ElementNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+        stateConfigs: {
+            flat: true;
+            stateConfig: lexical.StateConfig<"open", boolean>;
+        }[];
+    }>;
     isShadowRoot(): boolean;
     collapseAtStart(_selection: RangeSelection): boolean;
     createDOM(_config: EditorConfig, editor: LexicalEditor): HTMLElement;
     updateDOM(prevNode: this, dom: HTMLDetailsElement): boolean;
-    static importDOM(): DOMConversionMap<HTMLDetailsElement> | null;
-    static importJSON(serializedNode: SerializedCollapsibleContainerNode): CollapsibleContainerNode;
     exportDOM(): DOMExportOutput;
-    exportJSON(): SerializedCollapsibleContainerNode;
     setOpen(open: boolean): void;
     getOpen(): boolean;
     toggleOpen(): void;
@@ -34,23 +24,14 @@ declare class CollapsibleContainerNode extends ElementNode {
 declare function $createCollapsibleContainerNode(isOpen: boolean): CollapsibleContainerNode;
 declare function $isCollapsibleContainerNode(node: LexicalNode | null | undefined): node is CollapsibleContainerNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedCollapsibleContentNode = SerializedElementNode;
 declare class CollapsibleContentNode extends ElementNode {
-    static getType(): string;
-    static clone(node: CollapsibleContentNode): CollapsibleContentNode;
+    $config(): lexical.StaticNodeConfigRecord<"collapsible-content", {
+        extends: typeof ElementNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+    }>;
     createDOM(_config: EditorConfig, editor: LexicalEditor): HTMLElement;
     updateDOM(_prevNode: this, _dom: HTMLElement): boolean;
-    static importDOM(): DOMConversionMap | null;
     exportDOM(): DOMExportOutput;
-    static importJSON(serializedNode: SerializedCollapsibleContentNode): CollapsibleContentNode;
     isShadowRoot(): boolean;
 }
 declare function $createCollapsibleContentNode(): CollapsibleContentNode;
@@ -71,17 +52,10 @@ declare class CollapsibleTitleNode extends ElementNode {
 declare function $createCollapsibleTitleNode(): CollapsibleTitleNode;
 declare function $isCollapsibleTitleNode(node: LexicalNode | null | undefined): node is CollapsibleTitleNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
 type SerializedAutocompleteNode = Spread<{
     uuid: string;
 }, SerializedTextNode>;
+declare const uuidState: lexical.StateConfig<"uuid", string>;
 declare class AutocompleteNode extends TextNode {
     /**
      * A unique uuid is generated for each session and assigned to the instance.
@@ -91,17 +65,20 @@ declare class AutocompleteNode extends TextNode {
      *   other sessions.
      * See https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/AutocompletePlugin/index.tsx
      */
-    __uuid: string;
-    static clone(node: AutocompleteNode): AutocompleteNode;
-    static getType(): 'autocomplete';
-    static importDOM(): null;
-    static importJSON(serializedNode: SerializedAutocompleteNode): AutocompleteNode;
+    $config(): lexical.StaticNodeConfigRecord<"autocomplete", {
+        extends: typeof TextNode;
+        stateConfigs: {
+            flat: true;
+            stateConfig: lexical.StateConfig<"uuid", string>;
+        }[];
+    }>;
     exportJSON(): SerializedAutocompleteNode;
-    constructor(text: string, uuid: string, key?: NodeKey);
     updateDOM(_prevNode: this, _dom: HTMLElement, _config: EditorConfig): boolean;
     exportDOM(_: LexicalEditor): DOMExportOutput;
     excludeFromCopy(): boolean;
     createDOM(config: EditorConfig): HTMLElement;
+    getUUID(): StateConfigValue<typeof uuidState>;
+    setUUID(valueOrUpdater: StateValueOrUpdater<typeof uuidState>): this;
 }
 declare function $createAutocompleteNode(text: string, uuid: string): AutocompleteNode;
 
@@ -127,96 +104,65 @@ declare class DateTimeNode extends DecoratorNode<JSX.Element> {
 declare function $createDateTimeNode(dateTime: Date): DateTimeNode;
 declare function $isDateTimeNode(node: LexicalNode | null | undefined): node is DateTimeNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedEmojiNode = Spread<{
-    className: string;
-}, SerializedTextNode>;
+declare const classNameState: lexical.StateConfig<"className", string>;
 declare class EmojiNode extends TextNode {
-    __className: string;
-    static getType(): string;
-    static clone(node: EmojiNode): EmojiNode;
-    constructor(className: string, text: string, key?: NodeKey);
+    $config(): lexical.StaticNodeConfigRecord<"emoji", {
+        extends: typeof TextNode;
+        stateConfigs: {
+            flat: true;
+            stateConfig: lexical.StateConfig<"className", string>;
+        }[];
+    }>;
     createDOM(config: EditorConfig): HTMLElement;
     updateDOM(prevNode: this, dom: HTMLElement, config: EditorConfig): boolean;
-    static importJSON(serializedNode: SerializedEmojiNode): EmojiNode;
-    exportJSON(): SerializedEmojiNode;
-    getClassName(): string;
+    getClassName(): StateConfigValue<typeof classNameState>;
+    setClassName(valueOrUpdater: StateValueOrUpdater<typeof classNameState>): this;
 }
 declare function $isEmojiNode(node: LexicalNode | null | undefined): node is EmojiNode;
 declare function $createEmojiNode(className: string, emojiText: string): EmojiNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedEquationNode = Spread<{
-    equation: string;
-    inline: boolean;
-}, SerializedLexicalNode>;
+declare const equationState: lexical.StateConfig<"equation", string>;
+declare const inlineState: lexical.StateConfig<"inline", boolean>;
 declare class EquationNode extends DecoratorNode<JSX.Element> {
-    __equation: string;
-    __inline: boolean;
-    static getType(): string;
-    static clone(node: EquationNode): EquationNode;
-    constructor(equation: string, inline?: boolean, key?: NodeKey);
-    static importJSON(serializedNode: SerializedEquationNode): EquationNode;
-    exportJSON(): SerializedEquationNode;
+    $config(): lexical.StaticNodeConfigRecord<"equation", {
+        extends: typeof DecoratorNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+        stateConfigs: ({
+            flat: true;
+            stateConfig: lexical.StateConfig<"equation", string>;
+        } | {
+            flat: true;
+            stateConfig: lexical.StateConfig<"inline", boolean>;
+        })[];
+    }>;
     createDOM(_config: EditorConfig): HTMLElement;
     exportDOM(): DOMExportOutput;
-    static importDOM(): DOMConversionMap | null;
     updateDOM(prevNode: this): boolean;
     getTextContent(): string;
-    getEquation(): string;
-    setEquation(equation: string): void;
+    getEquation(): StateConfigValue<typeof equationState>;
+    setEquation(equation: string): this;
+    getInline(): StateConfigValue<typeof inlineState>;
     decorate(): JSX.Element;
 }
 declare function $createEquationNode(equation?: string, inline?: boolean): EquationNode;
 declare function $isEquationNode(node: LexicalNode | null | undefined): node is EquationNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedFigmaNode = Spread<{
-    documentID: string;
-}, SerializedDecoratorBlockNode>;
+declare const documentIDState: lexical.StateConfig<"documentID", string>;
 declare class FigmaNode extends DecoratorBlockNode {
-    __id: string;
-    static getType(): string;
-    static clone(node: FigmaNode): FigmaNode;
-    static importJSON(serializedNode: SerializedFigmaNode): FigmaNode;
-    exportJSON(): SerializedFigmaNode;
-    constructor(id: string, format?: ElementFormatType, key?: NodeKey);
+    $config(): lexical.StaticNodeConfigRecord<"figma", {
+        extends: typeof DecoratorBlockNode;
+        stateConfigs: {
+            flat: true;
+            stateConfig: lexical.StateConfig<"documentID", string>;
+        }[];
+    }>;
     updateDOM(): false;
-    getId(): string;
+    getId(): StateConfigValue<typeof documentIDState>;
     getTextContent(_includeInert?: boolean | undefined, _includeDirectionless?: false | undefined): string;
     decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element;
 }
 declare function $createFigmaNode(documentID: string): FigmaNode;
 declare function $isFigmaNode(node: FigmaNode | LexicalNode | null | undefined): node is FigmaNode;
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
 
 interface ImagePayload {
     altText: string;
@@ -238,47 +184,66 @@ type SerializedImageNode = Spread<{
     src: string;
     width?: number;
 }, SerializedLexicalNode>;
+declare const srcState: lexical.StateConfig<"src", string>;
+declare const altTextState: lexical.StateConfig<"altText", string>;
+declare const widthState: lexical.StateConfig<"width", number | "inherit">;
+declare const heightState: lexical.StateConfig<"height", number | "inherit">;
+declare const maxWidthState: lexical.StateConfig<"maxWidth", number>;
+declare const showCaptionState: lexical.StateConfig<"showCaption", boolean>;
+declare const captionsEnabledState: lexical.StateConfig<"captionsEnabled", boolean>;
 declare class ImageNode extends DecoratorNode<JSX.Element> {
-    __src: string;
-    __altText: string;
-    __width: 'inherit' | number;
-    __height: 'inherit' | number;
-    __maxWidth: number;
-    __showCaption: boolean;
     __caption: LexicalEditor;
-    __captionsEnabled: boolean;
-    static getType(): string;
-    static clone(node: ImageNode): ImageNode;
-    static importJSON(serializedNode: SerializedImageNode): ImageNode;
+    $config(): lexical.StaticNodeConfigRecord<"image", {
+        extends: typeof DecoratorNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+        stateConfigs: ({
+            flat: true;
+            stateConfig: lexical.StateConfig<"src", string>;
+        } | {
+            flat: true;
+            stateConfig: lexical.StateConfig<"altText", string>;
+        } | {
+            flat: true;
+            stateConfig: lexical.StateConfig<"width", number | "inherit">;
+        } | {
+            flat: true;
+            stateConfig: lexical.StateConfig<"height", number | "inherit">;
+        } | {
+            flat: true;
+            stateConfig: lexical.StateConfig<"maxWidth", number>;
+        } | {
+            flat: true;
+            stateConfig: lexical.StateConfig<"showCaption", boolean>;
+        } | {
+            flat: true;
+            stateConfig: lexical.StateConfig<"captionsEnabled", boolean>;
+        })[];
+    }>;
+    constructor(key?: NodeKey | undefined);
+    afterCloneFrom(prevNode: this): void;
     updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedImageNode>): this;
     exportDOM(): DOMExportOutput;
-    static importDOM(): DOMConversionMap | null;
-    constructor(src: string, altText: string, maxWidth: number, width?: 'inherit' | number, height?: 'inherit' | number, showCaption?: boolean, caption?: LexicalEditor, captionsEnabled?: boolean, key?: NodeKey);
     exportJSON(): SerializedImageNode;
     setWidthAndHeight(width: 'inherit' | number, height: 'inherit' | number): void;
     setShowCaption(showCaption: boolean): void;
     createDOM(config: EditorConfig): HTMLElement;
     updateDOM(): false;
-    getSrc(): string;
-    getAltText(): string;
+    getSrc(): StateConfigValue<typeof srcState>;
+    getAltText(): StateConfigValue<typeof altTextState>;
+    getWidth(): StateConfigValue<typeof widthState>;
+    getHeight(): StateConfigValue<typeof heightState>;
+    getMaxWidth(): StateConfigValue<typeof maxWidthState>;
+    getShowCaption(): StateConfigValue<typeof showCaptionState>;
+    getCaptionsEnabled(): StateConfigValue<typeof captionsEnabledState>;
     decorate(): JSX.Element;
 }
 declare function $createImageNode({ altText, height, maxWidth, captionsEnabled, src, width, showCaption, caption, key, }: ImagePayload): ImageNode;
 declare function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedKeywordNode = SerializedTextNode;
 declare class KeywordNode extends TextNode {
-    static getType(): string;
-    static clone(node: KeywordNode): KeywordNode;
-    static importJSON(serializedNode: SerializedKeywordNode): KeywordNode;
+    $config(): lexical.StaticNodeConfigRecord<"keyword", {
+        extends: typeof TextNode;
+    }>;
     createDOM(config: EditorConfig): HTMLElement;
     canInsertTextBefore(): boolean;
     canInsertTextAfter(): boolean;
@@ -287,76 +252,56 @@ declare class KeywordNode extends TextNode {
 declare function $createKeywordNode(keyword?: string): KeywordNode;
 declare function $isKeywordNode(node: LexicalNode | null | undefined): boolean;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedLayoutContainerNode = Spread<{
-    templateColumns: string;
-}, SerializedElementNode>;
+declare const templateColumnsState: lexical.StateConfig<"templateColumns", string>;
 declare class LayoutContainerNode extends ElementNode {
-    __templateColumns: string;
-    constructor(templateColumns: string, key?: NodeKey);
-    static getType(): string;
-    static clone(node: LayoutContainerNode): LayoutContainerNode;
+    $config(): lexical.StaticNodeConfigRecord<"layout-container", {
+        extends: typeof ElementNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+        stateConfigs: {
+            flat: true;
+            stateConfig: lexical.StateConfig<"templateColumns", string>;
+        }[];
+    }>;
     createDOM(config: EditorConfig): HTMLElement;
     exportDOM(): DOMExportOutput;
     updateDOM(prevNode: this, dom: HTMLElement): boolean;
-    static importDOM(): DOMConversionMap | null;
-    static importJSON(json: SerializedLayoutContainerNode): LayoutContainerNode;
-    updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedLayoutContainerNode>): this;
     isShadowRoot(): boolean;
     canBeEmpty(): boolean;
-    exportJSON(): SerializedLayoutContainerNode;
-    getTemplateColumns(): string;
+    getTemplateColumns(): StateConfigValue<typeof templateColumnsState>;
     setTemplateColumns(templateColumns: string): this;
 }
 declare function $createLayoutContainerNode(templateColumns?: string): LayoutContainerNode;
 declare function $isLayoutContainerNode(node: LexicalNode | null | undefined): node is LayoutContainerNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedLayoutItemNode = SerializedElementNode;
 declare class LayoutItemNode extends ElementNode {
-    static getType(): string;
-    static clone(node: LayoutItemNode): LayoutItemNode;
+    $config(): lexical.StaticNodeConfigRecord<"layout-item", {
+        extends: typeof ElementNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+    }>;
     createDOM(config: EditorConfig): HTMLElement;
     updateDOM(): boolean;
     collapseAtStart(): boolean;
-    static importDOM(): DOMConversionMap | null;
-    static importJSON(serializedNode: SerializedLayoutItemNode): LayoutItemNode;
     isShadowRoot(): boolean;
 }
 declare function $createLayoutItemNode(): LayoutItemNode;
 declare function $isLayoutItemNode(node: LexicalNode | null | undefined): node is LayoutItemNode;
 
-type SerializedMermaidNode = Spread<{
-    code: string;
-}, SerializedLexicalNode>;
+declare const codeState: lexical.StateConfig<"code", string>;
 declare class MermaidNode extends DecoratorNode<JSX.Element> {
-    __code: string;
-    static getType(): string;
-    static clone(node: MermaidNode): MermaidNode;
-    constructor(code: string, key?: NodeKey);
-    static importJSON(serializedNode: SerializedMermaidNode): MermaidNode;
-    exportJSON(): SerializedMermaidNode;
-    static importDOM(): DOMConversionMap | null;
+    $config(): lexical.StaticNodeConfigRecord<"mermaid", {
+        extends: typeof DecoratorNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+        stateConfigs: {
+            flat: true;
+            stateConfig: lexical.StateConfig<"code", string>;
+        }[];
+    }>;
     exportDOM(): DOMExportOutput;
     createDOM(_config: EditorConfig): HTMLElement;
     updateDOM(): false;
     getTextContent(): string;
-    getCode(): string;
-    setCode(code: string): void;
+    getCode(): StateConfigValue<typeof codeState>;
+    setCode(code: string): this;
     decorate(): JSX.Element;
     isIsolated(): true;
 }
@@ -373,20 +318,11 @@ declare function $isMermaidNode(node: LexicalNode | null | undefined): node is M
 
 declare const NotionLikeEditorNodes: Array<Klass<LexicalNode>>;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedPageBreakNode = SerializedLexicalNode;
 declare class PageBreakNode extends DecoratorNode<JSX.Element> {
-    static getType(): string;
-    static clone(node: PageBreakNode): PageBreakNode;
-    static importJSON(serializedNode: SerializedPageBreakNode): PageBreakNode;
-    static importDOM(): DOMConversionMap | null;
+    $config(): lexical.StaticNodeConfigRecord<"page-break", {
+        extends: typeof DecoratorNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+    }>;
     createDOM(): HTMLElement;
     getTextContent(): string;
     isInline(): false;
@@ -396,21 +332,13 @@ declare class PageBreakNode extends DecoratorNode<JSX.Element> {
 declare function $createPageBreakNode(): PageBreakNode;
 declare function $isPageBreakNode(node: LexicalNode | null | undefined): node is PageBreakNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
 /** @noInheritDoc */
 declare class SpecialTextNode extends TextNode {
-    static getType(): string;
-    static clone(node: SpecialTextNode): SpecialTextNode;
+    $config(): lexical.StaticNodeConfigRecord<"specialText", {
+        extends: typeof TextNode;
+    }>;
     createDOM(config: EditorConfig): HTMLElement;
     updateDOM(prevNode: this, dom: HTMLElement, config: EditorConfig): boolean;
-    static importJSON(serializedNode: SerializedTextNode): SpecialTextNode;
     isTextEntity(): true;
     canInsertTextAfter(): boolean;
 }
@@ -427,14 +355,6 @@ declare function $createSpecialTextNode(text?: string): SpecialTextNode;
  */
 declare function $isSpecialTextNode(node: LexicalNode | null | undefined): node is SpecialTextNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
 type StickyNoteColor = 'pink' | 'yellow';
 type SerializedStickyNode = Spread<{
     xOffset: number;
@@ -442,76 +362,72 @@ type SerializedStickyNode = Spread<{
     color: StickyNoteColor;
     caption: SerializedEditor;
 }, SerializedLexicalNode>;
+declare const xOffsetState: lexical.StateConfig<"xOffset", number>;
+declare const yOffsetState: lexical.StateConfig<"yOffset", number>;
+declare const colorState: lexical.StateConfig<"color", "pink" | "yellow">;
 declare class StickyNode extends DecoratorNode<JSX.Element> {
-    __x: number;
-    __y: number;
-    __color: StickyNoteColor;
     __caption: LexicalEditor;
-    static getType(): string;
-    static clone(node: StickyNode): StickyNode;
-    static importJSON(serializedNode: SerializedStickyNode): StickyNode;
+    $config(): lexical.StaticNodeConfigRecord<"sticky", {
+        extends: typeof DecoratorNode;
+        stateConfigs: ({
+            flat: true;
+            stateConfig: lexical.StateConfig<"xOffset", number>;
+        } | {
+            flat: true;
+            stateConfig: lexical.StateConfig<"yOffset", number>;
+        } | {
+            flat: true;
+            stateConfig: lexical.StateConfig<"color", "pink" | "yellow">;
+        })[];
+    }>;
+    constructor(key?: NodeKey | undefined);
+    afterCloneFrom(prevNode: this): void;
     updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedStickyNode>): this;
-    constructor(x: number, y: number, color: 'pink' | 'yellow', caption?: LexicalEditor, key?: NodeKey);
     exportJSON(): SerializedStickyNode;
     createDOM(_config: EditorConfig): HTMLElement;
     updateDOM(): false;
     setPosition(x: number, y: number): void;
     toggleColor(): void;
+    getXOffset(): StateConfigValue<typeof xOffsetState>;
+    getYOffset(): StateConfigValue<typeof yOffsetState>;
+    getColor(): StateConfigValue<typeof colorState>;
     decorate(_editor: LexicalEditor, _config: EditorConfig): JSX.Element;
     isIsolated(): true;
 }
 declare function $isStickyNode(node: LexicalNode | null | undefined): node is StickyNode;
 declare function $createStickyNode(xOffset: number, yOffset: number): StickyNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedTweetNode = Spread<{
-    id: string;
-}, SerializedDecoratorBlockNode>;
+declare const tweetIDState: lexical.StateConfig<"id", string>;
 declare class TweetNode extends DecoratorBlockNode {
-    __id: string;
-    static getType(): string;
-    static clone(node: TweetNode): TweetNode;
-    static importJSON(serializedNode: SerializedTweetNode): TweetNode;
-    exportJSON(): SerializedTweetNode;
-    static importDOM(): DOMConversionMap<HTMLDivElement> | null;
+    $config(): lexical.StaticNodeConfigRecord<"tweet", {
+        extends: typeof DecoratorBlockNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+        stateConfigs: {
+            flat: true;
+            stateConfig: lexical.StateConfig<"id", string>;
+        }[];
+    }>;
     exportDOM(): DOMExportOutput;
-    constructor(id: string, format?: ElementFormatType, key?: NodeKey);
-    getId(): string;
+    getId(): StateConfigValue<typeof tweetIDState>;
     getTextContent(_includeInert?: boolean | undefined, _includeDirectionless?: false | undefined): string;
     decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element;
 }
 declare function $createTweetNode(tweetID: string): TweetNode;
 declare function $isTweetNode(node: TweetNode | LexicalNode | null | undefined): node is TweetNode;
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-type SerializedYouTubeNode = Spread<{
-    videoID: string;
-}, SerializedDecoratorBlockNode>;
+declare const videoIDState: lexical.StateConfig<"videoID", string>;
 declare class YouTubeNode extends DecoratorBlockNode {
-    __id: string;
-    static getType(): string;
-    static clone(node: YouTubeNode): YouTubeNode;
-    static importJSON(serializedNode: SerializedYouTubeNode): YouTubeNode;
-    exportJSON(): SerializedYouTubeNode;
-    constructor(id: string, format?: ElementFormatType, key?: NodeKey);
+    $config(): lexical.StaticNodeConfigRecord<"youtube", {
+        extends: typeof DecoratorBlockNode;
+        importDOM: lexical.DOMConversionMap<HTMLElement>;
+        stateConfigs: {
+            flat: true;
+            stateConfig: lexical.StateConfig<"videoID", string>;
+        }[];
+    }>;
     exportDOM(): DOMExportOutput;
-    static importDOM(): DOMConversionMap | null;
     updateDOM(): false;
-    getId(): string;
+    getId(): StateConfigValue<typeof videoIDState>;
     getTextContent(_includeInert?: boolean | undefined, _includeDirectionless?: false | undefined): string;
     decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element;
 }

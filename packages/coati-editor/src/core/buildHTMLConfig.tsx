@@ -9,6 +9,7 @@ import {
   $isTextNode,
   type DOMConversionMap,
   type DOMExportOutputMap,
+  getStaticNodeConfig,
   type HTMLConfig,
   isBlockDomNode,
   isHTMLElement,
@@ -43,7 +44,8 @@ function buildImportMap(): DOMConversionMap {
 
   // Wrap all TextNode importers with a function that also imports
   // the custom styles implemented by the playground
-  for (const [tag, fn] of Object.entries(TextNode.importDOM() || {})) {
+  const textNodeConfig = getStaticNodeConfig(TextNode).ownNodeConfig;
+  for (const [tag, fn] of Object.entries(textNodeConfig?.importDOM ?? {})) {
     importMap[tag] = (importNode) => {
       const importer = fn(importNode);
       if (!importer) {

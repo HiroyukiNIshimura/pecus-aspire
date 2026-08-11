@@ -6,9 +6,16 @@
  *
  */
 
-import type { EditorConfig, LexicalNode, NodeKey, SerializedTextNode, Spread } from 'lexical';
+import type {
+  EditorConfig,
+  LexicalNode,
+  SerializedTextNode,
+  Spread,
+  StateConfigValue,
+  StateValueOrUpdater,
+} from 'lexical';
 
-import { $applyNodeReplacement, TextNode } from 'lexical';
+import { $create, $getState, $setState, createState, TextNode } from 'lexical';
 
 export type SerializedEmojiNode = Spread<
   {
@@ -17,26 +24,22 @@ export type SerializedEmojiNode = Spread<
   SerializedTextNode
 >;
 
+const classNameState = createState('className', {
+  parse: (v) => (typeof v === 'string' ? v : ''),
+});
+
 export class EmojiNode extends TextNode {
-  __className: string;
-
-  static getType(): string {
-    return 'emoji';
-  }
-
-  static clone(node: EmojiNode): EmojiNode {
-    return new EmojiNode(node.__className, node.__text, node.__key);
-  }
-
-  constructor(className: string, text: string, key?: NodeKey) {
-    super(text, key);
-    this.__className = className;
+  $config() {
+    return this.config('emoji', {
+      extends: TextNode,
+      stateConfigs: [{ flat: true, stateConfig: classNameState }],
+    });
   }
 
   createDOM(config: EditorConfig): HTMLElement {
     const dom = document.createElement('span');
     const inner = super.createDOM(config);
-    dom.className = this.__className;
+    dom.className = this.getClassName();
     inner.className = 'emoji-inner';
     dom.appendChild(inner);
     return dom;
@@ -51,20 +54,12 @@ export class EmojiNode extends TextNode {
     return false;
   }
 
-  static importJSON(serializedNode: SerializedEmojiNode): EmojiNode {
-    return $createEmojiNode(serializedNode.className, serializedNode.text).updateFromJSON(serializedNode);
+  getClassName(): StateConfigValue<typeof classNameState> {
+    return $getState(this, classNameState);
   }
 
-  exportJSON(): SerializedEmojiNode {
-    return {
-      ...super.exportJSON(),
-      className: this.getClassName(),
-    };
-  }
-
-  getClassName(): string {
-    const self = this.getLatest();
-    return self.__className;
+  setClassName(valueOrUpdater: StateValueOrUpdater<typeof classNameState>): this {
+    return $setState(this, classNameState, valueOrUpdater);
   }
 }
 
@@ -73,6 +68,5 @@ export function $isEmojiNode(node: LexicalNode | null | undefined): node is Emoj
 }
 
 export function $createEmojiNode(className: string, emojiText: string): EmojiNode {
-  const node = new EmojiNode(className, emojiText).setMode('token');
-  return $applyNodeReplacement(node);
+  return $setState($create(EmojiNode).setTextContent(emojiText).setMode('token'), classNameState, className);
 }

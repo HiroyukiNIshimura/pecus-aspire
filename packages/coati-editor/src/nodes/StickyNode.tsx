@@ -15,8 +15,18 @@ import type {
   SerializedEditor,
   SerializedLexicalNode,
   Spread,
+  StateConfigValue,
 } from 'lexical';
-import { $setSelection, createEditor, DecoratorNode } from 'lexical';
+import {
+  $applyNodeReplacement,
+  $create,
+  $getState,
+  $setSelection,
+  $setState,
+  createEditor,
+  createState,
+  DecoratorNode,
+} from 'lexical';
 import type { JSX } from 'react';
 import * as React from 'react';
 
@@ -34,23 +44,40 @@ export type SerializedStickyNode = Spread<
   SerializedLexicalNode
 >;
 
+const xOffsetState = createState('xOffset', {
+  parse: (v) => (typeof v === 'number' ? v : 0),
+});
+
+const yOffsetState = createState('yOffset', {
+  parse: (v) => (typeof v === 'number' ? v : 0),
+});
+
+const colorState = createState('color', {
+  parse: (v) => (v === 'pink' || v === 'yellow' ? v : 'yellow'),
+});
+
 export class StickyNode extends DecoratorNode<JSX.Element> {
-  __x: number;
-  __y: number;
-  __color: StickyNoteColor;
   __caption: LexicalEditor;
 
-  static getType(): string {
-    return 'sticky';
+  $config() {
+    return this.config('sticky', {
+      extends: DecoratorNode,
+      stateConfigs: [
+        { flat: true, stateConfig: xOffsetState },
+        { flat: true, stateConfig: yOffsetState },
+        { flat: true, stateConfig: colorState },
+      ],
+    });
   }
 
-  static clone(node: StickyNode): StickyNode {
-    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
+  constructor(key: NodeKey | undefined = undefined) {
+    super(key);
+    this.__caption = createEditor();
   }
-  static importJSON(serializedNode: SerializedStickyNode): StickyNode {
-    return new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color).updateFromJSON(
-      serializedNode,
-    );
+
+  afterCloneFrom(prevNode: this): void {
+    super.afterCloneFrom(prevNode);
+    this.__caption = prevNode.__caption;
   }
 
   updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedStickyNode>): this {
@@ -64,21 +91,13 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
     return stickyNode;
   }
 
-  constructor(x: number, y: number, color: 'pink' | 'yellow', caption?: LexicalEditor, key?: NodeKey) {
-    super(key);
-    this.__x = x;
-    this.__y = y;
-    this.__caption = caption || createEditor();
-    this.__color = color;
-  }
-
   exportJSON(): SerializedStickyNode {
     return {
       ...super.exportJSON(),
       caption: this.__caption.toJSON(),
-      color: this.__color,
-      xOffset: this.__x,
-      yOffset: this.__y,
+      color: this.getColor(),
+      xOffset: this.getXOffset(),
+      yOffset: this.getYOffset(),
     };
   }
 
@@ -93,23 +112,33 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
   }
 
   setPosition(x: number, y: number): void {
-    const writable = this.getWritable();
-    writable.__x = x;
-    writable.__y = y;
+    $setState(this, xOffsetState, x);
+    $setState(this, yOffsetState, y);
     $setSelection(null);
   }
 
   toggleColor(): void {
-    const writable = this.getWritable();
-    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
+    $setState(this, colorState, (prev) => (prev === 'pink' ? 'yellow' : 'pink'));
+  }
+
+  getXOffset(): StateConfigValue<typeof xOffsetState> {
+    return $getState(this, xOffsetState);
+  }
+
+  getYOffset(): StateConfigValue<typeof yOffsetState> {
+    return $getState(this, yOffsetState);
+  }
+
+  getColor(): StateConfigValue<typeof colorState> {
+    return $getState(this, colorState);
   }
 
   decorate(_editor: LexicalEditor, _config: EditorConfig): JSX.Element {
     return (
       <StickyComponent
-        color={this.__color}
-        x={this.__x}
-        y={this.__y}
+        color={this.getColor()}
+        x={this.getXOffset()}
+        y={this.getYOffset()}
         nodeKey={this.getKey()}
         caption={this.__caption}
       />
@@ -126,5 +155,9 @@ export function $isStickyNode(node: LexicalNode | null | undefined): node is Sti
 }
 
 export function $createStickyNode(xOffset: number, yOffset: number): StickyNode {
-  return new StickyNode(xOffset, yOffset, 'yellow');
+  const node = $applyNodeReplacement($create(StickyNode));
+  $setState(node, xOffsetState, xOffset);
+  $setState(node, yOffsetState, yOffset);
+  $setState(node, colorState, 'yellow');
+  return node;
 }

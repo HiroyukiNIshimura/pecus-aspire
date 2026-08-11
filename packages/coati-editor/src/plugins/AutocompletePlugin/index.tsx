@@ -149,7 +149,7 @@ export default function AutocompletePlugin(): JSX.Element | null {
 
     function $handleAutocompleteNodeTransform(node: AutocompleteNode) {
       const key = node.getKey();
-      if (node.__uuid === uuid && key !== autocompleteNodeKey) {
+      if (node.getUUID() === uuid && key !== autocompleteNodeKey) {
         // Max one Autocomplete node per session
         $clearSuggestion();
       }

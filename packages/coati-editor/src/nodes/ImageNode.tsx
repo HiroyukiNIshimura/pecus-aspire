@@ -11,7 +11,6 @@ import { HashtagNode } from '@lexical/hashtag';
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 import { LinkNode } from '@lexical/link';
 import type {
-  DOMConversionMap,
   DOMConversionOutput,
   DOMExportOutput,
   EditorConfig,
@@ -23,6 +22,7 @@ import type {
   SerializedEditor,
   SerializedLexicalNode,
   Spread,
+  StateConfigValue,
 } from 'lexical';
 import {
   $applyNodeReplacement,
@@ -31,11 +31,15 @@ import {
   $getChildCaret,
   $getEditor,
   $getRoot,
+  $getState,
   $isElementNode,
   $isParagraphNode,
   $selectAll,
   $setSelection,
+  $setState,
+  buildImportMap,
   createEditor,
+  createState,
   DecoratorNode,
   LineBreakNode,
   ParagraphNode,
@@ -107,45 +111,102 @@ export type SerializedImageNode = Spread<
   SerializedLexicalNode
 >;
 
+const srcState = createState('src', {
+  parse: (v) => (typeof v === 'string' ? v : ''),
+});
+
+const altTextState = createState('altText', {
+  parse: (v) => (typeof v === 'string' ? v : ''),
+});
+
+const widthState = createState('width', {
+  parse: (v) => (v === undefined || v === null || v === 0 ? 'inherit' : typeof v === 'number' ? v : 'inherit'),
+  unparse: (v) => (v === 'inherit' ? 0 : v),
+});
+
+const heightState = createState('height', {
+  parse: (v) => (v === undefined || v === null || v === 0 ? 'inherit' : typeof v === 'number' ? v : 'inherit'),
+  unparse: (v) => (v === 'inherit' ? 0 : v),
+});
+
+const maxWidthState = createState('maxWidth', {
+  parse: (v) => (typeof v === 'number' ? v : 500),
+});
+
+const showCaptionState = createState('showCaption', {
+  parse: (v) => (typeof v === 'boolean' ? v : false),
+});
+
+const captionsEnabledState = createState('captionsEnabled', {
+  parse: (v) => (typeof v === 'boolean' ? v : true),
+});
+
 export class ImageNode extends DecoratorNode<JSX.Element> {
-  __src: string;
-  __altText: string;
-  __width: 'inherit' | number;
-  __height: 'inherit' | number;
-  __maxWidth: number;
-  __showCaption: boolean;
-  __caption: LexicalEditor;
   // Captions cannot yet be used within editor cells
-  __captionsEnabled: boolean;
+  __caption: LexicalEditor;
 
-  static getType(): string {
-    return 'image';
+  $config() {
+    return this.config('image', {
+      extends: DecoratorNode,
+      importDOM: buildImportMap({
+        figcaption: () => ({
+          conversion: () => ({ node: null }),
+          priority: 0,
+        }),
+        figure: () => ({
+          conversion: (node) => {
+            return {
+              after: (childNodes) => {
+                const imageNodes = childNodes.filter($isImageNode);
+                const figcaption = node.querySelector('figcaption');
+                if (figcaption) {
+                  for (const imgNode of imageNodes) {
+                    imgNode.setShowCaption(true);
+                    imgNode.__caption.update(
+                      () => {
+                        const editor = $getEditor();
+                        $insertGeneratedNodes(editor, $generateNodesFromDOM(editor, figcaption), $selectAll());
+                        $setSelection(null);
+                      },
+                      { tag: SKIP_DOM_SELECTION_TAG },
+                    );
+                  }
+                }
+                return imageNodes;
+              },
+              node: null,
+            };
+          },
+          priority: 0,
+        }),
+        img: () => ({
+          conversion: $convertImageElement,
+          priority: 0,
+        }),
+      }),
+      stateConfigs: [
+        { flat: true, stateConfig: srcState },
+        { flat: true, stateConfig: altTextState },
+        { flat: true, stateConfig: widthState },
+        { flat: true, stateConfig: heightState },
+        { flat: true, stateConfig: maxWidthState },
+        { flat: true, stateConfig: showCaptionState },
+        { flat: true, stateConfig: captionsEnabledState },
+      ],
+    });
   }
 
-  static clone(node: ImageNode): ImageNode {
-    return new ImageNode(
-      node.__src,
-      node.__altText,
-      node.__maxWidth,
-      node.__width,
-      node.__height,
-      node.__showCaption,
-      node.__caption,
-      node.__captionsEnabled,
-      node.__key,
-    );
+  constructor(key: NodeKey | undefined = undefined) {
+    super(key);
+    this.__caption = createEditor({
+      namespace: 'Playground/ImageNodeCaption',
+      nodes: [RootNode, TextNode, LineBreakNode, ParagraphNode, LinkNode, EmojiNode, HashtagNode, KeywordNode],
+    });
   }
 
-  static importJSON(serializedNode: SerializedImageNode): ImageNode {
-    const { altText, height, width, maxWidth, src, showCaption } = serializedNode;
-    return $createImageNode({
-      altText,
-      height,
-      maxWidth,
-      showCaption,
-      src,
-      width,
-    }).updateFromJSON(serializedNode);
+  afterCloneFrom(prevNode: this): void {
+    super.afterCloneFrom(prevNode);
+    this.__caption = prevNode.__caption;
   }
 
   updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedImageNode>): this {
@@ -162,12 +223,12 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
 
   exportDOM(): DOMExportOutput {
     const imgElement = document.createElement('img');
-    imgElement.setAttribute('src', this.__src);
-    imgElement.setAttribute('alt', this.__altText);
-    imgElement.setAttribute('width', this.__width.toString());
-    imgElement.setAttribute('height', this.__height.toString());
+    imgElement.setAttribute('src', this.getSrc());
+    imgElement.setAttribute('alt', this.getAltText());
+    imgElement.setAttribute('width', this.getWidth().toString());
+    imgElement.setAttribute('height', this.getHeight().toString());
 
-    if (this.__showCaption && this.__caption) {
+    if (this.getShowCaption() && this.__caption) {
       const captionEditor = this.__caption;
       const captionHtml = captionEditor.read(() => {
         if ($isCaptionEditorEmpty()) {
@@ -198,94 +259,26 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     return { element: imgElement };
   }
 
-  static importDOM(): DOMConversionMap | null {
-    return {
-      figcaption: () => ({
-        conversion: () => ({ node: null }),
-        priority: 0,
-      }),
-      figure: () => ({
-        conversion: (node) => {
-          return {
-            after: (childNodes) => {
-              const imageNodes = childNodes.filter($isImageNode);
-              const figcaption = node.querySelector('figcaption');
-              if (figcaption) {
-                for (const imgNode of imageNodes) {
-                  imgNode.setShowCaption(true);
-                  imgNode.__caption.update(
-                    () => {
-                      const editor = $getEditor();
-                      $insertGeneratedNodes(editor, $generateNodesFromDOM(editor, figcaption), $selectAll());
-                      $setSelection(null);
-                    },
-                    { tag: SKIP_DOM_SELECTION_TAG },
-                  );
-                }
-              }
-              return imageNodes;
-            },
-            node: null,
-          };
-        },
-        priority: 0,
-      }),
-      img: () => ({
-        conversion: $convertImageElement,
-        priority: 0,
-      }),
-    };
-  }
-
-  constructor(
-    src: string,
-    altText: string,
-    maxWidth: number,
-    width?: 'inherit' | number,
-    height?: 'inherit' | number,
-    showCaption?: boolean,
-    caption?: LexicalEditor,
-    captionsEnabled?: boolean,
-    key?: NodeKey,
-  ) {
-    super(key);
-    this.__src = src;
-    this.__altText = altText;
-    this.__maxWidth = maxWidth;
-    this.__width = width || 'inherit';
-    this.__height = height || 'inherit';
-    this.__showCaption = showCaption || false;
-    this.__caption =
-      caption ||
-      createEditor({
-        namespace: 'Playground/ImageNodeCaption',
-        nodes: [RootNode, TextNode, LineBreakNode, ParagraphNode, LinkNode, EmojiNode, HashtagNode, KeywordNode],
-      });
-    this.__captionsEnabled = captionsEnabled || captionsEnabled === undefined;
-  }
-
   exportJSON(): SerializedImageNode {
     return {
       ...super.exportJSON(),
       altText: this.getAltText(),
       caption: this.__caption.toJSON(),
-      height: this.__height === 'inherit' ? 0 : this.__height,
-      maxWidth: this.__maxWidth,
-      showCaption: this.__showCaption,
+      height: this.getHeight() === 'inherit' ? 0 : (this.getHeight() as number),
+      maxWidth: this.getMaxWidth(),
+      showCaption: this.getShowCaption(),
       src: this.getSrc(),
-      width: this.__width === 'inherit' ? 0 : this.__width,
+      width: this.getWidth() === 'inherit' ? 0 : (this.getWidth() as number),
     };
   }
 
   setWidthAndHeight(width: 'inherit' | number, height: 'inherit' | number): void {
-    const writable = this.getWritable();
-    writable.__width = width;
-    writable.__height = height;
+    $setState(this, widthState, width);
+    $setState(this, heightState, height);
   }
 
   setShowCaption(showCaption: boolean): void {
-    const writable = this.getWritable();
-    writable.__showCaption = showCaption;
+    $setState(this, showCaptionState, showCaption);
   }
 
   // View
@@ -304,26 +297,46 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     return false;
   }
 
-  getSrc(): string {
-    return this.__src;
+  getSrc(): StateConfigValue<typeof srcState> {
+    return $getState(this, srcState);
   }
 
-  getAltText(): string {
-    return this.__altText;
+  getAltText(): StateConfigValue<typeof altTextState> {
+    return $getState(this, altTextState);
+  }
+
+  getWidth(): StateConfigValue<typeof widthState> {
+    return $getState(this, widthState);
+  }
+
+  getHeight(): StateConfigValue<typeof heightState> {
+    return $getState(this, heightState);
+  }
+
+  getMaxWidth(): StateConfigValue<typeof maxWidthState> {
+    return $getState(this, maxWidthState);
+  }
+
+  getShowCaption(): StateConfigValue<typeof showCaptionState> {
+    return $getState(this, showCaptionState);
+  }
+
+  getCaptionsEnabled(): StateConfigValue<typeof captionsEnabledState> {
+    return $getState(this, captionsEnabledState);
   }
 
   decorate(): JSX.Element {
     return (
       <ImageComponent
-        src={this.__src}
-        altText={this.__altText}
-        width={this.__width}
-        height={this.__height}
-        maxWidth={this.__maxWidth}
+        src={this.getSrc()}
+        altText={this.getAltText()}
+        width={this.getWidth()}
+        height={this.getHeight()}
+        maxWidth={this.getMaxWidth()}
         nodeKey={this.getKey()}
-        showCaption={this.__showCaption}
+        showCaption={this.getShowCaption()}
         caption={this.__caption}
-        captionsEnabled={this.__captionsEnabled}
+        captionsEnabled={this.getCaptionsEnabled()}
         resizable={true}
       />
     );
@@ -341,9 +354,18 @@ export function $createImageNode({
   caption,
   key,
 }: ImagePayload): ImageNode {
-  return $applyNodeReplacement(
-    new ImageNode(src, altText, maxWidth, width, height, showCaption, caption, captionsEnabled, key),
-  );
+  const node = $applyNodeReplacement(new ImageNode(key));
+  $setState(node, srcState, src);
+  $setState(node, altTextState, altText ?? '');
+  $setState(node, widthState, width === undefined || width === 0 ? 'inherit' : width);
+  $setState(node, heightState, height === undefined || height === 0 ? 'inherit' : height);
+  $setState(node, maxWidthState, maxWidth);
+  $setState(node, showCaptionState, showCaption ?? false);
+  $setState(node, captionsEnabledState, captionsEnabled ?? true);
+  if (caption) {
+    node.__caption = caption;
+  }
+  return node;
 }
 
 export function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode {

@@ -7,6 +7,7 @@
  */
 
 import {
+  $create,
   $getState,
   $setState,
   buildImportMap,
@@ -129,7 +130,7 @@ export class DateTimeNode extends DecoratorNode<JSX.Element> {
 }
 
 export function $createDateTimeNode(dateTime: Date): DateTimeNode {
-  return new DateTimeNode().setDateTime(dateTime);
+  return $create(DateTimeNode).setDateTime(dateTime);
 }
 
 export function $isDateTimeNode(node: LexicalNode | null | undefined): node is DateTimeNode {

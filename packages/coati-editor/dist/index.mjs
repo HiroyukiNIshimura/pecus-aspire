@@ -5536,10 +5536,11 @@ var init_DateTimeComponent = __esm({
 
 // src/nodes/DateTimeNode/DateTimeNode.tsx
 import {
-  $getState,
-  $setState,
-  buildImportMap as buildImportMap2,
-  createState,
+  $create as $create8,
+  $getState as $getState6,
+  $setState as $setState6,
+  buildImportMap as buildImportMap6,
+  createState as createState6,
   DecoratorNode
 } from "lexical";
 import * as React from "react";
@@ -5563,7 +5564,7 @@ function $convertDateTimeElement(domNode) {
   return { node };
 }
 function $createDateTimeNode(dateTime) {
-  return new DateTimeNode().setDateTime(dateTime);
+  return $create8(DateTimeNode).setDateTime(dateTime);
 }
 function $isDateTimeNode(node) {
   return node instanceof DateTimeNode;
@@ -5581,7 +5582,7 @@ var init_DateTimeNode2 = __esm({
       const minutes = dateTime?.getMinutes();
       return dateTime.toDateString() + (hours === 0 && minutes === 0 ? "" : ` ${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
     };
-    dateTimeState = createState("dateTime", {
+    dateTimeState = createState6("dateTime", {
       parse: (v2) => new Date(v2),
       unparse: (v2) => v2.toISOString()
     });
@@ -5589,7 +5590,7 @@ var init_DateTimeNode2 = __esm({
       $config() {
         return this.config("datetime", {
           extends: DecoratorNode,
-          importDOM: buildImportMap2({
+          importDOM: buildImportMap6({
             span: (domNode) => domNode.getAttribute("data-lexical-datetime") !== null || // GDocs Support
             domNode.getAttribute("data-rich-links") !== null && JSON.parse(domNode.getAttribute("data-rich-links") || "{}").type === "date" ? {
               conversion: $convertDateTimeElement,
@@ -5600,10 +5601,10 @@ var init_DateTimeNode2 = __esm({
         });
       }
       getDateTime() {
-        return $getState(this, dateTimeState);
+        return $getState6(this, dateTimeState);
       }
       setDateTime(valueOrUpdater) {
-        return $setState(this, dateTimeState, valueOrUpdater);
+        return $setState6(this, dateTimeState, valueOrUpdater);
       }
       getTextContent() {
         const dateTime = this.getDateTime();
@@ -5926,7 +5927,15 @@ var init_EquationComponent = __esm({
 
 // src/nodes/EquationNode.tsx
 import katex2 from "katex";
-import { $applyNodeReplacement, DecoratorNode as DecoratorNode2 } from "lexical";
+import {
+  $applyNodeReplacement,
+  $create as $create9,
+  $getState as $getState7,
+  $setState as $setState7,
+  buildImportMap as buildImportMap7,
+  createState as createState7,
+  DecoratorNode as DecoratorNode2
+} from "lexical";
 import * as React2 from "react";
 import { jsx as jsx27 } from "react/jsx-runtime";
 function $convertEquationElement(domNode) {
@@ -5940,53 +5949,66 @@ function $convertEquationElement(domNode) {
   return null;
 }
 function $createEquationNode(equation = "", inline = false) {
-  const equationNode = new EquationNode(equation, inline);
-  return $applyNodeReplacement(equationNode);
+  return $applyNodeReplacement(
+    $setState7($setState7($create9(EquationNode), equationState, equation), inlineState, inline)
+  );
 }
 function $isEquationNode(node) {
   return node instanceof EquationNode;
 }
-var EquationComponent2, EquationNode;
+var EquationComponent2, equationState, inlineState, EquationNode;
 var init_EquationNode = __esm({
   "src/nodes/EquationNode.tsx"() {
     "use strict";
     EquationComponent2 = React2.lazy(() => Promise.resolve().then(() => (init_EquationComponent(), EquationComponent_exports)));
-    EquationNode = class _EquationNode extends DecoratorNode2 {
-      __equation;
-      __inline;
-      static getType() {
-        return "equation";
-      }
-      static clone(node) {
-        return new _EquationNode(node.__equation, node.__inline, node.__key);
-      }
-      constructor(equation, inline, key2) {
-        super(key2);
-        this.__equation = equation;
-        this.__inline = inline ?? false;
-      }
-      static importJSON(serializedNode) {
-        return $createEquationNode(serializedNode.equation, serializedNode.inline).updateFromJSON(serializedNode);
-      }
-      exportJSON() {
-        return {
-          ...super.exportJSON(),
-          equation: this.getEquation(),
-          inline: this.__inline
-        };
+    equationState = createState7("equation", {
+      parse: (v2) => typeof v2 === "string" ? v2 : ""
+    });
+    inlineState = createState7("inline", {
+      parse: (v2) => typeof v2 === "boolean" ? v2 : false
+    });
+    EquationNode = class extends DecoratorNode2 {
+      $config() {
+        return this.config("equation", {
+          extends: DecoratorNode2,
+          importDOM: buildImportMap7({
+            div: (domNode) => {
+              if (!domNode.hasAttribute("data-lexical-equation")) {
+                return null;
+              }
+              return {
+                conversion: $convertEquationElement,
+                priority: 2
+              };
+            },
+            span: (domNode) => {
+              if (!domNode.hasAttribute("data-lexical-equation")) {
+                return null;
+              }
+              return {
+                conversion: $convertEquationElement,
+                priority: 1
+              };
+            }
+          }),
+          stateConfigs: [
+            { flat: true, stateConfig: equationState },
+            { flat: true, stateConfig: inlineState }
+          ]
+        });
       }
       createDOM(_config) {
-        const element2 = document.createElement(this.__inline ? "span" : "div");
+        const element2 = document.createElement(this.getInline() ? "span" : "div");
         element2.className = "editor-equation";
         return element2;
       }
       exportDOM() {
-        const element2 = document.createElement(this.__inline ? "span" : "div");
-        const equation = btoa(this.__equation);
+        const element2 = document.createElement(this.getInline() ? "span" : "div");
+        const equation = btoa(this.getEquation());
         element2.setAttribute("data-lexical-equation", equation);
-        element2.setAttribute("data-lexical-inline", `${this.__inline}`);
-        katex2.render(this.__equation, element2, {
-          displayMode: !this.__inline,
+        element2.setAttribute("data-lexical-inline", `${this.getInline()}`);
+        katex2.render(this.getEquation(), element2, {
+          displayMode: !this.getInline(),
           // true === block display //
           errorColor: "#cc0000",
           output: "html",
@@ -5996,77 +6018,54 @@ var init_EquationNode = __esm({
         });
         return { element: element2 };
       }
-      static importDOM() {
-        return {
-          div: (domNode) => {
-            if (!domNode.hasAttribute("data-lexical-equation")) {
-              return null;
-            }
-            return {
-              conversion: $convertEquationElement,
-              priority: 2
-            };
-          },
-          span: (domNode) => {
-            if (!domNode.hasAttribute("data-lexical-equation")) {
-              return null;
-            }
-            return {
-              conversion: $convertEquationElement,
-              priority: 1
-            };
-          }
-        };
-      }
       updateDOM(prevNode) {
-        return this.__inline !== prevNode.__inline;
+        return this.getInline() !== prevNode.getInline();
       }
       getTextContent() {
-        return this.__equation;
+        return this.getEquation();
       }
       getEquation() {
-        return this.__equation;
+        return $getState7(this, equationState);
       }
       setEquation(equation) {
-        const writable = this.getWritable();
-        writable.__equation = equation;
+        return $setState7(this, equationState, equation);
+      }
+      getInline() {
+        return $getState7(this, inlineState);
       }
       decorate() {
-        return /* @__PURE__ */ jsx27(EquationComponent2, { equation: this.__equation, inline: this.__inline, nodeKey: this.__key });
+        return /* @__PURE__ */ jsx27(EquationComponent2, { equation: this.getEquation(), inline: this.getInline(), nodeKey: this.__key });
       }
     };
   }
 });
 
 // src/nodes/EmojiNode.tsx
-import { $applyNodeReplacement as $applyNodeReplacement2, TextNode as TextNode3 } from "lexical";
+import { $create as $create10, $getState as $getState8, $setState as $setState8, createState as createState8, TextNode as TextNode3 } from "lexical";
 function $isEmojiNode(node) {
   return node instanceof EmojiNode;
 }
 function $createEmojiNode(className, emojiText) {
-  const node = new EmojiNode(className, emojiText).setMode("token");
-  return $applyNodeReplacement2(node);
+  return $setState8($create10(EmojiNode).setTextContent(emojiText).setMode("token"), classNameState, className);
 }
-var EmojiNode;
+var classNameState, EmojiNode;
 var init_EmojiNode = __esm({
   "src/nodes/EmojiNode.tsx"() {
     "use strict";
-    EmojiNode = class _EmojiNode extends TextNode3 {
-      __className;
-      static getType() {
-        return "emoji";
-      }
-      static clone(node) {
-        return new _EmojiNode(node.__className, node.__text, node.__key);
-      }
-      constructor(className, text2, key2) {
-        super(text2, key2);
-        this.__className = className;
+    classNameState = createState8("className", {
+      parse: (v2) => typeof v2 === "string" ? v2 : ""
+    });
+    EmojiNode = class extends TextNode3 {
+      $config() {
+        return this.config("emoji", {
+          extends: TextNode3,
+          stateConfigs: [{ flat: true, stateConfig: classNameState }]
+        });
       }
       createDOM(config) {
         const dom = document.createElement("span");
         const inner = super.createDOM(config);
-        dom.className = this.__className;
+        dom.className = this.getClassName();
         inner.className = "emoji-inner";
         dom.appendChild(inner);
         return dom;
@@ -6079,27 +6078,20 @@ var init_EmojiNode = __esm({
         super.updateDOM(prevNode, inner, config);
         return false;
       }
-      static importJSON(serializedNode) {
-        return $createEmojiNode(serializedNode.className, serializedNode.text).updateFromJSON(serializedNode);
-      }
-      exportJSON() {
-        return {
-          ...super.exportJSON(),
-          className: this.getClassName()
-        };
-      }
       getClassName() {
-        const self = this.getLatest();
-        return self.__className;
+        return $getState8(this, classNameState);
+      }
+      setClassName(valueOrUpdater) {
+        return $setState8(this, classNameState, valueOrUpdater);
       }
     };
   }
 });
 
 // src/nodes/KeywordNode.ts
-import { $applyNodeReplacement as $applyNodeReplacement3, TextNode as TextNode4 } from "lexical";
+import { $create as $create11, TextNode as TextNode4 } from "lexical";
 function $createKeywordNode(keyword = "") {
-  return $applyNodeReplacement3(new KeywordNode(keyword));
+  return $create11(KeywordNode).setTextContent(keyword);
 }
 function $isKeywordNode(node) {
   return node instanceof KeywordNode;
@@ -6108,15 +6100,9 @@ var KeywordNode;
 var init_KeywordNode = __esm({
   "src/nodes/KeywordNode.ts"() {
     "use strict";
-    KeywordNode = class _KeywordNode extends TextNode4 {
-      static getType() {
-        return "keyword";
-      }
-      static clone(node) {
-        return new _KeywordNode(node.__text, node.__key);
-      }
-      static importJSON(serializedNode) {
-        return $createKeywordNode().updateFromJSON(serializedNode);
+    KeywordNode = class extends TextNode4 {
+      $config() {
+        return this.config("keyword", { extends: TextNode4 });
       }
       createDOM(config) {
         const dom = super.createDOM(config);
@@ -7024,17 +7010,21 @@ import { HashtagNode } from "@lexical/hashtag";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import { LinkNode } from "@lexical/link";
 import {
-  $applyNodeReplacement as $applyNodeReplacement4,
+  $applyNodeReplacement as $applyNodeReplacement2,
   $createRangeSelection,
   $extendCaretToRange,
   $getChildCaret,
   $getEditor,
   $getRoot as $getRoot2,
+  $getState as $getState9,
   $isElementNode as $isElementNode3,
   $isParagraphNode,
   $selectAll,
   $setSelection as $setSelection4,
+  $setState as $setState9,
+  buildImportMap as buildImportMap8,
   createEditor,
+  createState as createState9,
   DecoratorNode as DecoratorNode3,
   LineBreakNode,
   ParagraphNode,
@@ -7076,56 +7066,115 @@ function $createImageNode({
   caption,
   key: key2
 }) {
-  return $applyNodeReplacement4(
-    new ImageNode(src, altText, maxWidth, width, height, showCaption, caption, captionsEnabled, key2)
-  );
+  const node = $applyNodeReplacement2(new ImageNode(key2));
+  $setState9(node, srcState, src);
+  $setState9(node, altTextState, altText ?? "");
+  $setState9(node, widthState, width === void 0 || width === 0 ? "inherit" : width);
+  $setState9(node, heightState, height === void 0 || height === 0 ? "inherit" : height);
+  $setState9(node, maxWidthState, maxWidth);
+  $setState9(node, showCaptionState, showCaption ?? false);
+  $setState9(node, captionsEnabledState, captionsEnabled ?? true);
+  if (caption) {
+    node.__caption = caption;
+  }
+  return node;
 }
 function $isImageNode(node) {
   return node instanceof ImageNode;
 }
-var ImageComponent2, ImageNode;
+var ImageComponent2, srcState, altTextState, widthState, heightState, maxWidthState, showCaptionState, captionsEnabledState, ImageNode;
 var init_ImageNode2 = __esm({
   "src/nodes/ImageNode.tsx"() {
     "use strict";
     init_EmojiNode();
     init_KeywordNode();
     ImageComponent2 = React3.lazy(() => Promise.resolve().then(() => (init_ImageComponent(), ImageComponent_exports)));
-    ImageNode = class _ImageNode extends DecoratorNode3 {
-      __src;
-      __altText;
-      __width;
-      __height;
-      __maxWidth;
-      __showCaption;
-      __caption;
+    srcState = createState9("src", {
+      parse: (v2) => typeof v2 === "string" ? v2 : ""
+    });
+    altTextState = createState9("altText", {
+      parse: (v2) => typeof v2 === "string" ? v2 : ""
+    });
+    widthState = createState9("width", {
+      parse: (v2) => v2 === void 0 || v2 === null || v2 === 0 ? "inherit" : typeof v2 === "number" ? v2 : "inherit",
+      unparse: (v2) => v2 === "inherit" ? 0 : v2
+    });
+    heightState = createState9("height", {
+      parse: (v2) => v2 === void 0 || v2 === null || v2 === 0 ? "inherit" : typeof v2 === "number" ? v2 : "inherit",
+      unparse: (v2) => v2 === "inherit" ? 0 : v2
+    });
+    maxWidthState = createState9("maxWidth", {
+      parse: (v2) => typeof v2 === "number" ? v2 : 500
+    });
+    showCaptionState = createState9("showCaption", {
+      parse: (v2) => typeof v2 === "boolean" ? v2 : false
+    });
+    captionsEnabledState = createState9("captionsEnabled", {
+      parse: (v2) => typeof v2 === "boolean" ? v2 : true
+    });
+    ImageNode = class extends DecoratorNode3 {
       // Captions cannot yet be used within editor cells
-      __captionsEnabled;
-      static getType() {
-        return "image";
+      __caption;
+      $config() {
+        return this.config("image", {
+          extends: DecoratorNode3,
+          importDOM: buildImportMap8({
+            figcaption: () => ({
+              conversion: () => ({ node: null }),
+              priority: 0
+            }),
+            figure: () => ({
+              conversion: (node) => {
+                return {
+                  after: (childNodes) => {
+                    const imageNodes = childNodes.filter($isImageNode);
+                    const figcaption = node.querySelector("figcaption");
+                    if (figcaption) {
+                      for (const imgNode of imageNodes) {
+                        imgNode.setShowCaption(true);
+                        imgNode.__caption.update(
+                          () => {
+                            const editor = $getEditor();
+                            $insertGeneratedNodes(editor, $generateNodesFromDOM(editor, figcaption), $selectAll());
+                            $setSelection4(null);
+                          },
+                          { tag: SKIP_DOM_SELECTION_TAG }
+                        );
+                      }
+                    }
+                    return imageNodes;
+                  },
+                  node: null
+                };
+              },
+              priority: 0
+            }),
+            img: () => ({
+              conversion: $convertImageElement,
+              priority: 0
+            })
+          }),
+          stateConfigs: [
+            { flat: true, stateConfig: srcState },
+            { flat: true, stateConfig: altTextState },
+            { flat: true, stateConfig: widthState },
+            { flat: true, stateConfig: heightState },
+            { flat: true, stateConfig: maxWidthState },
+            { flat: true, stateConfig: showCaptionState },
+            { flat: true, stateConfig: captionsEnabledState }
+          ]
+        });
       }
-      static clone(node) {
-        return new _ImageNode(
-          node.__src,
-          node.__altText,
-          node.__maxWidth,
-          node.__width,
-          node.__height,
-          node.__showCaption,
-          node.__caption,
-          node.__captionsEnabled,
-          node.__key
-        );
+      constructor(key2 = void 0) {
+        super(key2);
+        this.__caption = createEditor({
+          namespace: "Playground/ImageNodeCaption",
+          nodes: [RootNode, TextNode6, LineBreakNode, ParagraphNode, LinkNode, EmojiNode, HashtagNode, KeywordNode]
+        });
       }
-      static importJSON(serializedNode) {
-        const { altText, height, width, maxWidth, src, showCaption } = serializedNode;
-        return $createImageNode({
-          altText,
-          height,
-          maxWidth,
-          showCaption,
-          src,
-          width
-        }).updateFromJSON(serializedNode);
+      afterCloneFrom(prevNode) {
+        super.afterCloneFrom(prevNode);
+        this.__caption = prevNode.__caption;
       }
       updateFromJSON(serializedNode) {
         const node = super.updateFromJSON(serializedNode);
@@ -7139,11 +7188,11 @@ var init_ImageNode2 = __esm({
       }
       exportDOM() {
         const imgElement = document.createElement("img");
-        imgElement.setAttribute("src", this.__src);
-        imgElement.setAttribute("alt", this.__altText);
-        imgElement.setAttribute("width", this.__width.toString());
-        imgElement.setAttribute("height", this.__height.toString());
-        if (this.__showCaption && this.__caption) {
+        imgElement.setAttribute("src", this.getSrc());
+        imgElement.setAttribute("alt", this.getAltText());
+        imgElement.setAttribute("width", this.getWidth().toString());
+        imgElement.setAttribute("height", this.getHeight().toString());
+        if (this.getShowCaption() && this.__caption) {
           const captionEditor = this.__caption;
           const captionHtml = captionEditor.read(() => {
             if ($isCaptionEditorEmpty()) {
@@ -7169,78 +7218,24 @@ var init_ImageNode2 = __esm({
         }
         return { element: imgElement };
       }
-      static importDOM() {
-        return {
-          figcaption: () => ({
-            conversion: () => ({ node: null }),
-            priority: 0
-          }),
-          figure: () => ({
-            conversion: (node) => {
-              return {
-                after: (childNodes) => {
-                  const imageNodes = childNodes.filter($isImageNode);
-                  const figcaption = node.querySelector("figcaption");
-                  if (figcaption) {
-                    for (const imgNode of imageNodes) {
-                      imgNode.setShowCaption(true);
-                      imgNode.__caption.update(
-                        () => {
-                          const editor = $getEditor();
-                          $insertGeneratedNodes(editor, $generateNodesFromDOM(editor, figcaption), $selectAll());
-                          $setSelection4(null);
-                        },
-                        { tag: SKIP_DOM_SELECTION_TAG }
-                      );
-                    }
-                  }
-                  return imageNodes;
-                },
-                node: null
-              };
-            },
-            priority: 0
-          }),
-          img: () => ({
-            conversion: $convertImageElement,
-            priority: 0
-          })
-        };
-      }
-      constructor(src, altText, maxWidth, width, height, showCaption, caption, captionsEnabled, key2) {
-        super(key2);
-        this.__src = src;
-        this.__altText = altText;
-        this.__maxWidth = maxWidth;
-        this.__width = width || "inherit";
-        this.__height = height || "inherit";
-        this.__showCaption = showCaption || false;
-        this.__caption = caption || createEditor({
-          namespace: "Playground/ImageNodeCaption",
-          nodes: [RootNode, TextNode6, LineBreakNode, ParagraphNode, LinkNode, EmojiNode, HashtagNode, KeywordNode]
-        });
-        this.__captionsEnabled = captionsEnabled || captionsEnabled === void 0;
-      }
       exportJSON() {
         return {
           ...super.exportJSON(),
           altText: this.getAltText(),
           caption: this.__caption.toJSON(),
-          height: this.__height === "inherit" ? 0 : this.__height,
-          maxWidth: this.__maxWidth,
-          showCaption: this.__showCaption,
+          height: this.getHeight() === "inherit" ? 0 : this.getHeight(),
+          maxWidth: this.getMaxWidth(),
+          showCaption: this.getShowCaption(),
           src: this.getSrc(),
-          width: this.__width === "inherit" ? 0 : this.__width
+          width: this.getWidth() === "inherit" ? 0 : this.getWidth()
         };
       }
       setWidthAndHeight(width, height) {
-        const writable = this.getWritable();
-        writable.__width = width;
-        writable.__height = height;
+        $setState9(this, widthState, width);
+        $setState9(this, heightState, height);
       }
       setShowCaption(showCaption) {
-        const writable = this.getWritable();
-        writable.__showCaption = showCaption;
+        $setState9(this, showCaptionState, showCaption);
       }
       // View
       createDOM(config) {
@@ -7256,24 +7251,39 @@ var init_ImageNode2 = __esm({
         return false;
       }
       getSrc() {
-        return this.__src;
+        return $getState9(this, srcState);
       }
       getAltText() {
-        return this.__altText;
+        return $getState9(this, altTextState);
+      }
+      getWidth() {
+        return $getState9(this, widthState);
+      }
+      getHeight() {
+        return $getState9(this, heightState);
+      }
+      getMaxWidth() {
+        return $getState9(this, maxWidthState);
+      }
+      getShowCaption() {
+        return $getState9(this, showCaptionState);
+      }
+      getCaptionsEnabled() {
+        return $getState9(this, captionsEnabledState);
       }
       decorate() {
         return /* @__PURE__ */ jsx34(
           ImageComponent2,
           {
-            src: this.__src,
-            altText: this.__altText,
-            width: this.__width,
-            height: this.__height,
-            maxWidth: this.__maxWidth,
+            src: this.getSrc(),
+            altText: this.getAltText(),
+            width: this.getWidth(),
+            height: this.getHeight(),
+            maxWidth: this.getMaxWidth(),
             nodeKey: this.getKey(),
-            showCaption: this.__showCaption,
+            showCaption: this.getShowCaption(),
             caption: this.__caption,
-            captionsEnabled: this.__captionsEnabled,
+            captionsEnabled: this.getCaptionsEnabled(),
             resizable: true
           }
         );
@@ -7423,7 +7433,15 @@ var init_MermaidComponent = __esm({
 });
 
 // src/nodes/MermaidNode.tsx
-import { $applyNodeReplacement as $applyNodeReplacement5, DecoratorNode as DecoratorNode5 } from "lexical";
+import {
+  $applyNodeReplacement as $applyNodeReplacement3,
+  $create as $create15,
+  $getState as $getState11,
+  $setState as $setState11,
+  buildImportMap as buildImportMap12,
+  createState as createState11,
+  DecoratorNode as DecoratorNode5
+} from "lexical";
 import * as React5 from "react";
 import { jsx as jsx51 } from "react/jsx-runtime";
 function $convertMermaidElement(domNode) {
@@ -7436,56 +7454,43 @@ function $convertMermaidElement(domNode) {
   return { node };
 }
 function $createMermaidNode(code = "") {
-  return $applyNodeReplacement5(new MermaidNode(code));
+  return $applyNodeReplacement3($setState11($create15(MermaidNode), codeState, code));
 }
 function $isMermaidNode(node) {
   return node instanceof MermaidNode;
 }
-var MermaidComponent2, MermaidNode;
+var MermaidComponent2, codeState, MermaidNode;
 var init_MermaidNode2 = __esm({
   "src/nodes/MermaidNode.tsx"() {
     "use strict";
     MermaidComponent2 = React5.lazy(() => Promise.resolve().then(() => (init_MermaidComponent(), MermaidComponent_exports)));
-    MermaidNode = class _MermaidNode extends DecoratorNode5 {
-      __code;
-      static getType() {
-        return "mermaid";
-      }
-      static clone(node) {
-        return new _MermaidNode(node.__code, node.__key);
-      }
-      constructor(code, key2) {
-        super(key2);
-        this.__code = code;
-      }
-      static importJSON(serializedNode) {
-        return $createMermaidNode(serializedNode.code).updateFromJSON(serializedNode);
-      }
-      exportJSON() {
-        return {
-          ...super.exportJSON(),
-          code: this.getCode()
-        };
-      }
-      static importDOM() {
-        return {
-          div: (domNode) => {
-            if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
-              return null;
+    codeState = createState11("code", {
+      parse: (v2) => typeof v2 === "string" ? v2 : ""
+    });
+    MermaidNode = class extends DecoratorNode5 {
+      $config() {
+        return this.config("mermaid", {
+          extends: DecoratorNode5,
+          importDOM: buildImportMap12({
+            div: (domNode) => {
+              if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
+                return null;
+              }
+              return {
+                conversion: $convertMermaidElement,
+                priority: 2
+              };
             }
-            return {
-              conversion: $convertMermaidElement,
-              priority: 2
-            };
-          }
-        };
+          }),
+          stateConfigs: [{ flat: true, stateConfig: codeState }]
+        });
       }
       exportDOM() {
         const element2 = document.createElement("div");
         element2.setAttribute("data-lexical-mermaid", "true");
         const source = document.createElement("pre");
         source.setAttribute("data-lexical-mermaid-source", "true");
-        source.textContent = this.__code;
+        source.textContent = this.getCode();
         element2.appendChild(source);
         return { element: element2 };
       }
@@ -7498,17 +7503,16 @@ var init_MermaidNode2 = __esm({
         return false;
       }
       getTextContent() {
-        return this.__code;
+        return this.getCode();
       }
       getCode() {
-        return this.__code;
+        return $getState11(this, codeState);
       }
       setCode(code) {
-        const writable = this.getWritable();
-        writable.__code = code;
+        return $setState11(this, codeState, code);
       }
       decorate() {
-        return /* @__PURE__ */ jsx51(MermaidComponent2, { code: this.__code, nodeKey: this.__key });
+        return /* @__PURE__ */ jsx51(MermaidComponent2, { code: this.getCode(), nodeKey: this.__key });
       }
       isIsolated() {
         return true;
@@ -7923,35 +7927,61 @@ var init_StickyComponent = __esm({
 });
 
 // src/nodes/StickyNode.tsx
-import { $setSelection as $setSelection8, createEditor as createEditor2, DecoratorNode as DecoratorNode6 } from "lexical";
+import {
+  $applyNodeReplacement as $applyNodeReplacement4,
+  $create as $create17,
+  $getState as $getState12,
+  $setSelection as $setSelection8,
+  $setState as $setState12,
+  createEditor as createEditor2,
+  createState as createState12,
+  DecoratorNode as DecoratorNode6
+} from "lexical";
 import * as React6 from "react";
 import { jsx as jsx57 } from "react/jsx-runtime";
 function $isStickyNode(node) {
   return node instanceof StickyNode;
 }
 function $createStickyNode(xOffset, yOffset) {
-  return new StickyNode(xOffset, yOffset, "yellow");
+  const node = $applyNodeReplacement4($create17(StickyNode));
+  $setState12(node, xOffsetState, xOffset);
+  $setState12(node, yOffsetState, yOffset);
+  $setState12(node, colorState, "yellow");
+  return node;
 }
-var StickyComponent2, StickyNode;
+var StickyComponent2, xOffsetState, yOffsetState, colorState, StickyNode;
 var init_StickyNode2 = __esm({
   "src/nodes/StickyNode.tsx"() {
     "use strict";
     StickyComponent2 = React6.lazy(() => Promise.resolve().then(() => (init_StickyComponent(), StickyComponent_exports)));
-    StickyNode = class _StickyNode extends DecoratorNode6 {
-      __x;
-      __y;
-      __color;
+    xOffsetState = createState12("xOffset", {
+      parse: (v2) => typeof v2 === "number" ? v2 : 0
+    });
+    yOffsetState = createState12("yOffset", {
+      parse: (v2) => typeof v2 === "number" ? v2 : 0
+    });
+    colorState = createState12("color", {
+      parse: (v2) => v2 === "pink" || v2 === "yellow" ? v2 : "yellow"
+    });
+    StickyNode = class extends DecoratorNode6 {
       __caption;
-      static getType() {
-        return "sticky";
+      $config() {
+        return this.config("sticky", {
+          extends: DecoratorNode6,
+          stateConfigs: [
+            { flat: true, stateConfig: xOffsetState },
+            { flat: true, stateConfig: yOffsetState },
+            { flat: true, stateConfig: colorState }
+          ]
+        });
       }
-      static clone(node) {
-        return new _StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
+      constructor(key2 = void 0) {
+        super(key2);
+        this.__caption = createEditor2();
       }
-      static importJSON(serializedNode) {
-        return new _StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color).updateFromJSON(
-          serializedNode
-        );
+      afterCloneFrom(prevNode) {
+        super.afterCloneFrom(prevNode);
+        this.__caption = prevNode.__caption;
       }
       updateFromJSON(serializedNode) {
         const stickyNode = super.updateFromJSON(serializedNode);
@@ -7963,20 +7993,13 @@ var init_StickyNode2 = __esm({
         }
         return stickyNode;
       }
-      constructor(x3, y4, color, caption, key2) {
-        super(key2);
-        this.__x = x3;
-        this.__y = y4;
-        this.__caption = caption || createEditor2();
-        this.__color = color;
-      }
       exportJSON() {
         return {
           ...super.exportJSON(),
           caption: this.__caption.toJSON(),
-          color: this.__color,
-          xOffset: this.__x,
-          yOffset: this.__y
+          color: this.getColor(),
+          xOffset: this.getXOffset(),
+          yOffset: this.getYOffset()
         };
       }
       createDOM(_config) {
@@ -7988,22 +8011,29 @@ var init_StickyNode2 = __esm({
         return false;
       }
       setPosition(x3, y4) {
-        const writable = this.getWritable();
-        writable.__x = x3;
-        writable.__y = y4;
+        $setState12(this, xOffsetState, x3);
+        $setState12(this, yOffsetState, y4);
         $setSelection8(null);
       }
       toggleColor() {
-        const writable = this.getWritable();
-        writable.__color = writable.__color === "pink" ? "yellow" : "pink";
+        $setState12(this, colorState, (prev) => prev === "pink" ? "yellow" : "pink");
+      }
+      getXOffset() {
+        return $getState12(this, xOffsetState);
+      }
+      getYOffset() {
+        return $getState12(this, yOffsetState);
+      }
+      getColor() {
+        return $getState12(this, colorState);
       }
       decorate(_editor, _config) {
         return /* @__PURE__ */ jsx57(
           StickyComponent2,
           {
-            color: this.__color,
-            x: this.__x,
-            y: this.__y,
+            color: this.getColor(),
+            x: this.getXOffset(),
+            y: this.getYOffset(),
             nodeKey: this.getKey(),
             caption: this.__caption
           }
@@ -8331,8 +8361,11 @@ import {
 import { useCallback as useCallback5, useEffect as useEffect4 } from "react";
 
 // src/nodes/AutocompleteNode.tsx
-import { TextNode } from "lexical";
-var AutocompleteNode = class _AutocompleteNode extends TextNode {
+import { $create, $getState, $setState, createState, TextNode } from "lexical";
+var uuidState = createState("uuid", {
+  parse: (v2) => typeof v2 === "string" ? v2 : ""
+});
+var AutocompleteNode = class extends TextNode {
   /**
    * A unique uuid is generated for each session and assigned to the instance.
    * This helps to:
@@ -8341,28 +8374,17 @@ var AutocompleteNode = class _AutocompleteNode extends TextNode {
    *   other sessions.
    * See https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/AutocompletePlugin/index.tsx
    */
-  __uuid;
-  static clone(node) {
-    return new _AutocompleteNode(node.__text, node.__uuid, node.__key);
-  }
-  static getType() {
-    return "autocomplete";
-  }
-  static importDOM() {
-    return null;
-  }
-  static importJSON(serializedNode) {
-    return $createAutocompleteNode(serializedNode.text, serializedNode.uuid).updateFromJSON(serializedNode);
+  $config() {
+    return this.config("autocomplete", {
+      extends: TextNode,
+      stateConfigs: [{ flat: true, stateConfig: uuidState }]
+    });
   }
   exportJSON() {
     return {
       ...super.exportJSON(),
-      uuid: this.__uuid
+      uuid: this.getUUID()
     };
-  }
-  constructor(text2, uuid2, key2) {
-    super(text2, key2);
-    this.__uuid = uuid2;
   }
   updateDOM(_prevNode, _dom, _config) {
     return false;
@@ -8376,14 +8398,20 @@ var AutocompleteNode = class _AutocompleteNode extends TextNode {
   createDOM(config) {
     const dom = super.createDOM(config);
     dom.classList.add(config.theme.autocomplete);
-    if (this.__uuid !== uuid) {
+    if (this.getUUID() !== uuid) {
       dom.style.display = "none";
     }
     return dom;
   }
+  getUUID() {
+    return $getState(this, uuidState);
+  }
+  setUUID(valueOrUpdater) {
+    return $setState(this, uuidState, valueOrUpdater);
+  }
 };
 function $createAutocompleteNode(text2, uuid2) {
-  return new AutocompleteNode(text2, uuid2).setMode("token");
+  return $setState($create(AutocompleteNode).setTextContent(text2).setMode("token"), uuidState, uuid2);
 }
 
 // src/utils/swipe.ts
@@ -8542,7 +8570,7 @@ function AutocompletePlugin() {
     }
     function $handleAutocompleteNodeTransform(node) {
       const key2 = node.getKey();
-      if (node.__uuid === uuid && key2 !== autocompleteNodeKey) {
+      if (node.getUUID() === uuid && key2 !== autocompleteNodeKey) {
         $clearSuggestion();
       }
     }
@@ -11076,6 +11104,7 @@ import { useEffect as useEffect6 } from "react";
 // src/nodes/FigmaNode.tsx
 import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode";
+import { $create as $create2, $getState as $getState2, $setState as $setState2, createState as createState2 } from "lexical";
 import { jsx as jsx13 } from "react/jsx-runtime";
 function FigmaComponent({ className, format, nodeKey, documentID }) {
   return /* @__PURE__ */ jsx13(BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ jsx13(
@@ -11089,35 +11118,24 @@ function FigmaComponent({ className, format, nodeKey, documentID }) {
     }
   ) });
 }
-var FigmaNode = class _FigmaNode extends DecoratorBlockNode {
-  __id;
-  static getType() {
-    return "figma";
-  }
-  static clone(node) {
-    return new _FigmaNode(node.__id, node.__format, node.__key);
-  }
-  static importJSON(serializedNode) {
-    return $createFigmaNode(serializedNode.documentID).updateFromJSON(serializedNode);
-  }
-  exportJSON() {
-    return {
-      ...super.exportJSON(),
-      documentID: this.__id
-    };
-  }
-  constructor(id, format, key2) {
-    super(format, key2);
-    this.__id = id;
+var documentIDState = createState2("documentID", {
+  parse: (v2) => typeof v2 === "string" ? v2 : ""
+});
+var FigmaNode = class extends DecoratorBlockNode {
+  $config() {
+    return this.config("figma", {
+      extends: DecoratorBlockNode,
+      stateConfigs: [{ flat: true, stateConfig: documentIDState }]
+    });
   }
   updateDOM() {
     return false;
   }
   getId() {
-    return this.__id;
+    return $getState2(this, documentIDState);
   }
   getTextContent(_includeInert, _includeDirectionless) {
-    return `https://www.figma.com/file/${this.__id}`;
+    return `https://www.figma.com/file/${this.getId()}`;
   }
   decorate(_editor, config) {
     const embedBlockTheme = config.theme.embedBlock || {};
@@ -11125,11 +11143,11 @@ var FigmaNode = class _FigmaNode extends DecoratorBlockNode {
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ jsx13(FigmaComponent, { className, format: this.__format, nodeKey: this.getKey(), documentID: this.__id });
+    return /* @__PURE__ */ jsx13(FigmaComponent, { className, format: this.__format, nodeKey: this.getKey(), documentID: this.getId() });
   }
 };
 function $createFigmaNode(documentID) {
-  return new FigmaNode(documentID);
+  return $setState2($create2(FigmaNode), documentIDState, documentID);
 }
 function $isFigmaNode(node) {
   return node instanceof FigmaNode;
@@ -11165,6 +11183,7 @@ import { useEffect as useEffect8 } from "react";
 // src/nodes/TweetNode.tsx
 import { BlockWithAlignableContents as BlockWithAlignableContents2 } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode as DecoratorBlockNode2 } from "@lexical/react/LexicalDecoratorBlockNode";
+import { $create as $create3, $getState as $getState3, $setState as $setState3, buildImportMap, createState as createState3 } from "lexical";
 import { useCallback as useCallback7, useEffect as useEffect7, useRef as useRef2, useState as useState6 } from "react";
 import { jsx as jsx14, jsxs as jsxs3 } from "react/jsx-runtime";
 var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
@@ -11228,52 +11247,39 @@ function TweetComponent({
     /* @__PURE__ */ jsx14("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
   ] });
 }
-var TweetNode = class _TweetNode extends DecoratorBlockNode2 {
-  __id;
-  static getType() {
-    return "tweet";
-  }
-  static clone(node) {
-    return new _TweetNode(node.__id, node.__format, node.__key);
-  }
-  static importJSON(serializedNode) {
-    return $createTweetNode(serializedNode.id).updateFromJSON(serializedNode);
-  }
-  exportJSON() {
-    return {
-      ...super.exportJSON(),
-      id: this.getId()
-    };
-  }
-  static importDOM() {
-    return {
-      div: (domNode) => {
-        if (!domNode.hasAttribute("data-lexical-tweet-id")) {
-          return null;
+var tweetIDState = createState3("id", {
+  parse: (v2) => typeof v2 === "string" ? v2 : ""
+});
+var TweetNode = class extends DecoratorBlockNode2 {
+  $config() {
+    return this.config("tweet", {
+      extends: DecoratorBlockNode2,
+      importDOM: buildImportMap({
+        div: (domNode) => {
+          if (!domNode.hasAttribute("data-lexical-tweet-id")) {
+            return null;
+          }
+          return {
+            conversion: $convertTweetElement,
+            priority: 2
+          };
         }
-        return {
-          conversion: $convertTweetElement,
-          priority: 2
-        };
-      }
-    };
+      }),
+      stateConfigs: [{ flat: true, stateConfig: tweetIDState }]
+    });
   }
   exportDOM() {
     const element2 = document.createElement("div");
-    element2.setAttribute("data-lexical-tweet-id", this.__id);
+    element2.setAttribute("data-lexical-tweet-id", this.getId());
     const text2 = document.createTextNode(this.getTextContent());
     element2.append(text2);
     return { element: element2 };
   }
-  constructor(id, format, key2) {
-    super(format, key2);
-    this.__id = id;
-  }
   getId() {
-    return this.__id;
+    return $getState3(this, tweetIDState);
   }
   getTextContent(_includeInert, _includeDirectionless) {
-    return `https://x.com/i/web/status/${this.__id}`;
+    return `https://x.com/i/web/status/${this.getId()}`;
   }
   decorate(_editor, config) {
     const embedBlockTheme = config.theme.embedBlock || {};
@@ -11288,13 +11294,13 @@ var TweetNode = class _TweetNode extends DecoratorBlockNode2 {
         format: this.__format,
         loadingComponent: "Loading...",
         nodeKey: this.getKey(),
-        tweetID: this.__id
+        tweetID: this.getId()
       }
     );
   }
 };
 function $createTweetNode(tweetID) {
-  return new TweetNode(tweetID);
+  return $setState3($create3(TweetNode), tweetIDState, tweetID);
 }
 function $isTweetNode(node) {
   return node instanceof TweetNode;
@@ -11330,6 +11336,7 @@ import { useEffect as useEffect9 } from "react";
 // src/nodes/YouTubeNode.tsx
 import { BlockWithAlignableContents as BlockWithAlignableContents3 } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode as DecoratorBlockNode3 } from "@lexical/react/LexicalDecoratorBlockNode";
+import { $create as $create4, $getState as $getState4, $setState as $setState4, buildImportMap as buildImportMap2, createState as createState4 } from "lexical";
 import { jsx as jsx15 } from "react/jsx-runtime";
 function YouTubeComponent({ className, format, nodeKey, videoID }) {
   return /* @__PURE__ */ jsx15(BlockWithAlignableContents3, { className, format, nodeKey, children: /* @__PURE__ */ jsx15(
@@ -11345,6 +11352,9 @@ function YouTubeComponent({ className, format, nodeKey, videoID }) {
     }
   ) });
 }
+var videoIDState = createState4("videoID", {
+  parse: (v2) => typeof v2 === "string" ? v2 : ""
+});
 function $convertYoutubeElement(domNode) {
   const videoID = domNode.getAttribute("data-lexical-youtube");
   if (videoID) {
@@ -11353,33 +11363,30 @@ function $convertYoutubeElement(domNode) {
   }
   return null;
 }
-var YouTubeNode = class _YouTubeNode extends DecoratorBlockNode3 {
-  __id;
-  static getType() {
-    return "youtube";
-  }
-  static clone(node) {
-    return new _YouTubeNode(node.__id, node.__format, node.__key);
-  }
-  static importJSON(serializedNode) {
-    return $createYouTubeNode(serializedNode.videoID).updateFromJSON(serializedNode);
-  }
-  exportJSON() {
-    return {
-      ...super.exportJSON(),
-      videoID: this.__id
-    };
-  }
-  constructor(id, format, key2) {
-    super(format, key2);
-    this.__id = id;
+var YouTubeNode = class extends DecoratorBlockNode3 {
+  $config() {
+    return this.config("youtube", {
+      extends: DecoratorBlockNode3,
+      importDOM: buildImportMap2({
+        iframe: (domNode) => {
+          if (!domNode.hasAttribute("data-lexical-youtube")) {
+            return null;
+          }
+          return {
+            conversion: $convertYoutubeElement,
+            priority: 1
+          };
+        }
+      }),
+      stateConfigs: [{ flat: true, stateConfig: videoIDState }]
+    });
   }
   exportDOM() {
     const element2 = document.createElement("iframe");
-    element2.setAttribute("data-lexical-youtube", this.__id);
+    element2.setAttribute("data-lexical-youtube", this.getId());
     element2.setAttribute("width", "560");
     element2.setAttribute("height", "315");
-    element2.setAttribute("src", `https://www.youtube-nocookie.com/embed/${this.__id}`);
+    element2.setAttribute("src", `https://www.youtube-nocookie.com/embed/${this.getId()}`);
     element2.setAttribute("frameborder", "0");
     element2.setAttribute(
       "allow",
@@ -11389,27 +11396,14 @@ var YouTubeNode = class _YouTubeNode extends DecoratorBlockNode3 {
     element2.setAttribute("title", "YouTube video");
     return { element: element2 };
   }
-  static importDOM() {
-    return {
-      iframe: (domNode) => {
-        if (!domNode.hasAttribute("data-lexical-youtube")) {
-          return null;
-        }
-        return {
-          conversion: $convertYoutubeElement,
-          priority: 1
-        };
-      }
-    };
-  }
   updateDOM() {
     return false;
   }
   getId() {
-    return this.__id;
+    return $getState4(this, videoIDState);
   }
   getTextContent(_includeInert, _includeDirectionless) {
-    return `https://www.youtube.com/watch?v=${this.__id}`;
+    return `https://www.youtube.com/watch?v=${this.getId()}`;
   }
   decorate(_editor, config) {
     const embedBlockTheme = config.theme.embedBlock || {};
@@ -11417,11 +11411,11 @@ var YouTubeNode = class _YouTubeNode extends DecoratorBlockNode3 {
       base: embedBlockTheme.base || "",
       focus: embedBlockTheme.focus || ""
     };
-    return /* @__PURE__ */ jsx15(YouTubeComponent, { className, format: this.__format, nodeKey: this.getKey(), videoID: this.__id });
+    return /* @__PURE__ */ jsx15(YouTubeComponent, { className, format: this.__format, nodeKey: this.getKey(), videoID: this.getId() });
   }
 };
 function $createYouTubeNode(videoID) {
-  return new YouTubeNode(videoID);
+  return $setState4($create4(YouTubeNode), videoIDState, videoID);
 }
 function $isYouTubeNode(node) {
   return node instanceof YouTubeNode;
@@ -11648,7 +11642,7 @@ function LexicalAutoLinkPlugin() {
 }
 
 // src/plugins/CodeActionMenuPlugin/index.tsx
-import { $isCodeNode as $isCodeNode3, CodeNode, getCodeLanguageOptions, normalizeCodeLang } from "@lexical/code";
+import { $isCodeNode as $isCodeNode3, CodeNode, getCodeLanguageOptions, normalizeCodeLanguage } from "@lexical/code";
 import { useLexicalComposerContext as useLexicalComposerContext6 } from "@lexical/react/LexicalComposerContext";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode3, isHTMLElement } from "lexical";
 import { useEffect as useEffect10, useRef as useRef3, useState as useState10 } from "react";
@@ -11921,7 +11915,7 @@ function CodeActionMenuContainer({
       { skipInitialization: false }
     );
   }, [editor]);
-  const normalizedLang = normalizeCodeLang(lang254);
+  const normalizedLang = normalizeCodeLanguage(lang254);
   const handleLanguageChange = (event) => {
     const newLang = event.target.value;
     const codeDOMNode = getCodeDOMNode();
@@ -24735,9 +24729,14 @@ import { useEffect as useEffect13 } from "react";
 // src/plugins/CollapsiblePlugin/CollapsibleContainerNode.ts
 import { IS_CHROME } from "@lexical/utils";
 import {
+  $create as $create5,
   $getSiblingCaret as $getSiblingCaret2,
+  $getState as $getState5,
   $isElementNode,
   $rewindSiblingCaret,
+  $setState as $setState5,
+  buildImportMap as buildImportMap3,
+  createState as createState5,
   ElementNode,
   isHTMLElement as isHTMLElement2
 } from "lexical";
@@ -24751,6 +24750,9 @@ function domOnBeforeMatch(dom, callback) {
 }
 
 // src/plugins/CollapsiblePlugin/CollapsibleContainerNode.ts
+var openState = createState5("open", {
+  parse: (v2) => typeof v2 === "boolean" ? v2 : true
+});
 function $convertDetailsElement(domNode) {
   const isOpen = domNode.open !== void 0 ? domNode.open : true;
   const node = $createCollapsibleContainerNode(isOpen);
@@ -24758,17 +24760,18 @@ function $convertDetailsElement(domNode) {
     node
   };
 }
-var CollapsibleContainerNode = class _CollapsibleContainerNode extends ElementNode {
-  __open;
-  constructor(open, key2) {
-    super(key2);
-    this.__open = open;
-  }
-  static getType() {
-    return "collapsible-container";
-  }
-  static clone(node) {
-    return new _CollapsibleContainerNode(node.__open, node.__key);
+var CollapsibleContainerNode = class extends ElementNode {
+  $config() {
+    return this.config("collapsible-container", {
+      extends: ElementNode,
+      importDOM: buildImportMap3({
+        details: () => ({
+          conversion: $convertDetailsElement,
+          priority: 1
+        })
+      }),
+      stateConfigs: [{ flat: true, stateConfig: openState }]
+    });
   }
   isShadowRoot() {
     return true;
@@ -24795,7 +24798,7 @@ var CollapsibleContainerNode = class _CollapsibleContainerNode extends ElementNo
       dom.setAttribute("open", "");
     } else {
       const detailsDom = document.createElement("details");
-      detailsDom.open = this.__open;
+      detailsDom.open = this.getOpen();
       detailsDom.addEventListener("toggle", () => {
         const open = editor.getEditorState().read(() => this.getOpen());
         if (open !== detailsDom.open) {
@@ -24808,8 +24811,8 @@ var CollapsibleContainerNode = class _CollapsibleContainerNode extends ElementNo
     return dom;
   }
   updateDOM(prevNode, dom) {
-    const currentOpen = this.__open;
-    if (prevNode.__open !== currentOpen) {
+    const currentOpen = this.getOpen();
+    if (prevNode.getOpen() !== currentOpen) {
       if (IS_CHROME) {
         const contentDom = dom.children[1];
         if (!isHTMLElement2(contentDom)) {
@@ -24823,49 +24826,29 @@ var CollapsibleContainerNode = class _CollapsibleContainerNode extends ElementNo
           setDomHiddenUntilFound(contentDom);
         }
       } else {
-        dom.open = this.__open;
+        dom.open = currentOpen;
       }
     }
     return false;
   }
-  static importDOM() {
-    return {
-      details: (_domNode) => {
-        return {
-          conversion: $convertDetailsElement,
-          priority: 1
-        };
-      }
-    };
-  }
-  static importJSON(serializedNode) {
-    return $createCollapsibleContainerNode(serializedNode.open).updateFromJSON(serializedNode);
-  }
   exportDOM() {
     const element2 = document.createElement("details");
     element2.classList.add("Collapsible__container");
-    element2.setAttribute("open", this.__open.toString());
+    element2.setAttribute("open", this.getOpen().toString());
     return { element: element2 };
   }
-  exportJSON() {
-    return {
-      ...super.exportJSON(),
-      open: this.__open
-    };
-  }
   setOpen(open) {
-    const writable = this.getWritable();
-    writable.__open = open;
+    $setState5(this, openState, open);
   }
   getOpen() {
-    return this.getLatest().__open;
+    return $getState5(this, openState);
   }
   toggleOpen() {
     this.setOpen(!this.getOpen());
   }
 };
 function $createCollapsibleContainerNode(isOpen) {
-  return new CollapsibleContainerNode(isOpen);
+  return $setState5($create5(CollapsibleContainerNode), openState, isOpen);
 }
 function $isCollapsibleContainerNode(node) {
   return node instanceof CollapsibleContainerNode;
@@ -24874,6 +24857,8 @@ function $isCollapsibleContainerNode(node) {
 // src/plugins/CollapsiblePlugin/CollapsibleContentNode.ts
 import { IS_CHROME as IS_CHROME2 } from "@lexical/utils";
 import {
+  $create as $create6,
+  buildImportMap as buildImportMap4,
   ElementNode as ElementNode2
 } from "lexical";
 function $convertCollapsibleContentElement(_domNode) {
@@ -24882,12 +24867,22 @@ function $convertCollapsibleContentElement(_domNode) {
     node
   };
 }
-var CollapsibleContentNode = class _CollapsibleContentNode extends ElementNode2 {
-  static getType() {
-    return "collapsible-content";
-  }
-  static clone(node) {
-    return new _CollapsibleContentNode(node.__key);
+var CollapsibleContentNode = class extends ElementNode2 {
+  $config() {
+    return this.config("collapsible-content", {
+      extends: ElementNode2,
+      importDOM: buildImportMap4({
+        div: (domNode) => {
+          if (!domNode.hasAttribute("data-lexical-collapsible-content")) {
+            return null;
+          }
+          return {
+            conversion: $convertCollapsibleContentElement,
+            priority: 2
+          };
+        }
+      })
+    });
   }
   createDOM(_config, editor) {
     const dom = document.createElement("div");
@@ -24898,7 +24893,7 @@ var CollapsibleContentNode = class _CollapsibleContentNode extends ElementNode2 
         if (!$isCollapsibleContainerNode(containerNode)) {
           throw new Error("Expected parent node to be a CollapsibleContainerNode");
         }
-        if (!containerNode.__open) {
+        if (!containerNode.getOpen()) {
           setDomHiddenUntilFound(dom);
         }
       });
@@ -24908,7 +24903,7 @@ var CollapsibleContentNode = class _CollapsibleContentNode extends ElementNode2 
           if (!$isCollapsibleContainerNode(containerNode)) {
             throw new Error("Expected parent node to be a CollapsibleContainerNode");
           }
-          if (!containerNode.__open) {
+          if (!containerNode.getOpen()) {
             containerNode.toggleOpen();
           }
         });
@@ -24919,34 +24914,18 @@ var CollapsibleContentNode = class _CollapsibleContentNode extends ElementNode2 
   updateDOM(_prevNode, _dom) {
     return false;
   }
-  static importDOM() {
-    return {
-      div: (domNode) => {
-        if (!domNode.hasAttribute("data-lexical-collapsible-content")) {
-          return null;
-        }
-        return {
-          conversion: $convertCollapsibleContentElement,
-          priority: 2
-        };
-      }
-    };
-  }
   exportDOM() {
     const element2 = document.createElement("div");
     element2.classList.add("Collapsible__content");
     element2.setAttribute("data-lexical-collapsible-content", "true");
     return { element: element2 };
   }
-  static importJSON(serializedNode) {
-    return $createCollapsibleContentNode().updateFromJSON(serializedNode);
-  }
   isShadowRoot() {
     return true;
   }
 };
 function $createCollapsibleContentNode() {
-  return new CollapsibleContentNode();
+  return $create6(CollapsibleContentNode);
 }
 function $isCollapsibleContentNode(node) {
   return node instanceof CollapsibleContentNode;
@@ -24955,9 +24934,10 @@ function $isCollapsibleContentNode(node) {
 // src/plugins/CollapsiblePlugin/CollapsibleTitleNode.ts
 import { IS_CHROME as IS_CHROME3 } from "@lexical/utils";
 import {
+  $create as $create7,
   $createParagraphNode,
   $isElementNode as $isElementNode2,
-  buildImportMap,
+  buildImportMap as buildImportMap5,
   ElementNode as ElementNode3
 } from "lexical";
 function $convertSummaryElement(_domNode) {
@@ -24976,7 +24956,7 @@ var CollapsibleTitleNode = class extends ElementNode3 {
         }
       },
       extends: ElementNode3,
-      importDOM: buildImportMap({
+      importDOM: buildImportMap5({
         summary: () => ({
           conversion: $convertSummaryElement,
           priority: 1
@@ -25029,7 +25009,7 @@ var CollapsibleTitleNode = class extends ElementNode3 {
   }
 };
 function $createCollapsibleTitleNode() {
-  return new CollapsibleTitleNode();
+  return $create7(CollapsibleTitleNode);
 }
 function $isCollapsibleTitleNode(node) {
   return node instanceof CollapsibleTitleNode;
@@ -25612,14 +25592,14 @@ function $onDragStart(event) {
     "application/x-lexical-drag",
     JSON.stringify({
       data: {
-        altText: node.__altText,
+        altText: node.getAltText(),
         caption: node.__caption,
-        height: node.__height,
+        height: node.getHeight(),
         key: node.getKey(),
-        maxWidth: node.__maxWidth,
-        showCaption: node.__showCaption,
-        src: node.__src,
-        width: node.__width
+        maxWidth: node.getMaxWidth(),
+        showCaption: node.getShowCaption(),
+        src: node.getSrc(),
+        width: node.getWidth()
       },
       type: "image"
     })
@@ -25942,7 +25922,10 @@ import { useEffect as useEffect23 } from "react";
 
 // src/nodes/LayoutContainerNode.ts
 import { addClassNamesToElement } from "@lexical/utils";
-import { ElementNode as ElementNode4 } from "lexical";
+import { $create as $create12, $getState as $getState10, $setState as $setState10, buildImportMap as buildImportMap9, createState as createState10, ElementNode as ElementNode4 } from "lexical";
+var templateColumnsState = createState10("templateColumns", {
+  parse: (v2) => typeof v2 === "string" ? v2 : ""
+});
 function $convertLayoutContainerElement(domNode) {
   const styleAttributes = window.getComputedStyle(domNode);
   const templateColumns = styleAttributes.getPropertyValue("grid-template-columns");
@@ -25952,21 +25935,27 @@ function $convertLayoutContainerElement(domNode) {
   }
   return null;
 }
-var LayoutContainerNode = class _LayoutContainerNode extends ElementNode4 {
-  __templateColumns;
-  constructor(templateColumns, key2) {
-    super(key2);
-    this.__templateColumns = templateColumns;
-  }
-  static getType() {
-    return "layout-container";
-  }
-  static clone(node) {
-    return new _LayoutContainerNode(node.__templateColumns, node.__key);
+var LayoutContainerNode = class extends ElementNode4 {
+  $config() {
+    return this.config("layout-container", {
+      extends: ElementNode4,
+      importDOM: buildImportMap9({
+        div: (domNode) => {
+          if (!domNode.hasAttribute("data-lexical-layout-container")) {
+            return null;
+          }
+          return {
+            conversion: $convertLayoutContainerElement,
+            priority: 2
+          };
+        }
+      }),
+      stateConfigs: [{ flat: true, stateConfig: templateColumnsState }]
+    });
   }
   createDOM(config) {
     const dom = document.createElement("div");
-    dom.style.gridTemplateColumns = this.__templateColumns;
+    dom.style.gridTemplateColumns = this.getTemplateColumns();
     if (typeof config.theme.layoutContainer === "string") {
       addClassNamesToElement(dom, config.theme.layoutContainer);
     }
@@ -25974,34 +25963,15 @@ var LayoutContainerNode = class _LayoutContainerNode extends ElementNode4 {
   }
   exportDOM() {
     const element2 = document.createElement("div");
-    element2.style.gridTemplateColumns = this.__templateColumns;
+    element2.style.gridTemplateColumns = this.getTemplateColumns();
     element2.setAttribute("data-lexical-layout-container", "true");
     return { element: element2 };
   }
   updateDOM(prevNode, dom) {
-    if (prevNode.__templateColumns !== this.__templateColumns) {
-      dom.style.gridTemplateColumns = this.__templateColumns;
+    if (prevNode.getTemplateColumns() !== this.getTemplateColumns()) {
+      dom.style.gridTemplateColumns = this.getTemplateColumns();
     }
     return false;
-  }
-  static importDOM() {
-    return {
-      div: (domNode) => {
-        if (!domNode.hasAttribute("data-lexical-layout-container")) {
-          return null;
-        }
-        return {
-          conversion: $convertLayoutContainerElement,
-          priority: 2
-        };
-      }
-    };
-  }
-  static importJSON(json) {
-    return $createLayoutContainerNode().updateFromJSON(json);
-  }
-  updateFromJSON(serializedNode) {
-    return super.updateFromJSON(serializedNode).setTemplateColumns(serializedNode.templateColumns);
   }
   isShadowRoot() {
     return true;
@@ -26009,23 +25979,15 @@ var LayoutContainerNode = class _LayoutContainerNode extends ElementNode4 {
   canBeEmpty() {
     return false;
   }
-  exportJSON() {
-    return {
-      ...super.exportJSON(),
-      templateColumns: this.__templateColumns
-    };
-  }
   getTemplateColumns() {
-    return this.getLatest().__templateColumns;
+    return $getState10(this, templateColumnsState);
   }
   setTemplateColumns(templateColumns) {
-    const self = this.getWritable();
-    self.__templateColumns = templateColumns;
-    return self;
+    return $setState10(this, templateColumnsState, templateColumns);
   }
 };
 function $createLayoutContainerNode(templateColumns = "") {
-  return new LayoutContainerNode(templateColumns);
+  return $setState10($create12(LayoutContainerNode), templateColumnsState, templateColumns);
 }
 function $isLayoutContainerNode(node) {
   return node instanceof LayoutContainerNode;
@@ -26033,7 +25995,7 @@ function $isLayoutContainerNode(node) {
 
 // src/nodes/LayoutItemNode.ts
 import { addClassNamesToElement as addClassNamesToElement2 } from "@lexical/utils";
-import { $isParagraphNode as $isParagraphNode2, ElementNode as ElementNode5 } from "lexical";
+import { $create as $create13, $isParagraphNode as $isParagraphNode2, buildImportMap as buildImportMap10, ElementNode as ElementNode5 } from "lexical";
 function $convertLayoutItemElement() {
   return { node: $createLayoutItemNode() };
 }
@@ -26044,12 +26006,22 @@ function $isEmptyLayoutItemNode(node) {
   const firstChild = node.getFirstChild();
   return $isParagraphNode2(firstChild) && firstChild.isEmpty();
 }
-var LayoutItemNode = class _LayoutItemNode extends ElementNode5 {
-  static getType() {
-    return "layout-item";
-  }
-  static clone(node) {
-    return new _LayoutItemNode(node.__key);
+var LayoutItemNode = class extends ElementNode5 {
+  $config() {
+    return this.config("layout-item", {
+      extends: ElementNode5,
+      importDOM: buildImportMap10({
+        div: (domNode) => {
+          if (!domNode.hasAttribute("data-lexical-layout-item")) {
+            return null;
+          }
+          return {
+            conversion: $convertLayoutItemElement,
+            priority: 2
+          };
+        }
+      })
+    });
   }
   createDOM(config) {
     const dom = document.createElement("div");
@@ -26070,28 +26042,12 @@ var LayoutItemNode = class _LayoutItemNode extends ElementNode5 {
     }
     return false;
   }
-  static importDOM() {
-    return {
-      div: (domNode) => {
-        if (!domNode.hasAttribute("data-lexical-layout-item")) {
-          return null;
-        }
-        return {
-          conversion: $convertLayoutItemElement,
-          priority: 2
-        };
-      }
-    };
-  }
-  static importJSON(serializedNode) {
-    return $createLayoutItemNode().updateFromJSON(serializedNode);
-  }
   isShadowRoot() {
     return true;
   }
 };
 function $createLayoutItemNode() {
-  return new LayoutItemNode();
+  return $create13(LayoutItemNode);
 }
 function $isLayoutItemNode(node) {
   return node instanceof LayoutItemNode;
@@ -26258,6 +26214,8 @@ import { useLexicalComposerContext as useLexicalComposerContext19 } from "@lexic
 import { useLexicalNodeSelection as useLexicalNodeSelection3 } from "@lexical/react/useLexicalNodeSelection";
 import { mergeRegister as mergeRegister9 } from "@lexical/utils";
 import {
+  $create as $create14,
+  buildImportMap as buildImportMap11,
   CLICK_COMMAND as CLICK_COMMAND2,
   COMMAND_PRIORITY_HIGH as COMMAND_PRIORITY_HIGH3,
   COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW7,
@@ -26295,34 +26253,28 @@ function PageBreakComponent({ nodeKey }) {
   }, [editor, isSelected, nodeKey]);
   return null;
 }
-var PageBreakNode = class _PageBreakNode extends DecoratorNode4 {
-  static getType() {
-    return "page-break";
-  }
-  static clone(node) {
-    return new _PageBreakNode(node.__key);
-  }
-  static importJSON(serializedNode) {
-    return $createPageBreakNode().updateFromJSON(serializedNode);
-  }
-  static importDOM() {
-    return {
-      figure: (domNode) => {
-        const tp = domNode.getAttribute("type");
-        if (tp !== _PageBreakNode.getType()) {
-          return null;
+var PageBreakNode = class extends DecoratorNode4 {
+  $config() {
+    return this.config("page-break", {
+      extends: DecoratorNode4,
+      importDOM: buildImportMap11({
+        figure: (domNode) => {
+          const tp = domNode.getAttribute("type");
+          if (tp !== "page-break") {
+            return null;
+          }
+          return {
+            conversion: $convertPageBreakElement,
+            priority: COMMAND_PRIORITY_HIGH3
+          };
         }
-        return {
-          conversion: $convertPageBreakElement,
-          priority: COMMAND_PRIORITY_HIGH3
-        };
-      }
-    };
+      })
+    });
   }
   createDOM() {
     const el = document.createElement("figure");
     el.style.pageBreakAfter = "always";
-    el.setAttribute("type", this.getType());
+    el.setAttribute("type", "page-break");
     return el;
   }
   getTextContent() {
@@ -26342,7 +26294,7 @@ function $convertPageBreakElement() {
   return { node: $createPageBreakNode() };
 }
 function $createPageBreakNode() {
-  return new PageBreakNode();
+  return $create14(PageBreakNode);
 }
 function $isPageBreakNode(node) {
   return node instanceof PageBreakNode;
@@ -46663,13 +46615,10 @@ import { useEffect as useEffect39 } from "react";
 
 // src/nodes/SpecialTextNode.tsx
 import { addClassNamesToElement as addClassNamesToElement3 } from "@lexical/utils";
-import { $applyNodeReplacement as $applyNodeReplacement6, TextNode as TextNode8 } from "lexical";
-var SpecialTextNode = class _SpecialTextNode extends TextNode8 {
-  static getType() {
-    return "specialText";
-  }
-  static clone(node) {
-    return new _SpecialTextNode(node.__text, node.__key);
+import { $create as $create16, TextNode as TextNode8 } from "lexical";
+var SpecialTextNode = class extends TextNode8 {
+  $config() {
+    return this.config("specialText", { extends: TextNode8 });
   }
   createDOM(config) {
     const dom = document.createElement("span");
@@ -46685,9 +46634,6 @@ var SpecialTextNode = class _SpecialTextNode extends TextNode8 {
     addClassNamesToElement3(dom, config.theme.specialText);
     return false;
   }
-  static importJSON(serializedNode) {
-    return $createSpecialTextNode().updateFromJSON(serializedNode);
-  }
   isTextEntity() {
     return true;
   }
@@ -46696,7 +46642,7 @@ var SpecialTextNode = class _SpecialTextNode extends TextNode8 {
   }
 };
 function $createSpecialTextNode(text2 = "") {
-  return $applyNodeReplacement6(new SpecialTextNode(text2));
+  return $create16(SpecialTextNode).setTextContent(text2);
 }
 function $isSpecialTextNode(node) {
   return node instanceof SpecialTextNode;
@@ -50154,6 +50100,7 @@ init_NotionLikeEditorTheme2();
 // src/core/buildHTMLConfig.tsx
 import {
   $isTextNode as $isTextNode8,
+  getStaticNodeConfig,
   isBlockDomNode,
   isHTMLElement as isHTMLElement8,
   ParagraphNode as ParagraphNode2,
@@ -50175,9 +50122,10 @@ function getExtraStyles(element2) {
   }
   return extraStyles;
 }
-function buildImportMap3() {
+function buildImportMap13() {
   const importMap = {};
-  for (const [tag, fn] of Object.entries(TextNode10.importDOM() || {})) {
+  const textNodeConfig = getStaticNodeConfig(TextNode10).ownNodeConfig;
+  for (const [tag, fn] of Object.entries(textNodeConfig?.importDOM ?? {})) {
     importMap[tag] = (importNode) => {
       const importer = fn(importNode);
       if (!importer) {
@@ -50249,7 +50197,7 @@ function buildExportMap() {
   ]);
 }
 function buildHTMLConfig() {
-  return { export: buildExportMap(), import: buildImportMap3() };
+  return { export: buildExportMap(), import: buildImportMap13() };
 }
 
 // src/core/NotionLikeEditor.tsx

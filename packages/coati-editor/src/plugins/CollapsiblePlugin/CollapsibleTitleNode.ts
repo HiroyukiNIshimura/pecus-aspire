@@ -8,6 +8,7 @@
 
 import { IS_CHROME } from '@lexical/utils';
 import {
+  $create,
   $createParagraphNode,
   $isElementNode,
   buildImportMap,
@@ -100,7 +101,7 @@ export class CollapsibleTitleNode extends ElementNode {
 }
 
 export function $createCollapsibleTitleNode(): CollapsibleTitleNode {
-  return new CollapsibleTitleNode();
+  return $create(CollapsibleTitleNode);
 }
 
 export function $isCollapsibleTitleNode(node: LexicalNode | null | undefined): node is CollapsibleTitleNode {

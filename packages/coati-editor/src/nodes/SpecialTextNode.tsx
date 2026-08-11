@@ -7,17 +7,13 @@
  */
 
 import { addClassNamesToElement } from '@lexical/utils';
-import type { EditorConfig, LexicalNode, SerializedTextNode } from 'lexical';
-import { $applyNodeReplacement, TextNode } from 'lexical';
+import type { EditorConfig, LexicalNode } from 'lexical';
+import { $create, TextNode } from 'lexical';
 
 /** @noInheritDoc */
 export class SpecialTextNode extends TextNode {
-  static getType(): string {
-    return 'specialText';
-  }
-
-  static clone(node: SpecialTextNode): SpecialTextNode {
-    return new SpecialTextNode(node.__text, node.__key);
+  $config() {
+    return this.config('specialText', { extends: TextNode });
   }
 
   createDOM(config: EditorConfig): HTMLElement {
@@ -38,10 +34,6 @@ export class SpecialTextNode extends TextNode {
     return false;
   }
 
-  static importJSON(serializedNode: SerializedTextNode): SpecialTextNode {
-    return $createSpecialTextNode().updateFromJSON(serializedNode);
-  }
-
   isTextEntity(): true {
     return true;
   }
@@ -56,7 +48,7 @@ export class SpecialTextNode extends TextNode {
  * @returns A new SpecialTextNode instance.
  */
 export function $createSpecialTextNode(text = ''): SpecialTextNode {
-  return $applyNodeReplacement(new SpecialTextNode(text));
+  return $create(SpecialTextNode).setTextContent(text);
 }
 
 /**

@@ -9,7 +9,6 @@
 import { BlockWithAlignableContents } from '@lexical/react/LexicalBlockWithAlignableContents';
 import { DecoratorBlockNode, type SerializedDecoratorBlockNode } from '@lexical/react/LexicalDecoratorBlockNode';
 import type {
-  DOMConversionMap,
   DOMConversionOutput,
   DOMExportOutput,
   EditorConfig,
@@ -18,7 +17,9 @@ import type {
   LexicalNode,
   NodeKey,
   Spread,
+  StateConfigValue,
 } from 'lexical';
+import { $create, $getState, $setState, buildImportMap, createState } from 'lexical';
 import type { JSX } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -118,61 +119,43 @@ export type SerializedTweetNode = Spread<
   SerializedDecoratorBlockNode
 >;
 
+const tweetIDState = createState('id', {
+  parse: (v) => (typeof v === 'string' ? v : ''),
+});
+
 export class TweetNode extends DecoratorBlockNode {
-  __id: string;
-
-  static getType(): string {
-    return 'tweet';
-  }
-
-  static clone(node: TweetNode): TweetNode {
-    return new TweetNode(node.__id, node.__format, node.__key);
-  }
-
-  static importJSON(serializedNode: SerializedTweetNode): TweetNode {
-    return $createTweetNode(serializedNode.id).updateFromJSON(serializedNode);
-  }
-
-  exportJSON(): SerializedTweetNode {
-    return {
-      ...super.exportJSON(),
-      id: this.getId(),
-    };
-  }
-
-  static importDOM(): DOMConversionMap<HTMLDivElement> | null {
-    return {
-      div: (domNode: HTMLDivElement) => {
-        if (!domNode.hasAttribute('data-lexical-tweet-id')) {
-          return null;
-        }
-        return {
-          conversion: $convertTweetElement,
-          priority: 2,
-        };
-      },
-    };
+  $config() {
+    return this.config('tweet', {
+      extends: DecoratorBlockNode,
+      importDOM: buildImportMap({
+        div: (domNode) => {
+          if (!domNode.hasAttribute('data-lexical-tweet-id')) {
+            return null;
+          }
+          return {
+            conversion: $convertTweetElement,
+            priority: 2,
+          };
+        },
+      }),
+      stateConfigs: [{ flat: true, stateConfig: tweetIDState }],
+    });
   }
 
   exportDOM(): DOMExportOutput {
     const element = document.createElement('div');
-    element.setAttribute('data-lexical-tweet-id', this.__id);
+    element.setAttribute('data-lexical-tweet-id', this.getId());
     const text = document.createTextNode(this.getTextContent());
     element.append(text);
     return { element };
   }
 
-  constructor(id: string, format?: ElementFormatType, key?: NodeKey) {
-    super(format, key);
-    this.__id = id;
-  }
-
-  getId(): string {
-    return this.__id;
+  getId(): StateConfigValue<typeof tweetIDState> {
+    return $getState(this, tweetIDState);
   }
 
   getTextContent(_includeInert?: boolean | undefined, _includeDirectionless?: false | undefined): string {
-    return `https://x.com/i/web/status/${this.__id}`;
+    return `https://x.com/i/web/status/${this.getId()}`;
   }
 
   decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element {
@@ -187,14 +170,14 @@ export class TweetNode extends DecoratorBlockNode {
         format={this.__format}
         loadingComponent="Loading..."
         nodeKey={this.getKey()}
-        tweetID={this.__id}
+        tweetID={this.getId()}
       />
     );
   }
 }
 
 export function $createTweetNode(tweetID: string): TweetNode {
-  return new TweetNode(tweetID);
+  return $setState($create(TweetNode), tweetIDState, tweetID);
 }
 
 export function $isTweetNode(node: TweetNode | LexicalNode | null | undefined): node is TweetNode {

@@ -8,10 +8,14 @@
 
 import { IS_CHROME } from '@lexical/utils';
 import {
+  $create,
   $getSiblingCaret,
+  $getState,
   $isElementNode,
   $rewindSiblingCaret,
-  type DOMConversionMap,
+  $setState,
+  buildImportMap,
+  createState,
   type DOMConversionOutput,
   type DOMExportOutput,
   type EditorConfig,
@@ -19,20 +23,14 @@ import {
   isHTMLElement,
   type LexicalEditor,
   type LexicalNode,
-  type NodeKey,
   type RangeSelection,
-  type SerializedElementNode,
-  type Spread,
 } from 'lexical';
 
 import { setDomHiddenUntilFound } from './CollapsibleUtils';
 
-type SerializedCollapsibleContainerNode = Spread<
-  {
-    open: boolean;
-  },
-  SerializedElementNode
->;
+const openState = createState('open', {
+  parse: (v) => (typeof v === 'boolean' ? v : true),
+});
 
 export function $convertDetailsElement(domNode: HTMLDetailsElement): DOMConversionOutput | null {
   const isOpen = domNode.open !== undefined ? domNode.open : true;
@@ -43,19 +41,17 @@ export function $convertDetailsElement(domNode: HTMLDetailsElement): DOMConversi
 }
 
 export class CollapsibleContainerNode extends ElementNode {
-  __open: boolean;
-
-  constructor(open: boolean, key?: NodeKey) {
-    super(key);
-    this.__open = open;
-  }
-
-  static getType(): string {
-    return 'collapsible-container';
-  }
-
-  static clone(node: CollapsibleContainerNode): CollapsibleContainerNode {
-    return new CollapsibleContainerNode(node.__open, node.__key);
+  $config() {
+    return this.config('collapsible-container', {
+      extends: ElementNode,
+      importDOM: buildImportMap({
+        details: () => ({
+          conversion: $convertDetailsElement,
+          priority: 1,
+        }),
+      }),
+      stateConfigs: [{ flat: true, stateConfig: openState }],
+    });
   }
 
   isShadowRoot(): boolean {
@@ -90,7 +86,7 @@ export class CollapsibleContainerNode extends ElementNode {
       dom.setAttribute('open', '');
     } else {
       const detailsDom = document.createElement('details');
-      detailsDom.open = this.__open;
+      detailsDom.open = this.getOpen();
       detailsDom.addEventListener('toggle', () => {
         const open = editor.getEditorState().read(() => this.getOpen());
         if (open !== detailsDom.open) {
@@ -105,8 +101,8 @@ export class CollapsibleContainerNode extends ElementNode {
   }
 
   updateDOM(prevNode: this, dom: HTMLDetailsElement): boolean {
-    const currentOpen = this.__open;
-    if (prevNode.__open !== currentOpen) {
+    const currentOpen = this.getOpen();
+    if (prevNode.getOpen() !== currentOpen) {
       // details is not well supported in Chrome #5582
       if (IS_CHROME) {
         const contentDom = dom.children[1];
@@ -121,49 +117,26 @@ export class CollapsibleContainerNode extends ElementNode {
           setDomHiddenUntilFound(contentDom);
         }
       } else {
-        dom.open = this.__open;
+        dom.open = currentOpen;
       }
     }
 
     return false;
   }
 
-  static importDOM(): DOMConversionMap<HTMLDetailsElement> | null {
-    return {
-      details: (_domNode: HTMLDetailsElement) => {
-        return {
-          conversion: $convertDetailsElement,
-          priority: 1,
-        };
-      },
-    };
-  }
-
-  static importJSON(serializedNode: SerializedCollapsibleContainerNode): CollapsibleContainerNode {
-    return $createCollapsibleContainerNode(serializedNode.open).updateFromJSON(serializedNode);
-  }
-
   exportDOM(): DOMExportOutput {
     const element = document.createElement('details');
     element.classList.add('Collapsible__container');
-    element.setAttribute('open', this.__open.toString());
+    element.setAttribute('open', this.getOpen().toString());
     return { element };
   }
 
-  exportJSON(): SerializedCollapsibleContainerNode {
-    return {
-      ...super.exportJSON(),
-      open: this.__open,
-    };
-  }
-
   setOpen(open: boolean): void {
-    const writable = this.getWritable();
-    writable.__open = open;
+    $setState(this, openState, open);
   }
 
   getOpen(): boolean {
-    return this.getLatest().__open;
+    return $getState(this, openState);
   }
 
   toggleOpen(): void {
@@ -172,7 +145,7 @@ export class CollapsibleContainerNode extends ElementNode {
 }
 
 export function $createCollapsibleContainerNode(isOpen: boolean): CollapsibleContainerNode {
-  return new CollapsibleContainerNode(isOpen);
+  return $setState($create(CollapsibleContainerNode), openState, isOpen);
 }
 
 export function $isCollapsibleContainerNode(node: LexicalNode | null | undefined): node is CollapsibleContainerNode {

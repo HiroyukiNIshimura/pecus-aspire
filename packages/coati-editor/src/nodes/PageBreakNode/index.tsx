@@ -14,11 +14,12 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { useLexicalNodeSelection } from '@lexical/react/useLexicalNodeSelection';
 import { mergeRegister } from '@lexical/utils';
 import {
+  $create,
+  buildImportMap,
   CLICK_COMMAND,
   COMMAND_PRIORITY_HIGH,
   COMMAND_PRIORITY_LOW,
   DecoratorNode,
-  type DOMConversionMap,
   type DOMConversionOutput,
   type LexicalNode,
   type NodeKey,
@@ -65,38 +66,29 @@ function PageBreakComponent({ nodeKey }: { nodeKey: NodeKey }) {
 }
 
 export class PageBreakNode extends DecoratorNode<JSX.Element> {
-  static getType(): string {
-    return 'page-break';
-  }
+  $config() {
+    return this.config('page-break', {
+      extends: DecoratorNode,
+      importDOM: buildImportMap({
+        figure: (domNode) => {
+          const tp = domNode.getAttribute('type');
+          if (tp !== 'page-break') {
+            return null;
+          }
 
-  static clone(node: PageBreakNode): PageBreakNode {
-    return new PageBreakNode(node.__key);
-  }
-
-  static importJSON(serializedNode: SerializedPageBreakNode): PageBreakNode {
-    return $createPageBreakNode().updateFromJSON(serializedNode);
-  }
-
-  static importDOM(): DOMConversionMap | null {
-    return {
-      figure: (domNode: HTMLElement) => {
-        const tp = domNode.getAttribute('type');
-        if (tp !== PageBreakNode.getType()) {
-          return null;
-        }
-
-        return {
-          conversion: $convertPageBreakElement,
-          priority: COMMAND_PRIORITY_HIGH,
-        };
-      },
-    };
+          return {
+            conversion: $convertPageBreakElement,
+            priority: COMMAND_PRIORITY_HIGH,
+          };
+        },
+      }),
+    });
   }
 
   createDOM(): HTMLElement {
     const el = document.createElement('figure');
     el.style.pageBreakAfter = 'always';
-    el.setAttribute('type', this.getType());
+    el.setAttribute('type', 'page-break');
     return el;
   }
 
@@ -122,7 +114,7 @@ function $convertPageBreakElement(): DOMConversionOutput {
 }
 
 export function $createPageBreakNode(): PageBreakNode {
-  return new PageBreakNode();
+  return $create(PageBreakNode);
 }
 
 export function $isPageBreakNode(node: LexicalNode | null | undefined): node is PageBreakNode {
