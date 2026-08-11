@@ -1,0 +1,3861 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// src/nodes/DateTimeNode/DateTimeNode.css
+var init_DateTimeNode = __esm({
+  "src/nodes/DateTimeNode/DateTimeNode.css"() {
+  }
+});
+
+// src/nodes/DateTimeNode/DateTimeComponent.tsx
+var DateTimeComponent_exports = {};
+__export(DateTimeComponent_exports, {
+  default: () => DateTimeComponent
+});
+import "react-day-picker/style.css";
+import {
+  autoUpdate,
+  FloatingFocusManager,
+  FloatingOverlay,
+  FloatingPortal,
+  flip,
+  offset,
+  shift,
+  useDismiss,
+  useFloating,
+  useInteractions,
+  useRole
+} from "@floating-ui/react";
+import { useLexicalComposerContext as useLexicalComposerContext2 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalNodeSelection } from "@lexical/react/useLexicalNodeSelection";
+import { setHours, setMinutes } from "date-fns";
+import { $getNodeByKey as $getNodeByKey2 } from "lexical";
+import { useEffect as useEffect3, useRef, useState as useState2 } from "react";
+import { DayPicker } from "react-day-picker";
+import { jsx as jsx2, jsxs } from "react/jsx-runtime";
+function DateTimeComponent({
+  dateTime,
+  nodeKey
+}) {
+  const [editor] = useLexicalComposerContext2();
+  const [isOpen, setIsOpen] = useState2(false);
+  const ref = useRef(null);
+  const [selected, setSelected] = useState2(dateTime);
+  const [includeTime, setIncludeTime] = useState2(() => {
+    if (dateTime === void 0) {
+      return false;
+    }
+    const hours = dateTime?.getHours();
+    const minutes = dateTime?.getMinutes();
+    return hours !== 0 || minutes !== 0;
+  });
+  const [timeValue, setTimeValue] = useState2(() => {
+    if (dateTime === void 0) {
+      return "00:00";
+    }
+    const hours = dateTime?.getHours();
+    const minutes = dateTime?.getMinutes();
+    if (hours !== 0 || minutes !== 0) {
+      return `${hours?.toString().padStart(2, "0")}:${minutes?.toString().padStart(2, "0")}`;
+    }
+    return "00:00";
+  });
+  const [isNodeSelected, _setNodeSelected, _clearNodeSelection] = useLexicalNodeSelection(nodeKey);
+  const { refs, floatingStyles, context } = useFloating({
+    elements: {
+      reference: ref.current
+    },
+    middleware: [
+      offset(5),
+      flip({
+        fallbackPlacements: ["top-start"]
+      }),
+      shift({ padding: 10 })
+    ],
+    onOpenChange: setIsOpen,
+    open: isOpen,
+    placement: "bottom-start",
+    strategy: "fixed",
+    whileElementsMounted: autoUpdate
+  });
+  const role = useRole(context, { role: "dialog" });
+  const dismiss = useDismiss(context);
+  const { getFloatingProps } = useInteractions([role, dismiss]);
+  useEffect3(() => {
+    const dateTimePillRef = ref.current;
+    function onClick(e) {
+      e.preventDefault();
+      setIsOpen(true);
+    }
+    if (dateTimePillRef) {
+      dateTimePillRef.addEventListener("click", onClick);
+    }
+    return () => {
+      if (dateTimePillRef) {
+        dateTimePillRef.removeEventListener("click", onClick);
+      }
+    };
+  }, []);
+  const withDateTimeNode = (cb, onUpdate) => {
+    editor.update(
+      () => {
+        const node = $getNodeByKey2(nodeKey);
+        if ($isDateTimeNode(node)) {
+          cb(node);
+        }
+      },
+      { onUpdate }
+    );
+  };
+  const handleCheckboxChange = (e) => {
+    withDateTimeNode((node) => {
+      if (e.target.checked) {
+        setIncludeTime(true);
+      } else {
+        if (selected) {
+          const newSelectedDate = setHours(setMinutes(selected, 0), 0);
+          node.setDateTime(newSelectedDate);
+        }
+        setIncludeTime(false);
+        setTimeValue("00:00");
+      }
+    });
+  };
+  const handleTimeChange = (e) => {
+    withDateTimeNode((node) => {
+      const time = e.target.value;
+      if (!selected) {
+        setTimeValue(time);
+        return;
+      }
+      const [hours, minutes] = time.split(":").map((str) => parseInt(str, 10));
+      const newSelectedDate = setHours(setMinutes(selected, minutes), hours);
+      setSelected(newSelectedDate);
+      node.setDateTime(newSelectedDate);
+      setTimeValue(time);
+    });
+  };
+  const handleDaySelect = (date) => {
+    withDateTimeNode((node) => {
+      if (!timeValue || !date) {
+        setSelected(date);
+        return;
+      }
+      const [hours, minutes] = timeValue.split(":").map((str) => parseInt(str, 10));
+      const newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes);
+      node.setDateTime(newDate);
+      setSelected(newDate);
+    });
+  };
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  };
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: `dateTimePill ${isNodeSelected ? "selected" : ""}`,
+      ref,
+      style: { cursor: "pointer", width: "fit-content" },
+      children: [
+        dateTime?.toLocaleDateString(void 0, options) + (includeTime ? ` ${timeValue}` : "") || "Invalid Date",
+        isOpen && /* @__PURE__ */ jsx2(FloatingPortal, { children: /* @__PURE__ */ jsx2(
+          FloatingOverlay,
+          {
+            lockScroll: true,
+            style: {
+              zIndex: 2e3
+            },
+            children: /* @__PURE__ */ jsx2(FloatingFocusManager, { context, initialFocus: -1, children: /* @__PURE__ */ jsxs(
+              "div",
+              {
+                className: "notion-like-editor dateTimePicker",
+                ref: refs.setFloating,
+                style: {
+                  ...floatingStyles,
+                  zIndex: 2e3
+                },
+                ...getFloatingProps(),
+                children: [
+                  /* @__PURE__ */ jsx2(DayPicker, { mode: "single", selected, onSelect: handleDaySelect }),
+                  /* @__PURE__ */ jsx2("div", { className: "includeTime", children: /* @__PURE__ */ jsxs("label", { htmlFor: "includeTime", style: { display: "inline-flex", alignItems: "center", gap: "6px" }, children: [
+                    /* @__PURE__ */ jsx2("input", { id: "includeTime", type: "checkbox", checked: includeTime, onChange: handleCheckboxChange }),
+                    /* @__PURE__ */ jsx2("span", { children: "Include time" })
+                  ] }) }),
+                  includeTime && /* @__PURE__ */ jsx2(
+                    "input",
+                    {
+                      id: "time",
+                      type: "time",
+                      value: timeValue,
+                      onChange: handleTimeChange,
+                      style: {
+                        marginTop: "8px",
+                        padding: "4px",
+                        border: "1px solid #ccc",
+                        borderRadius: "4px"
+                      }
+                    }
+                  ),
+                  /* @__PURE__ */ jsx2("p", { style: { fontSize: "12px", color: "#666", marginTop: "8px" }, children: userTimeZone })
+                ]
+              }
+            ) })
+          }
+        ) })
+      ]
+    }
+  );
+}
+var userTimeZone;
+var init_DateTimeComponent = __esm({
+  "src/nodes/DateTimeNode/DateTimeComponent.tsx"() {
+    "use strict";
+    init_DateTimeNode();
+    init_DateTimeNode2();
+    userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+});
+
+// src/nodes/DateTimeNode/DateTimeNode.tsx
+import {
+  $getState,
+  $setState,
+  buildImportMap as buildImportMap2,
+  createState,
+  DecoratorNode
+} from "lexical";
+import * as React from "react";
+import { jsx as jsx3 } from "react/jsx-runtime";
+function $convertDateTimeElement(domNode) {
+  const dateTimeValue = domNode.getAttribute("data-lexical-datetime");
+  if (dateTimeValue) {
+    const node2 = $createDateTimeNode(new Date(Date.parse(dateTimeValue)));
+    return { node: node2 };
+  }
+  const gDocsDateTimePayload = domNode.getAttribute("data-rich-links");
+  if (!gDocsDateTimePayload) {
+    return null;
+  }
+  const parsed = JSON.parse(gDocsDateTimePayload);
+  const parsedDate = Date.parse(parsed?.dat_df?.dfie_dt || "");
+  if (Number.isNaN(parsedDate)) {
+    return null;
+  }
+  const node = $createDateTimeNode(new Date(parsedDate));
+  return { node };
+}
+function $createDateTimeNode(dateTime) {
+  return new DateTimeNode().setDateTime(dateTime);
+}
+function $isDateTimeNode(node) {
+  return node instanceof DateTimeNode;
+}
+var DateTimeComponent2, getDateTimeText, dateTimeState, DateTimeNode;
+var init_DateTimeNode2 = __esm({
+  "src/nodes/DateTimeNode/DateTimeNode.tsx"() {
+    "use strict";
+    DateTimeComponent2 = React.lazy(() => Promise.resolve().then(() => (init_DateTimeComponent(), DateTimeComponent_exports)));
+    getDateTimeText = (dateTime) => {
+      if (dateTime === void 0) {
+        return "";
+      }
+      const hours = dateTime?.getHours();
+      const minutes = dateTime?.getMinutes();
+      return dateTime.toDateString() + (hours === 0 && minutes === 0 ? "" : ` ${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
+    };
+    dateTimeState = createState("dateTime", {
+      parse: (v) => new Date(v),
+      unparse: (v) => v.toISOString()
+    });
+    DateTimeNode = class extends DecoratorNode {
+      $config() {
+        return this.config("datetime", {
+          extends: DecoratorNode,
+          importDOM: buildImportMap2({
+            span: (domNode) => domNode.getAttribute("data-lexical-datetime") !== null || // GDocs Support
+            domNode.getAttribute("data-rich-links") !== null && JSON.parse(domNode.getAttribute("data-rich-links") || "{}").type === "date" ? {
+              conversion: $convertDateTimeElement,
+              priority: 2
+            } : null
+          }),
+          stateConfigs: [{ flat: true, stateConfig: dateTimeState }]
+        });
+      }
+      getDateTime() {
+        return $getState(this, dateTimeState);
+      }
+      setDateTime(valueOrUpdater) {
+        return $setState(this, dateTimeState, valueOrUpdater);
+      }
+      getTextContent() {
+        const dateTime = this.getDateTime();
+        return getDateTimeText(dateTime);
+      }
+      exportDOM() {
+        const element = document.createElement("span");
+        element.textContent = getDateTimeText(this.getDateTime());
+        element.setAttribute("data-lexical-datetime", this.getDateTime()?.toString() || "");
+        return { element };
+      }
+      createDOM() {
+        const element = document.createElement("span");
+        element.setAttribute("data-lexical-datetime", this.getDateTime()?.toString() || "");
+        element.style.display = "inline-block";
+        return element;
+      }
+      updateDOM() {
+        return false;
+      }
+      isInline() {
+        return true;
+      }
+      decorate() {
+        return /* @__PURE__ */ jsx3(DateTimeComponent2, { dateTime: this.getDateTime(), nodeKey: this.__key });
+      }
+    };
+  }
+});
+
+// src/nodes/EmojiNode.tsx
+import { $applyNodeReplacement, TextNode as TextNode2 } from "lexical";
+function $isEmojiNode(node) {
+  return node instanceof EmojiNode;
+}
+function $createEmojiNode(className, emojiText) {
+  const node = new EmojiNode(className, emojiText).setMode("token");
+  return $applyNodeReplacement(node);
+}
+var EmojiNode;
+var init_EmojiNode = __esm({
+  "src/nodes/EmojiNode.tsx"() {
+    "use strict";
+    EmojiNode = class _EmojiNode extends TextNode2 {
+      __className;
+      static getType() {
+        return "emoji";
+      }
+      static clone(node) {
+        return new _EmojiNode(node.__className, node.__text, node.__key);
+      }
+      constructor(className, text, key) {
+        super(text, key);
+        this.__className = className;
+      }
+      createDOM(config) {
+        const dom = document.createElement("span");
+        const inner = super.createDOM(config);
+        dom.className = this.__className;
+        inner.className = "emoji-inner";
+        dom.appendChild(inner);
+        return dom;
+      }
+      updateDOM(prevNode, dom, config) {
+        const inner = dom.firstChild;
+        if (inner === null) {
+          return true;
+        }
+        super.updateDOM(prevNode, inner, config);
+        return false;
+      }
+      static importJSON(serializedNode) {
+        return $createEmojiNode(serializedNode.className, serializedNode.text).updateFromJSON(serializedNode);
+      }
+      exportJSON() {
+        return {
+          ...super.exportJSON(),
+          className: this.getClassName()
+        };
+      }
+      getClassName() {
+        const self = this.getLatest();
+        return self.__className;
+      }
+    };
+  }
+});
+
+// ../../node_modules/react-error-boundary/dist/react-error-boundary.js
+import { createContext as l, Component as y, createElement as d, useContext as f, useState as p, useMemo as E, forwardRef as B } from "react";
+function C(r = [], e = []) {
+  return r.length !== e.length || r.some((t, o) => !Object.is(t, e[o]));
+}
+var h, c, m;
+var init_react_error_boundary = __esm({
+  "../../node_modules/react-error-boundary/dist/react-error-boundary.js"() {
+    "use strict";
+    "use client";
+    h = l(null);
+    c = {
+      didCatch: false,
+      error: null
+    };
+    m = class extends y {
+      constructor(e) {
+        super(e), this.resetErrorBoundary = this.resetErrorBoundary.bind(this), this.state = c;
+      }
+      static getDerivedStateFromError(e) {
+        return { didCatch: true, error: e };
+      }
+      resetErrorBoundary(...e) {
+        const { error: t } = this.state;
+        t !== null && (this.props.onReset?.({
+          args: e,
+          reason: "imperative-api"
+        }), this.setState(c));
+      }
+      componentDidCatch(e, t) {
+        this.props.onError?.(e, t);
+      }
+      componentDidUpdate(e, t) {
+        const { didCatch: o } = this.state, { resetKeys: s } = this.props;
+        o && t.error !== null && C(e.resetKeys, s) && (this.props.onReset?.({
+          next: s,
+          prev: e.resetKeys,
+          reason: "keys"
+        }), this.setState(c));
+      }
+      render() {
+        const { children: e, fallbackRender: t, FallbackComponent: o, fallback: s } = this.props, { didCatch: n, error: a } = this.state;
+        let i = e;
+        if (n) {
+          const u = {
+            error: a,
+            resetErrorBoundary: this.resetErrorBoundary
+          };
+          if (typeof t == "function")
+            i = t(u);
+          else if (o)
+            i = d(o, u);
+          else if (s !== void 0)
+            i = s;
+          else
+            throw a;
+        }
+        return d(
+          h.Provider,
+          {
+            value: {
+              didCatch: n,
+              error: a,
+              resetErrorBoundary: this.resetErrorBoundary
+            }
+          },
+          i
+        );
+      }
+    };
+  }
+});
+
+// src/ui/EquationEditor.css
+var init_EquationEditor = __esm({
+  "src/ui/EquationEditor.css"() {
+  }
+});
+
+// src/ui/EquationEditor.tsx
+import { isHTMLElement as isHTMLElement2 } from "lexical";
+import { forwardRef } from "react";
+import { jsx as jsx4, jsxs as jsxs2 } from "react/jsx-runtime";
+function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
+  const onChange = (event) => {
+    setEquation(event.target.value);
+  };
+  return inline && isHTMLElement2(forwardedRef) ? /* @__PURE__ */ jsxs2("span", { className: "EquationEditor_inputBackground", children: [
+    /* @__PURE__ */ jsx4("span", { className: "EquationEditor_dollarSign", children: "$" }),
+    /* @__PURE__ */ jsx4(
+      "input",
+      {
+        className: "EquationEditor_inlineEditor",
+        value: equation,
+        onChange,
+        ref: forwardedRef
+      }
+    ),
+    /* @__PURE__ */ jsx4("span", { className: "EquationEditor_dollarSign", children: "$" })
+  ] }) : /* @__PURE__ */ jsxs2("div", { className: "EquationEditor_inputBackground", children: [
+    /* @__PURE__ */ jsx4("span", { className: "EquationEditor_dollarSign", children: "$$\n" }),
+    /* @__PURE__ */ jsx4(
+      "textarea",
+      {
+        className: "EquationEditor_blockEditor",
+        value: equation,
+        onChange,
+        ref: forwardedRef
+      }
+    ),
+    /* @__PURE__ */ jsx4("span", { className: "EquationEditor_dollarSign", children: "\n$$" })
+  ] });
+}
+var EquationEditor_default;
+var init_EquationEditor2 = __esm({
+  "src/ui/EquationEditor.tsx"() {
+    "use strict";
+    init_EquationEditor();
+    EquationEditor_default = forwardRef(EquationEditor);
+  }
+});
+
+// src/ui/KatexRenderer.tsx
+import katex from "katex";
+import { useEffect as useEffect4, useRef as useRef2 } from "react";
+import { Fragment, jsx as jsx5, jsxs as jsxs3 } from "react/jsx-runtime";
+function KatexRenderer({
+  equation,
+  inline,
+  onDoubleClick
+}) {
+  const katexElementRef = useRef2(null);
+  useEffect4(() => {
+    const katexElement = katexElementRef.current;
+    if (katexElement !== null) {
+      katex.render(equation, katexElement, {
+        displayMode: !inline,
+        // true === block display //
+        errorColor: "#cc0000",
+        output: "html",
+        strict: "warn",
+        throwOnError: false,
+        trust: false
+      });
+    }
+  }, [equation, inline]);
+  return (
+    // We use an empty image tag either side to ensure Android doesn't try and compose from the
+    // inner text from Katex. There didn't seem to be any other way of making this work,
+    // without having a physical space.
+    /* @__PURE__ */ jsxs3(Fragment, { children: [
+      /* @__PURE__ */ jsx5(
+        "img",
+        {
+          src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          width: "0",
+          height: "0",
+          alt: ""
+        }
+      ),
+      /* @__PURE__ */ jsx5("span", { role: "button", tabIndex: -1, onDoubleClick, ref: katexElementRef }),
+      /* @__PURE__ */ jsx5(
+        "img",
+        {
+          src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          width: "0",
+          height: "0",
+          alt: ""
+        }
+      )
+    ] })
+  );
+}
+var init_KatexRenderer = __esm({
+  "src/ui/KatexRenderer.tsx"() {
+    "use strict";
+  }
+});
+
+// src/nodes/EquationNode.tsx
+import katex2 from "katex";
+import { $applyNodeReplacement as $applyNodeReplacement2, DecoratorNode as DecoratorNode2 } from "lexical";
+import * as React2 from "react";
+import { jsx as jsx6 } from "react/jsx-runtime";
+function $convertEquationElement(domNode) {
+  let equation = domNode.getAttribute("data-lexical-equation");
+  const inline = domNode.getAttribute("data-lexical-inline") === "true";
+  equation = atob(equation || "");
+  if (equation) {
+    const node = $createEquationNode(equation, inline);
+    return { node };
+  }
+  return null;
+}
+function $createEquationNode(equation = "", inline = false) {
+  const equationNode = new EquationNode(equation, inline);
+  return $applyNodeReplacement2(equationNode);
+}
+function $isEquationNode(node) {
+  return node instanceof EquationNode;
+}
+var EquationComponent, EquationNode;
+var init_EquationNode = __esm({
+  "src/nodes/EquationNode.tsx"() {
+    "use strict";
+    EquationComponent = React2.lazy(() => Promise.resolve().then(() => (init_EquationComponent(), EquationComponent_exports)));
+    EquationNode = class _EquationNode extends DecoratorNode2 {
+      __equation;
+      __inline;
+      static getType() {
+        return "equation";
+      }
+      static clone(node) {
+        return new _EquationNode(node.__equation, node.__inline, node.__key);
+      }
+      constructor(equation, inline, key) {
+        super(key);
+        this.__equation = equation;
+        this.__inline = inline ?? false;
+      }
+      static importJSON(serializedNode) {
+        return $createEquationNode(serializedNode.equation, serializedNode.inline).updateFromJSON(serializedNode);
+      }
+      exportJSON() {
+        return {
+          ...super.exportJSON(),
+          equation: this.getEquation(),
+          inline: this.__inline
+        };
+      }
+      createDOM(_config) {
+        const element = document.createElement(this.__inline ? "span" : "div");
+        element.className = "editor-equation";
+        return element;
+      }
+      exportDOM() {
+        const element = document.createElement(this.__inline ? "span" : "div");
+        const equation = btoa(this.__equation);
+        element.setAttribute("data-lexical-equation", equation);
+        element.setAttribute("data-lexical-inline", `${this.__inline}`);
+        katex2.render(this.__equation, element, {
+          displayMode: !this.__inline,
+          // true === block display //
+          errorColor: "#cc0000",
+          output: "html",
+          strict: "warn",
+          throwOnError: false,
+          trust: false
+        });
+        return { element };
+      }
+      static importDOM() {
+        return {
+          div: (domNode) => {
+            if (!domNode.hasAttribute("data-lexical-equation")) {
+              return null;
+            }
+            return {
+              conversion: $convertEquationElement,
+              priority: 2
+            };
+          },
+          span: (domNode) => {
+            if (!domNode.hasAttribute("data-lexical-equation")) {
+              return null;
+            }
+            return {
+              conversion: $convertEquationElement,
+              priority: 1
+            };
+          }
+        };
+      }
+      updateDOM(prevNode) {
+        return this.__inline !== prevNode.__inline;
+      }
+      getTextContent() {
+        return this.__equation;
+      }
+      getEquation() {
+        return this.__equation;
+      }
+      setEquation(equation) {
+        const writable = this.getWritable();
+        writable.__equation = equation;
+      }
+      decorate() {
+        return /* @__PURE__ */ jsx6(EquationComponent, { equation: this.__equation, inline: this.__inline, nodeKey: this.__key });
+      }
+    };
+  }
+});
+
+// src/nodes/EquationComponent.tsx
+var EquationComponent_exports = {};
+__export(EquationComponent_exports, {
+  default: () => EquationComponent2
+});
+import { useLexicalComposerContext as useLexicalComposerContext3 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalEditable } from "@lexical/react/useLexicalEditable";
+import { mergeRegister as mergeRegister2 } from "@lexical/utils";
+import {
+  $getNodeByKey as $getNodeByKey3,
+  $getSelection as $getSelection2,
+  $isNodeSelection,
+  COMMAND_PRIORITY_HIGH,
+  KEY_ESCAPE_COMMAND,
+  SELECTION_CHANGE_COMMAND
+} from "lexical";
+import { useCallback as useCallback3, useEffect as useEffect5, useRef as useRef3, useState as useState3 } from "react";
+import { Fragment as Fragment2, jsx as jsx7 } from "react/jsx-runtime";
+function EquationComponent2({ equation, inline, nodeKey }) {
+  const [editor] = useLexicalComposerContext3();
+  const isEditable = useLexicalEditable();
+  const [equationValue, setEquationValue] = useState3(equation);
+  const [showEquationEditor, setShowEquationEditor] = useState3(false);
+  const inputRef = useRef3(null);
+  const onHide = useCallback3(
+    (restoreSelection) => {
+      setShowEquationEditor(false);
+      editor.update(() => {
+        const node = $getNodeByKey3(nodeKey);
+        if ($isEquationNode(node)) {
+          node.setEquation(equationValue);
+          if (restoreSelection) {
+            node.selectNext(0, 0);
+          }
+        }
+      });
+    },
+    [editor, equationValue, nodeKey]
+  );
+  useEffect5(() => {
+    if (!showEquationEditor && equationValue !== equation) {
+      setEquationValue(equation);
+    }
+  }, [showEquationEditor, equation, equationValue]);
+  useEffect5(() => {
+    if (!isEditable) {
+      return;
+    }
+    if (showEquationEditor) {
+      return mergeRegister2(
+        editor.registerCommand(
+          SELECTION_CHANGE_COMMAND,
+          (_payload) => {
+            const activeElement = document.activeElement;
+            const inputElem = inputRef.current;
+            if (inputElem !== activeElement) {
+              onHide();
+            }
+            return false;
+          },
+          COMMAND_PRIORITY_HIGH
+        ),
+        editor.registerCommand(
+          KEY_ESCAPE_COMMAND,
+          (_payload) => {
+            const activeElement = document.activeElement;
+            const inputElem = inputRef.current;
+            if (inputElem === activeElement) {
+              onHide(true);
+              return true;
+            }
+            return false;
+          },
+          COMMAND_PRIORITY_HIGH
+        )
+      );
+    } else {
+      return editor.registerUpdateListener(({ editorState }) => {
+        const isSelected = editorState.read(() => {
+          const selection = $getSelection2();
+          return $isNodeSelection(selection) && selection.has(nodeKey) && selection.getNodes().length === 1;
+        });
+        if (isSelected) {
+          setShowEquationEditor(true);
+        }
+      });
+    }
+  }, [editor, nodeKey, onHide, showEquationEditor, isEditable]);
+  return /* @__PURE__ */ jsx7(Fragment2, { children: showEquationEditor && isEditable ? /* @__PURE__ */ jsx7(EquationEditor_default, { equation: equationValue, setEquation: setEquationValue, inline, ref: inputRef }) : /* @__PURE__ */ jsx7(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ jsx7(
+    KatexRenderer,
+    {
+      equation: equationValue,
+      inline,
+      onDoubleClick: () => {
+        if (isEditable) {
+          setShowEquationEditor(true);
+        }
+      }
+    }
+  ) }) });
+}
+var init_EquationComponent = __esm({
+  "src/nodes/EquationComponent.tsx"() {
+    "use strict";
+    init_react_error_boundary();
+    init_EquationEditor2();
+    init_KatexRenderer();
+    init_EquationNode();
+  }
+});
+
+// src/nodes/ImageNode.css
+var init_ImageNode = __esm({
+  "src/nodes/ImageNode.css"() {
+  }
+});
+
+// src/context/SharedHistoryContext.tsx
+import { createEmptyHistoryState } from "@lexical/react/LexicalHistoryPlugin";
+import { createContext as createContext2, useContext as useContext2, useMemo as useMemo2 } from "react";
+import { jsx as jsx9 } from "react/jsx-runtime";
+var Context2, useSharedHistoryContext;
+var init_SharedHistoryContext = __esm({
+  "src/context/SharedHistoryContext.tsx"() {
+    "use strict";
+    Context2 = createContext2({});
+    useSharedHistoryContext = () => {
+      return useContext2(Context2);
+    };
+  }
+});
+
+// src/images/image-broken.svg
+var image_broken_default;
+var init_image_broken = __esm({
+  "src/images/image-broken.svg"() {
+    image_broken_default = 'data:image/svg+xml,<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->%0A<svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">%0A    <path d="M22 3H2v18h20v-2h-2v-2h2v-2h-2v-2h2v-2h-2V9h2V7h-2V5h2V3zm-2 4v2h-2v2h2v2h-2v2h2v2h-2v2H4V5h14v2h2zm-6 2h-2v2h-2v2H8v2H6v2h2v-2h2v-2h2v-2h2v2h2v-2h-2V9zM6 7h2v2H6V7z" fill="%23000000"/>%0A</svg>';
+  }
+});
+
+// src/plugins/EmojisPlugin/index.ts
+import { useLexicalComposerContext as useLexicalComposerContext4 } from "@lexical/react/LexicalComposerContext";
+import { TextNode as TextNode3 } from "lexical";
+import { useEffect as useEffect6 } from "react";
+function $findAndTransformEmoji(node) {
+  const text = node.getTextContent();
+  for (let i = 0; i < text.length; i++) {
+    const emojiData = emojis.get(text[i]) || emojis.get(text.slice(i, i + 2));
+    if (emojiData !== void 0) {
+      const [emojiStyle, emojiText] = emojiData;
+      let targetNode;
+      if (i === 0) {
+        [targetNode] = node.splitText(i + 2);
+      } else {
+        [, targetNode] = node.splitText(i, i + 2);
+      }
+      const emojiNode = $createEmojiNode(emojiStyle, emojiText);
+      targetNode.replace(emojiNode);
+      return emojiNode;
+    }
+  }
+  return null;
+}
+function $textNodeTransform(node) {
+  let targetNode = node;
+  while (targetNode !== null) {
+    if (!targetNode.isSimpleText()) {
+      return;
+    }
+    targetNode = $findAndTransformEmoji(targetNode);
+  }
+}
+function useEmojis(editor) {
+  useEffect6(() => {
+    if (!editor.hasNodes([EmojiNode])) {
+      throw new Error("EmojisPlugin: EmojiNode not registered on editor");
+    }
+    return editor.registerNodeTransform(TextNode3, $textNodeTransform);
+  }, [editor]);
+}
+function EmojisPlugin() {
+  const [editor] = useLexicalComposerContext4();
+  useEmojis(editor);
+  return null;
+}
+var emojis;
+var init_EmojisPlugin = __esm({
+  "src/plugins/EmojisPlugin/index.ts"() {
+    "use strict";
+    init_EmojiNode();
+    emojis = /* @__PURE__ */ new Map([
+      [":)", ["emoji happysmile", "\u{1F642}"]],
+      [":D", ["emoji veryhappysmile", "\u{1F600}"]],
+      [":(", ["emoji unhappysmile", "\u{1F641}"]],
+      ["<3", ["emoji heart", "\u2764"]]
+    ]);
+  }
+});
+
+// src/utils/url.ts
+function validateUrl(url) {
+  return url === "https://" || urlRegExp.test(url);
+}
+var urlRegExp;
+var init_url = __esm({
+  "src/utils/url.ts"() {
+    "use strict";
+    urlRegExp = new RegExp(
+      /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[\w]*))?)/
+    );
+  }
+});
+
+// src/plugins/LinkPlugin/index.tsx
+import { LinkPlugin as LexicalLinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { jsx as jsx10 } from "react/jsx-runtime";
+function LinkPlugin({ hasLinkAttributes = false }) {
+  return /* @__PURE__ */ jsx10(
+    LexicalLinkPlugin,
+    {
+      validateUrl,
+      attributes: hasLinkAttributes ? {
+        rel: "noopener noreferrer",
+        target: "_blank"
+      } : void 0
+    }
+  );
+}
+var init_LinkPlugin = __esm({
+  "src/plugins/LinkPlugin/index.tsx"() {
+    "use strict";
+    init_url();
+  }
+});
+
+// src/ui/ContentEditable.css
+var init_ContentEditable = __esm({
+  "src/ui/ContentEditable.css"() {
+  }
+});
+
+// src/ui/ContentEditable.tsx
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { jsx as jsx11 } from "react/jsx-runtime";
+function LexicalContentEditable({ className, placeholder, placeholderClassName }) {
+  return /* @__PURE__ */ jsx11(
+    ContentEditable,
+    {
+      className: className ?? "ContentEditable__root",
+      "aria-placeholder": placeholder,
+      placeholder: /* @__PURE__ */ jsx11("div", { className: placeholderClassName ?? "ContentEditable__placeholder", children: placeholder })
+    }
+  );
+}
+var init_ContentEditable2 = __esm({
+  "src/ui/ContentEditable.tsx"() {
+    "use strict";
+    init_ContentEditable();
+  }
+});
+
+// src/ui/ImageResizer.tsx
+import { calculateZoomLevel } from "@lexical/utils";
+import { useRef as useRef4 } from "react";
+import { jsx as jsx12, jsxs as jsxs4 } from "react/jsx-runtime";
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+function ImageResizer({
+  onResizeStart,
+  onResizeEnd,
+  buttonRef,
+  imageRef,
+  maxWidth,
+  editor,
+  showCaption,
+  setShowCaption,
+  captionsEnabled
+}) {
+  const controlWrapperRef = useRef4(null);
+  const userSelect = useRef4({
+    priority: "",
+    value: "default"
+  });
+  const positioningRef = useRef4({
+    currentHeight: 0,
+    currentWidth: 0,
+    direction: 0,
+    isResizing: false,
+    ratio: 0,
+    startHeight: 0,
+    startWidth: 0,
+    startX: 0,
+    startY: 0
+  });
+  const editorRootElement = editor.getRootElement();
+  const maxWidthContainer = maxWidth ? maxWidth : editorRootElement !== null ? editorRootElement.getBoundingClientRect().width - 20 : 100;
+  const maxHeightContainer = editorRootElement !== null ? editorRootElement.getBoundingClientRect().height - 20 : 100;
+  const minWidth = 100;
+  const minHeight = 100;
+  const setStartCursor = (direction) => {
+    const ew = direction === Direction.east || direction === Direction.west;
+    const ns = direction === Direction.north || direction === Direction.south;
+    const nwse = direction & Direction.north && direction & Direction.west || direction & Direction.south && direction & Direction.east;
+    const cursorDir = ew ? "ew" : ns ? "ns" : nwse ? "nwse" : "nesw";
+    if (editorRootElement !== null) {
+      editorRootElement.style.setProperty("cursor", `${cursorDir}-resize`, "important");
+    }
+    if (document.body !== null) {
+      document.body.style.setProperty("cursor", `${cursorDir}-resize`, "important");
+      userSelect.current.value = document.body.style.getPropertyValue("-webkit-user-select");
+      userSelect.current.priority = document.body.style.getPropertyPriority("-webkit-user-select");
+      document.body.style.setProperty("-webkit-user-select", `none`, "important");
+    }
+  };
+  const setEndCursor = () => {
+    if (editorRootElement !== null) {
+      editorRootElement.style.setProperty("cursor", "text");
+    }
+    if (document.body !== null) {
+      document.body.style.setProperty("cursor", "default");
+      document.body.style.setProperty("-webkit-user-select", userSelect.current.value, userSelect.current.priority);
+    }
+  };
+  const handlePointerDown = (event, direction) => {
+    if (!editor.isEditable()) {
+      return;
+    }
+    const image = imageRef.current;
+    const controlWrapper = controlWrapperRef.current;
+    if (image !== null && controlWrapper !== null) {
+      event.preventDefault();
+      const { width, height } = image.getBoundingClientRect();
+      const zoom = calculateZoomLevel(image);
+      const positioning = positioningRef.current;
+      positioning.startWidth = width;
+      positioning.startHeight = height;
+      positioning.ratio = width / height;
+      positioning.currentWidth = width;
+      positioning.currentHeight = height;
+      positioning.startX = event.clientX / zoom;
+      positioning.startY = event.clientY / zoom;
+      positioning.isResizing = true;
+      positioning.direction = direction;
+      setStartCursor(direction);
+      onResizeStart();
+      controlWrapper.classList.add("image-control-wrapper--resizing");
+      image.style.height = `${height}px`;
+      image.style.width = `${width}px`;
+      document.addEventListener("pointermove", handlePointerMove);
+      document.addEventListener("pointerup", handlePointerUp);
+    }
+  };
+  const handlePointerMove = (event) => {
+    const image = imageRef.current;
+    const positioning = positioningRef.current;
+    const isHorizontal = positioning.direction & (Direction.east | Direction.west);
+    const isVertical = positioning.direction & (Direction.south | Direction.north);
+    if (image !== null && positioning.isResizing) {
+      const zoom = calculateZoomLevel(image);
+      if (isHorizontal && isVertical) {
+        let diff = Math.floor(positioning.startX - event.clientX / zoom);
+        diff = positioning.direction & Direction.east ? -diff : diff;
+        const width = clamp(positioning.startWidth + diff, minWidth, maxWidthContainer);
+        const height = width / positioning.ratio;
+        image.style.width = `${width}px`;
+        image.style.height = `${height}px`;
+        positioning.currentHeight = height;
+        positioning.currentWidth = width;
+      } else if (isVertical) {
+        let diff = Math.floor(positioning.startY - event.clientY / zoom);
+        diff = positioning.direction & Direction.south ? -diff : diff;
+        const height = clamp(positioning.startHeight + diff, minHeight, maxHeightContainer);
+        image.style.height = `${height}px`;
+        positioning.currentHeight = height;
+      } else {
+        let diff = Math.floor(positioning.startX - event.clientX / zoom);
+        diff = positioning.direction & Direction.east ? -diff : diff;
+        const width = clamp(positioning.startWidth + diff, minWidth, maxWidthContainer);
+        image.style.width = `${width}px`;
+        positioning.currentWidth = width;
+      }
+    }
+  };
+  const handlePointerUp = () => {
+    const image = imageRef.current;
+    const positioning = positioningRef.current;
+    const controlWrapper = controlWrapperRef.current;
+    if (image !== null && controlWrapper !== null && positioning.isResizing) {
+      const width = positioning.currentWidth;
+      const height = positioning.currentHeight;
+      positioning.startWidth = 0;
+      positioning.startHeight = 0;
+      positioning.ratio = 0;
+      positioning.startX = 0;
+      positioning.startY = 0;
+      positioning.currentWidth = 0;
+      positioning.currentHeight = 0;
+      positioning.isResizing = false;
+      controlWrapper.classList.remove("image-control-wrapper--resizing");
+      setEndCursor();
+      onResizeEnd(width, height);
+      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerup", handlePointerUp);
+    }
+  };
+  return /* @__PURE__ */ jsxs4("div", { ref: controlWrapperRef, children: [
+    !showCaption && captionsEnabled && /* @__PURE__ */ jsx12(
+      "button",
+      {
+        type: "button",
+        className: "image-caption-button",
+        ref: buttonRef,
+        onClick: () => {
+          setShowCaption(!showCaption);
+        },
+        children: "Add Caption"
+      }
+    ),
+    /* @__PURE__ */ jsx12(
+      "div",
+      {
+        className: "image-resizer image-resizer-n",
+        onPointerDown: (event) => {
+          handlePointerDown(event, Direction.north);
+        }
+      }
+    ),
+    /* @__PURE__ */ jsx12(
+      "div",
+      {
+        className: "image-resizer image-resizer-ne",
+        onPointerDown: (event) => {
+          handlePointerDown(event, Direction.north | Direction.east);
+        }
+      }
+    ),
+    /* @__PURE__ */ jsx12(
+      "div",
+      {
+        className: "image-resizer image-resizer-e",
+        onPointerDown: (event) => {
+          handlePointerDown(event, Direction.east);
+        }
+      }
+    ),
+    /* @__PURE__ */ jsx12(
+      "div",
+      {
+        className: "image-resizer image-resizer-se",
+        onPointerDown: (event) => {
+          handlePointerDown(event, Direction.south | Direction.east);
+        }
+      }
+    ),
+    /* @__PURE__ */ jsx12(
+      "div",
+      {
+        className: "image-resizer image-resizer-s",
+        onPointerDown: (event) => {
+          handlePointerDown(event, Direction.south);
+        }
+      }
+    ),
+    /* @__PURE__ */ jsx12(
+      "div",
+      {
+        className: "image-resizer image-resizer-sw",
+        onPointerDown: (event) => {
+          handlePointerDown(event, Direction.south | Direction.west);
+        }
+      }
+    ),
+    /* @__PURE__ */ jsx12(
+      "div",
+      {
+        className: "image-resizer image-resizer-w",
+        onPointerDown: (event) => {
+          handlePointerDown(event, Direction.west);
+        }
+      }
+    ),
+    /* @__PURE__ */ jsx12(
+      "div",
+      {
+        className: "image-resizer image-resizer-nw",
+        onPointerDown: (event) => {
+          handlePointerDown(event, Direction.north | Direction.west);
+        }
+      }
+    )
+  ] });
+}
+var Direction;
+var init_ImageResizer = __esm({
+  "src/ui/ImageResizer.tsx"() {
+    "use strict";
+    Direction = {
+      east: 1 << 0,
+      north: 1 << 3,
+      south: 1 << 1,
+      west: 1 << 2
+    };
+  }
+});
+
+// src/nodes/KeywordNode.ts
+import { $applyNodeReplacement as $applyNodeReplacement3, TextNode as TextNode4 } from "lexical";
+function $createKeywordNode(keyword = "") {
+  return $applyNodeReplacement3(new KeywordNode(keyword));
+}
+function $isKeywordNode(node) {
+  return node instanceof KeywordNode;
+}
+var KeywordNode;
+var init_KeywordNode = __esm({
+  "src/nodes/KeywordNode.ts"() {
+    "use strict";
+    KeywordNode = class _KeywordNode extends TextNode4 {
+      static getType() {
+        return "keyword";
+      }
+      static clone(node) {
+        return new _KeywordNode(node.__text, node.__key);
+      }
+      static importJSON(serializedNode) {
+        return $createKeywordNode().updateFromJSON(serializedNode);
+      }
+      createDOM(config) {
+        const dom = super.createDOM(config);
+        dom.style.cursor = "default";
+        dom.className = "keyword";
+        return dom;
+      }
+      canInsertTextBefore() {
+        return false;
+      }
+      canInsertTextAfter() {
+        return false;
+      }
+      isTextEntity() {
+        return true;
+      }
+    };
+  }
+});
+
+// src/nodes/ImageNode.tsx
+import { $insertGeneratedNodes } from "@lexical/clipboard";
+import { HashtagNode } from "@lexical/hashtag";
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
+import { LinkNode } from "@lexical/link";
+import {
+  $applyNodeReplacement as $applyNodeReplacement4,
+  $createRangeSelection,
+  $extendCaretToRange,
+  $getChildCaret,
+  $getEditor,
+  $getRoot,
+  $isElementNode as $isElementNode3,
+  $isParagraphNode,
+  $selectAll,
+  $setSelection as $setSelection2,
+  createEditor,
+  DecoratorNode as DecoratorNode3,
+  LineBreakNode,
+  ParagraphNode,
+  RootNode,
+  SKIP_DOM_SELECTION_TAG,
+  TextNode as TextNode5
+} from "lexical";
+import * as React3 from "react";
+import { jsx as jsx13 } from "react/jsx-runtime";
+function isGoogleDocCheckboxImg(img) {
+  return img.parentElement != null && img.parentElement.tagName === "LI" && img.previousSibling === null && img.getAttribute("aria-roledescription") === "checkbox";
+}
+function $convertImageElement(domNode) {
+  const img = domNode;
+  const src = img.getAttribute("src");
+  if (!src || src.startsWith("file:///") || isGoogleDocCheckboxImg(img)) {
+    return null;
+  }
+  const { alt: altText, width, height } = img;
+  const node = $createImageNode({ altText, height, src, width });
+  return { node };
+}
+function $isCaptionEditorEmpty() {
+  for (const { origin } of $extendCaretToRange($getChildCaret($getRoot(), "next"))) {
+    if (!$isElementNode3(origin)) {
+      return false;
+    }
+  }
+  return true;
+}
+function $createImageNode({
+  altText,
+  height,
+  maxWidth = 500,
+  captionsEnabled,
+  src,
+  width,
+  showCaption,
+  caption,
+  key
+}) {
+  return $applyNodeReplacement4(
+    new ImageNode(src, altText, maxWidth, width, height, showCaption, caption, captionsEnabled, key)
+  );
+}
+function $isImageNode(node) {
+  return node instanceof ImageNode;
+}
+var ImageComponent, ImageNode;
+var init_ImageNode2 = __esm({
+  "src/nodes/ImageNode.tsx"() {
+    "use strict";
+    init_EmojiNode();
+    init_KeywordNode();
+    ImageComponent = React3.lazy(() => Promise.resolve().then(() => (init_ImageComponent(), ImageComponent_exports)));
+    ImageNode = class _ImageNode extends DecoratorNode3 {
+      __src;
+      __altText;
+      __width;
+      __height;
+      __maxWidth;
+      __showCaption;
+      __caption;
+      // Captions cannot yet be used within editor cells
+      __captionsEnabled;
+      static getType() {
+        return "image";
+      }
+      static clone(node) {
+        return new _ImageNode(
+          node.__src,
+          node.__altText,
+          node.__maxWidth,
+          node.__width,
+          node.__height,
+          node.__showCaption,
+          node.__caption,
+          node.__captionsEnabled,
+          node.__key
+        );
+      }
+      static importJSON(serializedNode) {
+        const { altText, height, width, maxWidth, src, showCaption } = serializedNode;
+        return $createImageNode({
+          altText,
+          height,
+          maxWidth,
+          showCaption,
+          src,
+          width
+        }).updateFromJSON(serializedNode);
+      }
+      updateFromJSON(serializedNode) {
+        const node = super.updateFromJSON(serializedNode);
+        const { caption } = serializedNode;
+        const nestedEditor = node.__caption;
+        const editorState = nestedEditor.parseEditorState(caption.editorState);
+        if (!editorState.isEmpty()) {
+          nestedEditor.setEditorState(editorState);
+        }
+        return node;
+      }
+      exportDOM() {
+        const imgElement = document.createElement("img");
+        imgElement.setAttribute("src", this.__src);
+        imgElement.setAttribute("alt", this.__altText);
+        imgElement.setAttribute("width", this.__width.toString());
+        imgElement.setAttribute("height", this.__height.toString());
+        if (this.__showCaption && this.__caption) {
+          const captionEditor = this.__caption;
+          const captionHtml = captionEditor.read(() => {
+            if ($isCaptionEditorEmpty()) {
+              return null;
+            }
+            let selection = null;
+            const firstChild = $getRoot().getFirstChild();
+            if ($isParagraphNode(firstChild) && firstChild.getNextSibling() === null) {
+              selection = $createRangeSelection();
+              selection.anchor.set(firstChild.getKey(), 0, "element");
+              selection.focus.set(firstChild.getKey(), firstChild.getChildrenSize(), "element");
+            }
+            return $generateHtmlFromNodes(captionEditor, selection);
+          });
+          if (captionHtml) {
+            const figureElement = document.createElement("figure");
+            const figcaptionElement = document.createElement("figcaption");
+            figcaptionElement.innerHTML = captionHtml;
+            figureElement.appendChild(imgElement);
+            figureElement.appendChild(figcaptionElement);
+            return { element: figureElement };
+          }
+        }
+        return { element: imgElement };
+      }
+      static importDOM() {
+        return {
+          figcaption: () => ({
+            conversion: () => ({ node: null }),
+            priority: 0
+          }),
+          figure: () => ({
+            conversion: (node) => {
+              return {
+                after: (childNodes) => {
+                  const imageNodes = childNodes.filter($isImageNode);
+                  const figcaption = node.querySelector("figcaption");
+                  if (figcaption) {
+                    for (const imgNode of imageNodes) {
+                      imgNode.setShowCaption(true);
+                      imgNode.__caption.update(
+                        () => {
+                          const editor = $getEditor();
+                          $insertGeneratedNodes(editor, $generateNodesFromDOM(editor, figcaption), $selectAll());
+                          $setSelection2(null);
+                        },
+                        { tag: SKIP_DOM_SELECTION_TAG }
+                      );
+                    }
+                  }
+                  return imageNodes;
+                },
+                node: null
+              };
+            },
+            priority: 0
+          }),
+          img: () => ({
+            conversion: $convertImageElement,
+            priority: 0
+          })
+        };
+      }
+      constructor(src, altText, maxWidth, width, height, showCaption, caption, captionsEnabled, key) {
+        super(key);
+        this.__src = src;
+        this.__altText = altText;
+        this.__maxWidth = maxWidth;
+        this.__width = width || "inherit";
+        this.__height = height || "inherit";
+        this.__showCaption = showCaption || false;
+        this.__caption = caption || createEditor({
+          namespace: "Playground/ImageNodeCaption",
+          nodes: [RootNode, TextNode5, LineBreakNode, ParagraphNode, LinkNode, EmojiNode, HashtagNode, KeywordNode]
+        });
+        this.__captionsEnabled = captionsEnabled || captionsEnabled === void 0;
+      }
+      exportJSON() {
+        return {
+          ...super.exportJSON(),
+          altText: this.getAltText(),
+          caption: this.__caption.toJSON(),
+          height: this.__height === "inherit" ? 0 : this.__height,
+          maxWidth: this.__maxWidth,
+          showCaption: this.__showCaption,
+          src: this.getSrc(),
+          width: this.__width === "inherit" ? 0 : this.__width
+        };
+      }
+      setWidthAndHeight(width, height) {
+        const writable = this.getWritable();
+        writable.__width = width;
+        writable.__height = height;
+      }
+      setShowCaption(showCaption) {
+        const writable = this.getWritable();
+        writable.__showCaption = showCaption;
+      }
+      // View
+      createDOM(config) {
+        const span = document.createElement("span");
+        const theme3 = config.theme;
+        const className = theme3.image;
+        if (className !== void 0) {
+          span.className = className;
+        }
+        return span;
+      }
+      updateDOM() {
+        return false;
+      }
+      getSrc() {
+        return this.__src;
+      }
+      getAltText() {
+        return this.__altText;
+      }
+      decorate() {
+        return /* @__PURE__ */ jsx13(
+          ImageComponent,
+          {
+            src: this.__src,
+            altText: this.__altText,
+            width: this.__width,
+            height: this.__height,
+            maxWidth: this.__maxWidth,
+            nodeKey: this.getKey(),
+            showCaption: this.__showCaption,
+            caption: this.__caption,
+            captionsEnabled: this.__captionsEnabled,
+            resizable: true
+          }
+        );
+      }
+    };
+  }
+});
+
+// src/nodes/ImageComponent.tsx
+var ImageComponent_exports = {};
+__export(ImageComponent_exports, {
+  RIGHT_CLICK_IMAGE_COMMAND: () => RIGHT_CLICK_IMAGE_COMMAND,
+  default: () => ImageComponent2
+});
+import { useLexicalComposerContext as useLexicalComposerContext5 } from "@lexical/react/LexicalComposerContext";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { HashtagPlugin } from "@lexical/react/LexicalHashtagPlugin";
+import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { useLexicalEditable as useLexicalEditable2 } from "@lexical/react/useLexicalEditable";
+import { useLexicalNodeSelection as useLexicalNodeSelection2 } from "@lexical/react/useLexicalNodeSelection";
+import { mergeRegister as mergeRegister3 } from "@lexical/utils";
+import {
+  $getNodeByKey as $getNodeByKey4,
+  $getRoot as $getRoot2,
+  $getSelection as $getSelection3,
+  $isNodeSelection as $isNodeSelection2,
+  $isRangeSelection as $isRangeSelection2,
+  $setSelection as $setSelection3,
+  BLUR_COMMAND,
+  CLICK_COMMAND,
+  COMMAND_PRIORITY_EDITOR,
+  COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW2,
+  createCommand,
+  DRAGSTART_COMMAND,
+  KEY_ENTER_COMMAND,
+  KEY_ESCAPE_COMMAND as KEY_ESCAPE_COMMAND2,
+  SELECTION_CHANGE_COMMAND as SELECTION_CHANGE_COMMAND2
+} from "lexical";
+import { Suspense, useCallback as useCallback4, useEffect as useEffect7, useMemo as useMemo3, useRef as useRef5, useState as useState4 } from "react";
+import { createPortal } from "react-dom";
+import { jsx as jsx14, jsxs as jsxs5 } from "react/jsx-runtime";
+function DisableCaptionOnBlur({ setShowCaption }) {
+  const [editor] = useLexicalComposerContext5();
+  useEffect7(
+    () => editor.registerCommand(
+      BLUR_COMMAND,
+      () => {
+        if ($isCaptionEditorEmpty()) {
+          setShowCaption(false);
+        }
+        return false;
+      },
+      COMMAND_PRIORITY_EDITOR
+    )
+  );
+  return null;
+}
+function CaptionOnChangePlugin({ parentEditor, nodeKey }) {
+  const [captionEditor] = useLexicalComposerContext5();
+  useEffect7(() => {
+    return captionEditor.registerUpdateListener(({ dirtyElements, dirtyLeaves, tags }) => {
+      if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
+        return;
+      }
+      if (tags.has("history-merge")) {
+        return;
+      }
+      parentEditor.update(
+        () => {
+          const node = $getNodeByKey4(nodeKey);
+          if ($isImageNode(node)) {
+            node.getWritable();
+          }
+        },
+        { discrete: true }
+      );
+    });
+  }, [captionEditor, parentEditor, nodeKey]);
+  return null;
+}
+function useSuspenseImage(src) {
+  let cached = imageCache.get(src);
+  if (cached && "error" in cached && typeof cached.error === "boolean") {
+    return cached;
+  } else if (!cached) {
+    cached = new Promise((resolve) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => resolve({
+        error: false,
+        height: img.naturalHeight,
+        width: img.naturalWidth
+      });
+      img.onerror = () => resolve({ error: true });
+    }).then((rval) => {
+      imageCache.set(src, rval);
+      return rval;
+    });
+    imageCache.set(src, cached);
+    throw cached;
+  }
+  throw cached;
+}
+function isSVG(src) {
+  return src.toLowerCase().endsWith(".svg");
+}
+function LazyImage({
+  altText,
+  className,
+  imageRef,
+  src,
+  width,
+  height,
+  maxWidth,
+  onError,
+  isViewerZoomable,
+  onOpenPreview
+}) {
+  const isSVGImage = isSVG(src);
+  const status = useSuspenseImage(src);
+  useEffect7(() => {
+    if (status.error) {
+      onError();
+    }
+  }, [status.error, onError]);
+  if (status.error) {
+    return /* @__PURE__ */ jsx14(BrokenImage, {});
+  }
+  const calculateDimensions = () => {
+    if (!isSVGImage) {
+      return {
+        height,
+        maxWidth,
+        width
+      };
+    }
+    const naturalWidth = status.width;
+    const naturalHeight = status.height;
+    let finalWidth = naturalWidth;
+    let finalHeight = naturalHeight;
+    if (finalWidth > maxWidth) {
+      const scale = maxWidth / finalWidth;
+      finalWidth = maxWidth;
+      finalHeight = Math.round(finalHeight * scale);
+    }
+    const maxHeight = 500;
+    if (finalHeight > maxHeight) {
+      const scale = maxHeight / finalHeight;
+      finalHeight = maxHeight;
+      finalWidth = Math.round(finalWidth * scale);
+    }
+    return {
+      height: finalHeight,
+      maxWidth,
+      width: finalWidth
+    };
+  };
+  const imageStyle = calculateDimensions();
+  return /* @__PURE__ */ jsx14(
+    "img",
+    {
+      className: isViewerZoomable ? `${className ?? ""} viewer-zoomable`.trim() : className || void 0,
+      src,
+      alt: altText,
+      ref: imageRef,
+      style: imageStyle,
+      onError,
+      onClick: (event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        onOpenPreview();
+      },
+      role: isViewerZoomable ? "button" : void 0,
+      tabIndex: isViewerZoomable ? 0 : void 0,
+      "aria-label": isViewerZoomable ? `${altText || "Image"} \u3092\u62E1\u5927\u8868\u793A` : void 0,
+      onKeyDown: (event) => {
+        if (!isViewerZoomable || !onOpenPreview) {
+          return;
+        }
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenPreview();
+        }
+      },
+      draggable: "false"
+    }
+  );
+}
+function BrokenImage() {
+  return /* @__PURE__ */ jsx14(
+    "img",
+    {
+      src: image_broken_default,
+      style: {
+        height: 200,
+        opacity: 0.2,
+        width: 200
+      },
+      draggable: "false",
+      alt: "Broken image"
+    }
+  );
+}
+function noop() {
+}
+function ImageComponent2({
+  src,
+  altText,
+  nodeKey,
+  width,
+  height,
+  maxWidth,
+  resizable,
+  showCaption,
+  caption,
+  captionsEnabled
+}) {
+  const imageRef = useRef5(null);
+  const buttonRef = useRef5(null);
+  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection2(nodeKey);
+  const [isResizing, setIsResizing] = useState4(false);
+  const [editor] = useLexicalComposerContext5();
+  const activeEditorRef = useRef5(null);
+  const [isLoadError, setIsLoadError] = useState4(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState4(false);
+  const isEditable = useLexicalEditable2();
+  const isViewerZoomable = !isEditable && !isLoadError;
+  const isInNodeSelection = useMemo3(
+    () => isSelected && editor.getEditorState().read(() => {
+      const selection = $getSelection3();
+      return $isNodeSelection2(selection) && selection.has(nodeKey);
+    }),
+    [editor, isSelected, nodeKey]
+  );
+  const $onEnter = useCallback4(
+    (event) => {
+      const latestSelection = $getSelection3();
+      const buttonElem = buttonRef.current;
+      if ($isNodeSelection2(latestSelection) && latestSelection.has(nodeKey) && latestSelection.getNodes().length === 1) {
+        if (showCaption) {
+          $setSelection3(null);
+          event.preventDefault();
+          caption.focus();
+          return true;
+        } else if (buttonElem !== null && buttonElem !== document.activeElement) {
+          event.preventDefault();
+          buttonElem.focus();
+          return true;
+        }
+      }
+      return false;
+    },
+    [caption, nodeKey, showCaption]
+  );
+  const $onEscape = useCallback4(
+    (event) => {
+      if (activeEditorRef.current === caption || buttonRef.current === event.target) {
+        $setSelection3(null);
+        editor.update(() => {
+          setSelected(true);
+          const parentRootElement = editor.getRootElement();
+          if (parentRootElement !== null) {
+            parentRootElement.focus();
+          }
+        });
+        return true;
+      }
+      return false;
+    },
+    [caption, editor, setSelected]
+  );
+  const onClick = useCallback4(
+    (payload) => {
+      const event = payload;
+      if (isResizing) {
+        return true;
+      }
+      if (event.target === imageRef.current) {
+        if (!isEditable && !isLoadError) {
+          setIsPreviewOpen(true);
+          return true;
+        }
+        if (event.shiftKey) {
+          setSelected(!isSelected);
+        } else {
+          clearSelection();
+          setSelected(true);
+        }
+        return true;
+      }
+      return false;
+    },
+    [isResizing, isSelected, setSelected, clearSelection, isEditable, isLoadError]
+  );
+  const onRightClick = useCallback4(
+    (event) => {
+      editor.getEditorState().read(() => {
+        const latestSelection = $getSelection3();
+        const domElement = event.target;
+        if (domElement.tagName === "IMG" && $isRangeSelection2(latestSelection) && latestSelection.getNodes().length === 1) {
+          editor.dispatchCommand(RIGHT_CLICK_IMAGE_COMMAND, event);
+        }
+      });
+    },
+    [editor]
+  );
+  useEffect7(() => {
+    return mergeRegister3(
+      editor.registerCommand(
+        SELECTION_CHANGE_COMMAND2,
+        (_, activeEditor) => {
+          activeEditorRef.current = activeEditor;
+          return false;
+        },
+        COMMAND_PRIORITY_LOW2
+      ),
+      editor.registerCommand(
+        DRAGSTART_COMMAND,
+        (event) => {
+          if (event.target === imageRef.current) {
+            event.preventDefault();
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW2
+      )
+    );
+  }, [editor]);
+  useEffect7(() => {
+    let rootCleanup = noop;
+    return mergeRegister3(
+      editor.registerCommand(CLICK_COMMAND, onClick, COMMAND_PRIORITY_LOW2),
+      editor.registerCommand(RIGHT_CLICK_IMAGE_COMMAND, onClick, COMMAND_PRIORITY_LOW2),
+      editor.registerCommand(KEY_ENTER_COMMAND, $onEnter, COMMAND_PRIORITY_LOW2),
+      editor.registerCommand(KEY_ESCAPE_COMMAND2, $onEscape, COMMAND_PRIORITY_LOW2),
+      editor.registerRootListener((rootElement) => {
+        rootCleanup();
+        rootCleanup = noop;
+        if (rootElement) {
+          rootElement.addEventListener("contextmenu", onRightClick);
+          rootCleanup = () => rootElement.removeEventListener("contextmenu", onRightClick);
+        }
+      }),
+      () => rootCleanup()
+    );
+  }, [editor, $onEnter, $onEscape, onClick, onRightClick]);
+  const setShowCaption = (show) => {
+    editor.update(() => {
+      const node = $getNodeByKey4(nodeKey);
+      if ($isImageNode(node)) {
+        node.setShowCaption(show);
+        if (show) {
+          node.__caption.update(() => {
+            if (!$getSelection3()) {
+              $getRoot2().selectEnd();
+            }
+          });
+        }
+      }
+    });
+  };
+  const onResizeEnd = (nextWidth, nextHeight) => {
+    setTimeout(() => {
+      setIsResizing(false);
+    }, 200);
+    editor.update(() => {
+      const node = $getNodeByKey4(nodeKey);
+      if ($isImageNode(node)) {
+        node.setWidthAndHeight(nextWidth, nextHeight);
+      }
+    });
+  };
+  const onResizeStart = () => {
+    setIsResizing(true);
+  };
+  const closePreview = useCallback4(() => {
+    setIsPreviewOpen(false);
+  }, []);
+  useEffect7(() => {
+    if (!isPreviewOpen) {
+      return;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closePreview();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPreviewOpen, closePreview]);
+  useSharedHistoryContext();
+  const draggable = isInNodeSelection && !isResizing;
+  const isFocused = (isSelected || isResizing) && isEditable;
+  return /* @__PURE__ */ jsxs5(Suspense, { fallback: null, children: [
+    /* @__PURE__ */ jsx14("div", { draggable, children: isLoadError ? /* @__PURE__ */ jsx14(BrokenImage, {}) : /* @__PURE__ */ jsx14(
+      LazyImage,
+      {
+        className: isFocused ? `focused ${isInNodeSelection ? "draggable" : ""}` : null,
+        src,
+        altText,
+        imageRef,
+        width,
+        height,
+        maxWidth,
+        onError: () => setIsLoadError(true),
+        isViewerZoomable,
+        onOpenPreview: () => setIsPreviewOpen(true)
+      }
+    ) }),
+    showCaption && /* @__PURE__ */ jsx14("div", { className: "image-caption-container", children: /* @__PURE__ */ jsxs5(LexicalNestedComposer, { initialEditor: caption, children: [
+      /* @__PURE__ */ jsx14(CaptionOnChangePlugin, { parentEditor: editor, nodeKey }),
+      /* @__PURE__ */ jsx14(DisableCaptionOnBlur, { setShowCaption }),
+      /* @__PURE__ */ jsx14(LinkPlugin, {}),
+      /* @__PURE__ */ jsx14(EmojisPlugin, {}),
+      /* @__PURE__ */ jsx14(HashtagPlugin, {}),
+      /* @__PURE__ */ jsx14(
+        RichTextPlugin,
+        {
+          contentEditable: /* @__PURE__ */ jsx14(
+            LexicalContentEditable,
+            {
+              placeholder: "Enter a caption...",
+              placeholderClassName: "ImageNode__placeholder",
+              className: "ImageNode__contentEditable"
+            }
+          ),
+          ErrorBoundary: LexicalErrorBoundary
+        }
+      )
+    ] }) }),
+    resizable && isInNodeSelection && isFocused && /* @__PURE__ */ jsx14(
+      ImageResizer,
+      {
+        showCaption,
+        setShowCaption,
+        editor,
+        buttonRef,
+        imageRef,
+        maxWidth,
+        onResizeStart,
+        onResizeEnd,
+        captionsEnabled: !isLoadError && captionsEnabled
+      }
+    ),
+    isPreviewOpen && typeof document !== "undefined" && createPortal(
+      /* @__PURE__ */ jsxs5(
+        "div",
+        {
+          className: "image-preview-overlay",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": "\u753B\u50CF\u30D7\u30EC\u30D3\u30E5\u30FC",
+          tabIndex: -1,
+          onClick: (event) => {
+            if (event.target === event.currentTarget) {
+              closePreview();
+            }
+          },
+          onKeyDown: (event) => {
+            if (event.key === "Escape") {
+              closePreview();
+            }
+          },
+          children: [
+            /* @__PURE__ */ jsx14("button", { type: "button", className: "image-preview-close", onClick: closePreview, "aria-label": "\u9589\u3058\u308B", children: /* @__PURE__ */ jsx14("span", { className: "icon-[mdi--close] size-5", "aria-hidden": "true" }) }),
+            /* @__PURE__ */ jsx14("img", { src, alt: altText, className: "image-preview-content", draggable: "false" })
+          ]
+        }
+      ),
+      document.body
+    )
+  ] });
+}
+var imageCache, RIGHT_CLICK_IMAGE_COMMAND;
+var init_ImageComponent = __esm({
+  "src/nodes/ImageComponent.tsx"() {
+    "use strict";
+    init_ImageNode();
+    init_SharedHistoryContext();
+    init_image_broken();
+    init_EmojisPlugin();
+    init_LinkPlugin();
+    init_ContentEditable2();
+    init_ImageResizer();
+    init_ImageNode2();
+    imageCache = /* @__PURE__ */ new Map();
+    RIGHT_CLICK_IMAGE_COMMAND = createCommand("RIGHT_CLICK_IMAGE_COMMAND");
+  }
+});
+
+// src/nodes/MermaidNode.css
+var init_MermaidNode = __esm({
+  "src/nodes/MermaidNode.css"() {
+  }
+});
+
+// src/nodes/MermaidComponent.tsx
+var MermaidComponent_exports = {};
+__export(MermaidComponent_exports, {
+  default: () => MermaidComponent
+});
+import { useLexicalComposerContext as useLexicalComposerContext6 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalEditable as useLexicalEditable3 } from "@lexical/react/useLexicalEditable";
+import { $getNodeByKey as $getNodeByKey5 } from "lexical";
+import { useEffect as useEffect8, useMemo as useMemo4, useRef as useRef6, useState as useState5 } from "react";
+import { jsx as jsx15, jsxs as jsxs6 } from "react/jsx-runtime";
+function getIsDark() {
+  if (typeof document === "undefined") return false;
+  return document.documentElement.getAttribute("data-theme") === "dark";
+}
+function normalizeError(error) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "Mermaid diagram rendering failed.";
+}
+function MermaidComponent({ code, nodeKey }) {
+  const [editor] = useLexicalComposerContext6();
+  const isEditable = useLexicalEditable3();
+  const [source, setSource] = useState5(code);
+  const [svg, setSvg] = useState5("");
+  const [errorMessage, setErrorMessage] = useState5("");
+  const [isRendering, setIsRendering] = useState5(false);
+  const hasSource = useMemo4(() => source.trim().length > 0, [source]);
+  const [isDark, setIsDark] = useState5(getIsDark);
+  const renderCountRef = useRef6(0);
+  useEffect8(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(getIsDark());
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+  useEffect8(() => {
+    setSource(code);
+  }, [code]);
+  useEffect8(() => {
+    if (!hasSource) {
+      setSvg("");
+      setErrorMessage("");
+      setIsRendering(false);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setIsRendering(true);
+      try {
+        const mermaidModule = await import("mermaid");
+        const mermaid = mermaidModule.default;
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: "strict",
+          theme: isDark ? "dark" : "default"
+        });
+        renderCountRef.current += 1;
+        const id = `mermaid-${nodeKey.replace(/[^a-zA-Z0-9_-]/g, "")}-${renderCountRef.current}`;
+        const renderResult = await mermaid.render(id, source);
+        if (!cancelled) {
+          setSvg(renderResult.svg);
+          setErrorMessage("");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setSvg("");
+          setErrorMessage(normalizeError(error));
+        }
+      } finally {
+        if (!cancelled) {
+          setIsRendering(false);
+        }
+      }
+    }, RENDER_DELAY_MS);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [hasSource, source, nodeKey, isDark]);
+  const handleSourceChange = (event) => {
+    const nextValue = event.target.value;
+    setSource(nextValue);
+    if (!isEditable) {
+      return;
+    }
+    editor.update(() => {
+      const node = $getNodeByKey5(nodeKey);
+      if ($isMermaidNode(node)) {
+        node.setCode(nextValue);
+      }
+    });
+  };
+  return /* @__PURE__ */ jsxs6("div", { className: "editor-mermaid-container", "data-lexical-mermaid-node": "true", children: [
+    isEditable && /* @__PURE__ */ jsxs6("div", { className: "editor-mermaid-input-area", children: [
+      /* @__PURE__ */ jsx15("label", { htmlFor: `mermaid-source-${nodeKey}`, className: "editor-mermaid-label", children: "Mermaid" }),
+      /* @__PURE__ */ jsx15(
+        "textarea",
+        {
+          id: `mermaid-source-${nodeKey}`,
+          className: "editor-mermaid-textarea",
+          value: source,
+          onChange: handleSourceChange,
+          spellCheck: false,
+          "aria-label": "Mermaid source",
+          placeholder: "flowchart TD\\n  A[Start] --> B[End]"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxs6("div", { className: "editor-mermaid-preview-area", children: [
+      isRendering && /* @__PURE__ */ jsx15("div", { className: "editor-mermaid-status", children: "Rendering diagram..." }),
+      !hasSource && isEditable && /* @__PURE__ */ jsx15("div", { className: "editor-mermaid-status", children: "Write Mermaid syntax to preview." }),
+      !!errorMessage && /* @__PURE__ */ jsx15("div", { className: "editor-mermaid-error", children: errorMessage }),
+      !errorMessage && hasSource && !isRendering && /* @__PURE__ */ jsx15(
+        "div",
+        {
+          className: "editor-mermaid-preview",
+          dangerouslySetInnerHTML: { __html: svg }
+        }
+      )
+    ] })
+  ] });
+}
+var RENDER_DELAY_MS;
+var init_MermaidComponent = __esm({
+  "src/nodes/MermaidComponent.tsx"() {
+    "use strict";
+    init_MermaidNode2();
+    init_MermaidNode();
+    RENDER_DELAY_MS = 180;
+  }
+});
+
+// src/nodes/MermaidNode.tsx
+import { $applyNodeReplacement as $applyNodeReplacement5, DecoratorNode as DecoratorNode4 } from "lexical";
+import * as React4 from "react";
+import { jsx as jsx16 } from "react/jsx-runtime";
+function $convertMermaidElement(domNode) {
+  if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
+    return null;
+  }
+  const codeElement = domNode.querySelector('pre[data-lexical-mermaid-source="true"]');
+  const code = codeElement?.textContent ?? domNode.textContent ?? "";
+  const node = $createMermaidNode(code);
+  return { node };
+}
+function $createMermaidNode(code = "") {
+  return $applyNodeReplacement5(new MermaidNode(code));
+}
+function $isMermaidNode(node) {
+  return node instanceof MermaidNode;
+}
+var MermaidComponent2, MermaidNode;
+var init_MermaidNode2 = __esm({
+  "src/nodes/MermaidNode.tsx"() {
+    "use strict";
+    MermaidComponent2 = React4.lazy(() => Promise.resolve().then(() => (init_MermaidComponent(), MermaidComponent_exports)));
+    MermaidNode = class _MermaidNode extends DecoratorNode4 {
+      __code;
+      static getType() {
+        return "mermaid";
+      }
+      static clone(node) {
+        return new _MermaidNode(node.__code, node.__key);
+      }
+      constructor(code, key) {
+        super(key);
+        this.__code = code;
+      }
+      static importJSON(serializedNode) {
+        return $createMermaidNode(serializedNode.code).updateFromJSON(serializedNode);
+      }
+      exportJSON() {
+        return {
+          ...super.exportJSON(),
+          code: this.getCode()
+        };
+      }
+      static importDOM() {
+        return {
+          div: (domNode) => {
+            if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
+              return null;
+            }
+            return {
+              conversion: $convertMermaidElement,
+              priority: 2
+            };
+          }
+        };
+      }
+      exportDOM() {
+        const element = document.createElement("div");
+        element.setAttribute("data-lexical-mermaid", "true");
+        const source = document.createElement("pre");
+        source.setAttribute("data-lexical-mermaid-source", "true");
+        source.textContent = this.__code;
+        element.appendChild(source);
+        return { element };
+      }
+      createDOM(_config) {
+        const element = document.createElement("div");
+        element.className = "editor-mermaid";
+        return element;
+      }
+      updateDOM() {
+        return false;
+      }
+      getTextContent() {
+        return this.__code;
+      }
+      getCode() {
+        return this.__code;
+      }
+      setCode(code) {
+        const writable = this.getWritable();
+        writable.__code = code;
+      }
+      decorate() {
+        return /* @__PURE__ */ jsx16(MermaidComponent2, { code: this.__code, nodeKey: this.__key });
+      }
+      isIsolated() {
+        return true;
+      }
+    };
+  }
+});
+
+// src/nodes/StickyNode.css
+var init_StickyNode = __esm({
+  "src/nodes/StickyNode.css"() {
+  }
+});
+
+// src/themes/StickyEditorTheme.css
+var init_StickyEditorTheme = __esm({
+  "src/themes/StickyEditorTheme.css"() {
+  }
+});
+
+// src/themes/NotionLikeEditorTheme.css
+var init_NotionLikeEditorTheme = __esm({
+  "src/themes/NotionLikeEditorTheme.css"() {
+  }
+});
+
+// src/themes/NotionLikeEditorTheme.ts
+var theme, NotionLikeEditorTheme_default;
+var init_NotionLikeEditorTheme2 = __esm({
+  "src/themes/NotionLikeEditorTheme.ts"() {
+    "use strict";
+    init_NotionLikeEditorTheme();
+    theme = {
+      autocomplete: "NotionLikeEditorTheme__autocomplete",
+      blockCursor: "NotionLikeEditorTheme__blockCursor",
+      characterLimit: "NotionLikeEditorTheme__characterLimit",
+      code: "NotionLikeEditorTheme__code",
+      codeHighlight: {
+        atrule: "NotionLikeEditorTheme__tokenAttr",
+        attr: "NotionLikeEditorTheme__tokenAttr",
+        boolean: "NotionLikeEditorTheme__tokenProperty",
+        builtin: "NotionLikeEditorTheme__tokenSelector",
+        cdata: "NotionLikeEditorTheme__tokenComment",
+        char: "NotionLikeEditorTheme__tokenSelector",
+        class: "NotionLikeEditorTheme__tokenFunction",
+        "class-name": "NotionLikeEditorTheme__tokenFunction",
+        comment: "NotionLikeEditorTheme__tokenComment",
+        constant: "NotionLikeEditorTheme__tokenProperty",
+        deleted: "NotionLikeEditorTheme__tokenDeleted",
+        doctype: "NotionLikeEditorTheme__tokenComment",
+        entity: "NotionLikeEditorTheme__tokenOperator",
+        function: "NotionLikeEditorTheme__tokenFunction",
+        important: "NotionLikeEditorTheme__tokenVariable",
+        inserted: "NotionLikeEditorTheme__tokenInserted",
+        keyword: "NotionLikeEditorTheme__tokenAttr",
+        namespace: "NotionLikeEditorTheme__tokenVariable",
+        number: "NotionLikeEditorTheme__tokenProperty",
+        operator: "NotionLikeEditorTheme__tokenOperator",
+        prolog: "NotionLikeEditorTheme__tokenComment",
+        property: "NotionLikeEditorTheme__tokenProperty",
+        punctuation: "NotionLikeEditorTheme__tokenPunctuation",
+        regex: "NotionLikeEditorTheme__tokenVariable",
+        selector: "NotionLikeEditorTheme__tokenSelector",
+        string: "NotionLikeEditorTheme__tokenSelector",
+        symbol: "NotionLikeEditorTheme__tokenProperty",
+        tag: "NotionLikeEditorTheme__tokenProperty",
+        unchanged: "NotionLikeEditorTheme__tokenUnchanged",
+        url: "NotionLikeEditorTheme__tokenOperator",
+        variable: "NotionLikeEditorTheme__tokenVariable"
+      },
+      embedBlock: {
+        base: "NotionLikeEditorTheme__embedBlock",
+        focus: "NotionLikeEditorTheme__embedBlockFocus"
+      },
+      hashtag: "NotionLikeEditorTheme__hashtag",
+      heading: {
+        h1: "NotionLikeEditorTheme__h1",
+        h2: "NotionLikeEditorTheme__h2",
+        h3: "NotionLikeEditorTheme__h3",
+        h4: "NotionLikeEditorTheme__h4",
+        h5: "NotionLikeEditorTheme__h5",
+        h6: "NotionLikeEditorTheme__h6"
+      },
+      hr: "NotionLikeEditorTheme__hr",
+      hrSelected: "NotionLikeEditorTheme__hrSelected",
+      image: "editor-image",
+      indent: "NotionLikeEditorTheme__indent",
+      layoutContainer: "NotionLikeEditorTheme__layoutContainer",
+      layoutItem: "NotionLikeEditorTheme__layoutItem",
+      link: "NotionLikeEditorTheme__link",
+      list: {
+        checklist: "NotionLikeEditorTheme__checklist",
+        listitem: "NotionLikeEditorTheme__listItem",
+        listitemChecked: "NotionLikeEditorTheme__listItemChecked",
+        listitemUnchecked: "NotionLikeEditorTheme__listItemUnchecked",
+        nested: {
+          listitem: "NotionLikeEditorTheme__nestedListItem"
+        },
+        olDepth: [
+          "NotionLikeEditorTheme__ol1",
+          "NotionLikeEditorTheme__ol2",
+          "NotionLikeEditorTheme__ol3",
+          "NotionLikeEditorTheme__ol4",
+          "NotionLikeEditorTheme__ol5"
+        ],
+        ul: "NotionLikeEditorTheme__ul",
+        ol: "NotionLikeEditorTheme__ol"
+      },
+      mark: "NotionLikeEditorTheme__mark",
+      markOverlap: "NotionLikeEditorTheme__markOverlap",
+      paragraph: "NotionLikeEditorTheme__paragraph",
+      quote: "NotionLikeEditorTheme__quote",
+      specialText: "NotionLikeEditorTheme__specialText",
+      tab: "NotionLikeEditorTheme__tabNode",
+      table: "NotionLikeEditorTheme__table",
+      tableAddColumns: "NotionLikeEditorTheme__tableAddColumns",
+      tableAddRows: "NotionLikeEditorTheme__tableAddRows",
+      tableAlignment: {
+        center: "NotionLikeEditorTheme__tableAlignmentCenter",
+        right: "NotionLikeEditorTheme__tableAlignmentRight"
+      },
+      tableCell: "NotionLikeEditorTheme__tableCell",
+      tableCellActionButton: "NotionLikeEditorTheme__tableCellActionButton",
+      tableCellActionButtonContainer: "NotionLikeEditorTheme__tableCellActionButtonContainer",
+      tableCellHeader: "NotionLikeEditorTheme__tableCellHeader",
+      tableCellResizer: "NotionLikeEditorTheme__tableCellResizer",
+      tableCellSelected: "NotionLikeEditorTheme__tableCellSelected",
+      tableFrozenColumn: "NotionLikeEditorTheme__tableFrozenColumn",
+      tableFrozenRow: "NotionLikeEditorTheme__tableFrozenRow",
+      tableRowStriping: "NotionLikeEditorTheme__tableRowStriping",
+      tableScrollableWrapper: "NotionLikeEditorTheme__tableScrollableWrapper",
+      tableSelected: "NotionLikeEditorTheme__tableSelected",
+      tableSelection: "NotionLikeEditorTheme__tableSelection",
+      text: {
+        bold: "NotionLikeEditorTheme__textBold",
+        capitalize: "NotionLikeEditorTheme__textCapitalize",
+        code: "NotionLikeEditorTheme__textCode",
+        highlight: "NotionLikeEditorTheme__textHighlight",
+        italic: "NotionLikeEditorTheme__textItalic",
+        lowercase: "NotionLikeEditorTheme__textLowercase",
+        strikethrough: "NotionLikeEditorTheme__textStrikethrough",
+        subscript: "NotionLikeEditorTheme__textSubscript",
+        superscript: "NotionLikeEditorTheme__textSuperscript",
+        underline: "NotionLikeEditorTheme__textUnderline",
+        underlineStrikethrough: "NotionLikeEditorTheme__textUnderlineStrikethrough",
+        uppercase: "NotionLikeEditorTheme__textUppercase"
+      }
+    };
+    NotionLikeEditorTheme_default = theme;
+  }
+});
+
+// src/themes/StickyEditorTheme.ts
+var theme2, StickyEditorTheme_default;
+var init_StickyEditorTheme2 = __esm({
+  "src/themes/StickyEditorTheme.ts"() {
+    "use strict";
+    init_StickyEditorTheme();
+    init_NotionLikeEditorTheme2();
+    theme2 = {
+      ...NotionLikeEditorTheme_default,
+      paragraph: "StickyEditorTheme__paragraph"
+    };
+    StickyEditorTheme_default = theme2;
+  }
+});
+
+// src/nodes/StickyComponent.tsx
+var StickyComponent_exports = {};
+__export(StickyComponent_exports, {
+  default: () => StickyComponent
+});
+import { useLexicalComposerContext as useLexicalComposerContext8 } from "@lexical/react/LexicalComposerContext";
+import { LexicalErrorBoundary as LexicalErrorBoundary2 } from "@lexical/react/LexicalErrorBoundary";
+import { LexicalNestedComposer as LexicalNestedComposer2 } from "@lexical/react/LexicalNestedComposer";
+import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
+import { calculateZoomLevel as calculateZoomLevel2 } from "@lexical/utils";
+import { $getNodeByKey as $getNodeByKey6 } from "lexical";
+import { useEffect as useEffect10, useLayoutEffect, useRef as useRef7, useState as useState6 } from "react";
+import { createPortal as createPortal2 } from "react-dom";
+import { jsx as jsx18, jsxs as jsxs7 } from "react/jsx-runtime";
+function positionSticky(stickyElem, positioning) {
+  const style = stickyElem.style;
+  style.top = `${positioning.y}px`;
+  style.left = `${positioning.x}px`;
+}
+function StickyComponent({
+  x,
+  y: y2,
+  nodeKey,
+  color,
+  caption
+}) {
+  const [editor] = useLexicalComposerContext8();
+  const stickyContainerRef = useRef7(null);
+  const [portalContainer, setPortalContainer] = useState6(null);
+  const positioningRef = useRef7({
+    isDragging: false,
+    offsetX: 0,
+    offsetY: 0,
+    rootElementRect: null,
+    x: 0,
+    y: 0
+  });
+  useEffect10(() => {
+    const rootElement = editor.getRootElement();
+    if (rootElement) {
+      const scrollerContainer = rootElement.closest(".editor-scroller");
+      if (scrollerContainer) {
+        setPortalContainer(scrollerContainer);
+      } else {
+        setPortalContainer(rootElement.parentElement);
+      }
+    }
+  }, [editor]);
+  useEffect10(() => {
+    const stickyContainer = stickyContainerRef.current;
+    if (!stickyContainer) return;
+    const stopFlyonuiEvents = (e) => {
+      e.stopPropagation();
+    };
+    stickyContainer.addEventListener("focusin", stopFlyonuiEvents);
+    stickyContainer.addEventListener("focusout", stopFlyonuiEvents);
+    return () => {
+      stickyContainer.removeEventListener("focusin", stopFlyonuiEvents);
+      stickyContainer.removeEventListener("focusout", stopFlyonuiEvents);
+    };
+  }, []);
+  useEffect10(() => {
+    const position = positioningRef.current;
+    position.x = x;
+    position.y = y2;
+    const stickyContainer = stickyContainerRef.current;
+    if (stickyContainer !== null) {
+      positionSticky(stickyContainer, position);
+    }
+  }, [x, y2]);
+  useLayoutEffect(() => {
+    const position = positioningRef.current;
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        const { target } = entry;
+        position.rootElementRect = target.getBoundingClientRect();
+        const stickyContainer = stickyContainerRef.current;
+        if (stickyContainer !== null) {
+          positionSticky(stickyContainer, position);
+        }
+      }
+    });
+    const removeRootListener = editor.registerRootListener((nextRootElem, prevRootElem) => {
+      if (prevRootElem !== null) {
+        resizeObserver.unobserve(prevRootElem);
+      }
+      if (nextRootElem !== null) {
+        resizeObserver.observe(nextRootElem);
+      }
+    });
+    const handleWindowResize = () => {
+      const rootElement = editor.getRootElement();
+      const stickyContainer = stickyContainerRef.current;
+      if (rootElement !== null && stickyContainer !== null) {
+        position.rootElementRect = rootElement.getBoundingClientRect();
+        positionSticky(stickyContainer, position);
+      }
+    };
+    const handleScroll = () => {
+      const rootElement = editor.getRootElement();
+      const stickyContainer = stickyContainerRef.current;
+      if (rootElement !== null && stickyContainer !== null) {
+        position.rootElementRect = rootElement.getBoundingClientRect();
+        positionSticky(stickyContainer, position);
+      }
+    };
+    window.addEventListener("resize", handleWindowResize);
+    window.addEventListener("scroll", handleScroll, true);
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+      window.removeEventListener("scroll", handleScroll, true);
+      removeRootListener();
+    };
+  }, [editor]);
+  useEffect10(() => {
+    const stickyContainer = stickyContainerRef.current;
+    if (stickyContainer !== null) {
+      setTimeout(() => {
+        stickyContainer.style.setProperty("transition", "top 0.3s ease 0s, left 0.3s ease 0s");
+      }, 500);
+    }
+  }, []);
+  const handlePointerMove = (event) => {
+    const stickyContainer = stickyContainerRef.current;
+    const positioning = positioningRef.current;
+    const rootElementRect = positioning.rootElementRect;
+    const zoom = calculateZoomLevel2(stickyContainer);
+    if (stickyContainer !== null && positioning.isDragging && rootElementRect !== null && portalContainer !== null) {
+      const portalRect = portalContainer.getBoundingClientRect();
+      let newX = (event.clientX - portalRect.left) / zoom - positioning.offsetX;
+      let newY = (event.clientY - portalRect.top) / zoom - positioning.offsetY;
+      const stickyRect = stickyContainer.getBoundingClientRect();
+      const stickyWidth = stickyRect.width / zoom;
+      const stickyHeight = stickyRect.height / zoom;
+      const maxX = rootElementRect.width - stickyWidth;
+      const maxY = rootElementRect.height - stickyHeight;
+      newX = Math.max(0, Math.min(newX, maxX));
+      newY = Math.max(0, Math.min(newY, maxY));
+      positioning.x = newX;
+      positioning.y = newY;
+      positionSticky(stickyContainer, positioning);
+    }
+  };
+  const handlePointerUp = (_event) => {
+    const stickyContainer = stickyContainerRef.current;
+    const positioning = positioningRef.current;
+    if (stickyContainer !== null) {
+      positioning.isDragging = false;
+      stickyContainer.classList.remove("dragging");
+      editor.update(() => {
+        const node = $getNodeByKey6(nodeKey);
+        if ($isStickyNode(node)) {
+          node.setPosition(positioning.x, positioning.y);
+        }
+      });
+    }
+    document.removeEventListener("pointermove", handlePointerMove);
+    document.removeEventListener("pointerup", handlePointerUp);
+  };
+  const handleDelete = () => {
+    editor.update(() => {
+      const node = $getNodeByKey6(nodeKey);
+      if ($isStickyNode(node)) {
+        node.remove();
+      }
+    });
+  };
+  const handleColorChange = () => {
+    editor.update(() => {
+      const node = $getNodeByKey6(nodeKey);
+      if ($isStickyNode(node)) {
+        node.toggleColor();
+      }
+    });
+  };
+  useSharedHistoryContext();
+  const stickyContent = /* @__PURE__ */ jsx18("div", { ref: stickyContainerRef, className: "sticky-note-container", children: /* @__PURE__ */ jsxs7(
+    "div",
+    {
+      className: `sticky-note ${color}`,
+      onPointerDown: (event) => {
+        const stickyContainer = stickyContainerRef.current;
+        if (stickyContainer == null || event.button === 2 || event.target !== stickyContainer.firstChild) {
+          return;
+        }
+        const stickContainer = stickyContainer;
+        const positioning = positioningRef.current;
+        if (stickContainer !== null && portalContainer !== null) {
+          const portalRect = portalContainer.getBoundingClientRect();
+          const zoom = calculateZoomLevel2(stickContainer);
+          positioning.offsetX = (event.clientX - portalRect.left) / zoom - positioning.x;
+          positioning.offsetY = (event.clientY - portalRect.top) / zoom - positioning.y;
+          positioning.isDragging = true;
+          stickContainer.classList.add("dragging");
+          document.addEventListener("pointermove", handlePointerMove);
+          document.addEventListener("pointerup", handlePointerUp);
+          event.preventDefault();
+        }
+      },
+      children: [
+        /* @__PURE__ */ jsx18("button", { type: "button", onClick: handleDelete, className: "delete", "aria-label": "Delete sticky note", title: "Delete", children: "X" }),
+        /* @__PURE__ */ jsx18(
+          "button",
+          {
+            type: "button",
+            onClick: handleColorChange,
+            className: "color",
+            "aria-label": "Change sticky note color",
+            title: "Color",
+            children: /* @__PURE__ */ jsx18("i", { className: "bucket" })
+          }
+        ),
+        /* @__PURE__ */ jsx18(LexicalNestedComposer2, { initialEditor: caption, initialTheme: StickyEditorTheme_default, children: /* @__PURE__ */ jsx18(
+          PlainTextPlugin,
+          {
+            contentEditable: /* @__PURE__ */ jsx18(
+              LexicalContentEditable,
+              {
+                placeholder: "What's up?",
+                placeholderClassName: "StickyNode__placeholder",
+                className: "StickyNode__contentEditable"
+              }
+            ),
+            ErrorBoundary: LexicalErrorBoundary2
+          }
+        ) })
+      ]
+    }
+  ) });
+  if (!portalContainer) {
+    return null;
+  }
+  return createPortal2(stickyContent, portalContainer);
+}
+var init_StickyComponent = __esm({
+  "src/nodes/StickyComponent.tsx"() {
+    "use strict";
+    init_StickyNode();
+    init_SharedHistoryContext();
+    init_StickyEditorTheme2();
+    init_ContentEditable2();
+    init_StickyNode2();
+  }
+});
+
+// src/nodes/StickyNode.tsx
+import { $setSelection as $setSelection4, createEditor as createEditor2, DecoratorNode as DecoratorNode6 } from "lexical";
+import * as React5 from "react";
+import { jsx as jsx19 } from "react/jsx-runtime";
+function $isStickyNode(node) {
+  return node instanceof StickyNode;
+}
+function $createStickyNode(xOffset, yOffset) {
+  return new StickyNode(xOffset, yOffset, "yellow");
+}
+var StickyComponent2, StickyNode;
+var init_StickyNode2 = __esm({
+  "src/nodes/StickyNode.tsx"() {
+    "use strict";
+    StickyComponent2 = React5.lazy(() => Promise.resolve().then(() => (init_StickyComponent(), StickyComponent_exports)));
+    StickyNode = class _StickyNode extends DecoratorNode6 {
+      __x;
+      __y;
+      __color;
+      __caption;
+      static getType() {
+        return "sticky";
+      }
+      static clone(node) {
+        return new _StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
+      }
+      static importJSON(serializedNode) {
+        return new _StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color).updateFromJSON(
+          serializedNode
+        );
+      }
+      updateFromJSON(serializedNode) {
+        const stickyNode = super.updateFromJSON(serializedNode);
+        const caption = serializedNode.caption;
+        const nestedEditor = stickyNode.__caption;
+        const editorState = nestedEditor.parseEditorState(caption.editorState);
+        if (!editorState.isEmpty()) {
+          nestedEditor.setEditorState(editorState);
+        }
+        return stickyNode;
+      }
+      constructor(x, y2, color, caption, key) {
+        super(key);
+        this.__x = x;
+        this.__y = y2;
+        this.__caption = caption || createEditor2();
+        this.__color = color;
+      }
+      exportJSON() {
+        return {
+          ...super.exportJSON(),
+          caption: this.__caption.toJSON(),
+          color: this.__color,
+          xOffset: this.__x,
+          yOffset: this.__y
+        };
+      }
+      createDOM(_config) {
+        const div = document.createElement("div");
+        div.style.display = "contents";
+        return div;
+      }
+      updateDOM() {
+        return false;
+      }
+      setPosition(x, y2) {
+        const writable = this.getWritable();
+        writable.__x = x;
+        writable.__y = y2;
+        $setSelection4(null);
+      }
+      toggleColor() {
+        const writable = this.getWritable();
+        writable.__color = writable.__color === "pink" ? "yellow" : "pink";
+      }
+      decorate(_editor, _config) {
+        return /* @__PURE__ */ jsx19(
+          StickyComponent2,
+          {
+            color: this.__color,
+            x: this.__x,
+            y: this.__y,
+            nodeKey: this.getKey(),
+            caption: this.__caption
+          }
+        );
+      }
+      isIsolated() {
+        return true;
+      }
+    };
+  }
+});
+
+// src/plugins/CollapsiblePlugin/CollapsibleContainerNode.ts
+import { IS_CHROME } from "@lexical/utils";
+import {
+  $getSiblingCaret,
+  $isElementNode,
+  $rewindSiblingCaret,
+  ElementNode,
+  isHTMLElement
+} from "lexical";
+
+// src/plugins/CollapsiblePlugin/CollapsibleUtils.ts
+function setDomHiddenUntilFound(dom) {
+  dom.hidden = "until-found";
+}
+function domOnBeforeMatch(dom, callback) {
+  dom.onbeforematch = callback;
+}
+
+// src/plugins/CollapsiblePlugin/CollapsibleContainerNode.ts
+function $convertDetailsElement(domNode) {
+  const isOpen = domNode.open !== void 0 ? domNode.open : true;
+  const node = $createCollapsibleContainerNode(isOpen);
+  return {
+    node
+  };
+}
+var CollapsibleContainerNode = class _CollapsibleContainerNode extends ElementNode {
+  __open;
+  constructor(open, key) {
+    super(key);
+    this.__open = open;
+  }
+  static getType() {
+    return "collapsible-container";
+  }
+  static clone(node) {
+    return new _CollapsibleContainerNode(node.__open, node.__key);
+  }
+  isShadowRoot() {
+    return true;
+  }
+  collapseAtStart(_selection) {
+    const nodesToInsert = [];
+    for (const child of this.getChildren()) {
+      if ($isElementNode(child)) {
+        nodesToInsert.push(...child.getChildren());
+      }
+    }
+    const caret = $rewindSiblingCaret($getSiblingCaret(this, "previous"));
+    caret.splice(1, nodesToInsert);
+    const [firstChild] = nodesToInsert;
+    if (firstChild) {
+      firstChild.selectStart().deleteCharacter(true);
+    }
+    return true;
+  }
+  createDOM(_config, editor) {
+    let dom;
+    if (IS_CHROME) {
+      dom = document.createElement("div");
+      dom.setAttribute("open", "");
+    } else {
+      const detailsDom = document.createElement("details");
+      detailsDom.open = this.__open;
+      detailsDom.addEventListener("toggle", () => {
+        const open = editor.getEditorState().read(() => this.getOpen());
+        if (open !== detailsDom.open) {
+          editor.update(() => this.toggleOpen());
+        }
+      });
+      dom = detailsDom;
+    }
+    dom.classList.add("Collapsible__container");
+    return dom;
+  }
+  updateDOM(prevNode, dom) {
+    const currentOpen = this.__open;
+    if (prevNode.__open !== currentOpen) {
+      if (IS_CHROME) {
+        const contentDom = dom.children[1];
+        if (!isHTMLElement(contentDom)) {
+          throw new Error("Expected contentDom to be an HTMLElement");
+        }
+        if (currentOpen) {
+          dom.setAttribute("open", "");
+          contentDom.hidden = false;
+        } else {
+          dom.removeAttribute("open");
+          setDomHiddenUntilFound(contentDom);
+        }
+      } else {
+        dom.open = this.__open;
+      }
+    }
+    return false;
+  }
+  static importDOM() {
+    return {
+      details: (_domNode) => {
+        return {
+          conversion: $convertDetailsElement,
+          priority: 1
+        };
+      }
+    };
+  }
+  static importJSON(serializedNode) {
+    return $createCollapsibleContainerNode(serializedNode.open).updateFromJSON(serializedNode);
+  }
+  exportDOM() {
+    const element = document.createElement("details");
+    element.classList.add("Collapsible__container");
+    element.setAttribute("open", this.__open.toString());
+    return { element };
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      open: this.__open
+    };
+  }
+  setOpen(open) {
+    const writable = this.getWritable();
+    writable.__open = open;
+  }
+  getOpen() {
+    return this.getLatest().__open;
+  }
+  toggleOpen() {
+    this.setOpen(!this.getOpen());
+  }
+};
+function $createCollapsibleContainerNode(isOpen) {
+  return new CollapsibleContainerNode(isOpen);
+}
+function $isCollapsibleContainerNode(node) {
+  return node instanceof CollapsibleContainerNode;
+}
+
+// src/plugins/CollapsiblePlugin/CollapsibleContentNode.ts
+import { IS_CHROME as IS_CHROME2 } from "@lexical/utils";
+import {
+  ElementNode as ElementNode2
+} from "lexical";
+function $convertCollapsibleContentElement(_domNode) {
+  const node = $createCollapsibleContentNode();
+  return {
+    node
+  };
+}
+var CollapsibleContentNode = class _CollapsibleContentNode extends ElementNode2 {
+  static getType() {
+    return "collapsible-content";
+  }
+  static clone(node) {
+    return new _CollapsibleContentNode(node.__key);
+  }
+  createDOM(_config, editor) {
+    const dom = document.createElement("div");
+    dom.classList.add("Collapsible__content");
+    if (IS_CHROME2) {
+      editor.getEditorState().read(() => {
+        const containerNode = this.getParentOrThrow();
+        if (!$isCollapsibleContainerNode(containerNode)) {
+          throw new Error("Expected parent node to be a CollapsibleContainerNode");
+        }
+        if (!containerNode.__open) {
+          setDomHiddenUntilFound(dom);
+        }
+      });
+      domOnBeforeMatch(dom, () => {
+        editor.update(() => {
+          const containerNode = this.getParentOrThrow().getLatest();
+          if (!$isCollapsibleContainerNode(containerNode)) {
+            throw new Error("Expected parent node to be a CollapsibleContainerNode");
+          }
+          if (!containerNode.__open) {
+            containerNode.toggleOpen();
+          }
+        });
+      });
+    }
+    return dom;
+  }
+  updateDOM(_prevNode, _dom) {
+    return false;
+  }
+  static importDOM() {
+    return {
+      div: (domNode) => {
+        if (!domNode.hasAttribute("data-lexical-collapsible-content")) {
+          return null;
+        }
+        return {
+          conversion: $convertCollapsibleContentElement,
+          priority: 2
+        };
+      }
+    };
+  }
+  exportDOM() {
+    const element = document.createElement("div");
+    element.classList.add("Collapsible__content");
+    element.setAttribute("data-lexical-collapsible-content", "true");
+    return { element };
+  }
+  static importJSON(serializedNode) {
+    return $createCollapsibleContentNode().updateFromJSON(serializedNode);
+  }
+  isShadowRoot() {
+    return true;
+  }
+};
+function $createCollapsibleContentNode() {
+  return new CollapsibleContentNode();
+}
+function $isCollapsibleContentNode(node) {
+  return node instanceof CollapsibleContentNode;
+}
+
+// src/plugins/CollapsiblePlugin/CollapsibleTitleNode.ts
+import { IS_CHROME as IS_CHROME3 } from "@lexical/utils";
+import {
+  $createParagraphNode,
+  $isElementNode as $isElementNode2,
+  buildImportMap,
+  ElementNode as ElementNode3
+} from "lexical";
+function $convertSummaryElement(_domNode) {
+  const node = $createCollapsibleTitleNode();
+  return {
+    node
+  };
+}
+var CollapsibleTitleNode = class extends ElementNode3 {
+  /** @internal */
+  $config() {
+    return this.config("collapsible-title", {
+      $transform(node) {
+        if (node.isEmpty()) {
+          node.remove();
+        }
+      },
+      extends: ElementNode3,
+      importDOM: buildImportMap({
+        summary: () => ({
+          conversion: $convertSummaryElement,
+          priority: 1
+        })
+      })
+    });
+  }
+  createDOM(_config, editor) {
+    const dom = document.createElement("summary");
+    dom.classList.add("Collapsible__title");
+    if (IS_CHROME3) {
+      dom.addEventListener("click", () => {
+        editor.update(() => {
+          const collapsibleContainer = this.getLatest().getParentOrThrow();
+          if (!$isCollapsibleContainerNode(collapsibleContainer)) {
+            throw new Error("Expected parent node to be a CollapsibleContainerNode");
+          }
+          collapsibleContainer.toggleOpen();
+        });
+      });
+    }
+    return dom;
+  }
+  updateDOM(_prevNode, _dom) {
+    return false;
+  }
+  insertNewAfter(_, restoreSelection = true) {
+    const containerNode = this.getParentOrThrow();
+    if (!$isCollapsibleContainerNode(containerNode)) {
+      throw new Error("CollapsibleTitleNode expects to be child of CollapsibleContainerNode");
+    }
+    if (containerNode.getOpen()) {
+      const contentNode = this.getNextSibling();
+      if (!$isCollapsibleContentNode(contentNode)) {
+        throw new Error("CollapsibleTitleNode expects to have CollapsibleContentNode sibling");
+      }
+      const firstChild = contentNode.getFirstChild();
+      if ($isElementNode2(firstChild)) {
+        return firstChild;
+      } else {
+        const paragraph = $createParagraphNode();
+        contentNode.append(paragraph);
+        return paragraph;
+      }
+    } else {
+      const paragraph = $createParagraphNode();
+      containerNode.insertAfter(paragraph, restoreSelection);
+      return paragraph;
+    }
+  }
+};
+function $createCollapsibleTitleNode() {
+  return new CollapsibleTitleNode();
+}
+function $isCollapsibleTitleNode(node) {
+  return node instanceof CollapsibleTitleNode;
+}
+
+// src/nodes/AutocompleteNode.tsx
+import { TextNode } from "lexical";
+
+// src/plugins/AutocompletePlugin/index.tsx
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $isAtNodeEnd } from "@lexical/selection";
+import { mergeRegister } from "@lexical/utils";
+import {
+  $addUpdateTag,
+  $createTextNode,
+  $getNodeByKey,
+  $getSelection,
+  $isRangeSelection,
+  $isTextNode,
+  $setSelection,
+  COMMAND_PRIORITY_LOW,
+  HISTORY_MERGE_TAG,
+  KEY_ARROW_RIGHT_COMMAND,
+  KEY_TAB_COMMAND
+} from "lexical";
+import { useCallback as useCallback2, useEffect as useEffect2 } from "react";
+
+// src/context/ToolbarContext.tsx
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { jsx } from "react/jsx-runtime";
+var DEFAULT_FONT_SIZE = 15;
+var INITIAL_TOOLBAR_STATE = {
+  bgColor: "#fff",
+  blockType: "paragraph",
+  canRedo: false,
+  canUndo: false,
+  codeLanguage: "",
+  codeTheme: "",
+  elementFormat: "left",
+  fontColor: "#000",
+  fontFamily: "Arial",
+  // Current font size in px
+  fontSize: `${DEFAULT_FONT_SIZE}px`,
+  // Font size input value - for controlled input
+  fontSizeInputValue: `${DEFAULT_FONT_SIZE}`,
+  isBold: false,
+  isCode: false,
+  isHighlight: false,
+  isImageCaption: false,
+  isItalic: false,
+  isLink: false,
+  isRTL: false,
+  isStrikethrough: false,
+  isSubscript: false,
+  isSuperscript: false,
+  isUnderline: false,
+  isLowercase: false,
+  isUppercase: false,
+  isCapitalize: false,
+  rootType: "root",
+  listStartNumber: null
+};
+var Context = createContext(void 0);
+
+// src/plugins/AutocompletePlugin/index.tsx
+var uuid = Math.random().toString(36).replace(/[^a-z]+/g, "").substring(0, 5);
+
+// src/nodes/AutocompleteNode.tsx
+var AutocompleteNode = class _AutocompleteNode extends TextNode {
+  /**
+   * A unique uuid is generated for each session and assigned to the instance.
+   * This helps to:
+   * - Ensures max one Autocomplete node per session.
+   * - Ensure that when collaboration is enabled, this node is not shown in
+   *   other sessions.
+   * See https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/AutocompletePlugin/index.tsx
+   */
+  __uuid;
+  static clone(node) {
+    return new _AutocompleteNode(node.__text, node.__uuid, node.__key);
+  }
+  static getType() {
+    return "autocomplete";
+  }
+  static importDOM() {
+    return null;
+  }
+  static importJSON(serializedNode) {
+    return $createAutocompleteNode(serializedNode.text, serializedNode.uuid).updateFromJSON(serializedNode);
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      uuid: this.__uuid
+    };
+  }
+  constructor(text, uuid2, key) {
+    super(text, key);
+    this.__uuid = uuid2;
+  }
+  updateDOM(_prevNode, _dom, _config) {
+    return false;
+  }
+  exportDOM(_) {
+    return { element: null };
+  }
+  excludeFromCopy() {
+    return true;
+  }
+  createDOM(config) {
+    const dom = super.createDOM(config);
+    dom.classList.add(config.theme.autocomplete);
+    if (this.__uuid !== uuid) {
+      dom.style.display = "none";
+    }
+    return dom;
+  }
+};
+function $createAutocompleteNode(text, uuid2) {
+  return new AutocompleteNode(text, uuid2).setMode("token");
+}
+
+// src/nodes/index.ts
+init_DateTimeNode2();
+init_EmojiNode();
+init_EquationComponent();
+init_EquationNode();
+
+// src/nodes/FigmaNode.tsx
+import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents";
+import { DecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode";
+import { jsx as jsx8 } from "react/jsx-runtime";
+function FigmaComponent({ className, format, nodeKey, documentID }) {
+  return /* @__PURE__ */ jsx8(BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ jsx8(
+    "iframe",
+    {
+      title: `Figma Embed - ${documentID}`,
+      width: "560",
+      height: "315",
+      src: `https://www.figma.com/embed?embed_host=lexical&url=        https://www.figma.com/file/${documentID}`,
+      allowFullScreen: true
+    }
+  ) });
+}
+var FigmaNode = class _FigmaNode extends DecoratorBlockNode {
+  __id;
+  static getType() {
+    return "figma";
+  }
+  static clone(node) {
+    return new _FigmaNode(node.__id, node.__format, node.__key);
+  }
+  static importJSON(serializedNode) {
+    return $createFigmaNode(serializedNode.documentID).updateFromJSON(serializedNode);
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      documentID: this.__id
+    };
+  }
+  constructor(id, format, key) {
+    super(format, key);
+    this.__id = id;
+  }
+  updateDOM() {
+    return false;
+  }
+  getId() {
+    return this.__id;
+  }
+  getTextContent(_includeInert, _includeDirectionless) {
+    return `https://www.figma.com/file/${this.__id}`;
+  }
+  decorate(_editor, config) {
+    const embedBlockTheme = config.theme.embedBlock || {};
+    const className = {
+      base: embedBlockTheme.base || "",
+      focus: embedBlockTheme.focus || ""
+    };
+    return /* @__PURE__ */ jsx8(FigmaComponent, { className, format: this.__format, nodeKey: this.getKey(), documentID: this.__id });
+  }
+};
+function $createFigmaNode(documentID) {
+  return new FigmaNode(documentID);
+}
+function $isFigmaNode(node) {
+  return node instanceof FigmaNode;
+}
+
+// src/nodes/index.ts
+init_ImageComponent();
+init_ImageNode2();
+init_KeywordNode();
+
+// src/nodes/LayoutContainerNode.ts
+import { addClassNamesToElement } from "@lexical/utils";
+import { ElementNode as ElementNode4 } from "lexical";
+function $convertLayoutContainerElement(domNode) {
+  const styleAttributes = window.getComputedStyle(domNode);
+  const templateColumns = styleAttributes.getPropertyValue("grid-template-columns");
+  if (templateColumns) {
+    const node = $createLayoutContainerNode(templateColumns);
+    return { node };
+  }
+  return null;
+}
+var LayoutContainerNode = class _LayoutContainerNode extends ElementNode4 {
+  __templateColumns;
+  constructor(templateColumns, key) {
+    super(key);
+    this.__templateColumns = templateColumns;
+  }
+  static getType() {
+    return "layout-container";
+  }
+  static clone(node) {
+    return new _LayoutContainerNode(node.__templateColumns, node.__key);
+  }
+  createDOM(config) {
+    const dom = document.createElement("div");
+    dom.style.gridTemplateColumns = this.__templateColumns;
+    if (typeof config.theme.layoutContainer === "string") {
+      addClassNamesToElement(dom, config.theme.layoutContainer);
+    }
+    return dom;
+  }
+  exportDOM() {
+    const element = document.createElement("div");
+    element.style.gridTemplateColumns = this.__templateColumns;
+    element.setAttribute("data-lexical-layout-container", "true");
+    return { element };
+  }
+  updateDOM(prevNode, dom) {
+    if (prevNode.__templateColumns !== this.__templateColumns) {
+      dom.style.gridTemplateColumns = this.__templateColumns;
+    }
+    return false;
+  }
+  static importDOM() {
+    return {
+      div: (domNode) => {
+        if (!domNode.hasAttribute("data-lexical-layout-container")) {
+          return null;
+        }
+        return {
+          conversion: $convertLayoutContainerElement,
+          priority: 2
+        };
+      }
+    };
+  }
+  static importJSON(json) {
+    return $createLayoutContainerNode().updateFromJSON(json);
+  }
+  updateFromJSON(serializedNode) {
+    return super.updateFromJSON(serializedNode).setTemplateColumns(serializedNode.templateColumns);
+  }
+  isShadowRoot() {
+    return true;
+  }
+  canBeEmpty() {
+    return false;
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      templateColumns: this.__templateColumns
+    };
+  }
+  getTemplateColumns() {
+    return this.getLatest().__templateColumns;
+  }
+  setTemplateColumns(templateColumns) {
+    const self = this.getWritable();
+    self.__templateColumns = templateColumns;
+    return self;
+  }
+};
+function $createLayoutContainerNode(templateColumns = "") {
+  return new LayoutContainerNode(templateColumns);
+}
+function $isLayoutContainerNode(node) {
+  return node instanceof LayoutContainerNode;
+}
+
+// src/nodes/LayoutItemNode.ts
+import { addClassNamesToElement as addClassNamesToElement2 } from "@lexical/utils";
+import { $isParagraphNode as $isParagraphNode2, ElementNode as ElementNode5 } from "lexical";
+function $convertLayoutItemElement() {
+  return { node: $createLayoutItemNode() };
+}
+function $isEmptyLayoutItemNode(node) {
+  if (!$isLayoutItemNode(node) || node.getChildrenSize() !== 1) {
+    return false;
+  }
+  const firstChild = node.getFirstChild();
+  return $isParagraphNode2(firstChild) && firstChild.isEmpty();
+}
+var LayoutItemNode = class _LayoutItemNode extends ElementNode5 {
+  static getType() {
+    return "layout-item";
+  }
+  static clone(node) {
+    return new _LayoutItemNode(node.__key);
+  }
+  createDOM(config) {
+    const dom = document.createElement("div");
+    dom.setAttribute("data-lexical-layout-item", "true");
+    if (typeof config.theme.layoutItem === "string") {
+      addClassNamesToElement2(dom, config.theme.layoutItem);
+    }
+    return dom;
+  }
+  updateDOM() {
+    return false;
+  }
+  collapseAtStart() {
+    const parent = this.getParentOrThrow();
+    if (this.is(parent.getFirstChild()) && parent.getChildren().every($isEmptyLayoutItemNode)) {
+      parent.remove();
+      return true;
+    }
+    return false;
+  }
+  static importDOM() {
+    return {
+      div: (domNode) => {
+        if (!domNode.hasAttribute("data-lexical-layout-item")) {
+          return null;
+        }
+        return {
+          conversion: $convertLayoutItemElement,
+          priority: 2
+        };
+      }
+    };
+  }
+  static importJSON(serializedNode) {
+    return $createLayoutItemNode().updateFromJSON(serializedNode);
+  }
+  isShadowRoot() {
+    return true;
+  }
+};
+function $createLayoutItemNode() {
+  return new LayoutItemNode();
+}
+function $isLayoutItemNode(node) {
+  return node instanceof LayoutItemNode;
+}
+
+// src/nodes/index.ts
+init_MermaidNode2();
+
+// src/nodes/NotionLikeEditorNodes.ts
+import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import { HorizontalRuleNode } from "@lexical/extension";
+import { HashtagNode as HashtagNode2 } from "@lexical/hashtag";
+import { AutoLinkNode, LinkNode as LinkNode2 } from "@lexical/link";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { MarkNode } from "@lexical/mark";
+import { OverflowNode } from "@lexical/overflow";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
+init_DateTimeNode2();
+init_EmojiNode();
+init_EquationNode();
+init_ImageNode2();
+init_KeywordNode();
+init_MermaidNode2();
+
+// src/nodes/PageBreakNode/index.tsx
+import { useLexicalComposerContext as useLexicalComposerContext7 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalNodeSelection as useLexicalNodeSelection3 } from "@lexical/react/useLexicalNodeSelection";
+import { mergeRegister as mergeRegister4 } from "@lexical/utils";
+import {
+  CLICK_COMMAND as CLICK_COMMAND2,
+  COMMAND_PRIORITY_HIGH as COMMAND_PRIORITY_HIGH2,
+  COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW3,
+  DecoratorNode as DecoratorNode5
+} from "lexical";
+import { useEffect as useEffect9 } from "react";
+import { jsx as jsx17 } from "react/jsx-runtime";
+function PageBreakComponent({ nodeKey }) {
+  const [editor] = useLexicalComposerContext7();
+  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection3(nodeKey);
+  useEffect9(() => {
+    return mergeRegister4(
+      editor.registerCommand(
+        CLICK_COMMAND2,
+        (event) => {
+          const pbElem = editor.getElementByKey(nodeKey);
+          if (event.target === pbElem) {
+            if (!event.shiftKey) {
+              clearSelection();
+            }
+            setSelected(!isSelected);
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW3
+      )
+    );
+  }, [clearSelection, editor, isSelected, nodeKey, setSelected]);
+  useEffect9(() => {
+    const pbElem = editor.getElementByKey(nodeKey);
+    if (pbElem !== null) {
+      pbElem.className = isSelected ? "selected" : "";
+    }
+  }, [editor, isSelected, nodeKey]);
+  return null;
+}
+var PageBreakNode = class _PageBreakNode extends DecoratorNode5 {
+  static getType() {
+    return "page-break";
+  }
+  static clone(node) {
+    return new _PageBreakNode(node.__key);
+  }
+  static importJSON(serializedNode) {
+    return $createPageBreakNode().updateFromJSON(serializedNode);
+  }
+  static importDOM() {
+    return {
+      figure: (domNode) => {
+        const tp = domNode.getAttribute("type");
+        if (tp !== _PageBreakNode.getType()) {
+          return null;
+        }
+        return {
+          conversion: $convertPageBreakElement,
+          priority: COMMAND_PRIORITY_HIGH2
+        };
+      }
+    };
+  }
+  createDOM() {
+    const el = document.createElement("figure");
+    el.style.pageBreakAfter = "always";
+    el.setAttribute("type", this.getType());
+    return el;
+  }
+  getTextContent() {
+    return "\n";
+  }
+  isInline() {
+    return false;
+  }
+  updateDOM() {
+    return false;
+  }
+  decorate() {
+    return /* @__PURE__ */ jsx17(PageBreakComponent, { nodeKey: this.__key });
+  }
+};
+function $convertPageBreakElement() {
+  return { node: $createPageBreakNode() };
+}
+function $createPageBreakNode() {
+  return new PageBreakNode();
+}
+function $isPageBreakNode(node) {
+  return node instanceof PageBreakNode;
+}
+
+// src/nodes/SpecialTextNode.tsx
+import { addClassNamesToElement as addClassNamesToElement3 } from "@lexical/utils";
+import { $applyNodeReplacement as $applyNodeReplacement6, TextNode as TextNode6 } from "lexical";
+var SpecialTextNode = class _SpecialTextNode extends TextNode6 {
+  static getType() {
+    return "specialText";
+  }
+  static clone(node) {
+    return new _SpecialTextNode(node.__text, node.__key);
+  }
+  createDOM(config) {
+    const dom = document.createElement("span");
+    addClassNamesToElement3(dom, config.theme.specialText);
+    dom.textContent = this.getTextContent();
+    return dom;
+  }
+  updateDOM(prevNode, dom, config) {
+    if (prevNode.__text.startsWith("[") && prevNode.__text.endsWith("]")) {
+      const strippedText = this.__text.substring(1, this.__text.length - 1);
+      dom.textContent = strippedText;
+    }
+    addClassNamesToElement3(dom, config.theme.specialText);
+    return false;
+  }
+  static importJSON(serializedNode) {
+    return $createSpecialTextNode().updateFromJSON(serializedNode);
+  }
+  isTextEntity() {
+    return true;
+  }
+  canInsertTextAfter() {
+    return false;
+  }
+};
+function $createSpecialTextNode(text = "") {
+  return $applyNodeReplacement6(new SpecialTextNode(text));
+}
+function $isSpecialTextNode(node) {
+  return node instanceof SpecialTextNode;
+}
+
+// src/nodes/NotionLikeEditorNodes.ts
+init_StickyNode2();
+
+// src/nodes/TweetNode.tsx
+import { BlockWithAlignableContents as BlockWithAlignableContents2 } from "@lexical/react/LexicalBlockWithAlignableContents";
+import { DecoratorBlockNode as DecoratorBlockNode2 } from "@lexical/react/LexicalDecoratorBlockNode";
+import { useCallback as useCallback5, useEffect as useEffect11, useRef as useRef8, useState as useState7 } from "react";
+import { jsx as jsx20, jsxs as jsxs8 } from "react/jsx-runtime";
+var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
+function $convertTweetElement(domNode) {
+  const id = domNode.getAttribute("data-lexical-tweet-id");
+  if (id) {
+    const node = $createTweetNode(id);
+    return { node };
+  }
+  return null;
+}
+var isTwitterScriptLoading = true;
+function TweetComponent({
+  className,
+  format,
+  loadingComponent,
+  nodeKey,
+  onError,
+  onLoad,
+  tweetID
+}) {
+  const containerRef = useRef8(null);
+  const previousTweetIDRef = useRef8("");
+  const [isTweetLoading, setIsTweetLoading] = useState7(false);
+  const createTweet = useCallback5(async () => {
+    try {
+      await window.twttr.widgets.createTweet(tweetID, containerRef.current);
+      setIsTweetLoading(false);
+      isTwitterScriptLoading = false;
+      if (onLoad) {
+        onLoad();
+      }
+    } catch (error) {
+      if (onError) {
+        onError(String(error));
+      }
+    }
+  }, [onError, onLoad, tweetID]);
+  useEffect11(() => {
+    if (tweetID !== previousTweetIDRef.current) {
+      setIsTweetLoading(true);
+      if (isTwitterScriptLoading) {
+        const script = document.createElement("script");
+        script.src = WIDGET_SCRIPT_URL;
+        script.async = true;
+        document.body?.appendChild(script);
+        script.onload = createTweet;
+        if (onError) {
+          script.onerror = onError;
+        }
+      } else {
+        createTweet();
+      }
+      if (previousTweetIDRef) {
+        previousTweetIDRef.current = tweetID;
+      }
+    }
+  }, [createTweet, onError, tweetID]);
+  return /* @__PURE__ */ jsxs8(BlockWithAlignableContents2, { className, format, nodeKey, children: [
+    isTweetLoading ? loadingComponent : null,
+    /* @__PURE__ */ jsx20("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
+  ] });
+}
+var TweetNode = class _TweetNode extends DecoratorBlockNode2 {
+  __id;
+  static getType() {
+    return "tweet";
+  }
+  static clone(node) {
+    return new _TweetNode(node.__id, node.__format, node.__key);
+  }
+  static importJSON(serializedNode) {
+    return $createTweetNode(serializedNode.id).updateFromJSON(serializedNode);
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      id: this.getId()
+    };
+  }
+  static importDOM() {
+    return {
+      div: (domNode) => {
+        if (!domNode.hasAttribute("data-lexical-tweet-id")) {
+          return null;
+        }
+        return {
+          conversion: $convertTweetElement,
+          priority: 2
+        };
+      }
+    };
+  }
+  exportDOM() {
+    const element = document.createElement("div");
+    element.setAttribute("data-lexical-tweet-id", this.__id);
+    const text = document.createTextNode(this.getTextContent());
+    element.append(text);
+    return { element };
+  }
+  constructor(id, format, key) {
+    super(format, key);
+    this.__id = id;
+  }
+  getId() {
+    return this.__id;
+  }
+  getTextContent(_includeInert, _includeDirectionless) {
+    return `https://x.com/i/web/status/${this.__id}`;
+  }
+  decorate(_editor, config) {
+    const embedBlockTheme = config.theme.embedBlock || {};
+    const className = {
+      base: embedBlockTheme.base || "",
+      focus: embedBlockTheme.focus || ""
+    };
+    return /* @__PURE__ */ jsx20(
+      TweetComponent,
+      {
+        className,
+        format: this.__format,
+        loadingComponent: "Loading...",
+        nodeKey: this.getKey(),
+        tweetID: this.__id
+      }
+    );
+  }
+};
+function $createTweetNode(tweetID) {
+  return new TweetNode(tweetID);
+}
+function $isTweetNode(node) {
+  return node instanceof TweetNode;
+}
+
+// src/nodes/YouTubeNode.tsx
+import { BlockWithAlignableContents as BlockWithAlignableContents3 } from "@lexical/react/LexicalBlockWithAlignableContents";
+import { DecoratorBlockNode as DecoratorBlockNode3 } from "@lexical/react/LexicalDecoratorBlockNode";
+import { jsx as jsx21 } from "react/jsx-runtime";
+function YouTubeComponent({ className, format, nodeKey, videoID }) {
+  return /* @__PURE__ */ jsx21(BlockWithAlignableContents3, { className, format, nodeKey, children: /* @__PURE__ */ jsx21(
+    "iframe",
+    {
+      width: "560",
+      height: "315",
+      src: `https://www.youtube-nocookie.com/embed/${videoID}`,
+      frameBorder: "0",
+      allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+      allowFullScreen: true,
+      title: "YouTube video"
+    }
+  ) });
+}
+function $convertYoutubeElement(domNode) {
+  const videoID = domNode.getAttribute("data-lexical-youtube");
+  if (videoID) {
+    const node = $createYouTubeNode(videoID);
+    return { node };
+  }
+  return null;
+}
+var YouTubeNode = class _YouTubeNode extends DecoratorBlockNode3 {
+  __id;
+  static getType() {
+    return "youtube";
+  }
+  static clone(node) {
+    return new _YouTubeNode(node.__id, node.__format, node.__key);
+  }
+  static importJSON(serializedNode) {
+    return $createYouTubeNode(serializedNode.videoID).updateFromJSON(serializedNode);
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      videoID: this.__id
+    };
+  }
+  constructor(id, format, key) {
+    super(format, key);
+    this.__id = id;
+  }
+  exportDOM() {
+    const element = document.createElement("iframe");
+    element.setAttribute("data-lexical-youtube", this.__id);
+    element.setAttribute("width", "560");
+    element.setAttribute("height", "315");
+    element.setAttribute("src", `https://www.youtube-nocookie.com/embed/${this.__id}`);
+    element.setAttribute("frameborder", "0");
+    element.setAttribute(
+      "allow",
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    );
+    element.setAttribute("allowfullscreen", "true");
+    element.setAttribute("title", "YouTube video");
+    return { element };
+  }
+  static importDOM() {
+    return {
+      iframe: (domNode) => {
+        if (!domNode.hasAttribute("data-lexical-youtube")) {
+          return null;
+        }
+        return {
+          conversion: $convertYoutubeElement,
+          priority: 1
+        };
+      }
+    };
+  }
+  updateDOM() {
+    return false;
+  }
+  getId() {
+    return this.__id;
+  }
+  getTextContent(_includeInert, _includeDirectionless) {
+    return `https://www.youtube.com/watch?v=${this.__id}`;
+  }
+  decorate(_editor, config) {
+    const embedBlockTheme = config.theme.embedBlock || {};
+    const className = {
+      base: embedBlockTheme.base || "",
+      focus: embedBlockTheme.focus || ""
+    };
+    return /* @__PURE__ */ jsx21(YouTubeComponent, { className, format: this.__format, nodeKey: this.getKey(), videoID: this.__id });
+  }
+};
+function $createYouTubeNode(videoID) {
+  return new YouTubeNode(videoID);
+}
+function $isYouTubeNode(node) {
+  return node instanceof YouTubeNode;
+}
+
+// src/nodes/NotionLikeEditorNodes.ts
+var NotionLikeEditorNodes = [
+  HeadingNode,
+  ListNode,
+  ListItemNode,
+  QuoteNode,
+  CodeNode,
+  TableNode,
+  TableCellNode,
+  TableRowNode,
+  HashtagNode2,
+  CodeHighlightNode,
+  AutoLinkNode,
+  LinkNode2,
+  OverflowNode,
+  StickyNode,
+  ImageNode,
+  EmojiNode,
+  EquationNode,
+  AutocompleteNode,
+  KeywordNode,
+  HorizontalRuleNode,
+  TweetNode,
+  YouTubeNode,
+  FigmaNode,
+  MarkNode,
+  CollapsibleContainerNode,
+  CollapsibleContentNode,
+  CollapsibleTitleNode,
+  PageBreakNode,
+  LayoutContainerNode,
+  LayoutItemNode,
+  MermaidNode,
+  SpecialTextNode,
+  DateTimeNode
+];
+var NotionLikeEditorNodes_default = NotionLikeEditorNodes;
+
+// src/nodes/index.ts
+init_StickyComponent();
+init_StickyNode2();
+export {
+  $createAutocompleteNode,
+  $createCollapsibleContainerNode,
+  $createCollapsibleContentNode,
+  $createCollapsibleTitleNode,
+  $createDateTimeNode,
+  $createEmojiNode,
+  $createEquationNode,
+  $createFigmaNode,
+  $createImageNode,
+  $createKeywordNode,
+  $createLayoutContainerNode,
+  $createLayoutItemNode,
+  $createMermaidNode,
+  $createPageBreakNode,
+  $createSpecialTextNode,
+  $createStickyNode,
+  $createTweetNode,
+  $createYouTubeNode,
+  $isCollapsibleContainerNode,
+  $isCollapsibleContentNode,
+  $isCollapsibleTitleNode,
+  $isDateTimeNode,
+  $isEmojiNode,
+  $isEquationNode,
+  $isFigmaNode,
+  $isImageNode,
+  $isKeywordNode,
+  $isLayoutContainerNode,
+  $isLayoutItemNode,
+  $isMermaidNode,
+  $isPageBreakNode,
+  $isSpecialTextNode,
+  $isStickyNode,
+  $isTweetNode,
+  $isYouTubeNode,
+  AutocompleteNode,
+  CollapsibleContainerNode,
+  CollapsibleContentNode,
+  CollapsibleTitleNode,
+  DateTimeNode,
+  EmojiNode,
+  EquationComponent2 as EquationComponent,
+  EquationNode,
+  FigmaNode,
+  ImageComponent2 as ImageComponent,
+  ImageNode,
+  KeywordNode,
+  LayoutContainerNode,
+  LayoutItemNode,
+  MermaidNode,
+  NotionLikeEditorNodes_default as NotionLikeEditorNodes,
+  PageBreakNode,
+  SpecialTextNode,
+  StickyComponent,
+  StickyNode,
+  TweetNode,
+  YouTubeNode
+};
+//# sourceMappingURL=nodes.mjs.map
