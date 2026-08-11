@@ -445,6 +445,7 @@ public abstract class GroupChatReplyTaskBase
     /// <param name="triggerMessage">トリガーメッセージ</param>
     /// <param name="senderUser">送信者ユーザー</param>
     /// <param name="bot">使用する Bot</param>
+    /// <param name="isExplicitBotMention">明示的に Bot がメンションされているかどうか</param>
     /// <returns>メッセージ内容</returns>
     protected abstract Task<string> BuildReplyMessageAsync(
         int organizationId,
