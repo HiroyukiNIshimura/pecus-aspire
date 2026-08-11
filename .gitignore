@@ -86,6 +86,9 @@ publish/
 # @coati/editor のビルド済み dist はコミット対象（Docker ビルド高速化のため）
 !packages/coati-editor/dist/
 
+# @coati/editor の型定義ロールアップ用一時出力
+packages/coati-editor/.dts-tmp/
+
 # Windows Azure Build Output
 csx/
 *.build.csdef

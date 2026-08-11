@@ -378,79 +378,6 @@ var init_EmojiNode = __esm({
   }
 });
 
-// ../../node_modules/react-error-boundary/dist/react-error-boundary.js
-function C(r = [], e = []) {
-  return r.length !== e.length || r.some((t, o) => !Object.is(t, e[o]));
-}
-var import_react5, h, c, m;
-var init_react_error_boundary = __esm({
-  "../../node_modules/react-error-boundary/dist/react-error-boundary.js"() {
-    "use strict";
-    "use client";
-    import_react5 = require("react");
-    h = (0, import_react5.createContext)(null);
-    c = {
-      didCatch: false,
-      error: null
-    };
-    m = class extends import_react5.Component {
-      constructor(e) {
-        super(e), this.resetErrorBoundary = this.resetErrorBoundary.bind(this), this.state = c;
-      }
-      static getDerivedStateFromError(e) {
-        return { didCatch: true, error: e };
-      }
-      resetErrorBoundary(...e) {
-        const { error: t } = this.state;
-        t !== null && (this.props.onReset?.({
-          args: e,
-          reason: "imperative-api"
-        }), this.setState(c));
-      }
-      componentDidCatch(e, t) {
-        this.props.onError?.(e, t);
-      }
-      componentDidUpdate(e, t) {
-        const { didCatch: o } = this.state, { resetKeys: s } = this.props;
-        o && t.error !== null && C(e.resetKeys, s) && (this.props.onReset?.({
-          next: s,
-          prev: e.resetKeys,
-          reason: "keys"
-        }), this.setState(c));
-      }
-      render() {
-        const { children: e, fallbackRender: t, FallbackComponent: o, fallback: s } = this.props, { didCatch: n, error: a } = this.state;
-        let i = e;
-        if (n) {
-          const u = {
-            error: a,
-            resetErrorBoundary: this.resetErrorBoundary
-          };
-          if (typeof t == "function")
-            i = t(u);
-          else if (o)
-            i = (0, import_react5.createElement)(o, u);
-          else if (s !== void 0)
-            i = s;
-          else
-            throw a;
-        }
-        return (0, import_react5.createElement)(
-          h.Provider,
-          {
-            value: {
-              didCatch: n,
-              error: a,
-              resetErrorBoundary: this.resetErrorBoundary
-            }
-          },
-          i
-        );
-      }
-    };
-  }
-});
-
 // src/ui/EquationEditor.css
 var init_EquationEditor = __esm({
   "src/ui/EquationEditor.css"() {
@@ -488,15 +415,15 @@ function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
     /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "EquationEditor_dollarSign", children: "\n$$" })
   ] });
 }
-var import_lexical9, import_react6, import_jsx_runtime4, EquationEditor_default;
+var import_lexical9, import_react5, import_jsx_runtime4, EquationEditor_default;
 var init_EquationEditor2 = __esm({
   "src/ui/EquationEditor.tsx"() {
     "use strict";
     init_EquationEditor();
     import_lexical9 = require("lexical");
-    import_react6 = require("react");
+    import_react5 = require("react");
     import_jsx_runtime4 = require("react/jsx-runtime");
-    EquationEditor_default = (0, import_react6.forwardRef)(EquationEditor);
+    EquationEditor_default = (0, import_react5.forwardRef)(EquationEditor);
   }
 });
 
@@ -506,8 +433,8 @@ function KatexRenderer({
   inline,
   onDoubleClick
 }) {
-  const katexElementRef = (0, import_react7.useRef)(null);
-  (0, import_react7.useEffect)(() => {
+  const katexElementRef = (0, import_react6.useRef)(null);
+  (0, import_react6.useEffect)(() => {
     const katexElement = katexElementRef.current;
     if (katexElement !== null) {
       import_katex.default.render(equation, katexElement, {
@@ -548,12 +475,12 @@ function KatexRenderer({
     ] })
   );
 }
-var import_katex, import_react7, import_jsx_runtime5;
+var import_katex, import_react6, import_jsx_runtime5;
 var init_KatexRenderer = __esm({
   "src/ui/KatexRenderer.tsx"() {
     "use strict";
     import_katex = __toESM(require("katex"));
-    import_react7 = require("react");
+    import_react6 = require("react");
     import_jsx_runtime5 = require("react/jsx-runtime");
   }
 });
@@ -673,10 +600,10 @@ __export(EquationComponent_exports, {
 function EquationComponent2({ equation, inline, nodeKey }) {
   const [editor] = (0, import_LexicalComposerContext3.useLexicalComposerContext)();
   const isEditable = (0, import_useLexicalEditable.useLexicalEditable)();
-  const [equationValue, setEquationValue] = (0, import_react8.useState)(equation);
-  const [showEquationEditor, setShowEquationEditor] = (0, import_react8.useState)(false);
-  const inputRef = (0, import_react8.useRef)(null);
-  const onHide = (0, import_react8.useCallback)(
+  const [equationValue, setEquationValue] = (0, import_react7.useState)(equation);
+  const [showEquationEditor, setShowEquationEditor] = (0, import_react7.useState)(false);
+  const inputRef = (0, import_react7.useRef)(null);
+  const onHide = (0, import_react7.useCallback)(
     (restoreSelection) => {
       setShowEquationEditor(false);
       editor.update(() => {
@@ -691,12 +618,12 @@ function EquationComponent2({ equation, inline, nodeKey }) {
     },
     [editor, equationValue, nodeKey]
   );
-  (0, import_react8.useEffect)(() => {
+  (0, import_react7.useEffect)(() => {
     if (!showEquationEditor && equationValue !== equation) {
       setEquationValue(equation);
     }
   }, [showEquationEditor, equation, equationValue]);
-  (0, import_react8.useEffect)(() => {
+  (0, import_react7.useEffect)(() => {
     if (!isEditable) {
       return;
     }
@@ -740,7 +667,7 @@ function EquationComponent2({ equation, inline, nodeKey }) {
       });
     }
   }, [editor, nodeKey, onHide, showEquationEditor, isEditable]);
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(import_jsx_runtime7.Fragment, { children: showEquationEditor && isEditable ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(EquationEditor_default, { equation: equationValue, setEquation: setEquationValue, inline, ref: inputRef }) : /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(import_jsx_runtime7.Fragment, { children: showEquationEditor && isEditable ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(EquationEditor_default, { equation: equationValue, setEquation: setEquationValue, inline, ref: inputRef }) : /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(import_react_error_boundary.ErrorBoundary, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
     KatexRenderer,
     {
       equation: equationValue,
@@ -753,7 +680,7 @@ function EquationComponent2({ equation, inline, nodeKey }) {
     }
   ) }) });
 }
-var import_LexicalComposerContext3, import_useLexicalEditable, import_utils5, import_lexical11, import_react8, import_jsx_runtime7;
+var import_LexicalComposerContext3, import_useLexicalEditable, import_utils5, import_lexical11, import_react7, import_react_error_boundary, import_jsx_runtime7;
 var init_EquationComponent = __esm({
   "src/nodes/EquationComponent.tsx"() {
     "use strict";
@@ -761,8 +688,8 @@ var init_EquationComponent = __esm({
     import_useLexicalEditable = require("@lexical/react/useLexicalEditable");
     import_utils5 = require("@lexical/utils");
     import_lexical11 = require("lexical");
-    import_react8 = require("react");
-    init_react_error_boundary();
+    import_react7 = require("react");
+    import_react_error_boundary = require("react-error-boundary");
     init_EquationEditor2();
     init_KatexRenderer();
     init_EquationNode();
@@ -777,16 +704,16 @@ var init_ImageNode = __esm({
 });
 
 // src/context/SharedHistoryContext.tsx
-var import_LexicalHistoryPlugin, import_react9, import_jsx_runtime9, Context2, useSharedHistoryContext;
+var import_LexicalHistoryPlugin, import_react8, import_jsx_runtime9, Context2, useSharedHistoryContext;
 var init_SharedHistoryContext = __esm({
   "src/context/SharedHistoryContext.tsx"() {
     "use strict";
     import_LexicalHistoryPlugin = require("@lexical/react/LexicalHistoryPlugin");
-    import_react9 = require("react");
+    import_react8 = require("react");
     import_jsx_runtime9 = require("react/jsx-runtime");
-    Context2 = (0, import_react9.createContext)({});
+    Context2 = (0, import_react8.createContext)({});
     useSharedHistoryContext = () => {
-      return (0, import_react9.useContext)(Context2);
+      return (0, import_react8.useContext)(Context2);
     };
   }
 });
@@ -829,7 +756,7 @@ function $textNodeTransform(node) {
   }
 }
 function useEmojis(editor) {
-  (0, import_react10.useEffect)(() => {
+  (0, import_react9.useEffect)(() => {
     if (!editor.hasNodes([EmojiNode])) {
       throw new Error("EmojisPlugin: EmojiNode not registered on editor");
     }
@@ -841,13 +768,13 @@ function EmojisPlugin() {
   useEmojis(editor);
   return null;
 }
-var import_LexicalComposerContext4, import_lexical13, import_react10, emojis;
+var import_LexicalComposerContext4, import_lexical13, import_react9, emojis;
 var init_EmojisPlugin = __esm({
   "src/plugins/EmojisPlugin/index.ts"() {
     "use strict";
     import_LexicalComposerContext4 = require("@lexical/react/LexicalComposerContext");
     import_lexical13 = require("lexical");
-    import_react10 = require("react");
+    import_react9 = require("react");
     init_EmojiNode();
     emojis = /* @__PURE__ */ new Map([
       [":)", ["emoji happysmile", "\u{1F642}"]],
@@ -937,12 +864,12 @@ function ImageResizer({
   setShowCaption,
   captionsEnabled
 }) {
-  const controlWrapperRef = (0, import_react11.useRef)(null);
-  const userSelect = (0, import_react11.useRef)({
+  const controlWrapperRef = (0, import_react10.useRef)(null);
+  const userSelect = (0, import_react10.useRef)({
     priority: "",
     value: "default"
   });
-  const positioningRef = (0, import_react11.useRef)({
+  const positioningRef = (0, import_react10.useRef)({
     currentHeight: 0,
     currentWidth: 0,
     direction: 0,
@@ -1151,12 +1078,12 @@ function ImageResizer({
     )
   ] });
 }
-var import_utils6, import_react11, import_jsx_runtime12, Direction;
+var import_utils6, import_react10, import_jsx_runtime12, Direction;
 var init_ImageResizer = __esm({
   "src/ui/ImageResizer.tsx"() {
     "use strict";
     import_utils6 = require("@lexical/utils");
-    import_react11 = require("react");
+    import_react10 = require("react");
     import_jsx_runtime12 = require("react/jsx-runtime");
     Direction = {
       east: 1 << 0,
@@ -1476,7 +1403,7 @@ __export(ImageComponent_exports, {
 });
 function DisableCaptionOnBlur({ setShowCaption }) {
   const [editor] = (0, import_LexicalComposerContext5.useLexicalComposerContext)();
-  (0, import_react12.useEffect)(
+  (0, import_react11.useEffect)(
     () => editor.registerCommand(
       import_lexical16.BLUR_COMMAND,
       () => {
@@ -1492,7 +1419,7 @@ function DisableCaptionOnBlur({ setShowCaption }) {
 }
 function CaptionOnChangePlugin({ parentEditor, nodeKey }) {
   const [captionEditor] = (0, import_LexicalComposerContext5.useLexicalComposerContext)();
-  (0, import_react12.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     return captionEditor.registerUpdateListener(({ dirtyElements, dirtyLeaves, tags }) => {
       if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
         return;
@@ -1553,7 +1480,7 @@ function LazyImage({
 }) {
   const isSVGImage = isSVG(src);
   const status = useSuspenseImage(src);
-  (0, import_react12.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     if (status.error) {
       onError();
     }
@@ -1653,35 +1580,35 @@ function ImageComponent2({
   caption,
   captionsEnabled
 }) {
-  const imageRef = (0, import_react12.useRef)(null);
-  const buttonRef = (0, import_react12.useRef)(null);
+  const imageRef = (0, import_react11.useRef)(null);
+  const buttonRef = (0, import_react11.useRef)(null);
   const [isSelected, setSelected, clearSelection] = (0, import_useLexicalNodeSelection2.useLexicalNodeSelection)(nodeKey);
-  const [isResizing, setIsResizing] = (0, import_react12.useState)(false);
+  const [isResizing, setIsResizing] = (0, import_react11.useState)(false);
   const [editor] = (0, import_LexicalComposerContext5.useLexicalComposerContext)();
-  const activeEditorRef = (0, import_react12.useRef)(null);
-  const [isLoadError, setIsLoadError] = (0, import_react12.useState)(false);
-  const [isPreviewOpen, setIsPreviewOpen] = (0, import_react12.useState)(false);
+  const activeEditorRef = (0, import_react11.useRef)(null);
+  const [isLoadError, setIsLoadError] = (0, import_react11.useState)(false);
+  const [isPreviewOpen, setIsPreviewOpen] = (0, import_react11.useState)(false);
   const isEditable = (0, import_useLexicalEditable2.useLexicalEditable)();
   const isViewerZoomable = !isEditable && !isLoadError;
-  const isInNodeSelection = (0, import_react12.useMemo)(
+  const isInNodeSelection = (0, import_react11.useMemo)(
     () => isSelected && editor.getEditorState().read(() => {
       const selection = (0, import_lexical16.$getSelection)();
       return (0, import_lexical16.$isNodeSelection)(selection) && selection.has(nodeKey);
     }),
     [editor, isSelected, nodeKey]
   );
-  const $onEnter = (0, import_react12.useCallback)(
+  const $onEnter = (0, import_react11.useCallback)(
     (event) => {
       const latestSelection = (0, import_lexical16.$getSelection)();
       const buttonElem = buttonRef.current;
       if ((0, import_lexical16.$isNodeSelection)(latestSelection) && latestSelection.has(nodeKey) && latestSelection.getNodes().length === 1) {
         if (showCaption) {
           (0, import_lexical16.$setSelection)(null);
-          event.preventDefault();
+          event?.preventDefault();
           caption.focus();
           return true;
         } else if (buttonElem !== null && buttonElem !== document.activeElement) {
-          event.preventDefault();
+          event?.preventDefault();
           buttonElem.focus();
           return true;
         }
@@ -1690,9 +1617,9 @@ function ImageComponent2({
     },
     [caption, nodeKey, showCaption]
   );
-  const $onEscape = (0, import_react12.useCallback)(
+  const $onEscape = (0, import_react11.useCallback)(
     (event) => {
-      if (activeEditorRef.current === caption || buttonRef.current === event.target) {
+      if (activeEditorRef.current === caption || buttonRef.current === event?.target) {
         (0, import_lexical16.$setSelection)(null);
         editor.update(() => {
           setSelected(true);
@@ -1707,7 +1634,7 @@ function ImageComponent2({
     },
     [caption, editor, setSelected]
   );
-  const onClick = (0, import_react12.useCallback)(
+  const onClick = (0, import_react11.useCallback)(
     (payload) => {
       const event = payload;
       if (isResizing) {
@@ -1730,7 +1657,7 @@ function ImageComponent2({
     },
     [isResizing, isSelected, setSelected, clearSelection, isEditable, isLoadError]
   );
-  const onRightClick = (0, import_react12.useCallback)(
+  const onRightClick = (0, import_react11.useCallback)(
     (event) => {
       editor.getEditorState().read(() => {
         const latestSelection = (0, import_lexical16.$getSelection)();
@@ -1742,7 +1669,7 @@ function ImageComponent2({
     },
     [editor]
   );
-  (0, import_react12.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     return (0, import_utils7.mergeRegister)(
       editor.registerCommand(
         import_lexical16.SELECTION_CHANGE_COMMAND,
@@ -1765,7 +1692,7 @@ function ImageComponent2({
       )
     );
   }, [editor]);
-  (0, import_react12.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     let rootCleanup = noop;
     return (0, import_utils7.mergeRegister)(
       editor.registerCommand(import_lexical16.CLICK_COMMAND, onClick, import_lexical16.COMMAND_PRIORITY_LOW),
@@ -1812,10 +1739,10 @@ function ImageComponent2({
   const onResizeStart = () => {
     setIsResizing(true);
   };
-  const closePreview = (0, import_react12.useCallback)(() => {
+  const closePreview = (0, import_react11.useCallback)(() => {
     setIsPreviewOpen(false);
   }, []);
-  (0, import_react12.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     if (!isPreviewOpen) {
       return;
     }
@@ -1832,7 +1759,7 @@ function ImageComponent2({
   useSharedHistoryContext();
   const draggable = isInNodeSelection && !isResizing;
   const isFocused = (isSelected || isResizing) && isEditable;
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_react12.Suspense, { fallback: null, children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_react11.Suspense, { fallback: null, children: [
     /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { draggable, children: isLoadError ? /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(BrokenImage, {}) : /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
       LazyImage,
       {
@@ -1912,7 +1839,7 @@ function ImageComponent2({
     )
   ] });
 }
-var import_LexicalComposerContext5, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection2, import_utils7, import_lexical16, import_react12, import_react_dom, import_jsx_runtime14, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
+var import_LexicalComposerContext5, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection2, import_utils7, import_lexical16, import_react11, import_react_dom, import_jsx_runtime14, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
 var init_ImageComponent = __esm({
   "src/nodes/ImageComponent.tsx"() {
     "use strict";
@@ -1926,7 +1853,7 @@ var init_ImageComponent = __esm({
     import_useLexicalNodeSelection2 = require("@lexical/react/useLexicalNodeSelection");
     import_utils7 = require("@lexical/utils");
     import_lexical16 = require("lexical");
-    import_react12 = require("react");
+    import_react11 = require("react");
     import_react_dom = require("react-dom");
     init_SharedHistoryContext();
     init_image_broken();
@@ -1965,24 +1892,24 @@ function normalizeError(error) {
 function MermaidComponent({ code, nodeKey }) {
   const [editor] = (0, import_LexicalComposerContext6.useLexicalComposerContext)();
   const isEditable = (0, import_useLexicalEditable3.useLexicalEditable)();
-  const [source, setSource] = (0, import_react13.useState)(code);
-  const [svg, setSvg] = (0, import_react13.useState)("");
-  const [errorMessage, setErrorMessage] = (0, import_react13.useState)("");
-  const [isRendering, setIsRendering] = (0, import_react13.useState)(false);
-  const hasSource = (0, import_react13.useMemo)(() => source.trim().length > 0, [source]);
-  const [isDark, setIsDark] = (0, import_react13.useState)(getIsDark);
-  const renderCountRef = (0, import_react13.useRef)(0);
-  (0, import_react13.useEffect)(() => {
+  const [source, setSource] = (0, import_react12.useState)(code);
+  const [svg, setSvg] = (0, import_react12.useState)("");
+  const [errorMessage, setErrorMessage] = (0, import_react12.useState)("");
+  const [isRendering, setIsRendering] = (0, import_react12.useState)(false);
+  const hasSource = (0, import_react12.useMemo)(() => source.trim().length > 0, [source]);
+  const [isDark, setIsDark] = (0, import_react12.useState)(getIsDark);
+  const renderCountRef = (0, import_react12.useRef)(0);
+  (0, import_react12.useEffect)(() => {
     const observer = new MutationObserver(() => {
       setIsDark(getIsDark());
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => observer.disconnect();
   }, []);
-  (0, import_react13.useEffect)(() => {
+  (0, import_react12.useEffect)(() => {
     setSource(code);
   }, [code]);
-  (0, import_react13.useEffect)(() => {
+  (0, import_react12.useEffect)(() => {
     if (!hasSource) {
       setSvg("");
       setErrorMessage("");
@@ -2066,14 +1993,14 @@ function MermaidComponent({ code, nodeKey }) {
     ] })
   ] });
 }
-var import_LexicalComposerContext6, import_useLexicalEditable3, import_lexical19, import_react13, import_jsx_runtime15, RENDER_DELAY_MS;
+var import_LexicalComposerContext6, import_useLexicalEditable3, import_lexical19, import_react12, import_jsx_runtime15, RENDER_DELAY_MS;
 var init_MermaidComponent = __esm({
   "src/nodes/MermaidComponent.tsx"() {
     "use strict";
     import_LexicalComposerContext6 = require("@lexical/react/LexicalComposerContext");
     import_useLexicalEditable3 = require("@lexical/react/useLexicalEditable");
     import_lexical19 = require("lexical");
-    import_react13 = require("react");
+    import_react12 = require("react");
     init_MermaidNode2();
     init_MermaidNode();
     import_jsx_runtime15 = require("react/jsx-runtime");
@@ -2333,15 +2260,15 @@ function positionSticky(stickyElem, positioning) {
 }
 function StickyComponent({
   x,
-  y: y2,
+  y,
   nodeKey,
   color,
   caption
 }) {
   const [editor] = (0, import_LexicalComposerContext8.useLexicalComposerContext)();
-  const stickyContainerRef = (0, import_react15.useRef)(null);
-  const [portalContainer, setPortalContainer] = (0, import_react15.useState)(null);
-  const positioningRef = (0, import_react15.useRef)({
+  const stickyContainerRef = (0, import_react14.useRef)(null);
+  const [portalContainer, setPortalContainer] = (0, import_react14.useState)(null);
+  const positioningRef = (0, import_react14.useRef)({
     isDragging: false,
     offsetX: 0,
     offsetY: 0,
@@ -2349,7 +2276,7 @@ function StickyComponent({
     x: 0,
     y: 0
   });
-  (0, import_react15.useEffect)(() => {
+  (0, import_react14.useEffect)(() => {
     const rootElement = editor.getRootElement();
     if (rootElement) {
       const scrollerContainer = rootElement.closest(".editor-scroller");
@@ -2360,7 +2287,7 @@ function StickyComponent({
       }
     }
   }, [editor]);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react14.useEffect)(() => {
     const stickyContainer = stickyContainerRef.current;
     if (!stickyContainer) return;
     const stopFlyonuiEvents = (e) => {
@@ -2373,16 +2300,16 @@ function StickyComponent({
       stickyContainer.removeEventListener("focusout", stopFlyonuiEvents);
     };
   }, []);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react14.useEffect)(() => {
     const position = positioningRef.current;
     position.x = x;
-    position.y = y2;
+    position.y = y;
     const stickyContainer = stickyContainerRef.current;
     if (stickyContainer !== null) {
       positionSticky(stickyContainer, position);
     }
-  }, [x, y2]);
-  (0, import_react15.useLayoutEffect)(() => {
+  }, [x, y]);
+  (0, import_react14.useLayoutEffect)(() => {
     const position = positioningRef.current;
     const resizeObserver = new ResizeObserver((entries) => {
       for (let i = 0; i < entries.length; i++) {
@@ -2427,7 +2354,7 @@ function StickyComponent({
       removeRootListener();
     };
   }, [editor]);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react14.useEffect)(() => {
     const stickyContainer = stickyContainerRef.current;
     if (stickyContainer !== null) {
       setTimeout(() => {
@@ -2547,7 +2474,7 @@ function StickyComponent({
   }
   return (0, import_react_dom2.createPortal)(stickyContent, portalContainer);
 }
-var import_LexicalComposerContext8, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils12, import_lexical23, import_react15, import_react_dom2, import_jsx_runtime18;
+var import_LexicalComposerContext8, import_LexicalErrorBoundary2, import_LexicalNestedComposer2, import_LexicalPlainTextPlugin, import_utils12, import_lexical23, import_react14, import_react_dom2, import_jsx_runtime18;
 var init_StickyComponent = __esm({
   "src/nodes/StickyComponent.tsx"() {
     "use strict";
@@ -2558,7 +2485,7 @@ var init_StickyComponent = __esm({
     import_LexicalPlainTextPlugin = require("@lexical/react/LexicalPlainTextPlugin");
     import_utils12 = require("@lexical/utils");
     import_lexical23 = require("lexical");
-    import_react15 = require("react");
+    import_react14 = require("react");
     import_react_dom2 = require("react-dom");
     init_SharedHistoryContext();
     init_StickyEditorTheme2();
@@ -2643,9 +2570,9 @@ var init_StickyNode2 = __esm({
       updateDOM() {
         return false;
       }
-      setPosition(x, y2) {
+      setPosition(x, y) {
         (0, import_lexical24.$setState)(this, xOffsetState, x);
-        (0, import_lexical24.$setState)(this, yOffsetState, y2);
+        (0, import_lexical24.$setState)(this, yOffsetState, y);
         (0, import_lexical24.$setSelection)(null);
       }
       toggleColor() {
@@ -3334,12 +3261,12 @@ var import_LexicalComposerContext7 = require("@lexical/react/LexicalComposerCont
 var import_useLexicalNodeSelection3 = require("@lexical/react/useLexicalNodeSelection");
 var import_utils10 = require("@lexical/utils");
 var import_lexical21 = require("lexical");
-var import_react14 = require("react");
+var import_react13 = require("react");
 var import_jsx_runtime17 = require("react/jsx-runtime");
 function PageBreakComponent({ nodeKey }) {
   const [editor] = (0, import_LexicalComposerContext7.useLexicalComposerContext)();
   const [isSelected, setSelected, clearSelection] = (0, import_useLexicalNodeSelection3.useLexicalNodeSelection)(nodeKey);
-  (0, import_react14.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     return (0, import_utils10.mergeRegister)(
       editor.registerCommand(
         import_lexical21.CLICK_COMMAND,
@@ -3358,7 +3285,7 @@ function PageBreakComponent({ nodeKey }) {
       )
     );
   }, [clearSelection, editor, isSelected, nodeKey, setSelected]);
-  (0, import_react14.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     const pbElem = editor.getElementByKey(nodeKey);
     if (pbElem !== null) {
       pbElem.className = isSelected ? "selected" : "";
@@ -3455,7 +3382,7 @@ init_StickyNode2();
 var import_LexicalBlockWithAlignableContents2 = require("@lexical/react/LexicalBlockWithAlignableContents");
 var import_LexicalDecoratorBlockNode2 = require("@lexical/react/LexicalDecoratorBlockNode");
 var import_lexical25 = require("lexical");
-var import_react16 = require("react");
+var import_react15 = require("react");
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
 function $convertTweetElement(domNode) {
@@ -3476,10 +3403,10 @@ function TweetComponent({
   onLoad,
   tweetID
 }) {
-  const containerRef = (0, import_react16.useRef)(null);
-  const previousTweetIDRef = (0, import_react16.useRef)("");
-  const [isTweetLoading, setIsTweetLoading] = (0, import_react16.useState)(false);
-  const createTweet = (0, import_react16.useCallback)(async () => {
+  const containerRef = (0, import_react15.useRef)(null);
+  const previousTweetIDRef = (0, import_react15.useRef)("");
+  const [isTweetLoading, setIsTweetLoading] = (0, import_react15.useState)(false);
+  const createTweet = (0, import_react15.useCallback)(async () => {
     try {
       await window.twttr.widgets.createTweet(tweetID, containerRef.current);
       setIsTweetLoading(false);
@@ -3493,7 +3420,7 @@ function TweetComponent({
       }
     }
   }, [onError, onLoad, tweetID]);
-  (0, import_react16.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     if (tweetID !== previousTweetIDRef.current) {
       setIsTweetLoading(true);
       if (isTwitterScriptLoading) {

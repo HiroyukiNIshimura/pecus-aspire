@@ -79,7 +79,8 @@ export const IMAGE: TextMatchTransformer = {
       return null;
     }
 
-    return `![${node.getAltText()}](${node.getSrc()})`;
+    const imageNode = node as ImageNode;
+    return `![${imageNode.getAltText()}](${imageNode.getSrc()})`;
   },
   importRegExp: /!(?:\[([^[]*)\])(?:\(([^(]+)\))/,
   regExp: /!(?:\[([^[]*)\])(?:\(([^(]+)\))$/,
@@ -124,7 +125,8 @@ export const EQUATION: TextMatchTransformer = {
       return null;
     }
 
-    return `$${node.getEquation()}$`;
+    const equationNode = node as EquationNode;
+    return `$${equationNode.getEquation()}$`;
   },
   importRegExp: /\$([^$]+?)\$/,
   regExp: /\$([^$]+?)\$$/,
@@ -147,7 +149,8 @@ export const TWEET: ElementTransformer = {
       return null;
     }
 
-    return `<tweet id="${node.getId()}" />`;
+    const tweetNode = node as TweetNode;
+    return `<tweet id="${tweetNode.getId()}" />`;
   },
   regExp: /<tweet id="([^"]+?)"\s?\/>\s?$/,
   replace: (textNode, _1, match) => {

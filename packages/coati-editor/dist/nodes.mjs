@@ -375,79 +375,6 @@ var init_EmojiNode = __esm({
   }
 });
 
-// ../../node_modules/react-error-boundary/dist/react-error-boundary.js
-import { createContext as l, Component as y, createElement as d, useContext as f, useState as p, useMemo as E, forwardRef as B } from "react";
-function C(r = [], e = []) {
-  return r.length !== e.length || r.some((t, o) => !Object.is(t, e[o]));
-}
-var h, c, m;
-var init_react_error_boundary = __esm({
-  "../../node_modules/react-error-boundary/dist/react-error-boundary.js"() {
-    "use strict";
-    "use client";
-    h = l(null);
-    c = {
-      didCatch: false,
-      error: null
-    };
-    m = class extends y {
-      constructor(e) {
-        super(e), this.resetErrorBoundary = this.resetErrorBoundary.bind(this), this.state = c;
-      }
-      static getDerivedStateFromError(e) {
-        return { didCatch: true, error: e };
-      }
-      resetErrorBoundary(...e) {
-        const { error: t } = this.state;
-        t !== null && (this.props.onReset?.({
-          args: e,
-          reason: "imperative-api"
-        }), this.setState(c));
-      }
-      componentDidCatch(e, t) {
-        this.props.onError?.(e, t);
-      }
-      componentDidUpdate(e, t) {
-        const { didCatch: o } = this.state, { resetKeys: s } = this.props;
-        o && t.error !== null && C(e.resetKeys, s) && (this.props.onReset?.({
-          next: s,
-          prev: e.resetKeys,
-          reason: "keys"
-        }), this.setState(c));
-      }
-      render() {
-        const { children: e, fallbackRender: t, FallbackComponent: o, fallback: s } = this.props, { didCatch: n, error: a } = this.state;
-        let i = e;
-        if (n) {
-          const u = {
-            error: a,
-            resetErrorBoundary: this.resetErrorBoundary
-          };
-          if (typeof t == "function")
-            i = t(u);
-          else if (o)
-            i = d(o, u);
-          else if (s !== void 0)
-            i = s;
-          else
-            throw a;
-        }
-        return d(
-          h.Provider,
-          {
-            value: {
-              didCatch: n,
-              error: a,
-              resetErrorBoundary: this.resetErrorBoundary
-            }
-          },
-          i
-        );
-      }
-    };
-  }
-});
-
 // src/ui/EquationEditor.css
 var init_EquationEditor = __esm({
   "src/ui/EquationEditor.css"() {
@@ -686,6 +613,7 @@ import {
   SELECTION_CHANGE_COMMAND
 } from "lexical";
 import { useCallback as useCallback3, useEffect as useEffect5, useRef as useRef3, useState as useState3 } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { Fragment as Fragment2, jsx as jsx7 } from "react/jsx-runtime";
 function EquationComponent2({ equation, inline, nodeKey }) {
   const [editor] = useLexicalComposerContext3();
@@ -757,7 +685,7 @@ function EquationComponent2({ equation, inline, nodeKey }) {
       });
     }
   }, [editor, nodeKey, onHide, showEquationEditor, isEditable]);
-  return /* @__PURE__ */ jsx7(Fragment2, { children: showEquationEditor && isEditable ? /* @__PURE__ */ jsx7(EquationEditor_default, { equation: equationValue, setEquation: setEquationValue, inline, ref: inputRef }) : /* @__PURE__ */ jsx7(m, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ jsx7(
+  return /* @__PURE__ */ jsx7(Fragment2, { children: showEquationEditor && isEditable ? /* @__PURE__ */ jsx7(EquationEditor_default, { equation: equationValue, setEquation: setEquationValue, inline, ref: inputRef }) : /* @__PURE__ */ jsx7(ErrorBoundary, { onError: (e) => editor._onError(e), fallback: null, children: /* @__PURE__ */ jsx7(
     KatexRenderer,
     {
       equation: equationValue,
@@ -773,7 +701,6 @@ function EquationComponent2({ equation, inline, nodeKey }) {
 var init_EquationComponent = __esm({
   "src/nodes/EquationComponent.tsx"() {
     "use strict";
-    init_react_error_boundary();
     init_EquationEditor2();
     init_KatexRenderer();
     init_EquationNode();
@@ -1735,11 +1662,11 @@ function ImageComponent2({
       if ($isNodeSelection2(latestSelection) && latestSelection.has(nodeKey) && latestSelection.getNodes().length === 1) {
         if (showCaption) {
           $setSelection3(null);
-          event.preventDefault();
+          event?.preventDefault();
           caption.focus();
           return true;
         } else if (buttonElem !== null && buttonElem !== document.activeElement) {
-          event.preventDefault();
+          event?.preventDefault();
           buttonElem.focus();
           return true;
         }
@@ -1750,7 +1677,7 @@ function ImageComponent2({
   );
   const $onEscape = useCallback4(
     (event) => {
-      if (activeEditorRef.current === caption || buttonRef.current === event.target) {
+      if (activeEditorRef.current === caption || buttonRef.current === event?.target) {
         $setSelection3(null);
         editor.update(() => {
           setSelected(true);
@@ -2396,7 +2323,7 @@ function positionSticky(stickyElem, positioning) {
 }
 function StickyComponent({
   x,
-  y: y2,
+  y,
   nodeKey,
   color,
   caption
@@ -2439,12 +2366,12 @@ function StickyComponent({
   useEffect10(() => {
     const position = positioningRef.current;
     position.x = x;
-    position.y = y2;
+    position.y = y;
     const stickyContainer = stickyContainerRef.current;
     if (stickyContainer !== null) {
       positionSticky(stickyContainer, position);
     }
-  }, [x, y2]);
+  }, [x, y]);
   useLayoutEffect(() => {
     const position = positioningRef.current;
     const resizeObserver = new ResizeObserver((entries) => {
@@ -2705,9 +2632,9 @@ var init_StickyNode2 = __esm({
       updateDOM() {
         return false;
       }
-      setPosition(x, y2) {
+      setPosition(x, y) {
         $setState10(this, xOffsetState, x);
-        $setState10(this, yOffsetState, y2);
+        $setState10(this, yOffsetState, y);
         $setSelection4(null);
       }
       toggleColor() {

@@ -1,20 +1,15 @@
-import { TextMatchTransformer, ElementTransformer, Transformer } from '@lexical/markdown';
+import { ElementTransformer } from '@lexical/markdown';
+import { TextMatchTransformer } from '@lexical/markdown';
+import { Transformer as Transformer_2 } from '@lexical/markdown';
 
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
+export declare const EMOJI: TextMatchTransformer;
 
-declare const HR: ElementTransformer;
-declare const IMAGE: TextMatchTransformer;
-declare const EMOJI: TextMatchTransformer;
-declare const EQUATION: TextMatchTransformer;
-declare const TWEET: ElementTransformer;
-declare const TABLE: ElementTransformer;
-declare const PLAYGROUND_TRANSFORMERS: Array<Transformer>;
+export declare const EQUATION: TextMatchTransformer;
+
+export declare const HR: ElementTransformer;
+
+export declare const IMAGE: TextMatchTransformer;
+
 /**
  * リスト行の2スペースインデントを4スペースに正規化
  * Lexicalのデフォルトは4スペース = 1インデントレベル
@@ -28,6 +23,12 @@ declare const PLAYGROUND_TRANSFORMERS: Array<Transformer>;
  * @param markdown - 入力Markdown文字列
  * @returns リストインデントが正規化されたMarkdown文字列
  */
-declare function normalizeListIndentation(markdown: string): string;
+export declare function normalizeListIndentation(markdown: string): string;
 
-export { EMOJI, EQUATION, HR, IMAGE, PLAYGROUND_TRANSFORMERS, TABLE, TWEET, normalizeListIndentation };
+export declare const PLAYGROUND_TRANSFORMERS: Array<Transformer_2>;
+
+export declare const TABLE: ElementTransformer;
+
+export declare const TWEET: ElementTransformer;
+
+export { }
