@@ -3,11 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, rmSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  ConsoleMessageId,
-  Extractor,
-  ExtractorConfig,
-} from '@microsoft/api-extractor';
+import { ConsoleMessageId, Extractor, ExtractorConfig } from '@microsoft/api-extractor';
 
 const projectFolder = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const tempTypes = join(projectFolder, '.dts-tmp');
