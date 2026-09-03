@@ -8,7 +8,16 @@
 
 import { BlockWithAlignableContents } from '@lexical/react/LexicalBlockWithAlignableContents';
 import { DecoratorBlockNode, type SerializedDecoratorBlockNode } from '@lexical/react/LexicalDecoratorBlockNode';
-import type { EditorConfig, ElementFormatType, LexicalEditor, LexicalNode, NodeKey, Spread } from 'lexical';
+import type {
+  EditorConfig,
+  ElementFormatType,
+  LexicalEditor,
+  LexicalNode,
+  NodeKey,
+  Spread,
+  StateConfigValue,
+} from 'lexical';
+import { $create, $getState, $setState, createState } from 'lexical';
 import type { JSX } from 'react';
 
 type FigmaComponentProps = Readonly<{
@@ -43,43 +52,28 @@ export type SerializedFigmaNode = Spread<
   SerializedDecoratorBlockNode
 >;
 
+const documentIDState = createState('documentID', {
+  parse: (v) => (typeof v === 'string' ? v : ''),
+});
+
 export class FigmaNode extends DecoratorBlockNode {
-  __id: string;
-
-  static getType(): string {
-    return 'figma';
-  }
-
-  static clone(node: FigmaNode): FigmaNode {
-    return new FigmaNode(node.__id, node.__format, node.__key);
-  }
-
-  static importJSON(serializedNode: SerializedFigmaNode): FigmaNode {
-    return $createFigmaNode(serializedNode.documentID).updateFromJSON(serializedNode);
-  }
-
-  exportJSON(): SerializedFigmaNode {
-    return {
-      ...super.exportJSON(),
-      documentID: this.__id,
-    };
-  }
-
-  constructor(id: string, format?: ElementFormatType, key?: NodeKey) {
-    super(format, key);
-    this.__id = id;
+  $config() {
+    return this.config('figma', {
+      extends: DecoratorBlockNode,
+      stateConfigs: [{ flat: true, stateConfig: documentIDState }],
+    });
   }
 
   updateDOM(): false {
     return false;
   }
 
-  getId(): string {
-    return this.__id;
+  getId(): StateConfigValue<typeof documentIDState> {
+    return $getState(this, documentIDState);
   }
 
   getTextContent(_includeInert?: boolean | undefined, _includeDirectionless?: false | undefined): string {
-    return `https://www.figma.com/file/${this.__id}`;
+    return `https://www.figma.com/file/${this.getId()}`;
   }
 
   decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element {
@@ -89,13 +83,13 @@ export class FigmaNode extends DecoratorBlockNode {
       focus: embedBlockTheme.focus || '',
     };
     return (
-      <FigmaComponent className={className} format={this.__format} nodeKey={this.getKey()} documentID={this.__id} />
+      <FigmaComponent className={className} format={this.__format} nodeKey={this.getKey()} documentID={this.getId()} />
     );
   }
 }
 
 export function $createFigmaNode(documentID: string): FigmaNode {
-  return new FigmaNode(documentID);
+  return $setState($create(FigmaNode), documentIDState, documentID);
 }
 
 export function $isFigmaNode(node: FigmaNode | LexicalNode | null | undefined): node is FigmaNode {

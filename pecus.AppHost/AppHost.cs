@@ -115,7 +115,12 @@ try
         .WithEnvironment("GRPC_PORT", lexicalConverterPort.ToString())
         .WithEnvironment("GRPC_HOST", grpcHost)
         .WithEnvironment("METRICS_PORT", lexicalConverterMetricsPort.ToString())
-        .WithEnvironment("LEXICAL_PROTO_PATH", lexicalProtoPath);
+        .WithEnvironment("LEXICAL_PROTO_PATH", lexicalProtoPath)
+        // WaitFor はプロセス起動しか待たないため、gRPC が listen する前に依存サービス
+        // (dbmanager のシード等)が走り Connection refused となる競合が発生する。
+        // /health は gRPC の listen 開始後に応答するようになっている(src/main.ts 参照)ので、
+        // これをレディネス判定に使う。
+        .WithHttpHealthCheck("/health", endpointName: "metrics");
 
     //マイグレーションとシードデータの投入サービス
     var dbManagerBuilder = builder

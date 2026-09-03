@@ -7,8 +7,8 @@
  */
 
 import { addClassNamesToElement } from '@lexical/utils';
-import type { DOMConversionMap, DOMConversionOutput, EditorConfig, LexicalNode, SerializedElementNode } from 'lexical';
-import { $isParagraphNode, ElementNode } from 'lexical';
+import type { DOMConversionOutput, EditorConfig, LexicalNode, SerializedElementNode } from 'lexical';
+import { $create, $isParagraphNode, buildImportMap, ElementNode } from 'lexical';
 
 export type SerializedLayoutItemNode = SerializedElementNode;
 
@@ -25,12 +25,21 @@ export function $isEmptyLayoutItemNode(node: LexicalNode): boolean {
 }
 
 export class LayoutItemNode extends ElementNode {
-  static getType(): string {
-    return 'layout-item';
-  }
-
-  static clone(node: LayoutItemNode): LayoutItemNode {
-    return new LayoutItemNode(node.__key);
+  $config() {
+    return this.config('layout-item', {
+      extends: ElementNode,
+      importDOM: buildImportMap({
+        div: (domNode) => {
+          if (!domNode.hasAttribute('data-lexical-layout-item')) {
+            return null;
+          }
+          return {
+            conversion: $convertLayoutItemElement,
+            priority: 2,
+          };
+        },
+      }),
+    });
   }
 
   createDOM(config: EditorConfig): HTMLElement {
@@ -55,31 +64,13 @@ export class LayoutItemNode extends ElementNode {
     return false;
   }
 
-  static importDOM(): DOMConversionMap | null {
-    return {
-      div: (domNode: HTMLElement) => {
-        if (!domNode.hasAttribute('data-lexical-layout-item')) {
-          return null;
-        }
-        return {
-          conversion: $convertLayoutItemElement,
-          priority: 2,
-        };
-      },
-    };
-  }
-
-  static importJSON(serializedNode: SerializedLayoutItemNode): LayoutItemNode {
-    return $createLayoutItemNode().updateFromJSON(serializedNode);
-  }
-
   isShadowRoot(): boolean {
     return true;
   }
 }
 
 export function $createLayoutItemNode(): LayoutItemNode {
-  return new LayoutItemNode();
+  return $create(LayoutItemNode);
 }
 
 export function $isLayoutItemNode(node: LexicalNode | null | undefined): node is LayoutItemNode {

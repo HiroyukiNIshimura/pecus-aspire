@@ -276,8 +276,8 @@ export default function MarkdownPastePlugin(): null {
     // PASTE_COMMAND を高優先度で登録し、マークダウンペーストを優先処理
     return editor.registerCommand(
       PASTE_COMMAND,
-      (event: ClipboardEvent) => {
-        return handlePaste(event);
+      (event) => {
+        return handlePaste(event as ClipboardEvent);
       },
       COMMAND_PRIORITY_HIGH,
     );

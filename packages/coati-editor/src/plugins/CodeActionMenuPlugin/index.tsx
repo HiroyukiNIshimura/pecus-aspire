@@ -10,7 +10,7 @@ import type { JSX } from 'react';
 
 import './index.css';
 
-import { $isCodeNode, CodeNode, getCodeLanguageOptions, normalizeCodeLang } from '@lexical/code';
+import { $isCodeNode, CodeNode, getCodeLanguageOptions, normalizeCodeLanguage } from '@lexical/code';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $getNearestNodeFromDOMNode, isHTMLElement } from 'lexical';
 import type * as React from 'react';
@@ -157,7 +157,7 @@ function CodeActionMenuContainer({
     );
   }, [editor]);
 
-  const normalizedLang = normalizeCodeLang(lang);
+  const normalizedLang = normalizeCodeLanguage(lang);
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newLang = event.target.value;
