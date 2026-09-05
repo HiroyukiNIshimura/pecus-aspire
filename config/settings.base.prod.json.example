@@ -15,7 +15,7 @@
       "_comment": "【必須】本番環境の公開URLを設定",
       "allowDomain": "your-domain.com",
       "frontend": "https://your-domain.com",
-      "webapiPublic": "https://your-domain.com/api",
+      "webapiPublic": "https://your-domain.com/backend",
       "webapiInternal": "http://pecusapi:7265",
       "lexicalConverter": "http://lexicalconverter:5100"
     },
