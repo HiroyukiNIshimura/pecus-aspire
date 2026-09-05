@@ -18114,6 +18114,73 @@
         },
         "description": "メールアドレス変更確認レスポンス"
       },
+      "EmailNotificationCustomSettings": {
+        "type": "object",
+        "properties": {
+          "directMention": {
+            "type": "boolean",
+            "description": "自分へのメンション"
+          },
+          "directNeedReply": {
+            "type": "boolean",
+            "description": "自分への返信依頼（NeedReply）"
+          },
+          "directUrge": {
+            "type": "boolean",
+            "description": "自分への督促（Urge / Reminder）"
+          },
+          "directHelpWanted": {
+            "type": "boolean",
+            "description": "ヘルプ要請（HelpWanted）"
+          },
+          "taskAssignedCreated": {
+            "type": "boolean",
+            "description": "自分が担当するタスクの作成"
+          },
+          "taskRelatedCompleted": {
+            "type": "boolean",
+            "description": "自分が関係するタスクの完了"
+          },
+          "taskOverdue": {
+            "type": "boolean",
+            "description": "自分が担当するタスクの期限超過"
+          },
+          "pinnedItemActivity": {
+            "type": "boolean",
+            "description": "PIN留めしたアイテムの更新・タスク追加"
+          },
+          "assignedItemUpdated": {
+            "type": "boolean",
+            "description": "担当・コミット対象アイテムの更新"
+          },
+          "itemBodyUpdated": {
+            "type": "boolean",
+            "description": "アイテム本文の更新"
+          },
+          "generalComment": {
+            "type": "boolean",
+            "description": "一般コメントの追加"
+          },
+          "agendaInvitationOrUpdate": {
+            "type": "boolean",
+            "description": "アジェンダへの招待・変更"
+          },
+          "agendaCancellationOrReminder": {
+            "type": "boolean",
+            "description": "アジェンダの中止・リマインダー"
+          },
+          "workspaceActivity": {
+            "type": "boolean",
+            "description": "ワークスペース全体の活動・メンバー変更"
+          }
+        },
+        "description": "カスタムメール通知設定（JSONB値オブジェクト）"
+      },
+      "EmailNotificationMode": {
+        "enum": ["Off", "ImportantOnly", "Standard", "Custom"],
+        "type": "string",
+        "nullable": true
+      },
       "ErrorResponse": {
         "required": ["message"],
         "type": "object",
@@ -23265,6 +23332,7 @@
       "UpdateUserSettingRequest": {
         "required": [
           "canReceiveEmail",
+          "canReceiveWeeklyReport",
           "canReceiveRealtimeNotification",
           "timeZone",
           "language",
@@ -23276,7 +23344,38 @@
         "properties": {
           "canReceiveEmail": {
             "type": "boolean",
-            "description": "メールを受信するかどうか"
+            "description": "メールを受信するかどうか（マスターフラグ）"
+          },
+          "emailNotificationMode": {
+            "type": "string",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmailNotificationMode"
+              }
+            ],
+            "nullable": true
+          },
+          "customEmailSettings": {
+            "type": "object",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmailNotificationCustomSettings"
+              }
+            ],
+            "nullable": true
+          },
+          "emailWorkspaceIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）",
+            "nullable": true
+          },
+          "canReceiveWeeklyReport": {
+            "type": "boolean",
+            "description": "週間レポートを受信するかどうか"
           },
           "canReceiveRealtimeNotification": {
             "type": "boolean",
@@ -23966,6 +24065,7 @@
       "UserSettingResponse": {
         "required": [
           "canReceiveEmail",
+          "canReceiveWeeklyReport",
           "canReceiveRealtimeNotification",
           "timeZone",
           "language",
@@ -23977,6 +24077,31 @@
           "canReceiveEmail": {
             "type": "boolean",
             "description": "メール受信の可否"
+          },
+          "emailNotificationMode": {
+            "type": "string",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmailNotificationMode"
+              }
+            ],
+            "nullable": true
+          },
+          "customEmailSettings": {
+            "$ref": "#/components/schemas/EmailNotificationCustomSettings"
+          },
+          "emailWorkspaceIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）",
+            "nullable": true
+          },
+          "canReceiveWeeklyReport": {
+            "type": "boolean",
+            "description": "週間レポートを受信するかどうか"
           },
           "canReceiveRealtimeNotification": {
             "type": "boolean",

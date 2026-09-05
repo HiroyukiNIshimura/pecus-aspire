@@ -1174,6 +1174,7 @@ public class WorkspaceService
     public async Task<List<User>> GetWorkspaceCreationNotificationTargetsAsync(int organizationId, int excludeUserId)
     {
         return await _context.Users
+            .Include(u => u.Setting)
             .Where(u =>
                 u.OrganizationId == organizationId &&
                 u.IsActive &&
@@ -1191,6 +1192,7 @@ public class WorkspaceService
     public async Task<List<User>> GetOrganizationActiveUsersAsync(int organizationId)
     {
         return await _context.Users
+            .Include(u => u.Setting)
             .Where(u =>
                 u.OrganizationId == organizationId &&
                 u.IsActive &&

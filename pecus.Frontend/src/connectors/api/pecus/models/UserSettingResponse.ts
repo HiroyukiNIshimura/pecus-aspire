@@ -3,6 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { BadgeVisibility } from './BadgeVisibility';
+import type { EmailNotificationCustomSettings } from './EmailNotificationCustomSettings';
+import type { EmailNotificationMode } from './EmailNotificationMode';
 import type { FocusScorePriority } from './FocusScorePriority';
 import type { LandingPage } from './LandingPage';
 /**
@@ -13,6 +15,16 @@ export type UserSettingResponse = {
      * メール受信の可否
      */
     canReceiveEmail: boolean;
+    emailNotificationMode?: EmailNotificationMode | null;
+    customEmailSettings?: EmailNotificationCustomSettings;
+    /**
+     * メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
+     */
+    emailWorkspaceIds?: Array<number> | null;
+    /**
+     * 週間レポートを受信するかどうか
+     */
+    canReceiveWeeklyReport: boolean;
     /**
      * リアルタイム通知の可否
      */

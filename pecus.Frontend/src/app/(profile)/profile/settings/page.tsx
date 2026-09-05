@@ -1,5 +1,9 @@
 import { createPecusApiClients, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
-import type { OrganizationPublicSettings, UserSettingResponse } from '@/connectors/api/pecus';
+import type {
+  OrganizationPublicSettings,
+  UserSettingResponse,
+  WorkspaceListItemResponse,
+} from '@/connectors/api/pecus';
 import UserSettingsClient from './UserSettingsClient';
 
 export const dynamic = 'force-dynamic';
@@ -11,6 +15,7 @@ export const dynamic = 'force-dynamic';
 export default async function UserSettingsPage() {
   let userSettings: UserSettingResponse | null = null;
   let organizationSetting: OrganizationPublicSettings | null = null;
+  let workspaces: WorkspaceListItemResponse[] = [];
   let fetchError: string | null = null;
 
   try {
@@ -23,6 +28,10 @@ export default async function UserSettingsPage() {
     // 組織設定を取得（ゲーミフィケーション設定のため）
     const appSettings = await api.profile.getApiProfileAppSettings();
     organizationSetting = appSettings.organization ?? null;
+
+    // ワークスペース一覧を取得（メール通知フィルタ用）
+    const workspacesResponse = await api.workspace.getApiWorkspaces();
+    workspaces = workspacesResponse.data ?? [];
   } catch (error) {
     console.error('Failed to fetch user settings data:', error);
     fetchError = getUserSafeErrorMessage(error, 'ユーザー設定情報の取得に失敗しました');
@@ -32,6 +41,8 @@ export default async function UserSettingsPage() {
   const defaultSettings: UserSettingResponse = {
     rowVersion: 0,
     canReceiveEmail: true,
+    emailNotificationMode: 'Standard',
+    canReceiveWeeklyReport: false,
     canReceiveRealtimeNotification: true,
     timeZone: 'Asia/Tokyo',
     language: 'ja-JP',
@@ -43,6 +54,7 @@ export default async function UserSettingsPage() {
     <UserSettingsClient
       initialSettings={userSettings ?? defaultSettings}
       organizationSetting={organizationSetting}
+      workspaces={workspaces}
       fetchError={fetchError}
     />
   );

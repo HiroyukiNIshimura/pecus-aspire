@@ -22,6 +22,7 @@ public class AgendaEmailTask
     private readonly IConfiguration _config;
     private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly ILogger<AgendaEmailTask> _logger;
+    private readonly IEmailNotificationFilterService _emailFilterService;
 
     /// <summary>
     /// コンストラクタ
@@ -31,13 +32,15 @@ public class AgendaEmailTask
         IEmailService emailService,
         IConfiguration config,
         FrontendUrlResolver frontendUrlResolver,
-        ILogger<AgendaEmailTask> logger)
+        ILogger<AgendaEmailTask> logger,
+        IEmailNotificationFilterService emailFilterService)
     {
         _context = context;
         _emailService = emailService;
         _config = config;
         _frontendUrlResolver = frontendUrlResolver;
         _logger = logger;
+        _emailFilterService = emailFilterService;
     }
 
     /// <summary>
@@ -121,6 +124,24 @@ public class AgendaEmailTask
             _logger.LogDebug(
                 "ダミーアドレスのためメール送信をスキップ: NotificationId={NotificationId}",
                 notification.Id);
+            notification.IsEmailSent = true;
+            await _context.SaveChangesAsync();
+            return;
+        }
+
+        var eventType = notification.Type switch
+        {
+            AgendaNotificationType.SeriesCancelled => EmailNotificationEventType.AgendaCancellationOrReminder,
+            AgendaNotificationType.OccurrenceCancelled => EmailNotificationEventType.AgendaCancellationOrReminder,
+            AgendaNotificationType.Reminder => EmailNotificationEventType.AgendaCancellationOrReminder,
+            _ => EmailNotificationEventType.AgendaInvitationOrUpdate,
+        };
+
+        if (!_emailFilterService.ShouldSendEmail(user.Setting, eventType, workspaceId: null))
+        {
+            _logger.LogDebug(
+                "ユーザー設定によりアジェンダメール送信をスキップ: NotificationId={NotificationId}, Type={Type}, UserId={UserId}",
+                notification.Id, notification.Type, user.Id);
             notification.IsEmailSent = true;
             await _context.SaveChangesAsync();
             return;

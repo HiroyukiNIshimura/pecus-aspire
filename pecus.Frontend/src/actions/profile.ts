@@ -415,6 +415,10 @@ export async function updateUserSetting(input: UpdateUserSettingInput): Promise<
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfileSetting({
       canReceiveEmail: parseResult.data.canReceiveEmail,
+      emailNotificationMode: parseResult.data.emailNotificationMode,
+      customEmailSettings: parseResult.data.customEmailSettings,
+      emailWorkspaceIds: parseResult.data.emailWorkspaceIds,
+      canReceiveWeeklyReport: parseResult.data.canReceiveWeeklyReport,
       canReceiveRealtimeNotification: parseResult.data.canReceiveRealtimeNotification,
       timeZone: parseResult.data.timeZone,
       language: parseResult.data.language,

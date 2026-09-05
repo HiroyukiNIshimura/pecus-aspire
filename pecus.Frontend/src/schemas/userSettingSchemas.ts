@@ -4,9 +4,48 @@ import { z } from 'zod';
 const landingPages = ['Dashboard', 'Workspace', 'MyItems', 'Tasks', 'Committer'] as const;
 const focusScorePriorities = ['Priority', 'Deadline', 'SuccessorImpact'] as const;
 const badgeVisibilities = ['Private', 'Workspace', 'Organization'] as const;
+export const emailNotificationModes = ['Off', 'ImportantOnly', 'Standard', 'Custom'] as const;
+
+export const emailNotificationCustomSettingsSchema = z.object({
+  directMention: z.boolean().default(true),
+  directNeedReply: z.boolean().default(true),
+  directUrge: z.boolean().default(true),
+  directHelpWanted: z.boolean().default(true),
+  taskAssignedCreated: z.boolean().default(true),
+  taskRelatedCompleted: z.boolean().default(true),
+  taskOverdue: z.boolean().default(true),
+  pinnedItemActivity: z.boolean().default(true),
+  assignedItemUpdated: z.boolean().default(false),
+  itemBodyUpdated: z.boolean().default(false),
+  generalComment: z.boolean().default(false),
+  agendaInvitationOrUpdate: z.boolean().default(true),
+  agendaCancellationOrReminder: z.boolean().default(true),
+  workspaceActivity: z.boolean().default(false),
+});
+
+export type EmailNotificationCustomSettingsInput = z.infer<typeof emailNotificationCustomSettingsSchema>;
 
 export const userSettingSchema = z.object({
   canReceiveEmail: z.boolean().default(true),
+  emailNotificationMode: z.enum(emailNotificationModes).default('Standard'),
+  customEmailSettings: emailNotificationCustomSettingsSchema.default({
+    directMention: true,
+    directNeedReply: true,
+    directUrge: true,
+    directHelpWanted: true,
+    taskAssignedCreated: true,
+    taskRelatedCompleted: true,
+    taskOverdue: true,
+    pinnedItemActivity: true,
+    assignedItemUpdated: false,
+    itemBodyUpdated: false,
+    generalComment: false,
+    agendaInvitationOrUpdate: true,
+    agendaCancellationOrReminder: true,
+    workspaceActivity: false,
+  }),
+  emailWorkspaceIds: z.array(z.number().int()).nullable().optional(),
+  canReceiveWeeklyReport: z.boolean().default(false),
   canReceiveRealtimeNotification: z.boolean().default(true),
   timeZone: z.string().default('Asia/Tokyo'),
   language: z.string().default('ja'),

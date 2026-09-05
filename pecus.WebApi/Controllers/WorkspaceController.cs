@@ -6,6 +6,7 @@ using Pecus.Libs;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
@@ -32,6 +33,7 @@ public class WorkspaceController : BaseSecureController
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly FrontendUrlResolver _frontendUrlResolver;
+    private readonly IEmailNotificationFilterService _emailFilterService;
 
     public WorkspaceController(
         WorkspaceService workspaceService,
@@ -40,7 +42,8 @@ public class WorkspaceController : BaseSecureController
         ILogger<WorkspaceController> logger,
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
-        FrontendUrlResolver frontendUrlResolver
+        FrontendUrlResolver frontendUrlResolver,
+        IEmailNotificationFilterService emailFilterService
     ) : base(profileService, logger)
     {
         _workspaceService = workspaceService;
@@ -49,6 +52,7 @@ public class WorkspaceController : BaseSecureController
         _config = config;
         _backgroundJobClient = backgroundJobClient;
         _frontendUrlResolver = frontendUrlResolver;
+        _emailFilterService = emailFilterService;
     }
 
     /// <summary>
@@ -743,6 +747,11 @@ public class WorkspaceController : BaseSecureController
                 continue;
             }
 
+            if (!_emailFilterService.ShouldSendEmail(user.Setting, EmailNotificationEventType.WorkspaceActivity, workspaceId))
+            {
+                continue;
+            }
+
             var emailModel = new WorkspaceCreatedEmailModel
             {
                 UserName = user.Username,
@@ -845,6 +854,11 @@ public class WorkspaceController : BaseSecureController
                 continue;
             }
 
+            if (!_emailFilterService.ShouldSendEmail(user.Setting, EmailNotificationEventType.WorkspaceActivity, workspaceId))
+            {
+                continue;
+            }
+
             var emailModel = new WorkspaceUpdatedEmailModel
             {
                 UserName = user.Username,
@@ -902,6 +916,11 @@ public class WorkspaceController : BaseSecureController
         foreach (var user in targetUsers)
         {
             if (string.IsNullOrEmpty(user.Email))
+            {
+                continue;
+            }
+
+            if (!_emailFilterService.ShouldSendEmail(user.Setting, EmailNotificationEventType.WorkspaceActivity, workspace.Id))
             {
                 continue;
             }

@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -10,10 +11,32 @@ namespace Pecus.Models.Requests.User;
 public class UpdateUserSettingRequest
 {
     /// <summary>
-    /// メールを受信するかどうか
+    /// メールを受信するかどうか（マスターフラグ）
     /// </summary>
     [Required(ErrorMessage = "メール受信設定は必須です。")]
     public required bool CanReceiveEmail { get; set; }
+
+    /// <summary>
+    /// メール通知配信モード（Off, ImportantOnly, Standard, Custom）
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<EmailNotificationMode>))]
+    public EmailNotificationMode? EmailNotificationMode { get; set; }
+
+    /// <summary>
+    /// カスタムモード時の詳細通知設定
+    /// </summary>
+    public EmailNotificationCustomSettings? CustomEmailSettings { get; set; }
+
+    /// <summary>
+    /// メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
+    /// </summary>
+    public List<int>? EmailWorkspaceIds { get; set; }
+
+    /// <summary>
+    /// 週間レポートを受信するかどうか
+    /// </summary>
+    [Required(ErrorMessage = "週間レポート受信設定は必須です。")]
+    public required bool CanReceiveWeeklyReport { get; set; }
 
     /// <summary>
     /// リアルタイム通知の可否

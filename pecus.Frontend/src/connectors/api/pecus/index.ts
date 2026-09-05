@@ -121,6 +121,8 @@ export type { DocumentTreeItemResponse } from './models/DocumentTreeItemResponse
 export type { DocumentTreeResponse } from './models/DocumentTreeResponse';
 export type { EmailChangeRequestResponse } from './models/EmailChangeRequestResponse';
 export type { EmailChangeVerifyResponse } from './models/EmailChangeVerifyResponse';
+export type { EmailNotificationCustomSettings } from './models/EmailNotificationCustomSettings';
+export type { EmailNotificationMode } from './models/EmailNotificationMode';
 export type { ErrorResponse } from './models/ErrorResponse';
 export type { EstimatedSize } from './models/EstimatedSize';
 export type { ExternalApiKeyResponse } from './models/ExternalApiKeyResponse';

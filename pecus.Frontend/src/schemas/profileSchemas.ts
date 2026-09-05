@@ -227,8 +227,39 @@ export const deleteAvatarFileInputSchema = z.object({
 
 export type DeleteAvatarFileInput = z.infer<typeof deleteAvatarFileInputSchema>;
 
+export const emailNotificationModeSchema = z
+  .enum(['Off', 'ImportantOnly', 'Standard', 'Custom'], {
+    error: 'メール通知モードが不正です。',
+  })
+  .optional()
+  .nullable();
+
+export const emailNotificationCustomSettingsSchema = z
+  .object({
+    directMention: z.boolean().optional(),
+    directNeedReply: z.boolean().optional(),
+    directUrge: z.boolean().optional(),
+    directHelpWanted: z.boolean().optional(),
+    taskAssignedCreated: z.boolean().optional(),
+    taskRelatedCompleted: z.boolean().optional(),
+    taskOverdue: z.boolean().optional(),
+    pinnedItemActivity: z.boolean().optional(),
+    assignedItemUpdated: z.boolean().optional(),
+    itemBodyUpdated: z.boolean().optional(),
+    generalComment: z.boolean().optional(),
+    agendaInvitationOrUpdate: z.boolean().optional(),
+    agendaCancellationOrReminder: z.boolean().optional(),
+    workspaceActivity: z.boolean().optional(),
+  })
+  .optional()
+  .nullable();
+
 export const updateUserSettingInputSchema = z.object({
   canReceiveEmail: z.boolean({ error: 'メール通知設定が不正です。' }),
+  emailNotificationMode: emailNotificationModeSchema,
+  customEmailSettings: emailNotificationCustomSettingsSchema,
+  emailWorkspaceIds: z.array(z.number().int()).optional().nullable(),
+  canReceiveWeeklyReport: z.boolean({ error: '週間レポート設定が不正です。' }),
   canReceiveRealtimeNotification: z.boolean({ error: 'リアルタイム通知設定が不正です。' }),
   timeZone: z.string({ error: 'タイムゾーンが不正です。' }).min(1, 'タイムゾーンが不正です。'),
   language: z.string({ error: '言語設定が不正です。' }).min(1, '言語設定が不正です。'),

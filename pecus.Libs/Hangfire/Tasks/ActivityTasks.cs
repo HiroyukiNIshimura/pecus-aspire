@@ -6,6 +6,7 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail;
+using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 
@@ -26,6 +27,7 @@ public class ActivityTasks
     private readonly ILexicalConverterService _lexicalConverter;
     private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly ILogger<ActivityTasks> _logger;
+    private readonly IEmailNotificationFilterService _emailFilterService;
 
     /// <summary>
     /// コンストラクタ
@@ -35,7 +37,8 @@ public class ActivityTasks
         IBackgroundJobClient backgroundJobClient,
         ILexicalConverterService lexicalConverter,
         FrontendUrlResolver frontendUrlResolver,
-        ILogger<ActivityTasks> logger
+        ILogger<ActivityTasks> logger,
+        IEmailNotificationFilterService emailFilterService
     )
     {
         _context = context;
@@ -43,6 +46,7 @@ public class ActivityTasks
         _lexicalConverter = lexicalConverter;
         _frontendUrlResolver = frontendUrlResolver;
         _logger = logger;
+        _emailFilterService = emailFilterService;
     }
 
     /// <summary>
@@ -137,6 +141,7 @@ public class ActivityTasks
             var item = await _context
                 .WorkspaceItems.Include(wi => wi.Workspace)
                 .Include(wi => wi.Owner)
+                .Include(wi => wi.WorkspaceItemPins)
                 .FirstOrDefaultAsync(wi => wi.Id == itemId && wi.WorkspaceId == workspaceId);
 
             if (item == null)
@@ -188,6 +193,7 @@ public class ActivityTasks
             // ワークスペース内の有効なメンバー全員を取得
             var targetUsers = await _context
                 .WorkspaceUsers.Include(wu => wu.User)
+                    .ThenInclude(u => u!.Setting)
                 .Where(wu =>
                     wu.WorkspaceId == workspaceId && wu.User != null && wu.User.IsActive
                 )
@@ -248,6 +254,19 @@ public class ActivityTasks
             foreach (var user in targetUsers)
             {
                 if (string.IsNullOrEmpty(user.Email))
+                {
+                    continue;
+                }
+
+                // メール送信判定
+                var isPinned = item.WorkspaceItemPins?.Any(p => p.UserId == user.Id) ?? false;
+                var eventType = isPinned
+                    ? EmailNotificationEventType.PinnedItemActivity
+                    : (actionType == ActivityActionType.BodyUpdated
+                        ? EmailNotificationEventType.ItemBodyUpdated
+                        : EmailNotificationEventType.AssignedItemUpdated);
+
+                if (!_emailFilterService.ShouldSendEmail(user.Setting, eventType, workspaceId))
                 {
                     continue;
                 }

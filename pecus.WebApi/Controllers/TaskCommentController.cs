@@ -7,6 +7,7 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Hangfire.Tasks.Bot;
+using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
@@ -29,6 +30,7 @@ public class TaskCommentController : BaseSecureController
     private readonly ILogger<TaskCommentController> _logger;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly FrontendUrlResolver _frontendUrlResolver;
+    private readonly IEmailNotificationFilterService _emailFilterService;
 
     public TaskCommentController(
         TaskCommentService taskCommentService,
@@ -37,7 +39,8 @@ public class TaskCommentController : BaseSecureController
         ProfileService profileService,
         ILogger<TaskCommentController> logger,
         IBackgroundJobClient backgroundJobClient,
-        FrontendUrlResolver frontendUrlResolver
+        FrontendUrlResolver frontendUrlResolver,
+        IEmailNotificationFilterService emailFilterService
     ) : base(profileService, logger)
     {
         _taskCommentService = taskCommentService;
@@ -46,6 +49,7 @@ public class TaskCommentController : BaseSecureController
         _logger = logger;
         _backgroundJobClient = backgroundJobClient;
         _frontendUrlResolver = frontendUrlResolver;
+        _emailFilterService = emailFilterService;
     }
 
     /// <summary>
@@ -390,6 +394,17 @@ public class TaskCommentController : BaseSecureController
             return;
         }
 
+        // ユーザーのメール通知設定を確認（DirectUrge）
+        if (!_emailFilterService.ShouldSendEmail(taskInfo.AssignedUser.Setting, EmailNotificationEventType.DirectUrge, workspaceId))
+        {
+            _logger.LogInformation(
+                "督促メール送信: ユーザー設定によりスキップされました。TaskId={TaskId}, AssignedUserId={AssignedUserId}",
+                taskId,
+                taskInfo.AssignedUserId
+            );
+            return;
+        }
+
         var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         var itemUrl = $"{baseUrl}/workspaces/{taskInfo.Workspace?.Code}?itemCode={taskInfo.WorkspaceItem?.Code}&task={taskInfo.Sequence}";
 
@@ -471,6 +486,12 @@ public class TaskCommentController : BaseSecureController
         foreach (var user in targetUsers)
         {
             if (string.IsNullOrEmpty(user.Email))
+            {
+                continue;
+            }
+
+            // ユーザーのメール通知設定を確認（DirectHelpWanted）
+            if (!_emailFilterService.ShouldSendEmail(user.Setting, EmailNotificationEventType.DirectHelpWanted, workspaceId))
             {
                 continue;
             }

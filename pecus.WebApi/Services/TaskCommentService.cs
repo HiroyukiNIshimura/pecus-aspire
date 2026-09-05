@@ -380,6 +380,7 @@ public class TaskCommentService
     {
         return await _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
+                .ThenInclude(u => u.Setting)
             .Include(t => t.Workspace)
             .Include(t => t.WorkspaceItem)
             .Include(t => t.Organization)
@@ -431,6 +432,7 @@ public class TaskCommentService
         {
             // 組織全体の有効なユーザーを取得
             users = await _context.Users
+                .Include(u => u.Setting)
                 .Where(u =>
                     u.OrganizationId == organizationId &&
                     u.IsActive &&
@@ -444,6 +446,7 @@ public class TaskCommentService
             // ワークスペースの有効なメンバーを取得
             users = await _context.WorkspaceUsers
                 .Include(wu => wu.User)
+                    .ThenInclude(u => u!.Setting)
                 .Where(wu =>
                     wu.WorkspaceId == workspaceId &&
                     wu.User != null &&

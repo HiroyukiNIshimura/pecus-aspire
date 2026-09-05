@@ -6,6 +6,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
 using Pecus.Models.Enums;
@@ -23,6 +24,7 @@ public class WorkspaceTaskService
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly SignalRPresenceService _presenceService;
+    private readonly IEmailNotificationFilterService _emailFilterService;
 
     public WorkspaceTaskService(
         ApplicationDbContext context,
@@ -30,7 +32,8 @@ public class WorkspaceTaskService
         OrganizationAccessHelper accessHelper,
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
-        SignalRPresenceService presenceService
+        SignalRPresenceService presenceService,
+        IEmailNotificationFilterService emailFilterService
     )
     {
         _context = context;
@@ -39,6 +42,7 @@ public class WorkspaceTaskService
         _config = config;
         _backgroundJobClient = backgroundJobClient;
         _presenceService = presenceService;
+        _emailFilterService = emailFilterService;
     }
 
     /// <summary>
@@ -2131,7 +2135,8 @@ public class WorkspaceTaskService
 
     /// <summary>
     /// タスク作成通知の送信先ユーザー一覧を取得
-    /// （タスク担当者、アイテム担当者、アイテムコミッタ、アイテムオーナー）
+    /// （タスク担当者、アイテム担当者、アイテムコミッタ、アイテムオーナー、PIN留めユーザー）
+    /// ユーザーのメール通知設定に基づいてフィルタリングされる
     /// </summary>
     /// <param name="taskId">タスクID</param>
     /// <param name="excludeUserId">除外するユーザーID（タスク作成者）</param>
@@ -2139,13 +2144,18 @@ public class WorkspaceTaskService
     public async Task<List<User>> GetTaskCreationNotificationTargetsAsync(int taskId, int excludeUserId)
     {
         var task = await _context.WorkspaceTasks
+            .Include(t => t.Workspace)
             .Include(t => t.AssignedUser)
+                .ThenInclude(u => u!.Setting)
             .Include(t => t.WorkspaceItem)
-                .ThenInclude(wi => wi.Owner)
+                .ThenInclude(wi => wi!.Owner)
+                    .ThenInclude(u => u!.Setting)
             .Include(t => t.WorkspaceItem)
-                .ThenInclude(wi => wi.Assignee)
+                .ThenInclude(wi => wi!.Assignee)
+                    .ThenInclude(u => u!.Setting)
             .Include(t => t.WorkspaceItem)
-                .ThenInclude(wi => wi.Committer)
+                .ThenInclude(wi => wi!.Committer)
+                    .ThenInclude(u => u!.Setting)
             .FirstOrDefaultAsync(t => t.Id == taskId);
 
         if (task == null)
@@ -2153,15 +2163,16 @@ public class WorkspaceTaskService
             return new List<User>();
         }
 
-        var targetUsers = new HashSet<User>();
+        var workspaceId = task.WorkspaceId;
+        var targetUsers = new Dictionary<int, (User User, EmailNotificationEventType EventType)>();
 
-        // タスク担当者
+        // タスク担当者（TaskAssignedCreated）
         if (task.AssignedUser != null &&
             task.AssignedUser.IsActive &&
             !string.IsNullOrEmpty(task.AssignedUser.Email) &&
             task.AssignedUserId != excludeUserId)
         {
-            targetUsers.Add(task.AssignedUser);
+            targetUsers[task.AssignedUserId] = (task.AssignedUser, EmailNotificationEventType.TaskAssignedCreated);
         }
 
         // アイテムオーナー
@@ -2170,28 +2181,53 @@ public class WorkspaceTaskService
             !string.IsNullOrEmpty(task.WorkspaceItem.Owner.Email) &&
             task.WorkspaceItem.OwnerId != excludeUserId)
         {
-            targetUsers.Add(task.WorkspaceItem.Owner);
+            targetUsers.TryAdd(task.WorkspaceItem.OwnerId, (task.WorkspaceItem.Owner, EmailNotificationEventType.TaskAssignedCreated));
         }
 
         // アイテム担当者（設定されている場合）
         if (task.WorkspaceItem?.Assignee != null &&
+            task.WorkspaceItem.AssigneeId.HasValue &&
             task.WorkspaceItem.Assignee.IsActive &&
             !string.IsNullOrEmpty(task.WorkspaceItem.Assignee.Email) &&
-            task.WorkspaceItem.AssigneeId != excludeUserId)
+            task.WorkspaceItem.AssigneeId.Value != excludeUserId)
         {
-            targetUsers.Add(task.WorkspaceItem.Assignee);
+            targetUsers.TryAdd(task.WorkspaceItem.AssigneeId.Value, (task.WorkspaceItem.Assignee, EmailNotificationEventType.TaskAssignedCreated));
         }
 
         // アイテムコミッタ（設定されている場合）
         if (task.WorkspaceItem?.Committer != null &&
+            task.WorkspaceItem.CommitterId.HasValue &&
             task.WorkspaceItem.Committer.IsActive &&
             !string.IsNullOrEmpty(task.WorkspaceItem.Committer.Email) &&
-            task.WorkspaceItem.CommitterId != excludeUserId)
+            task.WorkspaceItem.CommitterId.Value != excludeUserId)
         {
-            targetUsers.Add(task.WorkspaceItem.Committer);
+            targetUsers.TryAdd(task.WorkspaceItem.CommitterId.Value, (task.WorkspaceItem.Committer, EmailNotificationEventType.TaskAssignedCreated));
         }
 
-        return targetUsers.ToList();
+        // PIN留めユーザー
+        if (task.WorkspaceItemId > 0)
+        {
+            var pinnedUsers = await _context.WorkspaceItemPins
+                .Include(p => p.User)
+                    .ThenInclude(u => u!.Setting)
+                .Where(p => p.WorkspaceItemId == task.WorkspaceItemId && p.UserId != excludeUserId)
+                .Select(p => p.User)
+                .ToListAsync();
+
+            foreach (var user in pinnedUsers)
+            {
+                if (user != null && user.IsActive && !string.IsNullOrEmpty(user.Email))
+                {
+                    targetUsers.TryAdd(user.Id, (user, EmailNotificationEventType.PinnedItemActivity));
+                }
+            }
+        }
+
+        // メール受信設定によるフィルタリング
+        return targetUsers.Values
+            .Where(t => _emailFilterService.ShouldSendEmail(t.User.Setting, t.EventType, workspaceId))
+            .Select(t => t.User)
+            .ToList();
     }
 
     /// <summary>
@@ -2212,7 +2248,8 @@ public class WorkspaceTaskService
 
     /// <summary>
     /// タスク完了/破棄通知の送信先ユーザー一覧を取得
-    /// （アイテム担当者、アイテムコミッタ、アイテムオーナー）
+    /// （タスク担当者、アイテム担当者、アイテムコミッタ、アイテムオーナー、PIN留めユーザー）
+    /// ユーザーのメール通知設定に基づいてフィルタリングされる
     /// </summary>
     /// <param name="taskId">タスクID</param>
     /// <param name="excludeUserId">除外するユーザーID（タスク完了/破棄を実行したユーザー）</param>
@@ -2220,12 +2257,18 @@ public class WorkspaceTaskService
     public async Task<List<User>> GetTaskCompletionNotificationTargetsAsync(int taskId, int excludeUserId)
     {
         var task = await _context.WorkspaceTasks
+            .Include(t => t.Workspace)
+            .Include(t => t.AssignedUser)
+                .ThenInclude(u => u!.Setting)
             .Include(t => t.WorkspaceItem)
-                .ThenInclude(wi => wi.Owner)
+                .ThenInclude(wi => wi!.Owner)
+                    .ThenInclude(u => u!.Setting)
             .Include(t => t.WorkspaceItem)
-                .ThenInclude(wi => wi.Assignee)
+                .ThenInclude(wi => wi!.Assignee)
+                    .ThenInclude(u => u!.Setting)
             .Include(t => t.WorkspaceItem)
-                .ThenInclude(wi => wi.Committer)
+                .ThenInclude(wi => wi!.Committer)
+                    .ThenInclude(u => u!.Setting)
             .FirstOrDefaultAsync(t => t.Id == taskId);
 
         if (task == null)
@@ -2233,7 +2276,17 @@ public class WorkspaceTaskService
             return new List<User>();
         }
 
-        var targetUsers = new HashSet<User>();
+        var workspaceId = task.WorkspaceId;
+        var targetUsers = new Dictionary<int, (User User, EmailNotificationEventType EventType)>();
+
+        // タスク担当者（自分が完了させたのでなければ通知）
+        if (task.AssignedUser != null &&
+            task.AssignedUser.IsActive &&
+            !string.IsNullOrEmpty(task.AssignedUser.Email) &&
+            task.AssignedUserId != excludeUserId)
+        {
+            targetUsers[task.AssignedUserId] = (task.AssignedUser, EmailNotificationEventType.TaskRelatedCompleted);
+        }
 
         // アイテムオーナー
         if (task.WorkspaceItem?.Owner != null &&
@@ -2241,27 +2294,52 @@ public class WorkspaceTaskService
             !string.IsNullOrEmpty(task.WorkspaceItem.Owner.Email) &&
             task.WorkspaceItem.OwnerId != excludeUserId)
         {
-            targetUsers.Add(task.WorkspaceItem.Owner);
+            targetUsers.TryAdd(task.WorkspaceItem.OwnerId, (task.WorkspaceItem.Owner, EmailNotificationEventType.TaskRelatedCompleted));
         }
 
         // アイテム担当者（設定されている場合）
         if (task.WorkspaceItem?.Assignee != null &&
+            task.WorkspaceItem.AssigneeId.HasValue &&
             task.WorkspaceItem.Assignee.IsActive &&
             !string.IsNullOrEmpty(task.WorkspaceItem.Assignee.Email) &&
-            task.WorkspaceItem.AssigneeId != excludeUserId)
+            task.WorkspaceItem.AssigneeId.Value != excludeUserId)
         {
-            targetUsers.Add(task.WorkspaceItem.Assignee);
+            targetUsers.TryAdd(task.WorkspaceItem.AssigneeId.Value, (task.WorkspaceItem.Assignee, EmailNotificationEventType.TaskRelatedCompleted));
         }
 
         // アイテムコミッタ（設定されている場合）
         if (task.WorkspaceItem?.Committer != null &&
+            task.WorkspaceItem.CommitterId.HasValue &&
             task.WorkspaceItem.Committer.IsActive &&
             !string.IsNullOrEmpty(task.WorkspaceItem.Committer.Email) &&
-            task.WorkspaceItem.CommitterId != excludeUserId)
+            task.WorkspaceItem.CommitterId.Value != excludeUserId)
         {
-            targetUsers.Add(task.WorkspaceItem.Committer);
+            targetUsers.TryAdd(task.WorkspaceItem.CommitterId.Value, (task.WorkspaceItem.Committer, EmailNotificationEventType.TaskRelatedCompleted));
         }
 
-        return targetUsers.ToList();
+        // PIN留めユーザー
+        if (task.WorkspaceItemId > 0)
+        {
+            var pinnedUsers = await _context.WorkspaceItemPins
+                .Include(p => p.User)
+                    .ThenInclude(u => u!.Setting)
+                .Where(p => p.WorkspaceItemId == task.WorkspaceItemId && p.UserId != excludeUserId)
+                .Select(p => p.User)
+                .ToListAsync();
+
+            foreach (var user in pinnedUsers)
+            {
+                if (user != null && user.IsActive && !string.IsNullOrEmpty(user.Email))
+                {
+                    targetUsers.TryAdd(user.Id, (user, EmailNotificationEventType.PinnedItemActivity));
+                }
+            }
+        }
+
+        // メール受信設定によるフィルタリング
+        return targetUsers.Values
+            .Where(t => _emailFilterService.ShouldSendEmail(t.User.Setting, t.EventType, workspaceId))
+            .Select(t => t.User)
+            .ToList();
     }
 }

@@ -206,6 +206,10 @@ public class ProfileService
                 {
                     UserId = userId,
                     CanReceiveEmail = request.CanReceiveEmail,
+                    EmailNotificationMode = request.EmailNotificationMode ?? EmailNotificationMode.Standard,
+                    CustomEmailSettings = request.CustomEmailSettings ?? new EmailNotificationCustomSettings(),
+                    EmailWorkspaceIds = request.EmailWorkspaceIds,
+                    CanReceiveWeeklyReport = request.CanReceiveWeeklyReport,
                     CanReceiveRealtimeNotification = request.CanReceiveRealtimeNotification,
                     TimeZone = request.TimeZone,
                     Language = request.Language,
@@ -222,25 +226,17 @@ public class ProfileService
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return new UserSettingResponse
-                {
-                    CanReceiveEmail = setting.CanReceiveEmail,
-                    CanReceiveRealtimeNotification = setting.CanReceiveRealtimeNotification,
-                    TimeZone = setting.TimeZone,
-                    Language = setting.Language,
-                    LandingPage = setting.LandingPage,
-                    FocusScorePriority = setting.FocusScorePriority,
-                    FocusTasksLimit = setting.FocusTasksLimit,
-                    WaitingTasksLimit = setting.WaitingTasksLimit,
-                    BadgeVisibility = setting.BadgeVisibility,
-                    PendingLandingPageRecommendation = setting.PendingLandingPageRecommendation,
-                    LandingPageUpdatedAt = setting.LandingPageUpdatedAt,
-                    LandingPageRecommendationRefusedAt = setting.LandingPageRecommendationRefusedAt,
-                    RowVersion = setting.RowVersion,
-                };
+                return MapToUserSettingResponse(setting);
             }
 
             setting.CanReceiveEmail = request.CanReceiveEmail;
+            setting.EmailNotificationMode = request.EmailNotificationMode ?? EmailNotificationMode.Standard;
+            if (request.CustomEmailSettings != null)
+            {
+                setting.CustomEmailSettings = request.CustomEmailSettings;
+            }
+            setting.EmailWorkspaceIds = request.EmailWorkspaceIds;
+            setting.CanReceiveWeeklyReport = request.CanReceiveWeeklyReport;
             setting.CanReceiveRealtimeNotification = request.CanReceiveRealtimeNotification;
             setting.TimeZone = request.TimeZone;
             setting.Language = request.Language;
@@ -274,22 +270,7 @@ public class ProfileService
                 request.CanReceiveEmail
             );
 
-            return new UserSettingResponse
-            {
-                CanReceiveEmail = setting.CanReceiveEmail,
-                CanReceiveRealtimeNotification = setting.CanReceiveRealtimeNotification,
-                TimeZone = setting.TimeZone,
-                Language = setting.Language,
-                LandingPage = setting.LandingPage,
-                FocusScorePriority = setting.FocusScorePriority,
-                FocusTasksLimit = setting.FocusTasksLimit,
-                WaitingTasksLimit = setting.WaitingTasksLimit,
-                BadgeVisibility = setting.BadgeVisibility,
-                PendingLandingPageRecommendation = setting.PendingLandingPageRecommendation,
-                LandingPageUpdatedAt = setting.LandingPageUpdatedAt,
-                LandingPageRecommendationRefusedAt = setting.LandingPageRecommendationRefusedAt,
-                RowVersion = setting.RowVersion,
-            };
+            return MapToUserSettingResponse(setting);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -427,22 +408,7 @@ public class ProfileService
             IsAdmin = user.Roles?.Any(r => r.Name == SystemRole.Admin || r.Name == SystemRole.BackOffice) ?? false,
             IsActive = user.IsActive,
             RowVersion = user.RowVersion!,
-            Setting = new UserSettingResponse
-            {
-                CanReceiveEmail = user.Setting?.CanReceiveEmail ?? true,
-                CanReceiveRealtimeNotification = user.Setting?.CanReceiveRealtimeNotification ?? true,
-                TimeZone = user.Setting?.TimeZone ?? "Asia/Tokyo",
-                Language = user.Setting?.Language ?? "ja-JP",
-                LandingPage = user.Setting?.LandingPage,
-                FocusScorePriority = user.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
-                FocusTasksLimit = user.Setting?.FocusTasksLimit ?? 5,
-                WaitingTasksLimit = user.Setting?.WaitingTasksLimit ?? 5,
-                BadgeVisibility = user.Setting?.BadgeVisibility,
-                PendingLandingPageRecommendation = user.Setting?.PendingLandingPageRecommendation,
-                LandingPageUpdatedAt = user.Setting?.LandingPageUpdatedAt,
-                LandingPageRecommendationRefusedAt = user.Setting?.LandingPageRecommendationRefusedAt,
-                RowVersion = user.Setting?.RowVersion ?? 0,
-            },
+            Setting = user.Setting != null ? MapToUserSettingResponse(user.Setting) : null,
         };
 
         return response;
@@ -709,22 +675,7 @@ public class ProfileService
 
         throw new ConcurrencyException<UserSettingResponse>(
             "別のユーザーが同時に設定を変更しました。最新の設定を取得して再度操作してください。",
-            new UserSettingResponse
-            {
-                CanReceiveEmail = latestSetting.CanReceiveEmail,
-                CanReceiveRealtimeNotification = latestSetting.CanReceiveRealtimeNotification,
-                TimeZone = latestSetting.TimeZone,
-                Language = latestSetting.Language,
-                LandingPage = latestSetting.LandingPage,
-                FocusScorePriority = latestSetting.FocusScorePriority,
-                FocusTasksLimit = latestSetting.FocusTasksLimit,
-                WaitingTasksLimit = latestSetting.WaitingTasksLimit,
-                BadgeVisibility = latestSetting.BadgeVisibility,
-                PendingLandingPageRecommendation = latestSetting.PendingLandingPageRecommendation,
-                LandingPageUpdatedAt = latestSetting.LandingPageUpdatedAt,
-                LandingPageRecommendationRefusedAt = latestSetting.LandingPageRecommendationRefusedAt,
-                RowVersion = latestSetting.RowVersion,
-            }
+            MapToUserSettingResponse(latestSetting)
         );
     }
 
@@ -890,6 +841,10 @@ public class ProfileService
         return new UserSettingResponse
         {
             CanReceiveEmail = setting.CanReceiveEmail,
+            EmailNotificationMode = setting.EmailNotificationMode ?? EmailNotificationMode.Standard,
+            CustomEmailSettings = setting.CustomEmailSettings ?? new EmailNotificationCustomSettings(),
+            EmailWorkspaceIds = setting.EmailWorkspaceIds,
+            CanReceiveWeeklyReport = setting.CanReceiveWeeklyReport,
             CanReceiveRealtimeNotification = setting.CanReceiveRealtimeNotification,
             TimeZone = setting.TimeZone,
             Language = setting.Language,

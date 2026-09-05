@@ -23,9 +23,29 @@ public class UserSetting
     public User? User { get; set; }
 
     /// <summary>
-    /// メール受信の可否
+    /// メール受信の可否（後方互換・マスターフラグ）
     /// </summary>
     public bool CanReceiveEmail { get; set; } = true;
+
+    /// <summary>
+    /// メール通知配信モード（Off, ImportantOnly, Standard, Custom）
+    /// </summary>
+    public EmailNotificationMode? EmailNotificationMode { get; set; } = Enums.EmailNotificationMode.Standard;
+
+    /// <summary>
+    /// カスタムモード時の詳細通知設定（JSONB）
+    /// </summary>
+    public EmailNotificationCustomSettings CustomEmailSettings { get; set; } = new();
+
+    /// <summary>
+    /// メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
+    /// </summary>
+    public List<int>? EmailWorkspaceIds { get; set; }
+
+    /// <summary>
+    /// 週間レポートを受信するかどうか
+    /// </summary>
+    public bool CanReceiveWeeklyReport { get; set; } = false;
 
     /// <summary>
     /// リアルタイム通知の可否

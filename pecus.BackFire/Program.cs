@@ -57,6 +57,7 @@ builder.Services.Configure<ApplicationSettings>(
 builder.Services.AddSingleton<RazorTemplateService>();
 builder.Services.AddSingleton<RazorNonEncodeTemplateService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailNotificationFilterService, EmailNotificationFilterService>();
 
 // FrontendUrlResolver の登録
 builder.Services.AddSingleton<FrontendUrlResolver>();

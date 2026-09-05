@@ -284,6 +284,21 @@ public class ApplicationDbContext : DbContext
                 );
         });
 
+        // UserSettingエンティティの設定
+        modelBuilder.Entity<UserSetting>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.UserId).IsUnique();
+
+            entity.OwnsOne(e => e.CustomEmailSettings, b =>
+            {
+                b.ToJson();
+            });
+
+            entity.Property(e => e.EmailWorkspaceIds)
+                .HasColumnType("integer[]");
+        });
+
         // Roleエンティティの設定
         modelBuilder.Entity<Role>(entity =>
         {

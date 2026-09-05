@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -14,6 +15,28 @@ public class UserSettingResponse : IConflictModel
     /// </summary>
     [Required]
     public bool CanReceiveEmail { get; set; } = true;
+
+    /// <summary>
+    /// メール通知配信モード
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<EmailNotificationMode>))]
+    public EmailNotificationMode? EmailNotificationMode { get; set; } = Pecus.Libs.DB.Models.Enums.EmailNotificationMode.Standard;
+
+    /// <summary>
+    /// カスタムモード時の詳細通知設定
+    /// </summary>
+    public EmailNotificationCustomSettings CustomEmailSettings { get; set; } = new();
+
+    /// <summary>
+    /// メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
+    /// </summary>
+    public List<int>? EmailWorkspaceIds { get; set; }
+
+    /// <summary>
+    /// 週間レポートを受信するかどうか
+    /// </summary>
+    [Required]
+    public bool CanReceiveWeeklyReport { get; set; } = false;
 
     /// <summary>
     /// リアルタイム通知の可否
