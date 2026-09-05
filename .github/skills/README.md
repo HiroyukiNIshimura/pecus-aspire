@@ -8,7 +8,7 @@
 
 | Skill | Description |
 |-------|-------------|
-| [chrome-devtools](chrome-devtools/SKILL.md) | Expert-level browser automation, debugging, and performance analysis using Chrome DevTools MCP. \| Use this skill when:; Browser Automation: Navigating pages, clicking elements, filling forms, and h... |
+| [chrome-devtools](chrome-devtools/SKILL.md) | Expert-level browser automation, debugging, and performance analysis using Chrome DevTools MCP. U... \| Use this skill when:; Browser Automation: Navigating pages, clicking elements, filling forms, and... |
 | [coati-markdown-submit](coati-markdown-submit/SKILL.md) | Coati 外部APIへマークダウン設計ドキュメントを送信する手順と安全な運用ガイド。 \| Coati の外部APIへ、作成済みのマークダウン設計ドキュメントを送信するためのスキルです。安全な運用（APIキーの秘匿）と、再現性のあるリクエスト構成を重視します。 |
 | [flyonui](flyonui/SKILL.md) | Expert guidance for building semantic Tailwind CSS UI components using FlyonUI. \| Master the FlyonUI component library for building modern, accessible web interfaces with semantic Tailwind CSS. |
 | [lexical-converter-grpc](lexical-converter-grpc/SKILL.md) | gRPC 経由で Lexical JSON を HTML/Markdown/PlainText に変換、または Markdown を Lexical JSON に変換する手順と実装ガイド。 \| gRPC 経由で Lexical JSON を各形式（HTML/Markdown/PlainText）に変換、または Markdown を Lexical JSON に変換するためのスキル。 |
