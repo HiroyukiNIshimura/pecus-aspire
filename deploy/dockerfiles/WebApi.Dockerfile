@@ -3,7 +3,7 @@
 # ============================================
 
 # Use Debian-based images for gRPC Tools compatibility (Alpine ARM64 has issues)
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 # EXPOSE is documentation only; actual port is set via ASPNETCORE_URLS env var
 EXPOSE 7265
@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl libgssapi-
 # ============================================
 # Build stage
 # ============================================
-FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy project files
