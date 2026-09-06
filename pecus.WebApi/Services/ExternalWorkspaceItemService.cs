@@ -1,14 +1,7 @@
-using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
-using Pecus.Libs;
 using Pecus.Libs.DB;
-using Pecus.Libs.DB.Models;
-using Pecus.Libs.DB.Models.Enums;
-using Pecus.Libs.Hangfire.Tasks;
-using Pecus.Libs.Hangfire.Tasks.Bot;
 using Pecus.Libs.Lexical;
-using Pecus.Models.Requests.External;
 using Pecus.Models.Responses.External;
 
 namespace Pecus.Services;
@@ -19,127 +12,150 @@ namespace Pecus.Services;
 public class ExternalWorkspaceItemService(
     ApplicationDbContext context,
     ILexicalConverterService lexicalConverterService,
-    OrganizationAccessHelper accessHelper,
-    IBackgroundJobClient backgroundJobClient,
     ILogger<ExternalWorkspaceItemService> logger) : IExternalWorkspaceItemService
 {
+    private const int FixedPageSize = 20;
+
     /// <inheritdoc />
-    public async Task<CreateExternalWorkspaceItemResponse> CreateItemAsync(
+    public async Task<ExternalItemListResponse> GetWorkspaceItemsAsync(
         int organizationId,
-        string workspaceCode,
-        CreateExternalWorkspaceItemRequest request,
+        string workspaceIdOrCode,
+        int page,
         CancellationToken cancellationToken = default)
     {
-        // 1. ワークスペースの存在確認（組織スコープでフィルタ）
+        // ワークスペースの存在および組織所属チェック（コードまたは数値IDで検索）
+        var isNumeric = int.TryParse(workspaceIdOrCode, out var numericId);
         var workspace = await context.Workspaces
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                w => w.Code == workspaceCode && w.OrganizationId == organizationId,
-                cancellationToken)
-            ?? throw new NotFoundException($"ワークスペース '{workspaceCode}' が見つかりません。");
+                w => w.OrganizationId == organizationId &&
+                     (w.Code == workspaceIdOrCode || (isNumeric && w.Id == numericId)),
+                cancellationToken);
 
-        // 2. オーナーの存在確認（同一組織内のユーザーのみ）
-        var owner = await context.Users
+        if (workspace == null)
+        {
+            throw new NotFoundException($"ワークスペース '{workspaceIdOrCode}' が見つかりません。");
+        }
+
+        var targetPage = page < 1 ? 1 : page;
+        var query = context.WorkspaceItems
+            .AsNoTracking()
+            .Where(wi => wi.WorkspaceId == workspace.Id && wi.IsActive);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Include(wi => wi.WorkspaceItemTags)
+                .ThenInclude(wit => wit.Tag)
+            .OrderByDescending(wi => wi.CreatedAt)
+            .Skip((targetPage - 1) * FixedPageSize)
+            .Take(FixedPageSize)
+            .ToListAsync(cancellationToken);
+
+        var workspaceCode = workspace.Code ?? string.Empty;
+
+        var convertedTasks = items.Select(async item =>
+        {
+            var markdown = await ConvertToMarkdownAsync(item.Body, cancellationToken);
+            var tagNames = item.WorkspaceItemTags
+                .Where(wit => wit.Tag != null && wit.Tag.IsActive)
+                .Select(wit => wit.Tag!.Name)
+                .ToList();
+
+            return new ExternalItemResponse
+            {
+                WorkspaceCode = workspaceCode,
+                ItemNumber = item.ItemNumber,
+                Subject = item.Subject,
+                Body = markdown,
+                Tags = tagNames,
+            };
+        });
+
+        var itemResponses = await Task.WhenAll(convertedTasks);
+
+        return new ExternalItemListResponse
+        {
+            WorkspaceCode = workspaceCode,
+            TotalCount = totalCount,
+            CurrentPage = targetPage,
+            PageSize = FixedPageSize,
+            HasNextPage = (targetPage * FixedPageSize) < totalCount,
+            Items = itemResponses,
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<ExternalItemResponse> GetWorkspaceItemAsync(
+        int organizationId,
+        string workspaceIdOrCode,
+        int itemNumber,
+        CancellationToken cancellationToken = default)
+    {
+        var isNumeric = int.TryParse(workspaceIdOrCode, out var numericId);
+        var workspace = await context.Workspaces
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                u => u.LoginId == request.OwnerLoginId && u.OrganizationId == organizationId,
-                cancellationToken)
-            ?? throw new NotFoundException($"ユーザー '{request.OwnerLoginId}' が見つかりません。");
+                w => w.OrganizationId == organizationId &&
+                     (w.Code == workspaceIdOrCode || (isNumeric && w.Id == numericId)),
+                cancellationToken);
 
-        // 3. オーナーがワークスペースのメンバーであることを確認
-        var isMember = await accessHelper.IsActiveWorkspaceMemberAsync(owner.Id, workspace.Id);
-        if (!isMember)
+        if (workspace == null)
         {
-            throw new InvalidOperationException(
-                $"ユーザー '{request.OwnerLoginId}' はワークスペースのメンバーではありません。");
+            throw new NotFoundException($"ワークスペース '{workspaceIdOrCode}' が見つかりません。");
         }
 
-        // 4. MarkdownからLexical JSONへ変換
-        var lexicalResult = await lexicalConverterService.FromMarkdownAsync(
-            request.Body,
-            cancellationToken);
+        var item = await context.WorkspaceItems
+            .AsNoTracking()
+            .Include(wi => wi.WorkspaceItemTags)
+                .ThenInclude(wit => wit.Tag)
+            .FirstOrDefaultAsync(
+                wi => wi.WorkspaceId == workspace.Id && wi.ItemNumber == itemNumber && wi.IsActive,
+                cancellationToken);
 
-        if (!lexicalResult.Success)
+        if (item == null)
         {
-            throw new InvalidOperationException(
-                $"Markdown から Lexical JSON への変換に失敗しました: {lexicalResult.ErrorMessage}");
+            throw new NotFoundException($"ワークスペース '{workspaceIdOrCode}' にアイテム番号 '{itemNumber}' が見つかりません。");
         }
 
-        // 5. トランザクション開始
-        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+        var markdown = await ConvertToMarkdownAsync(item.Body, cancellationToken);
+        var tagNames = item.WorkspaceItemTags
+            .Where(wit => wit.Tag != null && wit.Tag.IsActive)
+            .Select(wit => wit.Tag!.Name)
+            .ToList();
+
+        return new ExternalItemResponse
+        {
+            WorkspaceCode = workspace.Code ?? string.Empty,
+            ItemNumber = item.ItemNumber,
+            Subject = item.Subject,
+            Body = markdown,
+            Tags = tagNames,
+        };
+    }
+
+    private async Task<string?> ConvertToMarkdownAsync(string? lexicalJson, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(lexicalJson))
+        {
+            return null;
+        }
 
         try
         {
-            // シーケンス名の確認
-            if (string.IsNullOrEmpty(workspace.ItemNumberSequenceName))
+            var result = await lexicalConverterService.ToMarkdownAsync(lexicalJson, cancellationToken);
+            if (!result.Success)
             {
-                throw new InvalidOperationException(
-                    "ワークスペースのアイテム連番シーケンスが設定されていません。");
+                logger.LogWarning("Markdown変換に失敗しました: {Error}", result.ErrorMessage);
+                return null;
             }
 
-            // シーケンスから次の連番を取得（アトミック操作）
-#pragma warning disable EF1002
-            var itemNumber = await context.Database
-                .SqlQueryRaw<int>($@"SELECT nextval('""{workspace.ItemNumberSequenceName}""')::int AS ""Value""")
-                .FirstAsync(cancellationToken);
-#pragma warning restore EF1002
-
-            var now = DateTimeOffset.UtcNow;
-            var item = new WorkspaceItem
-            {
-                WorkspaceId = workspace.Id,
-                ItemNumber = itemNumber,
-                Code = itemNumber.ToString(),
-                Subject = request.Subject,
-                Body = lexicalResult.Result,
-                OwnerId = owner.Id,
-                IsDraft = false,
-                IsArchived = false,
-                IsActive = true,
-                CreatedAt = now,
-                UpdatedAt = now,
-                UpdatedByUserId = owner.Id,
-            };
-
-            context.WorkspaceItems.Add(item);
-            await context.SaveChangesAsync(cancellationToken);
-
-            await transaction.CommitAsync(cancellationToken);
-
-            logger.LogInformation(
-                "外部APIでワークスペースアイテムを作成しました: ItemId={ItemId}, WorkspaceCode={WorkspaceCode}, Owner={Owner}",
-                item.Id,
-                workspaceCode,
-                request.OwnerLoginId);
-
-            // 検索インデックス更新ジョブをエンキュー
-            backgroundJobClient.Enqueue<WorkspaceItemTasks>(x =>
-                x.UpdateSearchIndexAsync(item.Id));
-
-            // Activity 記録ジョブをエンキュー
-            backgroundJobClient.Enqueue<ActivityTasks>(x =>
-                x.RecordActivityAsync(workspace.Id, item.Id, owner.Id, ActivityActionType.Created, null));
-
-            // アイテム作成通知ボットジョブをエンキュー
-            backgroundJobClient.Enqueue<CreateItemTask>(x =>
-                x.NotifyItemCreatedAsync(item.Id));
-
-            return new CreateExternalWorkspaceItemResponse
-            {
-                WorkspaceCode = workspace.Code ?? string.Empty,
-                ItemNumber = item.ItemNumber,
-                Subject = item.Subject,
-                CreatedAt = item.CreatedAt,
-            };
+            return result.Result;
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync(cancellationToken);
-            logger.LogError(
-                ex,
-                "外部APIでのワークスペースアイテム作成に失敗しました: WorkspaceCode={WorkspaceCode}",
-                workspaceCode);
-            throw;
+            logger.LogWarning(ex, "Markdown変換中にエラーが発生しました。");
+            return null;
         }
     }
 }
