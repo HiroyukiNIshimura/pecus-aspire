@@ -132,6 +132,7 @@ builder.Services.AddScoped<ExternalApiKeyService>();
 
 // 外部API用サービスの登録
 builder.Services.AddScoped<IExternalWorkspaceItemService, ExternalWorkspaceItemService>();
+builder.Services.AddScoped<IExternalWorkspaceTaskService, ExternalWorkspaceTaskService>();
 
 // サービスの登録
 builder.Services.AddScoped<UserService>();

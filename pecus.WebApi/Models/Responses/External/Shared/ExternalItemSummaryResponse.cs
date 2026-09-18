@@ -3,16 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace Pecus.Models.Responses.External;
 
 /// <summary>
-/// 外部公開用アイテム情報レスポンス
+/// 外部公開用アイテムサマリーレスポンス（一覧用）
 /// </summary>
-public class ExternalItemResponse
+public class ExternalItemSummaryResponse
 {
-    /// <summary>
-    /// ワークスペースコード
-    /// </summary>
-    [Required]
-    public required string WorkspaceCode { get; set; }
-
     /// <summary>
     /// アイテム番号（ワークスペース内の連番）
     /// </summary>
@@ -24,11 +18,6 @@ public class ExternalItemResponse
     /// </summary>
     [Required]
     public required string Subject { get; set; }
-
-    /// <summary>
-    /// 本文（Markdown変換データ）
-    /// </summary>
-    public string? Body { get; set; }
 
     /// <summary>
     /// タグ（タグ名一覧）

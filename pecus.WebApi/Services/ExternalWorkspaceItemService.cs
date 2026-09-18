@@ -21,6 +21,9 @@ public class ExternalWorkspaceItemService(
         int organizationId,
         string workspaceIdOrCode,
         int page,
+        bool? isActive = null,
+        bool? isArchived = null,
+        bool? isDraft = null,
         CancellationToken cancellationToken = default)
     {
         // ワークスペースの存在および組織所属チェック（コードまたは数値IDで検索）
@@ -40,11 +43,29 @@ public class ExternalWorkspaceItemService(
         var targetPage = page < 1 ? 1 : page;
         var query = context.WorkspaceItems
             .AsNoTracking()
-            .Where(wi => wi.WorkspaceId == workspace.Id && wi.IsActive);
+            .Where(wi => wi.WorkspaceId == workspace.Id);
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(wi => wi.IsActive == isActive.Value);
+        }
+
+        if (isArchived.HasValue)
+        {
+            query = query.Where(wi => wi.IsArchived == isArchived.Value);
+        }
+
+        if (isDraft.HasValue)
+        {
+            query = query.Where(wi => wi.IsDraft == isDraft.Value);
+        }
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
+            .Include(wi => wi.Owner)
+            .Include(wi => wi.Assignee)
+            .Include(wi => wi.Committer)
             .Include(wi => wi.WorkspaceItemTags)
                 .ThenInclude(wit => wit.Tag)
             .OrderByDescending(wi => wi.CreatedAt)
@@ -54,25 +75,43 @@ public class ExternalWorkspaceItemService(
 
         var workspaceCode = workspace.Code ?? string.Empty;
 
-        var convertedTasks = items.Select(async item =>
+        var itemResponses = items.Select(item =>
         {
-            var markdown = await ConvertToMarkdownAsync(item.Body, cancellationToken);
             var tagNames = item.WorkspaceItemTags
                 .Where(wit => wit.Tag != null && wit.Tag.IsActive)
                 .Select(wit => wit.Tag!.Name)
                 .ToList();
 
-            return new ExternalItemResponse
+            return new ExternalItemSummaryResponse
             {
-                WorkspaceCode = workspaceCode,
                 ItemNumber = item.ItemNumber,
                 Subject = item.Subject,
-                Body = markdown,
                 Tags = tagNames,
+                Owner = new ExternalUserRefResponse
+                {
+                    LoginId = item.Owner?.LoginId ?? string.Empty,
+                    Username = item.Owner?.Username ?? string.Empty,
+                },
+                AssignedUser = item.Assignee != null
+                    ? new ExternalUserRefResponse
+                    {
+                        LoginId = item.Assignee.LoginId,
+                        Username = item.Assignee.Username,
+                    }
+                    : null,
+                Committer = item.Committer != null
+                    ? new ExternalUserRefResponse
+                    {
+                        LoginId = item.Committer.LoginId,
+                        Username = item.Committer.Username,
+                    }
+                    : null,
+                DueDate = item.DueDate,
+                IsActive = item.IsActive,
+                IsArchived = item.IsArchived,
+                IsDraft = item.IsDraft,
             };
-        });
-
-        var itemResponses = await Task.WhenAll(convertedTasks);
+        }).ToList();
 
         return new ExternalItemListResponse
         {
@@ -107,10 +146,13 @@ public class ExternalWorkspaceItemService(
 
         var item = await context.WorkspaceItems
             .AsNoTracking()
+            .Include(wi => wi.Owner)
+            .Include(wi => wi.Assignee)
+            .Include(wi => wi.Committer)
             .Include(wi => wi.WorkspaceItemTags)
                 .ThenInclude(wit => wit.Tag)
             .FirstOrDefaultAsync(
-                wi => wi.WorkspaceId == workspace.Id && wi.ItemNumber == itemNumber && wi.IsActive,
+                wi => wi.WorkspaceId == workspace.Id && wi.ItemNumber == itemNumber,
                 cancellationToken);
 
         if (item == null)
@@ -131,6 +173,29 @@ public class ExternalWorkspaceItemService(
             Subject = item.Subject,
             Body = markdown,
             Tags = tagNames,
+            Owner = new ExternalUserRefResponse
+            {
+                LoginId = item.Owner?.LoginId ?? string.Empty,
+                Username = item.Owner?.Username ?? string.Empty,
+            },
+            AssignedUser = item.Assignee != null
+                ? new ExternalUserRefResponse
+                {
+                    LoginId = item.Assignee.LoginId,
+                    Username = item.Assignee.Username,
+                }
+                : null,
+            Committer = item.Committer != null
+                ? new ExternalUserRefResponse
+                {
+                    LoginId = item.Committer.LoginId,
+                    Username = item.Committer.Username,
+                }
+                : null,
+            DueDate = item.DueDate,
+            IsActive = item.IsActive,
+            IsArchived = item.IsArchived,
+            IsDraft = item.IsDraft,
         };
     }
 
