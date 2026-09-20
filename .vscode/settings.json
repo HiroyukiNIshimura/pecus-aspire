@@ -43,9 +43,6 @@
     "editor.defaultFormatter": "vscode.json-language-features"
   },
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
-  "chat.instructionsFilesLocations": {
-    ".github/instructions": true
-  },
   "chat.tools.terminal.autoApprove": {
     "dotnet build": true,
     "dotnet ef": true,
