@@ -1,11 +1,11 @@
 ---
-name: integrated-browser-ui-review
-description: '共有された VS Code 統合ブラウザで `http://localhost:3000` の開発ページを開く。Use when asked to open or share the integrated browser for localhost:3000. Do not use for other URLs or for Playwright CLI/E2E test creation or execution.'
+name: localhost-debug-browser
+description: '共有された VS Code 統合ブラウザで `http://localhost:3000` のデバッグ用開発ページを開く。Use when asked to open or share the localhost:3000 debug browser. Do not use for other URLs or for Playwright CLI/E2E test creation or execution.'
 ---
 
-# 統合ブラウザを開く
+# localhost デバッグブラウザを開く
 
-共有された VS Code 統合ブラウザで、`http://localhost:3000` の開発環境ページを開くためのスキルです。これは E2E テストの設計・作成・実行ではありません。
+共有された VS Code 統合ブラウザで、`http://localhost:3000` のデバッグ用開発ページを開くためのスキルです。これは E2E テストの設計・作成・実行ではありません。
 
 ## 使用する場面
 
