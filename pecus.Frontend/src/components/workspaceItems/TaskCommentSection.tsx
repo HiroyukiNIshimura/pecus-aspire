@@ -504,6 +504,7 @@ export default function TaskCommentSection({
                       {/* 表示モード */}
                       <MessageContentRenderer
                         content={comment.isDeleted ? null : comment.content}
+                        mode="markdown"
                         fallback={<span className="italic text-base-content/50">このコメントは削除されました</span>}
                       />
 
