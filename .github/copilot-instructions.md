@@ -1,144 +1,145 @@
 ---
 applyTo: "*"
 ---
-## Pecus Aspire — AI エージェント最小指示書
 
-メタ情報
-- 版: v1.4
-- 更新日: 2026-03-16
-- 文書責任: Pecus Aspire Maintainers
+# Pecus Aspire — メイン AI エージェント指示書
 
-## 指示の優先順位（SSoT）
+## 1. この文書の役割
 
-エージェントは、以下の順で指示を解釈・適用すること。
+- 対象: Pecus Aspire リポジトリ全体
+- アプリケーション名: **Coati**
+- 開発コード: `pecus`
+- この文書は、プロジェクト全体に適用する共通ルールの SSOT（唯一の正）である。
+- `.github/instructions/*.instructions.md` は、この文書に記載しないスコープ固有の差分だけを定義する。
+- 詳細な実装方法は `docs/` を参照する。ルールが衝突した場合は、次の順に優先する。
 
-1. このファイル（`.github/copilot-instructions.md`）の**共通・絶対ルール**
-2. `applyTo` が一致する `.github/instructions/*.instructions.md` の**スコープ別ルール**
-3. `docs/*` の**実装詳細ガイド**（各ドキュメント先頭の「AI エージェント向け要約」を優先参照）
+1. この文書
+2. 対象ファイルに適用される `.github/instructions/*.instructions.md`
+3. `docs/` の実装ガイド
 
-矛盾時は、上位レイヤーを優先する。判断が付かない場合は、推測実装せず確認を取ること。
+判断できない場合は推測実装せず、必要な前提を明示して確認を求める。
 
-## 短い要約（エージェント向け / 必読）
+## 2. プロジェクトの前提
 
-このプロジェクトのコードは全てエージェントが自律的に生成しています。以下のルールに反する変更は禁止です。できないことは正直に「できない」と回答してください。
+- .NET 10 / EF Core 10 / .NET Aspire 13.2
+- Next.js 16.2 / React 19.2 / Tailwind CSS 4.2 / FlyonUI 2.4
+- PostgreSQL（pgroonga）、Redis、Hangfire、SignalR、Lexical
+- 共有パッケージ: `packages/coati-editor`
+- テストプロジェクト・テストファイルは現時点で存在しない。テスト作成を作業の前提にしない。
 
-### 最優先事項
-このアプリは一般公開されグローバルに使用されます。以下を禁止します: (1) 楽観的排他制御を使わないポーリングによる再試行でユニークID衝突を回避する実装、(2) ロック取得によるスループット低下を招く排他制御、(3) 破壊的操作（削除等）以外の通常操作（保存・登録・画面遷移等）で都度確認ダイアログを挟むUIや、形式的で緩いセキュリティロジック。
+### サービス構成
 
-### プロジェクト基本情報
-- 開発コード: `pecus`、アプリケーション名: `Coati`
-- エントリ: `pecus.AppHost/AppHost.cs`（Aspire がサービスの起動順・依存を管理）
-- 主要プロジェクト: `pecus.WebApi`, `pecus.BackFire`, `pecus.DbManager`, `pecus.Libs`, `pecus.Frontend`, `pecus.LexicalConverter`, `pecus.Protos`
-- 共有パッケージ: `packages/coati-editor`（Lexical ベースリッチテキストエディタ）
-- 技術スタック: .NET 10 / EF Core 10 / .NET Aspire 13.2 / Next.js 16.2 / React 19.2 / Tailwind CSS 4.2 / FlyonUI 2.4
-- テスト基盤: なし（テストプロジェクト・テストファイルは存在しない。エージェントはテスト作成を提案しないこと）
-
-### 絶対禁止事項（SSoT ルール一覧）
-
-すべての禁止事項および共通ルールは本表を一意の正（SSoT）として管理します。
-
-| カテゴリ | 禁止事項 / ルール | 詳細・遵守手順 |
-|---|---|---|
-| **コマンド** | API クライアント生成（`npm run full:api`）の実行禁止 | 人間の開発者のみが実行。作業に必要な場合は中断し、報告時は (1) 何が必要か、(2) なぜ実行できないか、(3) 人間が実行すべきコマンド、を明記した上で、それ以外の作業を継続すること。 |
-| **ファイル** | 自動生成ファイルの手動編集禁止 | [pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts](pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts) 等の自動生成ファイルを直接編集しない（.gitignore 対象）。 |
-| **API / 通信** | フロントからの WebApi 直 fetch 禁止 | Server Actions / API Routes 経由のみ許可。クライアント側での API 呼び出し禁止（SSR で初期データ取得、CSR は UI のみ）。 |
-| **トランザクション** | コントローラーでのトランザクション開始禁止 | トランザクションはサービス層で `BeginTransactionAsync` を使用し明示的に開始・管理する。 |
-| **変更管理** | 複数プロジェクト横断変更の無断実施禁止 | 1 変更で複数プロジェクトを触る場合は、事前に目的・影響・差分を明記して承認を得る。 |
-| **ロジック** | リファクタリング時の業務ロジック変更禁止 | コードや UI のリファクタリング時に業務ロジックを絶対に変更しない。変更が必要な場合は必ず報告し確認をとること。 |
-| **アーキテクチャ** | サービス間の直接参照禁止 | C# 共通ライブラリは `pecus.Libs`、Node.js 共通ライブラリは `packages/` へ集約。 |
-| **型 / DTO** | 型宣言の重複定義禁止 | DTO / リクエスト・レスポンス型は必ず単一ソースで管理。 |
-| **型 / DTO** | DTO / 型安全・検証属性の未設定禁止 | 必須項目に `[Required]` / `[MaxLength]` 等を必ず付与し API 互換性に注意する。DB 変更時は DTO / 検証属性も必ず更新。 |
-| **DB / 設計** | Enum の `HasDefaultValue()` 禁止 | Enum は nullable 推奨、`HasDefaultValue()` は使用しない。 |
-| **ジョブ** | Hangfire 静的メソッド呼び出し禁止 | Hangfire タスクは `pecus.Libs` で DI 共有（`IBackgroundJobClient` / `IRecurringJobManager`）。 |
-| **UI / レイアウト** | ページコンポーネントでの `h-screen` / `min-h-screen` 禁止 | `flex-1` を使用。レイアウト変更前に [docs/layout-template.md](docs/layout-template.md) を確認すること。 |
-| **UI / a11y** | アクセシビリティ / HTML 属性の未設定禁止 | `button type`, `label for`, `alt`, `required`, `className` 等を必ず設定。 |
-| **UI / スタイル** | CSS セマンティックカラーの誤用禁止 | ❌ `-ghost`、✅ `-secondary`。 |
-
-
-## サービスアーキテクチャ（Aspire 依存関係）
-
-```
-PostgreSQL (pgroonga) ─┬─→ dbmanager (マイグレーション・シード)
-Redis (バックエンド)   ─┤   ↓
-LexicalConverter (gRPC)─┼─→ backfire (Hangfire バックグラウンドジョブ)
-                        └─→ pecusapi (REST API) ←─ dbmanager, backfire
-Redis (フロントエンド)  ──→ frontend (Next.js SSR) ←─ pecusapi
+```text
+PostgreSQL ─┬─> dbmanager ─┐
+Redis       ─┤              ├─> pecusapi <─ backfire <─ LexicalConverter
+              └─────────────┘
+Redis（frontend） ─> frontend（Next.js SSR）
 ```
 
-- **Redis は 2 インスタンス**: バックエンド用（キャッシュ・SignalR backplane）とフロントエンド用（セッション管理）
-- 起動順・依存は `pecus.AppHost/AppHost.cs` で定義
+- バックエンド用 Redis とフロントエンド用 Redis は別インスタンスである。
+- サービスの起動順と依存関係は `pecus.AppHost/AppHost.cs` が管理する。
+- サービス間の直接参照は禁止する。C# の共有コードは `pecus.Libs`、Node.js の共有コードは `packages/` に置く。
 
-## フロントエンド ルートグループ構造
+## 3. 絶対ルール
 
-```
-src/app/
-  (workspace-full)/   — ワークスペース関連ページ
-  (dashboard)/        — ダッシュボード
-  (admin-full)/       — 管理者ページ
-  (profile)/          — プロフィール
-  (entrance)/         — ログイン・サインアップ
-  (backoffice-full)/  — バックオフィス
-  api/                — API Routes
-  help/               — ヘルプページ
-```
+### 変更の安全性
 
-## 参照ドキュメント
+- 業務ロジックを変更しないリファクタリングでは、振る舞いを変更しない。
+- 複数プロジェクトを変更する場合は、変更前に目的・影響範囲・対象プロジェクト・差分方針を示す。協調変更の実施順は第5節に従う。
+- ポーリングで一意 ID の衝突を回避しない。楽観的排他制御を使わない再試行も実装しない。
+- スループットを下げるロック取得による排他制御を追加しない。
+- 保存・登録・画面遷移などの通常操作に確認ダイアログを挟まない。削除など破壊的操作は例外とする。
+- 形式的で緩いセキュリティ実装を追加しない。認証・認可・入力検証は実際の脅威モデルに基づいて実装する。
 
-詳細な実装ガイドラインは以下のドキュメントを参照してください。
-**各ドキュメントの冒頭にある「AI エージェント向け要約（必読）」を必ず確認し、ルールを遵守してください。**
+### 自動生成物と API
 
-| カテゴリ | ドキュメント | 重要度 |
-|---------|-------------|--------|
-| **ビジョン** | `docs/spec/PRODUCT_VISION_PERSONAS_JA.md` | 必読 |
-| **フロントエンド** | `docs/frontend-guidelines.md`, `docs/ssr-design-guidelines.md` | 必読 |
-| **レイアウト** | `docs/layout-template.md` | 必読（変更前に必ず確認） |
-| **バックエンド** | `docs/backend-guidelines.md`, `docs/global-exception-handling.md` | 必読 |
-| **DB** | `docs/db-concurrency.md` | 必読 |
-| **UI** | `docs/tailwind-arbitrary-values.md`, `docs/modal-dialog-template.md` | 必読 |
-| **設定** | `docs/app-settings-provider.md` | 参照 |
+- API クライアント生成の実施条件・手順・失敗時の対応は第5節に従う。
+- API クライアント生成後は、生成物を手編集せず、その生成結果を使ってフロントエンドを実装する。
+- `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts` などの自動生成ファイルを手編集しない。
+- フロントエンドから `pecus.WebApi` へ直接 `fetch` しない。Server Actions または Next.js API Routes 経由にする。
+- クライアントコンポーネントから API を呼び出さない。初期データは SSR、操作は Server Actions を基本とする。
+- DTO、リクエスト型、レスポンス型を重複定義しない。単一の型ソースを維持する。
 
-## 開発フロー／コマンド
+### データベースとトランザクション
 
-- 環境セットアップ: `node scripts/generate-appsettings.js -D`（開発用設定ファイル生成。各プロジェクトの `appsettings.json` を生成）
-- バックエンド: `dotnet format pecus.sln` → `dotnet clean pecus.sln`→ `dotnet build pecus.sln` → `dotnet run --project pecus.AppHost`（エージェントの実行禁止）
-- フロントエンド: `cd pecus.Frontend` → `npm run lint` → `npm run format` → `npx tsc --noEmit` → `npm run build`（エージェントの実行禁止） → `npm run dev`（エージェントの実行禁止）
-- 共有パッケージ: `cd packages/coati-editor && npm run build`（エディタ変更時）
-- API クライアント生成: `npm run full:api`（エージェントの実行禁止）
+- 必須 DTO プロパティには `[Required]`、文字列には適切な `[MaxLength]` などの検証属性を付ける。
+- DB スキーマを変更した場合は、DTO・検証属性・関連する型を同時に確認する。
+- Enum の `HasDefaultValue()` は使用しない。Enum プロパティは原則 nullable とする。
+- トランザクションはサービス層で `BeginTransactionAsync` を使って管理する。コントローラーで開始しない。
+- 競合は `DbUpdateConcurrencyException` を捕捉し、対象を `FindAsync` で再取得して `ConcurrencyException<T>` を使用する。
 
-## プロジェクト特有のルール（必ず守る）
+### UI とアクセシビリティ
 
-本プロジェクトの共通ルール・禁止事項は `絶対禁止事項（SSoT ルール一覧）` を参照してください（重複を避けるため一元化されています）。
+- ページコンポーネントで `h-screen` / `min-h-screen` を使わず、レイアウトの `flex-1` を使う。
+- `button` の `type`、`label` の `htmlFor`、画像の `alt`、フォームの `required`、React の `className` など、必要な HTML 属性を省略しない。
+- Tailwind と FlyonUI のセマンティックカラーを使う。`-ghost` は使わず `-secondary` を使う。
+- レイアウトを変更する前に `docs/layout-template.md` を読む。
 
-## すぐ参照すべきファイル（ショートリスト）
+## 4. 実装ルール
 
-| ファイル | 説明 |
-|---------|------|
-| `pecus.AppHost/AppHost.cs` | Aspire サービス起動順・依存解決 |
-| `pecus.Libs/DB/ApplicationDbContext.cs` | PostgreSQL `xmin` → `uint` マッピング |
-| `pecus.WebApi/Filters/GlobalExceptionFilter.cs` | 例外 → HTTP ステータス変換 |
-| `pecus.WebApi/Exceptions/ConcurrencyException.cs` | 競合例外定義 |
-| `pecus.Frontend/src/libs/serverSession.ts` | Redis セッション管理 |
-| `pecus.Frontend/src/actions/` | Server Actions 実装例 |
+### バックエンド
 
-## 作業時のチェックリスト（短い）
+対象: `pecus.WebApi`、`pecus.BackFire`、`pecus.DbManager`、`pecus.Libs`
 
-1. 変更が跨プロジェクトか？ → README に承認フローを記載。
-2. DTO の検証属性は揃っているか？ → `dotnet build` 前に確認。
-3. 型生成物は手動編集していないか？ → 自動生成ファイルは .gitignore へ。
+スコープ固有の実装規約と参照先は `.github/instructions/backend.instructions.md` に従う。
 
-## ログファイル
-- バックエンド: `pecus.WebApi/logs/最新日付けのログ`（Serilog ログ）
-- バックグラウンドジョブ: `pecus.BackFire/logs/最新日付けのログ`
-- フロントエンド: ブラウザの DevTools コンソール
-- マイグレーション: `pecus.DbManager/logs/最新日付けのログ`
-- マイクロサービス: コンソールにもログは出していません。各サービスのログ設定を参照してください。
+### フロントエンド
 
-## アンチパターン・禁止事項（**必ず遵守**）
+対象: `pecus.Frontend/**/*.ts`、`pecus.Frontend/**/*.tsx`
 
-アンチパターンおよび禁止事項の詳細は `絶対禁止事項（SSoT ルール一覧）` を参照してください（本指示書の単一メンタルモデルとして一元管理されています）。
+スコープ固有の実装規約と参照先は `.github/instructions/frontend.instructions.md` に従う。
 
-## 運用ポリシー（重複管理）
+### 共有エディター
 
-- このファイルは「共通ルールの SSOT（唯一の正）」として扱う
-- `.github/instructions/frontend.instructions.md` / `backend.instructions.md` には、共通ルールを再掲せず、**差分ルールのみ**記載する
-- 実装例・背景説明・詳細手順は `docs/` 側に集約し、instruction 側では参照を優先する
+- `packages/coati-editor` は共有パッケージであり、変更時はパッケージのビルドで確認する。
+- Lexical JSON の変換や gRPC 連携を変更する場合は `.github/skills/lexical-converter-grpc/SKILL.md` を先に読む。
+
+## 5. 変更前後のワークフロー
+
+1. 対象ファイル、適用される指示書、関連ドキュメントを確認する。
+2. 複数プロジェクトにまたがる場合は、目的・影響・差分を明示する。
+3. 既存コードの責務・公開 API・エラー処理・排他制御を確認する。
+4. バックエンドを先に修正し、診断・ビルドで修正完了を確認する。
+5. バックエンドとフロントエンドを同一変更で扱う場合は、バックエンドの修正・検証後に API 契約が確定していることを確認し、`npm run full:api` を実行して API クライアントを生成する。API 契約に変更がない場合もこの順序を省略しない。生成に失敗した場合はエラー内容を報告し、フロントエンド実装を保留する。生成物は手編集しない。
+6. フロントエンドのみの変更でバックエンドに変更がない場合は、既存の生成済み API クライアントをそのまま使用し、`npm run full:api` を再実行しない。
+7. API クライアント生成後にフロントエンドを実装する。生成前にフロントエンド側で API 型を推測して実装しない。
+8. 最小限の差分で実装する。無関係な整形や生成物の編集をしない。
+9. 変更後に `get_errors` で診断を確認する。
+10. 対象プロジェクトで利用可能な lint、型チェック、ビルドの CLI コマンドはすべて実行し、コマンドが利用できない場合または実行できなかった場合は理由を報告する。
+11. 最終報告では、変更ファイル、実施順序、検証結果、未実行の検証、利用者が必要な手動操作を明記する。
+
+## 6. エージェントが実行してはいけないコマンド
+
+- `dotnet run --project pecus.AppHost`
+- `npm run dev`（`pecus.Frontend`）
+
+上記が必要な場合は、何が必要か・なぜ実行できないか・人間が実行するコマンドを報告し、それ以外の作業を継続する。
+
+## 7. 参照先と主要ファイル
+
+### 必読ドキュメント
+
+- `docs/spec/PRODUCT_VISION_PERSONAS_JA.md`
+- `docs/frontend-guidelines.md`
+- `docs/ssr-design-guidelines.md`
+- `docs/layout-template.md`
+- `docs/backend-guidelines.md`
+- `docs/global-exception-handling.md`
+- `docs/db-concurrency.md`
+
+### 主要ファイル
+
+- `pecus.AppHost/AppHost.cs`: Aspire のサービス構成
+- `pecus.Libs/DB/ApplicationDbContext.cs`: PostgreSQL と `xmin` のマッピング
+- `pecus.WebApi/Filters/GlobalExceptionFilter.cs`: 例外と HTTP ステータスの変換
+- `pecus.WebApi/Exceptions/ConcurrencyException.cs`: 競合例外
+- `pecus.Frontend/src/libs/serverSession.ts`: Redis セッション管理
+- `pecus.Frontend/src/actions/`: Server Actions の実装例
+
+## 8. 返答と報告の原則
+
+- 返答は日本語で簡潔に行う。
+- 変更したファイルと変更理由を示す。
+- 検証は実行結果に基づいて報告し、未実行のものを成功と書かない。
+- 禁止事項に抵触する依頼は、代替案と人間が行うべき手順を示す。
+- できないことは推測で埋めず、できない理由を明確にする。

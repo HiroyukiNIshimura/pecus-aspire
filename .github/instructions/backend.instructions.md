@@ -9,13 +9,13 @@ applyTo: "pecus.WebApi/**/*.cs, pecus.BackFire/**/*.cs, pecus.DbManager/**/*.cs,
 ### メタ情報
 - Scope: `pecus.WebApi/**/*.cs, pecus.BackFire/**/*.cs, pecus.DbManager/**/*.cs, pecus.Libs/**/*.cs`
 - Depends On: `.github/copilot-instructions.md`
-- Details Source: `docs/backend-guidelines.md`（参照先ドキュメントが取得できない場合、または本ファイルの記載と矛盾する場合は、本ファイルの差分ルールを優先する）
+- Details Source: `docs/backend-guidelines.md`
 
 ### バックエンド差分ルール（要点）
 - 競合制御: `DbUpdateConcurrencyException` を捕捉し、`FindAsync` 後に `ConcurrencyException<T>` を使用
 - コントローラーは MVC + `HttpResults` を使用し、例外は `GlobalExceptionFilter` に委譲
 - DTO には検証属性（`[Required]`, `[MaxLength]` 等）を必ず付与
-- Enum プロパティは常に nullable として宣言し、`HasDefaultValue()` は使用しない
+- Enum プロパティは原則 nullable とし、`HasDefaultValue()` は使用しない
 - トランザクションはサービス層で `BeginTransactionAsync` を使用（コントローラーで開始しない）
 - レスポンス DTO の enum は `JsonStringEnumConverter<TEnum>` を明示する
 - Hangfire は DI 経由（`IBackgroundJobClient` / `IRecurringJobManager`）を使用し、静的 API を使わない
