@@ -16,7 +16,7 @@ import { useCurrentUserId } from '@/providers/AppSettingsProvider';
 
 /** コメントタイプのラベルと色 */
 /** コメントの最大文字数 */
-const MAX_COMMENT_LENGTH = 500;
+const MAX_COMMENT_LENGTH = 2000;
 
 const commentTypeConfig: Record<
   NonNullable<TaskCommentType>,
@@ -297,6 +297,10 @@ export default function TaskCommentSection({
         notify.error('コメントを入力してください');
         return;
       }
+      if (editingContent.trim().length > MAX_COMMENT_LENGTH) {
+        notify.error(`コメントは${MAX_COMMENT_LENGTH}文字以内で入力してください。`);
+        return;
+      }
 
       setIsSubmitting(true);
       try {
@@ -472,12 +476,13 @@ export default function TaskCommentSection({
                   {/* 内容 */}
                   {editingCommentId === comment.id ? (
                     // 編集モード（内容のみ編集可、コメントタイプは変更不可）
-                    <div className="space-y-2 mt-2">
+                    <div className="chat-bubble comment-edit-bubble space-y-2 mt-2">
                       <textarea
                         className="textarea textarea-bordered textarea-sm w-full"
                         value={editingContent}
                         onChange={(e) => setEditingContent(e.target.value)}
                         rows={2}
+                        maxLength={MAX_COMMENT_LENGTH}
                         disabled={isSubmitting}
                       />
                       <div className="flex items-center gap-1.5 justify-end">
@@ -505,6 +510,7 @@ export default function TaskCommentSection({
                       <MessageContentRenderer
                         content={comment.isDeleted ? null : comment.content}
                         mode="markdown"
+                        tone={isOwn ? 'primary' : 'default'}
                         fallback={<span className="italic text-base-content/50">このコメントは削除されました</span>}
                       />
 
@@ -570,7 +576,7 @@ export default function TaskCommentSection({
               onCompositionEnd={handleCompositionEnd}
               disabled={isSubmitting}
               rows={1}
-              maxLength={MAX_COMMENT_LENGTH + 50}
+              maxLength={MAX_COMMENT_LENGTH}
             />
           </div>
           {/* 送信ボタン */}

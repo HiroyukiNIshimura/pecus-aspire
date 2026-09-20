@@ -8,11 +8,13 @@ import { convertToLinks } from '@/libs/utils/autoLink';
 import { highlightMentions, type MentionItem } from '@/libs/utils/mention';
 
 export type MessageContentMode = 'plain' | 'markdown';
+export type MessageContentTone = 'default' | 'primary';
 
 interface MessageContentRendererProps {
   content: string | null | undefined;
   mentions?: MentionItem[];
   mode?: MessageContentMode;
+  tone?: MessageContentTone;
   className?: string;
   fallback?: ReactNode;
 }
@@ -20,8 +22,8 @@ interface MessageContentRendererProps {
 const messageContentClassName =
   'chat-bubble !text-left wrap-break-word whitespace-pre-wrap [&_a]:text-primary [&_a]:underline [&_a:hover]:text-info-content';
 
-const markdownContentClassName =
-  'prose prose-sm prose-neutral dark:prose-invert max-w-none ' +
+const markdownContentBaseClassName =
+  'prose prose-sm max-w-none ' +
   'prose-headings:mt-1 prose-headings:mb-0 prose-headings:font-semibold ' +
   'prose-h1:text-lg prose-h2:text-base prose-h3:text-sm ' +
   'prose-p:mt-0 prose-p:mb-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 ' +
@@ -40,6 +42,7 @@ export default function MessageContentRenderer({
   content,
   mentions = [],
   mode = 'plain',
+  tone = 'default',
   className,
   fallback,
 }: MessageContentRendererProps) {
@@ -50,8 +53,13 @@ export default function MessageContentRenderer({
   }
 
   if (mode === 'markdown') {
+    const markdownToneClassName =
+      tone === 'primary'
+        ? 'message-content--primary prose-invert prose-headings:text-primary-content prose-th:text-primary-content'
+        : 'prose-neutral dark:prose-invert';
+
     return (
-      <div className={`${classes} ${markdownContentClassName}`}>
+      <div className={`${classes} ${markdownContentBaseClassName} ${markdownToneClassName}`}>
         <Markdown
           remarkPlugins={[remarkGfm, remarkBreaks, remarkItemCodeLinks, remarkMentions]}
           components={{

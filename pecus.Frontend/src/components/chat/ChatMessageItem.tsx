@@ -131,7 +131,7 @@ export default function ChatMessageItemComponent({
           {sender?.username || 'あなた'}
           {createdAt && <time className="text-base-content/50 ml-2">{formatRelativeTime(createdAt)}</time>}
         </div>
-        <MessageContentRenderer content={content} mentions={mentions} mode="markdown" />
+        <MessageContentRenderer content={content} mentions={mentions} mode="markdown" tone="primary" />
         {showReadStatus && (
           <div className="chat-footer text-base-content/50">
             既読

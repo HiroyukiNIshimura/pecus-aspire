@@ -27,7 +27,10 @@ export type CreateOrGetAiRoomInput = z.infer<typeof createOrGetAiRoomInputSchema
 
 export const sendChatMessageInputSchema = z.object({
   roomId: z.number({ error: 'ルームIDが不正です。' }).int('ルームIDが不正です。').positive('ルームIDが不正です。'),
-  content: z.string({ error: 'メッセージが不正です。' }).min(1, 'メッセージを入力してください。'),
+  content: z
+    .string({ error: 'メッセージが不正です。' })
+    .min(1, 'メッセージを入力してください。')
+    .max(10000, 'メッセージは10000文字以内で入力してください。'),
   replyToMessageId: z
     .number({ error: '返信先メッセージIDが不正です。' })
     .int('返信先メッセージIDが不正です。')

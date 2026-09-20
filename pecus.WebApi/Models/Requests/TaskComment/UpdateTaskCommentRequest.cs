@@ -11,7 +11,7 @@ public class UpdateTaskCommentRequest
     /// <summary>
     /// コメント内容
     /// </summary>
-    [MaxLength(500, ErrorMessage = "コメント内容は500文字以内で入力してください。")]
+    [MaxLength(2000, ErrorMessage = "コメント内容は2000文字以内で入力してください。")]
     public string? Content { get; set; }
 
     /// <summary>
