@@ -5,6 +5,7 @@ applyTo: "pecus.Frontend/**/*.ts, pecus.Frontend/**/*.tsx"
 
 > 共通ルール・禁止事項は `.github/copilot-instructions.md` を最優先で参照。
 > このファイルは `pecus.Frontend` 向けの**差分ルールのみ**を記載する。
+> 参照先ドキュメントとこのファイルの内容が矛盾する場合は、`.github/copilot-instructions.md` を優先し、次にこのファイルの差分ルールに従う。
 
 ### メタ情報
 - Scope: `pecus.Frontend/**/*.ts, pecus.Frontend/**/*.tsx`
@@ -18,7 +19,7 @@ applyTo: "pecus.Frontend/**/*.ts, pecus.Frontend/**/*.tsx"
 - UI は Tailwind CSS + FlyonUI（daisyUI 禁止、アイコンは `@iconify/tailwind4`）
 - レイアウトは `h-screen` / `min-h-screen` を避け、`flex-1` を使用
 - Tailwind 任意値（例: `z-[10]`, `w-[200px]`）を使用しない
-- ページ全体を不用意に `"use client"` にしない
+- 「use client」はインタラクティブなUI部分（イベントハンドラ、useState等を使う末端コンポーネント）にのみ付与し、ページ全体やレイアウトコンポーネントには付与しない。
 
 ### 実装時の参照先（必読）
 - `docs/frontend-guidelines.md`（先頭の「AI エージェント向け要約」）
