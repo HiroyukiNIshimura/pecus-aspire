@@ -1,7 +1,7 @@
 'use client';
 
 import type { ChatMentionItem, ChatMessageItem } from '@/connectors/api/pecus';
-import { convertToLinks } from '@/libs/utils/autoLink';
+import MessageContentRenderer from '@/components/common/feedback/MessageContentRenderer';
 import { formatRelativeTime } from '@/libs/utils/date';
 
 interface ChatMessageItemComponentProps {
@@ -11,14 +11,12 @@ interface ChatMessageItemComponentProps {
   showReadStatus?: boolean;
 }
 
-/** アバター設定 */
 interface AvatarConfig {
   bgClass: string;
   iconClass: string;
   iconColorClass: string;
 }
 
-/** アバターコンポーネント */
 function Avatar({
   iconUrl,
   username,
@@ -39,78 +37,6 @@ function Avatar({
       </div>
     </div>
   );
-}
-
-/** メッセージ本文コンポーネント */
-function MessageContent({
-  content,
-  mentions,
-}: {
-  content: string | null | undefined;
-  mentions?: Array<ChatMentionItem>;
-}) {
-  const linkedContent = convertToLinks(content ?? '');
-  const mentionDisplayNames = (mentions ?? [])
-    .map((mention) => mention.displayName)
-    .filter((displayName): displayName is string => Boolean(displayName));
-  const htmlWithMention = highlightMentions(linkedContent, mentionDisplayNames);
-
-  return (
-    <div
-      className="chat-bubble wrap-break-word whitespace-pre-wrap [&_a]:text-primary [&_a]:underline [&_a:hover]:text-info-content"
-      dangerouslySetInnerHTML={{ __html: htmlWithMention }}
-    />
-  );
-}
-
-/**
- * HTML 断片のテキスト部分にのみメンション装飾を適用
- */
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function highlightMentions(html: string, mentionDisplayNames: string[] = []): string {
-  if (!html) {
-    return html;
-  }
-
-  const chunks = html.split(/(<[^>]+>)/g);
-  const uniqueMentionTokens = Array.from(
-    new Set(
-      mentionDisplayNames
-        .map((displayName) => displayName.trim())
-        .filter((displayName) => displayName.length > 0)
-        .map((displayName) => `@${displayName}`),
-    ),
-  ).sort((a, b) => b.length - a.length);
-
-  return chunks
-    .map((chunk) => {
-      if (chunk.startsWith('<') && chunk.endsWith('>')) {
-        return chunk;
-      }
-
-      if (uniqueMentionTokens.length > 0) {
-        let highlighted = chunk;
-
-        for (const token of uniqueMentionTokens) {
-          const mentionRegex = new RegExp(`(^|\\s)(${escapeRegExp(token)})(?=\\s|$)`, 'g');
-          highlighted = highlighted.replace(mentionRegex, (_match, prefix: string, mention: string) => {
-            return `${prefix}<span class="font-semibold text-secondary-content">${mention}</span>`;
-          });
-        }
-
-        return highlighted;
-      }
-
-      // mentions がない場合のフォールバック（旧来）
-      const mentionRegex = /(^|\s)(@[^\s@]{1,100})/g;
-      return chunk.replace(mentionRegex, (_match, prefix: string, mention: string) => {
-        return `${prefix}<span class="font-semibold text-secondary-content">${mention}</span>`;
-      });
-    })
-    .join('');
 }
 
 /** 左寄せメッセージ（相手・システム・AI用）*/
@@ -134,7 +60,7 @@ function LeftAlignedMessage({
         {displayName}
         {createdAt && <time className="text-base-content/50 ml-2">{formatRelativeTime(createdAt)}</time>}
       </div>
-      <MessageContent content={content} mentions={mentions} />
+      <MessageContentRenderer content={content} mentions={mentions} />
     </div>
   );
 }
@@ -205,7 +131,7 @@ export default function ChatMessageItemComponent({
           {sender?.username || 'あなた'}
           {createdAt && <time className="text-base-content/50 ml-2">{formatRelativeTime(createdAt)}</time>}
         </div>
-        <MessageContent content={content} mentions={mentions} />
+        <MessageContentRenderer content={content} mentions={mentions} />
         {showReadStatus && (
           <div className="chat-footer text-base-content/50">
             既読

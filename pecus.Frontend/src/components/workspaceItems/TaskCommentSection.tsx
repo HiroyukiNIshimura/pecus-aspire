@@ -7,10 +7,10 @@ import {
   getTaskComments,
   updateTaskComment,
 } from '@/actions/workspaceTaskComment';
+import MessageContentRenderer from '@/components/common/feedback/MessageContentRenderer';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import { convertToLinks } from '@/libs/utils/autoLink';
 import { formatDateTime } from '@/libs/utils/date';
 import { useCurrentUserId } from '@/providers/AppSettingsProvider';
 
@@ -502,13 +502,10 @@ export default function TaskCommentSection({
                   ) : (
                     <>
                       {/* 表示モード */}
-                      <div className="chat-bubble whitespace-pre-wrap">
-                        {comment.isDeleted ? (
-                          <span className="italic text-base-content/50">このコメントは削除されました</span>
-                        ) : (
-                          <div dangerouslySetInnerHTML={{ __html: convertToLinks(comment.content ?? '') }} />
-                        )}
-                      </div>
+                      <MessageContentRenderer
+                        content={comment.isDeleted ? null : comment.content}
+                        fallback={<span className="italic text-base-content/50">このコメントは削除されました</span>}
+                      />
 
                       {/* アクションボタン（自分のコメントかつ削除されていない場合のみ） */}
                       {!comment.isDeleted && isOwn && (
