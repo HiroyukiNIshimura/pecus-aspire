@@ -39,11 +39,7 @@ export default function MessageContentRenderer({
   if (mode === 'markdown') {
     return (
       <div className={`${classes} prose prose-sm prose-neutral dark:prose-invert max-w-none`}>
-        <Markdown
-          remarkPlugins={[remarkBreaks, remarkItemCodeLinks, remarkMentions]}
-        >
-          {content}
-        </Markdown>
+        <Markdown remarkPlugins={[remarkBreaks, remarkItemCodeLinks, remarkMentions]}>{content}</Markdown>
       </div>
     );
   }

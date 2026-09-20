@@ -1,7 +1,7 @@
 'use client';
 
-import type { ChatMentionItem, ChatMessageItem } from '@/connectors/api/pecus';
 import MessageContentRenderer from '@/components/common/feedback/MessageContentRenderer';
+import type { ChatMentionItem, ChatMessageItem } from '@/connectors/api/pecus';
 import { formatRelativeTime } from '@/libs/utils/date';
 
 interface ChatMessageItemComponentProps {
