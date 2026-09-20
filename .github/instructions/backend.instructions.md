@@ -24,3 +24,6 @@ applyTo: "pecus.WebApi/**/*.cs, pecus.BackFire/**/*.cs, pecus.DbManager/**/*.cs,
 - `docs/backend-guidelines.md`（先頭の「AI エージェント向け要約」）
 - `docs/global-exception-handling.md`
 - `docs/db-concurrency.md`
+
+## コード修正時のゴール
+- [] ビルドが成功すること

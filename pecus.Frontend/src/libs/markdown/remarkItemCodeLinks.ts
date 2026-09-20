@@ -14,7 +14,7 @@
  * ```
  */
 
-import type { Link, Parent, Text } from 'mdast';
+import type { Link, Parent, Root, Text } from 'mdast';
 import { visit } from 'unist-util-visit';
 import { findItemCodeLinkMatches } from '@/libs/utils/autoLink';
 
@@ -26,7 +26,7 @@ export interface RemarkItemCodeLinksOptions {
  * remark プラグイン: ワークスペース参照をリンクに変換
  */
 export function remarkItemCodeLinks({ workspaceCode }: RemarkItemCodeLinksOptions = {}) {
-  return (tree) => {
+  return (tree: Root) => {
     visit(tree, 'text', (node: Text, index: number | undefined, parent: Parent | undefined) => {
       if (!parent || index === undefined) return;
 

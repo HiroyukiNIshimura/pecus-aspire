@@ -1226,7 +1226,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             <div id="tasks">
               <WorkspaceTasks
                 workspaceId={workspaceId}
-                workspaceCode={workspaceCode}
+                workspaceCode={workspaceCode ?? ''}
                 itemId={itemId}
                 itemCode={itemCode ?? ''}
                 itemOwnerId={item?.owner?.id}

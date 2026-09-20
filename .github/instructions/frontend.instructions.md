@@ -27,3 +27,10 @@ applyTo: "pecus.Frontend/**/*.ts, pecus.Frontend/**/*.tsx"
 - `docs/layout-template.md`
 - `docs/tailwind-arbitrary-values.md`
 - `docs/modal-dialog-template.md`
+
+## コード修正時のゴール
+- [] 実装が SSR-first の原則に従っていること
+- [] 型チェックで警告がないこと
+- [] ビルドが成功すること
+- [] 修正対象ページが正しく表示されること
+
