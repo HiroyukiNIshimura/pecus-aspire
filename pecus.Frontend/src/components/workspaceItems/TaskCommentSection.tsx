@@ -62,6 +62,7 @@ const commentTypeConfig: Record<
 
 interface TaskCommentSectionProps {
   workspaceId: number;
+  workspaceCode?: string;
   itemId: number;
   taskId: number;
   /** コメント数が変更された時のコールバック */
@@ -105,6 +106,7 @@ function getAvailableCommentTypes(
 
 export default function TaskCommentSection({
   workspaceId,
+  workspaceCode,
   itemId,
   taskId,
   onCommentCountChange,
@@ -509,6 +511,7 @@ export default function TaskCommentSection({
                       {/* 表示モード */}
                       <MessageContentRenderer
                         content={comment.isDeleted ? null : comment.content}
+                        workspaceCode={workspaceCode}
                         mode="markdown"
                         tone={isOwn ? 'primary' : 'default'}
                         fallback={<span className="italic text-base-content/50">このコメントは削除されました</span>}

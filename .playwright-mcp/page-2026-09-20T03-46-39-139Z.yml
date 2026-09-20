@@ -1,0 +1,29 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - main [ref=e3]:
+      - main [ref=e5]:
+        - generic [ref=e7]:
+          - heading "ログイン" [level=1] [ref=e8]
+          - generic [ref=e9]:
+            - generic [ref=e10]:
+              - generic [ref=e11]: ログインID *
+              - textbox "ログインID *" [ref=e14]:
+                - /placeholder: ログインIDまたはメールアドレス
+            - generic [ref=e15]:
+              - generic [ref=e16]: パスワード *
+              - textbox "パスワード *" [ref=e19]:
+                - /placeholder: パスワード
+            - button "ログイン" [ref=e21] [cursor=pointer]
+          - link "パスワードを忘れた" [ref=e23] [cursor=pointer]:
+            - /url: /forgot-password
+    - contentinfo [ref=e24]:
+      - paragraph [ref=e25]: © 2025 Pecus. All rights reserved.
+  - generic [ref=e30] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e31]
+    - generic [ref=e35]:
+      - button "Open issues overlay" [ref=e36]:
+        - generic [ref=e37]:
+          - generic [aria-hidden] [ref=e38]: "-1"
+          - generic [ref=e39]: "0"
+      - button "Collapse issues badge" [ref=e40]
+  - alert [ref=e43]

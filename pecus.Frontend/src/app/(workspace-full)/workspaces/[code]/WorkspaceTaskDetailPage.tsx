@@ -1777,6 +1777,7 @@ export default function WorkspaceTaskDetailPage({
             {task && (
               <TaskCommentSection
                 workspaceId={workspaceId}
+                workspaceCode={workspaceCode}
                 itemId={itemId}
                 taskId={task.id}
                 autoFocus={initialFocusComments}

@@ -1,6 +1,6 @@
 /**
  * react-markdown 用の remark プラグイン
- * ワークスペースコード#アイテムコード、ワークスペースコード#アイテムコードTタスクシーケンス
+ * アイテムコード、ワークスペースコード#アイテムコード、各形式のタスク参照
  * を自動的にリンクに変換する
  *
  * @example
@@ -9,98 +9,29 @@
  * import { remarkItemCodeLinks } from '@/libs/markdown/remarkItemCodeLinks';
  *
  * <Markdown remarkPlugins={[remarkItemCodeLinks]}>
- *   {`Check Oc76lxrXKmc0ifCo#1T1 and Oc76lxrXKmc0ifCo#2`}
+ *   {`Check #1T1, Oc76lxrXKmc0ifCo#1T1 and Oc76lxrXKmc0ifCo#2`}
  * </Markdown>
  * ```
  */
 
 import type { Link, Parent, Text } from 'mdast';
-import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
-import { patterns } from '@/libs/utils/autoLink';
+import { findItemCodeLinkMatches } from '@/libs/utils/autoLink';
 
-const { WORKSPACE_CODE_PATTERN, ITEM_CODE_PATTERN, TASK_SEQUENCE_PATTERN } = patterns;
-
-/**
- * ワークスペースコード#アイテムコードTタスクシーケンス
- * 例: MrzCtr8P9vUYfnXb#123T1
- */
-const WORKSPACE_ITEM_TASK_REGEX = new RegExp(
-  `(${WORKSPACE_CODE_PATTERN})#(${ITEM_CODE_PATTERN})T(${TASK_SEQUENCE_PATTERN})`,
-  'g',
-);
-
-/**
- * ワークスペースコード#アイテムコード（タスクなし）
- * 例: MrzCtr8P9vUYfnXb#123
- * ※ 後ろにTと数字が続かないものだけをマッチ（負の先読み）
- */
-const WORKSPACE_ITEM_REGEX = new RegExp(
-  `(${WORKSPACE_CODE_PATTERN})#(${ITEM_CODE_PATTERN})(?!T${TASK_SEQUENCE_PATTERN})`,
-  'g',
-);
-
-interface MatchInfo {
-  index: number;
-  length: number;
-  text: string;
-  url: string;
-}
-
-/**
- * テキストからすべてのマッチを収集
- */
-function findAllMatches(text: string): MatchInfo[] {
-  const matches: MatchInfo[] = [];
-
-  // ワークスペース#アイテムTタスク（より具体的なパターンを先に）
-  for (const match of text.matchAll(new RegExp(WORKSPACE_ITEM_TASK_REGEX.source, 'g'))) {
-    const [fullMatch, wsCode, itemCode, taskSequence] = match;
-    matches.push({
-      index: match.index,
-      length: fullMatch.length,
-      text: fullMatch,
-      url: `/workspaces/${wsCode}?itemCode=${itemCode}&task=${taskSequence}`,
-    });
-  }
-
-  // ワークスペース#アイテム
-  for (const match of text.matchAll(new RegExp(WORKSPACE_ITEM_REGEX.source, 'g'))) {
-    const [fullMatch, wsCode, itemCode] = match;
-    matches.push({
-      index: match.index,
-      length: fullMatch.length,
-      text: fullMatch,
-      url: `/workspaces/${wsCode}?itemCode=${itemCode}`,
-    });
-  }
-
-  // 位置でソート
-  matches.sort((a, b) => a.index - b.index);
-
-  // 重複を除去（先にマッチしたものを優先、重なりがあるものは除外）
-  const filtered: MatchInfo[] = [];
-  let lastEnd = 0;
-  for (const match of matches) {
-    if (match.index >= lastEnd) {
-      filtered.push(match);
-      lastEnd = match.index + match.length;
-    }
-  }
-
-  return filtered;
+export interface RemarkItemCodeLinksOptions {
+  workspaceCode?: string;
 }
 
 /**
  * remark プラグイン: ワークスペース参照をリンクに変換
  */
-export const remarkItemCodeLinks: Plugin = () => {
+export function remarkItemCodeLinks({ workspaceCode }: RemarkItemCodeLinksOptions = {}) {
   return (tree) => {
     visit(tree, 'text', (node: Text, index: number | undefined, parent: Parent | undefined) => {
       if (!parent || index === undefined) return;
 
       const text = node.value;
-      const matches = findAllMatches(text);
+      const matches = findItemCodeLinkMatches(text, workspaceCode);
 
       if (matches.length === 0) return;
 
@@ -124,7 +55,7 @@ export const remarkItemCodeLinks: Plugin = () => {
           children: [{ type: 'text', value: match.text }],
         });
 
-        lastIndex = match.index + match.length;
+        lastIndex = match.index + match.text.length;
       }
 
       // 残りのテキスト
@@ -139,4 +70,4 @@ export const remarkItemCodeLinks: Plugin = () => {
       parent.children.splice(index, 1, ...children);
     });
   };
-};
+}

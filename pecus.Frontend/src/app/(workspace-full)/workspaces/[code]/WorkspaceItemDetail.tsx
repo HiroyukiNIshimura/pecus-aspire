@@ -127,6 +127,7 @@ interface TaskNavigation {
 
 interface WorkspaceItemDetailProps {
   workspaceId: number;
+  workspaceCode?: string | null;
   itemId: number;
   onItemSelect: (itemId: number, itemCode: string) => void;
   members?: WorkspaceDetailUserResponse[];
@@ -188,6 +189,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
   function WorkspaceItemDetail(
     {
       workspaceId,
+      workspaceCode,
       itemId,
       onItemSelect,
       members = [],
@@ -1224,6 +1226,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             <div id="tasks">
               <WorkspaceTasks
                 workspaceId={workspaceId}
+                workspaceCode={workspaceCode}
                 itemId={itemId}
                 itemCode={itemCode ?? ''}
                 itemOwnerId={item?.owner?.id}

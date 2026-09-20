@@ -8,6 +8,7 @@ import ChatMessageItemComponent from './ChatMessageItem';
 interface ChatMessageListProps {
   messages: ChatMessageItem[];
   currentUserId: number;
+  workspaceCode?: string;
   loading?: boolean;
   hasMore?: boolean;
   onLoadMore?: () => void;
@@ -26,6 +27,7 @@ interface ChatMessageListProps {
 export default function ChatMessageList({
   messages,
   currentUserId,
+  workspaceCode,
   loading = false,
   hasMore = false,
   onLoadMore,
@@ -106,6 +108,7 @@ export default function ChatMessageList({
           key={message.id}
           message={message}
           isOwnMessage={message.senderUserId === currentUserId}
+          workspaceCode={workspaceCode}
           showReadStatus={getShowReadStatus(message)}
         />
       ))}

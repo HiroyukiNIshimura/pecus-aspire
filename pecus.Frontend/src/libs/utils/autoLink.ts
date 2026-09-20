@@ -51,6 +51,12 @@ const WORKSPACE_ITEM_REGEX = new RegExp(
   'g',
 );
 
+/** 現在のワークスペース内アイテムコード */
+const ITEM_CODE_ONLY_REGEX = /(?<![/=A-Za-z0-9_-])#([1-9][0-9]*)(?=\s|$)/g;
+
+/** 現在のワークスペース内アイテムのタスクコード */
+const ITEM_CODE_TASK_ONLY_REGEX = /(?<![/=A-Za-z0-9_-])#([1-9][0-9]*)T([1-9][0-9]*)(?=\s|$)/g;
+
 /**
  * 既存の<a>タグを検出する正規表現
  */
@@ -69,6 +75,61 @@ interface LinkMatch {
   index: number;
   /** 変換後のHTML */
   replacement: string;
+}
+
+export interface ItemCodeLinkMatch {
+  text: string;
+  index: number;
+  url: string;
+}
+
+/** 内部アイテムリンクのURLを生成する */
+export function createItemCodeUrl(workspaceCode: string, itemCode: string, taskSequence?: string): string {
+  const params = new URLSearchParams({ itemCode });
+  if (taskSequence) params.set('task', taskSequence);
+  return `/workspaces/${workspaceCode}?${params.toString()}`;
+}
+
+/** テキストから内部アイテムリンク候補を列挙する */
+export function findItemCodeLinkMatches(text: string, workspaceCode?: string): ItemCodeLinkMatch[] {
+  const matches: ItemCodeLinkMatch[] = [];
+
+  for (const match of text.matchAll(new RegExp(WORKSPACE_ITEM_TASK_REGEX.source, 'g'))) {
+    const [fullMatch, wsCode, itemCode, taskSequence] = match;
+    matches.push({ index: match.index, text: fullMatch, url: createItemCodeUrl(wsCode, itemCode, taskSequence) });
+  }
+
+  for (const match of text.matchAll(new RegExp(WORKSPACE_ITEM_REGEX.source, 'g'))) {
+    const [fullMatch, wsCode, itemCode] = match;
+    matches.push({ index: match.index, text: fullMatch, url: createItemCodeUrl(wsCode, itemCode) });
+  }
+
+  if (workspaceCode) {
+    for (const match of text.matchAll(ITEM_CODE_TASK_ONLY_REGEX)) {
+      const [fullMatch, itemCode, taskSequence] = match;
+      matches.push({
+        index: match.index,
+        text: fullMatch,
+        url: createItemCodeUrl(workspaceCode, itemCode, taskSequence),
+      });
+    }
+
+    for (const match of text.matchAll(ITEM_CODE_ONLY_REGEX)) {
+      const [fullMatch, itemCode] = match;
+      matches.push({ index: match.index, text: fullMatch, url: createItemCodeUrl(workspaceCode, itemCode) });
+    }
+  }
+
+  matches.sort((a, b) => a.index - b.index || b.text.length - a.text.length);
+  const filtered: ItemCodeLinkMatch[] = [];
+  let lastEnd = 0;
+  for (const match of matches) {
+    if (match.index >= lastEnd) {
+      filtered.push(match);
+      lastEnd = match.index + match.text.length;
+    }
+  }
+  return filtered;
 }
 
 /**
@@ -133,7 +194,7 @@ function convertWorkspaceItemTask(text: string, excludedRanges: Array<{ start: n
       matches.push({
         match: fullMatch,
         index: match.index,
-        replacement: `<a href="/workspaces/${workspaceCode}?itemCode=${itemCode}&task=${taskSequence}" class="link link-hover">${fullMatch}</a>`,
+        replacement: `<a href="${createItemCodeUrl(workspaceCode, itemCode, taskSequence)}" class="link link-hover">${fullMatch}</a>`,
       });
     }
   }
@@ -153,12 +214,30 @@ function convertWorkspaceItem(text: string, excludedRanges: Array<{ start: numbe
       matches.push({
         match: fullMatch,
         index: match.index,
-        replacement: `<a href="/workspaces/${workspaceCode}?itemCode=${itemCode}" class="link link-hover">${fullMatch}</a>`,
+        replacement: `<a href="${createItemCodeUrl(workspaceCode, itemCode)}" class="link link-hover">${fullMatch}</a>`,
       });
     }
   }
 
   return matches;
+}
+
+/** 現在のワークスペース内アイテムコードをリンクに変換 */
+function convertItemCodeOnly(
+  text: string,
+  workspaceCode: string | undefined,
+  excludedRanges: Array<{ start: number; end: number }>,
+): LinkMatch[] {
+  if (!workspaceCode) return [];
+
+  return findItemCodeLinkMatches(text, workspaceCode)
+    .filter((match) => match.text.startsWith('#'))
+    .filter((match) => !isInExcludedRange(match.index, match.text.length, excludedRanges))
+    .map((match) => ({
+      match: match.text,
+      index: match.index,
+      replacement: `<a href="${match.url}" class="link link-hover">${match.text}</a>`,
+    }));
 }
 
 /**
@@ -199,7 +278,7 @@ function isContainedInOtherMatch(target: LinkMatch, allMatches: LinkMatch[]): bo
  * // => '<a href="/test">https://example.com</a>' (変換なし)
  * ```
  */
-export function convertToLinks(text: string): string {
+export function convertToLinks(text: string, workspaceCode?: string): string {
   if (!text) return text;
 
   // 除外範囲を取得
@@ -209,9 +288,10 @@ export function convertToLinks(text: string): string {
   const urlMatches = convertUrls(text, excludedRanges);
   const workspaceItemTaskMatches = convertWorkspaceItemTask(text, excludedRanges);
   const workspaceItemMatches = convertWorkspaceItem(text, excludedRanges);
+  const itemCodeOnlyMatches = convertItemCodeOnly(text, workspaceCode, excludedRanges);
 
   // 全マッチを結合
-  let allMatches = [...urlMatches, ...workspaceItemTaskMatches, ...workspaceItemMatches];
+  let allMatches = [...urlMatches, ...workspaceItemTaskMatches, ...workspaceItemMatches, ...itemCodeOnlyMatches];
 
   // 重複を除去（より具体的なマッチを優先）
   // URL内にワークスペースパターンが含まれる場合はURLを優先
@@ -247,6 +327,8 @@ export const patterns = {
   URL_REGEX,
   WORKSPACE_ITEM_TASK_REGEX,
   WORKSPACE_ITEM_REGEX,
+  ITEM_CODE_ONLY_REGEX,
+  ITEM_CODE_TASK_ONLY_REGEX,
   WORKSPACE_CODE_PATTERN,
   ITEM_CODE_PATTERN,
   TASK_SEQUENCE_PATTERN,

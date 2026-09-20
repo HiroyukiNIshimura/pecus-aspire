@@ -13,6 +13,7 @@ export type MessageContentTone = 'default' | 'primary';
 interface MessageContentRendererProps {
   content: string | null | undefined;
   mentions?: MentionItem[];
+  workspaceCode?: string;
   mode?: MessageContentMode;
   tone?: MessageContentTone;
   className?: string;
@@ -20,7 +21,9 @@ interface MessageContentRendererProps {
 }
 
 const messageContentClassName =
-  'chat-bubble !text-left wrap-break-word whitespace-pre-wrap [&_a]:text-primary [&_a]:underline [&_a:hover]:text-info-content';
+  'chat-bubble !text-left wrap-break-word whitespace-pre-wrap ' +
+  '[&_a]:text-primary [&_a]:underline [&_a]:transition-all [&_a]:duration-150 ' +
+  '[&_a:hover]:text-info-content [&_a:hover]:opacity-80 [&_a:hover]:underline-offset-2';
 
 const markdownContentBaseClassName =
   'prose prose-sm max-w-none ' +
@@ -41,12 +44,15 @@ function isExternalUrl(href: string | undefined): boolean {
 export default function MessageContentRenderer({
   content,
   mentions = [],
+  workspaceCode,
   mode = 'plain',
   tone = 'default',
   className,
   fallback,
 }: MessageContentRendererProps) {
-  const classes = [messageContentClassName, className].filter(Boolean).join(' ');
+  const linkColorClassName = tone === 'primary' ? '[&_a]:text-primary-content' : '[&_a]:text-primary';
+  const toneTextClassName = tone === 'primary' ? 'text-primary-content' : '';
+  const classes = [messageContentClassName, linkColorClassName, toneTextClassName, className].filter(Boolean).join(' ');
 
   if (content == null || content === '') {
     return <div className={classes}>{fallback}</div>;
@@ -61,14 +67,14 @@ export default function MessageContentRenderer({
     return (
       <div className={`${classes} ${markdownContentBaseClassName} ${markdownToneClassName}`}>
         <Markdown
-          remarkPlugins={[remarkGfm, remarkBreaks, remarkItemCodeLinks, remarkMentions]}
+          remarkPlugins={[remarkGfm, remarkBreaks, [remarkItemCodeLinks, { workspaceCode }], remarkMentions]}
           components={{
             a: ({ href, children }) => {
               const external = isExternalUrl(href);
               return (
                 <a
                   href={href}
-                  className="text-primary underline hover:text-info-content"
+                  className={`${tone === 'primary' ? 'text-primary-content' : 'text-primary'} underline transition-all duration-150 hover:text-info-content hover:opacity-80 hover:underline-offset-2`}
                   {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 >
                   {children}
@@ -103,7 +109,7 @@ export default function MessageContentRenderer({
     );
   }
 
-  const linkedContent = convertToLinks(content);
+  const linkedContent = convertToLinks(content, workspaceCode);
   const contentWithMentions = highlightMentions(linkedContent, mentions);
 
   return <div className={classes} dangerouslySetInnerHTML={{ __html: contentWithMentions }} />;

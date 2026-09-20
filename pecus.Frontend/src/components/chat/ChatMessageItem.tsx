@@ -7,6 +7,7 @@ import { formatRelativeTime } from '@/libs/utils/date';
 interface ChatMessageItemComponentProps {
   message: ChatMessageItem;
   isOwnMessage: boolean;
+  workspaceCode?: string;
   /** 既読表示を表示するか（DM用） */
   showReadStatus?: boolean;
 }
@@ -45,12 +46,14 @@ function LeftAlignedMessage({
   displayName,
   content,
   mentions,
+  workspaceCode,
   createdAt,
 }: {
   avatar: React.ReactNode;
   displayName: string;
   content: string | null | undefined;
   mentions?: Array<ChatMentionItem>;
+  workspaceCode?: string;
   createdAt: string | null | undefined;
 }) {
   return (
@@ -60,7 +63,7 @@ function LeftAlignedMessage({
         {displayName}
         {createdAt && <time className="text-base-content/50 ml-2">{formatRelativeTime(createdAt)}</time>}
       </div>
-      <MessageContentRenderer content={content} mentions={mentions} mode="markdown" />
+      <MessageContentRenderer content={content} mentions={mentions} workspaceCode={workspaceCode} mode="markdown" />
     </div>
   );
 }
@@ -93,6 +96,7 @@ const AVATAR_CONFIGS = {
 export default function ChatMessageItemComponent({
   message,
   isOwnMessage,
+  workspaceCode,
   showReadStatus = false,
 }: ChatMessageItemComponentProps) {
   const { messageType, content, sender, createdAt, mentions } = message;
@@ -105,6 +109,7 @@ export default function ChatMessageItemComponent({
         displayName={sender?.username || 'システム'}
         content={content}
         mentions={mentions}
+        workspaceCode={workspaceCode}
         createdAt={createdAt}
       />
     );
@@ -118,6 +123,7 @@ export default function ChatMessageItemComponent({
         displayName={sender?.username || 'AI'}
         content={content}
         mentions={mentions}
+        workspaceCode={workspaceCode}
         createdAt={createdAt}
       />
     );
@@ -131,7 +137,13 @@ export default function ChatMessageItemComponent({
           {sender?.username || 'あなた'}
           {createdAt && <time className="text-base-content/50 ml-2">{formatRelativeTime(createdAt)}</time>}
         </div>
-        <MessageContentRenderer content={content} mentions={mentions} mode="markdown" tone="primary" />
+        <MessageContentRenderer
+          content={content}
+          mentions={mentions}
+          workspaceCode={workspaceCode}
+          mode="markdown"
+          tone="primary"
+        />
         {showReadStatus && (
           <div className="chat-footer text-base-content/50">
             既読
@@ -149,6 +161,7 @@ export default function ChatMessageItemComponent({
       displayName={sender?.username || '不明'}
       content={content}
       mentions={mentions}
+      workspaceCode={workspaceCode}
       createdAt={createdAt}
     />
   );

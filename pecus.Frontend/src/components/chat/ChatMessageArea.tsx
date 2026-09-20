@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getChatMessages, getChatRoomDetail, sendChatMessage, updateReadPosition } from '@/actions/chat';
+import { getWorkspaceDetail } from '@/actions/workspace';
 import type { ChatMessageItem, ChatRoomDetailResponse } from '@/connectors/api/pecus';
 import { useSignalREvent } from '@/hooks/useSignalR';
 import { useSignalRContext } from '@/providers/SignalRProvider';
@@ -125,6 +126,7 @@ interface BotTypingState {
 export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAreaProps) {
   const { joinChat, leaveChat, sendChatTyping } = useSignalRContext();
   const [room, setRoom] = useState<ChatRoomDetailResponse | null>(null);
+  const [workspaceCode, setWorkspaceCode] = useState<string | undefined>();
   const [messages, setMessages] = useState<ChatMessageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -180,6 +182,13 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
 
       if (roomResult.success && roomResult.data) {
         setRoom(roomResult.data);
+
+        if (roomResult.data.workspaceId != null) {
+          const workspaceResult = await getWorkspaceDetail({ workspaceId: roomResult.data.workspaceId });
+          setWorkspaceCode(workspaceResult.success ? (workspaceResult.data?.code ?? undefined) : undefined);
+        } else {
+          setWorkspaceCode(undefined);
+        }
 
         // DM/AI ルームの場合、相手（Bot）の既読位置を初期化
         if (
@@ -616,6 +625,7 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
       <ChatMessageList
         messages={messages}
         currentUserId={currentUserId}
+        workspaceCode={workspaceCode}
         loading={loading}
         hasMore={hasMore}
         onLoadMore={loadMoreMessages}
