@@ -1,0 +1,21 @@
+@model Pecus.Libs.Mail.Templates.Models.ChatMentionEmailModel
+
+チャットでメンションされました
+
+@Model.MentionedByName さんが「@Model.RoomName」であなたをメンションしました。
+
+メッセージ:
+---
+@Model.MessagePreview
+---
+
+詳細:
+- メンションしたユーザー: @Model.MentionedByName
+- チャットルーム: @Model.RoomName
+- メンション日時 (JST): @Model.MentionedAt.ToString("yyyy/MM/dd HH:mm")
+- ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)
+- 組織: @Model.OrganizationName
+
+チャットを確認: @Model.ChatUrl
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。

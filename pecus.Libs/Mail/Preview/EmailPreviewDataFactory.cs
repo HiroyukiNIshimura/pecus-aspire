@@ -32,6 +32,8 @@ public static class EmailPreviewDataFactory
             new(TaskCompletedEmailModel.TemplateName, "タスク完了", "タスク完了通知"),
             new(HelpCommentEmailModel.TemplateName, "ヘルプ要求", "ヘルプコメント通知"),
             new(ReminderCommentEmailModel.TemplateName, "督促コメント", "リマインダーコメント通知"),
+            new(ChatMentionEmailModel.TemplateName, "チャットメンション", "チャットでのメンション通知"),
+            new(TaskCommentMentionEmailModel.TemplateName, "タスクコメントメンション", "タスクコメントでのメンション通知"),
             new(WeeklyReportEmailModel.TemplateName, "週間レポート", "週間タスク・進捗レポート"),
             new(AgendaInvitationEmailModel.TemplateName, "アジェンダ招待", "アジェンダへの招待通知"),
             new(AgendaUpdatedEmailModel.TemplateName, "アジェンダ変更", "アジェンダ変更通知"),
@@ -68,6 +70,8 @@ public static class EmailPreviewDataFactory
             "task-completed" => CreateTaskCompletedData(now),
             "help-comment" => CreateHelpCommentData(now),
             "reminder-comment" => CreateReminderCommentData(now),
+            "chat-mention" => CreateChatMentionData(now),
+            "task-comment-mention" => CreateTaskCommentMentionData(now),
             "weekly-report" => CreateWeeklyReportData(now),
             "agenda-invitation" => CreateAgendaInvitationData(now),
             "agenda-updated" => CreateAgendaUpdatedData(now),
@@ -290,6 +294,36 @@ public static class EmailPreviewDataFactory
         CommentBody = "期限が迫っています。進捗状況を確認させてください。",
         CommentedAt = now,
         TaskDueDate = now.AddDays(2),
+        WorkspaceName = "プロジェクトA",
+        WorkspaceCode = "PROJECT-001",
+        ItemUrl = "https://app.example.com/workspace/PROJECT-001/item/ITEM-001",
+        OrganizationName = "サンプル株式会社",
+    };
+
+    private static ChatMentionEmailModel CreateChatMentionData(DateTimeOffset now) => new()
+    {
+        UserName = "田中 太郎",
+        MentionedByName = "山田 花子",
+        RoomName = "プロジェクトA 全体連絡",
+        MessagePreview = "@田中 太郎 さん、明日の定例のアジェンダを確認してもらえますか？",
+        MentionedAt = now,
+        WorkspaceName = "プロジェクトA",
+        WorkspaceCode = "PROJECT-001",
+        ChatUrl = "https://app.example.com/workspace/PROJECT-001/chat",
+        OrganizationName = "サンプル株式会社",
+    };
+
+    private static TaskCommentMentionEmailModel CreateTaskCommentMentionData(DateTimeOffset now) => new()
+    {
+        UserName = "田中 太郎",
+        MentionedByName = "山田 花子",
+        ItemTitle = "【要件定義】ユーザー管理機能の仕様検討",
+        ItemCode = "ITEM-001",
+        TaskContent = "ユーザー登録画面のUIデザイン作成",
+        TaskPriority = "高",
+        TaskAssigneeName = "田中 太郎",
+        CommentBody = "@田中 太郎 さん、この部分の実装をお願いできますか？",
+        CommentedAt = now,
         WorkspaceName = "プロジェクトA",
         WorkspaceCode = "PROJECT-001",
         ItemUrl = "https://app.example.com/workspace/PROJECT-001/item/ITEM-001",

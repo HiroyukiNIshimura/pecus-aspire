@@ -1,0 +1,26 @@
+@model Pecus.Libs.Mail.Templates.Models.ChatMentionEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>チャットでメンションされました</h2>
+
+<p>@Model.MentionedByName さんが「@Model.RoomName」であなたをメンションしました。</p>
+
+<div class="info">
+    <p class="pre-wrap">@Model.MessagePreview</p>
+</div>
+
+<ul>
+    <li>メンションしたユーザー: @Model.MentionedByName</li>
+    <li>チャットルーム: @Model.RoomName</li>
+    <li>メンション日時 (JST): @Model.MentionedAt.ToString("yyyy/MM/dd HH:mm")</li>
+    <li>ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)</li>
+    <li>組織: @Model.OrganizationName</li>
+</ul>
+
+<div class="center">
+    <a href="@Model.ChatUrl" class="button">チャットを確認</a>
+</div>
+
+<p class="muted">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>
