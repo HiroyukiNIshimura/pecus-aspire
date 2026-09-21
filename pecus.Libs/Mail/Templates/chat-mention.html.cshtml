@@ -15,7 +15,10 @@
     <li>メンションしたユーザー: @Model.MentionedByName</li>
     <li>チャットルーム: @Model.RoomName</li>
     <li>メンション日時 (JST): @Model.MentionedAt.ToString("yyyy/MM/dd HH:mm")</li>
-    <li>ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)</li>
+    @if (!string.IsNullOrWhiteSpace(Model.WorkspaceName))
+    {
+        <li>ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)</li>
+    }
     <li>組織: @Model.OrganizationName</li>
 </ul>
 
