@@ -10,8 +10,8 @@ user-invocable: true
 ## 制約
 - 画像形式はWebPに統一し、記事MarkdownからJPEG/JPGを直接参照しない。JPEG/JPGは一時素材とし、必要なときは `scripts/convert-to-webp.js` でWebP化して存在を確認する。変換成功時は元画像を削除し、保持が必要な場合だけ `--keep` を指定する。
 - シェル実行は、プロジェクトルートから `node scripts/convert-to-webp.js <JPEGの相対パス>` を実行する場合だけ許可する。ほかのコマンドは実行しない。`npm run dev`、`dotnet run --project pecus.AppHost`、`npm run generate:help-index`、APIクライアント生成も実行禁止。
-- ブラウザー操作は共有されたVS Code統合ブラウザーを優先し、対象URLは `http://localhost:3000` とその配下だけ。Chrome DevToolsの別接続ページ一覧には依存せず、ほかのタブは選択・操作しない。意図しない外部リダイレクトが起きた場合は停止する。
-- 利用者が同じ作業・対象URLの外部通信を明示許可済みなら再確認しない。許可がない場合に限り、操作開始前に一度確認する。
+- ブラウザー操作は共有されたVS Code統合ブラウザーを優先する。共有ページIDが添付されている場合はそのIDを使って `screenshot_page` を呼ぶ。`mcp_playwright_browser_snapshot` が`about:blank`を返しても共有ページを利用不可と判断しない。対象URLは `http://localhost:3000` とその配下だけ。Chrome DevToolsの別接続ページ一覧には依存せず、ほかのタブは選択・操作しない。意図しない外部リダイレクトが起きた場合は停止する。
+- このワークスペースのCoatiヘルプ作成では、`http://localhost:3000` から発生する付随的な外部通信は利用者が許可済み。同一オリジンでは再確認しない。他ホストへの移動・通信が必要な場合だけ確認する。
 - パスワード、Cookie、トークン、APIキーなどの認証情報・秘密値を読み取る、入力する、撮影する、記事へ掲載することは禁止。未ログイン時は利用者に手動ログインを依頼する。
 - 通常の画面表示・本文は人がレビューする草稿として扱う。通常のプロフィール項目やデモ表示を理由にマスキングや撮影拒否をしない。
 - 画面操作は閲覧中心とし、保存・送信・招待・削除など永続的な変更は行わない。
@@ -20,8 +20,8 @@ user-invocable: true
 
 ## 手順
 1. `.github/skills/coati-help-author/SKILL.md` と関連するヘルプ仕様・実装・既存記事を読み、事実を確認する。
-2. 共有統合ブラウザーで対象のlocalhost画面を確認する。必要なら明示されたlocalhost URLを開く。ログインが必要なら利用者へ引き継ぐ。
-3. 画面ヘルプに必要なキャプチャを撮影専用ツールで保存する。WebPで保存できれば `.webp` とし、既存の次の未使用番号を使う。
+2. 共有統合ブラウザーで対象のlocalhost画面を確認する。添付に共有ページIDがある場合はそのIDを`screenshot_page`へ渡して確認し、`mcp_playwright_browser_snapshot`の別コンテキストが`about:blank`でも停止しない。必要なら明示されたlocalhost URLを開く。ログインが必要なら利用者へ引き継ぐ。
+3. 画面ヘルプに必要なキャプチャを撮影専用ツールで保存する。共有ページの`screenshot_page`は画像を添付で返すため、JPEGならユーザーに画像を `pecus.Frontend/public/help/images/` へ保存してもらい、手順4の変換コマンドをAgent自身が実行する。WebPで保存できれば `.webp` とし、既存の次の未使用番号を使う。
 4. 撮影ツールがJPEGしか保存できない、または添付画像をJPEGで受け取った場合は、JPEGを `pecus.Frontend/public/help/images/` に置き、次の形式で変換する。変換成功時に元JPEGは既定で削除される。元画像を保持する必要がある場合だけ `--keep` を付ける。変換スクリプトは既存出力を上書きしない。出力ファイルの存在を確認するまで記事を作成・更新しない。
    - `node scripts/convert-to-webp.js pecus.Frontend/public/help/images/元画像.jpg`
 5. 保存済みWebPを確認した後、Markdown記事に `![説明](/help/images/ファイル名.webp)` で参照する。画面ヘルプで、明示的な文章のみの依頼がない限り、キャプチャなしの記事を作成・完了扱いにしない。
