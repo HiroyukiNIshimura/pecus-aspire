@@ -16,6 +16,11 @@ public static class ThumbnailHelper
         var directory = Path.GetDirectoryName(sourceFilePath);
         var fileNameWithoutExt = Path.GetFileNameWithoutExtension(sourceFilePath);
         var extension = Path.GetExtension(sourceFilePath);
+        if (string.Equals(extension, ".gif", StringComparison.OrdinalIgnoreCase))
+        {
+            // SkiaSharp の静止サムネイルは GIF の先頭フレームを PNG として保存する
+            extension = ".png";
+        }
 
         var thumbnailFileName = $"{fileNameWithoutExt}_{size}{extension}";
 

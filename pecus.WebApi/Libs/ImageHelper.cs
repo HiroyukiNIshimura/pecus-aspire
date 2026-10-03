@@ -1,7 +1,4 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.Processing;
-using SixLaborsImage = SixLabors.ImageSharp.Image;
+﻿using Pecus.Libs.Image;
 
 namespace Pecus.Libs;
 
@@ -27,27 +24,21 @@ public static class ImageHelper
         int quality = 85
     )
     {
-        using var image = await SixLaborsImage.LoadAsync(inputFilePath);
-
-        // アスペクト比を保持してリサイズ（中央切り抜き）
-        image.Mutate(x =>
-            x.Resize(
-                new ResizeOptions
-                {
-                    Size = new Size(width, height),
-                    Mode = ResizeMode.Crop,
-                    Position = AnchorPositionMode.Center,
-                }
-            )
-        );
-
         // 出力ファイルパスを .webp に変更
         var directory = Path.GetDirectoryName(outputFilePath);
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputFilePath);
         var webpFilePath = Path.Combine(directory ?? string.Empty, $"{fileNameWithoutExtension}.webp");
 
         // WebP形式で保存
-        await image.SaveAsWebpAsync(webpFilePath, new WebpEncoder { Quality = quality });
+        await ImageProcessingHelper.ResizeAsync(
+            sourceFilePath: inputFilePath,
+            destinationFilePath: webpFilePath,
+            maxWidth: width,
+            maxHeight: height,
+            cropToFit: true,
+            allowUpscale: true,
+            quality: quality
+        );
 
         return webpFilePath;
     }
@@ -67,8 +58,8 @@ public static class ImageHelper
     {
         try
         {
-            using var image = await SixLaborsImage.LoadAsync(filePath);
-            return image.Width > maxWidth || image.Height > maxHeight;
+            var (width, height) = await ImageProcessingHelper.GetDimensionsAsync(filePath);
+            return width > maxWidth || height > maxHeight;
         }
         catch
         {

@@ -49,6 +49,7 @@ RUN dotnet publish "pecus.WebApi.csproj" -c Release -o /app/publish \
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY THIRD_PARTY_NOTICES.md ./THIRD_PARTY_NOTICES.md
 
 # Copy appsettings.json (pre-configured on build PC)
 COPY pecus.WebApi/appsettings.json ./appsettings.json

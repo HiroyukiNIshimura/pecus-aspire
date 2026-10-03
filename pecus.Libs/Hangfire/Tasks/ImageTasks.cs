@@ -95,19 +95,73 @@ public class ImageTasks
                 return;
             }
 
+            var storedMediumPath = attachment.ThumbnailMediumPath;
+            var storedSmallPath = attachment.ThumbnailSmallPath;
+            var isGif = string.Equals(
+                attachment.MimeType,
+                "image/gif",
+                StringComparison.OrdinalIgnoreCase
+            );
+            var mediumThumbnailPath = isGif
+                ? ThumbnailHelper.GenerateThumbnailPath(sourceFilePath, "medium")
+                : storedMediumPath;
+            var smallThumbnailPath = isGif
+                ? ThumbnailHelper.GenerateThumbnailPath(sourceFilePath, "small")
+                : storedSmallPath;
+
             // Mediumサムネイル生成
             var thumbnailMediumSuccess = await GenerateThumbnailAsync(
                 sourceFilePath,
-                attachment.ThumbnailMediumPath,
+                mediumThumbnailPath!,
                 mediumSize
             );
 
             // Smallサムネイル生成
             var thumbnailSmallSuccess = await GenerateThumbnailAsync(
                 sourceFilePath,
-                attachment.ThumbnailSmallPath,
+                smallThumbnailPath!,
                 smallSize
             );
+
+            var thumbnailPathsUpdated = false;
+            if (
+                thumbnailMediumSuccess
+                && !string.Equals(storedMediumPath, mediumThumbnailPath, StringComparison.Ordinal)
+            )
+            {
+                attachment.ThumbnailMediumPath = mediumThumbnailPath;
+                thumbnailPathsUpdated = true;
+            }
+
+            if (
+                thumbnailSmallSuccess
+                && !string.Equals(storedSmallPath, smallThumbnailPath, StringComparison.Ordinal)
+            )
+            {
+                attachment.ThumbnailSmallPath = smallThumbnailPath;
+                thumbnailPathsUpdated = true;
+            }
+
+            if (thumbnailPathsUpdated)
+            {
+                await _context.SaveChangesAsync();
+
+                if (
+                    thumbnailMediumSuccess
+                    && !string.Equals(storedMediumPath, mediumThumbnailPath, StringComparison.Ordinal)
+                )
+                {
+                    TryDeleteObsoleteThumbnail(storedMediumPath);
+                }
+
+                if (
+                    thumbnailSmallSuccess
+                    && !string.Equals(storedSmallPath, smallThumbnailPath, StringComparison.Ordinal)
+                )
+                {
+                    TryDeleteObsoleteThumbnail(storedSmallPath);
+                }
+            }
 
             _logger.LogInformation(
                 "サムネイル生成完了: AttachmentId={AttachmentId}, Medium={MediumSuccess}, Small={SmallSuccess}",
@@ -142,9 +196,12 @@ public class ImageTasks
     {
         try
         {
-            // 現在は簡易実装としてファイルをコピー
-            // TODO: ImageSharp等の画像処理ライブラリを使用してリサイズ
-            await Task.Run(() => File.Copy(sourceFilePath, thumbnailPath, true));
+            await ImageProcessingHelper.ResizeAsync(
+                sourceFilePath: sourceFilePath,
+                destinationFilePath: thumbnailPath,
+                maxWidth: maxDimension,
+                maxHeight: maxDimension
+            );
 
             _logger.LogDebug(
                 "サムネイル生成: MaxDimension={MaxDimension}, Path={Path}",
@@ -163,6 +220,27 @@ public class ImageTasks
                 sourceFilePath
             );
             return false;
+        }
+    }
+
+    private void TryDeleteObsoleteThumbnail(string? thumbnailPath)
+    {
+        if (string.IsNullOrEmpty(thumbnailPath) || !File.Exists(thumbnailPath))
+        {
+            return;
+        }
+
+        try
+        {
+            File.Delete(thumbnailPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "旧サムネイルの削除に失敗しました: ThumbnailPath={ThumbnailPath}",
+                thumbnailPath
+            );
         }
     }
 

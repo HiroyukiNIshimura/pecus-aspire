@@ -1,7 +1,5 @@
 ﻿using Pecus.Libs.Image;
 using Pecus.Models.Config;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 
 namespace Pecus.Services;
 
@@ -389,25 +387,12 @@ public class WorkspaceItemTempAttachmentService
         {
             try
             {
-                // FileShare.Read を指定してファイルを開く（他プロセスとの競合を回避）
-                await using var sourceStream = new FileStream(
-                    sourcePath,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read,
-                    bufferSize: 4096,
-                    useAsync: true);
-
-                using var image = await Image.LoadAsync(sourceStream);
-
-                // アスペクト比を維持してリサイズ
-                image.Mutate(x => x.Resize(new ResizeOptions
-                {
-                    Size = new Size(maxWidth, maxHeight),
-                    Mode = ResizeMode.Max
-                }));
-
-                await image.SaveAsync(destinationPath);
+                await ImageProcessingHelper.ResizeAsync(
+                    sourceFilePath: sourcePath,
+                    destinationFilePath: destinationPath,
+                    maxWidth: maxWidth,
+                    maxHeight: maxHeight
+                );
                 return;
             }
             catch (IOException) when (attempt < maxRetries - 1)

@@ -17,6 +17,7 @@
 docs/
 *.md
 !README.md
+!THIRD_PARTY_NOTICES.md
 
 # Deploy scripts (Dockerfile は必要なので ops のみ除外)
 deploy/ops/
