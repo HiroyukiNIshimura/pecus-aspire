@@ -6,6 +6,10 @@
 
 - [config-management.md](./config-management.md) — **【必読】設定ファイル管理方式（config/settings.base.json が唯一のソース）**。
 
+### コードベース解説
+
+- [codebase/INDEX.md](./codebase/INDEX.md) — 現行コードを根拠にしたCoatiの構成・機能・連携の技術解説。既存の仕様書・開発ガイドとは区別して参照してください。
+
 ### コーディングルール・ガイドライン
 
 - [api-list-response-design.md](./api-list-response-design.md) — API の一覧レスポンス設計指針。
