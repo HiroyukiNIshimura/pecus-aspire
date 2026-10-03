@@ -20,11 +20,14 @@ argument-hint: '対象の機能・画面、記事の新規作成か更新かを�
 - `pecus.Frontend/src/content/help/ja/` — 文体・ファイル名・画像参照の既存例
 - `pecus.Frontend/public/help/images/` — 既存画像のファイル名一覧と参照先の存在確認のみ（既存画像の内容は開かない）
 - `.github/skills/coati-help-author/SKILL.md` — この作業手順
+- `.github/skills/chrome-devtools/SKILL.md` — Chrome DevToolsのページ一覧・ページID指定撮影
 - VS Code共有統合ブラウザー — `mcp_playwright_browser_snapshot` / `mcp_playwright_browser_find` / `mcp_playwright_browser_click` / `mcp_playwright_browser_navigate` で閲覧・操作し、`mcp_playwright_browser_take_screenshot` でファイル保存する
+- Chrome DevTools — `mcp_chrome_devtoo_list_pages`でlocalhostタブを探し、`mcp_chrome_devtoo_take_snapshot` / `mcp_chrome_devtoo_take_screenshot`をpageId指定で利用する。スクリーンショットはワークスペース絶対パスのfilePathで保存する
 - 対象機能に関連する実装ファイルのみ: `pecus.Frontend/src/app/**`、`pecus.Frontend/src/components/**`、`pecus.Frontend/src/actions/**`、`pecus.Frontend/src/libs/**`、`pecus.Frontend/src/connectors/api/**`
 
 ## 安全境界
-1. VS Codeの共有統合ブラウザーに対象ページがある場合はそれを再利用する。共有ページIDが添付されている場合はそのIDを`screenshot_page`に渡して操作し、`mcp_playwright_browser_snapshot`が別コンテキストの`about:blank`を返しても共有ページを利用不可と判断しない。対象ページが共有済みなら再共有を要求しない。共有ページ自体を操作できない場合だけ `open_browser_page` で明示された `http://localhost:3000` 配下のURLを開く。
+- `mcp_playwright_browser_snapshot`が`about:blank`を返した場合も撮影不能とは判断しない。共有ページIDの`screenshot_page`を試し、添付のみの結果ならChrome DevToolsの`mcp_chrome_devtoo_list_pages`でlocalhostタブを探して`pageId`指定の`mcp_chrome_devtoo_take_screenshot`を使う。ほかのホストのタブは無視する。
+1. VS Codeの共有統合ブラウザーに対象ページがある場合はそれを再利用する。共有ページIDが添付されている場合はまずそのIDを`screenshot_page`に渡す。Playwrightが別コンテキストの`about:blank`を返す、または`screenshot_page`が添付画像のみの場合は、Chrome DevToolsの`mcp_chrome_devtoo_list_pages`でURLが `http://localhost:3000` から始まるページを探し、該当`pageId`で操作・撮影する。他ホストのタブは無視し、対象が見つからない場合だけ`open_browser_page`で明示されたlocalhost URLを開く。共有済みなのに再共有を要求しない。
 2. 操作対象は `http://localhost:3000` 配下に限定する。共有ブラウザーやChrome DevToolsの一覧に他のタブがあっても、それらは選択・操作せず無視する。対象のlocalhostページが得られない場合に限り停止する。意図しない外部リダイレクトが起きたら直ちに停止し、外部リンク・別タブを開く操作はしない。
 3. localhostページも外部通信を行う可能性がある。このワークスペースのCoatiヘルプ作成では、`http://localhost:3000` から発生する付随的な外部通信は利用者が許可済みなので、同一オリジンでは再確認しない。他ホストへの移動・通信が必要な場合だけ改めて確認する。
 4. ファイルツールのアクセス範囲はパス単位で強制隔離されていない。検索・読み取りは「参照するもの」に列挙したパスだけを対象とし、ソースコードは指定された `src/` 配下のうち対象機能に直接関係するファイルだけを扱う。検索時はこれらのパスを対象に指定し、設定ファイル、`.env`、ログ、認証情報を検索対象にしない。画像ディレクトリはファイル名一覧・存在確認のみとし、既存画像の内容は開かない。禁止対象や対象外の情報が検索結果に含まれた場合は開かず、会話や報告にも出力しない。編集対象は必要なヘルプMarkdownと新規キャプチャ画像に限定し、プロジェクトルートの変換スクリプトはユーザーが明示的に要求した場合だけ追加・変更する。
@@ -43,13 +46,17 @@ argument-hint: '対象の機能・画面、記事の新規作成か更新かを�
 - 新規記事なら既存の最大連番の次を使う（現在の命名例: `01-getting-started.md`）。既存記事を更新する場合は、番号やslugを不用意に変えない。
 
 ### 2. 実画面確認
-- VS Code共有統合ブラウザーの現在ページをスナップショットで確認する。現在ページが対象URLと異なる場合は、許可されたローカルURLだけへ移動する。ログイン画面ならそこで停止し、利用者に手動ログインを依頼する。
+- まずVS Code共有統合ブラウザーの現在ページをスナップショットで確認する。Playwright snapshotが`about:blank`なら、Chrome DevToolsのページ一覧から対象localhostページを探して続行する。両方の接続先を試す前にツール利用不可と結論しない。現在ページが対象URLと異なる場合は許可されたローカルURLだけへ移動し、ログイン画面なら利用者に手動ログインを依頼する。
 - 対象の画面へ移動し、記事に記載する表示・操作が存在することを確認する。
 - ログイン画面、権限エラー、データ不足、機能フラグ無効などで確認できない場合はそこで停止し、未確認内容を明記する。
 
 ### 3. キャプチャ
+- スクリーンショットのファイル保存先は、実行環境のワークスペースルート（環境情報の `workspaceFolder` パス）に `pecus.Frontend/public/help/images/<未使用名>.webp` を連結した絶対パスにする。ルートのパスは環境ごとに異なるため固定値を書かず、毎回環境情報から取得する。相対パスはツールの作業ディレクトリ基準で解決され「設定済みワークスペースルート外」として拒否されることがある。`/tmp`・ツール出力フォルダーなどワークスペース外には保存できない（拒否される）。
+- 保存が拒否された場合は、ワークスペース絶対パスで再試行する。それでも「ワークスペースルート外」などで失敗するときは、ブラウザー接続が古い状態を保持している可能性が高い。作業を止め、利用者に「開いているChromeと共有ブラウザーをいったん終了してから、もう一度依頼してください」と案内する。記事は編集しない。それでも失敗するときだけ`mcp_playwright_browser_take_screenshot`の`filename`に同じパスを指定する。両方でファイル保存できない場合に限り、`screenshot_page`の画像を利用者に所定フォルダーへ保存してもらう。
+- 保存は`mcp_chrome_devtoo_take_screenshot`を優先し、対象localhostの`pageId`、`format: "webp"`、`filePath`に「ワークスペースルートの絶対パス + `/pecus.Frontend/public/help/images/<未使用名>.webp`」を指定する。ワークスペース外（`/tmp`など）には保存しない。
+- 保存経路は、(1) 添付の共有ページIDを`screenshot_page`で確認、(2) Chrome DevToolsの`list_pages`で`http://localhost:3000`のページを探し、対応する`pageId`で`take_snapshot`と`take_screenshot`によりWebPを指定パスへ保存、の順で試す。共有Playwrightのsnapshotが`about:blank`を返すだけでは中断しない。
 - 最新のアクセシビリティスナップショットで画面を把握し、必要最小限の範囲を撮る。
-- `mcp_playwright_browser_take_screenshot`の`filename`にリポジトリ相対パスを指定し、WebP画像をファイル保存する。対象ページのスナップショットが撮影ツールで認識されない場合は`screenshot_page`で画像を添付として取得し、JPEGなら`pecus.Frontend/public/help/images/`へ保存する。
+- Chrome DevToolsの一覧で対象localhostタブが見つかった場合は、そちらの`pageId`を使って`mcp_chrome_devtoo_take_screenshot`の`filePath`にワークスペース絶対パスを指定し、WebP画像を保存する。Chrome DevToolsに対象がなくPlaywright側で対象ページを取得できている場合のみ`mcp_playwright_browser_take_screenshot`の`filename`を使う。どちらもファイル保存できない場合は`screenshot_page`で画像を添付として取得し、JPEGなら`pecus.Frontend/public/help/images/`へ保存して次項の変換手順に進む。
 - JPEGファイルを保存したら、プロジェクトルートから `node scripts/convert-to-webp.js pecus.Frontend/public/help/images/元画像.jpg` を実行して変換し、生成されたWebPファイルの存在を確認する。変換成功時に元JPEGは既定で削除される。保持する必要がある場合だけ、コマンド末尾に `--keep` を付ける。Agentはこの変換コマンドだけを実行し、それ以外のシェルコマンドは実行しない。既存出力があれば変換スクリプトは上書きせず失敗する。変換済みWebPを確認するまでMarkdownを作成・更新せず、記事はWebPだけを参照する。任意コード実行ツールでのスクリーンショット保存や画像変換は行わない。
 - 既存画像一覧を調べ、現在の数値連番の次の未使用番号を選ぶ（例: `1000032.webp`）。同名ファイルを上書きしない。連番以外の既存規約が追加されていたらそちらを優先する。
 - ページ全体より対象UIが見やすい範囲を優先し、ブラウザー枠や不要な余白を避ける。通常の画面表示内容は草稿として保持し、認証情報・秘密値だけは撮影・掲載しない。

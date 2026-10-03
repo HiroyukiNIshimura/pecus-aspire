@@ -180,3 +180,4 @@ data/
 .env
 
 *.lscache
+.playwright-mcp/
