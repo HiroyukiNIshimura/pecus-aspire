@@ -14,6 +14,26 @@
 
 WebApi起動時には、共通の`GlobalExceptionFilter`と`ValidationFilter`がMVCフィルターに追加されています。コントローラー／サービスからの例外と入力検証をHTTP応答へ反映する詳細は[例外処理ガイド](../global-exception-handling.md)を参照してください。
 
+### 開発用メールテンプレートプレビュー
+
+[`EmailPreviewController`](../../pecus.WebApi/Controllers/Dev/EmailPreviewController.cs)は、メールテンプレートをダミーデータで描画する開発用GETエンドポイントを提供します。プレビュー用モデルは[`EmailPreviewDataFactory`](../../pecus.Libs/Mail/Preview/EmailPreviewDataFactory.cs)が作成し、[`ITemplateService`](../../pecus.Libs/Mail/Services/ITemplateService.cs)を通じてレンダリングします。実装は[`RazorTemplateService`](../../pecus.Libs/Mail/Services/RazorTemplateService.cs)で、テンプレートモデルにはアプリ設定とロゴSVGを設定してからRazorLightで描画します。
+
+| エンドポイント | 応答 |
+|---|---|
+| `GET /api/dev/email-preview` | プレビュー対象一覧（`EmailTemplateInfo`のJSON） |
+| `GET /api/dev/email-preview/index` | HTMLの簡易一覧ページ。各テンプレートのHTML版・テキスト版へのリンクを表示 |
+| `GET /api/dev/email-preview/{templateName}` | `{templateName}.html.cshtml`のHTMLプレビュー |
+| `GET /api/dev/email-preview/{templateName}/text` | `{templateName}.text.cshtml`のテキストプレビュー |
+
+一覧とダミーモデル生成は同じFactoryにあります。現在の一覧は24種類で、各プレビュー要求ごとに`DateTimeOffset.UtcNow`を基準にしたモデルを生成します。プレビューは実データを読み出さず、モデルの実行時型を使ってテンプレートサービスのジェネリック描画メソッドを呼び出します。テンプレートファイルは[`Mail/Templates`](../../pecus.Libs/Mail/Templates)にあり、テンプレートルートの設定は[`EmailSettings`](../../pecus.Libs/Mail/Configuration/EmailSettings.cs)で定義されています。
+
+`[AllowAnonymous]`によりこのコントローラーでは認証を要求しません。一方、開発環境限定の判定はWebApi側の[`[DevelopmentOnly]`](../../pecus.WebApi/Filters/DevelopmentOnlyAttribute.cs)が行います。Development以外では、リクエストがWebApiに届いてもアクション実行前に404となります。この機能を無効化するためにNginxの設定変更は必要ありません。[WebApi起動処理](../../pecus.WebApi/Program.cs)も参照してください。
+
+エラー時の挙動には次の差があります。
+
+- 登録済みテンプレートのHTML／テキスト描画で例外が発生すると、Controllerがログを記録して`null`にし、400応答を返します。テキスト版のファイルがない場合も同じ経路です。
+- 未登録のテンプレート名はFactoryのswitch既定分岐が`NotImplementedException`を投げます。この呼び出しはControllerの描画例外処理より前にあるため、Controllerの404分岐には到達せず、[`GlobalExceptionFilter`](../../pecus.WebApi/Filters/GlobalExceptionFilter.cs)の予期しない例外処理により500応答になります。Controllerのレスポンス属性は404も宣言していますが、このFactory実装では未知名に対してその応答になりません。FactoryのXMLコメントにも未知名で`null`を返す旨がありますが、現在の実装とは一致しません。
+
 ## 認証・認可
 
 WebApiはJWT Bearerを既定の認証方式として登録し、JWT検証時にトークン無効化状態とユーザーの有効状態を確認します。APIキー認証schemeも登録されています。SignalR Hubへの接続では、WebApi側でHubリクエストのトークンを処理します。

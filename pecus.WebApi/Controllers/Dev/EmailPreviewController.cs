@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Filters;
 using Pecus.Libs.Mail.Preview;
 using Pecus.Libs.Mail.Services;
 
@@ -13,6 +14,7 @@ namespace Pecus.Controllers.Dev;
 [Route("api/dev/email-preview")]
 [Produces("application/json")]
 [AllowAnonymous]
+[DevelopmentOnly]
 public class EmailPreviewController : ControllerBase
 {
     private readonly ITemplateService _templateService;

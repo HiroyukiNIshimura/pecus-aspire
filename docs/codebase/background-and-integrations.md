@@ -32,6 +32,7 @@ Publisher／Subscriberの経路とSignalR backplaneは別の役割です。Redis
 
 - [NotificationHub](../../pecus.WebApi/Hubs/NotificationHub.cs)
 - [WebApiでのHub／Subscriber登録](../../pecus.WebApi/Program.cs)
+- [Redis Pub/Sub Subscriber](../../pecus.WebApi/Services/SignalRNotificationSubscriber.cs)
 - [BackFireでのPublisher登録](../../pecus.BackFire/Program.cs)
 - [共有通知実装](../../pecus.Libs/Notifications/)
 
