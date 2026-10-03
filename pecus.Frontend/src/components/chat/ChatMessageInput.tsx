@@ -16,6 +16,8 @@ interface ChatMessageInputProps {
   mentionCandidates?: MentionCandidate[];
 }
 
+const MAX_MESSAGE_LENGTH = 10000;
+
 /**
  * メッセージ入力コンポーネント
  * - Enter で送信（Shift+Enter で改行）
@@ -82,7 +84,7 @@ export default function ChatMessageInput({
   const handleSubmit = (e?: FormEvent) => {
     e?.preventDefault();
     const trimmedContent = content.trim();
-    if (!trimmedContent || disabled) return;
+    if (!trimmedContent || disabled || trimmedContent.length > MAX_MESSAGE_LENGTH) return;
 
     onSend(trimmedContent);
     setContent('');
@@ -293,6 +295,7 @@ export default function ChatMessageInput({
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
+          maxLength={MAX_MESSAGE_LENGTH}
           className="textarea textarea-bordered flex-1 min-h-10 max-h-30 resize-none py-2"
           aria-label="メッセージ入力"
         />
@@ -306,6 +309,9 @@ export default function ChatMessageInput({
         >
           <span className="icon-[tabler--send] size-5" aria-hidden="true" />
         </button>
+      </div>
+      <div className="mt-1 text-right text-xs tabular-nums text-base-content/50">
+        {content.length}/{MAX_MESSAGE_LENGTH}
       </div>
     </form>
   );

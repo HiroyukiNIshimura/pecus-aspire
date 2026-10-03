@@ -27,6 +27,19 @@ body {
   font-family: var(--font-hackgen), "Source Han Code JP", "Noto Sans Mono CJK JP", monospace;
 }
 
+/* 送信側バブル内のインラインコードのみを見やすくする（コードブロックは対象外） */
+.message-content--primary :not(pre) > code {
+  color: var(--color-primary-content) !important;
+  background-color: color-mix(in oklab, var(--color-primary-content) 15%, transparent) !important;
+  border-radius: 0.25rem;
+  padding-inline: 0.25rem;
+}
+
+/* FlyonUI の fit-content を上書きして、コメント編集に必要な幅を確保する */
+.chat.chat-sender .chat-bubble.comment-edit-bubble {
+  width: min(24rem, 100%);
+}
+
 /* Editor の DayPicker 用カスタムプロパティ
 https://daypicker.dev/docs/styling#css-variables */
 .rdp-root {

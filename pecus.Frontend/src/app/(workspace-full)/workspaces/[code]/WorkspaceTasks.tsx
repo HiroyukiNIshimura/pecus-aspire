@@ -70,6 +70,7 @@ interface TaskNavigation {
 
 interface WorkspaceTasksProps {
   workspaceId: number;
+  workspaceCode?: string;
   itemId: number;
   /** アイテムのオーナーID */
   itemOwnerId?: number | null;
@@ -119,6 +120,7 @@ const ITEMS_PER_PAGE = 8; // 4列 x 2行
 
 const WorkspaceTasks = ({
   workspaceId,
+  workspaceCode,
   itemId,
   itemOwnerId,
   itemAssigneeId,
@@ -499,6 +501,7 @@ const WorkspaceTasks = ({
             setCommentTargetTask(null);
           }}
           workspaceId={workspaceId}
+          workspaceCode={workspaceCode}
           itemId={itemId}
           task={commentTargetTask}
           onCommentCountChange={() => fetchTasks(currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder)}

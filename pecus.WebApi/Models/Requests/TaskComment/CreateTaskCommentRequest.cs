@@ -12,7 +12,7 @@ public class CreateTaskCommentRequest
     /// コメント内容
     /// </summary>
     [Required(ErrorMessage = "コメント内容は必須です。")]
-    [MaxLength(500, ErrorMessage = "コメント内容は500文字以内で入力してください。")]
+    [MaxLength(2000, ErrorMessage = "コメント内容は2000文字以内で入力してください。")]
     public required string Content { get; set; }
 
     /// <summary>

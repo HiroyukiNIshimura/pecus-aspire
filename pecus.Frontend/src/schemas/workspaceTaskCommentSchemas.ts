@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { CreateTaskCommentRequest, TaskCommentType, UpdateTaskCommentRequest } from '@/connectors/api/pecus';
+import type { TaskCommentType } from '@/connectors/api/pecus';
 
 const workspaceIdSchema = z
   .number({ error: 'ワークスペースIDが不正です。' })
@@ -37,6 +37,10 @@ const taskCommentTypeSchema = z
   })
   .optional();
 
+const taskCommentContentSchema = z
+  .string({ error: 'コメント内容が不正です。' })
+  .max(2000, 'コメント内容は2000文字以内で入力してください。');
+
 export const getTaskCommentsInputSchema = z.object({
   workspaceId: workspaceIdSchema,
   itemId: itemIdSchema,
@@ -61,8 +65,9 @@ export const createTaskCommentInputSchema = z.object({
   workspaceId: workspaceIdSchema,
   itemId: itemIdSchema,
   taskId: taskIdSchema,
-  request: z.custom<CreateTaskCommentRequest>((value) => typeof value === 'object' && value !== null, {
-    error: 'コメント作成リクエストが不正です。',
+  request: z.object({
+    content: taskCommentContentSchema,
+    commentType: taskCommentTypeSchema,
   }),
 });
 
@@ -73,8 +78,9 @@ export const updateTaskCommentInputSchema = z.object({
   itemId: itemIdSchema,
   taskId: taskIdSchema,
   commentId: commentIdSchema,
-  request: z.custom<UpdateTaskCommentRequest>((value) => typeof value === 'object' && value !== null, {
-    error: 'コメント更新リクエストが不正です。',
+  request: z.object({
+    content: taskCommentContentSchema.nullable().optional(),
+    rowVersion: rowVersionSchema,
   }),
 });
 

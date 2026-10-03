@@ -8,17 +8,23 @@ namespace Pecus.Services;
 public interface IExternalWorkspaceItemService
 {
     /// <summary>
-    /// ワークスペース内の全アイテムを取得（ページネーション対応）
+    /// ワークスペース内の全アイテムを取得（ページネーション対応、各種フィルタ対応）
     /// </summary>
     /// <param name="organizationId">組織ID</param>
     /// <param name="workspaceIdOrCode">ワークスペースIDまたはコード</param>
     /// <param name="page">ページ番号（1始まり）</param>
+    /// <param name="isActive">アクティブフラグフィルタ（nullの場合は全件）</param>
+    /// <param name="isArchived">アーカイブフラグフィルタ（nullの場合は全件）</param>
+    /// <param name="isDraft">下書きフラグフィルタ（nullの場合は全件）</param>
     /// <param name="cancellationToken">キャンセレーショントークン</param>
     /// <returns>アイテム一覧レスポンス</returns>
     Task<ExternalItemListResponse> GetWorkspaceItemsAsync(
         int organizationId,
         string workspaceIdOrCode,
         int page,
+        bool? isActive = null,
+        bool? isArchived = null,
+        bool? isDraft = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatRoomItem } from '@/connectors/api/pecus';
 import { useChatStore } from '@/stores/chatStore';
 import ChatMessageArea from './ChatMessageArea';
@@ -13,6 +13,10 @@ interface ChatBottomDrawerProps {
   onRoomCreated?: () => void;
 }
 
+const DEFAULT_DRAWER_HEIGHT = '50vh';
+const MIN_DRAWER_HEIGHT = 300;
+const MAX_DRAWER_HEIGHT = 700;
+
 /**
  * PC用ボトムドロワー
  * 画面下部からスライドして出現し、作業コンテキストを維持しながらチャット可能
@@ -24,6 +28,9 @@ export default function ChatBottomDrawer({
   onRoomCreated,
 }: ChatBottomDrawerProps) {
   const { isDrawerOpen, closeDrawer, selectedRoomId } = useChatStore();
+  const [drawerHeight, setDrawerHeight] = useState<number | null>(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStateRef = useRef<{ startY: number; startHeight: number } | null>(null);
 
   // Escape キーでドロワーを閉じる（IME 変換中は無視）
   const handleKeyDown = useCallback(
@@ -44,6 +51,50 @@ export default function ChatBottomDrawer({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
+  // PC用ドロワーの上端をドラッグして高さを変更する
+  const handleResizePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    const drawer = event.currentTarget.parentElement;
+    if (!drawer) return;
+
+    resizeStateRef.current = {
+      startY: event.clientY,
+      startHeight: drawer.getBoundingClientRect().height,
+    };
+    setIsResizing(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  }, []);
+
+  const handleResizePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    const resizeState = resizeStateRef.current;
+    if (!resizeState) return;
+
+    const nextHeight = Math.min(
+      MAX_DRAWER_HEIGHT,
+      Math.max(MIN_DRAWER_HEIGHT, resizeState.startHeight + resizeState.startY - event.clientY),
+    );
+    setDrawerHeight(nextHeight);
+  }, []);
+
+  const handleResizePointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    resizeStateRef.current = null;
+    setIsResizing(false);
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  }, []);
+
+  const handleResizeKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+
+      const currentHeight = drawerHeight ?? window.innerHeight * 0.5;
+      const delta = event.key === 'ArrowUp' ? 20 : -20;
+      const nextHeight = Math.min(MAX_DRAWER_HEIGHT, Math.max(MIN_DRAWER_HEIGHT, currentHeight + delta));
+      setDrawerHeight(nextHeight);
+      event.preventDefault();
+    },
+    [drawerHeight],
+  );
+
   // ドロワーが閉じている場合は何も表示しない
   if (!isDrawerOpen) {
     return null;
@@ -52,8 +103,31 @@ export default function ChatBottomDrawer({
   return (
     <div
       className="fixed bottom-0 left-0 right-0 z-40 bg-base-100 border-t-2 border-base-content/20 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out"
-      style={{ height: '50vh', minHeight: '300px', maxHeight: '600px' }}
+      style={{
+        height: drawerHeight ? `${drawerHeight}px` : DEFAULT_DRAWER_HEIGHT,
+        minHeight: MIN_DRAWER_HEIGHT,
+        maxHeight: MAX_DRAWER_HEIGHT,
+      }}
     >
+      {/* PC用リサイズハンドル */}
+      <div
+        role="separator"
+        aria-label="チャット領域の高さを変更"
+        aria-orientation="horizontal"
+        aria-valuemin={MIN_DRAWER_HEIGHT}
+        aria-valuemax={MAX_DRAWER_HEIGHT}
+        aria-valuenow={drawerHeight ?? undefined}
+        tabIndex={0}
+        className={`absolute inset-x-0 top-0 z-10 hidden h-1 cursor-row-resize hover:bg-primary/50 transition-colors md:block ${
+          isResizing ? 'bg-primary' : ''
+        }`}
+        onPointerDown={handleResizePointerDown}
+        onPointerMove={handleResizePointerMove}
+        onPointerUp={handleResizePointerUp}
+        onPointerCancel={handleResizePointerUp}
+        onKeyDown={handleResizeKeyDown}
+      />
+
       {/* ヘッダー */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-base-content/10 bg-base-200">
         <h2 className="font-semibold text-base">チャット</h2>

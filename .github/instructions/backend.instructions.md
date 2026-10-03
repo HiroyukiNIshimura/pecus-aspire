@@ -15,7 +15,7 @@ applyTo: "pecus.WebApi/**/*.cs, pecus.BackFire/**/*.cs, pecus.DbManager/**/*.cs,
 - 競合制御: `DbUpdateConcurrencyException` を捕捉し、`FindAsync` 後に `ConcurrencyException<T>` を使用
 - コントローラーは MVC + `HttpResults` を使用し、例外は `GlobalExceptionFilter` に委譲
 - DTO には検証属性（`[Required]`, `[MaxLength]` 等）を必ず付与
-- Enum は nullable 推奨、`HasDefaultValue()` は使用しない
+- Enum プロパティは原則 nullable とし、`HasDefaultValue()` は使用しない
 - トランザクションはサービス層で `BeginTransactionAsync` を使用（コントローラーで開始しない）
 - レスポンス DTO の enum は `JsonStringEnumConverter<TEnum>` を明示する
 - Hangfire は DI 経由（`IBackgroundJobClient` / `IRecurringJobManager`）を使用し、静的 API を使わない
@@ -24,3 +24,6 @@ applyTo: "pecus.WebApi/**/*.cs, pecus.BackFire/**/*.cs, pecus.DbManager/**/*.cs,
 - `docs/backend-guidelines.md`（先頭の「AI エージェント向け要約」）
 - `docs/global-exception-handling.md`
 - `docs/db-concurrency.md`
+
+## コード修正時のゴール
+- [] ビルドが成功すること

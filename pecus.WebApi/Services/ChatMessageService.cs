@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
@@ -6,6 +7,10 @@ using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Services;
+using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 
 namespace Pecus.Services;
 
@@ -17,16 +22,25 @@ public class ChatMessageService
     private readonly ApplicationDbContext _context;
     private readonly IHubContext<NotificationHub> _hubContext;
     private readonly ILogger<ChatMessageService> _logger;
+    private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
+    private readonly IEmailNotificationFilterService _emailFilterService;
 
     public ChatMessageService(
         ApplicationDbContext context,
         IHubContext<NotificationHub> hubContext,
-        ILogger<ChatMessageService> logger
+        ILogger<ChatMessageService> logger,
+        IBackgroundJobClient backgroundJobClient,
+        FrontendUrlResolver frontendUrlResolver,
+        IEmailNotificationFilterService emailFilterService
     )
     {
         _context = context;
         _hubContext = hubContext;
         _logger = logger;
+        _backgroundJobClient = backgroundJobClient;
+        _frontendUrlResolver = frontendUrlResolver;
+        _emailFilterService = emailFilterService;
     }
 
     #region メッセージ送信
@@ -349,6 +363,8 @@ public class ChatMessageService
         var actorIdSet = mentionedActors.Select(actor => actor.Id).ToHashSet();
         var mentionedMembers = await _context
             .ChatRoomMembers.Include(member => member.ChatActor)
+                .ThenInclude(actor => actor.User)
+                    .ThenInclude(user => user!.Setting)
             .Where(member => member.ChatRoomId == room.Id && actorIdSet.Contains(member.ChatActorId))
             .ToListAsync();
 
@@ -389,7 +405,60 @@ public class ChatMessageService
                         Timestamp = DateTimeOffset.UtcNow,
                     }
                 );
+
+            await SendMentionEmailAsync(room, message, member.ChatActor.User);
         }
+    }
+
+    /// <summary>
+    /// メンション対象ユーザーの通知設定に従いメールを送信する（リアルタイム通知の到達可否は判定しない）
+    /// </summary>
+    private async Task SendMentionEmailAsync(ChatRoom room, ChatMessage message, User? mentionedUser)
+    {
+        if (mentionedUser == null || string.IsNullOrWhiteSpace(mentionedUser.Email))
+        {
+            return;
+        }
+
+        if (!_emailFilterService.ShouldSendEmail(mentionedUser.Setting, EmailNotificationEventType.DirectMention, room.WorkspaceId))
+        {
+            return;
+        }
+
+        await _context.Entry(room).Reference(r => r.Workspace).LoadAsync();
+        await _context.Entry(room).Reference(r => r.Organization).LoadAsync();
+
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
+        var mentionedByName = message.SenderActor?.DisplayName ?? "";
+
+        var emailModel = new ChatMentionEmailModel
+        {
+            UserName = mentionedUser.Username,
+            MentionedByName = mentionedByName,
+            RoomName = room.Name ?? $"{mentionedByName} とのダイレクトメッセージ",
+            MessagePreview = BuildMentionPreview(message.Content),
+            MentionedAt = message.CreatedAt,
+            WorkspaceName = room.Workspace?.Name ?? "",
+            WorkspaceCode = room.Workspace?.Code ?? "",
+            ChatUrl = $"{baseUrl}/chat/rooms/{room.Id}",
+            OrganizationName = room.Organization?.Name ?? "",
+        };
+
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendTemplatedEmailAsync(
+                room.OrganizationId,
+                mentionedUser.Email,
+                "チャットでメンションされました",
+                emailModel
+            )
+        );
+
+        _logger.LogInformation(
+            "メンションメールをキューに追加しました。RoomId={RoomId}, MessageId={MessageId}, To={Email}",
+            room.Id,
+            message.Id,
+            mentionedUser.Email
+        );
     }
 
     /// <summary>

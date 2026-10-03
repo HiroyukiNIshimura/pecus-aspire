@@ -32,6 +32,14 @@
 				"@upstash/context7-mcp@latest"
 			],
 			"type": "stdio"
+		},
+		"chrome-devtools": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"chrome-devtools-mcp@latest",
+				"--autoConnect"
+			]
 		}
 	},
 	"inputs": []

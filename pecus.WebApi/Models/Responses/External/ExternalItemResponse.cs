@@ -35,4 +35,43 @@ public class ExternalItemResponse
     /// </summary>
     [Required]
     public required IReadOnlyList<string> Tags { get; set; }
+
+    /// <summary>
+    /// オーナーユーザー
+    /// </summary>
+    [Required]
+    public required ExternalUserRefResponse Owner { get; set; }
+
+    /// <summary>
+    /// 担当ユーザー
+    /// </summary>
+    public ExternalUserRefResponse? AssignedUser { get; set; }
+
+    /// <summary>
+    /// コミッターユーザー
+    /// </summary>
+    public ExternalUserRefResponse? Committer { get; set; }
+
+    /// <summary>
+    /// 期限日時
+    /// </summary>
+    public DateTimeOffset? DueDate { get; set; }
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    [Required]
+    public bool IsActive { get; set; }
+
+    /// <summary>
+    /// アーカイブフラグ
+    /// </summary>
+    [Required]
+    public bool IsArchived { get; set; }
+
+    /// <summary>
+    /// 下書きフラグ
+    /// </summary>
+    [Required]
+    public bool IsDraft { get; set; }
 }

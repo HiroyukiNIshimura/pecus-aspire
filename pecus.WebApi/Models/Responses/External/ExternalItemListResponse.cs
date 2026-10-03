@@ -41,5 +41,5 @@ public class ExternalItemListResponse
     /// アイテムの配列
     /// </summary>
     [Required]
-    public required IReadOnlyList<ExternalItemResponse> Items { get; set; }
+    public required IReadOnlyList<ExternalItemSummaryResponse> Items { get; set; }
 }

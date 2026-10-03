@@ -8,6 +8,7 @@ interface TaskCommentModalProps {
   isOpen: boolean;
   onClose: () => void;
   workspaceId: number;
+  workspaceCode?: string;
   itemId: number;
   task: WorkspaceTaskDetailResponse;
   /** コメント数が変更された時のコールバック */
@@ -20,6 +21,7 @@ export default function TaskCommentModal({
   isOpen,
   onClose,
   workspaceId,
+  workspaceCode,
   itemId,
   task,
   onCommentCountChange,
@@ -74,6 +76,7 @@ export default function TaskCommentModal({
         {/* TaskCommentSection を使用 - h-full で親の高さを継承 */}
         <TaskCommentSection
           workspaceId={workspaceId}
+          workspaceCode={workspaceCode}
           itemId={itemId}
           taskId={task.id}
           onCommentCountChange={onCommentCountChange}

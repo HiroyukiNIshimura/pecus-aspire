@@ -25,10 +25,11 @@ export default async function ChatRoomPage({ params }: ChatRoomPageProps) {
 
   try {
     const api = createPecusApiClients();
-    const [roomResponse, messagesResponse, profileResponse] = await Promise.all([
-      api.chat.getApiChatRooms1(roomIdNum),
+    const roomResponse = await api.chat.getApiChatRooms1(roomIdNum);
+    const [messagesResponse, profileResponse, workspaceResponse] = await Promise.all([
       api.chat.getApiChatRoomsMessages(roomIdNum),
       api.profile.getApiProfile(),
+      roomResponse.workspaceId != null ? api.workspace.getApiWorkspaces1(roomResponse.workspaceId) : null,
     ]);
 
     return (
@@ -38,6 +39,7 @@ export default async function ChatRoomPage({ params }: ChatRoomPageProps) {
         hasMore={messagesResponse.hasMore ?? false}
         nextCursor={messagesResponse.nextCursor ?? null}
         currentUserId={profileResponse.id}
+        workspaceCode={workspaceResponse?.code ?? undefined}
       />
     );
   } catch (error) {

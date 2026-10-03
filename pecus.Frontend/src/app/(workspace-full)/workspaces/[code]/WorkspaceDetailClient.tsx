@@ -1292,7 +1292,12 @@ export default function WorkspaceDetailClient({
                 {/* 説明 */}
                 {currentWorkspaceDetail.description && (
                   <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none prose-headings:mt-3 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 mb-4 text-base-content/70">
-                    <Markdown remarkPlugins={[remarkBreaks, remarkItemCodeLinks]}>
+                    <Markdown
+                      remarkPlugins={[
+                        remarkBreaks,
+                        [remarkItemCodeLinks, { workspaceCode: currentWorkspaceDetail.code ?? undefined }],
+                      ]}
+                    >
                       {currentWorkspaceDetail.description}
                     </Markdown>
                   </div>
@@ -1530,6 +1535,7 @@ export default function WorkspaceDetailClient({
               <WorkspaceItemDetail
                 ref={itemDetailRef}
                 workspaceId={currentWorkspaceDetail.id}
+                workspaceCode={currentWorkspaceDetail.code}
                 itemId={selectedItemId}
                 itemCode={selectedItemCode}
                 onItemSelect={handleItemSelect}

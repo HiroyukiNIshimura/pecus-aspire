@@ -7,16 +7,16 @@ import {
   getTaskComments,
   updateTaskComment,
 } from '@/actions/workspaceTaskComment';
+import MessageContentRenderer from '@/components/common/feedback/MessageContentRenderer';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import { convertToLinks } from '@/libs/utils/autoLink';
 import { formatDateTime } from '@/libs/utils/date';
 import { useCurrentUserId } from '@/providers/AppSettingsProvider';
 
 /** コメントタイプのラベルと色 */
 /** コメントの最大文字数 */
-const MAX_COMMENT_LENGTH = 500;
+const MAX_COMMENT_LENGTH = 2000;
 
 const commentTypeConfig: Record<
   NonNullable<TaskCommentType>,
@@ -62,6 +62,7 @@ const commentTypeConfig: Record<
 
 interface TaskCommentSectionProps {
   workspaceId: number;
+  workspaceCode?: string;
   itemId: number;
   taskId: number;
   /** コメント数が変更された時のコールバック */
@@ -105,6 +106,7 @@ function getAvailableCommentTypes(
 
 export default function TaskCommentSection({
   workspaceId,
+  workspaceCode,
   itemId,
   taskId,
   onCommentCountChange,
@@ -297,6 +299,10 @@ export default function TaskCommentSection({
         notify.error('コメントを入力してください');
         return;
       }
+      if (editingContent.trim().length > MAX_COMMENT_LENGTH) {
+        notify.error(`コメントは${MAX_COMMENT_LENGTH}文字以内で入力してください。`);
+        return;
+      }
 
       setIsSubmitting(true);
       try {
@@ -472,12 +478,13 @@ export default function TaskCommentSection({
                   {/* 内容 */}
                   {editingCommentId === comment.id ? (
                     // 編集モード（内容のみ編集可、コメントタイプは変更不可）
-                    <div className="space-y-2 mt-2">
+                    <div className="chat-bubble comment-edit-bubble space-y-2 mt-2">
                       <textarea
                         className="textarea textarea-bordered textarea-sm w-full"
                         value={editingContent}
                         onChange={(e) => setEditingContent(e.target.value)}
                         rows={2}
+                        maxLength={MAX_COMMENT_LENGTH}
                         disabled={isSubmitting}
                       />
                       <div className="flex items-center gap-1.5 justify-end">
@@ -502,13 +509,13 @@ export default function TaskCommentSection({
                   ) : (
                     <>
                       {/* 表示モード */}
-                      <div className="chat-bubble whitespace-pre-wrap">
-                        {comment.isDeleted ? (
-                          <span className="italic text-base-content/50">このコメントは削除されました</span>
-                        ) : (
-                          <div dangerouslySetInnerHTML={{ __html: convertToLinks(comment.content ?? '') }} />
-                        )}
-                      </div>
+                      <MessageContentRenderer
+                        content={comment.isDeleted ? null : comment.content}
+                        workspaceCode={workspaceCode}
+                        mode="markdown"
+                        tone={isOwn ? 'primary' : 'default'}
+                        fallback={<span className="italic text-base-content/50">このコメントは削除されました</span>}
+                      />
 
                       {/* アクションボタン（自分のコメントかつ削除されていない場合のみ） */}
                       {!comment.isDeleted && isOwn && (
@@ -572,7 +579,7 @@ export default function TaskCommentSection({
               onCompositionEnd={handleCompositionEnd}
               disabled={isSubmitting}
               rows={1}
-              maxLength={MAX_COMMENT_LENGTH + 50}
+              maxLength={MAX_COMMENT_LENGTH}
             />
           </div>
           {/* 送信ボタン */}

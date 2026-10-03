@@ -16,6 +16,7 @@ interface ChatRoomMessageClientProps {
   hasMore: boolean;
   nextCursor: number | null;
   currentUserId: number;
+  workspaceCode?: string;
 }
 
 /** SignalR chat:message_received イベントのペイロード型 */
@@ -49,6 +50,7 @@ export default function ChatRoomMessageClient({
   hasMore: initialHasMore,
   nextCursor: initialNextCursor,
   currentUserId,
+  workspaceCode,
 }: ChatRoomMessageClientProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -204,6 +206,7 @@ export default function ChatRoomMessageClient({
         <ChatMessageList
           messages={messages}
           currentUserId={currentUserId}
+          workspaceCode={workspaceCode}
           loading={loadingMore}
           hasMore={hasMore}
           onLoadMore={loadMoreMessages}
