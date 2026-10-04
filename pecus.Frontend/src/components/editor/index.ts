@@ -78,18 +78,16 @@ export {
 
 // Pecus固有エディタのエクスポート
 export type {
-  ExistingItemUploadOptions,
   ItemCodeLinkMatcherOptions,
   LinkMatcher,
-  NewItemUploadOptions,
   NotionLikeViewerProps,
+  TempAttachmentUploadOptions,
 } from './pecus';
 
 export {
   createLinkMatcherWithRegExp,
   PecusNotionLikeEditor,
   PecusNotionLikeViewer,
-  useExistingItemImageUploadHandler,
   useItemCodeLinkMatchers,
-  useNewItemImageUploadHandler,
+  useTempAttachmentImageUploadHandler,
 } from './pecus';

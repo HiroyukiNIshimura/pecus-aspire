@@ -5,7 +5,7 @@ import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import TagInput from '@/components/common/forms/TagInput';
-import { PecusNotionLikeEditor, useNewItemImageUploadHandler } from '@/components/editor';
+import { PecusNotionLikeEditor, useTempAttachmentImageUploadHandler } from '@/components/editor';
 import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { useSignalRContext } from '@/providers/SignalRProvider';
@@ -515,8 +515,8 @@ function EditWorkspaceItemEditor({
   onFullscreenChange?: (isFullscreen: boolean) => void;
   onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
 }) {
-  // 一時ファイルアップロードハンドラー（更新時も新規作成と同じ仕組みを使用）
-  const imageUploadHandler = useNewItemImageUploadHandler({
+  // エディター画像の一時添付アップロードハンドラー
+  const imageUploadHandler = useTempAttachmentImageUploadHandler({
     workspaceId,
     sessionId,
     onTempFileUploaded,

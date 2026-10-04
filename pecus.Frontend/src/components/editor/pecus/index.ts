@@ -13,16 +13,10 @@ export type { ImageUploadHandler, ImageUploadResult, PecusEditorProps } from '@c
 export type { ItemCodeLinkMatcherOptions, LinkMatcher } from '../hooks/useAutoLinkMatchers';
 // AutoLink Matcherのフック
 export { createLinkMatcherWithRegExp, useItemCodeLinkMatchers } from '../hooks/useAutoLinkMatchers';
-export type {
-  ExistingItemUploadOptions,
-  NewItemUploadOptions,
-} from '../hooks/useImageUploadHandler';
+export type { TempAttachmentUploadOptions } from '../hooks/useImageUploadHandler';
 
 // 画像アップロードハンドラーのフック
-export {
-  useExistingItemImageUploadHandler,
-  useNewItemImageUploadHandler,
-} from '../hooks/useImageUploadHandler';
+export { useTempAttachmentImageUploadHandler } from '../hooks/useImageUploadHandler';
 // プラグイン
 export { default as AiAssistantPlugin, INSERT_AI_ASSISTANT_COMMAND } from '../plugins/AiAssistantPlugin';
 // コンポーネント

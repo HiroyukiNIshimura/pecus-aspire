@@ -7,7 +7,11 @@ import DatePicker from '@/components/common/filters/DatePicker';
 import AiSuggestButton from '@/components/common/forms/AiSuggestButton';
 import TagInput from '@/components/common/forms/TagInput';
 import AiProgressOverlay from '@/components/common/overlays/AiProgressOverlay';
-import { INSERT_MARKDOWN_COMMAND, PecusNotionLikeEditor, useNewItemImageUploadHandler } from '@/components/editor';
+import {
+  INSERT_MARKDOWN_COMMAND,
+  PecusNotionLikeEditor,
+  useTempAttachmentImageUploadHandler,
+} from '@/components/editor';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useAiSuggestion } from '@/hooks/useAiSuggestion';
 import { useFormValidation } from '@/hooks/useFormValidation';
@@ -74,8 +78,8 @@ export default function CreateWorkspaceItem({
     });
   }, []);
 
-  // 画像アップロードハンドラー（新規アイテム作成用）
-  const imageUploadHandler = useNewItemImageUploadHandler({
+  // エディター画像の一時添付アップロードハンドラー
+  const imageUploadHandler = useTempAttachmentImageUploadHandler({
     workspaceId: workspaceId ?? 0,
     sessionId,
     onTempFileUploaded: handleTempFileUploaded,
