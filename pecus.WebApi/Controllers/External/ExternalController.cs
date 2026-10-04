@@ -15,6 +15,7 @@ namespace Pecus.Controllers.External;
 /// X-API-KEY ヘッダーによるAPIキー認証が必要です。
 /// 組織スコープで動作し、認証されたキーの所属組織のデータのみアクセス可能です。
 /// /// </remarks>
+[Tags("ExternalAPI")]
 public class ExternalController : BaseExternalApiController
 {
     private readonly IExternalWorkspaceItemService _externalWorkspaceItemService;

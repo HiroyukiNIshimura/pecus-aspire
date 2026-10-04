@@ -350,7 +350,7 @@ export { ChatService } from './services/ChatService';
 export { DashboardService } from './services/DashboardService';
 export { EntranceAuthService } from './services/EntranceAuthService';
 export { EntrancePasswordService } from './services/EntrancePasswordService';
-export { ExternalService } from './services/ExternalService';
+export { ExternalApiService } from './services/ExternalApiService';
 export { FileService } from './services/FileService';
 export { FocusService } from './services/FocusService';
 export { MasterService } from './services/MasterService';

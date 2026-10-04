@@ -10633,7 +10633,7 @@
     "/api/external/ping": {
       "post": {
         "tags": [
-          "External"
+          "ExternalAPI"
         ],
         "summary": "疎通確認用エンドポイント",
         "description": "受け取ったメッセージをそのまま返却します。\nAPIキー認証の疎通確認に使用してください。",
@@ -10699,7 +10699,7 @@
     "/api/external/workspaces/{workspaceIdOrCode}/items": {
       "get": {
         "tags": [
-          "External"
+          "ExternalAPI"
         ],
         "summary": "指定ワークスペース内の全アイテムを取得する",
         "description": "ページネーション（1ページあたり20件固定）に対応しています。\nアクティブフラグ（isActive）、アーカイブフラグ（isArchived）、下書きフラグ（isDraft）でのフィルタリングが可能です。\n認証された API キーの組織に属するワークスペースのみアクセス可能です。",
@@ -10790,7 +10790,7 @@
     "/api/external/workspaces/{workspaceIdOrCode}/items/{itemNumber}": {
       "get": {
         "tags": [
-          "External"
+          "ExternalAPI"
         ],
         "summary": "指定ワークスペース内の指定アイテムを取得する",
         "description": "ワークスペースIDまたはコードとアイテム番号（ワークスペース内連番）を指定してアイテム情報を取得します。\n本文は Markdown 形式に変換されて返却されます。\n認証された API キーの組織に属するワークスペース・アイテムのみアクセス可能です。",
@@ -10858,7 +10858,7 @@
     "/api/external/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks": {
       "get": {
         "tags": [
-          "External"
+          "ExternalAPI"
         ],
         "summary": "指定ワークスペース・アイテム内のタスク一覧を取得する",
         "description": "指定されたワークスペースおよびアイテムに紐づくタスクの一覧を取得します。\n完了状態（isCompleted）や破棄状態（isDiscarded）によるフィルタリングが可能です。\n認証された API キーの組織に属するワークスペース・アイテムのみアクセス可能です。",
@@ -10942,7 +10942,7 @@
     "/api/external/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks/{sequence}": {
       "get": {
         "tags": [
-          "External"
+          "ExternalAPI"
         ],
         "summary": "指定ワークスペース・アイテム内の指定タスクを取得する",
         "description": "ワークスペースIDまたはコード、アイテム番号、タスクシーケンス番号を指定してタスク詳細を取得します。\n認証された API キーの組織に属するワークスペース・アイテム・タスクのみアクセス可能です。",
@@ -11021,7 +11021,7 @@
     "/api/external/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks/{sequence}/comments": {
       "get": {
         "tags": [
-          "External"
+          "ExternalAPI"
         ],
         "summary": "指定ワークスペース・アイテム・タスク内のコメント一覧を取得する",
         "description": "指定されたタスクに紐づく全コメントを取得します（論理削除されたコメントを除く）。\n認証された API キーの組織に属するワークスペース・アイテム・タスクのみアクセス可能です。",
@@ -28478,7 +28478,7 @@
       "name": "Profile"
     },
     {
-      "name": "External"
+      "name": "ExternalAPI"
     },
     {
       "name": "Entrance - Auth"

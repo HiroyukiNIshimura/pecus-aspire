@@ -21,7 +21,6 @@ namespace Pecus.Controllers.External;
 [Route("api/external")]
 [Authorize(AuthenticationSchemes = ApiKeyAuthenticationOptions.SchemeName)]
 [Produces("application/json")]
-[Tags("ExternalAPI")]
 public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFilter
 {
     private readonly ApplicationDbContext _context;
