@@ -54,11 +54,11 @@ sequenceDiagram
     A->>S: createSession(応答から構成したデータ)
     S->>R: セッションJSONをTTL付きで保存
     S-->>A: Cookie(sessionId)を設定
-    A-->>B: successとLoginResponseを返す
+    A-->>B: successと画面に必要なログイン情報を返す
     Note over A,B: Action応答とSet-Cookieを含むHTTP応答
 ```
 
-**現行実装上の注意:** Cookieに入れるのは`sessionId`だけですが、Actionは`return { success: true, data: response }`としてWeb API応答全体を返します。生成された[LoginResponse型](../../pecus.Frontend/src/connectors/api/pecus/models/LoginResponse.ts)にはアクセストークンとリフレッシュトークンの項目があり、Client ComponentはActionの戻り値を受け取ります。したがって、コード上はCookieとは別にAction応答にもトークン項目が含まれ得ます。「トークンはブラウザーへ送られない」というコメントとは一致しません。このページでは値を掲載しません。この実装差の修正は今回の担当範囲外です。
+**セキュリティ上の要点:** Web APIの[LoginResponse型](../../pecus.Frontend/src/connectors/api/pecus/models/LoginResponse.ts)にはアクセストークンとリフレッシュトークンが含まれますが、Server ActionはそれらをRedisセッションに保存した後、Client Componentへロール名とランディングページだけを返します。Cookieに含めるのは`sessionId`のみです。
 
 ## Server Components／Server Actionsと生成APIクライアント
 

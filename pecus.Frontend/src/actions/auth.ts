@@ -11,13 +11,18 @@ import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 import { serverError, validationError } from './types';
 
+type LoginActionData = {
+  roles: Array<Pick<RoleInfoResponse, 'name'>>;
+  landingPage: LoginResponse['landingPage'];
+};
+
 /**
  * Server Action: ログイン
  *
  * 認証成功時、Redis にセッションを作成し、Cookie には sessionId のみ保存。
- * トークンはブラウザに送信されない（Redis 内に保持）。
+ * トークンは Redis 内に保持し、Action の戻り値には画面で必要な情報だけを含める。
  */
-export async function login(input: LoginActionInput): Promise<ApiResponse<LoginResponse>> {
+export async function login(input: LoginActionInput): Promise<ApiResponse<LoginActionData>> {
   const parseResult = loginActionInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -82,9 +87,15 @@ export async function login(input: LoginActionInput): Promise<ApiResponse<LoginR
 
     await ServerSessionManager.createSession(sessionInput);
 
-    return { success: true, data: response };
+    return {
+      success: true,
+      data: {
+        roles: response.roles?.map(({ name }) => ({ name })) ?? [],
+        landingPage: response.landingPage,
+      },
+    };
   } catch (error) {
-    return handleApiErrorForAction<LoginResponse>(error, {
+    return handleApiErrorForAction<LoginActionData>(error, {
       defaultMessage: 'ログインに失敗しました',
     });
   }
