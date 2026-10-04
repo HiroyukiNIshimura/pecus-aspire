@@ -222,6 +222,13 @@ cd deploy-bluegreen/ops
 | Node Exporter | `:9100/metrics` | - |
 | Blackbox Exporter | `:9115/probe` | - |
 
+### Frontend／LexicalConverter の独自リクエストメトリクス
+
+- Frontend は Next.js Node server のHTTP request start／response finish／closeを観測します。動的な画面・APIリクエストを集計し、`/_next/static/` と一般的な静的ファイル拡張子は除外します。`/api/metrics` のscrapeリクエストも集計対象です。
+- `nextjs_http_requests_total` と `nextjs_http_request_duration_seconds` は `method`／`path`／`status` を付与します。`path` は `/`、`/api/metrics`、`/api/*`、`/_next/*`、`/*` の固定カテゴリに集約し、利用者指定のURL値をラベルにしません。`nextjs_active_connections` は応答が終了するまでの処理中リクエスト数です。切断して応答が完了しない場合は `status="aborted"` で記録します。
+- LexicalConverter は4つのLexical変換RPCをInterceptorで記録します。`lexicalconverter_grpc_requests_total` はメソッド名と `success`／`error` を記録し、`lexicalconverter_grpc_request_duration_seconds` は処理時間を観測します。変換処理が `success: false` を返す場合とRPC例外は `error` です。API Key guardで拒否されたRPCもrequest counter／duration histogramへ記録します。
+- `lexicalconverter_conversions_total` は認証を通過して変換ハンドラーへ進んだ呼び出しを、`type`（`ToHtml`、`ToMarkdown`、`ToPlainText`、`FromMarkdown`）別に数えます。変換結果が `success: false` の呼び出しも試行数として含み、認証拒否は含みません。
+
 ## 設定管理
 
 ### 重要: prometheus.yml は手動管理
@@ -249,4 +256,3 @@ AppHost での Prometheus 有効/無効化に使用:
   }
 }
 ```
-

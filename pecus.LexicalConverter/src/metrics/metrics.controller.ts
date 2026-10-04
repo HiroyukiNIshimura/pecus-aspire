@@ -30,7 +30,39 @@ const conversionCounter = new client.Counter({
   registers: [register],
 });
 
-export { grpcRequestsTotal, grpcRequestDuration, conversionCounter, register };
+const conversionMethods = new Map([
+  ['toHtml', 'ToHtml'],
+  ['toMarkdown', 'ToMarkdown'],
+  ['toPlainText', 'ToPlainText'],
+  ['fromMarkdown', 'FromMarkdown'],
+]);
+
+function getGrpcMethodLabel(handlerName: string): string | undefined {
+  return conversionMethods.get(handlerName);
+}
+
+function recordGrpcRequest(
+  method: string,
+  status: 'success' | 'error',
+  durationSeconds: number,
+): void {
+  grpcRequestsTotal.labels(method, status).inc();
+  grpcRequestDuration.labels(method).observe(durationSeconds);
+}
+
+function recordConversion(type: string): void {
+  conversionCounter.labels(type).inc();
+}
+
+export {
+  conversionCounter,
+  getGrpcMethodLabel,
+  grpcRequestDuration,
+  grpcRequestsTotal,
+  recordConversion,
+  recordGrpcRequest,
+  register,
+};
 
 @Controller()
 export class MetricsController {
