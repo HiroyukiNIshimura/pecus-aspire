@@ -99,13 +99,9 @@ migrationは新slotのAPI／Frontendを起動した後、旧slotを停止して�
 
 [pg-backup.sh](../../deploy/ops/pg-backup.sh) はbackup用ディレクトリの存在・書き込み可否を確認し、infraと[backup Compose](../../deploy/docker-compose.backup.yml)を重ねて `pgbackup` を一回実行します。Composeの処理はPostgreSQL custom format（圧縮指定あり）のdumpをUTC時刻付きファイル名で保存し、保持日数を超えた同DB名のdumpを削除します。これはDBのdumpであり、uploads等のファイル領域やDocker imageは含みません。
 
-復元については、[pg-restore.sh](../../deploy/ops/pg-restore.sh) の意図された流れは、dump一覧表示／ファイル選択、上書き確認、active app slot停止、helper起動です。しかし現行ソースには実行上の不整合があります。
+[pg-restore.sh](../../deploy/ops/pg-restore.sh) はバックアップ一覧から `.dump` を選択し、ファイル名とアーカイブを確認してから破壊的操作の確認を求めます。確認後にactive app slotを停止し、restore helperが既存接続を終了して `POSTGRES_DB` を削除・再作成し、custom formatのdumpを `pg_restore` します。バックアップは読み取り専用で `/backups` にマウントされ、接続先・DB名・資格情報は通常のCompose環境変数を使います。
 
-- scriptはCompose service `restore-helper` を呼びますが、[restore-helper Compose](../../deploy/docker-compose.restore-helper.yml) のservice名は `postgres-restore` です。
-- restore用serviceにはbackupディレクトリのvolume mountも、`pg_restore` 等の実行commandも定義されていません。
-- script内コメントの使用例や説明と、Composeの実定義も一致していません。
-
-したがって、ソースだけからはDB復元を完了できるとは確認できません。実環境での復元作業手順として利用する前に、service名・backup fileの受け渡し・復元処理の実装確認が必要です。`pg-restore.sh` は上書き確認の後、復元成功以前にactive slotを停止するため、この不整合は特に運用上重要です。
+復元対象はPostgreSQL DBのみで、uploads等のファイル領域は含みません。処理完了後もapp slotは停止したままです。また、DBの削除後に復元が失敗した場合、DBは空または部分復元の状態になり得るため、バックアップの保全と復元後の確認が必要です。
 
 ## Image snapshotとDB backupの違い
 

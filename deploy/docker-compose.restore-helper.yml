@@ -2,7 +2,7 @@ services:
   # ============================================
   # Helper for restore (pg_restore)
   # 使い方:
-  #   CONFIRM_RESTORE=YES ./scripts/pg-restore.sh /abs/path/to/file.dump
+  #   ./ops/pg-restore.sh <backup_file_name.dump>
   # ============================================
   postgres-restore:
     image: postgres:18-alpine
@@ -14,6 +14,54 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-pecusdb}
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+    volumes:
+      - ${DATA_PATH:?DATA_PATH is required}/backups/postgres:/backups:ro
+    command:
+      - sh
+      - -lc
+      - |
+        set -eu
+        backup_file="/backups/$${BACKUP_FILE:?BACKUP_FILE is required}"
+        if [ ! -f "$$backup_file" ]; then
+          echo "[Error] Backup file not found: $$backup_file" >&2
+          exit 1
+        fi
+        case "$${POSTGRES_DB}" in
+          postgres|template0|template1)
+            echo "[Error] Refusing to replace a PostgreSQL system database: $${POSTGRES_DB}" >&2
+            exit 1
+            ;;
+        esac
+
+        echo "[Info] Checking backup archive..."
+        pg_restore --list "$$backup_file" >/dev/null
+
+        echo "[Info] Terminating connections and recreating database $${POSTGRES_DB}..."
+        psql \
+          --host="$${POSTGRES_HOST}" \
+          --port="$${POSTGRES_PORT}" \
+          --username="$${POSTGRES_USER}" \
+          --dbname=template1 \
+          --set=ON_ERROR_STOP=1 \
+          --set=db_name="$${POSTGRES_DB}" \
+          --set=db_owner="$${POSTGRES_USER}" <<'SQL'
+        SELECT pg_terminate_backend(pid)
+        FROM pg_stat_activity
+        WHERE datname = :'db_name'
+          AND pid <> pg_backend_pid();
+        DROP DATABASE IF EXISTS :"db_name";
+        CREATE DATABASE :"db_name" OWNER :"db_owner";
+        SQL
+
+        echo "[Info] Restoring backup into $${POSTGRES_DB}..."
+        pg_restore \
+          --exit-on-error \
+          --host="$${POSTGRES_HOST}" \
+          --port="$${POSTGRES_PORT}" \
+          --username="$${POSTGRES_USER}" \
+          --dbname="$${POSTGRES_DB}" \
+          "$$backup_file"
+        echo "[OK] Database restore completed."
     networks:
       - pecus-network
 
