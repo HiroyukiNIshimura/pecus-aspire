@@ -24,10 +24,10 @@ export type ExternalTaskSummaryResponse = {
      * 完了日時
      */
     completedAt?: string | null;
-    completedByUser?: ExternalUserRefResponse | null;
-    discarded?: ExternalTaskDiscardedResponse | null;
+    completedByUser?: ExternalUserRefResponse;
+    discarded?: ExternalTaskDiscardedResponse;
     taskType: ExternalTaskTypeRefResponse;
-    priority?: TaskPriority | null;
+    priority?: TaskPriority;
     /**
      * 開始日時
      */

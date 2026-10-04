@@ -40,7 +40,7 @@ export type UpdateFromOccurrenceRequest = {
      * URL
      */
     url?: string | null;
-    recurrenceType?: RecurrenceType | null;
+    recurrenceType?: RecurrenceType;
     /**
      * 繰り返し間隔
      */

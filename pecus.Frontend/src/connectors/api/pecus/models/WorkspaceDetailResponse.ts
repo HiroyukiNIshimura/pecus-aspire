@@ -30,7 +30,7 @@ export type WorkspaceDetailResponse = {
      * 組織ID
      */
     organizationId?: number;
-    organization?: OrganizationInfoResponse | null;
+    organization?: OrganizationInfoResponse;
     /**
      * ジャンルID
      */
@@ -43,12 +43,12 @@ export type WorkspaceDetailResponse = {
      * ジャンルアイコン
      */
     genreIcon?: string | null;
-    mode?: WorkspaceMode | null;
+    mode?: WorkspaceMode;
     /**
      * 参加しているユーザー一覧
      */
     members?: Array<WorkspaceUserDetailResponse> | null;
-    owner?: WorkspaceDetailUserResponse | null;
+    owner?: WorkspaceDetailUserResponse;
     /**
      * 作成日時
      */

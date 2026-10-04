@@ -23,7 +23,7 @@ export type HotWorkspaceEntry = {
      * ジャンルアイコン
      */
     genreIcon?: string | null;
-    mode?: WorkspaceMode | null;
+    mode?: WorkspaceMode;
     /**
      * タスク追加数（直近）
      */

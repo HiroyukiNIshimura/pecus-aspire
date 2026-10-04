@@ -35,7 +35,7 @@ export type HotItemEntry = {
      * ジャンルアイコン
      */
     genreIcon?: string | null;
-    mode?: WorkspaceMode | null;
+    mode?: WorkspaceMode;
     /**
      * 直近のアクティビティ数
      */

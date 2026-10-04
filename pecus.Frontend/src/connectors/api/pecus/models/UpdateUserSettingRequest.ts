@@ -15,8 +15,8 @@ export type UpdateUserSettingRequest = {
      * メールを受信するかどうか（マスターフラグ）
      */
     canReceiveEmail: boolean;
-    emailNotificationMode?: EmailNotificationMode | null;
-    customEmailSettings?: EmailNotificationCustomSettings | null;
+    emailNotificationMode?: EmailNotificationMode;
+    customEmailSettings?: EmailNotificationCustomSettings;
     /**
      * メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
      */
@@ -38,8 +38,8 @@ export type UpdateUserSettingRequest = {
      * 言語設定（TODO：未使用）
      */
     language: string;
-    landingPage?: LandingPage | null;
-    focusScorePriority?: FocusScorePriority | null;
+    landingPage?: LandingPage;
+    focusScorePriority?: FocusScorePriority;
     /**
      * やることピックアップタスクの表示件数（5-20）
      */
@@ -48,7 +48,7 @@ export type UpdateUserSettingRequest = {
      * 待機中タスクの表示件数（5-20）
      */
     waitingTasksLimit: number;
-    badgeVisibility?: BadgeVisibility | null;
+    badgeVisibility?: BadgeVisibility;
     /**
      * ユーザー設定の楽観的ロック用 RowVersion
      */

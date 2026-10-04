@@ -12,7 +12,7 @@ export type CreateAgendaRequest = {
     isAllDay?: boolean;
     location?: string | null;
     url?: string | null;
-    recurrenceType?: RecurrenceType | null;
+    recurrenceType?: RecurrenceType;
     /**
      * 繰り返し間隔（例: 2週間ごと = Weekly + Interval=2）
      */

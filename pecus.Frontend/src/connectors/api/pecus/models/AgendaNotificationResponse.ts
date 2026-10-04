@@ -37,6 +37,6 @@ export type AgendaNotificationResponse = {
      * 作成日時
      */
     createdAt?: string;
-    createdBy?: UserIdentityResponse | null;
+    createdBy?: UserIdentityResponse;
 };
 

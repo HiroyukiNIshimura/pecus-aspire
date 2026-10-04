@@ -38,7 +38,7 @@ export type AdminUpdateOrganizationSettingRequest = {
      */
     generativeApiModel?: string | null;
     plan: OrganizationPlan;
-    helpNotificationTarget?: HelpNotificationTarget | null;
+    helpNotificationTarget?: HelpNotificationTarget;
     /**
      * タスク作成時に見積もりを必須とするか
      */
@@ -51,13 +51,13 @@ export type AdminUpdateOrganizationSettingRequest = {
      * ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
      */
     dashboardHelpCommentMaxCount?: number;
-    groupChatScope?: GroupChatScope | null;
-    defaultWorkspaceMode?: WorkspaceMode | null;
+    groupChatScope?: GroupChatScope;
+    defaultWorkspaceMode?: WorkspaceMode;
     /**
      * ゲーミフィケーション機能の有効/無効
      */
     gamificationEnabled?: boolean;
-    gamificationBadgeVisibility?: BadgeVisibility | null;
+    gamificationBadgeVisibility?: BadgeVisibility;
     /**
      * ユーザーによるバッジ公開範囲のオーバーライドを許可するか
      */

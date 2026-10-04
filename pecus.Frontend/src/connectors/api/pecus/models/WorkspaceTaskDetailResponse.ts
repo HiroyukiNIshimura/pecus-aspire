@@ -34,11 +34,11 @@ export type WorkspaceTaskDetailResponse = {
      */
     organizationId?: number;
     itemOwner?: UserIdentityResponse;
-    itemAssignee?: UserIdentityResponse | null;
-    itemCommitter?: UserIdentityResponse | null;
+    itemAssignee?: UserIdentityResponse;
+    itemCommitter?: UserIdentityResponse;
     assigned?: UserIdentityResponse;
     createdBy?: UserIdentityResponse;
-    completedBy?: UserIdentityResponse | null;
+    completedBy?: UserIdentityResponse;
     /**
      * タスク内容
      */
@@ -59,7 +59,7 @@ export type WorkspaceTaskDetailResponse = {
      * タスク種類アイコン（拡張子なしのファイル名）
      */
     taskTypeIcon?: string | null;
-    priority?: TaskPriority | null;
+    priority?: TaskPriority;
     /**
      * 開始日時
      */

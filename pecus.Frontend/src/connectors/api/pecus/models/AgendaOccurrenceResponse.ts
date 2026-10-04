@@ -46,7 +46,7 @@ export type AgendaOccurrenceResponse = {
      * 終日イベントか
      */
     isAllDay?: boolean;
-    recurrenceType?: RecurrenceType | null;
+    recurrenceType?: RecurrenceType;
     /**
      * この回は中止されているか
      */
@@ -63,7 +63,7 @@ export type AgendaOccurrenceResponse = {
      * 参加者数
      */
     attendeeCount?: number;
-    myAttendanceStatus?: AttendanceStatus | null;
-    createdBy?: UserIdentityResponse | null;
+    myAttendanceStatus?: AttendanceStatus;
+    createdBy?: UserIdentityResponse;
 };
 

@@ -21,7 +21,7 @@ export type TaskCommentDetailResponse = {
      * コメント内容
      */
     content?: string;
-    commentType?: TaskCommentType | null;
+    commentType?: TaskCommentType;
     /**
      * 削除済みフラグ
      */

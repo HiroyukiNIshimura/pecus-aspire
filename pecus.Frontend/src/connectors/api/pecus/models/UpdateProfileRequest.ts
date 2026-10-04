@@ -8,7 +8,7 @@ import type { AvatarType } from './AvatarType';
  */
 export type UpdateProfileRequest = {
     username?: string | null;
-    avatarType?: AvatarType | null;
+    avatarType?: AvatarType;
     userAvatarPath?: string | null;
     skillIds?: Array<number> | null;
     rowVersion: number;

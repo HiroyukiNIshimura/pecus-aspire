@@ -23,7 +23,7 @@ export type DashboardWorkspaceStatistics = {
      * ジャンルアイコン
      */
     genreIcon?: string | null;
-    mode?: WorkspaceMode | null;
+    mode?: WorkspaceMode;
     /**
      * ワークスペースの説明
      */

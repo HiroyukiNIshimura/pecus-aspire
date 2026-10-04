@@ -16,8 +16,8 @@ export type WorkspaceTaskResponse = {
      * メッセージ
      */
     message?: string;
-    workspaceTask?: WorkspaceTaskDetailResponse | null;
-    previousWorkspaceTask?: WorkspaceTaskDetailResponse | null;
+    workspaceTask?: WorkspaceTaskDetailResponse;
+    previousWorkspaceTask?: WorkspaceTaskDetailResponse;
     /**
      * 新規取得バッジ（タスク完了時のみ）
      */

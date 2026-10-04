@@ -37,7 +37,7 @@ export type MyTaskDetailResponse = {
      * ジャンル名
      */
     genreName?: string | null;
-    workspaceMode?: WorkspaceMode | null;
+    workspaceMode?: WorkspaceMode;
     /**
      * アイテムコード
      */
@@ -46,10 +46,10 @@ export type MyTaskDetailResponse = {
      * アイテム件名
      */
     itemSubject?: string | null;
-    itemOwner?: UserIdentityResponse | null;
-    itemAssignee?: UserIdentityResponse | null;
-    itemCommitter?: UserIdentityResponse | null;
-    createdBy?: UserIdentityResponse | null;
+    itemOwner?: UserIdentityResponse;
+    itemAssignee?: UserIdentityResponse;
+    itemCommitter?: UserIdentityResponse;
+    createdBy?: UserIdentityResponse;
     /**
      * 組織ID
      */
@@ -74,7 +74,7 @@ export type MyTaskDetailResponse = {
      * タスク種類アイコン（拡張子なしのファイル名）
      */
     taskTypeIcon?: string | null;
-    priority?: TaskPriority | null;
+    priority?: TaskPriority;
     /**
      * 開始日時
      */

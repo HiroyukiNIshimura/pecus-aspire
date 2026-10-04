@@ -17,6 +17,6 @@ export type ExternalTaskCommentResponse = {
      * コメント内容
      */
     content: string;
-    commentType?: TaskCommentType | null;
+    commentType?: TaskCommentType;
 };
 

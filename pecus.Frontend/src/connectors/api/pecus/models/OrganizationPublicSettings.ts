@@ -25,8 +25,8 @@ export type OrganizationPublicSettings = {
      * 先行タスクが完了しないと次のタスクを操作できないようにするか
      */
     enforcePredecessorCompletion: boolean;
-    groupChatScope?: GroupChatScope | null;
-    defaultWorkspaceMode?: WorkspaceMode | null;
+    groupChatScope?: GroupChatScope;
+    defaultWorkspaceMode?: WorkspaceMode;
     /**
      * ゲーミフィケーション機能の有効/無効
      */

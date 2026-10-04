@@ -18,7 +18,7 @@ export type ChatMessageItem = {
      * 送信者ユーザーID（AI/System メッセージの場合は null）
      */
     senderUserId?: number | null;
-    sender?: UserIdentityResponse | null;
+    sender?: UserIdentityResponse;
     messageType: ChatMessageType;
     /**
      * メッセージ内容
@@ -28,7 +28,7 @@ export type ChatMessageItem = {
      * 返信先メッセージID
      */
     replyToMessageId?: number | null;
-    replyTo?: ChatMessageReplyItem | null;
+    replyTo?: ChatMessageReplyItem;
     /**
      * メンション一覧
      */

@@ -32,7 +32,7 @@ export type MyTaskWorkspaceResponse = {
      * ジャンル名
      */
     genreName?: string | null;
-    mode?: WorkspaceMode | null;
+    mode?: WorkspaceMode;
     /**
      * 未完了タスク数
      */

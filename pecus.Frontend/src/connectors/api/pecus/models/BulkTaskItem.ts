@@ -19,7 +19,7 @@ export type BulkTaskItem = {
      * 担当ユーザーID
      */
     assignedUserId: number;
-    priority?: TaskPriority | null;
+    priority?: TaskPriority;
     /**
      * 開始日
      */

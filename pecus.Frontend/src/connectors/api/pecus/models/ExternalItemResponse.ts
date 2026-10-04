@@ -28,8 +28,8 @@ export type ExternalItemResponse = {
      */
     tags: Array<string>;
     owner: ExternalUserRefResponse;
-    assignedUser?: ExternalUserRefResponse | null;
-    committer?: ExternalUserRefResponse | null;
+    assignedUser?: ExternalUserRefResponse;
+    committer?: ExternalUserRefResponse;
     /**
      * 期限日時
      */

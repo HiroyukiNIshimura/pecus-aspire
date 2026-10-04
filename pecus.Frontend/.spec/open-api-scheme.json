@@ -10691,7 +10691,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "ApiKey": [ ]
           }
         ]
       }
@@ -10782,7 +10782,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "ApiKey": [ ]
           }
         ]
       }
@@ -10850,7 +10850,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "ApiKey": [ ]
           }
         ]
       }
@@ -10934,7 +10934,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "ApiKey": [ ]
           }
         ]
       }
@@ -11013,7 +11013,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "ApiKey": [ ]
           }
         ]
       }
@@ -11092,7 +11092,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "ApiKey": [ ]
           }
         ]
       }
@@ -15288,13 +15288,17 @@
             "nullable": true
           },
           "workspaceMode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "itemId": {
             "type": "integer",
@@ -15310,13 +15314,17 @@
             "description": "アイテム件名"
           },
           "user": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "actionType": {
             "$ref": "#/components/schemas/ActivityActionType"
@@ -15347,13 +15355,17 @@
             "format": "int32"
           },
           "workspaceRole": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "ワークスペースにユーザーを参加させるリクエスト"
@@ -15370,13 +15382,17 @@
             "format": "int32"
           },
           "relationType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/RelationType"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "ワークスペースアイテム関連追加リクエスト"
@@ -15393,13 +15409,17 @@
             "description": "メッセージ"
           },
           "relation": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceItemRelationResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "ワークスペースアイテム関連追加レスポンス"
@@ -15495,13 +15515,17 @@
             "$ref": "#/components/schemas/OrganizationPlan"
           },
           "helpNotificationTarget": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/HelpNotificationTarget"
               }
-            ],
-            "nullable": true
+            ]
           },
           "requireEstimateOnTaskCreation": {
             "type": "boolean",
@@ -15519,35 +15543,47 @@
             "format": "int32"
           },
           "groupChatScope": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/GroupChatScope"
               }
-            ],
-            "nullable": true
+            ]
           },
           "defaultWorkspaceMode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "gamificationEnabled": {
             "type": "boolean",
             "description": "ゲーミフィケーション機能の有効/無効"
           },
           "gamificationBadgeVisibility": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/BadgeVisibility"
               }
-            ],
-            "nullable": true
+            ]
           },
           "gamificationAllowUserOverride": {
             "type": "boolean",
@@ -15634,13 +15670,17 @@
             "$ref": "#/components/schemas/AttendanceStatus"
           },
           "occurrenceStatus": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/AttendanceStatus"
               }
-            ],
-            "nullable": true
+            ]
           },
           "isOptional": {
             "type": "boolean"
@@ -15655,13 +15695,17 @@
             "nullable": true
           },
           "user": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -15741,13 +15785,17 @@
             "format": "date-time"
           },
           "createdBy": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "アジェンダ例外レスポンス（特定回の中止・変更）"
@@ -15817,13 +15865,17 @@
             "format": "date-time"
           },
           "createdBy": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "アジェンダ通知レスポンス"
@@ -15898,13 +15950,17 @@
             "description": "終日イベントか"
           },
           "recurrenceType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/RecurrenceType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "isCancelled": {
             "type": "boolean",
@@ -15925,22 +15981,30 @@
             "format": "int32"
           },
           "myAttendanceStatus": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/AttendanceStatus"
               }
-            ],
-            "nullable": true
+            ]
           },
           "createdBy": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "アジェンダ展開済みオカレンス（一覧用）\n繰り返しイベントを展開した各回を表すDTO"
@@ -16021,13 +16085,17 @@
             "nullable": true
           },
           "recurrenceType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/RecurrenceType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "recurrenceInterval": {
             "type": "integer",
@@ -16083,13 +16151,17 @@
             "nullable": true
           },
           "cancelledBy": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "createdByUserId": {
             "type": "integer",
@@ -16108,13 +16180,17 @@
             "format": "uint32"
           },
           "createdBy": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "attendees": {
             "type": "array",
@@ -16473,13 +16549,17 @@
             "description": "本文（Markdown形式）"
           },
           "type": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/SystemNotificationType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "publishAt": {
             "type": "string",
@@ -16579,13 +16659,17 @@
             "description": "件名"
           },
           "type": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/SystemNotificationType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "publishAt": {
             "type": "string",
@@ -16816,13 +16900,17 @@
             "nullable": true
           },
           "type": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/SystemNotificationType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "publishAt": {
             "type": "string",
@@ -16964,13 +17052,17 @@
             "format": "int32"
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "startDate": {
             "type": "string",
@@ -17104,13 +17196,17 @@
             "nullable": true
           },
           "sender": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "messageType": {
             "$ref": "#/components/schemas/ChatMessageType"
@@ -17126,13 +17222,17 @@
             "nullable": true
           },
           "replyTo": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ChatMessageReplyItem"
               }
-            ],
-            "nullable": true
+            ]
           },
           "mentions": {
             "type": "array",
@@ -17320,22 +17420,30 @@
             "nullable": true
           },
           "otherUser": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "latestMessage": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ChatMessageItem"
               }
-            ],
-            "nullable": true
+            ]
           },
           "unreadCount": {
             "type": "integer",
@@ -17509,13 +17617,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/AgendaResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17541,13 +17653,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/OrganizationResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17573,13 +17689,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/OrganizationSettingResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17605,13 +17725,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/SkillDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17637,13 +17761,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TagDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17669,13 +17797,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskCommentDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17701,13 +17833,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17733,13 +17869,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserSettingResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17765,13 +17905,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17797,13 +17941,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceItemDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17829,13 +17977,17 @@
         "type": "object",
         "properties": {
           "current": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "statusCode": {
             "type": "integer",
@@ -17955,13 +18107,17 @@
             "nullable": true
           },
           "recurrenceType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/RecurrenceType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "recurrenceInterval": {
             "maximum": 99,
@@ -18225,13 +18381,17 @@
             "description": "コメント内容"
           },
           "commentType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskCommentType"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "タスクコメント作成リクエスト"
@@ -18285,13 +18445,17 @@
             "nullable": true
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "dueDate": {
             "type": "string",
@@ -18357,13 +18521,17 @@
             "format": "int32"
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "ownerId": {
             "maximum": 2147483647,
@@ -18403,13 +18571,17 @@
             "format": "int32"
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "startDate": {
             "type": "string",
@@ -18802,13 +18974,17 @@
             "nullable": true
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "description": {
             "type": "string",
@@ -19424,22 +19600,30 @@
             "$ref": "#/components/schemas/ExternalUserRefResponse"
           },
           "assignedUser": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ExternalUserRefResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "committer": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ExternalUserRefResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "dueDate": {
             "type": "string",
@@ -19494,22 +19678,30 @@
             "$ref": "#/components/schemas/ExternalUserRefResponse"
           },
           "assignedUser": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ExternalUserRefResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "committer": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ExternalUserRefResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "dueDate": {
             "type": "string",
@@ -19595,13 +19787,17 @@
             "description": "コメント内容"
           },
           "commentType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskCommentType"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "外部公開用タスクコメント"
@@ -19639,13 +19835,17 @@
             "$ref": "#/components/schemas/ExternalTaskTypeRefResponse"
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "startDate": {
             "type": "string",
@@ -19686,22 +19886,30 @@
             "nullable": true
           },
           "completedByUser": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ExternalUserRefResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "discarded": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ExternalTaskDiscardedResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "predecessorTasks": {
             "type": "array",
@@ -19781,34 +19989,46 @@
             "nullable": true
           },
           "completedByUser": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ExternalUserRefResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "discarded": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ExternalTaskDiscardedResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "taskType": {
             "$ref": "#/components/schemas/ExternalTaskTypeRefResponse"
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "startDate": {
             "type": "string",
@@ -20106,13 +20326,17 @@
             "nullable": true
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "dueDate": {
             "type": "string",
@@ -20141,13 +20365,17 @@
             "format": "int32"
           },
           "successorTask": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/SuccessorTaskInfo"
               }
-            ],
-            "nullable": true
+            ]
           },
           "predecessorTaskIds": {
             "type": "array",
@@ -20165,13 +20393,17 @@
             "description": "先行タスク情報リスト"
           },
           "scoreDetail": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskScoreDetail"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "やることピックアップタスクレスポンス"
@@ -20713,13 +20945,17 @@
             "nullable": true
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "activityCount": {
             "type": "integer",
@@ -20789,13 +21025,17 @@
             "nullable": true
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "taskAddedCount": {
             "type": "integer",
@@ -21025,13 +21265,17 @@
             "description": "メールアドレス"
           },
           "avatarType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/AvatarType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "identityIconUrl": {
             "type": "string",
@@ -21057,22 +21301,30 @@
             "nullable": true
           },
           "device": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LoginDeviceInfo"
               }
-            ],
-            "nullable": true
+            ]
           },
           "landingPage": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LandingPage"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "ログインレスポンス"
@@ -21256,13 +21508,17 @@
             "nullable": true
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "itemCount": {
             "type": "integer",
@@ -21357,13 +21613,17 @@
             "nullable": true
           },
           "workspaceMode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "itemCode": {
             "type": "string",
@@ -21376,40 +21636,56 @@
             "nullable": true
           },
           "itemOwner": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "itemAssignee": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "itemCommitter": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "createdBy": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "organizationId": {
             "type": "integer",
@@ -21441,13 +21717,17 @@
             "nullable": true
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "startDate": {
             "type": "string",
@@ -21567,13 +21847,17 @@
             "nullable": true
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "activeTaskCount": {
             "type": "integer",
@@ -21775,22 +22059,30 @@
             "description": "先行タスクが完了しないと次のタスクを操作できないようにするか"
           },
           "groupChatScope": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/GroupChatScope"
               }
-            ],
-            "nullable": true
+            ]
           },
           "defaultWorkspaceMode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "gamificationEnabled": {
             "type": "boolean",
@@ -21878,13 +22170,17 @@
             "format": "uint32"
           },
           "setting": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/OrganizationSettingResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "組織情報レスポンス"
@@ -21945,13 +22241,17 @@
             "$ref": "#/components/schemas/OrganizationPlan"
           },
           "helpNotificationTarget": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/HelpNotificationTarget"
               }
-            ],
-            "nullable": true
+            ]
           },
           "requireEstimateOnTaskCreation": {
             "type": "boolean",
@@ -21967,22 +22267,30 @@
             "format": "int32"
           },
           "groupChatScope": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/GroupChatScope"
               }
-            ],
-            "nullable": true
+            ]
           },
           "defaultWorkspaceMode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "gamificationEnabled": {
             "type": "boolean",
@@ -22218,13 +22526,17 @@
         "type": "object",
         "properties": {
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceTaskStatistics"
               }
-            ],
-            "nullable": true
+            ]
           },
           "data": {
             "type": "array",
@@ -22315,13 +22627,17 @@
         "type": "object",
         "properties": {
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/SkillStatistics"
               }
-            ],
-            "nullable": true
+            ]
           },
           "data": {
             "type": "array",
@@ -22368,13 +22684,17 @@
         "type": "object",
         "properties": {
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TagStatistics"
               }
-            ],
-            "nullable": true
+            ]
           },
           "data": {
             "type": "array",
@@ -22465,13 +22785,17 @@
         "type": "object",
         "properties": {
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserStatistics"
               }
-            ],
-            "nullable": true
+            ]
           },
           "data": {
             "type": "array",
@@ -22562,13 +22886,17 @@
         "type": "object",
         "properties": {
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceItemStatistics"
               }
-            ],
-            "nullable": true
+            ]
           },
           "data": {
             "type": "array",
@@ -22659,13 +22987,17 @@
         "type": "object",
         "properties": {
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceStatistics"
               }
-            ],
-            "nullable": true
+            ]
           },
           "data": {
             "type": "array",
@@ -22712,13 +23044,17 @@
         "type": "object",
         "properties": {
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceTaskStatistics"
               }
-            ],
-            "nullable": true
+            ]
           },
           "data": {
             "type": "array",
@@ -22958,13 +23294,17 @@
         "type": "object",
         "properties": {
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "count": {
             "type": "integer",
@@ -23067,22 +23407,30 @@
             "nullable": true
           },
           "deviceType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/DeviceType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "os": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/OSPlatform"
               }
-            ],
-            "nullable": true
+            ]
           },
           "userAgent": {
             "maxLength": 200,
@@ -23181,13 +23529,17 @@
             "description": "コード"
           },
           "relationType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/RelationType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "direction": {
             "type": "string",
@@ -23403,13 +23755,17 @@
             "description": "メッセージ内容"
           },
           "messageType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ChatMessageType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "replyToMessageId": {
             "type": "integer",
@@ -23647,13 +24003,17 @@
             "description": "メッセージ"
           },
           "skill": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/SkillDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "スキルレスポンス"
@@ -23828,13 +24188,17 @@
             "nullable": true
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -23986,13 +24350,17 @@
             "description": "メッセージ"
           },
           "tag": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TagDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "タグレスポンス"
@@ -24083,13 +24451,17 @@
             "description": "コメント内容"
           },
           "commentType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskCommentType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "isDeleted": {
             "type": "boolean",
@@ -24131,13 +24503,17 @@
             "description": "メッセージ"
           },
           "taskComment": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskCommentDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "タスクコメント操作レスポンス"
@@ -24263,13 +24639,17 @@
             "nullable": true
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "dueDate": {
             "type": "string",
@@ -24294,13 +24674,17 @@
             "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "completedBy": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "canStart": {
             "type": "boolean",
@@ -24315,13 +24699,17 @@
             "description": "先行タスクID配列"
           },
           "predecessorTask": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskFlowPredecessorInfo"
               }
-            ],
-            "nullable": true
+            ]
           },
           "successorCount": {
             "type": "integer",
@@ -24477,13 +24865,17 @@
             "nullable": true
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "code": {
             "type": "string",
@@ -24497,31 +24889,43 @@
             "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "assignee": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "committer": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "dueDate": {
             "type": "string",
@@ -24707,13 +25111,17 @@
             "nullable": true
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "startDate": {
             "type": "string",
@@ -24792,22 +25200,30 @@
             "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "itemAssignee": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "itemCommitter": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "commentTypeCounts": {
             "type": "object",
@@ -24957,13 +25373,17 @@
             "nullable": true
           },
           "recurrenceType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/RecurrenceType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "recurrenceInterval": {
             "maximum": 99,
@@ -25080,13 +25500,17 @@
             "nullable": true
           },
           "recurrenceType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/RecurrenceType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "recurrenceInterval": {
             "maximum": 365,
@@ -25234,13 +25658,17 @@
             "nullable": true
           },
           "avatarType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/AvatarType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "userAvatarPath": {
             "maxLength": 200,
@@ -25400,22 +25828,30 @@
             "description": "メールを受信するかどうか（マスターフラグ）"
           },
           "emailNotificationMode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/EmailNotificationMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "customEmailSettings": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/EmailNotificationCustomSettings"
               }
-            ],
-            "nullable": true
+            ]
           },
           "emailWorkspaceIds": {
             "type": "array",
@@ -25443,22 +25879,30 @@
             "description": "言語設定（TODO：未使用）"
           },
           "landingPage": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LandingPage"
               }
-            ],
-            "nullable": true
+            ]
           },
           "focusScorePriority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/FocusScorePriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "focusTasksLimit": {
             "maximum": 20,
@@ -25475,13 +25919,17 @@
             "format": "int32"
           },
           "badgeVisibility": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/BadgeVisibility"
               }
-            ],
-            "nullable": true
+            ]
           },
           "rowVersion": {
             "type": "integer",
@@ -25520,10 +25968,15 @@
           "value": {
             "oneOf": [
               {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
+              {
                 "$ref": "#/components/schemas/JsonElement"
               }
-            ],
-            "nullable": true
+            ]
           },
           "rowVersion": {
             "type": "integer",
@@ -25557,13 +26010,17 @@
             "nullable": true
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "dueDate": {
             "type": "string",
@@ -25709,13 +26166,17 @@
             "nullable": true
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "startDate": {
             "type": "string",
@@ -25896,13 +26357,17 @@
             "description": "メールアドレス"
           },
           "avatarType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/AvatarType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "userAvatarPath": {
             "type": "string",
@@ -25957,13 +26422,17 @@
             "format": "uint32"
           },
           "setting": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserSettingResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "ユーザー詳細レスポンス"
@@ -26026,22 +26495,30 @@
             "description": "リアルタイム通知の可否"
           },
           "landingPage": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LandingPage"
               }
-            ],
-            "nullable": true
+            ]
           },
           "focusScorePriority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/FocusScorePriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "focusTasksLimit": {
             "type": "integer",
@@ -26054,22 +26531,30 @@
             "format": "int32"
           },
           "badgeVisibility": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/BadgeVisibility"
               }
-            ],
-            "nullable": true
+            ]
           },
           "pendingLandingPageRecommendation": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LandingPage"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "ユーザーの公開設定"
@@ -26113,13 +26598,17 @@
             "description": "メールアドレス"
           },
           "avatarType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/AvatarType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "identityIconUrl": {
             "type": "string",
@@ -26171,13 +26660,17 @@
             "description": "メール受信の可否"
           },
           "emailNotificationMode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/EmailNotificationMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "customEmailSettings": {
             "$ref": "#/components/schemas/EmailNotificationCustomSettings"
@@ -26208,22 +26701,30 @@
             "description": "言語設定（TODO：未使用）"
           },
           "landingPage": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LandingPage"
               }
-            ],
-            "nullable": true
+            ]
           },
           "focusScorePriority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/FocusScorePriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "focusTasksLimit": {
             "maximum": 20,
@@ -26240,22 +26741,30 @@
             "format": "int32"
           },
           "badgeVisibility": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/BadgeVisibility"
               }
-            ],
-            "nullable": true
+            ]
           },
           "pendingLandingPageRecommendation": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LandingPage"
               }
-            ],
-            "nullable": true
+            ]
           },
           "landingPageUpdatedAt": {
             "type": "string",
@@ -26543,13 +27052,17 @@
             "format": "int32"
           },
           "organization": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/OrganizationInfoResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "genreId": {
             "type": "integer",
@@ -26568,13 +27081,17 @@
             "nullable": true
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "members": {
             "type": "array",
@@ -26585,13 +27102,17 @@
             "nullable": true
           },
           "owner": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -26651,13 +27172,17 @@
             "nullable": true
           },
           "workspaceRole": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
-            ],
-            "nullable": true
+            ]
           },
           "isActive": {
             "type": "boolean",
@@ -26727,13 +27252,17 @@
             "description": "メンバー一覧"
           },
           "owner": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -26757,22 +27286,30 @@
             "description": "アクティブフラグ"
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "currentUserRole": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
-            ],
-            "nullable": true
+            ]
           },
           "skills": {
             "type": "array",
@@ -26847,13 +27384,17 @@
             "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "task": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceItemAttachmentTask"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "ワークスペースアイテム添付ファイルレスポンス"
@@ -26914,13 +27455,17 @@
             "nullable": true
           },
           "workspaceMode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "code": {
             "type": "string",
@@ -26939,31 +27484,43 @@
             "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "assignee": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "committer": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "dueDate": {
             "type": "string",
@@ -27058,13 +27615,17 @@
             "description": "関連先アイテム件名"
           },
           "relationType": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/RelationType"
               }
-            ],
-            "nullable": true
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -27120,13 +27681,17 @@
             "description": "メッセージ"
           },
           "workspaceItem": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceItemDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "ワークスペースアイテム操作レスポンス"
@@ -27197,13 +27762,17 @@
             "nullable": true
           },
           "mode": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
-            ],
-            "nullable": true
+            ]
           },
           "activeItemCount": {
             "type": "integer",
@@ -27239,13 +27808,17 @@
             "nullable": true
           },
           "owner": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceUserItem"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "description": "ワークスペースリストアイテムレスポンス"
@@ -27418,22 +27991,30 @@
             "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "itemAssignee": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "itemCommitter": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "assigned": {
             "$ref": "#/components/schemas/UserIdentityResponse"
@@ -27442,13 +28023,17 @@
             "$ref": "#/components/schemas/UserIdentityResponse"
           },
           "completedBy": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/UserIdentityResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "content": {
             "type": "string",
@@ -27475,13 +28060,17 @@
             "nullable": true
           },
           "priority": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TaskPriority"
               }
-            ],
-            "nullable": true
+            ]
           },
           "startDate": {
             "type": "string",
@@ -27599,22 +28188,30 @@
             "description": "メッセージ"
           },
           "workspaceTask": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "previousWorkspaceTask": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "newAchievements": {
             "type": "array",
@@ -27703,13 +28300,17 @@
             "description": "メールアドレス"
           },
           "workspaceRole": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
-            ],
-            "nullable": true
+            ]
           },
           "joinedAt": {
             "type": "string",
@@ -27759,13 +28360,17 @@
             "description": "メールアドレス"
           },
           "workspaceRole": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
-            ],
-            "nullable": true
+            ]
           },
           "lastLoginAt": {
             "type": "string",
@@ -27802,6 +28407,12 @@
         "description": "JWT Authorization header using the Bearer scheme.",
         "scheme": "bearer",
         "bearerFormat": "JWT"
+      },
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "External API key sent in the X-API-KEY header.",
+        "name": "X-API-KEY",
+        "in": "header"
       }
     }
   },

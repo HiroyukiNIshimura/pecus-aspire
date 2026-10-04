@@ -26,7 +26,7 @@ export type TaskItemResponse = {
      * ジャンル名
      */
     genreName?: string | null;
-    mode?: WorkspaceMode | null;
+    mode?: WorkspaceMode;
     /**
      * コード
      */
@@ -36,9 +36,9 @@ export type TaskItemResponse = {
      */
     subject?: string;
     owner?: UserIdentityResponse;
-    assignee?: UserIdentityResponse | null;
-    committer?: UserIdentityResponse | null;
-    priority?: TaskPriority | null;
+    assignee?: UserIdentityResponse;
+    committer?: UserIdentityResponse;
+    priority?: TaskPriority;
     /**
      * 期限日時
      */

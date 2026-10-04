@@ -15,7 +15,7 @@ export type UserSettingResponse = {
      * メール受信の可否
      */
     canReceiveEmail: boolean;
-    emailNotificationMode?: EmailNotificationMode | null;
+    emailNotificationMode?: EmailNotificationMode;
     customEmailSettings?: EmailNotificationCustomSettings;
     /**
      * メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
@@ -38,8 +38,8 @@ export type UserSettingResponse = {
      * 言語設定（TODO：未使用）
      */
     language: string;
-    landingPage?: LandingPage | null;
-    focusScorePriority?: FocusScorePriority | null;
+    landingPage?: LandingPage;
+    focusScorePriority?: FocusScorePriority;
     /**
      * やることピックアップタスクの表示件数（5-20）
      */
@@ -48,8 +48,8 @@ export type UserSettingResponse = {
      * 待機中タスクの表示件数（5-20）
      */
     waitingTasksLimit: number;
-    badgeVisibility?: BadgeVisibility | null;
-    pendingLandingPageRecommendation?: LandingPage | null;
+    badgeVisibility?: BadgeVisibility;
+    pendingLandingPageRecommendation?: LandingPage;
     /**
      * ユーザーが最後にランディングページ設定を変更した日時
      */

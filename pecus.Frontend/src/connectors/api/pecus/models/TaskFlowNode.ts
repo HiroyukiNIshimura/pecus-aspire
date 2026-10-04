@@ -33,7 +33,7 @@ export type TaskFlowNode = {
      * タスク種類アイコン
      */
     taskTypeIcon?: string | null;
-    priority?: TaskPriority | null;
+    priority?: TaskPriority;
     /**
      * 期限日時
      */
@@ -51,7 +51,7 @@ export type TaskFlowNode = {
      */
     isDiscarded: boolean;
     assigned?: UserIdentityResponse;
-    completedBy?: UserIdentityResponse | null;
+    completedBy?: UserIdentityResponse;
     /**
      * 着手可能か（先行タスクなし or 完了済み、かつ自身が未完了・未破棄）
      */
@@ -60,7 +60,7 @@ export type TaskFlowNode = {
      * 先行タスクID配列
      */
     predecessorTaskIds?: Array<number>;
-    predecessorTask?: TaskFlowPredecessorInfo | null;
+    predecessorTask?: TaskFlowPredecessorInfo;
     /**
      * 後続タスク数
      */

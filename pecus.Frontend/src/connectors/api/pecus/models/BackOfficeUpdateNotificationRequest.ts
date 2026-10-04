@@ -15,7 +15,7 @@ export type BackOfficeUpdateNotificationRequest = {
      * 本文（Markdown形式）
      */
     body?: string | null;
-    type?: SystemNotificationType | null;
+    type?: SystemNotificationType;
     /**
      * 公開開始日時
      */

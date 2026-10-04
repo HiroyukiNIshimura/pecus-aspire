@@ -395,8 +395,8 @@ builder.Services.AddOpenApi("v1", options =>
         return Task.CompletedTask;
     });
 
-    // JWT Bearer認証のセキュリティスキーム設定
-    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    // JWT Bearer／External API Key認証のスキーム登録とoperationごとの要件設定
+    options.AddDocumentTransformer<ApiSecuritySchemeTransformer>();
 
     // 整数型を integer のみに統一（integer | string のユニオン型を防止）
     options.AddSchemaTransformer<IntegerSchemaTransformer>();
