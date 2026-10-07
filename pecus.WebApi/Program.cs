@@ -1,6 +1,7 @@
 ﻿using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -383,6 +384,8 @@ builder.Services.AddOpenApi("v1", options =>
 {
     //本プロジェクトでは恒久的に変更禁止
     options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+    options.ShouldInclude = description =>
+        description.GroupName is null or "external" or "v1";
 
     options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
@@ -402,6 +405,27 @@ builder.Services.AddOpenApi("v1", options =>
     options.AddSchemaTransformer<IntegerSchemaTransformer>();
 
     // Enum を文字列として出力
+    options.AddSchemaTransformer<EnumSchemaTransformer>();
+});
+
+builder.Services.AddOpenApi("openapi", options =>
+{
+    options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+    options.ShouldInclude = description => description.GroupName == "external";
+
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info = new OpenApiInfo
+        {
+            Title = $"{pecusConfig.Application.Name} External API",
+            Version = pecusConfig.Application.Version,
+            Description = "External API schema.",
+        };
+        return Task.CompletedTask;
+    });
+
+    options.AddDocumentTransformer<ApiSecuritySchemeTransformer>();
+    options.AddSchemaTransformer<IntegerSchemaTransformer>();
     options.AddSchemaTransformer<EnumSchemaTransformer>();
 });
 
@@ -436,6 +460,12 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = string.Empty;
     });
 }
+
+app.MapOpenApi("/api/external/{documentName:regex(^openapi$)}.json")
+    .RequireAuthorization(new AuthorizeAttribute
+    {
+        AuthenticationSchemes = ApiKeyAuthenticationOptions.SchemeName,
+    });
 
 app.UseHttpLogging();
 app.UseHttpsRedirection();

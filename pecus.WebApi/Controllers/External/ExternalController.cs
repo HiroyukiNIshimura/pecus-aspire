@@ -16,6 +16,7 @@ namespace Pecus.Controllers.External;
 /// 組織スコープで動作し、認証されたキーの所属組織のデータのみアクセス可能です。
 /// /// </remarks>
 [Tags("ExternalAPI")]
+[ApiExplorerSettings(GroupName = "external")]
 public class ExternalController : BaseExternalApiController
 {
     private readonly IExternalWorkspaceItemService _externalWorkspaceItemService;

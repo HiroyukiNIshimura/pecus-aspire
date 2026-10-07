@@ -14,7 +14,7 @@
 
 `Program.cs` はAspire接続名から`ApplicationDbContext`を登録し、ドメインサービス、認証関連サービス、SignalR Hub、バックグラウンドサービスなどをDIへ登録します。認証はJWT Bearerを既定のauthenticate／challenge schemeとし、別schemeとして`ApiKey`も登録します。Controllerには`GlobalExceptionFilter`、`ValidationFilter`、および引数なしのグローバル`AuthorizeFilter`が追加されています。[`Program.cs`](../../pecus.WebApi/Program.cs)
 
-構築後の主な順序は、HTTP logging・HTTPSリダイレクト、開発環境でのCORS、認証、認可、ControllerとHubのマッピングです。OpenAPI JSONとSwagger UIも開発環境でのみマッピングされます。Hubは`/hubs/notifications`に公開され、Hub自身にも`[Authorize]`があります。[`Program.cs`](../../pecus.WebApi/Program.cs) [`NotificationHub.cs`](../../pecus.WebApi/Hubs/NotificationHub.cs)
+構築後の主な順序は、HTTP logging・HTTPSリダイレクト、開発環境でのCORS、認証、認可、ControllerとHubのマッピングです。全API向けのOpenAPI JSONとSwagger UIは開発環境でのみマッピングされます。外部API専用OpenAPI JSONは`/api/external/openapi.json`で全環境にマッピングされ、API Key認証が必要です。Hubは`/hubs/notifications`に公開され、Hub自身にも`[Authorize]`があります。[`Program.cs`](../../pecus.WebApi/Program.cs) [`NotificationHub.cs`](../../pecus.WebApi/Hubs/NotificationHub.cs)
 
 ### JWT、SignalR、API Keyの境界
 
@@ -29,6 +29,8 @@
 認証済みであることと、特定ワークスペースで操作できることは別の判定です。`OrganizationAccessHelper`はユーザーの所属組織とワークスペースの組織・有効状態を照合します。編集権限チェックではワークスペースメンバーのロールも確認し、アクセス不可は404、Viewerの編集操作は403にします。たとえば`WorkspaceItemController`は読取時にアクセス可否を、更新時に編集権限を確認してからサービスを呼びます。[`WorkspaceAccessHelper.cs`](../../pecus.WebApi/Libs/WorkspaceAccessHelper.cs) [`WorkspaceItemController.cs`](../../pecus.WebApi/Controllers/WorkspaceItemController.cs)
 
 External API側は`BaseExternalApiController`を継承し、`[Authorize(AuthenticationSchemes = ApiKeyAuthenticationOptions.SchemeName)]`を指定します。アクション前に認証principalのAPI Key ID・組織IDを読み、DBからキーと組織を取得して`CurrentApiKey`等を設定します。`ExternalController`はこれらの組織IDを外部サービス呼び出しへ渡します。サービス内部の全クエリ条件まではここでは説明しません。[`BaseExternalApiController.cs`](../../pecus.WebApi/Controllers/External/BaseExternalApiController.cs) [`ExternalController.cs`](../../pecus.WebApi/Controllers/External/ExternalController.cs) [`ApiKeyAuthenticationOptions`／handler](../../pecus.WebApi/Authentication/ApiKeyAuthenticationHandler.cs)
+
+外部API専用OpenAPI文書は`ExternalController`のAPI Explorerグループから生成され、外部API操作だけを含みます。JSON取得ルートにも`ApiKey`認証schemeが適用され、スキーマ内の各外部API操作は`X-API-KEY`認証として記述されます。[`ExternalController.cs`](../../pecus.WebApi/Controllers/External/ExternalController.cs) [`ApiSecuritySchemeTransformer.cs`](../../pecus.WebApi/OpenApi/ApiSecuritySchemeTransformer.cs) [`Program.cs`](../../pecus.WebApi/Program.cs)
 
 ### 検証と例外からHTTP応答への変換
 
