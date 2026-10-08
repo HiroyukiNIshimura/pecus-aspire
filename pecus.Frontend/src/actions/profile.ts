@@ -416,7 +416,7 @@ export async function updateUserSetting(input: UpdateUserSettingInput): Promise<
     const response = await api.profile.putApiProfileSetting({
       canReceiveEmail: parseResult.data.canReceiveEmail,
       emailNotificationMode: parseResult.data.emailNotificationMode,
-      customEmailSettings: parseResult.data.customEmailSettings,
+      customEmailSettings: parseResult.data.customEmailSettings ?? undefined,
       emailWorkspaceIds: parseResult.data.emailWorkspaceIds,
       canReceiveWeeklyReport: parseResult.data.canReceiveWeeklyReport,
       canReceiveRealtimeNotification: parseResult.data.canReceiveRealtimeNotification,

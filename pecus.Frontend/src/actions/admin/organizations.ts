@@ -96,6 +96,7 @@ export async function updateOrganizationSetting(
       helpNotificationTarget: parseResult.data.helpNotificationTarget ?? undefined,
       groupChatScope: parseResult.data.groupChatScope ?? undefined,
       defaultWorkspaceMode: parseResult.data.defaultWorkspaceMode ?? undefined,
+      gamificationBadgeVisibility: parseResult.data.gamificationBadgeVisibility ?? undefined,
     };
 
     const response = await api.adminOrganization.putApiAdminOrganizationSetting(payload);
