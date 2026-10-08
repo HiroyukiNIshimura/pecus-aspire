@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from 'react';
 
+export type ExternalApiKeyRoleOption = 'ReadOnly' | 'FullAccess';
+
 interface Props {
   isOpen: boolean;
   isSubmitting: boolean;
-  onConfirm: (name: string, expirationDays?: number) => void;
+  onConfirm: (name: string, role: ExternalApiKeyRoleOption, expirationDays?: number) => void;
   onClose: () => void;
 }
 
 export default function CreateApiKeyModal({ isOpen, isSubmitting, onConfirm, onClose }: Props) {
   const [name, setName] = useState('');
+  const [role, setRole] = useState<ExternalApiKeyRoleOption>('ReadOnly');
   const [expirationDays, setExpirationDays] = useState<number>(365);
 
   // body スクロール制御
@@ -27,6 +30,7 @@ export default function CreateApiKeyModal({ isOpen, isSubmitting, onConfirm, onC
   useEffect(() => {
     if (isOpen) {
       setName('');
+      setRole('ReadOnly');
       setExpirationDays(365);
     }
   }, [isOpen]);
@@ -35,7 +39,7 @@ export default function CreateApiKeyModal({ isOpen, isSubmitting, onConfirm, onC
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onConfirm(name.trim(), expirationDays);
+    onConfirm(name.trim(), role, expirationDays);
   };
 
   return (
@@ -83,6 +87,28 @@ export default function CreateApiKeyModal({ isOpen, isSubmitting, onConfirm, onC
                   onChange={(e) => setName(e.target.value)}
                   disabled={isSubmitting}
                 />
+              </div>
+
+              <div className="form-control">
+                <label htmlFor="api-key-role" className="label">
+                  <span className="label-text font-semibold">
+                    ロール <span className="text-error">*</span>
+                  </span>
+                </label>
+                <select
+                  id="api-key-role"
+                  className="select select-bordered w-full"
+                  required
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as ExternalApiKeyRoleOption)}
+                  disabled={isSubmitting}
+                >
+                  <option value="ReadOnly">読み取り専用 (ReadOnly)</option>
+                  <option value="FullAccess">フルアクセス (FullAccess)</option>
+                </select>
+                <p className="label label-text-alt text-base-content/60">
+                  読み取り専用は参照系APIのみ利用できます。フルアクセスは全てのAPIを利用できます。
+                </p>
               </div>
 
               <div className="form-control">

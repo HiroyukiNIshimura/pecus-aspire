@@ -8,7 +8,7 @@ import type { CreateExternalApiKeyResponse, ExternalApiKeyResponse } from '@/con
 import { useNotify } from '@/hooks/useNotify';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import ApiKeyTable from './ApiKeyTable';
-import CreateApiKeyModal from './CreateApiKeyModal';
+import CreateApiKeyModal, { type ExternalApiKeyRoleOption } from './CreateApiKeyModal';
 import RawKeyModal from './RawKeyModal';
 import RevokeApiKeyModal from './RevokeApiKeyModal';
 
@@ -28,10 +28,10 @@ export default function AdminApiKeysClient({ initialKeys }: Props) {
   const [createdKey, setCreatedKey] = useState<CreateExternalApiKeyResponse | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<ExternalApiKeyResponse | null>(null);
 
-  const handleCreate = async (name: string, expirationDays?: number) => {
+  const handleCreate = async (name: string, role: ExternalApiKeyRoleOption, expirationDays?: number) => {
     setIsSubmitting(true);
     try {
-      const result = await createExternalApiKey({ name, expirationDays });
+      const result = await createExternalApiKey({ name, role, expirationDays });
       if (!result.success) {
         notify.error(result.message);
         return;
@@ -44,6 +44,7 @@ export default function AdminApiKeysClient({ initialKeys }: Props) {
           id: result.data.id,
           name: result.data.name,
           keyPrefix: result.data.keyPrefix,
+          role: result.data.role,
           expiresAt: result.data.expiresAt,
           isRevoked: false,
           createdByUserId: 0,

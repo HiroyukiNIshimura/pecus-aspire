@@ -105,6 +105,26 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
 
             CurrentOrganization = CurrentApiKey.Organization;
 
+            // ロールによるガードレール（属性なし・ロール未設定・権限不足は403）
+            var descriptor = context.ActionDescriptor as Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor;
+            var accessAttribute = descriptor?.MethodInfo.GetCustomAttributes(typeof(ExternalApiAccessAttribute), true)
+                .Cast<ExternalApiAccessAttribute>().FirstOrDefault()
+                ?? descriptor?.ControllerTypeInfo.GetCustomAttributes(typeof(ExternalApiAccessAttribute), true)
+                .Cast<ExternalApiAccessAttribute>().FirstOrDefault();
+
+            if (accessAttribute is null || !accessAttribute.IsSatisfiedBy(CurrentApiKey.Role))
+            {
+                _logger.LogWarning(
+                    "ExternalAPI Forbidden: ApiKeyId={ApiKeyId} KeyRole={KeyRole} Required={Required} Path={Path} IP={IP}",
+                    CurrentApiKeyId,
+                    CurrentApiKey.Role?.ToString() ?? "(none)",
+                    accessAttribute?.RequiredRole.ToString() ?? "(no attribute)",
+                    context.HttpContext.Request.Path,
+                    ipAddress);
+                context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+                return;
+            }
+
             // リクエストログ（構造化ログ）
             _logger.LogInformation(
                 "ExternalAPI Request: {Method} {Path} | ApiKeyId={ApiKeyId} OrgCode={OrgCode} KeyName={KeyName} IP={IP}",

@@ -49,6 +49,7 @@ export async function createExternalApiKey(
     const api = createPecusApiClients();
     const request: CreateExternalApiKeyRequest = {
       name: parseResult.data.name,
+      role: parseResult.data.role,
       expirationDays: parseResult.data.expirationDays,
     };
     const response = await api.adminExternalApiKeys.postApiAdminExternalApiKeys(request);

@@ -1,4 +1,6 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.ExternalApiKey;
 
@@ -37,6 +39,13 @@ public class CreateExternalApiKeyResponse
     /// </summary>
     [Required]
     public required DateTimeOffset ExpiresAt { get; set; }
+
+    /// <summary>
+    /// APIキーのロール
+    /// </summary>
+    [Required]
+    [JsonConverter(typeof(JsonStringEnumConverter<ExternalApiKeyRole>))]
+    public required ExternalApiKeyRole Role { get; set; }
 
     /// <summary>
     /// 作成日時

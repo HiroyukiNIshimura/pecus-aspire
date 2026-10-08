@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ExternalApiKeyRole } from './ExternalApiKeyRole';
 /**
  * APIキー発行直後のレスポンス。
  * 平文キー（RawKey）はこの応答でのみ取得可能。
@@ -27,6 +28,7 @@ export type CreateExternalApiKeyResponse = {
      * 有効期限
      */
     expiresAt: string;
+    role: ExternalApiKeyRole;
     /**
      * 作成日時
      */

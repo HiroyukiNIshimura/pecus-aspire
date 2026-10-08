@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Authentication;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Requests.External;
 using Pecus.Models.Responses.External;
 using Pecus.Services;
@@ -40,10 +42,12 @@ public class ExternalController : BaseExternalApiController
     /// 受け取ったメッセージをそのまま返却します。
     /// APIキー認証の疎通確認に使用してください。
     /// </remarks>
+    [ExternalApiAccess(ExternalApiKeyRole.ReadOnly)]
     [HttpPost("ping")]
     [ProducesResponseType(typeof(PingResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public Ok<PingResponse> Ping([FromBody] PingRequest request)
     {
         return TypedResults.Ok(new PingResponse
@@ -72,9 +76,11 @@ public class ExternalController : BaseExternalApiController
     /// <response code="200">アイテム一覧の取得に成功</response>
     /// <response code="401">認証エラー</response>
     /// <response code="404">ワークスペースが見つからない</response>
+    [ExternalApiAccess(ExternalApiKeyRole.ReadOnly)]
     [HttpGet("workspaces/{workspaceIdOrCode}/items")]
     [ProducesResponseType(typeof(ExternalItemListResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Ok<ExternalItemListResponse>> GetWorkspaceItems(
         [FromRoute] string workspaceIdOrCode,
@@ -111,9 +117,11 @@ public class ExternalController : BaseExternalApiController
     /// <response code="200">アイテムの取得に成功</response>
     /// <response code="401">認証エラー</response>
     /// <response code="404">ワークスペースまたはアイテムが見つからない</response>
+    [ExternalApiAccess(ExternalApiKeyRole.ReadOnly)]
     [HttpGet("workspaces/{workspaceIdOrCode}/items/{itemNumber:int}")]
     [ProducesResponseType(typeof(ExternalItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Ok<ExternalItemResponse>> GetWorkspaceItem(
         [FromRoute] string workspaceIdOrCode,
@@ -146,9 +154,11 @@ public class ExternalController : BaseExternalApiController
     /// <response code="200">タスク一覧の取得に成功</response>
     /// <response code="401">認証エラー</response>
     /// <response code="404">ワークスペースまたはアイテムが見つからない</response>
+    [ExternalApiAccess(ExternalApiKeyRole.ReadOnly)]
     [HttpGet("workspaces/{workspaceIdOrCode}/items/{itemNumber:int}/tasks")]
     [ProducesResponseType(typeof(ExternalWorkspaceTaskListResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Ok<ExternalWorkspaceTaskListResponse>> GetWorkspaceTasks(
         [FromRoute] string workspaceIdOrCode,
@@ -183,9 +193,11 @@ public class ExternalController : BaseExternalApiController
     /// <response code="200">タスクの取得に成功</response>
     /// <response code="401">認証エラー</response>
     /// <response code="404">ワークスペース、アイテム、またはタスクが見つからない</response>
+    [ExternalApiAccess(ExternalApiKeyRole.ReadOnly)]
     [HttpGet("workspaces/{workspaceIdOrCode}/items/{itemNumber:int}/tasks/{sequence:int}")]
     [ProducesResponseType(typeof(ExternalWorkspaceTaskDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Ok<ExternalWorkspaceTaskDetailResponse>> GetWorkspaceTask(
         [FromRoute] string workspaceIdOrCode,
@@ -218,9 +230,11 @@ public class ExternalController : BaseExternalApiController
     /// <response code="200">タスクコメント一覧の取得に成功</response>
     /// <response code="401">認証エラー</response>
     /// <response code="404">ワークスペース、アイテム、またはタスクが見つからない</response>
+    [ExternalApiAccess(ExternalApiKeyRole.ReadOnly)]
     [HttpGet("workspaces/{workspaceIdOrCode}/items/{itemNumber:int}/tasks/{sequence:int}/comments")]
     [ProducesResponseType(typeof(ExternalTaskCommentListResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Ok<ExternalTaskCommentListResponse>> GetWorkspaceTaskComments(
         [FromRoute] string workspaceIdOrCode,

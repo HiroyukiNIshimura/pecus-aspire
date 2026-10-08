@@ -1,4 +1,6 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.ExternalApiKey;
 
@@ -24,6 +26,12 @@ public class ExternalApiKeyResponse
     /// </summary>
     [Required]
     public required string KeyPrefix { get; set; }
+
+    /// <summary>
+    /// APIキーのロール（未設定の場合は null）
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<ExternalApiKeyRole>))]
+    public ExternalApiKeyRole? Role { get; set; }
 
     /// <summary>
     /// 有効期限

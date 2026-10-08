@@ -47,6 +47,7 @@ public class AdminExternalApiKeyController : BaseAdminController
             Id = k.Id,
             Name = k.Name,
             KeyPrefix = k.KeyPrefix,
+            Role = k.Role,
             ExpiresAt = k.ExpiresAt,
             IsRevoked = k.IsRevoked,
             CreatedByUserId = k.CreatedByUserId,
@@ -80,6 +81,7 @@ public class AdminExternalApiKeyController : BaseAdminController
             CurrentOrganizationId,
             CurrentUserId,
             request.Name,
+            request.Role,
             request.ExpirationDays,
             cancellationToken);
 
@@ -88,6 +90,7 @@ public class AdminExternalApiKeyController : BaseAdminController
             Id = entity.Id,
             Name = entity.Name,
             KeyPrefix = entity.KeyPrefix,
+            Role = entity.Role!.Value,
             RawKey = rawKey,
             ExpiresAt = entity.ExpiresAt,
             CreatedAt = entity.CreatedAt,

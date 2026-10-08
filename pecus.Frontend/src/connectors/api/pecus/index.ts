@@ -124,6 +124,7 @@ export type { EmailNotificationMode } from './models/EmailNotificationMode';
 export type { ErrorResponse } from './models/ErrorResponse';
 export type { EstimatedSize } from './models/EstimatedSize';
 export type { ExternalApiKeyResponse } from './models/ExternalApiKeyResponse';
+export type { ExternalApiKeyRole } from './models/ExternalApiKeyRole';
 export type { ExternalItemListResponse } from './models/ExternalItemListResponse';
 export type { ExternalItemRefResponse } from './models/ExternalItemRefResponse';
 export type { ExternalItemResponse } from './models/ExternalItemResponse';

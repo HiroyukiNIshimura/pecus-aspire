@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ExternalApiKeyRole } from './ExternalApiKeyRole';
 /**
  * APIキー発行リクエスト
  */
@@ -10,9 +11,7 @@ export type CreateExternalApiKeyRequest = {
      * キー名（用途識別用）
      */
     name: string;
-    /**
-     * 有効期限（日数）。省略時は365日。
-     */
+    role: ExternalApiKeyRole;
     expirationDays?: number | null;
 };
 

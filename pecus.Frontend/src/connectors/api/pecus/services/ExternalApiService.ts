@@ -32,6 +32,7 @@ export class ExternalApiService {
             errors: {
                 400: `Bad Request`,
                 401: `Unauthorized`,
+                403: `Forbidden`,
             },
         });
     }
@@ -69,6 +70,7 @@ export class ExternalApiService {
             },
             errors: {
                 401: `認証エラー`,
+                403: `Forbidden`,
                 404: `ワークスペースが見つからない`,
             },
         });
@@ -96,6 +98,7 @@ export class ExternalApiService {
             },
             errors: {
                 401: `認証エラー`,
+                403: `Forbidden`,
                 404: `ワークスペースまたはアイテムが見つからない`,
             },
         });
@@ -131,6 +134,7 @@ export class ExternalApiService {
             },
             errors: {
                 401: `認証エラー`,
+                403: `Forbidden`,
                 404: `ワークスペースまたはアイテムが見つからない`,
             },
         });
@@ -160,6 +164,7 @@ export class ExternalApiService {
             },
             errors: {
                 401: `認証エラー`,
+                403: `Forbidden`,
                 404: `ワークスペース、アイテム、またはタスクが見つからない`,
             },
         });
@@ -189,6 +194,7 @@ export class ExternalApiService {
             },
             errors: {
                 401: `認証エラー`,
+                403: `Forbidden`,
                 404: `ワークスペース、アイテム、またはタスクが見つからない`,
             },
         });

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -45,6 +46,7 @@ public class ExternalApiKeyService
     /// <param name="organizationId">組織ID</param>
     /// <param name="createdByUserId">作成者ユーザーID</param>
     /// <param name="name">キー名（用途識別用）</param>
+    /// <param name="role">APIキーのロール</param>
     /// <param name="expirationDays">有効期限（日数）。省略時は365日</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>作成されたエンティティと平文キーのタプル</returns>
@@ -52,6 +54,7 @@ public class ExternalApiKeyService
         int organizationId,
         int createdByUserId,
         string name,
+        ExternalApiKeyRole role,
         int? expirationDays = null,
         CancellationToken cancellationToken = default)
     {
@@ -63,6 +66,7 @@ public class ExternalApiKeyService
         {
             OrganizationId = organizationId,
             Name = name,
+            Role = role,
             KeyPrefix = keyPrefix,
             KeyHash = keyHash,
             ExpiresAt = DateTimeOffset.UtcNow.AddDays(expirationDays ?? DefaultExpirationDays),

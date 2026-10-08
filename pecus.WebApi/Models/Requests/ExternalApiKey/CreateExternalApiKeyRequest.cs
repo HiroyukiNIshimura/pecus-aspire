@@ -1,4 +1,6 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Requests.ExternalApiKey;
 
@@ -17,6 +19,13 @@ public class CreateExternalApiKeyRequest
     /// <summary>
     /// 有効期限（日数）。省略時は365日。
     /// </summary>
+    /// <summary>
+    /// APIキーのロール
+    /// </summary>
+    [Required(ErrorMessage = "ロールは必須です。")]
+    [JsonConverter(typeof(JsonStringEnumConverter<ExternalApiKeyRole>))]
+    public required ExternalApiKeyRole Role { get; set; }
+
     [Range(1, 730, ErrorMessage = "有効期限は1〜730日の範囲で入力してください。")]
     public int? ExpirationDays { get; set; }
 }

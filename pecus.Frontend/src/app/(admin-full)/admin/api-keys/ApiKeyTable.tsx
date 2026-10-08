@@ -28,6 +28,7 @@ export default function ApiKeyTable({ keys, onRevoke, isSubmitting }: Props) {
           <tr>
             <th>名前</th>
             <th>キー（先頭）</th>
+            <th>ロール</th>
             <th>状態</th>
             <th>有効期限</th>
             <th>発行者</th>
@@ -43,6 +44,9 @@ export default function ApiKeyTable({ keys, onRevoke, isSubmitting }: Props) {
               <td className="font-medium">{key.name}</td>
               <td>
                 <code className="bg-base-200 rounded px-2 py-0.5 text-sm">{key.keyPrefix}...</code>
+              </td>
+              <td>
+                <RoleBadge role={key.role} />
               </td>
               <td>
                 <StatusBadge isRevoked={key.isRevoked} isExpired={key.isExpired} />
@@ -81,4 +85,10 @@ function StatusBadge({ isRevoked, isExpired }: { isRevoked: boolean; isExpired: 
     return <span className="badge badge-warning badge-sm">期限切れ</span>;
   }
   return <span className="badge badge-success badge-sm">有効</span>;
+}
+
+function RoleBadge({ role }: { role?: ExternalApiKeyResponse['role'] }) {
+  if (role === 'FullAccess') return <span className="badge badge-primary">フルアクセス</span>;
+  if (role === 'ReadOnly') return <span className="badge badge-secondary">読み取り専用</span>;
+  return <span className="badge badge-outline">未設定</span>;
 }

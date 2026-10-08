@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ExternalApiKeyRole } from './ExternalApiKeyRole';
 /**
  * APIキー一覧用レスポンス
  */
@@ -18,6 +19,7 @@ export type ExternalApiKeyResponse = {
      * キーの先頭8文字（識別用）
      */
     keyPrefix: string;
+    role?: ExternalApiKeyRole;
     /**
      * 有効期限
      */

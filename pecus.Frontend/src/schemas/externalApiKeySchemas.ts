@@ -6,6 +6,7 @@ export const createExternalApiKeyInputSchema = z.object({
     .trim()
     .min(1, 'キー名は必須です。')
     .max(100, 'キー名は100文字以内で入力してください。'),
+  role: z.enum(['ReadOnly', 'FullAccess'], { error: 'ロールを選択してください。' }),
   expirationDays: z
     .number({ error: '有効期限（日数）は必須です。' })
     .int('有効期限（日数）は整数で入力してください。')

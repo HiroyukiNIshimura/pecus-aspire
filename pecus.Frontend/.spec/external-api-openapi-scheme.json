@@ -13,9 +13,7 @@
   "paths": {
     "/api/external/ping": {
       "post": {
-        "tags": [
-          "ExternalAPI"
-        ],
+        "tags": ["ExternalAPI"],
         "summary": "疎通確認用エンドポイント",
         "description": "受け取ったメッセージをそのまま返却します。\nAPIキー認証の疎通確認に使用してください。",
         "requestBody": {
@@ -79,9 +77,7 @@
     },
     "/api/external/workspaces/{workspaceIdOrCode}/items": {
       "get": {
-        "tags": [
-          "ExternalAPI"
-        ],
+        "tags": ["ExternalAPI"],
         "summary": "指定ワークスペース内の全アイテムを取得する",
         "description": "ページネーション（1ページあたり20件固定）に対応しています。\nアクティブフラグ（isActive）、アーカイブフラグ（isArchived）、下書きフラグ（isDraft）でのフィルタリングが可能です。\n認証された API キーの組織に属するワークスペースのみアクセス可能です。",
         "parameters": [
@@ -170,9 +166,7 @@
     },
     "/api/external/workspaces/{workspaceIdOrCode}/items/{itemNumber}": {
       "get": {
-        "tags": [
-          "ExternalAPI"
-        ],
+        "tags": ["ExternalAPI"],
         "summary": "指定ワークスペース内の指定アイテムを取得する",
         "description": "ワークスペースIDまたはコードとアイテム番号（ワークスペース内連番）を指定してアイテム情報を取得します。\n本文は Markdown 形式に変換されて返却されます。\n認証された API キーの組織に属するワークスペース・アイテムのみアクセス可能です。",
         "parameters": [
@@ -238,9 +232,7 @@
     },
     "/api/external/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks": {
       "get": {
-        "tags": [
-          "ExternalAPI"
-        ],
+        "tags": ["ExternalAPI"],
         "summary": "指定ワークスペース・アイテム内のタスク一覧を取得する",
         "description": "指定されたワークスペースおよびアイテムに紐づくタスクの一覧を取得します。\n完了状態（isCompleted）や破棄状態（isDiscarded）によるフィルタリングが可能です。\n認証された API キーの組織に属するワークスペース・アイテムのみアクセス可能です。",
         "parameters": [
@@ -322,9 +314,7 @@
     },
     "/api/external/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks/{sequence}": {
       "get": {
-        "tags": [
-          "ExternalAPI"
-        ],
+        "tags": ["ExternalAPI"],
         "summary": "指定ワークスペース・アイテム内の指定タスクを取得する",
         "description": "ワークスペースIDまたはコード、アイテム番号、タスクシーケンス番号を指定してタスク詳細を取得します。\n認証された API キーの組織に属するワークスペース・アイテム・タスクのみアクセス可能です。",
         "parameters": [
@@ -401,9 +391,7 @@
     },
     "/api/external/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks/{sequence}/comments": {
       "get": {
-        "tags": [
-          "ExternalAPI"
-        ],
+        "tags": ["ExternalAPI"],
         "summary": "指定ワークスペース・アイテム・タスク内のコメント一覧を取得する",
         "description": "指定されたタスクに紐づく全コメントを取得します（論理削除されたコメントを除く）。\n認証された API キーの組織に属するワークスペース・アイテム・タスクのみアクセス可能です。",
         "parameters": [
@@ -508,12 +496,7 @@
         }
       },
       "ExternalTaskCommentListResponse": {
-        "required": [
-          "workspace",
-          "item",
-          "task",
-          "comments"
-        ],
+        "required": ["workspace", "item", "task", "comments"],
         "type": "object",
         "properties": {
           "workspace": {
@@ -536,11 +519,7 @@
         "description": "外部公開用タスクコメント一覧レスポンス"
       },
       "ExternalTaskCommentResponse": {
-        "required": [
-          "id",
-          "user",
-          "content"
-        ],
+        "required": ["id", "user", "content"],
         "type": "object",
         "properties": {
           "id": {
@@ -558,9 +537,7 @@
           "commentType": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -572,22 +549,12 @@
         "description": "外部公開用タスクコメント"
       },
       "TaskCommentType": {
-        "enum": [
-          "Normal",
-          "Memo",
-          "HelpWanted",
-          "NeedReply",
-          "Reminder",
-          "Urge"
-        ],
+        "enum": ["Normal", "Memo", "HelpWanted", "NeedReply", "Reminder", "Urge"],
         "type": "string",
         "nullable": true
       },
       "ExternalUserRefResponse": {
-        "required": [
-          "loginId",
-          "username"
-        ],
+        "required": ["loginId", "username"],
         "type": "object",
         "properties": {
           "loginId": {
@@ -602,9 +569,7 @@
         "description": "外部公開用ユーザー参照"
       },
       "ExternalTaskRefResponse": {
-        "required": [
-          "sequence"
-        ],
+        "required": ["sequence"],
         "type": "object",
         "properties": {
           "sequence": {
@@ -616,9 +581,7 @@
         "description": "外部公開用タスク参照"
       },
       "ExternalItemRefResponse": {
-        "required": [
-          "itemNumber"
-        ],
+        "required": ["itemNumber"],
         "type": "object",
         "properties": {
           "itemNumber": {
@@ -630,9 +593,7 @@
         "description": "外部公開用アイテム参照"
       },
       "ExternalWorkspaceRefResponse": {
-        "required": [
-          "code"
-        ],
+        "required": ["code"],
         "type": "object",
         "properties": {
           "code": {
@@ -643,11 +604,7 @@
         "description": "外部公開用ワークスペース参照"
       },
       "ExternalWorkspaceTaskDetailResponse": {
-        "required": [
-          "workspace",
-          "item",
-          "task"
-        ],
+        "required": ["workspace", "item", "task"],
         "type": "object",
         "properties": {
           "workspace": {
@@ -697,9 +654,7 @@
           "priority": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -748,9 +703,7 @@
           "completedByUser": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -761,9 +714,7 @@
           "discarded": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -782,9 +733,7 @@
         "description": "外部公開用タスク詳細"
       },
       "ExternalPredecessorTaskResponse": {
-        "required": [
-          "sequence"
-        ],
+        "required": ["sequence"],
         "type": "object",
         "properties": {
           "sequence": {
@@ -796,9 +745,7 @@
         "description": "外部公開用先行タスク参照"
       },
       "ExternalTaskDiscardedResponse": {
-        "required": [
-          "discardedAt"
-        ],
+        "required": ["discardedAt"],
         "type": "object",
         "properties": {
           "discardedAt": {
@@ -816,20 +763,12 @@
         "description": "外部公開用タスク破棄情報"
       },
       "TaskPriority": {
-        "enum": [
-          "Low",
-          "Medium",
-          "High",
-          "Critical"
-        ],
+        "enum": ["Low", "Medium", "High", "Critical"],
         "type": "string",
         "nullable": true
       },
       "ExternalTaskTypeRefResponse": {
-        "required": [
-          "code",
-          "name"
-        ],
+        "required": ["code", "name"],
         "type": "object",
         "properties": {
           "code": {
@@ -844,11 +783,7 @@
         "description": "外部公開用タスク種類参照"
       },
       "ExternalWorkspaceTaskListResponse": {
-        "required": [
-          "workspace",
-          "item",
-          "tasks"
-        ],
+        "required": ["workspace", "item", "tasks"],
         "type": "object",
         "properties": {
           "workspace": {
@@ -903,9 +838,7 @@
           "completedByUser": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -916,9 +849,7 @@
           "discarded": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -932,9 +863,7 @@
           "priority": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -974,16 +903,7 @@
         "description": "外部公開用タスクサマリー（一覧用）"
       },
       "ExternalItemResponse": {
-        "required": [
-          "workspaceCode",
-          "itemNumber",
-          "subject",
-          "tags",
-          "owner",
-          "isActive",
-          "isArchived",
-          "isDraft"
-        ],
+        "required": ["workspaceCode", "itemNumber", "subject", "tags", "owner", "isActive", "isArchived", "isDraft"],
         "type": "object",
         "properties": {
           "workspaceCode": {
@@ -1017,9 +937,7 @@
           "assignedUser": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -1030,9 +948,7 @@
           "committer": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -1062,14 +978,7 @@
         "description": "外部公開用アイテム情報レスポンス"
       },
       "ExternalItemListResponse": {
-        "required": [
-          "workspaceCode",
-          "totalCount",
-          "currentPage",
-          "pageSize",
-          "hasNextPage",
-          "items"
-        ],
+        "required": ["workspaceCode", "totalCount", "currentPage", "pageSize", "hasNextPage", "items"],
         "type": "object",
         "properties": {
           "workspaceCode": {
@@ -1106,15 +1015,7 @@
         "description": "外部公開用アイテム一覧レスポンス"
       },
       "ExternalItemSummaryResponse": {
-        "required": [
-          "itemNumber",
-          "subject",
-          "tags",
-          "owner",
-          "isActive",
-          "isArchived",
-          "isDraft"
-        ],
+        "required": ["itemNumber", "subject", "tags", "owner", "isActive", "isArchived", "isDraft"],
         "type": "object",
         "properties": {
           "itemNumber": {
@@ -1139,9 +1040,7 @@
           "assignedUser": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -1152,9 +1051,7 @@
           "committer": {
             "oneOf": [
               {
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "nullable": true
               },
               {
@@ -1219,11 +1116,7 @@
         }
       },
       "PingResponse": {
-        "required": [
-          "message",
-          "organizationCode",
-          "timestamp"
-        ],
+        "required": ["message", "organizationCode", "timestamp"],
         "type": "object",
         "properties": {
           "message": {
@@ -1243,9 +1136,7 @@
         "description": "Pingレスポンス"
       },
       "PingRequest": {
-        "required": [
-          "message"
-        ],
+        "required": ["message"],
         "type": "object",
         "properties": {
           "message": {

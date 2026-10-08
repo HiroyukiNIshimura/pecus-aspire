@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+using Pecus.Libs.DB.Models.Enums;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -34,6 +36,11 @@ public class ExternalApiKey
     [Required]
     [MaxLength(8)]
     public string KeyPrefix { get; set; } = string.Empty;
+
+    /// <summary>
+    /// APIキーのロール。未設定（null）のキーは外部APIで403となる。
+    /// </summary>
+    public ExternalApiKeyRole? Role { get; set; }
 
     /// <summary>
     /// SHA-256 ハッシュ（Base64）。平文キーは保存しない。
