@@ -2,8 +2,7 @@
  * ヘッドレス用ノード定義
  * @coati/editor パッケージから再エクスポート
  *
- * 注意: Node.js 環境では CSS インポートが失敗するため、
- * ignore-css.ts フックで CSS を無視している
+ * Node.js では ESM ローダーで CSS の副作用を無視して利用する。
  */
 
 // @coati/editor からすべてのノードを再エクスポート
@@ -77,4 +76,4 @@ export {
   StickyNode,
   TweetNode,
   YouTubeNode,
-} from '@coati/editor';
+} from '@coati/editor/nodes-headless';

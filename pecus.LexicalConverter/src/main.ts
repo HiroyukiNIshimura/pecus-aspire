@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { type MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import { AppModule } from './app.module';
+import { AppModule } from './app.module.js';
 
 async function bootstrap() {
   // ConfigServiceを取得するために一時的にアプリケーションを作成

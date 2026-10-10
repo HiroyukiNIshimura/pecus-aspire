@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { LexicalModule } from './lexical/lexical.module';
-import { MetricsModule } from './metrics';
+import { LexicalModule } from './lexical/lexical.module.js';
+import { MetricsModule } from './metrics/index.js';
 
 @Module({
   imports: [

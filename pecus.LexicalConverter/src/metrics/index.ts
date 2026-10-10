@@ -1,4 +1,4 @@
-export { GrpcMetricsInterceptor } from './grpc-metrics.interceptor';
+export { GrpcMetricsInterceptor } from './grpc-metrics.interceptor.js';
 export {
   conversionCounter,
   getGrpcMethodLabel,
@@ -8,5 +8,5 @@ export {
   recordConversion,
   recordGrpcRequest,
   register,
-} from './metrics.controller';
-export { MetricsModule } from './metrics.module';
+} from './metrics.controller.js';
+export { MetricsModule } from './metrics.module.js';

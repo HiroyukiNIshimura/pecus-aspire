@@ -1,1 +1,1 @@
-export * from './grpc-api-key.guard';
+export * from './grpc-api-key.guard.js';

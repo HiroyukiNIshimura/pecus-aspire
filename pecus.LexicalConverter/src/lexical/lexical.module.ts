@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { GrpcApiKeyGuard } from './guards';
-import { LexicalController } from './lexical.controller';
-import { LexicalService } from './lexical.service';
+import { GrpcApiKeyGuard } from './guards/index.js';
+import { LexicalController } from './lexical.controller.js';
+import { LexicalService } from './lexical.service.js';
 
 @Module({
   controllers: [LexicalController],

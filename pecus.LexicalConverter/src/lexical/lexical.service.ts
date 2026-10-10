@@ -11,9 +11,12 @@ import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
 import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { $getRoot, type Klass, type LexicalNode } from 'lexical';
-import { initializeDomEnvironment } from './dom-environment';
-import { CustomNodes } from './nodes';
-import { normalizeListIndentation, PLAYGROUND_TRANSFORMERS } from './transformers/markdown-transformers';
+import { initializeDomEnvironment } from './dom-environment.js';
+import { CustomNodes } from './nodes/index.js';
+import {
+  normalizeListIndentation,
+  PLAYGROUND_TRANSFORMERS,
+} from './transformers/markdown-transformers.js';
 
 /** 変換結果 */
 export interface ConvertResult {

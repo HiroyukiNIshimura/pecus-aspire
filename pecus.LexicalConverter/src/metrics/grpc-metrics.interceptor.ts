@@ -5,7 +5,7 @@ import {
   type NestInterceptor,
 } from '@nestjs/common';
 import { finalize, type Observable, tap } from 'rxjs';
-import { getGrpcMethodLabel, recordConversion, recordGrpcRequest } from './metrics.controller';
+import { getGrpcMethodLabel, recordConversion, recordGrpcRequest } from './metrics.controller.js';
 
 function isSuccessfulConversion(result: unknown): boolean {
   return (

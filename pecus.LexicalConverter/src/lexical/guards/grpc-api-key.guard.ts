@@ -2,7 +2,7 @@ import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/com
 // biome-ignore lint/style/useImportType: NestJS DI requires runtime class reference
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
-import { getGrpcMethodLabel, recordGrpcRequest } from '../../metrics/metrics.controller';
+import { getGrpcMethodLabel, recordGrpcRequest } from '../../metrics/metrics.controller.js';
 
 /**
  * gRPC API キー認証ガード

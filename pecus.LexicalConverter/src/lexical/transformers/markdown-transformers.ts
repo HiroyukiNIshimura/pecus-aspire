@@ -13,7 +13,7 @@ import {
   EquationNode,
   ImageNode,
   TweetNode,
-} from '@coati/editor';
+} from '@coati/editor/nodes-headless';
 import {
   $createHorizontalRuleNode,
   $isHorizontalRuleNode,
@@ -44,7 +44,7 @@ import {
   TableRowNode,
 } from '@lexical/table';
 import { $createTextNode, $isParagraphNode, $isTextNode, type LexicalNode } from 'lexical';
-import { emojiList } from './emoji-list';
+import { emojiList } from './emoji-list.js';
 
 /**
  * 水平線トランスフォーマー

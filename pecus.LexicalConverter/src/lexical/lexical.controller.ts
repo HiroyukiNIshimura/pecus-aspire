@@ -1,8 +1,8 @@
 import { Controller, UseGuards } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
-import { GrpcApiKeyGuard } from './guards';
+import { GrpcApiKeyGuard } from './guards/index.js';
 // biome-ignore lint/style/useImportType: NestJS DI requires runtime class reference
-import { LexicalService } from './lexical.service';
+import { LexicalService } from './lexical.service.js';
 
 export interface ConvertRequest {
   lexicalJson: string;
