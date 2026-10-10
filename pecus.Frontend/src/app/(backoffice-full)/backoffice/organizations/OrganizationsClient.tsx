@@ -11,7 +11,7 @@ import Pagination from '@/components/common/filters/Pagination';
 import type {
   CreateOrganizationRequest,
   PagedResponseOfBackOfficeOrganizationListItemResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';

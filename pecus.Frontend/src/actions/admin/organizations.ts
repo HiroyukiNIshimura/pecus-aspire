@@ -1,12 +1,18 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
+import {
+  getAdminOrganizationWithHeyApi,
+  getAvailableAdminModelsWithHeyApi,
+  updateAdminOrganizationSettingWithHeyApi,
+  updateAdminOrganizationWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   AdminUpdateOrganizationSettingRequest,
   GetAvailableModelsResponse,
   OrganizationResponse,
   OrganizationSettingResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import {
   type GetAvailableModelsInput,
   getAvailableModelsInputSchema,
@@ -24,8 +30,7 @@ import { validationError } from '../types';
  */
 export async function getOrganizationDetail(): Promise<ApiResponse<OrganizationResponse>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminOrganization.getApiAdminOrganization();
+    const response = await getAdminOrganizationWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch organization detail:', error);
@@ -45,8 +50,7 @@ export async function updateOrganization(input: UpdateOrganizationInput): Promis
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminOrganization.putApiAdminOrganization(parseResult.data);
+    const response = await updateAdminOrganizationWithHeyApi(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -84,8 +88,7 @@ export async function updateOrganizationSetting(
   }
 
   try {
-    const api = createPecusApiClients();
-    const payload: AdminUpdateOrganizationSettingRequest & { generativeApiKey?: string | null } = {
+    const payload: AdminUpdateOrganizationSettingRequest = {
       ...parseResult.data,
       mailFromAddress: parseResult.data.mailFromAddress ? String(parseResult.data.mailFromAddress) : null,
       mailFromName: parseResult.data.mailFromName ? String(parseResult.data.mailFromName) : null,
@@ -99,7 +102,7 @@ export async function updateOrganizationSetting(
       gamificationBadgeVisibility: parseResult.data.gamificationBadgeVisibility ?? undefined,
     };
 
-    const response = await api.adminOrganization.putApiAdminOrganizationSetting(payload);
+    const response = await updateAdminOrganizationSettingWithHeyApi(payload);
     return { success: true, data: response };
   } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
@@ -150,8 +153,7 @@ export async function getAvailableModels(
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminOrganization.postApiAdminOrganizationAvailableModels({
+    const response = await getAvailableAdminModelsWithHeyApi({
       vendor: parseResult.data.vendor,
       apiKey: parseResult.data.apiKey,
     });

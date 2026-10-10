@@ -1,13 +1,16 @@
 'use server';
 
-import { getAdminExternalApiKeysWithHeyApi } from '@/connectors/HeyApiClient';
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import {
+  createAdminExternalApiKeyWithHeyApi,
+  getAdminExternalApiKeysWithHeyApi,
+  revokeAdminExternalApiKeyWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   CreateExternalApiKeyRequest,
   CreateExternalApiKeyResponse,
   ExternalApiKeyResponse,
   SuccessResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import {
   type CreateExternalApiKeyInput,
   createExternalApiKeyInputSchema,
@@ -46,13 +49,12 @@ export async function createExternalApiKey(
   }
 
   try {
-    const api = createPecusApiClients();
     const request: CreateExternalApiKeyRequest = {
       name: parseResult.data.name,
       role: parseResult.data.role,
       expirationDays: parseResult.data.expirationDays,
     };
-    const response = await api.adminExternalApiKeys.postApiAdminExternalApiKeys(request);
+    const response = await createAdminExternalApiKeyWithHeyApi(request);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create external API key:', error);
@@ -73,8 +75,7 @@ export async function revokeExternalApiKey(input: RevokeExternalApiKeyInput): Pr
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminExternalApiKeys.deleteApiAdminExternalApiKeys(parseResult.data.keyId);
+    const response = await revokeAdminExternalApiKeyWithHeyApi(parseResult.data.keyId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to revoke external API key:', error);

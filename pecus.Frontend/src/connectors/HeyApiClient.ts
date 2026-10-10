@@ -3,6 +3,13 @@
 import { getApiBaseUrl } from '@/libs/env';
 import { getAccessToken } from './auth';
 import {
+  deleteApiAdminExternalApiKeysByKeyId,
+  deleteApiAdminSkillsById,
+  deleteApiAdminTagsById,
+  deleteApiAdminWorkspacesById,
+  deleteApiAdminWorkspacesByIdUsersByUserId,
+  deleteApiBackofficeNotificationsById,
+  deleteApiBackofficeOrganizationsById,
   getApiAchievements,
   getApiAchievementsMe,
   getApiAchievementsMeUnnotified,
@@ -14,6 +21,8 @@ import {
   getApiAdminTags,
   getApiAdminTagsById,
   getApiAdminUsers,
+  getApiAdminUsersById,
+  getApiAdminUsersRoles,
   getApiAdminWorkspaces,
   getApiAdminWorkspacesById,
   getApiBackendMonitoringHangfireStats,
@@ -51,6 +60,7 @@ import {
   getApiProfileEmailPending,
   getApiUsersByUserIdAchievements,
   getApiUsersByUserIdSkills,
+  getApiUsersSearch,
   getApiWorkspaces,
   getApiWorkspacesById,
   getApiWorkspacesByWorkspaceIdItems,
@@ -58,16 +68,52 @@ import {
   getApiWorkspacesByWorkspaceIdItemsByItemIdActivities,
   getApiWorkspacesCodeByCode,
   getApiWorkspacesStatistics,
+  patchApiAdminSkillsByIdActivate,
+  patchApiAdminSkillsByIdDeactivate,
+  patchApiAdminTagsByIdActivate,
+  patchApiAdminTagsByIdDeactivate,
+  patchApiAdminWorkspacesByIdActivate,
+  patchApiAdminWorkspacesByIdDeactivate,
+  patchApiAdminWorkspacesByIdUsersByUserIdRole,
   postApiAchievementsMeByAchievementIdNotify,
   postApiAchievementsMeNotifyAll,
+  postApiAdminExternalApiKeys,
+  postApiAdminOrganizationAvailableModels,
+  postApiAdminSkills,
+  postApiAdminTags,
+  postApiAdminUsersByIdRequestPasswordReset,
+  postApiAdminUsersByIdResendPasswordSetup,
+  postApiAdminUsersCreateWithoutPassword,
+  postApiAdminWorkspaces,
+  postApiAdminWorkspacesByIdUsers,
+  postApiBackofficeNotifications,
+  postApiBackofficeOrganizations,
+  postApiBackofficeOrganizationsByIdResendCreatedEmail,
   postApiDashboardHealthAnalysis,
   postApiEntranceAuthLogin,
+  postApiUsersWorkload,
+  putApiAdminOrganization,
+  putApiAdminOrganizationSetting,
+  putApiAdminSkillsById,
+  putApiAdminTagsById,
+  putApiAdminUsersById,
+  putApiAdminWorkspacesById,
+  putApiBackofficeNotificationsById,
+  putApiBackofficeOrganizationsById,
+  putApiBackofficeOrganizationsByIdBotsByBotIdPersona,
 } from './hey-api-axios';
 import { type Client, createClient } from './hey-api-axios/client';
 import type {
   ActivityPeriod,
   AppPublicSettingsResponse,
+  BackOfficeBotResponse,
+  BackOfficeOrganizationDetailResponse,
   DashboardTaskFilter,
+  DeleteApiAdminExternalApiKeysByKeyIdResponse,
+  DeleteApiAdminSkillsByIdResponse,
+  DeleteApiAdminTagsByIdResponse,
+  DeleteApiAdminWorkspacesByIdResponse,
+  DeleteApiAdminWorkspacesByIdUsersByUserIdResponse,
   GetApiAchievementsMeResponse,
   GetApiAchievementsMeUnnotifiedResponse,
   GetApiAchievementsRankingResponse,
@@ -78,7 +124,9 @@ import type {
   GetApiAdminSkillsResponse,
   GetApiAdminTagsByIdResponse,
   GetApiAdminTagsResponse,
+  GetApiAdminUsersByIdResponse,
   GetApiAdminUsersResponse,
+  GetApiAdminUsersRolesResponse,
   GetApiAdminWorkspacesByIdResponse,
   GetApiAdminWorkspacesResponse,
   GetApiBackendMonitoringHangfireStatsResponse,
@@ -114,6 +162,7 @@ import type {
   GetApiProfileResponse,
   GetApiUsersByUserIdAchievementsResponse,
   GetApiUsersByUserIdSkillsResponse,
+  GetApiUsersSearchResponse,
   GetApiWorkspacesByIdResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdActivitiesResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdResponse,
@@ -121,10 +170,38 @@ import type {
   GetApiWorkspacesCodeByCodeResponse,
   GetApiWorkspacesResponse,
   GetApiWorkspacesStatisticsResponse,
+  GetAvailableModelsRequest,
+  GetAvailableModelsResponse,
   HealthAnalysisRequest,
+  OrganizationWithAdminResponse,
+  PatchApiAdminSkillsByIdActivateResponse,
+  PatchApiAdminSkillsByIdDeactivateResponse,
+  PatchApiAdminTagsByIdActivateResponse,
+  PatchApiAdminTagsByIdDeactivateResponse,
+  PatchApiAdminWorkspacesByIdActivateResponse,
+  PatchApiAdminWorkspacesByIdDeactivateResponse,
+  PatchApiAdminWorkspacesByIdUsersByUserIdRoleResponse,
   PendingEmailChangeResponse,
+  PostApiAdminExternalApiKeysResponse,
+  PostApiAdminSkillsResponse,
+  PostApiAdminTagsResponse,
+  PostApiAdminUsersByIdRequestPasswordResetResponse,
+  PostApiAdminUsersByIdResendPasswordSetupResponse,
+  PostApiAdminUsersCreateWithoutPasswordResponse,
+  PostApiAdminWorkspacesByIdUsersResponse,
+  PostApiAdminWorkspacesResponse,
+  PostApiBackofficeNotificationsResponse,
   PostApiDashboardHealthAnalysisResponse,
   PostApiEntranceAuthLoginResponse,
+  PostApiUsersWorkloadResponse,
+  PutApiAdminOrganizationResponse,
+  PutApiAdminOrganizationSettingResponse,
+  PutApiAdminSkillsByIdResponse,
+  PutApiAdminTagsByIdResponse,
+  PutApiAdminUsersByIdResponse,
+  PutApiAdminWorkspacesByIdResponse,
+  PutApiBackofficeNotificationsByIdResponse,
+  SuccessResponse,
   TaskPriority,
   TaskStatusFilter,
 } from './hey-api-axios/types.gen';
@@ -328,6 +405,34 @@ export async function getAdminOrganizationWithHeyApi(): Promise<GetApiAdminOrgan
   return response.data;
 }
 
+export async function updateAdminOrganizationWithHeyApi(
+  body: Parameters<typeof putApiAdminOrganization>[0]['body'],
+): Promise<PutApiAdminOrganizationResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiAdminOrganization({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function updateAdminOrganizationSettingWithHeyApi(
+  body: Parameters<typeof putApiAdminOrganizationSetting>[0]['body'],
+): Promise<PutApiAdminOrganizationSettingResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiAdminOrganizationSetting({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function getAvailableAdminModelsWithHeyApi(
+  body: GetAvailableModelsRequest,
+): Promise<GetAvailableModelsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminOrganizationAvailableModels({
+    client,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
 /**
  * Get external API keys through Hey API.
  */
@@ -347,6 +452,92 @@ export async function getAdminUsersWithHeyApi(
   return response.data;
 }
 
+export async function getAdminUserByIdWithHeyApi(id: number): Promise<GetApiAdminUsersByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAdminUsersById({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getAdminUsersRolesWithHeyApi(): Promise<GetApiAdminUsersRolesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAdminUsersRoles({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function createAdminUserWithoutPasswordWithHeyApi(
+  body: Parameters<typeof postApiAdminUsersCreateWithoutPassword>[0]['body'],
+): Promise<PostApiAdminUsersCreateWithoutPasswordResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminUsersCreateWithoutPassword({
+    client,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateAdminUserWithHeyApi(
+  id: number,
+  body: Parameters<typeof putApiAdminUsersById>[0]['body'],
+): Promise<PutApiAdminUsersByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiAdminUsersById({
+    client,
+    path: { id },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function requestAdminUserPasswordResetWithHeyApi(
+  id: number,
+): Promise<PostApiAdminUsersByIdRequestPasswordResetResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminUsersByIdRequestPasswordReset({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function resendAdminUserPasswordSetupWithHeyApi(
+  id: number,
+): Promise<PostApiAdminUsersByIdResendPasswordSetupResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminUsersByIdResendPasswordSetup({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function searchUsersWithHeyApi(query: string, limit: number): Promise<GetApiUsersSearchResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiUsersSearch({
+    client,
+    query: { Q: query, Limit: limit },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getUsersWorkloadWithHeyApi(userIds: number[]): Promise<PostApiUsersWorkloadResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiUsersWorkload({
+    client,
+    body: { userIds },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
 export async function getAdminExternalApiKeysWithHeyApi(): Promise<GetApiAdminExternalApiKeysResponse> {
   const client = await createHeyApiClient();
   const response = await getApiAdminExternalApiKeys({
@@ -354,6 +545,26 @@ export async function getAdminExternalApiKeysWithHeyApi(): Promise<GetApiAdminEx
     throwOnError: true,
   });
 
+  return response.data;
+}
+
+export async function createAdminExternalApiKeyWithHeyApi(
+  body: Parameters<typeof postApiAdminExternalApiKeys>[0]['body'],
+): Promise<PostApiAdminExternalApiKeysResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminExternalApiKeys({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function revokeAdminExternalApiKeyWithHeyApi(
+  keyId: number,
+): Promise<DeleteApiAdminExternalApiKeysByKeyIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiAdminExternalApiKeysByKeyId({
+    client,
+    path: { keyId },
+    throwOnError: true,
+  });
   return response.data;
 }
 
@@ -425,6 +636,110 @@ export async function getAdminTagByIdWithHeyApi(id: number): Promise<GetApiAdmin
   return response.data;
 }
 
+export async function createAdminSkillWithHeyApi(
+  body: Parameters<typeof postApiAdminSkills>[0]['body'],
+): Promise<PostApiAdminSkillsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminSkills({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function updateAdminSkillWithHeyApi(
+  id: number,
+  body: Parameters<typeof putApiAdminSkillsById>[0]['body'],
+): Promise<PutApiAdminSkillsByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiAdminSkillsById({
+    client,
+    path: { id },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteAdminSkillWithHeyApi(id: number): Promise<DeleteApiAdminSkillsByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiAdminSkillsById({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function activateAdminSkillWithHeyApi(id: number): Promise<PatchApiAdminSkillsByIdActivateResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAdminSkillsByIdActivate({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deactivateAdminSkillWithHeyApi(id: number): Promise<PatchApiAdminSkillsByIdDeactivateResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAdminSkillsByIdDeactivate({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function createAdminTagWithHeyApi(
+  body: Parameters<typeof postApiAdminTags>[0]['body'],
+): Promise<PostApiAdminTagsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminTags({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function updateAdminTagWithHeyApi(
+  id: number,
+  body: Parameters<typeof putApiAdminTagsById>[0]['body'],
+): Promise<PutApiAdminTagsByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiAdminTagsById({
+    client,
+    path: { id },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteAdminTagWithHeyApi(id: number): Promise<DeleteApiAdminTagsByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiAdminTagsById({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function activateAdminTagWithHeyApi(id: number): Promise<PatchApiAdminTagsByIdActivateResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAdminTagsByIdActivate({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deactivateAdminTagWithHeyApi(id: number): Promise<PatchApiAdminTagsByIdDeactivateResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAdminTagsByIdDeactivate({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
 /**
  * Get the admin workspace list through Hey API.
  */
@@ -460,6 +775,104 @@ export async function getAdminWorkspaceByIdWithHeyApi(workspaceId: number): Prom
     throwOnError: true,
   });
 
+  return response.data;
+}
+
+export async function createAdminWorkspaceWithHeyApi(
+  body: Parameters<typeof postApiAdminWorkspaces>[0]['body'],
+): Promise<PostApiAdminWorkspacesResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminWorkspaces({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function updateAdminWorkspaceWithHeyApi(
+  id: number,
+  body: Parameters<typeof putApiAdminWorkspacesById>[0]['body'],
+): Promise<PutApiAdminWorkspacesByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiAdminWorkspacesById({
+    client,
+    path: { id },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteAdminWorkspaceWithHeyApi(id: number): Promise<DeleteApiAdminWorkspacesByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiAdminWorkspacesById({ client, path: { id }, throwOnError: true });
+  return response.data;
+}
+
+export async function activateAdminWorkspaceWithHeyApi(
+  id: number,
+  rowVersion: number,
+): Promise<PatchApiAdminWorkspacesByIdActivateResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAdminWorkspacesByIdActivate({
+    client,
+    path: { id },
+    body: rowVersion,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deactivateAdminWorkspaceWithHeyApi(
+  id: number,
+  rowVersion: number,
+): Promise<PatchApiAdminWorkspacesByIdDeactivateResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAdminWorkspacesByIdDeactivate({
+    client,
+    path: { id },
+    body: rowVersion,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function addAdminWorkspaceMemberWithHeyApi(
+  id: number,
+  body: Parameters<typeof postApiAdminWorkspacesByIdUsers>[0]['body'],
+): Promise<PostApiAdminWorkspacesByIdUsersResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminWorkspacesByIdUsers({
+    client,
+    path: { id },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function removeAdminWorkspaceMemberWithHeyApi(
+  id: number,
+  userId: number,
+): Promise<DeleteApiAdminWorkspacesByIdUsersByUserIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiAdminWorkspacesByIdUsersByUserId({
+    client,
+    path: { id, userId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateAdminWorkspaceMemberRoleWithHeyApi(
+  id: number,
+  userId: number,
+  body: Parameters<typeof patchApiAdminWorkspacesByIdUsersByUserIdRole>[0]['body'],
+): Promise<PatchApiAdminWorkspacesByIdUsersByUserIdRoleResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAdminWorkspacesByIdUsersByUserIdRole({
+    client,
+    path: { id, userId },
+    body,
+    throwOnError: true,
+  });
   return response.data;
 }
 
@@ -513,6 +926,61 @@ export async function getBackOfficeOrganizationBotsWithHeyApi(
   return response.data;
 }
 
+export async function updateBackOfficeOrganizationWithHeyApi(
+  id: number,
+  body: Parameters<typeof putApiBackofficeOrganizationsById>[0]['body'],
+): Promise<BackOfficeOrganizationDetailResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiBackofficeOrganizationsById({
+    client,
+    path: { id },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteBackOfficeOrganizationWithHeyApi(
+  id: number,
+  body: Parameters<typeof deleteApiBackofficeOrganizationsById>[0]['body'],
+): Promise<void> {
+  const client = await createHeyApiClient();
+  await deleteApiBackofficeOrganizationsById({ client, path: { id }, body, throwOnError: true });
+}
+
+export async function createBackOfficeOrganizationWithHeyApi(
+  body: Parameters<typeof postApiBackofficeOrganizations>[0]['body'],
+): Promise<OrganizationWithAdminResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiBackofficeOrganizations({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function resendBackOfficeOrganizationCreatedEmailWithHeyApi(id: number): Promise<SuccessResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiBackofficeOrganizationsByIdResendCreatedEmail({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateBackOfficeBotPersonaWithHeyApi(
+  organizationId: number,
+  botId: number,
+  body: Parameters<typeof putApiBackofficeOrganizationsByIdBotsByBotIdPersona>[0]['body'],
+): Promise<BackOfficeBotResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiBackofficeOrganizationsByIdBotsByBotIdPersona({
+    client,
+    path: { id: organizationId, botId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
 export async function getBackOfficeNotificationsWithHeyApi(
   page?: number,
   pageSize?: number,
@@ -537,6 +1005,42 @@ export async function getBackOfficeNotificationByIdWithHeyApi(
     throwOnError: true,
   });
   return response.data;
+}
+
+export async function createBackOfficeNotificationWithHeyApi(
+  body: Parameters<typeof postApiBackofficeNotifications>[0]['body'],
+): Promise<PostApiBackofficeNotificationsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiBackofficeNotifications({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function updateBackOfficeNotificationWithHeyApi(
+  id: number,
+  body: Parameters<typeof putApiBackofficeNotificationsById>[0]['body'],
+): Promise<PutApiBackofficeNotificationsByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiBackofficeNotificationsById({
+    client,
+    path: { id },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteBackOfficeNotificationWithHeyApi(
+  id: number,
+  deleteMessages: boolean,
+  rowVersion: number,
+): Promise<void> {
+  const client = await createHeyApiClient();
+  await deleteApiBackofficeNotificationsById({
+    client,
+    path: { id },
+    body: { deleteMessages, rowVersion },
+    throwOnError: true,
+  });
 }
 
 /**

@@ -1,7 +1,7 @@
 'use server';
 
 import { getMasterRolesWithHeyApi } from '@/connectors/HeyApiClient';
-import type { RoleResponse } from '@/connectors/legacy-api/pecus';
+import type { RoleResponse } from '@/connectors/hey-api-axios/types.gen';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 

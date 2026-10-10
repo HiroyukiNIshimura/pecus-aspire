@@ -1,14 +1,16 @@
 'use server';
 
 import {
+  createBackOfficeNotificationWithHeyApi,
+  deleteBackOfficeNotificationWithHeyApi,
   getBackOfficeNotificationByIdWithHeyApi,
   getBackOfficeNotificationsWithHeyApi,
+  updateBackOfficeNotificationWithHeyApi,
 } from '@/connectors/HeyApiClient';
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   BackOfficeNotificationDetailResponse,
   PagedResponseOfBackOfficeNotificationListItemResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import {
   type CreateBackOfficeNotificationInput,
   createBackOfficeNotificationInputSchema,
@@ -84,8 +86,7 @@ export async function createBackOfficeNotification(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeNotifications.postApiBackofficeNotifications(parseResult.data);
+    const response = await createBackOfficeNotificationWithHeyApi(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create backoffice notification:', error);
@@ -106,11 +107,7 @@ export async function updateBackOfficeNotification(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeNotifications.putApiBackofficeNotifications(
-      parseResult.data.id,
-      parseResult.data.request,
-    );
+    const response = await updateBackOfficeNotificationWithHeyApi(parseResult.data.id, parseResult.data.request);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update backoffice notification:', error);
@@ -133,11 +130,11 @@ export async function deleteBackOfficeNotification(
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.backOfficeNotifications.deleteApiBackofficeNotifications(parseResult.data.id, {
-      deleteMessages: parseResult.data.deleteMessages ?? false,
-      rowVersion: parseResult.data.rowVersion,
-    });
+    await deleteBackOfficeNotificationWithHeyApi(
+      parseResult.data.id,
+      parseResult.data.deleteMessages ?? false,
+      parseResult.data.rowVersion,
+    );
     return { success: true, data: undefined };
   } catch (error) {
     console.error('Failed to delete backoffice notification:', error);

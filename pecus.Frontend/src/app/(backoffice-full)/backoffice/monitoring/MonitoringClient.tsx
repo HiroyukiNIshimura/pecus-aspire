@@ -17,7 +17,7 @@ import {
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
-import type { HangfireStatsResponse } from '@/connectors/legacy-api/pecus';
+import type { HangfireStatsResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { formatDateTime, formatTime } from '@/libs/utils/date';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';

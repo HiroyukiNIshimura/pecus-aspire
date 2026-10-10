@@ -25,7 +25,7 @@ import type {
   WorkspaceDetailResponse,
   WorkspaceItemDetailResponse,
   WorkspaceTaskDetailResponse,
-} from "./pecus";
+} from "../hey-api-axios/types.gen";
 
 /**
  * バックエンド ConcurrencyErrorResponse のボディ形式（409 Conflict）
