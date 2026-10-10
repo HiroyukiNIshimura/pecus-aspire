@@ -6,9 +6,8 @@
  * DM ルーム作成リクエスト
  */
 export type CreateDmRoomRequest = {
-    /**
-     * 相手ユーザーID
-     */
-    targetUserId: number;
+  /**
+   * 相手ユーザーID
+   */
+  targetUserId: number;
 };
-

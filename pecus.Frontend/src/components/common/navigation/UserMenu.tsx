@@ -2,7 +2,7 @@
 
 import { logout } from '@/actions/auth';
 import AvatarImage from '@/components/common/widgets/user/AvatarImage';
-import type { CurrentUserInfo } from '@/connectors/api/pecus';
+import type { CurrentUserInfo } from '@/connectors/legacy-api/pecus';
 
 interface UserMenuProps {
   userInfo: CurrentUserInfo | null;

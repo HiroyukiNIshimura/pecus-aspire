@@ -1,7 +1,7 @@
 'use client';
 
 import AppHeader from '@/components/common/layout/AppHeader';
-import type { CurrentUserInfo } from '@/connectors/api/pecus';
+import type { CurrentUserInfo } from '@/connectors/legacy-api/pecus';
 
 interface AdminHeaderProps {
   userInfo: CurrentUserInfo | null;

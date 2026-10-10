@@ -11,56 +11,55 @@ import type { LandingPage } from './LandingPage';
  * ユーザー設定レスポンス
  */
 export type UserSettingResponse = {
-    /**
-     * メール受信の可否
-     */
-    canReceiveEmail: boolean;
-    emailNotificationMode?: EmailNotificationMode;
-    customEmailSettings?: EmailNotificationCustomSettings;
-    /**
-     * メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
-     */
-    emailWorkspaceIds?: Array<number> | null;
-    /**
-     * 週間レポートを受信するかどうか
-     */
-    canReceiveWeeklyReport: boolean;
-    /**
-     * リアルタイム通知の可否
-     */
-    canReceiveRealtimeNotification: boolean;
-    /**
-     * タイムゾーン（TODO：未使用）
-     * IANA zone name
-     */
-    timeZone: string;
-    /**
-     * 言語設定（TODO：未使用）
-     */
-    language: string;
-    landingPage?: LandingPage;
-    focusScorePriority?: FocusScorePriority;
-    /**
-     * やることピックアップタスクの表示件数（5-20）
-     */
-    focusTasksLimit: number;
-    /**
-     * 待機中タスクの表示件数（5-20）
-     */
-    waitingTasksLimit: number;
-    badgeVisibility?: BadgeVisibility;
-    pendingLandingPageRecommendation?: LandingPage;
-    /**
-     * ユーザーが最後にランディングページ設定を変更した日時
-     */
-    landingPageUpdatedAt?: string | null;
-    /**
-     * ユーザーがランディングページ推奨を拒否した日時（Cool-down制御用）
-     */
-    landingPageRecommendationRefusedAt?: string | null;
-    /**
-     * ユーザー設定の楽観的ロック用 RowVersion
-     */
-    rowVersion?: number;
+  /**
+   * メール受信の可否
+   */
+  canReceiveEmail: boolean;
+  emailNotificationMode?: EmailNotificationMode;
+  customEmailSettings?: EmailNotificationCustomSettings;
+  /**
+   * メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
+   */
+  emailWorkspaceIds?: Array<number> | null;
+  /**
+   * 週間レポートを受信するかどうか
+   */
+  canReceiveWeeklyReport: boolean;
+  /**
+   * リアルタイム通知の可否
+   */
+  canReceiveRealtimeNotification: boolean;
+  /**
+   * タイムゾーン（TODO：未使用）
+   * IANA zone name
+   */
+  timeZone: string;
+  /**
+   * 言語設定（TODO：未使用）
+   */
+  language: string;
+  landingPage?: LandingPage;
+  focusScorePriority?: FocusScorePriority;
+  /**
+   * やることピックアップタスクの表示件数（5-20）
+   */
+  focusTasksLimit: number;
+  /**
+   * 待機中タスクの表示件数（5-20）
+   */
+  waitingTasksLimit: number;
+  badgeVisibility?: BadgeVisibility;
+  pendingLandingPageRecommendation?: LandingPage;
+  /**
+   * ユーザーが最後にランディングページ設定を変更した日時
+   */
+  landingPageUpdatedAt?: string | null;
+  /**
+   * ユーザーがランディングページ推奨を拒否した日時（Cool-down制御用）
+   */
+  landingPageRecommendationRefusedAt?: string | null;
+  /**
+   * ユーザー設定の楽観的ロック用 RowVersion
+   */
+  rowVersion?: number;
 };
-

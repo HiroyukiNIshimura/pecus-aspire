@@ -6,9 +6,8 @@
  * 外部公開用ワークスペース参照
  */
 export type ExternalWorkspaceRefResponse = {
-    /**
-     * ワークスペースコード
-     */
-    code: string;
+  /**
+   * ワークスペースコード
+   */
+  code: string;
 };
-

@@ -2,4 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type SystemNotificationType = 'EmergencyMaintenance' | 'ScheduledMaintenance' | 'Important' | 'Info' | 'IncidentReport' | null;
+export type SystemNotificationType =
+  | 'EmergencyMaintenance'
+  | 'ScheduledMaintenance'
+  | 'Important'
+  | 'Info'
+  | 'IncidentReport'
+  | null;

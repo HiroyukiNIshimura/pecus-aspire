@@ -1,6 +1,6 @@
 'use client';
 
-import type { AgendaOccurrenceResponse } from '@/connectors/api/pecus';
+import type { AgendaOccurrenceResponse } from '@/connectors/legacy-api/pecus';
 import AgendaTimelineItem from './AgendaTimelineItem';
 
 interface AgendaTimelineGroupProps {

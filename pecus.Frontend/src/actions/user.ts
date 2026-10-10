@@ -1,6 +1,6 @@
 'use server';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { UserAchievementResponse, UserSkillDetailResponse } from '@/connectors/api/pecus';
+import { getUserAchievementsWithHeyApi, getUserSkillsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { UserAchievementResponse, UserSkillDetailResponse } from '@/connectors/hey-api-axios/types.gen';
 import {
   type GetUserAchievementsInput,
   type GetUserSkillsInput,
@@ -25,8 +25,7 @@ export async function getUserAchievements(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.user.getApiUsersAchievements(parseResult.data.userId);
+    const response = await getUserAchievementsWithHeyApi(parseResult.data.userId);
     return { success: true, data: response };
   } catch (error) {
     return handleApiErrorForAction(error, { defaultMessage: 'ユーザー実績の取得に失敗しました' });
@@ -44,8 +43,7 @@ export async function getUserSkills(input: GetUserSkillsInput): Promise<ApiRespo
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.user.getApiUsersSkills(parseResult.data.userId);
+    const response = await getUserSkillsWithHeyApi(parseResult.data.userId);
     return { success: true, data: response };
   } catch (error) {
     return handleApiErrorForAction(error, { defaultMessage: 'ユーザースキルの取得に失敗しました' });

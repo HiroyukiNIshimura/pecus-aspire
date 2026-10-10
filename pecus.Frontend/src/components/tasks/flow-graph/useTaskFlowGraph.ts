@@ -3,7 +3,7 @@
 import type { Edge, Node } from '@xyflow/react';
 import dagre from 'dagre';
 import { useMemo } from 'react';
-import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/api/pecus';
+import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/legacy-api/pecus';
 
 /** グラフノードのデータ型（React Flow v12ではRecord<string, unknown>を継承する必要あり） */
 export interface TaskNodeData extends Record<string, unknown> {

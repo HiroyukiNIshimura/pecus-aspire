@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import FocusRecommendationModal from '@/components/focus/FocusRecommendationModal';
-import type { DashboardPersonalSummaryResponse } from '@/connectors/api/pecus';
+import type { DashboardPersonalSummaryResponse } from '@/connectors/legacy-api/pecus';
 import StatCard from './StatCard.server';
 
 interface PersonalSummarySectionProps {

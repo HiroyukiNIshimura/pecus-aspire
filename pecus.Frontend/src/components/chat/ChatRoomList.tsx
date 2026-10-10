@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createOrGetAiRoom, createOrGetDmRoom, getDmCandidateUsers } from '@/actions/chat';
-import type { ChatRoomItem, DmCandidateUserItem } from '@/connectors/api/pecus';
+import type { ChatRoomItem, DmCandidateUserItem } from '@/connectors/legacy-api/pecus';
 import { useIsAiEnabled } from '@/providers/AppSettingsProvider';
 import { type ChatTab, useChatStore } from '@/stores/chatStore';
 import ChatRoomListItem from './ChatRoomListItem';

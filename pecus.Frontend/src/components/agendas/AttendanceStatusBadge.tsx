@@ -1,6 +1,6 @@
 'use client';
 
-import type { AttendanceStatus } from '@/connectors/api/pecus';
+import type { AttendanceStatus } from '@/connectors/legacy-api/pecus';
 
 interface AttendanceStatusBadgeProps {
   status: AttendanceStatus;

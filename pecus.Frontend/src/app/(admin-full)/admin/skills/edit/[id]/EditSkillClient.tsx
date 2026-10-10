@@ -6,7 +6,7 @@ import { updateSkill } from '@/actions/admin/skills';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
-import type { SkillDetailResponse } from '@/connectors/api/pecus';
+import type { SkillDetailResponse } from '@/connectors/legacy-api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';

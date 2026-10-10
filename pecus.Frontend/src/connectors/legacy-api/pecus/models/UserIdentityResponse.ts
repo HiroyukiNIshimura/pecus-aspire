@@ -3,22 +3,21 @@
 /* tslint:disable */
 /* eslint-disable */
 export type UserIdentityResponse = {
-    /**
-     * ユーザーID
-     */
-    id: number;
-    /**
-     * ユーザー名
-     */
-    username: string | null;
-    /**
-     * アイデンティティアイコンURL（表示用）
-     * 必ず有効なURLが返されるため、クライアント側でnullチェック不要
-     */
-    identityIconUrl: string | null;
-    /**
-     * ユーザーがアクティブかどうか
-     */
-    isActive: boolean;
+  /**
+   * ユーザーID
+   */
+  id: number;
+  /**
+   * ユーザー名
+   */
+  username: string | null;
+  /**
+   * アイデンティティアイコンURL（表示用）
+   * 必ず有効なURLが返されるため、クライアント側でnullチェック不要
+   */
+  identityIconUrl: string | null;
+  /**
+   * ユーザーがアクティブかどうか
+   */
+  isActive: boolean;
 };
-

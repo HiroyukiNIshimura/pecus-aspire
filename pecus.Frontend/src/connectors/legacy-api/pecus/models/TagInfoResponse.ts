@@ -6,13 +6,12 @@
  * タグ情報レスポンス
  */
 export type TagInfoResponse = {
-    /**
-     * タグID
-     */
-    id: number;
-    /**
-     * タグ名
-     */
-    name?: string;
+  /**
+   * タグID
+   */
+  id: number;
+  /**
+   * タグ名
+   */
+  name?: string;
 };
-

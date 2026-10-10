@@ -2,7 +2,7 @@
 
 import AgendaIconButton from '@/components/agendas/AgendaIconButton';
 import ChatIconButton from '@/components/chat/ChatIconButton';
-import type { CurrentUserInfo } from '@/connectors/api/pecus';
+import type { CurrentUserInfo } from '@/connectors/legacy-api/pecus';
 import HeaderLogo from '../navigation/HeaderLogo';
 import HeaderNavItem from '../navigation/HeaderNavItem';
 import MobileMenuButton from '../navigation/MobileMenuButton';

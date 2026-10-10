@@ -6,9 +6,8 @@
  * 外部公開用タスク参照
  */
 export type ExternalTaskRefResponse = {
-    /**
-     * シーケンス番号
-     */
-    sequence: number;
+  /**
+   * シーケンス番号
+   */
+  sequence: number;
 };
-

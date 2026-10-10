@@ -3,17 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 export type WorkspaceItemAttachmentTask = {
-    /**
-     * タスクシーケンス番号
-     */
-    sequenceNumber?: number;
-    /**
-     * タスク説明
-     */
-    content?: string;
-    /**
-     * タスク種別名
-     */
-    taskTypeName?: string;
+  /**
+   * タスクシーケンス番号
+   */
+  sequenceNumber?: number;
+  /**
+   * タスク説明
+   */
+  content?: string;
+  /**
+   * タスク種別名
+   */
+  taskTypeName?: string;
 };
-

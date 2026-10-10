@@ -9,7 +9,12 @@ import { AttendeeList } from '@/components/agendas/AttendeeList';
 import { CancelConfirmModal } from '@/components/agendas/CancelConfirmModal';
 import { CancelOccurrenceModal } from '@/components/agendas/CancelOccurrenceModal';
 import { type EditScope, EditScopeModal } from '@/components/agendas/EditScopeModal';
-import type { AgendaExceptionResponse, AgendaResponse, AttendanceStatus, RecurrenceType } from '@/connectors/api/pecus';
+import type {
+  AgendaExceptionResponse,
+  AgendaResponse,
+  AttendanceStatus,
+  RecurrenceType,
+} from '@/connectors/legacy-api/pecus';
 import { useAppSettings } from '@/providers/AppSettingsProvider';
 
 interface AgendaDetailClientProps {

@@ -7,14 +7,13 @@ import type { TagDetailResponse } from './TagDetailResponse';
  * タグレスポンス
  */
 export type TagResponse = {
-    /**
-     * 成功フラグ
-     */
-    success?: boolean;
-    /**
-     * メッセージ
-     */
-    message?: string;
-    tag?: TagDetailResponse;
+  /**
+   * 成功フラグ
+   */
+  success?: boolean;
+  /**
+   * メッセージ
+   */
+  message?: string;
+  tag?: TagDetailResponse;
 };
-

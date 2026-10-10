@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   AddWorkspaceItemRelationResponse,
   PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics,
@@ -8,7 +8,7 @@ import type {
   SuccessResponse,
   WorkspaceItemDetailResponse,
   WorkspaceItemResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type AddWorkspaceItemRelationsInput,
   addWorkspaceItemRelationsInputSchema,

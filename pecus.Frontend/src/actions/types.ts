@@ -2,8 +2,8 @@
  * Server Actions 共通型定義
  */
 
-import type { ConflictLatestData } from '@/connectors/api/ConflictDataTypes.generated';
-import type { WorkspaceMemberAssignmentsResponse } from '@/connectors/api/pecus';
+import type { ConflictLatestData } from '@/connectors/legacy-api/ConflictDataTypes.generated';
+import type { WorkspaceMemberAssignmentsResponse } from '@/connectors/legacy-api/pecus';
 
 /**
  * 409 Conflict レスポンス型

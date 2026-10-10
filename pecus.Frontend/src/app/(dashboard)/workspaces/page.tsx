@@ -1,10 +1,10 @@
 import { fetchWorkspaces } from '@/actions/workspace';
+import { getMasterGenresWithHeyApi, getWorkspaceStatisticsWithHeyApi } from '@/connectors/HeyApiClient';
 import type {
   MasterGenreResponse,
   PagedResponseOfWorkspaceListItemResponse,
   WorkspaceStatistics,
-} from '@/connectors/api/pecus';
-import { getMasterGenresWithHeyApi, getWorkspaceStatisticsWithHeyApi } from '@/connectors/HeyApiClient';
+} from '@/connectors/legacy-api/pecus';
 import WorkspacesClient from './WorkspacesClient';
 
 export const dynamic = 'force-dynamic';

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createWorkspace } from '@/actions/workspace';
 import GenreSelect from '@/components/workspaces/GenreSelect';
-import type { MasterGenreResponse, WorkspaceMode } from '@/connectors/api/pecus';
+import type { MasterGenreResponse, WorkspaceMode } from '@/connectors/legacy-api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useLimitsSettings, useOrganizationSettings } from '@/providers/AppSettingsProvider';
 import { createWorkspaceSchema } from '@/schemas/workspaceSchemas';

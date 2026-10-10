@@ -7,7 +7,7 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import ActiveStatusFilter from '@/components/common/filters/ActiveStatusFilter';
 import Pagination from '@/components/common/filters/Pagination';
-import type { SkillListItemResponse, UserDetailResponse } from '@/connectors/api/pecus';
+import type { SkillListItemResponse, UserDetailResponse } from '@/connectors/legacy-api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';

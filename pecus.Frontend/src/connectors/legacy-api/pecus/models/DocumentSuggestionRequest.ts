@@ -3,9 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export type DocumentSuggestionRequest = {
-    /**
-     * 件名
-     */
-    title: string;
+  /**
+   * 件名
+   */
+  title: string;
 };
-

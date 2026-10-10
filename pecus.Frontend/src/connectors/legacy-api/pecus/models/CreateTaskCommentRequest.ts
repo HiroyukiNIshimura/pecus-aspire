@@ -7,10 +7,9 @@ import type { TaskCommentType } from './TaskCommentType';
  * タスクコメント作成リクエスト
  */
 export type CreateTaskCommentRequest = {
-    /**
-     * コメント内容
-     */
-    content: string;
-    commentType?: TaskCommentType;
+  /**
+   * コメント内容
+   */
+  content: string;
+  commentType?: TaskCommentType;
 };
-

@@ -10,62 +10,61 @@ import type { WorkspaceSkillResponse } from './WorkspaceSkillResponse';
  * ワークスペース詳細情報（一般ユーザー用）
  */
 export type WorkspaceFullDetailResponse = {
-    /**
-     * ワークスペースID
-     */
-    id: number;
-    /**
-     * ワークスペース名
-     */
-    name: string;
-    /**
-     * ワークスペースコード
-     */
-    code?: string | null;
-    /**
-     * ワークスペースの説明
-     */
-    description?: string | null;
-    /**
-     * ジャンルID
-     */
-    genreId?: number | null;
-    /**
-     * ジャンル名
-     */
-    genreName?: string | null;
-    /**
-     * ジャンルアイコン
-     */
-    genreIcon?: string | null;
-    /**
-     * メンバー一覧
-     */
-    members?: Array<WorkspaceDetailUserResponse>;
-    owner?: WorkspaceDetailUserResponse;
-    /**
-     * 作成日時
-     */
-    createdAt?: string;
-    createdBy?: WorkspaceDetailUserResponse;
-    /**
-     * 更新日時
-     */
-    updatedAt?: string | null;
-    updatedBy?: WorkspaceDetailUserResponse;
-    /**
-     * アクティブフラグ
-     */
-    isActive?: boolean;
-    mode?: WorkspaceMode;
-    currentUserRole?: WorkspaceRole;
-    /**
-     * ワークスペースに設定されているスキル一覧
-     */
-    skills?: Array<WorkspaceSkillResponse>;
-    /**
-     * 楽観的ロック用のRowVersion
-     */
-    rowVersion: number;
+  /**
+   * ワークスペースID
+   */
+  id: number;
+  /**
+   * ワークスペース名
+   */
+  name: string;
+  /**
+   * ワークスペースコード
+   */
+  code?: string | null;
+  /**
+   * ワークスペースの説明
+   */
+  description?: string | null;
+  /**
+   * ジャンルID
+   */
+  genreId?: number | null;
+  /**
+   * ジャンル名
+   */
+  genreName?: string | null;
+  /**
+   * ジャンルアイコン
+   */
+  genreIcon?: string | null;
+  /**
+   * メンバー一覧
+   */
+  members?: Array<WorkspaceDetailUserResponse>;
+  owner?: WorkspaceDetailUserResponse;
+  /**
+   * 作成日時
+   */
+  createdAt?: string;
+  createdBy?: WorkspaceDetailUserResponse;
+  /**
+   * 更新日時
+   */
+  updatedAt?: string | null;
+  updatedBy?: WorkspaceDetailUserResponse;
+  /**
+   * アクティブフラグ
+   */
+  isActive?: boolean;
+  mode?: WorkspaceMode;
+  currentUserRole?: WorkspaceRole;
+  /**
+   * ワークスペースに設定されているスキル一覧
+   */
+  skills?: Array<WorkspaceSkillResponse>;
+  /**
+   * 楽観的ロック用のRowVersion
+   */
+  rowVersion: number;
 };
-

@@ -8,19 +8,18 @@ import type { WorkspaceTaskDetailResponse } from './WorkspaceTaskDetailResponse'
  * ワークスペースタスク操作レスポンス
  */
 export type WorkspaceTaskResponse = {
-    /**
-     * 成功フラグ
-     */
-    success?: boolean;
-    /**
-     * メッセージ
-     */
-    message?: string;
-    workspaceTask?: WorkspaceTaskDetailResponse;
-    previousWorkspaceTask?: WorkspaceTaskDetailResponse;
-    /**
-     * 新規取得バッジ（タスク完了時のみ）
-     */
-    newAchievements?: Array<NewAchievementResponse> | null;
+  /**
+   * 成功フラグ
+   */
+  success?: boolean;
+  /**
+   * メッセージ
+   */
+  message?: string;
+  workspaceTask?: WorkspaceTaskDetailResponse;
+  previousWorkspaceTask?: WorkspaceTaskDetailResponse;
+  /**
+   * 新規取得バッジ（タスク完了時のみ）
+   */
+  newAchievements?: Array<NewAchievementResponse> | null;
 };
-

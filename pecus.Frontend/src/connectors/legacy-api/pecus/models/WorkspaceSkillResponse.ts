@@ -6,13 +6,12 @@
  * ワークスペーススキル情報
  */
 export type WorkspaceSkillResponse = {
-    /**
-     * スキルID
-     */
-    id: number;
-    /**
-     * スキル名
-     */
-    name: string;
+  /**
+   * スキルID
+   */
+  id: number;
+  /**
+   * スキル名
+   */
+  name: string;
 };
-

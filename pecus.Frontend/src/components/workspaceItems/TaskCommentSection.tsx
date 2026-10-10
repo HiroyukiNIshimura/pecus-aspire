@@ -9,7 +9,11 @@ import {
 } from '@/actions/workspaceTaskComment';
 import MessageContentRenderer from '@/components/common/feedback/MessageContentRenderer';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
+import type {
+  CreateTaskCommentRequest,
+  TaskCommentDetailResponse,
+  TaskCommentType,
+} from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
 import { useCurrentUserId } from '@/providers/AppSettingsProvider';

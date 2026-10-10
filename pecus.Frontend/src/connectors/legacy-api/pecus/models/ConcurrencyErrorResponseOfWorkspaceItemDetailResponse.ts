@@ -7,18 +7,17 @@ import type { WorkspaceItemDetailResponse } from './WorkspaceItemDetailResponse'
  * 競合エラーレスポンス（409 Conflict）
  */
 export type ConcurrencyErrorResponseOfWorkspaceItemDetailResponse = {
-    current?: WorkspaceItemDetailResponse;
-    /**
-     * HTTPステータスコード
-     */
-    statusCode?: number;
-    /**
-     * エラーメッセージ
-     */
-    message: string;
-    /**
-     * エラー詳細（オプション）
-     */
-    details?: string | null;
+  current?: WorkspaceItemDetailResponse;
+  /**
+   * HTTPステータスコード
+   */
+  statusCode?: number;
+  /**
+   * エラーメッセージ
+   */
+  message: string;
+  /**
+   * エラー詳細（オプション）
+   */
+  details?: string | null;
 };
-

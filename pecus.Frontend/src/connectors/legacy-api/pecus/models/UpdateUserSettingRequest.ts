@@ -11,47 +11,46 @@ import type { LandingPage } from './LandingPage';
  * 自ユーザー設定の更新リクエスト
  */
 export type UpdateUserSettingRequest = {
-    /**
-     * メールを受信するかどうか（マスターフラグ）
-     */
-    canReceiveEmail: boolean;
-    emailNotificationMode?: EmailNotificationMode;
-    customEmailSettings?: EmailNotificationCustomSettings;
-    /**
-     * メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
-     */
-    emailWorkspaceIds?: Array<number> | null;
-    /**
-     * 週間レポートを受信するかどうか
-     */
-    canReceiveWeeklyReport: boolean;
-    /**
-     * リアルタイム通知の可否
-     */
-    canReceiveRealtimeNotification: boolean;
-    /**
-     * タイムゾーン（TODO：未使用）
-     * IANA zone name
-     */
-    timeZone: string;
-    /**
-     * 言語設定（TODO：未使用）
-     */
-    language: string;
-    landingPage?: LandingPage;
-    focusScorePriority?: FocusScorePriority;
-    /**
-     * やることピックアップタスクの表示件数（5-20）
-     */
-    focusTasksLimit: number;
-    /**
-     * 待機中タスクの表示件数（5-20）
-     */
-    waitingTasksLimit: number;
-    badgeVisibility?: BadgeVisibility;
-    /**
-     * ユーザー設定の楽観的ロック用 RowVersion
-     */
-    rowVersion: number;
+  /**
+   * メールを受信するかどうか（マスターフラグ）
+   */
+  canReceiveEmail: boolean;
+  emailNotificationMode?: EmailNotificationMode;
+  customEmailSettings?: EmailNotificationCustomSettings;
+  /**
+   * メール通知を受信するワークスペースID一覧（nullの場合は全ワークスペース）
+   */
+  emailWorkspaceIds?: Array<number> | null;
+  /**
+   * 週間レポートを受信するかどうか
+   */
+  canReceiveWeeklyReport: boolean;
+  /**
+   * リアルタイム通知の可否
+   */
+  canReceiveRealtimeNotification: boolean;
+  /**
+   * タイムゾーン（TODO：未使用）
+   * IANA zone name
+   */
+  timeZone: string;
+  /**
+   * 言語設定（TODO：未使用）
+   */
+  language: string;
+  landingPage?: LandingPage;
+  focusScorePriority?: FocusScorePriority;
+  /**
+   * やることピックアップタスクの表示件数（5-20）
+   */
+  focusTasksLimit: number;
+  /**
+   * 待機中タスクの表示件数（5-20）
+   */
+  waitingTasksLimit: number;
+  badgeVisibility?: BadgeVisibility;
+  /**
+   * ユーザー設定の楽観的ロック用 RowVersion
+   */
+  rowVersion: number;
 };
-

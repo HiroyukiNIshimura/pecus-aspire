@@ -8,39 +8,38 @@ import type { AchievementDifficulty } from './AchievementDifficulty';
  * 新規取得実績レスポンス（タスク更新時のバッジ取得演出用）
  */
 export type NewAchievementResponse = {
-    /**
-     * 実績マスタID
-     */
-    id: number;
-    /**
-     * 実績コード
-     */
-    code: string;
-    /**
-     * 実績名
-     */
-    name: string;
-    /**
-     * 実績名（英語）
-     */
-    nameEn: string;
-    /**
-     * 説明文
-     */
-    description: string;
-    /**
-     * 説明文（英語）
-     */
-    descriptionEn: string;
-    /**
-     * アイコンパス
-     */
-    iconPath?: string | null;
-    difficulty: AchievementDifficulty;
-    category: AchievementCategory;
-    /**
-     * 取得日時
-     */
-    earnedAt: string;
+  /**
+   * 実績マスタID
+   */
+  id: number;
+  /**
+   * 実績コード
+   */
+  code: string;
+  /**
+   * 実績名
+   */
+  name: string;
+  /**
+   * 実績名（英語）
+   */
+  nameEn: string;
+  /**
+   * 説明文
+   */
+  description: string;
+  /**
+   * 説明文（英語）
+   */
+  descriptionEn: string;
+  /**
+   * アイコンパス
+   */
+  iconPath?: string | null;
+  difficulty: AchievementDifficulty;
+  category: AchievementCategory;
+  /**
+   * 取得日時
+   */
+  earnedAt: string;
 };
-

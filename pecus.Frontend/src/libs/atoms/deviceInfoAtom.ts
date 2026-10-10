@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
-import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
-import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
+import type { DeviceType } from '@/connectors/legacy-api/pecus/models/DeviceType';
+import type { OSPlatform } from '@/connectors/legacy-api/pecus/models/OSPlatform';
 
 export interface DeviceInfo {
   deviceName: string;

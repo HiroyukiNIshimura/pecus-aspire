@@ -15,7 +15,7 @@
       "src/**/*.js",
       "src/**/*.jsx",
       "!src/connectors/hey-api-axios",
-      "!src/connectors/api",
+      "!src/connectors/legacy-api",
       "!public"
     ]
   },

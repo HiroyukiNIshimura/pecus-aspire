@@ -4,7 +4,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { Tooltip } from '@/components/common/feedback/Tooltip';
-import type { AchievementCategory, AchievementCollectionResponse } from '@/connectors/api/pecus';
+import type { AchievementCategory, AchievementCollectionResponse } from '@/connectors/legacy-api/pecus';
 
 interface BadgeCardProps {
   achievement: AchievementCollectionResponse;

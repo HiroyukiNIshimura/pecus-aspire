@@ -6,9 +6,8 @@
  * 未読数レスポンス
  */
 export type ChatUnreadCountResponse = {
-    /**
-     * 全体の未読メッセージ数
-     */
-    totalUnreadCount: number;
+  /**
+   * 全体の未読メッセージ数
+   */
+  totalUnreadCount: number;
 };
-

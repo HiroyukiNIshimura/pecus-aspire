@@ -3,7 +3,12 @@
 import { useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
-import type { AgendaExceptionResponse, AgendaResponse, AttendanceStatus, RecurrenceType } from '@/connectors/api/pecus';
+import type {
+  AgendaExceptionResponse,
+  AgendaResponse,
+  AttendanceStatus,
+  RecurrenceType,
+} from '@/connectors/legacy-api/pecus';
 import { remarkItemCodeLinks } from '@/libs/markdown/remarkItemCodeLinks';
 import { formatDate, formatDateTime, formatTime } from '@/libs/utils/date';
 

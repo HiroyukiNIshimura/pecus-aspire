@@ -21,7 +21,7 @@ import type {
   DashboardTasksByPriorityResponse,
   DashboardTaskTrendResponse,
   DashboardWorkspaceBreakdownResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useOrganizationSettings } from '@/providers/AppSettingsProvider';
 
 interface DashboardClientProps {

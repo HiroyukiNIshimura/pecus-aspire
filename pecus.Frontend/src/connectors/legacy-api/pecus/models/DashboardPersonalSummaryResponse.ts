@@ -7,25 +7,24 @@
  * ログインユーザー自身のタスク状況を集計
  */
 export type DashboardPersonalSummaryResponse = {
-    /**
-     * 担当中タスク数（未完了・未破棄）
-     */
-    assignedCount: number;
-    /**
-     * 完了タスク数（指定期間内）
-     */
-    completedCount: number;
-    /**
-     * 期限切れタスク数
-     */
-    overdueCount: number;
-    /**
-     * 今週期限タスク数
-     */
-    dueThisWeekCount: number;
-    /**
-     * 今週完了したタスク数（ActivityベースではなくCompletedAtベース）
-     */
-    completedThisWeekCount: number;
+  /**
+   * 担当中タスク数（未完了・未破棄）
+   */
+  assignedCount: number;
+  /**
+   * 完了タスク数（指定期間内）
+   */
+  completedCount: number;
+  /**
+   * 期限切れタスク数
+   */
+  overdueCount: number;
+  /**
+   * 今週期限タスク数
+   */
+  dueThisWeekCount: number;
+  /**
+   * 今週完了したタスク数（ActivityベースではなくCompletedAtベース）
+   */
+  completedThisWeekCount: number;
 };
-

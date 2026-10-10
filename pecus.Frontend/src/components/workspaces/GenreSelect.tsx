@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import Select, { components, type OptionProps, type SingleValue, type StylesConfig } from 'react-select';
-import type { MasterGenreResponse } from '@/connectors/api/pecus';
+import type { MasterGenreResponse } from '@/connectors/legacy-api/pecus';
 
 /** react-select 用のオプション型 */
 interface GenreOption {

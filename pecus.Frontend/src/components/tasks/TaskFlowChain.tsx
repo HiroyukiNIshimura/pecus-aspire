@@ -1,6 +1,6 @@
 'use client';
 
-import type { TaskFlowNode } from '@/connectors/api/pecus';
+import type { TaskFlowNode } from '@/connectors/legacy-api/pecus';
 import TaskFlowCard from './TaskFlowCard';
 
 interface TaskFlowChainProps {

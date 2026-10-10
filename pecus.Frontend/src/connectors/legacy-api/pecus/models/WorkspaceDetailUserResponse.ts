@@ -7,34 +7,33 @@ import type { WorkspaceRole } from './WorkspaceRole';
  * ワークスペース詳細取得用ユーザー情報
  */
 export type WorkspaceDetailUserResponse = {
-    /**
-     * ユーザーID
-     */
-    id?: number;
-    /**
-     * ユーザー名
-     */
-    userName?: string;
-    /**
-     * メールアドレス
-     */
-    email?: string | null;
-    /**
-     * アイデンティティアイコン URL
-     */
-    identityIconUrl?: string | null;
-    workspaceRole?: WorkspaceRole;
-    /**
-     * アクティブフラグ
-     */
-    isActive?: boolean;
-    /**
-     * 最終ログイン日時
-     */
-    lastLoginAt?: string | null;
-    /**
-     * 自分自身のユーザーかどうか
-     */
-    isMe?: boolean;
+  /**
+   * ユーザーID
+   */
+  id?: number;
+  /**
+   * ユーザー名
+   */
+  userName?: string;
+  /**
+   * メールアドレス
+   */
+  email?: string | null;
+  /**
+   * アイデンティティアイコン URL
+   */
+  identityIconUrl?: string | null;
+  workspaceRole?: WorkspaceRole;
+  /**
+   * アクティブフラグ
+   */
+  isActive?: boolean;
+  /**
+   * 最終ログイン日時
+   */
+  lastLoginAt?: string | null;
+  /**
+   * 自分自身のユーザーかどうか
+   */
+  isMe?: boolean;
 };
-

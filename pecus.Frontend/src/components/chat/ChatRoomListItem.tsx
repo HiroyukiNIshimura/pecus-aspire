@@ -1,6 +1,6 @@
 'use client';
 
-import type { ChatRoomItem } from '@/connectors/api/pecus';
+import type { ChatRoomItem } from '@/connectors/legacy-api/pecus';
 import { formatRelativeTime } from '@/libs/utils/date';
 
 interface ChatRoomListItemProps {

@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { GenerateTextResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import type { GenerateTextResponse } from '@/connectors/legacy-api/pecus';
 import { type GenerateAiTextInput, generateAiTextInputSchema } from '@/schemas/aiAssistantSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';

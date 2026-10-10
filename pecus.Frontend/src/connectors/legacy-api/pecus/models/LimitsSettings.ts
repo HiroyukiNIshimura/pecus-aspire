@@ -6,25 +6,24 @@
  * 制限設定
  */
 export type LimitsSettings = {
-    /**
-     * 組織あたりの最大タグ数
-     */
-    maxTagsPerOrganization?: number;
-    /**
-     * 組織あたりの最大スキル数
-     */
-    maxSkillsPerOrganization?: number;
-    /**
-     * ドキュメントモードのワークスペースあたりの最大アイテム数
-     */
-    maxDocumentsPerWorkspace?: number;
-    /**
-     * アジェンダあたりの最大参加者数
-     */
-    maxAttendeesPerAgenda?: number;
-    /**
-     * アイテムあたりの最大タスク数
-     */
-    maxTasksPerItem?: number;
+  /**
+   * 組織あたりの最大タグ数
+   */
+  maxTagsPerOrganization?: number;
+  /**
+   * 組織あたりの最大スキル数
+   */
+  maxSkillsPerOrganization?: number;
+  /**
+   * ドキュメントモードのワークスペースあたりの最大アイテム数
+   */
+  maxDocumentsPerWorkspace?: number;
+  /**
+   * アジェンダあたりの最大参加者数
+   */
+  maxAttendeesPerAgenda?: number;
+  /**
+   * アイテムあたりの最大タスク数
+   */
+  maxTasksPerItem?: number;
 };
-

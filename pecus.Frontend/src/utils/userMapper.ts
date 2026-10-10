@@ -1,4 +1,4 @@
-import type { UserDetailResponse } from '@/connectors/api/pecus';
+import type { UserDetailResponse } from '@/connectors/legacy-api/pecus';
 import type { UserInfo } from '@/types/userInfo';
 
 /**

@@ -8,14 +8,13 @@ import type { WorkspaceTaskDetailResponse } from './WorkspaceTaskDetailResponse'
  * アイテムとそのタスクをグループ化したレスポンス
  */
 export type ItemWithTasksResponse = {
-    /**
-     * リスト内での一意なインデックス（フロントエンドのReact key用）
-     */
-    listIndex?: number;
-    item: TaskItemResponse;
-    /**
-     * アイテムに紐づくタスクのリスト
-     */
-    tasks: Array<WorkspaceTaskDetailResponse>;
+  /**
+   * リスト内での一意なインデックス（フロントエンドのReact key用）
+   */
+  listIndex?: number;
+  item: TaskItemResponse;
+  /**
+   * アイテムに紐づくタスクのリスト
+   */
+  tasks: Array<WorkspaceTaskDetailResponse>;
 };
-

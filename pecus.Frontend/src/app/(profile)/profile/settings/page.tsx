@@ -1,39 +1,34 @@
-import { getUserSafeErrorMessage } from "@/connectors/api/PecusApiClient";
 import {
   getProfileAppSettingsWithHeyApi,
   getProfileWithHeyApi,
   getWorkspacesWithHeyApi,
-} from "@/connectors/HeyApiClient";
+} from '@/connectors/HeyApiClient';
+import type {
+  UserSettingResponse as HeyUserSettingResponse,
+  WorkspaceListItemResponse as HeyWorkspaceListItemResponse,
+} from '@/connectors/hey-api-axios/types.gen';
+import { getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   OrganizationPublicSettings,
   UserSettingResponse,
   WorkspaceListItemResponse,
-} from "@/connectors/api/pecus";
-import type {
-  UserSettingResponse as HeyUserSettingResponse,
-  WorkspaceListItemResponse as HeyWorkspaceListItemResponse,
-} from "@/connectors/hey-api-axios/types.gen";
-import UserSettingsClient from "./UserSettingsClient";
+} from '@/connectors/legacy-api/pecus';
+import UserSettingsClient from './UserSettingsClient';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-function normalizeUserSettings(
-  setting: HeyUserSettingResponse,
-): UserSettingResponse {
+function normalizeUserSettings(setting: HeyUserSettingResponse): UserSettingResponse {
   return {
     ...setting,
     emailNotificationMode: setting.emailNotificationMode ?? undefined,
     landingPage: setting.landingPage ?? undefined,
     focusScorePriority: setting.focusScorePriority ?? undefined,
     badgeVisibility: setting.badgeVisibility ?? undefined,
-    pendingLandingPageRecommendation:
-      setting.pendingLandingPageRecommendation ?? undefined,
+    pendingLandingPageRecommendation: setting.pendingLandingPageRecommendation ?? undefined,
   };
 }
 
-function normalizeWorkspaceForSettings(
-  workspace: HeyWorkspaceListItemResponse,
-): WorkspaceListItemResponse {
+function normalizeWorkspaceForSettings(workspace: HeyWorkspaceListItemResponse): WorkspaceListItemResponse {
   return {
     id: workspace.id,
     name: workspace.name,
@@ -54,9 +49,7 @@ export default async function UserSettingsPage() {
   try {
     // ユーザー設定を取得
     const userResponse = await getProfileWithHeyApi();
-    userSettings = userResponse.setting
-      ? normalizeUserSettings(userResponse.setting)
-      : null;
+    userSettings = userResponse.setting ? normalizeUserSettings(userResponse.setting) : null;
 
     // 組織設定を取得（ゲーミフィケーション設定のため）
     const appSettings = await getProfileAppSettingsWithHeyApi();
@@ -66,22 +59,19 @@ export default async function UserSettingsPage() {
     const workspacesResponse = await getWorkspacesWithHeyApi();
     workspaces = workspacesResponse.data.map(normalizeWorkspaceForSettings);
   } catch (error) {
-    console.error("Failed to fetch user settings data:", error);
-    fetchError = getUserSafeErrorMessage(
-      error,
-      "ユーザー設定情報の取得に失敗しました",
-    );
+    console.error('Failed to fetch user settings data:', error);
+    fetchError = getUserSafeErrorMessage(error, 'ユーザー設定情報の取得に失敗しました');
   }
 
   // 設定が取得できない場合はデフォルト値を使用
   const defaultSettings: UserSettingResponse = {
     rowVersion: 0,
     canReceiveEmail: true,
-    emailNotificationMode: "Standard",
+    emailNotificationMode: 'Standard',
     canReceiveWeeklyReport: false,
     canReceiveRealtimeNotification: true,
-    timeZone: "Asia/Tokyo",
-    language: "ja-JP",
+    timeZone: 'Asia/Tokyo',
+    language: 'ja-JP',
     focusTasksLimit: 5,
     waitingTasksLimit: 5,
   };

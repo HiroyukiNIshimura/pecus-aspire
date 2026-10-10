@@ -11,7 +11,7 @@ import type {
   RecurrenceType,
   UpdateAgendaRequest,
   UpdateFromOccurrenceRequest,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 
 /** 編集範囲 */

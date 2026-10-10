@@ -6,7 +6,7 @@ import { getTaskFlowMap } from '@/actions/workspaceTask';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import TaskFlowMap from '@/components/tasks/TaskFlowMap';
-import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/api/pecus';
+import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/legacy-api/pecus';
 
 /** 表示モード */
 type ViewMode = 'chain' | 'graph';

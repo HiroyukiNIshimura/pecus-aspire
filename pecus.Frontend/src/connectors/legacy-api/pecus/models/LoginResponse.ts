@@ -10,56 +10,55 @@ import type { RoleInfoResponse } from './RoleInfoResponse';
  * ログインレスポンス
  */
 export type LoginResponse = {
-    /**
-     * JWTアクセストークン
-     */
-    accessToken: string;
-    /**
-     * トークンタイプ（常に "Bearer"）
-     */
-    tokenType?: string;
-    /**
-     * トークンの有効期限（UTC）
-     */
-    expiresAt?: string;
-    /**
-     * トークンの有効時間（秒）
-     */
-    expiresIn?: number;
-    /**
-     * ユーザーID
-     */
-    userId?: number;
-    /**
-     * ログインID
-     */
-    loginId: string;
-    /**
-     * ユーザー名
-     */
-    username: string;
-    /**
-     * メールアドレス
-     */
-    email: string;
-    avatarType?: AvatarType;
-    /**
-     * アイデンティティアイコンURL
-     */
-    identityIconUrl?: string | null;
-    /**
-     * ユーザーが持つロール一覧
-     */
-    roles?: Array<RoleInfoResponse>;
-    /**
-     * リフレッシュトークン
-     */
-    refreshToken?: string | null;
-    /**
-     * リフレッシュトークンの有効期限（UTC）
-     */
-    refreshExpiresAt?: string | null;
-    device?: LoginDeviceInfo;
-    landingPage?: LandingPage;
+  /**
+   * JWTアクセストークン
+   */
+  accessToken: string;
+  /**
+   * トークンタイプ（常に "Bearer"）
+   */
+  tokenType?: string;
+  /**
+   * トークンの有効期限（UTC）
+   */
+  expiresAt?: string;
+  /**
+   * トークンの有効時間（秒）
+   */
+  expiresIn?: number;
+  /**
+   * ユーザーID
+   */
+  userId?: number;
+  /**
+   * ログインID
+   */
+  loginId: string;
+  /**
+   * ユーザー名
+   */
+  username: string;
+  /**
+   * メールアドレス
+   */
+  email: string;
+  avatarType?: AvatarType;
+  /**
+   * アイデンティティアイコンURL
+   */
+  identityIconUrl?: string | null;
+  /**
+   * ユーザーが持つロール一覧
+   */
+  roles?: Array<RoleInfoResponse>;
+  /**
+   * リフレッシュトークン
+   */
+  refreshToken?: string | null;
+  /**
+   * リフレッシュトークンの有効期限（UTC）
+   */
+  refreshExpiresAt?: string | null;
+  device?: LoginDeviceInfo;
+  landingPage?: LandingPage;
 };
-

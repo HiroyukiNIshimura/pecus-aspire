@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { CreateOrganizationRequest } from '@/connectors/api/pecus';
+import type { CreateOrganizationRequest } from '@/connectors/legacy-api/pecus';
 import { type CreateOrganizationFormData, createOrganizationSchema } from '@/schemas/backofficeSchemas';
 
 interface CreateOrganizationModalProps {

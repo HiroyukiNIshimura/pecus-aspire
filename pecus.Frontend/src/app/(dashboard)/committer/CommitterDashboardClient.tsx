@@ -5,7 +5,7 @@ import { fetchCommitterTasksByWorkspace } from '@/actions/myCommitter';
 import DashboardFilterBar from '@/components/common/filters/DashboardFilterBar';
 import WorkspaceTaskAccordion, { type WorkspaceInfo } from '@/components/common/widgets/WorkspaceTaskAccordion';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import type { DashboardTaskFilter, MyCommitterWorkspaceResponse } from '@/connectors/api/pecus';
+import type { DashboardTaskFilter, MyCommitterWorkspaceResponse } from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 
 interface CommitterDashboardClientProps {

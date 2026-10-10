@@ -6,17 +6,16 @@
  * タグ更新リクエスト
  */
 export type UpdateTagRequest = {
-    /**
-     * タグ名
-     */
-    name: string;
-    /**
-     * アクティブフラグ
-     */
-    isActive?: boolean | null;
-    /**
-     * タグの楽観的ロック用のRowVersion
-     */
-    rowVersion: number;
+  /**
+   * タグ名
+   */
+  name: string;
+  /**
+   * アクティブフラグ
+   */
+  isActive?: boolean | null;
+  /**
+   * タグの楽観的ロック用のRowVersion
+   */
+  rowVersion: number;
 };
-

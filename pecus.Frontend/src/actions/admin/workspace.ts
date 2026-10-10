@@ -4,13 +4,13 @@ import {
   createPecusApiClients,
   detectConcurrencyError,
   detectMemberHasAssignmentsError,
-} from '@/connectors/api/PecusApiClient';
+} from '@/connectors/legacy-api/PecusApiClient';
 import type {
   PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
   SuccessResponse,
   WorkspaceDetailResponse,
   WorkspaceUserDetailResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type ActivateWorkspaceInput,
   type AddWorkspaceMemberInput,

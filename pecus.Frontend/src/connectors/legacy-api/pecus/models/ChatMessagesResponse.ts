@@ -7,17 +7,16 @@ import type { ChatMessageItem } from './ChatMessageItem';
  * メッセージ一覧レスポンス
  */
 export type ChatMessagesResponse = {
-    /**
-     * メッセージ一覧
-     */
-    messages: Array<ChatMessageItem>;
-    /**
-     * 次ページカーソル（null の場合は最後のページ）
-     */
-    nextCursor?: number | null;
-    /**
-     * さらにメッセージがあるか
-     */
-    hasMore?: boolean;
+  /**
+   * メッセージ一覧
+   */
+  messages: Array<ChatMessageItem>;
+  /**
+   * 次ページカーソル（null の場合は最後のページ）
+   */
+  nextCursor?: number | null;
+  /**
+   * さらにメッセージがあるか
+   */
+  hasMore?: boolean;
 };
-

@@ -23,7 +23,7 @@ import type {
   WorkspaceMemberAssignmentsResponse,
   WorkspaceRole,
   WorkspaceUserDetailResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';

@@ -6,9 +6,8 @@
  * タスク内容提案レスポンス
  */
 export type TaskContentSuggestionResponse = {
-    /**
-     * 提案されたタスク内容（プレーンテキスト）
-     */
-    suggestedContent?: string;
+  /**
+   * 提案されたタスク内容（プレーンテキスト）
+   */
+  suggestedContent?: string;
 };
-

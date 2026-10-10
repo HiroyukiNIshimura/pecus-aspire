@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import DatePicker from '@/components/common/filters/DatePicker';
-import type { SystemNotificationType } from '@/connectors/api/pecus';
+import type { SystemNotificationType } from '@/connectors/legacy-api/pecus';
 import {
   type CreateNotificationFormData,
   createNotificationBaseSchema,

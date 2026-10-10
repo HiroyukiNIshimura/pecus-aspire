@@ -1,8 +1,8 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { parseRouterError, unauthorizedError } from '@/app/api/routerError';
-import type { DeviceResponse } from '@/connectors/api/pecus';
 import { getProfileDevicesWithHeyApi } from '@/connectors/HeyApiClient';
+import type { DeviceResponse } from '@/connectors/legacy-api/pecus';
 import { getApiBaseUrl } from '@/libs/env';
 import { ServerSessionManager } from '@/libs/serverSession';
 

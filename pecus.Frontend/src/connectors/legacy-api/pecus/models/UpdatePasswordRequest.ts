@@ -6,7 +6,6 @@
  * パスワード変更リクエスト
  */
 export type UpdatePasswordRequest = {
-    currentPassword: string;
-    newPassword: string;
+  currentPassword: string;
+  newPassword: string;
 };
-

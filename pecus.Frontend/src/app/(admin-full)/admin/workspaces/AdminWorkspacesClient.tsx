@@ -13,7 +13,7 @@ import type {
   PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
   WorkspaceListItemResponse,
   WorkspaceStatistics,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';

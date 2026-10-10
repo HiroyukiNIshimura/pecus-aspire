@@ -12,7 +12,7 @@ import type {
   BackOfficeNotificationListItemResponse,
   PagedResponseOfBackOfficeNotificationListItemResponse,
   SystemNotificationType,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';

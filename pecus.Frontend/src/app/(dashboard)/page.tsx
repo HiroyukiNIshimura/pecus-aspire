@@ -1,14 +1,3 @@
-import type {
-  AchievementRankingResponse,
-  DashboardHelpCommentsResponse,
-  DashboardHotItemsResponse,
-  DashboardHotWorkspacesResponse,
-  DashboardPersonalSummaryResponse,
-  DashboardSummaryResponse,
-  DashboardTasksByPriorityResponse,
-  DashboardTaskTrendResponse,
-  DashboardWorkspaceBreakdownResponse,
-} from '@/connectors/api/pecus';
 import {
   getAchievementsRankingWithHeyApi,
   getDashboardHelpCommentsWithHeyApi,
@@ -20,6 +9,17 @@ import {
   getDashboardTasksTrendWithHeyApi,
   getDashboardWorkspacesWithHeyApi,
 } from '@/connectors/HeyApiClient';
+import type {
+  AchievementRankingResponse,
+  DashboardHelpCommentsResponse,
+  DashboardHotItemsResponse,
+  DashboardHotWorkspacesResponse,
+  DashboardPersonalSummaryResponse,
+  DashboardSummaryResponse,
+  DashboardTasksByPriorityResponse,
+  DashboardTaskTrendResponse,
+  DashboardWorkspaceBreakdownResponse,
+} from '@/connectors/legacy-api/pecus';
 import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';

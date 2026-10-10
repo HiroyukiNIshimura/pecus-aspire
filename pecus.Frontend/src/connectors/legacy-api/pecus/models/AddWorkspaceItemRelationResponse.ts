@@ -7,14 +7,13 @@ import type { WorkspaceItemRelationResponse } from './WorkspaceItemRelationRespo
  * ワークスペースアイテム関連追加レスポンス
  */
 export type AddWorkspaceItemRelationResponse = {
-    /**
-     * 成功フラグ
-     */
-    success?: boolean;
-    /**
-     * メッセージ
-     */
-    message?: string;
-    relation?: WorkspaceItemRelationResponse;
+  /**
+   * 成功フラグ
+   */
+  success?: boolean;
+  /**
+   * メッセージ
+   */
+  message?: string;
+  relation?: WorkspaceItemRelationResponse;
 };
-

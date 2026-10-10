@@ -2,99 +2,100 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
+import type { CancelablePromise } from '../core/CancelablePromise';
+import { OpenAPI } from '../core/OpenAPI';
+import { request as __request } from '../core/request';
 import type { AdminUpdateOrganizationRequest } from '../models/AdminUpdateOrganizationRequest';
 import type { AdminUpdateOrganizationSettingRequest } from '../models/AdminUpdateOrganizationSettingRequest';
 import type { GetAvailableModelsRequest } from '../models/GetAvailableModelsRequest';
 import type { GetAvailableModelsResponse } from '../models/GetAvailableModelsResponse';
 import type { OrganizationResponse } from '../models/OrganizationResponse';
 import type { OrganizationSettingResponse } from '../models/OrganizationSettingResponse';
-import type { CancelablePromise } from '../core/CancelablePromise';
-import { OpenAPI } from '../core/OpenAPI';
-import { request as __request } from '../core/request';
 export class AdminOrganizationService {
-    /**
-     * 自組織の情報を取得
-     * ログイン中のユーザーが属する組織の詳細情報を取得します。
-     * @returns OrganizationResponse OK
-     * @throws ApiError
-     */
-    public static getApiAdminOrganization(): CancelablePromise<OrganizationResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/admin/organization',
-            errors: {
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * 自組織の情報を更新
-     * ログイン中のユーザーが属する組織の情報を更新します。
-     * @param requestBody
-     * @returns OrganizationResponse OK
-     * @throws ApiError
-     */
-    public static putApiAdminOrganization(
-        requestBody: AdminUpdateOrganizationRequest,
-    ): CancelablePromise<OrganizationResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/admin/organization',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                404: `Not Found`,
-                409: `Conflict`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * 自組織の設定を更新
-     * タスク期限や配信設定などの組織設定を更新します。
-     * @param requestBody
-     * @returns OrganizationSettingResponse OK
-     * @throws ApiError
-     */
-    public static putApiAdminOrganizationSetting(
-        requestBody: AdminUpdateOrganizationSettingRequest,
-    ): CancelablePromise<OrganizationSettingResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/admin/organization/setting',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                404: `Not Found`,
-                409: `Conflict`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * 指定したAPIキーとベンダーで利用可能なAIモデル一覧を取得
-     * APIキーとベンダーを指定して、そのベンダーで利用可能なモデル一覧を取得します。
-     * モデル選択UIで使用します。
-     * 外部API呼び出し時のエラー（認証エラー等）はレスポンスのSuccess=falseとErrorMessageで返します。
-     * @param requestBody
-     * @returns GetAvailableModelsResponse OK
-     * @throws ApiError
-     */
-    public static postApiAdminOrganizationAvailableModels(
-        requestBody: GetAvailableModelsRequest,
-    ): CancelablePromise<GetAvailableModelsResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/admin/organization/available-models',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
+  /**
+   * 自組織の情報を取得
+   * ログイン中のユーザーが属する組織の詳細情報を取得します。
+   * @returns OrganizationResponse OK
+   * @throws ApiError
+   */
+  public static getApiAdminOrganization(): CancelablePromise<OrganizationResponse> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/admin/organization',
+      errors: {
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * 自組織の情報を更新
+   * ログイン中のユーザーが属する組織の情報を更新します。
+   * @param requestBody
+   * @returns OrganizationResponse OK
+   * @throws ApiError
+   */
+  public static putApiAdminOrganization(
+    requestBody: AdminUpdateOrganizationRequest,
+  ): CancelablePromise<OrganizationResponse> {
+    return __request(OpenAPI, {
+      method: 'PUT',
+      url: '/api/admin/organization',
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        404: `Not Found`,
+        409: `Conflict`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * 自組織の設定を更新
+   * タスク期限や配信設定などの組織設定を更新します。
+   * @param requestBody
+   * @returns OrganizationSettingResponse OK
+   * @throws ApiError
+   */
+  public static putApiAdminOrganizationSetting(
+    requestBody: AdminUpdateOrganizationSettingRequest,
+  ): CancelablePromise<OrganizationSettingResponse> {
+    return __request(OpenAPI, {
+      method: 'PUT',
+      url: '/api/admin/organization/setting',
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        404: `Not Found`,
+        409: `Conflict`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * 指定したAPIキーとベンダーで利用可能なAIモデル一覧を取得
+   * APIキーとベンダーを指定して、そのベンダーで利用可能なモデル一覧を取得します。
+   * モデル選択UIで使用します。
+   * 外部API呼び出し時のエラー（認証エラー等）はレスポンスのSuccess=falseとErrorMessageで返します。
+   * @param requestBody
+   * @returns GetAvailableModelsResponse OK
+   * @throws ApiError
+   */
+  public static postApiAdminOrganizationAvailableModels(
+    requestBody: GetAvailableModelsRequest,
+  ): CancelablePromise<GetAvailableModelsResponse> {
+    return __request(OpenAPI, {
+      method: 'POST',
+      url: '/api/admin/organization/available-models',
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
 }

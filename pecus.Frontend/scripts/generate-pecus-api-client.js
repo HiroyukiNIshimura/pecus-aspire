@@ -3,8 +3,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const PECUS_SERVICES_DIR = path.join(__dirname, '..', 'src', 'connectors', 'api', 'pecus', 'services');
-const OUTPUT_FILE = path.join(__dirname, '..', 'src', 'connectors', 'api', 'PecusApiClient.generated.ts');
+const PECUS_SERVICES_DIR = path.join(__dirname, '..', 'src', 'connectors', 'legacy-api', 'pecus', 'services');
+const OUTPUT_FILE = path.join(__dirname, '..', 'src', 'connectors', 'legacy-api', 'PecusApiClient.generated.ts');
 
 function getServiceClassName(fileName) {
   return fileName.replace('.ts', '');

@@ -2,9 +2,9 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { fetchRecentOccurrencesPaginated } from '@/actions/agenda';
-import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
-import type { AgendaOccurrenceResponse } from '@/connectors/api/pecus';
 import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
+import type { AgendaOccurrenceResponse } from '@/connectors/legacy-api/pecus';
 import AgendaPageClient from './AgendaPageClient';
 
 export default async function AgendasPage() {

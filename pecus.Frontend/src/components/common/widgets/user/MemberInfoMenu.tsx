@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { AssigneeTaskLoadResponse } from '@/connectors/api/pecus';
+import type { AssigneeTaskLoadResponse } from '@/connectors/legacy-api/pecus';
 import UserBadgesPopover from './UserBadgesPopover';
 import UserSkillsPopover from './UserSkillsPopover';
 import UserWorkloadPopover from './UserWorkloadPopover';

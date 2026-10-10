@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import DatePicker from '@/components/common/filters/DatePicker';
-import type { AgendaAttendeeRequest, AgendaResponse, RecurrenceType } from '@/connectors/api/pecus';
+import type { AgendaAttendeeRequest, AgendaResponse, RecurrenceType } from '@/connectors/legacy-api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useLimitsSettings } from '@/providers/AppSettingsProvider';
 import { createAgendaSchema } from '@/schemas/agendaSchemas';

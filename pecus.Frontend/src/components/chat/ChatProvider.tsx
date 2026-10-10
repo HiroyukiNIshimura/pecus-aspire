@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { getChatRooms, getChatUnreadCounts } from '@/actions/chat';
-import type { ChatRoomItem } from '@/connectors/api/pecus';
+import type { ChatRoomItem } from '@/connectors/legacy-api/pecus';
 import { useSignalREvent } from '@/hooks/useSignalR';
 import { useChatStore } from '@/stores/chatStore';
 import ChatBottomDrawer from './ChatBottomDrawer';

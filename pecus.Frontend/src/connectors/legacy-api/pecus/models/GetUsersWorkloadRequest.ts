@@ -6,9 +6,8 @@
  * 複数ユーザーの負荷情報取得リクエスト
  */
 export type GetUsersWorkloadRequest = {
-    /**
-     * 取得対象のユーザーIDリスト（最大50件）
-     */
-    userIds: Array<number>;
+  /**
+   * 取得対象のユーザーIDリスト（最大50件）
+   */
+  userIds: Array<number>;
 };
-

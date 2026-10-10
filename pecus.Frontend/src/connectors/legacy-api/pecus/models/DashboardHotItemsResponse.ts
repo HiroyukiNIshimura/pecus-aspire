@@ -8,13 +8,12 @@ import type { HotItemEntry } from './HotItemEntry';
  * 直近で作業が活発なアイテムのランキング
  */
 export type DashboardHotItemsResponse = {
-    /**
-     * 集計期間（"24h" または "1week"）
-     */
-    period: string;
-    /**
-     * ホットアイテムリスト（アクティビティ数の多い順）
-     */
-    items: Array<HotItemEntry>;
+  /**
+   * 集計期間（"24h" または "1week"）
+   */
+  period: string;
+  /**
+   * ホットアイテムリスト（アクティビティ数の多い順）
+   */
+  items: Array<HotItemEntry>;
 };
-

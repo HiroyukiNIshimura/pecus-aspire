@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { WorkspaceMemberAssignmentsResponse, WorkspaceRole } from '@/connectors/api/pecus';
+import type { WorkspaceMemberAssignmentsResponse, WorkspaceRole } from '@/connectors/legacy-api/pecus';
 
 /** null を除外したワークスペースロール型 */
 type WorkspaceRoleValue = NonNullable<WorkspaceRole>;

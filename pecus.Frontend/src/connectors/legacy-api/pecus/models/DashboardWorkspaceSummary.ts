@@ -6,13 +6,12 @@
  * ワークスペースサマリ
  */
 export type DashboardWorkspaceSummary = {
-    /**
-     * ワークスペース総数（アクティブなワークスペース）
-     */
-    totalCount: number;
-    /**
-     * ドキュメントモードのワークスペース数
-     */
-    documentModeCount: number;
+  /**
+   * ワークスペース総数（アクティブなワークスペース）
+   */
+  totalCount: number;
+  /**
+   * ドキュメントモードのワークスペース数
+   */
+  documentModeCount: number;
 };
-

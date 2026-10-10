@@ -10,8 +10,7 @@ import type { DashboardWorkspaceSummary } from './DashboardWorkspaceSummary';
  * タスクとアイテムの現在状態を集計したサマリ情報
  */
 export type DashboardSummaryResponse = {
-    taskSummary: DashboardTaskSummary;
-    itemSummary: DashboardItemSummary;
-    workspaceSummary: DashboardWorkspaceSummary;
+  taskSummary: DashboardTaskSummary;
+  itemSummary: DashboardItemSummary;
+  workspaceSummary: DashboardWorkspaceSummary;
 };
-

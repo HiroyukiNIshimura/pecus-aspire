@@ -1,6 +1,6 @@
 'use client';
 
-import type { DashboardTaskFilter } from '@/connectors/api/pecus';
+import type { DashboardTaskFilter } from '@/connectors/legacy-api/pecus';
 
 export interface FilterStats {
   activeCount: number;

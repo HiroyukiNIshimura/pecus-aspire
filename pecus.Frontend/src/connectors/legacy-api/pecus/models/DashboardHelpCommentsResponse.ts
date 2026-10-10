@@ -7,13 +7,12 @@ import type { HelpCommentItem } from './HelpCommentItem';
  * ダッシュボード ヘルプコメント一覧レスポンス
  */
 export type DashboardHelpCommentsResponse = {
-    /**
-     * ヘルプコメント一覧
-     */
-    comments: Array<HelpCommentItem>;
-    /**
-     * 総件数
-     */
-    totalCount: number;
+  /**
+   * ヘルプコメント一覧
+   */
+  comments: Array<HelpCommentItem>;
+  /**
+   * 総件数
+   */
+  totalCount: number;
 };
-

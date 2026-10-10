@@ -4,7 +4,7 @@ import {
   createAuthenticatedAxios,
   createPecusApiClients,
   detectConcurrencyError,
-} from '@/connectors/api/PecusApiClient';
+} from '@/connectors/legacy-api/PecusApiClient';
 import type {
   AppPublicSettingsResponse,
   EmailChangeRequestResponse,
@@ -13,7 +13,7 @@ import type {
   SuccessResponse,
   UserDetailResponse,
   UserSettingResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type DeleteAvatarFileInput,
   type DeleteDeviceInput,

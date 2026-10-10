@@ -1,7 +1,7 @@
 import { getGenres } from '@/actions/master';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import type { MasterGenreResponse } from '@/connectors/api/pecus';
 import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
+import type { MasterGenreResponse } from '@/connectors/legacy-api/pecus';
 import { handleServerFetch } from '@/libs/serverFetch';
 import AdminWorkspacesClient from './AdminWorkspacesClient';
 

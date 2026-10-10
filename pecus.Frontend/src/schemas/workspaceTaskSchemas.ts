@@ -7,7 +7,7 @@ import type {
   TaskSortBy,
   TaskStatusFilter,
   UpdateWorkspaceTaskRequest,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 
 /**
  * タスク優先度の選択肢

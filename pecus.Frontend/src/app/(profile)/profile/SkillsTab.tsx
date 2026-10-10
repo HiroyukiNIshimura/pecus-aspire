@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { setUserSkills } from '@/actions/profile';
-import type { MasterSkillResponse } from '@/connectors/api/pecus';
+import type { MasterSkillResponse } from '@/connectors/legacy-api/pecus';
 
 interface SkillsTabProps {
   initialSkillIds: number[];

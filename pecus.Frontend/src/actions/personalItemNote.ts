@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
-import type { PersonalItemNoteResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
+import type { PersonalItemNoteResponse } from '@/connectors/legacy-api/pecus';
 import {
   type CreatePersonalItemNoteInput,
   createPersonalItemNoteInputSchema,

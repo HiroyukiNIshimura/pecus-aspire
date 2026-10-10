@@ -6,7 +6,7 @@ import {
   detect404ValidationError,
   getHttpErrorInfo,
   getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+} from '@/connectors/legacy-api/PecusApiClient';
 
 export type RouterErrorType = {
   error: string;

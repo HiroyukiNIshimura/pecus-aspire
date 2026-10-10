@@ -2,37 +2,38 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { PagedResponseOfActivityResponse } from '../models/PagedResponseOfActivityResponse';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
+import type { PagedResponseOfActivityResponse } from '../models/PagedResponseOfActivityResponse';
 export class ActivityService {
-    /**
-     * アイテムのアクティビティ一覧を取得（タイムライン表示用）
-     * @param workspaceId ワークスペースID
-     * @param itemId アイテムID
-     * @param page ページ番号（1から開始）
-     * @returns PagedResponseOfActivityResponse OK
-     * @throws ApiError
-     */
-    public static getApiWorkspacesItemsActivities(
-        workspaceId: number,
-        itemId: number,
-        page: number = 1,
-    ): CancelablePromise<PagedResponseOfActivityResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/activities',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-            },
-            query: {
-                'page': page,
-            },
-            errors: {
-                404: `Not Found`,
-            },
-        });
-    }
+  /**
+   * アイテムのアクティビティ一覧を取得（タイムライン表示用）
+   * @param workspaceId ワークスペースID
+   * @param itemId アイテムID
+   * @param page ページ番号（1から開始）
+   * @returns PagedResponseOfActivityResponse OK
+   * @throws ApiError
+   */
+  public static getApiWorkspacesItemsActivities(
+    workspaceId: number,
+    itemId: number,
+    page: number = 1,
+  ): CancelablePromise<PagedResponseOfActivityResponse> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/activities',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+      },
+      query: {
+        page: page,
+      },
+      errors: {
+        404: `Not Found`,
+      },
+    });
+  }
 }

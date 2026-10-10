@@ -12,7 +12,7 @@ import {
   useEdgesState,
   useNodesState,
 } from '@xyflow/react';
-import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/api/pecus';
+import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/legacy-api/pecus';
 import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import TaskFlowGraphNode from './TaskFlowGraphNode';

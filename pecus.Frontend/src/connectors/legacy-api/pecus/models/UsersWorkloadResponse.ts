@@ -7,9 +7,8 @@ import type { UserWorkloadInfo } from './UserWorkloadInfo';
  * 複数ユーザーの負荷情報レスポンス
  */
 export type UsersWorkloadResponse = {
-    /**
-     * ユーザーID別の負荷情報
-     */
-    workloads?: Record<string, UserWorkloadInfo>;
+  /**
+   * ユーザーID別の負荷情報
+   */
+  workloads?: Record<string, UserWorkloadInfo>;
 };
-

@@ -7,6 +7,5 @@ import type { ChatNotificationSetting } from './ChatNotificationSetting';
  * 通知設定更新リクエスト
  */
 export type UpdateNotificationSettingRequest = {
-    setting: ChatNotificationSetting;
+  setting: ChatNotificationSetting;
 };
-

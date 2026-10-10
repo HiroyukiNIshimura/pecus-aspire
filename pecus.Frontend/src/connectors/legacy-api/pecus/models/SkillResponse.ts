@@ -7,14 +7,13 @@ import type { SkillDetailResponse } from './SkillDetailResponse';
  * スキルレスポンス
  */
 export type SkillResponse = {
-    /**
-     * 成功フラグ
-     */
-    success?: boolean;
-    /**
-     * メッセージ
-     */
-    message: string;
-    skill?: SkillDetailResponse;
+  /**
+   * 成功フラグ
+   */
+  success?: boolean;
+  /**
+   * メッセージ
+   */
+  message: string;
+  skill?: SkillDetailResponse;
 };
-

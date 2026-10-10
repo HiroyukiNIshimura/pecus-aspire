@@ -6,13 +6,12 @@
  * 外部公開用タスク種類参照
  */
 export type ExternalTaskTypeRefResponse = {
-    /**
-     * タスク種類コード
-     */
-    code: string;
-    /**
-     * タスク種類名
-     */
-    name: string;
+  /**
+   * タスク種類コード
+   */
+  code: string;
+  /**
+   * タスク種類名
+   */
+  name: string;
 };
-

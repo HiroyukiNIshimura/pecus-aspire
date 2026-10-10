@@ -1,11 +1,15 @@
 import { redirect } from 'next/navigation';
-import { detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
-import type { ChatRoomItem } from '@/connectors/api/pecus';
 import { getChatRoomsWithHeyApi, getChatUnreadByCategoryWithHeyApi } from '@/connectors/HeyApiClient';
 import type {
   ChatMessageItem as HeyChatMessageItem,
   ChatRoomItem as HeyChatRoomItem,
 } from '@/connectors/hey-api-axios/types.gen';
+import {
+  detect401ValidationError,
+  getHttpErrorInfo,
+  getUserSafeErrorMessage,
+} from '@/connectors/legacy-api/PecusApiClient';
+import type { ChatRoomItem } from '@/connectors/legacy-api/pecus';
 import { ServerSessionManager } from '@/libs/serverSession';
 import ChatFullScreenClient from './ChatFullScreenClient';
 

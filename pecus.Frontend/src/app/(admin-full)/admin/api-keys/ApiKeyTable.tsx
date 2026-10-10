@@ -1,6 +1,6 @@
 'use client';
 
-import type { ExternalApiKeyResponse } from '@/connectors/api/pecus';
+import type { ExternalApiKeyResponse } from '@/connectors/legacy-api/pecus';
 import { formatDate } from '@/libs/utils/date';
 
 interface Props {

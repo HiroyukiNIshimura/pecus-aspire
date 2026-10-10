@@ -8,29 +8,28 @@ import type { SkillUserCountResponse } from './SkillUserCountResponse';
  * ユーザー統計情報レスポンス
  */
 export type UserStatistics = {
-    /**
-     * スキルごとのユーザー数サマリ
-     */
-    skillCounts: Array<SkillUserCountResponse>;
-    /**
-     * ロールごとのユーザー数サマリ
-     */
-    roleCounts: Array<RoleUserCountResponse>;
-    /**
-     * アクティブなユーザー数
-     */
-    activeUserCount: number;
-    /**
-     * 非アクティブなユーザー数
-     */
-    inactiveUserCount: number;
-    /**
-     * ワークスペースに参加しているユーザー数
-     */
-    workspaceParticipationCount: number;
-    /**
-     * ワークスペースに参加していないユーザー数
-     */
-    noWorkspaceParticipationCount: number;
+  /**
+   * スキルごとのユーザー数サマリ
+   */
+  skillCounts: Array<SkillUserCountResponse>;
+  /**
+   * ロールごとのユーザー数サマリ
+   */
+  roleCounts: Array<RoleUserCountResponse>;
+  /**
+   * アクティブなユーザー数
+   */
+  activeUserCount: number;
+  /**
+   * 非アクティブなユーザー数
+   */
+  inactiveUserCount: number;
+  /**
+   * ワークスペースに参加しているユーザー数
+   */
+  workspaceParticipationCount: number;
+  /**
+   * ワークスペースに参加していないユーザー数
+   */
+  noWorkspaceParticipationCount: number;
 };
-

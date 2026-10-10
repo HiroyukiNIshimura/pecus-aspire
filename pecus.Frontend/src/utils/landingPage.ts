@@ -1,4 +1,4 @@
-import type { LandingPage } from '@/connectors/api/pecus';
+import type { LandingPage } from '@/connectors/legacy-api/pecus';
 
 /**
  * LandingPage 列挙値を URL パスに変換

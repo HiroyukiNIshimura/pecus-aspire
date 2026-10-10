@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   DashboardHelpCommentsResponse,
   DashboardPersonalSummaryResponse,
@@ -10,7 +10,7 @@ import type {
   DashboardWorkspaceBreakdownResponse,
   HealthAnalysisRequest,
   HealthAnalysisResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { type AnalyzeHealthInput, analyzeHealthInputSchema } from '@/schemas/dashboardSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';

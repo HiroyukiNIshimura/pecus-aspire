@@ -2,6 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
+import type { CancelablePromise } from '../core/CancelablePromise';
+import { OpenAPI } from '../core/OpenAPI';
+import { request as __request } from '../core/request';
 import type { BackOfficeBotResponse } from '../models/BackOfficeBotResponse';
 import type { BackOfficeDeleteOrganizationRequest } from '../models/BackOfficeDeleteOrganizationRequest';
 import type { BackOfficeOrganizationDetailResponse } from '../models/BackOfficeOrganizationDetailResponse';
@@ -11,211 +15,202 @@ import type { CreateOrganizationRequest } from '../models/CreateOrganizationRequ
 import type { OrganizationWithAdminResponse } from '../models/OrganizationWithAdminResponse';
 import type { PagedResponseOfBackOfficeOrganizationListItemResponse } from '../models/PagedResponseOfBackOfficeOrganizationListItemResponse';
 import type { SuccessResponse } from '../models/SuccessResponse';
-import type { CancelablePromise } from '../core/CancelablePromise';
-import { OpenAPI } from '../core/OpenAPI';
-import { request as __request } from '../core/request';
 export class BackOfficeOrganizationsService {
-    /**
-     * 組織一覧を取得
-     * @param page ページ番号
-     * @param pageSize ページサイズ
-     * @returns PagedResponseOfBackOfficeOrganizationListItemResponse OK
-     * @throws ApiError
-     */
-    public static getApiBackofficeOrganizations(
-        page?: number,
-        pageSize?: number,
-    ): CancelablePromise<PagedResponseOfBackOfficeOrganizationListItemResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/backoffice/organizations',
-            query: {
-                'Page': page,
-                'PageSize': pageSize,
-            },
-            errors: {
-                401: `Unauthorized`,
-                403: `Forbidden`,
-            },
-        });
-    }
-    /**
-     * 組織登録（管理者ユーザーも同時作成）
-     * 新規組織を登録し、管理者ユーザーを同時に作成します。
-     * 管理者ユーザーへはパスワード設定メールが送信されます。
-     * @param requestBody
-     * @returns OrganizationWithAdminResponse OK
-     * @throws ApiError
-     */
-    public static postApiBackofficeOrganizations(
-        requestBody: CreateOrganizationRequest,
-    ): CancelablePromise<OrganizationWithAdminResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/backoffice/organizations',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * 組織詳細を取得
-     * @param id
-     * @returns BackOfficeOrganizationDetailResponse OK
-     * @throws ApiError
-     */
-    public static getApiBackofficeOrganizations1(
-        id: number,
-    ): CancelablePromise<BackOfficeOrganizationDetailResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/backoffice/organizations/{id}',
-            path: {
-                'id': id,
-            },
-            errors: {
-                401: `Unauthorized`,
-                403: `Forbidden`,
-                404: `Not Found`,
-            },
-        });
-    }
-    /**
-     * 組織を更新
-     * @param id
-     * @param requestBody
-     * @returns BackOfficeOrganizationDetailResponse OK
-     * @throws ApiError
-     */
-    public static putApiBackofficeOrganizations(
-        id: number,
-        requestBody: BackOfficeUpdateOrganizationRequest,
-    ): CancelablePromise<BackOfficeOrganizationDetailResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/backoffice/organizations/{id}',
-            path: {
-                'id': id,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                401: `Unauthorized`,
-                403: `Forbidden`,
-                404: `Not Found`,
-                409: `Conflict`,
-            },
-        });
-    }
-    /**
-     * 組織を削除（物理削除）
-     * 組織とすべての関連データを物理削除します。
-     * 誤操作防止のため、確認用に組織名の入力が必要です。
-     * @param id
-     * @param requestBody
-     * @returns void
-     * @throws ApiError
-     */
-    public static deleteApiBackofficeOrganizations(
-        id: number,
-        requestBody: BackOfficeDeleteOrganizationRequest,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/backoffice/organizations/{id}',
-            path: {
-                'id': id,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                401: `Unauthorized`,
-                403: `Forbidden`,
-                404: `Not Found`,
-                409: `Conflict`,
-            },
-        });
-    }
-    /**
-     * 組織登録完了メールを再送
-     * 組織登録完了メールを再送します。
-     * 管理者ユーザーがパスワード未設定の場合のみ再送可能です。
-     * パスワード設定トークンは再生成されます。
-     * @param id 組織ID
-     * @returns SuccessResponse 組織登録完了メールが送信されました
-     * @throws ApiError
-     */
-    public static postApiBackofficeOrganizationsResendCreatedEmail(
-        id: number,
-    ): CancelablePromise<SuccessResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/backoffice/organizations/{id}/resend-created-email',
-            path: {
-                'id': id,
-            },
-            errors: {
-                400: `管理者ユーザーは既にパスワードを設定済みです`,
-                404: `組織または管理者ユーザーが見つかりません`,
-            },
-        });
-    }
-    /**
-     * 組織に紐づくボット一覧を取得
-     * @param id 組織ID
-     * @returns BackOfficeBotResponse ボット一覧
-     * @throws ApiError
-     */
-    public static getApiBackofficeOrganizationsBots(
-        id: number,
-    ): CancelablePromise<Array<BackOfficeBotResponse>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/backoffice/organizations/{id}/bots',
-            path: {
-                'id': id,
-            },
-            errors: {
-                401: `Unauthorized`,
-                403: `Forbidden`,
-                404: `組織が見つかりません`,
-            },
-        });
-    }
-    /**
-     * ボットのPersona/Constraintを更新
-     * @param id 組織ID
-     * @param botId ボットID
-     * @param requestBody 更新リクエスト
-     * @returns BackOfficeBotResponse 更新後のボット情報
-     * @throws ApiError
-     */
-    public static putApiBackofficeOrganizationsBotsPersona(
-        id: number,
-        botId: number,
-        requestBody: BackOfficeUpdateBotPersonaRequest,
-    ): CancelablePromise<BackOfficeBotResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/backoffice/organizations/{id}/bots/{botId}/persona',
-            path: {
-                'id': id,
-                'botId': botId,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                401: `Unauthorized`,
-                403: `Forbidden`,
-                404: `ボットが見つかりません`,
-                409: `楽観ロック競合`,
-            },
-        });
-    }
+  /**
+   * 組織一覧を取得
+   * @param page ページ番号
+   * @param pageSize ページサイズ
+   * @returns PagedResponseOfBackOfficeOrganizationListItemResponse OK
+   * @throws ApiError
+   */
+  public static getApiBackofficeOrganizations(
+    page?: number,
+    pageSize?: number,
+  ): CancelablePromise<PagedResponseOfBackOfficeOrganizationListItemResponse> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/backoffice/organizations',
+      query: {
+        Page: page,
+        PageSize: pageSize,
+      },
+      errors: {
+        401: `Unauthorized`,
+        403: `Forbidden`,
+      },
+    });
+  }
+  /**
+   * 組織登録（管理者ユーザーも同時作成）
+   * 新規組織を登録し、管理者ユーザーを同時に作成します。
+   * 管理者ユーザーへはパスワード設定メールが送信されます。
+   * @param requestBody
+   * @returns OrganizationWithAdminResponse OK
+   * @throws ApiError
+   */
+  public static postApiBackofficeOrganizations(
+    requestBody: CreateOrganizationRequest,
+  ): CancelablePromise<OrganizationWithAdminResponse> {
+    return __request(OpenAPI, {
+      method: 'POST',
+      url: '/api/backoffice/organizations',
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * 組織詳細を取得
+   * @param id
+   * @returns BackOfficeOrganizationDetailResponse OK
+   * @throws ApiError
+   */
+  public static getApiBackofficeOrganizations1(id: number): CancelablePromise<BackOfficeOrganizationDetailResponse> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/backoffice/organizations/{id}',
+      path: {
+        id: id,
+      },
+      errors: {
+        401: `Unauthorized`,
+        403: `Forbidden`,
+        404: `Not Found`,
+      },
+    });
+  }
+  /**
+   * 組織を更新
+   * @param id
+   * @param requestBody
+   * @returns BackOfficeOrganizationDetailResponse OK
+   * @throws ApiError
+   */
+  public static putApiBackofficeOrganizations(
+    id: number,
+    requestBody: BackOfficeUpdateOrganizationRequest,
+  ): CancelablePromise<BackOfficeOrganizationDetailResponse> {
+    return __request(OpenAPI, {
+      method: 'PUT',
+      url: '/api/backoffice/organizations/{id}',
+      path: {
+        id: id,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        401: `Unauthorized`,
+        403: `Forbidden`,
+        404: `Not Found`,
+        409: `Conflict`,
+      },
+    });
+  }
+  /**
+   * 組織を削除（物理削除）
+   * 組織とすべての関連データを物理削除します。
+   * 誤操作防止のため、確認用に組織名の入力が必要です。
+   * @param id
+   * @param requestBody
+   * @returns void
+   * @throws ApiError
+   */
+  public static deleteApiBackofficeOrganizations(
+    id: number,
+    requestBody: BackOfficeDeleteOrganizationRequest,
+  ): CancelablePromise<void> {
+    return __request(OpenAPI, {
+      method: 'DELETE',
+      url: '/api/backoffice/organizations/{id}',
+      path: {
+        id: id,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        401: `Unauthorized`,
+        403: `Forbidden`,
+        404: `Not Found`,
+        409: `Conflict`,
+      },
+    });
+  }
+  /**
+   * 組織登録完了メールを再送
+   * 組織登録完了メールを再送します。
+   * 管理者ユーザーがパスワード未設定の場合のみ再送可能です。
+   * パスワード設定トークンは再生成されます。
+   * @param id 組織ID
+   * @returns SuccessResponse 組織登録完了メールが送信されました
+   * @throws ApiError
+   */
+  public static postApiBackofficeOrganizationsResendCreatedEmail(id: number): CancelablePromise<SuccessResponse> {
+    return __request(OpenAPI, {
+      method: 'POST',
+      url: '/api/backoffice/organizations/{id}/resend-created-email',
+      path: {
+        id: id,
+      },
+      errors: {
+        400: `管理者ユーザーは既にパスワードを設定済みです`,
+        404: `組織または管理者ユーザーが見つかりません`,
+      },
+    });
+  }
+  /**
+   * 組織に紐づくボット一覧を取得
+   * @param id 組織ID
+   * @returns BackOfficeBotResponse ボット一覧
+   * @throws ApiError
+   */
+  public static getApiBackofficeOrganizationsBots(id: number): CancelablePromise<Array<BackOfficeBotResponse>> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/backoffice/organizations/{id}/bots',
+      path: {
+        id: id,
+      },
+      errors: {
+        401: `Unauthorized`,
+        403: `Forbidden`,
+        404: `組織が見つかりません`,
+      },
+    });
+  }
+  /**
+   * ボットのPersona/Constraintを更新
+   * @param id 組織ID
+   * @param botId ボットID
+   * @param requestBody 更新リクエスト
+   * @returns BackOfficeBotResponse 更新後のボット情報
+   * @throws ApiError
+   */
+  public static putApiBackofficeOrganizationsBotsPersona(
+    id: number,
+    botId: number,
+    requestBody: BackOfficeUpdateBotPersonaRequest,
+  ): CancelablePromise<BackOfficeBotResponse> {
+    return __request(OpenAPI, {
+      method: 'PUT',
+      url: '/api/backoffice/organizations/{id}/bots/{botId}/persona',
+      path: {
+        id: id,
+        botId: botId,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        401: `Unauthorized`,
+        403: `Forbidden`,
+        404: `ボットが見つかりません`,
+        409: `楽観ロック競合`,
+      },
+    });
+  }
 }

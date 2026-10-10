@@ -2,8 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/actions/auth';
-import { detect401ValidationError } from '@/connectors/api/PecusApiClient';
 import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import { detect401ValidationError } from '@/connectors/legacy-api/PecusApiClient';
 import AgendaFormClient from './AgendaFormClient';
 
 export default async function NewAgendaPage() {

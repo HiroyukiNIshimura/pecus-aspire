@@ -10,12 +10,11 @@ import type { ExternalWorkspaceRefResponse } from './ExternalWorkspaceRefRespons
  * 外部公開用タスクコメント一覧レスポンス
  */
 export type ExternalTaskCommentListResponse = {
-    workspace: ExternalWorkspaceRefResponse;
-    item: ExternalItemRefResponse;
-    task: ExternalTaskRefResponse;
-    /**
-     * コメント一覧
-     */
-    comments: Array<ExternalTaskCommentResponse>;
+  workspace: ExternalWorkspaceRefResponse;
+  item: ExternalItemRefResponse;
+  task: ExternalTaskRefResponse;
+  /**
+   * コメント一覧
+   */
+  comments: Array<ExternalTaskCommentResponse>;
 };
-

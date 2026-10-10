@@ -1,13 +1,18 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import {
+  getAchievementsRankingWithHeyApi,
+  getAchievementsWithHeyApi,
+  getMyAchievementsWithHeyApi,
+  getUnnotifiedAchievementsWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   AchievementCollectionResponse,
   AchievementRankingResponse,
   NewAchievementResponse,
   UserAchievementResponse,
-} from '@/connectors/api/pecus';
-import { getAchievementsWithHeyApi } from '@/connectors/HeyApiClient';
+} from '@/connectors/hey-api-axios/types.gen';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import {
   type GetAchievementRankingInput,
   getAchievementRankingInputSchema,
@@ -40,8 +45,7 @@ export async function getAchievementCollection(): Promise<ApiResponse<Achievemen
  */
 export async function getMyAchievements(): Promise<ApiResponse<UserAchievementResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievementsMe();
+    const response = await getMyAchievementsWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     return handleApiErrorForAction(error, {
@@ -56,8 +60,7 @@ export async function getMyAchievements(): Promise<ApiResponse<UserAchievementRe
  */
 export async function getUnnotifiedAchievements(): Promise<ApiResponse<NewAchievementResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievementsMeUnnotified();
+    const response = await getUnnotifiedAchievementsWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     return handleApiErrorForAction(error, {
@@ -124,8 +127,7 @@ export async function getAchievementRanking(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievementsRanking(parseResult.data.workspaceId);
+    const response = await getAchievementsRankingWithHeyApi(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     return handleApiErrorForAction(error, {

@@ -1,6 +1,6 @@
 'use client';
 
-import type { FocusTaskResponse } from '@/connectors/api/pecus';
+import type { FocusTaskResponse } from '@/connectors/legacy-api/pecus';
 
 interface WaitingTaskCardProps {
   task: FocusTaskResponse;

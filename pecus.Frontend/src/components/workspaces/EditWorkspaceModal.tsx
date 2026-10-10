@@ -8,7 +8,7 @@ import type {
   MasterGenreResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { updateWorkspaceSchema } from '@/schemas/workspaceSchemas';

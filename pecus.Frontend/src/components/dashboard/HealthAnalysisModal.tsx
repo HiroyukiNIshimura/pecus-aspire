@@ -10,7 +10,7 @@ import type {
   HealthAnalysisScope,
   HealthAnalysisType,
   WorkspaceListItemResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useAiSuggestion } from '@/hooks/useAiSuggestion';
 
 interface HealthAnalysisModalProps {

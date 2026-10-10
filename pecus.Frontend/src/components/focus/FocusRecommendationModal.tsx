@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchFocusRecommendation } from '@/actions/focus';
 import { EmptyStateCard } from '@/components/common/feedback/EmptyState';
-import type { FocusRecommendationResponse } from '@/connectors/api/pecus';
+import type { FocusRecommendationResponse } from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import FocusTaskCard from './FocusTaskCard';
 import WaitingTaskCard from './WaitingTaskCard';

@@ -6,17 +6,16 @@
  * エラーレスポンス
  */
 export type ErrorResponse = {
-    /**
-     * HTTPステータスコード
-     */
-    statusCode?: number;
-    /**
-     * エラーメッセージ
-     */
-    message: string;
-    /**
-     * エラー詳細（オプション）
-     */
-    details?: string | null;
+  /**
+   * HTTPステータスコード
+   */
+  statusCode?: number;
+  /**
+   * エラーメッセージ
+   */
+  message: string;
+  /**
+   * エラー詳細（オプション）
+   */
+  details?: string | null;
 };
-

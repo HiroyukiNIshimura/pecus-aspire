@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { MasterGenreResponse } from '@/connectors/api/pecus';
+import { getMasterGenresWithHeyApi } from '@/connectors/HeyApiClient';
+import type { MasterGenreResponse } from '@/connectors/hey-api-axios/types.gen';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
@@ -10,8 +10,7 @@ import type { ApiResponse } from './types';
  */
 export async function getGenres(): Promise<ApiResponse<MasterGenreResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.master.getApiMasterGenres();
+    const response = await getMasterGenresWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch genres:', error);

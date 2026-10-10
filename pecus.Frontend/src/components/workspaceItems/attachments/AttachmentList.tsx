@@ -1,6 +1,6 @@
 'use client';
 
-import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemAttachmentResponse } from '@/connectors/legacy-api/pecus';
 import AttachmentListItem from './AttachmentListItem';
 import AttachmentUploadProgress from './AttachmentUploadProgress';
 

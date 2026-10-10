@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type AgendaAttendeeRequest = {
-    userId?: number;
-    isOptional?: boolean;
+  userId?: number;
+  isOptional?: boolean;
 };
-

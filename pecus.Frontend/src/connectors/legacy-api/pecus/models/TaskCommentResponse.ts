@@ -7,14 +7,13 @@ import type { TaskCommentDetailResponse } from './TaskCommentDetailResponse';
  * タスクコメント操作レスポンス
  */
 export type TaskCommentResponse = {
-    /**
-     * 成功フラグ
-     */
-    success?: boolean;
-    /**
-     * メッセージ
-     */
-    message?: string;
-    taskComment?: TaskCommentDetailResponse;
+  /**
+   * 成功フラグ
+   */
+  success?: boolean;
+  /**
+   * メッセージ
+   */
+  message?: string;
+  taskComment?: TaskCommentDetailResponse;
 };
-

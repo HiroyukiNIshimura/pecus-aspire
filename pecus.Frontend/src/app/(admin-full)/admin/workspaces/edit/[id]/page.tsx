@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation';
 import { getWorkspaceDetail } from '@/actions/admin/workspace';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import type { MasterGenreResponse } from '@/connectors/api/pecus';
 import { getMasterGenresWithHeyApi, getProfileWithHeyApi } from '@/connectors/HeyApiClient';
+import type { MasterGenreResponse } from '@/connectors/legacy-api/pecus';
 import { handleServerFetch } from '@/libs/serverFetch';
 import EditWorkspaceClient from './EditWorkspaceClient';
 

@@ -3,9 +3,13 @@ import type { ReactNode } from 'react';
 import DashboardLayoutClient from '@/components/common/layout/DashboardLayoutClient';
 import { ChatMentionNotification } from '@/components/notifications/ChatMentionNotification';
 import { ItemGatherNotification } from '@/components/notifications/ItemGatherNotification';
-import { detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
-import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
 import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import {
+  detect401ValidationError,
+  getHttpErrorInfo,
+  getUserSafeErrorMessage,
+} from '@/connectors/legacy-api/PecusApiClient';
+import type { AppPublicSettingsResponse } from '@/connectors/legacy-api/pecus';
 import { AchievementCelebrationProvider } from '@/providers/AchievementCelebrationProvider';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';

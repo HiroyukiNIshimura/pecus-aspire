@@ -6,13 +6,12 @@
  * 組織登録リクエスト
  */
 export type CreateOrganizationRequest = {
-    name: string;
-    phoneNumber: string;
-    code?: string | null;
-    description?: string | null;
-    representativeName?: string | null;
-    email?: string | null;
-    adminUsername: string;
-    adminEmail: string;
+  name: string;
+  phoneNumber: string;
+  code?: string | null;
+  description?: string | null;
+  representativeName?: string | null;
+  email?: string | null;
+  adminUsername: string;
+  adminEmail: string;
 };
-

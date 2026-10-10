@@ -6,25 +6,24 @@
  * 管理者によるユーザー更新リクエスト
  */
 export type AdminUpdateUserRequest = {
-    /**
-     * ユーザー名
-     */
-    username: string;
-    /**
-     * アクティブ状態
-     */
-    isActive: boolean;
-    /**
-     * スキルIDのリスト
-     */
-    skillIds?: Array<number>;
-    /**
-     * ロールIDのリスト
-     */
-    roleIds?: Array<number>;
-    /**
-     * 楽観的ロック用のRowVersion
-     */
-    rowVersion: number;
+  /**
+   * ユーザー名
+   */
+  username: string;
+  /**
+   * アクティブ状態
+   */
+  isActive: boolean;
+  /**
+   * スキルIDのリスト
+   */
+  skillIds?: Array<number>;
+  /**
+   * ロールIDのリスト
+   */
+  roleIds?: Array<number>;
+  /**
+   * 楽観的ロック用のRowVersion
+   */
+  rowVersion: number;
 };
-

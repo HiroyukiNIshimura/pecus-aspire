@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemAttachmentResponse } from '@/connectors/legacy-api/pecus';
 import { formatDate } from '@/libs/utils/date';
 
 interface AttachmentListItemProps {

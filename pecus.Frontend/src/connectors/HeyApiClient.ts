@@ -1,10 +1,11 @@
 'use server';
 
 import { getApiBaseUrl } from '@/libs/env';
-import { getAccessToken } from './api/auth';
-import type { AppPublicSettingsResponse } from './api/pecus';
+import { getAccessToken } from './auth';
 import {
   getApiAchievements,
+  getApiAchievementsMe,
+  getApiAchievementsMeUnnotified,
   getApiAchievementsRanking,
   getApiAdminExternalApiKeys,
   getApiAdminOrganization,
@@ -28,19 +29,27 @@ import {
   getApiMasterGenres,
   getApiMasterSkills,
   getApiMasterTaskTypes,
+  getApiMyActivities,
   getApiProfile,
   getApiProfileAppSettings,
   getApiProfileDevices,
   getApiProfileEmailPending,
+  getApiUsersByUserIdAchievements,
+  getApiUsersByUserIdSkills,
   getApiWorkspaces,
   getApiWorkspacesById,
   getApiWorkspacesByWorkspaceIdItems,
   getApiWorkspacesByWorkspaceIdItemsByItemId,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdActivities,
   getApiWorkspacesCodeByCode,
   getApiWorkspacesStatistics,
+  postApiEntranceAuthLogin,
 } from './hey-api-axios';
 import { type Client, createClient } from './hey-api-axios/client';
 import type {
+  ActivityPeriod,
+  GetApiAchievementsMeResponse,
+  GetApiAchievementsMeUnnotifiedResponse,
   GetApiAchievementsRankingResponse,
   GetApiAchievementsResponse,
   GetApiAdminExternalApiKeysResponse,
@@ -65,17 +74,23 @@ import type {
   GetApiMasterGenresResponse,
   GetApiMasterSkillsResponse,
   GetApiMasterTaskTypesResponse,
+  GetApiMyActivitiesResponse,
   GetApiProfileDevicesResponse,
   GetApiProfileResponse,
+  GetApiUsersByUserIdAchievementsResponse,
+  GetApiUsersByUserIdSkillsResponse,
   GetApiWorkspacesByIdResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdActivitiesResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdResponse,
   GetApiWorkspacesByWorkspaceIdItemsResponse,
   GetApiWorkspacesCodeByCodeResponse,
   GetApiWorkspacesResponse,
   GetApiWorkspacesStatisticsResponse,
   PendingEmailChangeResponse,
+  PostApiEntranceAuthLoginResponse,
   TaskPriority,
 } from './hey-api-axios/types.gen';
+import type { AppPublicSettingsResponse } from './legacy-api/pecus';
 
 function isPendingEmailChangeResponse(value: unknown): value is PendingEmailChangeResponse {
   if (typeof value !== 'object' || value === null) {
@@ -118,13 +133,68 @@ export async function getAchievementsWithHeyApi(): Promise<GetApiAchievementsRes
 /**
  * Get achievement rankings through Hey API.
  */
-export async function getAchievementsRankingWithHeyApi(): Promise<GetApiAchievementsRankingResponse> {
+export async function getAchievementsRankingWithHeyApi(
+  workspaceId?: number,
+): Promise<GetApiAchievementsRankingResponse> {
   const client = await createHeyApiClient();
   const response = await getApiAchievementsRanking({
     client,
+    query: { workspaceId },
     throwOnError: true,
   });
 
+  return response.data;
+}
+
+export async function getMyAchievementsWithHeyApi(): Promise<GetApiAchievementsMeResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAchievementsMe({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function getUnnotifiedAchievementsWithHeyApi(): Promise<GetApiAchievementsMeUnnotifiedResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAchievementsMeUnnotified({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function getItemActivitiesWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+  page = 1,
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdActivitiesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdActivities({
+    client,
+    path: { workspaceId, itemId },
+    query: { page },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getMyActivitiesWithHeyApi(
+  page = 1,
+  period?: ActivityPeriod,
+): Promise<GetApiMyActivitiesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiMyActivities({
+    client,
+    query: { Page: page, Period: period },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function loginWithHeyApi(
+  body: Parameters<typeof postApiEntranceAuthLogin>[0]['body'],
+): Promise<PostApiEntranceAuthLoginResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiEntranceAuthLogin({
+    client,
+    body,
+    throwOnError: true,
+  });
   return response.data;
 }
 
@@ -564,6 +634,34 @@ export async function getWorkspaceItemByIdWithHeyApi(
   const response = await getApiWorkspacesByWorkspaceIdItemsByItemId({
     client,
     path: { workspaceId, itemId },
+    throwOnError: true,
+  });
+
+  return response.data;
+}
+
+/**
+ * Get a user's achievements through Hey API.
+ */
+export async function getUserAchievementsWithHeyApi(userId: number): Promise<GetApiUsersByUserIdAchievementsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiUsersByUserIdAchievements({
+    client,
+    path: { userId },
+    throwOnError: true,
+  });
+
+  return response.data;
+}
+
+/**
+ * Get a user's skills through Hey API.
+ */
+export async function getUserSkillsWithHeyApi(userId: number): Promise<GetApiUsersByUserIdSkillsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiUsersByUserIdSkills({
+    client,
+    path: { userId },
     throwOnError: true,
   });
 

@@ -6,9 +6,8 @@
  * スキル更新リクエスト
  */
 export type UpdateSkillRequest = {
-    name?: string | null;
-    description?: string | null;
-    isActive?: boolean | null;
-    rowVersion: number;
+  name?: string | null;
+  description?: string | null;
+  isActive?: boolean | null;
+  rowVersion: number;
 };
-

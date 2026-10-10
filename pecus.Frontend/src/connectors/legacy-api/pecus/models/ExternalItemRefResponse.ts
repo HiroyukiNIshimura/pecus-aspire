@@ -6,9 +6,8 @@
  * 外部公開用アイテム参照
  */
 export type ExternalItemRefResponse = {
-    /**
-     * アイテム番号（ワークスペース内連番）
-     */
-    itemNumber: number;
+  /**
+   * アイテム番号（ワークスペース内連番）
+   */
+  itemNumber: number;
 };
-

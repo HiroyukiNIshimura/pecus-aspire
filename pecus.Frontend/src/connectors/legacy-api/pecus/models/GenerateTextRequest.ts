@@ -6,17 +6,16 @@
  * AIアシスタントによるテキスト生成リクエスト
  */
 export type GenerateTextRequest = {
-    /**
-     * エディタ全体のMarkdownコンテンツ（カーソル位置マーカー含む）
-     */
-    markdown: string;
-    /**
-     * カーソル位置を示すマーカー文字列
-     */
-    cursorMarker: string;
-    /**
-     * ユーザーからの指示（何を生成してほしいか）
-     */
-    userPrompt: string;
+  /**
+   * エディタ全体のMarkdownコンテンツ（カーソル位置マーカー含む）
+   */
+  markdown: string;
+  /**
+   * カーソル位置を示すマーカー文字列
+   */
+  cursorMarker: string;
+  /**
+   * ユーザーからの指示（何を生成してほしいか）
+   */
+  userPrompt: string;
 };
-

@@ -6,7 +6,7 @@ import {
   fetchWorkspaceItemAttachments,
   uploadWorkspaceItemAttachment,
 } from '@/actions/workspaceItemAttachment';
-import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemAttachmentResponse } from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import AttachmentDropzone from './AttachmentDropzone';
 import AttachmentList, { type UploadingFile } from './AttachmentList';

@@ -7,10 +7,9 @@ import type { SystemRole } from './SystemRole';
  * ユーザーロール情報レスポンス
  */
 export type UserRoleResponse = {
-    /**
-     * ロールID
-     */
-    id: number;
-    name: SystemRole;
+  /**
+   * ロールID
+   */
+  id: number;
+  name: SystemRole;
 };
-

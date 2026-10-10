@@ -6,13 +6,12 @@
  * ユーザー検索結果に含まれるスキル情報
  */
 export type UserSearchSkillResponse = {
-    /**
-     * スキルID
-     */
-    id?: number;
-    /**
-     * スキル名
-     */
-    name: string;
+  /**
+   * スキルID
+   */
+  id?: number;
+  /**
+   * スキル名
+   */
+  name: string;
 };
-

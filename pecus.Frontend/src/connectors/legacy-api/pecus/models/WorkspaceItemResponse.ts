@@ -7,14 +7,13 @@ import type { WorkspaceItemDetailResponse } from './WorkspaceItemDetailResponse'
  * ワークスペースアイテム操作レスポンス
  */
 export type WorkspaceItemResponse = {
-    /**
-     * 成功フラグ
-     */
-    success?: boolean;
-    /**
-     * メッセージ
-     */
-    message?: string;
-    workspaceItem?: WorkspaceItemDetailResponse;
+  /**
+   * 成功フラグ
+   */
+  success?: boolean;
+  /**
+   * メッセージ
+   */
+  message?: string;
+  workspaceItem?: WorkspaceItemDetailResponse;
 };
-

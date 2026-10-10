@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { AttendanceStatus } from '@/connectors/api/pecus';
+import type { AttendanceStatus } from '@/connectors/legacy-api/pecus';
 
 /**
  * アジェンダ作成/編集用スキーマ

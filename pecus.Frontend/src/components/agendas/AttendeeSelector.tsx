@@ -10,7 +10,7 @@ import {
   type WorkspaceOption,
 } from '@/actions/agenda';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { AgendaAttendeeRequest } from '@/connectors/api/pecus';
+import type { AgendaAttendeeRequest } from '@/connectors/legacy-api/pecus';
 
 /** デフォルトの参加者最大人数（AppSettingsから取得できない場合のフォールバック） */
 const DEFAULT_MAX_ATTENDEES = 100;

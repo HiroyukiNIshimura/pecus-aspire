@@ -7,18 +7,17 @@ import type { SkillDetailResponse } from './SkillDetailResponse';
  * 競合エラーレスポンス（409 Conflict）
  */
 export type ConcurrencyErrorResponseOfSkillDetailResponse = {
-    current?: SkillDetailResponse;
-    /**
-     * HTTPステータスコード
-     */
-    statusCode?: number;
-    /**
-     * エラーメッセージ
-     */
-    message: string;
-    /**
-     * エラー詳細（オプション）
-     */
-    details?: string | null;
+  current?: SkillDetailResponse;
+  /**
+   * HTTPステータスコード
+   */
+  statusCode?: number;
+  /**
+   * エラーメッセージ
+   */
+  message: string;
+  /**
+   * エラー詳細（オプション）
+   */
+  details?: string | null;
 };
-

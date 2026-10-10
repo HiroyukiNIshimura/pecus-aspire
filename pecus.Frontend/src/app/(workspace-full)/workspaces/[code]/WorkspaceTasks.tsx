@@ -15,7 +15,7 @@ import type {
   UserSearchResultResponse,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskStatistics,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { formatShortDateJa } from '@/libs/utils/date';
 import { useIsAiEnabled } from '@/providers/AppSettingsProvider';

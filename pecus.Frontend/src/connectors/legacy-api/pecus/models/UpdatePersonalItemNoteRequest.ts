@@ -6,9 +6,8 @@
  * 個人メモ更新リクエスト
  */
 export type UpdatePersonalItemNoteRequest = {
-    /**
-     * メモ内容
-     */
-    content: string;
+  /**
+   * メモ内容
+   */
+  content: string;
 };
-

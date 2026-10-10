@@ -1,12 +1,12 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   AdminUpdateOrganizationSettingRequest,
   GetAvailableModelsResponse,
   OrganizationResponse,
   OrganizationSettingResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type GetAvailableModelsInput,
   getAvailableModelsInputSchema,

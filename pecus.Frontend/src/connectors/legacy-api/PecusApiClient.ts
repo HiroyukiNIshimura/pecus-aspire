@@ -1,16 +1,13 @@
-import { getAccessToken } from "./auth";
-import {
-  configureOpenAPI,
-  createApiClientInstances,
-} from "./PecusApiClient.generated";
-import Axios from "axios";
-import type { ConcurrencyErrorResponseBody } from "./ConflictDataTypes.generated";
-import type { ErrorResponse } from "@/actions/types";
-import { ApiError } from "./pecus/core/ApiError";
-import type { WorkspaceMemberAssignmentsResponse } from "./pecus";
-import { getApiBaseUrl } from "@/libs/env";
+import Axios from 'axios';
+import type { ErrorResponse } from '@/actions/types';
+import { getApiBaseUrl } from '@/libs/env';
+import { getAccessToken } from './auth';
+import type { ConcurrencyErrorResponseBody } from './ConflictDataTypes.generated';
+import { configureOpenAPI, createApiClientInstances } from './PecusApiClient.generated';
+import type { WorkspaceMemberAssignmentsResponse } from './pecus';
+import { ApiError } from './pecus/core/ApiError';
 
-const isApiError = (error: unknown): error is ApiError=> {
+const isApiError = (error: unknown): error is ApiError => {
   return error instanceof ApiError;
 };
 
@@ -38,7 +35,7 @@ export class ConcurrencyError<T = ConcurrencyErrorResponseBody> extends Error {
 
   constructor(message: string, payload?: T) {
     super(message);
-    this.name = "ConcurrencyError";
+    this.name = 'ConcurrencyError';
     this.payload = payload as T;
     Object.setPrototypeOf(this, ConcurrencyError.prototype);
   }
@@ -80,20 +77,16 @@ export function detectConcurrencyError(error: unknown): ConcurrencyError<Concurr
 
   // レスポンスボディから message を抽出
   const message =
-    (typeof body === "object" &&
-    body !== null &&
-    "message" in body
+    (typeof body === 'object' && body !== null && 'message' in body
       ? (body as Record<string, unknown>).message
-      : null) || "別のユーザーにより変更されました。";
+      : null) || '別のユーザーにより変更されました。';
 
   console.error('Concurrency error detected:', message);
   return new ConcurrencyError<ConcurrencyErrorResponseBody>(String(message), body as ConcurrencyErrorResponseBody);
 }
 
-
 export function detect401ValidationError(error: unknown): ErrorResponse | undefined {
-  if ((isApiError(error) && error.status === 401) ||
-      (Axios.isAxiosError(error) && error.response?.status === 401)) {
+  if ((isApiError(error) && error.status === 401) || (Axios.isAxiosError(error) && error.response?.status === 401)) {
     return {
       success: false,
       error: 'unauthorized',
@@ -117,9 +110,7 @@ export function detect400ValidationError(error: unknown): ErrorResponse | undefi
   console.error('400 Bad Request body:', JSON.stringify(body, null, 2));
 
   const message =
-    (typeof body === "object" &&
-    body !== null &&
-    "message" in body
+    (typeof body === 'object' && body !== null && 'message' in body
       ? (body as Record<string, unknown>).message
       : null) || '入力内容に誤りがあります。';
 
@@ -142,9 +133,7 @@ export function detect404ValidationError(error: unknown): ErrorResponse | undefi
   }
 
   const message =
-    (typeof body === "object" &&
-    body !== null &&
-    "message" in body
+    (typeof body === 'object' && body !== null && 'message' in body
       ? (body as Record<string, unknown>).message
       : null) || '対象が見つかりません。';
 
@@ -167,9 +156,7 @@ export function detect403ValidationError(error: unknown): ErrorResponse | undefi
   }
 
   const message =
-    (typeof body === "object" &&
-    body !== null &&
-    "message" in body
+    (typeof body === 'object' && body !== null && 'message' in body
       ? (body as Record<string, unknown>).message
       : null) || 'アクセスが禁止されています。';
 
@@ -200,9 +187,9 @@ export function detectMemberHasAssignmentsError(error: unknown): WorkspaceMember
 
   // hasAssignments プロパティがある場合はアサインメントエラー
   if (
-    typeof body === "object" &&
+    typeof body === 'object' &&
     body !== null &&
-    "hasAssignments" in body &&
+    'hasAssignments' in body &&
     (body as Record<string, unknown>).hasAssignments === true
   ) {
     console.error('Member has assignments error detected');
@@ -288,7 +275,7 @@ export function getUserSafeErrorMessage(error: unknown, fallback: string): strin
     return bodyMessage;
   }
 
-  if (typeof error === "string" && error) {
+  if (typeof error === 'string' && error) {
     return error;
   }
 
@@ -365,5 +352,3 @@ export async function createAuthenticatedAxios() {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 }
-
-

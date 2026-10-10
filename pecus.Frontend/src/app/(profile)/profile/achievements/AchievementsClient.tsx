@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { AchievementCategory, AchievementCollectionResponse } from '@/connectors/api/pecus';
+import type { AchievementCategory, AchievementCollectionResponse } from '@/connectors/legacy-api/pecus';
 import { useAppSettings } from '@/providers/AppSettingsProvider';
 import BadgeCard from './BadgeCard';
 

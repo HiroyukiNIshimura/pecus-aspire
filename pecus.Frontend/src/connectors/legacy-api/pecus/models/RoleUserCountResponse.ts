@@ -7,14 +7,13 @@ import type { SystemRole } from './SystemRole';
  * ロールごとのユーザー数
  */
 export type RoleUserCountResponse = {
-    /**
-     * ロールID
-     */
-    id: number;
-    name: SystemRole;
-    /**
-     * ユーザー数
-     */
-    count: number;
+  /**
+   * ロールID
+   */
+  id: number;
+  name: SystemRole;
+  /**
+   * ユーザー数
+   */
+  count: number;
 };
-

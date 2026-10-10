@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { searchUsers } from '@/actions/chat';
-import type { UserSearchResultResponse } from '@/connectors/api/pecus';
+import type { UserSearchResultResponse } from '@/connectors/legacy-api/pecus';
 
 interface DmUserSearchModalProps {
   isOpen: boolean;

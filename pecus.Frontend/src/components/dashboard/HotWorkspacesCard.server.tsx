@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
-import type { DashboardHotWorkspacesResponse } from '@/connectors/api/pecus';
+import type { DashboardHotWorkspacesResponse } from '@/connectors/legacy-api/pecus';
 
 interface HotWorkspacesCardProps {
   /** ホットワークスペースデータ */

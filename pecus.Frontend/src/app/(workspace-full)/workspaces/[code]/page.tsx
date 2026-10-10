@@ -3,14 +3,18 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchWorkspaceItemByCode } from '@/actions/workspaceItem';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import { detect401ValidationError, detect404ValidationError } from '@/connectors/api/PecusApiClient';
-import type { MasterGenreResponse, MasterSkillResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
 import {
   getMasterGenresWithHeyApi,
   getMasterSkillsWithHeyApi,
   getMasterTaskTypesWithHeyApi,
   getWorkspaceByCodeWithHeyApi,
 } from '@/connectors/HeyApiClient';
+import { detect401ValidationError, detect404ValidationError } from '@/connectors/legacy-api/PecusApiClient';
+import type {
+  MasterGenreResponse,
+  MasterSkillResponse,
+  WorkspaceFullDetailResponse,
+} from '@/connectors/legacy-api/pecus';
 import WorkspaceDetailClient from './WorkspaceDetailClient';
 
 interface WorkspaceDetailPageProps {

@@ -7,18 +7,17 @@ import type { TaskCommentDetailResponse } from './TaskCommentDetailResponse';
  * 競合エラーレスポンス（409 Conflict）
  */
 export type ConcurrencyErrorResponseOfTaskCommentDetailResponse = {
-    current?: TaskCommentDetailResponse;
-    /**
-     * HTTPステータスコード
-     */
-    statusCode?: number;
-    /**
-     * エラーメッセージ
-     */
-    message: string;
-    /**
-     * エラー詳細（オプション）
-     */
-    details?: string | null;
+  current?: TaskCommentDetailResponse;
+  /**
+   * HTTPステータスコード
+   */
+  statusCode?: number;
+  /**
+   * エラーメッセージ
+   */
+  message: string;
+  /**
+   * エラー詳細（オプション）
+   */
+  details?: string | null;
 };
-

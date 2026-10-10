@@ -8,15 +8,14 @@ import type { TaskCommentType } from './TaskCommentType';
  * 外部公開用タスクコメント
  */
 export type ExternalTaskCommentResponse = {
-    /**
-     * コメントID
-     */
-    id: number;
-    user: ExternalUserRefResponse;
-    /**
-     * コメント内容
-     */
-    content: string;
-    commentType?: TaskCommentType;
+  /**
+   * コメントID
+   */
+  id: number;
+  user: ExternalUserRefResponse;
+  /**
+   * コメント内容
+   */
+  content: string;
+  commentType?: TaskCommentType;
 };
-

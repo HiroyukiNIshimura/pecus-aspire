@@ -1,4 +1,4 @@
-import type { DashboardItemSummary, DashboardTaskSummary } from '@/connectors/api/pecus';
+import type { DashboardItemSummary, DashboardTaskSummary } from '@/connectors/legacy-api/pecus';
 import OrganizationHealthButton from './OrganizationHealthButton';
 import StatCard from './StatCard.server';
 

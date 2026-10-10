@@ -7,11 +7,10 @@ import type { ExternalApiKeyRole } from './ExternalApiKeyRole';
  * APIキー発行リクエスト
  */
 export type CreateExternalApiKeyRequest = {
-    /**
-     * キー名（用途識別用）
-     */
-    name: string;
-    role: ExternalApiKeyRole;
-    expirationDays?: number | null;
+  /**
+   * キー名（用途識別用）
+   */
+  name: string;
+  role: ExternalApiKeyRole;
+  expirationDays?: number | null;
 };
-

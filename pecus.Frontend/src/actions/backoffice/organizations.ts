@@ -1,13 +1,13 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   BackOfficeBotResponse,
   BackOfficeOrganizationDetailResponse,
   OrganizationWithAdminResponse,
   PagedResponseOfBackOfficeOrganizationListItemResponse,
   SuccessResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type CreateBackOfficeOrganizationInput,
   createBackOfficeOrganizationInputSchema,

@@ -7,10 +7,9 @@ import type { RelationType } from './RelationType';
  * ワークスペースアイテム関連追加リクエスト
  */
 export type AddWorkspaceItemRelationRequest = {
-    /**
-     * 関連先アイテムID
-     */
-    toItemId: number;
-    relationType?: RelationType;
+  /**
+   * 関連先アイテムID
+   */
+  toItemId: number;
+  relationType?: RelationType;
 };
-

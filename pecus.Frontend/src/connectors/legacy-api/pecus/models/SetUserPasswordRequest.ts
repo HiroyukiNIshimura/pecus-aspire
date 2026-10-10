@@ -6,8 +6,7 @@
  * ユーザーパスワード設定リクエスト
  */
 export type SetUserPasswordRequest = {
-    token: string;
-    password: string;
-    resetAllDeviceSessions?: boolean | null;
+  token: string;
+  password: string;
+  resetAllDeviceSessions?: boolean | null;
 };
-

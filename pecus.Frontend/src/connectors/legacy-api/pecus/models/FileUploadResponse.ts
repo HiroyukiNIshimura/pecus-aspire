@@ -6,33 +6,32 @@
  * ファイルアップロードレスポンス
  */
 export type FileUploadResponse = {
-    /**
-     * アップロード成功フラグ
-     */
-    success?: boolean;
-    /**
-     * ファイルURL（公開アクセス用）
-     */
-    fileUrl?: string | null;
-    /**
-     * ファイルサイズ（バイト）
-     */
-    fileSize?: number;
-    /**
-     * ファイル形式
-     */
-    contentType?: string | null;
-    /**
-     * アップロード日時
-     */
-    uploadedAt?: string;
-    /**
-     * メッセージ
-     */
-    message?: string | null;
-    /**
-     * 更新後のRowVersion（楽観的ロック用）
-     */
-    rowVersion?: number | null;
+  /**
+   * アップロード成功フラグ
+   */
+  success?: boolean;
+  /**
+   * ファイルURL（公開アクセス用）
+   */
+  fileUrl?: string | null;
+  /**
+   * ファイルサイズ（バイト）
+   */
+  fileSize?: number;
+  /**
+   * ファイル形式
+   */
+  contentType?: string | null;
+  /**
+   * アップロード日時
+   */
+  uploadedAt?: string;
+  /**
+   * メッセージ
+   */
+  message?: string | null;
+  /**
+   * 更新後のRowVersion（楽観的ロック用）
+   */
+  rowVersion?: number | null;
 };
-

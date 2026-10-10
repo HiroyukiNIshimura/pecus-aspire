@@ -6,13 +6,12 @@
  * BackOffice用 組織削除リクエスト
  */
 export type BackOfficeDeleteOrganizationRequest = {
-    /**
-     * 確認用組織コード（誤操作防止）
-     */
-    confirmOrganizationCode: string;
-    /**
-     * 楽観的ロック用バージョン番号
-     */
-    rowVersion: number;
+  /**
+   * 確認用組織コード（誤操作防止）
+   */
+  confirmOrganizationCode: string;
+  /**
+   * 楽観的ロック用バージョン番号
+   */
+  rowVersion: number;
 };
-

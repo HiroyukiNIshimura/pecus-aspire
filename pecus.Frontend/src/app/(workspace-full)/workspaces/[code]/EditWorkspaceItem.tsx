@@ -6,7 +6,7 @@ import { fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import TagInput from '@/components/common/forms/TagInput';
 import { PecusNotionLikeEditor, useTempAttachmentImageUploadHandler } from '@/components/editor';
-import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemDetailResponse } from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { useSignalRContext } from '@/providers/SignalRProvider';
 import { updateWorkspaceItemSchema } from '@/schemas/editSchemas';

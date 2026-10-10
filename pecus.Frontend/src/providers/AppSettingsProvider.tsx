@@ -7,10 +7,10 @@ import type {
   LimitsSettings,
   OrganizationPublicSettings,
   UserPublicSettings,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 
 // 自動生成された型を再エクスポート
-export type { CurrentUserInfo } from '@/connectors/api/pecus';
+export type { CurrentUserInfo } from '@/connectors/legacy-api/pecus';
 
 /**
  * アプリケーション設定コンテキストの値型

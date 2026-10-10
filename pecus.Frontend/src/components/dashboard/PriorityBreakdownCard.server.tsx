@@ -1,5 +1,5 @@
 import { EmptyState } from '@/components/common/feedback/EmptyState';
-import type { DashboardTasksByPriorityResponse, TaskPriority } from '@/connectors/api/pecus';
+import type { DashboardTasksByPriorityResponse, TaskPriority } from '@/connectors/legacy-api/pecus';
 
 interface PriorityBreakdownCardProps {
   /** 優先度別タスク数データ */

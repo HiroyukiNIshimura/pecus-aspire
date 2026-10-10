@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
-import type { AgendaOccurrenceResponse } from '@/connectors/api/pecus';
+import type { AgendaOccurrenceResponse } from '@/connectors/legacy-api/pecus';
 import AgendaTimelineGroup from './AgendaTimelineGroup';
 
 interface AgendaTimelineProps {

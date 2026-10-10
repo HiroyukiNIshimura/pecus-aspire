@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getChatMessages, sendChatMessage, updateReadPosition } from '@/actions/chat';
 import ChatMessageInput from '@/components/chat/ChatMessageInput';
 import ChatMessageList from '@/components/chat/ChatMessageList';
-import type { ChatMessageItem, ChatRoomDetailResponse } from '@/connectors/api/pecus';
+import type { ChatMessageItem, ChatRoomDetailResponse } from '@/connectors/legacy-api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSignalREvent } from '@/hooks/useSignalR';
 import { useSignalRContext } from '@/providers/SignalRProvider';

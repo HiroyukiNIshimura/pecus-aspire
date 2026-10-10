@@ -6,9 +6,8 @@
  * AIアシスタントによるテキスト生成レスポンス
  */
 export type GenerateTextResponse = {
-    /**
-     * 生成されたテキスト（Markdown形式）
-     */
-    generatedText: string;
+  /**
+   * 生成されたテキスト（Markdown形式）
+   */
+  generatedText: string;
 };
-

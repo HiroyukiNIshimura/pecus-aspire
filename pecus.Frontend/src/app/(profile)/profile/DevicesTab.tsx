@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { deleteDevice } from '@/actions/profile';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import DeleteConfirmModal from '@/components/common/overlays/DeleteConfirmModal';
-import type { DeviceResponse } from '@/connectors/api/pecus';
+import type { DeviceResponse } from '@/connectors/legacy-api/pecus';
 import { formatDateTime } from '@/libs/utils/date';
 
 interface DevicesTabProps {

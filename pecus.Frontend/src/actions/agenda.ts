@@ -1,6 +1,6 @@
 'use server';
 
-import { createAuthenticatedAxios, createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createAuthenticatedAxios, createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   AgendaExceptionResponse,
   AgendaNotificationCountResponse,
@@ -14,7 +14,7 @@ import type {
   UpdateAgendaRequest,
   UpdateAttendanceRequest,
   UpdateFromOccurrenceRequest,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   agendaIdSchema,
   type CancelAgendaInput,
@@ -802,7 +802,7 @@ export async function fetchWorkspaceMembers(
 }
 
 /** 組織メンバー1件の型（APIクライアントの型を再エクスポート） */
-export type { OrganizationMemberItem as OrganizationMember } from '@/connectors/api/pecus';
+export type { OrganizationMemberItem as OrganizationMember } from '@/connectors/legacy-api/pecus';
 
 /** デフォルトの参加者最大人数（AppSettingsから取得できない場合のフォールバック） */
 const DEFAULT_MAX_ATTENDEES = 100;

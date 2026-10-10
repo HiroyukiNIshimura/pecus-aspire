@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { getBackOfficeOrganizationBots, updateBackOfficeBotPersona } from '@/actions/backoffice/organizations';
-import type { BackOfficeBotResponse, BackOfficeUpdateBotPersonaRequest } from '@/connectors/api/pecus';
+import type { BackOfficeBotResponse, BackOfficeUpdateBotPersonaRequest } from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import BotPersonaEditModal from './BotPersonaEditModal';
 

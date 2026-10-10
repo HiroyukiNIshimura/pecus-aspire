@@ -2,6 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
+import type { CancelablePromise } from '../core/CancelablePromise';
+import { OpenAPI } from '../core/OpenAPI';
+import { request as __request } from '../core/request';
 import type { AssigneeTaskLoadResponse } from '../models/AssigneeTaskLoadResponse';
 import type { BulkCreateTasksRequest } from '../models/BulkCreateTasksRequest';
 import type { BulkCreateTasksResponse } from '../models/BulkCreateTasksResponse';
@@ -18,312 +22,309 @@ import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { UpdateWorkspaceTaskRequest } from '../models/UpdateWorkspaceTaskRequest';
 import type { WorkspaceTaskDetailResponse } from '../models/WorkspaceTaskDetailResponse';
 import type { WorkspaceTaskResponse } from '../models/WorkspaceTaskResponse';
-import type { CancelablePromise } from '../core/CancelablePromise';
-import { OpenAPI } from '../core/OpenAPI';
-import { request as __request } from '../core/request';
 export class WorkspaceTaskService {
-    /**
-     * タスク作成
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @param requestBody 作成リクエスト
-     * @returns WorkspaceTaskResponse OK
-     * @throws ApiError
-     */
-    public static postApiWorkspacesItemsTasks(
-        workspaceId: number,
-        itemId: number,
-        requestBody: CreateWorkspaceTaskRequest,
-    ): CancelablePromise<WorkspaceTaskResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * アイテムのタスク一覧取得
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @param page ページ番号（1から始まる）
-     * @param pageSize 1ページあたりの件数（1〜50、デフォルト10）
-     * カルーセルのためクライアントからの指定を許可
-     * @param status タスクのステータスフィルター（省略時はすべて表示）
-     * @param assignedUserId 担当ユーザーIDでフィルタ
-     * @param sortBy ソート項目(省略時はSequence)
-     * @param order ソート順序(省略時はAsc)
-     * @returns PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics OK
-     * @throws ApiError
-     */
-    public static getApiWorkspacesItemsTasks(
-        workspaceId: number,
-        itemId: number,
-        page?: number,
-        pageSize?: number,
-        status?: TaskStatusFilter,
-        assignedUserId?: number,
-        sortBy?: TaskSortBy,
-        order?: SortOrder,
-    ): CancelablePromise<PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-            },
-            query: {
-                'Page': page,
-                'PageSize': pageSize,
-                'Status': status,
-                'AssignedUserId': assignedUserId,
-                'SortBy': sortBy,
-                'Order': order,
-            },
-            errors: {
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * タスク取得
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @param taskId タスクID
-     * @returns WorkspaceTaskDetailResponse OK
-     * @throws ApiError
-     */
-    public static getApiWorkspacesItemsTasks1(
-        workspaceId: number,
-        itemId: number,
-        taskId: number,
-    ): CancelablePromise<WorkspaceTaskDetailResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/{taskId}',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-                'taskId': taskId,
-            },
-            errors: {
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * タスク更新
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @param taskId タスクID
-     * @param requestBody 更新リクエスト
-     * @returns WorkspaceTaskResponse OK
-     * @throws ApiError
-     */
-    public static putApiWorkspacesItemsTasks(
-        workspaceId: number,
-        itemId: number,
-        taskId: number,
-        requestBody: UpdateWorkspaceTaskRequest,
-    ): CancelablePromise<WorkspaceTaskResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/{taskId}',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-                'taskId': taskId,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                404: `Not Found`,
-                409: `Conflict`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * シーケンス番号でタスク取得
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @param sequence タスクシーケンス番号（アイテム内で一意）
-     * @returns WorkspaceTaskDetailResponse OK
-     * @throws ApiError
-     */
-    public static getApiWorkspacesItemsTasksSequence(
-        workspaceId: number,
-        itemId: number,
-        sequence: number,
-    ): CancelablePromise<WorkspaceTaskDetailResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/sequence/{sequence}',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-                'sequence': sequence,
-            },
-            errors: {
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * タスクフローマップ取得
-     * アイテム内のタスク依存関係を可視化するためのデータを取得します
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @returns TaskFlowMapResponse OK
-     * @throws ApiError
-     */
-    public static getApiWorkspacesItemsTasksFlowMap(
-        workspaceId: number,
-        itemId: number,
-    ): CancelablePromise<TaskFlowMapResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/flow-map',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-            },
-            errors: {
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * 担当者のタスク負荷を期限日ごとにチェック
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @param assignedUserId 担当ユーザーID
-     * @param dueDate 期限日時（ISO 8601 形式）
-     * @returns AssigneeTaskLoadResponse OK
-     * @throws ApiError
-     */
-    public static getApiWorkspacesItemsTasksAssigneeLoadCheck(
-        workspaceId: number,
-        itemId: number,
-        assignedUserId?: number,
-        dueDate?: string,
-    ): CancelablePromise<AssigneeTaskLoadResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/assignee-load-check',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-            },
-            query: {
-                'AssignedUserId': assignedUserId,
-                'DueDate': dueDate,
-            },
-            errors: {
-                400: `Bad Request`,
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * タスク内容提案取得
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @param requestBody タスク内容提案リクエスト
-     * @returns TaskContentSuggestionResponse OK
-     * @throws ApiError
-     */
-    public static postApiWorkspacesItemsTasksContentSuggestion(
-        workspaceId: number,
-        itemId: number,
-        requestBody: TaskContentSuggestionRequest,
-    ): CancelablePromise<TaskContentSuggestionResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/content-suggestion',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * タスク候補生成（AI）
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @param requestBody タスク候補生成リクエスト
-     * @returns TaskGenerationResponse OK
-     * @throws ApiError
-     */
-    public static postApiWorkspacesItemsTasksGenerateCandidates(
-        workspaceId: number,
-        itemId: number,
-        requestBody: GenerateTaskCandidatesRequest,
-    ): CancelablePromise<TaskGenerationResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/generate-candidates',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * タスク一括作成
-     * @param workspaceId ワークスペースID
-     * @param itemId ワークスペースアイテムID
-     * @param requestBody 一括作成リクエスト
-     * @returns BulkCreateTasksResponse OK
-     * @throws ApiError
-     */
-    public static postApiWorkspacesItemsTasksBulkCreate(
-        workspaceId: number,
-        itemId: number,
-        requestBody: BulkCreateTasksRequest,
-    ): CancelablePromise<BulkCreateTasksResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/bulk-create',
-            path: {
-                'workspaceId': workspaceId,
-                'itemId': itemId,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
+  /**
+   * タスク作成
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @param requestBody 作成リクエスト
+   * @returns WorkspaceTaskResponse OK
+   * @throws ApiError
+   */
+  public static postApiWorkspacesItemsTasks(
+    workspaceId: number,
+    itemId: number,
+    requestBody: CreateWorkspaceTaskRequest,
+  ): CancelablePromise<WorkspaceTaskResponse> {
+    return __request(OpenAPI, {
+      method: 'POST',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * アイテムのタスク一覧取得
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @param page ページ番号（1から始まる）
+   * @param pageSize 1ページあたりの件数（1〜50、デフォルト10）
+   * カルーセルのためクライアントからの指定を許可
+   * @param status タスクのステータスフィルター（省略時はすべて表示）
+   * @param assignedUserId 担当ユーザーIDでフィルタ
+   * @param sortBy ソート項目(省略時はSequence)
+   * @param order ソート順序(省略時はAsc)
+   * @returns PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics OK
+   * @throws ApiError
+   */
+  public static getApiWorkspacesItemsTasks(
+    workspaceId: number,
+    itemId: number,
+    page?: number,
+    pageSize?: number,
+    status?: TaskStatusFilter,
+    assignedUserId?: number,
+    sortBy?: TaskSortBy,
+    order?: SortOrder,
+  ): CancelablePromise<PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+      },
+      query: {
+        Page: page,
+        PageSize: pageSize,
+        Status: status,
+        AssignedUserId: assignedUserId,
+        SortBy: sortBy,
+        Order: order,
+      },
+      errors: {
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * タスク取得
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @param taskId タスクID
+   * @returns WorkspaceTaskDetailResponse OK
+   * @throws ApiError
+   */
+  public static getApiWorkspacesItemsTasks1(
+    workspaceId: number,
+    itemId: number,
+    taskId: number,
+  ): CancelablePromise<WorkspaceTaskDetailResponse> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/{taskId}',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+        taskId: taskId,
+      },
+      errors: {
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * タスク更新
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @param taskId タスクID
+   * @param requestBody 更新リクエスト
+   * @returns WorkspaceTaskResponse OK
+   * @throws ApiError
+   */
+  public static putApiWorkspacesItemsTasks(
+    workspaceId: number,
+    itemId: number,
+    taskId: number,
+    requestBody: UpdateWorkspaceTaskRequest,
+  ): CancelablePromise<WorkspaceTaskResponse> {
+    return __request(OpenAPI, {
+      method: 'PUT',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/{taskId}',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+        taskId: taskId,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        404: `Not Found`,
+        409: `Conflict`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * シーケンス番号でタスク取得
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @param sequence タスクシーケンス番号（アイテム内で一意）
+   * @returns WorkspaceTaskDetailResponse OK
+   * @throws ApiError
+   */
+  public static getApiWorkspacesItemsTasksSequence(
+    workspaceId: number,
+    itemId: number,
+    sequence: number,
+  ): CancelablePromise<WorkspaceTaskDetailResponse> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/sequence/{sequence}',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+        sequence: sequence,
+      },
+      errors: {
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * タスクフローマップ取得
+   * アイテム内のタスク依存関係を可視化するためのデータを取得します
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @returns TaskFlowMapResponse OK
+   * @throws ApiError
+   */
+  public static getApiWorkspacesItemsTasksFlowMap(
+    workspaceId: number,
+    itemId: number,
+  ): CancelablePromise<TaskFlowMapResponse> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/flow-map',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+      },
+      errors: {
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * 担当者のタスク負荷を期限日ごとにチェック
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @param assignedUserId 担当ユーザーID
+   * @param dueDate 期限日時（ISO 8601 形式）
+   * @returns AssigneeTaskLoadResponse OK
+   * @throws ApiError
+   */
+  public static getApiWorkspacesItemsTasksAssigneeLoadCheck(
+    workspaceId: number,
+    itemId: number,
+    assignedUserId?: number,
+    dueDate?: string,
+  ): CancelablePromise<AssigneeTaskLoadResponse> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/assignee-load-check',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+      },
+      query: {
+        AssignedUserId: assignedUserId,
+        DueDate: dueDate,
+      },
+      errors: {
+        400: `Bad Request`,
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * タスク内容提案取得
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @param requestBody タスク内容提案リクエスト
+   * @returns TaskContentSuggestionResponse OK
+   * @throws ApiError
+   */
+  public static postApiWorkspacesItemsTasksContentSuggestion(
+    workspaceId: number,
+    itemId: number,
+    requestBody: TaskContentSuggestionRequest,
+  ): CancelablePromise<TaskContentSuggestionResponse> {
+    return __request(OpenAPI, {
+      method: 'POST',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/content-suggestion',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * タスク候補生成（AI）
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @param requestBody タスク候補生成リクエスト
+   * @returns TaskGenerationResponse OK
+   * @throws ApiError
+   */
+  public static postApiWorkspacesItemsTasksGenerateCandidates(
+    workspaceId: number,
+    itemId: number,
+    requestBody: GenerateTaskCandidatesRequest,
+  ): CancelablePromise<TaskGenerationResponse> {
+    return __request(OpenAPI, {
+      method: 'POST',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/generate-candidates',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
+  /**
+   * タスク一括作成
+   * @param workspaceId ワークスペースID
+   * @param itemId ワークスペースアイテムID
+   * @param requestBody 一括作成リクエスト
+   * @returns BulkCreateTasksResponse OK
+   * @throws ApiError
+   */
+  public static postApiWorkspacesItemsTasksBulkCreate(
+    workspaceId: number,
+    itemId: number,
+    requestBody: BulkCreateTasksRequest,
+  ): CancelablePromise<BulkCreateTasksResponse> {
+    return __request(OpenAPI, {
+      method: 'POST',
+      url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/bulk-create',
+      path: {
+        workspaceId: workspaceId,
+        itemId: itemId,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        400: `Bad Request`,
+        404: `Not Found`,
+        500: `Internal Server Error`,
+      },
+    });
+  }
 }

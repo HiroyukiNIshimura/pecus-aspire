@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
-import type { HangfireStatsResponse } from '@/connectors/api/pecus';
+import type { HangfireStatsResponse } from '@/connectors/legacy-api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';

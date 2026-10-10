@@ -8,26 +8,25 @@ import type { UserSearchSkillResponse } from './UserSearchSkillResponse';
  * ユーザー検索結果レスポンス
  */
 export type UserSearchResultResponse = {
-    /**
-     * ユーザーID
-     */
-    id?: number;
-    /**
-     * ユーザー名
-     */
-    username: string;
-    /**
-     * メールアドレス
-     */
-    email: string;
-    avatarType?: AvatarType;
-    /**
-     * アイデンティティアイコンURL
-     */
-    identityIconUrl?: string | null;
-    /**
-     * ユーザーが持つスキル一覧
-     */
-    skills?: Array<UserSearchSkillResponse>;
+  /**
+   * ユーザーID
+   */
+  id?: number;
+  /**
+   * ユーザー名
+   */
+  username: string;
+  /**
+   * メールアドレス
+   */
+  email: string;
+  avatarType?: AvatarType;
+  /**
+   * アイデンティティアイコンURL
+   */
+  identityIconUrl?: string | null;
+  /**
+   * ユーザーが持つスキル一覧
+   */
+  skills?: Array<UserSearchSkillResponse>;
 };
-

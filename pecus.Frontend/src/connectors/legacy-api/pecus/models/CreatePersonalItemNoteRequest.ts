@@ -6,9 +6,8 @@
  * 個人メモ作成リクエスト
  */
 export type CreatePersonalItemNoteRequest = {
-    /**
-     * メモ内容
-     */
-    content: string;
+  /**
+   * メモ内容
+   */
+  content: string;
 };
-

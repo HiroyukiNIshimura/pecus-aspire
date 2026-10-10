@@ -2,4 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type RecurrenceType = 'None' | 'Daily' | 'Weekly' | 'Biweekly' | 'MonthlyByDate' | 'MonthlyByWeekday' | 'Yearly' | null;
+export type RecurrenceType =
+  | 'None'
+  | 'Daily'
+  | 'Weekly'
+  | 'Biweekly'
+  | 'MonthlyByDate'
+  | 'MonthlyByWeekday'
+  | 'Yearly'
+  | null;

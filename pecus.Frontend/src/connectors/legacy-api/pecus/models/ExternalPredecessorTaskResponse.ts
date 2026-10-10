@@ -6,9 +6,8 @@
  * 外部公開用先行タスク参照
  */
 export type ExternalPredecessorTaskResponse = {
-    /**
-     * シーケンス番号
-     */
-    sequence: number;
+  /**
+   * シーケンス番号
+   */
+  sequence: number;
 };
-

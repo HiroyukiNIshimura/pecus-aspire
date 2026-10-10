@@ -6,13 +6,12 @@
  * 外部公開用タスク破棄情報
  */
 export type ExternalTaskDiscardedResponse = {
-    /**
-     * 破棄日時
-     */
-    discardedAt: string | null;
-    /**
-     * 破棄理由
-     */
-    discardReason?: string | null;
+  /**
+   * 破棄日時
+   */
+  discardedAt: string | null;
+  /**
+   * 破棄理由
+   */
+  discardReason?: string | null;
 };
-

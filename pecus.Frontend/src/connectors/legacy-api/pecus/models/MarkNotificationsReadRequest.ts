@@ -6,9 +6,8 @@
  * 通知一括既読リクエスト
  */
 export type MarkNotificationsReadRequest = {
-    /**
-     * 既読にする通知IDリスト（nullまたは空の場合は全て既読にする）
-     */
-    notificationIds?: Array<number> | null;
+  /**
+   * 既読にする通知IDリスト（nullまたは空の場合は全て既読にする）
+   */
+  notificationIds?: Array<number> | null;
 };
-

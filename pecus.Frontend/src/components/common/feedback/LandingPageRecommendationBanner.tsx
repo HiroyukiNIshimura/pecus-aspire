@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { respondToLandingPageRecommendation } from '@/actions/profile';
-import type { LandingPage } from '@/connectors/api/pecus';
+import type { LandingPage } from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { getLandingPageDisplayName } from '@/utils/landingPage';
 

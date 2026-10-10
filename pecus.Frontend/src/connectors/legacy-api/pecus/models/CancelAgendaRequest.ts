@@ -6,14 +6,13 @@
  * アジェンダ中止リクエスト
  */
 export type CancelAgendaRequest = {
-    /**
-     * 中止理由
-     */
-    reason?: string | null;
-    rowVersion: number;
-    /**
-     * 参加者へ中止通知を送信するか
-     */
-    sendNotification?: boolean;
+  /**
+   * 中止理由
+   */
+  reason?: string | null;
+  rowVersion: number;
+  /**
+   * 参加者へ中止通知を送信するか
+   */
+  sendNotification?: boolean;
 };
-

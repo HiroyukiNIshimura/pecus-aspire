@@ -6,7 +6,6 @@
  * スキル作成リクエスト
  */
 export type CreateSkillRequest = {
-    name: string;
-    description?: string | null;
+  name: string;
+  description?: string | null;
 };
-

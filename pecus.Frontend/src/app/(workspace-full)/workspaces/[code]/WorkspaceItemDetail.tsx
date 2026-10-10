@@ -37,7 +37,7 @@ import type {
   WorkspaceItemDetailResponse,
   WorkspaceMode,
   WorkspaceTaskDetailResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate, formatDateTime } from '@/libs/utils/date';
 import { type ItemEditStatus as ItemEditState, useSignalRContext } from '@/providers/SignalRProvider';

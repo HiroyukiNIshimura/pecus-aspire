@@ -12,9 +12,8 @@ import type { UserPublicSettings } from './UserPublicSettings';
  * ※ APIキー、パスワード等のセンシティブ情報は含まない
  */
 export type AppPublicSettingsResponse = {
-    currentUser: CurrentUserInfo;
-    organization: OrganizationPublicSettings;
-    user: UserPublicSettings;
-    limits: LimitsSettings;
+  currentUser: CurrentUserInfo;
+  organization: OrganizationPublicSettings;
+  user: UserPublicSettings;
+  limits: LimitsSettings;
 };
-

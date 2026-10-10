@@ -2,7 +2,7 @@
 
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import type { DmCandidateUserItem } from '@/connectors/api/pecus';
+import type { DmCandidateUserItem } from '@/connectors/legacy-api/pecus';
 
 interface DmCandidateUserListItemProps {
   user: DmCandidateUserItem;

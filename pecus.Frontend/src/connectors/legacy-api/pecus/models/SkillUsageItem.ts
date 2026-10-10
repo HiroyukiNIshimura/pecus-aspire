@@ -6,13 +6,12 @@
  * スキル利用アイテム（ID と名前）
  */
 export type SkillUsageItem = {
-    /**
-     * スキルID
-     */
-    id: number;
-    /**
-     * スキル名
-     */
-    name: string;
+  /**
+   * スキルID
+   */
+  id: number;
+  /**
+   * スキル名
+   */
+  name: string;
 };
-

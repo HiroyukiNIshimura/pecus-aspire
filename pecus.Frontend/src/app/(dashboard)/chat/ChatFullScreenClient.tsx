@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { getChatRooms, getChatUnreadCounts } from '@/actions/chat';
 import ChatRoomList from '@/components/chat/ChatRoomList';
-import type { ChatRoomItem } from '@/connectors/api/pecus';
+import type { ChatRoomItem } from '@/connectors/legacy-api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSignalREvent } from '@/hooks/useSignalR';
 import { useChatStore } from '@/stores/chatStore';

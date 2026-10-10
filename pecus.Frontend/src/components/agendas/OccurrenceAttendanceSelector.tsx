@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { AttendanceStatus } from '@/connectors/api/pecus';
+import type { AttendanceStatus } from '@/connectors/legacy-api/pecus';
 
 interface OccurrenceAttendanceSelectorProps {
   /** シリーズ全体の参加状況（デフォルト） */

@@ -6,13 +6,12 @@
  * 外部公開用ユーザー参照
  */
 export type ExternalUserRefResponse = {
-    /**
-     * ログインID
-     */
-    loginId: string;
-    /**
-     * ユーザー名
-     */
-    username: string;
+  /**
+   * ログインID
+   */
+  loginId: string;
+  /**
+   * ユーザー名
+   */
+  username: string;
 };
-

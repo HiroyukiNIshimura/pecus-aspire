@@ -1,6 +1,6 @@
 'use client';
 
-import type { AgendaAttendeeResponse, AttendanceStatus } from '@/connectors/api/pecus';
+import type { AgendaAttendeeResponse, AttendanceStatus } from '@/connectors/legacy-api/pecus';
 import { AttendanceStatusBadge } from './AttendanceStatusBadge';
 
 interface AttendeeListProps {

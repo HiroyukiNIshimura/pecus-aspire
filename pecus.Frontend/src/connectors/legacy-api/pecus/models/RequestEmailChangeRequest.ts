@@ -6,13 +6,12 @@
  * メールアドレス変更リクエスト
  */
 export type RequestEmailChangeRequest = {
-    /**
-     * 新しいメールアドレス
-     */
-    newEmail: string;
-    /**
-     * 現在のパスワード（本人確認用）
-     */
-    currentPassword: string;
+  /**
+   * 新しいメールアドレス
+   */
+  newEmail: string;
+  /**
+   * 現在のパスワード（本人確認用）
+   */
+  currentPassword: string;
 };
-

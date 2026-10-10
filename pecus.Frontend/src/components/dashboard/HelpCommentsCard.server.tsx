@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { DashboardHelpCommentsResponse } from '@/connectors/api/pecus';
+import type { DashboardHelpCommentsResponse } from '@/connectors/legacy-api/pecus';
 import { formatRelativeTime } from '@/libs/utils/date';
 
 /**

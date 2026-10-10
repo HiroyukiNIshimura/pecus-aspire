@@ -7,17 +7,16 @@ import type { TaskWithItemResponse } from './TaskWithItemResponse';
  * 期限日でグループ化されたタスク一覧レスポンス
  */
 export type TasksByDueDateResponse = {
-    /**
-     * リスト内での一意なインデックス（フロントエンドのReact key用）
-     */
-    listIndex?: number;
-    /**
-     * 期限日（日付のみ）
-     */
-    dueDate: string;
-    /**
-     * その期限日のタスク一覧（アイテムID + タスクID順）
-     */
-    tasks: Array<TaskWithItemResponse>;
+  /**
+   * リスト内での一意なインデックス（フロントエンドのReact key用）
+   */
+  listIndex?: number;
+  /**
+   * 期限日（日付のみ）
+   */
+  dueDate: string;
+  /**
+   * その期限日のタスク一覧（アイテムID + タスクID順）
+   */
+  tasks: Array<TaskWithItemResponse>;
 };
-

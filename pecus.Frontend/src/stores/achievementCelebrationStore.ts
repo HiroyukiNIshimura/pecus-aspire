@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { NewAchievementResponse } from '@/connectors/api/pecus';
+import type { NewAchievementResponse } from '@/connectors/legacy-api/pecus';
 
 /**
  * バッジ演出状態

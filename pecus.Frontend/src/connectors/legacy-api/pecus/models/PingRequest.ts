@@ -6,9 +6,8 @@
  * Pingリクエスト（疎通確認用）
  */
 export type PingRequest = {
-    /**
-     * エコーバックする文字列
-     */
-    message: string;
+  /**
+   * エコーバックする文字列
+   */
+  message: string;
 };
-

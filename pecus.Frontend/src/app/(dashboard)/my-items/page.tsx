@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import { fetchMyItems } from '@/actions/workspaceItem';
-import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
-import type { PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics } from '@/connectors/api/pecus';
 import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
 import type { GetApiProfileResponse } from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
+import type { PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics } from '@/connectors/legacy-api/pecus';
 import MyItemsClient from './MyItemsClient';
 
 export const dynamic = 'force-dynamic';

@@ -8,17 +8,16 @@ import type { WeeklyTaskTrend } from './WeeklyTaskTrend';
  * 週次のタスク作成/完了推移データ
  */
 export type DashboardTaskTrendResponse = {
-    /**
-     * 週次データのリスト
-     */
-    weeklyTrends: Array<WeeklyTaskTrend>;
-    /**
-     * 期間の開始日
-     */
-    startDate: string;
-    /**
-     * 期間の終了日
-     */
-    endDate: string;
+  /**
+   * 週次データのリスト
+   */
+  weeklyTrends: Array<WeeklyTaskTrend>;
+  /**
+   * 期間の開始日
+   */
+  startDate: string;
+  /**
+   * 期間の終了日
+   */
+  endDate: string;
 };
-

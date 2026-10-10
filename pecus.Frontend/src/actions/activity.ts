@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { ActivityPeriod, PagedResponseOfActivityResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import type { ActivityPeriod, PagedResponseOfActivityResponse } from '@/connectors/legacy-api/pecus';
 import {
   type FetchItemActivitiesInput,
   type FetchMyActivitiesInput,

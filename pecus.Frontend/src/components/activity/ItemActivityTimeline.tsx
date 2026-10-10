@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { fetchItemActivities } from '@/actions/activity';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { ActivityResponse } from '@/connectors/api/pecus';
+import type { ActivityResponse } from '@/connectors/legacy-api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { actionTypeConfig, actionTypeLabels, defaultActionConfig, formatDetails } from '@/libs/activity/activityUtils';
 import { formatFullDateJa, formatTime } from '@/libs/utils/date';

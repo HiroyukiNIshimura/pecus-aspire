@@ -44,7 +44,7 @@ import type {
   WorkspaceMemberAssignmentsResponse,
   WorkspaceRole,
   WorkspaceTaskDetailResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { remarkItemCodeLinks } from '@/libs/markdown/remarkItemCodeLinks';
 import { formatDateTime } from '@/libs/utils/date';

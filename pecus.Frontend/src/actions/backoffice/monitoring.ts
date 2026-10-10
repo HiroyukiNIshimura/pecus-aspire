@@ -240,8 +240,8 @@ async function fetchPrometheusRange(
   }
 }
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { HangfireStatsResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import type { HangfireStatsResponse } from '@/connectors/legacy-api/pecus';
 
 /**
  * Server Action: Hangfire バックグラウンドジョブ統計を取得

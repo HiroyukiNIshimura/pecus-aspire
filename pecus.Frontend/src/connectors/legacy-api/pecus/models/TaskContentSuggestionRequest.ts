@@ -6,9 +6,8 @@
  * タスク内容提案リクエスト
  */
 export type TaskContentSuggestionRequest = {
-    /**
-     * タスク種類ID
-     */
-    taskTypeId: number;
+  /**
+   * タスク種類ID
+   */
+  taskTypeId: number;
 };
-

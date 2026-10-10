@@ -1,12 +1,12 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   DashboardTaskFilter,
   MyCommitterWorkspaceResponse,
   PagedResponseOfItemWithTasksResponse,
   TasksByDueDateResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 

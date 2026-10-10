@@ -6,17 +6,16 @@
  * Pingレスポンス
  */
 export type PingResponse = {
-    /**
-     * エコーバックされたメッセージ
-     */
-    message: string;
-    /**
-     * 認証されたAPIキーの組織コード
-     */
-    organizationCode: string;
-    /**
-     * サーバー応答時刻（UTC）
-     */
-    timestamp: string;
+  /**
+   * エコーバックされたメッセージ
+   */
+  message: string;
+  /**
+   * 認証されたAPIキーの組織コード
+   */
+  organizationCode: string;
+  /**
+   * サーバー応答時刻（UTC）
+   */
+  timestamp: string;
 };
-

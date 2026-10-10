@@ -10,7 +10,7 @@ import type {
   WorkspaceDetailUserResponse,
   WorkspaceItemDetailResponse,
   WorkspaceMode,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 
 /** 優先度のラベル定義 */

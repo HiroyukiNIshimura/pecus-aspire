@@ -6,21 +6,20 @@
  * 組織メンバーアイテム（ページングレスポンスで使用）
  */
 export type OrganizationMemberItem = {
-    /**
-     * ユーザーID
-     */
-    userId?: number;
-    /**
-     * ユーザー名
-     */
-    userName: string;
-    /**
-     * メールアドレス
-     */
-    email: string;
-    /**
-     * アイデンティティアイコンURL
-     */
-    identityIconUrl?: string | null;
+  /**
+   * ユーザーID
+   */
+  userId?: number;
+  /**
+   * ユーザー名
+   */
+  userName: string;
+  /**
+   * メールアドレス
+   */
+  email: string;
+  /**
+   * アイデンティティアイコンURL
+   */
+  identityIconUrl?: string | null;
 };
-

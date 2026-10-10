@@ -7,13 +7,12 @@ import type { WorkspaceMode } from './WorkspaceMode';
  * ワークスペース登録リクエスト
  */
 export type CreateWorkspaceRequest = {
-    name: string;
-    description?: string | null;
-    genreId: number;
-    mode?: WorkspaceMode;
-    /**
-     * オーナーユーザーID（任意）
-     */
-    ownerId?: number | null;
+  name: string;
+  description?: string | null;
+  genreId: number;
+  mode?: WorkspaceMode;
+  /**
+   * オーナーユーザーID（任意）
+   */
+  ownerId?: number | null;
 };
-

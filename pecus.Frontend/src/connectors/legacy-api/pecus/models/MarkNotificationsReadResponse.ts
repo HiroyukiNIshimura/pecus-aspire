@@ -6,9 +6,8 @@
  * 一括既読レスポンス
  */
 export type MarkNotificationsReadResponse = {
-    /**
-     * 既読にした通知数
-     */
-    markedCount?: number;
+  /**
+   * 既読にした通知数
+   */
+  markedCount?: number;
 };
-

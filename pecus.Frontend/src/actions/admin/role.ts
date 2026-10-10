@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { RoleResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import type { RoleResponse } from '@/connectors/legacy-api/pecus';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 

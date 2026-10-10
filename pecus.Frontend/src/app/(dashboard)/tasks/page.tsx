@@ -3,10 +3,10 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchMyTaskWorkspaces } from '@/actions/myTask';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
-import type { MyTaskWorkspaceResponse } from '@/connectors/api/pecus';
 import { getMasterTaskTypesWithHeyApi, getProfileWithHeyApi } from '@/connectors/HeyApiClient';
 import type { GetApiProfileResponse } from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
+import type { MyTaskWorkspaceResponse } from '@/connectors/legacy-api/pecus';
 import MyTasksDashboardClient from './MyTasksDashboardClient';
 
 export default async function MyTasksPage() {

@@ -1,6 +1,6 @@
 import { getLocationFromCoordinates } from '@/actions/geolocation';
-import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
-import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
+import type { DeviceType } from '@/connectors/legacy-api/pecus/models/DeviceType';
+import type { OSPlatform } from '@/connectors/legacy-api/pecus/models/OSPlatform';
 import type { DeviceInfo } from '@/libs/atoms/deviceInfoAtom';
 
 type UADataBrand = {

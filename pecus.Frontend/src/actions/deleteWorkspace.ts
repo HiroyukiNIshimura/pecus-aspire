@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import { type DeleteWorkspaceInput, deleteWorkspaceInputSchema } from '@/schemas/workspaceSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';

@@ -1,10 +1,10 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   BackOfficeNotificationDetailResponse,
   PagedResponseOfBackOfficeNotificationListItemResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type CreateBackOfficeNotificationInput,
   createBackOfficeNotificationInputSchema,

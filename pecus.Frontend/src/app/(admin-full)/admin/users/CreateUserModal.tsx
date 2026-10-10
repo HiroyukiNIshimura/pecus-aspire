@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createUserWithoutPassword, getRoles } from '@/actions/admin/user';
-import type { RoleListItemResponse } from '@/connectors/api/pecus';
+import type { RoleListItemResponse } from '@/connectors/legacy-api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { createUserWithoutPasswordSchema } from '@/schemas/profileSchemas';

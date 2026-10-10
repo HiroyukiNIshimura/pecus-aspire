@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { requestEmailChange } from '@/actions/profile';
-import type { PendingEmailChangeResponse } from '@/connectors/api/pecus';
+import type { PendingEmailChangeResponse } from '@/connectors/legacy-api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { formatDateTime } from '@/libs/utils/date';
 import { updateEmailFormSchema } from '@/schemas/profileSchemas';

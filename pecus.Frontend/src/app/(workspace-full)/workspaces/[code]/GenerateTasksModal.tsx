@@ -21,7 +21,7 @@ import type {
   TaskPriority,
   UserSearchResultResponse,
   UserWorkloadInfo,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import { useAiSuggestion } from '@/hooks/useAiSuggestion';
 import { useNotify } from '@/hooks/useNotify';
 import { useIsAiEnabled } from '@/providers/AppSettingsProvider';

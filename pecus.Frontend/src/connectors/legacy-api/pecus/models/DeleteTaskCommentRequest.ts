@@ -6,9 +6,8 @@
  * タスクコメント削除（無効化）リクエスト
  */
 export type DeleteTaskCommentRequest = {
-    /**
-     * 楽観的ロック用のRowVersion（必須）
-     */
-    rowVersion: number;
+  /**
+   * 楽観的ロック用のRowVersion（必須）
+   */
+  rowVersion: number;
 };
-

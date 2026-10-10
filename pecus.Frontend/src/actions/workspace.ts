@@ -4,7 +4,7 @@ import {
   createPecusApiClients,
   detectConcurrencyError,
   detectMemberHasAssignmentsError,
-} from '@/connectors/api/PecusApiClient';
+} from '@/connectors/legacy-api/PecusApiClient';
 import type {
   DashboardTaskTrendResponse,
   PagedResponseOfWorkspaceListItemResponse,
@@ -16,7 +16,7 @@ import type {
   WorkspaceMode,
   WorkspaceRole,
   WorkspaceUserDetailResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type AddMemberToWorkspaceInput,
   addMemberToWorkspaceInputSchema,

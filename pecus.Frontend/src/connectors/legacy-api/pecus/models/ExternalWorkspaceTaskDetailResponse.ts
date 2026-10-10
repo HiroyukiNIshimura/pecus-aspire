@@ -9,8 +9,7 @@ import type { ExternalWorkspaceRefResponse } from './ExternalWorkspaceRefRespons
  * 外部公開用タスク詳細レスポンス
  */
 export type ExternalWorkspaceTaskDetailResponse = {
-    workspace: ExternalWorkspaceRefResponse;
-    item: ExternalItemRefResponse;
-    task: ExternalTaskDetailResponse;
+  workspace: ExternalWorkspaceRefResponse;
+  item: ExternalItemRefResponse;
+  task: ExternalTaskDetailResponse;
 };
-

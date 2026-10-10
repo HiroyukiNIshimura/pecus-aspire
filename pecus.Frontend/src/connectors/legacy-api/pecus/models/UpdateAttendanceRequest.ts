@@ -7,6 +7,5 @@ import type { AttendanceStatus } from './AttendanceStatus';
  * 参加状況更新リクエスト
  */
 export type UpdateAttendanceRequest = {
-    status: AttendanceStatus;
+  status: AttendanceStatus;
 };
-

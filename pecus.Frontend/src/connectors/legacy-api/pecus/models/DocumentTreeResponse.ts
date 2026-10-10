@@ -7,13 +7,12 @@ import type { DocumentTreeItemResponse } from './DocumentTreeItemResponse';
  * ドキュメントツリーレスポンス
  */
 export type DocumentTreeResponse = {
-    /**
-     * ツリーアイテム一覧
-     */
-    items?: Array<DocumentTreeItemResponse>;
-    /**
-     * 総アイテム数
-     */
-    totalCount?: number;
+  /**
+   * ツリーアイテム一覧
+   */
+  items?: Array<DocumentTreeItemResponse>;
+  /**
+   * 総アイテム数
+   */
+  totalCount?: number;
 };
-

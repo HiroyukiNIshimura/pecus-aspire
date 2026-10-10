@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   AssigneeTaskLoadResponse,
   BulkCreateTasksResponse,
@@ -8,7 +8,7 @@ import type {
   TaskGenerationResponse,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type BulkCreateTasksInput,
   bulkCreateTasksInputSchema,
@@ -360,7 +360,7 @@ export async function getPredecessorTaskOptions(
  */
 export async function getTaskFlowMap(
   input: GetTaskFlowMapInput,
-): Promise<ApiResponse<import('@/connectors/api/pecus').TaskFlowMapResponse>> {
+): Promise<ApiResponse<import('@/connectors/legacy-api/pecus').TaskFlowMapResponse>> {
   const parseResult = getTaskFlowMapInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -377,7 +377,7 @@ export async function getTaskFlowMap(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to get task flow map:', error);
-    return handleApiErrorForAction<import('@/connectors/api/pecus').TaskFlowMapResponse>(error, {
+    return handleApiErrorForAction<import('@/connectors/legacy-api/pecus').TaskFlowMapResponse>(error, {
       defaultMessage: 'タスクフローマップの取得に失敗しました',
     });
   }

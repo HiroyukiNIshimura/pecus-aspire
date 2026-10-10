@@ -2,7 +2,7 @@
 
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
-import type { DashboardTaskTrendResponse, WorkspaceMode } from '@/connectors/api/pecus';
+import type { DashboardTaskTrendResponse, WorkspaceMode } from '@/connectors/legacy-api/pecus';
 
 interface TaskTrendChartProps {
   /** トレンドデータ */

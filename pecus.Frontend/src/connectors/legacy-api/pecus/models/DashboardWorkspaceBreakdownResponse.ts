@@ -7,9 +7,8 @@ import type { DashboardWorkspaceStatistics } from './DashboardWorkspaceStatistic
  * ワークスペース別統計レスポンス
  */
 export type DashboardWorkspaceBreakdownResponse = {
-    /**
-     * ワークスペース別の統計リスト
-     */
-    workspaces: Array<DashboardWorkspaceStatistics>;
+  /**
+   * ワークスペース別の統計リスト
+   */
+  workspaces: Array<DashboardWorkspaceStatistics>;
 };
-

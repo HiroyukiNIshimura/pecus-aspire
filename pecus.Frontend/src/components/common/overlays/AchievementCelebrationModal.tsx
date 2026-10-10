@@ -4,7 +4,7 @@
 import confetti from 'canvas-confetti';
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { NewAchievementResponse } from '@/connectors/api/pecus';
+import type { NewAchievementResponse } from '@/connectors/legacy-api/pecus';
 
 interface AchievementCelebrationModalProps {
   /** 新規取得バッジのリスト */

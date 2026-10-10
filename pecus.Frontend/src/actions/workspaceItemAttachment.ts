@@ -1,7 +1,7 @@
 'use server';
 
-import { createAuthenticatedAxios, createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import { createAuthenticatedAxios, createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import type { WorkspaceItemAttachmentResponse } from '@/connectors/legacy-api/pecus';
 import {
   type DeleteWorkspaceItemAttachmentInput,
   deleteWorkspaceItemAttachmentInputSchema,

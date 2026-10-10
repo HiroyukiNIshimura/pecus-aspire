@@ -4,8 +4,8 @@ import { getAllSkills } from '@/actions/admin/skills';
 import { getUserDetail } from '@/actions/admin/user';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import type { RoleResponse, SkillListItemResponse } from '@/connectors/api/pecus';
 import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
+import type { RoleResponse, SkillListItemResponse } from '@/connectors/legacy-api/pecus';
 import { handleServerFetch } from '@/libs/serverFetch';
 import EditUserClient from './EditUserClient';
 

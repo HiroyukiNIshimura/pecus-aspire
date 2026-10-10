@@ -6,9 +6,8 @@
  * メッセージレスポンス
  */
 export type MessageResponse = {
-    /**
-     * メッセージ
-     */
-    message: string;
+  /**
+   * メッセージ
+   */
+  message: string;
 };
-

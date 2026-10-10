@@ -1,13 +1,13 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   PagedResponseOfSkillListItemResponseAndSkillStatistics,
   SkillDetailResponse,
   SkillListItemResponse,
   SkillResponse,
   SuccessResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type ActivateSkillInput,
   activateSkillInputSchema,

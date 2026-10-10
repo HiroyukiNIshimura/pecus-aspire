@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
-import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
-import type { AchievementCollectionResponse } from '@/connectors/api/pecus';
 import { getAchievementsWithHeyApi } from '@/connectors/HeyApiClient';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
+import type { AchievementCollectionResponse } from '@/connectors/legacy-api/pecus';
 import AchievementsClient from './AchievementsClient';
 
 export const dynamic = 'force-dynamic';

@@ -1,12 +1,12 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   CreateExternalApiKeyRequest,
   CreateExternalApiKeyResponse,
   ExternalApiKeyResponse,
   SuccessResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/legacy-api/pecus';
 import {
   type CreateExternalApiKeyInput,
   createExternalApiKeyInputSchema,

@@ -6,13 +6,12 @@
  * タグ利用アイテム（ID と名前）
  */
 export type TagUsageItem = {
-    /**
-     * タグID
-     */
-    id: number;
-    /**
-     * タグ名
-     */
-    name: string;
+  /**
+   * タグID
+   */
+  id: number;
+  /**
+   * タグ名
+   */
+  name: string;
 };
-

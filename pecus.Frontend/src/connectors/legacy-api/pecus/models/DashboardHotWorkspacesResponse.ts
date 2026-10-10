@@ -8,13 +8,12 @@ import type { HotWorkspaceEntry } from './HotWorkspaceEntry';
  * タスク関連アクティビティが活発なワークスペースのランキング
  */
 export type DashboardHotWorkspacesResponse = {
-    /**
-     * 集計期間（"24h" または "1week"）
-     */
-    period: string;
-    /**
-     * ホットワークスペースリスト（タスク関連アクティビティ数の多い順）
-     */
-    workspaces: Array<HotWorkspaceEntry>;
+  /**
+   * 集計期間（"24h" または "1week"）
+   */
+  period: string;
+  /**
+   * ホットワークスペースリスト（タスク関連アクティビティ数の多い順）
+   */
+  workspaces: Array<HotWorkspaceEntry>;
 };
-

@@ -6,10 +6,9 @@
  * 入力中通知リクエスト
  */
 export type NotifyTypingRequest = {
-    /**
-     * 入力中かどうか
-     * true: 入力開始, false: 入力終了
-     */
-    isTyping: boolean;
+  /**
+   * 入力中かどうか
+   * true: 入力開始, false: 入力終了
+   */
+  isTyping: boolean;
 };
-

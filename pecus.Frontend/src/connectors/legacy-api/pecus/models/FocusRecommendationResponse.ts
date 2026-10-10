@@ -7,21 +7,20 @@ import type { FocusTaskResponse } from './FocusTaskResponse';
  * やることピックアップレスポンス
  */
 export type FocusRecommendationResponse = {
-    /**
-     * 今すぐ取り組むべきタスク（先行タスクなし or 完了済み、スコア上位）
-     */
-    focusTasks: Array<FocusTaskResponse>;
-    /**
-     * 今は着手できないタスク（先行タスク未完了）
-     */
-    waitingTasks: Array<FocusTaskResponse>;
-    /**
-     * 対象タスクの総数
-     */
-    totalTaskCount: number;
-    /**
-     * レスポンス生成日時
-     */
-    generatedAt: string;
+  /**
+   * 今すぐ取り組むべきタスク（先行タスクなし or 完了済み、スコア上位）
+   */
+  focusTasks: Array<FocusTaskResponse>;
+  /**
+   * 今は着手できないタスク（先行タスク未完了）
+   */
+  waitingTasks: Array<FocusTaskResponse>;
+  /**
+   * 対象タスクの総数
+   */
+  totalTaskCount: number;
+  /**
+   * レスポンス生成日時
+   */
+  generatedAt: string;
 };
-

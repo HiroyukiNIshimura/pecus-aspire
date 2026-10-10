@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ChatRoomItem } from '@/connectors/api/pecus';
+import type { ChatRoomItem } from '@/connectors/legacy-api/pecus';
 import { useChatStore } from '@/stores/chatStore';
 import ChatMessageArea from './ChatMessageArea';
 import ChatRoomList from './ChatRoomList';

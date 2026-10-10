@@ -5,4 +5,10 @@
 /**
  * 健康診断の種類
  */
-export type HealthAnalysisType = 'CurrentHealth' | 'ProblemPickup' | 'FuturePrediction' | 'Recommendation' | 'Comparison' | 'Summary';
+export type HealthAnalysisType =
+  | 'CurrentHealth'
+  | 'ProblemPickup'
+  | 'FuturePrediction'
+  | 'Recommendation'
+  | 'Comparison'
+  | 'Summary';

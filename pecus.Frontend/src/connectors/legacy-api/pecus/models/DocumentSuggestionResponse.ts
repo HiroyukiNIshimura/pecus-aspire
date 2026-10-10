@@ -6,9 +6,8 @@
  * ドキュメント提案レスポンス
  */
 export type DocumentSuggestionResponse = {
-    /**
-     * 提案されたドキュメント内容(Markdown)
-     */
-    suggestedContent?: string;
+  /**
+   * 提案されたドキュメント内容(Markdown)
+   */
+  suggestedContent?: string;
 };
-

@@ -7,9 +7,8 @@ import type { SummaryWorkspaceResponse } from './SummaryWorkspaceResponse';
  * ワークスペースアイテム統計情報レスポンス
  */
 export type WorkspaceItemStatistics = {
-    /**
-     * 検索結果に該当するワークスペース
-     */
-    workspaces?: Array<SummaryWorkspaceResponse>;
+  /**
+   * 検索結果に該当するワークスペース
+   */
+  workspaces?: Array<SummaryWorkspaceResponse>;
 };
-

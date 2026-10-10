@@ -7,6 +7,5 @@ import type { LandingPageRecommendationAction } from './LandingPageRecommendatio
  * ランディングページ推奨への応答リクエスト
  */
 export type RespondToLandingPageRecommendationRequest = {
-    action: LandingPageRecommendationAction;
+  action: LandingPageRecommendationAction;
 };
-

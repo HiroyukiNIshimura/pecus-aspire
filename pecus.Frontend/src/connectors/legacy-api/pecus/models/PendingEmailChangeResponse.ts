@@ -6,17 +6,16 @@
  * 未使用メールアドレス変更トークン情報レスポンス
  */
 export type PendingEmailChangeResponse = {
-    /**
-     * 変更予定の新しいメールアドレス
-     */
-    newEmail: string;
-    /**
-     * トークン有効期限（UTC）
-     */
-    expiresAt: string;
-    /**
-     * トークン作成日時（UTC）
-     */
-    createdAt: string;
+  /**
+   * 変更予定の新しいメールアドレス
+   */
+  newEmail: string;
+  /**
+   * トークン有効期限（UTC）
+   */
+  expiresAt: string;
+  /**
+   * トークン作成日時（UTC）
+   */
+  createdAt: string;
 };
-

@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { MessageResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import type { MessageResponse } from '@/connectors/legacy-api/pecus';
 import {
   type RequestPasswordResetInput,
   type ResetPasswordInput,

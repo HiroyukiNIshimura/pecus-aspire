@@ -1,4 +1,4 @@
-import type { ActivityActionType } from '@/connectors/api/pecus';
+import type { ActivityActionType } from '@/connectors/legacy-api/pecus';
 import { formatDate } from '@/libs/utils/date';
 
 /** アクションタイプごとのアイコンと色の設定 */
