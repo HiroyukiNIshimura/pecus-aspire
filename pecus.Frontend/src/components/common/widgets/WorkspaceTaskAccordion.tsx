@@ -7,7 +7,7 @@ import { EmptyStateCard } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { uiConfig } from '@/config/ui';
-import type { TasksByDueDateResponse, TaskWithItemResponse } from '@/connectors/legacy-api/pecus';
+import type { TasksByDueDateResponse, TaskWithItemResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate, formatShortDateJa } from '@/libs/utils/date';
 

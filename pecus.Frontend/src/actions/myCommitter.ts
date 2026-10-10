@@ -1,12 +1,16 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import {
+  getMyCommitterItemsWithHeyApi,
+  getMyCommitterTasksByWorkspaceWithHeyApi,
+  getMyCommitterWorkspacesWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   DashboardTaskFilter,
   MyCommitterWorkspaceResponse,
   PagedResponseOfItemWithTasksResponse,
   TasksByDueDateResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
@@ -15,8 +19,7 @@ import type { ApiResponse } from './types';
  */
 export async function fetchMyCommitterWorkspaces(): Promise<ApiResponse<MyCommitterWorkspaceResponse[]>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.my.getApiMyCommitterWorkspaces();
+    const response = await getMyCommitterWorkspacesWithHeyApi();
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -35,8 +38,7 @@ export async function fetchMyCommitterItems(
   page: number = 1,
 ): Promise<ApiResponse<PagedResponseOfItemWithTasksResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.my.getApiMyCommitterItems(page, workspaceId);
+    const response = await getMyCommitterItemsWithHeyApi(page, workspaceId);
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -55,8 +57,7 @@ export async function fetchCommitterTasksByWorkspace(
   filter?: DashboardTaskFilter,
 ): Promise<ApiResponse<TasksByDueDateResponse[]>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.my.getApiMyCommitterWorkspacesTasks(workspaceId, filter);
+    const response = await getMyCommitterTasksByWorkspaceWithHeyApi(workspaceId, filter);
 
     return { success: true, data: response };
   } catch (error: unknown) {

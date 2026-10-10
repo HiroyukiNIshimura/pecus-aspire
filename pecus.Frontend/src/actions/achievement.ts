@@ -5,6 +5,8 @@ import {
   getAchievementsWithHeyApi,
   getMyAchievementsWithHeyApi,
   getUnnotifiedAchievementsWithHeyApi,
+  notifyAchievementWithHeyApi,
+  notifyAllAchievementsWithHeyApi,
 } from '@/connectors/HeyApiClient';
 import type {
   AchievementCollectionResponse,
@@ -12,7 +14,6 @@ import type {
   NewAchievementResponse,
   UserAchievementResponse,
 } from '@/connectors/hey-api-axios/types.gen';
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import {
   type GetAchievementRankingInput,
   getAchievementRankingInputSchema,
@@ -81,8 +82,7 @@ export async function markAchievementNotified(input: MarkAchievementNotifiedInpu
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.achievement.postApiAchievementsMeNotify(parseResult.data.achievementId);
+    await notifyAchievementWithHeyApi(parseResult.data.achievementId);
     return { success: true, data: undefined };
   } catch (error) {
     return handleApiErrorForAction(error, {
@@ -103,8 +103,7 @@ export async function markAllAchievementsNotified(input: MarkAllAchievementsNoti
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.achievement.postApiAchievementsMeNotifyAll();
+    await notifyAllAchievementsWithHeyApi();
     return { success: true, data: undefined };
   } catch (error) {
     return handleApiErrorForAction(error, {

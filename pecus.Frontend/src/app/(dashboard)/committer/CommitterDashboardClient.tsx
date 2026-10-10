@@ -5,7 +5,7 @@ import { fetchCommitterTasksByWorkspace } from '@/actions/myCommitter';
 import DashboardFilterBar from '@/components/common/filters/DashboardFilterBar';
 import WorkspaceTaskAccordion, { type WorkspaceInfo } from '@/components/common/widgets/WorkspaceTaskAccordion';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import type { DashboardTaskFilter, MyCommitterWorkspaceResponse } from '@/connectors/legacy-api/pecus';
+import type { DashboardTaskFilter, MyCommitterWorkspaceResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 
 interface CommitterDashboardClientProps {
@@ -113,7 +113,7 @@ export default function CommitterDashboardClient({
       {/* フィルターバー */}
       <DashboardFilterBar
         currentFilter={currentFilter}
-        onFilterChange={setCurrentFilter}
+        onFilterChange={(filter) => setCurrentFilter(filter ?? 'Active')}
         stats={{
           activeCount: totalActive,
           completedCount: totalCompleted,

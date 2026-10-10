@@ -1,6 +1,14 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import {
+  analyzeDashboardHealthWithHeyApi,
+  getDashboardHelpCommentsWithHeyApi,
+  getDashboardPersonalSummaryWithHeyApi,
+  getDashboardSummaryWithHeyApi,
+  getDashboardTasksByPriorityWithHeyApi,
+  getDashboardTasksTrendWithHeyApi,
+  getDashboardWorkspacesWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   DashboardHelpCommentsResponse,
   DashboardPersonalSummaryResponse,
@@ -10,7 +18,7 @@ import type {
   DashboardWorkspaceBreakdownResponse,
   HealthAnalysisRequest,
   HealthAnalysisResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { type AnalyzeHealthInput, analyzeHealthInputSchema } from '@/schemas/dashboardSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
@@ -22,8 +30,7 @@ import { validationError } from './types';
  */
 export async function fetchDashboardSummary(): Promise<ApiResponse<DashboardSummaryResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.dashboard.getApiDashboardSummary();
+    const response = await getDashboardSummaryWithHeyApi();
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -40,8 +47,7 @@ export async function fetchDashboardSummary(): Promise<ApiResponse<DashboardSumm
  */
 export async function fetchTasksByPriority(): Promise<ApiResponse<DashboardTasksByPriorityResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.dashboard.getApiDashboardTasksByPriority();
+    const response = await getDashboardTasksByPriorityWithHeyApi();
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -58,8 +64,7 @@ export async function fetchTasksByPriority(): Promise<ApiResponse<DashboardTasks
  */
 export async function fetchPersonalSummary(): Promise<ApiResponse<DashboardPersonalSummaryResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.dashboard.getApiDashboardPersonalSummary();
+    const response = await getDashboardPersonalSummaryWithHeyApi();
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -76,8 +81,7 @@ export async function fetchPersonalSummary(): Promise<ApiResponse<DashboardPerso
  */
 export async function fetchWorkspaceBreakdown(): Promise<ApiResponse<DashboardWorkspaceBreakdownResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.dashboard.getApiDashboardWorkspaces();
+    const response = await getDashboardWorkspacesWithHeyApi();
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -95,8 +99,7 @@ export async function fetchWorkspaceBreakdown(): Promise<ApiResponse<DashboardWo
  */
 export async function fetchTaskTrend(weeks: number = 8): Promise<ApiResponse<DashboardTaskTrendResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.dashboard.getApiDashboardTasksTrend(weeks);
+    const response = await getDashboardTasksTrendWithHeyApi(weeks);
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -113,8 +116,7 @@ export async function fetchTaskTrend(weeks: number = 8): Promise<ApiResponse<Das
  */
 export async function fetchHelpComments(): Promise<ApiResponse<DashboardHelpCommentsResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.dashboard.getApiDashboardHelpComments();
+    const response = await getDashboardHelpCommentsWithHeyApi();
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -137,13 +139,12 @@ export async function analyzeHealth(input: AnalyzeHealthInput): Promise<ApiRespo
   }
 
   try {
-    const api = await createPecusApiClients();
     const request: HealthAnalysisRequest = {
       scope: parseResult.data.scope,
       workspaceId: parseResult.data.workspaceId,
       analysisType: parseResult.data.analysisType,
     };
-    const response = await api.dashboard.postApiDashboardHealthAnalysis(request);
+    const response = await analyzeDashboardHealthWithHeyApi(request);
 
     return { success: true, data: response };
   } catch (error: unknown) {

@@ -6,13 +6,11 @@ import {
 import type {
   UserSettingResponse as HeyUserSettingResponse,
   WorkspaceListItemResponse as HeyWorkspaceListItemResponse,
-} from '@/connectors/hey-api-axios/types.gen';
-import { getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
-import type {
   OrganizationPublicSettings,
   UserSettingResponse,
   WorkspaceListItemResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
 import UserSettingsClient from './UserSettingsClient';
 
 export const dynamic = 'force-dynamic';

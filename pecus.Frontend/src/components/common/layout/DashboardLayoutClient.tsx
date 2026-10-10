@@ -6,7 +6,7 @@ import ChatProvider from '@/components/chat/ChatProvider';
 import LandingPageRecommendationBanner from '@/components/common/feedback/LandingPageRecommendationBanner';
 import AppHeader from '@/components/common/layout/AppHeader';
 import DashboardSidebar from '@/components/common/layout/DashboardSidebar.server';
-import type { CurrentUserInfo } from '@/connectors/legacy-api/pecus';
+import type { CurrentUserInfo } from '@/connectors/hey-api-axios/types.gen';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAppSettings } from '@/providers/AppSettingsProvider';
 import { getLandingPageUrl } from '@/utils/landingPage';

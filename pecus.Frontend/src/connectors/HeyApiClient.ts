@@ -39,6 +39,12 @@ import {
   getApiMasterSkills,
   getApiMasterTaskTypes,
   getApiMyActivities,
+  getApiMyCommitterItems,
+  getApiMyCommitterWorkspaces,
+  getApiMyCommitterWorkspacesByWorkspaceIdTasks,
+  getApiMyTasks,
+  getApiMyTaskWorkspaces,
+  getApiMyTaskWorkspacesByWorkspaceIdTasks,
   getApiProfile,
   getApiProfileAppSettings,
   getApiProfileDevices,
@@ -52,11 +58,16 @@ import {
   getApiWorkspacesByWorkspaceIdItemsByItemIdActivities,
   getApiWorkspacesCodeByCode,
   getApiWorkspacesStatistics,
+  postApiAchievementsMeByAchievementIdNotify,
+  postApiAchievementsMeNotifyAll,
+  postApiDashboardHealthAnalysis,
   postApiEntranceAuthLogin,
 } from './hey-api-axios';
 import { type Client, createClient } from './hey-api-axios/client';
 import type {
   ActivityPeriod,
+  AppPublicSettingsResponse,
+  DashboardTaskFilter,
   GetApiAchievementsMeResponse,
   GetApiAchievementsMeUnnotifiedResponse,
   GetApiAchievementsRankingResponse,
@@ -93,6 +104,12 @@ import type {
   GetApiMasterSkillsResponse,
   GetApiMasterTaskTypesResponse,
   GetApiMyActivitiesResponse,
+  GetApiMyCommitterItemsResponse,
+  GetApiMyCommitterWorkspacesByWorkspaceIdTasksResponse,
+  GetApiMyCommitterWorkspacesResponse,
+  GetApiMyTasksResponse,
+  GetApiMyTaskWorkspacesByWorkspaceIdTasksResponse,
+  GetApiMyTaskWorkspacesResponse,
   GetApiProfileDevicesResponse,
   GetApiProfileResponse,
   GetApiUsersByUserIdAchievementsResponse,
@@ -104,11 +121,13 @@ import type {
   GetApiWorkspacesCodeByCodeResponse,
   GetApiWorkspacesResponse,
   GetApiWorkspacesStatisticsResponse,
+  HealthAnalysisRequest,
   PendingEmailChangeResponse,
+  PostApiDashboardHealthAnalysisResponse,
   PostApiEntranceAuthLoginResponse,
   TaskPriority,
+  TaskStatusFilter,
 } from './hey-api-axios/types.gen';
-import type { AppPublicSettingsResponse } from './legacy-api/pecus';
 
 function isPendingEmailChangeResponse(value: unknown): value is PendingEmailChangeResponse {
   if (typeof value !== 'object' || value === null) {
@@ -176,6 +195,23 @@ export async function getUnnotifiedAchievementsWithHeyApi(): Promise<GetApiAchie
   return response.data;
 }
 
+export async function notifyAchievementWithHeyApi(achievementId: number): Promise<void> {
+  const client = await createHeyApiClient();
+  await postApiAchievementsMeByAchievementIdNotify({
+    client,
+    path: { achievementId },
+    throwOnError: true,
+  });
+}
+
+export async function notifyAllAchievementsWithHeyApi(): Promise<void> {
+  const client = await createHeyApiClient();
+  await postApiAchievementsMeNotifyAll({
+    client,
+    throwOnError: true,
+  });
+}
+
 export async function getItemActivitiesWithHeyApi(
   workspaceId: number,
   itemId: number,
@@ -199,6 +235,69 @@ export async function getMyActivitiesWithHeyApi(
   const response = await getApiMyActivities({
     client,
     query: { Page: page, Period: period },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getMyTasksWithHeyApi(page?: number, status?: TaskStatusFilter): Promise<GetApiMyTasksResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiMyTasks({
+    client,
+    query: { Page: page, Status: status },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getMyTaskWorkspacesWithHeyApi(): Promise<GetApiMyTaskWorkspacesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiMyTaskWorkspaces({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function getMyTasksByWorkspaceWithHeyApi(
+  workspaceId: number,
+  filter?: DashboardTaskFilter,
+): Promise<GetApiMyTaskWorkspacesByWorkspaceIdTasksResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiMyTaskWorkspacesByWorkspaceIdTasks({
+    client,
+    path: { workspaceId },
+    query: { filter },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getMyCommitterWorkspacesWithHeyApi(): Promise<GetApiMyCommitterWorkspacesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiMyCommitterWorkspaces({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function getMyCommitterItemsWithHeyApi(
+  page?: number,
+  workspaceId?: number,
+): Promise<GetApiMyCommitterItemsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiMyCommitterItems({
+    client,
+    query: { Page: page, WorkspaceId: workspaceId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getMyCommitterTasksByWorkspaceWithHeyApi(
+  workspaceId: number,
+  filter?: DashboardTaskFilter,
+): Promise<GetApiMyCommitterWorkspacesByWorkspaceIdTasksResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiMyCommitterWorkspacesByWorkspaceIdTasks({
+    client,
+    path: { workspaceId },
+    query: { filter },
     throwOnError: true,
   });
   return response.data;
@@ -601,6 +700,22 @@ export async function getDashboardHelpCommentsWithHeyApi(): Promise<GetApiDashbo
   const client = await createHeyApiClient();
   const response = await getApiDashboardHelpComments({
     client,
+    throwOnError: true,
+  });
+
+  return response.data;
+}
+
+/**
+ * Analyze dashboard health through Hey API.
+ */
+export async function analyzeDashboardHealthWithHeyApi(
+  body: HealthAnalysisRequest,
+): Promise<PostApiDashboardHealthAnalysisResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiDashboardHealthAnalysis({
+    client,
+    body,
     throwOnError: true,
   });
 

@@ -1,12 +1,17 @@
 'use server';
 
 import {
+  getProfileAppSettingsWithHeyApi,
+  getProfileDevicesWithHeyApi,
+  getProfileWithHeyApi,
+} from '@/connectors/HeyApiClient';
+import type { AppPublicSettingsResponse } from '@/connectors/hey-api-axios/types.gen';
+import {
   createAuthenticatedAxios,
   createPecusApiClients,
   detectConcurrencyError,
 } from '@/connectors/legacy-api/PecusApiClient';
 import type {
-  AppPublicSettingsResponse,
   EmailChangeRequestResponse,
   EmailChangeVerifyResponse,
   MessageResponse,
@@ -186,7 +191,7 @@ export async function deleteDevice(input: DeleteDeviceInput): Promise<ApiRespons
     const api = createPecusApiClients();
 
     // まずデバイス一覧を取得して対象デバイスの publicId を確認
-    const devices = await api.profile.getApiProfileDevices();
+    const devices = await getProfileDevicesWithHeyApi();
     const targetDevice = devices.find((d) => d.id === parseResult.data.deviceId);
     const devicePublicId = targetDevice?.publicId;
 
@@ -237,7 +242,7 @@ export async function logoutOtherDevices(
     const currentDevicePublicId = session.device?.publicId;
 
     // デバイス一覧を取得して、現在のデバイス以外を削除
-    const devices = await api.profile.getApiProfileDevices();
+    const devices = await getProfileDevicesWithHeyApi();
     const otherDevices = devices.filter((d) => d.publicId !== currentDevicePublicId);
 
     let deletedDeviceCount = 0;
@@ -322,10 +327,8 @@ export async function uploadAvatarFile(input: UploadAvatarFileInput): Promise<
   }
 
   try {
-    const api = createPecusApiClients();
-
     // ユーザー情報を取得してResourceIdを設定
-    const userResponse = await api.profile.getApiProfile();
+    const userResponse = await getProfileWithHeyApi();
 
     // 認証済みAxiosインスタンスを作成
     // Note: OpenAPI自動生成クライアントはNode.js環境でのFormData/Fileオブジェクト処理に非対応のため、
@@ -463,8 +466,7 @@ export async function updateUserSetting(input: UpdateUserSettingInput): Promise<
  */
 export async function fetchAppSettings(): Promise<ApiResponse<AppPublicSettingsResponse>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.getApiProfileAppSettings();
+    const response = await getProfileAppSettingsWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch app settings:', error);

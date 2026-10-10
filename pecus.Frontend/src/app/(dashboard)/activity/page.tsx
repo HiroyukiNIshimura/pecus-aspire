@@ -3,9 +3,8 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchMyActivities } from '@/actions/activity';
 import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
-import type { GetApiProfileResponse } from '@/connectors/hey-api-axios/types.gen';
+import type { GetApiProfileResponse, PagedResponseOfActivityResponse } from '@/connectors/hey-api-axios/types.gen';
 import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
-import type { PagedResponseOfActivityResponse } from '@/connectors/legacy-api/pecus';
 import ActivityClient from './ActivityClient';
 
 export default async function ActivityPage() {

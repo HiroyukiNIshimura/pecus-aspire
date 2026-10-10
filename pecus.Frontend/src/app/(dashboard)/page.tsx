@@ -19,7 +19,7 @@ import type {
   DashboardTasksByPriorityResponse,
   DashboardTaskTrendResponse,
   DashboardWorkspaceBreakdownResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';
