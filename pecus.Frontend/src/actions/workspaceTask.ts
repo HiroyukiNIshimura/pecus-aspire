@@ -1,6 +1,11 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
+import {
+  createWorkspaceTaskWithHeyApi,
+  getWorkspaceTaskBySequenceWithHeyApi,
+  getWorkspaceTasksWithHeyApi,
+  getWorkspaceTaskWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   AssigneeTaskLoadResponse,
   BulkCreateTasksResponse,
@@ -8,7 +13,8 @@ import type {
   TaskGenerationResponse,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import {
   type BulkCreateTasksInput,
   bulkCreateTasksInputSchema,
@@ -52,12 +58,7 @@ export async function getWorkspaceTaskBySequence(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasksSequence(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.sequence,
-    );
+    const response = await getWorkspaceTaskBySequenceWithHeyApi(parseResult.data);
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -81,16 +82,19 @@ export async function getWorkspaceTasks(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.page ?? 1,
-      parseResult.data.pageSize ?? 10,
-      parseResult.data.status,
-      parseResult.data.assignedUserId,
-      parseResult.data.sortBy,
-      parseResult.data.order,
+    const response = await getWorkspaceTasksWithHeyApi(
+      {
+        workspaceId: parseResult.data.workspaceId,
+        itemId: parseResult.data.itemId,
+      },
+      {
+        Page: parseResult.data.page ?? 1,
+        PageSize: parseResult.data.pageSize ?? 10,
+        Status: parseResult.data.status,
+        AssignedUserId: parseResult.data.assignedUserId,
+        SortBy: parseResult.data.sortBy,
+        Order: parseResult.data.order,
+      },
     );
 
     return { success: true, data: response };
@@ -116,7 +120,6 @@ export async function getAllWorkspaceTasks(
   }
 
   try {
-    const api = await createPecusApiClients();
     const allTasks: WorkspaceTaskDetailResponse[] = [];
     let page = 1;
     let hasMore = true;
@@ -124,13 +127,14 @@ export async function getAllWorkspaceTasks(
 
     // 全ページを取得
     while (hasMore) {
-      const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-        parseResult.data.workspaceId,
-        parseResult.data.itemId,
-        page,
-        pageSize,
-        parseResult.data.status,
-        parseResult.data.assignedUserId,
+      const response = await getWorkspaceTasksWithHeyApi(
+        { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
+        {
+          Page: page,
+          PageSize: pageSize,
+          Status: parseResult.data.status,
+          AssignedUserId: parseResult.data.assignedUserId,
+        },
       );
 
       if (response.data && response.data.length > 0) {
@@ -164,12 +168,7 @@ export async function getWorkspaceTask(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasks1(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.taskId,
-    );
+    const response = await getWorkspaceTaskWithHeyApi(parseResult.data);
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -193,10 +192,8 @@ export async function createWorkspaceTask(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasks(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
+    const response = await createWorkspaceTaskWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
       parseResult.data.request,
     );
 

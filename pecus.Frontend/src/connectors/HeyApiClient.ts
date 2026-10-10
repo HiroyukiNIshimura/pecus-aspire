@@ -10,6 +10,9 @@ import {
   deleteApiAdminWorkspacesByIdUsersByUserId,
   deleteApiBackofficeNotificationsById,
   deleteApiBackofficeOrganizationsById,
+  deleteApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsByAttachmentId,
+  deleteApiWorkspacesByWorkspaceIdItemsByItemIdPin,
+  deleteApiWorkspacesByWorkspaceIdItemsByItemIdRelationsByRelationId,
   deleteApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId,
   getApiAchievements,
   getApiAchievementsMe,
@@ -68,8 +71,14 @@ import {
   getApiWorkspacesByWorkspaceIdItems,
   getApiWorkspacesByWorkspaceIdItemsByItemId,
   getApiWorkspacesByWorkspaceIdItemsByItemIdActivities,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdAttachments,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdChildrenCount,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdTasks,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskId,
   getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments,
   getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdTasksSequenceBySequence,
+  getApiWorkspacesByWorkspaceIdItemsCodeByCode,
   getApiWorkspacesCodeByCode,
   getApiWorkspacesStatistics,
   patchApiAdminSkillsByIdActivate,
@@ -79,6 +88,10 @@ import {
   patchApiAdminWorkspacesByIdActivate,
   patchApiAdminWorkspacesByIdDeactivate,
   patchApiAdminWorkspacesByIdUsersByUserIdRole,
+  patchApiWorkspacesByWorkspaceIdItemsByItemId,
+  patchApiWorkspacesByWorkspaceIdItemsByItemIdAssignee,
+  patchApiWorkspacesByWorkspaceIdItemsByItemIdByAttr,
+  patchApiWorkspacesByWorkspaceIdItemsByItemIdStatus,
   postApiAchievementsMeByAchievementIdNotify,
   postApiAchievementsMeNotifyAll,
   postApiAdminExternalApiKeys,
@@ -101,7 +114,12 @@ import {
   postApiEntranceAuthLogin,
   postApiUsersWorkload,
   postApiWorkspaces,
+  postApiWorkspacesByWorkspaceIdItems,
+  postApiWorkspacesByWorkspaceIdItemsByItemIdPin,
+  postApiWorkspacesByWorkspaceIdItemsByItemIdRelations,
+  postApiWorkspacesByWorkspaceIdItemsByItemIdTasks,
   postApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments,
+  postApiWorkspacesByWorkspaceIdItemsDocumentSuggestion,
   putApiAdminOrganization,
   putApiAdminOrganizationSetting,
   putApiAdminSkillsById,
@@ -128,6 +146,8 @@ import type {
   DeleteApiAdminTagsByIdResponse,
   DeleteApiAdminWorkspacesByIdResponse,
   DeleteApiAdminWorkspacesByIdUsersByUserIdResponse,
+  DeleteApiWorkspacesByWorkspaceIdItemsByItemIdPinResponse,
+  DeleteApiWorkspacesByWorkspaceIdItemsByItemIdRelationsByRelationIdResponse,
   DeleteApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse,
   GetApiAchievementsMeResponse,
   GetApiAchievementsMeUnnotifiedResponse,
@@ -181,9 +201,15 @@ import type {
   GetApiUsersSearchResponse,
   GetApiWorkspacesByIdResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdActivitiesResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdChildrenCountResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksSequenceBySequenceResponse,
+  GetApiWorkspacesByWorkspaceIdItemsCodeByCodeResponse,
   GetApiWorkspacesByWorkspaceIdItemsResponse,
   GetApiWorkspacesCodeByCodeResponse,
   GetApiWorkspacesResponse,
@@ -199,6 +225,10 @@ import type {
   PatchApiAdminWorkspacesByIdActivateResponse,
   PatchApiAdminWorkspacesByIdDeactivateResponse,
   PatchApiAdminWorkspacesByIdUsersByUserIdRoleResponse,
+  PatchApiWorkspacesByWorkspaceIdItemsByItemIdAssigneeResponse,
+  PatchApiWorkspacesByWorkspaceIdItemsByItemIdByAttrResponse,
+  PatchApiWorkspacesByWorkspaceIdItemsByItemIdResponse,
+  PatchApiWorkspacesByWorkspaceIdItemsByItemIdStatusResponse,
   PendingEmailChangeResponse,
   PostApiAdminExternalApiKeysResponse,
   PostApiAdminSkillsResponse,
@@ -215,7 +245,12 @@ import type {
   PostApiDashboardHealthAnalysisResponse,
   PostApiEntranceAuthLoginResponse,
   PostApiUsersWorkloadResponse,
+  PostApiWorkspacesByWorkspaceIdItemsByItemIdPinResponse,
+  PostApiWorkspacesByWorkspaceIdItemsByItemIdRelationsResponse,
   PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsResponse,
+  PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksResponse,
+  PostApiWorkspacesByWorkspaceIdItemsDocumentSuggestionResponse,
+  PostApiWorkspacesByWorkspaceIdItemsResponse,
   PostApiWorkspacesResponse,
   PutApiAdminOrganizationResponse,
   PutApiAdminOrganizationSettingResponse,
@@ -1499,6 +1534,34 @@ export async function deleteTaskCommentWithHeyApi(
   return response.data;
 }
 
+export async function getWorkspaceItemAttachmentsWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+  taskId?: number,
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdAttachments({
+    client,
+    path: { workspaceId, itemId },
+    query: { taskId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteWorkspaceItemAttachmentWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+  attachmentId: number,
+): Promise<void> {
+  const client = await createHeyApiClient();
+  await deleteApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsByAttachmentId({
+    client,
+    path: { workspaceId, itemId, attachmentId },
+    throwOnError: true,
+  });
+}
+
 /**
  * Get workspace details by code through Hey API.
  */
@@ -1585,6 +1648,233 @@ export async function getWorkspaceItemByIdWithHeyApi(
     throwOnError: true,
   });
 
+  return response.data;
+}
+
+export async function getWorkspaceItemByCodeWithHeyApi(
+  workspaceId: number,
+  itemCode: string,
+): Promise<GetApiWorkspacesByWorkspaceIdItemsCodeByCodeResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsCodeByCode({
+    client,
+    path: { workspaceId, code: itemCode },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getWorkspaceItemChildrenCountWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdChildrenCountResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdChildrenCount({
+    client,
+    path: { workspaceId, itemId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+type WorkspaceTaskPath = {
+  workspaceId: number;
+  itemId: number;
+};
+
+export async function getWorkspaceTasksWithHeyApi(
+  path: WorkspaceTaskPath,
+  query?: Parameters<typeof getApiWorkspacesByWorkspaceIdItemsByItemIdTasks>[0]['query'],
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdTasks({
+    client,
+    path,
+    query,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getWorkspaceTaskWithHeyApi(
+  path: WorkspaceTaskPath & { taskId: number },
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskId({
+    client,
+    path,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getWorkspaceTaskBySequenceWithHeyApi(
+  path: WorkspaceTaskPath & { sequence: number },
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksSequenceBySequenceResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdTasksSequenceBySequence({
+    client,
+    path,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function createWorkspaceTaskWithHeyApi(
+  path: WorkspaceTaskPath,
+  body: Parameters<typeof postApiWorkspacesByWorkspaceIdItemsByItemIdTasks>[0]['body'],
+): Promise<PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByWorkspaceIdItemsByItemIdTasks({
+    client,
+    path,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function createWorkspaceItemWithHeyApi(
+  workspaceId: number,
+  body: Parameters<typeof postApiWorkspacesByWorkspaceIdItems>[0]['body'],
+): Promise<PostApiWorkspacesByWorkspaceIdItemsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByWorkspaceIdItems({
+    client,
+    path: { workspaceId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateWorkspaceItemWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+  body: Parameters<typeof patchApiWorkspacesByWorkspaceIdItemsByItemId>[0]['body'],
+): Promise<PatchApiWorkspacesByWorkspaceIdItemsByItemIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiWorkspacesByWorkspaceIdItemsByItemId({
+    client,
+    path: { workspaceId, itemId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateWorkspaceItemStatusWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+  body: Parameters<typeof patchApiWorkspacesByWorkspaceIdItemsByItemIdStatus>[0]['body'],
+): Promise<PatchApiWorkspacesByWorkspaceIdItemsByItemIdStatusResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiWorkspacesByWorkspaceIdItemsByItemIdStatus({
+    client,
+    path: { workspaceId, itemId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateWorkspaceItemAssigneeWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+  body: Parameters<typeof patchApiWorkspacesByWorkspaceIdItemsByItemIdAssignee>[0]['body'],
+): Promise<PatchApiWorkspacesByWorkspaceIdItemsByItemIdAssigneeResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiWorkspacesByWorkspaceIdItemsByItemIdAssignee({
+    client,
+    path: { workspaceId, itemId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateWorkspaceItemAttributeWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+  attribute: string,
+  body: Parameters<typeof patchApiWorkspacesByWorkspaceIdItemsByItemIdByAttr>[0]['body'],
+): Promise<PatchApiWorkspacesByWorkspaceIdItemsByItemIdByAttrResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiWorkspacesByWorkspaceIdItemsByItemIdByAttr({
+    client,
+    path: { workspaceId, itemId, attr: attribute },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getWorkspaceItemDocumentSuggestionWithHeyApi(
+  workspaceId: number,
+  body: Parameters<typeof postApiWorkspacesByWorkspaceIdItemsDocumentSuggestion>[0]['body'],
+): Promise<PostApiWorkspacesByWorkspaceIdItemsDocumentSuggestionResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByWorkspaceIdItemsDocumentSuggestion({
+    client,
+    path: { workspaceId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function addWorkspaceItemPinWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+): Promise<PostApiWorkspacesByWorkspaceIdItemsByItemIdPinResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByWorkspaceIdItemsByItemIdPin({
+    client,
+    path: { workspaceId, itemId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function removeWorkspaceItemPinWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+): Promise<DeleteApiWorkspacesByWorkspaceIdItemsByItemIdPinResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiWorkspacesByWorkspaceIdItemsByItemIdPin({
+    client,
+    path: { workspaceId, itemId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function addWorkspaceItemRelationWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+  body: Parameters<typeof postApiWorkspacesByWorkspaceIdItemsByItemIdRelations>[0]['body'],
+): Promise<PostApiWorkspacesByWorkspaceIdItemsByItemIdRelationsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByWorkspaceIdItemsByItemIdRelations({
+    client,
+    path: { workspaceId, itemId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function removeWorkspaceItemRelationWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+  relationId: number,
+): Promise<DeleteApiWorkspacesByWorkspaceIdItemsByItemIdRelationsByRelationIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiWorkspacesByWorkspaceIdItemsByItemIdRelationsByRelationId({
+    client,
+    path: { workspaceId, itemId, relationId },
+    throwOnError: true,
+  });
   return response.data;
 }
 

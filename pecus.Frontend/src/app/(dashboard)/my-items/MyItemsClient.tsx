@@ -13,7 +13,7 @@ import type {
   SortOrder,
   SummaryWorkspaceResponse,
   WorkspaceItemDetailResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';

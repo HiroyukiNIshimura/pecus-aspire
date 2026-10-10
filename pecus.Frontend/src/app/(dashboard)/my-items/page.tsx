@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation';
 import { fetchMyItems } from '@/actions/workspaceItem';
 import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
-import type { GetApiProfileResponse } from '@/connectors/hey-api-axios/types.gen';
-import type { PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics } from '@/connectors/legacy-api/pecus';
+import type {
+  GetApiProfileResponse,
+  PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics,
+} from '@/connectors/hey-api-axios/types.gen';
 import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import MyItemsClient from './MyItemsClient';
 
