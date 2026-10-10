@@ -14,6 +14,7 @@
     "download:api": "curl -o ./.spec/open-api-scheme.json https://localhost:7265/openapi/v1.json",
     "generate:api": "npm run clean:api && openapi --input ./.spec/open-api-scheme.json --output src/connectors/api/pecus --useUnionTypes --client axios && npm run generate:conflict-types",
     "generate:client": "node scripts/generate-pecus-api-client.js",
+    "hey:gen-client": "openapi-ts --input ./.spec/open-api-scheme.json --output ./src/connectors/hey-api-axios --client @hey-api/client-axios --no-log-file",
     "extract:external-api-spec": "node scripts/extract-external-api-openapi.js",
     "generate:conflict-types": "node scripts/generate-conflict-types.js",
     "generate:help-index": "npx tsx scripts/generate-help-index.ts",
