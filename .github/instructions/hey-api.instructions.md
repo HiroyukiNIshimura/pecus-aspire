@@ -16,7 +16,7 @@ description: "Use when generating, configuring, or migrating the pecus.Frontend 
 - Hey API の生成物は手編集しない。
 - `hey-api-axios` は自動生成専用ディレクトリとする。手書きのアダプター、認証処理、エラー処理を配置しない。
 - 生成時に出力先ディレクトリ内の既存ファイルが削除されるため、生成前に手書きファイルを置かない。
-- 手書きの互換層や認証設定は `src/connectors/api/` など生成先の外側に配置する。
+- 手書きの互換層や認証設定は `src/connectors/backend/` など生成先の外側に配置する。
 - OpenAPI スキーマの変更後は、生成物だけでなく nullable 型、レスポンス型、リクエスト型、メソッド名を確認する。
 
 ## HTTP クライアント

@@ -169,7 +169,7 @@ export async function getMonitoringStatus(): Promise<ApiResponse<MonitoringStatu
   try {
     const targetsResponse = await fetchPrometheusTargets();
 
-    if (!targetsResponse || targetsResponse.status !== 'success') {
+    if (targetsResponse?.status !== 'success') {
       return {
         success: true,
         data: {
@@ -287,7 +287,7 @@ async function fetchPrometheusInstant(query: string): Promise<PrometheusInstantR
  * Prometheus レスポンスを MetricTimeSeries 配列に変換
  */
 function parseRangeResponse(response: PrometheusRangeResponse | null, metricName: string): MetricTimeSeries[] {
-  if (!response || response.status !== 'success') return [];
+  if (response?.status !== 'success') return [];
 
   return response.data.result.map((result) => ({
     job: result.metric.job || 'unknown',
@@ -308,7 +308,7 @@ function parseRangeResponseWithJobOverride(
   metricName: string,
   jobOverride: string,
 ): MetricTimeSeries[] {
-  if (!response || response.status !== 'success' || response.data.result.length === 0) return [];
+  if (response?.status !== 'success' || response.data.result.length === 0) return [];
 
   return response.data.result.map((result) => ({
     job: jobOverride,
