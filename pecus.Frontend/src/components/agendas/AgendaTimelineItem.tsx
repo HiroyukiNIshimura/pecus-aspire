@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { AgendaOccurrenceResponse, RecurrenceType } from '@/connectors/legacy-api/pecus';
+import type { AgendaOccurrenceResponse, RecurrenceType } from '@/connectors/hey-api-axios/types.gen';
 import { formatTime } from '@/libs/utils/date';
 import QuickAttendanceButtons from './QuickAttendanceButtons';
 

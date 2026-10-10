@@ -8,6 +8,8 @@ import {
   deleteApiAdminTagsById,
   deleteApiAdminWorkspacesById,
   deleteApiAdminWorkspacesByIdUsersByUserId,
+  deleteApiAgendasByIdExceptionsByExceptionId,
+  deleteApiAgendasByIdOccurrencesByOccurrenceIndexAttendance,
   deleteApiBackofficeNotificationsById,
   deleteApiBackofficeOrganizationsById,
   deleteApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsByAttachmentId,
@@ -29,6 +31,12 @@ import {
   getApiAdminUsersRoles,
   getApiAdminWorkspaces,
   getApiAdminWorkspacesById,
+  getApiAgendasById,
+  getApiAgendasByIdExceptions,
+  getApiAgendasNotifications,
+  getApiAgendasNotificationsCount,
+  getApiAgendasOccurrences,
+  getApiAgendasOccurrencesRecent,
   getApiBackendMonitoringHangfireStats,
   getApiBackofficeNotifications,
   getApiBackofficeNotificationsById,
@@ -74,9 +82,11 @@ import {
   getApiWorkspacesByWorkspaceIdItemsByItemIdAttachments,
   getApiWorkspacesByWorkspaceIdItemsByItemIdChildrenCount,
   getApiWorkspacesByWorkspaceIdItemsByItemIdTasks,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdTasksAssigneeLoadCheck,
   getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskId,
   getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments,
   getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdTasksFlowMap,
   getApiWorkspacesByWorkspaceIdItemsByItemIdTasksSequenceBySequence,
   getApiWorkspacesByWorkspaceIdItemsCodeByCode,
   getApiWorkspacesCodeByCode,
@@ -88,6 +98,10 @@ import {
   patchApiAdminWorkspacesByIdActivate,
   patchApiAdminWorkspacesByIdDeactivate,
   patchApiAdminWorkspacesByIdUsersByUserIdRole,
+  patchApiAgendasByIdAttendance,
+  patchApiAgendasByIdCancel,
+  patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendance,
+  patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceFrom,
   patchApiWorkspacesByWorkspaceIdItemsByItemId,
   patchApiWorkspacesByWorkspaceIdItemsByItemIdAssignee,
   patchApiWorkspacesByWorkspaceIdItemsByItemIdByAttr,
@@ -103,6 +117,10 @@ import {
   postApiAdminUsersCreateWithoutPassword,
   postApiAdminWorkspaces,
   postApiAdminWorkspacesByIdUsers,
+  postApiAgendas,
+  postApiAgendasByIdExceptions,
+  postApiAgendasNotificationsByIdRead,
+  postApiAgendasNotificationsRead,
   postApiBackofficeNotifications,
   postApiBackofficeOrganizations,
   postApiBackofficeOrganizationsByIdResendCreatedEmail,
@@ -118,7 +136,10 @@ import {
   postApiWorkspacesByWorkspaceIdItemsByItemIdPin,
   postApiWorkspacesByWorkspaceIdItemsByItemIdRelations,
   postApiWorkspacesByWorkspaceIdItemsByItemIdTasks,
+  postApiWorkspacesByWorkspaceIdItemsByItemIdTasksBulkCreate,
   postApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments,
+  postApiWorkspacesByWorkspaceIdItemsByItemIdTasksContentSuggestion,
+  postApiWorkspacesByWorkspaceIdItemsByItemIdTasksGenerateCandidates,
   postApiWorkspacesByWorkspaceIdItemsDocumentSuggestion,
   putApiAdminOrganization,
   putApiAdminOrganizationSetting,
@@ -126,11 +147,14 @@ import {
   putApiAdminTagsById,
   putApiAdminUsersById,
   putApiAdminWorkspacesById,
+  putApiAgendasById,
+  putApiAgendasByIdFrom,
   putApiBackofficeNotificationsById,
   putApiBackofficeOrganizationsById,
   putApiBackofficeOrganizationsByIdBotsByBotIdPersona,
   putApiChatRoomsByRoomIdRead,
   putApiWorkspacesById,
+  putApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskId,
   putApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId,
 } from './hey-api-axios';
 import { type Client, createClient } from './hey-api-axios/client';
@@ -146,6 +170,7 @@ import type {
   DeleteApiAdminTagsByIdResponse,
   DeleteApiAdminWorkspacesByIdResponse,
   DeleteApiAdminWorkspacesByIdUsersByUserIdResponse,
+  DeleteApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceResponse,
   DeleteApiWorkspacesByWorkspaceIdItemsByItemIdPinResponse,
   DeleteApiWorkspacesByWorkspaceIdItemsByItemIdRelationsByRelationIdResponse,
   DeleteApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse,
@@ -164,6 +189,12 @@ import type {
   GetApiAdminUsersRolesResponse,
   GetApiAdminWorkspacesByIdResponse,
   GetApiAdminWorkspacesResponse,
+  GetApiAgendasByIdExceptionsResponse,
+  GetApiAgendasByIdResponse,
+  GetApiAgendasNotificationsCountResponse,
+  GetApiAgendasNotificationsResponse,
+  GetApiAgendasOccurrencesRecentResponse,
+  GetApiAgendasOccurrencesResponse,
   GetApiBackendMonitoringHangfireStatsResponse,
   GetApiBackofficeNotificationsByIdResponse,
   GetApiBackofficeNotificationsResponse,
@@ -204,9 +235,11 @@ import type {
   GetApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdChildrenCountResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksAssigneeLoadCheckResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksFlowMapResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksSequenceBySequenceResponse,
   GetApiWorkspacesByWorkspaceIdItemsCodeByCodeResponse,
@@ -225,6 +258,9 @@ import type {
   PatchApiAdminWorkspacesByIdActivateResponse,
   PatchApiAdminWorkspacesByIdDeactivateResponse,
   PatchApiAdminWorkspacesByIdUsersByUserIdRoleResponse,
+  PatchApiAgendasByIdAttendanceResponse,
+  PatchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceFromResponse,
+  PatchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceResponse,
   PatchApiWorkspacesByWorkspaceIdItemsByItemIdAssigneeResponse,
   PatchApiWorkspacesByWorkspaceIdItemsByItemIdByAttrResponse,
   PatchApiWorkspacesByWorkspaceIdItemsByItemIdResponse,
@@ -238,6 +274,9 @@ import type {
   PostApiAdminUsersCreateWithoutPasswordResponse,
   PostApiAdminWorkspacesByIdUsersResponse,
   PostApiAdminWorkspacesResponse,
+  PostApiAgendasByIdExceptionsResponse,
+  PostApiAgendasNotificationsReadResponse,
+  PostApiAgendasResponse,
   PostApiBackofficeNotificationsResponse,
   PostApiChatRoomsAiResponse,
   PostApiChatRoomsByRoomIdMessagesResponse,
@@ -247,7 +286,10 @@ import type {
   PostApiUsersWorkloadResponse,
   PostApiWorkspacesByWorkspaceIdItemsByItemIdPinResponse,
   PostApiWorkspacesByWorkspaceIdItemsByItemIdRelationsResponse,
+  PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksBulkCreateResponse,
   PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsResponse,
+  PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksContentSuggestionResponse,
+  PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksGenerateCandidatesResponse,
   PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksResponse,
   PostApiWorkspacesByWorkspaceIdItemsDocumentSuggestionResponse,
   PostApiWorkspacesByWorkspaceIdItemsResponse,
@@ -258,9 +300,12 @@ import type {
   PutApiAdminTagsByIdResponse,
   PutApiAdminUsersByIdResponse,
   PutApiAdminWorkspacesByIdResponse,
+  PutApiAgendasByIdFromResponse,
+  PutApiAgendasByIdResponse,
   PutApiBackofficeNotificationsByIdResponse,
   PutApiWorkspacesByIdResponse,
   PutApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse,
+  PutApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdResponse,
   SuccessResponse,
   TaskPriority,
   TaskStatusFilter,
@@ -1726,6 +1771,300 @@ export async function createWorkspaceTaskWithHeyApi(
 ): Promise<PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksResponse> {
   const client = await createHeyApiClient();
   const response = await postApiWorkspacesByWorkspaceIdItemsByItemIdTasks({
+    client,
+    path,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateWorkspaceTaskWithHeyApi(
+  path: WorkspaceTaskPath & { taskId: number },
+  body: Parameters<typeof putApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskId>[0]['body'],
+): Promise<PutApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskId({
+    client,
+    path,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function checkWorkspaceTaskAssigneeLoadWithHeyApi(
+  path: WorkspaceTaskPath,
+  query: Parameters<typeof getApiWorkspacesByWorkspaceIdItemsByItemIdTasksAssigneeLoadCheck>[0]['query'],
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksAssigneeLoadCheckResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdTasksAssigneeLoadCheck({
+    client,
+    path,
+    query,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getWorkspaceTaskFlowMapWithHeyApi(
+  path: WorkspaceTaskPath,
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksFlowMapResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdTasksFlowMap({
+    client,
+    path,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getAgendaOccurrencesWithHeyApi(query: {
+  startAt?: string;
+  endAt?: string;
+}): Promise<GetApiAgendasOccurrencesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAgendasOccurrences({
+    client,
+    query,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getRecentAgendaOccurrencesWithHeyApi(query: {
+  Limit?: number;
+  Cursor?: string;
+}): Promise<GetApiAgendasOccurrencesRecentResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAgendasOccurrencesRecent({
+    client,
+    query,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getAgendaByIdWithHeyApi(
+  id: number,
+  query?: { occurrenceStartAt?: string; occurrenceIndex?: number },
+): Promise<GetApiAgendasByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAgendasById({
+    client,
+    path: { id },
+    query,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateAgendaAttendanceWithHeyApi(
+  agendaId: number,
+  body: Parameters<typeof patchApiAgendasByIdAttendance>[0]['body'],
+): Promise<PatchApiAgendasByIdAttendanceResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAgendasByIdAttendance({
+    client,
+    path: { id: agendaId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function cancelAgendaWithHeyApi(
+  agendaId: number,
+  body: Parameters<typeof patchApiAgendasByIdCancel>[0]['body'],
+): Promise<void> {
+  const client = await createHeyApiClient();
+  await patchApiAgendasByIdCancel({
+    client,
+    path: { id: agendaId },
+    body,
+    throwOnError: true,
+  });
+}
+
+export async function updateAgendaOccurrenceAttendanceWithHeyApi(
+  agendaId: number,
+  occurrenceIndex: number,
+  body: Parameters<typeof patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendance>[0]['body'],
+): Promise<PatchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendance({
+    client,
+    path: { id: agendaId, occurrenceIndex },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function resetAgendaOccurrenceAttendanceWithHeyApi(
+  agendaId: number,
+  occurrenceIndex: number,
+): Promise<DeleteApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiAgendasByIdOccurrencesByOccurrenceIndexAttendance({
+    client,
+    path: { id: agendaId, occurrenceIndex },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateAgendaAttendanceFromOccurrenceWithHeyApi(
+  agendaId: number,
+  occurrenceIndex: number,
+  body: Parameters<typeof patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceFrom>[0]['body'],
+): Promise<PatchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceFromResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceFrom({
+    client,
+    path: { id: agendaId, occurrenceIndex },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getAgendaExceptionsWithHeyApi(agendaId: number): Promise<GetApiAgendasByIdExceptionsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAgendasByIdExceptions({
+    client,
+    path: { id: agendaId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function createAgendaExceptionWithHeyApi(
+  agendaId: number,
+  body: Parameters<typeof postApiAgendasByIdExceptions>[0]['body'],
+): Promise<PostApiAgendasByIdExceptionsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAgendasByIdExceptions({
+    client,
+    path: { id: agendaId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function createAgendaWithHeyApi(
+  body: Parameters<typeof postApiAgendas>[0]['body'],
+): Promise<PostApiAgendasResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAgendas({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function updateAgendaWithHeyApi(
+  agendaId: number,
+  body: Parameters<typeof putApiAgendasById>[0]['body'],
+): Promise<PutApiAgendasByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiAgendasById({
+    client,
+    path: { id: agendaId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateAgendaFromOccurrenceWithHeyApi(
+  agendaId: number,
+  body: Parameters<typeof putApiAgendasByIdFrom>[0]['body'],
+): Promise<PutApiAgendasByIdFromResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiAgendasByIdFrom({
+    client,
+    path: { id: agendaId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteAgendaExceptionWithHeyApi(agendaId: number, exceptionId: number): Promise<void> {
+  const client = await createHeyApiClient();
+  await deleteApiAgendasByIdExceptionsByExceptionId({
+    client,
+    path: { id: agendaId, exceptionId },
+    throwOnError: true,
+  });
+}
+
+export async function getAgendaNotificationCountWithHeyApi(): Promise<GetApiAgendasNotificationsCountResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAgendasNotificationsCount({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function getAgendaNotificationsWithHeyApi(query: {
+  Limit?: number;
+  BeforeId?: number;
+  UnreadOnly?: boolean;
+}): Promise<GetApiAgendasNotificationsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAgendasNotifications({ client, query, throwOnError: true });
+  return response.data;
+}
+
+export async function markAgendaNotificationReadWithHeyApi(notificationId: number): Promise<void> {
+  const client = await createHeyApiClient();
+  await postApiAgendasNotificationsByIdRead({
+    client,
+    path: { id: notificationId },
+    throwOnError: true,
+  });
+}
+
+export async function markAllAgendaNotificationsReadWithHeyApi(
+  body: Parameters<typeof postApiAgendasNotificationsRead>[0]['body'],
+): Promise<PostApiAgendasNotificationsReadResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAgendasNotificationsRead({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function getWorkspaceTaskContentSuggestionWithHeyApi(
+  path: WorkspaceTaskPath,
+  body: Parameters<typeof postApiWorkspacesByWorkspaceIdItemsByItemIdTasksContentSuggestion>[0]['body'],
+): Promise<PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksContentSuggestionResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByWorkspaceIdItemsByItemIdTasksContentSuggestion({
+    client,
+    path,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function generateWorkspaceTaskCandidatesWithHeyApi(
+  path: WorkspaceTaskPath,
+  body: Parameters<typeof postApiWorkspacesByWorkspaceIdItemsByItemIdTasksGenerateCandidates>[0]['body'],
+): Promise<PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksGenerateCandidatesResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByWorkspaceIdItemsByItemIdTasksGenerateCandidates({
+    client,
+    path,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function bulkCreateWorkspaceTasksWithHeyApi(
+  path: WorkspaceTaskPath,
+  body: Parameters<typeof postApiWorkspacesByWorkspaceIdItemsByItemIdTasksBulkCreate>[0]['body'],
+): Promise<PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksBulkCreateResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByWorkspaceIdItemsByItemIdTasksBulkCreate({
     client,
     path,
     body,

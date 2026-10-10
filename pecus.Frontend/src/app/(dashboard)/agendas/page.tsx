@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchRecentOccurrencesPaginated } from '@/actions/agenda';
 import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
-import type { AgendaOccurrenceResponse } from '@/connectors/legacy-api/pecus';
+import type { AgendaOccurrenceResponse } from '@/connectors/hey-api-axios/types.gen';
 import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import AgendaPageClient from './AgendaPageClient';
 

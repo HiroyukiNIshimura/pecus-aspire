@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { fetchRecentOccurrencesPaginated } from '@/actions/agenda';
 import AgendaTimeline from '@/components/agendas/AgendaTimeline';
-import type { AgendaOccurrenceResponse } from '@/connectors/legacy-api/pecus';
+import type { AgendaOccurrenceResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 interface AgendaPageClientProps {

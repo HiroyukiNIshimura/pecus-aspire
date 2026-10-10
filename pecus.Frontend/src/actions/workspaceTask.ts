@@ -1,20 +1,27 @@
 'use server';
 
 import {
+  bulkCreateWorkspaceTasksWithHeyApi,
+  checkWorkspaceTaskAssigneeLoadWithHeyApi,
   createWorkspaceTaskWithHeyApi,
+  generateWorkspaceTaskCandidatesWithHeyApi,
   getWorkspaceTaskBySequenceWithHeyApi,
+  getWorkspaceTaskContentSuggestionWithHeyApi,
+  getWorkspaceTaskFlowMapWithHeyApi,
   getWorkspaceTasksWithHeyApi,
   getWorkspaceTaskWithHeyApi,
+  updateWorkspaceTaskWithHeyApi,
 } from '@/connectors/HeyApiClient';
 import type {
   AssigneeTaskLoadResponse,
   BulkCreateTasksResponse,
   PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics,
+  TaskFlowMapResponse,
   TaskGenerationResponse,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskResponse,
 } from '@/connectors/hey-api-axios/types.gen';
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
+import { detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import {
   type BulkCreateTasksInput,
   bulkCreateTasksInputSchema,
@@ -219,11 +226,12 @@ export async function updateWorkspaceTask(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.putApiWorkspacesItemsTasks(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.taskId,
+    const response = await updateWorkspaceTaskWithHeyApi(
+      {
+        workspaceId: parseResult.data.workspaceId,
+        itemId: parseResult.data.itemId,
+        taskId: parseResult.data.taskId,
+      },
       parseResult.data.request,
     );
 
@@ -265,12 +273,12 @@ export async function checkAssigneeTaskLoad(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasksAssigneeLoadCheck(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.assignedUserId,
-      parseResult.data.dueDate,
+    const response = await checkWorkspaceTaskAssigneeLoadWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
+      {
+        AssignedUserId: parseResult.data.assignedUserId,
+        DueDate: parseResult.data.dueDate,
+      },
     );
 
     return { success: true, data: response };
@@ -307,7 +315,6 @@ export async function getPredecessorTaskOptions(
   }
 
   try {
-    const api = await createPecusApiClients();
     const pageSize = 50; // APIの上限
     let allTasks: PredecessorTaskOption[] = [];
     let currentPage = 1;
@@ -315,15 +322,12 @@ export async function getPredecessorTaskOptions(
 
     // 全ページを取得するまでループ
     while (hasMore) {
-      const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-        parseResult.data.workspaceId,
-        parseResult.data.itemId,
-        currentPage,
-        pageSize,
-        'All', // 全タスク（Active + Completed + Discarded）
+      const response = await getWorkspaceTasksWithHeyApi(
+        { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
+        { Page: currentPage, PageSize: pageSize, Status: 'All' },
       );
 
-      const pageTasks = (response.data || [])
+      const pageTasks = response.data
         .filter((t) => t.id !== parseResult.data.excludeTaskId && !t.isDiscarded) // 自タスクと破棄タスクを除外
         .map((t) => ({
           id: t.id,
@@ -355,9 +359,7 @@ export async function getPredecessorTaskOptions(
  * タスクフローマップを取得
  * アイテム内のタスク依存関係を可視化するためのデータを取得
  */
-export async function getTaskFlowMap(
-  input: GetTaskFlowMapInput,
-): Promise<ApiResponse<import('@/connectors/legacy-api/pecus').TaskFlowMapResponse>> {
+export async function getTaskFlowMap(input: GetTaskFlowMapInput): Promise<ApiResponse<TaskFlowMapResponse>> {
   const parseResult = getTaskFlowMapInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -365,16 +367,12 @@ export async function getTaskFlowMap(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasksFlowMap(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-    );
+    const response = await getWorkspaceTaskFlowMapWithHeyApi(parseResult.data);
 
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to get task flow map:', error);
-    return handleApiErrorForAction<import('@/connectors/legacy-api/pecus').TaskFlowMapResponse>(error, {
+    return handleApiErrorForAction<TaskFlowMapResponse>(error, {
       defaultMessage: 'タスクフローマップの取得に失敗しました',
     });
   }
@@ -394,13 +392,9 @@ export async function fetchTaskContentSuggestion(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasksContentSuggestion(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      {
-        taskTypeId: parseResult.data.taskTypeId,
-      },
+    const response = await getWorkspaceTaskContentSuggestionWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
+      { taskTypeId: parseResult.data.taskTypeId },
     );
 
     return {
@@ -432,10 +426,8 @@ export async function generateTaskCandidates(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasksGenerateCandidates(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
+    const response = await generateWorkspaceTaskCandidatesWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
       parseResult.data.request,
     );
 
@@ -461,10 +453,8 @@ export async function bulkCreateTasks(input: BulkCreateTasksInput): Promise<ApiR
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasksBulkCreate(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
+    const response = await bulkCreateWorkspaceTasksWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
       parseResult.data.request,
     );
 
