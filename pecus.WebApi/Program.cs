@@ -383,7 +383,7 @@ builder.Services.AddControllers(options =>
 builder.Services.AddOpenApi("v1", options =>
 {
     //本プロジェクトでは恒久的に変更禁止
-    options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+    options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
     options.ShouldInclude = description =>
         description.GroupName is null or "external" or "v1";
 
@@ -410,7 +410,7 @@ builder.Services.AddOpenApi("v1", options =>
 
 builder.Services.AddOpenApi("openapi", options =>
 {
-    options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+    options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
     options.ShouldInclude = description => description.GroupName == "external";
 
     options.AddDocumentTransformer((document, context, cancellationToken) =>
