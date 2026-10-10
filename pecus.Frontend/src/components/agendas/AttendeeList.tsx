@@ -1,6 +1,6 @@
 'use client';
 
-import type { AgendaAttendeeResponse, AttendanceStatus } from '@/connectors/api/pecus';
+import type { AgendaAttendeeResponse, AttendanceStatus } from '@/connectors/hey-api-axios/types.gen';
 import { AttendanceStatusBadge } from './AttendanceStatusBadge';
 
 interface AttendeeListProps {

@@ -1,13 +1,22 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import {
+  createBackOfficeOrganizationWithHeyApi,
+  deleteBackOfficeOrganizationWithHeyApi,
+  getBackOfficeOrganizationBotsWithHeyApi,
+  getBackOfficeOrganizationByIdWithHeyApi,
+  getBackOfficeOrganizationsWithHeyApi,
+  resendBackOfficeOrganizationCreatedEmailWithHeyApi,
+  updateBackOfficeBotPersonaWithHeyApi,
+  updateBackOfficeOrganizationWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   BackOfficeBotResponse,
   BackOfficeOrganizationDetailResponse,
   OrganizationWithAdminResponse,
   PagedResponseOfBackOfficeOrganizationListItemResponse,
   SuccessResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import {
   type CreateBackOfficeOrganizationInput,
   createBackOfficeOrganizationInputSchema,
@@ -43,11 +52,7 @@ export async function getBackOfficeOrganizations(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizations(
-      parseResult.data.page,
-      parseResult.data.pageSize,
-    );
+    const response = await getBackOfficeOrganizationsWithHeyApi(parseResult.data.page, parseResult.data.pageSize);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice organizations:', error);
@@ -68,8 +73,7 @@ export async function getBackOfficeOrganizationDetail(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizations1(parseResult.data.id);
+    const response = await getBackOfficeOrganizationByIdWithHeyApi(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice organization detail:', error);
@@ -90,11 +94,7 @@ export async function updateBackOfficeOrganization(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.putApiBackofficeOrganizations(
-      parseResult.data.id,
-      parseResult.data.request,
-    );
+    const response = await updateBackOfficeOrganizationWithHeyApi(parseResult.data.id, parseResult.data.request);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update backoffice organization:', error);
@@ -116,8 +116,7 @@ export async function deleteBackOfficeOrganization(
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.backOfficeOrganizations.deleteApiBackofficeOrganizations(parseResult.data.id, {
+    await deleteBackOfficeOrganizationWithHeyApi(parseResult.data.id, {
       confirmOrganizationCode: parseResult.data.confirmOrganizationCode,
       rowVersion: parseResult.data.rowVersion,
     });
@@ -141,8 +140,7 @@ export async function createBackOfficeOrganization(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.postApiBackofficeOrganizations(parseResult.data);
+    const response = await createBackOfficeOrganizationWithHeyApi(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create backoffice organization:', error);
@@ -163,10 +161,7 @@ export async function resendOrganizationCreatedEmail(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.postApiBackofficeOrganizationsResendCreatedEmail(
-      parseResult.data.organizationId,
-    );
+    const response = await resendBackOfficeOrganizationCreatedEmailWithHeyApi(parseResult.data.organizationId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to resend organization created email:', error);
@@ -187,10 +182,7 @@ export async function getBackOfficeOrganizationBots(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizationsBots(
-      parseResult.data.organizationId,
-    );
+    const response = await getBackOfficeOrganizationBotsWithHeyApi(parseResult.data.organizationId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch organization bots:', error);
@@ -211,8 +203,7 @@ export async function updateBackOfficeBotPersona(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.putApiBackofficeOrganizationsBotsPersona(
+    const response = await updateBackOfficeBotPersonaWithHeyApi(
       parseResult.data.organizationId,
       parseResult.data.botId,
       parseResult.data.request,

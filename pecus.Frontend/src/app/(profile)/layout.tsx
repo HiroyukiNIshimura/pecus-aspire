@@ -2,13 +2,9 @@ import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import ProfileLayoutClient from '@/components/common/layout/ProfileLayoutClient';
 import { ChatMentionNotification } from '@/components/notifications/ChatMentionNotification';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getHttpErrorInfo,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
-import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
+import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { AppPublicSettingsResponse } from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/libs/apiError';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 
@@ -27,9 +23,8 @@ export default async function ProfileLayout({ children }: ProfileLayoutProps) {
   let appSettings: AppPublicSettingsResponse = defaultAppSettings;
 
   try {
-    const api = createPecusApiClients();
     // アプリ設定とユーザー情報を単一のAPI呼び出しで取得
-    appSettings = await api.profile.getApiProfileAppSettings();
+    appSettings = await getProfileAppSettingsWithHeyApi();
   } catch (error) {
     // 401 エラーの場合はログインページにリダイレクト
     if (detect401ValidationError(error)) {

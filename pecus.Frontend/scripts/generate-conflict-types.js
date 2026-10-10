@@ -3,14 +3,14 @@
  *
  * このスクリプトは pecus.Frontend/.spec/open-api-scheme.json を解析して、
  * 409 Conflict レスポンスに対応する型情報を抽出し、
- * src/connectors/api/ConflictDataTypes.generated.ts を生成します。
+ * src/connectors/ConflictDataTypes.generated.ts を生成します。
  */
 
 const fs = require('node:fs');
 const path = require('node:path');
 
 const openApiSpecPath = path.join(__dirname, '../.spec/open-api-scheme.json');
-const outputPath = path.join(__dirname, '../src/connectors/api/ConflictDataTypes.generated.ts');
+const outputPath = path.join(__dirname, '../src/connectors/ConflictDataTypes.generated.ts');
 
 /**
  * OpenAPI定義から409 Conflict対応の型を抽出
@@ -200,7 +200,7 @@ function generateConflictTypesFile(conflictTypes) {
 
 import type {
 ${imports}
-} from "./pecus";
+} from "./hey-api-axios/types.gen";
 
 /**
  * バックエンド ConcurrencyErrorResponse のボディ形式（409 Conflict）

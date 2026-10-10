@@ -8,7 +8,10 @@ import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import DeleteNotificationModal from '@/components/backoffice/DeleteNotificationModal';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import DatePicker from '@/components/common/filters/DatePicker';
-import type { BackOfficeNotificationDetailResponse, SystemNotificationType } from '@/connectors/api/pecus';
+import type {
+  BackOfficeNotificationDetailResponse,
+  SystemNotificationType,
+} from '@/connectors/hey-api-axios/types.gen';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';

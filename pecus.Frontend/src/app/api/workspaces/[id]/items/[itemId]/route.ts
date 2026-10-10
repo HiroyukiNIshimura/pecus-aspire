@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { badRequestError, parseRouterError } from '@/app/api/routerError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getWorkspaceItemByIdWithHeyApi } from '@/connectors/HeyApiClient';
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string; itemId: string }> }) {
   try {
@@ -12,8 +12,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       return badRequestError('Invalid workspace ID or item ID');
     }
 
-    const clients = await createPecusApiClients();
-    const data = await clients.workspaceItem.getApiWorkspacesItems1(workspaceId, itemIdNum);
+    const data = await getWorkspaceItemByIdWithHeyApi(workspaceId, itemIdNum);
 
     return NextResponse.json(data);
   } catch (error) {

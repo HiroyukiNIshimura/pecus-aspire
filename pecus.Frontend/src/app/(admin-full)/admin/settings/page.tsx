@@ -2,15 +2,14 @@ import { redirect } from 'next/navigation';
 import { getOrganizationDetail } from '@/actions/admin/organizations';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
 import { handleServerFetch } from '@/libs/serverFetch';
 import AdminSettingsClient from './AdminSettingsClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminSettingsPage() {
-  const api = createPecusApiClients();
-  const authResult = await handleServerFetch(() => api.profile.getApiProfile());
+  const authResult = await handleServerFetch(getProfileWithHeyApi);
 
   if (!authResult.success) {
     if (authResult.error === 'forbidden') {

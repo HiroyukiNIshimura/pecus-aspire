@@ -13,7 +13,7 @@ import type {
   OrganizationPublicSettings,
   UserSettingResponse,
   WorkspaceListItemResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import {

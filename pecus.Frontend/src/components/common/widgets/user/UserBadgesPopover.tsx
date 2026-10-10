@@ -4,7 +4,11 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { getUserAchievements } from '@/actions/user';
-import type { AchievementCategory, AchievementDifficulty, UserAchievementResponse } from '@/connectors/api/pecus';
+import type {
+  AchievementCategory,
+  AchievementDifficulty,
+  UserAchievementResponse,
+} from '@/connectors/hey-api-axios/types.gen';
 
 /**
  * ユーザーバッジポップオーバーのProps

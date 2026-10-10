@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { ActivityPeriod, PagedResponseOfActivityResponse } from '@/connectors/api/pecus';
+import { getItemActivitiesWithHeyApi, getMyActivitiesWithHeyApi } from '@/connectors/HeyApiClient';
+import type { PagedResponseOfActivityResponse } from '@/connectors/hey-api-axios/types.gen';
 import {
   type FetchItemActivitiesInput,
   type FetchMyActivitiesInput,
@@ -25,8 +25,7 @@ export async function fetchItemActivities(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const result = await api.activity.getApiWorkspacesItemsActivities(
+    const result = await getItemActivitiesWithHeyApi(
       parseResult.data.workspaceId,
       parseResult.data.itemId,
       parseResult.data.page ?? 1,
@@ -53,11 +52,7 @@ export async function fetchMyActivities(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const result = await api.my.getApiMyActivities(
-      parseResult.data.page ?? 1,
-      parseResult.data.period as ActivityPeriod,
-    );
+    const result = await getMyActivitiesWithHeyApi(parseResult.data.page ?? 1, parseResult.data.period ?? undefined);
     return { success: true, data: result };
   } catch (error: unknown) {
     console.error('fetchMyActivities error:', error);

@@ -6,7 +6,11 @@ import { fetchMyActivities } from '@/actions/activity';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import { Tooltip } from '@/components/common/feedback/Tooltip';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { ActivityPeriod, ActivityResponse, PagedResponseOfActivityResponse } from '@/connectors/api/pecus';
+import type {
+  ActivityPeriod,
+  ActivityResponse,
+  PagedResponseOfActivityResponse,
+} from '@/connectors/hey-api-axios/types.gen';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { actionTypeConfig, actionTypeLabels, defaultActionConfig, formatDetails } from '@/libs/activity/activityUtils';
 import { formatFullDateJa, formatTime } from '@/libs/utils/date';

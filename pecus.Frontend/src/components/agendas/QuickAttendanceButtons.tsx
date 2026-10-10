@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { updateAttendance, updateOccurrenceAttendance } from '@/actions/agenda';
-import type { AttendanceStatus } from '@/connectors/api/pecus';
+import type { AttendanceStatus } from '@/connectors/hey-api-axios/types.gen';
 
 interface QuickAttendanceButtonsProps {
   agendaId: number;

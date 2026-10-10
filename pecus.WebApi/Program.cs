@@ -379,7 +379,6 @@ builder.Services.AddControllers(options =>
     });
 
 // OpenAPIの設定 (Microsoft.AspNetCore.OpenApi)
-// OpenAPI 3.0 に固定（3.1 では nullable や integer の扱いが異なるため）
 builder.Services.AddOpenApi("v1", options =>
 {
     //本プロジェクトでは恒久的に変更禁止

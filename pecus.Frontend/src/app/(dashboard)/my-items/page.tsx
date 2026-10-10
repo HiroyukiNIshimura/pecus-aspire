@@ -1,28 +1,23 @@
 import { redirect } from 'next/navigation';
 import { fetchMyItems } from '@/actions/workspaceItem';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
 import type {
+  GetApiProfileResponse,
   PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics,
-  UserDetailResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import MyItemsClient from './MyItemsClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function MyItemsPage() {
-  let userResponse: UserDetailResponse | null = null;
+  let userResponse: GetApiProfileResponse | null = null;
   let initialItems: PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics | null = null;
   let fetchError: string | null = null;
 
   try {
-    const api = createPecusApiClients();
-
     // ユーザー情報を取得（認証確認のため）
-    userResponse = await api.profile.getApiProfile();
+    userResponse = await getProfileWithHeyApi();
 
     // マイアイテムを取得（初回は All で取得）
     const itemsResult = await fetchMyItems({ page: 1 });

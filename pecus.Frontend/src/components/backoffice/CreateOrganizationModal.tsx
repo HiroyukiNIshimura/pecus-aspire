@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { CreateOrganizationRequest } from '@/connectors/api/pecus';
+import type { CreateOrganizationRequest } from '@/connectors/hey-api-axios/types.gen';
 import { type CreateOrganizationFormData, createOrganizationSchema } from '@/schemas/backofficeSchemas';
 
 interface CreateOrganizationModalProps {

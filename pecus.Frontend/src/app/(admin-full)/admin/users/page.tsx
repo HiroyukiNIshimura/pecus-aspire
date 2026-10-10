@@ -1,6 +1,6 @@
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
 import { handleServerFetch } from '@/libs/serverFetch';
 import AdminUsersClient from './AdminUsersClient';
 
@@ -13,8 +13,7 @@ export const dynamic = 'force-dynamic';
  * （SSRでHTMLレンダリングしないデータをSSRでフェッチしない方針）
  */
 export default async function AdminUsers() {
-  const api = createPecusApiClients();
-  const result = await handleServerFetch(() => api.profile.getApiProfile());
+  const result = await handleServerFetch(getProfileWithHeyApi);
 
   if (!result.success) {
     if (result.error === 'forbidden') {

@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation';
 import { getWorkspaceDetail } from '@/actions/admin/workspace';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { MasterGenreResponse } from '@/connectors/api/pecus';
+import { getMasterGenresWithHeyApi, getProfileWithHeyApi } from '@/connectors/HeyApiClient';
+import type { MasterGenreResponse } from '@/connectors/hey-api-axios/types.gen';
 import { handleServerFetch } from '@/libs/serverFetch';
 import EditWorkspaceClient from './EditWorkspaceClient';
 
@@ -17,8 +17,7 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const api = createPecusApiClients();
-  const authResult = await handleServerFetch(() => api.profile.getApiProfile());
+  const authResult = await handleServerFetch(getProfileWithHeyApi);
 
   if (!authResult.success) {
     if (authResult.error === 'forbidden') {
@@ -41,7 +40,7 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
   }
 
   let genres: MasterGenreResponse[] = [];
-  const genresResponse = await api.master.getApiMasterGenres();
+  const genresResponse = await getMasterGenresWithHeyApi();
   genres = genresResponse || [];
 
   return <EditWorkspaceClient workspaceDetail={workspaceResult.data} genres={genres} fetchError={null} />;

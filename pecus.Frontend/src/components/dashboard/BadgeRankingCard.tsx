@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import AvatarImage from '@/components/common/widgets/user/AvatarImage';
 import UserBadgesPopover from '@/components/common/widgets/user/UserBadgesPopover';
-import type { AchievementRankingResponse, RankingItemDto } from '@/connectors/api/pecus';
+import type { AchievementRankingResponse, RankingItemDto } from '@/connectors/hey-api-axios/types.gen';
 
 /**
  * ランキング種別

@@ -1,6 +1,6 @@
 'use client';
 
-import type { DashboardTaskFilter } from '@/connectors/api/pecus';
+import type { DashboardTaskFilter } from '@/connectors/hey-api-axios/types.gen';
 
 export interface FilterStats {
   activeCount: number;

@@ -1,8 +1,8 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { parseRouterError, unauthorizedError } from '@/app/api/routerError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { DeviceResponse } from '@/connectors/api/pecus';
+import { getProfileDevicesWithHeyApi } from '@/connectors/HeyApiClient';
+import type { DeviceResponse } from '@/connectors/hey-api-axios/types.gen';
 import { getApiBaseUrl } from '@/libs/env';
 import { ServerSessionManager } from '@/libs/serverSession';
 
@@ -18,8 +18,7 @@ export async function GET() {
       return unauthorizedError('セッションが見つかりません。再度ログインしてください。');
     }
 
-    const api = createPecusApiClients();
-    const devices = await api.profile.getApiProfileDevices();
+    const devices = await getProfileDevicesWithHeyApi();
 
     let currentDevicePublicId = session.device?.publicId ?? null;
 

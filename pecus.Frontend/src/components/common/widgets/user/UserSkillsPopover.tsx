@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { getUserSkills } from '@/actions/user';
-import type { UserSkillDetailResponse } from '@/connectors/api/pecus';
+import type { UserSkillDetailResponse } from '@/connectors/hey-api-axios/types.gen';
 
 /**
  * ユーザースキルポップオーバーのProps

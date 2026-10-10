@@ -1,15 +1,13 @@
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getHangfireStatsWithHeyApi } from '@/connectors/HeyApiClient';
 import { handleServerFetch } from '@/libs/serverFetch';
 import BackOfficeDashboardClient from './BackOfficeDashboardClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function BackOfficePage() {
-  const api = createPecusApiClients();
-
   // BackOffice権限チェックを兼ねてHangfire統計を取得
-  const result = await handleServerFetch(() => api.backOfficeMonitoring.getApiBackendMonitoringHangfireStats());
+  const result = await handleServerFetch(getHangfireStatsWithHeyApi);
 
   if (!result.success) {
     if (result.error === 'forbidden') {

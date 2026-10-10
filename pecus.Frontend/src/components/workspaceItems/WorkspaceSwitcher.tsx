@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getMyWorkspacesPaged } from '@/actions/workspace';
-import type { WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import type { WorkspaceListItemResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Tooltip } from '../common/feedback/Tooltip';
 

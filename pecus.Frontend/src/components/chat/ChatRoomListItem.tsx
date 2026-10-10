@@ -1,6 +1,6 @@
 'use client';
 
-import type { ChatRoomItem } from '@/connectors/api/pecus';
+import type { ChatRoomItem } from '@/connectors/hey-api-axios/types.gen';
 import { formatRelativeTime } from '@/libs/utils/date';
 
 interface ChatRoomListItemProps {

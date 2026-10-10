@@ -1,12 +1,19 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import {
+  getAchievementsRankingWithHeyApi,
+  getAchievementsWithHeyApi,
+  getMyAchievementsWithHeyApi,
+  getUnnotifiedAchievementsWithHeyApi,
+  notifyAchievementWithHeyApi,
+  notifyAllAchievementsWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   AchievementCollectionResponse,
   AchievementRankingResponse,
   NewAchievementResponse,
   UserAchievementResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import {
   type GetAchievementRankingInput,
   getAchievementRankingInputSchema,
@@ -25,11 +32,12 @@ import { validationError } from './types';
  */
 export async function getAchievementCollection(): Promise<ApiResponse<AchievementCollectionResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievements();
+    const response = await getAchievementsWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '実績情報の取得に失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '実績情報の取得に失敗しました',
+    });
   }
 }
 
@@ -38,11 +46,12 @@ export async function getAchievementCollection(): Promise<ApiResponse<Achievemen
  */
 export async function getMyAchievements(): Promise<ApiResponse<UserAchievementResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievementsMe();
+    const response = await getMyAchievementsWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '取得済み実績の取得に失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '取得済み実績の取得に失敗しました',
+    });
   }
 }
 
@@ -52,11 +61,12 @@ export async function getMyAchievements(): Promise<ApiResponse<UserAchievementRe
  */
 export async function getUnnotifiedAchievements(): Promise<ApiResponse<NewAchievementResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievementsMeUnnotified();
+    const response = await getUnnotifiedAchievementsWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '未通知実績の取得に失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '未通知実績の取得に失敗しました',
+    });
   }
 }
 
@@ -72,11 +82,12 @@ export async function markAchievementNotified(input: MarkAchievementNotifiedInpu
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.achievement.postApiAchievementsMeNotify(parseResult.data.achievementId);
+    await notifyAchievementWithHeyApi(parseResult.data.achievementId);
     return { success: true, data: undefined };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '通知済みマークに失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '通知済みマークに失敗しました',
+    });
   }
 }
 
@@ -92,11 +103,12 @@ export async function markAllAchievementsNotified(input: MarkAllAchievementsNoti
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.achievement.postApiAchievementsMeNotifyAll();
+    await notifyAllAchievementsWithHeyApi();
     return { success: true, data: undefined };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '通知済みマークに失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '通知済みマークに失敗しました',
+    });
   }
 }
 
@@ -114,10 +126,11 @@ export async function getAchievementRanking(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievementsRanking(parseResult.data.workspaceId);
+    const response = await getAchievementsRankingWithHeyApi(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: 'ランキングの取得に失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: 'ランキングの取得に失敗しました',
+    });
   }
 }

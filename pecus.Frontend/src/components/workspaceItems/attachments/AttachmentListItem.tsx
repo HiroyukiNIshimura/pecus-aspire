@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemAttachmentResponse } from '@/connectors/hey-api-axios/types.gen';
 import { formatDate } from '@/libs/utils/date';
 
 interface AttachmentListItemProps {

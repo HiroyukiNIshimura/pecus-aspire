@@ -1,7 +1,7 @@
 import { getGenres } from '@/actions/master';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { MasterGenreResponse } from '@/connectors/api/pecus';
+import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
+import type { MasterGenreResponse } from '@/connectors/hey-api-axios/types.gen';
 import { handleServerFetch } from '@/libs/serverFetch';
 import AdminWorkspacesClient from './AdminWorkspacesClient';
 
@@ -15,8 +15,7 @@ export const dynamic = 'force-dynamic';
  * ジャンルはフィルターUIで使用するマスタデータなのでSSRで取得する
  */
 export default async function AdminWorkspaces() {
-  const api = createPecusApiClients();
-  const result = await handleServerFetch(() => api.profile.getApiProfile());
+  const result = await handleServerFetch(getProfileWithHeyApi);
 
   if (!result.success) {
     if (result.error === 'forbidden') {

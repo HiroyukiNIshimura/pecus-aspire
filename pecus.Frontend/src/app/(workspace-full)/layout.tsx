@@ -3,12 +3,9 @@ import type { ReactNode } from 'react';
 import ChatProvider from '@/components/chat/ChatProvider';
 import { ChatMentionNotification } from '@/components/notifications/ChatMentionNotification';
 import { ItemGatherNotification } from '@/components/notifications/ItemGatherNotification';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  detect404ValidationError,
-} from '@/connectors/api/PecusApiClient';
-import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
+import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { AppPublicSettingsResponse } from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, detect404ValidationError } from '@/libs/apiError';
 import { AchievementCelebrationProvider } from '@/providers/AchievementCelebrationProvider';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
@@ -37,8 +34,7 @@ export default async function WorkspaceFullLayout({ children }: WorkspaceFullLay
   let appSettings: AppPublicSettingsResponse = defaultAppSettings;
 
   try {
-    const api = createPecusApiClients();
-    appSettings = await api.profile.getApiProfileAppSettings();
+    appSettings = await getProfileAppSettingsWithHeyApi();
   } catch (error) {
     if (detect401ValidationError(error)) {
       redirect('/signin');

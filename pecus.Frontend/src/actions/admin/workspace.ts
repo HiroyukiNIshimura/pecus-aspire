@@ -1,16 +1,25 @@
 'use server';
 
 import {
-  createPecusApiClients,
-  detectConcurrencyError,
-  detectMemberHasAssignmentsError,
-} from '@/connectors/api/PecusApiClient';
+  activateAdminWorkspaceWithHeyApi,
+  addAdminWorkspaceMemberWithHeyApi,
+  createAdminWorkspaceWithHeyApi,
+  deactivateAdminWorkspaceWithHeyApi,
+  deleteAdminWorkspaceWithHeyApi,
+  getAdminWorkspaceByIdWithHeyApi,
+  getAdminWorkspacesWithHeyApi,
+  removeAdminWorkspaceMemberWithHeyApi,
+  updateAdminWorkspaceMemberRoleWithHeyApi,
+  updateAdminWorkspaceWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
-  PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
+  GetApiAdminWorkspacesByIdResponse,
+  GetApiAdminWorkspacesResponse,
   SuccessResponse,
   WorkspaceDetailResponse,
   WorkspaceUserDetailResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detectConcurrencyError, detectMemberHasAssignmentsError } from '@/libs/concurrencyError';
 import {
   type ActivateWorkspaceInput,
   type AddWorkspaceMemberInput,
@@ -42,15 +51,14 @@ import { validationError } from '../types';
  */
 export async function getWorkspaces(
   input: GetAdminWorkspacesInput = {},
-): Promise<ApiResponse<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics>> {
+): Promise<ApiResponse<GetApiAdminWorkspacesResponse>> {
   const parseResult = getAdminWorkspacesInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces(
+    const response = await getAdminWorkspacesWithHeyApi(
       parseResult.data.page,
       parseResult.data.isActive,
       parseResult.data.genreId,
@@ -67,15 +75,14 @@ export async function getWorkspaces(
  */
 export async function getWorkspaceDetail(
   input: GetAdminWorkspaceDetailInput,
-): Promise<ApiResponse<WorkspaceDetailResponse>> {
+): Promise<ApiResponse<GetApiAdminWorkspacesByIdResponse>> {
   const parseResult = getAdminWorkspaceDetailInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces1(parseResult.data.workspaceId);
+    const response = await getAdminWorkspaceByIdWithHeyApi(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace detail:', error);
@@ -94,8 +101,7 @@ export async function createWorkspace(input: CreateWorkspaceInput): Promise<ApiR
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.postApiAdminWorkspaces(parseResult.data);
+    const response = await createAdminWorkspaceWithHeyApi(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create workspace:', error);
@@ -115,11 +121,7 @@ export async function updateWorkspace(input: UpdateWorkspaceInput): Promise<ApiR
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.putApiAdminWorkspaces(
-      parseResult.data.workspaceId,
-      parseResult.data.request,
-    );
+    const response = await updateAdminWorkspaceWithHeyApi(parseResult.data.workspaceId, parseResult.data.request);
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -156,8 +158,7 @@ export async function deleteWorkspace(input: DeleteWorkspaceInput): Promise<ApiR
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.deleteApiAdminWorkspaces(parseResult.data.workspaceId);
+    const response = await deleteAdminWorkspaceWithHeyApi(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete workspace:', error);
@@ -177,11 +178,7 @@ export async function activateWorkspace(input: ActivateWorkspaceInput): Promise<
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.patchApiAdminWorkspacesActivate(
-      parseResult.data.workspaceId,
-      parseResult.data.rowVersion,
-    );
+    const response = await activateAdminWorkspaceWithHeyApi(parseResult.data.workspaceId, parseResult.data.rowVersion);
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -219,8 +216,7 @@ export async function deactivateWorkspace(input: DeactivateWorkspaceInput): Prom
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.patchApiAdminWorkspacesDeactivate(
+    const response = await deactivateAdminWorkspaceWithHeyApi(
       parseResult.data.workspaceId,
       parseResult.data.rowVersion,
     );
@@ -260,11 +256,7 @@ export async function removeWorkspaceMember(input: RemoveWorkspaceMemberInput): 
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.deleteApiAdminWorkspacesUsers(
-      parseResult.data.workspaceId,
-      parseResult.data.userId,
-    );
+    const response = await removeAdminWorkspaceMemberWithHeyApi(parseResult.data.workspaceId, parseResult.data.userId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to remove workspace member:', error);
@@ -285,8 +277,7 @@ export async function updateWorkspaceMemberRole(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.patchApiAdminWorkspacesUsersRole(
+    const response = await updateAdminWorkspaceMemberRoleWithHeyApi(
       parseResult.data.workspaceId,
       parseResult.data.userId,
       {
@@ -325,8 +316,7 @@ export async function addWorkspaceMember(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.postApiAdminWorkspacesUsers(parseResult.data.workspaceId, {
+    const response = await addAdminWorkspaceMemberWithHeyApi(parseResult.data.workspaceId, {
       userId: parseResult.data.userId,
       workspaceRole: parseResult.data.workspaceRole,
     });

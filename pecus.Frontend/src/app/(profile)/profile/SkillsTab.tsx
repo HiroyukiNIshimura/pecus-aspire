@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { setUserSkills } from '@/actions/profile';
-import type { MasterSkillResponse } from '@/connectors/api/pecus';
+import type { MasterSkillResponse } from '@/connectors/hey-api-axios/types.gen';
 
 interface SkillsTabProps {
   initialSkillIds: number[];

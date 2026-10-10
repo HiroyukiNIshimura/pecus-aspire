@@ -1,10 +1,15 @@
 import { redirect } from 'next/navigation';
 import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
-import type { MasterSkillResponse, PendingEmailChangeResponse, UserDetailResponse } from '@/connectors/api/pecus';
+  getMasterSkillsWithHeyApi,
+  getPendingEmailChangeWithHeyApi,
+  getProfileWithHeyApi,
+} from '@/connectors/HeyApiClient';
+import type {
+  GetApiProfileResponse,
+  MasterSkillResponse,
+  PendingEmailChangeResponse,
+} from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import ProfileClient from './ProfileClient';
 
@@ -15,27 +20,25 @@ export const dynamic = 'force-dynamic';
  * SSR で初期データを取得し、Client Component へプロップスで渡す
  */
 export default async function ProfileSettingsPage() {
-  let userResponse: UserDetailResponse | null = null;
+  let userResponse: GetApiProfileResponse | null = null;
   let masterSkills: MasterSkillResponse[] = [];
   let pendingEmailChange: PendingEmailChangeResponse | null = null;
   let fetchError: string | null = null;
 
   try {
-    const api = createPecusApiClients();
-
     // ユーザー情報を取得
-    userResponse = await api.profile.getApiProfile();
+    userResponse = await getProfileWithHeyApi();
 
     // マスタスキルを取得
     try {
-      masterSkills = await api.master.getApiMasterSkills();
+      masterSkills = await getMasterSkillsWithHeyApi();
     } catch (error) {
       console.error('Failed to fetch master skills:', error);
       fetchError = `スキル情報の取得に失敗しました`;
     }
 
     // 保留中のメールアドレス変更を取得
-    pendingEmailChange = await api.profile.getApiProfileEmailPending();
+    pendingEmailChange = await getPendingEmailChangeWithHeyApi();
   } catch (error) {
     console.error('Failed to fetch profile data:', error);
 
@@ -54,7 +57,11 @@ export default async function ProfileSettingsPage() {
   }
 
   // UserDetailResponse から UserInfo に変換
-  const user = mapUserResponseToUserInfo(userResponse);
+  const { setting: _setting, ...userProfile } = userResponse;
+  const user = mapUserResponseToUserInfo({
+    ...userProfile,
+    avatarType: userProfile.avatarType ?? undefined,
+  });
 
   return (
     <ProfileClient

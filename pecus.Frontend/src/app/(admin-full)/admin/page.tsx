@@ -1,6 +1,6 @@
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getAdminOrganizationWithHeyApi } from '@/connectors/HeyApiClient';
 import { handleServerFetch } from '@/libs/serverFetch';
 import AdminClient from './AdminClient';
 
@@ -8,8 +8,7 @@ export const dynamic = 'force-dynamic';
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function AdminPage() {
-  const api = createPecusApiClients();
-  const result = await handleServerFetch(() => api.adminOrganization.getApiAdminOrganization());
+  const result = await handleServerFetch(getAdminOrganizationWithHeyApi);
 
   if (!result.success) {
     if (result.error === 'forbidden') {

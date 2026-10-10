@@ -1,7 +1,11 @@
 'use server';
 
-import { createAuthenticatedAxios, createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import {
+  createAuthenticatedAxios,
+  deleteWorkspaceItemAttachmentWithHeyApi,
+  getWorkspaceItemAttachmentsWithHeyApi,
+} from '@/connectors/HeyApiClient';
+import type { WorkspaceItemAttachmentResponse } from '@/connectors/hey-api-axios/types.gen';
 import {
   type DeleteWorkspaceItemAttachmentInput,
   deleteWorkspaceItemAttachmentInputSchema,
@@ -159,8 +163,7 @@ export async function fetchWorkspaceItemAttachments(
   taskId?: number,
 ): Promise<ApiResponse<WorkspaceItemAttachmentResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItemsAttachments(workspaceId, itemId, taskId);
+    const response = await getWorkspaceItemAttachmentsWithHeyApi(workspaceId, itemId, taskId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace item attachments:', error);
@@ -188,8 +191,7 @@ export async function deleteWorkspaceItemAttachment(
 
   try {
     const { workspaceId, itemId, attachmentId } = parseResult.data;
-    const api = createPecusApiClients();
-    await api.workspaceItem.deleteApiWorkspacesItemsAttachments(workspaceId, itemId, attachmentId);
+    await deleteWorkspaceItemAttachmentWithHeyApi(workspaceId, itemId, attachmentId);
     return { success: true, data: undefined };
   } catch (error) {
     console.error('Failed to delete workspace item attachment:', error);

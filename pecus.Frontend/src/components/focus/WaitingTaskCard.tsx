@@ -1,6 +1,6 @@
 'use client';
 
-import type { FocusTaskResponse } from '@/connectors/api/pecus';
+import type { FocusTaskResponse } from '@/connectors/hey-api-axios/types.gen';
 
 interface WaitingTaskCardProps {
   task: FocusTaskResponse;

@@ -1,6 +1,6 @@
 'use client';
 
-import type { AgendaOccurrenceResponse } from '@/connectors/api/pecus';
+import type { AgendaOccurrenceResponse } from '@/connectors/hey-api-axios/types.gen';
 import AgendaTimelineItem from './AgendaTimelineItem';
 
 interface AgendaTimelineGroupProps {

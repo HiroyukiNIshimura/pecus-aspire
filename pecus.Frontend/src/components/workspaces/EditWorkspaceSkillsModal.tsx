@@ -4,7 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { getWorkspaceDetail, setWorkspaceSkills } from '@/actions/workspace';
 import { ConflictAlert } from '@/components/common/feedback/ConflictAlert';
 import MultiSelectDropdown from '@/components/common/filters/MultiSelectDropdown';
-import type { MasterSkillResponse, WorkspaceDetailResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
+import type {
+  MasterSkillResponse,
+  WorkspaceDetailResponse,
+  WorkspaceFullDetailResponse,
+} from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { Tooltip } from '../common/feedback/Tooltip';
 

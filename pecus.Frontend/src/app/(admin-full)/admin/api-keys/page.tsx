@@ -1,14 +1,13 @@
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getAdminExternalApiKeysWithHeyApi } from '@/connectors/HeyApiClient';
 import { handleServerFetch } from '@/libs/serverFetch';
 import AdminApiKeysClient from './AdminApiKeysClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminApiKeysPage() {
-  const api = createPecusApiClients();
-  const result = await handleServerFetch(() => api.adminExternalApiKeys.getApiAdminExternalApiKeys());
+  const result = await handleServerFetch(getAdminExternalApiKeysWithHeyApi);
 
   if (!result.success) {
     if (result.error === 'forbidden') {

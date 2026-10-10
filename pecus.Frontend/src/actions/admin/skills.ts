@@ -1,13 +1,22 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import {
+  activateAdminSkillWithHeyApi,
+  createAdminSkillWithHeyApi,
+  deactivateAdminSkillWithHeyApi,
+  deleteAdminSkillWithHeyApi,
+  getAdminSkillByIdWithHeyApi,
+  getAdminSkillsWithHeyApi,
+  updateAdminSkillWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   PagedResponseOfSkillListItemResponseAndSkillStatistics,
   SkillDetailResponse,
   SkillListItemResponse,
   SkillResponse,
   SuccessResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detectConcurrencyError } from '@/libs/concurrencyError';
 import {
   type ActivateSkillInput,
   activateSkillInputSchema,
@@ -42,9 +51,14 @@ export async function getSkills(
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminSkill.getApiAdminSkills(parseResult.data.page, parseResult.data.isActive);
-    return { success: true, data: response };
+    const response = await getAdminSkillsWithHeyApi(parseResult.data.page, parseResult.data.isActive);
+    return {
+      success: true,
+      data: {
+        ...response,
+        summary: response.summary ?? undefined,
+      },
+    };
   } catch (error) {
     console.error('Failed to fetch skills:', error);
     return handleApiErrorForAction(error, { defaultMessage: 'スキル一覧の取得に失敗しました' });
@@ -62,13 +76,12 @@ export async function getAllSkills(input: GetAllSkillsInput = {}): Promise<ApiRe
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
     const allSkills: SkillListItemResponse[] = [];
     let currentPage = 1;
     let hasMore = true;
 
     while (hasMore) {
-      const response = await api.adminSkill.getApiAdminSkills(currentPage, parseResult.data.isActive);
+      const response = await getAdminSkillsWithHeyApi(currentPage, parseResult.data.isActive);
 
       if (response.data && response.data.length > 0) {
         allSkills.push(...response.data);
@@ -103,8 +116,7 @@ export async function getSkillDetail(input: GetSkillDetailInput): Promise<ApiRes
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminSkill.getApiAdminSkills1(parseResult.data.id);
+    const response = await getAdminSkillByIdWithHeyApi(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch skill detail:', error);
@@ -123,8 +135,7 @@ export async function createSkill(input: CreateSkillInput): Promise<ApiResponse<
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminSkill.postApiAdminSkills(parseResult.data);
+    const response = await createAdminSkillWithHeyApi(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create skill:', error);
@@ -144,8 +155,7 @@ export async function updateSkill(input: UpdateSkillInput): Promise<ApiResponse<
   }
 
   try {
-    const api = createPecusApiClients();
-    let response = await api.adminSkill.putApiAdminSkills(parseResult.data.id, {
+    let response = await updateAdminSkillWithHeyApi(parseResult.data.id, {
       name: parseResult.data.name,
       description: parseResult.data.description,
       rowVersion: parseResult.data.rowVersion,
@@ -154,9 +164,9 @@ export async function updateSkill(input: UpdateSkillInput): Promise<ApiResponse<
     // isActive が指定されている場合、activate/deactivate を呼び出す
     if (parseResult.data.isActive !== undefined) {
       if (parseResult.data.isActive) {
-        response = await api.adminSkill.patchApiAdminSkillsActivate(parseResult.data.id);
+        response = await activateAdminSkillWithHeyApi(parseResult.data.id);
       } else {
-        response = await api.adminSkill.patchApiAdminSkillsDeactivate(parseResult.data.id);
+        response = await deactivateAdminSkillWithHeyApi(parseResult.data.id);
       }
     }
 
@@ -196,8 +206,7 @@ export async function deleteSkill(input: DeleteSkillInput): Promise<ApiResponse<
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminSkill.deleteApiAdminSkills(parseResult.data.id);
+    const response = await deleteAdminSkillWithHeyApi(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete skill:', error);
@@ -217,8 +226,7 @@ export async function activateSkill(input: ActivateSkillInput): Promise<ApiRespo
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminSkill.patchApiAdminSkillsActivate(parseResult.data.id);
+    const response = await activateAdminSkillWithHeyApi(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
@@ -253,8 +261,7 @@ export async function deactivateSkill(input: DeactivateSkillInput): Promise<ApiR
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminSkill.patchApiAdminSkillsDeactivate(parseResult.data.id);
+    const response = await deactivateAdminSkillWithHeyApi(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     const concurrencyError = detectConcurrencyError(error);

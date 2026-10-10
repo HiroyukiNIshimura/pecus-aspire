@@ -21,12 +21,12 @@ This project uses OpenAPI Generator to automatically generate TypeScript API cli
    npm run generate:client
    ```
 
-The `generate:client` script automatically scans the `src/connectors/api/pecus/` directory and creates a unified client factory that provides access to all API endpoints with proper authentication handling.
+The `generate:client` script automatically scans the `src/connectors/legacy-api/pecus/` directory and creates a unified client factory that provides access to all API endpoints with proper authentication handling.
 
 ### API Usage
 
 ```typescript
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 
 const clients = createPecusApiClients();
 

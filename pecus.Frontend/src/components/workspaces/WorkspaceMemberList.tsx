@@ -6,7 +6,7 @@ import { EmptyState } from '@/components/common/feedback/EmptyState';
 import MemberActionMenu from '@/components/common/widgets/user/MemberActionMenu';
 import MemberCard from '@/components/common/widgets/user/MemberCard';
 import MemberInfoMenu from '@/components/common/widgets/user/MemberInfoMenu';
-import type { UserWorkloadInfo, WorkspaceRole } from '@/connectors/api/pecus';
+import type { UserWorkloadInfo, WorkspaceRole } from '@/connectors/hey-api-axios/types.gen';
 
 /** null を除外したワークスペースロール型 */
 export type WorkspaceRoleValue = NonNullable<WorkspaceRole>;

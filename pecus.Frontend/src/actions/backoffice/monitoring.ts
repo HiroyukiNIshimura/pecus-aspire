@@ -169,7 +169,7 @@ export async function getMonitoringStatus(): Promise<ApiResponse<MonitoringStatu
   try {
     const targetsResponse = await fetchPrometheusTargets();
 
-    if (!targetsResponse || targetsResponse.status !== 'success') {
+    if (targetsResponse?.status !== 'success') {
       return {
         success: true,
         data: {
@@ -240,16 +240,15 @@ async function fetchPrometheusRange(
   }
 }
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { HangfireStatsResponse } from '@/connectors/api/pecus';
+import { getHangfireStatsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { GetApiBackendMonitoringHangfireStatsResponse } from '@/connectors/hey-api-axios/types.gen';
 
 /**
  * Server Action: Hangfire バックグラウンドジョブ統計を取得
  */
-export async function getHangfireStatus(): Promise<ApiResponse<HangfireStatsResponse>> {
+export async function getHangfireStatus(): Promise<ApiResponse<GetApiBackendMonitoringHangfireStatsResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.backOfficeMonitoring.getApiBackendMonitoringHangfireStats();
+    const response = await getHangfireStatsWithHeyApi();
     return {
       success: true,
       data: response,
@@ -287,7 +286,7 @@ async function fetchPrometheusInstant(query: string): Promise<PrometheusInstantR
  * Prometheus レスポンスを MetricTimeSeries 配列に変換
  */
 function parseRangeResponse(response: PrometheusRangeResponse | null, metricName: string): MetricTimeSeries[] {
-  if (!response || response.status !== 'success') return [];
+  if (response?.status !== 'success') return [];
 
   return response.data.result.map((result) => ({
     job: result.metric.job || 'unknown',
@@ -308,7 +307,7 @@ function parseRangeResponseWithJobOverride(
   metricName: string,
   jobOverride: string,
 ): MetricTimeSeries[] {
-  if (!response || response.status !== 'success' || response.data.result.length === 0) return [];
+  if (response?.status !== 'success' || response.data.result.length === 0) return [];
 
   return response.data.result.map((result) => ({
     job: jobOverride,

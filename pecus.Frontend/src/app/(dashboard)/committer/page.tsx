@@ -3,25 +3,20 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchMyCommitterWorkspaces } from '@/actions/myCommitter';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
-import type { MyCommitterWorkspaceResponse, UserDetailResponse } from '@/connectors/api/pecus';
+import { getMasterTaskTypesWithHeyApi, getProfileWithHeyApi } from '@/connectors/HeyApiClient';
+import type { GetApiProfileResponse, MyCommitterWorkspaceResponse } from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import CommitterDashboardClient from './CommitterDashboardClient';
 
 export default async function CommitterDashboardPage() {
-  let userResponse: UserDetailResponse | null = null;
+  let userResponse: GetApiProfileResponse | null = null;
   let initialWorkspaces: MyCommitterWorkspaceResponse[] = [];
   let taskTypes: TaskTypeOption[] = [];
   let fetchError: string | null = null;
 
   try {
-    const api = createPecusApiClients();
-
     // ユーザー情報を取得（認証確認のため）
-    userResponse = await api.profile.getApiProfile();
+    userResponse = await getProfileWithHeyApi();
 
     // コミッターワークスペース一覧を取得
     const workspacesResult = await fetchMyCommitterWorkspaces();
@@ -39,7 +34,7 @@ export default async function CommitterDashboardPage() {
 
     // タスクタイプ一覧取得（モーダル編集用）
     try {
-      const taskTypeResponse = await api.master.getApiMasterTaskTypes();
+      const taskTypeResponse = await getMasterTaskTypesWithHeyApi();
       taskTypes = taskTypeResponse.map((t) => ({
         id: t.id,
         code: t.code ?? '',

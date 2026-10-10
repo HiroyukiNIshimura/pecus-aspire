@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { RoleResponse } from '@/connectors/api/pecus';
+import { getMasterRolesWithHeyApi } from '@/connectors/HeyApiClient';
+import type { RoleResponse } from '@/connectors/hey-api-axios/types.gen';
 import { handleApiErrorForAction } from '../apiErrorPolicy';
 import type { ApiResponse } from '../types';
 
@@ -10,8 +10,7 @@ import type { ApiResponse } from '../types';
  */
 export async function getAllRoles(): Promise<ApiResponse<RoleResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.master.getApiMasterRoles();
+    const response = await getMasterRolesWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch roles:', error);

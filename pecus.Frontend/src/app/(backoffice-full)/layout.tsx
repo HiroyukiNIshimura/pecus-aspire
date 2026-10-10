@@ -1,13 +1,9 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { ChatMentionNotification } from '@/components/notifications/ChatMentionNotification';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getHttpErrorInfo,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
-import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
+import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { AppPublicSettingsResponse } from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/libs/apiError';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 
@@ -29,8 +25,7 @@ export default async function BackOfficeFullLayout({ children }: BackOfficeFullL
   let appSettings: AppPublicSettingsResponse = defaultAppSettings;
 
   try {
-    const api = createPecusApiClients();
-    appSettings = await api.profile.getApiProfileAppSettings();
+    appSettings = await getProfileAppSettingsWithHeyApi();
 
     // BackOffice権限がない場合はダッシュボードにリダイレクト
     if (!appSettings.currentUser?.isBackOffice) {

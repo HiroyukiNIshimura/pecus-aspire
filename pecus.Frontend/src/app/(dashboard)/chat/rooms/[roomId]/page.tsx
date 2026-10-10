@@ -1,14 +1,26 @@
 import { redirect } from 'next/navigation';
 import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getHttpErrorInfo,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+  getChatRoomByIdWithHeyApi,
+  getChatRoomMessagesWithHeyApi,
+  getProfileWithHeyApi,
+  getWorkspaceByIdWithHeyApi,
+} from '@/connectors/HeyApiClient';
+import type { ChatMessageItem, ChatMessageItem as HeyChatMessageItem } from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/libs/apiError';
 import ChatRoomMessageClient from './ChatRoomMessageClient';
 
 interface ChatRoomPageProps {
   params: Promise<{ roomId: string }>;
+}
+
+function normalizeChatMessage(message: HeyChatMessageItem): ChatMessageItem {
+  return {
+    ...message,
+    senderUserId: message.senderUserId ?? undefined,
+    sender: message.sender ?? undefined,
+    replyToMessageId: message.replyToMessageId ?? undefined,
+    replyTo: message.replyTo ?? undefined,
+  };
 }
 
 /**
@@ -24,18 +36,17 @@ export default async function ChatRoomPage({ params }: ChatRoomPageProps) {
   }
 
   try {
-    const api = createPecusApiClients();
-    const roomResponse = await api.chat.getApiChatRooms1(roomIdNum);
+    const roomResponse = await getChatRoomByIdWithHeyApi(roomIdNum);
     const [messagesResponse, profileResponse, workspaceResponse] = await Promise.all([
-      api.chat.getApiChatRoomsMessages(roomIdNum),
-      api.profile.getApiProfile(),
-      roomResponse.workspaceId != null ? api.workspace.getApiWorkspaces1(roomResponse.workspaceId) : null,
+      getChatRoomMessagesWithHeyApi(roomIdNum),
+      getProfileWithHeyApi(),
+      roomResponse.workspaceId != null ? getWorkspaceByIdWithHeyApi(roomResponse.workspaceId) : null,
     ]);
 
     return (
       <ChatRoomMessageClient
         room={roomResponse}
-        initialMessages={messagesResponse.messages}
+        initialMessages={messagesResponse.messages.map(normalizeChatMessage)}
         hasMore={messagesResponse.hasMore ?? false}
         nextCursor={messagesResponse.nextCursor ?? null}
         currentUserId={profileResponse.id}
