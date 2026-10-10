@@ -7,6 +7,7 @@ import type {
   NewAchievementResponse,
   UserAchievementResponse,
 } from '@/connectors/api/pecus';
+import { getAchievementsWithHeyApi } from '@/connectors/HeyApiClient';
 import {
   type GetAchievementRankingInput,
   getAchievementRankingInputSchema,
@@ -25,11 +26,12 @@ import { validationError } from './types';
  */
 export async function getAchievementCollection(): Promise<ApiResponse<AchievementCollectionResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.achievement.getApiAchievements();
+    const response = await getAchievementsWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '実績情報の取得に失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '実績情報の取得に失敗しました',
+    });
   }
 }
 
@@ -42,7 +44,9 @@ export async function getMyAchievements(): Promise<ApiResponse<UserAchievementRe
     const response = await api.achievement.getApiAchievementsMe();
     return { success: true, data: response };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '取得済み実績の取得に失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '取得済み実績の取得に失敗しました',
+    });
   }
 }
 
@@ -56,7 +60,9 @@ export async function getUnnotifiedAchievements(): Promise<ApiResponse<NewAchiev
     const response = await api.achievement.getApiAchievementsMeUnnotified();
     return { success: true, data: response };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '未通知実績の取得に失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '未通知実績の取得に失敗しました',
+    });
   }
 }
 
@@ -76,7 +82,9 @@ export async function markAchievementNotified(input: MarkAchievementNotifiedInpu
     await api.achievement.postApiAchievementsMeNotify(parseResult.data.achievementId);
     return { success: true, data: undefined };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '通知済みマークに失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '通知済みマークに失敗しました',
+    });
   }
 }
 
@@ -96,7 +104,9 @@ export async function markAllAchievementsNotified(input: MarkAllAchievementsNoti
     await api.achievement.postApiAchievementsMeNotifyAll();
     return { success: true, data: undefined };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: '通知済みマークに失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: '通知済みマークに失敗しました',
+    });
   }
 }
 
@@ -118,6 +128,8 @@ export async function getAchievementRanking(
     const response = await api.achievement.getApiAchievementsRanking(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
-    return handleApiErrorForAction(error, { defaultMessage: 'ランキングの取得に失敗しました' });
+    return handleApiErrorForAction(error, {
+      defaultMessage: 'ランキングの取得に失敗しました',
+    });
   }
 }
