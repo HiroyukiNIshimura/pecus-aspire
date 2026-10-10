@@ -1,4 +1,3 @@
-## tsup（rollup.js）のTypescript6対応漏れ。
+## tsup の TypeScript 6/7 対応状況を確認する。
 https://github.com/egoist/tsup/issues/1389
-現状、patch-package で npm パッケージにパッチを当てる形で対応している。
-
+Rollup は tsup の内部依存として使用されている。現在のビルドは成功しているが、TypeScript 6/7 対応状況と、現行バージョンでの対応要否を確認する。
