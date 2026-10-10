@@ -11,6 +11,7 @@ import type { EditorThemeClasses } from 'lexical';
 import type { ElementFormatType } from 'lexical';
 import { ElementNode } from 'lexical';
 import { ForwardRefExoticComponent } from 'react';
+import { GeneratedJSONFactory } from 'lexical';
 import type { HistoryState } from '@lexical/react/LexicalHistoryPlugin';
 import type { HTMLInputTypeAttribute } from 'react';
 import { JSX } from 'react';
@@ -21,6 +22,7 @@ import { LexicalNode } from 'lexical';
 import type { LexicalUpdateJSON } from 'lexical';
 import { LinkMatcher } from '@lexical/react/LexicalAutoLinkPlugin';
 import type { NodeKey } from 'lexical';
+import { NodeSerializationSchema } from 'lexical';
 import { RangeSelection } from 'lexical';
 import * as React_2 from 'react';
 import { ReactNode } from 'react';
@@ -130,6 +132,8 @@ export declare class AutocompleteNode extends TextNode {
      */
     $config(): BaseStaticNodeConfig & {
         readonly text?: {
+            readonly extends: LexicalNode;
+            readonly generated: GeneratedJSONFactory;
             readonly importDOM: {
                 readonly '#text': () => {
                     conversion: (domNode: Node) => DOMConversionOutput;
@@ -180,8 +184,75 @@ export declare class AutocompleteNode extends TextNode {
                     priority: 0;
                 };
             };
+            readonly json: NodeSerializationSchema<TextNode, {
+            readonly detail?: string | number | undefined;
+            readonly format?: string | number | undefined;
+            readonly mode?: "normal" | "token" | "segmented" | undefined;
+            readonly style?: string | undefined;
+            readonly text?: string | undefined;
+            }>;
         } | undefined;
-    } & {
+    } & StaticNodeTypeAccessor<"text"> & StaticNodeConfigAccessor<    {
+    readonly extends: LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly importDOM: {
+    readonly '#text': () => {
+    conversion: (domNode: Node) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly b: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly code: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly em: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly i: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly mark: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly s: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly span: () => {
+    conversion: (domNode: HTMLSpanElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly strong: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly sub: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly sup: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly u: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    };
+    readonly json: NodeSerializationSchema<TextNode, {
+    readonly detail?: string | number | undefined;
+    readonly format?: string | number | undefined;
+    readonly mode?: "normal" | "token" | "segmented" | undefined;
+    readonly style?: string | undefined;
+    readonly text?: string | undefined;
+    }>;
+    }> & {
         readonly autocomplete?: {
             readonly extends: typeof TextNode;
             readonly stateConfigs: readonly [{
@@ -243,7 +314,18 @@ declare const classNameState: StateConfig<"className", string>;
 declare const codeState: StateConfig<"code", string>;
 
 export declare class CollapsibleContainerNode extends ElementNode {
-    $config(): BaseStaticNodeConfig & {
+    $config(): BaseStaticNodeConfig & StaticNodeConfigAccessor<    {
+    readonly $transform: (node: ElementNode) => void;
+    readonly extends: typeof LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly json: NodeSerializationSchema<ElementNode, {
+    readonly direction?: "ltr" | "rtl" | null | undefined;
+    readonly format?: "" | "left" | "start" | "center" | "right" | "end" | "justify" | undefined;
+    readonly indent?: string | number | undefined;
+    readonly textFormat?: string | number | undefined;
+    readonly textStyle?: string | undefined;
+    }>;
+    }> & {
         readonly "collapsible-container"?: {
             readonly extends: typeof ElementNode;
             readonly importDOM: DOMConversionMap<HTMLElement>;
@@ -271,7 +353,18 @@ export declare class CollapsibleContainerNode extends ElementNode {
 }
 
 export declare class CollapsibleContentNode extends ElementNode {
-    $config(): BaseStaticNodeConfig & {
+    $config(): BaseStaticNodeConfig & StaticNodeConfigAccessor<    {
+    readonly $transform: (node: ElementNode) => void;
+    readonly extends: typeof LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly json: NodeSerializationSchema<ElementNode, {
+    readonly direction?: "ltr" | "rtl" | null | undefined;
+    readonly format?: "" | "left" | "start" | "center" | "right" | "end" | "justify" | undefined;
+    readonly indent?: string | number | undefined;
+    readonly textFormat?: string | number | undefined;
+    readonly textStyle?: string | undefined;
+    }>;
+    }> & {
         readonly "collapsible-content"?: {
             readonly extends: typeof ElementNode;
             readonly importDOM: DOMConversionMap<HTMLElement>;
@@ -289,7 +382,18 @@ export declare class CollapsibleContentNode extends ElementNode {
 /** @noInheritDoc */
 export declare class CollapsibleTitleNode extends ElementNode {
     /** @internal */
-    $config(): BaseStaticNodeConfig & {
+    $config(): BaseStaticNodeConfig & StaticNodeConfigAccessor<    {
+    readonly $transform: (node: ElementNode) => void;
+    readonly extends: typeof LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly json: NodeSerializationSchema<ElementNode, {
+    readonly direction?: "ltr" | "rtl" | null | undefined;
+    readonly format?: "" | "left" | "start" | "center" | "right" | "end" | "justify" | undefined;
+    readonly indent?: string | number | undefined;
+    readonly textFormat?: string | number | undefined;
+    readonly textStyle?: string | undefined;
+    }>;
+    }> & {
         readonly "collapsible-title"?: {
             readonly $transform: (node: CollapsibleTitleNode) => void;
             readonly extends: typeof ElementNode;
@@ -570,6 +674,8 @@ export declare const emojiList: ({
 export declare class EmojiNode extends TextNode {
     $config(): BaseStaticNodeConfig & {
         readonly text?: {
+            readonly extends: typeof LexicalNode;
+            readonly generated: GeneratedJSONFactory;
             readonly importDOM: {
                 readonly '#text': () => {
                     conversion: (domNode: Node) => DOMConversionOutput;
@@ -620,8 +726,75 @@ export declare class EmojiNode extends TextNode {
                     priority: 0;
                 };
             };
+            readonly json: NodeSerializationSchema<TextNode, {
+            readonly detail?: string | number | undefined;
+            readonly format?: string | number | undefined;
+            readonly mode?: "normal" | "token" | "segmented" | undefined;
+            readonly style?: string | undefined;
+            readonly text?: string | undefined;
+            }>;
         } | undefined;
-    } & {
+    } & StaticNodeTypeAccessor<"text"> & StaticNodeConfigAccessor<    {
+    readonly extends: typeof LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly importDOM: {
+    readonly '#text': () => {
+    conversion: (domNode: Node) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly b: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly code: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly em: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly i: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly mark: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly s: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly span: () => {
+    conversion: (domNode: HTMLSpanElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly strong: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly sub: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly sup: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly u: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    };
+    readonly json: NodeSerializationSchema<TextNode, {
+    readonly detail?: string | number | undefined;
+    readonly format?: string | number | undefined;
+    readonly mode?: "normal" | "token" | "segmented" | undefined;
+    readonly style?: string | undefined;
+    readonly text?: string | undefined;
+    }>;
+    }> & {
         readonly emoji?: {
             readonly extends: typeof TextNode;
             readonly stateConfigs: readonly [{
@@ -683,7 +856,13 @@ declare const equationState: StateConfig<"equation", string>;
 export declare type ExtraOptionsProvider = (editor: LexicalEditor) => ComponentPickerOptionConfig[];
 
 export declare class FigmaNode extends DecoratorBlockNode {
-    $config(): BaseStaticNodeConfig & {
+    $config(): BaseStaticNodeConfig & StaticNodeConfigAccessor<    {
+    readonly extends: DecoratorNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly json: NodeSerializationSchema<DecoratorBlockNode, {
+    readonly format?: "" | "left" | "start" | "center" | "right" | "end" | "justify" | undefined;
+    }>;
+    }> & {
         readonly figma?: {
             readonly extends: typeof DecoratorBlockNode;
             readonly stateConfigs: readonly [{
@@ -938,6 +1117,8 @@ export declare function KatexRenderer({ equation, inline, onDoubleClick, }: Read
 export declare class KeywordNode extends TextNode {
     $config(): BaseStaticNodeConfig & {
         readonly text?: {
+            readonly extends: typeof LexicalNode;
+            readonly generated: GeneratedJSONFactory;
             readonly importDOM: {
                 readonly '#text': () => {
                     conversion: (domNode: Node) => DOMConversionOutput;
@@ -988,8 +1169,75 @@ export declare class KeywordNode extends TextNode {
                     priority: 0;
                 };
             };
+            readonly json: NodeSerializationSchema<TextNode, {
+            readonly detail?: string | number | undefined;
+            readonly format?: string | number | undefined;
+            readonly mode?: "normal" | "token" | "segmented" | undefined;
+            readonly style?: string | undefined;
+            readonly text?: string | undefined;
+            }>;
         } | undefined;
-    } & {
+    } & StaticNodeTypeAccessor<"text"> & StaticNodeConfigAccessor<    {
+    readonly extends: typeof LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly importDOM: {
+    readonly '#text': () => {
+    conversion: (domNode: Node) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly b: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly code: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly em: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly i: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly mark: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly s: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly span: () => {
+    conversion: (domNode: HTMLSpanElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly strong: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly sub: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly sup: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly u: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    };
+    readonly json: NodeSerializationSchema<TextNode, {
+    readonly detail?: string | number | undefined;
+    readonly format?: string | number | undefined;
+    readonly mode?: "normal" | "token" | "segmented" | undefined;
+    readonly style?: string | undefined;
+    readonly text?: string | undefined;
+    }>;
+    }> & {
         readonly keyword?: {
             readonly extends: typeof TextNode;
         } | undefined;
@@ -1003,7 +1251,18 @@ export declare class KeywordNode extends TextNode {
 }
 
 export declare class LayoutContainerNode extends ElementNode {
-    $config(): BaseStaticNodeConfig & {
+    $config(): BaseStaticNodeConfig & StaticNodeConfigAccessor<    {
+    readonly $transform: (node: ElementNode) => void;
+    readonly extends: typeof LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly json: NodeSerializationSchema<ElementNode, {
+    readonly direction?: "ltr" | "rtl" | null | undefined;
+    readonly format?: "" | "left" | "start" | "center" | "right" | "end" | "justify" | undefined;
+    readonly indent?: string | number | undefined;
+    readonly textFormat?: string | number | undefined;
+    readonly textStyle?: string | undefined;
+    }>;
+    }> & {
         readonly "layout-container"?: {
             readonly extends: typeof ElementNode;
             readonly importDOM: DOMConversionMap<HTMLElement>;
@@ -1030,7 +1289,18 @@ export declare class LayoutContainerNode extends ElementNode {
 }
 
 export declare class LayoutItemNode extends ElementNode {
-    $config(): BaseStaticNodeConfig & {
+    $config(): BaseStaticNodeConfig & StaticNodeConfigAccessor<    {
+    readonly $transform: (node: ElementNode) => void;
+    readonly extends: typeof LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly json: NodeSerializationSchema<ElementNode, {
+    readonly direction?: "ltr" | "rtl" | null | undefined;
+    readonly format?: "" | "left" | "start" | "center" | "right" | "end" | "justify" | undefined;
+    readonly indent?: string | number | undefined;
+    readonly textFormat?: string | number | undefined;
+    readonly textStyle?: string | undefined;
+    }>;
+    }> & {
         readonly "layout-item"?: {
             readonly extends: typeof ElementNode;
             readonly importDOM: DOMConversionMap<HTMLElement>;
@@ -1369,6 +1639,8 @@ export declare type ShowFlashMessage = (message?: React.ReactNode, duration?: nu
 export declare class SpecialTextNode extends TextNode {
     $config(): BaseStaticNodeConfig & {
         readonly text?: {
+            readonly extends: typeof LexicalNode;
+            readonly generated: GeneratedJSONFactory;
             readonly importDOM: {
                 readonly '#text': () => {
                     conversion: (domNode: Node) => DOMConversionOutput;
@@ -1419,8 +1691,75 @@ export declare class SpecialTextNode extends TextNode {
                     priority: 0;
                 };
             };
+            readonly json: NodeSerializationSchema<TextNode, {
+            readonly detail?: string | number | undefined;
+            readonly format?: string | number | undefined;
+            readonly mode?: "normal" | "token" | "segmented" | undefined;
+            readonly style?: string | undefined;
+            readonly text?: string | undefined;
+            }>;
         } | undefined;
-    } & {
+    } & StaticNodeTypeAccessor<"text"> & StaticNodeConfigAccessor<    {
+    readonly extends: typeof LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly importDOM: {
+    readonly '#text': () => {
+    conversion: (domNode: Node) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly b: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly code: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly em: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly i: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly mark: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly s: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly span: () => {
+    conversion: (domNode: HTMLSpanElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly strong: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly sub: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly sup: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    readonly u: () => {
+    conversion: (domNode: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    };
+    readonly json: NodeSerializationSchema<TextNode, {
+    readonly detail?: string | number | undefined;
+    readonly format?: string | number | undefined;
+    readonly mode?: "normal" | "token" | "segmented" | undefined;
+    readonly style?: string | undefined;
+    readonly text?: string | undefined;
+    }>;
+    }> & {
         readonly specialText?: {
             readonly extends: typeof TextNode;
         } | undefined;
@@ -1511,7 +1850,13 @@ declare type ToolbarStateValue<Key extends ToolbarStateKey> = ToolbarState[Key];
 declare const tweetIDState: StateConfig<"id", string>;
 
 export declare class TweetNode extends DecoratorBlockNode {
-    $config(): BaseStaticNodeConfig & {
+    $config(): BaseStaticNodeConfig & StaticNodeConfigAccessor<    {
+    readonly extends: DecoratorNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly json: NodeSerializationSchema<DecoratorBlockNode, {
+    readonly format?: "" | "left" | "start" | "center" | "right" | "end" | "justify" | undefined;
+    }>;
+    }> & {
         readonly tweet?: {
             readonly extends: typeof DecoratorBlockNode;
             readonly importDOM: DOMConversionMap<HTMLElement>;
@@ -1588,7 +1933,13 @@ declare const xOffsetState: StateConfig<"xOffset", number>;
 declare const yOffsetState: StateConfig<"yOffset", number>;
 
 export declare class YouTubeNode extends DecoratorBlockNode {
-    $config(): BaseStaticNodeConfig & {
+    $config(): BaseStaticNodeConfig & StaticNodeConfigAccessor<    {
+    readonly extends: DecoratorNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly json: NodeSerializationSchema<DecoratorBlockNode, {
+    readonly format?: "" | "left" | "start" | "center" | "right" | "end" | "justify" | undefined;
+    }>;
+    }> & {
         readonly youtube?: {
             readonly extends: typeof DecoratorBlockNode;
             readonly importDOM: DOMConversionMap<HTMLElement>;

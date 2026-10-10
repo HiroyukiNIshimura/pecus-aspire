@@ -10,7 +10,8 @@ import type { JSX } from 'react';
 
 import './index.css';
 
-import { $isCodeNode, CodeNode, getCodeLanguageOptions, normalizeCodeLanguage } from '@lexical/code';
+import { $isCodeNode, CodeNode } from '@lexical/code';
+import { getCodeLanguageOptions, normalizeCodeLanguage } from '@lexical/code-prism';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $getNearestNodeFromDOMNode, isHTMLElement } from 'lexical';
 import type * as React from 'react';
@@ -23,7 +24,7 @@ import { useDebounce } from './utils';
 
 const CODE_PADDING = 8;
 
-// サポートする言語リスト（@lexical/code からフィルタリング）
+// サポートする言語リスト（@lexical/code-prism からフィルタリング）
 const SUPPORTED_LANGUAGES: [string, string][] = getCodeLanguageOptions().filter((option) =>
   [
     'c',
