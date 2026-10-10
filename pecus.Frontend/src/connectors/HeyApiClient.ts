@@ -2,11 +2,16 @@
 
 import { getApiBaseUrl } from '@/libs/env';
 import { getAccessToken } from './api/auth';
+import type { AppPublicSettingsResponse } from './api/pecus';
 import {
   getApiAchievements,
   getApiAchievementsRanking,
   getApiAdminExternalApiKeys,
   getApiAdminOrganization,
+  getApiAdminSkills,
+  getApiAdminTags,
+  getApiAdminWorkspaces,
+  getApiAdminWorkspacesById,
   getApiBackendMonitoringHangfireStats,
   getApiChatRooms,
   getApiChatRoomsByRoomId,
@@ -25,9 +30,12 @@ import {
   getApiMasterTaskTypes,
   getApiProfile,
   getApiProfileAppSettings,
+  getApiProfileDevices,
   getApiProfileEmailPending,
   getApiWorkspaces,
   getApiWorkspacesById,
+  getApiWorkspacesByWorkspaceIdItems,
+  getApiWorkspacesByWorkspaceIdItemsByItemId,
   getApiWorkspacesCodeByCode,
   getApiWorkspacesStatistics,
 } from './hey-api-axios';
@@ -37,6 +45,10 @@ import type {
   GetApiAchievementsResponse,
   GetApiAdminExternalApiKeysResponse,
   GetApiAdminOrganizationResponse,
+  GetApiAdminSkillsResponse,
+  GetApiAdminTagsResponse,
+  GetApiAdminWorkspacesByIdResponse,
+  GetApiAdminWorkspacesResponse,
   GetApiBackendMonitoringHangfireStatsResponse,
   GetApiChatRoomsByRoomIdMessagesResponse,
   GetApiChatRoomsByRoomIdResponse,
@@ -53,13 +65,16 @@ import type {
   GetApiMasterGenresResponse,
   GetApiMasterSkillsResponse,
   GetApiMasterTaskTypesResponse,
-  GetApiProfileAppSettingsResponse,
+  GetApiProfileDevicesResponse,
   GetApiProfileResponse,
   GetApiWorkspacesByIdResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdResponse,
+  GetApiWorkspacesByWorkspaceIdItemsResponse,
   GetApiWorkspacesCodeByCodeResponse,
   GetApiWorkspacesResponse,
   GetApiWorkspacesStatisticsResponse,
   PendingEmailChangeResponse,
+  TaskPriority,
 } from './hey-api-axios/types.gen';
 
 function isPendingEmailChangeResponse(value: unknown): value is PendingEmailChangeResponse {
@@ -133,6 +148,92 @@ export async function getAdminExternalApiKeysWithHeyApi(): Promise<GetApiAdminEx
   const client = await createHeyApiClient();
   const response = await getApiAdminExternalApiKeys({
     client,
+    throwOnError: true,
+  });
+
+  return response.data;
+}
+
+/**
+ * Get the admin skill list through Hey API.
+ */
+export async function getAdminSkillsWithHeyApi(
+  page?: number,
+  isActive?: boolean,
+  unusedOnly?: boolean,
+  name?: string,
+): Promise<GetApiAdminSkillsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAdminSkills({
+    client,
+    query: {
+      Page: page,
+      IsActive: isActive,
+      UnusedOnly: unusedOnly,
+      Name: name,
+    },
+    throwOnError: true,
+  });
+
+  return response.data;
+}
+
+/**
+ * Get the admin tag list through Hey API.
+ */
+export async function getAdminTagsWithHeyApi(
+  page?: number,
+  isActive?: boolean,
+  unusedOnly?: boolean,
+  name?: string,
+): Promise<GetApiAdminTagsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAdminTags({
+    client,
+    query: {
+      Page: page,
+      IsActive: isActive,
+      UnusedOnly: unusedOnly,
+      Name: name,
+    },
+    throwOnError: true,
+  });
+
+  return response.data;
+}
+
+/**
+ * Get the admin workspace list through Hey API.
+ */
+export async function getAdminWorkspacesWithHeyApi(
+  page?: number,
+  isActive?: boolean,
+  genreId?: number,
+  name?: string,
+): Promise<GetApiAdminWorkspacesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAdminWorkspaces({
+    client,
+    query: {
+      Page: page,
+      IsActive: isActive,
+      GenreId: genreId,
+      Name: name,
+    },
+    throwOnError: true,
+  });
+
+  return response.data;
+}
+
+/**
+ * Get an admin workspace by ID through Hey API.
+ */
+export async function getAdminWorkspaceByIdWithHeyApi(workspaceId: number): Promise<GetApiAdminWorkspacesByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAdminWorkspacesById({
+    client,
+    path: { id: workspaceId },
     throwOnError: true,
   });
 
@@ -335,9 +436,31 @@ export async function getProfileWithHeyApi(): Promise<GetApiProfileResponse> {
 /**
  * Get public application settings through Hey API.
  */
-export async function getProfileAppSettingsWithHeyApi(): Promise<GetApiProfileAppSettingsResponse> {
+export async function getProfileAppSettingsWithHeyApi(): Promise<AppPublicSettingsResponse> {
   const client = await createHeyApiClient();
   const response = await getApiProfileAppSettings({
+    client,
+    throwOnError: true,
+  });
+
+  return {
+    ...response.data,
+    user: {
+      ...response.data.user,
+      landingPage: response.data.user.landingPage ?? undefined,
+      focusScorePriority: response.data.user.focusScorePriority ?? undefined,
+      badgeVisibility: response.data.user.badgeVisibility ?? undefined,
+      pendingLandingPageRecommendation: response.data.user.pendingLandingPageRecommendation ?? undefined,
+    },
+  } satisfies AppPublicSettingsResponse;
+}
+
+/**
+ * Get the current user's connected devices through Hey API.
+ */
+export async function getProfileDevicesWithHeyApi(): Promise<GetApiProfileDevicesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiProfileDevices({
     client,
     throwOnError: true,
   });
@@ -380,6 +503,67 @@ export async function getWorkspaceByIdWithHeyApi(workspaceId: number): Promise<G
   const response = await getApiWorkspacesById({
     client,
     path: { id: workspaceId },
+    throwOnError: true,
+  });
+
+  return response.data;
+}
+
+/**
+ * Get workspace items through Hey API.
+ */
+export async function getWorkspaceItemsWithHeyApi(
+  workspaceId: number,
+  options: {
+    page?: number;
+    pageSize?: number;
+    isDraft?: boolean;
+    isArchived?: boolean;
+    assigneeId?: number;
+    ownerId?: number;
+    committerId?: number;
+    priority?: TaskPriority;
+    pinned?: boolean;
+    hasDueDate?: boolean;
+    hasPersonalNote?: boolean;
+    searchQuery?: string;
+  },
+): Promise<GetApiWorkspacesByWorkspaceIdItemsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItems({
+    client,
+    path: { workspaceId },
+    query: {
+      Page: options.page,
+      PageSize: options.pageSize,
+      IsDraft: options.isDraft,
+      IsArchived: options.isArchived,
+      AssigneeId: options.assigneeId,
+      OwnerId: options.ownerId,
+      CommitterId: options.committerId,
+      Priority: options.priority,
+      Pinned: options.pinned,
+      HasDueDate: options.hasDueDate,
+      HasPersonalNote: options.hasPersonalNote,
+      SearchQuery: options.searchQuery,
+    },
+    throwOnError: true,
+  });
+
+  return response.data;
+}
+
+/**
+ * Get a workspace item by ID through Hey API.
+ */
+export async function getWorkspaceItemByIdWithHeyApi(
+  workspaceId: number,
+  itemId: number,
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemId({
+    client,
+    path: { workspaceId, itemId },
     throwOnError: true,
   });
 

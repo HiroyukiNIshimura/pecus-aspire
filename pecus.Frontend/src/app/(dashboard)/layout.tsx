@@ -3,13 +3,9 @@ import type { ReactNode } from 'react';
 import DashboardLayoutClient from '@/components/common/layout/DashboardLayoutClient';
 import { ChatMentionNotification } from '@/components/notifications/ChatMentionNotification';
 import { ItemGatherNotification } from '@/components/notifications/ItemGatherNotification';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getHttpErrorInfo,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+import { detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import type { AppPublicSettingsResponse } from '@/connectors/api/pecus';
+import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
 import { AchievementCelebrationProvider } from '@/providers/AchievementCelebrationProvider';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
@@ -29,9 +25,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   let appSettings: AppPublicSettingsResponse = defaultAppSettings;
 
   try {
-    const api = createPecusApiClients();
     // アプリ設定とユーザー情報を単一のAPI呼び出しで取得
-    appSettings = await api.profile.getApiProfileAppSettings();
+    appSettings = await getProfileAppSettingsWithHeyApi();
   } catch (error) {
     // 401 エラーの場合はログインページにリダイレクト
     if (detect401ValidationError(error)) {

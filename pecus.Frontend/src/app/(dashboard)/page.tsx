@@ -1,15 +1,3 @@
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import {
-  getAchievementsRankingWithHeyApi,
-  getDashboardHotItemsWithHeyApi,
-  getDashboardHotWorkspacesWithHeyApi,
-  getDashboardHelpCommentsWithHeyApi,
-  getDashboardPersonalSummaryWithHeyApi,
-  getDashboardSummaryWithHeyApi,
-  getDashboardTasksByPriorityWithHeyApi,
-  getDashboardTasksTrendWithHeyApi,
-  getDashboardWorkspacesWithHeyApi,
-} from '@/connectors/HeyApiClient';
 import type {
   AchievementRankingResponse,
   DashboardHelpCommentsResponse,
@@ -21,6 +9,17 @@ import type {
   DashboardTaskTrendResponse,
   DashboardWorkspaceBreakdownResponse,
 } from '@/connectors/api/pecus';
+import {
+  getAchievementsRankingWithHeyApi,
+  getDashboardHelpCommentsWithHeyApi,
+  getDashboardHotItemsWithHeyApi,
+  getDashboardHotWorkspacesWithHeyApi,
+  getDashboardPersonalSummaryWithHeyApi,
+  getDashboardSummaryWithHeyApi,
+  getDashboardTasksByPriorityWithHeyApi,
+  getDashboardTasksTrendWithHeyApi,
+  getDashboardWorkspacesWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';
@@ -29,8 +28,6 @@ export const dynamic = 'force-dynamic';
 // ランディングページへのリダイレクトはログイン時（LoginFormClient.tsx）で処理済み
 // ダッシュボードページ自体ではリダイレクトを行わない
 export default async function Dashboard() {
-  const api = createPecusApiClients();
-
   let summary: DashboardSummaryResponse | null = null;
   let tasksByPriority: DashboardTasksByPriorityResponse | null = null;
   let personalSummary: DashboardPersonalSummaryResponse | null = null;

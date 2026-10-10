@@ -1,9 +1,5 @@
 import { redirect } from 'next/navigation';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import type { MasterSkillResponse, PendingEmailChangeResponse } from '@/connectors/api/pecus';
 import {
   getMasterSkillsWithHeyApi,
@@ -27,8 +23,6 @@ export default async function ProfileSettingsPage() {
   let fetchError: string | null = null;
 
   try {
-    const api = createPecusApiClients();
-
     // ユーザー情報を取得
     userResponse = await getProfileWithHeyApi();
 
