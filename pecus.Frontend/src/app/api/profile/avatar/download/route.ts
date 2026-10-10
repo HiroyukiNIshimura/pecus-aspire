@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { badRequestError, parseRouterError } from '@/app/api/routerError';
-import { createAuthenticatedAxios } from '@/connectors/legacy-api/PecusApiClient';
+import { createAuthenticatedAxios } from '@/connectors/HeyApiClient';
 
 /**
  * アバター画像ダウンロードAPI Route

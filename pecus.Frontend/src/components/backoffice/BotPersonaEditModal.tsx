@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { BackOfficeBotResponse, BackOfficeUpdateBotPersonaRequest } from '@/connectors/legacy-api/pecus';
+import type { BackOfficeBotResponse, BackOfficeUpdateBotPersonaRequest } from '@/connectors/hey-api-axios/types.gen';
 
 interface BotPersonaEditModalProps {
   isOpen: boolean;

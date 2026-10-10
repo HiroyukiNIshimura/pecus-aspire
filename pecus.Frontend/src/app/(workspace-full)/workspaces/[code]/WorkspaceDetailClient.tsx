@@ -1444,7 +1444,7 @@ export default function WorkspaceDetailClient({
                       </div>
                     </div>
                   ) : (
-                    taskTrend && <TaskTrendChart data={taskTrend} mode={currentWorkspaceDetail.mode} />
+                    taskTrend && <TaskTrendChart data={taskTrend} mode={currentWorkspaceDetail.mode ?? undefined} />
                   )}
                   {/* レポート出力ボタン */}
                   <div className="flex justify-end mt-3">

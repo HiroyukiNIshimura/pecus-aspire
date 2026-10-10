@@ -19,10 +19,7 @@ import type {
   WorkspaceDetailResponse,
   WorkspaceUserDetailResponse,
 } from '@/connectors/hey-api-axios/types.gen';
-import {
-  detectConcurrencyError,
-  detectMemberHasAssignmentsError,
-} from '@/connectors/legacy-api/PecusApiClient';
+import { detectConcurrencyError, detectMemberHasAssignmentsError } from '@/libs/concurrencyError';
 import {
   type ActivateWorkspaceInput,
   type AddWorkspaceMemberInput,

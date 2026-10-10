@@ -1,6 +1,5 @@
 import { atom } from 'jotai';
-import type { DeviceType } from '@/connectors/legacy-api/pecus/models/DeviceType';
-import type { OSPlatform } from '@/connectors/legacy-api/pecus/models/OSPlatform';
+import type { DeviceType, OsPlatform as OSPlatform } from '@/connectors/hey-api-axios/types.gen';
 
 export interface DeviceInfo {
   deviceName: string;

@@ -4,7 +4,7 @@ import {
   detect403ValidationError,
   detect404ValidationError,
   getUserSafeErrorMessage,
-} from '@/connectors/legacy-api/PecusApiClient';
+} from '@/libs/apiError';
 
 /**
  * Server Component用のフェッチ結果型

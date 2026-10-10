@@ -17,13 +17,13 @@ import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
-import type { WorkspaceDetailResponse } from '@/connectors/hey-api-axios/types.gen';
 import type {
   MasterGenreResponse,
+  WorkspaceDetailResponse,
   WorkspaceMemberAssignmentsResponse,
   WorkspaceRole,
   WorkspaceUserDetailResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';

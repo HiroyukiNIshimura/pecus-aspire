@@ -4,6 +4,7 @@ import {
   cancelAgendaWithHeyApi,
   createAgendaExceptionWithHeyApi,
   createAgendaWithHeyApi,
+  createAuthenticatedAxios,
   getAgendaExceptionsWithHeyApi,
   getAgendaNotificationCountWithHeyApi,
   getAgendaNotificationsWithHeyApi,
@@ -24,23 +25,20 @@ import {
   updateAgendaWithHeyApi,
 } from '@/connectors/HeyApiClient';
 import type {
+  AgendaResponse,
+  CancelAgendaRequest,
+  CreateAgendaExceptionRequest,
+  CreateAgendaRequest,
   AgendaExceptionResponse as HeyAgendaExceptionResponse,
   AgendaNotificationCountResponse as HeyAgendaNotificationCountResponse,
   AgendaNotificationResponse as HeyAgendaNotificationResponse,
   AgendaOccurrenceResponse as HeyAgendaOccurrenceResponse,
   AgendaOccurrencesResponse as HeyAgendaOccurrencesResponse,
   AgendaResponse as HeyAgendaResponse,
-} from '@/connectors/hey-api-axios/types.gen';
-import { createAuthenticatedAxios } from '@/connectors/legacy-api/PecusApiClient';
-import type {
-  AgendaResponse,
-  CancelAgendaRequest,
-  CreateAgendaExceptionRequest,
-  CreateAgendaRequest,
   UpdateAgendaRequest,
   UpdateAttendanceRequest,
   UpdateFromOccurrenceRequest,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import {
   agendaIdSchema,
   type CancelAgendaInput,
@@ -810,7 +808,7 @@ export async function fetchWorkspaceMembers(
 }
 
 /** 組織メンバー1件の型（APIクライアントの型を再エクスポート） */
-export type { OrganizationMemberItem as OrganizationMember } from '@/connectors/legacy-api/pecus';
+export type { OrganizationMemberItem as OrganizationMember } from '@/connectors/hey-api-axios/types.gen';
 
 /** デフォルトの参加者最大人数（AppSettingsから取得できない場合のフォールバック） */
 const DEFAULT_MAX_ATTENDEES = 100;

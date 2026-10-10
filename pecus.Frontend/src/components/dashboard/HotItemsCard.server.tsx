@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import AvatarImage from '@/components/common/widgets/user/AvatarImage';
-import type { DashboardHotItemsResponse } from '@/connectors/legacy-api/pecus';
+import type { DashboardHotItemsResponse } from '@/connectors/hey-api-axios/types.gen';
 import { formatRelativeTime } from '@/libs/utils/date';
 
 interface HotItemsCardProps {

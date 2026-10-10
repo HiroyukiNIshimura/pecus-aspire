@@ -9,8 +9,12 @@ import { AttendeeList } from '@/components/agendas/AttendeeList';
 import { CancelConfirmModal } from '@/components/agendas/CancelConfirmModal';
 import { CancelOccurrenceModal } from '@/components/agendas/CancelOccurrenceModal';
 import { type EditScope, EditScopeModal } from '@/components/agendas/EditScopeModal';
-import type { AgendaExceptionResponse, AgendaResponse } from '@/connectors/hey-api-axios/types.gen';
-import type { AttendanceStatus, RecurrenceType } from '@/connectors/legacy-api/pecus';
+import type {
+  AgendaExceptionResponse,
+  AgendaResponse,
+  AttendanceStatus,
+  RecurrenceType,
+} from '@/connectors/hey-api-axios/types.gen';
 import { useAppSettings } from '@/providers/AppSettingsProvider';
 
 interface AgendaDetailClientProps {

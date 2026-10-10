@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { WorkspaceListItemResponse } from '@/connectors/legacy-api/pecus';
+import type { WorkspaceListItemResponse } from '@/connectors/hey-api-axios/types.gen';
 
 interface DeleteWorkspaceModalProps {
   isOpen: boolean;

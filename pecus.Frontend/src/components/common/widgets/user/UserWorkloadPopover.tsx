@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { AssigneeTaskLoadResponse } from '@/connectors/legacy-api/pecus';
+import type { AssigneeTaskLoadResponse } from '@/connectors/hey-api-axios/types.gen';
 
 /** 負荷レベルの型 */
 type WorkloadLevel = 'Low' | 'Medium' | 'High' | 'Overloaded';

@@ -12,7 +12,7 @@ import type {
   OrganizationResponse,
   OrganizationSettingResponse,
 } from '@/connectors/hey-api-axios/types.gen';
-import { detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
+import { detectConcurrencyError } from '@/libs/concurrencyError';
 import {
   type GetAvailableModelsInput,
   getAvailableModelsInputSchema,

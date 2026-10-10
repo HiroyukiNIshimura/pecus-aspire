@@ -11,16 +11,16 @@ import {
   searchUsersWithHeyApi,
   updateAdminUserWithHeyApi,
 } from '@/connectors/HeyApiClient';
-import type { UserDetailResponse } from '@/connectors/hey-api-axios/types.gen';
-import { detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   PagedResponseOfUserDetailResponseAndUserStatistics,
   RoleListItemResponse,
   SuccessResponse,
+  UserDetailResponse,
   UserSearchResultResponse,
   UsersWorkloadResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { normalizeHeyApiResponse } from '@/connectors/normalizeHeyApiResponse';
+import { detectConcurrencyError } from '@/libs/concurrencyError';
 import {
   type CreateUserWithoutPasswordInput,
   createUserWithoutPasswordInputSchema,

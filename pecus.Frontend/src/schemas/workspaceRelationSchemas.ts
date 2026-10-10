@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { UpdateItemParentRequest, UpdateSiblingOrderRequest } from '@/connectors/legacy-api/pecus';
+import type { UpdateItemParentRequest, UpdateSiblingOrderRequest } from '@/connectors/hey-api-axios/types.gen';
 
 const workspaceIdSchema = z
   .number({ error: 'ワークスペースIDが不正です。' })

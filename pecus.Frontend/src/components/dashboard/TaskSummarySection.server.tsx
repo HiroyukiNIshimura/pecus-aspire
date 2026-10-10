@@ -1,4 +1,4 @@
-import type { DashboardItemSummary, DashboardTaskSummary } from '@/connectors/legacy-api/pecus';
+import type { DashboardItemSummary, DashboardTaskSummary } from '@/connectors/hey-api-axios/types.gen';
 import OrganizationHealthButton from './OrganizationHealthButton';
 import StatCard from './StatCard.server';
 

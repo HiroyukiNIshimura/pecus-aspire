@@ -10,7 +10,7 @@ import type {
   UserSettingResponse,
   WorkspaceListItemResponse,
 } from '@/connectors/hey-api-axios/types.gen';
-import { getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
+import { getUserSafeErrorMessage } from '@/libs/apiError';
 import UserSettingsClient from './UserSettingsClient';
 
 export const dynamic = 'force-dynamic';

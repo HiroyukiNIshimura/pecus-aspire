@@ -5,7 +5,7 @@ import { getUserDetail } from '@/actions/admin/user';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
 import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
-import type { RoleResponse, SkillListItemResponse } from '@/connectors/legacy-api/pecus';
+import type { RoleResponse, SkillListItemResponse } from '@/connectors/hey-api-axios/types.gen';
 import { handleServerFetch } from '@/libs/serverFetch';
 import EditUserClient from './EditUserClient';
 

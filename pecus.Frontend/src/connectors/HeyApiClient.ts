@@ -1,5 +1,6 @@
 'use server';
 
+import Axios from 'axios';
 import { getApiBaseUrl } from '@/libs/env';
 import { getAccessToken } from './auth';
 import {
@@ -12,7 +13,10 @@ import {
   deleteApiAgendasByIdOccurrencesByOccurrenceIndexAttendance,
   deleteApiBackofficeNotificationsById,
   deleteApiBackofficeOrganizationsById,
+  deleteApiDownloadsIcons,
+  deleteApiProfileDevicesByDeviceId,
   deleteApiWorkspacesById,
+  deleteApiWorkspacesByIdMembersByUserId,
   deleteApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsByAttachmentId,
   deleteApiWorkspacesByWorkspaceIdItemsByItemIdPersonalNote,
   deleteApiWorkspacesByWorkspaceIdItemsByItemIdPin,
@@ -71,16 +75,20 @@ import {
   getApiMyTasks,
   getApiMyTaskWorkspaces,
   getApiMyTaskWorkspacesByWorkspaceIdTasks,
+  getApiMyWorkspaceItems,
   getApiProfile,
   getApiProfileAppSettings,
   getApiProfileDevices,
   getApiProfileEmailPending,
+  getApiProfileEmailVerify,
   getApiUsersByUserIdAchievements,
   getApiUsersByUserIdSkills,
   getApiUsersOrganizationMembers,
   getApiUsersSearch,
   getApiWorkspaces,
   getApiWorkspacesById,
+  getApiWorkspacesByIdMembersSearch,
+  getApiWorkspacesByIdTaskTrend,
   getApiWorkspacesByWorkspaceIdDocumentTree,
   getApiWorkspacesByWorkspaceIdItems,
   getApiWorkspacesByWorkspaceIdItemsByItemId,
@@ -110,6 +118,7 @@ import {
   patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendance,
   patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceFrom,
   patchApiProfilePassword,
+  patchApiWorkspacesByIdMembersByUserIdRole,
   patchApiWorkspacesByWorkspaceIdItemsByItemId,
   patchApiWorkspacesByWorkspaceIdItemsByItemIdAssignee,
   patchApiWorkspacesByWorkspaceIdItemsByItemIdByAttr,
@@ -143,8 +152,13 @@ import {
   postApiEntrancePasswordReset,
   postApiEntrancePasswordSet,
   postApiProfileEmailRequestChange,
+  postApiProfileLandingPageRecommendationRespond,
   postApiUsersWorkload,
   postApiWorkspaces,
+  postApiWorkspacesByIdActivate,
+  postApiWorkspacesByIdDeactivate,
+  postApiWorkspacesByIdJoin,
+  postApiWorkspacesByIdMembers,
   postApiWorkspacesByWorkspaceIdItems,
   postApiWorkspacesByWorkspaceIdItemsByItemIdPersonalNote,
   postApiWorkspacesByWorkspaceIdItemsByItemIdPin,
@@ -167,9 +181,11 @@ import {
   putApiBackofficeOrganizationsById,
   putApiBackofficeOrganizationsByIdBotsByBotIdPersona,
   putApiChatRoomsByRoomIdRead,
+  putApiProfile,
   putApiProfileSetting,
   putApiProfileSkills,
   putApiWorkspacesById,
+  putApiWorkspacesByIdSkills,
   putApiWorkspacesByWorkspaceIdDocumentTreeParent,
   putApiWorkspacesByWorkspaceIdDocumentTreeSiblingOrder,
   putApiWorkspacesByWorkspaceIdItemsByItemIdPersonalNote,
@@ -190,6 +206,8 @@ import type {
   DeleteApiAdminWorkspacesByIdResponse,
   DeleteApiAdminWorkspacesByIdUsersByUserIdResponse,
   DeleteApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceResponse,
+  DeleteApiDownloadsIconsResponse,
+  DeleteApiProfileDevicesByDeviceIdResponse,
   DeleteApiWorkspacesByWorkspaceIdItemsByItemIdPinResponse,
   DeleteApiWorkspacesByWorkspaceIdItemsByItemIdRelationsByRelationIdResponse,
   DeleteApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse,
@@ -246,13 +264,18 @@ import type {
   GetApiMyTasksResponse,
   GetApiMyTaskWorkspacesByWorkspaceIdTasksResponse,
   GetApiMyTaskWorkspacesResponse,
+  GetApiMyWorkspaceItemsData,
+  GetApiMyWorkspaceItemsResponse,
   GetApiProfileDevicesResponse,
+  GetApiProfileEmailVerifyResponse,
   GetApiProfileResponse,
   GetApiUsersByUserIdAchievementsResponse,
   GetApiUsersByUserIdSkillsResponse,
   GetApiUsersOrganizationMembersResponse,
   GetApiUsersSearchResponse,
+  GetApiWorkspacesByIdMembersSearchResponse,
   GetApiWorkspacesByIdResponse,
+  GetApiWorkspacesByIdTaskTrendResponse,
   GetApiWorkspacesByWorkspaceIdDocumentTreeResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdActivitiesResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsResponse,
@@ -286,6 +309,7 @@ import type {
   PatchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceFromResponse,
   PatchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceResponse,
   PatchApiProfilePasswordResponse,
+  PatchApiWorkspacesByIdMembersByUserIdRoleResponse,
   PatchApiWorkspacesByWorkspaceIdItemsByItemIdAssigneeResponse,
   PatchApiWorkspacesByWorkspaceIdItemsByItemIdByAttrResponse,
   PatchApiWorkspacesByWorkspaceIdItemsByItemIdResponse,
@@ -313,7 +337,12 @@ import type {
   PostApiEntrancePasswordResetResponse,
   PostApiEntrancePasswordSetResponse,
   PostApiProfileEmailRequestChangeResponse,
+  PostApiProfileLandingPageRecommendationRespondResponse,
   PostApiUsersWorkloadResponse,
+  PostApiWorkspacesByIdActivateResponse,
+  PostApiWorkspacesByIdDeactivateResponse,
+  PostApiWorkspacesByIdJoinResponse,
+  PostApiWorkspacesByIdMembersResponse,
   PostApiWorkspacesByWorkspaceIdItemsByItemIdPersonalNoteResponse,
   PostApiWorkspacesByWorkspaceIdItemsByItemIdPinResponse,
   PostApiWorkspacesByWorkspaceIdItemsByItemIdRelationsResponse,
@@ -334,9 +363,11 @@ import type {
   PutApiAgendasByIdFromResponse,
   PutApiAgendasByIdResponse,
   PutApiBackofficeNotificationsByIdResponse,
+  PutApiProfileResponse,
   PutApiProfileSettingResponse,
   PutApiProfileSkillsResponse,
   PutApiWorkspacesByIdResponse,
+  PutApiWorkspacesByIdSkillsResponse,
   PutApiWorkspacesByWorkspaceIdDocumentTreeParentResponse,
   PutApiWorkspacesByWorkspaceIdDocumentTreeSiblingOrderResponse,
   PutApiWorkspacesByWorkspaceIdItemsByItemIdPersonalNoteResponse,
@@ -370,6 +401,15 @@ export async function createHeyApiClient(): Promise<Client> {
     withCredentials: true,
     throwOnError: true,
     auth: async () => (await getAccessToken()) ?? undefined,
+  });
+}
+
+export async function createAuthenticatedAxios() {
+  const token = await getAccessToken();
+  return Axios.create({
+    baseURL: getApiBaseUrl(),
+    withCredentials: true,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 }
 
@@ -673,6 +713,14 @@ export async function searchUsersWithHeyApi(query: string, limit: number): Promi
 export async function getMyOrganizationWithHeyApi(): Promise<GetApiMyOrganizationResponse> {
   const client = await createHeyApiClient();
   const response = await getApiMyOrganization({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function getMyWorkspaceItemsWithHeyApi(
+  query?: GetApiMyWorkspaceItemsData['query'],
+): Promise<GetApiMyWorkspaceItemsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiMyWorkspaceItems({ client, query, throwOnError: true });
   return response.data;
 }
 
@@ -1497,6 +1545,50 @@ export async function changeProfileEmailWithHeyApi(
   return response.data;
 }
 
+export async function verifyProfileEmailWithHeyApi(token: string): Promise<GetApiProfileEmailVerifyResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiProfileEmailVerify({
+    client,
+    query: { token },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteProfileDeviceWithHeyApi(
+  deviceId: number,
+): Promise<DeleteApiProfileDevicesByDeviceIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiProfileDevicesByDeviceId({
+    client,
+    path: { deviceId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteAvatarFileWithHeyApi(query: {
+  FileType: 'Avatar';
+  ResourceId: number;
+  FileName: string;
+}): Promise<DeleteApiDownloadsIconsResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiDownloadsIcons({ client, query, throwOnError: true });
+  return response.data;
+}
+
+export async function respondToLandingPageRecommendationWithHeyApi(
+  body: Parameters<typeof postApiProfileLandingPageRecommendationRespond>[0]['body'],
+): Promise<PostApiProfileLandingPageRecommendationRespondResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiProfileLandingPageRecommendationRespond({
+    client,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
 export async function changeProfilePasswordWithHeyApi(
   body: Parameters<typeof patchApiProfilePassword>[0]['body'],
 ): Promise<PatchApiProfilePasswordResponse> {
@@ -1518,6 +1610,14 @@ export async function updateProfileSettingWithHeyApi(
 ): Promise<PutApiProfileSettingResponse> {
   const client = await createHeyApiClient();
   const response = await putApiProfileSetting({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function updateProfileWithHeyApi(
+  body: Parameters<typeof putApiProfile>[0]['body'],
+): Promise<PutApiProfileResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiProfile({ client, body, throwOnError: true });
   return response.data;
 }
 
@@ -1633,6 +1733,124 @@ export async function updateWorkspaceWithHeyApi(
     client,
     path: { id: workspaceId },
     body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function activateWorkspaceWithHeyApi(
+  workspaceId: number,
+  rowVersion: number,
+): Promise<PostApiWorkspacesByIdActivateResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByIdActivate({
+    client,
+    path: { id: workspaceId },
+    body: rowVersion,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deactivateWorkspaceWithHeyApi(
+  workspaceId: number,
+  rowVersion: number,
+): Promise<PostApiWorkspacesByIdDeactivateResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByIdDeactivate({
+    client,
+    path: { id: workspaceId },
+    body: rowVersion,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function addWorkspaceMemberWithHeyApi(
+  workspaceId: number,
+  body: Parameters<typeof postApiWorkspacesByIdMembers>[0]['body'],
+): Promise<PostApiWorkspacesByIdMembersResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByIdMembers({
+    client,
+    path: { id: workspaceId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function removeWorkspaceMemberWithHeyApi(workspaceId: number, userId: number): Promise<void> {
+  const client = await createHeyApiClient();
+  await deleteApiWorkspacesByIdMembersByUserId({
+    client,
+    path: { id: workspaceId, userId },
+    throwOnError: true,
+  });
+}
+
+export async function updateWorkspaceMemberRoleWithHeyApi(
+  workspaceId: number,
+  userId: number,
+  body: Parameters<typeof patchApiWorkspacesByIdMembersByUserIdRole>[0]['body'],
+): Promise<PatchApiWorkspacesByIdMembersByUserIdRoleResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiWorkspacesByIdMembersByUserIdRole({
+    client,
+    path: { id: workspaceId, userId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateWorkspaceSkillsWithHeyApi(
+  workspaceId: number,
+  body: Parameters<typeof putApiWorkspacesByIdSkills>[0]['body'],
+): Promise<PutApiWorkspacesByIdSkillsResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiWorkspacesByIdSkills({
+    client,
+    path: { id: workspaceId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function searchWorkspaceMembersWithHeyApi(
+  workspaceId: number,
+  query: Parameters<typeof getApiWorkspacesByIdMembersSearch>[0]['query'],
+): Promise<GetApiWorkspacesByIdMembersSearchResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByIdMembersSearch({
+    client,
+    path: { id: workspaceId },
+    query,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getWorkspaceTaskTrendWithHeyApi(
+  workspaceId: number,
+  query: Parameters<typeof getApiWorkspacesByIdTaskTrend>[0]['query'],
+): Promise<GetApiWorkspacesByIdTaskTrendResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByIdTaskTrend({
+    client,
+    path: { id: workspaceId },
+    query,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function joinWorkspaceWithHeyApi(workspaceId: number): Promise<PostApiWorkspacesByIdJoinResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByIdJoin({
+    client,
+    path: { id: workspaceId },
     throwOnError: true,
   });
   return response.data;

@@ -1,11 +1,11 @@
 'use server';
 
 import {
+  createAuthenticatedAxios,
   deleteWorkspaceItemAttachmentWithHeyApi,
   getWorkspaceItemAttachmentsWithHeyApi,
 } from '@/connectors/HeyApiClient';
 import type { WorkspaceItemAttachmentResponse } from '@/connectors/hey-api-axios/types.gen';
-import { createAuthenticatedAxios } from '@/connectors/legacy-api/PecusApiClient';
 import {
   type DeleteWorkspaceItemAttachmentInput,
   deleteWorkspaceItemAttachmentInputSchema,

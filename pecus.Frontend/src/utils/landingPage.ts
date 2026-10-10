@@ -1,4 +1,4 @@
-import type { LandingPage } from '@/connectors/legacy-api/pecus';
+import type { LandingPage } from '@/connectors/hey-api-axios/types.gen';
 
 /**
  * LandingPage 列挙値を URL パスに変換

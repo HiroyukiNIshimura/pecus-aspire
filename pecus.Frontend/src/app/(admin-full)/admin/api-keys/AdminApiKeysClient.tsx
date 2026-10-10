@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createExternalApiKey, revokeExternalApiKey } from '@/actions/admin/externalApiKeys';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import type { CreateExternalApiKeyResponse, ExternalApiKeyResponse } from '@/connectors/legacy-api/pecus';
+import type { CreateExternalApiKeyResponse, ExternalApiKeyResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { useCurrentUser } from '@/providers/AppSettingsProvider';
 import ApiKeyTable from './ApiKeyTable';

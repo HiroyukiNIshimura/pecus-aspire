@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { getWorkspaceItemsWithHeyApi } from '@/connectors/HeyApiClient';
-import type { TaskPriority } from '@/connectors/legacy-api/pecus';
+import type { TaskPriority } from '@/connectors/hey-api-axios/types.gen';
 
 interface RouteParams {
   params: Promise<{

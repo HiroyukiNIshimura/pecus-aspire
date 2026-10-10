@@ -5,11 +5,7 @@ import { ChatMentionNotification } from '@/components/notifications/ChatMentionN
 import { ItemGatherNotification } from '@/components/notifications/ItemGatherNotification';
 import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
 import type { AppPublicSettingsResponse } from '@/connectors/hey-api-axios/types.gen';
-import {
-  detect401ValidationError,
-  getHttpErrorInfo,
-  getUserSafeErrorMessage,
-} from '@/connectors/legacy-api/PecusApiClient';
+import { detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/libs/apiError';
 import { AchievementCelebrationProvider } from '@/providers/AchievementCelebrationProvider';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';

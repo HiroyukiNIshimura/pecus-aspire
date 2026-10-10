@@ -7,7 +7,10 @@ import { joinWorkspace } from '@/actions/workspace';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import { Tooltip } from '@/components/common/feedback/Tooltip';
 import JoinWorkspaceModal from '@/components/workspaces/JoinWorkspaceModal';
-import type { DashboardWorkspaceBreakdownResponse, DashboardWorkspaceStatistics } from '@/connectors/legacy-api/pecus';
+import type {
+  DashboardWorkspaceBreakdownResponse,
+  DashboardWorkspaceStatistics,
+} from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 
 /** 初期表示件数 */

@@ -3,7 +3,7 @@ import { getWorkspaceDetail } from '@/actions/admin/workspace';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
 import { getMasterGenresWithHeyApi, getProfileWithHeyApi } from '@/connectors/HeyApiClient';
-import type { MasterGenreResponse } from '@/connectors/legacy-api/pecus';
+import type { MasterGenreResponse } from '@/connectors/hey-api-axios/types.gen';
 import { handleServerFetch } from '@/libs/serverFetch';
 import EditWorkspaceClient from './EditWorkspaceClient';
 

@@ -4,6 +4,7 @@ import {
   addWorkspaceItemPinWithHeyApi,
   addWorkspaceItemRelationWithHeyApi,
   createWorkspaceItemWithHeyApi,
+  getMyWorkspaceItemsWithHeyApi,
   getWorkspaceItemByCodeWithHeyApi,
   getWorkspaceItemByIdWithHeyApi,
   getWorkspaceItemChildrenCountWithHeyApi,
@@ -23,7 +24,7 @@ import type {
   WorkspaceItemDetailResponse,
   WorkspaceItemResponse,
 } from '@/connectors/hey-api-axios/types.gen';
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
+import { detectConcurrencyError } from '@/libs/concurrencyError';
 import {
   type AddWorkspaceItemRelationsInput,
   addWorkspaceItemRelationsInputSchema,
@@ -76,15 +77,14 @@ export async function fetchMyItems(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.my.getApiMyWorkspaceItems(
-      parseResult.data.page ?? 1,
-      parseResult.data.relation,
-      parseResult.data.includeArchived,
-      parseResult.data.workspaceIds,
-      parseResult.data.sortBy ?? undefined,
-      parseResult.data.order ?? undefined,
-    );
+    const response = await getMyWorkspaceItemsWithHeyApi({
+      Page: parseResult.data.page ?? 1,
+      Relation: parseResult.data.relation ?? undefined,
+      IncludeArchived: parseResult.data.includeArchived,
+      WorkspaceIds: parseResult.data.workspaceIds,
+      SortBy: parseResult.data.sortBy ?? undefined,
+      Order: parseResult.data.order ?? undefined,
+    });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch my items:', error);

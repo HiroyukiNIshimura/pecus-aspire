@@ -7,8 +7,8 @@ import type {
   MasterSkillResponse,
   PendingEmailChangeResponse,
 } from '@/connectors/hey-api-axios/types.gen';
-import { detect404ValidationError } from '@/connectors/legacy-api/PecusApiClient';
 import { useNotify } from '@/hooks/useNotify';
+import { detect404ValidationError } from '@/libs/apiError';
 import type { UserInfo } from '@/types/userInfo';
 import BasicInfoTab from './BasicInfoTab';
 import DevicesTab from './DevicesTab';
