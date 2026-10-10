@@ -2,14 +2,14 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/actions/auth';
-import { createPecusApiClients, detect401ValidationError } from '@/connectors/api/PecusApiClient';
+import { detect401ValidationError } from '@/connectors/api/PecusApiClient';
+import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
 import AgendaFormClient from './AgendaFormClient';
 
 export default async function NewAgendaPage() {
   try {
     // 認証確認
-    const api = createPecusApiClients();
-    await api.profile.getApiProfileAppSettings();
+    await getProfileAppSettingsWithHeyApi();
 
     // 現在のユーザーID取得
     const userResult = await getCurrentUser();

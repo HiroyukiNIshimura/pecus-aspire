@@ -1,12 +1,33 @@
 import { redirect } from 'next/navigation';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getHttpErrorInfo,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+import { detect401ValidationError, getHttpErrorInfo, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import type { ChatRoomItem } from '@/connectors/api/pecus';
+import { getChatRoomsWithHeyApi, getChatUnreadByCategoryWithHeyApi } from '@/connectors/HeyApiClient';
+import type {
+  ChatMessageItem as HeyChatMessageItem,
+  ChatRoomItem as HeyChatRoomItem,
+} from '@/connectors/hey-api-axios/types.gen';
 import { ServerSessionManager } from '@/libs/serverSession';
 import ChatFullScreenClient from './ChatFullScreenClient';
+
+function normalizeChatMessage(message: HeyChatMessageItem) {
+  return {
+    ...message,
+    senderUserId: message.senderUserId ?? undefined,
+    sender: message.sender ?? undefined,
+    replyToMessageId: message.replyToMessageId ?? undefined,
+    replyTo: message.replyTo ?? undefined,
+  };
+}
+
+function normalizeChatRoom(room: HeyChatRoomItem): ChatRoomItem {
+  return {
+    ...room,
+    name: room.name ?? undefined,
+    workspaceId: room.workspaceId ?? undefined,
+    otherUser: room.otherUser ?? undefined,
+    latestMessage: room.latestMessage ? normalizeChatMessage(room.latestMessage) : undefined,
+  };
+}
 
 /**
  * チャットページ（スマホ用フル画面）
@@ -19,15 +40,11 @@ export default async function ChatPage() {
       redirect('/signin');
     }
 
-    const api = createPecusApiClients();
-    const [rooms, unreadCounts] = await Promise.all([
-      api.chat.getApiChatRooms(),
-      api.chat.getApiChatUnreadByCategory(),
-    ]);
+    const [rooms, unreadCounts] = await Promise.all([getChatRoomsWithHeyApi(), getChatUnreadByCategoryWithHeyApi()]);
 
     return (
       <ChatFullScreenClient
-        initialRooms={rooms}
+        initialRooms={rooms.map(normalizeChatRoom)}
         initialUnreadCounts={{
           total: unreadCounts.totalUnreadCount,
           dm: unreadCounts.dmUnreadCount,

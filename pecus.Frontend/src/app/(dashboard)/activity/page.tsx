@@ -2,24 +2,20 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { fetchMyActivities } from '@/actions/activity';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
-import type { PagedResponseOfActivityResponse, UserDetailResponse } from '@/connectors/api/pecus';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import type { PagedResponseOfActivityResponse } from '@/connectors/api/pecus';
+import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
+import type { GetApiProfileResponse } from '@/connectors/hey-api-axios/types.gen';
 import ActivityClient from './ActivityClient';
 
 export default async function ActivityPage() {
-  let userResponse: UserDetailResponse | null = null;
+  let userResponse: GetApiProfileResponse | null = null;
   let initialActivities: PagedResponseOfActivityResponse | null = null;
   let fetchError: string | null = null;
 
   try {
-    const api = createPecusApiClients();
-
     // ユーザー情報を取得
-    userResponse = await api.profile.getApiProfile();
+    userResponse = await getProfileWithHeyApi();
 
     // 初回は「今日」のアクティビティを取得
     const activitiesResult = await fetchMyActivities({ page: 1, period: 'Today' });

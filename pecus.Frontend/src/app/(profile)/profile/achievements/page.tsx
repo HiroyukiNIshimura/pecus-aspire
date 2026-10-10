@@ -1,10 +1,7 @@
 import { redirect } from 'next/navigation';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
 import type { AchievementCollectionResponse } from '@/connectors/api/pecus';
+import { getAchievementsWithHeyApi } from '@/connectors/HeyApiClient';
 import AchievementsClient from './AchievementsClient';
 
 export const dynamic = 'force-dynamic';
@@ -18,9 +15,8 @@ export default async function AchievementsPage() {
   let fetchError: string | null = null;
 
   try {
-    const api = createPecusApiClients();
     // 全実績マスタを取得（未取得バッジは情報が隠蔽される）
-    achievements = await api.achievement.getApiAchievements();
+    achievements = await getAchievementsWithHeyApi();
   } catch (error) {
     console.error('Failed to fetch achievements:', error);
 

@@ -4,8 +4,8 @@ import { getAllSkills } from '@/actions/admin/skills';
 import { getUserDetail } from '@/actions/admin/user';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { RoleResponse, SkillListItemResponse } from '@/connectors/api/pecus';
+import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
 import { handleServerFetch } from '@/libs/serverFetch';
 import EditUserClient from './EditUserClient';
 
@@ -19,8 +19,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     notFound();
   }
 
-  const api = createPecusApiClients();
-  const authResult = await handleServerFetch(() => api.profile.getApiProfile());
+  const authResult = await handleServerFetch(getProfileWithHeyApi);
 
   if (!authResult.success) {
     if (authResult.error === 'forbidden') {

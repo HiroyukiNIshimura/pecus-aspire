@@ -3,25 +3,21 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchMyTaskWorkspaces } from '@/actions/myTask';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
-import type { MyTaskWorkspaceResponse, UserDetailResponse } from '@/connectors/api/pecus';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import type { MyTaskWorkspaceResponse } from '@/connectors/api/pecus';
+import { getMasterTaskTypesWithHeyApi, getProfileWithHeyApi } from '@/connectors/HeyApiClient';
+import type { GetApiProfileResponse } from '@/connectors/hey-api-axios/types.gen';
 import MyTasksDashboardClient from './MyTasksDashboardClient';
 
 export default async function MyTasksPage() {
-  let userResponse: UserDetailResponse | null = null;
+  let userResponse: GetApiProfileResponse | null = null;
   let initialWorkspaces: MyTaskWorkspaceResponse[] = [];
   let taskTypes: TaskTypeOption[] = [];
   let fetchError: string | null = null;
 
   try {
-    const api = createPecusApiClients();
-
     // ユーザー情報を取得（認証確認のため）
-    userResponse = await api.profile.getApiProfile();
+    userResponse = await getProfileWithHeyApi();
 
     // マイタスクワークスペース一覧を取得
     const workspacesResult = await fetchMyTaskWorkspaces();
@@ -33,7 +29,7 @@ export default async function MyTasksPage() {
 
     // タスクタイプ一覧取得（モーダル編集用）
     try {
-      const taskTypeResponse = await api.master.getApiMasterTaskTypes();
+      const taskTypeResponse = await getMasterTaskTypesWithHeyApi();
       taskTypes = taskTypeResponse.map((t) => ({
         id: t.id,
         code: t.code ?? '',

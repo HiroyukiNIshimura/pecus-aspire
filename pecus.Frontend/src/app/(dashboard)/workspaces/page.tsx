@@ -1,10 +1,10 @@
 import { fetchWorkspaces } from '@/actions/workspace';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   MasterGenreResponse,
   PagedResponseOfWorkspaceListItemResponse,
   WorkspaceStatistics,
 } from '@/connectors/api/pecus';
+import { getMasterGenresWithHeyApi, getWorkspaceStatisticsWithHeyApi } from '@/connectors/HeyApiClient';
 import WorkspacesClient from './WorkspacesClient';
 
 export const dynamic = 'force-dynamic';
@@ -22,12 +22,10 @@ export default async function WorkspacesPage() {
   let fetchError: string | null = null;
 
   try {
-    const api = await createPecusApiClients();
-
     // ジャンル一覧、統計情報、初期ワークスペース一覧を並列取得
     const [genresResult, statisticsResult, workspacesResult] = await Promise.all([
-      api.master.getApiMasterGenres(),
-      api.workspace.getApiWorkspacesStatistics(),
+      getMasterGenresWithHeyApi(),
+      getWorkspaceStatisticsWithHeyApi(),
       fetchWorkspaces({ page: 1 }),
     ]);
 
