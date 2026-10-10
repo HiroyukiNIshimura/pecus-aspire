@@ -1,6 +1,6 @@
 'use server';
 
-import { getAdminUsersWithHeyApi, normalizeHeyApiResponse } from '@/connectors/HeyApiClient';
+import { getAdminUsersWithHeyApi } from '@/connectors/HeyApiClient';
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   PagedResponseOfUserDetailResponseAndUserStatistics,
@@ -10,6 +10,7 @@ import type {
   UserSearchResultResponse,
   UsersWorkloadResponse,
 } from '@/connectors/legacy-api/pecus';
+import { normalizeHeyApiResponse } from '@/connectors/normalizeHeyApiResponse';
 import {
   type CreateUserWithoutPasswordInput,
   createUserWithoutPasswordInputSchema,
