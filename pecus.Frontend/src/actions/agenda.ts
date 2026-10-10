@@ -8,10 +8,15 @@ import {
   getAgendaNotificationCountWithHeyApi,
   getAgendaNotificationsWithHeyApi,
   getAgendaOccurrencesWithHeyApi,
+  getMyOrganizationWithHeyApi,
+  getOrganizationMembersWithHeyApi,
   getRecentAgendaOccurrencesWithHeyApi,
+  getWorkspaceByIdWithHeyApi,
+  getWorkspacesWithHeyApiOptions,
   markAgendaNotificationReadWithHeyApi,
   markAllAgendaNotificationsReadWithHeyApi,
   resetAgendaOccurrenceAttendanceWithHeyApi,
+  searchUsersWithHeyApi,
   updateAgendaAttendanceFromOccurrenceWithHeyApi,
   updateAgendaAttendanceWithHeyApi,
   updateAgendaFromOccurrenceWithHeyApi,
@@ -26,7 +31,7 @@ import type {
   AgendaOccurrencesResponse as HeyAgendaOccurrencesResponse,
   AgendaResponse as HeyAgendaResponse,
 } from '@/connectors/hey-api-axios/types.gen';
-import { createAuthenticatedAxios, createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import { createAuthenticatedAxios } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   AgendaResponse,
   CancelAgendaRequest,
@@ -607,7 +612,6 @@ export async function searchAttendees(input: SearchAttendeesInput): Promise<ApiR
   const parseResult = searchAttendeesInputSchema.safeParse(input);
 
   try {
-    const api = await createPecusApiClients();
     const results: AttendeeSearchResult[] = [];
 
     // 空検索または2文字未満の場合は組織全体のみ表示
@@ -621,7 +625,7 @@ export async function searchAttendees(input: SearchAttendeesInput): Promise<ApiR
       }
 
       // 組織全体を候補に追加
-      const orgUsers = await api.user.getApiUsersSearch('', 1000);
+      const orgUsers = await searchUsersWithHeyApi('', 1000);
       results.push({
         type: 'organization',
         id: 0,
@@ -632,7 +636,7 @@ export async function searchAttendees(input: SearchAttendeesInput): Promise<ApiR
     }
 
     // ユーザー検索
-    const users = await api.user.getApiUsersSearch(parseResult.data.query, 10);
+    const users = await searchUsersWithHeyApi(parseResult.data.query, 10);
     for (const user of users) {
       results.push({
         type: 'user',
@@ -644,7 +648,7 @@ export async function searchAttendees(input: SearchAttendeesInput): Promise<ApiR
     }
 
     // ワークスペース検索
-    const workspaces = await api.workspace.getApiWorkspaces(1, undefined, parseResult.data.query, undefined);
+    const workspaces = await getWorkspacesWithHeyApiOptions({ page: 1, name: parseResult.data.query });
     for (const ws of workspaces.data ?? []) {
       results.push({
         type: 'workspace',
@@ -660,7 +664,7 @@ export async function searchAttendees(input: SearchAttendeesInput): Promise<ApiR
       parseResult.data.query.includes('全体') ||
       parseResult.data.query.includes('全員')
     ) {
-      const orgUsers = await api.user.getApiUsersSearch('', 1000);
+      const orgUsers = await searchUsersWithHeyApi('', 1000);
       results.push({
         type: 'organization',
         id: 0,
@@ -692,7 +696,6 @@ export interface WorkspaceOption {
  */
 export async function fetchWorkspaceList(): Promise<ApiResponse<WorkspaceOption[]>> {
   try {
-    const api = await createPecusApiClients();
     // getApiWorkspaces(page, genreId, name, mode) - ページサイズはAPIで固定
     // 複数ページ取得して全件を返す
     const allWorkspaces: WorkspaceOption[] = [];
@@ -700,7 +703,7 @@ export async function fetchWorkspaceList(): Promise<ApiResponse<WorkspaceOption[
     let hasNextPage = true;
 
     while (hasNextPage) {
-      const result = await api.workspace.getApiWorkspaces(currentPage);
+      const result = await getWorkspacesWithHeyApiOptions({ page: currentPage });
       const workspaces =
         result.data?.map((ws) => ({
           id: ws.id!,
@@ -729,9 +732,8 @@ export async function fetchWorkspaceList(): Promise<ApiResponse<WorkspaceOption[
  */
 export async function fetchOrganizationMemberCount(): Promise<ApiResponse<number>> {
   try {
-    const api = await createPecusApiClients();
     // getApiMyOrganization で userCount を取得
-    const org = await api.my.getApiMyOrganization();
+    const org = await getMyOrganizationWithHeyApi();
     return { success: true, data: org.userCount ?? 0 };
   } catch (error: unknown) {
     console.error('fetchOrganizationMemberCount error:', error);
@@ -761,8 +763,7 @@ export async function searchUsers(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const users = await api.user.getApiUsersSearch(parseResult.data.query, 10);
+    const users = await searchUsersWithHeyApi(parseResult.data.query, 10);
     const results = users.map((u) => ({
       userId: u.id!,
       userName: u.username!,
@@ -791,8 +792,7 @@ export async function fetchWorkspaceMembers(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const workspace = await api.workspace.getApiWorkspaces1(parseResult.data.workspaceId);
+    const workspace = await getWorkspaceByIdWithHeyApi(parseResult.data.workspaceId);
     const members =
       workspace.members?.map((m) => ({
         userId: m.id!,
@@ -830,7 +830,6 @@ export async function fetchOrganizationMembers(
   }
 
   try {
-    const api = await createPecusApiClients();
     const allMembers: { userId: number; userName: string; email: string; identityIconUrl: string | null }[] = [];
     let currentPage = 1;
     let hasNextPage = true;
@@ -838,7 +837,7 @@ export async function fetchOrganizationMembers(
 
     // maxAttendeesに達するまでページを取得
     while (hasNextPage && allMembers.length < maxAttendees) {
-      const response = await api.user.getApiUsersOrganizationMembers(currentPage);
+      const response = await getOrganizationMembersWithHeyApi({ page: currentPage });
 
       // maxAttendeesを超えないように追加
       const remaining = maxAttendees - allMembers.length;

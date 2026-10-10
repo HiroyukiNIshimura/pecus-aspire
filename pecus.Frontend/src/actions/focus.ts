@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
-import type { FocusRecommendationResponse } from '@/connectors/legacy-api/pecus';
+import { getFocusRecommendationWithHeyApi } from '@/connectors/HeyApiClient';
+import type { FocusRecommendationResponse } from '@/connectors/hey-api-axios/types.gen';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
 
@@ -10,8 +10,7 @@ import type { ApiResponse } from './types';
  */
 export async function fetchFocusRecommendation(): Promise<ApiResponse<FocusRecommendationResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.focus.getApiFocusMe();
+    const response = await getFocusRecommendationWithHeyApi();
 
     return { success: true, data: response };
   } catch (error: unknown) {

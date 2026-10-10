@@ -1,7 +1,11 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
-import type { MessageResponse } from '@/connectors/legacy-api/pecus';
+import {
+  requestPasswordResetWithHeyApi,
+  resetPasswordWithHeyApi,
+  setPasswordWithHeyApi,
+} from '@/connectors/HeyApiClient';
+import type { MessageResponse } from '@/connectors/hey-api-axios/types.gen';
 import {
   type RequestPasswordResetInput,
   type ResetPasswordInput,
@@ -31,13 +35,7 @@ export async function requestPasswordResetAction(
   }
 
   try {
-    // API クライアント生成
-    const clients = await createPecusApiClients();
-
-    // パスワードリセットリクエスト送信
-    const result = await clients.entrancePassword.postApiEntrancePasswordRequestReset({
-      email: parseResult.data.email,
-    });
+    const result = await requestPasswordResetWithHeyApi({ email: parseResult.data.email });
 
     return {
       success: true,
@@ -68,11 +66,7 @@ export async function setPasswordAction(input: SetPasswordInput): Promise<ApiRes
   }
 
   try {
-    // API クライアント生成（認証不要なので公開エンドポイント）
-    const clients = await createPecusApiClients();
-
-    // パスワード設定 API 呼び出し
-    const result = await clients.entrancePassword.postApiEntrancePasswordSet({
+    const result = await setPasswordWithHeyApi({
       token: parseResult.data.token,
       password: parseResult.data.password,
     });
@@ -106,11 +100,7 @@ export async function resetPasswordAction(input: ResetPasswordInput): Promise<Ap
   }
 
   try {
-    // API クライアント生成（認証不要なので公開エンドポイント）
-    const clients = await createPecusApiClients();
-
-    // パスワードリセット API 呼び出し
-    const result = await clients.entrancePassword.postApiEntrancePasswordReset({
+    const result = await resetPasswordWithHeyApi({
       token: parseResult.data.token,
       password: parseResult.data.password,
     });

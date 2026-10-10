@@ -1,11 +1,17 @@
 'use server';
 
 import {
+  changeProfileEmailWithHeyApi,
+  changeProfilePasswordWithHeyApi,
   getProfileAppSettingsWithHeyApi,
   getProfileDevicesWithHeyApi,
   getProfileWithHeyApi,
 } from '@/connectors/HeyApiClient';
-import type { AppPublicSettingsResponse } from '@/connectors/hey-api-axios/types.gen';
+import type {
+  AppPublicSettingsResponse,
+  EmailChangeRequestResponse as HeyEmailChangeRequestResponse,
+  MessageResponse as HeyMessageResponse,
+} from '@/connectors/hey-api-axios/types.gen';
 import {
   createAuthenticatedAxios,
   createPecusApiClients,
@@ -106,8 +112,7 @@ export async function requestEmailChange(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.postApiProfileEmailRequestChange({
+    const response = await changeProfileEmailWithHeyApi({
       newEmail: parseResult.data.newEmail,
       currentPassword: parseResult.data.currentPassword,
     });
@@ -115,7 +120,7 @@ export async function requestEmailChange(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to request email change:', error);
-    return handleApiErrorForAction<EmailChangeRequestResponse>(error, {
+    return handleApiErrorForAction<HeyEmailChangeRequestResponse>(error, {
       defaultMessage: 'メールアドレス変更リクエストに失敗しました',
     });
   }
@@ -151,7 +156,7 @@ export async function verifyEmailChange(
  * Server Action: パスワードを変更
  * @param input クライアント側で Zod 検証済みのデータ
  */
-export async function updateUserPassword(input: UpdatePasswordFormInput): Promise<ApiResponse<MessageResponse>> {
+export async function updateUserPassword(input: UpdatePasswordFormInput): Promise<ApiResponse<HeyMessageResponse>> {
   const parseResult = updatePasswordFormSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -159,8 +164,7 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.patchApiProfilePassword({
+    const response = await changeProfilePasswordWithHeyApi({
       currentPassword: parseResult.data.currentPassword,
       newPassword: parseResult.data.newPassword,
     });
@@ -168,7 +172,7 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update password:', error);
-    return handleApiErrorForAction<MessageResponse>(error, {
+    return handleApiErrorForAction<HeyMessageResponse>(error, {
       defaultMessage: 'パスワード変更に失敗しました',
     });
   }

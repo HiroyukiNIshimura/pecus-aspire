@@ -1,7 +1,13 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
-import type { PersonalItemNoteResponse } from '@/connectors/legacy-api/pecus';
+import {
+  createPersonalItemNoteWithHeyApi,
+  deletePersonalItemNoteWithHeyApi,
+  getPersonalItemNoteWithHeyApi,
+  updatePersonalItemNoteWithHeyApi,
+} from '@/connectors/HeyApiClient';
+import type { PersonalItemNoteResponse } from '@/connectors/hey-api-axios/types.gen';
+import { detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import {
   type CreatePersonalItemNoteInput,
   createPersonalItemNoteInputSchema,
@@ -19,8 +25,7 @@ export async function fetchPersonalItemNote(
   itemId: number,
 ): Promise<ApiResponse<PersonalItemNoteResponse | null>> {
   try {
-    const api = createPecusApiClients();
-    const data = await api.personalItemNote.getApiWorkspacesItemsPersonalNote(workspaceId, itemId);
+    const data = await getPersonalItemNoteWithHeyApi({ workspaceId, itemId });
     return { success: true, data };
   } catch (error) {
     const result = handleApiErrorForAction<PersonalItemNoteResponse | null>(error, {
@@ -44,10 +49,8 @@ export async function createPersonalItemNote(
   }
 
   try {
-    const api = createPecusApiClients();
-    const data = await api.personalItemNote.postApiWorkspacesItemsPersonalNote(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
+    const data = await createPersonalItemNoteWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
       { content: parseResult.data.content },
     );
     return { success: true, data };
@@ -69,10 +72,8 @@ export async function updatePersonalItemNote(
   }
 
   try {
-    const api = createPecusApiClients();
-    const data = await api.personalItemNote.putApiWorkspacesItemsPersonalNote(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
+    const data = await updatePersonalItemNoteWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
       { content: parseResult.data.content },
     );
     return { success: true, data };
@@ -96,11 +97,10 @@ export async function deletePersonalItemNote(input: DeletePersonalItemNoteInput)
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.personalItemNote.deleteApiWorkspacesItemsPersonalNote(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-    );
+    await deletePersonalItemNoteWithHeyApi({
+      workspaceId: parseResult.data.workspaceId,
+      itemId: parseResult.data.itemId,
+    });
     return { success: true, data: null };
   } catch (error) {
     return handleApiErrorForAction<null>(error, {

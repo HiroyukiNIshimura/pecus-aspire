@@ -1,7 +1,7 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
-import type { GenerateTextResponse } from '@/connectors/legacy-api/pecus';
+import { generateAiTextWithHeyApi } from '@/connectors/HeyApiClient';
+import type { GenerateTextResponse } from '@/connectors/hey-api-axios/types.gen';
 import { type GenerateAiTextInput, generateAiTextInputSchema } from '@/schemas/aiAssistantSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
@@ -24,8 +24,7 @@ export async function generateAiText(input: GenerateAiTextInput): Promise<ApiRes
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.aiAssistant.postApiAiAssistantGenerate({
+    const response = await generateAiTextWithHeyApi({
       markdown: parseResult.data.markdown,
       cursorMarker: parseResult.data.cursorMarker,
       userPrompt: parseResult.data.userPrompt,

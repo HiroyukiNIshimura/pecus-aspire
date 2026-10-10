@@ -1,7 +1,11 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
-import type { DocumentTreeResponse } from '@/connectors/legacy-api/pecus';
+import {
+  getWorkspaceDocumentTreeWithHeyApi,
+  updateWorkspaceDocumentTreeParentWithHeyApi,
+  updateWorkspaceDocumentTreeSiblingOrderWithHeyApi,
+} from '@/connectors/HeyApiClient';
+import type { DocumentTreeResponse } from '@/connectors/hey-api-axios/types.gen';
 import {
   type UpdateItemParentInput,
   type UpdateSiblingOrderInput,
@@ -19,8 +23,7 @@ import { validationError } from './types';
  */
 export async function fetchDocumentTree(workspaceId: number): Promise<ApiResponse<DocumentTreeResponse>> {
   try {
-    const { workspace } = createPecusApiClients();
-    const response = await workspace.getApiWorkspacesDocumentTree(workspaceId);
+    const response = await getWorkspaceDocumentTreeWithHeyApi(workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('fetchDocumentTree error:', error);
@@ -43,8 +46,7 @@ export async function updateItemParent(input: UpdateItemParentInput): Promise<Ap
   }
 
   try {
-    const { workspace } = createPecusApiClients();
-    await workspace.putApiWorkspacesDocumentTreeParent(parseResult.data.workspaceId, parseResult.data.request);
+    await updateWorkspaceDocumentTreeParentWithHeyApi(parseResult.data.workspaceId, parseResult.data.request);
     return { success: true, data: undefined };
   } catch (error) {
     console.error('updateItemParent error:', error);
@@ -67,8 +69,7 @@ export async function updateSiblingOrder(input: UpdateSiblingOrderInput): Promis
   }
 
   try {
-    const { workspace } = createPecusApiClients();
-    await workspace.putApiWorkspacesDocumentTreeSiblingOrder(parseResult.data.workspaceId, parseResult.data.request);
+    await updateWorkspaceDocumentTreeSiblingOrderWithHeyApi(parseResult.data.workspaceId, parseResult.data.request);
     return { success: true, data: undefined };
   } catch (error) {
     console.error('updateSiblingOrder error:', error);

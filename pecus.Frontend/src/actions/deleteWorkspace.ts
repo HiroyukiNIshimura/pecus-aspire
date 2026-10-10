@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import { deleteWorkspaceWithHeyApi } from '@/connectors/HeyApiClient';
 import { type DeleteWorkspaceInput, deleteWorkspaceInputSchema } from '@/schemas/workspaceSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
@@ -17,8 +17,7 @@ export async function deleteWorkspace(input: DeleteWorkspaceInput): Promise<ApiR
   }
 
   try {
-    const clients = await createPecusApiClients();
-    await clients.workspace.deleteApiWorkspaces(parseResult.data.workspaceId);
+    await deleteWorkspaceWithHeyApi(parseResult.data.workspaceId);
 
     return { success: true, data: undefined };
   } catch (error) {

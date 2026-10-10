@@ -1,6 +1,6 @@
 'use client';
 
-import type { FocusTaskResponse } from '@/connectors/legacy-api/pecus';
+import type { FocusTaskResponse } from '@/connectors/hey-api-axios/types.gen';
 import { formatDate } from '@/libs/utils/date';
 
 interface FocusTaskCardProps {
