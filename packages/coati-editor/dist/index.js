@@ -11928,11 +11928,66 @@ function LexicalAutoLinkPlugin() {
 
 // src/plugins/CodeActionMenuPlugin/index.tsx
 var import_code3 = require("@lexical/code");
-var import_code_prism = require("@lexical/code-prism");
+var import_code_prism2 = require("@lexical/code-prism");
 var import_LexicalComposerContext6 = require("@lexical/react/LexicalComposerContext");
 var import_lexical12 = require("lexical");
 var import_react20 = require("react");
 var import_react_dom3 = require("react-dom");
+
+// src/plugins/codeLanguageOptions.ts
+var import_prism_bash = require("prismjs/components/prism-bash");
+var import_prism_csharp = require("prismjs/components/prism-csharp");
+var import_prism_kotlin = require("prismjs/components/prism-kotlin");
+var import_prism_php = require("prismjs/components/prism-php");
+var import_prism_json = require("prismjs/components/prism-json");
+var import_prism_ruby = require("prismjs/components/prism-ruby");
+var import_prism_yaml = require("prismjs/components/prism-yaml");
+var import_code_prism = require("@lexical/code-prism");
+var ADDITIONAL_LANGUAGE_OPTIONS = [
+  ["json", "JSON"],
+  ["shell", "Shell"],
+  ["yaml", "YAML"],
+  ["csharp", "C#"],
+  ["kotlin", "Kotlin"],
+  ["php", "PHP"],
+  ["ruby", "Ruby"]
+];
+var SUPPORTED_LANGUAGE_IDS = /* @__PURE__ */ new Set([
+  "c",
+  "clike",
+  "cpp",
+  "css",
+  "go",
+  "html",
+  "java",
+  "js",
+  "javascript",
+  "json",
+  "markdown",
+  "objc",
+  "objective-c",
+  "plain",
+  "powershell",
+  "py",
+  "python",
+  "rust",
+  "shell",
+  "sql",
+  "swift",
+  "typescript",
+  "xml",
+  "yaml",
+  "csharp",
+  "kotlin",
+  "php",
+  "ruby"
+]);
+var CODE_LANGUAGE_OPTIONS = [
+  ...(0, import_code_prism.getCodeLanguageOptions)(),
+  ...ADDITIONAL_LANGUAGE_OPTIONS
+].filter(
+  ([id], index, options) => SUPPORTED_LANGUAGE_IDS.has(id) && options.findIndex(([optionId]) => optionId === id) === index
+);
 
 // src/plugins/CodeActionMenuPlugin/components/CopyButton/index.tsx
 var import_code = require("@lexical/code");
@@ -12092,30 +12147,6 @@ function PrettierButton({ lang: lang261, editor, getCodeDOMNode }) {
 // src/plugins/CodeActionMenuPlugin/index.tsx
 var import_jsx_runtime21 = require("react/jsx-runtime");
 var CODE_PADDING = 8;
-var SUPPORTED_LANGUAGES = (0, import_code_prism.getCodeLanguageOptions)().filter(
-  (option2) => [
-    "c",
-    "clike",
-    "cpp",
-    "css",
-    "html",
-    "java",
-    "js",
-    "javascript",
-    "markdown",
-    "objc",
-    "objective-c",
-    "plain",
-    "powershell",
-    "py",
-    "python",
-    "rust",
-    "sql",
-    "swift",
-    "typescript",
-    "xml"
-  ].includes(option2[0])
-);
 function CodeActionMenuContainer({
   anchorElem,
   showOnlyCopy = false
@@ -12201,7 +12232,7 @@ function CodeActionMenuContainer({
       { skipInitialization: false }
     );
   }, [editor]);
-  const normalizedLang = (0, import_code_prism.normalizeCodeLanguage)(lang261);
+  const normalizedLang = (0, import_code_prism2.normalizeCodeLanguage)(lang261);
   const handleLanguageChange = (event) => {
     const newLang = event.target.value;
     const codeDOMNode = getCodeDOMNode();
@@ -12223,7 +12254,7 @@ function CodeActionMenuContainer({
         value: lang261,
         onChange: handleLanguageChange,
         "aria-label": "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u8A00\u8A9E\u3092\u9078\u629E",
-        children: SUPPORTED_LANGUAGES.map(([value, name]) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value, children: name }, value))
+        children: CODE_LANGUAGE_OPTIONS.map(([value, name]) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value, children: name }, value))
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(CopyButton, { editor, getCodeDOMNode }),
@@ -12248,7 +12279,7 @@ function CodeActionMenuPlugin({
 }
 
 // src/plugins/CodeHighlightPrismPlugin/index.ts
-var import_code_prism2 = require("@lexical/code-prism");
+var import_code_prism3 = require("@lexical/code-prism");
 var import_LexicalComposerContext7 = require("@lexical/react/LexicalComposerContext");
 var import_react21 = require("react");
 function CodeHighlightPrismPlugin() {
@@ -12256,7 +12287,7 @@ function CodeHighlightPrismPlugin() {
   const cleanupRef = (0, import_react21.useRef)(null);
   (0, import_react21.useEffect)(() => {
     const timeoutId = setTimeout(() => {
-      cleanupRef.current = (0, import_code_prism2.registerCodeHighlighting)(editor);
+      cleanupRef.current = (0, import_code_prism3.registerCodeHighlighting)(editor);
     }, 0);
     return () => {
       clearTimeout(timeoutId);
@@ -48294,7 +48325,7 @@ function TableOfContentsPlugin() {
 
 // src/plugins/ToolbarPlugin/index.tsx
 var import_code10 = require("@lexical/code");
-var import_code_prism3 = require("@lexical/code-prism");
+var import_code_prism4 = require("@lexical/code-prism");
 var import_code_shiki = require("@lexical/code-shiki");
 var import_extension5 = require("@lexical/extension");
 var import_link7 = require("@lexical/link");
@@ -48450,40 +48481,25 @@ function FontSize({
 
 // src/plugins/ToolbarPlugin/index.tsx
 var import_jsx_runtime59 = require("react/jsx-runtime");
-var CODE_LANGUAGE_OPTIONS_PRISM = (0, import_code_prism3.getCodeLanguageOptions)().filter(
-  (option2) => [
-    "c",
-    "clike",
-    "cpp",
-    "css",
-    "html",
-    "java",
-    "js",
-    "javascript",
-    "markdown",
-    "objc",
-    "objective-c",
-    "plain",
-    "powershell",
-    "py",
-    "python",
-    "rust",
-    "sql",
-    "swift",
-    "typescript",
-    "xml"
-  ].includes(option2[0])
-);
+var CODE_LANGUAGE_OPTIONS_PRISM = CODE_LANGUAGE_OPTIONS;
 var CODE_LANGUAGE_OPTIONS_SHIKI = (0, import_code_shiki.getCodeLanguageOptions)().filter(
   (option2) => [
     "c",
     "clike",
     "cpp",
     "css",
+    "go",
     "html",
     "java",
     "js",
     "javascript",
+    "json",
+    "shell",
+    "yaml",
+    "csharp",
+    "kotlin",
+    "php",
+    "ruby",
     "markdown",
     "objc",
     "objective-c",
@@ -49005,7 +49021,7 @@ function ToolbarPlugin({
         const language = element2.getLanguage();
         updateToolbarState(
           "codeLanguage",
-          language ? isCodeHighlighted && (isCodeShiki ? (0, import_code_shiki.normalizeCodeLanguage)(language) : (0, import_code_prism3.normalizeCodeLanguage)(language)) || language : ""
+          language ? isCodeHighlighted && (isCodeShiki ? (0, import_code_shiki.normalizeCodeLanguage)(language) : (0, import_code_prism4.normalizeCodeLanguage)(language)) || language : ""
         );
         const theme4 = element2.getTheme();
         updateToolbarState("codeTheme", theme4 || "");
@@ -49253,7 +49269,7 @@ function ToolbarPlugin({
           disabled: !isEditable,
           buttonClassName: "toolbar-item code-language",
           buttonLabel: (CODE_LANGUAGE_OPTIONS_PRISM.find(
-            (opt) => opt[0] === (0, import_code_prism3.normalizeCodeLanguage)(toolbarState.codeLanguage)
+            (opt) => opt[0] === (0, import_code_prism4.normalizeCodeLanguage)(toolbarState.codeLanguage)
           ) || ["", ""])[1],
           buttonAriaLabel: "Select language",
           children: CODE_LANGUAGE_OPTIONS_PRISM.map(([value, name]) => {

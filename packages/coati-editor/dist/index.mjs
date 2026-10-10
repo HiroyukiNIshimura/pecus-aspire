@@ -11888,11 +11888,66 @@ function LexicalAutoLinkPlugin() {
 
 // src/plugins/CodeActionMenuPlugin/index.tsx
 import { $isCodeNode as $isCodeNode3, CodeNode } from "@lexical/code";
-import { getCodeLanguageOptions, normalizeCodeLanguage } from "@lexical/code-prism";
+import { normalizeCodeLanguage } from "@lexical/code-prism";
 import { useLexicalComposerContext as useLexicalComposerContext6 } from "@lexical/react/LexicalComposerContext";
 import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode3, isHTMLElement } from "lexical";
 import { useEffect as useEffect10, useRef as useRef3, useState as useState10 } from "react";
 import { createPortal as createPortal3 } from "react-dom";
+
+// src/plugins/codeLanguageOptions.ts
+import "prismjs/components/prism-bash";
+import "prismjs/components/prism-csharp";
+import "prismjs/components/prism-kotlin";
+import "prismjs/components/prism-php";
+import "prismjs/components/prism-json";
+import "prismjs/components/prism-ruby";
+import "prismjs/components/prism-yaml";
+import { getCodeLanguageOptions } from "@lexical/code-prism";
+var ADDITIONAL_LANGUAGE_OPTIONS = [
+  ["json", "JSON"],
+  ["shell", "Shell"],
+  ["yaml", "YAML"],
+  ["csharp", "C#"],
+  ["kotlin", "Kotlin"],
+  ["php", "PHP"],
+  ["ruby", "Ruby"]
+];
+var SUPPORTED_LANGUAGE_IDS = /* @__PURE__ */ new Set([
+  "c",
+  "clike",
+  "cpp",
+  "css",
+  "go",
+  "html",
+  "java",
+  "js",
+  "javascript",
+  "json",
+  "markdown",
+  "objc",
+  "objective-c",
+  "plain",
+  "powershell",
+  "py",
+  "python",
+  "rust",
+  "shell",
+  "sql",
+  "swift",
+  "typescript",
+  "xml",
+  "yaml",
+  "csharp",
+  "kotlin",
+  "php",
+  "ruby"
+]);
+var CODE_LANGUAGE_OPTIONS = [
+  ...getCodeLanguageOptions(),
+  ...ADDITIONAL_LANGUAGE_OPTIONS
+].filter(
+  ([id], index, options) => SUPPORTED_LANGUAGE_IDS.has(id) && options.findIndex(([optionId]) => optionId === id) === index
+);
 
 // src/plugins/CodeActionMenuPlugin/components/CopyButton/index.tsx
 import { $isCodeNode } from "@lexical/code";
@@ -12052,30 +12107,6 @@ function PrettierButton({ lang: lang261, editor, getCodeDOMNode }) {
 // src/plugins/CodeActionMenuPlugin/index.tsx
 import { Fragment as Fragment3, jsx as jsx21, jsxs as jsxs6 } from "react/jsx-runtime";
 var CODE_PADDING = 8;
-var SUPPORTED_LANGUAGES = getCodeLanguageOptions().filter(
-  (option2) => [
-    "c",
-    "clike",
-    "cpp",
-    "css",
-    "html",
-    "java",
-    "js",
-    "javascript",
-    "markdown",
-    "objc",
-    "objective-c",
-    "plain",
-    "powershell",
-    "py",
-    "python",
-    "rust",
-    "sql",
-    "swift",
-    "typescript",
-    "xml"
-  ].includes(option2[0])
-);
 function CodeActionMenuContainer({
   anchorElem,
   showOnlyCopy = false
@@ -12183,7 +12214,7 @@ function CodeActionMenuContainer({
         value: lang261,
         onChange: handleLanguageChange,
         "aria-label": "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u8A00\u8A9E\u3092\u9078\u629E",
-        children: SUPPORTED_LANGUAGES.map(([value, name]) => /* @__PURE__ */ jsx21("option", { value, children: name }, value))
+        children: CODE_LANGUAGE_OPTIONS.map(([value, name]) => /* @__PURE__ */ jsx21("option", { value, children: name }, value))
       }
     ),
     /* @__PURE__ */ jsx21(CopyButton, { editor, getCodeDOMNode }),
@@ -48553,10 +48584,7 @@ function TableOfContentsPlugin() {
 
 // src/plugins/ToolbarPlugin/index.tsx
 import { $isCodeNode as $isCodeNode7 } from "@lexical/code";
-import {
-  getCodeLanguageOptions as getCodeLanguageOptionsPrism,
-  normalizeCodeLanguage as normalizeCodeLanguagePrism
-} from "@lexical/code-prism";
+import { normalizeCodeLanguage as normalizeCodeLanguagePrism } from "@lexical/code-prism";
 import {
   getCodeLanguageOptions as getCodeLanguageOptionsShiki,
   getCodeThemeOptions as getCodeThemeOptionsShiki,
@@ -48745,40 +48773,25 @@ function FontSize({
 
 // src/plugins/ToolbarPlugin/index.tsx
 import { Fragment as Fragment19, jsx as jsx59, jsxs as jsxs31 } from "react/jsx-runtime";
-var CODE_LANGUAGE_OPTIONS_PRISM = getCodeLanguageOptionsPrism().filter(
-  (option2) => [
-    "c",
-    "clike",
-    "cpp",
-    "css",
-    "html",
-    "java",
-    "js",
-    "javascript",
-    "markdown",
-    "objc",
-    "objective-c",
-    "plain",
-    "powershell",
-    "py",
-    "python",
-    "rust",
-    "sql",
-    "swift",
-    "typescript",
-    "xml"
-  ].includes(option2[0])
-);
+var CODE_LANGUAGE_OPTIONS_PRISM = CODE_LANGUAGE_OPTIONS;
 var CODE_LANGUAGE_OPTIONS_SHIKI = getCodeLanguageOptionsShiki().filter(
   (option2) => [
     "c",
     "clike",
     "cpp",
     "css",
+    "go",
     "html",
     "java",
     "js",
     "javascript",
+    "json",
+    "shell",
+    "yaml",
+    "csharp",
+    "kotlin",
+    "php",
+    "ruby",
     "markdown",
     "objc",
     "objective-c",

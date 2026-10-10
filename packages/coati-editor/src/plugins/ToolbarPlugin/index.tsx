@@ -7,10 +7,7 @@
  */
 
 import { $isCodeNode } from '@lexical/code';
-import {
-  getCodeLanguageOptions as getCodeLanguageOptionsPrism,
-  normalizeCodeLanguage as normalizeCodeLanguagePrism,
-} from '@lexical/code-prism';
+import { normalizeCodeLanguage as normalizeCodeLanguagePrism } from '@lexical/code-prism';
 import {
   getCodeLanguageOptions as getCodeLanguageOptionsShiki,
   getCodeThemeOptions as getCodeThemeOptionsShiki,
@@ -77,6 +74,7 @@ import { getSelectedNode } from '../../utils/getSelectedNode';
 import { sanitizeUrl } from '../../utils/url';
 import { EmbedConfigs } from '../AutoEmbedPlugin';
 import { INSERT_COLLAPSIBLE_COMMAND } from '../CollapsiblePlugin';
+import { CODE_LANGUAGE_OPTIONS } from '../codeLanguageOptions';
 import { INSERT_DATETIME_COMMAND } from '../DateTimePlugin';
 import { InsertEquationDialog } from '../EquationsPlugin';
 import { InsertImageDialog } from '../ImagesPlugin';
@@ -98,30 +96,7 @@ import {
   formatQuote,
 } from './utils';
 
-const CODE_LANGUAGE_OPTIONS_PRISM: [string, string][] = getCodeLanguageOptionsPrism().filter((option) =>
-  [
-    'c',
-    'clike',
-    'cpp',
-    'css',
-    'html',
-    'java',
-    'js',
-    'javascript',
-    'markdown',
-    'objc',
-    'objective-c',
-    'plain',
-    'powershell',
-    'py',
-    'python',
-    'rust',
-    'sql',
-    'swift',
-    'typescript',
-    'xml',
-  ].includes(option[0]),
-);
+const CODE_LANGUAGE_OPTIONS_PRISM = CODE_LANGUAGE_OPTIONS;
 
 const CODE_LANGUAGE_OPTIONS_SHIKI: [string, string][] = getCodeLanguageOptionsShiki().filter((option) =>
   [
@@ -129,10 +104,18 @@ const CODE_LANGUAGE_OPTIONS_SHIKI: [string, string][] = getCodeLanguageOptionsSh
     'clike',
     'cpp',
     'css',
+    'go',
     'html',
     'java',
     'js',
     'javascript',
+    'json',
+    'shell',
+    'yaml',
+    'csharp',
+    'kotlin',
+    'php',
+    'ruby',
     'markdown',
     'objc',
     'objective-c',

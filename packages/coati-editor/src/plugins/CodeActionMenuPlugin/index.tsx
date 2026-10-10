@@ -11,44 +11,19 @@ import type { JSX } from 'react';
 import './index.css';
 
 import { $isCodeNode, CodeNode } from '@lexical/code';
-import { getCodeLanguageOptions, normalizeCodeLanguage } from '@lexical/code-prism';
+import { normalizeCodeLanguage } from '@lexical/code-prism';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $getNearestNodeFromDOMNode, isHTMLElement } from 'lexical';
 import type * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { CODE_LANGUAGE_OPTIONS } from '../codeLanguageOptions';
 import { CopyButton } from './components/CopyButton';
 import { canBePrettier, PrettierButton } from './components/PrettierButton';
 import { useDebounce } from './utils';
 
 const CODE_PADDING = 8;
-
-// サポートする言語リスト（@lexical/code-prism からフィルタリング）
-const SUPPORTED_LANGUAGES: [string, string][] = getCodeLanguageOptions().filter((option) =>
-  [
-    'c',
-    'clike',
-    'cpp',
-    'css',
-    'html',
-    'java',
-    'js',
-    'javascript',
-    'markdown',
-    'objc',
-    'objective-c',
-    'plain',
-    'powershell',
-    'py',
-    'python',
-    'rust',
-    'sql',
-    'swift',
-    'typescript',
-    'xml',
-  ].includes(option[0]),
-);
 
 interface Position {
   top: string;
@@ -186,7 +161,7 @@ function CodeActionMenuContainer({
               onChange={handleLanguageChange}
               aria-label="コードブロックの言語を選択"
             >
-              {SUPPORTED_LANGUAGES.map(([value, name]) => (
+              {CODE_LANGUAGE_OPTIONS.map(([value, name]) => (
                 <option key={value} value={value}>
                   {name}
                 </option>
