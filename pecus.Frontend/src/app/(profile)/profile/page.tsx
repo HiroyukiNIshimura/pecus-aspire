@@ -9,7 +9,7 @@ import type {
   MasterSkillResponse,
   PendingEmailChangeResponse,
 } from '@/connectors/hey-api-axios/types.gen';
-import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import ProfileClient from './ProfileClient';
 

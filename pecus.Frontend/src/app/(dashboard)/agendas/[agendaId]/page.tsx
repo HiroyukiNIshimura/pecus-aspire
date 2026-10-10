@@ -3,8 +3,8 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchAgendaById, fetchAgendaExceptions } from '@/actions/agenda';
 import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
-import { detect401ValidationError, detect404ValidationError } from '@/connectors/legacy-api/PecusApiClient';
 import type { AgendaExceptionResponse, AgendaResponse, RecurrenceType } from '@/connectors/legacy-api/pecus';
+import { detect401ValidationError, detect404ValidationError } from '@/libs/apiError';
 import AgendaDetailClient from './AgendaDetailClient';
 
 interface AgendaDetailPageProps {

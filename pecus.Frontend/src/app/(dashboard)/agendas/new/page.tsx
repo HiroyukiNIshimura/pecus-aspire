@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/actions/auth';
 import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
-import { detect401ValidationError } from '@/connectors/legacy-api/PecusApiClient';
+import { detect401ValidationError } from '@/libs/apiError';
 import AgendaFormClient from './AgendaFormClient';
 
 export default async function NewAgendaPage() {

@@ -5,7 +5,7 @@ import { fetchMyCommitterWorkspaces } from '@/actions/myCommitter';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { getMasterTaskTypesWithHeyApi, getProfileWithHeyApi } from '@/connectors/HeyApiClient';
 import type { GetApiProfileResponse, MyCommitterWorkspaceResponse } from '@/connectors/hey-api-axios/types.gen';
-import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import CommitterDashboardClient from './CommitterDashboardClient';
 
 export default async function CommitterDashboardPage() {

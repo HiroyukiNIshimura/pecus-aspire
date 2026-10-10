@@ -1,6 +1,18 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
+import {
+  createOrGetAiRoomWithHeyApi,
+  createOrGetDmRoomWithHeyApi,
+  getChatDmCandidatesWithHeyApi,
+  getChatRoomByIdWithHeyApi,
+  getChatRoomMessagesWithHeyApiOptions,
+  getChatRoomsWithHeyApiByType,
+  getChatUnreadByCategoryWithHeyApi,
+  notifyChatTypingWithHeyApi,
+  searchUsersWithHeyApi,
+  sendChatMessageWithHeyApi,
+  updateChatReadPositionWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   ChatMessageItem,
   ChatMessagesResponse,
@@ -10,7 +22,7 @@ import type {
   ChatUnreadCountByCategoryResponse,
   DmCandidateUserItem,
   UserSearchResultResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import {
   type CreateOrGetAiRoomInput,
   type CreateOrGetDmRoomInput,
@@ -48,8 +60,7 @@ export async function getChatRooms(input: GetChatRoomsInput = {}): Promise<ApiRe
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.chat.getApiChatRooms(parseResult.data.type as ChatRoomType | undefined);
+    const response = await getChatRoomsWithHeyApiByType(parseResult.data.type as ChatRoomType | undefined);
     return { success: true, data: response };
   } catch (error) {
     console.error('getChatRooms error:', error);
@@ -68,8 +79,7 @@ export async function getChatRoomDetail(input: GetChatRoomDetailInput): Promise<
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.chat.getApiChatRooms1(parseResult.data.roomId);
+    const response = await getChatRoomByIdWithHeyApi(parseResult.data.roomId);
     return { success: true, data: response };
   } catch (error) {
     console.error('getChatRoomDetail error:', error);
@@ -90,8 +100,7 @@ export async function createOrGetDmRoom(input: CreateOrGetDmRoomInput): Promise<
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.chat.postApiChatRoomsDm({ targetUserId: parseResult.data.targetUserId });
+    const response = await createOrGetDmRoomWithHeyApi(parseResult.data.targetUserId);
     return { success: true, data: response };
   } catch (error) {
     console.error('createOrGetDmRoom error:', error);
@@ -111,8 +120,7 @@ export async function createOrGetAiRoom(input: CreateOrGetAiRoomInput): Promise<
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.chat.postApiChatRoomsAi();
+    const response = await createOrGetAiRoomWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     console.error('createOrGetAiRoom error:', error);
@@ -125,8 +133,7 @@ export async function createOrGetAiRoom(input: CreateOrGetAiRoomInput): Promise<
  */
 export async function getChatUnreadCounts(): Promise<ApiResponse<ChatUnreadCountByCategoryResponse>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.chat.getApiChatUnreadByCategory();
+    const response = await getChatUnreadByCategoryWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     console.error('getChatUnreadCounts error:', error);
@@ -147,8 +154,7 @@ export async function getChatMessages(input: GetChatMessagesInput): Promise<ApiR
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.chat.getApiChatRoomsMessages(
+    const response = await getChatRoomMessagesWithHeyApiOptions(
       parseResult.data.roomId,
       parseResult.data.limit,
       parseResult.data.cursor,
@@ -171,8 +177,7 @@ export async function sendChatMessage(input: SendChatMessageInput): Promise<ApiR
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.chat.postApiChatRoomsMessages(parseResult.data.roomId, {
+    const response = await sendChatMessageWithHeyApi(parseResult.data.roomId, {
       content: parseResult.data.content,
       replyToMessageId: parseResult.data.replyToMessageId,
     });
@@ -197,8 +202,7 @@ export async function updateReadPosition(input: UpdateReadPositionInput): Promis
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.chat.putApiChatRoomsRead(parseResult.data.roomId, {
+    await updateChatReadPositionWithHeyApi(parseResult.data.roomId, {
       readAt: parseResult.data.readAt ?? new Date().toISOString(),
       readMessageId: parseResult.data.readMessageId,
     });
@@ -222,8 +226,7 @@ export async function notifyTyping(input: NotifyTypingInput): Promise<ApiRespons
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.chat.postApiChatRoomsTyping(parseResult.data.roomId, { isTyping: parseResult.data.isTyping });
+    await notifyChatTypingWithHeyApi(parseResult.data.roomId, { isTyping: parseResult.data.isTyping });
     return { success: true, data: undefined };
   } catch (error) {
     console.error('notifyTyping error:', error);
@@ -246,8 +249,7 @@ export async function getDmCandidateUsers(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.chat.getApiChatDmCandidates(parseResult.data.limit ?? 10);
+    const response = await getChatDmCandidatesWithHeyApi(parseResult.data.limit ?? 10);
     return { success: true, data: response };
   } catch (error) {
     console.error('getDmCandidateUsers error:', error);
@@ -275,8 +277,7 @@ export async function searchUsers(input: SearchUsersInput): Promise<ApiResponse<
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.user.getApiUsersSearch(parseResult.data.query, parseResult.data.limit ?? 20);
+    const response = await searchUsersWithHeyApi(parseResult.data.query, parseResult.data.limit ?? 20);
     return { success: true, data: response };
   } catch (error) {
     console.error('searchUsers error:', error);

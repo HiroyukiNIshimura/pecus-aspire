@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getAchievementsWithHeyApi } from '@/connectors/HeyApiClient';
 import type { AchievementCollectionResponse } from '@/connectors/hey-api-axios/types.gen';
-import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import AchievementsClient from './AchievementsClient';
 
 export const dynamic = 'force-dynamic';

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { TaskCommentType } from '@/connectors/legacy-api/pecus';
+import type { TaskCommentType } from '@/connectors/hey-api-axios/types.gen';
 
 const workspaceIdSchema = z
   .number({ error: 'ワークスペースIDが不正です。' })

@@ -9,7 +9,7 @@ import {
   fetchPersonalItemNote,
   updatePersonalItemNote,
 } from '@/actions/personalItemNote';
-import type { PersonalItemNoteResponse } from '@/connectors/legacy-api/pecus';
+import type { PersonalItemNoteResponse } from '@/connectors/hey-api-axios/types.gen';
 import { formatDateTime } from '@/libs/utils/date';
 
 type Mode = 'loading' | 'view' | 'creating' | 'editing' | 'confirm-delete';

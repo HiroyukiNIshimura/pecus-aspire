@@ -9,11 +9,7 @@ import {
 } from '@/actions/workspaceTaskComment';
 import MessageContentRenderer from '@/components/common/feedback/MessageContentRenderer';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type {
-  CreateTaskCommentRequest,
-  TaskCommentDetailResponse,
-  TaskCommentType,
-} from '@/connectors/legacy-api/pecus';
+import type { TaskCommentDetailResponse, TaskCommentType } from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
 import { useCurrentUserId } from '@/providers/AppSettingsProvider';
@@ -251,7 +247,7 @@ export default function TaskCommentSection({
 
     setIsSubmitting(true);
     try {
-      const request: CreateTaskCommentRequest = {
+      const request = {
         content: newComment.trim(),
         commentType: newCommentType,
       };

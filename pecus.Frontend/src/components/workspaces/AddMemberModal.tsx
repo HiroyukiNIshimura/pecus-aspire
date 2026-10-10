@@ -10,7 +10,7 @@ import type {
   UserWorkloadInfo,
   WorkspaceRole,
   WorkspaceUserItem,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 
 /** null を除外したワークスペースロール型 */
 type WorkspaceRoleValue = NonNullable<WorkspaceRole>;

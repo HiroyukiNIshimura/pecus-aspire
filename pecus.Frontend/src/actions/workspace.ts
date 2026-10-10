@@ -1,10 +1,11 @@
 'use server';
 
 import {
-  createPecusApiClients,
-  detectConcurrencyError,
-  detectMemberHasAssignmentsError,
-} from '@/connectors/legacy-api/PecusApiClient';
+  createWorkspaceWithHeyApi,
+  getWorkspaceByIdWithHeyApi,
+  getWorkspacesWithHeyApiOptions,
+  updateWorkspaceWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   DashboardTaskTrendResponse,
   PagedResponseOfWorkspaceListItemResponse,
@@ -16,7 +17,12 @@ import type {
   WorkspaceMode,
   WorkspaceRole,
   WorkspaceUserDetailResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+  detectMemberHasAssignmentsError,
+} from '@/connectors/legacy-api/PecusApiClient';
 import {
   type AddMemberToWorkspaceInput,
   addMemberToWorkspaceInputSchema,
@@ -67,14 +73,13 @@ export async function getMyWorkspaces(
   }
 
   try {
-    const api = createPecusApiClients();
     const allWorkspaces: WorkspaceListItemResponse[] = [];
     let page = 1;
     let hasMore = true;
 
     // 全ページを取得
     while (hasMore) {
-      const response = await api.workspace.getApiWorkspaces(page, undefined, undefined, parseResult.data.mode);
+      const response = await getWorkspacesWithHeyApiOptions({ page, mode: parseResult.data.mode });
 
       if (response.data && response.data.length > 0) {
         allWorkspaces.push(...response.data);
@@ -123,8 +128,7 @@ export async function getMyWorkspacesPaged(
   const parsedPage = parseResult.data.page ?? 1;
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(parsedPage, undefined, undefined, undefined);
+    const response = await getWorkspacesWithHeyApiOptions({ page: parsedPage });
 
     return {
       success: true,
@@ -162,13 +166,11 @@ export async function fetchWorkspaces(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(
-      parseResult.data.page ?? 1,
-      parseResult.data.genreId,
-      parseResult.data.name,
-      undefined,
-    );
+    const response = await getWorkspacesWithHeyApiOptions({
+      page: parseResult.data.page ?? 1,
+      genreId: parseResult.data.genreId,
+      name: parseResult.data.name,
+    });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
@@ -191,8 +193,7 @@ export async function createWorkspace(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.postApiWorkspaces({
+    const response = await createWorkspaceWithHeyApi({
       name: parseResult.data.name,
       description: parseResult.data.description,
       genreId: parseResult.data.genreId,
@@ -222,8 +223,7 @@ export async function getWorkspaceDetail(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces1(parseResult.data.workspaceId);
+    const response = await getWorkspaceByIdWithHeyApi(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to get workspace detail:', error);
@@ -248,8 +248,7 @@ export async function updateWorkspace(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.putApiWorkspaces(parseResult.data.workspaceId, {
+    const response = await updateWorkspaceWithHeyApi(parseResult.data.workspaceId, {
       name: parseResult.data.name,
       description: parseResult.data.description,
       genreId: parseResult.data.genreId,

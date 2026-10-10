@@ -9,12 +9,12 @@ import {
   getMasterTaskTypesWithHeyApi,
   getWorkspaceByCodeWithHeyApi,
 } from '@/connectors/HeyApiClient';
-import { detect401ValidationError, detect404ValidationError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   MasterGenreResponse,
   MasterSkillResponse,
   WorkspaceFullDetailResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, detect404ValidationError } from '@/libs/apiError';
 import WorkspaceDetailClient from './WorkspaceDetailClient';
 
 interface WorkspaceDetailPageProps {

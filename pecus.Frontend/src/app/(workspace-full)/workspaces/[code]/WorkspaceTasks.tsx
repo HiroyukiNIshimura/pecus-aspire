@@ -15,7 +15,7 @@ import type {
   UserSearchResultResponse,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskStatistics,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { formatShortDateJa } from '@/libs/utils/date';
 import { useIsAiEnabled } from '@/providers/AppSettingsProvider';

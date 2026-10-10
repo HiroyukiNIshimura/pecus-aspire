@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { fetchAgendaById } from '@/actions/agenda';
 import { getCurrentUser } from '@/actions/auth';
 import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
-import { detect401ValidationError, detect404ValidationError } from '@/connectors/legacy-api/PecusApiClient';
+import { detect401ValidationError, detect404ValidationError } from '@/libs/apiError';
 import AgendaFormClient from '../../new/AgendaFormClient';
 
 interface EditAgendaPageProps {

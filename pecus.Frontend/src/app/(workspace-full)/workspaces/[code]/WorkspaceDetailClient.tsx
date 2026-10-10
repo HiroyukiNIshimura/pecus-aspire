@@ -44,7 +44,7 @@ import type {
   WorkspaceMemberAssignmentsResponse,
   WorkspaceRole,
   WorkspaceTaskDetailResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { remarkItemCodeLinks } from '@/libs/markdown/remarkItemCodeLinks';
 import { formatDateTime } from '@/libs/utils/date';
@@ -1241,7 +1241,7 @@ export default function WorkspaceDetailClient({
                 code: currentWorkspaceDetail.code ?? '',
                 genreIcon: currentWorkspaceDetail.genreIcon,
                 genreName: currentWorkspaceDetail.genreName,
-                mode: currentWorkspaceDetail.mode,
+                mode: currentWorkspaceDetail.mode ?? undefined,
               }}
               onHomeSelect={handleHomeSelect}
               onItemSelect={handleItemSelect}
@@ -1705,7 +1705,7 @@ export default function WorkspaceDetailClient({
                 code: currentWorkspaceDetail.code ?? '',
                 genreIcon: currentWorkspaceDetail.genreIcon,
                 genreName: currentWorkspaceDetail.genreName,
-                mode: currentWorkspaceDetail.mode,
+                mode: currentWorkspaceDetail.mode ?? undefined,
               }}
               onHomeSelect={handleHomeSelect}
               onItemSelect={(itemId, itemCode) => {

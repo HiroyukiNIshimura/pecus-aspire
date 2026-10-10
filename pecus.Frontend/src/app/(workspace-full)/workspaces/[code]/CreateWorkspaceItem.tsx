@@ -12,7 +12,7 @@ import {
   PecusNotionLikeEditor,
   useTempAttachmentImageUploadHandler,
 } from '@/components/editor';
-import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/legacy-api/pecus';
+import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/hey-api-axios/types.gen';
 import { useAiSuggestion } from '@/hooks/useAiSuggestion';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';

@@ -37,7 +37,7 @@ import type {
   WorkspaceItemDetailResponse,
   WorkspaceMode,
   WorkspaceTaskDetailResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate, formatDateTime } from '@/libs/utils/date';
 import { type ItemEditStatus as ItemEditState, useSignalRContext } from '@/providers/SignalRProvider';

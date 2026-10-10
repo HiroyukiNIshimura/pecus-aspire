@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { fetchMyActivities } from '@/actions/activity';
 import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
 import type { GetApiProfileResponse, PagedResponseOfActivityResponse } from '@/connectors/hey-api-axios/types.gen';
-import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import ActivityClient from './ActivityClient';
 
 export default async function ActivityPage() {

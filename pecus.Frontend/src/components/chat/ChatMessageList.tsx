@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
-import type { ChatMessageItem } from '@/connectors/legacy-api/pecus';
+import type { ChatMessageItem } from '@/connectors/hey-api-axios/types.gen';
 import ChatMessageItemComponent from './ChatMessageItem';
 
 interface ChatMessageListProps {

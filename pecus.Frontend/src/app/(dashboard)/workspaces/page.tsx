@@ -4,7 +4,7 @@ import type {
   MasterGenreResponse,
   PagedResponseOfWorkspaceListItemResponse,
   WorkspaceStatistics,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import WorkspacesClient from './WorkspacesClient';
 
 export const dynamic = 'force-dynamic';

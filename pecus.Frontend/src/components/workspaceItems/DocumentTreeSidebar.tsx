@@ -6,7 +6,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { fetchDocumentTree, updateItemParent, updateSiblingOrder } from '@/actions/workspaceRelation';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
-import type { DocumentTreeItemResponse } from '@/connectors/legacy-api/pecus';
+import type { DocumentTreeItemResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useNotify } from '@/hooks/useNotify';
 

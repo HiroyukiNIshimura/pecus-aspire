@@ -2,7 +2,7 @@
 
 import { Handle, Position } from '@xyflow/react';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { TaskPriority } from '@/connectors/legacy-api/pecus';
+import type { TaskPriority } from '@/connectors/hey-api-axios/types.gen';
 import { formatShortDate } from '@/libs/utils/date';
 import type { TaskNodeData } from './useTaskFlowGraph';
 import { NODE_HEIGHT, NODE_WIDTH } from './useTaskFlowGraph';

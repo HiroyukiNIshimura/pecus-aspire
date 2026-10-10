@@ -19,7 +19,7 @@ import type {
   CreateWorkspaceTaskRequest,
   TaskPriority,
   UserSearchResultResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { useAiSuggestion } from '@/hooks/useAiSuggestion';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';

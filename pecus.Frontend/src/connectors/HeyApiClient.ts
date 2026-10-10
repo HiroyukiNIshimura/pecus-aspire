@@ -10,6 +10,7 @@ import {
   deleteApiAdminWorkspacesByIdUsersByUserId,
   deleteApiBackofficeNotificationsById,
   deleteApiBackofficeOrganizationsById,
+  deleteApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId,
   getApiAchievements,
   getApiAchievementsMe,
   getApiAchievementsMeUnnotified,
@@ -31,6 +32,7 @@ import {
   getApiBackofficeOrganizations,
   getApiBackofficeOrganizationsById,
   getApiBackofficeOrganizationsByIdBots,
+  getApiChatDmCandidates,
   getApiChatRooms,
   getApiChatRoomsByRoomId,
   getApiChatRoomsByRoomIdMessages,
@@ -66,6 +68,8 @@ import {
   getApiWorkspacesByWorkspaceIdItems,
   getApiWorkspacesByWorkspaceIdItemsByItemId,
   getApiWorkspacesByWorkspaceIdItemsByItemIdActivities,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments,
+  getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId,
   getApiWorkspacesCodeByCode,
   getApiWorkspacesStatistics,
   patchApiAdminSkillsByIdActivate,
@@ -89,9 +93,15 @@ import {
   postApiBackofficeNotifications,
   postApiBackofficeOrganizations,
   postApiBackofficeOrganizationsByIdResendCreatedEmail,
+  postApiChatRoomsAi,
+  postApiChatRoomsByRoomIdMessages,
+  postApiChatRoomsByRoomIdTyping,
+  postApiChatRoomsDm,
   postApiDashboardHealthAnalysis,
   postApiEntranceAuthLogin,
   postApiUsersWorkload,
+  postApiWorkspaces,
+  postApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments,
   putApiAdminOrganization,
   putApiAdminOrganizationSetting,
   putApiAdminSkillsById,
@@ -101,6 +111,9 @@ import {
   putApiBackofficeNotificationsById,
   putApiBackofficeOrganizationsById,
   putApiBackofficeOrganizationsByIdBotsByBotIdPersona,
+  putApiChatRoomsByRoomIdRead,
+  putApiWorkspacesById,
+  putApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId,
 } from './hey-api-axios';
 import { type Client, createClient } from './hey-api-axios/client';
 import type {
@@ -108,12 +121,14 @@ import type {
   AppPublicSettingsResponse,
   BackOfficeBotResponse,
   BackOfficeOrganizationDetailResponse,
+  ChatRoomType,
   DashboardTaskFilter,
   DeleteApiAdminExternalApiKeysByKeyIdResponse,
   DeleteApiAdminSkillsByIdResponse,
   DeleteApiAdminTagsByIdResponse,
   DeleteApiAdminWorkspacesByIdResponse,
   DeleteApiAdminWorkspacesByIdUsersByUserIdResponse,
+  DeleteApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse,
   GetApiAchievementsMeResponse,
   GetApiAchievementsMeUnnotifiedResponse,
   GetApiAchievementsRankingResponse,
@@ -135,6 +150,7 @@ import type {
   GetApiBackofficeOrganizationsByIdBotsResponse,
   GetApiBackofficeOrganizationsByIdResponse,
   GetApiBackofficeOrganizationsResponse,
+  GetApiChatDmCandidatesResponse,
   GetApiChatRoomsByRoomIdMessagesResponse,
   GetApiChatRoomsByRoomIdResponse,
   GetApiChatRoomsResponse,
@@ -166,6 +182,8 @@ import type {
   GetApiWorkspacesByIdResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdActivitiesResponse,
   GetApiWorkspacesByWorkspaceIdItemsByItemIdResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse,
+  GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsResponse,
   GetApiWorkspacesByWorkspaceIdItemsResponse,
   GetApiWorkspacesCodeByCodeResponse,
   GetApiWorkspacesResponse,
@@ -191,9 +209,14 @@ import type {
   PostApiAdminWorkspacesByIdUsersResponse,
   PostApiAdminWorkspacesResponse,
   PostApiBackofficeNotificationsResponse,
+  PostApiChatRoomsAiResponse,
+  PostApiChatRoomsByRoomIdMessagesResponse,
+  PostApiChatRoomsDmResponse,
   PostApiDashboardHealthAnalysisResponse,
   PostApiEntranceAuthLoginResponse,
   PostApiUsersWorkloadResponse,
+  PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsResponse,
+  PostApiWorkspacesResponse,
   PutApiAdminOrganizationResponse,
   PutApiAdminOrganizationSettingResponse,
   PutApiAdminSkillsByIdResponse,
@@ -201,9 +224,12 @@ import type {
   PutApiAdminUsersByIdResponse,
   PutApiAdminWorkspacesByIdResponse,
   PutApiBackofficeNotificationsByIdResponse,
+  PutApiWorkspacesByIdResponse,
+  PutApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse,
   SuccessResponse,
   TaskPriority,
   TaskStatusFilter,
+  WorkspaceMode,
 } from './hey-api-axios/types.gen';
 
 function isPendingEmailChangeResponse(value: unknown): value is PendingEmailChangeResponse {
@@ -1097,6 +1123,81 @@ export async function getChatRoomMessagesWithHeyApi(roomId: number): Promise<Get
   return response.data;
 }
 
+export async function getChatRoomsWithHeyApiByType(type?: ChatRoomType): Promise<GetApiChatRoomsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiChatRooms({ client, query: { type }, throwOnError: true });
+  return response.data;
+}
+
+export async function createOrGetDmRoomWithHeyApi(
+  targetUserId: Parameters<typeof postApiChatRoomsDm>[0]['body']['targetUserId'],
+): Promise<PostApiChatRoomsDmResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiChatRoomsDm({
+    client,
+    body: { targetUserId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function createOrGetAiRoomWithHeyApi(): Promise<PostApiChatRoomsAiResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiChatRoomsAi({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function getChatRoomMessagesWithHeyApiOptions(
+  roomId: number,
+  limit?: number,
+  cursor?: number,
+): Promise<GetApiChatRoomsByRoomIdMessagesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiChatRoomsByRoomIdMessages({
+    client,
+    path: { roomId },
+    query: { Limit: limit, Cursor: cursor },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function sendChatMessageWithHeyApi(
+  roomId: number,
+  body: Parameters<typeof postApiChatRoomsByRoomIdMessages>[0]['body'],
+): Promise<PostApiChatRoomsByRoomIdMessagesResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiChatRoomsByRoomIdMessages({
+    client,
+    path: { roomId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateChatReadPositionWithHeyApi(
+  roomId: number,
+  body: Parameters<typeof putApiChatRoomsByRoomIdRead>[0]['body'],
+): Promise<void> {
+  const client = await createHeyApiClient();
+  await putApiChatRoomsByRoomIdRead({ client, path: { roomId }, body, throwOnError: true });
+}
+
+export async function notifyChatTypingWithHeyApi(
+  roomId: number,
+  body: Parameters<typeof postApiChatRoomsByRoomIdTyping>[0]['body'],
+): Promise<void> {
+  const client = await createHeyApiClient();
+  await postApiChatRoomsByRoomIdTyping({ client, path: { roomId }, body, throwOnError: true });
+}
+
+export async function getChatDmCandidatesWithHeyApi(limit?: number): Promise<GetApiChatDmCandidatesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiChatDmCandidates({ client, query: { limit }, throwOnError: true });
+  return response.data;
+}
+
 /**
  * Get the dashboard summary through Hey API.
  */
@@ -1284,6 +1385,117 @@ export async function getWorkspacesWithHeyApi(): Promise<GetApiWorkspacesRespons
     throwOnError: true,
   });
 
+  return response.data;
+}
+
+export async function getWorkspacesWithHeyApiOptions(options: {
+  page?: number;
+  genreId?: number;
+  name?: string;
+  mode?: WorkspaceMode;
+}): Promise<GetApiWorkspacesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspaces({
+    client,
+    query: { Page: options.page, GenreId: options.genreId, Name: options.name, Mode: options.mode },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function createWorkspaceWithHeyApi(
+  body: Parameters<typeof postApiWorkspaces>[0]['body'],
+): Promise<PostApiWorkspacesResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspaces({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function updateWorkspaceWithHeyApi(
+  workspaceId: number,
+  body: Parameters<typeof putApiWorkspacesById>[0]['body'],
+): Promise<PutApiWorkspacesByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiWorkspacesById({
+    client,
+    path: { id: workspaceId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+type TaskCommentPath = {
+  workspaceId: number;
+  itemId: number;
+  taskId: number;
+};
+
+export async function getTaskCommentsWithHeyApi(
+  path: TaskCommentPath,
+  query?: Parameters<typeof getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments>[0]['query'],
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments({
+    client,
+    path,
+    query,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getTaskCommentWithHeyApi(
+  path: TaskCommentPath & { commentId: number },
+): Promise<GetApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId({
+    client,
+    path,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function createTaskCommentWithHeyApi(
+  path: TaskCommentPath,
+  body: Parameters<typeof postApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments>[0]['body'],
+): Promise<PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdComments({
+    client,
+    path,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function updateTaskCommentWithHeyApi(
+  path: TaskCommentPath & { commentId: number },
+  body: Parameters<typeof putApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId>[0]['body'],
+): Promise<PutApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await putApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId({
+    client,
+    path,
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteTaskCommentWithHeyApi(
+  path: TaskCommentPath & { commentId: number },
+  body: Parameters<typeof deleteApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId>[0]['body'],
+): Promise<DeleteApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiWorkspacesByWorkspaceIdItemsByItemIdTasksByTaskIdCommentsByCommentId({
+    client,
+    path,
+    body,
+    throwOnError: true,
+  });
   return response.data;
 }
 

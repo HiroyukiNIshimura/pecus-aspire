@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import type { WorkspaceTaskDetailResponse } from '@/connectors/legacy-api/pecus';
+import type { WorkspaceTaskDetailResponse } from '@/connectors/hey-api-axios/types.gen';
 import TaskCommentSection from '../../../../components/workspaceItems/TaskCommentSection';
 
 interface TaskCommentModalProps {

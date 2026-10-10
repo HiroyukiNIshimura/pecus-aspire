@@ -8,7 +8,7 @@ import type {
   MasterSkillResponse,
   WorkspaceDetailResponse,
   WorkspaceFullDetailResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { Tooltip } from '../common/feedback/Tooltip';
 

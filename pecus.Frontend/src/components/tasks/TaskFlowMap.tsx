@@ -1,7 +1,7 @@
 'use client';
 
 import { EmptyStateCard } from '@/components/common/feedback/EmptyState';
-import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/legacy-api/pecus';
+import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/hey-api-axios/types.gen';
 import TaskFlowCard from './TaskFlowCard';
 import TaskFlowChain from './TaskFlowChain';
 

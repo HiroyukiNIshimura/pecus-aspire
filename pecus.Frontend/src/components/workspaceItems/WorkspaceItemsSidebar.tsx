@@ -7,7 +7,7 @@ import WorkspaceItemFilterDrawer, {
   type WorkspaceItemFilters,
 } from '@/components/workspaceItems/WorkspaceItemFilterDrawer';
 import WorkspaceSwitcher from '@/components/workspaceItems/WorkspaceSwitcher';
-import type { TaskPriority, WorkspaceItemDetailResponse, WorkspaceMode } from '@/connectors/legacy-api/pecus';
+import type { TaskPriority, WorkspaceItemDetailResponse, WorkspaceMode } from '@/connectors/hey-api-axios/types.gen';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 

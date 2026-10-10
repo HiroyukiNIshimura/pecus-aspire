@@ -1,7 +1,7 @@
 'use client';
 
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { TaskFlowNode, TaskPriority } from '@/connectors/legacy-api/pecus';
+import type { TaskFlowNode, TaskPriority } from '@/connectors/hey-api-axios/types.gen';
 import { formatShortDate } from '@/libs/utils/date';
 
 interface TaskFlowCardProps {
