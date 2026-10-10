@@ -240,16 +240,15 @@ async function fetchPrometheusRange(
   }
 }
 
-import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
-import type { HangfireStatsResponse } from '@/connectors/legacy-api/pecus';
+import { getHangfireStatsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { GetApiBackendMonitoringHangfireStatsResponse } from '@/connectors/hey-api-axios/types.gen';
 
 /**
  * Server Action: Hangfire バックグラウンドジョブ統計を取得
  */
-export async function getHangfireStatus(): Promise<ApiResponse<HangfireStatsResponse>> {
+export async function getHangfireStatus(): Promise<ApiResponse<GetApiBackendMonitoringHangfireStatsResponse>> {
   try {
-    const api = await createPecusApiClients();
-    const response = await api.backOfficeMonitoring.getApiBackendMonitoringHangfireStats();
+    const response = await getHangfireStatsWithHeyApi();
     return {
       success: true,
       data: response,

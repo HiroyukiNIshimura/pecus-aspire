@@ -8,7 +8,7 @@ import type {
   AchievementCategory,
   AchievementDifficulty,
   UserAchievementResponse,
-} from '@/connectors/legacy-api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 
 /**
  * ユーザーバッジポップオーバーのProps

@@ -1,5 +1,6 @@
 'use server';
 
+import { getAdminExternalApiKeysWithHeyApi } from '@/connectors/HeyApiClient';
 import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   CreateExternalApiKeyRequest,
@@ -22,8 +23,7 @@ import { validationError } from '../types';
  */
 export async function getExternalApiKeys(): Promise<ApiResponse<Array<ExternalApiKeyResponse>>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminExternalApiKeys.getApiAdminExternalApiKeys();
+    const response = await getAdminExternalApiKeysWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch external API keys:', error);

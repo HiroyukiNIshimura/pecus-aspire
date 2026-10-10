@@ -1,5 +1,10 @@
 'use server';
 
+import {
+  getBackOfficeOrganizationBotsWithHeyApi,
+  getBackOfficeOrganizationByIdWithHeyApi,
+  getBackOfficeOrganizationsWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   BackOfficeBotResponse,
@@ -43,11 +48,7 @@ export async function getBackOfficeOrganizations(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizations(
-      parseResult.data.page,
-      parseResult.data.pageSize,
-    );
+    const response = await getBackOfficeOrganizationsWithHeyApi(parseResult.data.page, parseResult.data.pageSize);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice organizations:', error);
@@ -68,8 +69,7 @@ export async function getBackOfficeOrganizationDetail(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizations1(parseResult.data.id);
+    const response = await getBackOfficeOrganizationByIdWithHeyApi(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice organization detail:', error);
@@ -187,10 +187,7 @@ export async function getBackOfficeOrganizationBots(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeOrganizations.getApiBackofficeOrganizationsBots(
-      parseResult.data.organizationId,
-    );
+    const response = await getBackOfficeOrganizationBotsWithHeyApi(parseResult.data.organizationId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch organization bots:', error);

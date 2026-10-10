@@ -1,5 +1,6 @@
 'use server';
 
+import { getAdminSkillByIdWithHeyApi, getAdminSkillsWithHeyApi } from '@/connectors/HeyApiClient';
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   PagedResponseOfSkillListItemResponseAndSkillStatistics,
@@ -42,9 +43,14 @@ export async function getSkills(
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminSkill.getApiAdminSkills(parseResult.data.page, parseResult.data.isActive);
-    return { success: true, data: response };
+    const response = await getAdminSkillsWithHeyApi(parseResult.data.page, parseResult.data.isActive);
+    return {
+      success: true,
+      data: {
+        ...response,
+        summary: response.summary ?? undefined,
+      },
+    };
   } catch (error) {
     console.error('Failed to fetch skills:', error);
     return handleApiErrorForAction(error, { defaultMessage: 'スキル一覧の取得に失敗しました' });
@@ -62,13 +68,12 @@ export async function getAllSkills(input: GetAllSkillsInput = {}): Promise<ApiRe
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
     const allSkills: SkillListItemResponse[] = [];
     let currentPage = 1;
     let hasMore = true;
 
     while (hasMore) {
-      const response = await api.adminSkill.getApiAdminSkills(currentPage, parseResult.data.isActive);
+      const response = await getAdminSkillsWithHeyApi(currentPage, parseResult.data.isActive);
 
       if (response.data && response.data.length > 0) {
         allSkills.push(...response.data);
@@ -103,8 +108,7 @@ export async function getSkillDetail(input: GetSkillDetailInput): Promise<ApiRes
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminSkill.getApiAdminSkills1(parseResult.data.id);
+    const response = await getAdminSkillByIdWithHeyApi(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch skill detail:', error);

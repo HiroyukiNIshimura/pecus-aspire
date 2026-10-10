@@ -2,12 +2,12 @@ import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { ChatMentionNotification } from '@/components/notifications/ChatMentionNotification';
 import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { AppPublicSettingsResponse } from '@/connectors/hey-api-axios/types.gen';
 import {
   detect401ValidationError,
   getHttpErrorInfo,
   getUserSafeErrorMessage,
 } from '@/connectors/legacy-api/PecusApiClient';
-import type { AppPublicSettingsResponse } from '@/connectors/legacy-api/pecus';
 import { AppSettingsProvider, defaultAppSettings } from '@/providers/AppSettingsProvider';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 

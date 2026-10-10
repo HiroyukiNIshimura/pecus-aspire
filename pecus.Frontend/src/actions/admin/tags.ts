@@ -1,5 +1,6 @@
 'use server';
 
+import { getAdminTagByIdWithHeyApi, getAdminTagsWithHeyApi } from '@/connectors/HeyApiClient';
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   PagedResponseOfTagListItemResponseAndTagStatistics,
@@ -39,9 +40,14 @@ export async function getTags(
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminTag.getApiAdminTags(parseResult.data.page, parseResult.data.isActive);
-    return { success: true, data: response };
+    const response = await getAdminTagsWithHeyApi(parseResult.data.page, parseResult.data.isActive);
+    return {
+      success: true,
+      data: {
+        ...response,
+        summary: response.summary ?? undefined,
+      },
+    };
   } catch (error) {
     console.error('Failed to fetch tags:', error);
     return handleApiErrorForAction(error, { defaultMessage: 'タグ一覧の取得に失敗しました' });
@@ -58,8 +64,7 @@ export async function getTagDetail(input: GetTagDetailInput): Promise<ApiRespons
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminTag.getApiAdminTags1(parseResult.data.id);
+    const response = await getAdminTagByIdWithHeyApi(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch tag detail:', error);

@@ -1,5 +1,9 @@
 'use server';
 
+import {
+  getBackOfficeNotificationByIdWithHeyApi,
+  getBackOfficeNotificationsWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import { createPecusApiClients } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   BackOfficeNotificationDetailResponse,
@@ -34,8 +38,7 @@ export async function getBackOfficeNotifications(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeNotifications.getApiBackofficeNotifications(
+    const response = await getBackOfficeNotificationsWithHeyApi(
       parseResult.data.page,
       parseResult.data.pageSize,
       parseResult.data.includeDeleted,
@@ -60,8 +63,7 @@ export async function getBackOfficeNotificationDetail(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.backOfficeNotifications.getApiBackofficeNotifications1(parseResult.data.id);
+    const response = await getBackOfficeNotificationByIdWithHeyApi(parseResult.data.id);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch backoffice notification detail:', error);

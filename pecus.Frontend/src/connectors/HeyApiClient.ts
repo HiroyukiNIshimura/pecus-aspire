@@ -10,10 +10,18 @@ import {
   getApiAdminExternalApiKeys,
   getApiAdminOrganization,
   getApiAdminSkills,
+  getApiAdminSkillsById,
   getApiAdminTags,
+  getApiAdminTagsById,
+  getApiAdminUsers,
   getApiAdminWorkspaces,
   getApiAdminWorkspacesById,
   getApiBackendMonitoringHangfireStats,
+  getApiBackofficeNotifications,
+  getApiBackofficeNotificationsById,
+  getApiBackofficeOrganizations,
+  getApiBackofficeOrganizationsById,
+  getApiBackofficeOrganizationsByIdBots,
   getApiChatRooms,
   getApiChatRoomsByRoomId,
   getApiChatRoomsByRoomIdMessages,
@@ -27,6 +35,7 @@ import {
   getApiDashboardTasksTrend,
   getApiDashboardWorkspaces,
   getApiMasterGenres,
+  getApiMasterRoles,
   getApiMasterSkills,
   getApiMasterTaskTypes,
   getApiMyActivities,
@@ -54,11 +63,19 @@ import type {
   GetApiAchievementsResponse,
   GetApiAdminExternalApiKeysResponse,
   GetApiAdminOrganizationResponse,
+  GetApiAdminSkillsByIdResponse,
   GetApiAdminSkillsResponse,
+  GetApiAdminTagsByIdResponse,
   GetApiAdminTagsResponse,
+  GetApiAdminUsersResponse,
   GetApiAdminWorkspacesByIdResponse,
   GetApiAdminWorkspacesResponse,
   GetApiBackendMonitoringHangfireStatsResponse,
+  GetApiBackofficeNotificationsByIdResponse,
+  GetApiBackofficeNotificationsResponse,
+  GetApiBackofficeOrganizationsByIdBotsResponse,
+  GetApiBackofficeOrganizationsByIdResponse,
+  GetApiBackofficeOrganizationsResponse,
   GetApiChatRoomsByRoomIdMessagesResponse,
   GetApiChatRoomsByRoomIdResponse,
   GetApiChatRoomsResponse,
@@ -72,6 +89,7 @@ import type {
   GetApiDashboardTasksTrendResponse,
   GetApiDashboardWorkspacesResponse,
   GetApiMasterGenresResponse,
+  GetApiMasterRolesResponse,
   GetApiMasterSkillsResponse,
   GetApiMasterTaskTypesResponse,
   GetApiMyActivitiesResponse,
@@ -115,6 +133,29 @@ export async function createHeyApiClient(): Promise<Client> {
     throwOnError: true,
     auth: async () => (await getAccessToken()) ?? undefined,
   });
+}
+
+type NullToUndefined<T> = T extends null
+  ? undefined
+  : T extends readonly (infer U)[]
+    ? NullToUndefined<U>[]
+    : T extends object
+      ? { [K in keyof T]: NullToUndefined<T[K]> }
+      : T;
+
+export function normalizeHeyApiResponse<T>(value: T): NullToUndefined<T> {
+  if (value === null) {
+    return undefined as NullToUndefined<T>;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeHeyApiResponse(item)) as NullToUndefined<T>;
+  }
+  if (typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, normalizeHeyApiResponse(item)]),
+    ) as NullToUndefined<T>;
+  }
+  return value as NullToUndefined<T>;
 }
 
 /**
@@ -214,6 +255,22 @@ export async function getAdminOrganizationWithHeyApi(): Promise<GetApiAdminOrgan
 /**
  * Get external API keys through Hey API.
  */
+export async function getAdminUsersWithHeyApi(
+  page?: number,
+  isActive?: boolean,
+  username?: string,
+  skillIds?: number[],
+  skillFilterMode?: string,
+): Promise<GetApiAdminUsersResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAdminUsers({
+    client,
+    query: { Page: page, IsActive: isActive, Username: username, SkillIds: skillIds, SkillFilterMode: skillFilterMode },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
 export async function getAdminExternalApiKeysWithHeyApi(): Promise<GetApiAdminExternalApiKeysResponse> {
   const client = await createHeyApiClient();
   const response = await getApiAdminExternalApiKeys({
@@ -248,6 +305,16 @@ export async function getAdminSkillsWithHeyApi(
   return response.data;
 }
 
+export async function getAdminSkillByIdWithHeyApi(id: number): Promise<GetApiAdminSkillsByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAdminSkillsById({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
 /**
  * Get the admin tag list through Hey API.
  */
@@ -269,6 +336,16 @@ export async function getAdminTagsWithHeyApi(
     throwOnError: true,
   });
 
+  return response.data;
+}
+
+export async function getAdminTagByIdWithHeyApi(id: number): Promise<GetApiAdminTagsByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiAdminTagsById({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
   return response.data;
 }
 
@@ -320,6 +397,69 @@ export async function getHangfireStatsWithHeyApi(): Promise<GetApiBackendMonitor
     throwOnError: true,
   });
 
+  return response.data;
+}
+
+export async function getBackOfficeOrganizationsWithHeyApi(
+  page?: number,
+  pageSize?: number,
+): Promise<GetApiBackofficeOrganizationsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiBackofficeOrganizations({
+    client,
+    query: { Page: page, PageSize: pageSize },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getBackOfficeOrganizationByIdWithHeyApi(
+  id: number,
+): Promise<GetApiBackofficeOrganizationsByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiBackofficeOrganizationsById({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getBackOfficeOrganizationBotsWithHeyApi(
+  id: number,
+): Promise<GetApiBackofficeOrganizationsByIdBotsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiBackofficeOrganizationsByIdBots({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getBackOfficeNotificationsWithHeyApi(
+  page?: number,
+  pageSize?: number,
+  includeDeleted?: boolean,
+): Promise<GetApiBackofficeNotificationsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiBackofficeNotifications({
+    client,
+    query: { Page: page, PageSize: pageSize, IncludeDeleted: includeDeleted },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getBackOfficeNotificationByIdWithHeyApi(
+  id: number,
+): Promise<GetApiBackofficeNotificationsByIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiBackofficeNotificationsById({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
   return response.data;
 }
 
@@ -704,6 +844,12 @@ export async function getMasterGenresWithHeyApi(): Promise<GetApiMasterGenresRes
     throwOnError: true,
   });
 
+  return response.data;
+}
+
+export async function getMasterRolesWithHeyApi(): Promise<GetApiMasterRolesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiMasterRoles({ client, throwOnError: true });
   return response.data;
 }
 

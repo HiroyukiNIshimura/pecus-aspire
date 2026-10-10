@@ -1,5 +1,6 @@
 'use server';
 
+import { getAdminUsersWithHeyApi, normalizeHeyApiResponse } from '@/connectors/HeyApiClient';
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/legacy-api/PecusApiClient';
 import type {
   PagedResponseOfUserDetailResponseAndUserStatistics,
@@ -44,15 +45,14 @@ export async function getUsers(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers1(
+    const response = await getAdminUsersWithHeyApi(
       parseResult.data.page ?? 1,
       parseResult.data.isActive,
       parseResult.data.username,
       parseResult.data.skillIds,
       parseResult.data.skillFilterMode ?? 'and',
     );
-    return { success: true, data: response };
+    return { success: true, data: normalizeHeyApiResponse(response) };
   } catch (error) {
     console.error('Failed to fetch users:', error);
     return handleApiErrorForAction(error, { defaultMessage: 'ユーザー一覧の取得に失敗しました' });

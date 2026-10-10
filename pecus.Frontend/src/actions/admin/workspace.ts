@@ -1,12 +1,16 @@
 'use server';
 
+import { getAdminWorkspaceByIdWithHeyApi, getAdminWorkspacesWithHeyApi } from '@/connectors/HeyApiClient';
+import type {
+  GetApiAdminWorkspacesByIdResponse,
+  GetApiAdminWorkspacesResponse,
+} from '@/connectors/hey-api-axios/types.gen';
 import {
   createPecusApiClients,
   detectConcurrencyError,
   detectMemberHasAssignmentsError,
 } from '@/connectors/legacy-api/PecusApiClient';
 import type {
-  PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
   SuccessResponse,
   WorkspaceDetailResponse,
   WorkspaceUserDetailResponse,
@@ -42,15 +46,14 @@ import { validationError } from '../types';
  */
 export async function getWorkspaces(
   input: GetAdminWorkspacesInput = {},
-): Promise<ApiResponse<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics>> {
+): Promise<ApiResponse<GetApiAdminWorkspacesResponse>> {
   const parseResult = getAdminWorkspacesInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces(
+    const response = await getAdminWorkspacesWithHeyApi(
       parseResult.data.page,
       parseResult.data.isActive,
       parseResult.data.genreId,
@@ -67,15 +70,14 @@ export async function getWorkspaces(
  */
 export async function getWorkspaceDetail(
   input: GetAdminWorkspaceDetailInput,
-): Promise<ApiResponse<WorkspaceDetailResponse>> {
+): Promise<ApiResponse<GetApiAdminWorkspacesByIdResponse>> {
   const parseResult = getAdminWorkspaceDetailInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
     return validationError(errorMessages);
   }
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces1(parseResult.data.workspaceId);
+    const response = await getAdminWorkspaceByIdWithHeyApi(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace detail:', error);

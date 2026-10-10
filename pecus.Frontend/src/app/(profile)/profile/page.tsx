@@ -4,9 +4,12 @@ import {
   getPendingEmailChangeWithHeyApi,
   getProfileWithHeyApi,
 } from '@/connectors/HeyApiClient';
-import type { GetApiProfileResponse } from '@/connectors/hey-api-axios/types.gen';
+import type {
+  GetApiProfileResponse,
+  MasterSkillResponse,
+  PendingEmailChangeResponse,
+} from '@/connectors/hey-api-axios/types.gen';
 import { detect401ValidationError, getUserSafeErrorMessage } from '@/connectors/legacy-api/PecusApiClient';
-import type { MasterSkillResponse, PendingEmailChangeResponse } from '@/connectors/legacy-api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import ProfileClient from './ProfileClient';
 
