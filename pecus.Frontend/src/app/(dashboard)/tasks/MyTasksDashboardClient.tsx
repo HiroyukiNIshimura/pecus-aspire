@@ -5,7 +5,7 @@ import { fetchMyTasksByWorkspace } from '@/actions/myTask';
 import DashboardFilterBar from '@/components/common/filters/DashboardFilterBar';
 import WorkspaceTaskAccordion, { type WorkspaceInfo } from '@/components/common/widgets/WorkspaceTaskAccordion';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import type { DashboardTaskFilter, MyTaskWorkspaceResponse } from '@/connectors/api/pecus';
+import type { DashboardTaskFilter, MyTaskWorkspaceResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 
 interface MyTasksDashboardClientProps {
@@ -118,7 +118,7 @@ export default function MyTasksDashboardClient({
       {/* フィルターバー */}
       <DashboardFilterBar
         currentFilter={currentFilter}
-        onFilterChange={setCurrentFilter}
+        onFilterChange={(filter) => setCurrentFilter(filter ?? 'Active')}
         stats={{
           activeCount: totalActive,
           completedCount: totalCompleted,

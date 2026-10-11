@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { getSkillDetail } from '@/actions/admin/skills';
 import FetchError from '@/components/common/feedback/FetchError';
 import ForbiddenError from '@/components/common/feedback/ForbiddenError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getProfileWithHeyApi } from '@/connectors/HeyApiClient';
 import { handleServerFetch } from '@/libs/serverFetch';
 import EditSkillClient from './EditSkillClient';
 
@@ -16,8 +16,7 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  const api = createPecusApiClients();
-  const authResult = await handleServerFetch(() => api.profile.getApiProfile());
+  const authResult = await handleServerFetch(getProfileWithHeyApi);
 
   if (!authResult.success) {
     if (authResult.error === 'forbidden') {

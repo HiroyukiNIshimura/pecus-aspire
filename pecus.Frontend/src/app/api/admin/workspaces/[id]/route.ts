@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { badRequestError, parseRouterError } from '@/app/api/routerError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getAdminWorkspaceByIdWithHeyApi } from '@/connectors/HeyApiClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,8 +13,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       return badRequestError('Invalid workspace ID');
     }
 
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces1(workspaceId);
+    const response = await getAdminWorkspaceByIdWithHeyApi(workspaceId);
 
     return NextResponse.json(response);
   } catch (error) {

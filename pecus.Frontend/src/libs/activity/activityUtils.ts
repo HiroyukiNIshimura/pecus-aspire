@@ -1,4 +1,4 @@
-import type { ActivityActionType } from '@/connectors/api/pecus';
+import type { ActivityActionType } from '@/connectors/hey-api-axios/types.gen';
 import { formatDate } from '@/libs/utils/date';
 
 /** アクションタイプごとのアイコンと色の設定 */

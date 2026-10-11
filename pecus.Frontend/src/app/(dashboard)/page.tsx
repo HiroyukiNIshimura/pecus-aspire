@@ -1,4 +1,14 @@
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import {
+  getAchievementsRankingWithHeyApi,
+  getDashboardHelpCommentsWithHeyApi,
+  getDashboardHotItemsWithHeyApi,
+  getDashboardHotWorkspacesWithHeyApi,
+  getDashboardPersonalSummaryWithHeyApi,
+  getDashboardSummaryWithHeyApi,
+  getDashboardTasksByPriorityWithHeyApi,
+  getDashboardTasksTrendWithHeyApi,
+  getDashboardWorkspacesWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   AchievementRankingResponse,
   DashboardHelpCommentsResponse,
@@ -9,7 +19,7 @@ import type {
   DashboardTasksByPriorityResponse,
   DashboardTaskTrendResponse,
   DashboardWorkspaceBreakdownResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';
@@ -18,8 +28,6 @@ export const dynamic = 'force-dynamic';
 // ランディングページへのリダイレクトはログイン時（LoginFormClient.tsx）で処理済み
 // ダッシュボードページ自体ではリダイレクトを行わない
 export default async function Dashboard() {
-  const api = createPecusApiClients();
-
   let summary: DashboardSummaryResponse | null = null;
   let tasksByPriority: DashboardTasksByPriorityResponse | null = null;
   let personalSummary: DashboardPersonalSummaryResponse | null = null;
@@ -44,15 +52,15 @@ export default async function Dashboard() {
       helpCommentsRes,
       badgeRankingRes,
     ] = await Promise.allSettled([
-      api.dashboard.getApiDashboardSummary(),
-      api.dashboard.getApiDashboardTasksByPriority(),
-      api.dashboard.getApiDashboardPersonalSummary(),
-      api.dashboard.getApiDashboardWorkspaces(),
-      api.dashboard.getApiDashboardTasksTrend(8),
-      api.dashboard.getApiDashboardHotItems('1week', 5),
-      api.dashboard.getApiDashboardHotWorkspaces('1week', 5),
-      api.dashboard.getApiDashboardHelpComments(),
-      api.achievement.getApiAchievementsRanking(),
+      getDashboardSummaryWithHeyApi(),
+      getDashboardTasksByPriorityWithHeyApi(),
+      getDashboardPersonalSummaryWithHeyApi(),
+      getDashboardWorkspacesWithHeyApi(),
+      getDashboardTasksTrendWithHeyApi(8),
+      getDashboardHotItemsWithHeyApi('1week', 5),
+      getDashboardHotWorkspacesWithHeyApi('1week', 5),
+      getDashboardHelpCommentsWithHeyApi(),
+      getAchievementsRankingWithHeyApi(),
     ]);
 
     // 結果を取得（エラーの場合はnull）

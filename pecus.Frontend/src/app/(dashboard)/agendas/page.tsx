@@ -2,12 +2,9 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { fetchRecentOccurrencesPaginated } from '@/actions/agenda';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
-import type { AgendaOccurrenceResponse } from '@/connectors/api/pecus';
+import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { AgendaOccurrenceResponse } from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, getUserSafeErrorMessage } from '@/libs/apiError';
 import AgendaPageClient from './AgendaPageClient';
 
 export default async function AgendasPage() {
@@ -16,9 +13,8 @@ export default async function AgendasPage() {
   let fetchError: string | null = null;
 
   try {
-    const api = createPecusApiClients();
     // ユーザー認証確認（appSettings取得でOK）
-    await api.profile.getApiProfileAppSettings();
+    await getProfileAppSettingsWithHeyApi();
 
     // 直近のオカレンスを取得（初回は20件）
     const result = await fetchRecentOccurrencesPaginated({ limit: 20 });

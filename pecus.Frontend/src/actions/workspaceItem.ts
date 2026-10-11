@@ -1,6 +1,21 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import {
+  addWorkspaceItemPinWithHeyApi,
+  addWorkspaceItemRelationWithHeyApi,
+  createWorkspaceItemWithHeyApi,
+  getMyWorkspaceItemsWithHeyApi,
+  getWorkspaceItemByCodeWithHeyApi,
+  getWorkspaceItemByIdWithHeyApi,
+  getWorkspaceItemChildrenCountWithHeyApi,
+  getWorkspaceItemDocumentSuggestionWithHeyApi,
+  removeWorkspaceItemPinWithHeyApi,
+  removeWorkspaceItemRelationWithHeyApi,
+  updateWorkspaceItemAssigneeWithHeyApi,
+  updateWorkspaceItemAttributeWithHeyApi,
+  updateWorkspaceItemStatusWithHeyApi,
+  updateWorkspaceItemWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   AddWorkspaceItemRelationResponse,
   PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics,
@@ -8,7 +23,8 @@ import type {
   SuccessResponse,
   WorkspaceItemDetailResponse,
   WorkspaceItemResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detectConcurrencyError } from '@/libs/concurrencyError';
 import {
   type AddWorkspaceItemRelationsInput,
   addWorkspaceItemRelationsInputSchema,
@@ -61,15 +77,14 @@ export async function fetchMyItems(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.my.getApiMyWorkspaceItems(
-      parseResult.data.page ?? 1,
-      parseResult.data.relation,
-      parseResult.data.includeArchived,
-      parseResult.data.workspaceIds,
-      parseResult.data.sortBy ?? undefined,
-      parseResult.data.order ?? undefined,
-    );
+    const response = await getMyWorkspaceItemsWithHeyApi({
+      Page: parseResult.data.page ?? 1,
+      Relation: parseResult.data.relation ?? undefined,
+      IncludeArchived: parseResult.data.includeArchived,
+      WorkspaceIds: parseResult.data.workspaceIds,
+      SortBy: parseResult.data.sortBy ?? undefined,
+      Order: parseResult.data.order ?? undefined,
+    });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch my items:', error);
@@ -92,11 +107,7 @@ export async function fetchLatestWorkspaceItem(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItems1(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-    );
+    const response = await getWorkspaceItemByIdWithHeyApi(parseResult.data.workspaceId, parseResult.data.itemId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace item:', error);
@@ -120,11 +131,7 @@ export async function fetchWorkspaceItemByCode(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItemsCode(
-      parseResult.data.workspaceId,
-      parseResult.data.itemCode,
-    );
+    const response = await getWorkspaceItemByCodeWithHeyApi(parseResult.data.workspaceId, parseResult.data.itemCode);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace item by code:', error);
@@ -148,11 +155,7 @@ export async function createWorkspaceItem(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.postApiWorkspacesItems(
-      parseResult.data.workspaceId,
-      parseResult.data.request,
-    );
+    const response = await createWorkspaceItemWithHeyApi(parseResult.data.workspaceId, parseResult.data.request);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create workspace item:', error);
@@ -176,8 +179,7 @@ export async function updateWorkspaceItem(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItems(
+    const response = await updateWorkspaceItemWithHeyApi(
       parseResult.data.workspaceId,
       parseResult.data.itemId,
       parseResult.data.request,
@@ -223,11 +225,7 @@ export async function addWorkspaceItemPin(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.postApiWorkspacesItemsPin(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-    );
+    const response = await addWorkspaceItemPinWithHeyApi(parseResult.data.workspaceId, parseResult.data.itemId);
 
     if (response.workspaceItem) {
       return {
@@ -259,11 +257,7 @@ export async function removeWorkspaceItemPin(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.deleteApiWorkspacesItemsPin(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-    );
+    const response = await removeWorkspaceItemPinWithHeyApi(parseResult.data.workspaceId, parseResult.data.itemId);
 
     if (response.workspaceItem) {
       return {
@@ -295,8 +289,7 @@ export async function updateWorkspaceItemAssignee(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItemsAssignee(
+    const response = await updateWorkspaceItemAssigneeWithHeyApi(
       parseResult.data.workspaceId,
       parseResult.data.itemId,
       parseResult.data.request,
@@ -354,8 +347,7 @@ export async function updateWorkspaceItemStatus(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItemsStatus(
+    const response = await updateWorkspaceItemStatusWithHeyApi(
       parseResult.data.workspaceId,
       parseResult.data.itemId,
       parseResult.data.request,
@@ -413,8 +405,7 @@ export async function updateWorkspaceItemAttribute(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItems1(
+    const response = await updateWorkspaceItemAttributeWithHeyApi(
       parseResult.data.workspaceId,
       parseResult.data.itemId,
       parseResult.data.attribute,
@@ -487,12 +478,10 @@ export async function addWorkspaceItemRelations(
   }
 
   try {
-    const api = createPecusApiClients();
-
     // 全ての関連追加を並列で実行
     const results = await Promise.all(
       parseResult.data.toItemIds.map((toItemId) =>
-        api.workspaceItem.postApiWorkspacesItemsRelations(parseResult.data.workspaceId, parseResult.data.itemId, {
+        addWorkspaceItemRelationWithHeyApi(parseResult.data.workspaceId, parseResult.data.itemId, {
           toItemId,
           relationType: parseResult.data.relationType ?? ('Related' as RelationType),
         }),
@@ -525,8 +514,7 @@ export async function removeWorkspaceItemRelation(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.deleteApiWorkspacesItemsRelations(
+    const response = await removeWorkspaceItemRelationWithHeyApi(
       parseResult.data.workspaceId,
       parseResult.data.itemId,
       parseResult.data.relationId,
@@ -556,8 +544,7 @@ export async function fetchChildrenCount(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItemsChildrenCount(
+    const response = await getWorkspaceItemChildrenCountWithHeyApi(
       parseResult.data.workspaceId,
       parseResult.data.itemId,
     );
@@ -593,8 +580,7 @@ export async function fetchDocumentSuggestion(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspaceItem.postApiWorkspacesItemsDocumentSuggestion(parseResult.data.workspaceId, {
+    const response = await getWorkspaceItemDocumentSuggestionWithHeyApi(parseResult.data.workspaceId, {
       title: parseResult.data.title,
     });
     return {

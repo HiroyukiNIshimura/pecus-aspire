@@ -2,8 +2,8 @@
 
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { LoginResponse, RoleInfoResponse } from '@/connectors/api/pecus';
+import { loginWithHeyApi } from '@/connectors/HeyApiClient';
+import type { LoginResponse, RoleInfoResponse } from '@/connectors/hey-api-axios/types.gen';
 import { getApiBaseUrl } from '@/libs/env';
 import { type CreateSessionInput, type ServerSessionData, ServerSessionManager } from '@/libs/serverSession';
 import { type LoginActionInput, loginActionInputSchema } from '@/schemas/signInSchemas';
@@ -28,6 +28,9 @@ export async function login(input: LoginActionInput): Promise<ApiResponse<LoginA
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
     return validationError(errorMessages);
   }
+  if (!parseResult.data.deviceType || !parseResult.data.os) {
+    return validationError('デバイスタイプとOS情報は必須です。');
+  }
 
   try {
     // Next.js のヘッダーからクライアントIPを取得
@@ -38,8 +41,7 @@ export async function login(input: LoginActionInput): Promise<ApiResponse<LoginA
       headersList.get('cf-connecting-ip') || // Cloudflare 対応
       undefined;
 
-    const api = createPecusApiClients();
-    const response = await api.entranceAuth.postApiEntranceAuthLogin({
+    const response = await loginWithHeyApi({
       loginIdentifier: parseResult.data.loginIdentifier,
       password: parseResult.data.password,
       deviceName: parseResult.data.deviceName,

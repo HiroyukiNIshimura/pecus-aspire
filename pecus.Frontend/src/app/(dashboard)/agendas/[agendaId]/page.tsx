@@ -2,12 +2,9 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { fetchAgendaById, fetchAgendaExceptions } from '@/actions/agenda';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  detect404ValidationError,
-} from '@/connectors/api/PecusApiClient';
-import type { AgendaExceptionResponse, AgendaResponse, RecurrenceType } from '@/connectors/api/pecus';
+import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { AgendaExceptionResponse, AgendaResponse, RecurrenceType } from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, detect404ValidationError } from '@/libs/apiError';
 import AgendaDetailClient from './AgendaDetailClient';
 
 interface AgendaDetailPageProps {
@@ -38,8 +35,7 @@ export default async function AgendaDetailPage({ params, searchParams }: AgendaD
 
   try {
     // 認証確認
-    const api = createPecusApiClients();
-    await api.profile.getApiProfileAppSettings();
+    await getProfileAppSettingsWithHeyApi();
 
     // アジェンダ詳細取得（occurrenceStartAt / occurrenceIndex を渡して例外情報を適用）
     const agendaResult = await fetchAgendaById({

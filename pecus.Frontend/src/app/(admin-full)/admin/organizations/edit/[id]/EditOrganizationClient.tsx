@@ -6,7 +6,7 @@ import { updateOrganization } from '@/actions/admin/organizations';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
-import type { OrganizationResponse } from '@/connectors/api/pecus';
+import type { OrganizationResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';

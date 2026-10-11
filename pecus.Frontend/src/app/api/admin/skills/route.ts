@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getAdminSkillsWithHeyApi } from '@/connectors/HeyApiClient';
 import { parseRouterError } from '../../routerError';
 
 export const dynamic = 'force-dynamic';
@@ -14,9 +14,7 @@ export async function GET(request: NextRequest) {
     const unusedOnly = unusedOnlyParam === 'true' ? true : undefined;
     const name = searchParams.get('Name') || undefined;
 
-    const api = createPecusApiClients();
-
-    const response = await api.adminSkill.getApiAdminSkills(page, isActive, unusedOnly, name);
+    const response = await getAdminSkillsWithHeyApi(page, isActive, unusedOnly, name);
 
     return NextResponse.json(response);
   } catch (error) {

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getChatMessages, getChatRoomDetail, sendChatMessage, updateReadPosition } from '@/actions/chat';
 import { getWorkspaceDetail } from '@/actions/workspace';
-import type { ChatMessageItem, ChatRoomDetailResponse } from '@/connectors/api/pecus';
+import type { ChatMessageItem, ChatRoomDetailResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useSignalREvent } from '@/hooks/useSignalR';
 import { useSignalRContext } from '@/providers/SignalRProvider';
 import type { MentionCandidate } from './ChatMessageInput';

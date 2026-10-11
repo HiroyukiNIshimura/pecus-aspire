@@ -9,7 +9,7 @@ import type {
   UpdateWorkspaceItemAttributeRequest,
   UpdateWorkspaceItemRequest,
   UpdateWorkspaceItemStatusRequest,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
 
 const workspaceIdSchema = z
   .number({ error: 'ワークスペースIDが不正です。' })

@@ -1,14 +1,27 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import {
+  bulkCreateWorkspaceTasksWithHeyApi,
+  checkWorkspaceTaskAssigneeLoadWithHeyApi,
+  createWorkspaceTaskWithHeyApi,
+  generateWorkspaceTaskCandidatesWithHeyApi,
+  getWorkspaceTaskBySequenceWithHeyApi,
+  getWorkspaceTaskContentSuggestionWithHeyApi,
+  getWorkspaceTaskFlowMapWithHeyApi,
+  getWorkspaceTasksWithHeyApi,
+  getWorkspaceTaskWithHeyApi,
+  updateWorkspaceTaskWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   AssigneeTaskLoadResponse,
   BulkCreateTasksResponse,
   PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics,
+  TaskFlowMapResponse,
   TaskGenerationResponse,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detectConcurrencyError } from '@/libs/concurrencyError';
 import {
   type BulkCreateTasksInput,
   bulkCreateTasksInputSchema,
@@ -52,12 +65,7 @@ export async function getWorkspaceTaskBySequence(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasksSequence(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.sequence,
-    );
+    const response = await getWorkspaceTaskBySequenceWithHeyApi(parseResult.data);
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -81,16 +89,19 @@ export async function getWorkspaceTasks(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.page ?? 1,
-      parseResult.data.pageSize ?? 10,
-      parseResult.data.status,
-      parseResult.data.assignedUserId,
-      parseResult.data.sortBy,
-      parseResult.data.order,
+    const response = await getWorkspaceTasksWithHeyApi(
+      {
+        workspaceId: parseResult.data.workspaceId,
+        itemId: parseResult.data.itemId,
+      },
+      {
+        Page: parseResult.data.page ?? 1,
+        PageSize: parseResult.data.pageSize ?? 10,
+        Status: parseResult.data.status,
+        AssignedUserId: parseResult.data.assignedUserId,
+        SortBy: parseResult.data.sortBy,
+        Order: parseResult.data.order,
+      },
     );
 
     return { success: true, data: response };
@@ -116,7 +127,6 @@ export async function getAllWorkspaceTasks(
   }
 
   try {
-    const api = await createPecusApiClients();
     const allTasks: WorkspaceTaskDetailResponse[] = [];
     let page = 1;
     let hasMore = true;
@@ -124,13 +134,14 @@ export async function getAllWorkspaceTasks(
 
     // 全ページを取得
     while (hasMore) {
-      const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-        parseResult.data.workspaceId,
-        parseResult.data.itemId,
-        page,
-        pageSize,
-        parseResult.data.status,
-        parseResult.data.assignedUserId,
+      const response = await getWorkspaceTasksWithHeyApi(
+        { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
+        {
+          Page: page,
+          PageSize: pageSize,
+          Status: parseResult.data.status,
+          AssignedUserId: parseResult.data.assignedUserId,
+        },
       );
 
       if (response.data && response.data.length > 0) {
@@ -164,12 +175,7 @@ export async function getWorkspaceTask(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasks1(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.taskId,
-    );
+    const response = await getWorkspaceTaskWithHeyApi(parseResult.data);
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -193,10 +199,8 @@ export async function createWorkspaceTask(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasks(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
+    const response = await createWorkspaceTaskWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
       parseResult.data.request,
     );
 
@@ -222,11 +226,12 @@ export async function updateWorkspaceTask(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.putApiWorkspacesItemsTasks(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.taskId,
+    const response = await updateWorkspaceTaskWithHeyApi(
+      {
+        workspaceId: parseResult.data.workspaceId,
+        itemId: parseResult.data.itemId,
+        taskId: parseResult.data.taskId,
+      },
       parseResult.data.request,
     );
 
@@ -268,12 +273,12 @@ export async function checkAssigneeTaskLoad(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasksAssigneeLoadCheck(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.assignedUserId,
-      parseResult.data.dueDate,
+    const response = await checkWorkspaceTaskAssigneeLoadWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
+      {
+        AssignedUserId: parseResult.data.assignedUserId,
+        DueDate: parseResult.data.dueDate,
+      },
     );
 
     return { success: true, data: response };
@@ -310,7 +315,6 @@ export async function getPredecessorTaskOptions(
   }
 
   try {
-    const api = await createPecusApiClients();
     const pageSize = 50; // APIの上限
     let allTasks: PredecessorTaskOption[] = [];
     let currentPage = 1;
@@ -318,15 +322,12 @@ export async function getPredecessorTaskOptions(
 
     // 全ページを取得するまでループ
     while (hasMore) {
-      const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
-        parseResult.data.workspaceId,
-        parseResult.data.itemId,
-        currentPage,
-        pageSize,
-        'All', // 全タスク（Active + Completed + Discarded）
+      const response = await getWorkspaceTasksWithHeyApi(
+        { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
+        { Page: currentPage, PageSize: pageSize, Status: 'All' },
       );
 
-      const pageTasks = (response.data || [])
+      const pageTasks = response.data
         .filter((t) => t.id !== parseResult.data.excludeTaskId && !t.isDiscarded) // 自タスクと破棄タスクを除外
         .map((t) => ({
           id: t.id,
@@ -358,9 +359,7 @@ export async function getPredecessorTaskOptions(
  * タスクフローマップを取得
  * アイテム内のタスク依存関係を可視化するためのデータを取得
  */
-export async function getTaskFlowMap(
-  input: GetTaskFlowMapInput,
-): Promise<ApiResponse<import('@/connectors/api/pecus').TaskFlowMapResponse>> {
+export async function getTaskFlowMap(input: GetTaskFlowMapInput): Promise<ApiResponse<TaskFlowMapResponse>> {
   const parseResult = getTaskFlowMapInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -368,16 +367,12 @@ export async function getTaskFlowMap(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.getApiWorkspacesItemsTasksFlowMap(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-    );
+    const response = await getWorkspaceTaskFlowMapWithHeyApi(parseResult.data);
 
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to get task flow map:', error);
-    return handleApiErrorForAction<import('@/connectors/api/pecus').TaskFlowMapResponse>(error, {
+    return handleApiErrorForAction<TaskFlowMapResponse>(error, {
       defaultMessage: 'タスクフローマップの取得に失敗しました',
     });
   }
@@ -397,13 +392,9 @@ export async function fetchTaskContentSuggestion(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasksContentSuggestion(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      {
-        taskTypeId: parseResult.data.taskTypeId,
-      },
+    const response = await getWorkspaceTaskContentSuggestionWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
+      { taskTypeId: parseResult.data.taskTypeId },
     );
 
     return {
@@ -435,10 +426,8 @@ export async function generateTaskCandidates(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasksGenerateCandidates(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
+    const response = await generateWorkspaceTaskCandidatesWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
       parseResult.data.request,
     );
 
@@ -464,10 +453,8 @@ export async function bulkCreateTasks(input: BulkCreateTasksInput): Promise<ApiR
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.workspaceTask.postApiWorkspacesItemsTasksBulkCreate(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
+    const response = await bulkCreateWorkspaceTasksWithHeyApi(
+      { workspaceId: parseResult.data.workspaceId, itemId: parseResult.data.itemId },
       parseResult.data.request,
     );
 

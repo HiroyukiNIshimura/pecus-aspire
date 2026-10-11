@@ -53,7 +53,7 @@ export type ApiResponse<T> =
 ```typescript
 export async function getOrganization(): Promise<ApiResponse<any>> {
   try {
-    const api = createPecusApiClients();
+    const userResponse = await getProfileWithHeyApi();
     const response = await api.adminOrganization.apiAdminOrganizationGet();
     return { success: true, data: response.data };
   } catch (error) {

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "root": false,
   "extends": ["../biome.json"],
   "vcs": {
@@ -9,7 +9,15 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx", "!src/connectors", "!public"]
+    "includes": [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "src/**/*.js",
+      "src/**/*.jsx",
+      "!src/connectors/hey-api-axios",
+      "!src/connectors/legacy-api",
+      "!public"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -21,7 +29,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "suspicious": {
         "noUnknownAtRules": "off",
         "noExplicitAny": "on"

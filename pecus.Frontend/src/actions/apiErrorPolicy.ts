@@ -5,7 +5,7 @@ import {
   detect404ValidationError,
   getHttpErrorInfo,
   getUserSafeErrorMessage,
-} from '@/connectors/api/PecusApiClient';
+} from '@/libs/apiError';
 
 import type { ApiResponse } from './types';
 import { serverError } from './types';

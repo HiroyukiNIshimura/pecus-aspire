@@ -1,9 +1,6 @@
-## tsup（rollup.js）のTypescript6対応漏れ。
+## tsup の TypeScript 6/7 対応状況を確認する。
 https://github.com/egoist/tsup/issues/1389
-現状、patch-package で npm パッケージにパッチを当てる形で対応している。
+Rollup は tsup の内部依存として使用されている。現在のビルドは成功しているが、TypeScript 6/7 対応状況と、現行バージョンでの対応要否を確認する。
 
-## OpenAPI 3.0 nullableスキーマの生成形式変更
-Microsoft.AspNetCore.OpenApi 10.0.12 への更新後、OpenAPI 3.0固定でもnullableの表現が変わり、生成TypeScript型から `| null` が欠落するケースが発生。3.1向けの変更が3.0出力にも影響した可能性があるため、当面様子見し、必要に応じて上流Issueや修正版を確認する。
-調査ではOpenAPI 3.1 + Orval/Hey API（https://www.npmjs.com/package/@hey-api/openapi-ts）で `| null` の生成を確認。Hey APIは有力だが、現行TypeScript 7環境で生成時エラーが出るため、移行は保留。→ https://github.com/hey-api/hey-api/issues/4235 npm i @hey-api/openapi-ts@next
-メソッド名を制御するため サーバー側でoperationIdを設定することが推奨される。
-operationIdを整備すると現行の openapi-typescript-codegen でも生成メソッド名が変わるため、移行方針を決めるまでは共通スキーマへ追加しない。必要なら移行用スキーマだけで検証する。
+## Hey API の TypeScript 7 対応後に安定版へ切り替える。
+現在は `@hey-api/openapi-ts` の `@next` 相当のプレリリース版を使用している。TypeScript 7 に対応した安定版が公開されたら、安定版へ更新して生成クライアントを再生成する。

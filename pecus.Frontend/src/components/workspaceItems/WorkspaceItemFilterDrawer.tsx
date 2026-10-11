@@ -5,7 +5,7 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import BooleanFilterGroup from '@/components/common/filters/BooleanFilterGroup';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
-import type { TaskPriority, UserSearchResultResponse } from '@/connectors/api/pecus';
+import type { TaskPriority, UserSearchResultResponse } from '@/connectors/hey-api-axios/types.gen';
 
 export interface WorkspaceItemFilters {
   /** 担当者ID */

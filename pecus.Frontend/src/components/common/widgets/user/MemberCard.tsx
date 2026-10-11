@@ -1,7 +1,7 @@
 'use client';
 
 import type { MemberItem } from '@/components/workspaces/WorkspaceMemberList';
-import type { AssigneeTaskLoadResponse, WorkspaceRole } from '@/connectors/api/pecus';
+import type { AssigneeTaskLoadResponse, WorkspaceRole } from '@/connectors/hey-api-axios/types.gen';
 import AvatarImage from './AvatarImage';
 import WorkloadIndicator from './WorkloadIndicator';
 

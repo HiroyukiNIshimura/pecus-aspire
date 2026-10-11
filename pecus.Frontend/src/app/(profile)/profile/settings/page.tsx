@@ -1,12 +1,38 @@
-import { createPecusApiClients, getUserSafeErrorMessage } from '@/connectors/api/PecusApiClient';
+import {
+  getProfileAppSettingsWithHeyApi,
+  getProfileWithHeyApi,
+  getWorkspacesWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
+  UserSettingResponse as HeyUserSettingResponse,
+  WorkspaceListItemResponse as HeyWorkspaceListItemResponse,
   OrganizationPublicSettings,
   UserSettingResponse,
   WorkspaceListItemResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { getUserSafeErrorMessage } from '@/libs/apiError';
 import UserSettingsClient from './UserSettingsClient';
 
 export const dynamic = 'force-dynamic';
+
+function normalizeUserSettings(setting: HeyUserSettingResponse): UserSettingResponse {
+  return {
+    ...setting,
+    emailNotificationMode: setting.emailNotificationMode ?? undefined,
+    landingPage: setting.landingPage ?? undefined,
+    focusScorePriority: setting.focusScorePriority ?? undefined,
+    badgeVisibility: setting.badgeVisibility ?? undefined,
+    pendingLandingPageRecommendation: setting.pendingLandingPageRecommendation ?? undefined,
+  };
+}
+
+function normalizeWorkspaceForSettings(workspace: HeyWorkspaceListItemResponse): WorkspaceListItemResponse {
+  return {
+    id: workspace.id,
+    name: workspace.name,
+    code: workspace.code ?? undefined,
+  };
+}
 
 /**
  * ユーザー設定ページ（Server Component）
@@ -19,19 +45,17 @@ export default async function UserSettingsPage() {
   let fetchError: string | null = null;
 
   try {
-    const api = createPecusApiClients();
-
     // ユーザー設定を取得
-    const userResponse = await api.profile.getApiProfile();
-    userSettings = userResponse.setting ?? null;
+    const userResponse = await getProfileWithHeyApi();
+    userSettings = userResponse.setting ? normalizeUserSettings(userResponse.setting) : null;
 
     // 組織設定を取得（ゲーミフィケーション設定のため）
-    const appSettings = await api.profile.getApiProfileAppSettings();
+    const appSettings = await getProfileAppSettingsWithHeyApi();
     organizationSetting = appSettings.organization ?? null;
 
     // ワークスペース一覧を取得（メール通知フィルタ用）
-    const workspacesResponse = await api.workspace.getApiWorkspaces();
-    workspaces = workspacesResponse.data ?? [];
+    const workspacesResponse = await getWorkspacesWithHeyApi();
+    workspaces = workspacesResponse.data.map(normalizeWorkspaceForSettings);
   } catch (error) {
     console.error('Failed to fetch user settings data:', error);
     fetchError = getUserSafeErrorMessage(error, 'ユーザー設定情報の取得に失敗しました');

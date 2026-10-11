@@ -1,19 +1,34 @@
 'use server';
 
 import {
+  changeProfileEmailWithHeyApi,
+  changeProfilePasswordWithHeyApi,
   createAuthenticatedAxios,
-  createPecusApiClients,
-  detectConcurrencyError,
-} from '@/connectors/api/PecusApiClient';
+  deleteAvatarFileWithHeyApi,
+  deleteProfileDeviceWithHeyApi,
+  getProfileAppSettingsWithHeyApi,
+  getProfileDevicesWithHeyApi,
+  getProfileWithHeyApi,
+  respondToLandingPageRecommendationWithHeyApi,
+  updateProfileSettingWithHeyApi,
+  updateProfileSkillsWithHeyApi,
+  updateProfileWithHeyApi,
+  verifyProfileEmailWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   AppPublicSettingsResponse,
   EmailChangeRequestResponse,
-  EmailChangeVerifyResponse,
+  EmailChangeRequestResponse as HeyEmailChangeRequestResponse,
+  EmailChangeVerifyResponse as HeyEmailChangeVerifyResponse,
+  MessageResponse as HeyMessageResponse,
+  UserDetailResponse as HeyUserDetailResponse,
+  UserSettingResponse as HeyUserSettingResponse,
   MessageResponse,
   SuccessResponse,
   UserDetailResponse,
   UserSettingResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detectConcurrencyError } from '@/libs/concurrencyError';
 import {
   type DeleteAvatarFileInput,
   type DeleteDeviceInput,
@@ -46,7 +61,7 @@ import { validationError } from './types';
  * Server Action: プロフィールを更新（ユーザー名、アバター）
  * 楽観的ロックで競合を検出
  */
-export async function updateProfile(input: UpdateProfileActionInput): Promise<ApiResponse<UserDetailResponse>> {
+export async function updateProfile(input: UpdateProfileActionInput): Promise<ApiResponse<HeyUserDetailResponse>> {
   const parseResult = updateProfileActionInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -54,8 +69,7 @@ export async function updateProfile(input: UpdateProfileActionInput): Promise<Ap
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.putApiProfile({
+    const response = await updateProfileWithHeyApi({
       username: parseResult.data.username,
       avatarType: parseResult.data.avatarType,
       userAvatarPath: parseResult.data.userAvatarPath,
@@ -81,7 +95,7 @@ export async function updateProfile(input: UpdateProfileActionInput): Promise<Ap
     }
 
     console.error('Failed to update profile:', error);
-    return handleApiErrorForAction<UserDetailResponse>(error, {
+    return handleApiErrorForAction<HeyUserDetailResponse>(error, {
       defaultMessage: 'プロフィールの更新に失敗しました',
     });
   }
@@ -101,8 +115,7 @@ export async function requestEmailChange(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.postApiProfileEmailRequestChange({
+    const response = await changeProfileEmailWithHeyApi({
       newEmail: parseResult.data.newEmail,
       currentPassword: parseResult.data.currentPassword,
     });
@@ -110,7 +123,7 @@ export async function requestEmailChange(
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to request email change:', error);
-    return handleApiErrorForAction<EmailChangeRequestResponse>(error, {
+    return handleApiErrorForAction<HeyEmailChangeRequestResponse>(error, {
       defaultMessage: 'メールアドレス変更リクエストに失敗しました',
     });
   }
@@ -122,7 +135,7 @@ export async function requestEmailChange(
  */
 export async function verifyEmailChange(
   input: VerifyEmailChangeInput,
-): Promise<ApiResponse<EmailChangeVerifyResponse>> {
+): Promise<ApiResponse<HeyEmailChangeVerifyResponse>> {
   const parseResult = verifyEmailChangeInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -130,13 +143,12 @@ export async function verifyEmailChange(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.getApiProfileEmailVerify(parseResult.data.token);
+    const response = await verifyProfileEmailWithHeyApi(parseResult.data.token);
 
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to verify email change:', error);
-    return handleApiErrorForAction<EmailChangeVerifyResponse>(error, {
+    return handleApiErrorForAction<HeyEmailChangeVerifyResponse>(error, {
       defaultMessage: 'メールアドレス変更の確認に失敗しました',
     });
   }
@@ -146,7 +158,7 @@ export async function verifyEmailChange(
  * Server Action: パスワードを変更
  * @param input クライアント側で Zod 検証済みのデータ
  */
-export async function updateUserPassword(input: UpdatePasswordFormInput): Promise<ApiResponse<MessageResponse>> {
+export async function updateUserPassword(input: UpdatePasswordFormInput): Promise<ApiResponse<HeyMessageResponse>> {
   const parseResult = updatePasswordFormSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -154,8 +166,7 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.patchApiProfilePassword({
+    const response = await changeProfilePasswordWithHeyApi({
       currentPassword: parseResult.data.currentPassword,
       newPassword: parseResult.data.newPassword,
     });
@@ -163,7 +174,7 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update password:', error);
-    return handleApiErrorForAction<MessageResponse>(error, {
+    return handleApiErrorForAction<HeyMessageResponse>(error, {
       defaultMessage: 'パスワード変更に失敗しました',
     });
   }
@@ -183,15 +194,14 @@ export async function deleteDevice(input: DeleteDeviceInput): Promise<ApiRespons
 
   try {
     const { ServerSessionManager } = await import('@/libs/serverSession');
-    const api = createPecusApiClients();
 
     // まずデバイス一覧を取得して対象デバイスの publicId を確認
-    const devices = await api.profile.getApiProfileDevices();
+    const devices = await getProfileDevicesWithHeyApi();
     const targetDevice = devices.find((d) => d.id === parseResult.data.deviceId);
     const devicePublicId = targetDevice?.publicId;
 
     // バックエンドでデバイスを削除
-    const response = await api.profile.deleteApiProfileDevices(parseResult.data.deviceId);
+    const response = await deleteProfileDeviceWithHeyApi(parseResult.data.deviceId);
 
     // Redis セッションも削除（publicId がある場合）
     if (devicePublicId) {
@@ -231,20 +241,18 @@ export async function logoutOtherDevices(
       return { success: false, error: 'unauthorized', message: 'ログインが必要です' };
     }
 
-    const api = createPecusApiClients();
-
     // 現在のデバイスの publicId を取得
     const currentDevicePublicId = session.device?.publicId;
 
     // デバイス一覧を取得して、現在のデバイス以外を削除
-    const devices = await api.profile.getApiProfileDevices();
+    const devices = await getProfileDevicesWithHeyApi();
     const otherDevices = devices.filter((d) => d.publicId !== currentDevicePublicId);
 
     let deletedDeviceCount = 0;
     for (const device of otherDevices) {
       if (device.id) {
         try {
-          await api.profile.deleteApiProfileDevices(device.id);
+          await deleteProfileDeviceWithHeyApi(device.id);
           deletedDeviceCount++;
         } catch (error) {
           console.error(`Failed to delete device ${device.id}:`, error);
@@ -279,8 +287,7 @@ export async function setUserSkills(input: UpdateSkillsFormInput): Promise<ApiRe
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.putApiProfileSkills({
+    const response = await updateProfileSkillsWithHeyApi({
       skillIds: parseResult.data.skillIds ?? null,
       userRowVersion: null, // optional: 簡略化のため送信しない
     });
@@ -322,10 +329,8 @@ export async function uploadAvatarFile(input: UploadAvatarFileInput): Promise<
   }
 
   try {
-    const api = createPecusApiClients();
-
     // ユーザー情報を取得してResourceIdを設定
-    const userResponse = await api.profile.getApiProfile();
+    const userResponse = await getProfileWithHeyApi();
 
     // 認証済みAxiosインスタンスを作成
     // Note: OpenAPI自動生成クライアントはNode.js環境でのFormData/Fileオブジェクト処理に非対応のため、
@@ -384,12 +389,11 @@ export async function deleteAvatarFile(input: DeleteAvatarFileInput): Promise<Ap
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.file.deleteApiDownloadsIcons(
-      'Avatar',
-      parseResult.data.resourceId,
-      parseResult.data.fileName,
-    );
+    const response = await deleteAvatarFileWithHeyApi({
+      FileType: 'Avatar',
+      ResourceId: parseResult.data.resourceId,
+      FileName: parseResult.data.fileName,
+    });
 
     return { success: true, data: response };
   } catch (error) {
@@ -404,7 +408,7 @@ export async function deleteAvatarFile(input: DeleteAvatarFileInput): Promise<Ap
  * Server Action: ユーザー設定を更新
  * 楽観的ロックで競合を検出
  */
-export async function updateUserSetting(input: UpdateUserSettingInput): Promise<ApiResponse<UserSettingResponse>> {
+export async function updateUserSetting(input: UpdateUserSettingInput): Promise<ApiResponse<HeyUserSettingResponse>> {
   const parseResult = updateUserSettingInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -412,8 +416,7 @@ export async function updateUserSetting(input: UpdateUserSettingInput): Promise<
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.putApiProfileSetting({
+    const response = await updateProfileSettingWithHeyApi({
       canReceiveEmail: parseResult.data.canReceiveEmail,
       emailNotificationMode: parseResult.data.emailNotificationMode,
       customEmailSettings: parseResult.data.customEmailSettings ?? undefined,
@@ -448,7 +451,7 @@ export async function updateUserSetting(input: UpdateUserSettingInput): Promise<
     }
 
     console.error('Failed to update user setting:', error);
-    return handleApiErrorForAction<UserSettingResponse>(error, {
+    return handleApiErrorForAction<HeyUserSettingResponse>(error, {
       defaultMessage: 'ユーザー設定の更新に失敗しました',
     });
   }
@@ -463,8 +466,7 @@ export async function updateUserSetting(input: UpdateUserSettingInput): Promise<
  */
 export async function fetchAppSettings(): Promise<ApiResponse<AppPublicSettingsResponse>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.getApiProfileAppSettings();
+    const response = await getProfileAppSettingsWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch app settings:', error);
@@ -485,7 +487,7 @@ export async function fetchAppSettings(): Promise<ApiResponse<AppPublicSettingsR
  */
 export async function respondToLandingPageRecommendation(
   input: RespondToLandingPageRecommendationInput,
-): Promise<ApiResponse<UserSettingResponse>> {
+): Promise<ApiResponse<HeyUserSettingResponse>> {
   const parseResult = respondToLandingPageRecommendationInputSchema.safeParse(input);
   if (!parseResult.success) {
     const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
@@ -493,14 +495,13 @@ export async function respondToLandingPageRecommendation(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.profile.postApiProfileLandingPageRecommendationRespond({
+    const response = await respondToLandingPageRecommendationWithHeyApi({
       action: parseResult.data.action,
     });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to respond to landing page recommendation:', error);
-    return handleApiErrorForAction<UserSettingResponse>(error, {
+    return handleApiErrorForAction<HeyUserSettingResponse>(error, {
       defaultMessage: 'ランディングページ推奨への応答に失敗しました',
     });
   }

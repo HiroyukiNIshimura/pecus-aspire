@@ -1,6 +1,6 @@
 'use client';
 
-import type { AttendanceStatus } from '@/connectors/api/pecus';
+import type { AttendanceStatus } from '@/connectors/hey-api-axios/types.gen';
 
 interface AttendanceStatusBadgeProps {
   status: AttendanceStatus;

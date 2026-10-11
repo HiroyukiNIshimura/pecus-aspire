@@ -2,7 +2,7 @@
 
 import { logout } from '@/actions/auth';
 import AvatarImage from '@/components/common/widgets/user/AvatarImage';
-import type { CurrentUserInfo } from '@/connectors/api/pecus';
+import type { CurrentUserInfo } from '@/connectors/hey-api-axios/types.gen';
 
 interface UserMenuProps {
   userInfo: CurrentUserInfo | null;

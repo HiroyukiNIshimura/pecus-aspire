@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { PendingEmailChangeResponse } from '@/connectors/api/pecus';
+import type { PendingEmailChangeResponse } from '@/connectors/hey-api-axios/types.gen';
 import EmailChangeTab from './EmailChangeTab';
 import PasswordChangeTab from './PasswordChangeTab';
 

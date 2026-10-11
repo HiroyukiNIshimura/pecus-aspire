@@ -1,6 +1,6 @@
 'use client';
 
-import type { AssigneeTaskLoadResponse } from '@/connectors/api/pecus';
+import type { AssigneeTaskLoadResponse } from '@/connectors/hey-api-axios/types.gen';
 
 /** 負荷レベルの型 */
 type WorkloadLevel = 'Low' | 'Medium' | 'High' | 'Overloaded';

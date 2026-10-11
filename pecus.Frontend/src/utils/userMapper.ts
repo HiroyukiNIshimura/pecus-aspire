@@ -1,4 +1,4 @@
-import type { UserDetailResponse } from '@/connectors/api/pecus';
+import type { UserDetailResponse } from '@/connectors/hey-api-axios/types.gen';
 import type { UserInfo } from '@/types/userInfo';
 
 /**
@@ -12,8 +12,7 @@ import type { UserInfo } from '@/types/userInfo';
  *
  * @example
  * ```typescript
- * const api = createPecusApiClients();
- * const userResponse = await api.profile.getApiProfile();
+ * const userResponse = await getProfileWithHeyApi();
  * const user = mapUserResponseToUserInfo(userResponse);
  * ```
  */

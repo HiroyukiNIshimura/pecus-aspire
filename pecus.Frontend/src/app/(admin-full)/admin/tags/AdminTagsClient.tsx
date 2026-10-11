@@ -9,7 +9,7 @@ import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import ActiveStatusFilter from '@/components/common/filters/ActiveStatusFilter';
 import Pagination from '@/components/common/filters/Pagination';
 import DeleteConfirmModal from '@/components/common/overlays/DeleteConfirmModal';
-import type { TagListItemResponse, TagStatistics } from '@/connectors/api/pecus';
+import type { TagListItemResponse, TagStatistics } from '@/connectors/hey-api-axios/types.gen';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';

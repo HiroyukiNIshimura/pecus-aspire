@@ -2,9 +2,13 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { detect404ValidationError } from '@/connectors/api/PecusApiClient';
-import type { DeviceResponse, MasterSkillResponse, PendingEmailChangeResponse } from '@/connectors/api/pecus';
+import type {
+  DeviceResponse,
+  MasterSkillResponse,
+  PendingEmailChangeResponse,
+} from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
+import { detect404ValidationError } from '@/libs/apiError';
 import type { UserInfo } from '@/types/userInfo';
 import BasicInfoTab from './BasicInfoTab';
 import DevicesTab from './DevicesTab';

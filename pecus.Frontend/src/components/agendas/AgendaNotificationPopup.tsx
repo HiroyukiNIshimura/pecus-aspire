@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { fetchNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '@/actions/agenda';
-import type { AgendaNotificationResponse, AgendaNotificationType } from '@/connectors/api/pecus';
+import type { AgendaNotificationResponse, AgendaNotificationType } from '@/connectors/hey-api-axios/types.gen';
 import { formatDate, formatRelativeTime } from '@/libs/utils/date';
 
 /**

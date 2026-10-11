@@ -12,7 +12,7 @@ import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import BotListSection from '@/components/backoffice/BotListSection';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import DeleteOrganizationModal from '@/components/common/overlays/DeleteOrganizationModal';
-import type { BackOfficeOrganizationDetailResponse } from '@/connectors/api/pecus';
+import type { BackOfficeOrganizationDetailResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';

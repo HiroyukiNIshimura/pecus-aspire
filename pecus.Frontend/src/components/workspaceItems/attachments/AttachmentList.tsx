@@ -1,6 +1,6 @@
 'use client';
 
-import type { WorkspaceItemAttachmentResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemAttachmentResponse } from '@/connectors/hey-api-axios/types.gen';
 import AttachmentListItem from './AttachmentListItem';
 import AttachmentUploadProgress from './AttachmentUploadProgress';
 

@@ -4,11 +4,17 @@ import { redirect } from 'next/navigation';
 import { fetchWorkspaceItemByCode } from '@/actions/workspaceItem';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import {
-  createPecusApiClients,
-  detect401ValidationError,
-  detect404ValidationError,
-} from '@/connectors/api/PecusApiClient';
-import type { MasterGenreResponse, MasterSkillResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
+  getMasterGenresWithHeyApi,
+  getMasterSkillsWithHeyApi,
+  getMasterTaskTypesWithHeyApi,
+  getWorkspaceByCodeWithHeyApi,
+} from '@/connectors/HeyApiClient';
+import type {
+  MasterGenreResponse,
+  MasterSkillResponse,
+  WorkspaceFullDetailResponse,
+} from '@/connectors/hey-api-axios/types.gen';
+import { detect401ValidationError, detect404ValidationError } from '@/libs/apiError';
 import WorkspaceDetailClient from './WorkspaceDetailClient';
 
 interface WorkspaceDetailPageProps {
@@ -35,10 +41,14 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
   let initialItemId: number | undefined;
 
   try {
-    const api = createPecusApiClients();
-
     // ワークスペース詳細情報取得（code ベース）
-    workspaceDetail = await api.workspace.getApiWorkspacesCode(code);
+    const workspace = await getWorkspaceByCodeWithHeyApi(code);
+    workspaceDetail = {
+      ...workspace,
+      owner: workspace.owner ?? undefined,
+      mode: workspace.mode ?? undefined,
+      currentUserRole: workspace.currentUserRole ?? undefined,
+    };
 
     // itemCode が指定されている場合、アイテムIDを解決
     if (itemCode && workspaceDetail) {
@@ -52,7 +62,7 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
 
     // ジャンル一覧取得（編集用）
     try {
-      genres = await api.master.getApiMasterGenres();
+      genres = await getMasterGenresWithHeyApi();
     } catch (err) {
       console.warn('Failed to fetch genres:', err);
       genres = [];
@@ -60,7 +70,7 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
 
     // スキル一覧取得（編集用）
     try {
-      skills = await api.master.getApiMasterSkills();
+      skills = await getMasterSkillsWithHeyApi();
     } catch (err) {
       console.warn('Failed to fetch skills:', err);
       skills = [];
@@ -68,7 +78,7 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
 
     // タスクタイプ一覧取得
     try {
-      const taskTypeResponse = await api.master.getApiMasterTaskTypes();
+      const taskTypeResponse = await getMasterTaskTypesWithHeyApi();
       taskTypes = taskTypeResponse.map((t) => ({
         id: t.id,
         code: t.code ?? '',

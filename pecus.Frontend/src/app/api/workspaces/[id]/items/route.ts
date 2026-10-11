@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { badRequestError, parseRouterError } from '@/app/api/routerError';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { TaskPriority } from '@/connectors/api/pecus';
+import { getWorkspaceItemsWithHeyApi } from '@/connectors/HeyApiClient';
+import type { TaskPriority } from '@/connectors/hey-api-axios/types.gen';
 
 interface RouteParams {
   params: Promise<{
@@ -38,10 +38,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return badRequestError('Invalid workspace ID');
     }
 
-    const api = createPecusApiClients();
     // WorkspaceItemService を使用（pgroonga によるあいまい検索対応）
-    const response = await api.workspaceItem.getApiWorkspacesItems(
-      workspaceId,
+    const response = await getWorkspaceItemsWithHeyApi(workspaceId, {
       page,
       pageSize,
       isDraft,
@@ -54,7 +52,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       hasDueDate,
       hasPersonalNote,
       searchQuery,
-    );
+    });
 
     return NextResponse.json(response);
   } catch (error) {

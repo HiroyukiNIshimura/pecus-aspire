@@ -1,10 +1,20 @@
 'use server';
 
 import {
-  createPecusApiClients,
-  detectConcurrencyError,
-  detectMemberHasAssignmentsError,
-} from '@/connectors/api/PecusApiClient';
+  activateWorkspaceWithHeyApi,
+  addWorkspaceMemberWithHeyApi,
+  createWorkspaceWithHeyApi,
+  deactivateWorkspaceWithHeyApi,
+  getWorkspaceByIdWithHeyApi,
+  getWorkspacesWithHeyApiOptions,
+  getWorkspaceTaskTrendWithHeyApi,
+  joinWorkspaceWithHeyApi,
+  removeWorkspaceMemberWithHeyApi,
+  searchWorkspaceMembersWithHeyApi,
+  updateWorkspaceMemberRoleWithHeyApi,
+  updateWorkspaceSkillsWithHeyApi,
+  updateWorkspaceWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   DashboardTaskTrendResponse,
   PagedResponseOfWorkspaceListItemResponse,
@@ -16,7 +26,8 @@ import type {
   WorkspaceMode,
   WorkspaceRole,
   WorkspaceUserDetailResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detectConcurrencyError, detectMemberHasAssignmentsError } from '@/libs/concurrencyError';
 import {
   type AddMemberToWorkspaceInput,
   addMemberToWorkspaceInputSchema,
@@ -67,14 +78,13 @@ export async function getMyWorkspaces(
   }
 
   try {
-    const api = createPecusApiClients();
     const allWorkspaces: WorkspaceListItemResponse[] = [];
     let page = 1;
     let hasMore = true;
 
     // 全ページを取得
     while (hasMore) {
-      const response = await api.workspace.getApiWorkspaces(page, undefined, undefined, parseResult.data.mode);
+      const response = await getWorkspacesWithHeyApiOptions({ page, mode: parseResult.data.mode });
 
       if (response.data && response.data.length > 0) {
         allWorkspaces.push(...response.data);
@@ -123,8 +133,7 @@ export async function getMyWorkspacesPaged(
   const parsedPage = parseResult.data.page ?? 1;
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(parsedPage, undefined, undefined, undefined);
+    const response = await getWorkspacesWithHeyApiOptions({ page: parsedPage });
 
     return {
       success: true,
@@ -162,13 +171,11 @@ export async function fetchWorkspaces(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(
-      parseResult.data.page ?? 1,
-      parseResult.data.genreId,
-      parseResult.data.name,
-      undefined,
-    );
+    const response = await getWorkspacesWithHeyApiOptions({
+      page: parseResult.data.page ?? 1,
+      genreId: parseResult.data.genreId,
+      name: parseResult.data.name,
+    });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
@@ -191,8 +198,7 @@ export async function createWorkspace(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.postApiWorkspaces({
+    const response = await createWorkspaceWithHeyApi({
       name: parseResult.data.name,
       description: parseResult.data.description,
       genreId: parseResult.data.genreId,
@@ -222,8 +228,7 @@ export async function getWorkspaceDetail(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces1(parseResult.data.workspaceId);
+    const response = await getWorkspaceByIdWithHeyApi(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to get workspace detail:', error);
@@ -248,8 +253,7 @@ export async function updateWorkspace(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.putApiWorkspaces(parseResult.data.workspaceId, {
+    const response = await updateWorkspaceWithHeyApi(parseResult.data.workspaceId, {
       name: parseResult.data.name,
       description: parseResult.data.description,
       genreId: parseResult.data.genreId,
@@ -290,10 +294,8 @@ export async function toggleWorkspaceActive(
   }
 
   try {
-    const api = createPecusApiClients();
-
     // 最新のワークスペース情報を取得してrowVersionを取得
-    const detailResponse = await api.workspace.getApiWorkspaces1(parseResult.data.workspaceId);
+    const detailResponse = await getWorkspaceByIdWithHeyApi(parseResult.data.workspaceId);
 
     // rowVersionが存在しない、または0の場合はエラー
     if (!detailResponse.rowVersion || detailResponse.rowVersion === 0) {
@@ -303,8 +305,8 @@ export async function toggleWorkspaceActive(
 
     // isActiveに応じて適切なエンドポイントを呼び出す
     const response = parseResult.data.isActive
-      ? await api.workspace.postApiWorkspacesActivate(parseResult.data.workspaceId, detailResponse.rowVersion)
-      : await api.workspace.postApiWorkspacesDeactivate(parseResult.data.workspaceId, detailResponse.rowVersion);
+      ? await activateWorkspaceWithHeyApi(parseResult.data.workspaceId, detailResponse.rowVersion)
+      : await deactivateWorkspaceWithHeyApi(parseResult.data.workspaceId, detailResponse.rowVersion);
 
     return { success: true, data: response };
   } catch (error) {
@@ -346,8 +348,7 @@ export async function addMemberToWorkspace(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.postApiWorkspacesMembers(parseResult.data.workspaceId, {
+    const response = await addWorkspaceMemberWithHeyApi(parseResult.data.workspaceId, {
       userId: parseResult.data.userId,
       workspaceRole: parseResult.data.workspaceRole as WorkspaceRole,
     });
@@ -372,8 +373,7 @@ export async function removeMemberFromWorkspace(input: RemoveMemberFromWorkspace
   }
 
   try {
-    const api = createPecusApiClients();
-    await api.workspace.deleteApiWorkspacesMembers(parseResult.data.workspaceId, parseResult.data.userId);
+    await removeWorkspaceMemberWithHeyApi(parseResult.data.workspaceId, parseResult.data.userId);
     return { success: true, data: undefined };
   } catch (error) {
     console.error('Failed to remove member from workspace:', error);
@@ -400,14 +400,9 @@ export async function updateMemberRoleInWorkspace(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.patchApiWorkspacesMembersRole(
-      parseResult.data.workspaceId,
-      parseResult.data.userId,
-      {
-        workspaceRole: parseResult.data.newRole as WorkspaceRole,
-      },
-    );
+    const response = await updateWorkspaceMemberRoleWithHeyApi(parseResult.data.workspaceId, parseResult.data.userId, {
+      workspaceRole: parseResult.data.newRole as WorkspaceRole,
+    });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update member role:', error);
@@ -442,8 +437,7 @@ export async function setWorkspaceSkills(input: SetWorkspaceSkillsInput): Promis
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.putApiWorkspacesSkills(parseResult.data.workspaceId, {
+    const response = await updateWorkspaceSkillsWithHeyApi(parseResult.data.workspaceId, {
       skillIds: parseResult.data.skillIds,
       rowVersion: parseResult.data.rowVersion,
     });
@@ -493,13 +487,11 @@ export async function searchWorkspaceMembers(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspacesMembersSearch(
-      parseResult.data.workspaceId,
-      parseResult.data.query,
-      parseResult.data.limit ?? 20,
-      parseResult.data.excludeViewer ?? false,
-    );
+    const response = await searchWorkspaceMembersWithHeyApi(parseResult.data.workspaceId, {
+      Q: parseResult.data.query,
+      Limit: parseResult.data.limit ?? 20,
+      ExcludeViewer: parseResult.data.excludeViewer ?? false,
+    });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to search workspace members:', error);
@@ -524,11 +516,9 @@ export async function getWorkspaceTaskTrend(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspacesTaskTrend(
-      parseResult.data.workspaceId,
-      parseResult.data.weeks ?? 8,
-    );
+    const response = await getWorkspaceTaskTrendWithHeyApi(parseResult.data.workspaceId, {
+      weeks: parseResult.data.weeks ?? 8,
+    });
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch workspace task trend:', error);
@@ -550,8 +540,7 @@ export async function joinWorkspace(input: JoinWorkspaceInput): Promise<ApiRespo
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.workspace.postApiWorkspacesJoin(parseResult.data.workspaceId);
+    const response = await joinWorkspaceWithHeyApi(parseResult.data.workspaceId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to join workspace:', error);

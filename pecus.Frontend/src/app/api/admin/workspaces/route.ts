@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { getAdminWorkspacesWithHeyApi } from '@/connectors/HeyApiClient';
 import { parseRouterError } from '../../routerError';
 
 export const dynamic = 'force-dynamic';
@@ -13,8 +13,7 @@ export async function GET(request: NextRequest) {
     const genreId = searchParams.get('GenreId') ? parseInt(searchParams.get('GenreId')!, 10) : undefined;
     const name = searchParams.get('Name') || undefined;
 
-    const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces(page, isActive, genreId, name);
+    const response = await getAdminWorkspacesWithHeyApi(page, isActive, genreId, name);
 
     return NextResponse.json(response);
   } catch (error) {

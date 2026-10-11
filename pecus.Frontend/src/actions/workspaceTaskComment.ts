@@ -1,11 +1,18 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import {
+  createTaskCommentWithHeyApi,
+  deleteTaskCommentWithHeyApi,
+  getTaskCommentsWithHeyApi,
+  getTaskCommentWithHeyApi,
+  updateTaskCommentWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   PagedResponseOfTaskCommentDetailResponse,
   TaskCommentDetailResponse,
   TaskCommentResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { detectConcurrencyError } from '@/libs/concurrencyError';
 import {
   type CreateTaskCommentInput,
   createTaskCommentInputSchema,
@@ -35,14 +42,17 @@ export async function getTaskComments(
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.taskComment.getApiWorkspacesItemsTasksComments(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.taskId,
-      parseResult.data.page ?? 1,
-      parseResult.data.commentType,
-      parseResult.data.includeDeleted,
+    const response = await getTaskCommentsWithHeyApi(
+      {
+        workspaceId: parseResult.data.workspaceId,
+        itemId: parseResult.data.itemId,
+        taskId: parseResult.data.taskId,
+      },
+      {
+        Page: parseResult.data.page ?? 1,
+        CommentType: parseResult.data.commentType,
+        IncludeDeleted: parseResult.data.includeDeleted,
+      },
     );
 
     return { success: true, data: response };
@@ -65,13 +75,7 @@ export async function getTaskComment(input: GetTaskCommentInput): Promise<ApiRes
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.taskComment.getApiWorkspacesItemsTasksComments1(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.taskId,
-      parseResult.data.commentId,
-    );
+    const response = await getTaskCommentWithHeyApi(parseResult.data);
 
     return { success: true, data: response };
   } catch (error: unknown) {
@@ -93,12 +97,16 @@ export async function createTaskComment(input: CreateTaskCommentInput): Promise<
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.taskComment.postApiWorkspacesItemsTasksComments(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.taskId,
-      parseResult.data.request,
+    const response = await createTaskCommentWithHeyApi(
+      {
+        workspaceId: parseResult.data.workspaceId,
+        itemId: parseResult.data.itemId,
+        taskId: parseResult.data.taskId,
+      },
+      {
+        ...parseResult.data.request,
+        commentType: parseResult.data.request.commentType ?? undefined,
+      },
     );
 
     return { success: true, data: response };
@@ -121,12 +129,13 @@ export async function updateTaskComment(input: UpdateTaskCommentInput): Promise<
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.taskComment.putApiWorkspacesItemsTasksComments(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.taskId,
-      parseResult.data.commentId,
+    const response = await updateTaskCommentWithHeyApi(
+      {
+        workspaceId: parseResult.data.workspaceId,
+        itemId: parseResult.data.itemId,
+        taskId: parseResult.data.taskId,
+        commentId: parseResult.data.commentId,
+      },
       parseResult.data.request,
     );
 
@@ -166,12 +175,13 @@ export async function deleteTaskComment(input: DeleteTaskCommentInput): Promise<
   }
 
   try {
-    const api = await createPecusApiClients();
-    const response = await api.taskComment.deleteApiWorkspacesItemsTasksComments(
-      parseResult.data.workspaceId,
-      parseResult.data.itemId,
-      parseResult.data.taskId,
-      parseResult.data.commentId,
+    const response = await deleteTaskCommentWithHeyApi(
+      {
+        workspaceId: parseResult.data.workspaceId,
+        itemId: parseResult.data.itemId,
+        taskId: parseResult.data.taskId,
+        commentId: parseResult.data.commentId,
+      },
       { rowVersion: parseResult.data.rowVersion },
     );
 

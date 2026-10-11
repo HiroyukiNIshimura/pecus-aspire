@@ -3,11 +3,8 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchAgendaById } from '@/actions/agenda';
 import { getCurrentUser } from '@/actions/auth';
-import {
-  createPecusApiClients,
-  detect401ValidationError,
-  detect404ValidationError,
-} from '@/connectors/api/PecusApiClient';
+import { getProfileAppSettingsWithHeyApi } from '@/connectors/HeyApiClient';
+import { detect401ValidationError, detect404ValidationError } from '@/libs/apiError';
 import AgendaFormClient from '../../new/AgendaFormClient';
 
 interface EditAgendaPageProps {
@@ -35,8 +32,7 @@ export default async function EditAgendaPage({ params, searchParams }: EditAgend
 
   try {
     // 認証確認
-    const api = createPecusApiClients();
-    await api.profile.getApiProfileAppSettings();
+    await getProfileAppSettingsWithHeyApi();
 
     // 現在のユーザーID取得
     const userResult = await getCurrentUser();

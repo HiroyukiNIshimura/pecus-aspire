@@ -1,6 +1,16 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import {
+  createAdminUserWithoutPasswordWithHeyApi,
+  getAdminUserByIdWithHeyApi,
+  getAdminUsersRolesWithHeyApi,
+  getAdminUsersWithHeyApi,
+  getUsersWorkloadWithHeyApi,
+  requestAdminUserPasswordResetWithHeyApi,
+  resendAdminUserPasswordSetupWithHeyApi,
+  searchUsersWithHeyApi,
+  updateAdminUserWithHeyApi,
+} from '@/connectors/HeyApiClient';
 import type {
   PagedResponseOfUserDetailResponseAndUserStatistics,
   RoleListItemResponse,
@@ -8,7 +18,9 @@ import type {
   UserDetailResponse,
   UserSearchResultResponse,
   UsersWorkloadResponse,
-} from '@/connectors/api/pecus';
+} from '@/connectors/hey-api-axios/types.gen';
+import { normalizeHeyApiResponse } from '@/connectors/normalizeHeyApiResponse';
+import { detectConcurrencyError } from '@/libs/concurrencyError';
 import {
   type CreateUserWithoutPasswordInput,
   createUserWithoutPasswordInputSchema,
@@ -44,15 +56,14 @@ export async function getUsers(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers1(
+    const response = await getAdminUsersWithHeyApi(
       parseResult.data.page ?? 1,
       parseResult.data.isActive,
       parseResult.data.username,
       parseResult.data.skillIds,
       parseResult.data.skillFilterMode ?? 'and',
     );
-    return { success: true, data: response };
+    return { success: true, data: normalizeHeyApiResponse(response) };
   } catch (error) {
     console.error('Failed to fetch users:', error);
     return handleApiErrorForAction(error, { defaultMessage: 'ユーザー一覧の取得に失敗しました' });
@@ -72,8 +83,7 @@ export async function createUserWithoutPassword(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.postApiAdminUsersCreateWithoutPassword(parseResult.data);
+    const response = await createAdminUserWithoutPasswordWithHeyApi(parseResult.data);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to create user:', error);
@@ -93,8 +103,7 @@ export async function updateUser(input: UpdateUserInput): Promise<ApiResponse<Us
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.putApiAdminUsers(parseResult.data.userId, parseResult.data.request);
+    const response = await updateAdminUserWithHeyApi(parseResult.data.userId, parseResult.data.request);
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -130,8 +139,7 @@ export async function requestPasswordReset(input: RequestPasswordResetInput): Pr
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.postApiAdminUsersRequestPasswordReset(parseResult.data.userId);
+    const response = await requestAdminUserPasswordResetWithHeyApi(parseResult.data.userId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to request password reset:', error);
@@ -150,8 +158,7 @@ export async function resendPasswordSetup(input: ResendPasswordSetupInput): Prom
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.postApiAdminUsersResendPasswordSetup(parseResult.data.userId);
+    const response = await resendAdminUserPasswordSetupWithHeyApi(parseResult.data.userId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to resend password setup email:', error);
@@ -170,8 +177,7 @@ export async function getUserDetail(input: GetUserDetailInput): Promise<ApiRespo
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers(parseResult.data.userId);
+    const response = await getAdminUserByIdWithHeyApi(parseResult.data.userId);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch user detail:', error);
@@ -200,8 +206,7 @@ export async function searchUsersForWorkspace(
   }
 
   try {
-    const api = createPecusApiClients();
-    const response = await api.user.getApiUsersSearch(parseResult.data.query, parseResult.data.limit ?? 20);
+    const response = await searchUsersWithHeyApi(parseResult.data.query, parseResult.data.limit ?? 20);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to search users:', error);
@@ -214,8 +219,7 @@ export async function searchUsersForWorkspace(
  */
 export async function getRoles(): Promise<ApiResponse<RoleListItemResponse[]>> {
   try {
-    const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsersRoles();
+    const response = await getAdminUsersRolesWithHeyApi();
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch roles:', error);
@@ -240,8 +244,7 @@ export async function getUsersWorkload(input: GetUsersWorkloadInput): Promise<Ap
       return { success: true, data: { workloads: {} } };
     }
 
-    const api = createPecusApiClients();
-    const response = await api.user.postApiUsersWorkload({ userIds: parseResult.data.userIds });
+    const response = await getUsersWorkloadWithHeyApi(parseResult.data.userIds);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch users workload:', error);
