@@ -55,9 +55,15 @@ COPY --from=deps /app/packages/coati-editor/dist ./packages/coati-editor/dist
 # Copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
+# ワークスペース固有の node_modules（バージョン競合で hoist されなかった依存、例: @nestjs/core）
+COPY --from=deps /app/pecus.LexicalConverter/node_modules ./pecus.LexicalConverter/node_modules
+
 # Copy built files
-COPY --from=build /app/pecus.LexicalConverter/dist ./dist
-RUN test -f /app/dist/main.js && test -f /app/dist/ignore-css-loader.js
+COPY --from=build /app/pecus.LexicalConverter/dist ./pecus.LexicalConverter/dist
+COPY pecus.LexicalConverter/package.json ./pecus.LexicalConverter/
+RUN test -f /app/pecus.LexicalConverter/dist/main.js && test -f /app/pecus.LexicalConverter/dist/ignore-css-loader.js
+
+WORKDIR /app/pecus.LexicalConverter
 
 # Copy proto files
 COPY pecus.Protos/ /app/protos/
