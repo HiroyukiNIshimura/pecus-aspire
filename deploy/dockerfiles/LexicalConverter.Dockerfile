@@ -51,6 +51,7 @@ RUN apk add --no-cache tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime 
 # Copy packages (実ファイルのみ、シンボリックリンク問題を回避)
 COPY --from=deps /app/packages/coati-editor/package.json ./packages/coati-editor/
 COPY --from=deps /app/packages/coati-editor/dist ./packages/coati-editor/dist
+COPY --from=deps /app/packages/coati-editor/node_modules ./packages/coati-editor/node_modules
 
 # Copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
