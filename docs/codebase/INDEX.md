@@ -1,22 +1,31 @@
 # Coati コードベース解説
 
-Coati（開発コード `pecus`）の現行実装を、サービス境界から機能処理、開発・運用経路へ順にたどる開発者向け解説です。本文はコード、プロジェクト定義、Compose、スクリプト等を確認して作成しています。初回作成時の最終確認日は **2026-10-04** です。設計意図や仕様を定める文書ではなく、コードから確認できない動作は本文で未確認として扱います。
+Coati（`pecus-aspire`）の現行コードを根拠に、サービス境界、主要なデータ経路、業務ドメイン、開発・運用フローを説明する技術解説です。仕様書や実装ガイドではなく、現在のリポジトリ構成を理解するための案内です。
 
-## 読み進める順
+## 読み進め方
 
-1. [実行時システムの境界と起動トポロジー](system-topology.md) — Aspireの開発時リソース、サービス境界、Redis 2系統、Composeとの違い。
-2. [Frontendのリクエストとセッション](frontend-request-flow.md) — Next.jsの画面構成、SSR／Server Actions／API Routes、セッションとSignalR接続。
-3. [Web APIの契約・認証・エラー境界](webapi-contracts-security.md) — HTTPパイプライン、JWT／API Key、認可、検証、例外、OpenAPI。
-4. [永続化モデルとデータベース初期化](data-model-lifecycle.md) — EF Coreモデル、`xmin`、DbManager、migration、seed、pgroongaとファイル保存。
-5. [ワークスペース・アイテム・タスクの業務フロー](workspace-workflows.md) — Item／Taskの画面からAPI・DB・検索・添付への経路。
-6. [チャット・アジェンダ・リアルタイム通知](collaboration-realtime.md) — チャット／アジェンダの保存とSignalR、Redis Pub/Sub通知の分離。
-7. [AI連携とバックグラウンドジョブ](ai-background-jobs.md) — AI client、Bot、Hangfire enqueue、BackFireの定期job。
-8. [共有エディターとLexical変換](rich-content-pipeline.md) — `@coati/editor`、Lexical変換gRPC、protoと.NET client。
-9. [ヘルス・メトリクス・可観測性](observability.md) — health endpoint、OpenTelemetry、Prometheusとtarget同期。
-10. [配布・デプロイ・復旧運用](deployment-operations.md) — Compose、Blue/Green、build／deploy PC、migration、backup／restore。
-11. [開発者向け生成処理とリポジトリ支援](developer-workflows.md) — 設定・API型・help index・共有パッケージの生成、Agent／Skill。
+1. [実行単位とサービス境界](./00-system-overview.md) でローカル Aspire と本番 Compose の構成を確認する。
+2. [SSR・セッション・フロントエンド要求経路](./01-frontend-request-session.md) と [Web API・認証・公開契約](./02-webapi-boundary-security.md) で要求・認証の境界を読む。
+3. [ユーザーの無効化・履歴とワークスペース業務](./03-user-lifecycle-workspace-domain.md) と [DB 初期化・検索・整合性・ファイル永続化](./04-data-lifecycle-search-concurrency.md) で業務データと永続化を確認する。
+4. [SignalR・プレゼンス・チャット通知](./05-realtime-chat-notifications.md)、[Hangfire・AI クライアント・Bot](./06-background-ai-bots.md)、[アジェンダ・Focus・実績](./07-agenda-focus-achievements.md) で非同期・リアルタイム機能を読む。
+5. [共有 Lexical エディターと変換 gRPC](./08-editor-lexical-pipeline.md) で編集データの共有境界を確認する。
+6. [ローカル開発・設定・API／型生成](./09-local-development-code-generation.md)、[本番ビルド・デプロイ・運用](./10-deployment-operations.md)、[エージェント・ヘルプ・成果物作成フロー](./11-agent-content-workflows.md) で開発・運用と作業支援の経路を確認する。
 
-## 参照上の注意
+## 本文一覧
 
-- 本文の未確認事項は、推測で補わずコード上で確かめられなかった範囲を示します。とくに外部API認証の合成、FrontendのログインAction応答、添付・復旧手順、メトリクス更新やジョブ再試行の保証等は該当ページの記述を確認してください。
-- 設計意図・履歴・規約については、[仕様書の索引](../spec/INDEX.md)および[ドキュメント全体の索引](../INDEX.md)を参照してください。これらは本解説の現行コード記述とは役割が異なります。
+| 順 | ページ | 主な内容 |
+|---:|---|---|
+| 1 | [実行単位とサービス境界](./00-system-overview.md) | Aspire のローカル構成、本番 Compose、サービス間の通信・データ境界 |
+| 2 | [SSR・セッション・フロントエンド要求経路](./01-frontend-request-session.md) | SSR、Server Actions、セッション Redis、Web API 要求 |
+| 3 | [Web API・認証・公開契約](./02-webapi-boundary-security.md) | JWT、外部 API key、OpenAPI、エラー境界 |
+| 4 | [ユーザーの無効化・履歴とワークスペース業務](./03-user-lifecycle-workspace-domain.md) | User lifecycle、Activity、WorkspaceItem／WorkspaceTask |
+| 5 | [DB 初期化・検索・整合性・ファイル永続化](./04-data-lifecycle-search-concurrency.md) | DbManager、pgroonga、xmin／409、ファイル永続化 |
+| 6 | [SignalR・プレゼンス・チャット通知](./05-realtime-chat-notifications.md) | Hub、presence、Pub/Sub、チャット通知 |
+| 7 | [Hangfire・AI クライアント・Bot](./06-background-ai-bots.md) | Hangfire、AI adapter、Bot の非同期処理 |
+| 8 | [アジェンダ・Focus・実績](./07-agenda-focus-achievements.md) | Agenda、Focus scoring、achievement 判定 |
+| 9 | [共有 Lexical エディターと変換 gRPC](./08-editor-lexical-pipeline.md) | editor package、Lexical JSON、gRPC 変換 |
+| 10 | [ローカル開発・設定・API／型生成](./09-local-development-code-generation.md) | 設定生成、OpenAPI／Hey API、workspace build |
+| 11 | [本番ビルド・デプロイ・運用](./10-deployment-operations.md) | build／deploy、Blue/Green、migration、監視 |
+| 12 | [エージェント・ヘルプ・成果物作成フロー](./11-agent-content-workflows.md) | Agent／Skill、ヘルプ、画像、Markdown 成果物 |
+
+**最終確認日:** 2026-10-12
