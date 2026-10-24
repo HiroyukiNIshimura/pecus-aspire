@@ -64,7 +64,7 @@ public class TagService
         _logger.LogDebug(
             "タグを作成しました。TagId: {TagId}, Name: {Name}, OrganizationId: {OrganizationId}",
             tag.Id,
-            tag.Name,
+            tag.Name.ReplaceLineEndings(string.Empty),
             organizationId
         );
 
@@ -189,7 +189,7 @@ public class TagService
         _logger.LogDebug(
             "タグを更新しました。TagId: {TagId}, Name: {Name}",
             tag.Id,
-            tag.Name
+            tag.Name.ReplaceLineEndings(string.Empty)
         );
 
         return tag;
@@ -213,7 +213,7 @@ public class TagService
         _logger.LogDebug(
             "タグを削除しました。TagId: {TagId}, Name: {Name}",
             tag.Id,
-            tag.Name
+            tag.Name.ReplaceLineEndings(string.Empty)
         );
 
         return true;

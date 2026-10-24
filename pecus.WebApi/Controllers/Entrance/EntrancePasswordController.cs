@@ -119,7 +119,7 @@ public class EntrancePasswordController : ControllerBase
 
             _logger.LogInformation(
                 "パスワードリセットメールを送信しました: {Email}",
-                request.Email
+                request.Email.ReplaceLineEndings(string.Empty)
             );
         }
 

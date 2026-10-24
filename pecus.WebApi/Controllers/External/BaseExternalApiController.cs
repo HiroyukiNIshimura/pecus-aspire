@@ -129,8 +129,8 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
                 context.HttpContext.Request.Method,
                 context.HttpContext.Request.Path.Value?.ReplaceLineEndings(string.Empty),
                 CurrentApiKeyId,
-                CurrentOrganization.Code,
-                CurrentApiKey.Name);
+                CurrentOrganization.Code?.ReplaceLineEndings(string.Empty),
+                CurrentApiKey.Name.ReplaceLineEndings(string.Empty));
 
             // 次のアクションを実行
             var executedContext = await next();

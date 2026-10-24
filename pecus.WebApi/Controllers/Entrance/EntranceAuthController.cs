@@ -147,9 +147,9 @@ public class EntranceAuthController : ControllerBase
             _logger.LogInformation(
                 "新しいデバイスが作成されました。UserId: {UserId}, DeviceName: {DeviceName}, DeviceType: {DeviceType}, IP: {IpAddress}",
                 user.Id,
-                deviceInfo.DeviceName,
+                deviceInfo.DeviceName?.ReplaceLineEndings(string.Empty),
                 deviceInfo.DeviceType,
-                deviceInfo.IpAddress
+                deviceInfo.IpAddress?.ReplaceLineEndings(string.Empty)
             );
 
             // バックグラウンドでメール送信
@@ -183,7 +183,7 @@ public class EntranceAuthController : ControllerBase
             _logger.LogInformation(
                 "セキュリティ通知メールをHangfireジョブキューに投入しました。UserId: {UserId}, Email: {Email}",
                 user.Id,
-                user.Email
+                user.Email.ReplaceLineEndings(string.Empty)
             );
         }
 

@@ -122,7 +122,7 @@ public class SystemNotificationService
         _logger.LogInformation(
             "システム通知を作成しました: NotificationId={NotificationId}, Subject={Subject}",
             notification.Id,
-            notification.Subject);
+            notification.Subject.ReplaceLineEndings(string.Empty));
 
         return await GetNotificationAsync(notification.Id);
     }

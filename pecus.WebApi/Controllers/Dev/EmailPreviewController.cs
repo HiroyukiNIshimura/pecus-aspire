@@ -182,7 +182,10 @@ public class EmailPreviewController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "HTMLテンプレート {TemplateName} のレンダリングに失敗しました", templateName);
+            _logger.LogError(
+                ex,
+                "HTMLテンプレート {TemplateName} のレンダリングに失敗しました",
+                templateName.ReplaceLineEndings(string.Empty));
             return null;
         }
     }
@@ -196,7 +199,10 @@ public class EmailPreviewController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "テキストテンプレート {TemplateName} のレンダリングに失敗しました（存在しない可能性があります）", templateName);
+            _logger.LogWarning(
+                ex,
+                "テキストテンプレート {TemplateName} のレンダリングに失敗しました（存在しない可能性があります）",
+                templateName.ReplaceLineEndings(string.Empty));
             return null;
         }
     }
