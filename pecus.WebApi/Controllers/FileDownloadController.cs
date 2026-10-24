@@ -50,11 +50,14 @@ public class FileDownloadController : BaseSecureController
     /// <param name="useOriginal">元画像（リサイズ前）を取得するかどうか（クエリパラメータ）</param>
     [HttpGet("{FileType}/{ResourceId}/{FileName}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<FileContentHttpResult> GetFile(
         [FromRoute] FileDownloadRequest request,
         bool useOriginal)
     {
+        ValidateFileName(request.FileName);
+
         // 組織IDを使用してファイルパスを構築
         var uploadsPath = GetStorageBasePath();
         var filePath = Path.Combine(
@@ -111,11 +114,14 @@ public class FileDownloadController : BaseSecureController
     /// <param name="request">アイコン削除リクエスト</param>
     [HttpDelete("icons")]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public Results<Ok<MessageResponse>, NotFound<MessageResponse>> DeleteIcon(
         [FromQuery] DeleteIconRequest request
     )
     {
+        ValidateFileName(request.FileName);
+
         // 組織IDを使用してファイルパスを構築
         var uploadsPath = GetStorageBasePath();
         var filePath = Path.Combine(
@@ -218,5 +224,21 @@ public class FileDownloadController : BaseSecureController
         );
 
         return filePath;
+    }
+
+    /// <summary>
+    /// ファイル名が単一のパス要素であることを検証
+    /// </summary>
+    private static void ValidateFileName(string fileName)
+    {
+        if (
+            string.IsNullOrWhiteSpace(fileName)
+            || fileName.Contains("..", StringComparison.Ordinal)
+            || fileName.Contains('/', StringComparison.Ordinal)
+            || fileName.Contains('\\', StringComparison.Ordinal)
+        )
+        {
+            throw new BadRequestException("ファイル名が無効です。");
+        }
     }
 }
