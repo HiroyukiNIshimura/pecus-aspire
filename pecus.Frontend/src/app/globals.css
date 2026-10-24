@@ -20,6 +20,9 @@ body {
   margin: 0%;
   padding: 0%;
   overflow: hidden;
+  /* iOS Safari でページ全体が横方向にずれるのを防ぐ */
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
 }
 
 /* font-mono クラスを上書き（HackGen を使用） */
