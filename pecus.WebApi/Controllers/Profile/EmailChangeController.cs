@@ -96,7 +96,7 @@ public class EmailChangeController : BaseSecureController
         _logger.LogDebug(
             "メールアドレス変更リクエストを受け付けました。UserId: {UserId}, NewEmail: {NewEmail}",
             CurrentUserId,
-            request.NewEmail
+            "(redacted)"
         );
 
         return TypedResults.Ok(response);

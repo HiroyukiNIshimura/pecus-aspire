@@ -69,7 +69,7 @@ public class EmailTasks
             _logger.LogDebug(
                 "デモ組織のためメール送信をスキップしました。OrganizationId: {OrganizationId}, To: {To}",
                 organizationId,
-                to
+                "(redacted)"
             );
             return;
         }
@@ -79,7 +79,7 @@ public class EmailTasks
             _logger.LogDebug(
                 "宛先がダミーアドレスのためメール送信をスキップしました。OrganizationId: {OrganizationId}, To: {To}",
                 organizationId,
-                to
+                "(redacted)"
             );
             return;
         }

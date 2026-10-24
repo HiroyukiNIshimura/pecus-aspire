@@ -71,7 +71,7 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
             var apiKeyIdClaim = User.FindFirst("api_key_id")?.Value;
             if (string.IsNullOrEmpty(apiKeyIdClaim) || !int.TryParse(apiKeyIdClaim, out var apiKeyId))
             {
-                _logger.LogWarning("External API request without valid api_key_id claim. IP={IP}", ipAddress);
+                _logger.LogWarning("External API request without valid api_key_id claim. IP={IP}", ipAddress.ReplaceLineEndings(string.Empty));
                 context.Result = new UnauthorizedResult();
                 return;
             }
@@ -81,7 +81,7 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
             var organizationIdClaim = User.FindFirst("organization_id")?.Value;
             if (string.IsNullOrEmpty(organizationIdClaim) || !int.TryParse(organizationIdClaim, out var organizationId))
             {
-                _logger.LogWarning("External API request without valid organization_id claim. IP={IP}", ipAddress);
+                _logger.LogWarning("External API request without valid organization_id claim. IP={IP}", ipAddress.ReplaceLineEndings(string.Empty));
                 context.Result = new UnauthorizedResult();
                 return;
             }
@@ -98,7 +98,7 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
                 _logger.LogWarning(
                     "External API request with non-existent API key: {ApiKeyId} IP={IP}",
                     CurrentApiKeyId,
-                    ipAddress);
+                    ipAddress.ReplaceLineEndings(string.Empty));
                 context.Result = new UnauthorizedResult();
                 return;
             }
@@ -120,7 +120,7 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
                     CurrentApiKey.Role?.ToString() ?? "(none)",
                     accessAttribute?.RequiredRole.ToString() ?? "(no attribute)",
                     context.HttpContext.Request.Path,
-                    ipAddress);
+                    ipAddress.ReplaceLineEndings(string.Empty));
                 context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
                 return;
             }
@@ -129,11 +129,11 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
             _logger.LogInformation(
                 "ExternalAPI Request: {Method} {Path} | ApiKeyId={ApiKeyId} OrgCode={OrgCode} KeyName={KeyName} IP={IP}",
                 context.HttpContext.Request.Method,
-                context.HttpContext.Request.Path,
+                context.HttpContext.Request.Path.Value?.ReplaceLineEndings(string.Empty),
                 CurrentApiKeyId,
                 CurrentOrganization.Code,
                 CurrentApiKey.Name,
-                ipAddress);
+                ipAddress.ReplaceLineEndings(string.Empty));
 
             // 次のアクションを実行
             var executedContext = await next();
@@ -147,7 +147,7 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
                 statusCode,
                 elapsed,
                 CurrentApiKeyId,
-                context.HttpContext.Request.Path);
+                context.HttpContext.Request.Path.Value?.ReplaceLineEndings(string.Empty));
 
             // エラー時は詳細ログ
             if (executedContext.Exception != null || statusCode >= 400)
@@ -156,8 +156,8 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
                     "ExternalAPI Error: {StatusCode} | ApiKeyId={ApiKeyId} Path={Path} Error={Error}",
                     statusCode,
                     CurrentApiKeyId,
-                    context.HttpContext.Request.Path,
-                    executedContext.Exception?.Message ?? "No exception");
+                    context.HttpContext.Request.Path.Value?.ReplaceLineEndings(string.Empty),
+                    executedContext.Exception?.Message?.ReplaceLineEndings(string.Empty) ?? "No exception");
             }
         }
         catch (Exception ex)
@@ -166,7 +166,7 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
                 ex,
                 "Unexpected error in External API authentication check. ApiKeyId={ApiKeyId} IP={IP}",
                 CurrentApiKeyId,
-                ipAddress);
+                ipAddress.ReplaceLineEndings(string.Empty));
             throw;
         }
     }

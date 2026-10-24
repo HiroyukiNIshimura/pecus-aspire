@@ -86,7 +86,7 @@ public class ProfileService
         var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == newEmail);
         if (existingUser != null)
         {
-            _logger.LogWarning("メールアドレス変更失敗: 既に使用されているメールアドレスです。UserId: {UserId}, NewEmail: {NewEmail}", userId, newEmail);
+            _logger.LogWarning("メールアドレス変更失敗: 既に使用されているメールアドレスです。UserId: {UserId}", userId);
             return false;
         }
 
@@ -105,7 +105,7 @@ public class ProfileService
 
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("メールアドレスを変更しました。UserId: {UserId}, NewEmail: {NewEmail}", userId, newEmail);
+        _logger.LogInformation("メールアドレスを変更しました。UserId: {UserId}", userId);
         return true;
     }
 
@@ -553,7 +553,7 @@ public class ProfileService
                         ex,
                         "古いアバターファイルの削除に失敗しました。UserId: {UserId}, UserAvatarPath: {UserAvatarPath}",
                         userId,
-                        user.UserAvatarPath
+                        user.UserAvatarPath?.ReplaceLineEndings(string.Empty)
                     );
                 }
             }

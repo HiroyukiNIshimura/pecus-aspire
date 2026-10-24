@@ -66,10 +66,10 @@ public class EmailService : IEmailService
                 "  Bcc: {Bcc}\n" +
                 "  Subject: {Subject}\n" +
                 "  TextBody: {TextBody}",
-                string.Join(", ", message.To),
-                message.Cc.Count > 0 ? string.Join(", ", message.Cc) : "(none)",
-                message.Bcc.Count > 0 ? string.Join(", ", message.Bcc) : "(none)",
-                message.Subject,
+                "(redacted)",
+                "(redacted)",
+                "(redacted)",
+                message.Subject.ReplaceLineEndings(string.Empty),
                 textBodyForLog
             );
             return;
@@ -106,7 +106,7 @@ public class EmailService : IEmailService
 
             _logger.LogInformation(
                 "Email sent successfully to {Recipients}",
-                string.Join(", ", message.To)
+                "(redacted)"
             );
         }
         catch (Exception ex)
@@ -114,7 +114,7 @@ public class EmailService : IEmailService
             _logger.LogError(
                 ex,
                 "Failed to send email to {Recipients}",
-                string.Join(", ", message.To)
+                "(redacted)"
             );
             throw;
         }

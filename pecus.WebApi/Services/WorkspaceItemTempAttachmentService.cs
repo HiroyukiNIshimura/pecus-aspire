@@ -35,6 +35,29 @@ public class WorkspaceItemTempAttachmentService
         return Path.Combine(_environment.ContentRootPath, storagePath);
     }
 
+    private static string ValidateSessionId(string sessionId)
+    {
+        if (!Guid.TryParse(sessionId, out _))
+        {
+            throw new ArgumentException("セッションIDの形式が不正です。", nameof(sessionId));
+        }
+
+        return sessionId;
+    }
+
+    private static string ValidateFileName(string fileName)
+    {
+        if (
+            string.IsNullOrWhiteSpace(fileName)
+            || !string.Equals(Path.GetFileName(fileName), fileName, StringComparison.Ordinal)
+        )
+        {
+            throw new ArgumentException("ファイル名の形式が不正です。", nameof(fileName));
+        }
+
+        return fileName;
+    }
+
     /// <summary>
     /// 一時ファイルをアップロード
     /// </summary>
@@ -49,6 +72,8 @@ public class WorkspaceItemTempAttachmentService
         IFormFile file,
         int uploadedByUserId)
     {
+        sessionId = ValidateSessionId(sessionId);
+
         // ファイルサイズの検証
         if (file.Length > _config.FileUpload.MaxAttachmentFileSize)
         {
@@ -124,14 +149,14 @@ public class WorkspaceItemTempAttachmentService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to create thumbnails for temp file: {TempFileId}", tempFileId);
+                _logger.LogWarning(ex, "Failed to create thumbnails for temp file: {TempFileId}", tempFileId.ReplaceLineEndings(string.Empty));
                 // サムネイル生成失敗は致命的エラーではないので続行
             }
         }
 
         _logger.LogDebug(
             "Temp file uploaded: {TempFileId} for workspace {WorkspaceId}, session {SessionId}, user {UserId}",
-            tempFileId, workspaceId, sessionId, uploadedByUserId);
+            tempFileId.ReplaceLineEndings(string.Empty), workspaceId, sessionId, uploadedByUserId);
 
         return new TempAttachmentResponse
         {
@@ -153,6 +178,9 @@ public class WorkspaceItemTempAttachmentService
     /// <returns>ファイルパス（存在する場合）</returns>
     public string? GetTempFilePath(int workspaceId, string sessionId, string fileName)
     {
+        sessionId = ValidateSessionId(sessionId);
+        fileName = ValidateFileName(fileName);
+
         var filePath = Path.Combine(
             GetStorageBasePath(),
             "temp",
@@ -172,6 +200,12 @@ public class WorkspaceItemTempAttachmentService
     /// <returns>ファイル情報（存在する場合）</returns>
     public TempFileInfo? GetTempFileInfo(int workspaceId, string sessionId, string tempFileId)
     {
+        sessionId = ValidateSessionId(sessionId);
+        if (!Guid.TryParse(tempFileId, out _))
+        {
+            throw new ArgumentException("一時ファイルIDの形式が不正です。", nameof(tempFileId));
+        }
+
         var tempFolder = Path.Combine(
             GetStorageBasePath(),
             "temp",
@@ -275,7 +309,7 @@ public class WorkspaceItemTempAttachmentService
 
         _logger.LogDebug(
             "Temp file promoted: {TempFileId} -> Item {WorkspaceItemId}, new path: {NewFilePath}",
-            tempFileId, workspaceItemId, newFilePath);
+            tempFileId.ReplaceLineEndings(string.Empty), workspaceItemId, newFilePath.ReplaceLineEndings(string.Empty));
 
         var downloadUrl = $"/api/workspaces/{workspaceId}/items/{workspaceItemId}/attachments/{newFileName}";
 
@@ -297,6 +331,8 @@ public class WorkspaceItemTempAttachmentService
     /// <param name="sessionId">セッションID</param>
     public void CleanupSessionFiles(int workspaceId, string sessionId)
     {
+        sessionId = ValidateSessionId(sessionId);
+
         var tempFolder = Path.Combine(
             GetStorageBasePath(),
             "temp",
@@ -308,7 +344,7 @@ public class WorkspaceItemTempAttachmentService
             Directory.Delete(tempFolder, recursive: true);
             _logger.LogDebug(
                 "Cleaned up temp files for workspace {WorkspaceId}, session {SessionId}",
-                workspaceId, sessionId);
+                workspaceId, sessionId.ReplaceLineEndings(string.Empty));
         }
     }
 

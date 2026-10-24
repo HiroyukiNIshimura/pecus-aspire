@@ -230,7 +230,7 @@ public class WorkspaceItemService
 
                         _logger.LogDebug(
                             "Promoted temp file {TempFileId} to attachment for item {ItemId}",
-                            tempFileId,
+                            tempFileId.ReplaceLineEndings(string.Empty),
                             item.Id
                         );
                     }
@@ -239,7 +239,7 @@ public class WorkspaceItemService
                         _logger.LogWarning(
                             ex,
                             "Temp file not found during promotion: {TempFileId}",
-                            tempFileId
+                            tempFileId.ReplaceLineEndings(string.Empty)
                         );
                         // 一時ファイルが見つからない場合は無視して続行
                     }
@@ -961,7 +961,7 @@ public class WorkspaceItemService
 
                     _logger.LogDebug(
                         "Promoted temp file {TempFileId} to attachment for item {ItemId} (update)",
-                        tempFileId,
+                        tempFileId.ReplaceLineEndings(string.Empty),
                         item.Id
                     );
                 }
@@ -970,7 +970,7 @@ public class WorkspaceItemService
                     _logger.LogWarning(
                         ex,
                         "Temp file not found during promotion (update): {TempFileId}",
-                        tempFileId
+                        tempFileId.ReplaceLineEndings(string.Empty)
                     );
                     // 一時ファイルが見つからない場合は無視して続行
                 }

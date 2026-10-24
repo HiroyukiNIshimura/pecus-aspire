@@ -151,10 +151,10 @@ public class FileDownloadController : BaseSecureController
             _logger.LogDebug(
                 "アイコンファイルを削除しました。OrganizationId: {OrganizationId}, FileType: {FileType}, ResourceId: {ResourceId}, FileName: {FileName}, DeletedFiles: {DeletedFiles}",
                 CurrentOrganizationId,
-                request.FileType,
+                request.FileType.ToString().ReplaceLineEndings(string.Empty),
                 request.ResourceId,
-                request.FileName,
-                string.Join(", ", deletedFiles)
+                request.FileName.ReplaceLineEndings(string.Empty),
+                string.Join(", ", deletedFiles).ReplaceLineEndings(string.Empty)
             );
         }
         else
@@ -162,9 +162,9 @@ public class FileDownloadController : BaseSecureController
             _logger.LogDebug(
                 "削除対象のファイルが既に存在しないため、削除をスキップしました。OrganizationId: {OrganizationId}, FileType: {FileType}, ResourceId: {ResourceId}, FileName: {FileName}",
                 CurrentOrganizationId,
-                request.FileType,
+                request.FileType.ToString().ReplaceLineEndings(string.Empty),
                 request.ResourceId,
-                request.FileName
+                request.FileName.ReplaceLineEndings(string.Empty)
             );
         }
 
@@ -215,7 +215,7 @@ public class FileDownloadController : BaseSecureController
         // 元画像が見つからない場合は通常のファイルにフォールバック
         _logger.LogWarning(
             "元画像が見つかりません。リサイズ済み画像を返します。FileName: {FileName}",
-            fileName
+            fileName.ReplaceLineEndings(string.Empty)
         );
 
         return filePath;
