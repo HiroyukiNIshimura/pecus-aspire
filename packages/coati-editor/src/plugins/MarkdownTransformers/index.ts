@@ -137,7 +137,41 @@ export const TWEET: ElementTransformer = {
 
 // Very primitive table setup
 const TABLE_ROW_REG_EXP = /^(?:\|)(.+)(?:\|)\s?$/;
-const TABLE_ROW_DIVIDER_REG_EXP = /^(\| ?:?-*:? ?)+\|\s?$/;
+
+function isTableRowDivider(text: string): boolean {
+  let row = text;
+  const lastCharacter = row.at(-1);
+  if (lastCharacter !== undefined && lastCharacter.trim() === '') {
+    row = row.slice(0, -1);
+  }
+
+  if (row.length < 2 || !row.startsWith('|') || !row.endsWith('|')) {
+    return false;
+  }
+
+  return row
+    .slice(1, -1)
+    .split('|')
+    .every((cell) => {
+      let index = 0;
+      if (cell[index] === ' ') {
+        index++;
+      }
+      if (cell[index] === ':') {
+        index++;
+      }
+      while (cell[index] === '-') {
+        index++;
+      }
+      if (cell[index] === ':') {
+        index++;
+      }
+      if (cell[index] === ' ') {
+        index++;
+      }
+      return index === cell.length;
+    });
+}
 
 export const TABLE: ElementTransformer = {
   dependencies: [TableNode, TableRowNode, TableCellNode],
@@ -176,7 +210,7 @@ export const TABLE: ElementTransformer = {
   regExp: TABLE_ROW_REG_EXP,
   replace: (parentNode, _1, match) => {
     // Header row
-    if (TABLE_ROW_DIVIDER_REG_EXP.test(match[0])) {
+    if (isTableRowDivider(match[0])) {
       const table = parentNode.getPreviousSibling();
       if (!table || !$isTableNode(table)) {
         return;

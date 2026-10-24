@@ -45680,7 +45680,35 @@ var TWEET = {
   type: "element"
 };
 var TABLE_ROW_REG_EXP = /^(?:\|)(.+)(?:\|)\s?$/;
-var TABLE_ROW_DIVIDER_REG_EXP = /^(\| ?:?-*:? ?)+\|\s?$/;
+function isTableRowDivider(text2) {
+  let row = text2;
+  const lastCharacter = row.at(-1);
+  if (lastCharacter !== void 0 && lastCharacter.trim() === "") {
+    row = row.slice(0, -1);
+  }
+  if (row.length < 2 || !row.startsWith("|") || !row.endsWith("|")) {
+    return false;
+  }
+  return row.slice(1, -1).split("|").every((cell) => {
+    let index = 0;
+    if (cell[index] === " ") {
+      index++;
+    }
+    if (cell[index] === ":") {
+      index++;
+    }
+    while (cell[index] === "-") {
+      index++;
+    }
+    if (cell[index] === ":") {
+      index++;
+    }
+    if (cell[index] === " ") {
+      index++;
+    }
+    return index === cell.length;
+  });
+}
 var TABLE = {
   dependencies: [import_table3.TableNode, import_table3.TableRowNode, import_table3.TableCellNode],
   export: (node) => {
@@ -45711,7 +45739,7 @@ var TABLE = {
   },
   regExp: TABLE_ROW_REG_EXP,
   replace: (parentNode, _1, match) => {
-    if (TABLE_ROW_DIVIDER_REG_EXP.test(match[0])) {
+    if (isTableRowDivider(match[0])) {
       const table2 = parentNode.getPreviousSibling();
       if (!table2 || !(0, import_table3.$isTableNode)(table2)) {
         return;
@@ -45934,7 +45962,35 @@ var TWEET2 = {
   type: "element"
 };
 var TABLE_ROW_REG_EXP2 = /^(?:\|)(.+)(?:\|)\s?$/;
-var TABLE_ROW_DIVIDER_REG_EXP2 = /^(\| ?:?-*:? ?)+\|\s?$/;
+function isTableRowDivider2(text2) {
+  let row = text2;
+  const lastCharacter = row.at(-1);
+  if (lastCharacter !== void 0 && lastCharacter.trim() === "") {
+    row = row.slice(0, -1);
+  }
+  if (row.length < 2 || !row.startsWith("|") || !row.endsWith("|")) {
+    return false;
+  }
+  return row.slice(1, -1).split("|").every((cell) => {
+    let index = 0;
+    if (cell[index] === " ") {
+      index++;
+    }
+    if (cell[index] === ":") {
+      index++;
+    }
+    while (cell[index] === "-") {
+      index++;
+    }
+    if (cell[index] === ":") {
+      index++;
+    }
+    if (cell[index] === " ") {
+      index++;
+    }
+    return index === cell.length;
+  });
+}
 var TABLE2 = {
   dependencies: [import_table4.TableNode, import_table4.TableRowNode, import_table4.TableCellNode],
   export: (node) => {
@@ -45965,7 +46021,7 @@ var TABLE2 = {
   },
   regExp: TABLE_ROW_REG_EXP2,
   replace: (parentNode, _1, match) => {
-    if (TABLE_ROW_DIVIDER_REG_EXP2.test(match[0])) {
+    if (isTableRowDivider2(match[0])) {
       const table2 = parentNode.getPreviousSibling();
       if (!table2 || !(0, import_table4.$isTableNode)(table2)) {
         return;
