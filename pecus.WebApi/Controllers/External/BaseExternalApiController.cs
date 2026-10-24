@@ -126,7 +126,7 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
             // リクエストログ（構造化ログ）
             _logger.LogInformation(
                 "ExternalAPI Request: {Method} {Path} | ApiKeyId={ApiKeyId} OrgCode={OrgCode} KeyName={KeyName}",
-                context.HttpContext.Request.Method,
+                context.HttpContext.Request.Method.ReplaceLineEndings(string.Empty),
                 context.HttpContext.Request.Path.Value?.ReplaceLineEndings(string.Empty),
                 CurrentApiKeyId,
                 CurrentOrganization.Code?.ReplaceLineEndings(string.Empty),
