@@ -3017,7 +3017,7 @@ var INITIAL_TOOLBAR_STATE = {
 var Context = createContext(void 0);
 
 // src/plugins/AutocompletePlugin/index.tsx
-var uuid = Math.random().toString(36).replace(/[^a-z]+/g, "").substring(0, 5);
+var uuid = globalThis.crypto.randomUUID();
 
 // src/nodes/AutocompleteNode.tsx
 var uuidState = createState2("uuid", {

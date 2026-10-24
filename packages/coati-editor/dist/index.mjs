@@ -8729,7 +8729,7 @@ function addSwipeRightListener(element2, cb) {
 
 // src/plugins/AutocompletePlugin/index.tsx
 var HISTORY_MERGE = { tag: HISTORY_MERGE_TAG };
-var uuid = Math.random().toString(36).replace(/[^a-z]+/g, "").substring(0, 5);
+var uuid = globalThis.crypto.randomUUID();
 function $search(selection) {
   if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
     return [false, ""];

@@ -2985,7 +2985,7 @@ var INITIAL_TOOLBAR_STATE = {
 var Context = (0, import_react.createContext)(void 0);
 
 // src/plugins/AutocompletePlugin/index.tsx
-var uuid = Math.random().toString(36).replace(/[^a-z]+/g, "").substring(0, 5);
+var uuid = globalThis.crypto.randomUUID();
 
 // src/nodes/AutocompleteNode.tsx
 var uuidState = (0, import_lexical5.createState)("uuid", {

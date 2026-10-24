@@ -8773,7 +8773,7 @@ function addSwipeRightListener(element2, cb) {
 
 // src/plugins/AutocompletePlugin/index.tsx
 var HISTORY_MERGE = { tag: import_lexical2.HISTORY_MERGE_TAG };
-var uuid = Math.random().toString(36).replace(/[^a-z]+/g, "").substring(0, 5);
+var uuid = globalThis.crypto.randomUUID();
 function $search(selection) {
   if (!(0, import_lexical2.$isRangeSelection)(selection) || !selection.isCollapsed()) {
     return [false, ""];
