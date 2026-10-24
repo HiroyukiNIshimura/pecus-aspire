@@ -20,11 +20,20 @@ export async function GET(request: NextRequest) {
       return badRequestError('Missing required parameters');
     }
 
+    const normalizedFileType = fileType.toLowerCase();
+    if (normalizedFileType !== 'avatar') {
+      return badRequestError('Invalid file type');
+    }
+
+    if (!/^[1-9]\d*$/.test(resourceId)) {
+      return badRequestError('Invalid resource ID');
+    }
+
     // 認証済みAxiosインスタンスを作成
     const axios = await createAuthenticatedAxios();
 
     // バックエンドの新しいルートベースエンドポイントにアクセス
-    const backendUrl = `/api/downloads/${fileType.toLowerCase()}/${resourceId}/${encodeURIComponent(fileName)}`;
+    const backendUrl = `/api/downloads/${normalizedFileType}/${resourceId}/${encodeURIComponent(fileName)}`;
 
     const response = await axios.get(backendUrl, {
       params: useOriginal ? { useOriginal: true } : undefined,
