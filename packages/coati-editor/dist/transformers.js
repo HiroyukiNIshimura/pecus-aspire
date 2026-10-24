@@ -513,15 +513,26 @@ var init_EmojisPlugin = __esm({
 
 // src/utils/url.ts
 function validateUrl(url) {
-  return url === "https://" || urlRegExp.test(url);
+  if (url === "https://") {
+    return true;
+  }
+  try {
+    const lowerUrl = url.toLowerCase();
+    const hasSupportedProtocol = Array.from(SUPPORTED_URL_PROTOCOLS).some((protocol) => lowerUrl.startsWith(protocol));
+    const parsedUrl = new URL(hasSupportedProtocol ? url : `https://${url}`);
+    if (!SUPPORTED_URL_PROTOCOLS.has(parsedUrl.protocol)) {
+      return false;
+    }
+    return parsedUrl.protocol === "mailto:" || parsedUrl.protocol === "sms:" || parsedUrl.protocol === "tel:" ? parsedUrl.pathname.length > 0 : parsedUrl.hostname.length > 0;
+  } catch {
+    return false;
+  }
 }
-var urlRegExp;
+var SUPPORTED_URL_PROTOCOLS;
 var init_url = __esm({
   "src/utils/url.ts"() {
     "use strict";
-    urlRegExp = new RegExp(
-      /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[\w]*))?)/
-    );
+    SUPPORTED_URL_PROTOCOLS = /* @__PURE__ */ new Set(["http:", "https:", "mailto:", "sms:", "tel:"]);
   }
 });
 
