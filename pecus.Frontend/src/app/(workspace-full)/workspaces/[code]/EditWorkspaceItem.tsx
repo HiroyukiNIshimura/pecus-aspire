@@ -294,7 +294,7 @@ export default function EditWorkspaceItem({
       {/* モーダルオーバーレイ */}
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         {/* モーダルコンテナ */}
-        <div className="bg-base-100 rounded-box shadow-xl w-full max-w-4xl sm:max-w-6xl xl:max-w-7xl max-h-[90vh] flex flex-col">
+        <div className="bg-base-100 rounded-box shadow-xl w-full max-w-screen-2xl max-h-[90vh] flex flex-col">
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
             <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
@@ -314,7 +314,7 @@ export default function EditWorkspaceItem({
 
           {/* モーダルボディ */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-screen-2xl mx-auto">
               {/* アイテム読み込みエラー表示 */}
               {itemLoadError && (
                 <div className="alert alert-soft alert-error mb-4">
