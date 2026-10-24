@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Pecus.Exceptions;
 
 namespace Pecus.Libs;
 
@@ -80,6 +81,22 @@ public static class FileUploadHelper
     /// </summary>
     public static bool IsAllowedFileSize(long fileSize, long maxFileSize) =>
         fileSize <= maxFileSize;
+
+    /// <summary>
+    /// ファイル名が単一のパス要素であることを検証
+    /// </summary>
+    public static void ValidateFileName(string? fileName)
+    {
+        if (
+            string.IsNullOrWhiteSpace(fileName)
+            || fileName.Contains("..", StringComparison.Ordinal)
+            || fileName.Contains('/', StringComparison.Ordinal)
+            || fileName.Contains('\\', StringComparison.Ordinal)
+        )
+        {
+            throw new BadRequestException("ファイル名が無効です。");
+        }
+    }
 
     /// <summary>
     /// ディレクトリが存在しない場合は作成

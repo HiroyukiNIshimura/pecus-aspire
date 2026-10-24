@@ -353,6 +353,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
     /// <returns>ファイル</returns>
     [HttpGet("download/{fileName}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<FileContentHttpResult> DownloadAttachment(
@@ -367,6 +368,8 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
+
+        FileUploadHelper.ValidateFileName(fileName);
 
         // ファイルパスを構築
         var filePath = Path.Combine(

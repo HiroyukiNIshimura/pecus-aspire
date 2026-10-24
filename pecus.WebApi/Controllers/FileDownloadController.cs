@@ -56,7 +56,7 @@ public class FileDownloadController : BaseSecureController
         [FromRoute] FileDownloadRequest request,
         bool useOriginal)
     {
-        ValidateFileName(request.FileName);
+        FileUploadHelper.ValidateFileName(request.FileName);
 
         // 組織IDを使用してファイルパスを構築
         var uploadsPath = GetStorageBasePath();
@@ -120,7 +120,7 @@ public class FileDownloadController : BaseSecureController
         [FromQuery] DeleteIconRequest request
     )
     {
-        ValidateFileName(request.FileName);
+        FileUploadHelper.ValidateFileName(request.FileName);
 
         // 組織IDを使用してファイルパスを構築
         var uploadsPath = GetStorageBasePath();
@@ -226,19 +226,4 @@ public class FileDownloadController : BaseSecureController
         return filePath;
     }
 
-    /// <summary>
-    /// ファイル名が単一のパス要素であることを検証
-    /// </summary>
-    private static void ValidateFileName(string fileName)
-    {
-        if (
-            string.IsNullOrWhiteSpace(fileName)
-            || fileName.Contains("..", StringComparison.Ordinal)
-            || fileName.Contains('/', StringComparison.Ordinal)
-            || fileName.Contains('\\', StringComparison.Ordinal)
-        )
-        {
-            throw new BadRequestException("ファイル名が無効です。");
-        }
-    }
 }
