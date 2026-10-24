@@ -71,7 +71,7 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
             var apiKeyIdClaim = User.FindFirst("api_key_id")?.Value;
             if (string.IsNullOrEmpty(apiKeyIdClaim) || !int.TryParse(apiKeyIdClaim, out var apiKeyId))
             {
-                _logger.LogWarning("External API request without valid api_key_id claim. IP={IP}", ipAddress.ReplaceLineEndings(string.Empty));
+                _logger.LogWarning("External API request without valid api_key_id claim");
                 context.Result = new UnauthorizedResult();
                 return;
             }
@@ -81,7 +81,7 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
             var organizationIdClaim = User.FindFirst("organization_id")?.Value;
             if (string.IsNullOrEmpty(organizationIdClaim) || !int.TryParse(organizationIdClaim, out var organizationId))
             {
-                _logger.LogWarning("External API request without valid organization_id claim. IP={IP}", ipAddress.ReplaceLineEndings(string.Empty));
+                _logger.LogWarning("External API request without valid organization_id claim");
                 context.Result = new UnauthorizedResult();
                 return;
             }
@@ -96,9 +96,8 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
             if (CurrentApiKey == null)
             {
                 _logger.LogWarning(
-                    "External API request with non-existent API key: {ApiKeyId} IP={IP}",
-                    CurrentApiKeyId,
-                    ipAddress.ReplaceLineEndings(string.Empty));
+                    "External API request with non-existent API key: {ApiKeyId}",
+                    CurrentApiKeyId);
                 context.Result = new UnauthorizedResult();
                 return;
             }
@@ -115,25 +114,23 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
             if (accessAttribute is null || !accessAttribute.IsSatisfiedBy(CurrentApiKey.Role))
             {
                 _logger.LogWarning(
-                    "ExternalAPI Forbidden: ApiKeyId={ApiKeyId} KeyRole={KeyRole} Required={Required} Path={Path} IP={IP}",
+                    "ExternalAPI Forbidden: ApiKeyId={ApiKeyId} KeyRole={KeyRole} Required={Required} Path={Path}",
                     CurrentApiKeyId,
                     CurrentApiKey.Role?.ToString() ?? "(none)",
                     accessAttribute?.RequiredRole.ToString() ?? "(no attribute)",
-                    context.HttpContext.Request.Path,
-                    ipAddress.ReplaceLineEndings(string.Empty));
+                    context.HttpContext.Request.Path.Value?.ReplaceLineEndings(string.Empty));
                 context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
                 return;
             }
 
             // リクエストログ（構造化ログ）
             _logger.LogInformation(
-                "ExternalAPI Request: {Method} {Path} | ApiKeyId={ApiKeyId} OrgCode={OrgCode} KeyName={KeyName} IP={IP}",
+                "ExternalAPI Request: {Method} {Path} | ApiKeyId={ApiKeyId} OrgCode={OrgCode} KeyName={KeyName}",
                 context.HttpContext.Request.Method,
                 context.HttpContext.Request.Path.Value?.ReplaceLineEndings(string.Empty),
                 CurrentApiKeyId,
                 CurrentOrganization.Code,
-                CurrentApiKey.Name,
-                ipAddress.ReplaceLineEndings(string.Empty));
+                CurrentApiKey.Name);
 
             // 次のアクションを実行
             var executedContext = await next();
@@ -164,9 +161,8 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
         {
             _logger.LogError(
                 ex,
-                "Unexpected error in External API authentication check. ApiKeyId={ApiKeyId} IP={IP}",
-                CurrentApiKeyId,
-                ipAddress.ReplaceLineEndings(string.Empty));
+                "Unexpected error in External API authentication check. ApiKeyId={ApiKeyId}",
+                CurrentApiKeyId);
             throw;
         }
     }
@@ -181,14 +177,14 @@ public abstract class BaseExternalApiController : ControllerBase, IAsyncActionFi
         var forwardedFor = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
         if (!string.IsNullOrWhiteSpace(forwardedFor))
         {
-            return forwardedFor.Split(',').First().Trim();
+            return forwardedFor.Split(',').First().Trim().ReplaceLineEndings(string.Empty);
         }
 
         // X-Real-IP ヘッダーをチェック（Nginxなどのプロキシ）
         var realIp = HttpContext.Request.Headers["X-Real-IP"].FirstOrDefault();
         if (!string.IsNullOrWhiteSpace(realIp))
         {
-            return realIp;
+            return realIp.ReplaceLineEndings(string.Empty);
         }
 
         // RemoteIpAddress を取得

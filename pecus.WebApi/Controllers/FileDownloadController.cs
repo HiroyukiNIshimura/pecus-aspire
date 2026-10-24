@@ -214,8 +214,7 @@ public class FileDownloadController : BaseSecureController
 
         // 元画像が見つからない場合は通常のファイルにフォールバック
         _logger.LogWarning(
-            "元画像が見つかりません。リサイズ済み画像を返します。FileName: {FileName}",
-            fileName.ReplaceLineEndings(string.Empty)
+            "元画像が見つかりません。リサイズ済み画像を返します。"
         );
 
         return filePath;

@@ -149,14 +149,15 @@ public class WorkspaceItemTempAttachmentService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to create thumbnails for temp file: {TempFileId}", tempFileId.ReplaceLineEndings(string.Empty));
+                _logger.LogWarning(ex, "Failed to create thumbnails for temporary attachment");
                 // サムネイル生成失敗は致命的エラーではないので続行
             }
         }
 
         _logger.LogDebug(
-            "Temp file uploaded: {TempFileId} for workspace {WorkspaceId}, session {SessionId}, user {UserId}",
-            tempFileId.ReplaceLineEndings(string.Empty), workspaceId, sessionId, uploadedByUserId);
+            "Temporary attachment uploaded for workspace {WorkspaceId}, user {UserId}",
+            workspaceId,
+            uploadedByUserId);
 
         return new TempAttachmentResponse
         {
@@ -308,8 +309,8 @@ public class WorkspaceItemTempAttachmentService
         }
 
         _logger.LogDebug(
-            "Temp file promoted: {TempFileId} -> Item {WorkspaceItemId}, new path: {NewFilePath}",
-            tempFileId.ReplaceLineEndings(string.Empty), workspaceItemId, newFilePath.ReplaceLineEndings(string.Empty));
+            "Temp file promoted for item {WorkspaceItemId}",
+            workspaceItemId);
 
         var downloadUrl = $"/api/workspaces/{workspaceId}/items/{workspaceItemId}/attachments/{newFileName}";
 
@@ -378,11 +379,11 @@ public class WorkspaceItemTempAttachmentService
                     {
                         Directory.Delete(sessionDir, recursive: true);
                         deletedCount++;
-                        _logger.LogDebug("Deleted old temp session: {SessionDir}", sessionDir);
+                        _logger.LogDebug("Deleted old temporary attachment session");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Failed to delete temp session: {SessionDir}", sessionDir);
+                        _logger.LogWarning(ex, "Failed to delete temporary attachment session");
                     }
                 }
             }
