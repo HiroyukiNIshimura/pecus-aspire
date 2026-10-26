@@ -306,7 +306,9 @@ export default function WorkspaceItemFilterDrawer({
               />
             </svg>
             <h3 className="text-lg font-bold">詳細フィルター</h3>
-            {activeFilterCount > 0 && <span className="badge badge-primary badge-sm">{activeFilterCount}</span>}
+            {activeFilterCount > 0 && (
+              <span className="badge badge-primary badge-xs size-2 p-0" role="img" aria-label="フィルター適用中" />
+            )}
           </div>
           <button type="button" className="btn btn-secondary btn-circle btn-sm" aria-label="閉じる" onClick={onClose}>
             ✕

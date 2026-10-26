@@ -579,7 +579,11 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                   <span className="icon-[mdi--filter-outline] w-3 h-3" aria-hidden="true" />
                   <span>詳細フィルター</span>
                   {countActiveFilters(filters) > 0 && (
-                    <span className="badge badge-primary badge-xs">{countActiveFilters(filters)}</span>
+                    <span
+                      className="badge badge-primary badge-xs size-2 p-0"
+                      role="img"
+                      aria-label="フィルター適用中"
+                    />
                   )}
                 </button>
               )}
