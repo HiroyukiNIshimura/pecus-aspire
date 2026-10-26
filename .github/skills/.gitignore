@@ -1,0 +1,13 @@
+# Agent Skills Ninja START
+/.gitignore.agent-ninja-*.tmp
+/.gitignore.agent-ninja.lock
+/chrome-devtools/
+/coati-help-author/.skill-meta.json
+/coati-markdown-submit/.skill-meta.json
+/flyonui/.skill-meta.json
+/lexical-converter-grpc/.skill-meta.json
+/localhost-debug-browser/.skill-meta.json
+/make-skill-template/
+/refactor/
+/suggest-awesome-github-copilot-instructions/
+# Agent Skills Ninja END
