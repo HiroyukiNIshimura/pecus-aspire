@@ -1170,6 +1170,13 @@ export default function ToolbarPlugin({
               <span className="shortcut">{SHORTCUTS.CLEAR_FORMATTING}</span>
             </DropDownItem>
           </DropDown>
+          <Divider />
+          <ElementFormatDropdown
+            disabled={!isEditable}
+            value={toolbarState.elementFormat}
+            editor={activeEditor}
+            isRTL={toolbarState.isRTL}
+          />
           {canViewerSeeInsertDropdown && (
             <>
               <Divider />
@@ -1312,13 +1319,6 @@ export default function ToolbarPlugin({
           )}
         </>
       )}
-      <Divider />
-      <ElementFormatDropdown
-        disabled={!isEditable}
-        value={toolbarState.elementFormat}
-        editor={activeEditor}
-        isRTL={toolbarState.isRTL}
-      />
       <Divider />
       <button
         type="button"
