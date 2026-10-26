@@ -44,6 +44,16 @@ interface CurrentUser {
   identityIconUrl: string | null;
 }
 
+/** 既定のフィルタ（アーカイブ済みを除外） */
+export const DEFAULT_WORKSPACE_ITEM_FILTERS: WorkspaceItemFilters = { isArchived: false };
+
+/** 既定値（アーカイブ除外）を除いた有効フィルタ数 */
+export function countActiveFilters(filters: WorkspaceItemFilters): number {
+  return Object.entries(filters).filter(
+    ([key, v]) => v !== null && v !== undefined && v !== '' && !(key === 'isArchived' && v === false),
+  ).length;
+}
+
 interface WorkspaceItemFilterDrawerProps {
   isOpen: boolean;
   isClosing: boolean;
@@ -223,7 +233,7 @@ export default function WorkspaceItemFilterDrawer({
       committerId: null,
       priority: null,
       isDraft: null,
-      isArchived: null,
+      isArchived: false,
       pinned: null,
       hasDueDate: null,
       hasPersonalNote: null,
@@ -236,7 +246,7 @@ export default function WorkspaceItemFilterDrawer({
     onClose();
   };
 
-  const activeFilterCount = Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length;
+  const activeFilterCount = countActiveFilters(filters);
 
   return (
     <>

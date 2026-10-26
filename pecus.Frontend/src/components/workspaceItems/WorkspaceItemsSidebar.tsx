@@ -4,6 +4,8 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useSta
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import DocumentTreeSidebar from '@/components/workspaceItems/DocumentTreeSidebar';
 import WorkspaceItemFilterDrawer, {
+  countActiveFilters,
+  DEFAULT_WORKSPACE_ITEM_FILTERS,
   type WorkspaceItemFilters,
 } from '@/components/workspaceItems/WorkspaceItemFilterDrawer';
 import WorkspaceSwitcher from '@/components/workspaceItems/WorkspaceSwitcher';
@@ -122,7 +124,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     // フィルタードローワーの状態
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
     const [isFilterDrawerClosing, setIsFilterDrawerClosing] = useState(false);
-    const [filters, setFilters] = useState<WorkspaceItemFilters>({});
+    const [filters, setFilters] = useState<WorkspaceItemFilters>(DEFAULT_WORKSPACE_ITEM_FILTERS);
 
     // 選択モードの状態
     const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -416,9 +418,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       [resetInfiniteScroll],
     );
 
-    const hasActiveFilters =
-      searchQuery.trim().length > 0 ||
-      Object.values(filters).some((value) => value !== null && value !== undefined && value !== '');
+    const hasActiveFilters = searchQuery.trim().length > 0 || countActiveFilters(filters) > 0;
     const shouldTemporarilyHighlightCreate =
       !isSelectionMode && !isLoading && items.length === 0 && !hasActiveFilters && canEdit;
 
@@ -578,10 +578,8 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                 >
                   <span className="icon-[mdi--filter-outline] w-3 h-3" aria-hidden="true" />
                   <span>詳細フィルター</span>
-                  {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length > 0 && (
-                    <span className="badge badge-primary badge-xs">
-                      {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length}
-                    </span>
+                  {countActiveFilters(filters) > 0 && (
+                    <span className="badge badge-primary badge-xs">{countActiveFilters(filters)}</span>
                   )}
                 </button>
               )}
