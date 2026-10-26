@@ -48920,7 +48920,6 @@ function ElementFormatDropdown({
     DropDown,
     {
       disabled,
-      buttonLabel: formatOption.name,
       buttonIconClassName: `icon ${isRTL ? formatOption.iconRTL : formatOption.icon}`,
       buttonClassName: "toolbar-item spaced alignment",
       buttonAriaLabel: "Formatting options for text alignment",

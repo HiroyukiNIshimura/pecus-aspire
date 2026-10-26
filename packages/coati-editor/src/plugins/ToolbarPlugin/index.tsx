@@ -401,7 +401,8 @@ function ElementFormatDropdown({
   return (
     <DropDown
       disabled={disabled}
-      buttonLabel={formatOption.name}
+      //ラベルは非表示
+      //buttonLabel={formatOption.name}
       buttonIconClassName={`icon ${isRTL ? formatOption.iconRTL : formatOption.icon}`}
       buttonClassName="toolbar-item spaced alignment"
       buttonAriaLabel="Formatting options for text alignment"
