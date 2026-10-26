@@ -36,6 +36,7 @@ import {
   $isNodeSelection,
   $isRangeSelection,
   $isRootOrShadowRoot,
+  type AnyLexicalCommand,
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
@@ -46,7 +47,6 @@ import {
   FORMAT_TEXT_COMMAND,
   HISTORIC_TAG,
   INDENT_CONTENT_COMMAND,
-  type LexicalCommand,
   type LexicalEditor,
   type LexicalNode,
   type NodeKey,
@@ -599,7 +599,7 @@ export default function ToolbarPlugin({
     );
   }, [activeEditor, openMarkdownPreview]);
 
-  const dispatchToolbarCommand = <T extends LexicalCommand<any>>(
+  const dispatchToolbarCommand = <T extends AnyLexicalCommand>(
     command: T,
     payload: CommandPayloadType<T> | undefined = undefined,
     skipRefocus: boolean = false,
