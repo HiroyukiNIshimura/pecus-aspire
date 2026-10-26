@@ -7563,11 +7563,11 @@ var MermaidComponent_exports = {};
 __export(MermaidComponent_exports, {
   default: () => MermaidComponent
 });
-import { useLexicalComposerContext as useLexicalComposerContext33 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext31 } from "@lexical/react/LexicalComposerContext";
 import { useLexicalEditable as useLexicalEditable3 } from "@lexical/react/useLexicalEditable";
 import { $getNodeByKey as $getNodeByKey9 } from "lexical";
-import { useEffect as useEffect36, useMemo as useMemo16, useRef as useRef17, useState as useState26 } from "react";
-import { jsx as jsx50, jsxs as jsxs24 } from "react/jsx-runtime";
+import { useEffect as useEffect34, useMemo as useMemo16, useRef as useRef17, useState as useState26 } from "react";
+import { jsx as jsx49, jsxs as jsxs24 } from "react/jsx-runtime";
 function getIsDark() {
   if (typeof document === "undefined") return false;
   return document.documentElement.getAttribute("data-theme") === "dark";
@@ -7579,7 +7579,7 @@ function normalizeError(error) {
   return "Mermaid diagram rendering failed.";
 }
 function MermaidComponent({ code, nodeKey }) {
-  const [editor] = useLexicalComposerContext33();
+  const [editor] = useLexicalComposerContext31();
   const isEditable = useLexicalEditable3();
   const [source, setSource] = useState26(code);
   const [svg3, setSvg] = useState26("");
@@ -7588,17 +7588,17 @@ function MermaidComponent({ code, nodeKey }) {
   const hasSource = useMemo16(() => source.trim().length > 0, [source]);
   const [isDark, setIsDark] = useState26(getIsDark);
   const renderCountRef = useRef17(0);
-  useEffect36(() => {
+  useEffect34(() => {
     const observer = new MutationObserver(() => {
       setIsDark(getIsDark());
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => observer.disconnect();
   }, []);
-  useEffect36(() => {
+  useEffect34(() => {
     setSource(code);
   }, [code]);
-  useEffect36(() => {
+  useEffect34(() => {
     if (!hasSource) {
       setSvg("");
       setErrorMessage("");
@@ -7654,8 +7654,8 @@ function MermaidComponent({ code, nodeKey }) {
   };
   return /* @__PURE__ */ jsxs24("div", { className: "editor-mermaid-container", "data-lexical-mermaid-node": "true", children: [
     isEditable && /* @__PURE__ */ jsxs24("div", { className: "editor-mermaid-input-area", children: [
-      /* @__PURE__ */ jsx50("label", { htmlFor: `mermaid-source-${nodeKey}`, className: "editor-mermaid-label", children: "Mermaid" }),
-      /* @__PURE__ */ jsx50(
+      /* @__PURE__ */ jsx49("label", { htmlFor: `mermaid-source-${nodeKey}`, className: "editor-mermaid-label", children: "Mermaid" }),
+      /* @__PURE__ */ jsx49(
         "textarea",
         {
           id: `mermaid-source-${nodeKey}`,
@@ -7669,10 +7669,10 @@ function MermaidComponent({ code, nodeKey }) {
       )
     ] }),
     /* @__PURE__ */ jsxs24("div", { className: "editor-mermaid-preview-area", children: [
-      isRendering && /* @__PURE__ */ jsx50("div", { className: "editor-mermaid-status", children: "Rendering diagram..." }),
-      !hasSource && isEditable && /* @__PURE__ */ jsx50("div", { className: "editor-mermaid-status", children: "Write Mermaid syntax to preview." }),
-      !!errorMessage && /* @__PURE__ */ jsx50("div", { className: "editor-mermaid-error", children: errorMessage }),
-      !errorMessage && hasSource && !isRendering && /* @__PURE__ */ jsx50(
+      isRendering && /* @__PURE__ */ jsx49("div", { className: "editor-mermaid-status", children: "Rendering diagram..." }),
+      !hasSource && isEditable && /* @__PURE__ */ jsx49("div", { className: "editor-mermaid-status", children: "Write Mermaid syntax to preview." }),
+      !!errorMessage && /* @__PURE__ */ jsx49("div", { className: "editor-mermaid-error", children: errorMessage }),
+      !errorMessage && hasSource && !isRendering && /* @__PURE__ */ jsx49(
         "div",
         {
           className: "editor-mermaid-preview",
@@ -7703,7 +7703,7 @@ import {
   DecoratorNode as DecoratorNode5
 } from "lexical";
 import * as React5 from "react";
-import { jsx as jsx51 } from "react/jsx-runtime";
+import { jsx as jsx50 } from "react/jsx-runtime";
 function $convertMermaidElement(domNode) {
   if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
     return null;
@@ -7772,7 +7772,7 @@ var init_MermaidNode2 = __esm({
         return $setState11(this, codeState, code);
       }
       decorate() {
-        return /* @__PURE__ */ jsx51(MermaidComponent2, { code: this.getCode(), nodeKey: this.__key });
+        return /* @__PURE__ */ jsx50(MermaidComponent2, { code: this.getCode(), nodeKey: this.__key });
       }
       isIsolated() {
         return true;
@@ -29123,7 +29123,7 @@ init_LinkPlugin();
 // src/plugins/MarkdownPastePlugin/index.tsx
 import { $isCodeNode as $isCodeNode6 } from "@lexical/code";
 import { $convertFromMarkdownString as $convertFromMarkdownString3 } from "@lexical/markdown";
-import { useLexicalComposerContext as useLexicalComposerContext31 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext32 } from "@lexical/react/LexicalComposerContext";
 import {
   $createParagraphNode as $createParagraphNode9,
   $getSelection as $getSelection15,
@@ -29131,11 +29131,12 @@ import {
   COMMAND_PRIORITY_HIGH as COMMAND_PRIORITY_HIGH6,
   PASTE_COMMAND as PASTE_COMMAND2
 } from "lexical";
-import { useCallback as useCallback17, useEffect as useEffect34 } from "react";
+import { useCallback as useCallback17, useEffect as useEffect35 } from "react";
 
 // src/transformers/markdown-transformers.ts
 init_EquationNode();
 init_ImageNode2();
+init_MermaidNode2();
 import { $createHorizontalRuleNode as $createHorizontalRuleNode2, $isHorizontalRuleNode, HorizontalRuleNode } from "@lexical/extension";
 import {
   $convertFromMarkdownString,
@@ -45852,6 +45853,33 @@ var TWEET = {
   },
   type: "element"
 };
+var MERMAID = {
+  dependencies: [MermaidNode],
+  export: (node) => {
+    const mermaidNode = $isMermaidNode(node) ? node : $isParagraphNode4(node) && node.getChildrenSize() === 1 && $isMermaidNode(node.getFirstChild()) ? node.getFirstChild() : null;
+    if (!$isMermaidNode(mermaidNode)) {
+      return null;
+    }
+    const code = mermaidNode.getCode();
+    return `\`\`\`mermaid${code ? `
+${code}` : ""}
+\`\`\``;
+  },
+  regExpEnd: /^```$/,
+  regExpStart: /^```mermaid\s*$/,
+  replace: (rootNode, children, _startMatch, _endMatch, linesInBetween) => {
+    const codeLines = linesInBetween ?? children?.map((child) => child.getTextContent()) ?? [];
+    if (codeLines[0]?.trim().length === 0) {
+      codeLines.shift();
+    }
+    while (codeLines.length > 0 && !codeLines[codeLines.length - 1]) {
+      codeLines.pop();
+    }
+    const code = codeLines.join("\n");
+    rootNode.append($createMermaidNode(code));
+  },
+  type: "multiline-element"
+};
 var TABLE_ROW_REG_EXP = /^(?:\|)(.+)(?:\|)\s?$/;
 function isTableRowDivider(text2) {
   let row = text2;
@@ -46002,6 +46030,7 @@ var PLAYGROUND_TRANSFORMERS = [
   EMOJI,
   EQUATION,
   TWEET,
+  MERMAID,
   CHECK_LIST,
   ...ELEMENT_TRANSFORMERS,
   ...MULTILINE_ELEMENT_TRANSFORMERS,
@@ -46043,6 +46072,7 @@ function normalizeListIndentation(markdown) {
 // src/plugins/MarkdownTransformers/index.ts
 init_EquationNode();
 init_ImageNode2();
+init_MermaidNode2();
 import { $createHorizontalRuleNode as $createHorizontalRuleNode3, $isHorizontalRuleNode as $isHorizontalRuleNode2, HorizontalRuleNode as HorizontalRuleNode2 } from "@lexical/extension";
 import {
   $convertFromMarkdownString as $convertFromMarkdownString2,
@@ -46152,6 +46182,33 @@ var TWEET2 = {
     textNode.replace(tweetNode);
   },
   type: "element"
+};
+var MERMAID2 = {
+  dependencies: [MermaidNode],
+  export: (node) => {
+    const mermaidNode = $isMermaidNode(node) ? node : $isParagraphNode5(node) && node.getChildrenSize() === 1 && $isMermaidNode(node.getFirstChild()) ? node.getFirstChild() : null;
+    if (!$isMermaidNode(mermaidNode)) {
+      return null;
+    }
+    const code = mermaidNode.getCode();
+    return `\`\`\`mermaid${code ? `
+${code}` : ""}
+\`\`\``;
+  },
+  regExpEnd: /^```$/,
+  regExpStart: /^```mermaid\s*$/,
+  replace: (rootNode, children, _startMatch, _endMatch, linesInBetween) => {
+    const codeLines = linesInBetween ?? children?.map((child) => child.getTextContent()) ?? [];
+    if (codeLines[0]?.trim().length === 0) {
+      codeLines.shift();
+    }
+    while (codeLines.length > 0 && !codeLines[codeLines.length - 1]) {
+      codeLines.pop();
+    }
+    const code = codeLines.join("\n");
+    rootNode.append($createMermaidNode(code));
+  },
+  type: "multiline-element"
 };
 var TABLE_ROW_REG_EXP2 = /^(?:\|)(.+)(?:\|)\s?$/;
 function isTableRowDivider2(text2) {
@@ -46303,6 +46360,7 @@ var PLAYGROUND_TRANSFORMERS2 = [
   EMOJI2,
   EQUATION2,
   TWEET2,
+  MERMAID2,
   CHECK_LIST2,
   ...ELEMENT_TRANSFORMERS2,
   ...MULTILINE_ELEMENT_TRANSFORMERS2,
@@ -46403,7 +46461,7 @@ function getPlainTextFromClipboard(event) {
   return plainText;
 }
 function MarkdownPastePlugin() {
-  const [editor] = useLexicalComposerContext31();
+  const [editor] = useLexicalComposerContext32();
   const handlePaste = useCallback17(
     (event) => {
       const isInsideCodeBlock = editor.getEditorState().read(() => {
@@ -46473,7 +46531,7 @@ function MarkdownPastePlugin() {
     },
     [editor]
   );
-  useEffect34(() => {
+  useEffect35(() => {
     return editor.registerCommand(
       PASTE_COMMAND2,
       (event) => {
@@ -46487,20 +46545,20 @@ function MarkdownPastePlugin() {
 
 // src/plugins/MarkdownShortcutPlugin/index.tsx
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
-import { jsx as jsx49 } from "react/jsx-runtime";
+import { jsx as jsx51 } from "react/jsx-runtime";
 function MarkdownPlugin() {
-  return /* @__PURE__ */ jsx49(MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
+  return /* @__PURE__ */ jsx51(MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
 }
 
 // src/plugins/MaxLengthPlugin/index.tsx
-import { useLexicalComposerContext as useLexicalComposerContext32 } from "@lexical/react/LexicalComposerContext";
+import { useLexicalComposerContext as useLexicalComposerContext33 } from "@lexical/react/LexicalComposerContext";
 import { $trimTextContentFromAnchor } from "@lexical/selection";
 import { $restoreEditorState } from "@lexical/utils";
 import { $getSelection as $getSelection16, $isRangeSelection as $isRangeSelection13, RootNode as RootNode2 } from "lexical";
-import { useEffect as useEffect35 } from "react";
+import { useEffect as useEffect36 } from "react";
 function MaxLengthPlugin({ maxLength }) {
-  const [editor] = useLexicalComposerContext32();
-  useEffect35(() => {
+  const [editor] = useLexicalComposerContext33();
+  useEffect36(() => {
     let lastRestoredEditorState = null;
     return editor.registerNodeTransform(RootNode2, (rootNode) => {
       const selection = $getSelection16();

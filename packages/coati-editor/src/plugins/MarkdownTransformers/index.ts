@@ -14,6 +14,7 @@ import {
   ELEMENT_TRANSFORMERS,
   type ElementTransformer,
   MULTILINE_ELEMENT_TRANSFORMERS,
+  type MultilineElementTransformer,
   TEXT_FORMAT_TRANSFORMERS,
   TEXT_MATCH_TRANSFORMERS,
   type TextMatchTransformer,
@@ -34,6 +35,7 @@ import {
 import { $createTextNode, $isParagraphNode, $isTextNode, type LexicalNode } from 'lexical';
 import { $createEquationNode, $isEquationNode, EquationNode } from '../../nodes/EquationNode';
 import { $createImageNode, $isImageNode, ImageNode } from '../../nodes/ImageNode';
+import { $createMermaidNode, $isMermaidNode, MermaidNode } from '../../nodes/MermaidNode';
 import { $createTweetNode, $isTweetNode, TweetNode } from '../../nodes/TweetNode';
 import emojiList from '../../utils/emoji-list';
 
@@ -133,6 +135,37 @@ export const TWEET: ElementTransformer = {
     textNode.replace(tweetNode);
   },
   type: 'element',
+};
+
+export const MERMAID: MultilineElementTransformer = {
+  dependencies: [MermaidNode],
+  export: (node: LexicalNode) => {
+    const mermaidNode = $isMermaidNode(node)
+      ? node
+      : $isParagraphNode(node) && node.getChildrenSize() === 1 && $isMermaidNode(node.getFirstChild())
+        ? node.getFirstChild()
+        : null;
+    if (!$isMermaidNode(mermaidNode)) {
+      return null;
+    }
+
+    const code = mermaidNode.getCode();
+    return `\`\`\`mermaid${code ? `\n${code}` : ''}\n\`\`\``;
+  },
+  regExpEnd: /^```$/,
+  regExpStart: /^```mermaid\s*$/,
+  replace: (rootNode, children, _startMatch, _endMatch, linesInBetween) => {
+    const codeLines = linesInBetween ?? children?.map((child) => child.getTextContent()) ?? [];
+    if (codeLines[0]?.trim().length === 0) {
+      codeLines.shift();
+    }
+    while (codeLines.length > 0 && !codeLines[codeLines.length - 1]) {
+      codeLines.pop();
+    }
+    const code = codeLines.join('\n');
+    rootNode.append($createMermaidNode(code));
+  },
+  type: 'multiline-element',
 };
 
 // Very primitive table setup
@@ -324,6 +357,7 @@ export const PLAYGROUND_TRANSFORMERS: Array<Transformer> = [
   EMOJI,
   EQUATION,
   TWEET,
+  MERMAID,
   CHECK_LIST,
   ...ELEMENT_TRANSFORMERS,
   ...MULTILINE_ELEMENT_TRANSFORMERS,

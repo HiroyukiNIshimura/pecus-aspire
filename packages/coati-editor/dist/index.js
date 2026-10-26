@@ -7528,26 +7528,26 @@ function normalizeError(error) {
   return "Mermaid diagram rendering failed.";
 }
 function MermaidComponent({ code, nodeKey }) {
-  const [editor] = (0, import_LexicalComposerContext33.useLexicalComposerContext)();
+  const [editor] = (0, import_LexicalComposerContext31.useLexicalComposerContext)();
   const isEditable = (0, import_useLexicalEditable3.useLexicalEditable)();
-  const [source, setSource] = (0, import_react56.useState)(code);
-  const [svg3, setSvg] = (0, import_react56.useState)("");
-  const [errorMessage, setErrorMessage] = (0, import_react56.useState)("");
-  const [isRendering, setIsRendering] = (0, import_react56.useState)(false);
-  const hasSource = (0, import_react56.useMemo)(() => source.trim().length > 0, [source]);
-  const [isDark, setIsDark] = (0, import_react56.useState)(getIsDark);
-  const renderCountRef = (0, import_react56.useRef)(0);
-  (0, import_react56.useEffect)(() => {
+  const [source, setSource] = (0, import_react54.useState)(code);
+  const [svg3, setSvg] = (0, import_react54.useState)("");
+  const [errorMessage, setErrorMessage] = (0, import_react54.useState)("");
+  const [isRendering, setIsRendering] = (0, import_react54.useState)(false);
+  const hasSource = (0, import_react54.useMemo)(() => source.trim().length > 0, [source]);
+  const [isDark, setIsDark] = (0, import_react54.useState)(getIsDark);
+  const renderCountRef = (0, import_react54.useRef)(0);
+  (0, import_react54.useEffect)(() => {
     const observer = new MutationObserver(() => {
       setIsDark(getIsDark());
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => observer.disconnect();
   }, []);
-  (0, import_react56.useEffect)(() => {
+  (0, import_react54.useEffect)(() => {
     setSource(code);
   }, [code]);
-  (0, import_react56.useEffect)(() => {
+  (0, import_react54.useEffect)(() => {
     if (!hasSource) {
       setSvg("");
       setErrorMessage("");
@@ -7595,16 +7595,16 @@ function MermaidComponent({ code, nodeKey }) {
       return;
     }
     editor.update(() => {
-      const node = (0, import_lexical51.$getNodeByKey)(nodeKey);
+      const node = (0, import_lexical47.$getNodeByKey)(nodeKey);
       if ($isMermaidNode(node)) {
         node.setCode(nextValue);
       }
     });
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "editor-mermaid-container", "data-lexical-mermaid-node": "true", children: [
-    isEditable && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "editor-mermaid-input-area", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("label", { htmlFor: `mermaid-source-${nodeKey}`, className: "editor-mermaid-label", children: "Mermaid" }),
-      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)("div", { className: "editor-mermaid-container", "data-lexical-mermaid-node": "true", children: [
+    isEditable && /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)("div", { className: "editor-mermaid-input-area", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("label", { htmlFor: `mermaid-source-${nodeKey}`, className: "editor-mermaid-label", children: "Mermaid" }),
+      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
         "textarea",
         {
           id: `mermaid-source-${nodeKey}`,
@@ -7617,11 +7617,11 @@ function MermaidComponent({ code, nodeKey }) {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "editor-mermaid-preview-area", children: [
-      isRendering && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "editor-mermaid-status", children: "Rendering diagram..." }),
-      !hasSource && isEditable && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "editor-mermaid-status", children: "Write Mermaid syntax to preview." }),
-      !!errorMessage && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "editor-mermaid-error", children: errorMessage }),
-      !errorMessage && hasSource && !isRendering && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)("div", { className: "editor-mermaid-preview-area", children: [
+      isRendering && /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { className: "editor-mermaid-status", children: "Rendering diagram..." }),
+      !hasSource && isEditable && /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { className: "editor-mermaid-status", children: "Write Mermaid syntax to preview." }),
+      !!errorMessage && /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { className: "editor-mermaid-error", children: errorMessage }),
+      !errorMessage && hasSource && !isRendering && /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(
         "div",
         {
           className: "editor-mermaid-preview",
@@ -7631,17 +7631,17 @@ function MermaidComponent({ code, nodeKey }) {
     ] })
   ] });
 }
-var import_LexicalComposerContext33, import_useLexicalEditable3, import_lexical51, import_react56, import_jsx_runtime50, RENDER_DELAY_MS;
+var import_LexicalComposerContext31, import_useLexicalEditable3, import_lexical47, import_react54, import_jsx_runtime49, RENDER_DELAY_MS;
 var init_MermaidComponent = __esm({
   "src/nodes/MermaidComponent.tsx"() {
     "use strict";
-    import_LexicalComposerContext33 = require("@lexical/react/LexicalComposerContext");
+    import_LexicalComposerContext31 = require("@lexical/react/LexicalComposerContext");
     import_useLexicalEditable3 = require("@lexical/react/useLexicalEditable");
-    import_lexical51 = require("lexical");
-    import_react56 = require("react");
+    import_lexical47 = require("lexical");
+    import_react54 = require("react");
     init_MermaidNode2();
     init_MermaidNode();
-    import_jsx_runtime50 = require("react/jsx-runtime");
+    import_jsx_runtime49 = require("react/jsx-runtime");
     RENDER_DELAY_MS = 180;
   }
 });
@@ -7657,27 +7657,27 @@ function $convertMermaidElement(domNode) {
   return { node };
 }
 function $createMermaidNode(code = "") {
-  return (0, import_lexical52.$applyNodeReplacement)((0, import_lexical52.$setState)((0, import_lexical52.$create)(MermaidNode), codeState, code));
+  return (0, import_lexical48.$applyNodeReplacement)((0, import_lexical48.$setState)((0, import_lexical48.$create)(MermaidNode), codeState, code));
 }
 function $isMermaidNode(node) {
   return node instanceof MermaidNode;
 }
-var import_lexical52, React5, import_jsx_runtime51, MermaidComponent2, codeState, MermaidNode;
+var import_lexical48, React5, import_jsx_runtime50, MermaidComponent2, codeState, MermaidNode;
 var init_MermaidNode2 = __esm({
   "src/nodes/MermaidNode.tsx"() {
     "use strict";
-    import_lexical52 = require("lexical");
+    import_lexical48 = require("lexical");
     React5 = __toESM(require("react"));
-    import_jsx_runtime51 = require("react/jsx-runtime");
+    import_jsx_runtime50 = require("react/jsx-runtime");
     MermaidComponent2 = React5.lazy(() => Promise.resolve().then(() => (init_MermaidComponent(), MermaidComponent_exports)));
-    codeState = (0, import_lexical52.createState)("code", {
+    codeState = (0, import_lexical48.createState)("code", {
       parse: (v2) => typeof v2 === "string" ? v2 : ""
     });
-    MermaidNode = class extends import_lexical52.DecoratorNode {
+    MermaidNode = class extends import_lexical48.DecoratorNode {
       $config() {
         return this.config("mermaid", {
-          extends: import_lexical52.DecoratorNode,
-          importDOM: (0, import_lexical52.buildImportMap)({
+          extends: import_lexical48.DecoratorNode,
+          importDOM: (0, import_lexical48.buildImportMap)({
             div: (domNode) => {
               if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
                 return null;
@@ -7712,13 +7712,13 @@ var init_MermaidNode2 = __esm({
         return this.getCode();
       }
       getCode() {
-        return (0, import_lexical52.$getState)(this, codeState);
+        return (0, import_lexical48.$getState)(this, codeState);
       }
       setCode(code) {
-        return (0, import_lexical52.$setState)(this, codeState, code);
+        return (0, import_lexical48.$setState)(this, codeState, code);
       }
       decorate() {
-        return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(MermaidComponent2, { code: this.getCode(), nodeKey: this.__key });
+        return /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(MermaidComponent2, { code: this.getCode(), nodeKey: this.__key });
       }
       isIsolated() {
         return true;
@@ -28990,17 +28990,18 @@ init_LinkPlugin();
 // src/plugins/MarkdownPastePlugin/index.tsx
 var import_code8 = require("@lexical/code");
 var import_markdown9 = require("@lexical/markdown");
-var import_LexicalComposerContext31 = require("@lexical/react/LexicalComposerContext");
-var import_lexical49 = require("lexical");
-var import_react54 = require("react");
+var import_LexicalComposerContext32 = require("@lexical/react/LexicalComposerContext");
+var import_lexical51 = require("lexical");
+var import_react55 = require("react");
 
 // src/transformers/markdown-transformers.ts
 var import_extension3 = require("@lexical/extension");
 var import_markdown7 = require("@lexical/markdown");
 var import_table3 = require("@lexical/table");
-var import_lexical47 = require("lexical");
+var import_lexical49 = require("lexical");
 init_EquationNode();
 init_ImageNode2();
+init_MermaidNode2();
 
 // src/utils/emoji-list.ts
 var emoji_list_default = [
@@ -45654,7 +45655,7 @@ var EMOJI = {
   replace: (textNode, [, name]) => {
     const emoji = emoji_list_default.find((e) => e.aliases.includes(name))?.emoji;
     if (emoji) {
-      textNode.replace((0, import_lexical47.$createTextNode)(emoji));
+      textNode.replace((0, import_lexical49.$createTextNode)(emoji));
     }
   },
   trigger: ":",
@@ -45693,6 +45694,33 @@ var TWEET = {
     textNode.replace(tweetNode);
   },
   type: "element"
+};
+var MERMAID = {
+  dependencies: [MermaidNode],
+  export: (node) => {
+    const mermaidNode = $isMermaidNode(node) ? node : (0, import_lexical49.$isParagraphNode)(node) && node.getChildrenSize() === 1 && $isMermaidNode(node.getFirstChild()) ? node.getFirstChild() : null;
+    if (!$isMermaidNode(mermaidNode)) {
+      return null;
+    }
+    const code = mermaidNode.getCode();
+    return `\`\`\`mermaid${code ? `
+${code}` : ""}
+\`\`\``;
+  },
+  regExpEnd: /^```$/,
+  regExpStart: /^```mermaid\s*$/,
+  replace: (rootNode, children, _startMatch, _endMatch, linesInBetween) => {
+    const codeLines = linesInBetween ?? children?.map((child) => child.getTextContent()) ?? [];
+    if (codeLines[0]?.trim().length === 0) {
+      codeLines.shift();
+    }
+    while (codeLines.length > 0 && !codeLines[codeLines.length - 1]) {
+      codeLines.pop();
+    }
+    const code = codeLines.join("\n");
+    rootNode.append($createMermaidNode(code));
+  },
+  type: "multiline-element"
 };
 var TABLE_ROW_REG_EXP = /^(?:\|)(.+)(?:\|)\s?$/;
 function isTableRowDivider(text2) {
@@ -45781,14 +45809,14 @@ var TABLE = {
     let sibling = parentNode.getPreviousSibling();
     let maxCells = matchCells.length;
     while (sibling) {
-      if (!(0, import_lexical47.$isParagraphNode)(sibling)) {
+      if (!(0, import_lexical49.$isParagraphNode)(sibling)) {
         break;
       }
       if (sibling.getChildrenSize() !== 1) {
         break;
       }
       const firstChild = sibling.getFirstChild();
-      if (!(0, import_lexical47.$isTextNode)(firstChild)) {
+      if (!(0, import_lexical49.$isTextNode)(firstChild)) {
         break;
       }
       const cells2 = mapToTableCells(firstChild.getTextContent());
@@ -45844,6 +45872,7 @@ var PLAYGROUND_TRANSFORMERS = [
   EMOJI,
   EQUATION,
   TWEET,
+  MERMAID,
   import_markdown7.CHECK_LIST,
   ...import_markdown7.ELEMENT_TRANSFORMERS,
   ...import_markdown7.MULTILINE_ELEMENT_TRANSFORMERS,
@@ -45886,9 +45915,10 @@ function normalizeListIndentation(markdown) {
 var import_extension4 = require("@lexical/extension");
 var import_markdown8 = require("@lexical/markdown");
 var import_table4 = require("@lexical/table");
-var import_lexical48 = require("lexical");
+var import_lexical50 = require("lexical");
 init_EquationNode();
 init_ImageNode2();
+init_MermaidNode2();
 var HR2 = {
   dependencies: [import_extension4.HorizontalRuleNode],
   export: (node) => {
@@ -45936,7 +45966,7 @@ var EMOJI2 = {
   replace: (textNode, [, name]) => {
     const emoji = emoji_list_default.find((e) => e.aliases.includes(name))?.emoji;
     if (emoji) {
-      textNode.replace((0, import_lexical48.$createTextNode)(emoji));
+      textNode.replace((0, import_lexical50.$createTextNode)(emoji));
     }
   },
   trigger: ":",
@@ -45975,6 +46005,33 @@ var TWEET2 = {
     textNode.replace(tweetNode);
   },
   type: "element"
+};
+var MERMAID2 = {
+  dependencies: [MermaidNode],
+  export: (node) => {
+    const mermaidNode = $isMermaidNode(node) ? node : (0, import_lexical50.$isParagraphNode)(node) && node.getChildrenSize() === 1 && $isMermaidNode(node.getFirstChild()) ? node.getFirstChild() : null;
+    if (!$isMermaidNode(mermaidNode)) {
+      return null;
+    }
+    const code = mermaidNode.getCode();
+    return `\`\`\`mermaid${code ? `
+${code}` : ""}
+\`\`\``;
+  },
+  regExpEnd: /^```$/,
+  regExpStart: /^```mermaid\s*$/,
+  replace: (rootNode, children, _startMatch, _endMatch, linesInBetween) => {
+    const codeLines = linesInBetween ?? children?.map((child) => child.getTextContent()) ?? [];
+    if (codeLines[0]?.trim().length === 0) {
+      codeLines.shift();
+    }
+    while (codeLines.length > 0 && !codeLines[codeLines.length - 1]) {
+      codeLines.pop();
+    }
+    const code = codeLines.join("\n");
+    rootNode.append($createMermaidNode(code));
+  },
+  type: "multiline-element"
 };
 var TABLE_ROW_REG_EXP2 = /^(?:\|)(.+)(?:\|)\s?$/;
 function isTableRowDivider2(text2) {
@@ -46063,14 +46120,14 @@ var TABLE2 = {
     let sibling = parentNode.getPreviousSibling();
     let maxCells = matchCells.length;
     while (sibling) {
-      if (!(0, import_lexical48.$isParagraphNode)(sibling)) {
+      if (!(0, import_lexical50.$isParagraphNode)(sibling)) {
         break;
       }
       if (sibling.getChildrenSize() !== 1) {
         break;
       }
       const firstChild = sibling.getFirstChild();
-      if (!(0, import_lexical48.$isTextNode)(firstChild)) {
+      if (!(0, import_lexical50.$isTextNode)(firstChild)) {
         break;
       }
       const cells2 = mapToTableCells2(firstChild.getTextContent());
@@ -46126,6 +46183,7 @@ var PLAYGROUND_TRANSFORMERS2 = [
   EMOJI2,
   EQUATION2,
   TWEET2,
+  MERMAID2,
   import_markdown8.CHECK_LIST,
   ...import_markdown8.ELEMENT_TRANSFORMERS,
   ...import_markdown8.MULTILINE_ELEMENT_TRANSFORMERS,
@@ -46226,12 +46284,12 @@ function getPlainTextFromClipboard(event) {
   return plainText;
 }
 function MarkdownPastePlugin() {
-  const [editor] = (0, import_LexicalComposerContext31.useLexicalComposerContext)();
-  const handlePaste = (0, import_react54.useCallback)(
+  const [editor] = (0, import_LexicalComposerContext32.useLexicalComposerContext)();
+  const handlePaste = (0, import_react55.useCallback)(
     (event) => {
       const isInsideCodeBlock = editor.getEditorState().read(() => {
-        const selection = (0, import_lexical49.$getSelection)();
-        if (!(0, import_lexical49.$isRangeSelection)(selection)) {
+        const selection = (0, import_lexical51.$getSelection)();
+        if (!(0, import_lexical51.$isRangeSelection)(selection)) {
           return false;
         }
         const anchorNode = selection.anchor.getNode();
@@ -46260,13 +46318,13 @@ function MarkdownPastePlugin() {
       }
       event.preventDefault();
       editor.update(() => {
-        const selection = (0, import_lexical49.$getSelection)();
-        if (!(0, import_lexical49.$isRangeSelection)(selection)) {
+        const selection = (0, import_lexical51.$getSelection)();
+        if (!(0, import_lexical51.$isRangeSelection)(selection)) {
           return;
         }
         selection.removeText();
         const anchorNode = selection.anchor.getNode();
-        const paragraphNode = (0, import_lexical49.$createParagraphNode)();
+        const paragraphNode = (0, import_lexical51.$createParagraphNode)();
         const normalizedText = plainText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
         (0, import_markdown9.$convertFromMarkdownString)(
           normalizeListIndentation(normalizedText),
@@ -46296,13 +46354,13 @@ function MarkdownPastePlugin() {
     },
     [editor]
   );
-  (0, import_react54.useEffect)(() => {
+  (0, import_react55.useEffect)(() => {
     return editor.registerCommand(
-      import_lexical49.PASTE_COMMAND,
+      import_lexical51.PASTE_COMMAND,
       (event) => {
         return handlePaste(event);
       },
-      import_lexical49.COMMAND_PRIORITY_HIGH
+      import_lexical51.COMMAND_PRIORITY_HIGH
     );
   }, [editor, handlePaste]);
   return null;
@@ -46310,24 +46368,24 @@ function MarkdownPastePlugin() {
 
 // src/plugins/MarkdownShortcutPlugin/index.tsx
 var import_LexicalMarkdownShortcutPlugin = require("@lexical/react/LexicalMarkdownShortcutPlugin");
-var import_jsx_runtime49 = require("react/jsx-runtime");
+var import_jsx_runtime51 = require("react/jsx-runtime");
 function MarkdownPlugin() {
-  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(import_LexicalMarkdownShortcutPlugin.MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
+  return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(import_LexicalMarkdownShortcutPlugin.MarkdownShortcutPlugin, { transformers: PLAYGROUND_TRANSFORMERS2 });
 }
 
 // src/plugins/MaxLengthPlugin/index.tsx
-var import_LexicalComposerContext32 = require("@lexical/react/LexicalComposerContext");
+var import_LexicalComposerContext33 = require("@lexical/react/LexicalComposerContext");
 var import_selection5 = require("@lexical/selection");
 var import_utils32 = require("@lexical/utils");
-var import_lexical50 = require("lexical");
-var import_react55 = require("react");
+var import_lexical52 = require("lexical");
+var import_react56 = require("react");
 function MaxLengthPlugin({ maxLength }) {
-  const [editor] = (0, import_LexicalComposerContext32.useLexicalComposerContext)();
-  (0, import_react55.useEffect)(() => {
+  const [editor] = (0, import_LexicalComposerContext33.useLexicalComposerContext)();
+  (0, import_react56.useEffect)(() => {
     let lastRestoredEditorState = null;
-    return editor.registerNodeTransform(import_lexical50.RootNode, (rootNode) => {
-      const selection = (0, import_lexical50.$getSelection)();
-      if (!(0, import_lexical50.$isRangeSelection)(selection) || !selection.isCollapsed()) {
+    return editor.registerNodeTransform(import_lexical52.RootNode, (rootNode) => {
+      const selection = (0, import_lexical52.$getSelection)();
+      if (!(0, import_lexical52.$isRangeSelection)(selection) || !selection.isCollapsed()) {
         return;
       }
       const prevEditorState = editor.getEditorState();
