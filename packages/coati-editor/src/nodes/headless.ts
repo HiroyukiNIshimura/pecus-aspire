@@ -21,6 +21,10 @@ export {
   $isCollapsibleTitleNode,
   CollapsibleTitleNode,
 } from '../plugins/CollapsiblePlugin/CollapsibleTitleNode';
+export type { AlertType, SerializedAlertNode } from './AlertNode';
+
+// AlertNode
+export { $createAlertNode, $isAlertNode, ALERT_TYPES, AlertNode } from './AlertNode';
 // AutocompleteNode
 export { $createAutocompleteNode, AutocompleteNode } from './AutocompleteNode';
 

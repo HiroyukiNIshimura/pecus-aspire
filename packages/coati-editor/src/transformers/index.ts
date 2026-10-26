@@ -5,6 +5,7 @@
  */
 
 export {
+  ALERT,
   EMOJI,
   EQUATION,
   HR,

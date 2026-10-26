@@ -20,14 +20,14 @@ var init_EquationEditor = __esm({
 });
 
 // src/ui/EquationEditor.tsx
-import { isHTMLElement } from "lexical";
+import { isHTMLElement as isHTMLElement2 } from "lexical";
 import { forwardRef } from "react";
 import { jsx, jsxs } from "react/jsx-runtime";
 function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
   const onChange = (event) => {
     setEquation(event.target.value);
   };
-  return inline && isHTMLElement(forwardedRef) ? /* @__PURE__ */ jsxs("span", { className: "EquationEditor_inputBackground", children: [
+  return inline && isHTMLElement2(forwardedRef) ? /* @__PURE__ */ jsxs("span", { className: "EquationEditor_inputBackground", children: [
     /* @__PURE__ */ jsx("span", { className: "EquationEditor_dollarSign", children: "$" }),
     /* @__PURE__ */ jsx(
       "input",
@@ -233,11 +233,11 @@ var init_EquationComponent = __esm({
 // src/nodes/EquationNode.tsx
 import katex2 from "katex";
 import {
-  $applyNodeReplacement,
-  $create,
+  $applyNodeReplacement as $applyNodeReplacement2,
+  $create as $create2,
   $getState,
   $setState,
-  buildImportMap,
+  buildImportMap as buildImportMap2,
   createState,
   DecoratorNode
 } from "lexical";
@@ -254,8 +254,8 @@ function $convertEquationElement(domNode) {
   return null;
 }
 function $createEquationNode(equation = "", inline = false) {
-  return $applyNodeReplacement(
-    $setState($setState($create(EquationNode), equationState, equation), inlineState, inline)
+  return $applyNodeReplacement2(
+    $setState($setState($create2(EquationNode), equationState, equation), inlineState, inline)
   );
 }
 function $isEquationNode(node) {
@@ -276,7 +276,7 @@ var init_EquationNode = __esm({
       $config() {
         return this.config("equation", {
           extends: DecoratorNode,
-          importDOM: buildImportMap({
+          importDOM: buildImportMap2({
             div: (domNode) => {
               if (!domNode.hasAttribute("data-lexical-equation")) {
                 return null;
@@ -346,9 +346,9 @@ var init_EquationNode = __esm({
 });
 
 // src/nodes/EmojiNode.tsx
-import { $create as $create2, $getState as $getState2, $setState as $setState2, createState as createState2, TextNode } from "lexical";
+import { $create as $create3, $getState as $getState2, $setState as $setState2, createState as createState2, TextNode } from "lexical";
 function $createEmojiNode(className, emojiText) {
-  return $setState2($create2(EmojiNode).setTextContent(emojiText).setMode("token"), classNameState, className);
+  return $setState2($create3(EmojiNode).setTextContent(emojiText).setMode("token"), classNameState, className);
 }
 var classNameState, EmojiNode;
 var init_EmojiNode = __esm({
@@ -391,7 +391,7 @@ var init_EmojiNode = __esm({
 });
 
 // src/nodes/KeywordNode.ts
-import { $create as $create3, TextNode as TextNode2 } from "lexical";
+import { $create as $create4, TextNode as TextNode2 } from "lexical";
 var KeywordNode;
 var init_KeywordNode = __esm({
   "src/nodes/KeywordNode.ts"() {
@@ -1320,7 +1320,7 @@ import { HashtagNode } from "@lexical/hashtag";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import { LinkNode } from "@lexical/link";
 import {
-  $applyNodeReplacement as $applyNodeReplacement2,
+  $applyNodeReplacement as $applyNodeReplacement3,
   $createRangeSelection,
   $extendCaretToRange,
   $getChildCaret,
@@ -1332,7 +1332,7 @@ import {
   $selectAll,
   $setSelection as $setSelection2,
   $setState as $setState3,
-  buildImportMap as buildImportMap2,
+  buildImportMap as buildImportMap3,
   createEditor,
   createState as createState3,
   DecoratorNode as DecoratorNode2,
@@ -1376,7 +1376,7 @@ function $createImageNode({
   caption,
   key
 }) {
-  const node = $applyNodeReplacement2(new ImageNode(key));
+  const node = $applyNodeReplacement3(new ImageNode(key));
   $setState3(node, srcState, src);
   $setState3(node, altTextState, altText ?? "");
   $setState3(node, widthState, width === void 0 || width === 0 ? "inherit" : width);
@@ -1428,7 +1428,7 @@ var init_ImageNode2 = __esm({
       $config() {
         return this.config("image", {
           extends: DecoratorNode2,
-          importDOM: buildImportMap2({
+          importDOM: buildImportMap3({
             figcaption: () => ({
               conversion: () => ({ node: null }),
               priority: 0
@@ -1744,11 +1744,11 @@ var init_MermaidComponent = __esm({
 
 // src/nodes/MermaidNode.tsx
 import {
-  $applyNodeReplacement as $applyNodeReplacement3,
-  $create as $create4,
+  $applyNodeReplacement as $applyNodeReplacement4,
+  $create as $create5,
   $getState as $getState4,
   $setState as $setState4,
-  buildImportMap as buildImportMap3,
+  buildImportMap as buildImportMap4,
   createState as createState4,
   DecoratorNode as DecoratorNode3
 } from "lexical";
@@ -1764,7 +1764,7 @@ function $convertMermaidElement(domNode) {
   return { node };
 }
 function $createMermaidNode(code = "") {
-  return $applyNodeReplacement3($setState4($create4(MermaidNode), codeState, code));
+  return $applyNodeReplacement4($setState4($create5(MermaidNode), codeState, code));
 }
 function $isMermaidNode(node) {
   return node instanceof MermaidNode;
@@ -1781,7 +1781,7 @@ var init_MermaidNode2 = __esm({
       $config() {
         return this.config("mermaid", {
           extends: DecoratorNode3,
-          importDOM: buildImportMap3({
+          importDOM: buildImportMap4({
             div: (domNode) => {
               if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
                 return null;
@@ -1832,9 +1832,6 @@ var init_MermaidNode2 = __esm({
 });
 
 // src/transformers/markdown-transformers.ts
-init_EquationNode();
-init_ImageNode2();
-init_MermaidNode2();
 import { $createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode } from "@lexical/extension";
 import {
   $convertFromMarkdownString,
@@ -1859,10 +1856,106 @@ import {
 } from "@lexical/table";
 import { $createTextNode, $isParagraphNode as $isParagraphNode2, $isTextNode } from "lexical";
 
+// src/nodes/AlertNode.ts
+import { QuoteNode } from "@lexical/rich-text";
+import { $applyNodeReplacement, $create, buildImportMap, isHTMLElement } from "lexical";
+var ALERT_TYPES = ["NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"];
+function normalizeAlertType(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  return ALERT_TYPES.find((alertType) => alertType === value.toUpperCase()) ?? null;
+}
+function getAlertLabel(alertType) {
+  return alertType[0] + alertType.slice(1).toLowerCase();
+}
+var AlertNode = class _AlertNode extends QuoteNode {
+  __alertType = "NOTE";
+  $config() {
+    return this.config("alert", {
+      extends: QuoteNode,
+      importDOM: buildImportMap({
+        blockquote: (domNode) => {
+          const alertType = normalizeAlertType(domNode.getAttribute("data-alert-type"));
+          if (!alertType) {
+            return null;
+          }
+          return {
+            conversion: () => ({ node: $createAlertNode(alertType) }),
+            priority: 2
+          };
+        }
+      })
+    });
+  }
+  static clone(node) {
+    const clone = new _AlertNode(node.__key);
+    clone.afterCloneFrom(node);
+    return clone;
+  }
+  afterCloneFrom(prevNode) {
+    super.afterCloneFrom(prevNode);
+    this.__alertType = prevNode.__alertType;
+  }
+  static importJSON(serializedNode) {
+    return $createAlertNode(normalizeAlertType(serializedNode.alertType) ?? "NOTE").updateFromJSON(serializedNode);
+  }
+  exportJSON(compact = false) {
+    return {
+      ...super.exportJSON(compact),
+      alertType: this.getAlertType()
+    };
+  }
+  createDOM(config) {
+    const element = super.createDOM(config);
+    this.updateAlertDOM(element);
+    return element;
+  }
+  updateDOM(prevNode, dom, config) {
+    if (super.updateDOM(prevNode, dom, config)) {
+      return true;
+    }
+    this.updateAlertDOM(dom);
+    return false;
+  }
+  exportDOM(editor) {
+    const output = super.exportDOM(editor);
+    if (isHTMLElement(output.element)) {
+      this.updateAlertDOM(output.element);
+    }
+    return output;
+  }
+  getAlertType() {
+    return this.getLatest().__alertType;
+  }
+  setAlertType(alertType) {
+    const writable = this.getWritable();
+    writable.__alertType = alertType;
+    return writable;
+  }
+  updateAlertDOM(element) {
+    const label = getAlertLabel(this.getAlertType());
+    element.setAttribute("data-alert-type", this.getAlertType());
+    element.setAttribute("role", "note");
+    element.setAttribute("aria-label", `${label} alert`);
+  }
+};
+function $createAlertNode(alertType = "NOTE") {
+  return $applyNodeReplacement($create(AlertNode).setAlertType(alertType));
+}
+function $isAlertNode(node) {
+  return node?.getType() === "alert";
+}
+
+// src/transformers/markdown-transformers.ts
+init_EquationNode();
+init_ImageNode2();
+init_MermaidNode2();
+
 // src/nodes/TweetNode.tsx
 import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode";
-import { $create as $create5, $getState as $getState5, $setState as $setState5, buildImportMap as buildImportMap4, createState as createState5 } from "lexical";
+import { $create as $create6, $getState as $getState5, $setState as $setState5, buildImportMap as buildImportMap5, createState as createState5 } from "lexical";
 import { useCallback as useCallback3, useEffect as useEffect6, useRef as useRef6, useState as useState4 } from "react";
 import { jsx as jsx13, jsxs as jsxs6 } from "react/jsx-runtime";
 var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
@@ -1933,7 +2026,7 @@ var TweetNode = class extends DecoratorBlockNode {
   $config() {
     return this.config("tweet", {
       extends: DecoratorBlockNode,
-      importDOM: buildImportMap4({
+      importDOM: buildImportMap5({
         div: (domNode) => {
           if (!domNode.hasAttribute("data-lexical-tweet-id")) {
             return null;
@@ -1979,7 +2072,7 @@ var TweetNode = class extends DecoratorBlockNode {
   }
 };
 function $createTweetNode(tweetID) {
-  return $setState5($create5(TweetNode), tweetIDState, tweetID);
+  return $setState5($create6(TweetNode), tweetIDState, tweetID);
 }
 function $isTweetNode(node) {
   return node instanceof TweetNode;
@@ -18661,6 +18754,32 @@ var EQUATION = {
   trigger: "$",
   type: "text-match"
 };
+var ALERT = {
+  dependencies: [AlertNode],
+  export: (node, exportChildren) => {
+    if (!$isAlertNode(node)) {
+      return null;
+    }
+    const body = exportChildren(node).replace(/^\n/, "");
+    const bodyLines = body.split("\n").map((line) => line.length > 0 && line !== ">" ? `> ${line}` : ">");
+    return `> [!${node.getAlertType()}]${body ? `
+${bodyLines.join("\n")}` : ""}`;
+  },
+  regExp: new RegExp(`^>\\s*\\[!(${ALERT_TYPES.join("|")})\\]\\s*$`, "i"),
+  replace: (parentNode, children, match, isImport) => {
+    const alertType = ALERT_TYPES.find((type) => type === match[1]?.toUpperCase());
+    if (!alertType) {
+      return false;
+    }
+    const alertNode = $createAlertNode(alertType);
+    alertNode.append(...children);
+    parentNode.replace(alertNode);
+    if (!isImport) {
+      alertNode.select(0, 0);
+    }
+  },
+  type: "element"
+};
 var TWEET = {
   dependencies: [TweetNode],
   export: (node) => {
@@ -18848,6 +18967,7 @@ var mapToTableCells = (textContent) => {
   return match[1].split("|").map((text) => $createTableCell(text));
 };
 var PLAYGROUND_TRANSFORMERS = [
+  ALERT,
   TABLE,
   HR,
   IMAGE,
@@ -18893,6 +19013,7 @@ function normalizeListIndentation(markdown) {
   return result.join("\n");
 }
 export {
+  ALERT,
   EMOJI,
   EQUATION,
   HR,

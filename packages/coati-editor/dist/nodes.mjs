@@ -233,10 +233,10 @@ var init_DateTimeComponent = __esm({
 
 // src/nodes/DateTimeNode/DateTimeNode.tsx
 import {
-  $create as $create5,
+  $create as $create6,
   $getState as $getState3,
   $setState as $setState3,
-  buildImportMap as buildImportMap4,
+  buildImportMap as buildImportMap5,
   createState as createState3,
   DecoratorNode
 } from "lexical";
@@ -261,7 +261,7 @@ function $convertDateTimeElement(domNode) {
   return { node };
 }
 function $createDateTimeNode(dateTime) {
-  return $create5(DateTimeNode).setDateTime(dateTime);
+  return $create6(DateTimeNode).setDateTime(dateTime);
 }
 function $isDateTimeNode(node) {
   return node instanceof DateTimeNode;
@@ -287,7 +287,7 @@ var init_DateTimeNode2 = __esm({
       $config() {
         return this.config("datetime", {
           extends: DecoratorNode,
-          importDOM: buildImportMap4({
+          importDOM: buildImportMap5({
             span: (domNode) => domNode.getAttribute("data-lexical-datetime") !== null || // GDocs Support
             domNode.getAttribute("data-rich-links") !== null && JSON.parse(domNode.getAttribute("data-rich-links") || "{}").type === "date" ? {
               conversion: $convertDateTimeElement,
@@ -333,12 +333,12 @@ var init_DateTimeNode2 = __esm({
 });
 
 // src/nodes/EmojiNode.tsx
-import { $create as $create6, $getState as $getState4, $setState as $setState4, createState as createState4, TextNode as TextNode2 } from "lexical";
+import { $create as $create7, $getState as $getState4, $setState as $setState4, createState as createState4, TextNode as TextNode2 } from "lexical";
 function $isEmojiNode(node) {
   return node instanceof EmojiNode;
 }
 function $createEmojiNode(className, emojiText) {
-  return $setState4($create6(EmojiNode).setTextContent(emojiText).setMode("token"), classNameState, className);
+  return $setState4($create7(EmojiNode).setTextContent(emojiText).setMode("token"), classNameState, className);
 }
 var classNameState, EmojiNode;
 var init_EmojiNode = __esm({
@@ -387,14 +387,14 @@ var init_EquationEditor = __esm({
 });
 
 // src/ui/EquationEditor.tsx
-import { isHTMLElement as isHTMLElement2 } from "lexical";
+import { isHTMLElement as isHTMLElement3 } from "lexical";
 import { forwardRef } from "react";
 import { jsx as jsx4, jsxs as jsxs2 } from "react/jsx-runtime";
 function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
   const onChange = (event) => {
     setEquation(event.target.value);
   };
-  return inline && isHTMLElement2(forwardedRef) ? /* @__PURE__ */ jsxs2("span", { className: "EquationEditor_inputBackground", children: [
+  return inline && isHTMLElement3(forwardedRef) ? /* @__PURE__ */ jsxs2("span", { className: "EquationEditor_inputBackground", children: [
     /* @__PURE__ */ jsx4("span", { className: "EquationEditor_dollarSign", children: "$" }),
     /* @__PURE__ */ jsx4(
       "input",
@@ -489,11 +489,11 @@ var init_KatexRenderer = __esm({
 // src/nodes/EquationNode.tsx
 import katex2 from "katex";
 import {
-  $applyNodeReplacement,
-  $create as $create7,
+  $applyNodeReplacement as $applyNodeReplacement2,
+  $create as $create8,
   $getState as $getState5,
   $setState as $setState5,
-  buildImportMap as buildImportMap5,
+  buildImportMap as buildImportMap6,
   createState as createState5,
   DecoratorNode as DecoratorNode2
 } from "lexical";
@@ -510,8 +510,8 @@ function $convertEquationElement(domNode) {
   return null;
 }
 function $createEquationNode(equation = "", inline = false) {
-  return $applyNodeReplacement(
-    $setState5($setState5($create7(EquationNode), equationState, equation), inlineState, inline)
+  return $applyNodeReplacement2(
+    $setState5($setState5($create8(EquationNode), equationState, equation), inlineState, inline)
   );
 }
 function $isEquationNode(node) {
@@ -532,7 +532,7 @@ var init_EquationNode = __esm({
       $config() {
         return this.config("equation", {
           extends: DecoratorNode2,
-          importDOM: buildImportMap5({
+          importDOM: buildImportMap6({
             div: (domNode) => {
               if (!domNode.hasAttribute("data-lexical-equation")) {
                 return null;
@@ -1119,9 +1119,9 @@ var init_ImageResizer = __esm({
 });
 
 // src/nodes/KeywordNode.ts
-import { $create as $create9, TextNode as TextNode4 } from "lexical";
+import { $create as $create10, TextNode as TextNode4 } from "lexical";
 function $createKeywordNode(keyword = "") {
-  return $create9(KeywordNode).setTextContent(keyword);
+  return $create10(KeywordNode).setTextContent(keyword);
 }
 function $isKeywordNode(node) {
   return node instanceof KeywordNode;
@@ -1159,7 +1159,7 @@ import { HashtagNode } from "@lexical/hashtag";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import { LinkNode } from "@lexical/link";
 import {
-  $applyNodeReplacement as $applyNodeReplacement2,
+  $applyNodeReplacement as $applyNodeReplacement3,
   $createRangeSelection,
   $extendCaretToRange,
   $getChildCaret,
@@ -1171,7 +1171,7 @@ import {
   $selectAll,
   $setSelection as $setSelection2,
   $setState as $setState7,
-  buildImportMap as buildImportMap6,
+  buildImportMap as buildImportMap7,
   createEditor,
   createState as createState7,
   DecoratorNode as DecoratorNode3,
@@ -1215,7 +1215,7 @@ function $createImageNode({
   caption,
   key
 }) {
-  const node = $applyNodeReplacement2(new ImageNode(key));
+  const node = $applyNodeReplacement3(new ImageNode(key));
   $setState7(node, srcState, src);
   $setState7(node, altTextState, altText ?? "");
   $setState7(node, widthState, width === void 0 || width === 0 ? "inherit" : width);
@@ -1267,7 +1267,7 @@ var init_ImageNode2 = __esm({
       $config() {
         return this.config("image", {
           extends: DecoratorNode3,
-          importDOM: buildImportMap6({
+          importDOM: buildImportMap7({
             figcaption: () => ({
               conversion: () => ({ node: null }),
               priority: 0
@@ -2072,11 +2072,11 @@ var init_MermaidComponent = __esm({
 
 // src/nodes/MermaidNode.tsx
 import {
-  $applyNodeReplacement as $applyNodeReplacement3,
-  $create as $create12,
+  $applyNodeReplacement as $applyNodeReplacement4,
+  $create as $create13,
   $getState as $getState9,
   $setState as $setState9,
-  buildImportMap as buildImportMap9,
+  buildImportMap as buildImportMap10,
   createState as createState9,
   DecoratorNode as DecoratorNode4
 } from "lexical";
@@ -2092,7 +2092,7 @@ function $convertMermaidElement(domNode) {
   return { node };
 }
 function $createMermaidNode(code = "") {
-  return $applyNodeReplacement3($setState9($create12(MermaidNode), codeState, code));
+  return $applyNodeReplacement4($setState9($create13(MermaidNode), codeState, code));
 }
 function $isMermaidNode(node) {
   return node instanceof MermaidNode;
@@ -2109,7 +2109,7 @@ var init_MermaidNode2 = __esm({
       $config() {
         return this.config("mermaid", {
           extends: DecoratorNode4,
-          importDOM: buildImportMap9({
+          importDOM: buildImportMap10({
             div: (domNode) => {
               if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
                 return null;
@@ -2566,8 +2566,8 @@ var init_StickyComponent = __esm({
 
 // src/nodes/StickyNode.tsx
 import {
-  $applyNodeReplacement as $applyNodeReplacement4,
-  $create as $create15,
+  $applyNodeReplacement as $applyNodeReplacement5,
+  $create as $create16,
   $getState as $getState10,
   $setSelection as $setSelection4,
   $setState as $setState10,
@@ -2581,7 +2581,7 @@ function $isStickyNode(node) {
   return node instanceof StickyNode;
 }
 function $createStickyNode(xOffset, yOffset) {
-  const node = $applyNodeReplacement4($create15(StickyNode));
+  const node = $applyNodeReplacement5($create16(StickyNode));
   $setState10(node, xOffsetState, xOffset);
   $setState10(node, yOffsetState, yOffset);
   $setState10(node, colorState, "yellow");
@@ -2973,8 +2973,99 @@ function $isCollapsibleTitleNode(node) {
   return node instanceof CollapsibleTitleNode;
 }
 
+// src/nodes/AlertNode.ts
+import { QuoteNode } from "@lexical/rich-text";
+import { $applyNodeReplacement, $create as $create4, buildImportMap as buildImportMap4, isHTMLElement as isHTMLElement2 } from "lexical";
+var ALERT_TYPES = ["NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"];
+function normalizeAlertType(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  return ALERT_TYPES.find((alertType) => alertType === value.toUpperCase()) ?? null;
+}
+function getAlertLabel(alertType) {
+  return alertType[0] + alertType.slice(1).toLowerCase();
+}
+var AlertNode = class _AlertNode extends QuoteNode {
+  __alertType = "NOTE";
+  $config() {
+    return this.config("alert", {
+      extends: QuoteNode,
+      importDOM: buildImportMap4({
+        blockquote: (domNode) => {
+          const alertType = normalizeAlertType(domNode.getAttribute("data-alert-type"));
+          if (!alertType) {
+            return null;
+          }
+          return {
+            conversion: () => ({ node: $createAlertNode(alertType) }),
+            priority: 2
+          };
+        }
+      })
+    });
+  }
+  static clone(node) {
+    const clone = new _AlertNode(node.__key);
+    clone.afterCloneFrom(node);
+    return clone;
+  }
+  afterCloneFrom(prevNode) {
+    super.afterCloneFrom(prevNode);
+    this.__alertType = prevNode.__alertType;
+  }
+  static importJSON(serializedNode) {
+    return $createAlertNode(normalizeAlertType(serializedNode.alertType) ?? "NOTE").updateFromJSON(serializedNode);
+  }
+  exportJSON(compact = false) {
+    return {
+      ...super.exportJSON(compact),
+      alertType: this.getAlertType()
+    };
+  }
+  createDOM(config) {
+    const element = super.createDOM(config);
+    this.updateAlertDOM(element);
+    return element;
+  }
+  updateDOM(prevNode, dom, config) {
+    if (super.updateDOM(prevNode, dom, config)) {
+      return true;
+    }
+    this.updateAlertDOM(dom);
+    return false;
+  }
+  exportDOM(editor) {
+    const output = super.exportDOM(editor);
+    if (isHTMLElement2(output.element)) {
+      this.updateAlertDOM(output.element);
+    }
+    return output;
+  }
+  getAlertType() {
+    return this.getLatest().__alertType;
+  }
+  setAlertType(alertType) {
+    const writable = this.getWritable();
+    writable.__alertType = alertType;
+    return writable;
+  }
+  updateAlertDOM(element) {
+    const label = getAlertLabel(this.getAlertType());
+    element.setAttribute("data-alert-type", this.getAlertType());
+    element.setAttribute("role", "note");
+    element.setAttribute("aria-label", `${label} alert`);
+  }
+};
+function $createAlertNode(alertType = "NOTE") {
+  return $applyNodeReplacement($create4(AlertNode).setAlertType(alertType));
+}
+function $isAlertNode(node) {
+  return node?.getType() === "alert";
+}
+
 // src/nodes/AutocompleteNode.tsx
-import { $create as $create4, $getState as $getState2, $setState as $setState2, createState as createState2, TextNode } from "lexical";
+import { $create as $create5, $getState as $getState2, $setState as $setState2, createState as createState2, TextNode } from "lexical";
 
 // src/plugins/AutocompletePlugin/index.tsx
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
@@ -3085,7 +3176,7 @@ var AutocompleteNode = class extends TextNode {
   }
 };
 function $createAutocompleteNode(text, uuid2) {
-  return $setState2($create4(AutocompleteNode).setTextContent(text).setMode("token"), uuidState, uuid2);
+  return $setState2($create5(AutocompleteNode).setTextContent(text).setMode("token"), uuidState, uuid2);
 }
 
 // src/nodes/index.ts
@@ -3097,7 +3188,7 @@ init_EquationNode();
 // src/nodes/FigmaNode.tsx
 import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode";
-import { $create as $create8, $getState as $getState6, $setState as $setState6, createState as createState6 } from "lexical";
+import { $create as $create9, $getState as $getState6, $setState as $setState6, createState as createState6 } from "lexical";
 import { jsx as jsx8 } from "react/jsx-runtime";
 function FigmaComponent({ className, format, nodeKey, documentID }) {
   return /* @__PURE__ */ jsx8(BlockWithAlignableContents, { className, format, nodeKey, children: /* @__PURE__ */ jsx8(
@@ -3140,7 +3231,7 @@ var FigmaNode = class extends DecoratorBlockNode {
   }
 };
 function $createFigmaNode(documentID) {
-  return $setState6($create8(FigmaNode), documentIDState, documentID);
+  return $setState6($create9(FigmaNode), documentIDState, documentID);
 }
 function $isFigmaNode(node) {
   return node instanceof FigmaNode;
@@ -3153,7 +3244,7 @@ init_KeywordNode();
 
 // src/nodes/LayoutContainerNode.ts
 import { addClassNamesToElement } from "@lexical/utils";
-import { $create as $create10, $getState as $getState8, $setState as $setState8, buildImportMap as buildImportMap7, createState as createState8, ElementNode as ElementNode4 } from "lexical";
+import { $create as $create11, $getState as $getState8, $setState as $setState8, buildImportMap as buildImportMap8, createState as createState8, ElementNode as ElementNode4 } from "lexical";
 var templateColumnsState = createState8("templateColumns", {
   parse: (v) => typeof v === "string" ? v : ""
 });
@@ -3170,7 +3261,7 @@ var LayoutContainerNode = class extends ElementNode4 {
   $config() {
     return this.config("layout-container", {
       extends: ElementNode4,
-      importDOM: buildImportMap7({
+      importDOM: buildImportMap8({
         div: (domNode) => {
           if (!domNode.hasAttribute("data-lexical-layout-container")) {
             return null;
@@ -3218,7 +3309,7 @@ var LayoutContainerNode = class extends ElementNode4 {
   }
 };
 function $createLayoutContainerNode(templateColumns = "") {
-  return $setState8($create10(LayoutContainerNode), templateColumnsState, templateColumns);
+  return $setState8($create11(LayoutContainerNode), templateColumnsState, templateColumns);
 }
 function $isLayoutContainerNode(node) {
   return node instanceof LayoutContainerNode;
@@ -3226,7 +3317,7 @@ function $isLayoutContainerNode(node) {
 
 // src/nodes/LayoutItemNode.ts
 import { addClassNamesToElement as addClassNamesToElement2 } from "@lexical/utils";
-import { $create as $create11, $isParagraphNode as $isParagraphNode2, buildImportMap as buildImportMap8, ElementNode as ElementNode5 } from "lexical";
+import { $create as $create12, $isParagraphNode as $isParagraphNode2, buildImportMap as buildImportMap9, ElementNode as ElementNode5 } from "lexical";
 function $convertLayoutItemElement() {
   return { node: $createLayoutItemNode() };
 }
@@ -3241,7 +3332,7 @@ var LayoutItemNode = class extends ElementNode5 {
   $config() {
     return this.config("layout-item", {
       extends: ElementNode5,
-      importDOM: buildImportMap8({
+      importDOM: buildImportMap9({
         div: (domNode) => {
           if (!domNode.hasAttribute("data-lexical-layout-item")) {
             return null;
@@ -3278,7 +3369,7 @@ var LayoutItemNode = class extends ElementNode5 {
   }
 };
 function $createLayoutItemNode() {
-  return $create11(LayoutItemNode);
+  return $create12(LayoutItemNode);
 }
 function $isLayoutItemNode(node) {
   return node instanceof LayoutItemNode;
@@ -3295,7 +3386,7 @@ import { AutoLinkNode, LinkNode as LinkNode2 } from "@lexical/link";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { MarkNode } from "@lexical/mark";
 import { OverflowNode } from "@lexical/overflow";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { HeadingNode, QuoteNode as QuoteNode2 } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 init_DateTimeNode2();
 init_EmojiNode();
@@ -3309,8 +3400,8 @@ import { useLexicalComposerContext as useLexicalComposerContext7 } from "@lexica
 import { useLexicalNodeSelection as useLexicalNodeSelection3 } from "@lexical/react/useLexicalNodeSelection";
 import { mergeRegister as mergeRegister4 } from "@lexical/utils";
 import {
-  $create as $create13,
-  buildImportMap as buildImportMap10,
+  $create as $create14,
+  buildImportMap as buildImportMap11,
   CLICK_COMMAND as CLICK_COMMAND2,
   COMMAND_PRIORITY_HIGH as COMMAND_PRIORITY_HIGH2,
   COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW3,
@@ -3352,7 +3443,7 @@ var PageBreakNode = class extends DecoratorNode5 {
   $config() {
     return this.config("page-break", {
       extends: DecoratorNode5,
-      importDOM: buildImportMap10({
+      importDOM: buildImportMap11({
         figure: (domNode) => {
           const tp = domNode.getAttribute("type");
           if (tp !== "page-break") {
@@ -3389,7 +3480,7 @@ function $convertPageBreakElement() {
   return { node: $createPageBreakNode() };
 }
 function $createPageBreakNode() {
-  return $create13(PageBreakNode);
+  return $create14(PageBreakNode);
 }
 function $isPageBreakNode(node) {
   return node instanceof PageBreakNode;
@@ -3397,7 +3488,7 @@ function $isPageBreakNode(node) {
 
 // src/nodes/SpecialTextNode.tsx
 import { addClassNamesToElement as addClassNamesToElement3 } from "@lexical/utils";
-import { $create as $create14, TextNode as TextNode6 } from "lexical";
+import { $create as $create15, TextNode as TextNode6 } from "lexical";
 var SpecialTextNode = class extends TextNode6 {
   $config() {
     return this.config("specialText", { extends: TextNode6 });
@@ -3424,7 +3515,7 @@ var SpecialTextNode = class extends TextNode6 {
   }
 };
 function $createSpecialTextNode(text = "") {
-  return $create14(SpecialTextNode).setTextContent(text);
+  return $create15(SpecialTextNode).setTextContent(text);
 }
 function $isSpecialTextNode(node) {
   return node instanceof SpecialTextNode;
@@ -3436,7 +3527,7 @@ init_StickyNode2();
 // src/nodes/TweetNode.tsx
 import { BlockWithAlignableContents as BlockWithAlignableContents2 } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode as DecoratorBlockNode2 } from "@lexical/react/LexicalDecoratorBlockNode";
-import { $create as $create16, $getState as $getState11, $setState as $setState11, buildImportMap as buildImportMap11, createState as createState11 } from "lexical";
+import { $create as $create17, $getState as $getState11, $setState as $setState11, buildImportMap as buildImportMap12, createState as createState11 } from "lexical";
 import { useCallback as useCallback5, useEffect as useEffect11, useRef as useRef8, useState as useState7 } from "react";
 import { jsx as jsx20, jsxs as jsxs8 } from "react/jsx-runtime";
 var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
@@ -3507,7 +3598,7 @@ var TweetNode = class extends DecoratorBlockNode2 {
   $config() {
     return this.config("tweet", {
       extends: DecoratorBlockNode2,
-      importDOM: buildImportMap11({
+      importDOM: buildImportMap12({
         div: (domNode) => {
           if (!domNode.hasAttribute("data-lexical-tweet-id")) {
             return null;
@@ -3553,7 +3644,7 @@ var TweetNode = class extends DecoratorBlockNode2 {
   }
 };
 function $createTweetNode(tweetID) {
-  return $setState11($create16(TweetNode), tweetIDState, tweetID);
+  return $setState11($create17(TweetNode), tweetIDState, tweetID);
 }
 function $isTweetNode(node) {
   return node instanceof TweetNode;
@@ -3562,7 +3653,7 @@ function $isTweetNode(node) {
 // src/nodes/YouTubeNode.tsx
 import { BlockWithAlignableContents as BlockWithAlignableContents3 } from "@lexical/react/LexicalBlockWithAlignableContents";
 import { DecoratorBlockNode as DecoratorBlockNode3 } from "@lexical/react/LexicalDecoratorBlockNode";
-import { $create as $create17, $getState as $getState12, $setState as $setState12, buildImportMap as buildImportMap12, createState as createState12 } from "lexical";
+import { $create as $create18, $getState as $getState12, $setState as $setState12, buildImportMap as buildImportMap13, createState as createState12 } from "lexical";
 import { jsx as jsx21 } from "react/jsx-runtime";
 function YouTubeComponent({ className, format, nodeKey, videoID }) {
   return /* @__PURE__ */ jsx21(BlockWithAlignableContents3, { className, format, nodeKey, children: /* @__PURE__ */ jsx21(
@@ -3593,7 +3684,7 @@ var YouTubeNode = class extends DecoratorBlockNode3 {
   $config() {
     return this.config("youtube", {
       extends: DecoratorBlockNode3,
-      importDOM: buildImportMap12({
+      importDOM: buildImportMap13({
         iframe: (domNode) => {
           if (!domNode.hasAttribute("data-lexical-youtube")) {
             return null;
@@ -3641,7 +3732,7 @@ var YouTubeNode = class extends DecoratorBlockNode3 {
   }
 };
 function $createYouTubeNode(videoID) {
-  return $setState12($create17(YouTubeNode), videoIDState, videoID);
+  return $setState12($create18(YouTubeNode), videoIDState, videoID);
 }
 function $isYouTubeNode(node) {
   return node instanceof YouTubeNode;
@@ -3652,7 +3743,8 @@ var NotionLikeEditorNodes = [
   HeadingNode,
   ListNode,
   ListItemNode,
-  QuoteNode,
+  QuoteNode2,
+  AlertNode,
   CodeNode,
   TableNode,
   TableCellNode,
@@ -3689,6 +3781,7 @@ var NotionLikeEditorNodes_default = NotionLikeEditorNodes;
 init_StickyComponent();
 init_StickyNode2();
 export {
+  $createAlertNode,
   $createAutocompleteNode,
   $createCollapsibleContainerNode,
   $createCollapsibleContentNode,
@@ -3707,6 +3800,7 @@ export {
   $createStickyNode,
   $createTweetNode,
   $createYouTubeNode,
+  $isAlertNode,
   $isCollapsibleContainerNode,
   $isCollapsibleContentNode,
   $isCollapsibleTitleNode,
@@ -3724,6 +3818,8 @@ export {
   $isStickyNode,
   $isTweetNode,
   $isYouTubeNode,
+  ALERT_TYPES,
+  AlertNode,
   AutocompleteNode,
   CollapsibleContainerNode,
   CollapsibleContentNode,

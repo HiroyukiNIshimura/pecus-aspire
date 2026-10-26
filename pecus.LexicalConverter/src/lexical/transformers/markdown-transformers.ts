@@ -17,6 +17,7 @@ import {
   MermaidNode,
   TweetNode,
 } from '@coati/editor/nodes-headless';
+import { ALERT } from '@coati/editor/transformers';
 import {
   $createHorizontalRuleNode,
   $isHorizontalRuleNode,
@@ -400,6 +401,7 @@ export const TABLE: ElementTransformer = {
  * プレイグラウンドで使用するすべてのトランスフォーマー
  */
 export const PLAYGROUND_TRANSFORMERS: Array<Transformer> = [
+  ALERT,
   TABLE,
   HR,
   IMAGE,

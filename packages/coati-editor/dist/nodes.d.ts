@@ -14,9 +14,12 @@ import { LexicalNode } from 'lexical';
 import type { LexicalUpdateJSON } from 'lexical';
 import { NodeKey } from 'lexical';
 import { NodeSerializationSchema } from 'lexical';
+import { QuoteNode } from '@lexical/rich-text';
 import { RangeSelection } from 'lexical';
 import type { SerializedEditor } from 'lexical';
 import type { SerializedLexicalNode } from 'lexical';
+import type { SerializedPartial } from 'lexical';
+import type { SerializedQuoteNode } from '@lexical/rich-text';
 import type { SerializedTextNode } from 'lexical';
 import type { Spread } from 'lexical';
 import { StateConfig } from 'lexical';
@@ -25,6 +28,8 @@ import { StateValueOrUpdater } from 'lexical';
 import { StaticNodeConfigAccessor } from 'lexical';
 import { StaticNodeTypeAccessor } from 'lexical';
 import { TextNode } from 'lexical';
+
+export declare function $createAlertNode(alertType?: AlertType): AlertNode;
 
 export declare function $createAutocompleteNode(text: string, uuid: string): AutocompleteNode;
 
@@ -67,6 +72,8 @@ export declare function $createTweetNode(tweetID: string): TweetNode;
 
 export declare function $createYouTubeNode(videoID: string): YouTubeNode;
 
+export declare function $isAlertNode(node: LexicalNode | null | undefined): node is AlertNode;
+
 export declare function $isCollapsibleContainerNode(node: LexicalNode | null | undefined): node is CollapsibleContainerNode;
 
 export declare function $isCollapsibleContentNode(node: LexicalNode | null | undefined): node is CollapsibleContentNode;
@@ -105,6 +112,74 @@ export declare function $isStickyNode(node: LexicalNode | null | undefined): nod
 export declare function $isTweetNode(node: TweetNode | LexicalNode | null | undefined): node is TweetNode;
 
 export declare function $isYouTubeNode(node: YouTubeNode | LexicalNode | null | undefined): node is YouTubeNode;
+
+export declare const ALERT_TYPES: readonly ['NOTE', 'TIP', 'IMPORTANT', 'WARNING', 'CAUTION'];
+
+/** @noInheritDoc */
+export declare class AlertNode extends QuoteNode {
+    __alertType: AlertType;
+    $config(): BaseStaticNodeConfig & StaticNodeConfigAccessor<    {
+    readonly $transform: (node: ElementNode) => void;
+    readonly extends: typeof LexicalNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly json: NodeSerializationSchema<ElementNode, {
+    readonly direction?: "ltr" | "rtl" | null | undefined;
+    readonly format?: "" | "left" | "start" | "center" | "right" | "end" | "justify" | undefined;
+    readonly indent?: string | number | undefined;
+    readonly textFormat?: string | number | undefined;
+    readonly textStyle?: string | undefined;
+    }>;
+    }> & {
+        readonly quote?: {
+            readonly extends: ElementNode;
+            readonly generated: GeneratedJSONFactory;
+            readonly importDOM: {
+                readonly blockquote: () => {
+                    conversion: (element: HTMLElement) => DOMConversionOutput;
+                    priority: 0;
+                };
+            };
+            readonly stateConfigs: readonly [{
+                readonly flat: true;
+                readonly stateConfig: StateConfig<"shadowRoot", boolean>;
+            }];
+        } | undefined;
+    } & StaticNodeTypeAccessor<"quote"> & StaticNodeConfigAccessor<    {
+    readonly extends: ElementNode;
+    readonly generated: GeneratedJSONFactory;
+    readonly importDOM: {
+    readonly blockquote: () => {
+    conversion: (element: HTMLElement) => DOMConversionOutput;
+    priority: 0;
+    };
+    };
+    readonly stateConfigs: readonly [{
+    readonly flat: true;
+    readonly stateConfig: StateConfig<"shadowRoot", boolean>;
+    }];
+    }> & {
+        readonly alert?: {
+            readonly extends: typeof QuoteNode;
+            readonly importDOM: DOMConversionMap<HTMLElement>;
+        } | undefined;
+    } & StaticNodeTypeAccessor<"alert"> & StaticNodeConfigAccessor<    {
+    readonly extends: typeof QuoteNode;
+    readonly importDOM: DOMConversionMap<HTMLElement>;
+    }>;
+    static clone(node: AlertNode): AlertNode;
+    afterCloneFrom(prevNode: this): void;
+    static importJSON(serializedNode: SerializedPartial<SerializedAlertNode>): AlertNode;
+    exportJSON(compact?: false): SerializedAlertNode;
+    exportJSON(compact: boolean): SerializedPartial<SerializedAlertNode>;
+    createDOM(config: EditorConfig): HTMLElement;
+    updateDOM(prevNode: this, dom: HTMLElement, config: EditorConfig): boolean;
+    exportDOM(editor: LexicalEditor): DOMExportOutput;
+    getAlertType(): AlertType;
+    setAlertType(alertType: AlertType): this;
+    private updateAlertDOM;
+}
+
+export declare type AlertType = (typeof ALERT_TYPES)[number];
 
 declare const altTextState: StateConfig<"altText", string>;
 
@@ -967,6 +1042,10 @@ export declare class PageBreakNode extends DecoratorNode<JSX.Element> {
     updateDOM(): boolean;
     decorate(): JSX.Element;
 }
+
+export declare type SerializedAlertNode = Spread<{
+    alertType: AlertType;
+}, SerializedQuoteNode>;
 
 declare type SerializedAutocompleteNode = Spread<{
     uuid: string;

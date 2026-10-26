@@ -32,6 +32,7 @@ import { useCallback, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom';
 import { useComponentPickerContext } from '../../context/ComponentPickerContext';
 import useModal from '../../hooks/useModal';
+import { $createAlertNode, $isAlertNode, ALERT_TYPES } from '../../nodes/AlertNode';
 import { EmbedConfigs } from '../AutoEmbedPlugin';
 import { INSERT_COLLAPSIBLE_COMMAND } from '../CollapsiblePlugin';
 import { INSERT_DATETIME_COMMAND } from '../DateTimePlugin';
@@ -207,6 +208,27 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
             $setBlocksType(selection, () => $createQuoteNode());
           }
         }),
+    }),
+    ...ALERT_TYPES.map((alertType) => {
+      const label = alertType[0] + alertType.slice(1).toLowerCase();
+      return new ComponentPickerOption(`Alert: ${label}`, {
+        icon: <i className="icon quote" />,
+        keywords: ['alert', 'callout', alertType.toLowerCase(), label.toLowerCase()],
+        onSelect: () =>
+          editor.update(() => {
+            const selection = $getSelection();
+            if (!$isRangeSelection(selection)) {
+              return;
+            }
+
+            const topLevelNode = selection.anchor.getNode().getTopLevelElement();
+            if ($isAlertNode(topLevelNode)) {
+              topLevelNode.setAlertType(alertType);
+            } else {
+              $setBlocksType(selection, () => $createAlertNode(alertType));
+            }
+          }),
+      });
     }),
     new ComponentPickerOption('Code', {
       icon: <i className="icon code" />,

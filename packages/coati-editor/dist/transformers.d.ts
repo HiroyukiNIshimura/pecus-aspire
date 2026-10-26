@@ -2,6 +2,8 @@ import { ElementTransformer } from '@lexical/markdown';
 import { TextMatchTransformer } from '@lexical/markdown';
 import { Transformer as Transformer_2 } from '@lexical/markdown';
 
+export declare const ALERT: ElementTransformer;
+
 export declare const EMOJI: TextMatchTransformer;
 
 export declare const EQUATION: TextMatchTransformer;

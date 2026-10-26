@@ -53,10 +53,13 @@ import { PLAYGROUND_TRANSFORMERS } from '@coati/editor/transformers';
 
 ### ノード (`@coati/editor/nodes`)
 - `CustomNodes` - 全カスタムノードの配列
-- 各ノードクラス（ImageNode, MentionNode, etc.）
+- 各ノードクラス（AlertNode, ImageNode, MentionNode, etc.）
 
 ### トランスフォーマー (`@coati/editor/transformers`)
 - `PLAYGROUND_TRANSFORMERS` - Markdown変換用
+- `ALERT` - GitHub Markdown Alertの変換用
+
+GitHub Markdown Alert（NOTE / TIP / IMPORTANT / WARNING / CAUTION）は `/` の挿入メニューから挿入でき、`> [!NOTE]` 形式のMarkdownとの変換に対応します。
 
 ### スタイル (`@coati/editor/styles`)
 - エディタのCSSスタイル

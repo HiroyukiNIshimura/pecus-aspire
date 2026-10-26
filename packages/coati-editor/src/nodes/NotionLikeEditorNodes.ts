@@ -19,6 +19,7 @@ import type { Klass, LexicalNode } from 'lexical';
 import { CollapsibleContainerNode } from '../plugins/CollapsiblePlugin/CollapsibleContainerNode';
 import { CollapsibleContentNode } from '../plugins/CollapsiblePlugin/CollapsibleContentNode';
 import { CollapsibleTitleNode } from '../plugins/CollapsiblePlugin/CollapsibleTitleNode';
+import { AlertNode } from './AlertNode';
 import { AutocompleteNode } from './AutocompleteNode';
 import { DateTimeNode } from './DateTimeNode/DateTimeNode';
 import { EmojiNode } from './EmojiNode';
@@ -40,6 +41,7 @@ const NotionLikeEditorNodes: Array<Klass<LexicalNode>> = [
   ListNode,
   ListItemNode,
   QuoteNode,
+  AlertNode,
   CodeNode,
   TableNode,
   TableCellNode,

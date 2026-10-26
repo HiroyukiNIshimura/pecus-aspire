@@ -47,6 +47,8 @@ const MARKDOWN_PATTERNS = {
   image: /!\[([^\]]*)\]\(([^)]+)\)/,
   // 引用: > quote
   blockquote: /^>\s+.+/m,
+  // GitHub Alert marker: > [!NOTE]
+  alert: /^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*$/im,
   // 水平線: ---, ***, ___
   horizontalRule: /^(---|\*\*\*|___)\s*$/m,
   // チェックリスト: - [ ] or - [x]
@@ -74,8 +76,9 @@ function isLikelyMarkdown(text: string): boolean {
     const hasItalic = MARKDOWN_PATTERNS.italic.test(text);
     const hasLink = MARKDOWN_PATTERNS.link.test(text);
     const hasInlineCode = MARKDOWN_PATTERNS.inlineCode.test(text);
+    const hasAlert = MARKDOWN_PATTERNS.alert.test(text);
 
-    if (hasHeading || hasBold || hasItalic || hasLink || hasInlineCode) {
+    if (hasHeading || hasBold || hasItalic || hasLink || hasInlineCode || hasAlert) {
       return true;
     }
     return false;
@@ -94,6 +97,7 @@ function isLikelyMarkdown(text: string): boolean {
   if (MARKDOWN_PATTERNS.link.test(text)) matchCount++;
   if (MARKDOWN_PATTERNS.image.test(text)) matchCount++;
   if (MARKDOWN_PATTERNS.blockquote.test(text)) matchCount++;
+  if (MARKDOWN_PATTERNS.alert.test(text)) matchCount++;
   if (MARKDOWN_PATTERNS.horizontalRule.test(text)) matchCount++;
   if (MARKDOWN_PATTERNS.checklist.test(text)) matchCount++;
   if (MARKDOWN_PATTERNS.table.test(text)) matchCount++;
@@ -105,6 +109,7 @@ function isLikelyMarkdown(text: string): boolean {
     MARKDOWN_PATTERNS.unorderedList.test(text) ||
     MARKDOWN_PATTERNS.orderedList.test(text) ||
     MARKDOWN_PATTERNS.blockquote.test(text) ||
+    MARKDOWN_PATTERNS.alert.test(text) ||
     MARKDOWN_PATTERNS.table.test(text);
 
   return matchCount >= 2 || hasStrongPattern;

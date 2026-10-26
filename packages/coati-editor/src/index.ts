@@ -28,8 +28,10 @@ export {
 // Hooks
 export { default as useModal } from './hooks/useModal';
 export { default as useReport } from './hooks/useReport';
+export type { AlertType, SerializedAlertNode } from './nodes';
 // ノード（個別エクスポート）
 export {
+  $createAlertNode,
   $createAutocompleteNode,
   $createCollapsibleContainerNode,
   $createCollapsibleContentNode,
@@ -48,6 +50,7 @@ export {
   $createStickyNode,
   $createTweetNode,
   $createYouTubeNode,
+  $isAlertNode,
   $isCollapsibleContainerNode,
   $isCollapsibleContentNode,
   $isCollapsibleTitleNode,
@@ -65,6 +68,8 @@ export {
   $isStickyNode,
   $isTweetNode,
   $isYouTubeNode,
+  ALERT_TYPES,
+  AlertNode,
   AutocompleteNode,
   CollapsibleContainerNode,
   CollapsibleContentNode,
@@ -92,7 +97,7 @@ export { default as ImagesPlugin } from './plugins/ImagesPlugin';
 // プラグイン（よく使われるもの）
 export { INSERT_MARKDOWN_COMMAND } from './plugins/InsertMarkdownPlugin';
 export { OPEN_MARKDOWN_PREVIEW_COMMAND } from './plugins/MarkdownPreviewPlugin';
-export { PLAYGROUND_TRANSFORMERS } from './plugins/MarkdownTransformers';
+export { ALERT, PLAYGROUND_TRANSFORMERS } from './plugins/MarkdownTransformers';
 export { default as SearchHighlightPlugin, SEARCH_HIGHLIGHT_ID } from './plugins/SearchHighlightPlugin';
 export { TableContext } from './plugins/TablePlugin';
 // Themes

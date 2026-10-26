@@ -33,6 +33,7 @@ import {
   TableRowNode,
 } from '@lexical/table';
 import { $createTextNode, $isParagraphNode, $isTextNode, type LexicalNode } from 'lexical';
+import { $createAlertNode, $isAlertNode, ALERT_TYPES, AlertNode } from '../../nodes/AlertNode';
 import { $createEquationNode, $isEquationNode, EquationNode } from '../../nodes/EquationNode';
 import { $createImageNode, $isImageNode, ImageNode } from '../../nodes/ImageNode';
 import { $createMermaidNode, $isMermaidNode, MermaidNode } from '../../nodes/MermaidNode';
@@ -133,6 +134,34 @@ export const TWEET: ElementTransformer = {
     const [, id] = match;
     const tweetNode = $createTweetNode(id);
     textNode.replace(tweetNode);
+  },
+  type: 'element',
+};
+
+export const ALERT: ElementTransformer = {
+  dependencies: [AlertNode],
+  export: (node, exportChildren) => {
+    if (!$isAlertNode(node)) {
+      return null;
+    }
+
+    const body = exportChildren(node).replace(/^\n/, '');
+    const bodyLines = body.split('\n').map((line) => (line.length > 0 && line !== '>' ? `> ${line}` : '>'));
+    return `> [!${node.getAlertType()}]${body ? `\n${bodyLines.join('\n')}` : ''}`;
+  },
+  regExp: new RegExp(`^>\\s*\\[!(${ALERT_TYPES.join('|')})\\]\\s*$`, 'i'),
+  replace: (parentNode, children, match, isImport) => {
+    const alertType = ALERT_TYPES.find((type) => type === match[1]?.toUpperCase());
+    if (!alertType) {
+      return false;
+    }
+
+    const alertNode = $createAlertNode(alertType);
+    alertNode.append(...children);
+    parentNode.replace(alertNode);
+    if (!isImport) {
+      alertNode.select(0, 0);
+    }
   },
   type: 'element',
 };
@@ -351,6 +380,7 @@ const mapToTableCells = (textContent: string): Array<TableCellNode> | null => {
 };
 
 export const PLAYGROUND_TRANSFORMERS: Array<Transformer> = [
+  ALERT,
   TABLE,
   HR,
   IMAGE,

@@ -960,6 +960,49 @@
   color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
   border-left: 4px solid color-mix(in oklab, var(--color-success) 50%, transparent);
 }
+blockquote[data-alert-type] {
+  --alert-color: var(--color-info);
+  margin: 1em 0;
+  padding: 0.75em 1em;
+  color: var(--color-base-content);
+  background-color: color-mix(in oklab, var(--alert-color) 7%, transparent);
+  border: 1px solid color-mix(in oklab, var(--alert-color) 25%, transparent);
+  border-left: 4px solid var(--alert-color);
+  border-radius: 0.375rem;
+}
+blockquote[data-alert-type]::before {
+  display: block;
+  margin-bottom: 0.35em;
+  color: var(--alert-color);
+  font-weight: 600;
+}
+blockquote[data-alert-type=NOTE]::before {
+  content: "Note";
+}
+blockquote[data-alert-type=TIP] {
+  --alert-color: var(--color-success);
+}
+blockquote[data-alert-type=TIP]::before {
+  content: "Tip";
+}
+blockquote[data-alert-type=IMPORTANT] {
+  --alert-color: var(--color-primary);
+}
+blockquote[data-alert-type=IMPORTANT]::before {
+  content: "Important";
+}
+blockquote[data-alert-type=WARNING] {
+  --alert-color: var(--color-warning);
+}
+blockquote[data-alert-type=WARNING]::before {
+  content: "Warning";
+}
+blockquote[data-alert-type=CAUTION] {
+  --alert-color: var(--color-error);
+}
+blockquote[data-alert-type=CAUTION]::before {
+  content: "Caution";
+}
 .NotionLikeEditorTheme__h1 {
   font-size: 2em;
   color: var(--color-base-content);

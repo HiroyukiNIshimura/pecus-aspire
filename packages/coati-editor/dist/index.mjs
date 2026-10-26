@@ -5859,10 +5859,10 @@ var init_DateTimeComponent = __esm({
 
 // src/nodes/DateTimeNode/DateTimeNode.tsx
 import {
-  $create as $create8,
+  $create as $create9,
   $getState as $getState6,
   $setState as $setState6,
-  buildImportMap as buildImportMap6,
+  buildImportMap as buildImportMap7,
   createState as createState6,
   DecoratorNode
 } from "lexical";
@@ -5887,7 +5887,7 @@ function $convertDateTimeElement(domNode) {
   return { node };
 }
 function $createDateTimeNode(dateTime) {
-  return $create8(DateTimeNode).setDateTime(dateTime);
+  return $create9(DateTimeNode).setDateTime(dateTime);
 }
 function $isDateTimeNode(node) {
   return node instanceof DateTimeNode;
@@ -5913,7 +5913,7 @@ var init_DateTimeNode2 = __esm({
       $config() {
         return this.config("datetime", {
           extends: DecoratorNode,
-          importDOM: buildImportMap6({
+          importDOM: buildImportMap7({
             span: (domNode) => domNode.getAttribute("data-lexical-datetime") !== null || // GDocs Support
             domNode.getAttribute("data-rich-links") !== null && JSON.parse(domNode.getAttribute("data-rich-links") || "{}").type === "date" ? {
               conversion: $convertDateTimeElement,
@@ -5965,14 +5965,14 @@ var init_EquationEditor = __esm({
 });
 
 // src/ui/EquationEditor.tsx
-import { isHTMLElement as isHTMLElement3 } from "lexical";
+import { isHTMLElement as isHTMLElement4 } from "lexical";
 import { forwardRef } from "react";
 import { jsx as jsx24, jsxs as jsxs8 } from "react/jsx-runtime";
 function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
   const onChange = (event) => {
     setEquation(event.target.value);
   };
-  return inline && isHTMLElement3(forwardedRef) ? /* @__PURE__ */ jsxs8("span", { className: "EquationEditor_inputBackground", children: [
+  return inline && isHTMLElement4(forwardedRef) ? /* @__PURE__ */ jsxs8("span", { className: "EquationEditor_inputBackground", children: [
     /* @__PURE__ */ jsx24("span", { className: "EquationEditor_dollarSign", children: "$" }),
     /* @__PURE__ */ jsx24(
       "input",
@@ -6178,11 +6178,11 @@ var init_EquationComponent = __esm({
 // src/nodes/EquationNode.tsx
 import katex2 from "katex";
 import {
-  $applyNodeReplacement,
-  $create as $create9,
+  $applyNodeReplacement as $applyNodeReplacement2,
+  $create as $create10,
   $getState as $getState7,
   $setState as $setState7,
-  buildImportMap as buildImportMap7,
+  buildImportMap as buildImportMap8,
   createState as createState7,
   DecoratorNode as DecoratorNode2
 } from "lexical";
@@ -6199,8 +6199,8 @@ function $convertEquationElement(domNode) {
   return null;
 }
 function $createEquationNode(equation = "", inline = false) {
-  return $applyNodeReplacement(
-    $setState7($setState7($create9(EquationNode), equationState, equation), inlineState, inline)
+  return $applyNodeReplacement2(
+    $setState7($setState7($create10(EquationNode), equationState, equation), inlineState, inline)
   );
 }
 function $isEquationNode(node) {
@@ -6221,7 +6221,7 @@ var init_EquationNode = __esm({
       $config() {
         return this.config("equation", {
           extends: DecoratorNode2,
-          importDOM: buildImportMap7({
+          importDOM: buildImportMap8({
             div: (domNode) => {
               if (!domNode.hasAttribute("data-lexical-equation")) {
                 return null;
@@ -6291,12 +6291,12 @@ var init_EquationNode = __esm({
 });
 
 // src/nodes/EmojiNode.tsx
-import { $create as $create10, $getState as $getState8, $setState as $setState8, createState as createState8, TextNode as TextNode3 } from "lexical";
+import { $create as $create11, $getState as $getState8, $setState as $setState8, createState as createState8, TextNode as TextNode3 } from "lexical";
 function $isEmojiNode(node) {
   return node instanceof EmojiNode;
 }
 function $createEmojiNode(className, emojiText) {
-  return $setState8($create10(EmojiNode).setTextContent(emojiText).setMode("token"), classNameState, className);
+  return $setState8($create11(EmojiNode).setTextContent(emojiText).setMode("token"), classNameState, className);
 }
 var classNameState, EmojiNode;
 var init_EmojiNode = __esm({
@@ -6339,9 +6339,9 @@ var init_EmojiNode = __esm({
 });
 
 // src/nodes/KeywordNode.ts
-import { $create as $create11, TextNode as TextNode4 } from "lexical";
+import { $create as $create12, TextNode as TextNode4 } from "lexical";
 function $createKeywordNode(keyword = "") {
-  return $create11(KeywordNode).setTextContent(keyword);
+  return $create12(KeywordNode).setTextContent(keyword);
 }
 function $isKeywordNode(node) {
   return node instanceof KeywordNode;
@@ -7270,7 +7270,7 @@ import { HashtagNode } from "@lexical/hashtag";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import { LinkNode } from "@lexical/link";
 import {
-  $applyNodeReplacement as $applyNodeReplacement2,
+  $applyNodeReplacement as $applyNodeReplacement3,
   $createRangeSelection,
   $extendCaretToRange,
   $getChildCaret,
@@ -7282,7 +7282,7 @@ import {
   $selectAll,
   $setSelection as $setSelection4,
   $setState as $setState9,
-  buildImportMap as buildImportMap8,
+  buildImportMap as buildImportMap9,
   createEditor,
   createState as createState9,
   DecoratorNode as DecoratorNode3,
@@ -7326,7 +7326,7 @@ function $createImageNode({
   caption,
   key: key2
 }) {
-  const node = $applyNodeReplacement2(new ImageNode(key2));
+  const node = $applyNodeReplacement3(new ImageNode(key2));
   $setState9(node, srcState, src);
   $setState9(node, altTextState, altText ?? "");
   $setState9(node, widthState, width === void 0 || width === 0 ? "inherit" : width);
@@ -7378,7 +7378,7 @@ var init_ImageNode2 = __esm({
       $config() {
         return this.config("image", {
           extends: DecoratorNode3,
-          importDOM: buildImportMap8({
+          importDOM: buildImportMap9({
             figcaption: () => ({
               conversion: () => ({ node: null }),
               priority: 0
@@ -7694,11 +7694,11 @@ var init_MermaidComponent = __esm({
 
 // src/nodes/MermaidNode.tsx
 import {
-  $applyNodeReplacement as $applyNodeReplacement3,
-  $create as $create15,
+  $applyNodeReplacement as $applyNodeReplacement4,
+  $create as $create16,
   $getState as $getState11,
   $setState as $setState11,
-  buildImportMap as buildImportMap12,
+  buildImportMap as buildImportMap13,
   createState as createState11,
   DecoratorNode as DecoratorNode5
 } from "lexical";
@@ -7714,7 +7714,7 @@ function $convertMermaidElement(domNode) {
   return { node };
 }
 function $createMermaidNode(code = "") {
-  return $applyNodeReplacement3($setState11($create15(MermaidNode), codeState, code));
+  return $applyNodeReplacement4($setState11($create16(MermaidNode), codeState, code));
 }
 function $isMermaidNode(node) {
   return node instanceof MermaidNode;
@@ -7731,7 +7731,7 @@ var init_MermaidNode2 = __esm({
       $config() {
         return this.config("mermaid", {
           extends: DecoratorNode5,
-          importDOM: buildImportMap12({
+          importDOM: buildImportMap13({
             div: (domNode) => {
               if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
                 return null;
@@ -8188,8 +8188,8 @@ var init_StickyComponent = __esm({
 
 // src/nodes/StickyNode.tsx
 import {
-  $applyNodeReplacement as $applyNodeReplacement4,
-  $create as $create17,
+  $applyNodeReplacement as $applyNodeReplacement5,
+  $create as $create18,
   $getState as $getState12,
   $setSelection as $setSelection8,
   $setState as $setState12,
@@ -8203,7 +8203,7 @@ function $isStickyNode(node) {
   return node instanceof StickyNode;
 }
 function $createStickyNode(xOffset, yOffset) {
-  const node = $applyNodeReplacement4($create17(StickyNode));
+  const node = $applyNodeReplacement5($create18(StickyNode));
   $setState12(node, xOffsetState, xOffset);
   $setState12(node, yOffsetState, yOffset);
   $setState12(node, colorState, "yellow");
@@ -12467,6 +12467,7 @@ var CachedFn = class {
   constructor(fn) {
     this.fn = fn;
   }
+  fn;
   cache = /* @__PURE__ */ new Map();
   get(key2) {
     if (this.cache.has(key2)) {
@@ -12483,6 +12484,9 @@ var Theme = class {
     this._defaults = _defaults;
     this._root = _root;
   }
+  _colorMap;
+  _defaults;
+  _root;
   static createFromRawTheme(source, colorMap) {
     return this.createFromParsedTheme(parseTheme(source), colorMap);
   }
@@ -12522,6 +12526,8 @@ var ScopeStack = class _ScopeStack {
     this.parent = parent;
     this.scopeName = scopeName;
   }
+  parent;
+  scopeName;
   static push(path, scopeNames) {
     for (const name of scopeNames) {
       path = new _ScopeStack(path, name);
@@ -12609,6 +12615,9 @@ var StyleAttributes = class {
     this.foregroundId = foregroundId;
     this.backgroundId = backgroundId;
   }
+  fontStyle;
+  foregroundId;
+  backgroundId;
 };
 function parseTheme(source) {
   if (!source) {
@@ -12695,6 +12704,12 @@ var ParsedThemeRule = class {
     this.foreground = foreground;
     this.background = background;
   }
+  scope;
+  parentScopes;
+  index;
+  fontStyle;
+  foreground;
+  background;
 };
 var FontStyle = /* @__PURE__ */ ((FontStyle2) => {
   FontStyle2[FontStyle2["NotSet"] = -1] = "NotSet";
@@ -12828,6 +12843,8 @@ var ThemeTrieElement = class _ThemeTrieElement {
     this._children = _children;
     this._rulesWithParentScopes = rulesWithParentScopes;
   }
+  _mainRule;
+  _children;
   _rulesWithParentScopes;
   static _cmpBySpecificity(a2, b3) {
     if (a2.scopeDepth !== b3.scopeDepth) {
@@ -13099,6 +13116,7 @@ var TopLevelRuleReference = class {
   constructor(scopeName) {
     this.scopeName = scopeName;
   }
+  scopeName;
   toKey() {
     return this.scopeName;
   }
@@ -13108,6 +13126,8 @@ var TopLevelRepositoryRuleReference = class {
     this.scopeName = scopeName;
     this.ruleName = ruleName;
   }
+  scopeName;
+  ruleName;
   toKey() {
     return `${this.scopeName}#${this.ruleName}`;
   }
@@ -13135,6 +13155,8 @@ var ScopeDependencyProcessor = class {
     this.seenFullScopeRequests.add(this.initialScopeName);
     this.Q = [new TopLevelRuleReference(this.initialScopeName)];
   }
+  repo;
+  initialScopeName;
   seenFullScopeRequests = /* @__PURE__ */ new Set();
   seenPartialScopeRequests = /* @__PURE__ */ new Set();
   Q;
@@ -13268,12 +13290,14 @@ var RelativeReference = class {
   constructor(ruleName) {
     this.ruleName = ruleName;
   }
+  ruleName;
   kind = 2;
 };
 var TopLevelReference = class {
   constructor(scopeName) {
     this.scopeName = scopeName;
   }
+  scopeName;
   kind = 3;
 };
 var TopLevelRepositoryReference = class {
@@ -13281,6 +13305,8 @@ var TopLevelRepositoryReference = class {
     this.scopeName = scopeName;
     this.ruleName = ruleName;
   }
+  scopeName;
+  ruleName;
   kind = 4;
 };
 function parseInclude(include) {
@@ -13981,6 +14007,8 @@ var CompiledRule = class {
     this.rules = rules;
     this.scanner = onigLib.createOnigScanner(regExps);
   }
+  regExps;
+  rules;
   scanner;
   dispose() {
     if (typeof this.scanner.dispose === "function") {
@@ -14010,6 +14038,8 @@ var BasicScopeAttributes = class {
     this.languageId = languageId;
     this.tokenType = tokenType;
   }
+  languageId;
+  tokenType;
 };
 var BasicScopeAttributesProvider = class _BasicScopeAttributesProvider {
   _defaultAttributes;
@@ -14103,6 +14133,8 @@ var TokenizeStringResult = class {
     this.stack = stack;
     this.stoppedEarly = stoppedEarly;
   }
+  stack;
+  stoppedEarly;
 };
 function _tokenizeString(grammar, lineText, isFirstLine, linePos, stack, lineTokens, checkWhileConditions, timeLimit) {
   const lineLength = lineText.content.length;
@@ -14638,6 +14670,9 @@ var Grammar = class {
       }
     }
   }
+  _rootScopeName;
+  balancedBracketSelectors;
+  _onigLib;
   _rootId;
   _lastRuleId;
   _ruleId2desc;
@@ -14869,6 +14904,9 @@ var AttributedScopeStack = class _AttributedScopeStack {
     this.scopePath = scopePath;
     this.tokenAttributes = tokenAttributes;
   }
+  parent;
+  scopePath;
+  tokenAttributes;
   static fromExtension(namesScopeList, contentNameScopesList) {
     let current = namesScopeList;
     let scopeNames = namesScopeList?.scopePath ?? null;
@@ -15002,6 +15040,12 @@ var StateStackImpl = class _StateStackImpl {
     this._enterPos = enterPos;
     this._anchorPos = anchorPos;
   }
+  parent;
+  ruleId;
+  beginRuleCapturedEOL;
+  endRule;
+  nameScopesList;
+  contentNameScopesList;
   _stackElementBrand = void 0;
   // TODO remove me
   static NULL = new _StateStackImpl(
@@ -15236,6 +15280,7 @@ var LineTokens = class {
     this._binaryTokens = [];
     this._lastTokenEndIndex = 0;
   }
+  balancedBracketSelectors;
   _emitBinaryTokens;
   /**
    * defined only if `false`.
@@ -15345,6 +15390,7 @@ var SyncRegistry = class {
     this._onigLib = _onigLib;
     this._theme = theme4;
   }
+  _onigLib;
   _grammars = /* @__PURE__ */ new Map();
   _rawGrammars = /* @__PURE__ */ new Map();
   _injectionGrammars = /* @__PURE__ */ new Map();
@@ -16475,6 +16521,7 @@ var html = create({
     allowFullScreen: boolean,
     allowPaymentRequest: boolean,
     allowUserMedia: boolean,
+    alpha: boolean,
     alt: null,
     as: null,
     async: boolean,
@@ -16488,8 +16535,12 @@ var html = create({
     checked: boolean,
     cite: null,
     className: spaceSeparated,
+    closedBy: null,
+    colorSpace: null,
     cols: number,
-    colSpan: null,
+    colSpan: number,
+    command: null,
+    commandFor: null,
     content: null,
     contentEditable: booleanish,
     controls: boolean,
@@ -16669,8 +16720,10 @@ var html = create({
     seamless: boolean,
     selected: boolean,
     shadowRootClonable: boolean,
+    shadowRootCustomElementRegistry: boolean,
     shadowRootDelegatesFocus: boolean,
     shadowRootMode: null,
+    shadowRootSerializable: boolean,
     shape: null,
     size: number,
     sizes: null,
@@ -16807,8 +16860,11 @@ var html = create({
     allowTransparency: null,
     autoCorrect: null,
     autoSave: null,
+    credentialless: boolean,
     disablePictureInPicture: boolean,
     disableRemotePlayback: boolean,
+    exportParts: commaSeparated,
+    part: spaceSeparated,
     prefix: null,
     property: null,
     results: number,
@@ -16862,6 +16918,7 @@ var svg = create({
     markerEnd: "marker-end",
     markerMid: "marker-mid",
     markerStart: "marker-start",
+    maskType: "mask-type",
     navDown: "nav-down",
     navDownLeft: "nav-down-left",
     navDownRight: "nav-down-right",
@@ -17132,6 +17189,7 @@ var svg = create({
     markerWidth: null,
     mask: null,
     maskContentUnits: null,
+    maskType: null,
     maskUnits: null,
     mathematical: null,
     max: null,
@@ -25556,6 +25614,97 @@ import {
 import { useCallback as useCallback13, useMemo as useMemo13, useState as useState21 } from "react";
 import * as ReactDOM from "react-dom";
 
+// src/nodes/AlertNode.ts
+import { QuoteNode } from "@lexical/rich-text";
+import { $applyNodeReplacement, $create as $create8, buildImportMap as buildImportMap6, isHTMLElement as isHTMLElement3 } from "lexical";
+var ALERT_TYPES = ["NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"];
+function normalizeAlertType(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  return ALERT_TYPES.find((alertType) => alertType === value.toUpperCase()) ?? null;
+}
+function getAlertLabel(alertType) {
+  return alertType[0] + alertType.slice(1).toLowerCase();
+}
+var AlertNode = class _AlertNode extends QuoteNode {
+  __alertType = "NOTE";
+  $config() {
+    return this.config("alert", {
+      extends: QuoteNode,
+      importDOM: buildImportMap6({
+        blockquote: (domNode) => {
+          const alertType = normalizeAlertType(domNode.getAttribute("data-alert-type"));
+          if (!alertType) {
+            return null;
+          }
+          return {
+            conversion: () => ({ node: $createAlertNode(alertType) }),
+            priority: 2
+          };
+        }
+      })
+    });
+  }
+  static clone(node) {
+    const clone2 = new _AlertNode(node.__key);
+    clone2.afterCloneFrom(node);
+    return clone2;
+  }
+  afterCloneFrom(prevNode) {
+    super.afterCloneFrom(prevNode);
+    this.__alertType = prevNode.__alertType;
+  }
+  static importJSON(serializedNode) {
+    return $createAlertNode(normalizeAlertType(serializedNode.alertType) ?? "NOTE").updateFromJSON(serializedNode);
+  }
+  exportJSON(compact = false) {
+    return {
+      ...super.exportJSON(compact),
+      alertType: this.getAlertType()
+    };
+  }
+  createDOM(config) {
+    const element2 = super.createDOM(config);
+    this.updateAlertDOM(element2);
+    return element2;
+  }
+  updateDOM(prevNode, dom, config) {
+    if (super.updateDOM(prevNode, dom, config)) {
+      return true;
+    }
+    this.updateAlertDOM(dom);
+    return false;
+  }
+  exportDOM(editor) {
+    const output = super.exportDOM(editor);
+    if (isHTMLElement3(output.element)) {
+      this.updateAlertDOM(output.element);
+    }
+    return output;
+  }
+  getAlertType() {
+    return this.getLatest().__alertType;
+  }
+  setAlertType(alertType) {
+    const writable = this.getWritable();
+    writable.__alertType = alertType;
+    return writable;
+  }
+  updateAlertDOM(element2) {
+    const label = getAlertLabel(this.getAlertType());
+    element2.setAttribute("data-alert-type", this.getAlertType());
+    element2.setAttribute("role", "note");
+    element2.setAttribute("aria-label", `${label} alert`);
+  }
+};
+function $createAlertNode(alertType = "NOTE") {
+  return $applyNodeReplacement($create8(AlertNode).setAlertType(alertType));
+}
+function $isAlertNode(node) {
+  return node?.getType() === "alert";
+}
+
 // src/plugins/DateTimePlugin/index.tsx
 init_DateTimeNode2();
 import { useLexicalComposerContext as useLexicalComposerContext11 } from "@lexical/react/LexicalComposerContext";
@@ -25717,7 +25866,7 @@ import {
   DRAGSTART_COMMAND as DRAGSTART_COMMAND2,
   DROP_COMMAND,
   getDOMSelectionFromTarget,
-  isHTMLElement as isHTMLElement4
+  isHTMLElement as isHTMLElement5
 } from "lexical";
 import { useEffect as useEffect21, useRef as useRef11, useState as useState17 } from "react";
 init_ImageNode2();
@@ -26058,7 +26207,7 @@ function getDragImageData(event) {
 }
 function canDropImage(event) {
   const target = event.target;
-  return !!(isHTMLElement4(target) && !target.closest("code, span.editor-image") && isHTMLElement4(target.parentElement) && target.parentElement.closest("div.ContentEditable__root"));
+  return !!(isHTMLElement5(target) && !target.closest("code, span.editor-image") && isHTMLElement5(target.parentElement) && target.parentElement.closest("div.ContentEditable__root"));
 }
 function getDragSelection(event) {
   let range2;
@@ -26313,7 +26462,7 @@ import { useEffect as useEffect23 } from "react";
 
 // src/nodes/LayoutContainerNode.ts
 import { addClassNamesToElement } from "@lexical/utils";
-import { $create as $create12, $getState as $getState10, $setState as $setState10, buildImportMap as buildImportMap9, createState as createState10, ElementNode as ElementNode4 } from "lexical";
+import { $create as $create13, $getState as $getState10, $setState as $setState10, buildImportMap as buildImportMap10, createState as createState10, ElementNode as ElementNode4 } from "lexical";
 var templateColumnsState = createState10("templateColumns", {
   parse: (v2) => typeof v2 === "string" ? v2 : ""
 });
@@ -26330,7 +26479,7 @@ var LayoutContainerNode = class extends ElementNode4 {
   $config() {
     return this.config("layout-container", {
       extends: ElementNode4,
-      importDOM: buildImportMap9({
+      importDOM: buildImportMap10({
         div: (domNode) => {
           if (!domNode.hasAttribute("data-lexical-layout-container")) {
             return null;
@@ -26378,7 +26527,7 @@ var LayoutContainerNode = class extends ElementNode4 {
   }
 };
 function $createLayoutContainerNode(templateColumns = "") {
-  return $setState10($create12(LayoutContainerNode), templateColumnsState, templateColumns);
+  return $setState10($create13(LayoutContainerNode), templateColumnsState, templateColumns);
 }
 function $isLayoutContainerNode(node) {
   return node instanceof LayoutContainerNode;
@@ -26386,7 +26535,7 @@ function $isLayoutContainerNode(node) {
 
 // src/nodes/LayoutItemNode.ts
 import { addClassNamesToElement as addClassNamesToElement2 } from "@lexical/utils";
-import { $create as $create13, $isParagraphNode as $isParagraphNode2, buildImportMap as buildImportMap10, ElementNode as ElementNode5 } from "lexical";
+import { $create as $create14, $isParagraphNode as $isParagraphNode2, buildImportMap as buildImportMap11, ElementNode as ElementNode5 } from "lexical";
 function $convertLayoutItemElement() {
   return { node: $createLayoutItemNode() };
 }
@@ -26401,7 +26550,7 @@ var LayoutItemNode = class extends ElementNode5 {
   $config() {
     return this.config("layout-item", {
       extends: ElementNode5,
-      importDOM: buildImportMap10({
+      importDOM: buildImportMap11({
         div: (domNode) => {
           if (!domNode.hasAttribute("data-lexical-layout-item")) {
             return null;
@@ -26438,7 +26587,7 @@ var LayoutItemNode = class extends ElementNode5 {
   }
 };
 function $createLayoutItemNode() {
-  return $create13(LayoutItemNode);
+  return $create14(LayoutItemNode);
 }
 function $isLayoutItemNode(node) {
   return node instanceof LayoutItemNode;
@@ -26605,8 +26754,8 @@ import { useLexicalComposerContext as useLexicalComposerContext19 } from "@lexic
 import { useLexicalNodeSelection as useLexicalNodeSelection3 } from "@lexical/react/useLexicalNodeSelection";
 import { mergeRegister as mergeRegister9 } from "@lexical/utils";
 import {
-  $create as $create14,
-  buildImportMap as buildImportMap11,
+  $create as $create15,
+  buildImportMap as buildImportMap12,
   CLICK_COMMAND as CLICK_COMMAND2,
   COMMAND_PRIORITY_HIGH as COMMAND_PRIORITY_HIGH3,
   COMMAND_PRIORITY_LOW as COMMAND_PRIORITY_LOW7,
@@ -26648,7 +26797,7 @@ var PageBreakNode = class extends DecoratorNode4 {
   $config() {
     return this.config("page-break", {
       extends: DecoratorNode4,
-      importDOM: buildImportMap11({
+      importDOM: buildImportMap12({
         figure: (domNode) => {
           const tp = domNode.getAttribute("type");
           if (tp !== "page-break") {
@@ -26685,7 +26834,7 @@ function $convertPageBreakElement() {
   return { node: $createPageBreakNode() };
 }
 function $createPageBreakNode() {
-  return $create14(PageBreakNode);
+  return $create15(PageBreakNode);
 }
 function $isPageBreakNode(node) {
   return node instanceof PageBreakNode;
@@ -26933,6 +27082,25 @@ function getBaseOptions(editor, showModal) {
           $setBlocksType(selection, () => $createQuoteNode());
         }
       })
+    }),
+    ...ALERT_TYPES.map((alertType) => {
+      const label = alertType[0] + alertType.slice(1).toLowerCase();
+      return new ComponentPickerOption(`Alert: ${label}`, {
+        icon: /* @__PURE__ */ jsx42("i", { className: "icon quote" }),
+        keywords: ["alert", "callout", alertType.toLowerCase(), label.toLowerCase()],
+        onSelect: () => editor.update(() => {
+          const selection = $getSelection10();
+          if (!$isRangeSelection7(selection)) {
+            return;
+          }
+          const topLevelNode = selection.anchor.getNode().getTopLevelElement();
+          if ($isAlertNode(topLevelNode)) {
+            topLevelNode.setAlertType(alertType);
+          } else {
+            $setBlocksType(selection, () => $createAlertNode(alertType));
+          }
+        })
+      });
     }),
     new ComponentPickerOption("Code", {
       icon: /* @__PURE__ */ jsx42("i", { className: "icon code" }),
@@ -27298,7 +27466,7 @@ function DragDropPaste() {
 // src/plugins/DraggableBlockPlugin/index.tsx
 import { useLexicalComposerContext as useLexicalComposerContext25 } from "@lexical/react/LexicalComposerContext";
 import { eventFiles } from "@lexical/rich-text";
-import { calculateZoomLevel as calculateZoomLevel2, isHTMLElement as isHTMLElement5, mergeRegister as mergeRegister11 } from "@lexical/utils";
+import { calculateZoomLevel as calculateZoomLevel2, isHTMLElement as isHTMLElement6, mergeRegister as mergeRegister11 } from "@lexical/utils";
 import {
   $createParagraphNode as $createParagraphNode8,
   $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode4,
@@ -27599,7 +27767,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
   useEffect28(() => {
     function onMouseMove(event) {
       const target = event.target;
-      if (!isHTMLElement5(target)) {
+      if (!isHTMLElement6(target)) {
         setDraggableBlockElem(null);
         return;
       }
@@ -27638,7 +27806,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
         return false;
       }
       const { pageY, target } = event;
-      if (!isHTMLElement5(target)) {
+      if (!isHTMLElement6(target)) {
         return false;
       }
       const targetBlockElem = getBlockElement(anchorElem, editor, event, true);
@@ -27664,7 +27832,7 @@ function useDraggableBlockMenu(editor, anchorElem, menuRef, targetLineRef, isEdi
       if (!draggedNode) {
         return false;
       }
-      if (!isHTMLElement5(target)) {
+      if (!isHTMLElement6(target)) {
         return false;
       }
       const targetBlockElem = getBlockElement(anchorElem, editor, event, true);
@@ -29134,9 +29302,6 @@ import {
 import { useCallback as useCallback17, useEffect as useEffect35 } from "react";
 
 // src/transformers/markdown-transformers.ts
-init_EquationNode();
-init_ImageNode2();
-init_MermaidNode2();
 import { $createHorizontalRuleNode as $createHorizontalRuleNode2, $isHorizontalRuleNode, HorizontalRuleNode } from "@lexical/extension";
 import {
   $convertFromMarkdownString,
@@ -29160,6 +29325,9 @@ import {
   TableRowNode as TableRowNode2
 } from "@lexical/table";
 import { $createTextNode as $createTextNode3, $isParagraphNode as $isParagraphNode4, $isTextNode as $isTextNode4 } from "lexical";
+init_EquationNode();
+init_ImageNode2();
+init_MermaidNode2();
 
 // src/utils/emoji-list.ts
 var emoji_list_default = [
@@ -45837,6 +46005,32 @@ var EQUATION = {
   trigger: "$",
   type: "text-match"
 };
+var ALERT = {
+  dependencies: [AlertNode],
+  export: (node, exportChildren) => {
+    if (!$isAlertNode(node)) {
+      return null;
+    }
+    const body3 = exportChildren(node).replace(/^\n/, "");
+    const bodyLines = body3.split("\n").map((line) => line.length > 0 && line !== ">" ? `> ${line}` : ">");
+    return `> [!${node.getAlertType()}]${body3 ? `
+${bodyLines.join("\n")}` : ""}`;
+  },
+  regExp: new RegExp(`^>\\s*\\[!(${ALERT_TYPES.join("|")})\\]\\s*$`, "i"),
+  replace: (parentNode, children, match, isImport) => {
+    const alertType = ALERT_TYPES.find((type) => type === match[1]?.toUpperCase());
+    if (!alertType) {
+      return false;
+    }
+    const alertNode = $createAlertNode(alertType);
+    alertNode.append(...children);
+    parentNode.replace(alertNode);
+    if (!isImport) {
+      alertNode.select(0, 0);
+    }
+  },
+  type: "element"
+};
 var TWEET = {
   dependencies: [TweetNode],
   export: (node) => {
@@ -46024,6 +46218,7 @@ var mapToTableCells = (textContent) => {
   return match[1].split("|").map((text2) => $createTableCell(text2));
 };
 var PLAYGROUND_TRANSFORMERS = [
+  ALERT,
   TABLE,
   HR,
   IMAGE,
@@ -46070,9 +46265,6 @@ function normalizeListIndentation(markdown) {
 }
 
 // src/plugins/MarkdownTransformers/index.ts
-init_EquationNode();
-init_ImageNode2();
-init_MermaidNode2();
 import { $createHorizontalRuleNode as $createHorizontalRuleNode3, $isHorizontalRuleNode as $isHorizontalRuleNode2, HorizontalRuleNode as HorizontalRuleNode2 } from "@lexical/extension";
 import {
   $convertFromMarkdownString as $convertFromMarkdownString2,
@@ -46096,6 +46288,9 @@ import {
   TableRowNode as TableRowNode3
 } from "@lexical/table";
 import { $createTextNode as $createTextNode4, $isParagraphNode as $isParagraphNode5, $isTextNode as $isTextNode5 } from "lexical";
+init_EquationNode();
+init_ImageNode2();
+init_MermaidNode2();
 var HR2 = {
   dependencies: [HorizontalRuleNode2],
   export: (node) => {
@@ -46180,6 +46375,32 @@ var TWEET2 = {
     const [, id] = match;
     const tweetNode = $createTweetNode(id);
     textNode.replace(tweetNode);
+  },
+  type: "element"
+};
+var ALERT2 = {
+  dependencies: [AlertNode],
+  export: (node, exportChildren) => {
+    if (!$isAlertNode(node)) {
+      return null;
+    }
+    const body3 = exportChildren(node).replace(/^\n/, "");
+    const bodyLines = body3.split("\n").map((line) => line.length > 0 && line !== ">" ? `> ${line}` : ">");
+    return `> [!${node.getAlertType()}]${body3 ? `
+${bodyLines.join("\n")}` : ""}`;
+  },
+  regExp: new RegExp(`^>\\s*\\[!(${ALERT_TYPES.join("|")})\\]\\s*$`, "i"),
+  replace: (parentNode, children, match, isImport) => {
+    const alertType = ALERT_TYPES.find((type) => type === match[1]?.toUpperCase());
+    if (!alertType) {
+      return false;
+    }
+    const alertNode = $createAlertNode(alertType);
+    alertNode.append(...children);
+    parentNode.replace(alertNode);
+    if (!isImport) {
+      alertNode.select(0, 0);
+    }
   },
   type: "element"
 };
@@ -46354,6 +46575,7 @@ var mapToTableCells2 = (textContent) => {
   return match[1].split("|").map((text2) => $createTableCell2(text2));
 };
 var PLAYGROUND_TRANSFORMERS2 = [
+  ALERT2,
   TABLE2,
   HR2,
   IMAGE2,
@@ -46390,6 +46612,8 @@ var MARKDOWN_PATTERNS = {
   image: /!\[([^\]]*)\]\(([^)]+)\)/,
   // 引用: > quote
   blockquote: /^>\s+.+/m,
+  // GitHub Alert marker: > [!NOTE]
+  alert: /^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*$/im,
   // 水平線: ---, ***, ___
   horizontalRule: /^(---|\*\*\*|___)\s*$/m,
   // チェックリスト: - [ ] or - [x]
@@ -46408,7 +46632,8 @@ function isLikelyMarkdown(text2) {
     const hasItalic = MARKDOWN_PATTERNS.italic.test(text2);
     const hasLink = MARKDOWN_PATTERNS.link.test(text2);
     const hasInlineCode = MARKDOWN_PATTERNS.inlineCode.test(text2);
-    if (hasHeading || hasBold || hasItalic || hasLink || hasInlineCode) {
+    const hasAlert = MARKDOWN_PATTERNS.alert.test(text2);
+    if (hasHeading || hasBold || hasItalic || hasLink || hasInlineCode || hasAlert) {
       return true;
     }
     return false;
@@ -46424,10 +46649,11 @@ function isLikelyMarkdown(text2) {
   if (MARKDOWN_PATTERNS.link.test(text2)) matchCount++;
   if (MARKDOWN_PATTERNS.image.test(text2)) matchCount++;
   if (MARKDOWN_PATTERNS.blockquote.test(text2)) matchCount++;
+  if (MARKDOWN_PATTERNS.alert.test(text2)) matchCount++;
   if (MARKDOWN_PATTERNS.horizontalRule.test(text2)) matchCount++;
   if (MARKDOWN_PATTERNS.checklist.test(text2)) matchCount++;
   if (MARKDOWN_PATTERNS.table.test(text2)) matchCount++;
-  const hasStrongPattern = MARKDOWN_PATTERNS.heading.test(text2) || MARKDOWN_PATTERNS.codeBlock.test(text2) || MARKDOWN_PATTERNS.unorderedList.test(text2) || MARKDOWN_PATTERNS.orderedList.test(text2) || MARKDOWN_PATTERNS.blockquote.test(text2) || MARKDOWN_PATTERNS.table.test(text2);
+  const hasStrongPattern = MARKDOWN_PATTERNS.heading.test(text2) || MARKDOWN_PATTERNS.codeBlock.test(text2) || MARKDOWN_PATTERNS.unorderedList.test(text2) || MARKDOWN_PATTERNS.orderedList.test(text2) || MARKDOWN_PATTERNS.blockquote.test(text2) || MARKDOWN_PATTERNS.alert.test(text2) || MARKDOWN_PATTERNS.table.test(text2);
   return matchCount >= 2 || hasStrongPattern;
 }
 function getPlainTextFromClipboard(event) {
@@ -47120,7 +47346,7 @@ import { useEffect as useEffect39 } from "react";
 
 // src/nodes/SpecialTextNode.tsx
 import { addClassNamesToElement as addClassNamesToElement3 } from "@lexical/utils";
-import { $create as $create16, TextNode as TextNode8 } from "lexical";
+import { $create as $create17, TextNode as TextNode8 } from "lexical";
 var SpecialTextNode = class extends TextNode8 {
   $config() {
     return this.config("specialText", { extends: TextNode8 });
@@ -47147,7 +47373,7 @@ var SpecialTextNode = class extends TextNode8 {
   }
 };
 function $createSpecialTextNode(text2 = "") {
-  return $create16(SpecialTextNode).setTextContent(text2);
+  return $create17(SpecialTextNode).setTextContent(text2);
 }
 function $isSpecialTextNode(node) {
   return node instanceof SpecialTextNode;
@@ -48000,7 +48226,7 @@ import {
   TableNode as TableNode4
 } from "@lexical/table";
 import { calculateZoomLevel as calculateZoomLevel4, mergeRegister as mergeRegister15 } from "@lexical/utils";
-import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode5, isHTMLElement as isHTMLElement6, SKIP_SCROLL_INTO_VIEW_TAG } from "lexical";
+import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode5, isHTMLElement as isHTMLElement7, SKIP_SCROLL_INTO_VIEW_TAG } from "lexical";
 import {
   useCallback as useCallback19,
   useEffect as useEffect42,
@@ -48061,7 +48287,7 @@ function TableCellResizer({ editor, anchorElem }) {
     }
     const onPointerMove = (event) => {
       const target = event.target;
-      if (!isHTMLElement6(target)) {
+      if (!isHTMLElement7(target)) {
         return;
       }
       if (draggingDirection) {
@@ -48379,7 +48605,7 @@ import {
   TableNode as TableNode5
 } from "@lexical/table";
 import { $findMatchingParent as $findMatchingParent5, mergeRegister as mergeRegister16 } from "@lexical/utils";
-import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode6, isHTMLElement as isHTMLElement7 } from "lexical";
+import { $getNearestNodeFromDOMNode as $getNearestNodeFromDOMNode6, isHTMLElement as isHTMLElement8 } from "lexical";
 import { useEffect as useEffect43, useMemo as useMemo18, useRef as useRef20, useState as useState29 } from "react";
 import { createPortal as createPortal12 } from "react-dom";
 
@@ -48583,7 +48809,7 @@ function TableHoverActionsContainer({ anchorElem }) {
 function getMouseInfo2(event, getTheme) {
   const target = event.target;
   const tableCellClass = getThemeSelector(getTheme, "tableCell");
-  if (isHTMLElement7(target)) {
+  if (isHTMLElement8(target)) {
     const tableDOMNode = target.closest(`td${tableCellClass}, th${tableCellClass}`);
     const isOutside = !(tableDOMNode || target.closest(`button${getThemeSelector(getTheme, "tableAddRows")}`) || target.closest(`button${getThemeSelector(getTheme, "tableAddColumns")}`) || target.closest("div.TableCellResizer__resizer"));
     return { isOutside, tableDOMNode };
@@ -49990,6 +50216,16 @@ function ToolbarPlugin({
           ]
         }
       ),
+      /* @__PURE__ */ jsx59(Divider, {}),
+      /* @__PURE__ */ jsx59(
+        ElementFormatDropdown,
+        {
+          disabled: !isEditable,
+          value: toolbarState.elementFormat,
+          editor: activeEditor,
+          isRTL: toolbarState.isRTL
+        }
+      ),
       canViewerSeeInsertDropdown && /* @__PURE__ */ jsxs31(Fragment19, { children: [
         /* @__PURE__ */ jsx59(Divider, {}),
         /* @__PURE__ */ jsxs31(
@@ -50144,16 +50380,6 @@ function ToolbarPlugin({
         )
       ] })
     ] }),
-    /* @__PURE__ */ jsx59(Divider, {}),
-    /* @__PURE__ */ jsx59(
-      ElementFormatDropdown,
-      {
-        disabled: !isEditable,
-        value: toolbarState.elementFormat,
-        editor: activeEditor,
-        isRTL: toolbarState.isRTL
-      }
-    ),
     /* @__PURE__ */ jsx59(Divider, {}),
     /* @__PURE__ */ jsx59(
       "button",
@@ -50340,7 +50566,7 @@ import { AutoLinkNode, LinkNode as LinkNode2 } from "@lexical/link";
 import { ListItemNode, ListNode as ListNode2 } from "@lexical/list";
 import { MarkNode } from "@lexical/mark";
 import { OverflowNode } from "@lexical/overflow";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { HeadingNode, QuoteNode as QuoteNode2 } from "@lexical/rich-text";
 import { TableCellNode as TableCellNode5, TableNode as TableNode6, TableRowNode as TableRowNode4 } from "@lexical/table";
 init_DateTimeNode2();
 init_EmojiNode();
@@ -50353,7 +50579,8 @@ var NotionLikeEditorNodes = [
   HeadingNode,
   ListNode2,
   ListItemNode,
-  QuoteNode,
+  QuoteNode2,
+  AlertNode,
   CodeNode3,
   TableNode6,
   TableCellNode5,
@@ -50588,7 +50815,7 @@ import {
   $isTextNode as $isTextNode8,
   getStaticNodeConfig,
   isBlockDomNode,
-  isHTMLElement as isHTMLElement8,
+  isHTMLElement as isHTMLElement9,
   ParagraphNode as ParagraphNode2,
   TextNode as TextNode10
 } from "lexical";
@@ -50608,7 +50835,7 @@ function getExtraStyles(element2) {
   }
   return extraStyles;
 }
-function buildImportMap13() {
+function buildImportMap14() {
   const importMap = {};
   const textNodeConfig = getStaticNodeConfig(TextNode10).ownNodeConfig;
   for (const [tag, fn] of Object.entries(textNodeConfig?.importDOM ?? {})) {
@@ -50651,7 +50878,7 @@ function buildExportMap() {
       ParagraphNode2,
       (editor, target) => {
         const output = target.exportDOM(editor);
-        if (isHTMLElement8(output.element) && output.element.tagName === "P") {
+        if (isHTMLElement9(output.element) && output.element.tagName === "P") {
           const after = output.after;
           return {
             ...output,
@@ -50659,7 +50886,7 @@ function buildExportMap() {
               if (after) {
                 generatedElement = after(generatedElement);
               }
-              if (isHTMLElement8(generatedElement) && generatedElement.tagName === "P") {
+              if (isHTMLElement9(generatedElement) && generatedElement.tagName === "P") {
                 for (const childNode of generatedElement.childNodes) {
                   if (isBlockDomNode(childNode)) {
                     const div = document.createElement("div");
@@ -50683,7 +50910,7 @@ function buildExportMap() {
   ]);
 }
 function buildHTMLConfig() {
-  return { export: buildExportMap(), import: buildImportMap13() };
+  return { export: buildExportMap(), import: buildImportMap14() };
 }
 
 // src/core/NotionLikeEditor.tsx
@@ -51223,6 +51450,7 @@ function Switch({
 init_url();
 var PACKAGE_VERSION = "0.1.0";
 export {
+  $createAlertNode,
   $createAutocompleteNode,
   $createCollapsibleContainerNode,
   $createCollapsibleContentNode,
@@ -51241,6 +51469,7 @@ export {
   $createStickyNode,
   $createTweetNode,
   $createYouTubeNode,
+  $isAlertNode,
   $isCollapsibleContainerNode,
   $isCollapsibleContentNode,
   $isCollapsibleTitleNode,
@@ -51258,6 +51487,9 @@ export {
   $isStickyNode,
   $isTweetNode,
   $isYouTubeNode,
+  ALERT2 as ALERT,
+  ALERT_TYPES,
+  AlertNode,
   AutocompleteNode,
   Button,
   CollapsibleContainerNode,

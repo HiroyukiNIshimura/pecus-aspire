@@ -46,7 +46,7 @@ function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
   const onChange = (event) => {
     setEquation(event.target.value);
   };
-  return inline && (0, import_lexical.isHTMLElement)(forwardedRef) ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "EquationEditor_inputBackground", children: [
+  return inline && (0, import_lexical2.isHTMLElement)(forwardedRef) ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "EquationEditor_inputBackground", children: [
     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "EquationEditor_dollarSign", children: "$" }),
     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
       "input",
@@ -72,12 +72,12 @@ function EquationEditor({ equation, setEquation, inline }, forwardedRef) {
     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "EquationEditor_dollarSign", children: "\n$$" })
   ] });
 }
-var import_lexical, import_react, import_jsx_runtime, EquationEditor_default;
+var import_lexical2, import_react, import_jsx_runtime, EquationEditor_default;
 var init_EquationEditor2 = __esm({
   "src/ui/EquationEditor.tsx"() {
     "use strict";
     init_EquationEditor();
-    import_lexical = require("lexical");
+    import_lexical2 = require("lexical");
     import_react = require("react");
     import_jsx_runtime = require("react/jsx-runtime");
     EquationEditor_default = (0, import_react.forwardRef)(EquationEditor);
@@ -157,7 +157,7 @@ function EquationComponent({ equation, inline, nodeKey }) {
     (restoreSelection) => {
       setShowEquationEditor(false);
       editor.update(() => {
-        const node = (0, import_lexical2.$getNodeByKey)(nodeKey);
+        const node = (0, import_lexical3.$getNodeByKey)(nodeKey);
         if ($isEquationNode(node)) {
           node.setEquation(equationValue);
           if (restoreSelection) {
@@ -180,7 +180,7 @@ function EquationComponent({ equation, inline, nodeKey }) {
     if (showEquationEditor) {
       return (0, import_utils.mergeRegister)(
         editor.registerCommand(
-          import_lexical2.SELECTION_CHANGE_COMMAND,
+          import_lexical3.SELECTION_CHANGE_COMMAND,
           (_payload) => {
             const activeElement = document.activeElement;
             const inputElem = inputRef.current;
@@ -189,10 +189,10 @@ function EquationComponent({ equation, inline, nodeKey }) {
             }
             return false;
           },
-          import_lexical2.COMMAND_PRIORITY_HIGH
+          import_lexical3.COMMAND_PRIORITY_HIGH
         ),
         editor.registerCommand(
-          import_lexical2.KEY_ESCAPE_COMMAND,
+          import_lexical3.KEY_ESCAPE_COMMAND,
           (_payload) => {
             const activeElement = document.activeElement;
             const inputElem = inputRef.current;
@@ -202,14 +202,14 @@ function EquationComponent({ equation, inline, nodeKey }) {
             }
             return false;
           },
-          import_lexical2.COMMAND_PRIORITY_HIGH
+          import_lexical3.COMMAND_PRIORITY_HIGH
         )
       );
     } else {
       return editor.registerUpdateListener(({ editorState }) => {
         const isSelected = editorState.read(() => {
-          const selection = (0, import_lexical2.$getSelection)();
-          return (0, import_lexical2.$isNodeSelection)(selection) && selection.has(nodeKey) && selection.getNodes().length === 1;
+          const selection = (0, import_lexical3.$getSelection)();
+          return (0, import_lexical3.$isNodeSelection)(selection) && selection.has(nodeKey) && selection.getNodes().length === 1;
         });
         if (isSelected) {
           setShowEquationEditor(true);
@@ -230,14 +230,14 @@ function EquationComponent({ equation, inline, nodeKey }) {
     }
   ) }) });
 }
-var import_LexicalComposerContext, import_useLexicalEditable, import_utils, import_lexical2, import_react3, import_react_error_boundary, import_jsx_runtime3;
+var import_LexicalComposerContext, import_useLexicalEditable, import_utils, import_lexical3, import_react3, import_react_error_boundary, import_jsx_runtime3;
 var init_EquationComponent = __esm({
   "src/nodes/EquationComponent.tsx"() {
     "use strict";
     import_LexicalComposerContext = require("@lexical/react/LexicalComposerContext");
     import_useLexicalEditable = require("@lexical/react/useLexicalEditable");
     import_utils = require("@lexical/utils");
-    import_lexical2 = require("lexical");
+    import_lexical3 = require("lexical");
     import_react3 = require("react");
     import_react_error_boundary = require("react-error-boundary");
     init_EquationEditor2();
@@ -259,33 +259,33 @@ function $convertEquationElement(domNode) {
   return null;
 }
 function $createEquationNode(equation = "", inline = false) {
-  return (0, import_lexical3.$applyNodeReplacement)(
-    (0, import_lexical3.$setState)((0, import_lexical3.$setState)((0, import_lexical3.$create)(EquationNode), equationState, equation), inlineState, inline)
+  return (0, import_lexical4.$applyNodeReplacement)(
+    (0, import_lexical4.$setState)((0, import_lexical4.$setState)((0, import_lexical4.$create)(EquationNode), equationState, equation), inlineState, inline)
   );
 }
 function $isEquationNode(node) {
   return node instanceof EquationNode;
 }
-var import_katex2, import_lexical3, React, import_jsx_runtime4, EquationComponent2, equationState, inlineState, EquationNode;
+var import_katex2, import_lexical4, React, import_jsx_runtime4, EquationComponent2, equationState, inlineState, EquationNode;
 var init_EquationNode = __esm({
   "src/nodes/EquationNode.tsx"() {
     "use strict";
     import_katex2 = __toESM(require("katex"));
-    import_lexical3 = require("lexical");
+    import_lexical4 = require("lexical");
     React = __toESM(require("react"));
     import_jsx_runtime4 = require("react/jsx-runtime");
     EquationComponent2 = React.lazy(() => Promise.resolve().then(() => (init_EquationComponent(), EquationComponent_exports)));
-    equationState = (0, import_lexical3.createState)("equation", {
+    equationState = (0, import_lexical4.createState)("equation", {
       parse: (v) => typeof v === "string" ? v : ""
     });
-    inlineState = (0, import_lexical3.createState)("inline", {
+    inlineState = (0, import_lexical4.createState)("inline", {
       parse: (v) => typeof v === "boolean" ? v : false
     });
-    EquationNode = class extends import_lexical3.DecoratorNode {
+    EquationNode = class extends import_lexical4.DecoratorNode {
       $config() {
         return this.config("equation", {
-          extends: import_lexical3.DecoratorNode,
-          importDOM: (0, import_lexical3.buildImportMap)({
+          extends: import_lexical4.DecoratorNode,
+          importDOM: (0, import_lexical4.buildImportMap)({
             div: (domNode) => {
               if (!domNode.hasAttribute("data-lexical-equation")) {
                 return null;
@@ -339,13 +339,13 @@ var init_EquationNode = __esm({
         return this.getEquation();
       }
       getEquation() {
-        return (0, import_lexical3.$getState)(this, equationState);
+        return (0, import_lexical4.$getState)(this, equationState);
       }
       setEquation(equation) {
-        return (0, import_lexical3.$setState)(this, equationState, equation);
+        return (0, import_lexical4.$setState)(this, equationState, equation);
       }
       getInline() {
-        return (0, import_lexical3.$getState)(this, inlineState);
+        return (0, import_lexical4.$getState)(this, inlineState);
       }
       decorate() {
         return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(EquationComponent2, { equation: this.getEquation(), inline: this.getInline(), nodeKey: this.__key });
@@ -356,20 +356,20 @@ var init_EquationNode = __esm({
 
 // src/nodes/EmojiNode.tsx
 function $createEmojiNode(className, emojiText) {
-  return (0, import_lexical4.$setState)((0, import_lexical4.$create)(EmojiNode).setTextContent(emojiText).setMode("token"), classNameState, className);
+  return (0, import_lexical5.$setState)((0, import_lexical5.$create)(EmojiNode).setTextContent(emojiText).setMode("token"), classNameState, className);
 }
-var import_lexical4, classNameState, EmojiNode;
+var import_lexical5, classNameState, EmojiNode;
 var init_EmojiNode = __esm({
   "src/nodes/EmojiNode.tsx"() {
     "use strict";
-    import_lexical4 = require("lexical");
-    classNameState = (0, import_lexical4.createState)("className", {
+    import_lexical5 = require("lexical");
+    classNameState = (0, import_lexical5.createState)("className", {
       parse: (v) => typeof v === "string" ? v : ""
     });
-    EmojiNode = class extends import_lexical4.TextNode {
+    EmojiNode = class extends import_lexical5.TextNode {
       $config() {
         return this.config("emoji", {
-          extends: import_lexical4.TextNode,
+          extends: import_lexical5.TextNode,
           stateConfigs: [{ flat: true, stateConfig: classNameState }]
         });
       }
@@ -390,24 +390,24 @@ var init_EmojiNode = __esm({
         return false;
       }
       getClassName() {
-        return (0, import_lexical4.$getState)(this, classNameState);
+        return (0, import_lexical5.$getState)(this, classNameState);
       }
       setClassName(valueOrUpdater) {
-        return (0, import_lexical4.$setState)(this, classNameState, valueOrUpdater);
+        return (0, import_lexical5.$setState)(this, classNameState, valueOrUpdater);
       }
     };
   }
 });
 
 // src/nodes/KeywordNode.ts
-var import_lexical5, KeywordNode;
+var import_lexical6, KeywordNode;
 var init_KeywordNode = __esm({
   "src/nodes/KeywordNode.ts"() {
     "use strict";
-    import_lexical5 = require("lexical");
-    KeywordNode = class extends import_lexical5.TextNode {
+    import_lexical6 = require("lexical");
+    KeywordNode = class extends import_lexical6.TextNode {
       $config() {
-        return this.config("keyword", { extends: import_lexical5.TextNode });
+        return this.config("keyword", { extends: import_lexical6.TextNode });
       }
       createDOM(config) {
         const dom = super.createDOM(config);
@@ -491,7 +491,7 @@ function useEmojis(editor) {
     if (!editor.hasNodes([EmojiNode])) {
       throw new Error("EmojisPlugin: EmojiNode not registered on editor");
     }
-    return editor.registerNodeTransform(import_lexical6.TextNode, $textNodeTransform);
+    return editor.registerNodeTransform(import_lexical7.TextNode, $textNodeTransform);
   }, [editor]);
 }
 function EmojisPlugin() {
@@ -499,12 +499,12 @@ function EmojisPlugin() {
   useEmojis(editor);
   return null;
 }
-var import_LexicalComposerContext2, import_lexical6, import_react5, emojis;
+var import_LexicalComposerContext2, import_lexical7, import_react5, emojis;
 var init_EmojisPlugin = __esm({
   "src/plugins/EmojisPlugin/index.ts"() {
     "use strict";
     import_LexicalComposerContext2 = require("@lexical/react/LexicalComposerContext");
-    import_lexical6 = require("lexical");
+    import_lexical7 = require("lexical");
     import_react5 = require("react");
     init_EmojiNode();
     emojis = /* @__PURE__ */ new Map([
@@ -846,14 +846,14 @@ function DisableCaptionOnBlur({ setShowCaption }) {
   const [editor] = (0, import_LexicalComposerContext3.useLexicalComposerContext)();
   (0, import_react7.useEffect)(
     () => editor.registerCommand(
-      import_lexical7.BLUR_COMMAND,
+      import_lexical8.BLUR_COMMAND,
       () => {
         if ($isCaptionEditorEmpty()) {
           setShowCaption(false);
         }
         return false;
       },
-      import_lexical7.COMMAND_PRIORITY_EDITOR
+      import_lexical8.COMMAND_PRIORITY_EDITOR
     )
   );
   return null;
@@ -870,7 +870,7 @@ function CaptionOnChangePlugin({ parentEditor, nodeKey }) {
       }
       parentEditor.update(
         () => {
-          const node = (0, import_lexical7.$getNodeByKey)(nodeKey);
+          const node = (0, import_lexical8.$getNodeByKey)(nodeKey);
           if ($isImageNode(node)) {
             node.getWritable();
           }
@@ -1033,18 +1033,18 @@ function ImageComponent({
   const isViewerZoomable = !isEditable && !isLoadError;
   const isInNodeSelection = (0, import_react7.useMemo)(
     () => isSelected && editor.getEditorState().read(() => {
-      const selection = (0, import_lexical7.$getSelection)();
-      return (0, import_lexical7.$isNodeSelection)(selection) && selection.has(nodeKey);
+      const selection = (0, import_lexical8.$getSelection)();
+      return (0, import_lexical8.$isNodeSelection)(selection) && selection.has(nodeKey);
     }),
     [editor, isSelected, nodeKey]
   );
   const $onEnter = (0, import_react7.useCallback)(
     (event) => {
-      const latestSelection = (0, import_lexical7.$getSelection)();
+      const latestSelection = (0, import_lexical8.$getSelection)();
       const buttonElem = buttonRef.current;
-      if ((0, import_lexical7.$isNodeSelection)(latestSelection) && latestSelection.has(nodeKey) && latestSelection.getNodes().length === 1) {
+      if ((0, import_lexical8.$isNodeSelection)(latestSelection) && latestSelection.has(nodeKey) && latestSelection.getNodes().length === 1) {
         if (showCaption) {
-          (0, import_lexical7.$setSelection)(null);
+          (0, import_lexical8.$setSelection)(null);
           event?.preventDefault();
           caption.focus();
           return true;
@@ -1061,7 +1061,7 @@ function ImageComponent({
   const $onEscape = (0, import_react7.useCallback)(
     (event) => {
       if (activeEditorRef.current === caption || buttonRef.current === event?.target) {
-        (0, import_lexical7.$setSelection)(null);
+        (0, import_lexical8.$setSelection)(null);
         editor.update(() => {
           setSelected(true);
           const parentRootElement = editor.getRootElement();
@@ -1101,9 +1101,9 @@ function ImageComponent({
   const onRightClick = (0, import_react7.useCallback)(
     (event) => {
       editor.getEditorState().read(() => {
-        const latestSelection = (0, import_lexical7.$getSelection)();
+        const latestSelection = (0, import_lexical8.$getSelection)();
         const domElement = event.target;
-        if (domElement.tagName === "IMG" && (0, import_lexical7.$isRangeSelection)(latestSelection) && latestSelection.getNodes().length === 1) {
+        if (domElement.tagName === "IMG" && (0, import_lexical8.$isRangeSelection)(latestSelection) && latestSelection.getNodes().length === 1) {
           editor.dispatchCommand(RIGHT_CLICK_IMAGE_COMMAND, event);
         }
       });
@@ -1113,15 +1113,15 @@ function ImageComponent({
   (0, import_react7.useEffect)(() => {
     return (0, import_utils3.mergeRegister)(
       editor.registerCommand(
-        import_lexical7.SELECTION_CHANGE_COMMAND,
+        import_lexical8.SELECTION_CHANGE_COMMAND,
         (_, activeEditor) => {
           activeEditorRef.current = activeEditor;
           return false;
         },
-        import_lexical7.COMMAND_PRIORITY_LOW
+        import_lexical8.COMMAND_PRIORITY_LOW
       ),
       editor.registerCommand(
-        import_lexical7.DRAGSTART_COMMAND,
+        import_lexical8.DRAGSTART_COMMAND,
         (event) => {
           if (event.target === imageRef.current) {
             event.preventDefault();
@@ -1129,17 +1129,17 @@ function ImageComponent({
           }
           return false;
         },
-        import_lexical7.COMMAND_PRIORITY_LOW
+        import_lexical8.COMMAND_PRIORITY_LOW
       )
     );
   }, [editor]);
   (0, import_react7.useEffect)(() => {
     let rootCleanup = noop;
     return (0, import_utils3.mergeRegister)(
-      editor.registerCommand(import_lexical7.CLICK_COMMAND, onClick, import_lexical7.COMMAND_PRIORITY_LOW),
-      editor.registerCommand(RIGHT_CLICK_IMAGE_COMMAND, onClick, import_lexical7.COMMAND_PRIORITY_LOW),
-      editor.registerCommand(import_lexical7.KEY_ENTER_COMMAND, $onEnter, import_lexical7.COMMAND_PRIORITY_LOW),
-      editor.registerCommand(import_lexical7.KEY_ESCAPE_COMMAND, $onEscape, import_lexical7.COMMAND_PRIORITY_LOW),
+      editor.registerCommand(import_lexical8.CLICK_COMMAND, onClick, import_lexical8.COMMAND_PRIORITY_LOW),
+      editor.registerCommand(RIGHT_CLICK_IMAGE_COMMAND, onClick, import_lexical8.COMMAND_PRIORITY_LOW),
+      editor.registerCommand(import_lexical8.KEY_ENTER_COMMAND, $onEnter, import_lexical8.COMMAND_PRIORITY_LOW),
+      editor.registerCommand(import_lexical8.KEY_ESCAPE_COMMAND, $onEscape, import_lexical8.COMMAND_PRIORITY_LOW),
       editor.registerRootListener((rootElement) => {
         rootCleanup();
         rootCleanup = noop;
@@ -1153,13 +1153,13 @@ function ImageComponent({
   }, [editor, $onEnter, $onEscape, onClick, onRightClick]);
   const setShowCaption = (show) => {
     editor.update(() => {
-      const node = (0, import_lexical7.$getNodeByKey)(nodeKey);
+      const node = (0, import_lexical8.$getNodeByKey)(nodeKey);
       if ($isImageNode(node)) {
         node.setShowCaption(show);
         if (show) {
           node.__caption.update(() => {
-            if (!(0, import_lexical7.$getSelection)()) {
-              (0, import_lexical7.$getRoot)().selectEnd();
+            if (!(0, import_lexical8.$getSelection)()) {
+              (0, import_lexical8.$getRoot)().selectEnd();
             }
           });
         }
@@ -1171,7 +1171,7 @@ function ImageComponent({
       setIsResizing(false);
     }, 200);
     editor.update(() => {
-      const node = (0, import_lexical7.$getNodeByKey)(nodeKey);
+      const node = (0, import_lexical8.$getNodeByKey)(nodeKey);
       if ($isImageNode(node)) {
         node.setWidthAndHeight(nextWidth, nextHeight);
       }
@@ -1280,7 +1280,7 @@ function ImageComponent({
     )
   ] });
 }
-var import_LexicalComposerContext3, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection, import_utils3, import_lexical7, import_react7, import_react_dom, import_jsx_runtime9, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
+var import_LexicalComposerContext3, import_LexicalErrorBoundary, import_LexicalHashtagPlugin, import_LexicalNestedComposer, import_LexicalRichTextPlugin, import_useLexicalEditable2, import_useLexicalNodeSelection, import_utils3, import_lexical8, import_react7, import_react_dom, import_jsx_runtime9, imageCache, RIGHT_CLICK_IMAGE_COMMAND;
 var init_ImageComponent = __esm({
   "src/nodes/ImageComponent.tsx"() {
     "use strict";
@@ -1293,7 +1293,7 @@ var init_ImageComponent = __esm({
     import_useLexicalEditable2 = require("@lexical/react/useLexicalEditable");
     import_useLexicalNodeSelection = require("@lexical/react/useLexicalNodeSelection");
     import_utils3 = require("@lexical/utils");
-    import_lexical7 = require("lexical");
+    import_lexical8 = require("lexical");
     import_react7 = require("react");
     import_react_dom = require("react-dom");
     init_SharedHistoryContext();
@@ -1305,7 +1305,7 @@ var init_ImageComponent = __esm({
     init_ImageNode2();
     import_jsx_runtime9 = require("react/jsx-runtime");
     imageCache = /* @__PURE__ */ new Map();
-    RIGHT_CLICK_IMAGE_COMMAND = (0, import_lexical7.createCommand)("RIGHT_CLICK_IMAGE_COMMAND");
+    RIGHT_CLICK_IMAGE_COMMAND = (0, import_lexical8.createCommand)("RIGHT_CLICK_IMAGE_COMMAND");
   }
 });
 
@@ -1324,8 +1324,8 @@ function $convertImageElement(domNode) {
   return { node };
 }
 function $isCaptionEditorEmpty() {
-  for (const { origin } of (0, import_lexical8.$extendCaretToRange)((0, import_lexical8.$getChildCaret)((0, import_lexical8.$getRoot)(), "next"))) {
-    if (!(0, import_lexical8.$isElementNode)(origin)) {
+  for (const { origin } of (0, import_lexical9.$extendCaretToRange)((0, import_lexical9.$getChildCaret)((0, import_lexical9.$getRoot)(), "next"))) {
+    if (!(0, import_lexical9.$isElementNode)(origin)) {
       return false;
     }
   }
@@ -1342,14 +1342,14 @@ function $createImageNode({
   caption,
   key
 }) {
-  const node = (0, import_lexical8.$applyNodeReplacement)(new ImageNode(key));
-  (0, import_lexical8.$setState)(node, srcState, src);
-  (0, import_lexical8.$setState)(node, altTextState, altText ?? "");
-  (0, import_lexical8.$setState)(node, widthState, width === void 0 || width === 0 ? "inherit" : width);
-  (0, import_lexical8.$setState)(node, heightState, height === void 0 || height === 0 ? "inherit" : height);
-  (0, import_lexical8.$setState)(node, maxWidthState, maxWidth);
-  (0, import_lexical8.$setState)(node, showCaptionState, showCaption ?? false);
-  (0, import_lexical8.$setState)(node, captionsEnabledState, captionsEnabled ?? true);
+  const node = (0, import_lexical9.$applyNodeReplacement)(new ImageNode(key));
+  (0, import_lexical9.$setState)(node, srcState, src);
+  (0, import_lexical9.$setState)(node, altTextState, altText ?? "");
+  (0, import_lexical9.$setState)(node, widthState, width === void 0 || width === 0 ? "inherit" : width);
+  (0, import_lexical9.$setState)(node, heightState, height === void 0 || height === 0 ? "inherit" : height);
+  (0, import_lexical9.$setState)(node, maxWidthState, maxWidth);
+  (0, import_lexical9.$setState)(node, showCaptionState, showCaption ?? false);
+  (0, import_lexical9.$setState)(node, captionsEnabledState, captionsEnabled ?? true);
   if (caption) {
     node.__caption = caption;
   }
@@ -1358,7 +1358,7 @@ function $createImageNode({
 function $isImageNode(node) {
   return node instanceof ImageNode;
 }
-var import_clipboard, import_hashtag, import_html, import_link, import_lexical8, React2, import_jsx_runtime10, ImageComponent2, srcState, altTextState, widthState, heightState, maxWidthState, showCaptionState, captionsEnabledState, ImageNode;
+var import_clipboard, import_hashtag, import_html, import_link, import_lexical9, React2, import_jsx_runtime10, ImageComponent2, srcState, altTextState, widthState, heightState, maxWidthState, showCaptionState, captionsEnabledState, ImageNode;
 var init_ImageNode2 = __esm({
   "src/nodes/ImageNode.tsx"() {
     "use strict";
@@ -1366,42 +1366,42 @@ var init_ImageNode2 = __esm({
     import_hashtag = require("@lexical/hashtag");
     import_html = require("@lexical/html");
     import_link = require("@lexical/link");
-    import_lexical8 = require("lexical");
+    import_lexical9 = require("lexical");
     React2 = __toESM(require("react"));
     init_EmojiNode();
     init_KeywordNode();
     import_jsx_runtime10 = require("react/jsx-runtime");
     ImageComponent2 = React2.lazy(() => Promise.resolve().then(() => (init_ImageComponent(), ImageComponent_exports)));
-    srcState = (0, import_lexical8.createState)("src", {
+    srcState = (0, import_lexical9.createState)("src", {
       parse: (v) => typeof v === "string" ? v : ""
     });
-    altTextState = (0, import_lexical8.createState)("altText", {
+    altTextState = (0, import_lexical9.createState)("altText", {
       parse: (v) => typeof v === "string" ? v : ""
     });
-    widthState = (0, import_lexical8.createState)("width", {
+    widthState = (0, import_lexical9.createState)("width", {
       parse: (v) => v === void 0 || v === null || v === 0 ? "inherit" : typeof v === "number" ? v : "inherit",
       unparse: (v) => v === "inherit" ? 0 : v
     });
-    heightState = (0, import_lexical8.createState)("height", {
+    heightState = (0, import_lexical9.createState)("height", {
       parse: (v) => v === void 0 || v === null || v === 0 ? "inherit" : typeof v === "number" ? v : "inherit",
       unparse: (v) => v === "inherit" ? 0 : v
     });
-    maxWidthState = (0, import_lexical8.createState)("maxWidth", {
+    maxWidthState = (0, import_lexical9.createState)("maxWidth", {
       parse: (v) => typeof v === "number" ? v : 500
     });
-    showCaptionState = (0, import_lexical8.createState)("showCaption", {
+    showCaptionState = (0, import_lexical9.createState)("showCaption", {
       parse: (v) => typeof v === "boolean" ? v : false
     });
-    captionsEnabledState = (0, import_lexical8.createState)("captionsEnabled", {
+    captionsEnabledState = (0, import_lexical9.createState)("captionsEnabled", {
       parse: (v) => typeof v === "boolean" ? v : true
     });
-    ImageNode = class extends import_lexical8.DecoratorNode {
+    ImageNode = class extends import_lexical9.DecoratorNode {
       // Captions cannot yet be used within editor cells
       __caption;
       $config() {
         return this.config("image", {
-          extends: import_lexical8.DecoratorNode,
-          importDOM: (0, import_lexical8.buildImportMap)({
+          extends: import_lexical9.DecoratorNode,
+          importDOM: (0, import_lexical9.buildImportMap)({
             figcaption: () => ({
               conversion: () => ({ node: null }),
               priority: 0
@@ -1417,11 +1417,11 @@ var init_ImageNode2 = __esm({
                         imgNode.setShowCaption(true);
                         imgNode.__caption.update(
                           () => {
-                            const editor = (0, import_lexical8.$getEditor)();
-                            (0, import_clipboard.$insertGeneratedNodes)(editor, (0, import_html.$generateNodesFromDOM)(editor, figcaption), (0, import_lexical8.$selectAll)());
-                            (0, import_lexical8.$setSelection)(null);
+                            const editor = (0, import_lexical9.$getEditor)();
+                            (0, import_clipboard.$insertGeneratedNodes)(editor, (0, import_html.$generateNodesFromDOM)(editor, figcaption), (0, import_lexical9.$selectAll)());
+                            (0, import_lexical9.$setSelection)(null);
                           },
-                          { tag: import_lexical8.SKIP_DOM_SELECTION_TAG }
+                          { tag: import_lexical9.SKIP_DOM_SELECTION_TAG }
                         );
                       }
                     }
@@ -1450,9 +1450,9 @@ var init_ImageNode2 = __esm({
       }
       constructor(key = void 0) {
         super(key);
-        this.__caption = (0, import_lexical8.createEditor)({
+        this.__caption = (0, import_lexical9.createEditor)({
           namespace: "Playground/ImageNodeCaption",
-          nodes: [import_lexical8.RootNode, import_lexical8.TextNode, import_lexical8.LineBreakNode, import_lexical8.ParagraphNode, import_link.LinkNode, EmojiNode, import_hashtag.HashtagNode, KeywordNode]
+          nodes: [import_lexical9.RootNode, import_lexical9.TextNode, import_lexical9.LineBreakNode, import_lexical9.ParagraphNode, import_link.LinkNode, EmojiNode, import_hashtag.HashtagNode, KeywordNode]
         });
       }
       afterCloneFrom(prevNode) {
@@ -1482,9 +1482,9 @@ var init_ImageNode2 = __esm({
               return null;
             }
             let selection = null;
-            const firstChild = (0, import_lexical8.$getRoot)().getFirstChild();
-            if ((0, import_lexical8.$isParagraphNode)(firstChild) && firstChild.getNextSibling() === null) {
-              selection = (0, import_lexical8.$createRangeSelection)();
+            const firstChild = (0, import_lexical9.$getRoot)().getFirstChild();
+            if ((0, import_lexical9.$isParagraphNode)(firstChild) && firstChild.getNextSibling() === null) {
+              selection = (0, import_lexical9.$createRangeSelection)();
               selection.anchor.set(firstChild.getKey(), 0, "element");
               selection.focus.set(firstChild.getKey(), firstChild.getChildrenSize(), "element");
             }
@@ -1514,11 +1514,11 @@ var init_ImageNode2 = __esm({
         };
       }
       setWidthAndHeight(width, height) {
-        (0, import_lexical8.$setState)(this, widthState, width);
-        (0, import_lexical8.$setState)(this, heightState, height);
+        (0, import_lexical9.$setState)(this, widthState, width);
+        (0, import_lexical9.$setState)(this, heightState, height);
       }
       setShowCaption(showCaption) {
-        (0, import_lexical8.$setState)(this, showCaptionState, showCaption);
+        (0, import_lexical9.$setState)(this, showCaptionState, showCaption);
       }
       // View
       createDOM(config) {
@@ -1534,25 +1534,25 @@ var init_ImageNode2 = __esm({
         return false;
       }
       getSrc() {
-        return (0, import_lexical8.$getState)(this, srcState);
+        return (0, import_lexical9.$getState)(this, srcState);
       }
       getAltText() {
-        return (0, import_lexical8.$getState)(this, altTextState);
+        return (0, import_lexical9.$getState)(this, altTextState);
       }
       getWidth() {
-        return (0, import_lexical8.$getState)(this, widthState);
+        return (0, import_lexical9.$getState)(this, widthState);
       }
       getHeight() {
-        return (0, import_lexical8.$getState)(this, heightState);
+        return (0, import_lexical9.$getState)(this, heightState);
       }
       getMaxWidth() {
-        return (0, import_lexical8.$getState)(this, maxWidthState);
+        return (0, import_lexical9.$getState)(this, maxWidthState);
       }
       getShowCaption() {
-        return (0, import_lexical8.$getState)(this, showCaptionState);
+        return (0, import_lexical9.$getState)(this, showCaptionState);
       }
       getCaptionsEnabled() {
-        return (0, import_lexical8.$getState)(this, captionsEnabledState);
+        return (0, import_lexical9.$getState)(this, captionsEnabledState);
       }
       decorate() {
         return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
@@ -1664,7 +1664,7 @@ function MermaidComponent({ code, nodeKey }) {
       return;
     }
     editor.update(() => {
-      const node = (0, import_lexical9.$getNodeByKey)(nodeKey);
+      const node = (0, import_lexical10.$getNodeByKey)(nodeKey);
       if ($isMermaidNode(node)) {
         node.setCode(nextValue);
       }
@@ -1700,13 +1700,13 @@ function MermaidComponent({ code, nodeKey }) {
     ] })
   ] });
 }
-var import_LexicalComposerContext4, import_useLexicalEditable3, import_lexical9, import_react8, import_jsx_runtime11, RENDER_DELAY_MS;
+var import_LexicalComposerContext4, import_useLexicalEditable3, import_lexical10, import_react8, import_jsx_runtime11, RENDER_DELAY_MS;
 var init_MermaidComponent = __esm({
   "src/nodes/MermaidComponent.tsx"() {
     "use strict";
     import_LexicalComposerContext4 = require("@lexical/react/LexicalComposerContext");
     import_useLexicalEditable3 = require("@lexical/react/useLexicalEditable");
-    import_lexical9 = require("lexical");
+    import_lexical10 = require("lexical");
     import_react8 = require("react");
     init_MermaidNode2();
     init_MermaidNode();
@@ -1726,27 +1726,27 @@ function $convertMermaidElement(domNode) {
   return { node };
 }
 function $createMermaidNode(code = "") {
-  return (0, import_lexical10.$applyNodeReplacement)((0, import_lexical10.$setState)((0, import_lexical10.$create)(MermaidNode), codeState, code));
+  return (0, import_lexical11.$applyNodeReplacement)((0, import_lexical11.$setState)((0, import_lexical11.$create)(MermaidNode), codeState, code));
 }
 function $isMermaidNode(node) {
   return node instanceof MermaidNode;
 }
-var import_lexical10, React3, import_jsx_runtime12, MermaidComponent2, codeState, MermaidNode;
+var import_lexical11, React3, import_jsx_runtime12, MermaidComponent2, codeState, MermaidNode;
 var init_MermaidNode2 = __esm({
   "src/nodes/MermaidNode.tsx"() {
     "use strict";
-    import_lexical10 = require("lexical");
+    import_lexical11 = require("lexical");
     React3 = __toESM(require("react"));
     import_jsx_runtime12 = require("react/jsx-runtime");
     MermaidComponent2 = React3.lazy(() => Promise.resolve().then(() => (init_MermaidComponent(), MermaidComponent_exports)));
-    codeState = (0, import_lexical10.createState)("code", {
+    codeState = (0, import_lexical11.createState)("code", {
       parse: (v) => typeof v === "string" ? v : ""
     });
-    MermaidNode = class extends import_lexical10.DecoratorNode {
+    MermaidNode = class extends import_lexical11.DecoratorNode {
       $config() {
         return this.config("mermaid", {
-          extends: import_lexical10.DecoratorNode,
-          importDOM: (0, import_lexical10.buildImportMap)({
+          extends: import_lexical11.DecoratorNode,
+          importDOM: (0, import_lexical11.buildImportMap)({
             div: (domNode) => {
               if (domNode.getAttribute("data-lexical-mermaid") !== "true") {
                 return null;
@@ -1781,10 +1781,10 @@ var init_MermaidNode2 = __esm({
         return this.getCode();
       }
       getCode() {
-        return (0, import_lexical10.$getState)(this, codeState);
+        return (0, import_lexical11.$getState)(this, codeState);
       }
       setCode(code) {
-        return (0, import_lexical10.$setState)(this, codeState, code);
+        return (0, import_lexical11.$setState)(this, codeState, code);
       }
       decorate() {
         return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(MermaidComponent2, { code: this.getCode(), nodeKey: this.__key });
@@ -1799,6 +1799,7 @@ var init_MermaidNode2 = __esm({
 // src/transformers/index.ts
 var transformers_exports = {};
 __export(transformers_exports, {
+  ALERT: () => ALERT,
   EMOJI: () => EMOJI,
   EQUATION: () => EQUATION,
   HR: () => HR,
@@ -1814,7 +1815,100 @@ module.exports = __toCommonJS(transformers_exports);
 var import_extension = require("@lexical/extension");
 var import_markdown = require("@lexical/markdown");
 var import_table = require("@lexical/table");
-var import_lexical12 = require("lexical");
+var import_lexical13 = require("lexical");
+
+// src/nodes/AlertNode.ts
+var import_rich_text = require("@lexical/rich-text");
+var import_lexical = require("lexical");
+var ALERT_TYPES = ["NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"];
+function normalizeAlertType(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  return ALERT_TYPES.find((alertType) => alertType === value.toUpperCase()) ?? null;
+}
+function getAlertLabel(alertType) {
+  return alertType[0] + alertType.slice(1).toLowerCase();
+}
+var AlertNode = class _AlertNode extends import_rich_text.QuoteNode {
+  __alertType = "NOTE";
+  $config() {
+    return this.config("alert", {
+      extends: import_rich_text.QuoteNode,
+      importDOM: (0, import_lexical.buildImportMap)({
+        blockquote: (domNode) => {
+          const alertType = normalizeAlertType(domNode.getAttribute("data-alert-type"));
+          if (!alertType) {
+            return null;
+          }
+          return {
+            conversion: () => ({ node: $createAlertNode(alertType) }),
+            priority: 2
+          };
+        }
+      })
+    });
+  }
+  static clone(node) {
+    const clone = new _AlertNode(node.__key);
+    clone.afterCloneFrom(node);
+    return clone;
+  }
+  afterCloneFrom(prevNode) {
+    super.afterCloneFrom(prevNode);
+    this.__alertType = prevNode.__alertType;
+  }
+  static importJSON(serializedNode) {
+    return $createAlertNode(normalizeAlertType(serializedNode.alertType) ?? "NOTE").updateFromJSON(serializedNode);
+  }
+  exportJSON(compact = false) {
+    return {
+      ...super.exportJSON(compact),
+      alertType: this.getAlertType()
+    };
+  }
+  createDOM(config) {
+    const element = super.createDOM(config);
+    this.updateAlertDOM(element);
+    return element;
+  }
+  updateDOM(prevNode, dom, config) {
+    if (super.updateDOM(prevNode, dom, config)) {
+      return true;
+    }
+    this.updateAlertDOM(dom);
+    return false;
+  }
+  exportDOM(editor) {
+    const output = super.exportDOM(editor);
+    if ((0, import_lexical.isHTMLElement)(output.element)) {
+      this.updateAlertDOM(output.element);
+    }
+    return output;
+  }
+  getAlertType() {
+    return this.getLatest().__alertType;
+  }
+  setAlertType(alertType) {
+    const writable = this.getWritable();
+    writable.__alertType = alertType;
+    return writable;
+  }
+  updateAlertDOM(element) {
+    const label = getAlertLabel(this.getAlertType());
+    element.setAttribute("data-alert-type", this.getAlertType());
+    element.setAttribute("role", "note");
+    element.setAttribute("aria-label", `${label} alert`);
+  }
+};
+function $createAlertNode(alertType = "NOTE") {
+  return (0, import_lexical.$applyNodeReplacement)((0, import_lexical.$create)(AlertNode).setAlertType(alertType));
+}
+function $isAlertNode(node) {
+  return node?.getType() === "alert";
+}
+
+// src/transformers/markdown-transformers.ts
 init_EquationNode();
 init_ImageNode2();
 init_MermaidNode2();
@@ -1822,7 +1916,7 @@ init_MermaidNode2();
 // src/nodes/TweetNode.tsx
 var import_LexicalBlockWithAlignableContents = require("@lexical/react/LexicalBlockWithAlignableContents");
 var import_LexicalDecoratorBlockNode = require("@lexical/react/LexicalDecoratorBlockNode");
-var import_lexical11 = require("lexical");
+var import_lexical12 = require("lexical");
 var import_react9 = require("react");
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
@@ -1886,14 +1980,14 @@ function TweetComponent({
     /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { style: { display: "inline-block", width: "550px" }, ref: containerRef })
   ] });
 }
-var tweetIDState = (0, import_lexical11.createState)("id", {
+var tweetIDState = (0, import_lexical12.createState)("id", {
   parse: (v) => typeof v === "string" ? v : ""
 });
 var TweetNode = class extends import_LexicalDecoratorBlockNode.DecoratorBlockNode {
   $config() {
     return this.config("tweet", {
       extends: import_LexicalDecoratorBlockNode.DecoratorBlockNode,
-      importDOM: (0, import_lexical11.buildImportMap)({
+      importDOM: (0, import_lexical12.buildImportMap)({
         div: (domNode) => {
           if (!domNode.hasAttribute("data-lexical-tweet-id")) {
             return null;
@@ -1915,7 +2009,7 @@ var TweetNode = class extends import_LexicalDecoratorBlockNode.DecoratorBlockNod
     return { element };
   }
   getId() {
-    return (0, import_lexical11.$getState)(this, tweetIDState);
+    return (0, import_lexical12.$getState)(this, tweetIDState);
   }
   getTextContent(_includeInert, _includeDirectionless) {
     return `https://x.com/i/web/status/${this.getId()}`;
@@ -1939,7 +2033,7 @@ var TweetNode = class extends import_LexicalDecoratorBlockNode.DecoratorBlockNod
   }
 };
 function $createTweetNode(tweetID) {
-  return (0, import_lexical11.$setState)((0, import_lexical11.$create)(TweetNode), tweetIDState, tweetID);
+  return (0, import_lexical12.$setState)((0, import_lexical12.$create)(TweetNode), tweetIDState, tweetID);
 }
 function $isTweetNode(node) {
   return node instanceof TweetNode;
@@ -18597,7 +18691,7 @@ var EMOJI = {
   replace: (textNode, [, name]) => {
     const emoji = emoji_list_default.find((e) => e.aliases.includes(name))?.emoji;
     if (emoji) {
-      textNode.replace((0, import_lexical12.$createTextNode)(emoji));
+      textNode.replace((0, import_lexical13.$createTextNode)(emoji));
     }
   },
   trigger: ":",
@@ -18621,6 +18715,32 @@ var EQUATION = {
   trigger: "$",
   type: "text-match"
 };
+var ALERT = {
+  dependencies: [AlertNode],
+  export: (node, exportChildren) => {
+    if (!$isAlertNode(node)) {
+      return null;
+    }
+    const body = exportChildren(node).replace(/^\n/, "");
+    const bodyLines = body.split("\n").map((line) => line.length > 0 && line !== ">" ? `> ${line}` : ">");
+    return `> [!${node.getAlertType()}]${body ? `
+${bodyLines.join("\n")}` : ""}`;
+  },
+  regExp: new RegExp(`^>\\s*\\[!(${ALERT_TYPES.join("|")})\\]\\s*$`, "i"),
+  replace: (parentNode, children, match, isImport) => {
+    const alertType = ALERT_TYPES.find((type) => type === match[1]?.toUpperCase());
+    if (!alertType) {
+      return false;
+    }
+    const alertNode = $createAlertNode(alertType);
+    alertNode.append(...children);
+    parentNode.replace(alertNode);
+    if (!isImport) {
+      alertNode.select(0, 0);
+    }
+  },
+  type: "element"
+};
 var TWEET = {
   dependencies: [TweetNode],
   export: (node) => {
@@ -18640,7 +18760,7 @@ var TWEET = {
 var MERMAID = {
   dependencies: [MermaidNode],
   export: (node) => {
-    const mermaidNode = $isMermaidNode(node) ? node : (0, import_lexical12.$isParagraphNode)(node) && node.getChildrenSize() === 1 && $isMermaidNode(node.getFirstChild()) ? node.getFirstChild() : null;
+    const mermaidNode = $isMermaidNode(node) ? node : (0, import_lexical13.$isParagraphNode)(node) && node.getChildrenSize() === 1 && $isMermaidNode(node.getFirstChild()) ? node.getFirstChild() : null;
     if (!$isMermaidNode(mermaidNode)) {
       return null;
     }
@@ -18751,14 +18871,14 @@ var TABLE = {
     let sibling = parentNode.getPreviousSibling();
     let maxCells = matchCells.length;
     while (sibling) {
-      if (!(0, import_lexical12.$isParagraphNode)(sibling)) {
+      if (!(0, import_lexical13.$isParagraphNode)(sibling)) {
         break;
       }
       if (sibling.getChildrenSize() !== 1) {
         break;
       }
       const firstChild = sibling.getFirstChild();
-      if (!(0, import_lexical12.$isTextNode)(firstChild)) {
+      if (!(0, import_lexical13.$isTextNode)(firstChild)) {
         break;
       }
       const cells = mapToTableCells(firstChild.getTextContent());
@@ -18808,6 +18928,7 @@ var mapToTableCells = (textContent) => {
   return match[1].split("|").map((text) => $createTableCell(text));
 };
 var PLAYGROUND_TRANSFORMERS = [
+  ALERT,
   TABLE,
   HR,
   IMAGE,
@@ -18854,6 +18975,7 @@ function normalizeListIndentation(markdown) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  ALERT,
   EMOJI,
   EQUATION,
   HR,
