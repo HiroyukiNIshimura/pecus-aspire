@@ -1869,8 +1869,10 @@
 .notion-like-editor.typeahead-popover.component-picker-menu {
   z-index: 50;
   background: var(--color-base-100);
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px color-mix(in oklab, var(--color-base-content) 24%, transparent);
+  overflow: hidden;
   position: relative;
 }
 .notion-like-editor.typeahead-popover.component-picker-menu ul {
@@ -1897,7 +1899,8 @@
   border-radius: 8px;
 }
 .notion-like-editor.typeahead-popover.component-picker-menu ul li.selected {
-  background: var(--color-info);
+  background: color-mix(in oklab, var(--color-primary) 16%, var(--color-base-100));
+  font-weight: 600;
 }
 .notion-like-editor.typeahead-popover.component-picker-menu li {
   margin: 0 8px 0 8px;
@@ -1945,6 +1948,9 @@
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+}
+[data-theme=dark] .notion-like-editor.typeahead-popover.component-picker-menu li .icon {
+  filter: invert(1);
 }
 .notion-like-editor.typeahead-popover.component-picker-menu {
   z-index: 50;

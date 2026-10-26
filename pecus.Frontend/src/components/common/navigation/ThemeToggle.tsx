@@ -35,7 +35,7 @@ export default function ThemeToggle() {
       <button type="button" className="dropdown-toggle btn btn-text btn-circle">
         {theme === 'light' && <span className="icon-[mdi--white-balance-sunny] size-6" aria-hidden="true" />}
         {theme === 'dark' && <span className="icon-[mdi--moon-and-stars] size-6" aria-hidden="true" />}
-        {theme === 'auto' && <span className="icon-[mdi--brightness-auto] size-6" aria-hidden="true" />}
+        {theme === 'auto' && <span className="icon-[mdi--theme-light-dark] size-6" aria-hidden="true" />}
       </button>
       <ul className="dropdown-menu dropdown-open:opacity-100 hidden min-w-32">
         <li>
@@ -64,7 +64,7 @@ export default function ThemeToggle() {
             className={`dropdown-item ${theme === 'auto' ? 'active' : ''}`}
             onClick={() => handleThemeChange('auto')}
           >
-            <span className="icon-[mdi--brightness-auto] size-4" aria-hidden="true" />
+            <span className="icon-[mdi--theme-light-dark] size-4" aria-hidden="true" />
             自動
           </button>
         </li>
