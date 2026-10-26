@@ -25,6 +25,10 @@ COPY pecus.LexicalConverter/package.json ./pecus.LexicalConverter/
 # ワークスペース全体の依存関係をインストール
 RUN npm ci --workspace=pecus.LexicalConverter
 
+# 依存が全てルートに hoist された場合、ワークスペース固有の node_modules は作られない。
+# final stage の COPY が失敗しないよう空ディレクトリを保証する。
+RUN mkdir -p packages/coati-editor/node_modules pecus.LexicalConverter/node_modules
+
 # ============================================
 # Build stage - deps を直接継承してコピーを削減
 # ============================================
