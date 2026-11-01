@@ -404,15 +404,27 @@ public class OrganizationService
             await RaiseConflictException(organizationId);
         }
 
-        // 生成APIベンダーが指定されている場合は API キー必須
-        if (request.GenerativeApiVendor != GenerativeApiVendor.None && string.IsNullOrWhiteSpace(request.GenerativeApiKey))
+        var submittedApiKey = request.GenerativeApiKey?.Trim();
+        var hasSubmittedApiKey = !string.IsNullOrWhiteSpace(submittedApiKey);
+
+        // APIキー未入力時は、同じベンダーに設定済みのキーを維持する
+        if (
+            request.GenerativeApiVendor != GenerativeApiVendor.None
+            && !hasSubmittedApiKey
+            && (
+                setting.GenerativeApiVendor != request.GenerativeApiVendor
+                || string.IsNullOrWhiteSpace(setting.GenerativeApiKey)
+            )
+        )
         {
             throw new InvalidOperationException("生成APIベンダーを利用する場合、APIキーは必須です。");
         }
 
         var normalizedApiKey = request.GenerativeApiVendor == GenerativeApiVendor.None
             ? null
-            : request.GenerativeApiKey?.Trim();
+            : hasSubmittedApiKey
+                ? submittedApiKey
+                : setting.GenerativeApiKey;
 
         setting.TaskOverdueThreshold = request.TaskOverdueThreshold;
         setting.WeeklyReportDeliveryDay = request.WeeklyReportDeliveryDay;
@@ -456,7 +468,7 @@ public class OrganizationService
             MailFromAddress = setting.MailFromAddress,
             MailFromName = setting.MailFromName,
             GenerativeApiVendor = setting.GenerativeApiVendor,
-            GenerativeApiKey = setting.GenerativeApiKey,
+            HasGenerativeApiKey = !string.IsNullOrWhiteSpace(setting.GenerativeApiKey),
             GenerativeApiModel = setting.GenerativeApiModel,
             Plan = setting.Plan,
             HelpNotificationTarget = setting.HelpNotificationTarget,
@@ -629,7 +641,7 @@ public class OrganizationService
                         MailFromAddress = latestOrganization.Setting.MailFromAddress,
                         MailFromName = latestOrganization.Setting.MailFromName,
                         GenerativeApiVendor = latestOrganization.Setting.GenerativeApiVendor,
-                        GenerativeApiKey = latestOrganization.Setting.GenerativeApiKey,
+                        HasGenerativeApiKey = !string.IsNullOrWhiteSpace(latestOrganization.Setting.GenerativeApiKey),
                         GenerativeApiModel = latestOrganization.Setting.GenerativeApiModel,
                         Plan = latestOrganization.Setting.Plan,
                         HelpNotificationTarget = latestOrganization.Setting.HelpNotificationTarget,
@@ -649,7 +661,7 @@ public class OrganizationService
                         TaskOverdueThreshold = 0,
                         WeeklyReportDeliveryDay = 0,
                         GenerativeApiVendor = GenerativeApiVendor.None,
-                        GenerativeApiKey = null,
+                        HasGenerativeApiKey = false,
                         GenerativeApiModel = null,
                         Plan = OrganizationPlan.Free,
                         HelpNotificationTarget = null,

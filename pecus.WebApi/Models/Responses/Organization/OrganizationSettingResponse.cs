@@ -41,9 +41,10 @@ public class OrganizationSettingResponse : IConflictModel
     public GenerativeApiVendor GenerativeApiVendor { get; set; }
 
     /// <summary>
-    /// 生成APIキー
+    /// 生成APIキーが設定済みか
     /// </summary>
-    public string? GenerativeApiKey { get; set; }
+    [Required]
+    public bool HasGenerativeApiKey { get; set; }
 
     /// <summary>
     /// 利用する生成AIモデル（例: gpt-4o, gemini-1.5-pro）

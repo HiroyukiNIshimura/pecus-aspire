@@ -98,13 +98,6 @@ export const organizationSettingSchema = z.object({
 });
 
 export const organizationSettingSchemaWithRules = organizationSettingSchema.superRefine((data, ctx) => {
-  if (data.generativeApiVendor !== 'None' && (!data.generativeApiKey || data.generativeApiKey.length === 0)) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['generativeApiKey'],
-      error: '選択した生成APIベンダーを利用する場合、APIキーは必須です。',
-    });
-  }
   if (data.generativeApiVendor !== 'None' && (!data.generativeApiModel || data.generativeApiModel.length === 0)) {
     ctx.addIssue({
       code: 'custom',

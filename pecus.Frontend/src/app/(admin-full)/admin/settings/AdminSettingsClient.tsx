@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { getAvailableModels, updateOrganizationSetting } from '@/actions/admin/organizations';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -25,6 +25,11 @@ interface AdminSettingsClientProps {
   organization: OrganizationResponse;
   fetchError: string | null;
 }
+
+type OrganizationSettingWithKeyStatus = OrganizationSettingResponse & {
+  hasGenerativeApiKey?: boolean;
+  generativeApiModel?: string | null;
+};
 
 const normalizeVendor = (value: unknown): OrganizationSettingResponse['generativeApiVendor'] => {
   if (typeof value === 'string') {
@@ -158,10 +163,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
   const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const initialSetting = (organization.setting as OrganizationSettingResponse & {
-    generativeApiKey?: string | null;
-    generativeApiModel?: string | null;
-  }) ?? {
+  const initialSetting = (organization.setting as OrganizationSettingWithKeyStatus) ?? {
     taskOverdueThreshold: 0,
     weeklyReportDeliveryDay: 0,
     mailFromAddress: '',
@@ -169,7 +171,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
     generativeApiVendor: 'None' as OrganizationSettingResponse['generativeApiVendor'],
     plan: 'Free' as OrganizationSettingResponse['plan'],
     helpNotificationTarget: undefined as OrganizationSettingResponse['helpNotificationTarget'],
-    generativeApiKey: '',
+    hasGenerativeApiKey: false,
     generativeApiModel: '',
     requireEstimateOnTaskCreation: false,
     enforcePredecessorCompletion: false,
@@ -184,6 +186,8 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
   };
 
   const [rowVersion, setRowVersion] = useState<number>(initialSetting.rowVersion ?? 0);
+  const [configuredVendor, setConfiguredVendor] = useState(normalizeVendor(initialSetting.generativeApiVendor));
+  const [hasGenerativeApiKey, setHasGenerativeApiKey] = useState(initialSetting.hasGenerativeApiKey ?? false);
   const [availableModels, setAvailableModels] = useState<AvailableModelResponse[]>([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [modelError, setModelError] = useState<string | null>(null);
@@ -200,7 +204,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
     generativeApiVendor: normalizeVendor(initialSetting.generativeApiVendor),
     plan: normalizePlan(initialSetting.plan),
     helpNotificationTarget: initialSetting.helpNotificationTarget ?? null,
-    generativeApiKey: initialSetting.generativeApiKey ?? '',
+    generativeApiKey: '',
     generativeApiModel: initialSetting.generativeApiModel ?? '',
     requireEstimateOnTaskCreation: initialSetting.requireEstimateOnTaskCreation ?? false,
     enforcePredecessorCompletion: initialSetting.enforcePredecessorCompletion ?? false,
@@ -262,21 +266,18 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
     [],
   );
 
-  // 初期ロード時にモデル一覧を取得
-  useEffect(() => {
-    if (initialSetting.generativeApiVendor !== 'None' && initialSetting.generativeApiKey) {
-      fetchAvailableModels(
-        normalizeVendor(initialSetting.generativeApiVendor),
-        initialSetting.generativeApiKey,
-        initialSetting.generativeApiModel ?? undefined,
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
-      schema: organizationSettingSchemaWithRules,
+      schema: organizationSettingSchemaWithRules.superRefine((data, ctx) => {
+        const hasKeyForSelectedVendor = hasGenerativeApiKey && data.generativeApiVendor === configuredVendor;
+        if (data.generativeApiVendor !== 'None' && !data.generativeApiKey && !hasKeyForSelectedVendor) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['generativeApiKey'],
+            error: '選択した生成APIベンダーを利用する場合、APIキーは必須です。',
+          });
+        }
+      }),
       onValidationError: (errors) => {
         const errorCount = Object.keys(errors).length;
         notify.error(`入力内容に${errorCount}件のエラーがあります。各フィールドを確認してください。`);
@@ -334,10 +335,9 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
 
   const syncWithResponse = (setting: OrganizationSettingResponse) => {
     setRowVersion(setting.rowVersion ?? 0);
-    const extendedSetting = setting as OrganizationSettingResponse & {
-      generativeApiKey?: string | null;
-      generativeApiModel?: string | null;
-    };
+    const extendedSetting = setting as OrganizationSettingWithKeyStatus;
+    setConfiguredVendor(normalizeVendor(setting.generativeApiVendor));
+    setHasGenerativeApiKey(extendedSetting.hasGenerativeApiKey ?? false);
     setFormData({
       taskOverdueThreshold: setting.taskOverdueThreshold ?? 0,
       weeklyReportDeliveryDay: setting.weeklyReportDeliveryDay ?? 0,
@@ -346,7 +346,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
       generativeApiVendor: normalizeVendor(setting.generativeApiVendor),
       plan: normalizePlan(setting.plan),
       helpNotificationTarget: setting.helpNotificationTarget ?? null,
-      generativeApiKey: extendedSetting.generativeApiKey ?? '',
+      generativeApiKey: '',
       generativeApiModel: extendedSetting.generativeApiModel ?? '',
       requireEstimateOnTaskCreation: setting.requireEstimateOnTaskCreation ?? false,
       enforcePredecessorCompletion: setting.enforcePredecessorCompletion ?? false,
@@ -398,6 +398,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
   };
 
   const vendorRequiresKey = formData.generativeApiVendor !== 'None';
+  const hasKeyForSelectedVendor = hasGenerativeApiKey && formData.generativeApiVendor === configuredVendor;
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -542,7 +543,8 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                   <div className="form-control">
                     <label className="label" htmlFor="input-generative-api-key">
                       <span className="label-text font-semibold">
-                        生成APIキー {vendorRequiresKey && <span className="text-error">*</span>}
+                        生成APIキー{' '}
+                        {vendorRequiresKey && !hasKeyForSelectedVendor && <span className="text-error">*</span>}
                       </span>
                     </label>
                     <input
@@ -553,7 +555,7 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                       value={formData.generativeApiKey ?? ''}
                       onChange={(e) => handleFieldChange('generativeApiKey', e.target.value)}
                       onBlur={handleApiKeyBlur}
-                      placeholder=""
+                      placeholder={hasKeyForSelectedVendor ? '変更する場合のみ入力' : ''}
                       disabled={!vendorRequiresKey}
                     />
                     {shouldShowError('generativeApiKey') && (
@@ -562,6 +564,11 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                     {!vendorRequiresKey && (
                       <span className="label-text-alt text-xs text-base-content/60">
                         ベンダーが未設定の場合、APIキーは保存されません。
+                      </span>
+                    )}
+                    {hasKeyForSelectedVendor && (
+                      <span className="label-text-alt text-xs text-base-content/60">
+                        APIキーは設定済みです。空欄で保存すると現在のキーを維持します。
                       </span>
                     )}
                   </div>
@@ -580,6 +587,10 @@ export default function AdminSettingsClient({ organization, fetchError }: AdminS
                         disabled={!vendorRequiresKey || isLoadingModels}
                       >
                         <option value="">{isLoadingModels ? '読み込み中...' : 'モデルを選択してください'}</option>
+                        {formData.generativeApiModel &&
+                          !availableModels.some((model) => model.id === formData.generativeApiModel) && (
+                            <option value={formData.generativeApiModel}>{formData.generativeApiModel}</option>
+                          )}
                         {availableModels.map((model) => (
                           <option key={model.id} value={model.id}>
                             {model.name}
