@@ -220,7 +220,7 @@ function TableCellResizer({ editor, anchorElem }: { editor: LexicalEditor; ancho
 
           let height = tableRow.getHeight();
           if (height === undefined) {
-            const rowCells = tableRow.getChildren<TableCellNode>();
+            const rowCells = tableRow.getChildren().filter((c): c is TableCellNode => $isTableCellNode(c));
             height = Math.min(...rowCells.map((cell) => getCellNodeHeight(cell, editor) ?? Infinity));
           }
 

@@ -131,6 +131,7 @@ export declare class AlertNode extends QuoteNode {
     }>;
     }> & {
         readonly quote?: {
+            readonly children: "inline";
             readonly extends: ElementNode;
             readonly generated: GeneratedJSONFactory;
             readonly importDOM: {
@@ -145,6 +146,7 @@ export declare class AlertNode extends QuoteNode {
             }];
         } | undefined;
     } & StaticNodeTypeAccessor<"quote"> & StaticNodeConfigAccessor<    {
+    readonly children: "inline";
     readonly extends: ElementNode;
     readonly generated: GeneratedJSONFactory;
     readonly importDOM: {

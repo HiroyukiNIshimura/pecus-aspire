@@ -185,6 +185,37 @@ function runNcu({ update, filter }) {
   }
 }
 
+const BIOME_CONFIG_FILES = ['biome.json', 'pecus.Frontend/biome.json', 'pecus.LexicalConverter/biome.json'];
+
+function getBiomeVersion() {
+  for (const relPath of TARGET_FILES) {
+    const filePath = path.join(ROOT_DIR, relPath);
+    if (!fs.existsSync(filePath)) continue;
+    const pkg = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    const range = pkg.devDependencies?.['@biomejs/biome'] ?? pkg.dependencies?.['@biomejs/biome'];
+    const match = range && /(\d+\.\d+\.\d+)/.exec(range);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// biome.json の $schema バージョンを @biomejs/biome のバージョンに合わせる
+function syncBiomeSchema() {
+  const version = getBiomeVersion();
+  if (!version) return;
+  const schemaPattern = /(https:\/\/biomejs\.dev\/schemas\/)[^/"]+(\/schema\.json)/;
+  for (const relPath of BIOME_CONFIG_FILES) {
+    const filePath = path.join(ROOT_DIR, relPath);
+    if (!fs.existsSync(filePath)) continue;
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    const next = raw.replace(schemaPattern, `$1${version}$2`);
+    if (next !== raw) {
+      fs.writeFileSync(filePath, next, 'utf-8');
+      console.log(`  biome スキーマ更新: ${relPath} -> ${version}`);
+    }
+  }
+}
+
 function main() {
   const args = process.argv.slice(2);
   const options = parseArgs(args);
@@ -239,6 +270,10 @@ function main() {
   }
   if (options.doNcuUpdate) {
     runNcu({ update: true, filter: options.ncuFilter });
+  }
+
+  if (hasNcuAction) {
+    syncBiomeSchema();
   }
 
   // --- 3. npm install ---

@@ -18155,7 +18155,8 @@ function body(_3, index, parent) {
 function p(_3, index, parent) {
   const next = siblingAfter(parent, index);
   return next ? next.type === "element" && (next.tagName === "address" || next.tagName === "article" || next.tagName === "aside" || next.tagName === "blockquote" || next.tagName === "details" || next.tagName === "div" || next.tagName === "dl" || next.tagName === "fieldset" || next.tagName === "figcaption" || next.tagName === "figure" || next.tagName === "footer" || next.tagName === "form" || next.tagName === "h1" || next.tagName === "h2" || next.tagName === "h3" || next.tagName === "h4" || next.tagName === "h5" || next.tagName === "h6" || next.tagName === "header" || next.tagName === "hgroup" || next.tagName === "hr" || next.tagName === "main" || next.tagName === "menu" || next.tagName === "nav" || next.tagName === "ol" || next.tagName === "p" || next.tagName === "pre" || next.tagName === "section" || next.tagName === "table" || next.tagName === "ul") : !parent || // Confusing parent.
-  !(parent.type === "element" && (parent.tagName === "a" || parent.tagName === "audio" || parent.tagName === "del" || parent.tagName === "ins" || parent.tagName === "map" || parent.tagName === "noscript" || parent.tagName === "video"));
+  !(parent.type === "element" && (parent.tagName === "a" || parent.tagName === "audio" || parent.tagName === "del" || parent.tagName === "ins" || parent.tagName === "map" || parent.tagName === "noscript" || parent.tagName === "video" || // Custom element.
+  parent.tagName.includes("-")));
 }
 function li(_3, index, parent) {
   const next = siblingAfter(parent, index);
@@ -18234,18 +18235,18 @@ function body2(node) {
 }
 function colgroup(node, index, parent) {
   const previous = siblingBefore(parent, index);
-  const head2 = siblingAfter(node, -1, true);
   if (parent && previous && previous.type === "element" && previous.tagName === "colgroup" && closing(previous, parent.children.indexOf(previous), parent)) {
     return false;
   }
+  const head2 = siblingAfter(node, -1, true);
   return Boolean(head2 && head2.type === "element" && head2.tagName === "col");
 }
 function tbody2(node, index, parent) {
   const previous = siblingBefore(parent, index);
-  const head2 = siblingAfter(node, -1);
   if (parent && previous && previous.type === "element" && (previous.tagName === "thead" || previous.tagName === "tbody") && closing(previous, parent.children.indexOf(previous), parent)) {
     return false;
   }
+  const head2 = siblingAfter(node, -1);
   return Boolean(head2 && head2.type === "element" && head2.tagName === "tr");
 }
 
@@ -18273,16 +18274,19 @@ var constants = {
     ['\0"&'.split(""), "\0\"&'`".split("")]
   ]
 };
+var htmlIntegrationPoints = /* @__PURE__ */ new Set(["desc", "foreignObject", "title"]);
 function element(node, index, parent, state) {
-  const schema = state.schema;
+  const { schema } = state;
   const omit = schema.space === "svg" ? false : state.settings.omitOptionalTags;
   let selfClosing = schema.space === "svg" ? state.settings.closeEmptyElements : state.settings.voids.includes(node.tagName.toLowerCase());
   const parts = [];
-  let last;
   if (schema.space === "html" && node.tagName === "svg") {
     state.schema = svg2;
   }
   const attributes = serializeAttributes(state, node.properties);
+  if (state.schema.space === "svg" && htmlIntegrationPoints.has(node.tagName)) {
+    state.schema = html2;
+  }
   const content = state.all(
     schema.space === "html" && node.tagName === "template" ? node.content : node
   );
@@ -18291,7 +18295,7 @@ function element(node, index, parent, state) {
   if (attributes || !omit || !opening(node, index, parent)) {
     parts.push("<", node.tagName, attributes ? " " + attributes : "");
     if (selfClosing && (schema.space === "svg" || state.settings.closeSelfClosing)) {
-      last = attributes.charAt(attributes.length - 1);
+      const last = attributes.charAt(attributes.length - 1);
       if (!state.settings.tightSelfClosing || last === "/" || last && last !== '"' && last !== "'") {
         parts.push(" ");
       }
@@ -18329,8 +18333,6 @@ function serializeAttribute(state, key2, value) {
   const info = find(state.schema, key2);
   const x3 = state.settings.allowParseErrors && state.schema.space === "html" ? 0 : 1;
   const y3 = state.settings.allowDangerousCharacters ? 0 : 1;
-  let quote = state.quote;
-  let result;
   if (info.overloadedBoolean && (value === info.attribute || value === "")) {
     value = true;
   } else if ((info.boolean || info.overloadedBoolean) && (typeof value !== "string" || value === info.attribute || value === "")) {
@@ -18351,6 +18353,7 @@ function serializeAttribute(state, key2, value) {
     padLeft: !state.settings.tightCommaSeparatedLists
   }) : String(value);
   if (state.settings.collapseEmptyAttributes && !value) return name;
+  let result;
   if (state.settings.preferUnquoted) {
     result = stringifyEntities(
       value,
@@ -18361,6 +18364,7 @@ function serializeAttribute(state, key2, value) {
     );
   }
   if (result !== value) {
+    let { quote } = state;
     if (state.settings.quoteSmart && ccount(value, quote) > ccount(value, state.alternative)) {
       quote = state.alternative;
     }
@@ -18421,10 +18425,10 @@ var emptyChildren2 = [];
 function toHtml(tree, options) {
   const options_ = options || emptyOptions;
   const quote = options_.quote || '"';
-  const alternative = quote === '"' ? "'" : '"';
   if (quote !== '"' && quote !== "'") {
     throw new Error("Invalid quote `" + quote + "`, expected `'` or `\"`");
   }
+  const alternative = quote === '"' ? "'" : '"';
   const state = {
     one,
     all,
@@ -48380,7 +48384,7 @@ function TableCellResizer({ editor, anchorElem }) {
           }
           let height = tableRow.getHeight();
           if (height === void 0) {
-            const rowCells = tableRow.getChildren();
+            const rowCells = tableRow.getChildren().filter((c) => $isTableCellNode4(c));
             height = Math.min(...rowCells.map((cell) => getCellNodeHeight(cell, editor) ?? Infinity));
           }
           const newHeight = Math.max(height + heightChange, MIN_ROW_HEIGHT);
