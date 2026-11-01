@@ -1,11 +1,11 @@
 {
   "name": "chrome-devtools",
   "source": "github-awesome-copilot",
-  "description": "Expert-level browser automation, debugging, and performance analysis using Chrome DevTools MCP.",
+  "description": "Expert-level browser automation, debugging, and performance analysis using Chrome DevTools MCP. Use for interacting with web pages, capturing screenshots, analyzing network traffic, and profiling performance.",
   "description_ja": "Chrome Devtools",
   "whenToUse": "Use this skill when:; Browser Automation: Navigating pages, clicking elements, filling forms, and handling dialogs.; Visual Inspection: Taking screenshots or text snapshots of web pages.",
   "categories": [],
-  "installedAt": "2026-10-03T04:18:40.095Z",
+  "installedAt": "2026-11-01T01:57:11.276Z",
   "relativePath": "chrome-devtools",
   "remotePath": "skills/chrome-devtools",
   "sourceRevision": {
@@ -13,7 +13,7 @@
     "repo": "awesome-copilot",
     "ref": "main",
     "remotePath": "skills/chrome-devtools",
-    "commitSha": "143a3d976b3c1603cc8932984d5e1f28501cb5fc",
+    "commitSha": "5269f7ea2d6c3a9bfda5ed878b6726cf509121fd",
     "contentSha": "1425ccd89c83988f6bdbc9e801f81e9f1faf86ea",
     "kind": "tree"
   },

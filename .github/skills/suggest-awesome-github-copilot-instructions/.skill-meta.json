@@ -1,10 +1,10 @@
 {
   "name": "suggest-awesome-github-copilot-instructions",
   "source": "github-awesome-copilot",
-  "description": "Suggest relevant GitHub Copilot instruction files from the awesome-copilot repository based on current repository context and chat history, avoiding duplicates with existing instructions in this repos...",
+  "description": "Suggest relevant GitHub Copilot instruction files from the awesome-copilot repository based on current repository context and chat history, avoiding duplicates with existing instructions in this repository, and identifying outdated instructions that need updates.",
   "whenToUse": "Analyze current repository context and suggest relevant copilot-instruction files from the [GitHub awesome-copilot repository](https://github.com/github/awesome-copilot/blob/main/docs/README.instru...",
   "categories": [],
-  "installedAt": "2026-10-03T04:18:40.968Z",
+  "installedAt": "2026-11-01T01:57:12.442Z",
   "relativePath": "suggest-awesome-github-copilot-instructions",
   "remotePath": "skills/suggest-awesome-github-copilot-instructions",
   "sourceRevision": {
@@ -12,7 +12,7 @@
     "repo": "awesome-copilot",
     "ref": "main",
     "remotePath": "skills/suggest-awesome-github-copilot-instructions",
-    "commitSha": "143a3d976b3c1603cc8932984d5e1f28501cb5fc",
+    "commitSha": "5269f7ea2d6c3a9bfda5ed878b6726cf509121fd",
     "contentSha": "7cee916b47bb9ebe63cf022657105e087a86718d",
     "kind": "tree"
   },
