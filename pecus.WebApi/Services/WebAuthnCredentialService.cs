@@ -31,6 +31,14 @@ public class WebAuthnCredentialService
     /// </summary>
     public const string RecoveryReferencePrefix = "recovery:";
 
+    /// <summary>
+    /// リカバリートークン／セットアップ登録チャレンジの有効期限
+    /// </summary>
+    /// <remarks>
+    /// 手動操作では画面を読んだり認証器の準備に時間がかかるため、5分では不足する。
+    /// </remarks>
+    public static readonly TimeSpan SetupTokenTtl = TimeSpan.FromMinutes(15);
+
     private const int ValidationTimeoutSeconds = 300;
 
     private readonly ApplicationDbContext _context;
@@ -256,6 +264,13 @@ public class WebAuthnCredentialService
             .Where(c => c.UserId == user.Id)
             .ToListAsync(cancellationToken);
 
+        // リカバリー（認証器を失った想定）では既存クレデンシャルを除外しない。
+        // 除外すると、同じ認証器で再登録しようとした際に InvalidStateError となり復旧できない。
+        var excludeCredentials = reference is not null
+            && reference.StartsWith(RecoveryReferencePrefix, StringComparison.Ordinal)
+                ? new List<PublicKeyCredentialDescriptor>()
+                : existing.Select(ToDescriptor).ToList();
+
         var options = _fido2.RequestNewCredential(new RequestNewCredentialParams
         {
             User = new Fido2User
@@ -264,7 +279,7 @@ public class WebAuthnCredentialService
                 Name = user.Email,
                 DisplayName = user.Username,
             },
-            ExcludeCredentials = existing.Select(ToDescriptor).ToList(),
+            ExcludeCredentials = excludeCredentials,
             AuthenticatorSelection = new AuthenticatorSelection
             {
                 // 同期パスキーを含む幅広い認証器を許可するため指定しない
@@ -279,7 +294,8 @@ public class WebAuthnCredentialService
             WebAuthnChallengePurpose.Registration,
             user.Id,
             cancellationToken,
-            reference);
+            reference,
+            reference is null ? null : SetupTokenTtl);
 
         return ToRegistrationOptionsResponse(options, challengeId);
     }
@@ -297,13 +313,15 @@ public class WebAuthnCredentialService
 
         if (!string.IsNullOrWhiteSpace(recoveryToken))
         {
-            var recoveryEntry = await _challengeStore.ConsumeAsync(
+            // ここでは消費しない（認証器の操作がキャンセルされた場合に再試行できるようにする）
+            var recoveryEntry = await _challengeStore.PeekAsync(
                 recoveryToken,
                 WebAuthnChallengePurpose.Recovery);
 
             if (recoveryEntry?.UserId is null || recoveryEntry.Reference is null)
             {
-                throw new UnauthorizedException("リカバリーコードが無効か期限切れです。");
+                throw new UnauthorizedException(
+                    "リカバリーの有効期限が切れています。リカバリーコードを入力し直してください。");
             }
 
             user = await _context
@@ -312,7 +330,14 @@ public class WebAuthnCredentialService
                     u => u.Id == recoveryEntry.UserId.Value && u.IsActive,
                     cancellationToken);
 
-            reference = recoveryEntry.Reference;
+            if (user is null)
+            {
+                throw new UnauthorizedException(
+                    "リカバリーの有効期限が切れています。リカバリーコードを入力し直してください。");
+            }
+
+            // 登録成功時にリカバリートークンを失効させるため、ID を参照に含める
+            reference = $"{recoveryEntry.Reference}:{recoveryToken}";
         }
         else if (!string.IsNullOrWhiteSpace(setupToken))
         {
@@ -378,7 +403,8 @@ public class WebAuthnCredentialService
             WebAuthnChallengePurpose.Recovery,
             user.Id,
             cancellationToken,
-            $"{RecoveryReferencePrefix}{codeId.Value}");
+            $"{RecoveryReferencePrefix}{codeId.Value}",
+            SetupTokenTtl);
     }
 
     /// <summary>
@@ -573,10 +599,16 @@ public class WebAuthnCredentialService
 
         if (reference.StartsWith(RecoveryReferencePrefix, StringComparison.Ordinal))
         {
-            var codeIdText = reference[RecoveryReferencePrefix.Length..];
-            if (int.TryParse(codeIdText, out var codeId))
+            var parts = reference.Split(':', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2 && int.TryParse(parts[1], out var codeId))
             {
                 await _recoveryCodes.MarkUsedAsync(codeId, cancellationToken);
+            }
+
+            // 登録が完了したのでリカバリートークンを失効させる
+            if (parts.Length >= 3)
+            {
+                await _challengeStore.ConsumeAsync(parts[2], WebAuthnChallengePurpose.Recovery);
             }
 
             // 認証器を失った前提のため、他端末のセッションをすべて失効させる

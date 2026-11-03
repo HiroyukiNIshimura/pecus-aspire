@@ -111,11 +111,12 @@ export const config = {
     /*
      * 以下を除くすべてのパスにマッチ:
      * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
+     * - _next (Next.js の静的ファイル・HMR・RSC ペイロード)
+     *   除外しないと HMR 要求が /signin へリダイレクトされ、開発時にリロードループと
+     *   セッション Cookie の削除が発生する
      * - favicon.ico, *.svg, *.png, *.webp, *.ico (static assets)
      * - scripts, styles (public assets)
      */
-    '/((?!api|_next/static|_next/image|favicon\\.ico|.*\\.svg$|.*\\.png$|.*\\.webp$|.*\\.ico$|scripts|styles|icons).*)',
+    '/((?!api|_next|favicon\\.ico|.*\\.svg$|.*\\.png$|.*\\.webp$|.*\\.ico$|scripts|styles|icons).*)',
   ],
 };

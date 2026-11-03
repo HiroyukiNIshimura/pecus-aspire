@@ -11,7 +11,10 @@ import {
   issueRecoveryCodes,
   registerCredential,
 } from '@/actions/webauthn';
+import ConfirmModal from '@/components/common/overlays/ConfirmModal';
+import DeleteConfirmModal from '@/components/common/overlays/DeleteConfirmModal';
 import type { WebAuthnCredentialResponse } from '@/connectors/hey-api-axios/types.gen';
+import { copyTextToClipboard } from '@/libs/utils/clipboard';
 import { formatDate } from '@/libs/utils/date';
 
 interface PasskeysTabProps {
@@ -26,6 +29,25 @@ interface PasskeysTabProps {
 }
 
 /**
+ * パスキー登録時の DOMException をユーザー向けメッセージに変換する
+ */
+function toPasskeyRegistrationErrorMessage(error: unknown): string {
+  const name = typeof error === 'object' && error !== null && 'name' in error ? (error as { name?: string }).name : '';
+  switch (name) {
+    case 'InvalidStateError':
+      return 'この端末には既にパスキーが登録されています。別の端末または別のブラウザで登録してください。';
+    case 'NotAllowedError':
+      return '認証がキャンセルされたか、時間切れになりました。もう一度「パスキーを登録する」を押してください。';
+    case 'NotSupportedError':
+      return 'この端末・ブラウザはパスキーに対応していません。別のブラウザでお試しください。';
+    case 'SecurityError':
+      return 'セキュリティ制約により登録できませんでした。http://localhost:3000 でアクセスしているか確認してください。';
+    default:
+      return 'パスキーの登録に失敗しました。もう一度お試しください。';
+  }
+}
+
+/**
  * パスキー管理タブ
  *
  * - 登録済みパスキーの一覧・追加・削除
@@ -37,7 +59,8 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
   const [isBusy, setIsBusy] = useState(false);
   const [issuedCodes, setIssuedCodes] = useState<string[]>([]);
   const [issuedInstruction, setIssuedInstruction] = useState<string>('');
-  const [savedToAnotherDevice, setSavedToAnotherDevice] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<WebAuthnCredentialResponse | null>(null);
+  const [isReissueConfirmOpen, setIsReissueConfirmOpen] = useState(false);
 
   // notify は毎レンダーで新しいオブジェクトを返すため、依存配列に入れると
   // 取得処理が無限に再実行される。最新値を ref 経由で参照する。
@@ -126,20 +149,24 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
       await load();
     } catch (error) {
       console.error('パスキー登録中にエラーが発生:', error);
-      notify.error('パスキーの登録がキャンセルされました。');
+      notify.error(toPasskeyRegistrationErrorMessage(error));
     } finally {
       setIsBusy(false);
     }
   };
 
-  const handleDelete = async (credentialId: number) => {
-    if (!window.confirm('このパスキーを削除します。この端末ではログインできなくなります。よろしいですか？')) {
+  const handleDelete = (credential: WebAuthnCredentialResponse) => {
+    setDeleteTarget(credential);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget?.id == null) {
       return;
     }
 
     setIsBusy(true);
     try {
-      const result = await deleteCredential({ credentialId });
+      const result = await deleteCredential({ credentialId: deleteTarget.id });
       if (!result.success) {
         notify.error(result.message || 'パスキーの削除に失敗しました。');
         return;
@@ -151,13 +178,8 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
     }
   };
 
-  const handleIssueRecoveryCodes = async () => {
-    if (hasRecoveryCodes && !window.confirm('既存のリカバリーコードはすべて無効になります。再発行しますか？')) {
-      return;
-    }
-
+  const issueRecoveryCodesNow = async () => {
     setIsBusy(true);
-    setSavedToAnotherDevice(false);
     try {
       const result = await issueRecoveryCodes();
       if (!result.success) {
@@ -170,6 +192,34 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
     } finally {
       setIsBusy(false);
     }
+  };
+
+  const handleIssueRecoveryCodes = () => {
+    if (hasRecoveryCodes) {
+      setIsReissueConfirmOpen(true);
+      return;
+    }
+
+    void issueRecoveryCodesNow();
+  };
+
+  const handleCopyCodes = async () => {
+    const text = issuedCodes.join('\n');
+    if (await copyTextToClipboard(text)) {
+      notify.success('リカバリーコードをコピーしました。');
+      return;
+    }
+    notify.error('コピーできませんでした。コードを選択して手動でコピーしてください。');
+  };
+
+  /**
+   * コードを画面から消す
+   *
+   * 表示したままにすると覗き見のリスクがあるため、保存後に明示的に消去する。
+   */
+  const handleDismissCodes = () => {
+    setIssuedCodes([]);
+    setIssuedInstruction('');
   };
 
   return (
@@ -198,7 +248,7 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
                   <button
                     type="button"
                     className="btn btn-sm btn-outline btn-error"
-                    onClick={() => credential.id != null && handleDelete(credential.id)}
+                    onClick={() => handleDelete(credential)}
                     disabled={isBusy || isLoading}
                   >
                     削除
@@ -240,31 +290,47 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
                 ))}
               </ul>
 
-              <label className="label cursor-pointer justify-start gap-3">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-sm"
-                  checked={savedToAnotherDevice}
-                  onChange={(event) => setSavedToAnotherDevice(event.target.checked)}
-                />
-                <span className="label-text">別のデバイスに保存しました</span>
-              </label>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className="btn btn-sm btn-outline" onClick={handleCopyCodes}>
+                  <span className="icon-[tabler--copy] size-4" aria-hidden="true" />
+                  コピー
+                </button>
+                <button type="button" className="btn btn-sm btn-primary" onClick={handleDismissCodes}>
+                  <span className="icon-[tabler--check] size-4" aria-hidden="true" />
+                  保存しました（閉じる）
+                </button>
+              </div>
             </>
           )}
 
           <div className="mt-4">
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={handleIssueRecoveryCodes}
-              disabled={isBusy || (issuedCodes.length > 0 && !savedToAnotherDevice)}
-            >
+            <button type="button" className="btn btn-outline" onClick={handleIssueRecoveryCodes} disabled={isBusy}>
               <span className="icon-[tabler--key] size-5" />
               {hasRecoveryCodes ? 'リカバリーコードを再発行' : 'リカバリーコードを発行'}
             </button>
           </div>
         </div>
       </div>
+
+      <DeleteConfirmModal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        itemType="パスキー"
+        itemName={deleteTarget?.name ?? ''}
+        additionalWarning="この端末ではログインできなくなります。"
+      />
+
+      <ConfirmModal
+        isOpen={isReissueConfirmOpen}
+        onClose={() => setIsReissueConfirmOpen(false)}
+        onConfirm={issueRecoveryCodesNow}
+        title="リカバリーコードの再発行"
+        description="既存のリカバリーコードはすべて無効になります。再発行しますか？"
+        confirmLabel="再発行する"
+        variant="warning"
+        iconClass="icon-[tabler--key]"
+      />
     </div>
   );
 }

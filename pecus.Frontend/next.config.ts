@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   distDir: 'build',
   output: 'standalone', // Docker デプロイ用
+  // 開発時のみ有効。コンテナ内のデバッグ用ブラウザ（host.docker.internal）から
+  // アクセスすると HMR が cross-origin としてブロックされ、リロードループになるため許可する
+  allowedDevOrigins: ['host.docker.internal'],
   turbopack: {
     // モノレポのルートを指定して、packages/coati-editor などの
     // ワークスペースパッケージを正しく解決する

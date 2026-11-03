@@ -29,6 +29,7 @@ import type {
   WebAuthnRegistrationOptionsResponse,
   WebAuthnSetupRegistrationResponse,
 } from '@/connectors/hey-api-axios/types.gen';
+import { getHttpErrorInfo } from '@/libs/apiError';
 import { createLoginSession, type LoginDeviceContext } from '@/libs/loginSession';
 import {
   type PasskeyLoginOptionsInput,
@@ -50,6 +51,20 @@ type PasskeyLoginResult = {
   roles: Array<Pick<RoleInfoResponse, 'name'>>;
   landingPage: LoginResponse['landingPage'];
 };
+
+/**
+ * パスキー登録系のエラーをユーザー向けメッセージに変換する
+ *
+ * 401 は「ログイン状態の確認」ではなく、リンク切れ・有効期限切れが原因のため
+ * サーバーが返したメッセージを優先して表示する。
+ */
+function toRegistrationError<T>(error: unknown, defaultMessage: string): ApiResponse<T> {
+  const info = getHttpErrorInfo(error);
+  if ((info.status === 400 || info.status === 401) && info.bodyMessage) {
+    return validationError<T>(info.bodyMessage);
+  }
+  return handleApiErrorForAction<T>(error, { defaultMessage });
+}
 
 /**
  * クライアント IP をリクエストヘッダーから取得する
@@ -187,9 +202,10 @@ export async function getSetupRegistrationOptions(
     });
     return { success: true, data: result };
   } catch (error) {
-    return handleApiErrorForAction<WebAuthnRegistrationOptionsResponse>(error, {
-      defaultMessage: 'パスキー登録を開始できませんでした。リンクの有効期限をご確認ください。',
-    });
+    return toRegistrationError<WebAuthnRegistrationOptionsResponse>(
+      error,
+      'パスキー登録を開始できませんでした。リンクの有効期限をご確認ください。',
+    );
   }
 }
 
@@ -220,9 +236,7 @@ export async function registerWithSetup(
     });
     return { success: true, data: result };
   } catch (error) {
-    return handleApiErrorForAction<WebAuthnSetupRegistrationResponse>(error, {
-      defaultMessage: 'パスキーの登録に失敗しました。',
-    });
+    return toRegistrationError<WebAuthnSetupRegistrationResponse>(error, 'パスキーの登録に失敗しました。');
   }
 }
 

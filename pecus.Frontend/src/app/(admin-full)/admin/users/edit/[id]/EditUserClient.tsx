@@ -7,6 +7,7 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import MultiSelectDropdown from '@/components/common/filters/MultiSelectDropdown';
+import ConfirmModal from '@/components/common/overlays/ConfirmModal';
 import type { UserDetailResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
@@ -39,6 +40,7 @@ export default function EditUserClient({
   const notify = useNotify();
   const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // === 状態管理: ユーザー編集対象の項目 ===
   const [username, setUsername] = useState(userDetail.username || '');
@@ -118,15 +120,11 @@ export default function EditUserClient({
     router.push('/admin/users');
   };
 
-  const handleResetCredentials = async () => {
-    if (
-      !window.confirm(
-        'このユーザーのパスキー登録をリセットします。既存のパスキーとセッションは、リンク使用時に失効します。よろしいですか？',
-      )
-    ) {
-      return;
-    }
+  const handleResetCredentials = () => {
+    setIsResetConfirmOpen(true);
+  };
 
+  const submitResetCredentials = async () => {
     try {
       const result = await resetUserCredentials({ userId: userDetail.id! });
       if (result.success) {
@@ -411,6 +409,17 @@ export default function EditUserClient({
           </div>
         </main>
       </div>
+
+      <ConfirmModal
+        isOpen={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={submitResetCredentials}
+        title="パスキー登録のリセット"
+        description="このユーザーのパスキー登録をリセットします。既存のパスキーとセッションは、リンク使用時に失効します。よろしいですか？"
+        confirmLabel="リセットする"
+        variant="warning"
+        iconClass="icon-[tabler--fingerprint]"
+      />
     </div>
   );
 }

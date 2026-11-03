@@ -48,7 +48,7 @@ public sealed record WebAuthnChallengeEntry(
 /// </remarks>
 public class WebAuthnChallengeStore
 {
-    private static readonly TimeSpan ChallengeTtl = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan DefaultChallengeTtl = TimeSpan.FromMinutes(5);
     private const string KeyPrefix = "webauthn:challenge:";
 
     private readonly IDatabase _db;
@@ -68,20 +68,46 @@ public class WebAuthnChallengeStore
         WebAuthnChallengePurpose purpose,
         int? userId,
         CancellationToken cancellationToken = default,
-        string? reference = null)
+        string? reference = null,
+        TimeSpan? ttl = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        var effectiveTtl = ttl ?? DefaultChallengeTtl;
         var challengeId = Guid.NewGuid().ToString("N");
         var entry = new WebAuthnChallengeEntry(
             userId,
             purpose.ToString(),
             payload,
             reference,
-            DateTimeOffset.UtcNow.Add(ChallengeTtl));
+            DateTimeOffset.UtcNow.Add(effectiveTtl));
 
-        await _db.StringSetAsync(GetKey(challengeId), JsonSerializer.Serialize(entry), ChallengeTtl);
+        await _db.StringSetAsync(GetKey(challengeId), JsonSerializer.Serialize(entry), effectiveTtl);
         return challengeId;
+    }
+
+    /// <summary>
+    /// チャレンジを消費せずに取得する（有効性の確認用）
+    /// </summary>
+    /// <remarks>
+    /// リカバリートークンのように「後続の処理が成功するまで失効させたくない」用途で使用する。
+    /// </remarks>
+    public async Task<WebAuthnChallengeEntry?> PeekAsync(
+        string? challengeId,
+        WebAuthnChallengePurpose purpose)
+    {
+        if (string.IsNullOrWhiteSpace(challengeId) || !Guid.TryParseExact(challengeId, "N", out _))
+        {
+            return null;
+        }
+
+        var json = await _db.StringGetAsync(GetKey(challengeId));
+        if (json.IsNullOrEmpty)
+        {
+            return null;
+        }
+
+        return ParseEntry(json.ToString(), purpose);
     }
 
     /// <summary>
@@ -104,10 +130,20 @@ public class WebAuthnChallengeStore
             return null;
         }
 
+        return ParseEntry(json.ToString(), purpose);
+    }
+
+    private WebAuthnChallengeEntry? ParseEntry(string? json, WebAuthnChallengePurpose purpose)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
+
         WebAuthnChallengeEntry? entry;
         try
         {
-            entry = JsonSerializer.Deserialize<WebAuthnChallengeEntry>(json.ToString());
+            entry = JsonSerializer.Deserialize<WebAuthnChallengeEntry>(json);
         }
         catch (JsonException ex)
         {

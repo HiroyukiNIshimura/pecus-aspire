@@ -6,6 +6,26 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getSetupRegistrationOptions, registerWithSetup } from '@/actions/webauthn';
 import type { WebAuthnSetupRegistrationResponse } from '@/connectors/hey-api-axios/types.gen';
+import { copyTextToClipboard } from '@/libs/utils/clipboard';
+
+/**
+ * パスキー登録時の DOMException をユーザー向けメッセージに変換する
+ */
+function toPasskeyRegistrationErrorMessage(error: unknown): string {
+  const name = typeof error === 'object' && error !== null && 'name' in error ? (error as { name?: string }).name : '';
+  switch (name) {
+    case 'InvalidStateError':
+      return 'この端末には既にパスキーが登録されています。別の端末または別のブラウザで登録してください。';
+    case 'NotAllowedError':
+      return '認証がキャンセルされたか、時間切れになりました。もう一度「パスキーを登録する」を押してください。';
+    case 'NotSupportedError':
+      return 'この端末・ブラウザはパスキーに対応していません。別のブラウザでお試しください。';
+    case 'SecurityError':
+      return 'セキュリティ制約により登録できませんでした。http://localhost:3000 でアクセスしているか確認してください。';
+    default:
+      return 'パスキーの登録に失敗しました。もう一度お試しください。';
+  }
+}
 
 /**
  * パスキー登録フォーム (Client Component)
@@ -19,7 +39,8 @@ export default function PasskeySetupFormClient() {
   const [apiError, setApiError] = useState('');
   const [passkeySupported, setPasskeySupported] = useState(true);
   const [result, setResult] = useState<WebAuthnSetupRegistrationResponse | null>(null);
-  const [savedToAnotherDevice, setSavedToAnotherDevice] = useState(false);
+  const [isCodesDismissed, setIsCodesDismissed] = useState(false);
+  const [copyMessage, setCopyMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     setPasskeySupported(browserSupportsWebAuthn());
@@ -56,10 +77,14 @@ export default function PasskeySetupFormClient() {
                   | undefined,
               }
             : undefined,
-          excludeCredentials: options.publicKey.excludeCredentials?.map((item) => ({
-            id: item.id,
-            type: 'public-key' as const,
-          })),
+          // リカバリーは「認証器を失った」前提のため、既存クレデンシャルを除外しない。
+          // 除外すると同じ端末で再登録しようとした際に InvalidStateError になる。
+          excludeCredentials: recoveryToken
+            ? undefined
+            : options.publicKey.excludeCredentials?.map((item) => ({
+                id: item.id,
+                type: 'public-key' as const,
+              })),
         },
       });
 
@@ -85,10 +110,19 @@ export default function PasskeySetupFormClient() {
       setResult(registerResult.data);
     } catch (error) {
       console.error('パスキー登録中にエラーが発生:', error);
-      setApiError('パスキーの登録がキャンセルされたか、この端末では利用できませんでした。');
+      setApiError(toPasskeyRegistrationErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCopyCodes = async (codes: string[]) => {
+    if (await copyTextToClipboard(codes.join('\n'))) {
+      setCopyMessage({ type: 'success', message: 'リカバリーコードをコピーしました。' });
+      return;
+    }
+
+    setCopyMessage({ type: 'error', message: 'コピーできませんでした。コードを選択して手動でコピーしてください。' });
   };
 
   const hasInvalidLink = !token && !recoveryToken;
@@ -125,7 +159,7 @@ export default function PasskeySetupFormClient() {
             </div>
           )}
 
-          {codes.length > 0 && (
+          {codes.length > 0 && !isCodesDismissed && (
             <>
               <div className="alert alert-soft alert-warning" role="alert">
                 <span className="icon-[tabler--alert-triangle] size-5 shrink-0" />
@@ -140,28 +174,39 @@ export default function PasskeySetupFormClient() {
                 ))}
               </ul>
 
-              <label className="label cursor-pointer justify-start gap-3 mt-2">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-sm"
-                  checked={savedToAnotherDevice}
-                  onChange={(event) => setSavedToAnotherDevice(event.target.checked)}
-                />
-                <span className="label-text">別のデバイスに保存しました（この画面を閉じると再表示できません）</span>
-              </label>
+              {copyMessage && (
+                <div
+                  className={`alert alert-soft ${copyMessage.type === 'success' ? 'alert-success' : 'alert-error'}`}
+                  role="status"
+                >
+                  <span>{copyMessage.message}</span>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-2 mt-2">
+                <button type="button" className="btn btn-sm btn-outline" onClick={() => handleCopyCodes(codes)}>
+                  <span className="icon-[tabler--copy] size-4" aria-hidden="true" />
+                  コピー
+                </button>
+                <button type="button" className="btn btn-sm btn-primary" onClick={() => setIsCodesDismissed(true)}>
+                  <span className="icon-[tabler--check] size-4" aria-hidden="true" />
+                  保存しました（閉じる）
+                </button>
+              </div>
             </>
+          )}
+
+          {codes.length > 0 && isCodesDismissed && (
+            <div className="alert alert-soft alert-success" role="status">
+              <span className="icon-[tabler--check] size-5 shrink-0" aria-hidden="true" />
+              <span>リカバリーコードを保存しました。この画面を閉じると再表示できません。</span>
+            </div>
           )}
 
           <div className="mt-4">
             <Link
               href="/signin"
-              className={`btn btn-accent w-full ${codes.length > 0 && !savedToAnotherDevice ? 'btn-disabled' : ''}`}
-              aria-disabled={codes.length > 0 && !savedToAnotherDevice}
-              onClick={(event) => {
-                if (codes.length > 0 && !savedToAnotherDevice) {
-                  event.preventDefault();
-                }
-              }}
+              className={`btn w-full ${codes.length > 0 && !isCodesDismissed ? 'btn-outline' : 'btn-accent'}`}
             >
               ログイン画面へ
             </Link>
@@ -178,7 +223,15 @@ export default function PasskeySetupFormClient() {
 
         {apiError && (
           <div className="alert alert-soft alert-error" role="alert">
-            {apiError}
+            <span>{apiError}</span>
+          </div>
+        )}
+
+        {apiError && recoveryToken && (
+          <div className="text-center">
+            <Link href="/recovery" className="link link-primary text-sm">
+              リカバリーコードを入力し直す
+            </Link>
           </div>
         )}
 
@@ -192,6 +245,13 @@ export default function PasskeySetupFormClient() {
           この端末の生体認証（指紋・顔認証）または画面ロック解除を使ってパスキーを登録します。
           複数の端末で使う場合は、端末ごとに登録してください。
         </p>
+
+        {recoveryToken && (
+          <p className="text-xs text-base-content/60">
+            リカバリーからの登録手続きは 15
+            分以内に完了してください。期限が切れた場合は、リカバリーコードを入力し直してください。
+          </p>
+        )}
 
         <button
           type="button"

@@ -13,6 +13,7 @@ import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import BotListSection from '@/components/backoffice/BotListSection';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import ConfirmModal from '@/components/common/overlays/ConfirmModal';
 import DeleteOrganizationModal from '@/components/common/overlays/DeleteOrganizationModal';
 import type {
   BackOfficeOrganizationAuthStatusResponse,
@@ -51,6 +52,8 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
   });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isAuthModeConfirmOpen, setIsAuthModeConfirmOpen] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (clientError && isAuthenticationError(clientError)) {
@@ -84,23 +87,24 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     setClientError(null);
   };
 
+  const needsWebAuthnSwitchConfirm = () =>
+    editForm.authenticationMode === 'WebAuthn' &&
+    data?.authenticationMode !== 'WebAuthn' &&
+    (authStatus?.usersWithoutCredential ?? 0) > 0;
+
   const handleSave = () => {
     if (!data) return;
 
-    if (
-      editForm.authenticationMode === 'WebAuthn' &&
-      data.authenticationMode !== 'WebAuthn' &&
-      (authStatus?.usersWithoutCredential ?? 0) > 0
-    ) {
-      const confirmed = window.confirm(
-        `パスキー未登録のユーザーが ${authStatus?.usersWithoutCredential} 名います。\n` +
-          'パスキー専用に切り替えると、これらのユーザーはログインできなくなります。\n' +
-          '先にパスキー登録を案内するか、切り替え後に管理者が登録リセットを行ってください。続行しますか？',
-      );
-      if (!confirmed) {
-        return;
-      }
+    if (needsWebAuthnSwitchConfirm()) {
+      setIsAuthModeConfirmOpen(true);
+      return;
     }
+
+    submitOrganizationUpdate();
+  };
+
+  const submitOrganizationUpdate = () => {
+    if (!data) return;
 
     startTransition(async () => {
       const result = await updateBackOfficeOrganization({
@@ -161,16 +165,13 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     }
   };
 
-  const handleResetAdminCredentials = async () => {
+  const handleResetAdminCredentials = () => {
     if (!data) return;
+    setIsResetConfirmOpen(true);
+  };
 
-    if (
-      !window.confirm(
-        '組織管理者のパスキー登録をリセットします。既存のパスキーとセッションは、リンク使用時に失効します。よろしいですか？',
-      )
-    ) {
-      return;
-    }
+  const submitResetAdminCredentials = async () => {
+    if (!data) return;
 
     try {
       const result = await resetAdminCredentials({ organizationId: data.id });
@@ -471,6 +472,32 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
           </div>
         </main>
       </div>
+
+      <ConfirmModal
+        isOpen={isAuthModeConfirmOpen}
+        onClose={() => setIsAuthModeConfirmOpen(false)}
+        onConfirm={submitOrganizationUpdate}
+        title="パスキー専用への切り替え"
+        description={
+          `パスキー未登録のユーザーが ${authStatus?.usersWithoutCredential ?? 0} 名います。\n` +
+          'パスキー専用に切り替えると、これらのユーザーはログインできなくなります。\n' +
+          '先にパスキー登録を案内するか、切り替え後に管理者が登録リセットを行ってください。続行しますか？'
+        }
+        confirmLabel="切り替える"
+        variant="warning"
+        iconClass="icon-[tabler--fingerprint]"
+      />
+
+      <ConfirmModal
+        isOpen={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={submitResetAdminCredentials}
+        title="パスキー登録のリセット"
+        description="組織管理者のパスキー登録をリセットします。既存のパスキーとセッションは、リンク使用時に失効します。よろしいですか？"
+        confirmLabel="リセットする"
+        variant="warning"
+        iconClass="icon-[tabler--fingerprint]"
+      />
 
       <DeleteOrganizationModal
         isOpen={showDeleteModal}

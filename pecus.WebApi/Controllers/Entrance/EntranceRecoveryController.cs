@@ -19,7 +19,6 @@ public class EntranceRecoveryController : ControllerBase
 {
     private const int RateLimitCount = 5;
     private static readonly TimeSpan RateLimitWindow = TimeSpan.FromMinutes(15);
-    private static readonly TimeSpan TokenTtl = TimeSpan.FromMinutes(5);
 
     private readonly WebAuthnCredentialService _credentialService;
     private readonly LoginRateLimiter _rateLimiter;
@@ -76,7 +75,7 @@ public class EntranceRecoveryController : ControllerBase
         return TypedResults.Ok(new WebAuthnRecoveryTokenResponse
         {
             RecoveryToken = recoveryToken,
-            ExpiresAt = DateTimeOffset.UtcNow.Add(TokenTtl),
+            ExpiresAt = DateTimeOffset.UtcNow.Add(WebAuthnCredentialService.SetupTokenTtl),
         });
     }
 }
