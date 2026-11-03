@@ -4,7 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import {
   deleteBackOfficeOrganization,
+  getOrganizationAuthStatus,
   resendOrganizationCreatedEmail,
+  resetAdminCredentials,
   updateBackOfficeOrganization,
 } from '@/actions/backoffice/organizations';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
@@ -12,7 +14,10 @@ import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import BotListSection from '@/components/backoffice/BotListSection';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import DeleteOrganizationModal from '@/components/common/overlays/DeleteOrganizationModal';
-import type { BackOfficeOrganizationDetailResponse } from '@/connectors/hey-api-axios/types.gen';
+import type {
+  BackOfficeOrganizationAuthStatusResponse,
+  BackOfficeOrganizationDetailResponse,
+} from '@/connectors/hey-api-axios/types.gen';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';
@@ -36,11 +41,13 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
   const notify = useNotify();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [authStatus, setAuthStatus] = useState<BackOfficeOrganizationAuthStatusResponse | null>(null);
   const [editForm, setEditForm] = useState({
     representativeName: data?.representativeName ?? '',
     phoneNumber: data?.phoneNumber ?? '',
     email: data?.email ?? '',
     isActive: data?.isActive ?? true,
+    authenticationMode: data?.authenticationMode ?? null,
   });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -51,6 +58,17 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     }
   }, [clientError, router]);
 
+  useEffect(() => {
+    if (!data?.id) return;
+
+    void (async () => {
+      const result = await getOrganizationAuthStatus({ organizationId: data.id });
+      if (result.success) {
+        setAuthStatus(result.data);
+      }
+    })();
+  }, [data?.id]);
+
   // 編集開始時にフォームをリセット
   const startEditing = () => {
     if (data) {
@@ -59,6 +77,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
         phoneNumber: data.phoneNumber ?? '',
         email: data.email ?? '',
         isActive: data.isActive ?? true,
+        authenticationMode: data.authenticationMode ?? null,
       });
     }
     setIsEditing(true);
@@ -68,6 +87,21 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
   const handleSave = () => {
     if (!data) return;
 
+    if (
+      editForm.authenticationMode === 'WebAuthn' &&
+      data.authenticationMode !== 'WebAuthn' &&
+      (authStatus?.usersWithoutCredential ?? 0) > 0
+    ) {
+      const confirmed = window.confirm(
+        `パスキー未登録のユーザーが ${authStatus?.usersWithoutCredential} 名います。\n` +
+          'パスキー専用に切り替えると、これらのユーザーはログインできなくなります。\n' +
+          '先にパスキー登録を案内するか、切り替え後に管理者が登録リセットを行ってください。続行しますか？',
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
     startTransition(async () => {
       const result = await updateBackOfficeOrganization({
         id: data.id,
@@ -76,6 +110,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
           phoneNumber: editForm.phoneNumber || undefined,
           email: editForm.email || undefined,
           isActive: editForm.isActive,
+          authenticationMode: editForm.authenticationMode ?? undefined,
           rowVersion: data.rowVersion,
         },
       });
@@ -123,6 +158,30 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     } catch (err: unknown) {
       console.error('組織登録完了メール再送中にエラーが発生:', err);
       notify.error('組織登録完了メール再送中にエラーが発生しました。');
+    }
+  };
+
+  const handleResetAdminCredentials = async () => {
+    if (!data) return;
+
+    if (
+      !window.confirm(
+        '組織管理者のパスキー登録をリセットします。既存のパスキーとセッションは、リンク使用時に失効します。よろしいですか？',
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const result = await resetAdminCredentials({ organizationId: data.id });
+      if (result.success) {
+        notify.success('パスキー登録メールを送信しました。');
+      } else {
+        notify.error(result.message || 'パスキー登録リセットの送信に失敗しました。');
+      }
+    } catch (err: unknown) {
+      console.error('パスキー登録リセット送信中にエラーが発生:', err);
+      notify.error('パスキー登録リセット送信中にエラーが発生しました。');
     }
   };
 
@@ -306,6 +365,48 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                     </div>
 
                     <div>
+                      <div className="text-sm font-semibold text-base-content/70 mb-1">認証方式</div>
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <select
+                            className="select select-bordered w-full max-w-xs"
+                            value={editForm.authenticationMode ?? 'Both'}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                authenticationMode: e.target.value as 'Password' | 'WebAuthn' | 'Both',
+                              })
+                            }
+                            disabled={isPending || authStatus?.hasBackOfficeUser}
+                          >
+                            <option value="Both">パスワードとパスキー（推奨）</option>
+                            <option value="Password">パスワードのみ</option>
+                            <option value="WebAuthn">パスキーのみ</option>
+                          </select>
+                          {authStatus?.hasBackOfficeUser && (
+                            <p className="text-xs text-warning">
+                              BackOffice 管理者が所属するため、パスキーのみには変更できません。
+                            </p>
+                          )}
+                          {editForm.authenticationMode === 'WebAuthn' && (
+                            <p className="text-xs text-warning">
+                              パスキー未登録: {authStatus?.usersWithoutCredential ?? 0} 名 / 有効ユーザー{' '}
+                              {authStatus?.userCount ?? 0} 名
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-lg">
+                          {data.authenticationMode === 'Password'
+                            ? 'パスワードのみ'
+                            : data.authenticationMode === 'WebAuthn'
+                              ? 'パスキーのみ'
+                              : 'パスワードとパスキー'}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
                       <div className="text-sm font-semibold text-base-content/70 mb-1">状態</div>
                       {isEditing ? (
                         <label className="label cursor-pointer justify-start gap-2">
@@ -339,15 +440,27 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                   <div className="divider" />
                   <div>
                     <h3 className="text-sm font-semibold text-base-content/70 mb-3">その他の操作</h3>
-                    <button
-                      type="button"
-                      className="btn btn-outline btn-sm"
-                      onClick={handleResendCreatedEmail}
-                      disabled={isPending}
-                    >
-                      <span className="icon-[tabler--mail-forward] w-4 h-4" />
-                      組織登録完了メール再送
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={handleResendCreatedEmail}
+                        disabled={isPending}
+                      >
+                        <span className="icon-[tabler--mail-forward] w-4 h-4" />
+                        組織登録完了メール再送
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn btn-accent btn-sm"
+                        onClick={handleResetAdminCredentials}
+                        disabled={isPending}
+                      >
+                        <span className="icon-[tabler--fingerprint] w-4 h-4" />
+                        管理者パスキー登録リセット
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

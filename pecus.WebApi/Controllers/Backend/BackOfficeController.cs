@@ -316,6 +316,22 @@ public class BackOfficeController : BaseBackendController
     }
 
     /// <summary>
+    /// 組織の認証方式とパスキー未登録ユーザー数を取得
+    /// </summary>
+    /// <remarks>
+    /// 認証方式をパスキー専用へ切り替える前に、締め出されるユーザー数を確認するために使用します。
+    /// </remarks>
+    /// <param name="id">組織ID</param>
+    [HttpGet("{id:int}/auth-status")]
+    [ProducesResponseType(typeof(BackOfficeOrganizationAuthStatusResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<Ok<BackOfficeOrganizationAuthStatusResponse>> GetAuthStatus(int id)
+    {
+        var response = await _backOfficeOrganizationService.GetAuthStatusAsync(id);
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// 組織管理者のパスキー登録をリセット
     /// </summary>
     /// <remarks>

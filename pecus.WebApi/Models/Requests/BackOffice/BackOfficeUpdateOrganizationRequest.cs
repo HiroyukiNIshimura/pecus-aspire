@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Models.Requests.BackOffice;
 
@@ -31,6 +32,12 @@ public class BackOfficeUpdateOrganizationRequest
     /// アクティブフラグ
     /// </summary>
     public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// 組織で許可する認証方式
+    /// </summary>
+    [EnumDataType(typeof(OrganizationAuthMode), ErrorMessage = "有効な認証方式を指定してください。")]
+    public OrganizationAuthMode? AuthenticationMode { get; set; }
 
     /// <summary>
     /// 楽観的ロック用バージョン番号

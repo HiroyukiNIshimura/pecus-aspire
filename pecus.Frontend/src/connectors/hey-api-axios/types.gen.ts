@@ -948,6 +948,33 @@ export type BackOfficeNotificationListItemResponse = {
 };
 
 /**
+ * 組織の認証方式と、パスキー未登録ユーザーの状況
+ */
+export type BackOfficeOrganizationAuthStatusResponse = {
+  /**
+   * 組織ID
+   */
+  organizationId?: number;
+  authenticationMode?: null | OrganizationAuthMode;
+  /**
+   * 有効なユーザー数
+   */
+  userCount?: number;
+  /**
+   * パスキー未登録の有効ユーザー数
+   */
+  usersWithoutCredential?: number;
+  /**
+   * パスキー未登録の管理者ユーザー数
+   */
+  adminsWithoutCredential?: number;
+  /**
+   * BackOffice 管理者が所属しているか（パスキー専用への変更を禁止する判定用）
+   */
+  hasBackOfficeUser?: boolean;
+};
+
+/**
  * BackOffice用 組織詳細レスポンス
  */
 export type BackOfficeOrganizationDetailResponse = {
@@ -987,6 +1014,7 @@ export type BackOfficeOrganizationDetailResponse = {
    * デモ組織フラグ
    */
   isDemo?: boolean;
+  authenticationMode?: null | OrganizationAuthMode;
   /**
    * 作成日時
    */
@@ -1124,6 +1152,7 @@ export type BackOfficeUpdateOrganizationRequest = {
    * アクティブフラグ
    */
   isActive?: null | boolean;
+  authenticationMode?: null | OrganizationAuthMode;
   /**
    * 楽観的ロック用バージョン番号
    */
@@ -3764,6 +3793,24 @@ export type LoginDeviceInfo = {
 };
 
 /**
+ * ログイン方式の判定結果
+ */
+export type LoginMethodsResponse = {
+  /**
+   * パスワードログインが利用できるか（組織設定に依存）
+   */
+  passwordEnabled?: boolean;
+  /**
+   * パスキーログインが利用できるか（組織設定に依存）
+   */
+  passkeyEnabled?: boolean;
+  /**
+   * 対象ユーザーがパスキーを登録済みか
+   */
+  hasPasskey?: boolean;
+};
+
+/**
  * ログインリクエスト
  */
 export type LoginRequest = {
@@ -4243,6 +4290,8 @@ export type NotifyTypingRequest = {
   isTyping: boolean;
 };
 
+export type OrganizationAuthMode = 'Password' | 'WebAuthn' | 'Both';
+
 /**
  * 組織情報レスポンス（簡易版）
  */
@@ -4413,9 +4462,9 @@ export type OrganizationSettingResponse = {
    */
   generativeApiVendor: GenerativeApiVendor;
   /**
-   * 生成APIキー
+   * 生成APIキーが設定済みか
    */
-  generativeApiKey?: null | string;
+  hasGenerativeApiKey: boolean;
   /**
    * 利用する生成AIモデル（例: gpt-4o, gemini-1.5-pro）
    */
@@ -7346,6 +7395,455 @@ export type ValidationProblemDetails = {
 };
 
 /**
+ * パスキー認証（アサーション）の検証リクエスト
+ */
+export type WebAuthnAssertionRequest = {
+  /**
+   * オプション取得時に発行されたチャレンジID（ワンタイム）
+   */
+  challengeId: string;
+  /**
+   * クレデンシャルID（base64url）
+   */
+  id: string;
+  /**
+   * クレデンシャルID（base64url、Id と同値）
+   */
+  rawId: string;
+  /**
+   * クレデンシャル種別
+   */
+  type?: string;
+  /**
+   * 認証器の応答
+   */
+  response: WebAuthnAssertionResponseData;
+  /**
+   * デバイス名
+   */
+  deviceName?: null | string;
+  /**
+   * デバイスタイプ
+   */
+  deviceType: DeviceType;
+  /**
+   * OSプラットフォーム
+   */
+  os: OsPlatform;
+  /**
+   * ユーザーエージェント
+   */
+  userAgent?: null | string;
+  /**
+   * アプリバージョン
+   */
+  appVersion?: null | string;
+  /**
+   * タイムゾーン
+   */
+  timezone?: null | string;
+  /**
+   * ロケーション
+   */
+  location?: null | string;
+};
+
+/**
+ * 認証器のアサーション応答データ
+ */
+export type WebAuthnAssertionResponseData = {
+  /**
+   * 認証器データ（base64url）
+   */
+  authenticatorData: string;
+  /**
+   * 署名（base64url）
+   */
+  signature: string;
+  /**
+   * クライアントデータJSON（base64url）
+   */
+  clientDataJson: string;
+  /**
+   * ユーザーハンドル（base64url、discoverable credentials の場合のみ）
+   */
+  userHandle?: null | string;
+};
+
+/**
+ * 認証器のアテステーション応答データ
+ */
+export type WebAuthnAttestationResponseData = {
+  /**
+   * アテステーションオブジェクト（base64url）
+   */
+  attestationObject: string;
+  /**
+   * クライアントデータJSON（base64url）
+   */
+  clientDataJson: string;
+  /**
+   * 認証器が申告したトランスポート
+   */
+  transports?: null | Array<string>;
+};
+
+/**
+ * 認証器の選択条件
+ */
+export type WebAuthnAuthenticatorSelection = {
+  /**
+   * 認証器の接続方式（未指定で幅広く許可）
+   */
+  authenticatorAttachment?: null | string;
+  /**
+   * discoverable credentials の要求レベル
+   */
+  residentKey?: null | string;
+  /**
+   * ユーザー検証の要求レベル
+   */
+  userVerification?: null | string;
+};
+
+/**
+ * PublicKeyCredentialCreationOptions（パスキー登録）
+ */
+export type WebAuthnCreationOptions = {
+  /**
+   * Relying Party 情報
+   */
+  rp: WebAuthnRpEntity;
+  /**
+   * ユーザー情報
+   */
+  user: WebAuthnUserEntity;
+  /**
+   * チャレンジ（base64url）
+   */
+  challenge: string;
+  /**
+   * サポートする公開鍵アルゴリズム
+   */
+  pubKeyCredParams?: Array<WebAuthnCredentialParameter>;
+  /**
+   * タイムアウト（ミリ秒）
+   */
+  timeout?: number;
+  /**
+   * アテステーションの要求方式
+   */
+  attestation?: null | string;
+  authenticatorSelection?: null | WebAuthnAuthenticatorSelection;
+  /**
+   * 登録済みクレデンシャル（重複登録の防止）
+   */
+  excludeCredentials?: Array<WebAuthnCredentialDescriptor>;
+};
+
+/**
+ * WebAuthn のクレデンシャル記述子
+ */
+export type WebAuthnCredentialDescriptor = {
+  /**
+   * クレデンシャルID（base64url）
+   */
+  id: string;
+  /**
+   * クレデンシャル種別
+   */
+  type?: string;
+  /**
+   * 認証器のトランスポート
+   */
+  transports?: null | Array<string>;
+};
+
+/**
+ * パスキーの表示名変更リクエスト
+ */
+export type WebAuthnCredentialNameRequest = {
+  /**
+   * 新しい表示名
+   */
+  name: string;
+};
+
+/**
+ * サポートする公開鍵アルゴリズム
+ */
+export type WebAuthnCredentialParameter = {
+  /**
+   * クレデンシャル種別
+   */
+  type?: string;
+  /**
+   * COSE アルゴリズム識別子
+   */
+  alg?: number;
+};
+
+/**
+ * 登録済みパスキー情報
+ */
+export type WebAuthnCredentialResponse = {
+  /**
+   * パスキーID
+   */
+  id?: number;
+  /**
+   * 表示名
+   */
+  name: string;
+  /**
+   * 登録日時
+   */
+  createdAt?: string;
+  /**
+   * 最終使用日時
+   */
+  lastUsedAt?: null | string;
+  /**
+   * バックアップ対象になり得る認証器か（同期パスキー）
+   */
+  isBackupEligible?: boolean;
+  /**
+   * バックアップ済みの認証器か
+   */
+  isBackedUp?: boolean;
+  /**
+   * 紐づく端末ID
+   */
+  deviceId?: null | number;
+  /**
+   * 紐づく端末名
+   */
+  deviceName?: null | string;
+  /**
+   * 認証器が申告したトランスポート
+   */
+  transports?: Array<string>;
+};
+
+/**
+ * パスキーログイン用オプション取得リクエスト
+ */
+export type WebAuthnLoginOptionsRequest = {
+  /**
+   * ログインIDまたはメールアドレス
+   */
+  loginIdentifier: string;
+};
+
+/**
+ * パスキーログイン用オプション
+ */
+export type WebAuthnLoginOptionsResponse = {
+  /**
+   * チャレンジID（検証時に送り返すワンタイム識別子）
+   */
+  challengeId: string;
+  /**
+   * PublicKeyCredentialRequestOptions
+   */
+  publicKey: WebAuthnRequestOptions;
+};
+
+/**
+ * リカバリーコードの検証リクエスト
+ */
+export type WebAuthnRecoveryCodeRequest = {
+  /**
+   * ログインIDまたはメールアドレス
+   */
+  loginIdentifier: string;
+  /**
+   * リカバリーコード
+   */
+  code: string;
+};
+
+/**
+ * リカバリーコードの発行結果
+ */
+export type WebAuthnRecoveryCodesResponse = {
+  /**
+   * 発行されたリカバリーコード（このレスポンスでのみ取得できる）
+   */
+  codes?: Array<string>;
+  /**
+   * 保管方法の案内文（必ず別デバイスへ保存する旨）
+   */
+  instruction: string;
+};
+
+/**
+ * リカバリーコードの保持状況
+ */
+export type WebAuthnRecoveryCodeStatusResponse = {
+  /**
+   * 未使用のリカバリーコードを保持しているか
+   */
+  hasUnusedCodes?: boolean;
+};
+
+/**
+ * リカバリーコード検証後のパスキー再登録用トークン
+ */
+export type WebAuthnRecoveryTokenResponse = {
+  /**
+   * リカバリートークン（有効期限は5分）
+   */
+  recoveryToken: string;
+  /**
+   * トークンの有効期限
+   */
+  expiresAt?: string;
+};
+
+/**
+ * パスキー登録用オプション
+ */
+export type WebAuthnRegistrationOptionsResponse = {
+  /**
+   * チャレンジID（検証時に送り返すワンタイム識別子）
+   */
+  challengeId: string;
+  /**
+   * PublicKeyCredentialCreationOptions
+   */
+  publicKey: WebAuthnCreationOptions;
+};
+
+/**
+ * パスキー登録の検証リクエスト
+ */
+export type WebAuthnRegistrationRequest = {
+  /**
+   * オプション取得時に発行されたチャレンジID（ワンタイム）
+   */
+  challengeId: string;
+  /**
+   * クレデンシャルID（base64url）
+   */
+  id: string;
+  /**
+   * クレデンシャルID（base64url、Id と同値）
+   */
+  rawId: string;
+  /**
+   * クレデンシャル種別
+   */
+  type?: string;
+  /**
+   * 認証器の応答
+   */
+  response: WebAuthnAttestationResponseData;
+  /**
+   * パスキーの表示名（省略時は端末名や既定名を使用）
+   */
+  name?: null | string;
+  /**
+   * 紐づける端末ID（任意）
+   */
+  deviceId?: null | number;
+};
+
+/**
+ * PublicKeyCredentialRequestOptions（パスキー認証）
+ */
+export type WebAuthnRequestOptions = {
+  /**
+   * チャレンジ（base64url）
+   */
+  challenge: string;
+  /**
+   * Relying Party ID
+   */
+  rpId: string;
+  /**
+   * タイムアウト（ミリ秒）
+   */
+  timeout?: number;
+  /**
+   * 許可するクレデンシャル（空の場合は discoverable credentials）
+   */
+  allowCredentials?: Array<WebAuthnCredentialDescriptor>;
+  /**
+   * ユーザー検証の要求レベル
+   */
+  userVerification?: null | string;
+};
+
+/**
+ * Relying Party 情報
+ */
+export type WebAuthnRpEntity = {
+  /**
+   * Relying Party ID
+   */
+  id: string;
+  /**
+   * 表示名
+   */
+  name: string;
+};
+
+/**
+ * セットアップトークン／リカバリートークンによる登録オプション取得リクエスト
+ */
+export type WebAuthnSetupOptionsRequest = {
+  /**
+   * 招待メールに含まれるセットアップトークン
+   */
+  token?: null | string;
+  /**
+   * リカバリーコードの検証で発行されたリカバリートークン
+   */
+  recoveryToken?: null | string;
+};
+
+/**
+ * セットアップトークン／リカバリーコードによる登録結果
+ */
+export type WebAuthnSetupRegistrationResponse = {
+  /**
+   * 登録されたパスキー
+   */
+  credential: WebAuthnCredentialResponse;
+  /**
+   * 発行されたリカバリーコード（未発行の場合は null）
+   */
+  recoveryCodes?: null | Array<string>;
+  /**
+   * リカバリーコードの保管方法の案内文
+   */
+  recoveryCodeInstruction?: null | string;
+  /**
+   * リカバリー経路のため全セッションを失効させたか
+   */
+  sessionsRevoked?: boolean;
+};
+
+/**
+ * WebAuthn のユーザー情報
+ */
+export type WebAuthnUserEntity = {
+  /**
+   * ユーザーハンドル（base64url、不変）
+   */
+  id: string;
+  /**
+   * ユーザー名（メールアドレス）
+   */
+  name: string;
+  /**
+   * 表示名
+   */
+  displayName: string;
+};
+
+/**
  * 週ごとのタスクトレンドデータ
  */
 export type WeeklyTaskTrend = {
@@ -10015,6 +10513,10 @@ export type GetApiDownloadsByFileTypeByResourceIdByFileNameData = {
 
 export type GetApiDownloadsByFileTypeByResourceIdByFileNameErrors = {
   /**
+   * Bad Request
+   */
+  400: ProblemDetails;
+  /**
    * Not Found
    */
   404: ProblemDetails;
@@ -10050,6 +10552,10 @@ export type DeleteApiDownloadsIconsData = {
 };
 
 export type DeleteApiDownloadsIconsErrors = {
+  /**
+   * Bad Request
+   */
+  400: MessageResponse;
   /**
    * Not Found
    */
@@ -12024,6 +12530,10 @@ export type GetApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsDownloadByFileN
 
 export type GetApiWorkspacesByWorkspaceIdItemsByItemIdAttachmentsDownloadByFileNameErrors = {
   /**
+   * Bad Request
+   */
+  400: ProblemDetails;
+  /**
    * Not Found
    */
   404: ProblemDetails;
@@ -13418,6 +13928,171 @@ export type PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksBulkCreateResponses 
 
 export type PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksBulkCreateResponse = PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksBulkCreateResponses[keyof PostApiWorkspacesByWorkspaceIdItemsByItemIdTasksBulkCreateResponses];
 
+export type GetApiProfileCredentialsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/api/profile/credentials';
+};
+
+export type GetApiProfileCredentialsResponses = {
+  /**
+   * OK
+   */
+  200: Array<WebAuthnCredentialResponse>;
+};
+
+export type GetApiProfileCredentialsResponse = GetApiProfileCredentialsResponses[keyof GetApiProfileCredentialsResponses];
+
+export type PostApiProfileCredentialsData = {
+  body: WebAuthnRegistrationRequest;
+  path?: never;
+  query?: never;
+  url: '/api/profile/credentials';
+};
+
+export type PostApiProfileCredentialsErrors = {
+  /**
+   * Bad Request
+   */
+  400: ProblemDetails;
+  /**
+   * Unauthorized
+   */
+  401: ProblemDetails;
+};
+
+export type PostApiProfileCredentialsError = PostApiProfileCredentialsErrors[keyof PostApiProfileCredentialsErrors];
+
+export type PostApiProfileCredentialsResponses = {
+  /**
+   * OK
+   */
+  200: WebAuthnCredentialResponse;
+};
+
+export type PostApiProfileCredentialsResponse = PostApiProfileCredentialsResponses[keyof PostApiProfileCredentialsResponses];
+
+export type PostApiProfileCredentialsOptionsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/api/profile/credentials/options';
+};
+
+export type PostApiProfileCredentialsOptionsErrors = {
+  /**
+   * Bad Request
+   */
+  400: ProblemDetails;
+};
+
+export type PostApiProfileCredentialsOptionsError = PostApiProfileCredentialsOptionsErrors[keyof PostApiProfileCredentialsOptionsErrors];
+
+export type PostApiProfileCredentialsOptionsResponses = {
+  /**
+   * OK
+   */
+  200: WebAuthnRegistrationOptionsResponse;
+};
+
+export type PostApiProfileCredentialsOptionsResponse = PostApiProfileCredentialsOptionsResponses[keyof PostApiProfileCredentialsOptionsResponses];
+
+export type DeleteApiProfileCredentialsByCredentialIdData = {
+  body?: never;
+  path: {
+    credentialId: number;
+  };
+  query?: never;
+  url: '/api/profile/credentials/{credentialId}';
+};
+
+export type DeleteApiProfileCredentialsByCredentialIdErrors = {
+  /**
+   * Not Found
+   */
+  404: ProblemDetails;
+};
+
+export type DeleteApiProfileCredentialsByCredentialIdError = DeleteApiProfileCredentialsByCredentialIdErrors[keyof DeleteApiProfileCredentialsByCredentialIdErrors];
+
+export type DeleteApiProfileCredentialsByCredentialIdResponses = {
+  /**
+   * OK
+   */
+  200: MessageResponse;
+};
+
+export type DeleteApiProfileCredentialsByCredentialIdResponse = DeleteApiProfileCredentialsByCredentialIdResponses[keyof DeleteApiProfileCredentialsByCredentialIdResponses];
+
+export type PatchApiProfileCredentialsByCredentialIdData = {
+  body: WebAuthnCredentialNameRequest;
+  path: {
+    credentialId: number;
+  };
+  query?: never;
+  url: '/api/profile/credentials/{credentialId}';
+};
+
+export type PatchApiProfileCredentialsByCredentialIdErrors = {
+  /**
+   * Not Found
+   */
+  404: ProblemDetails;
+};
+
+export type PatchApiProfileCredentialsByCredentialIdError = PatchApiProfileCredentialsByCredentialIdErrors[keyof PatchApiProfileCredentialsByCredentialIdErrors];
+
+export type PatchApiProfileCredentialsByCredentialIdResponses = {
+  /**
+   * OK
+   */
+  200: MessageResponse;
+};
+
+export type PatchApiProfileCredentialsByCredentialIdResponse = PatchApiProfileCredentialsByCredentialIdResponses[keyof PatchApiProfileCredentialsByCredentialIdResponses];
+
+export type GetApiProfileCredentialsRecoveryCodesData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/api/profile/credentials/recovery-codes';
+};
+
+export type GetApiProfileCredentialsRecoveryCodesResponses = {
+  /**
+   * OK
+   */
+  200: WebAuthnRecoveryCodeStatusResponse;
+};
+
+export type GetApiProfileCredentialsRecoveryCodesResponse = GetApiProfileCredentialsRecoveryCodesResponses[keyof GetApiProfileCredentialsRecoveryCodesResponses];
+
+export type PostApiProfileCredentialsRecoveryCodesData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/api/profile/credentials/recovery-codes';
+};
+
+export type PostApiProfileCredentialsRecoveryCodesErrors = {
+  /**
+   * Bad Request
+   */
+  400: ProblemDetails;
+};
+
+export type PostApiProfileCredentialsRecoveryCodesError = PostApiProfileCredentialsRecoveryCodesErrors[keyof PostApiProfileCredentialsRecoveryCodesErrors];
+
+export type PostApiProfileCredentialsRecoveryCodesResponses = {
+  /**
+   * OK
+   */
+  200: WebAuthnRecoveryCodesResponse;
+};
+
+export type PostApiProfileCredentialsRecoveryCodesResponse = PostApiProfileCredentialsRecoveryCodesResponses[keyof PostApiProfileCredentialsRecoveryCodesResponses];
+
 export type GetApiProfileDevicesData = {
   body?: never;
   path?: never;
@@ -13970,6 +14645,167 @@ export type PostApiEntrancePasswordResetResponses = {
 
 export type PostApiEntrancePasswordResetResponse = PostApiEntrancePasswordResetResponses[keyof PostApiEntrancePasswordResetResponses];
 
+export type PostApiEntranceRecoveryCodeData = {
+  body: WebAuthnRecoveryCodeRequest;
+  path?: never;
+  query?: never;
+  url: '/api/entrance/recovery/code';
+};
+
+export type PostApiEntranceRecoveryCodeErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ProblemDetails;
+  /**
+   * Too Many Requests
+   */
+  429: ProblemDetails;
+};
+
+export type PostApiEntranceRecoveryCodeError = PostApiEntranceRecoveryCodeErrors[keyof PostApiEntranceRecoveryCodeErrors];
+
+export type PostApiEntranceRecoveryCodeResponses = {
+  /**
+   * OK
+   */
+  200: WebAuthnRecoveryTokenResponse;
+};
+
+export type PostApiEntranceRecoveryCodeResponse = PostApiEntranceRecoveryCodeResponses[keyof PostApiEntranceRecoveryCodeResponses];
+
+export type PostApiEntranceWebauthnLoginMethodsData = {
+  body: WebAuthnLoginOptionsRequest;
+  path?: never;
+  query?: never;
+  url: '/api/entrance/webauthn/login-methods';
+};
+
+export type PostApiEntranceWebauthnLoginMethodsResponses = {
+  /**
+   * OK
+   */
+  200: LoginMethodsResponse;
+};
+
+export type PostApiEntranceWebauthnLoginMethodsResponse = PostApiEntranceWebauthnLoginMethodsResponses[keyof PostApiEntranceWebauthnLoginMethodsResponses];
+
+export type PostApiEntranceWebauthnLoginOptionsData = {
+  body: WebAuthnLoginOptionsRequest;
+  path?: never;
+  query?: never;
+  url: '/api/entrance/webauthn/login/options';
+};
+
+export type PostApiEntranceWebauthnLoginOptionsErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ProblemDetails;
+  /**
+   * Too Many Requests
+   */
+  429: ProblemDetails;
+};
+
+export type PostApiEntranceWebauthnLoginOptionsError = PostApiEntranceWebauthnLoginOptionsErrors[keyof PostApiEntranceWebauthnLoginOptionsErrors];
+
+export type PostApiEntranceWebauthnLoginOptionsResponses = {
+  /**
+   * OK
+   */
+  200: WebAuthnLoginOptionsResponse;
+};
+
+export type PostApiEntranceWebauthnLoginOptionsResponse = PostApiEntranceWebauthnLoginOptionsResponses[keyof PostApiEntranceWebauthnLoginOptionsResponses];
+
+export type PostApiEntranceWebauthnLoginVerifyData = {
+  body: WebAuthnAssertionRequest;
+  path?: never;
+  query?: never;
+  url: '/api/entrance/webauthn/login/verify';
+};
+
+export type PostApiEntranceWebauthnLoginVerifyErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ProblemDetails;
+  /**
+   * Too Many Requests
+   */
+  429: ProblemDetails;
+};
+
+export type PostApiEntranceWebauthnLoginVerifyError = PostApiEntranceWebauthnLoginVerifyErrors[keyof PostApiEntranceWebauthnLoginVerifyErrors];
+
+export type PostApiEntranceWebauthnLoginVerifyResponses = {
+  /**
+   * OK
+   */
+  200: LoginResponse;
+};
+
+export type PostApiEntranceWebauthnLoginVerifyResponse = PostApiEntranceWebauthnLoginVerifyResponses[keyof PostApiEntranceWebauthnLoginVerifyResponses];
+
+export type PostApiEntranceWebauthnRegisterOptionsData = {
+  body: WebAuthnSetupOptionsRequest;
+  path?: never;
+  query?: never;
+  url: '/api/entrance/webauthn/register/options';
+};
+
+export type PostApiEntranceWebauthnRegisterOptionsErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ProblemDetails;
+  /**
+   * Too Many Requests
+   */
+  429: ProblemDetails;
+};
+
+export type PostApiEntranceWebauthnRegisterOptionsError = PostApiEntranceWebauthnRegisterOptionsErrors[keyof PostApiEntranceWebauthnRegisterOptionsErrors];
+
+export type PostApiEntranceWebauthnRegisterOptionsResponses = {
+  /**
+   * OK
+   */
+  200: WebAuthnRegistrationOptionsResponse;
+};
+
+export type PostApiEntranceWebauthnRegisterOptionsResponse = PostApiEntranceWebauthnRegisterOptionsResponses[keyof PostApiEntranceWebauthnRegisterOptionsResponses];
+
+export type PostApiEntranceWebauthnRegisterVerifyData = {
+  body: WebAuthnRegistrationRequest;
+  path?: never;
+  query?: never;
+  url: '/api/entrance/webauthn/register/verify';
+};
+
+export type PostApiEntranceWebauthnRegisterVerifyErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ProblemDetails;
+  /**
+   * Too Many Requests
+   */
+  429: ProblemDetails;
+};
+
+export type PostApiEntranceWebauthnRegisterVerifyError = PostApiEntranceWebauthnRegisterVerifyErrors[keyof PostApiEntranceWebauthnRegisterVerifyErrors];
+
+export type PostApiEntranceWebauthnRegisterVerifyResponses = {
+  /**
+   * OK
+   */
+  200: WebAuthnSetupRegistrationResponse;
+};
+
+export type PostApiEntranceWebauthnRegisterVerifyResponse = PostApiEntranceWebauthnRegisterVerifyResponses[keyof PostApiEntranceWebauthnRegisterVerifyResponses];
+
 export type PostApiEntranceRefreshData = {
   /**
    * リフレッシュトークン情報
@@ -14245,6 +15081,66 @@ export type PostApiBackofficeOrganizationsByIdResendCreatedEmailResponses = {
 };
 
 export type PostApiBackofficeOrganizationsByIdResendCreatedEmailResponse = PostApiBackofficeOrganizationsByIdResendCreatedEmailResponses[keyof PostApiBackofficeOrganizationsByIdResendCreatedEmailResponses];
+
+export type GetApiBackofficeOrganizationsByIdAuthStatusData = {
+  body?: never;
+  path: {
+    /**
+     * 組織ID
+     */
+    id: number;
+  };
+  query?: never;
+  url: '/api/backoffice/organizations/{id}/auth-status';
+};
+
+export type GetApiBackofficeOrganizationsByIdAuthStatusErrors = {
+  /**
+   * Not Found
+   */
+  404: ProblemDetails;
+};
+
+export type GetApiBackofficeOrganizationsByIdAuthStatusError = GetApiBackofficeOrganizationsByIdAuthStatusErrors[keyof GetApiBackofficeOrganizationsByIdAuthStatusErrors];
+
+export type GetApiBackofficeOrganizationsByIdAuthStatusResponses = {
+  /**
+   * OK
+   */
+  200: BackOfficeOrganizationAuthStatusResponse;
+};
+
+export type GetApiBackofficeOrganizationsByIdAuthStatusResponse = GetApiBackofficeOrganizationsByIdAuthStatusResponses[keyof GetApiBackofficeOrganizationsByIdAuthStatusResponses];
+
+export type PostApiBackofficeOrganizationsByIdResetAdminCredentialsData = {
+  body?: never;
+  path: {
+    /**
+     * 組織ID
+     */
+    id: number;
+  };
+  query?: never;
+  url: '/api/backoffice/organizations/{id}/reset-admin-credentials';
+};
+
+export type PostApiBackofficeOrganizationsByIdResetAdminCredentialsErrors = {
+  /**
+   * Not Found
+   */
+  404: ProblemDetails;
+};
+
+export type PostApiBackofficeOrganizationsByIdResetAdminCredentialsError = PostApiBackofficeOrganizationsByIdResetAdminCredentialsErrors[keyof PostApiBackofficeOrganizationsByIdResetAdminCredentialsErrors];
+
+export type PostApiBackofficeOrganizationsByIdResetAdminCredentialsResponses = {
+  /**
+   * OK
+   */
+  200: SuccessResponse;
+};
+
+export type PostApiBackofficeOrganizationsByIdResetAdminCredentialsResponse = PostApiBackofficeOrganizationsByIdResetAdminCredentialsResponses[keyof PostApiBackofficeOrganizationsByIdResetAdminCredentialsResponses];
 
 export type GetApiBackofficeOrganizationsByIdBotsData = {
   body?: never;
@@ -15463,6 +16359,74 @@ export type PostApiAdminUsersByIdResendPasswordSetupResponses = {
 
 export type PostApiAdminUsersByIdResendPasswordSetupResponse = PostApiAdminUsersByIdResendPasswordSetupResponses[keyof PostApiAdminUsersByIdResendPasswordSetupResponses];
 
+export type PostApiAdminUsersByIdResetCredentialsData = {
+  body?: never;
+  path: {
+    /**
+     * ユーザーID
+     */
+    id: number;
+  };
+  query?: never;
+  url: '/api/admin/users/{id}/reset-credentials';
+};
+
+export type PostApiAdminUsersByIdResetCredentialsErrors = {
+  /**
+   * Forbidden
+   */
+  403: ProblemDetails;
+  /**
+   * Not Found
+   */
+  404: ProblemDetails;
+};
+
+export type PostApiAdminUsersByIdResetCredentialsError = PostApiAdminUsersByIdResetCredentialsErrors[keyof PostApiAdminUsersByIdResetCredentialsErrors];
+
+export type PostApiAdminUsersByIdResetCredentialsResponses = {
+  /**
+   * ロール一覧を返します
+   */
+  200: SuccessResponse;
+};
+
+export type PostApiAdminUsersByIdResetCredentialsResponse = PostApiAdminUsersByIdResetCredentialsResponses[keyof PostApiAdminUsersByIdResetCredentialsResponses];
+
+export type PostApiAdminUsersByIdResendCredentialSetupData = {
+  body?: never;
+  path: {
+    /**
+     * ユーザーID
+     */
+    id: number;
+  };
+  query?: never;
+  url: '/api/admin/users/{id}/resend-credential-setup';
+};
+
+export type PostApiAdminUsersByIdResendCredentialSetupErrors = {
+  /**
+   * Forbidden
+   */
+  403: ProblemDetails;
+  /**
+   * Not Found
+   */
+  404: ProblemDetails;
+};
+
+export type PostApiAdminUsersByIdResendCredentialSetupError = PostApiAdminUsersByIdResendCredentialSetupErrors[keyof PostApiAdminUsersByIdResendCredentialSetupErrors];
+
+export type PostApiAdminUsersByIdResendCredentialSetupResponses = {
+  /**
+   * OK
+   */
+  200: SuccessResponse;
+};
+
+export type PostApiAdminUsersByIdResendCredentialSetupResponse = PostApiAdminUsersByIdResendCredentialSetupResponses[keyof PostApiAdminUsersByIdResendCredentialSetupResponses];
+
 export type GetApiAdminUsersRolesData = {
   body?: never;
   path?: never;
@@ -15472,7 +16436,7 @@ export type GetApiAdminUsersRolesData = {
 
 export type GetApiAdminUsersRolesResponses = {
   /**
-   * ロール一覧を返します
+   * OK
    */
   200: Array<RoleListItemResponse>;
 };

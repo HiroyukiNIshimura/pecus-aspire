@@ -44,6 +44,7 @@
     "@lexical/utils": "0.53.0",
     "@microsoft/signalr": "^10.0.11",
     "@minoru/react-dnd-treeview": "^3.5.4",
+    "@simplewebauthn/browser": "^14.0.0",
     "@types/dagre": "^0.7.54",
     "@xyflow/react": "^12.12.0",
     "@yaireo/tagify": "^4.39.0",
@@ -84,7 +85,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.4",
-    "@hey-api/openapi-ts": "0.99.0",
+    "@hey-api/openapi-ts": "0.0.0-next-20260930190945",
     "@iconify/json": "^2.2.551",
     "@iconify/tailwind4": "^1.2.3",
     "@tailwindcss/postcss": "^4",

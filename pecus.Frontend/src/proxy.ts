@@ -21,7 +21,7 @@ const SESSION_COOKIE_KEY = 'sessionId';
  * セッションをクリアしてそのままページを表示するパス
  * パスワード設定・リセットは新規/別ユーザー向けなので、既存セッションは破棄する
  */
-const sessionClearPaths = ['/password-setup', '/password-reset'];
+const sessionClearPaths = ['/password-setup', '/password-reset', '/passkey-setup'];
 
 /**
  * キャッシュ無効化ヘッダーを設定
@@ -73,7 +73,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   // 認証不要なパス（公開ページ）
-  const publicPaths = ['/signin', '/signup', '/forgot-password', '/error-test'];
+  const publicPaths = ['/signin', '/signup', '/forgot-password', '/recovery', '/error-test'];
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }

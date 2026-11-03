@@ -38,6 +38,12 @@ export const getBackOfficeOrganizationDetailInputSchema = z.object({
 
 export type GetBackOfficeOrganizationDetailInput = z.infer<typeof getBackOfficeOrganizationDetailInputSchema>;
 
+export const getBackOfficeOrganizationAuthStatusInputSchema = z.object({
+  organizationId: organizationIdSchema,
+});
+
+export type GetBackOfficeOrganizationAuthStatusInput = z.infer<typeof getBackOfficeOrganizationAuthStatusInputSchema>;
+
 export const getBackOfficeOrganizationBotsInputSchema = z.object({
   organizationId: organizationIdSchema,
 });
@@ -51,6 +57,7 @@ export const updateBackOfficeOrganizationInputSchema = z.object({
     phoneNumber: z.string().optional(),
     email: z.string().optional(),
     isActive: z.boolean().optional(),
+    authenticationMode: z.enum(['Password', 'WebAuthn', 'Both'], { error: '認証方式が不正です。' }).optional(),
     rowVersion: rowVersionSchema,
   }),
 });

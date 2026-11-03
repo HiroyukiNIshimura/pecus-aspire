@@ -1,34 +1,41 @@
 'use client';
 
+import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser';
 import { useAtom } from 'jotai';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { login } from '@/actions/auth';
+import { getLoginMethods, getPasskeyLoginOptions, verifyPasskeyLogin } from '@/actions/webauthn';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import type { WebAuthnLoginOptionsResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { deviceInfoAtom } from '@/libs/atoms/deviceInfoAtom';
 import { loginSchema } from '@/schemas/signInSchemas';
 import { getDeviceInfo } from '@/utils/deviceInfo';
 import { getLandingPageUrl } from '@/utils/landingPage';
 
+type LoginMode = 'passkey' | 'password';
+
 /**
  * ログインフォーム (Client Component)
  *
- * 責務:
- * - フォーム入力・送信処理
- * - データバリデーション (Zod)
- * - エラー表示・成功時の処理
+ * - ログイン識別子から利用可能な認証方式を判定する
+ * - パスキー（WebAuthn）またはパスワードでログインする
  */
 export default function LoginFormClient() {
-  // === デバイス情報管理 (Jotai) ===
   const [deviceInfo, setDeviceInfo] = useAtom(deviceInfoAtom);
 
-  // === フォーム入力状態の管理 ===
   const [formData, setFormData] = useState({
     loginIdentifier: '',
     password: '',
   });
 
-  // === ページロード時にデバイス情報を取得 ===
+  const [mode, setMode] = useState<LoginMode>('passkey');
+  const [passkeySupported, setPasskeySupported] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiInfo, setApiInfo] = useState<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+
   useEffect(() => {
     const fetchDeviceInfo = async () => {
       const info = await getDeviceInfo();
@@ -37,27 +44,122 @@ export default function LoginFormClient() {
     fetchDeviceInfo();
   }, [setDeviceInfo]);
 
-  // === API エラー管理（ログイン失敗など） ===
-  const [apiError, setApiError] = useState<string | null>(null);
+  useEffect(() => {
+    setPasskeySupported(browserSupportsWebAuthn());
+  }, []);
 
-  // === Info メッセージ管理 ===
-  const [apiInfo, setApiInfo] = useState<string | null>(null);
+  const redirectAfterLogin = (roles: Array<{ name?: string }> | undefined, landingPage: unknown) => {
+    const isBackOfficeUser = roles?.some((role) => role.name === 'BackOffice') ?? false;
+    const redirectUrl = isBackOfficeUser
+      ? '/backoffice'
+      : getLandingPageUrl(landingPage as Parameters<typeof getLandingPageUrl>[0]);
+    window.location.href = redirectUrl;
+  };
 
-  // === Zod一本化フック ===
+  const handlePasskeyLogin = async (loginIdentifier: string) => {
+    if (!deviceInfo) {
+      setApiInfo('デバイス情報の取得に失敗しました。もう一度ログインボタンを押してください。');
+      return;
+    }
+
+    setIsAuthenticating(true);
+    try {
+      const optionsResult = await getPasskeyLoginOptions({ loginIdentifier });
+      if (!optionsResult.success) {
+        if (optionsResult.error === 'unauthorized' || optionsResult.error === 'not_found') {
+          setApiError('パスキーが見つかりません。パスワードでログインするか、管理者にご連絡ください。');
+        } else {
+          setApiError(optionsResult.message || 'パスキー認証を開始できませんでした。');
+        }
+        return;
+      }
+
+      const options: WebAuthnLoginOptionsResponse = optionsResult.data;
+      const assertion = await startAuthentication({
+        optionsJSON: {
+          challenge: options.publicKey.challenge,
+          rpId: options.publicKey.rpId,
+          timeout: options.publicKey.timeout,
+          allowCredentials: options.publicKey.allowCredentials
+            ?.filter((credential) => Boolean(credential.id))
+            .map((credential) => ({
+              id: credential.id,
+              type: 'public-key' as const,
+              transports: credential.transports as AuthenticatorTransport[] | undefined,
+            })),
+          userVerification: options.publicKey.userVerification as UserVerificationRequirement | undefined,
+        },
+      });
+
+      const result = await verifyPasskeyLogin({
+        challengeId: options.challengeId,
+        assertion: {
+          id: assertion.id,
+          rawId: assertion.rawId,
+          type: assertion.type,
+          response: {
+            authenticatorData: assertion.response.authenticatorData,
+            signature: assertion.response.signature,
+            clientDataJSON: assertion.response.clientDataJSON,
+            userHandle: assertion.response.userHandle,
+          },
+        },
+        deviceName: deviceInfo.deviceName,
+        deviceType: deviceInfo.deviceType,
+        os: deviceInfo.os,
+        userAgent: deviceInfo.userAgent,
+        appVersion: deviceInfo.appVersion,
+        timezone: deviceInfo.timezone,
+        location: deviceInfo.location ?? undefined,
+      });
+
+      if (result.success) {
+        redirectAfterLogin(result.data.roles, result.data.landingPage);
+        return;
+      }
+
+      setApiError(result.message || 'パスキー認証に失敗しました。');
+    } catch (error) {
+      console.error('パスキー認証中にエラーが発生:', error);
+      setApiError(
+        'パスキー認証がキャンセルされたか、この端末では利用できません。パスワードでのログインをお試しください。',
+      );
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: loginSchema,
     onSubmit: async (data) => {
-      // エラーをクリア
       setApiError(null);
       setApiInfo(null);
 
-      // === ログイン API 呼び出し ===
-      try {
-        if (!deviceInfo) {
-          setApiInfo('デバイス情報の取得に失敗しました。もう一度ログインボタンを押してください。');
+      if (!deviceInfo) {
+        setApiInfo('デバイス情報の取得に失敗しました。もう一度ログインボタンを押してください。');
+        return;
+      }
+
+      // 組織の認証方式を確認し、パスワードが許可されていない場合はパスキーへ誘導する
+      const methods = await getLoginMethods({ loginIdentifier: data.loginIdentifier });
+      if (methods.success) {
+        if (!methods.data.passwordEnabled && mode === 'password') {
+          setApiError('この組織ではパスキー認証が必要です。「パスキーでログイン」をご利用ください。');
           return;
         }
+        if (!methods.data.passkeyEnabled && mode === 'passkey') {
+          setMode('password');
+          setApiInfo('この組織ではパスワード認証を利用します。パスワードを入力してください。');
+          return;
+        }
+      }
 
+      if (mode === 'passkey') {
+        await handlePasskeyLogin(data.loginIdentifier);
+        return;
+      }
+
+      try {
         const result = await login({
           loginIdentifier: data.loginIdentifier,
           password: data.password,
@@ -68,19 +170,13 @@ export default function LoginFormClient() {
           appVersion: deviceInfo.appVersion,
           timezone: deviceInfo.timezone,
           location: deviceInfo.location ?? undefined,
-          // ipAddress はサーバー側で取得するため送信しない
         });
 
         if (result.success) {
-          // BackOffice ロールを持つユーザーは /backoffice にリダイレクト
-          const isBackOfficeUser = result.data?.roles?.some((role: { name: string }) => role.name === 'BackOffice');
-          const redirectUrl = isBackOfficeUser ? '/backoffice' : getLandingPageUrl(result.data?.landingPage);
-          // ハードナビゲーションでCookieを確実に反映
-          window.location.href = redirectUrl;
+          redirectAfterLogin(result.data?.roles, result.data?.landingPage);
           return;
         }
 
-        // === ログイン失敗時のエラー表示 ===
         setApiError(result.message || 'ログイン認証に失敗しました。');
       } catch (err: unknown) {
         console.error('ログイン処理中にエラーが発生:', err);
@@ -89,40 +185,43 @@ export default function LoginFormClient() {
     },
   });
 
-  // 入力時の検証とフォーム状態更新
   const handleFieldChange = async (fieldName: string, value: unknown) => {
     setFormData((prev) => ({
       ...prev,
       [fieldName]: value,
     }));
 
-    // フィールド検証を実行
     await validateField(fieldName, value);
   };
 
+  const isBusy = isSubmitting || isAuthenticating;
+
   return (
     <>
-      <LoadingOverlay isLoading={isSubmitting} message="ログイン中..." />
+      <LoadingOverlay isLoading={isBusy} message={mode === 'passkey' ? 'パスキーで認証中...' : 'ログイン中...'} />
 
       <div className="card w-full max-w-md shadow-lg bg-base-100">
         <div className="card-body">
           <h1 className="card-title text-center">ログイン</h1>
 
-          {/* === API エラー表示エリア（ログイン失敗など） === */}
           {apiError && (
             <div className="alert alert-soft alert-error" role="alert">
               {apiError}
             </div>
           )}
 
-          {/* === Info メッセージ表示エリア === */}
           {apiInfo && (
             <div className="alert alert-soft alert-info" role="status">
               {apiInfo}
             </div>
           )}
 
-          {/* === ログインフォーム === */}
+          {!passkeySupported && (
+            <div className="alert alert-soft alert-warning" role="status">
+              このブラウザはパスキーに対応していません。パスワードでログインしてください。
+            </div>
+          )}
+
           <form ref={formRef} onSubmit={handleSubmit} className="w-full" noValidate>
             <div className="form-control w-full mb-4">
               <label htmlFor="loginIdentifier" className="label">
@@ -139,9 +238,9 @@ export default function LoginFormClient() {
                   className={`input input-bordered w-full ${shouldShowError('loginIdentifier') ? 'input-error' : ''}`}
                   value={formData.loginIdentifier}
                   onChange={(event) => handleFieldChange('loginIdentifier', event.target.value)}
-                  disabled={isSubmitting}
+                  disabled={isBusy}
                   required
-                  autoComplete="email"
+                  autoComplete="username webauthn"
                 />
                 {shouldShowError('loginIdentifier') && (
                   <span className="label-text-alt text-error">{getFieldError('loginIdentifier')}</span>
@@ -149,42 +248,85 @@ export default function LoginFormClient() {
               </div>
             </div>
 
-            <div className="form-control w-full mb-4">
-              <label htmlFor="password" className="label">
-                <span className="label-text font-semibold">
-                  パスワード <span className="text-error">*</span>
-                </span>
-              </label>
-              <div className="w-full">
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="パスワード"
-                  className={`input input-bordered w-full ${shouldShowError('password') ? 'input-error' : ''}`}
-                  value={formData.password}
-                  onChange={(event) => handleFieldChange('password', event.target.value)}
-                  disabled={isSubmitting}
-                  required
-                  autoComplete="current-password"
-                />
-                {shouldShowError('password') && (
-                  <span className="label-text-alt text-error">{getFieldError('password')}</span>
-                )}
+            {mode === 'password' && (
+              <div className="form-control w-full mb-4">
+                <label htmlFor="password" className="label">
+                  <span className="label-text font-semibold">
+                    パスワード <span className="text-error">*</span>
+                  </span>
+                </label>
+                <div className="w-full">
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="パスワード"
+                    className={`input input-bordered w-full ${shouldShowError('password') ? 'input-error' : ''}`}
+                    value={formData.password}
+                    onChange={(event) => handleFieldChange('password', event.target.value)}
+                    disabled={isBusy}
+                    required
+                    autoComplete="current-password"
+                  />
+                  {shouldShowError('password') && (
+                    <span className="label-text-alt text-error">{getFieldError('password')}</span>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="w-full mt-6">
-              <button className="btn btn-accent w-full" type="submit" disabled={isSubmitting}>
-                ログイン
+              <button className="btn btn-accent w-full" type="submit" disabled={isBusy}>
+                {mode === 'passkey' ? 'パスキーでログイン' : 'パスワードでログイン'}
               </button>
             </div>
           </form>
 
-          <div className="text-center mt-4">
-            <a href="/forgot-password" className="link link-primary">
-              パスワードを忘れた
-            </a>
+          <div className="divider text-xs text-base-content/60">または</div>
+
+          <div className="w-full">
+            {mode === 'passkey' ? (
+              <button
+                type="button"
+                className="btn btn-outline w-full"
+                onClick={() => {
+                  setApiError(null);
+                  setApiInfo(null);
+                  setMode('password');
+                }}
+                disabled={isBusy}
+              >
+                パスワードでログイン
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-outline w-full"
+                onClick={() => {
+                  setApiError(null);
+                  setApiInfo(null);
+                  setMode('passkey');
+                }}
+                disabled={isBusy || !passkeySupported}
+              >
+                パスキーでログイン
+              </button>
+            )}
+          </div>
+
+          <div className="text-center mt-4 space-y-2">
+            <div>
+              <Link href="/recovery" className="link link-primary">
+                パスキーを紛失した場合
+              </Link>
+            </div>
+            {mode === 'password' && (
+              <div>
+                <Link href="/forgot-password" className="link link-primary">
+                  パスワードを忘れた
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

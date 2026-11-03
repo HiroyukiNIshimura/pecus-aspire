@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { PendingEmailChangeResponse } from '@/connectors/hey-api-axios/types.gen';
 import EmailChangeTab from './EmailChangeTab';
+import PasskeysTab from './PasskeysTab';
 import PasswordChangeTab from './PasswordChangeTab';
 
 interface SecurityTabProps {
@@ -18,7 +19,7 @@ interface SecurityTabProps {
   setIsLoading: (loading: boolean) => void;
 }
 
-type SecuritySubTab = 'password' | 'email';
+type SecuritySubTab = 'passkey' | 'password' | 'email';
 
 export default function SecurityTab({
   currentEmail,
@@ -27,9 +28,10 @@ export default function SecurityTab({
   isLoading,
   setIsLoading,
 }: SecurityTabProps) {
-  const [activeSubTab, setActiveSubTab] = useState<SecuritySubTab>('password');
+  const [activeSubTab, setActiveSubTab] = useState<SecuritySubTab>('passkey');
 
   const subTabs: { id: SecuritySubTab; label: string }[] = [
+    { id: 'passkey', label: 'パスキー' },
     { id: 'password', label: 'パスワード変更' },
     { id: 'email', label: 'メールアドレス変更' },
   ];
@@ -56,6 +58,9 @@ export default function SecurityTab({
 
       {/* サブタブコンテンツ */}
       <div className="pt-4">
+        {activeSubTab === 'passkey' && (
+          <PasskeysTab notify={notify} isLoading={isLoading} setIsLoading={setIsLoading} />
+        )}
         {activeSubTab === 'password' && (
           <PasswordChangeTab notify={notify} isLoading={isLoading} setIsLoading={setIsLoading} />
         )}

@@ -196,6 +196,7 @@ public class BackOfficeOrganizationService
                 UpdatedAt = o.UpdatedAt,
                 UserCount = o.Users.Count,
                 WorkspaceCount = o.Workspaces.Count,
+                AuthenticationMode = o.Setting == null ? null : o.Setting.AuthenticationMode,
                 RowVersion = o.RowVersion,
             })
             .FirstOrDefaultAsync();
@@ -244,6 +245,11 @@ public class BackOfficeOrganizationService
             organization.IsActive = request.IsActive.Value;
         }
 
+        if (request.AuthenticationMode.HasValue)
+        {
+            await ApplyAuthenticationModeAsync(id, request.AuthenticationMode.Value, updatedByUserId);
+        }
+
         organization.UpdatedAt = DateTime.UtcNow;
         organization.UpdatedByUserId = updatedByUserId;
 
@@ -262,6 +268,78 @@ public class BackOfficeOrganizationService
         _logger.LogInformation("組織を更新しました: OrganizationId={OrganizationId}", id);
 
         return await GetOrganizationAsync(id);
+    }
+
+    /// <summary>
+    /// 組織の認証方式とパスキー未登録ユーザー数を取得
+    /// </summary>
+    public async Task<BackOfficeOrganizationAuthStatusResponse> GetAuthStatusAsync(int id)
+    {
+        var organization = await _context
+            .Organizations
+            .AsNoTracking()
+            .Where(o => o.Id == id)
+            .Select(o => new
+            {
+                o.Id,
+                Mode = o.Setting == null ? (OrganizationAuthMode?)null : o.Setting.AuthenticationMode,
+            })
+            .FirstOrDefaultAsync();
+
+        if (organization == null)
+        {
+            throw new NotFoundException("組織が見つかりません。");
+        }
+
+        var users = _context.Users.AsNoTracking().Where(u => u.OrganizationId == id && u.IsActive);
+
+        return new BackOfficeOrganizationAuthStatusResponse
+        {
+            OrganizationId = organization.Id,
+            AuthenticationMode = organization.Mode,
+            UserCount = await users.CountAsync(),
+            UsersWithoutCredential = await users.CountAsync(u => !u.Credentials.Any()),
+            AdminsWithoutCredential = await users.CountAsync(u =>
+                !u.Credentials.Any() && u.Roles.Any(r => r.Name == SystemRole.Admin)),
+            HasBackOfficeUser = await users.AnyAsync(u => u.Roles.Any(r => r.Name == SystemRole.BackOffice)),
+        };
+    }
+
+    /// <summary>
+    /// 組織設定に認証方式を反映する
+    /// </summary>
+    private async Task ApplyAuthenticationModeAsync(
+        int organizationId,
+        OrganizationAuthMode mode,
+        int updatedByUserId)
+    {
+        if (mode == OrganizationAuthMode.WebAuthn)
+        {
+            // BackOffice 管理者が所属する組織をパスキー専用にすると、管理者が締め出される
+            var hasBackOfficeUser = await _context.Users.AnyAsync(u =>
+                u.OrganizationId == organizationId
+                && u.IsActive
+                && u.Roles.Any(r => r.Name == SystemRole.BackOffice));
+
+            if (hasBackOfficeUser)
+            {
+                throw new BadRequestException("BackOffice 管理者が所属する組織はパスキー専用に変更できません。");
+            }
+        }
+
+        var setting = await _context
+            .OrganizationSettings
+            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+
+        if (setting == null)
+        {
+            setting = new OrganizationSetting { OrganizationId = organizationId };
+            _context.OrganizationSettings.Add(setting);
+        }
+
+        setting.AuthenticationMode = mode;
+        setting.UpdatedAt = DateTimeOffset.UtcNow;
+        setting.UpdatedByUserId = updatedByUserId;
     }
 
     /// <summary>
