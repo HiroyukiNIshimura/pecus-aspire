@@ -383,6 +383,37 @@ public class RefreshTokenService
             return (false, existingDevice.PublicId, existingDevice.Id); // 既存デバイスを更新しただけ
         }
 
+        // 同じ端末の失効済み Device 行があれば再利用する。
+        // リフレッシュのたびに新しい行を作ると、パスキーの端末紐づけ（UserCredential.DeviceId）が
+        // 失効済み行を指したままになり、パスキー削除時の端末セッション失効が効かなくなる。
+        var revokedDevice = await _context
+            .Devices
+            .AsNoTracking()
+            .Where(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && d.IsRevoked)
+            .OrderByDescending(d => d.LastSeenAt)
+            .Select(d => new { d.Id, d.PublicId })
+            .FirstOrDefaultAsync();
+
+        if (revokedDevice != null)
+        {
+            await _context
+                .Devices
+                .Where(d => d.Id == revokedDevice.Id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(d => d.IsRevoked, false)
+                    .SetProperty(d => d.LastSeenAt, now)
+                    .SetProperty(d => d.LastIpMasked, MaskIpAddress(deviceInfo.IpAddress))
+                    .SetProperty(d => d.Timezone, deviceInfo.Timezone)
+                    .SetProperty(d => d.LastSeenLocation, deviceInfo.LastSeenLocation));
+
+            // リフレッシュトークンを再利用したデバイスに関連付け
+            refreshToken.DeviceId = revokedDevice.Id;
+
+            // 同一端末の行を再利用しているだけなので「新しいデバイス」としては扱わない
+            // （true にするとリフレッシュのたびに新デバイス通知メールが送られる）
+            return (false, revokedDevice.PublicId, revokedDevice.Id);
+        }
+
         // 新しいデバイスを作成
         var device = new Device
         {
@@ -406,27 +437,6 @@ public class RefreshTokenService
 
         // デバイスを先に保存してIDを取得
         await _context.SaveChangesAsync();
-
-        // 同じ端末の失効済み Device 行からパスキーの紐づけを引き継ぐ。
-        // リフレッシュのたびに Device 行が作り直されるため、引き継がないと
-        // UserCredential.DeviceId が失効済み行を指し、パスキー削除時の端末セッション失効が効かなくなる。
-        var revokedDeviceIds = await _context
-            .Devices
-            .Where(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && d.IsRevoked)
-            .Select(d => d.Id)
-            .ToListAsync();
-
-        if (revokedDeviceIds.Count > 0)
-        {
-            await _context
-                .UserCredentials
-                .Where(c =>
-                    c.UserId == userId
-                    && c.DeviceId != null
-                    && revokedDeviceIds.Contains(c.DeviceId.Value))
-                .ExecuteUpdateAsync(
-                    setters => setters.SetProperty(c => c.DeviceId, (int?)device.Id));
-        }
 
         // RefreshTokenにDeviceIdを設定（ナビゲーションプロパティではなくFKのみ）
         refreshToken.DeviceId = device.Id;

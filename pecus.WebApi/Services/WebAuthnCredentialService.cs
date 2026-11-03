@@ -567,7 +567,7 @@ public class WebAuthnCredentialService
         {
             if (
                 await _context.Devices.AnyAsync(
-                    d => d.Id == requestedDeviceId && d.UserId == user.Id,
+                    d => d.Id == requestedDeviceId && d.UserId == user.Id && !d.IsRevoked,
                     cancellationToken
                 )
             )

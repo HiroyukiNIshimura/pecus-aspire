@@ -286,6 +286,24 @@ public class BackOfficeOrganizationService
             throw new BadRequestException("組織は他のユーザーによって更新されました。最新のデータを再取得してください。");
         }
 
+        if (revokeSessions)
+        {
+            // 失効処理中（コミット前）は認証方式がまだ旧値のため、その間にパスワードで
+            // ログインしたセッションは上の失効に含まれない。方式変更の確定後にもう一度失効させる。
+            // 方式変更は確定済みのため、失敗しても要求自体は成功として扱い、記録のみ残す。
+            try
+            {
+                await _sessionRevocation.RevokeOrganizationSessionsAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "認証方式の変更後にセッションを失効できませんでした。OrganizationId={OrganizationId}",
+                    id);
+            }
+        }
+
         _logger.LogInformation("組織を更新しました: OrganizationId={OrganizationId}", id);
 
         return await GetOrganizationAsync(id);
