@@ -255,6 +255,13 @@ export default function PasskeySetupFormClient() {
           </div>
         )}
 
+        {apiError && !recoveryToken && (
+          <p className="text-sm text-base-content/70">
+            このリンクで登録できない場合は、リンクの有効期限切れか、組織の設定変更が考えられます。
+            管理者にパスキー登録リンクの再発行をご依頼ください。
+          </p>
+        )}
+
         {!passkeySupported && (
           <div className="alert alert-soft alert-error" role="alert">
             このブラウザはパスキーに対応していません。別のブラウザでお試しください。
