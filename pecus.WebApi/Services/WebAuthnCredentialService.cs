@@ -60,7 +60,7 @@ public class WebAuthnCredentialService
     private readonly OrganizationAuthPolicyService _authPolicy;
     private readonly RecoveryCodeService _recoveryCodes;
     private readonly RefreshTokenService _refreshTokens;
-    private readonly TokenBlacklistService _blacklist;
+    private readonly SessionRevocationService _sessionRevocation;
     private readonly ILogger<WebAuthnCredentialService> _logger;
 
     public WebAuthnCredentialService(
@@ -70,7 +70,7 @@ public class WebAuthnCredentialService
         OrganizationAuthPolicyService authPolicy,
         RecoveryCodeService recoveryCodes,
         RefreshTokenService refreshTokens,
-        TokenBlacklistService blacklist,
+        SessionRevocationService sessionRevocation,
         ILogger<WebAuthnCredentialService> logger)
     {
         _context = context;
@@ -79,7 +79,7 @@ public class WebAuthnCredentialService
         _authPolicy = authPolicy;
         _recoveryCodes = recoveryCodes;
         _refreshTokens = refreshTokens;
-        _blacklist = blacklist;
+        _sessionRevocation = sessionRevocation;
         _logger = logger;
     }
 
@@ -746,20 +746,8 @@ public class WebAuthnCredentialService
     /// <summary>
     /// 全デバイスとセッション（リフレッシュトークン・JWT）を失効させる
     /// </summary>
-    public async Task RevokeAllSessionsAsync(int userId, CancellationToken cancellationToken = default)
-    {
-        await _context
-            .Devices
-            .Where(d => d.UserId == userId && !d.IsRevoked)
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(d => d.IsRevoked, true),
-                cancellationToken);
-
-        await _refreshTokens.RevokeAllUserRefreshTokensAsync(userId);
-        await _blacklist.BlacklistAllUserTokensAsync(userId);
-
-        _logger.LogInformation("全セッションを失効しました。UserId: {UserId}", userId);
-    }
+    public Task RevokeAllSessionsAsync(int userId, CancellationToken cancellationToken = default) =>
+        _sessionRevocation.RevokeAllSessionsAsync(userId, cancellationToken);
 
     /// <summary>
     /// パスキーの表示名を変更する

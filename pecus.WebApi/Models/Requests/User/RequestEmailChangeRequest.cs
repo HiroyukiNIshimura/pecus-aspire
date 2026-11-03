@@ -18,7 +18,10 @@ public class RequestEmailChangeRequest
     /// <summary>
     /// 現在のパスワード（本人確認用）
     /// </summary>
-    [Required(ErrorMessage = "現在のパスワードは必須です。")]
-    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
-    public required string CurrentPassword { get; set; }
+    /// <remarks>
+    /// パスワードが未設定のユーザー（パスキー専用の組織）は省略できる。
+    /// 本人性はログイン済みセッションと、新しいメールアドレス宛の確認メールで担保する。
+    /// </remarks>
+    [MaxLength(100, ErrorMessage = "パスワードは100文字以内で入力してください。")]
+    public string? CurrentPassword { get; set; }
 }

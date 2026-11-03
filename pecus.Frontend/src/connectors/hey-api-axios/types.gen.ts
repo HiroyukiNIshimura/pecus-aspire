@@ -5353,7 +5353,7 @@ export type RequestEmailChangeRequest = {
   /**
    * 現在のパスワード（本人確認用）
    */
-  currentPassword: string;
+  currentPassword?: null | string;
 };
 
 /**

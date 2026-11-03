@@ -17,15 +17,18 @@ public class BackOfficeOrganizationService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<BackOfficeOrganizationService> _logger;
     private readonly BatchOrganizationDeletionService _organizationDeletionService;
+    private readonly SessionRevocationService _sessionRevocation;
 
     public BackOfficeOrganizationService(
         ApplicationDbContext context,
         ILogger<BackOfficeOrganizationService> logger,
-        BatchOrganizationDeletionService organizationDeletionService)
+        BatchOrganizationDeletionService organizationDeletionService,
+        SessionRevocationService sessionRevocation)
     {
         _context = context;
         _logger = logger;
         _organizationDeletionService = organizationDeletionService;
+        _sessionRevocation = sessionRevocation;
     }
 
     /// <summary>
@@ -245,9 +248,13 @@ public class BackOfficeOrganizationService
             organization.IsActive = request.IsActive.Value;
         }
 
+        var revokeSessions = false;
         if (request.AuthenticationMode.HasValue)
         {
             await ApplyAuthenticationModeAsync(id, request.AuthenticationMode.Value, updatedByUserId);
+            // パスワードを禁止する変更では、パスワードで確立済みのセッションが残らないよう失効させる。
+            // リフレッシュで延命されるため、失効させないと方式変更が既存セッションに作用しない。
+            revokeSessions = request.AuthenticationMode.Value == OrganizationAuthMode.WebAuthn;
         }
 
         organization.UpdatedAt = DateTime.UtcNow;
@@ -263,6 +270,11 @@ public class BackOfficeOrganizationService
         catch (DbUpdateConcurrencyException)
         {
             throw new BadRequestException("組織は他のユーザーによって更新されました。最新のデータを再取得してください。");
+        }
+
+        if (revokeSessions)
+        {
+            await _sessionRevocation.RevokeOrganizationSessionsAsync(id);
         }
 
         _logger.LogInformation("組織を更新しました: OrganizationId={OrganizationId}", id);

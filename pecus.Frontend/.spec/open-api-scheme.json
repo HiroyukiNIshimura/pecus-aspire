@@ -25098,8 +25098,7 @@
       },
       "RequestEmailChangeRequest": {
         "required": [
-          "newEmail",
-          "currentPassword"
+          "newEmail"
         ],
         "type": "object",
         "properties": {
@@ -25110,8 +25109,10 @@
           },
           "currentPassword": {
             "maxLength": 100,
-            "minLength": 8,
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "現在のパスワード（本人確認用）"
           }
         },

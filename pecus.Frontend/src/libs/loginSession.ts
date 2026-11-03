@@ -41,6 +41,7 @@ export async function createLoginSession(response: LoginResponse, device: LoginD
       roles: response.roles ? response.roles.map((role: RoleInfoResponse) => role.name || '') : [],
     },
     device: {
+      id: response.device?.id ?? undefined,
       publicId: response.device?.publicId ?? undefined,
       name: device.deviceName,
       type: device.deviceType ?? undefined,

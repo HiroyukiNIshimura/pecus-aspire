@@ -45,6 +45,8 @@ export interface ServerSessionData {
 
   /** デバイス情報 */
   device?: {
+    /** デバイスの数値ID（バックエンドの Device.Id。パスキー登録時の紐づけに使用） */
+    id?: number;
     /** デバイスの公開ID（バックエンドの Device.PublicId と紐づけ） */
     publicId?: string;
     name?: string;

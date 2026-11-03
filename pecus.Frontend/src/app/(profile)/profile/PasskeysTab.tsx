@@ -7,6 +7,7 @@ import {
   deleteCredential,
   getCredentialRegistrationOptions,
   getCredentials,
+  getCurrentDeviceId,
   getRecoveryCodeStatus,
   issueRecoveryCodes,
   registerCredential,
@@ -126,8 +127,12 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
         },
       });
 
+      // 登録するパスキーを現在の端末に紐づける（削除時にその端末のセッションを失効させるため）
+      const deviceId = await getCurrentDeviceId();
+
       const registerResult = await registerCredential({
         challengeId: options.challengeId,
+        deviceId,
         credential: {
           id: credential.id,
           rawId: credential.rawId,

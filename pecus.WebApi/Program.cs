@@ -112,6 +112,7 @@ builder.Services.AddSingleton(pecusConfig.WebAuthn);
 builder.Services.AddSingleton<WebAuthnChallengeStore>();
 builder.Services.AddSingleton<LoginRateLimiter>();
 builder.Services.AddScoped<OrganizationAuthPolicyService>();
+builder.Services.AddScoped<SessionRevocationService>();
 builder.Services.AddScoped<WebAuthnCredentialService>();
 builder.Services.AddScoped<AuthTokenIssuer>();
 builder.Services.AddScoped<RecoveryCodeService>();

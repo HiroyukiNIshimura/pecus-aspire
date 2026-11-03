@@ -29,6 +29,7 @@ import type {
 } from '@/connectors/hey-api-axios/types.gen';
 import { getHttpErrorInfo } from '@/libs/apiError';
 import { createLoginSession, type LoginDeviceContext } from '@/libs/loginSession';
+import { ServerSessionManager } from '@/libs/serverSession';
 import {
   type PasskeyLoginOptionsInput,
   type PasskeyLoginVerifyInput,
@@ -253,6 +254,14 @@ export async function getCredentials(): Promise<ApiResponse<WebAuthnCredentialRe
       defaultMessage: 'パスキー一覧の取得に失敗しました。',
     });
   }
+}
+
+/**
+ * Server Action: ログイン中の端末 ID を取得する（パスキー登録時に端末と紐づける）
+ */
+export async function getCurrentDeviceId(): Promise<number | undefined> {
+  const session = await ServerSessionManager.getSession();
+  return session?.device?.id;
 }
 
 /**

@@ -19,8 +19,8 @@ type LoginMode = 'passkey' | 'password';
 /**
  * ログインフォーム (Client Component)
  *
- * - ログイン識別子から利用可能な認証方式を判定する
- * - パスキー（WebAuthn）またはパスワードでログインする
+ * - 認証方式（パスキー／パスワード）はユーザーが選択する
+ * - 方式の可否はサーバー側のログイン処理で判定する（画面では事前判定しない）
  */
 export default function LoginFormClient() {
   const [deviceInfo, setDeviceInfo] = useAtom(deviceInfoAtom);
@@ -142,7 +142,7 @@ export default function LoginFormClient() {
       }
 
       // 認証方式の可否はサーバー側のログイン処理で判定する。
-      // (login-methods はユーザー列挙を防ぐため常に既定値を返すので事前判定には使わない)
+      // 画面では事前判定しない（アカウントの存在や組織の方式を推測されないようにするため）。
       if (mode === 'passkey') {
         await handlePasskeyLogin(data.loginIdentifier);
         return;

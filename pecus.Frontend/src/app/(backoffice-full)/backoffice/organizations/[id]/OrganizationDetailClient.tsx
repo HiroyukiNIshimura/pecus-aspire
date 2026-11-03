@@ -509,6 +509,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
         description={
           `パスキー未登録のユーザーが ${authStatus?.usersWithoutCredential ?? 0} 名います。\n` +
           'パスキー専用に切り替えると、これらのユーザーはログインできなくなります。\n' +
+          'また、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。\n' +
           '先にパスキー登録を案内するか、切り替え後に管理者が登録リセットを行ってください。続行しますか？'
         }
         confirmLabel="切り替える"
