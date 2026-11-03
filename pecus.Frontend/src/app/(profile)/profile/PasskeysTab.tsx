@@ -247,6 +247,7 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
                   <div>
                     <p className="font-semibold">{credential.name}</p>
                     <p className="text-xs text-base-content/60">
+                      {credential.deviceName ? `端末: ${credential.deviceName} / ` : ''}
                       登録: {credential.createdAt ? formatDate(credential.createdAt) : '-'}
                       {credential.lastUsedAt ? ` / 最終使用: ${formatDate(credential.lastUsedAt)}` : ''}
                       {credential.isBackedUp ? ' / 同期パスキー' : ''}

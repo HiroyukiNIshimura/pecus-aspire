@@ -89,9 +89,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
   };
 
   const needsWebAuthnSwitchConfirm = () =>
-    editForm.authenticationMode === 'WebAuthn' &&
-    data?.authenticationMode !== 'WebAuthn' &&
-    (authStatus?.usersWithoutCredential ?? 0) > 0;
+    editForm.authenticationMode === 'WebAuthn' && data?.authenticationMode !== 'WebAuthn';
 
   const handleSave = () => {
     if (!data) return;
@@ -507,10 +505,12 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
         onConfirm={submitOrganizationUpdate}
         title="パスキー専用への切り替え"
         description={
-          `パスキー未登録のユーザーが ${authStatus?.usersWithoutCredential ?? 0} 名います。\n` +
-          'パスキー専用に切り替えると、これらのユーザーはログインできなくなります。\n' +
-          'また、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。\n' +
-          '先にパスキー登録を案内するか、切り替え後に管理者が登録リセットを行ってください。続行しますか？'
+          (authStatus?.usersWithoutCredential ?? 0) > 0
+            ? `パスキー未登録のユーザーが ${authStatus?.usersWithoutCredential ?? 0} 名います。\n` +
+              'パスキー専用に切り替えると、これらのユーザーはログインできなくなります。\n' +
+              'また、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。\n' +
+              '先にパスキー登録を案内するか、切り替え後に管理者が登録リセットを行ってください。続行しますか？'
+            : 'パスキー専用に切り替えると、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。続行しますか？'
         }
         confirmLabel="切り替える"
         variant="warning"

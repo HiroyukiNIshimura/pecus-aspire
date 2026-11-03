@@ -251,10 +251,17 @@ public class BackOfficeOrganizationService
         var revokeSessions = false;
         if (request.AuthenticationMode.HasValue)
         {
-            await ApplyAuthenticationModeAsync(id, request.AuthenticationMode.Value, updatedByUserId);
-            // パスワードを禁止する変更では、パスワードで確立済みのセッションが残らないよう失効させる。
+            var previousMode = await ApplyAuthenticationModeAsync(
+                id,
+                request.AuthenticationMode.Value,
+                updatedByUserId);
+
+            // パスワードを禁止する「切替」のときだけ、パスワードで確立済みのセッションを失効させる。
             // リフレッシュで延命されるため、失効させないと方式変更が既存セッションに作用しない。
-            revokeSessions = request.AuthenticationMode.Value == OrganizationAuthMode.WebAuthn;
+            // 方式が変わらない保存（組織名の変更など）では失効させない。
+            revokeSessions =
+                request.AuthenticationMode.Value == OrganizationAuthMode.WebAuthn
+                && previousMode != OrganizationAuthMode.WebAuthn;
         }
 
         organization.UpdatedAt = DateTime.UtcNow;
@@ -265,16 +272,18 @@ public class BackOfficeOrganizationService
 
         try
         {
+            // 失効はコミット前に実行する。失効に失敗した場合はコミットせず、
+            // 認証方式が変わらない状態のまま再試行できるようにする。
+            if (revokeSessions)
+            {
+                await _sessionRevocation.RevokeOrganizationSessionsAsync(id);
+            }
+
             await _context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
             throw new BadRequestException("組織は他のユーザーによって更新されました。最新のデータを再取得してください。");
-        }
-
-        if (revokeSessions)
-        {
-            await _sessionRevocation.RevokeOrganizationSessionsAsync(id);
         }
 
         _logger.LogInformation("組織を更新しました: OrganizationId={OrganizationId}", id);
@@ -320,7 +329,8 @@ public class BackOfficeOrganizationService
     /// <summary>
     /// 組織設定に認証方式を反映する
     /// </summary>
-    private async Task ApplyAuthenticationModeAsync(
+    /// <returns>変更前の認証方式（未設定の場合は null）</returns>
+    private async Task<OrganizationAuthMode?> ApplyAuthenticationModeAsync(
         int organizationId,
         OrganizationAuthMode mode,
         int updatedByUserId)
@@ -343,6 +353,8 @@ public class BackOfficeOrganizationService
             .OrganizationSettings
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
 
+        var previousMode = setting?.AuthenticationMode;
+
         if (setting == null)
         {
             setting = new OrganizationSetting { OrganizationId = organizationId };
@@ -352,6 +364,8 @@ public class BackOfficeOrganizationService
         setting.AuthenticationMode = mode;
         setting.UpdatedAt = DateTimeOffset.UtcNow;
         setting.UpdatedByUserId = updatedByUserId;
+
+        return previousMode;
     }
 
     /// <summary>

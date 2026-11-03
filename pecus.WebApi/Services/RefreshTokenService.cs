@@ -407,6 +407,27 @@ public class RefreshTokenService
         // デバイスを先に保存してIDを取得
         await _context.SaveChangesAsync();
 
+        // 同じ端末の失効済み Device 行からパスキーの紐づけを引き継ぐ。
+        // リフレッシュのたびに Device 行が作り直されるため、引き継がないと
+        // UserCredential.DeviceId が失効済み行を指し、パスキー削除時の端末セッション失効が効かなくなる。
+        var revokedDeviceIds = await _context
+            .Devices
+            .Where(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && d.IsRevoked)
+            .Select(d => d.Id)
+            .ToListAsync();
+
+        if (revokedDeviceIds.Count > 0)
+        {
+            await _context
+                .UserCredentials
+                .Where(c =>
+                    c.UserId == userId
+                    && c.DeviceId != null
+                    && revokedDeviceIds.Contains(c.DeviceId.Value))
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(c => c.DeviceId, (int?)device.Id));
+        }
+
         // RefreshTokenにDeviceIdを設定（ナビゲーションプロパティではなくFKのみ）
         refreshToken.DeviceId = device.Id;
 
