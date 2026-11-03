@@ -84,6 +84,17 @@ public class WebAuthnCredentialService
     }
 
     /// <summary>
+    /// 件数上限の判定を免除する登録かどうか
+    /// </summary>
+    /// <remarks>
+    /// 管理者リセットは登録完了時に既存パスキーを削除するため上限に達していても登録できる必要があり、
+    /// リカバリーは認証器を失ったユーザーが復旧する唯一の手段のため、上限で妨げない。
+    /// </remarks>
+    private static bool IsRecoveryOrResetReference(string? reference) =>
+        reference == ResetSetupReference
+        || (reference?.StartsWith(RecoveryReferencePrefix, StringComparison.Ordinal) ?? false);
+
+    /// <summary>
     /// ログイン識別子から有効なユーザーを取得する
     /// </summary>
     public async Task<User?> FindUserByIdentifierAsync(
@@ -253,14 +264,18 @@ public class WebAuthnCredentialService
     {
         await EnsureUserHandleAsync(user, cancellationToken);
 
-        var existingCount = await _context
-            .UserCredentials
-            .CountAsync(c => c.UserId == user.Id, cancellationToken);
-
-        if (existingCount >= MaxCredentialsPerUser)
+        // 管理者リセットとリカバリーは復旧経路のため、上限に達していても登録を妨げない
+        if (!IsRecoveryOrResetReference(reference))
         {
-            throw new InvalidOperationException(
-                $"パスキーは {MaxCredentialsPerUser} 件まで登録できます。不要なパスキーを削除してください。");
+            var existingCount = await _context
+                .UserCredentials
+                .CountAsync(c => c.UserId == user.Id, cancellationToken);
+
+            if (existingCount >= MaxCredentialsPerUser)
+            {
+                throw new InvalidOperationException(
+                    $"パスキーは {MaxCredentialsPerUser} 件まで登録できます。不要なパスキーを削除してください。");
+            }
         }
 
         var existing = await _context
@@ -269,12 +284,12 @@ public class WebAuthnCredentialService
             .Where(c => c.UserId == user.Id)
             .ToListAsync(cancellationToken);
 
-        // リカバリー（認証器を失った想定）では既存クレデンシャルを除外しない。
-        // 除外すると、同じ認証器で再登録しようとした際に InvalidStateError となり復旧できない。
-        var excludeCredentials = reference is not null
-            && reference.StartsWith(RecoveryReferencePrefix, StringComparison.Ordinal)
-                ? new List<PublicKeyCredentialDescriptor>()
-                : existing.Select(ToDescriptor).ToList();
+        // リカバリー（認証器を失った想定）と管理者リセットでは既存クレデンシャルを除外しない。
+        // 除外すると同じ認証器で再登録した際に InvalidStateError となり復旧できない。
+        // 管理者リセットは登録完了時に既存パスキーを削除するため、除外する意味もない。
+        var excludeCredentials = IsRecoveryOrResetReference(reference)
+            ? new List<PublicKeyCredentialDescriptor>()
+            : existing.Select(ToDescriptor).ToList();
 
         var options = _fido2.RequestNewCredential(new RequestNewCredentialParams
         {
@@ -509,14 +524,18 @@ public class WebAuthnCredentialService
             throw new UnauthorizedException("パスキーの登録に失敗しました。");
         }
 
-        var existingCount = await _context
-            .UserCredentials
-            .CountAsync(c => c.UserId == user.Id, cancellationToken);
-
-        if (existingCount >= MaxCredentialsPerUser)
+        // 管理者リセットとリカバリーは復旧経路のため、上限に達していても登録を妨げない
+        if (!IsRecoveryOrResetReference(entry.Reference))
         {
-            throw new InvalidOperationException(
-                $"パスキーは {MaxCredentialsPerUser} 件まで登録できます。不要なパスキーを削除してください。");
+            var existingCount = await _context
+                .UserCredentials
+                .CountAsync(c => c.UserId == user.Id, cancellationToken);
+
+            if (existingCount >= MaxCredentialsPerUser)
+            {
+                throw new InvalidOperationException(
+                    $"パスキーは {MaxCredentialsPerUser} 件まで登録できます。不要なパスキーを削除してください。");
+            }
         }
 
         RegisteredPublicKeyCredential result;

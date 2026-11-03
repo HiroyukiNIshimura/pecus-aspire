@@ -206,6 +206,18 @@ function validateProdConfig(config) {
   const errors = [];
   const webAuthn = config.webapi?.Pecus?.WebAuthn;
 
+  // 起動できないイメージ・既知の鍵で署名するイメージを配布しないよう、JWT 署名鍵も検証する
+  const signingKey = (config.webapi?.Pecus?.Jwt?.IssuerSigningKey || '').trim();
+  if (
+    !signingKey ||
+    signingKey.startsWith('CHANGE_ME') ||
+    Buffer.byteLength(signingKey, 'utf8') < 32
+  ) {
+    errors.push(
+      'Pecus:Jwt:IssuerSigningKey が未設定、プレースホルダーのまま、または32バイト未満です。環境変数 JWT_ISSUER_SIGNING_KEY に十分な長さのランダム文字列（64文字以上を推奨）を設定してから再実行してください。',
+    );
+  }
+
   if (!webAuthn) {
     errors.push('WebAuthn 設定が見つかりません（config/settings.base.json の webapi.Pecus.WebAuthn を確認してください）。');
   } else {

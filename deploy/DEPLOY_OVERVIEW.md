@@ -114,7 +114,7 @@
 | 環境変数 | 必須 | 用途 |
 | --- | --- | --- |
 | `WEBAUTHN_RECOVERY_CODE_PEPPER` | **必須** | リカバリーコードの HMAC 鍵（64文字以上のランダム文字列）。未設定、または `CHANGE_ME` 始まりのまま実行すると**生成が中止**される（未設定のままでは本番の WebApi が起動しない） |
-| `JWT_ISSUER_SIGNING_KEY` | 必須（本番） | JWT 署名鍵（64文字以上のランダム文字列） |
+| `JWT_ISSUER_SIGNING_KEY` | 必須（本番） | JWT 署名鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まり・32 バイト未満は**生成が中止**される |
 | `FRONTEND_URL` | 推奨 | WebAuthn の `RpId` / `Origins` を自動導出する。未指定の場合は `config/settings.base.prod.json` の `_infrastructure.urls.frontend` が使われる |
 
 - 本番の `Origins` は `https` のみ。`RpId` が `localhost` のままの場合も生成が中止される。

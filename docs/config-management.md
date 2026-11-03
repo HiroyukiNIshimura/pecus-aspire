@@ -91,10 +91,11 @@ node scripts/generate-appsettings.js -P
 | 環境変数 | 必須 | 用途 |
 | --- | --- | --- |
 | `WEBAUTHN_RECOVERY_CODE_PEPPER` | **必須** | リカバリーコードの HMAC 鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まりは中止 |
-| `JWT_ISSUER_SIGNING_KEY` | 必須（本番） | JWT 署名鍵（64文字以上のランダム文字列） |
+| `JWT_ISSUER_SIGNING_KEY` | 必須（本番） | JWT 署名鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まり・32 バイト未満は中止 |
 | `FRONTEND_URL` | 推奨 | WebAuthn の `RpId` / `Origins` を自動導出（未指定時は `_infrastructure.urls.frontend`） |
 
 `RpId` が `localhost` のまま、または `Origins` に `https` 以外が含まれる場合も中止します。
+実行時にコンテナ環境変数 `JWT_SECRET` で署名鍵を差し替える運用でも、プレースホルダーの鍵をイメージに焼き込まないよう、生成時点の値を検証します。
 `-P` はビルドPCとデプロイPCの両方で実行されるため、どちらのホストでも同じ環境変数を使えるようにしてください。
 
 ## フロントエンドの環境変数
