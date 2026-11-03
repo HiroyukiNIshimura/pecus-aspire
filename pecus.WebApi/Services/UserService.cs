@@ -98,6 +98,13 @@ public class UserService
             return null;
         }
 
+        // パスワード検証中に組織の認証方式が変わった場合に備え、トークン発行前に再確認する
+        var currentMode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+        if (!OrganizationAuthPolicyService.AllowsPassword(currentMode))
+        {
+            return null;
+        }
+
         // 最終ログイン日時を更新
         user.LastLoginAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();

@@ -20,7 +20,8 @@ public record AuthDeviceContext(
     string? AppVersion,
     string? Timezone,
     string? Location,
-    string? IpAddress);
+    string? IpAddress,
+    string? AuthMethod = null);
 
 /// <summary>
 /// 認証成功後に JWT・リフレッシュトークン・デバイスを発行する
@@ -70,7 +71,10 @@ public class AuthTokenIssuer
             LastSeenLocation: deviceContext.Location,
             IpAddress: deviceContext.IpAddress
         );
-        var refreshToken = await _refreshService.CreateRefreshTokenAsync(user.Id, deviceInfo);
+        var refreshToken = await _refreshService.CreateRefreshTokenAsync(
+            user.Id,
+            deviceInfo,
+            deviceContext.AuthMethod);
 
         var jti = JwtBearerUtil.GetJtiFromToken(token);
         if (!string.IsNullOrWhiteSpace(jti))

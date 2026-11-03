@@ -388,11 +388,13 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                                 authenticationMode: e.target.value as 'Password' | 'WebAuthn' | 'Both',
                               })
                             }
-                            disabled={isPending || authStatus?.hasBackOfficeUser}
+                            disabled={isPending}
                           >
                             <option value="Both">パスワードとパスキー（推奨）</option>
                             <option value="Password">パスワードのみ</option>
-                            <option value="WebAuthn">パスキーのみ</option>
+                            <option value="WebAuthn" disabled={authStatus?.hasBackOfficeUser}>
+                              パスキーのみ
+                            </option>
                           </select>
                           {authStatus?.hasBackOfficeUser && (
                             <p className="text-xs text-warning">

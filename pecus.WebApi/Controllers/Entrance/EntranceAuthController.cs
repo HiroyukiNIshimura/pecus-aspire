@@ -58,7 +58,8 @@ public class EntranceAuthController : ControllerBase
             AppVersion: request.AppVersion,
             Timezone: request.Timezone,
             Location: request.Location,
-            IpAddress: request.IpAddress ?? ClientIpResolver.GetClientIpAddress(HttpContext));
+            IpAddress: request.IpAddress ?? ClientIpResolver.GetClientIpAddress(HttpContext),
+            AuthMethod: RefreshTokenService.AuthMethodPassword);
 
         var response = await _tokenIssuer.IssueAsync(user, deviceContext);
 

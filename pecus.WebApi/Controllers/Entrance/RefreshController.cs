@@ -19,12 +19,18 @@ public class RefreshController : ControllerBase
 {
     private readonly RefreshTokenService _refreshService;
     private readonly UserService _userService;
+    private readonly OrganizationAuthPolicyService _authPolicy;
     private readonly ILogger<RefreshController> _logger;
 
-    public RefreshController(RefreshTokenService refreshService, UserService userService, ILogger<RefreshController> logger)
+    public RefreshController(
+        RefreshTokenService refreshService,
+        UserService userService,
+        OrganizationAuthPolicyService authPolicy,
+        ILogger<RefreshController> logger)
     {
         _refreshService = refreshService;
         _userService = userService;
+        _authPolicy = authPolicy;
         _logger = logger;
     }
 
@@ -84,6 +90,19 @@ public class RefreshController : ControllerBase
             throw new UnauthorizedException("Invalid refresh token");
         }
 
+        // パスワード認証で発行されたトークンは、組織がパスワードを許可している間だけ有効とする。
+        // 認証方式の切替時にセッション失効が失敗しても、遅くともアクセストークンの有効期限後に
+        // パスワード由来のセッションが延命されないようにするため。
+        if (info.AuthMethod == RefreshTokenService.AuthMethodPassword)
+        {
+            var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+            if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+            {
+                await _refreshService.RevokeRefreshTokenAsync(request.RefreshToken);
+                throw new UnauthorizedException("認証方式が変更されました。再度ログインしてください。");
+            }
+        }
+
         // ローテーション: 古いリフレッシュトークンを無効化して新しいものを発行
         await _refreshService.RevokeRefreshTokenAsync(request.RefreshToken);
         var deviceInfo = new RefreshTokenService.DeviceInfo(
@@ -96,7 +115,11 @@ public class RefreshController : ControllerBase
             LastSeenLocation: request.Location,
             IpAddress: request.IpAddress ?? GetClientIpAddress()
         );
-        var newRefresh = await _refreshService.CreateRefreshTokenAsync(user.Id, deviceInfo);
+        // 認証方式はローテーション後も引き継ぐ
+        var newRefresh = await _refreshService.CreateRefreshTokenAsync(
+            user.Id,
+            deviceInfo,
+            info.AuthMethod);
 
         var accessToken = JwtBearerUtil.GenerateToken(user);
         var expiresAt = JwtBearerUtil.GetTokenExpiration();
