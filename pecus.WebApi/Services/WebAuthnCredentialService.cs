@@ -395,7 +395,8 @@ public class WebAuthnCredentialService
         var mode = await _authPolicy.GetModeByUserIdAsync(user.Id, cancellationToken);
         if (!OrganizationAuthPolicyService.AllowsWebAuthn(mode))
         {
-            throw new UnauthorizedException("この組織ではパスキーを利用できません。");
+            // 組織の認証方式を推測されないよう、理由を区別できない汎用エラーにする
+            throw new UnauthorizedException("パスキーの登録に失敗しました。");
         }
 
         return await CreateRegistrationOptionsAsync(user, cancellationToken, reference);
