@@ -157,7 +157,8 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     try {
       const result = await resendOrganizationCreatedEmail({ organizationId: data.id });
       if (result.success) {
-        notify.success('組織登録完了メールを再送しました。');
+        // パスキー専用組織ではパスキー登録メールが送られるため、サーバーの文言を優先する
+        notify.success(result.data.message || '組織登録完了メールを再送しました。');
       } else {
         notify.error(result.message || '組織登録完了メールの再送に失敗しました。');
       }
@@ -475,15 +476,17 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                         組織登録完了メール再送
                       </button>
 
-                      <button
-                        type="button"
-                        className="btn btn-accent btn-sm"
-                        onClick={handleResetAdminCredentials}
-                        disabled={isPending}
-                      >
-                        <span className="icon-[tabler--fingerprint] w-4 h-4" />
-                        管理者パスキー登録リセット
-                      </button>
+                      {authStatus?.authenticationMode !== 'Password' && (
+                        <button
+                          type="button"
+                          className="btn btn-accent btn-sm"
+                          onClick={handleResetAdminCredentials}
+                          disabled={isPending}
+                        >
+                          <span className="icon-[tabler--fingerprint] w-4 h-4" />
+                          管理者パスキー登録リセット
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

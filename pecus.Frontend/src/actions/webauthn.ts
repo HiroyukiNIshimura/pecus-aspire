@@ -60,7 +60,7 @@ type PasskeyLoginResult = {
 function toRegistrationError<T>(error: unknown, defaultMessage: string): ApiResponse<T> {
   const info = getHttpErrorInfo(error);
   if ((info.status === 400 || info.status === 401) && info.bodyMessage) {
-    return validationError<T>(info.bodyMessage);
+    return { success: false, error: 'validation', message: info.bodyMessage, status: info.status };
   }
   return handleApiErrorForAction<T>(error, { defaultMessage });
 }

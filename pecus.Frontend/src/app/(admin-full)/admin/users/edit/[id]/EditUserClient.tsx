@@ -415,7 +415,10 @@ export default function EditUserClient({
         onClose={() => setIsResetConfirmOpen(false)}
         onConfirm={submitResetCredentials}
         title="パスキー登録のリセット"
-        description="このユーザーのパスキー登録をリセットします。既存のパスキーとセッションは、リンク使用時に失効します。よろしいですか？"
+        description={
+          'このユーザーのパスキー登録をリセットします。既存のパスキーとセッションは、リンク使用時に失効します。\n' +
+          'パスキーを利用していない組織（パスワードのみ）では実行できません。よろしいですか？'
+        }
         confirmLabel="リセットする"
         variant="warning"
         iconClass="icon-[tabler--fingerprint]"

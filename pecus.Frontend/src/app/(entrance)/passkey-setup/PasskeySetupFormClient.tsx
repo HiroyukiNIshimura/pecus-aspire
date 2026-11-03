@@ -38,6 +38,8 @@ export default function PasskeySetupFormClient() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState('');
+  // リンク（有効期限切れ・組織設定変更）由来のエラーかどうか。再試行で解決する失敗では案内を出さない
+  const [showLinkGuidance, setShowLinkGuidance] = useState(false);
   const [passkeySupported, setPasskeySupported] = useState(true);
   const [result, setResult] = useState<WebAuthnSetupRegistrationResponse | null>(null);
   const [isCodesDismissed, setIsCodesDismissed] = useState(false);
@@ -49,12 +51,16 @@ export default function PasskeySetupFormClient() {
 
   const handleRegister = async () => {
     setApiError('');
+    setShowLinkGuidance(false);
     setIsSubmitting(true);
 
     try {
       const optionsResult = await getSetupRegistrationOptions({ token, recoveryToken });
       if (!optionsResult.success) {
         setApiError(optionsResult.message || 'パスキー登録を開始できませんでした。');
+        // 429（試行回数の上限）や通信エラーは再試行で解決するため、リンクの案内は出さない
+        const status = 'status' in optionsResult ? optionsResult.status : undefined;
+        setShowLinkGuidance(status !== 429);
         return;
       }
 
@@ -105,6 +111,9 @@ export default function PasskeySetupFormClient() {
 
       if (!registerResult.success) {
         setApiError(registerResult.message || 'パスキーの登録に失敗しました。');
+        // 401（リンク不正・組織ポリシー拒否）のみリンクの案内を出す。検証失敗は再試行で解決する
+        const status = 'status' in registerResult ? registerResult.status : undefined;
+        setShowLinkGuidance(status === 401);
         return;
       }
 
@@ -112,6 +121,7 @@ export default function PasskeySetupFormClient() {
     } catch (error) {
       console.error('パスキー登録中にエラーが発生:', error);
       setApiError(toPasskeyRegistrationErrorMessage(error));
+      setShowLinkGuidance(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -255,8 +265,8 @@ export default function PasskeySetupFormClient() {
           </div>
         )}
 
-        {apiError && !recoveryToken && (
-          <p className="text-sm text-base-content/70">
+        {apiError && !recoveryToken && showLinkGuidance && (
+          <p role="alert" className="text-sm text-base-content/70">
             このリンクで登録できない場合は、リンクの有効期限切れか、組織の設定変更が考えられます。
             管理者にパスキー登録リンクの再発行をご依頼ください。
           </p>

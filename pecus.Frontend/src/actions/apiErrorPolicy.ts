@@ -109,6 +109,7 @@ export function handleApiErrorForAction<T>(error: unknown, options: HandleApiErr
       success: false,
       error: 'server',
       message: getUserSafeErrorMessage(error, options.defaultMessage),
+      status: info.status,
     };
   }
 

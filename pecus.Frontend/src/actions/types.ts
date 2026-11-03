@@ -41,6 +41,8 @@ export type ErrorResponse = {
   success: false;
   error: 'validation' | 'server' | 'not_found' | 'forbidden' | string;
   message: string;
+  /** HTTP ステータス（Server Action が判別できる場合のみ） */
+  status?: number;
 };
 
 /**
