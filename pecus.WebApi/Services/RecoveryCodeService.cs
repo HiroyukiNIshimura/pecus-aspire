@@ -127,10 +127,10 @@ public class RecoveryCodeService
     }
 
     /// <summary>
-    /// 未使用のコードが残っているか
+    /// 未使用のコード数
     /// </summary>
-    public async Task<bool> HasUnusedCodeAsync(int userId, CancellationToken cancellationToken = default) =>
-        await _context.UserRecoveryCodes.AnyAsync(
+    public Task<int> CountUnusedAsync(int userId, CancellationToken cancellationToken = default) =>
+        _context.UserRecoveryCodes.CountAsync(
             c => c.UserId == userId && c.UsedAt == null,
             cancellationToken);
 

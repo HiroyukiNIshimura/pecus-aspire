@@ -7685,6 +7685,10 @@ export type WebAuthnRecoveryCodeStatusResponse = {
    * 未使用のリカバリーコードを保持しているか
    */
   hasUnusedCodes?: boolean;
+  /**
+   * 未使用のリカバリーコード数
+   */
+  unusedCodeCount?: number;
 };
 
 /**
@@ -7823,6 +7827,10 @@ export type WebAuthnSetupRegistrationResponse = {
    * リカバリー経路のため全セッションを失効させたか
    */
   sessionsRevoked?: boolean;
+  /**
+   * 現在有効な（未使用の）リカバリーコード数
+   */
+  unusedRecoveryCodeCount?: null | number;
 };
 
 /**

@@ -204,6 +204,7 @@ public class EntranceWebAuthnController : ControllerBase
             RecoveryCodes = result.RecoveryCodes,
             RecoveryCodeInstruction = result.RecoveryCodeInstruction,
             SessionsRevoked = result.SessionsRevoked,
+            UnusedRecoveryCodeCount = result.UnusedRecoveryCodeCount,
         });
     }
 

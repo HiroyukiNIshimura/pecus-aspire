@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { getSetupRegistrationOptions, registerWithSetup } from '@/actions/webauthn';
 import type { WebAuthnSetupRegistrationResponse } from '@/connectors/hey-api-axios/types.gen';
 import { copyTextToClipboard } from '@/libs/utils/clipboard';
+import { buildRecoveryCodeClipboardText, RECOVERY_CODE_USAGE_NOTE } from '@/libs/utils/recoveryCode';
 
 /**
  * パスキー登録時の DOMException をユーザー向けメッセージに変換する
@@ -117,7 +118,7 @@ export default function PasskeySetupFormClient() {
   };
 
   const handleCopyCodes = async (codes: string[]) => {
-    if (await copyTextToClipboard(codes.join('\n'))) {
+    if (await copyTextToClipboard(buildRecoveryCodeClipboardText(codes))) {
       setCopyMessage({ type: 'success', message: 'リカバリーコードをコピーしました。' });
       return;
     }
@@ -148,6 +149,7 @@ export default function PasskeySetupFormClient() {
 
   if (result) {
     const codes = result.recoveryCodes ?? [];
+    const remainingCodeCount = result.unusedRecoveryCodeCount ?? 0;
     return (
       <div className="card w-full shadow-lg bg-base-100">
         <div className="card-body">
@@ -159,12 +161,30 @@ export default function PasskeySetupFormClient() {
             </div>
           )}
 
+          {result.sessionsRevoked && codes.length > 0 && (
+            <div className="alert alert-soft alert-info" role="status">
+              未使用のコードを使い切ったため、新しいリカバリーコードを発行しました。
+            </div>
+          )}
+
+          {codes.length === 0 && remainingCodeCount > 0 && (
+            <div className="alert alert-soft alert-info" role="status">
+              <span className="icon-[tabler--key] size-5 shrink-0" aria-hidden="true" />
+              <span>
+                使用したコード以外の残り {remainingCodeCount} 個は、引き続きそのまま使えます。
+                作り直す場合は、ログイン後に「プロフィール → セキュリティ」から再発行してください。
+              </span>
+            </div>
+          )}
+
           {codes.length > 0 && !isCodesDismissed && (
             <>
               <div className="alert alert-soft alert-warning" role="alert">
                 <span className="icon-[tabler--alert-triangle] size-5 shrink-0" />
                 <span>{result.recoveryCodeInstruction}</span>
               </div>
+
+              <p className="text-sm text-base-content/70">{RECOVERY_CODE_USAGE_NOTE}</p>
 
               <ul className="grid grid-cols-2 gap-2 font-mono text-sm bg-base-200 rounded-box p-4">
                 {codes.map((code) => (

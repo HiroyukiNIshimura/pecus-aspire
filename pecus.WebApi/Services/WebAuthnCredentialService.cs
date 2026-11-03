@@ -416,12 +416,12 @@ public class WebAuthnCredentialService
         _recoveryCodes.IssueAsync(userId, cancellationToken);
 
     /// <summary>
-    /// 未使用のリカバリーコードを保持しているか
+    /// 未使用のリカバリーコード数
     /// </summary>
-    public Task<bool> HasUnusedRecoveryCodeAsync(
+    public Task<int> CountUnusedRecoveryCodesAsync(
         int userId,
         CancellationToken cancellationToken = default) =>
-        _recoveryCodes.HasUnusedCodeAsync(userId, cancellationToken);
+        _recoveryCodes.CountUnusedAsync(userId, cancellationToken);
 
     /// <summary>
     /// パスキー登録の応答を検証し、クレデンシャルを保存する（認証済みユーザー）
@@ -481,7 +481,8 @@ public class WebAuthnCredentialService
         WebAuthnCredentialResponse Credential,
         List<string>? RecoveryCodes,
         string? RecoveryCodeInstruction,
-        bool SessionsRevoked);
+        bool SessionsRevoked,
+        int? UnusedRecoveryCodeCount);
 
     private async Task<SetupRegistrationResult> CompleteRegistrationAsync(
         User user,
@@ -559,7 +560,7 @@ public class WebAuthnCredentialService
             entity.Id,
             entry.Reference ?? "(authenticated)");
 
-        var (recoveryCodes, sessionsRevoked) = await ApplyPostRegistrationAsync(
+        var (recoveryCodes, sessionsRevoked, unusedRecoveryCodeCount) = await ApplyPostRegistrationAsync(
             user,
             entry.Reference,
             cancellationToken);
@@ -568,22 +569,24 @@ public class WebAuthnCredentialService
             ToResponse(entity),
             recoveryCodes,
             recoveryCodes is null ? null : RecoveryCodeService.StorageInstruction,
-            sessionsRevoked);
+            sessionsRevoked,
+            unusedRecoveryCodeCount);
     }
 
     /// <summary>
     /// 登録後の後処理（セットアップトークンの消費・リカバリーコードの使用と全セッション失効・コード再発行）
     /// </summary>
-    private async Task<(List<string>? RecoveryCodes, bool SessionsRevoked)> ApplyPostRegistrationAsync(
-        User user,
-        string? reference,
-        CancellationToken cancellationToken)
+    /// <returns>
+    /// 発行したリカバリーコード（発行しない場合は null）、全セッション失効の有無、未使用コード数
+    /// </returns>
+    private async Task<(List<string>? RecoveryCodes, bool SessionsRevoked, int? UnusedRecoveryCodeCount)>
+        ApplyPostRegistrationAsync(User user, string? reference, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(reference))
         {
             // 認証済みユーザーによる追加登録。
             // レスポンスでコードを返せないため、ここでは自動発行しない（明示的な再発行 API を使う）
-            return (null, false);
+            return (null, false, null);
         }
 
         if (reference == SetupReference)
@@ -594,7 +597,7 @@ public class WebAuthnCredentialService
             await _context.SaveChangesAsync(cancellationToken);
 
             var issued = await _recoveryCodes.IssueAsync(user.Id, cancellationToken);
-            return (issued, false);
+            return (issued, false, issued.Count);
         }
 
         if (reference.StartsWith(RecoveryReferencePrefix, StringComparison.Ordinal))
@@ -614,11 +617,24 @@ public class WebAuthnCredentialService
             // 認証器を失った前提のため、他端末のセッションをすべて失効させる
             await RevokeAllSessionsAsync(user.Id, cancellationToken);
 
+            // 残りのコードは使い続けられるようにし、使い切っていた場合のみ新規に発行する。
+            // 残っているコードを毎回作り直すと、復旧のたびに保存し直す手間が発生し、
+            // 「1 個使っても残りは有効」という案内とも矛盾するため。
+            var remaining = await _recoveryCodes.CountUnusedAsync(user.Id, cancellationToken);
+            if (remaining > 0)
+            {
+                _logger.LogInformation(
+                    "リカバリー後、未使用のリカバリーコードを維持します。UserId: {UserId}, Remaining: {Remaining}",
+                    user.Id,
+                    remaining);
+                return (null, true, remaining);
+            }
+
             var issued = await _recoveryCodes.IssueAsync(user.Id, cancellationToken);
-            return (issued, true);
+            return (issued, true, issued.Count);
         }
 
-        return (null, false);
+        return (null, false, null);
     }
 
     /// <summary>

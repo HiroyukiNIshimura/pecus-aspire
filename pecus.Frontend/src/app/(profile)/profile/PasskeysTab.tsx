@@ -16,6 +16,7 @@ import DeleteConfirmModal from '@/components/common/overlays/DeleteConfirmModal'
 import type { WebAuthnCredentialResponse } from '@/connectors/hey-api-axios/types.gen';
 import { copyTextToClipboard } from '@/libs/utils/clipboard';
 import { formatDate } from '@/libs/utils/date';
+import { buildRecoveryCodeClipboardText, RECOVERY_CODE_USAGE_NOTE } from '@/libs/utils/recoveryCode';
 
 interface PasskeysTabProps {
   notify: {
@@ -55,7 +56,7 @@ function toPasskeyRegistrationErrorMessage(error: unknown): string {
  */
 export default function PasskeysTab({ notify, isLoading, setIsLoading }: PasskeysTabProps) {
   const [credentials, setCredentials] = useState<WebAuthnCredentialResponse[]>([]);
-  const [hasRecoveryCodes, setHasRecoveryCodes] = useState(false);
+  const [unusedCodeCount, setUnusedCodeCount] = useState(0);
   const [isBusy, setIsBusy] = useState(false);
   const [issuedCodes, setIssuedCodes] = useState<string[]>([]);
   const [issuedInstruction, setIssuedInstruction] = useState<string>('');
@@ -77,7 +78,7 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
         notifyRef.current.error(listResult.message || 'パスキー一覧の取得に失敗しました。');
       }
       if (statusResult.success) {
-        setHasRecoveryCodes(statusResult.data.hasUnusedCodes ?? false);
+        setUnusedCodeCount(statusResult.data.unusedCodeCount ?? 0);
       }
     } finally {
       setIsLoading(false);
@@ -186,16 +187,17 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
         notify.error(result.message || 'リカバリーコードの発行に失敗しました。');
         return;
       }
-      setIssuedCodes(result.data.codes ?? []);
+      const codes = result.data.codes ?? [];
+      setIssuedCodes(codes);
       setIssuedInstruction(result.data.instruction ?? '');
-      setHasRecoveryCodes(true);
+      setUnusedCodeCount(codes.length);
     } finally {
       setIsBusy(false);
     }
   };
 
   const handleIssueRecoveryCodes = () => {
-    if (hasRecoveryCodes) {
+    if (unusedCodeCount > 0) {
       setIsReissueConfirmOpen(true);
       return;
     }
@@ -204,7 +206,7 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
   };
 
   const handleCopyCodes = async () => {
-    const text = issuedCodes.join('\n');
+    const text = buildRecoveryCodeClipboardText(issuedCodes);
     if (await copyTextToClipboard(text)) {
       notify.success('リカバリーコードをコピーしました。');
       return;
@@ -272,7 +274,7 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
           <h3 className="card-title text-lg">リカバリーコード</h3>
           <p className="text-sm text-base-content/70">
             パスキーをすべて失った場合に、リカバリーコードで復旧できます。
-            {hasRecoveryCodes ? '未使用のコードがあります。' : '未発行です。必ず発行してください。'}
+            {unusedCodeCount > 0 ? `未使用のコード: 残り ${unusedCodeCount} 個` : '未使用のコードはありません。'}
           </p>
 
           {issuedCodes.length > 0 && (
@@ -281,6 +283,8 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
                 <span className="icon-[tabler--alert-triangle] size-5 shrink-0" />
                 <span>{issuedInstruction}</span>
               </div>
+
+              <p className="text-sm text-base-content/70">{RECOVERY_CODE_USAGE_NOTE}</p>
 
               <ul className="grid grid-cols-2 gap-2 font-mono text-sm bg-base-200 rounded-box p-4 my-2">
                 {issuedCodes.map((code) => (
@@ -303,11 +307,25 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
             </>
           )}
 
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <button type="button" className="btn btn-outline" onClick={handleIssueRecoveryCodes} disabled={isBusy}>
               <span className="icon-[tabler--key] size-5" />
-              {hasRecoveryCodes ? 'リカバリーコードを再発行' : 'リカバリーコードを発行'}
+              {unusedCodeCount > 0 ? 'リカバリーコードを再発行' : 'リカバリーコードを発行'}
             </button>
+
+            {unusedCodeCount > 0 && unusedCodeCount <= 2 && (
+              <p className="flex items-center gap-1 text-sm text-warning">
+                <span className="icon-[tabler--alert-triangle] size-4" aria-hidden="true" />
+                残り {unusedCodeCount} 個です。使い切る前に再発行をおすすめします。
+              </p>
+            )}
+
+            {unusedCodeCount === 0 && (
+              <p className="flex items-center gap-1 text-sm text-error">
+                <span className="icon-[tabler--alert-circle] size-4" aria-hidden="true" />
+                コードがありません。発行してください。
+              </p>
+            )}
           </div>
         </div>
       </div>

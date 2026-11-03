@@ -147,11 +147,10 @@ public class CredentialController : BaseSecureController
     public async Task<Ok<WebAuthnRecoveryCodeStatusResponse>> GetRecoveryCodeStatus(
         CancellationToken cancellationToken)
     {
-        var hasCodes = await _credentialService.HasUnusedRecoveryCodeAsync(
-            CurrentUserId,
-            cancellationToken);
+        var unusedCount = await _credentialService.CountUnusedRecoveryCodesAsync(CurrentUserId, cancellationToken);
 
-        return TypedResults.Ok(new WebAuthnRecoveryCodeStatusResponse { HasUnusedCodes = hasCodes });
+        return TypedResults.Ok(
+            new WebAuthnRecoveryCodeStatusResponse { HasUnusedCodes = unusedCount > 0, UnusedCodeCount = unusedCount });
     }
 
     /// <summary>
