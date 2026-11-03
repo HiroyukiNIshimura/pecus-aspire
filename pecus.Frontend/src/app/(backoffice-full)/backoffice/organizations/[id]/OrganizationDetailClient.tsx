@@ -88,13 +88,16 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     setClientError(null);
   };
 
-  const needsWebAuthnSwitchConfirm = () =>
-    editForm.authenticationMode === 'WebAuthn' && data?.authenticationMode !== 'WebAuthn';
+  // 認証方式を制限する方向の変更（Both 以外へ変更）は、セッション失効を伴うため確認する
+  const needsAuthModeConfirm = () =>
+    editForm.authenticationMode != null &&
+    editForm.authenticationMode !== 'Both' &&
+    editForm.authenticationMode !== (data?.authenticationMode ?? 'Both');
 
   const handleSave = () => {
     if (!data) return;
 
-    if (needsWebAuthnSwitchConfirm()) {
+    if (needsAuthModeConfirm()) {
       setIsAuthModeConfirmOpen(true);
       return;
     }
@@ -391,7 +394,9 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                             disabled={isPending}
                           >
                             <option value="Both">パスワードとパスキー（推奨）</option>
-                            <option value="Password">パスワードのみ</option>
+                            <option value="Password" disabled={data?.authenticationMode === 'WebAuthn'}>
+                              パスワードのみ
+                            </option>
                             <option value="WebAuthn" disabled={authStatus?.hasBackOfficeUser}>
                               パスキーのみ
                             </option>
@@ -399,6 +404,12 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                           {authStatus?.hasBackOfficeUser && (
                             <p className="text-xs text-warning">
                               BackOffice 管理者が所属するため、パスキーのみには変更できません。
+                            </p>
+                          )}
+                          {data?.authenticationMode === 'WebAuthn' && (
+                            <p className="text-xs text-warning">
+                              パスキー専用の組織はパスワードのみに変更できません（パスワード未設定のユーザーがログインできなくなるため）。
+                              パスワードとパスキーの併用を経由してください。
                             </p>
                           )}
                           {editForm.authenticationMode === 'WebAuthn' && (
@@ -505,21 +516,25 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
         isOpen={isAuthModeConfirmOpen}
         onClose={() => setIsAuthModeConfirmOpen(false)}
         onConfirm={submitOrganizationUpdate}
-        title="パスキー専用への切り替え"
+        title={editForm.authenticationMode === 'Password' ? 'パスワードのみへの切り替え' : 'パスキー専用への切り替え'}
         description={
-          authStatus?.usersWithoutCredential == null
-            ? 'パスキー専用に切り替えると、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。\n' +
-              'パスキー未登録のユーザーはログインできなくなります。先にパスキー登録を案内してください。続行しますか？'
-            : authStatus.usersWithoutCredential > 0
-              ? `パスキー未登録のユーザーが ${authStatus.usersWithoutCredential} 名います。\n` +
-                'パスキー専用に切り替えると、これらのユーザーはログインできなくなります。\n' +
-                'また、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。\n' +
-                '先にパスキー登録を案内するか、切り替え後に管理者が登録リセットを行ってください。続行しますか？'
-              : 'パスキー専用に切り替えると、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。続行しますか？'
+          editForm.authenticationMode === 'Password'
+            ? 'パスワードのみに切り替えると、パスキーだけで利用しているユーザー（パスワード未設定）はログインできなくなります。\n' +
+              '必要に応じて、切り替え後に該当ユーザーへパスワード設定メールを発行してください。\n' +
+              'また、この組織の全ユーザーのセッションを失効させます。続行しますか？'
+            : authStatus?.usersWithoutCredential == null
+              ? 'パスキー専用に切り替えると、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。\n' +
+                'パスキー未登録のユーザーはログインできなくなります。先にパスキー登録を案内してください。続行しますか？'
+              : authStatus.usersWithoutCredential > 0
+                ? `パスキー未登録のユーザーが ${authStatus.usersWithoutCredential} 名います。\n` +
+                  'パスキー専用に切り替えると、これらのユーザーはログインできなくなります。\n' +
+                  'また、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。\n' +
+                  '先にパスキー登録を案内するか、切り替え後に管理者が登録リセットを行ってください。続行しますか？'
+                : 'パスキー専用に切り替えると、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。続行しますか？'
         }
         confirmLabel="切り替える"
         variant="warning"
-        iconClass="icon-[tabler--fingerprint]"
+        iconClass={editForm.authenticationMode === 'Password' ? 'icon-[tabler--lock]' : 'icon-[tabler--fingerprint]'}
       />
 
       <ConfirmModal

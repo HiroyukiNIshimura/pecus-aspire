@@ -256,12 +256,13 @@ public class BackOfficeOrganizationService
                 request.AuthenticationMode.Value,
                 updatedByUserId);
 
-            // パスワードを禁止する「切替」のときだけ、パスワードで確立済みのセッションを失効させる。
-            // リフレッシュで延命されるため、失効させないと方式変更が既存セッションに作用しない。
-            // 方式が変わらない保存（組織名の変更など）では失効させない。
+            // 方式を制限する「切替」のときだけ、確立済みのセッションを失効させる
+            // （リフレッシュで延命されるため、失効させないと方式変更が既存セッションに作用しない）。
+            // 方式が変わらない保存（組織名の変更など）や、制限のない Both への変更では失効させない。
+            var previousModeValue = previousMode ?? OrganizationAuthMode.Both;
             revokeSessions =
-                request.AuthenticationMode.Value == OrganizationAuthMode.WebAuthn
-                && previousMode != OrganizationAuthMode.WebAuthn;
+                request.AuthenticationMode.Value != previousModeValue
+                && request.AuthenticationMode.Value != OrganizationAuthMode.Both;
         }
 
         organization.UpdatedAt = DateTime.UtcNow;
@@ -372,6 +373,17 @@ public class BackOfficeOrganizationService
             .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
 
         var previousMode = setting?.AuthenticationMode;
+
+        // パスキー専用からパスワード専用へは変更できない。
+        // パスワード未設定のユーザーがログイン手段（パスキー・リカバリーコード）を失うため。
+        if (
+            mode == OrganizationAuthMode.Password
+            && previousMode == OrganizationAuthMode.WebAuthn
+        )
+        {
+            throw new BadRequestException(
+                "パスキー専用の組織はパスワードのみに変更できません。パスワードとパスキーの併用を経由してください。");
+        }
 
         if (setting == null)
         {

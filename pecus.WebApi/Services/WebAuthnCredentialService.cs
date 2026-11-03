@@ -501,6 +501,13 @@ public class WebAuthnCredentialService
             throw new UnauthorizedException("パスキーの登録に失敗しました。");
         }
 
+        // チャレンジ発行後に組織がパスキーを禁止した場合に備え、登録時にも再確認する
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id, cancellationToken);
+        if (!OrganizationAuthPolicyService.AllowsWebAuthn(mode))
+        {
+            throw new UnauthorizedException("パスキーの登録に失敗しました。");
+        }
+
         return await CompleteRegistrationAsync(user, entry, request, cancellationToken);
     }
 
