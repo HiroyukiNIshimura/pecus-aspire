@@ -127,7 +127,7 @@ public class WebAuthnCredentialService
         var mode = await _authPolicy.GetModeByUserIdAsync(user.Id, cancellationToken);
         if (!OrganizationAuthPolicyService.AllowsWebAuthn(mode))
         {
-            throw new UnauthorizedException("この組織ではパスワード認証のみ利用できます。");
+            throw new UnauthorizedException("認証に失敗しました。");
         }
 
         var credentials = await _context
@@ -561,8 +561,8 @@ public class WebAuthnCredentialService
 
         _context.UserCredentials.Add(entity);
 
-        // 認証情報の保存と登録後の後処理（トークン消費・セッション失効・コード発行）を
-        // 1 トランザクションにまとめ、途中失敗時に不整合が残らないようにする。
+        // DB の変更はトランザクションでまとめる。Redis のチャレンジ／トークン消費や
+        // セッション失効は DB トランザクションに参加せず、ロールバックでは取り消せない。
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         try
         {
