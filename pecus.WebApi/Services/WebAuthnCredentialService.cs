@@ -218,6 +218,13 @@ public class WebAuthnCredentialService
             throw new UnauthorizedException("認証に失敗しました。");
         }
 
+        // チャレンジ発行後に組織がパスキーを禁止した場合に備え、検証時にも再確認する
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id, cancellationToken);
+        if (!OrganizationAuthPolicyService.AllowsWebAuthn(mode))
+        {
+            throw new UnauthorizedException("認証に失敗しました。");
+        }
+
         VerifyAssertionResult result;
         try
         {

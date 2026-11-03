@@ -90,17 +90,23 @@ public class RefreshController : ControllerBase
             throw new UnauthorizedException("Invalid refresh token");
         }
 
-        // パスワード認証で発行されたトークンは、組織がパスワードを許可している間だけ有効とする。
-        // 認証方式の切替時にセッション失効が失敗しても、遅くともアクセストークンの有効期限後に
-        // パスワード由来のセッションが延命されないようにするため。
-        if (info.AuthMethod == RefreshTokenService.AuthMethodPassword)
+        // 発行元の認証方式が組織のポリシーで禁止されたら、そのセッションは延命しない。
+        // 切替時のセッション失効が失敗しても、遅くともアクセストークンの有効期限後に遮断するため。
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+        var authMethodAllowed = info.AuthMethod switch
         {
-            var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
-            if (!OrganizationAuthPolicyService.AllowsPassword(mode))
-            {
-                await _refreshService.RevokeRefreshTokenAsync(request.RefreshToken);
-                throw new UnauthorizedException("認証方式が変更されました。再度ログインしてください。");
-            }
+            RefreshTokenService.AuthMethodPassword => OrganizationAuthPolicyService.AllowsPassword(mode),
+            RefreshTokenService.AuthMethodPasskey => OrganizationAuthPolicyService.AllowsWebAuthn(mode),
+            // 発行元が不明なトークン（旧トークン・Redis 復元時）は、
+            // 両方の方式を許可している組織でのみ許可する（安全側に倒す）
+            _ => OrganizationAuthPolicyService.AllowsPassword(mode)
+                && OrganizationAuthPolicyService.AllowsWebAuthn(mode),
+        };
+
+        if (!authMethodAllowed)
+        {
+            await _refreshService.RevokeRefreshTokenAsync(request.RefreshToken);
+            throw new UnauthorizedException("認証方式が変更されました。再度ログインしてください。");
         }
 
         // ローテーション: 古いリフレッシュトークンを無効化して新しいものを発行
