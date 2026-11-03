@@ -109,6 +109,33 @@ function applyEnvOverrides(config) {
     config._shared.DefaultAi.ApiKey = process.env.AI_API_KEY;
   }
 
+  // WebAuthn (WebApi only)
+  // RpId / Origins はフロントエンドのオリジンと一致している必要がある。
+  // FRONTEND_URL から自動導出し、明示指定があればそちらを優先する。
+  const webAuthn = config.webapi?.Pecus?.WebAuthn;
+  if (webAuthn) {
+    if (process.env.FRONTEND_URL) {
+      try {
+        const frontendUrl = new URL(process.env.FRONTEND_URL);
+        webAuthn.RpId = frontendUrl.hostname;
+        webAuthn.Origins = [frontendUrl.origin];
+      } catch {
+        console.warn('Warning: FRONTEND_URL is not a valid URL, WebAuthn RpId/Origins are not derived.');
+      }
+    }
+    if (process.env.WEBAUTHN_RP_ID) {
+      webAuthn.RpId = process.env.WEBAUTHN_RP_ID;
+    }
+    if (process.env.WEBAUTHN_RP_NAME) {
+      webAuthn.RpName = process.env.WEBAUTHN_RP_NAME;
+    }
+    if (process.env.WEBAUTHN_ORIGINS) {
+      webAuthn.Origins = process.env.WEBAUTHN_ORIGINS.split(',')
+        .map((origin) => origin.trim())
+        .filter((origin) => origin.length > 0);
+    }
+  }
+
   // JWT (WebApi only)
   if (process.env.JWT_ISSUER_SIGNING_KEY) {
     config.webapi.Pecus.Jwt.IssuerSigningKey = process.env.JWT_ISSUER_SIGNING_KEY;

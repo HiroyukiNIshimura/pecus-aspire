@@ -1,4 +1,5 @@
-﻿using Hangfire;
+﻿using Fido2NetLib;
+using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -76,6 +77,29 @@ builder.Services.AddScoped<IEmailNotificationFilterService, EmailNotificationFil
 
 // セキュリティ関連サービスの登録
 builder.Services.AddSingleton<FrontendUrlResolver>();
+
+// WebAuthn (FIDO2) の登録
+// RpId / Origins はフロントエンドのオリジンと一致させる（設定は config/settings.base.json）
+var webAuthnOrigins = pecusConfig
+    .WebAuthn
+    .Origins
+    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .Select(origin => origin.TrimEnd('/'))
+    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+builder.Services.AddFido2(options =>
+{
+    options.RPID = pecusConfig.WebAuthn.RpId;
+    options.RPName = pecusConfig.WebAuthn.RpName;
+    options.Origins = webAuthnOrigins;
+    options.TimestampDriftTolerance = pecusConfig.WebAuthn.TimestampDriftToleranceMs;
+});
+
+builder.Services.AddSingleton<WebAuthnChallengeStore>();
+builder.Services.AddSingleton<LoginRateLimiter>();
+builder.Services.AddScoped<OrganizationAuthPolicyService>();
+builder.Services.AddScoped<WebAuthnCredentialService>();
+builder.Services.AddScoped<AuthTokenIssuer>();
 
 // CORS設定（開発環境のみ - SignalR用）
 // 本番環境ではリバースプロキシ経由で同一ドメインになるためCORS不要

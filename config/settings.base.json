@@ -142,6 +142,12 @@
         "ValidAudience": "https://localhost/",
         "ExpiresMinutes": 15
       },
+      "WebAuthn": {
+        "_comment": "WebAuthn(FIDO2)設定。RpId はフロントエンドのホスト名（例: coati.0t0.jp）、Origins はフロントエンドのオリジン一覧。本番は必ず https を指定する。FRONTEND_URL から自動導出も可能。",
+        "RpId": "localhost",
+        "RpName": "Coati",
+        "Origins": ["https://localhost:3000", "http://localhost:3000"]
+      },
       "Pagination": {
         "DefaultPageSize": 20,
         "MaxPageSize": 100

@@ -54,13 +54,17 @@ public class UserService
     private readonly ApplicationDbContext _context;
     private readonly RefreshTokenService _refreshTokenService;
 
+    private readonly OrganizationAuthPolicyService _authPolicy;
+
     public UserService(
         ApplicationDbContext context,
-        RefreshTokenService refreshTokenService
+        RefreshTokenService refreshTokenService,
+        OrganizationAuthPolicyService authPolicy
     )
     {
         _context = context;
         _refreshTokenService = refreshTokenService;
+        _authPolicy = authPolicy;
     }
 
     /// <summary>
@@ -77,7 +81,19 @@ public class UserService
                 && u.IsActive
             );
 
-        if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
+        if (user == null)
+        {
+            return null;
+        }
+
+        // 組織がパスキー専用に設定されている場合はパスワード認証を拒否する
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+        if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+        {
+            return null;
+        }
+
+        if (!VerifyPassword(request.Password, user.PasswordHash))
         {
             return null;
         }
@@ -587,6 +603,13 @@ public class UserService
             return false; // 無効なトークンまたは期限切れ
         }
 
+        // パスキー専用の組織ではパスワード設定を許可しない
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+        if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+        {
+            return false;
+        }
+
         // パスワードを設定
         user.PasswordHash = HashPassword(request.Password);
         user.PasswordResetToken = null; // トークンをクリア
@@ -621,6 +644,13 @@ public class UserService
             return (true, null);
         }
 
+        // パスキー専用の組織ではパスワードリセットを発行しない（存在は伏せる）
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+        if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+        {
+            return (true, null);
+        }
+
         // パスワードリセットトークンを生成（24時間有効）
         var token = GeneratePasswordResetToken();
         var tokenExpiresAt = DateTime.UtcNow.AddHours(24);
@@ -641,6 +671,12 @@ public class UserService
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
         if (user == null)
+        {
+            return (false, null);
+        }
+
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+        if (!OrganizationAuthPolicyService.AllowsPassword(mode))
         {
             return (false, null);
         }
@@ -671,6 +707,12 @@ public class UserService
         if (user == null)
         {
             return false; // 無効なトークンまたは期限切れ
+        }
+
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+        if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+        {
+            return false;
         }
 
         // パスワードをリセット

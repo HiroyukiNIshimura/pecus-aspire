@@ -57,13 +57,16 @@ public class ProfileService
     /// <summary>
     /// コンストラクタ
     /// </summary>
+    private readonly OrganizationAuthPolicyService _authPolicy;
+
     public ProfileService(
         ApplicationDbContext context,
         ILogger<ProfileService> logger,
         RefreshTokenService refreshTokenService,
         UserService userService,
         FileUploadService fileUploadService,
-        IWebHostEnvironment environment
+        IWebHostEnvironment environment,
+        OrganizationAuthPolicyService authPolicy
     )
     {
         _context = context;
@@ -72,6 +75,7 @@ public class ProfileService
         _userService = userService;
         _fileUploadService = fileUploadService;
         _environment = environment;
+        _authPolicy = authPolicy;
     }
 
     /// <summary>
@@ -600,6 +604,14 @@ public class ProfileService
             if (user == null)
             {
                 _logger.LogWarning("パスワード変更失敗: ユーザーが見つかりません。UserId: {UserId}", userId);
+                return false;
+            }
+
+            // パスキー専用の組織ではパスワード変更を許可しない
+            var mode = await _authPolicy.GetModeByUserIdAsync(userId);
+            if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+            {
+                _logger.LogWarning("パスワード変更失敗: パスキー専用の組織です。UserId: {UserId}", userId);
                 return false;
             }
 

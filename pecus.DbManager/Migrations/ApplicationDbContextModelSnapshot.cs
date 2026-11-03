@@ -18,7 +18,7 @@ namespace pecus.DbManager.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1039,6 +1039,9 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AuthenticationMode")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("BotGroupChatMessagesEnabled")
                         .HasColumnType("boolean");
 
@@ -1665,6 +1668,10 @@ namespace pecus.DbManager.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<byte[]>("WebAuthnUserHandle")
+                        .HasMaxLength(64)
+                        .HasColumnType("bytea");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -1676,6 +1683,9 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("Username");
+
+                    b.HasIndex("WebAuthnUserHandle")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -1723,6 +1733,75 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("UserId", "IsNotified");
 
                     b.ToTable("UserAchievements");
+                });
+
+            modelBuilder.Entity("Pecus.Libs.DB.Models.UserCredential", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid?>("Aaguid")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("CredentialId")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<int?>("DeviceId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsBackedUp")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsBackupEligible")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LastUsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<byte[]>("PublicKey")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<long>("SignCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Transports")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CredentialId")
+                        .IsUnique();
+
+                    b.HasIndex("DeviceId");
+
+                    b.HasIndex("LastUsedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserCredentials");
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.UserSetting", b =>
@@ -2908,6 +2987,24 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Pecus.Libs.DB.Models.UserCredential", b =>
+                {
+                    b.HasOne("Pecus.Libs.DB.Models.Device", "Device")
+                        .WithMany()
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Pecus.Libs.DB.Models.User", "User")
+                        .WithMany("Credentials")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Device");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Pecus.Libs.DB.Models.UserSetting", b =>
                 {
                     b.HasOne("Pecus.Libs.DB.Models.User", "User")
@@ -3374,6 +3471,8 @@ namespace pecus.DbManager.Migrations
             modelBuilder.Entity("Pecus.Libs.DB.Models.User", b =>
                 {
                     b.Navigation("ChatActor");
+
+                    b.Navigation("Credentials");
 
                     b.Navigation("Devices");
 

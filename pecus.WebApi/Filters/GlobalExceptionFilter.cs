@@ -34,6 +34,7 @@ public class GlobalExceptionFilter : IExceptionFilter
         var result = context.Exception switch
         {
             UnauthorizedException ex => HandleUnauthorizedException(ex, context),
+            TooManyRequestsException ex => HandleTooManyRequestsException(ex, context),
             ForbiddenException ex => HandleForbiddenException(ex, context),
             NotFoundException ex => HandleNotFoundException(ex, context),
             BadRequestException ex => HandleBadRequestException(ex, context),
@@ -91,6 +92,28 @@ public class GlobalExceptionFilter : IExceptionFilter
         )
         {
             StatusCode = StatusCodes.Status401Unauthorized,
+        };
+    }
+
+    /// <summary>
+    /// TooManyRequestsException: 429 Too Many Requests
+    /// </summary>
+    private IActionResult HandleTooManyRequestsException(TooManyRequestsException ex, ExceptionContext context)
+    {
+        _logger.LogWarning(
+            "Too Many Requests Exception: {Message}",
+            ex.Message
+        );
+
+        return new ObjectResult(
+            new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status429TooManyRequests,
+                Message = ex.Message,
+            }
+        )
+        {
+            StatusCode = StatusCodes.Status429TooManyRequests,
         };
     }
 

@@ -147,6 +147,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Device> Devices { get; set; }
 
     /// <summary>
+    /// ユーザーのパスキー（WebAuthn クレデンシャル）テーブル
+    /// </summary>
+    public DbSet<UserCredential> UserCredentials { get; set; }
+
+    /// <summary>
     /// メールアドレス変更トークンテーブル
     /// </summary>
     public DbSet<EmailChangeToken> EmailChangeTokens { get; set; }
@@ -250,7 +255,9 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.AvatarType);
             entity.Property(e => e.UserAvatarPath).HasMaxLength(500);
             entity.Property(e => e.BackupEmail).HasMaxLength(254);
+            entity.Property(e => e.WebAuthnUserHandle).HasMaxLength(64);
             entity.HasIndex(e => e.LoginId).IsUnique();
+            entity.HasIndex(e => e.WebAuthnUserHandle).IsUnique();
             entity.HasIndex(e => e.Username);
             entity.HasIndex(e => e.Email).IsUnique();
 
@@ -1023,6 +1030,33 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(d => d.LastSeenAt);
         });
 
+        // UserCredential エンティティの設定
+        modelBuilder.Entity<UserCredential>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Transports).HasMaxLength(200);
+
+            // UserCredential と User の多対一リレーションシップ
+            entity
+                .HasOne(c => c.User)
+                .WithMany(u => u.Credentials)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // UserCredential と Device の多対一リレーションシップ（表示用の任意紐づけ）
+            entity
+                .HasOne(c => c.Device)
+                .WithMany()
+                .HasForeignKey(c => c.DeviceId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(c => c.CredentialId).IsUnique();
+            entity.HasIndex(c => c.UserId);
+            entity.HasIndex(c => c.DeviceId);
+            entity.HasIndex(c => c.LastUsedAt);
+        });
+
         // EmailChangeToken エンティティの設定
         modelBuilder.Entity<EmailChangeToken>(entity =>
         {
@@ -1579,6 +1613,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Genre>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<TaskType>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<Device>().Property(e => e.RowVersion).IsRowVersion();
+        modelBuilder.Entity<UserCredential>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<Activity>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<ChatRoom>().Property(e => e.RowVersion).IsRowVersion();
         modelBuilder.Entity<SystemNotification>().Property(e => e.RowVersion).IsRowVersion();
