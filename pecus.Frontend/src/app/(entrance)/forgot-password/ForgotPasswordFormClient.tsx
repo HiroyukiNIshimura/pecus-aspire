@@ -137,7 +137,7 @@ export default function ForgotPasswordFormClient() {
         {/* パスキー利用者向けの案内（入力内容に依存しないため、アカウントの存在は推測できない） */}
         <div className="alert alert-info mt-4 text-sm">
           <span>
-            パスキーをご利用の場合、パスワードリセットメールは届きません。
+            パスキー専用の組織では、パスワードリセットメールは届きません。
             <Link href="/recovery" className="link link-primary">
               パスキーを紛失した場合
             </Link>

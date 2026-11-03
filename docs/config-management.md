@@ -95,7 +95,7 @@ node scripts/generate-appsettings.js -P
 | `FRONTEND_URL` | 推奨 | WebAuthn の `RpId` / `Origins` を自動導出（未指定時は `_infrastructure.urls.frontend`） |
 
 `RpId` が `localhost` のまま、または `Origins` に `https` 以外が含まれる場合も中止します。
-実行時にコンテナ環境変数 `JWT_SECRET` で署名鍵を差し替える運用でも、プレースホルダーの鍵をイメージに焼き込まないよう、生成時点の値を検証します。
+署名は `appsettings.json` の `Pecus:Jwt:IssuerSigningKey` が使われ（環境変数 `JWT_SECRET` はトークン検証にのみ作用）、両者が食い違うと認証が失敗します。実行時に `JWT_SECRET` で差し替える運用は行わず、生成時にこの値を確定してください。
 `-P` はビルドPCとデプロイPCの両方で実行されるため、どちらのホストでも同じ環境変数を使えるようにしてください。
 
 ## フロントエンドの環境変数

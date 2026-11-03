@@ -559,6 +559,31 @@ public class WebAuthnCredentialService
             throw new InvalidOperationException("パスキーの登録に失敗しました。");
         }
 
+        // 端末 ID はクライアント指定のため、自ユーザーの端末のみ紐づける。
+        // 他ユーザーの端末を紐づけると、一覧での端末名参照や削除時のセッション失効の起点になる。
+        // 該当しない場合は紐づけずに登録を継続する（認証器の操作を無駄にしない）。
+        int? deviceId = null;
+        if (request.DeviceId is int requestedDeviceId)
+        {
+            if (
+                await _context.Devices.AnyAsync(
+                    d => d.Id == requestedDeviceId && d.UserId == user.Id,
+                    cancellationToken
+                )
+            )
+            {
+                deviceId = requestedDeviceId;
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "他ユーザーの、または存在しない端末 ID がパスキー登録に指定されました。UserId: {UserId}, DeviceId: {DeviceId}",
+                    user.Id,
+                    requestedDeviceId
+                );
+            }
+        }
+
         var entity = new UserCredential
         {
             UserId = user.Id,
@@ -574,7 +599,7 @@ public class WebAuthnCredentialService
             IsBackupEligible = result.IsBackupEligible,
             IsBackedUp = result.IsBackedUp,
             Name = string.IsNullOrWhiteSpace(request.Name) ? "パスキー" : request.Name.Trim(),
-            DeviceId = request.DeviceId,
+            DeviceId = deviceId,
             CreatedAt = DateTimeOffset.UtcNow,
         };
 
@@ -823,7 +848,7 @@ public class WebAuthnCredentialService
         var tokens = await _context
             .RefreshTokens
             .AsNoTracking()
-            .Where(t => t.DeviceId == deviceId && !t.IsRevoked)
+            .Where(t => t.DeviceId == deviceId && t.UserId == userId && !t.IsRevoked)
             .Select(t => t.Token)
             .ToListAsync(cancellationToken);
 
