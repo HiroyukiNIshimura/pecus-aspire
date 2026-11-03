@@ -319,6 +319,14 @@ public class ProfileService
             return false;
         }
 
+        // パスキーは削除せず端末との紐づけのみ解除する。
+        // 同期パスキーは複数端末で共有されるため、端末（セッション）の失効に巻き込むと
+        // 別の端末からも認証できなくなってしまう。
+        await _context
+            .UserCredentials
+            .Where(c => c.DeviceId == deviceId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.DeviceId, (int?)null));
+
         // 関連するリフレッシュトークンを無効化（Redis + DB）
         // トラッキングせずに取得し、RevokeRefreshTokenAsync で個別に無効化
         var refreshTokens = await _context.RefreshTokens

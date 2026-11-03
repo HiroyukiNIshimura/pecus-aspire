@@ -17,6 +17,11 @@ public enum WebAuthnChallengePurpose
     /// パスキー認証（ログイン）
     /// </summary>
     Authentication,
+
+    /// <summary>
+    /// リカバリーコード検証後のパスキー再登録
+    /// </summary>
+    Recovery,
 }
 
 /// <summary>
@@ -25,11 +30,13 @@ public enum WebAuthnChallengePurpose
 /// <param name="UserId">対象ユーザー（登録時は確定済み、認証時は識別済みのユーザー）</param>
 /// <param name="Purpose">用途</param>
 /// <param name="Payload">Fido2 のオプションをシリアライズした JSON</param>
+/// <param name="Reference">登録手段の識別情報（セットアップトークンやリカバリーコードID など）</param>
 /// <param name="ExpiresAt">有効期限</param>
 public sealed record WebAuthnChallengeEntry(
     int? UserId,
     string Purpose,
     string Payload,
+    string? Reference,
     DateTimeOffset ExpiresAt);
 
 /// <summary>
@@ -60,7 +67,8 @@ public class WebAuthnChallengeStore
         string payload,
         WebAuthnChallengePurpose purpose,
         int? userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? reference = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -69,6 +77,7 @@ public class WebAuthnChallengeStore
             userId,
             purpose.ToString(),
             payload,
+            reference,
             DateTimeOffset.UtcNow.Add(ChallengeTtl));
 
         await _db.StringSetAsync(GetKey(challengeId), JsonSerializer.Serialize(entry), ChallengeTtl);

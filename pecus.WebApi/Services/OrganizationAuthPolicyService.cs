@@ -45,6 +45,23 @@ public class OrganizationAuthPolicyService
     }
 
     /// <summary>
+    /// 組織IDから認証方式を取得する
+    /// </summary>
+    public async Task<OrganizationAuthMode> GetModeByOrganizationIdAsync(
+        int organizationId,
+        CancellationToken cancellationToken = default)
+    {
+        var mode = await _context
+            .OrganizationSettings
+            .AsNoTracking()
+            .Where(s => s.OrganizationId == organizationId)
+            .Select(s => (OrganizationAuthMode?)s.AuthenticationMode)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return mode ?? DefaultMode;
+    }
+
+    /// <summary>
     /// ユーザーIDから直接認証方式を取得する（ユーザー未特定時は既定値）
     /// </summary>
     public async Task<OrganizationAuthMode> GetModeByUserIdAsync(

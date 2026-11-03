@@ -151,6 +151,62 @@ public class EntranceWebAuthnController : ControllerBase
         return TypedResults.Ok(response);
     }
 
+    /// <summary>
+    /// セットアップトークン／リカバリートークンからパスキー登録用のオプションを取得
+    /// </summary>
+    [HttpPost("register/options")]
+    [ProducesResponseType(typeof(WebAuthnRegistrationOptionsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<Ok<WebAuthnRegistrationOptionsResponse>> GetSetupRegistrationOptions(
+        [FromBody] WebAuthnSetupOptionsRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!await IsAllowedByIpAsync("register-options", cancellationToken))
+        {
+            throw new TooManyRequestsException("試行回数が上限に達しました。しばらくしてから再度お試しください。");
+        }
+
+        var response = await _credentialService.CreateSetupRegistrationOptionsAsync(
+            request.Token,
+            request.RecoveryToken,
+            cancellationToken);
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// セットアップトークン／リカバリーコードでパスキーを登録
+    /// </summary>
+    [HttpPost("register/verify")]
+    [ProducesResponseType(typeof(WebAuthnSetupRegistrationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<Ok<WebAuthnSetupRegistrationResponse>> VerifySetupRegistration(
+        [FromBody] WebAuthnRegistrationRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!await IsAllowedByIpAsync("register-verify", cancellationToken))
+        {
+            throw new TooManyRequestsException("試行回数が上限に達しました。しばらくしてから再度お試しください。");
+        }
+
+        var result = await _credentialService.RegisterWithSetupAsync(request, cancellationToken);
+
+        _logger.LogInformation(
+            "パスキーを登録しました（セットアップ経路）。CredentialId: {CredentialId}, SessionsRevoked: {SessionsRevoked}",
+            result.Credential.Id,
+            result.SessionsRevoked);
+
+        return TypedResults.Ok(new WebAuthnSetupRegistrationResponse
+        {
+            Credential = result.Credential,
+            RecoveryCodes = result.RecoveryCodes,
+            RecoveryCodeInstruction = result.RecoveryCodeInstruction,
+            SessionsRevoked = result.SessionsRevoked,
+        });
+    }
+
     private async Task<bool> IsAllowedByIpAsync(string action, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();

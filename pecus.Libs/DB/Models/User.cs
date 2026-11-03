@@ -96,6 +96,16 @@ public class User
     public DateTimeOffset? PasswordResetTokenExpiresAt { get; set; }
 
     /// <summary>
+    /// パスキー登録用トークン（招待・登録リセット用）
+    /// </summary>
+    public string? CredentialSetupToken { get; set; }
+
+    /// <summary>
+    /// パスキー登録用トークンの有効期限
+    /// </summary>
+    public DateTimeOffset? CredentialSetupTokenExpiresAt { get; set; }
+
+    /// <summary>
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; } = true;
@@ -142,6 +152,11 @@ public class User
     /// このユーザーが登録したパスキー（WebAuthn クレデンシャル）
     /// </summary>
     public List<UserCredential> Credentials { get; set; } = new();
+
+    /// <summary>
+    /// このユーザーのリカバリーコード
+    /// </summary>
+    public List<UserRecoveryCode> RecoveryCodes { get; set; } = new();
 
     /// <summary>
     /// チャットアクター（ナビゲーションプロパティ）

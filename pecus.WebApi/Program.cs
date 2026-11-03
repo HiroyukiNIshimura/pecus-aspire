@@ -95,11 +95,13 @@ builder.Services.AddFido2(options =>
     options.TimestampDriftTolerance = pecusConfig.WebAuthn.TimestampDriftToleranceMs;
 });
 
+builder.Services.AddSingleton(pecusConfig.WebAuthn);
 builder.Services.AddSingleton<WebAuthnChallengeStore>();
 builder.Services.AddSingleton<LoginRateLimiter>();
 builder.Services.AddScoped<OrganizationAuthPolicyService>();
 builder.Services.AddScoped<WebAuthnCredentialService>();
 builder.Services.AddScoped<AuthTokenIssuer>();
+builder.Services.AddScoped<RecoveryCodeService>();
 
 // CORS設定（開発環境のみ - SignalR用）
 // 本番環境ではリバースプロキシ経由で同一ドメインになるためCORS不要

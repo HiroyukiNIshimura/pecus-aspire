@@ -129,6 +129,9 @@ function applyEnvOverrides(config) {
     if (process.env.WEBAUTHN_RP_NAME) {
       webAuthn.RpName = process.env.WEBAUTHN_RP_NAME;
     }
+    if (process.env.WEBAUTHN_RECOVERY_CODE_PEPPER) {
+      webAuthn.RecoveryCodePepper = process.env.WEBAUTHN_RECOVERY_CODE_PEPPER;
+    }
     if (process.env.WEBAUTHN_ORIGINS) {
       webAuthn.Origins = process.env.WEBAUTHN_ORIGINS.split(',')
         .map((origin) => origin.trim())

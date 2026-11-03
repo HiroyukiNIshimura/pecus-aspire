@@ -139,6 +139,48 @@ public class CredentialController : BaseSecureController
         return TypedResults.Ok(new MessageResponse { Message = "パスキーを削除しました。" });
     }
 
+    /// <summary>
+    /// 未使用のリカバリーコードを保持しているか
+    /// </summary>
+    [HttpGet("recovery-codes")]
+    [ProducesResponseType(typeof(WebAuthnRecoveryCodeStatusResponse), StatusCodes.Status200OK)]
+    public async Task<Ok<WebAuthnRecoveryCodeStatusResponse>> GetRecoveryCodeStatus(
+        CancellationToken cancellationToken)
+    {
+        var hasCodes = await _credentialService.HasUnusedRecoveryCodeAsync(
+            CurrentUserId,
+            cancellationToken);
+
+        return TypedResults.Ok(new WebAuthnRecoveryCodeStatusResponse { HasUnusedCodes = hasCodes });
+    }
+
+    /// <summary>
+    /// リカバリーコードを再発行
+    /// </summary>
+    /// <remarks>
+    /// 既存の未使用コードはすべて無効化される。表示はこのレスポンス限り。
+    /// </remarks>
+    [HttpPost("recovery-codes")]
+    [ProducesResponseType(typeof(WebAuthnRecoveryCodesResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<Ok<WebAuthnRecoveryCodesResponse>> IssueRecoveryCodes(
+        CancellationToken cancellationToken)
+    {
+        await EnsureWebAuthnAllowedAsync(cancellationToken);
+
+        var codes = await _credentialService.IssueRecoveryCodesAsync(
+            CurrentUserId,
+            cancellationToken);
+
+        _logger.LogInformation("リカバリーコードを再発行しました。UserId: {UserId}", CurrentUserId);
+
+        return TypedResults.Ok(new WebAuthnRecoveryCodesResponse
+        {
+            Codes = codes,
+            Instruction = RecoveryCodeService.StorageInstruction,
+        });
+    }
+
     private async Task EnsureWebAuthnAllowedAsync(CancellationToken cancellationToken)
     {
         var mode = await _authPolicy.GetModeByUserIdAsync(CurrentUserId, cancellationToken);

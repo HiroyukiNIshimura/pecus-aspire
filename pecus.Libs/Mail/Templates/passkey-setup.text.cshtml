@@ -1,0 +1,27 @@
+@model Pecus.Libs.Mail.Templates.Models.CredentialSetupEmailModel
+
+パスキー登録のお知らせ
+
+@Model.UserName さん、アカウントが作成されました
+
+このアプリはパスキー（WebAuthn）でログインします。以下のURLからパスキーを登録してください。
+
+パスキー登録URL: @Model.PasskeySetupUrl
+
+重要: このリンクは @Model.TokenExpiresAt.ToString("yyyy年MM月dd日 HH:mm") まで有効です。
+
+アカウント情報:
+- ユーザー名: @Model.UserName
+- メールアドレス: @Model.Email
+- ログインID: @Model.LoginId
+- 組織: @Model.OrganizationName
+
+【パスキー登録について】
+- 登録には端末の生体認証または画面ロックの解除が必要です
+- 複数の端末で使う場合は、端末ごとにパスキーを登録してください
+- 登録完了後にリカバリーコードが表示されます
+
+【リカバリーコードの保管】
+@Model.RecoveryCodeInstruction
+
+このメールに心当たりがない場合は、このメールを無視してください。

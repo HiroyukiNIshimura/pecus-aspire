@@ -152,6 +152,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserCredential> UserCredentials { get; set; }
 
     /// <summary>
+    /// ユーザーのリカバリーコードテーブル
+    /// </summary>
+    public DbSet<UserRecoveryCode> UserRecoveryCodes { get; set; }
+
+    /// <summary>
     /// メールアドレス変更トークンテーブル
     /// </summary>
     public DbSet<EmailChangeToken> EmailChangeTokens { get; set; }
@@ -256,8 +261,10 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.UserAvatarPath).HasMaxLength(500);
             entity.Property(e => e.BackupEmail).HasMaxLength(254);
             entity.Property(e => e.WebAuthnUserHandle).HasMaxLength(64);
+            entity.Property(e => e.CredentialSetupToken).HasMaxLength(128);
             entity.HasIndex(e => e.LoginId).IsUnique();
             entity.HasIndex(e => e.WebAuthnUserHandle).IsUnique();
+            entity.HasIndex(e => e.CredentialSetupToken);
             entity.HasIndex(e => e.Username);
             entity.HasIndex(e => e.Email).IsUnique();
 
@@ -1055,6 +1062,22 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(c => c.UserId);
             entity.HasIndex(c => c.DeviceId);
             entity.HasIndex(c => c.LastUsedAt);
+        });
+
+        // UserRecoveryCode エンティティの設定
+        modelBuilder.Entity<UserRecoveryCode>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CodeHash).IsRequired().HasMaxLength(128);
+
+            entity
+                .HasOne(c => c.User)
+                .WithMany(u => u.RecoveryCodes)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(c => new { c.UserId, c.CodeHash }).IsUnique();
+            entity.HasIndex(c => c.UserId);
         });
 
         // EmailChangeToken エンティティの設定

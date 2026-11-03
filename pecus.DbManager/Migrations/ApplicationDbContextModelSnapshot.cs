@@ -1618,6 +1618,13 @@ namespace pecus.DbManager.Migrations
                     b.Property<int?>("CreatedByUserId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("CredentialSetupToken")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTimeOffset?>("CredentialSetupTokenExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(254)
@@ -1673,6 +1680,8 @@ namespace pecus.DbManager.Migrations
                         .HasColumnType("bytea");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CredentialSetupToken");
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -1802,6 +1811,38 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserCredentials");
+                });
+
+            modelBuilder.Entity("Pecus.Libs.DB.Models.UserRecoveryCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "CodeHash")
+                        .IsUnique();
+
+                    b.ToTable("UserRecoveryCodes");
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.UserSetting", b =>
@@ -3005,6 +3046,17 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Pecus.Libs.DB.Models.UserRecoveryCode", b =>
+                {
+                    b.HasOne("Pecus.Libs.DB.Models.User", "User")
+                        .WithMany("RecoveryCodes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Pecus.Libs.DB.Models.UserSetting", b =>
                 {
                     b.HasOne("Pecus.Libs.DB.Models.User", "User")
@@ -3475,6 +3527,8 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("Credentials");
 
                     b.Navigation("Devices");
+
+                    b.Navigation("RecoveryCodes");
 
                     b.Navigation("Setting");
 

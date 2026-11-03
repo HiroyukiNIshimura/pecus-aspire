@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
@@ -25,6 +26,8 @@ public class BackOfficeController : BaseBackendController
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<BackOfficeController> _logger;
     private readonly FrontendUrlResolver _frontendUrlResolver;
+    private readonly OrganizationAuthPolicyService _authPolicy;
+    private readonly UserService _userService;
 
     public BackOfficeController(
         ProfileService profileService,
@@ -32,7 +35,9 @@ public class BackOfficeController : BaseBackendController
         BackOfficeOrganizationService backOfficeOrganizationService,
         IBackgroundJobClient backgroundJobClient,
         ILogger<BackOfficeController> logger,
-        FrontendUrlResolver frontendUrlResolver
+        FrontendUrlResolver frontendUrlResolver,
+        OrganizationAuthPolicyService authPolicy,
+        UserService userService
     ) : base(
         profileService: profileService,
         logger: logger
@@ -43,6 +48,8 @@ public class BackOfficeController : BaseBackendController
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
         _frontendUrlResolver = frontendUrlResolver;
+        _authPolicy = authPolicy;
+        _userService = userService;
     }
 
     /// <summary>
@@ -245,6 +252,20 @@ public class BackOfficeController : BaseBackendController
             throw new NotFoundException("組織の管理者ユーザーが見つかりません。");
         }
 
+        // パスキー専用の組織ではパスキー登録メールを送る
+        var mode = await _authPolicy.GetModeByOrganizationIdAsync(id);
+        if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+        {
+            var (credentialSuccess, credentialUser) = await _userService.RequestCredentialSetupAsync(adminUser.Id);
+            if (!credentialSuccess || credentialUser == null)
+            {
+                throw new NotFoundException("管理者ユーザーが見つかりません。");
+            }
+
+            EnqueueCredentialSetupEmail(organization, credentialUser);
+            return TypedResults.Ok(new SuccessResponse { Message = "パスキー登録メールを再送しました。" });
+        }
+
         // パスワードが既に設定されている場合はエラー（空文字列はパスワード未設定）
         if (!string.IsNullOrEmpty(adminUser.PasswordHash))
         {
@@ -292,6 +313,74 @@ public class BackOfficeController : BaseBackendController
         );
 
         return TypedResults.Ok(new SuccessResponse { Message = "組織登録完了メールを再送しました。" });
+    }
+
+    /// <summary>
+    /// 組織管理者のパスキー登録をリセット
+    /// </summary>
+    /// <remarks>
+    /// 組織管理者が認証器を紛失した場合に、パスキー再登録用のリンクを発行してメール送信します。
+    /// </remarks>
+    /// <param name="id">組織ID</param>
+    [HttpPost("{id:int}/reset-admin-credentials")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<Ok<SuccessResponse>> ResetAdminCredentials(int id)
+    {
+        var organization = await _organizationService.GetOrganizationByIdAsync(id);
+        if (organization == null)
+        {
+            throw new NotFoundException("組織が見つかりません。");
+        }
+
+        var adminUser = await _backOfficeOrganizationService.GetOrganizationAdminUserAsync(id);
+        if (adminUser == null)
+        {
+            throw new NotFoundException("組織の管理者ユーザーが見つかりません。");
+        }
+
+        var (success, user) = await _userService.RequestCredentialSetupAsync(adminUser.Id);
+        if (!success || user == null)
+        {
+            throw new NotFoundException("組織の管理者ユーザーが見つかりません。");
+        }
+
+        EnqueueCredentialSetupEmail(organization, user);
+
+        _logger.LogInformation(
+            "バックオフィスによる管理者パスキー登録リセット: OrganizationId={OrganizationId}, AdminUserId={AdminUserId}",
+            id,
+            adminUser.Id);
+
+        return TypedResults.Ok(new SuccessResponse { Message = "パスキー登録メールを送信しました。" });
+    }
+
+    /// <summary>
+    /// パスキー登録メールをキューに投入する
+    /// </summary>
+    private void EnqueueCredentialSetupEmail(Organization organization, User user)
+    {
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
+        var setupUrl = $"{baseUrl}/passkey-setup?token={user.CredentialSetupToken}";
+
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendTemplatedEmailAsync(
+                organization.Id,
+                user.Email,
+                "パスキー登録のお知らせ",
+                new CredentialSetupEmailModel
+                {
+                    UserName = user.Username,
+                    Email = user.Email,
+                    LoginId = user.LoginId,
+                    OrganizationName = organization.Name,
+                    PasskeySetupUrl = setupUrl,
+                    TokenExpiresAt = user.CredentialSetupTokenExpiresAt ?? DateTimeOffset.UtcNow.AddHours(24),
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    RecoveryCodeInstruction = RecoveryCodeService.StorageInstruction,
+                }
+            )
+        );
     }
 
     /// <summary>

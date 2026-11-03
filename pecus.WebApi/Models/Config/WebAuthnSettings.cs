@@ -28,4 +28,9 @@ public class WebAuthnSettings
     /// 認証器のタイムスタンプ許容誤差（ミリ秒）
     /// </summary>
     public int TimestampDriftToleranceMs { get; set; } = 300_000;
+
+    /// <summary>
+    /// リカバリーコードのハッシュに使用する鍵（十分な長さのランダム文字列）
+    /// </summary>
+    public string RecoveryCodePepper { get; set; } = "CHANGE_ME_RECOVERY_CODE_PEPPER_IN_PRODUCTION";
 }

@@ -21,12 +21,25 @@ public class WebAuthnCredentialService
     /// </summary>
     public const int MaxCredentialsPerUser = 10;
 
+    /// <summary>
+    /// セットアップトークンによる登録であることを示す参照値
+    /// </summary>
+    public const string SetupReference = "setup";
+
+    /// <summary>
+    /// リカバリーコードによる登録であることを示す参照値の接頭辞
+    /// </summary>
+    public const string RecoveryReferencePrefix = "recovery:";
+
     private const int ValidationTimeoutSeconds = 300;
 
     private readonly ApplicationDbContext _context;
     private readonly IFido2 _fido2;
     private readonly WebAuthnChallengeStore _challengeStore;
     private readonly OrganizationAuthPolicyService _authPolicy;
+    private readonly RecoveryCodeService _recoveryCodes;
+    private readonly RefreshTokenService _refreshTokens;
+    private readonly TokenBlacklistService _blacklist;
     private readonly ILogger<WebAuthnCredentialService> _logger;
 
     public WebAuthnCredentialService(
@@ -34,12 +47,18 @@ public class WebAuthnCredentialService
         IFido2 fido2,
         WebAuthnChallengeStore challengeStore,
         OrganizationAuthPolicyService authPolicy,
+        RecoveryCodeService recoveryCodes,
+        RefreshTokenService refreshTokens,
+        TokenBlacklistService blacklist,
         ILogger<WebAuthnCredentialService> logger)
     {
         _context = context;
         _fido2 = fido2;
         _challengeStore = challengeStore;
         _authPolicy = authPolicy;
+        _recoveryCodes = recoveryCodes;
+        _refreshTokens = refreshTokens;
+        _blacklist = blacklist;
         _logger = logger;
     }
 
@@ -216,7 +235,8 @@ public class WebAuthnCredentialService
     /// </summary>
     public async Task<WebAuthnRegistrationOptionsResponse> CreateRegistrationOptionsAsync(
         User user,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? reference = null)
     {
         await EnsureUserHandleAsync(user, cancellationToken);
 
@@ -258,13 +278,127 @@ public class WebAuthnCredentialService
             JsonSerializer.Serialize(options),
             WebAuthnChallengePurpose.Registration,
             user.Id,
-            cancellationToken);
+            cancellationToken,
+            reference);
 
         return ToRegistrationOptionsResponse(options, challengeId);
     }
 
     /// <summary>
-    /// パスキー登録の応答を検証し、クレデンシャルを保存する
+    /// セットアップトークンまたはリカバリートークンから登録用オプションを生成する（未認証）
+    /// </summary>
+    public async Task<WebAuthnRegistrationOptionsResponse> CreateSetupRegistrationOptionsAsync(
+        string? setupToken,
+        string? recoveryToken,
+        CancellationToken cancellationToken = default)
+    {
+        string reference;
+        User? user;
+
+        if (!string.IsNullOrWhiteSpace(recoveryToken))
+        {
+            var recoveryEntry = await _challengeStore.ConsumeAsync(
+                recoveryToken,
+                WebAuthnChallengePurpose.Recovery);
+
+            if (recoveryEntry?.UserId is null || recoveryEntry.Reference is null)
+            {
+                throw new UnauthorizedException("リカバリーコードが無効か期限切れです。");
+            }
+
+            user = await _context
+                .Users
+                .FirstOrDefaultAsync(
+                    u => u.Id == recoveryEntry.UserId.Value && u.IsActive,
+                    cancellationToken);
+
+            reference = recoveryEntry.Reference;
+        }
+        else if (!string.IsNullOrWhiteSpace(setupToken))
+        {
+            var now = DateTimeOffset.UtcNow;
+            user = await _context
+                .Users
+                .FirstOrDefaultAsync(
+                    u => u.CredentialSetupToken == setupToken
+                         && u.CredentialSetupTokenExpiresAt > now
+                         && u.IsActive,
+                    cancellationToken);
+
+            reference = SetupReference;
+        }
+        else
+        {
+            throw new UnauthorizedException("パスキーの登録に失敗しました。");
+        }
+
+        if (user is null)
+        {
+            throw new UnauthorizedException("リンクが無効か期限切れです。");
+        }
+
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id, cancellationToken);
+        if (!OrganizationAuthPolicyService.AllowsWebAuthn(mode))
+        {
+            throw new UnauthorizedException("この組織ではパスキーを利用できません。");
+        }
+
+        return await CreateRegistrationOptionsAsync(user, cancellationToken, reference);
+    }
+
+    /// <summary>
+    /// リカバリーコードを検証し、パスキー再登録用のトークンを発行する
+    /// </summary>
+    /// <returns>発行したリカバリートークン。識別子・コードが一致しない場合は null</returns>
+    public async Task<string?> CreateRecoveryTokenAsync(
+        string loginIdentifier,
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await FindUserByIdentifierAsync(loginIdentifier, cancellationToken);
+        if (user is null)
+        {
+            return null;
+        }
+
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id, cancellationToken);
+        if (!OrganizationAuthPolicyService.AllowsWebAuthn(mode))
+        {
+            return null;
+        }
+
+        var codeId = await _recoveryCodes.VerifyAsync(user.Id, code, cancellationToken);
+        if (codeId is null)
+        {
+            return null;
+        }
+
+        return await _challengeStore.StoreAsync(
+            string.Empty,
+            WebAuthnChallengePurpose.Recovery,
+            user.Id,
+            cancellationToken,
+            $"{RecoveryReferencePrefix}{codeId.Value}");
+    }
+
+    /// <summary>
+    /// リカバリーコードを再発行する（認証済みユーザー）
+    /// </summary>
+    public Task<List<string>> IssueRecoveryCodesAsync(
+        int userId,
+        CancellationToken cancellationToken = default) =>
+        _recoveryCodes.IssueAsync(userId, cancellationToken);
+
+    /// <summary>
+    /// 未使用のリカバリーコードを保持しているか
+    /// </summary>
+    public Task<bool> HasUnusedRecoveryCodeAsync(
+        int userId,
+        CancellationToken cancellationToken = default) =>
+        _recoveryCodes.HasUnusedCodeAsync(userId, cancellationToken);
+
+    /// <summary>
+    /// パスキー登録の応答を検証し、クレデンシャルを保存する（認証済みユーザー）
     /// </summary>
     public async Task<WebAuthnCredentialResponse> RegisterAsync(
         User user,
@@ -280,6 +414,55 @@ public class WebAuthnCredentialService
             throw new UnauthorizedException("パスキーの登録に失敗しました。");
         }
 
+        var result = await CompleteRegistrationAsync(user, entry, request, cancellationToken);
+        return result.Credential;
+    }
+
+    /// <summary>
+    /// セットアップトークンまたはリカバリーコードでパスキーを登録する（未認証）
+    /// </summary>
+    public async Task<SetupRegistrationResult> RegisterWithSetupAsync(
+        WebAuthnRegistrationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var entry = await _challengeStore.ConsumeAsync(
+            request.ChallengeId,
+            WebAuthnChallengePurpose.Registration);
+
+        if (entry?.UserId is null)
+        {
+            throw new UnauthorizedException("パスキーの登録に失敗しました。");
+        }
+
+        var user = await _context
+            .Users
+            .FirstOrDefaultAsync(
+                u => u.Id == entry.UserId.Value && u.IsActive,
+                cancellationToken);
+
+        if (user is null)
+        {
+            throw new UnauthorizedException("パスキーの登録に失敗しました。");
+        }
+
+        return await CompleteRegistrationAsync(user, entry, request, cancellationToken);
+    }
+
+    /// <summary>
+    /// 登録結果（リカバリーコードの発行結果を含む）
+    /// </summary>
+    public sealed record SetupRegistrationResult(
+        WebAuthnCredentialResponse Credential,
+        List<string>? RecoveryCodes,
+        string? RecoveryCodeInstruction,
+        bool SessionsRevoked);
+
+    private async Task<SetupRegistrationResult> CompleteRegistrationAsync(
+        User user,
+        WebAuthnChallengeEntry entry,
+        WebAuthnRegistrationRequest request,
+        CancellationToken cancellationToken)
+    {
         CredentialCreateOptions originalOptions;
         try
         {
@@ -345,11 +528,83 @@ public class WebAuthnCredentialService
         await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "パスキーを登録しました。UserId: {UserId}, CredentialId: {CredentialId}",
+            "パスキーを登録しました。UserId: {UserId}, CredentialId: {CredentialId}, Reference: {Reference}",
             user.Id,
-            entity.Id);
+            entity.Id,
+            entry.Reference ?? "(authenticated)");
 
-        return ToResponse(entity);
+        var (recoveryCodes, sessionsRevoked) = await ApplyPostRegistrationAsync(
+            user,
+            entry.Reference,
+            cancellationToken);
+
+        return new SetupRegistrationResult(
+            ToResponse(entity),
+            recoveryCodes,
+            recoveryCodes is null ? null : RecoveryCodeService.StorageInstruction,
+            sessionsRevoked);
+    }
+
+    /// <summary>
+    /// 登録後の後処理（セットアップトークンの消費・リカバリーコードの使用と全セッション失効・コード再発行）
+    /// </summary>
+    private async Task<(List<string>? RecoveryCodes, bool SessionsRevoked)> ApplyPostRegistrationAsync(
+        User user,
+        string? reference,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(reference))
+        {
+            // 認証済みユーザーによる追加登録。
+            // レスポンスでコードを返せないため、ここでは自動発行しない（明示的な再発行 API を使う）
+            return (null, false);
+        }
+
+        if (reference == SetupReference)
+        {
+            user.CredentialSetupToken = null;
+            user.CredentialSetupTokenExpiresAt = null;
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync(cancellationToken);
+
+            var issued = await _recoveryCodes.IssueAsync(user.Id, cancellationToken);
+            return (issued, false);
+        }
+
+        if (reference.StartsWith(RecoveryReferencePrefix, StringComparison.Ordinal))
+        {
+            var codeIdText = reference[RecoveryReferencePrefix.Length..];
+            if (int.TryParse(codeIdText, out var codeId))
+            {
+                await _recoveryCodes.MarkUsedAsync(codeId, cancellationToken);
+            }
+
+            // 認証器を失った前提のため、他端末のセッションをすべて失効させる
+            await RevokeAllSessionsAsync(user.Id, cancellationToken);
+
+            var issued = await _recoveryCodes.IssueAsync(user.Id, cancellationToken);
+            return (issued, true);
+        }
+
+        return (null, false);
+    }
+
+    /// <summary>
+    /// 全デバイスとセッション（リフレッシュトークン・JWT）を失効させる
+    /// </summary>
+    public async Task RevokeAllSessionsAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        await _context
+            .Devices
+            .Where(d => d.UserId == userId && !d.IsRevoked)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(d => d.IsRevoked, true),
+                cancellationToken);
+
+        await _refreshTokens.RevokeAllUserRefreshTokensAsync(userId);
+        await _blacklist.BlacklistAllUserTokensAsync(userId);
+
+        _logger.LogInformation("全セッションを失効しました。UserId: {UserId}", userId);
     }
 
     /// <summary>
@@ -379,20 +634,58 @@ public class WebAuthnCredentialService
         int credentialId,
         CancellationToken cancellationToken = default)
     {
-        var affected = await _context
+        var credential = await _context
+            .UserCredentials
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == credentialId && c.UserId == userId, cancellationToken);
+
+        if (credential is null)
+        {
+            return false;
+        }
+
+        await _context
             .UserCredentials
             .Where(c => c.Id == credentialId && c.UserId == userId)
             .ExecuteDeleteAsync(cancellationToken);
 
-        if (affected > 0)
+        // 認証器を失った端末が紐づいている場合は、その端末のセッションも失効させる
+        if (credential.DeviceId is int deviceId)
         {
-            _logger.LogInformation(
-                "パスキーを削除しました。UserId: {UserId}, CredentialId: {CredentialId}",
-                userId,
-                credentialId);
+            await RevokeDeviceSessionsAsync(userId, deviceId, cancellationToken);
         }
 
-        return affected > 0;
+        _logger.LogInformation(
+            "パスキーを削除しました。UserId: {UserId}, CredentialId: {CredentialId}",
+            userId,
+            credentialId);
+
+        return true;
+    }
+
+    private async Task RevokeDeviceSessionsAsync(
+        int userId,
+        int deviceId,
+        CancellationToken cancellationToken)
+    {
+        await _context
+            .Devices
+            .Where(d => d.Id == deviceId && d.UserId == userId && !d.IsRevoked)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(d => d.IsRevoked, true),
+                cancellationToken);
+
+        var tokens = await _context
+            .RefreshTokens
+            .AsNoTracking()
+            .Where(t => t.DeviceId == deviceId && !t.IsRevoked)
+            .Select(t => t.Token)
+            .ToListAsync(cancellationToken);
+
+        foreach (var token in tokens)
+        {
+            await _refreshTokens.RevokeRefreshTokenAsync(token);
+        }
     }
 
     private async Task EnsureUserHandleAsync(User user, CancellationToken cancellationToken)
