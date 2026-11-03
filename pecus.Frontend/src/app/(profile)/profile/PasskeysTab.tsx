@@ -2,7 +2,7 @@
 
 import type { RegistrationResponseJSON } from '@simplewebauthn/browser';
 import { startRegistration } from '@simplewebauthn/browser';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   deleteCredential,
   getCredentialRegistrationOptions,
@@ -39,6 +39,11 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
   const [issuedInstruction, setIssuedInstruction] = useState<string>('');
   const [savedToAnotherDevice, setSavedToAnotherDevice] = useState(false);
 
+  // notify は毎レンダーで新しいオブジェクトを返すため、依存配列に入れると
+  // 取得処理が無限に再実行される。最新値を ref 経由で参照する。
+  const notifyRef = useRef(notify);
+  notifyRef.current = notify;
+
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -46,7 +51,7 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
       if (listResult.success) {
         setCredentials(listResult.data);
       } else {
-        notify.error(listResult.message || 'パスキー一覧の取得に失敗しました。');
+        notifyRef.current.error(listResult.message || 'パスキー一覧の取得に失敗しました。');
       }
       if (statusResult.success) {
         setHasRecoveryCodes(statusResult.data.hasUnusedCodes ?? false);
@@ -54,7 +59,7 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
     } finally {
       setIsLoading(false);
     }
-  }, [notify, setIsLoading]);
+  }, [setIsLoading]);
 
   useEffect(() => {
     void load();

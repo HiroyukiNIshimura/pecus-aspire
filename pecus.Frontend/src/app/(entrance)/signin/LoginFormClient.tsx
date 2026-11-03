@@ -10,7 +10,7 @@ import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import type { WebAuthnLoginOptionsResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { deviceInfoAtom } from '@/libs/atoms/deviceInfoAtom';
-import { loginSchema } from '@/schemas/signInSchemas';
+import { loginFormSchema } from '@/schemas/signInSchemas';
 import { getDeviceInfo } from '@/utils/deviceInfo';
 import { getLandingPageUrl } from '@/utils/landingPage';
 
@@ -85,7 +85,10 @@ export default function LoginFormClient() {
             .map((credential) => ({
               id: credential.id,
               type: 'public-key' as const,
-              transports: credential.transports as AuthenticatorTransport[] | undefined,
+              // transports が無い場合はプロパティ自体を省略する（undefined を渡すと Chrome が拒否する）
+              ...(credential.transports && credential.transports.length > 0
+                ? { transports: credential.transports as AuthenticatorTransport[] }
+                : {}),
             })),
           userVerification: options.publicKey.userVerification as UserVerificationRequirement | undefined,
         },
@@ -130,7 +133,7 @@ export default function LoginFormClient() {
   };
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
-    schema: loginSchema,
+    schema: loginFormSchema,
     onSubmit: async (data) => {
       setApiError(null);
       setApiInfo(null);
@@ -156,6 +159,11 @@ export default function LoginFormClient() {
 
       if (mode === 'passkey') {
         await handlePasskeyLogin(data.loginIdentifier);
+        return;
+      }
+
+      if (!data.password) {
+        setApiError('パスワードは必須です。');
         return;
       }
 
