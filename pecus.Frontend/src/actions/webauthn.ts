@@ -5,7 +5,6 @@ import {
   deleteCredentialWithHeyApi,
   getCredentialRegistrationOptionsWithHeyApi,
   getCredentialsWithHeyApi,
-  getLoginMethodsWithHeyApi,
   getPasskeyLoginOptionsWithHeyApi,
   getRecoveryCodeStatusWithHeyApi,
   getSetupRegistrationOptionsWithHeyApi,
@@ -17,7 +16,6 @@ import {
   verifySetupRegistrationWithHeyApi,
 } from '@/connectors/HeyApiClient';
 import type {
-  LoginMethodsResponse,
   LoginResponse,
   MessageResponse,
   RoleInfoResponse,
@@ -77,27 +75,6 @@ async function resolveClientIp(): Promise<string | undefined> {
     headersList.get('cf-connecting-ip') ||
     undefined
   );
-}
-
-/**
- * Server Action: 指定したログイン識別子で利用できる認証方式を取得
- */
-export async function getLoginMethods(input: PasskeyLoginOptionsInput): Promise<ApiResponse<LoginMethodsResponse>> {
-  const parseResult = passkeyLoginOptionsInputSchema.safeParse(input);
-  if (!parseResult.success) {
-    return validationError(parseResult.error.issues.map((issue) => issue.message).join(', '));
-  }
-
-  try {
-    const result = await getLoginMethodsWithHeyApi({
-      loginIdentifier: parseResult.data.loginIdentifier,
-    });
-    return { success: true, data: result };
-  } catch (error) {
-    return handleApiErrorForAction<LoginMethodsResponse>(error, {
-      defaultMessage: '認証方式の取得に失敗しました。',
-    });
-  }
 }
 
 /**

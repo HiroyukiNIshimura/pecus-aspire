@@ -30,7 +30,12 @@ public class WebAuthnSettings
     public int TimestampDriftToleranceMs { get; set; } = 300_000;
 
     /// <summary>
+    /// リカバリーコード pepper が未設定であることを示すプレースホルダー値
+    /// </summary>
+    public const string PlaceholderRecoveryCodePepper = "CHANGE_ME_RECOVERY_CODE_PEPPER_IN_PRODUCTION";
+
+    /// <summary>
     /// リカバリーコードのハッシュに使用する鍵（十分な長さのランダム文字列）
     /// </summary>
-    public string RecoveryCodePepper { get; set; } = "CHANGE_ME_RECOVERY_CODE_PEPPER_IN_PRODUCTION";
+    public string RecoveryCodePepper { get; set; } = PlaceholderRecoveryCodePepper;
 }

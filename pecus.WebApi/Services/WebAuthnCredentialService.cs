@@ -27,6 +27,19 @@ public class WebAuthnCredentialService
     public const string SetupReference = "setup";
 
     /// <summary>
+    /// 管理者による認証情報リセットのセットアップトークンによる登録であることを示す参照値
+    /// </summary>
+    public const string ResetSetupReference = "reset-setup";
+
+    /// <summary>
+    /// 管理者による認証情報リセットで発行するセットアップトークンの接頭辞
+    /// </summary>
+    /// <remarks>
+    /// URL 安全な Base64 トークンには含まれない「.」で終端することで、通常の招待トークンと一意に区別する。
+    /// </remarks>
+    public const string AdminResetSetupTokenPrefix = "admin-reset.";
+
+    /// <summary>
     /// リカバリーコードによる登録であることを示す参照値の接頭辞
     /// </summary>
     public const string RecoveryReferencePrefix = "recovery:";
@@ -103,14 +116,6 @@ public class WebAuthnCredentialService
 
         return credentials.Select(ToResponse).ToList();
     }
-
-    /// <summary>
-    /// ユーザーがパスキーを 1 件以上登録しているか
-    /// </summary>
-    public async Task<bool> HasCredentialAsync(
-        int userId,
-        CancellationToken cancellationToken = default) =>
-        await _context.UserCredentials.AnyAsync(c => c.UserId == userId, cancellationToken);
 
     /// <summary>
     /// パスキーログイン用のオプションを生成する
@@ -350,7 +355,10 @@ public class WebAuthnCredentialService
                          && u.IsActive,
                     cancellationToken);
 
-            reference = SetupReference;
+            // 管理者による認証情報リセットの場合は、登録完了時に既存パスキーとセッションを失効させる
+            reference = setupToken.StartsWith(AdminResetSetupTokenPrefix, StringComparison.Ordinal)
+                ? ResetSetupReference
+                : SetupReference;
         }
         else
         {
@@ -552,25 +560,40 @@ public class WebAuthnCredentialService
         };
 
         _context.UserCredentials.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation(
-            "パスキーを登録しました。UserId: {UserId}, CredentialId: {CredentialId}, Reference: {Reference}",
-            user.Id,
-            entity.Id,
-            entry.Reference ?? "(authenticated)");
+        // 認証情報の保存と登録後の後処理（トークン消費・セッション失効・コード発行）を
+        // 1 トランザクションにまとめ、途中失敗時に不整合が残らないようにする。
+        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
 
-        var (recoveryCodes, sessionsRevoked, unusedRecoveryCodeCount) = await ApplyPostRegistrationAsync(
-            user,
-            entry.Reference,
-            cancellationToken);
+            _logger.LogInformation(
+                "パスキーを登録しました。UserId: {UserId}, CredentialId: {CredentialId}, Reference: {Reference}",
+                user.Id,
+                entity.Id,
+                entry.Reference ?? "(authenticated)");
 
-        return new SetupRegistrationResult(
-            ToResponse(entity),
-            recoveryCodes,
-            recoveryCodes is null ? null : RecoveryCodeService.StorageInstruction,
-            sessionsRevoked,
-            unusedRecoveryCodeCount);
+            var (recoveryCodes, sessionsRevoked, unusedRecoveryCodeCount) = await ApplyPostRegistrationAsync(
+                user,
+                entity.Id,
+                entry.Reference,
+                cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
+
+            return new SetupRegistrationResult(
+                ToResponse(entity),
+                recoveryCodes,
+                recoveryCodes is null ? null : RecoveryCodeService.StorageInstruction,
+                sessionsRevoked,
+                unusedRecoveryCodeCount);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 
     /// <summary>
@@ -580,7 +603,11 @@ public class WebAuthnCredentialService
     /// 発行したリカバリーコード（発行しない場合は null）、全セッション失効の有無、未使用コード数
     /// </returns>
     private async Task<(List<string>? RecoveryCodes, bool SessionsRevoked, int? UnusedRecoveryCodeCount)>
-        ApplyPostRegistrationAsync(User user, string? reference, CancellationToken cancellationToken)
+        ApplyPostRegistrationAsync(
+            User user,
+            int newCredentialId,
+            string? reference,
+            CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(reference))
         {
@@ -600,18 +627,53 @@ public class WebAuthnCredentialService
             return (issued, false, issued.Count);
         }
 
+        if (reference == ResetSetupReference)
+        {
+            // 管理者による認証情報リセット。既存のパスキーとセッションを失効させる。
+            user.CredentialSetupToken = null;
+            user.CredentialSetupTokenExpiresAt = null;
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await _context
+                .UserCredentials
+                .Where(c => c.UserId == user.Id && c.Id != newCredentialId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            await RevokeAllSessionsAsync(user.Id, cancellationToken);
+
+            var issued = await _recoveryCodes.IssueAsync(user.Id, cancellationToken);
+            return (issued, true, issued.Count);
+        }
+
         if (reference.StartsWith(RecoveryReferencePrefix, StringComparison.Ordinal))
         {
             var parts = reference.Split(':', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 2 && int.TryParse(parts[1], out var codeId))
+            if (parts.Length < 2 || !int.TryParse(parts[1], out var codeId))
             {
-                await _recoveryCodes.MarkUsedAsync(codeId, cancellationToken);
+                throw new UnauthorizedException("リカバリーコードが無効です。もう一度コードを入力してください。");
             }
 
-            // 登録が完了したのでリカバリートークンを失効させる
-            if (parts.Length >= 3)
+            // 使用は 1 回限り。条件付き更新の結果で二重利用を判定する
+            // （同時に複数リクエストが来ても成功するのは 1 件だけ）
+            if (!await _recoveryCodes.MarkUsedAsync(codeId, cancellationToken))
             {
-                await _challengeStore.ConsumeAsync(parts[2], WebAuthnChallengePurpose.Recovery);
+                _logger.LogWarning(
+                    "使用済みのリカバリーコードが再利用されました。UserId: {UserId}, CodeId: {CodeId}",
+                    user.Id,
+                    codeId);
+                throw new UnauthorizedException("このリカバリーコードは既に使用されています。");
+            }
+
+            // 登録が完了したのでリカバリートークンを失効させる。
+            // 失効済みの場合もリカバリーコードの使用判定で二重利用は防げているため処理は続行する。
+            if (parts.Length >= 3
+                && await _challengeStore.ConsumeAsync(parts[2], WebAuthnChallengePurpose.Recovery) is null)
+            {
+                _logger.LogWarning(
+                    "リカバリートークンは既に失効していました。UserId: {UserId}",
+                    user.Id);
             }
 
             // 認証器を失った前提のため、他端末のセッションをすべて失効させる

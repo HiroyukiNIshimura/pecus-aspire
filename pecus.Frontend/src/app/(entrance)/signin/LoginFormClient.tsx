@@ -5,7 +5,7 @@ import { useAtom } from 'jotai';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { login } from '@/actions/auth';
-import { getLoginMethods, getPasskeyLoginOptions, verifyPasskeyLogin } from '@/actions/webauthn';
+import { getPasskeyLoginOptions, verifyPasskeyLogin } from '@/actions/webauthn';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import type { WebAuthnLoginOptionsResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useFormValidation } from '@/hooks/useFormValidation';
@@ -143,20 +143,8 @@ export default function LoginFormClient() {
         return;
       }
 
-      // 組織の認証方式を確認し、パスワードが許可されていない場合はパスキーへ誘導する
-      const methods = await getLoginMethods({ loginIdentifier: data.loginIdentifier });
-      if (methods.success) {
-        if (!methods.data.passwordEnabled && mode === 'password') {
-          setApiError('この組織ではパスキー認証が必要です。「パスキーでログイン」をご利用ください。');
-          return;
-        }
-        if (!methods.data.passkeyEnabled && mode === 'passkey') {
-          setMode('password');
-          setApiInfo('この組織ではパスワード認証を利用します。パスワードを入力してください。');
-          return;
-        }
-      }
-
+      // 認証方式の可否はサーバー側のログイン処理で判定する。
+      // (login-methods はユーザー列挙を防ぐため常に既定値を返すので事前判定には使わない)
       if (mode === 'passkey') {
         await handlePasskeyLogin(data.loginIdentifier);
         return;

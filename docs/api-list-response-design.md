@@ -109,7 +109,7 @@ var response = items.Select((item, index) => new SomeResponse
 
 ### 4.2 フロントエンド
 
-1. APIクライアント再生成: `npm run full:api`（人間が実行）
+1. APIクライアント再生成: `npm run hey:gen-client`（人間が実行）
 2. 対象コンポーネントの `key` を `listIndex` に変更
 3. 型チェック: `npx tsc --noEmit`
 

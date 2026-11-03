@@ -11246,52 +11246,6 @@
         ]
       }
     },
-    "/api/entrance/webauthn/login-methods": {
-      "post": {
-        "tags": [
-          "Entrance - WebAuthn"
-        ],
-        "summary": "指定したログイン識別子で利用できる認証方式を取得",
-        "description": "組織の認証方式設定を反映する。ユーザーが存在しない場合も列挙を避けるため\n既定の組み合わせを返す。",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebAuthnLoginOptionsRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebAuthnLoginOptionsRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebAuthnLoginOptionsRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginMethodsResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
     "/api/entrance/webauthn/login/options": {
       "post": {
         "tags": [
@@ -22593,24 +22547,6 @@
           }
         },
         "description": "ログインレスポンス用のデバイス情報（最小限）"
-      },
-      "LoginMethodsResponse": {
-        "type": "object",
-        "properties": {
-          "passwordEnabled": {
-            "type": "boolean",
-            "description": "パスワードログインが利用できるか（組織設定に依存）"
-          },
-          "passkeyEnabled": {
-            "type": "boolean",
-            "description": "パスキーログインが利用できるか（組織設定に依存）"
-          },
-          "hasPasskey": {
-            "type": "boolean",
-            "description": "対象ユーザーがパスキーを登録済みか"
-          }
-        },
-        "description": "ログイン方式の判定結果"
       },
       "LoginRequest": {
         "required": [

@@ -3793,24 +3793,6 @@ export type LoginDeviceInfo = {
 };
 
 /**
- * ログイン方式の判定結果
- */
-export type LoginMethodsResponse = {
-  /**
-   * パスワードログインが利用できるか（組織設定に依存）
-   */
-  passwordEnabled?: boolean;
-  /**
-   * パスキーログインが利用できるか（組織設定に依存）
-   */
-  passkeyEnabled?: boolean;
-  /**
-   * 対象ユーザーがパスキーを登録済みか
-   */
-  hasPasskey?: boolean;
-};
-
-/**
  * ログインリクエスト
  */
 export type LoginRequest = {
@@ -14681,22 +14663,6 @@ export type PostApiEntranceRecoveryCodeResponses = {
 };
 
 export type PostApiEntranceRecoveryCodeResponse = PostApiEntranceRecoveryCodeResponses[keyof PostApiEntranceRecoveryCodeResponses];
-
-export type PostApiEntranceWebauthnLoginMethodsData = {
-  body: WebAuthnLoginOptionsRequest;
-  path?: never;
-  query?: never;
-  url: '/api/entrance/webauthn/login-methods';
-};
-
-export type PostApiEntranceWebauthnLoginMethodsResponses = {
-  /**
-   * OK
-   */
-  200: LoginMethodsResponse;
-};
-
-export type PostApiEntranceWebauthnLoginMethodsResponse = PostApiEntranceWebauthnLoginMethodsResponses[keyof PostApiEntranceWebauthnLoginMethodsResponses];
 
 export type PostApiEntranceWebauthnLoginOptionsData = {
   body: WebAuthnLoginOptionsRequest;

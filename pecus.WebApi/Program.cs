@@ -95,6 +95,19 @@ builder.Services.AddFido2(options =>
     options.TimestampDriftTolerance = pecusConfig.WebAuthn.TimestampDriftToleranceMs;
 });
 
+// リカバリーコードの pepper が未設定のまま本番運用すると、既知の定数で HMAC されるため
+// pepper の防御効果が失われる。本番では起動を失敗させ、明示的な設定を要求する。
+if (!builder.Environment.IsDevelopment())
+{
+    var pepper = pecusConfig.WebAuthn.RecoveryCodePepper;
+    if (string.IsNullOrWhiteSpace(pepper)
+        || pepper == WebAuthnSettings.PlaceholderRecoveryCodePepper)
+    {
+        throw new InvalidOperationException(
+            "WebAuthn:RecoveryCodePepper が未設定です。環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER に十分な長さのランダム文字列を設定してください。");
+    }
+}
+
 builder.Services.AddSingleton(pecusConfig.WebAuthn);
 builder.Services.AddSingleton<WebAuthnChallengeStore>();
 builder.Services.AddSingleton<LoginRateLimiter>();

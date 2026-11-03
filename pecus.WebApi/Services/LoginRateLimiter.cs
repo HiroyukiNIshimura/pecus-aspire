@@ -13,6 +13,15 @@ public class LoginRateLimiter
 {
     private const string KeyPrefix = "auth:ratelimit:";
 
+    /// <summary>
+    /// INCR と初回のみの EXPIRE を 1 回のスクリプト実行でアトミックに行い、
+    /// 途中で失敗した場合に TTL の無いキーが残り恒久的に制限されるのを防ぐ。
+    /// </summary>
+    private const string IncrementWithExpiryScript =
+        "local count = redis.call('INCR', KEYS[1]) "
+        + "if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end "
+        + "return count";
+
     private readonly IDatabase _db;
 
     public LoginRateLimiter(IConnectionMultiplexer redis)
@@ -29,12 +38,11 @@ public class LoginRateLimiter
     public async Task<bool> IsAllowedAsync(string key, int limit, TimeSpan window)
     {
         var redisKey = $"{KeyPrefix}{key}";
-        var count = await _db.StringIncrementAsync(redisKey);
-
-        if (count == 1)
-        {
-            await _db.KeyExpireAsync(redisKey, window);
-        }
+        var ttlSeconds = Math.Max(1, (long)window.TotalSeconds);
+        var count = (long)await _db.ScriptEvaluateAsync(
+            IncrementWithExpiryScript,
+            new RedisKey[] { redisKey },
+            new RedisValue[] { ttlSeconds });
 
         return count <= limit;
     }

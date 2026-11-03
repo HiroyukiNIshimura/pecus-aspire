@@ -609,7 +609,8 @@ public class UserService
         }
 
         var (token, tokenExpiresAt) = UserEntityFactory.GeneratePasswordResetTokenWithExpiry();
-        user.CredentialSetupToken = token;
+        // 管理者リセットであることを示す接頭辞を付け、登録完了時に既存パスキーとセッションを失効させる
+        user.CredentialSetupToken = WebAuthnCredentialService.AdminResetSetupTokenPrefix + token;
         user.CredentialSetupTokenExpiresAt = tokenExpiresAt;
         user.UpdatedAt = DateTimeOffset.UtcNow;
 

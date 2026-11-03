@@ -159,7 +159,6 @@ import {
   postApiEntrancePasswordReset,
   postApiEntrancePasswordSet,
   postApiEntranceRecoveryCode,
-  postApiEntranceWebauthnLoginMethods,
   postApiEntranceWebauthnLoginOptions,
   postApiEntranceWebauthnLoginVerify,
   postApiEntranceWebauthnRegisterOptions,
@@ -360,7 +359,6 @@ import type {
   PostApiEntrancePasswordResetResponse,
   PostApiEntrancePasswordSetResponse,
   PostApiEntranceRecoveryCodeResponse,
-  PostApiEntranceWebauthnLoginMethodsResponse,
   PostApiEntranceWebauthnLoginOptionsResponse,
   PostApiEntranceWebauthnLoginVerifyResponse,
   PostApiEntranceWebauthnRegisterOptionsResponse,
@@ -597,14 +595,6 @@ export async function getMyCommitterTasksByWorkspaceWithHeyApi(
 // ========================================
 // WebAuthn（パスキー）
 // ========================================
-
-export async function getLoginMethodsWithHeyApi(
-  body: Parameters<typeof postApiEntranceWebauthnLoginMethods>[0]['body'],
-): Promise<PostApiEntranceWebauthnLoginMethodsResponse> {
-  const client = await createHeyApiClient();
-  const response = await postApiEntranceWebauthnLoginMethods({ client, body, throwOnError: true });
-  return response.data;
-}
 
 export async function getPasskeyLoginOptionsWithHeyApi(
   body: Parameters<typeof postApiEntranceWebauthnLoginOptions>[0]['body'],
