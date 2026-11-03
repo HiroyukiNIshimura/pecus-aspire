@@ -12160,6 +12160,16 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -14468,6 +14478,16 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "他組織のユーザーは操作できません",
             "content": {
@@ -14569,8 +14589,8 @@
         "tags": [
           "Admin - User"
         ],
-        "summary": "全ロール一覧を取得",
-        "description": "システム内の全ロール一覧を取得します。ユーザー設定画面で使用されます。",
+        "summary": "パスキー登録リセットメールを送信",
+        "description": "認証器を紛失したユーザー向けに、パスキーを再登録するためのリンクを発行します。\nリンクの使用時に既存のパスキーとセッションが失効します。",
         "parameters": [
           {
             "name": "id",
@@ -14585,11 +14605,21 @@
         ],
         "responses": {
           "200": {
-            "description": "ロール一覧を返します",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -14652,6 +14682,16 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Forbidden",
             "content": {
@@ -14685,9 +14725,11 @@
         "tags": [
           "Admin - User"
         ],
+        "summary": "全ロール一覧を取得",
+        "description": "システム内の全ロール一覧を取得します。ユーザー設定画面で使用されます。",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "ロール一覧を返します",
             "content": {
               "application/json": {
                 "schema": {

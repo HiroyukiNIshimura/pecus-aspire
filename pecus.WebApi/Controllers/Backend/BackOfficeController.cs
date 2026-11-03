@@ -340,6 +340,7 @@ public class BackOfficeController : BaseBackendController
     /// <param name="id">組織ID</param>
     [HttpPost("{id:int}/reset-admin-credentials")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Ok<SuccessResponse>> ResetAdminCredentials(int id)
     {

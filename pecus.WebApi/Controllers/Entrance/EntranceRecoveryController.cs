@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
-using Pecus.Libs;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Entrance;
@@ -48,9 +47,8 @@ public class EntranceRecoveryController : ControllerBase
         [FromBody] WebAuthnRecoveryCodeRequest request,
         CancellationToken cancellationToken)
     {
-        var clientIp = ClientIpResolver.GetClientIpAddress(HttpContext) ?? "unknown";
         var allowed = await _rateLimiter.IsAllowedAsync(
-            $"recovery:{request.LoginIdentifier.Trim().ToLowerInvariant()}:{clientIp}",
+            $"recovery:{request.LoginIdentifier.Trim().ToLowerInvariant()}",
             RateLimitCount,
             RateLimitWindow);
 

@@ -608,6 +608,14 @@ public class UserService
             return (false, null);
         }
 
+        // パスキーを許可していない組織では、登録リンクを発行しても利用できない
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+        if (!OrganizationAuthPolicyService.AllowsWebAuthn(mode))
+        {
+            throw new InvalidOperationException(
+                "この組織はパスキーを利用していません。パスキー登録リセットは実行できません。");
+        }
+
         var (token, tokenExpiresAt) = UserEntityFactory.GeneratePasswordResetTokenWithExpiry();
         // 管理者リセットであることを示す接頭辞を付け、登録完了時に既存パスキーとセッションを失効させる
         user.CredentialSetupToken = WebAuthnCredentialService.AdminResetSetupTokenPrefix + token;
@@ -709,7 +717,8 @@ public class UserService
         var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
         if (!OrganizationAuthPolicyService.AllowsPassword(mode))
         {
-            return (false, null);
+            throw new InvalidOperationException(
+                "この組織はパスキー専用です。パスワードのリセットではなく、パスキー登録リセットを利用してください。");
         }
 
         // パスワードリセットトークンを生成（24時間有効）

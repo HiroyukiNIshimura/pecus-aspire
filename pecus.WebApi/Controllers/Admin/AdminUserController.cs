@@ -445,6 +445,7 @@ public class AdminUserController : BaseAdminController
     /// <response code="404">ユーザーが見つかりません</response>
     [HttpPost("{id}/request-password-reset")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Ok<SuccessResponse>> RequestPasswordReset(int id)
@@ -571,13 +572,6 @@ public class AdminUserController : BaseAdminController
     }
 
     /// <summary>
-    /// 全ロール一覧を取得
-    /// </summary>
-    /// <remarks>
-    /// システム内の全ロール一覧を取得します。ユーザー設定画面で使用されます。
-    /// </remarks>
-    /// <response code="200">ロール一覧を返します</response>
-    /// <summary>
     /// パスキー登録リセットメールを送信
     /// </summary>
     /// <remarks>
@@ -587,6 +581,7 @@ public class AdminUserController : BaseAdminController
     /// <param name="id">ユーザーID</param>
     [HttpPost("{id}/reset-credentials")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Ok<SuccessResponse>> ResetCredentials(int id)
@@ -619,6 +614,7 @@ public class AdminUserController : BaseAdminController
     /// <param name="id">ユーザーID</param>
     [HttpPost("{id}/resend-credential-setup")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<Ok<SuccessResponse>> ResendCredentialSetup(int id)
@@ -664,6 +660,13 @@ public class AdminUserController : BaseAdminController
         );
     }
 
+    /// <summary>
+    /// 全ロール一覧を取得
+    /// </summary>
+    /// <remarks>
+    /// システム内の全ロール一覧を取得します。ユーザー設定画面で使用されます。
+    /// </remarks>
+    /// <response code="200">ロール一覧を返します</response>
     [HttpGet("roles")]
     [ProducesResponseType(
         typeof(List<RoleListItemResponse>),

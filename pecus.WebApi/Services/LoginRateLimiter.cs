@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using StackExchange.Redis;
 
 namespace Pecus.Services;
@@ -27,6 +29,18 @@ public class LoginRateLimiter
     public LoginRateLimiter(IConnectionMultiplexer redis)
     {
         _db = redis.GetDatabase();
+    }
+
+    /// <summary>
+    /// 長い識別子（クレデンシャルID・トークンなど）を制限キー用の短いハッシュに変換する
+    /// </summary>
+    /// <remarks>
+    /// 制限キーはクライアントの入力から作られるため、値をそのまま Redis のキーにしない。
+    /// </remarks>
+    public static string HashKey(string value)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        return Convert.ToHexString(hash.AsSpan(0, 16)).ToLowerInvariant();
     }
 
     /// <summary>

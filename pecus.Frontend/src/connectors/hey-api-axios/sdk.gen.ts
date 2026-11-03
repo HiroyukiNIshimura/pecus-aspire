@@ -2786,9 +2786,10 @@ export const postApiAdminUsersByIdResendPasswordSetup = <ThrowOnError extends bo
 });
 
 /**
- * 全ロール一覧を取得
+ * パスキー登録リセットメールを送信
  *
- * システム内の全ロール一覧を取得します。ユーザー設定画面で使用されます。
+ * 認証器を紛失したユーザー向けに、パスキーを再登録するためのリンクを発行します。
+ * リンクの使用時に既存のパスキーとセッションが失効します。
  */
 export const postApiAdminUsersByIdResetCredentials = <ThrowOnError extends boolean = false>(options: Options<PostApiAdminUsersByIdResetCredentialsData, ThrowOnError>): RequestResult<PostApiAdminUsersByIdResetCredentialsResponses, PostApiAdminUsersByIdResetCredentialsErrors, ThrowOnError> => (options.client ?? client).post<PostApiAdminUsersByIdResetCredentialsResponses, PostApiAdminUsersByIdResetCredentialsErrors, ThrowOnError>({
   responseType: 'json',
@@ -2809,6 +2810,11 @@ export const postApiAdminUsersByIdResendCredentialSetup = <ThrowOnError extends 
   ...options
 });
 
+/**
+ * 全ロール一覧を取得
+ *
+ * システム内の全ロール一覧を取得します。ユーザー設定画面で使用されます。
+ */
 export const getApiAdminUsersRoles = <ThrowOnError extends boolean = false>(options?: Options<GetApiAdminUsersRolesData, ThrowOnError>): RequestResult<GetApiAdminUsersRolesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetApiAdminUsersRolesResponses, unknown, ThrowOnError>({
   responseType: 'json',
   security: [{ scheme: 'bearer', type: 'http' }],

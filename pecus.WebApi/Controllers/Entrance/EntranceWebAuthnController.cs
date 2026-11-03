@@ -48,7 +48,7 @@ public class EntranceWebAuthnController : ControllerBase
         [FromBody] WebAuthnLoginOptionsRequest request,
         CancellationToken cancellationToken)
     {
-        if (!await IsAllowedAsync("options", request.LoginIdentifier, cancellationToken))
+        if (!await IsAllowedForIdentifierAsync("options", request.LoginIdentifier, cancellationToken))
         {
             throw new TooManyRequestsException("試行回数が上限に達しました。しばらくしてから再度お試しください。");
         }
@@ -77,7 +77,7 @@ public class EntranceWebAuthnController : ControllerBase
         [FromBody] WebAuthnAssertionRequest request,
         CancellationToken cancellationToken)
     {
-        if (!await IsAllowedByIpAsync("verify", cancellationToken))
+        if (!await IsAllowedForSecretAsync("verify", request.Id, cancellationToken))
         {
             throw new TooManyRequestsException("試行回数が上限に達しました。しばらくしてから再度お試しください。");
         }
@@ -115,7 +115,10 @@ public class EntranceWebAuthnController : ControllerBase
         [FromBody] WebAuthnSetupOptionsRequest request,
         CancellationToken cancellationToken)
     {
-        if (!await IsAllowedByIpAsync("register-options", cancellationToken))
+        if (!await IsAllowedForSecretAsync(
+                "register-options",
+                request.Token ?? request.RecoveryToken ?? string.Empty,
+                cancellationToken))
         {
             throw new TooManyRequestsException("試行回数が上限に達しました。しばらくしてから再度お試しください。");
         }
@@ -139,7 +142,7 @@ public class EntranceWebAuthnController : ControllerBase
         [FromBody] WebAuthnRegistrationRequest request,
         CancellationToken cancellationToken)
     {
-        if (!await IsAllowedByIpAsync("register-verify", cancellationToken))
+        if (!await IsAllowedForSecretAsync("register-verify", request.Id, cancellationToken))
         {
             throw new TooManyRequestsException("試行回数が上限に達しました。しばらくしてから再度お試しください。");
         }
@@ -161,27 +164,34 @@ public class EntranceWebAuthnController : ControllerBase
         });
     }
 
-    private async Task<bool> IsAllowedByIpAsync(string action, CancellationToken cancellationToken)
+    /// <summary>
+    /// ログイン識別子などの短いキーで制限する（大文字小文字を正規化する）
+    /// </summary>
+    private async Task<bool> IsAllowedForIdentifierAsync(
+        string action,
+        string identifier,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var clientIp = ClientIpResolver.GetClientIpAddress(HttpContext) ?? "unknown";
-
         return await _rateLimiter.IsAllowedAsync(
-            $"{action}:{clientIp}",
+            $"{action}:{identifier.Trim().ToLowerInvariant()}",
             RateLimitCount,
             RateLimitWindow);
     }
 
-    private async Task<bool> IsAllowedAsync(string action, string key, CancellationToken cancellationToken)
+    /// <summary>
+    /// クレデンシャルIDやトークンなどの長いキーで制限する（ハッシュ化して使う）
+    /// </summary>
+    private async Task<bool> IsAllowedForSecretAsync(
+        string action,
+        string value,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var clientIp = ClientIpResolver.GetClientIpAddress(HttpContext) ?? "unknown";
-        var normalizedKey = key.Trim().ToLowerInvariant();
-
         return await _rateLimiter.IsAllowedAsync(
-            $"{action}:{normalizedKey}:{clientIp}",
+            $"{action}:{LoginRateLimiter.HashKey(value.Trim())}",
             RateLimitCount,
             RateLimitWindow);
     }

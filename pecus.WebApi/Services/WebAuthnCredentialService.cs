@@ -754,6 +754,22 @@ public class WebAuthnCredentialService
             return false;
         }
 
+        // パスキー専用の組織でリカバリーコードも残っていない場合、最後の 1 件を削除すると
+        // 管理者によるリセット以外にログイン手段が無くなるため拒否する
+        var mode = await _authPolicy.GetModeByUserIdAsync(userId, cancellationToken);
+        if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+        {
+            var credentialCount = await _context.UserCredentials
+                .CountAsync(c => c.UserId == userId, cancellationToken);
+            var unusedCodeCount = await _recoveryCodes.CountUnusedAsync(userId, cancellationToken);
+
+            if (credentialCount <= 1 && unusedCodeCount == 0)
+            {
+                throw new InvalidOperationException(
+                    "最後のパスキーです。先にリカバリーコードを発行してから削除してください。");
+            }
+        }
+
         await _context
             .UserCredentials
             .Where(c => c.Id == credentialId && c.UserId == userId)

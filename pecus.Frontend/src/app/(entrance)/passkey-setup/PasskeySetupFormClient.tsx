@@ -163,7 +163,7 @@ export default function PasskeySetupFormClient() {
 
           {result.sessionsRevoked && codes.length > 0 && (
             <div className="alert alert-soft alert-info" role="status">
-              未使用のコードを使い切ったため、新しいリカバリーコードを発行しました。
+              新しいリカバリーコードを発行しました。
             </div>
           )}
 

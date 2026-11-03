@@ -15100,6 +15100,10 @@ export type PostApiBackofficeOrganizationsByIdResetAdminCredentialsData = {
 
 export type PostApiBackofficeOrganizationsByIdResetAdminCredentialsErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Not Found
    */
   404: ProblemDetails;
@@ -16275,6 +16279,10 @@ export type PostApiAdminUsersByIdRequestPasswordResetData = {
 
 export type PostApiAdminUsersByIdRequestPasswordResetErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * 他組織のユーザーは操作できません
    */
   403: ErrorResponse;
@@ -16347,6 +16355,10 @@ export type PostApiAdminUsersByIdResetCredentialsData = {
 
 export type PostApiAdminUsersByIdResetCredentialsErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Forbidden
    */
   403: ProblemDetails;
@@ -16360,7 +16372,7 @@ export type PostApiAdminUsersByIdResetCredentialsError = PostApiAdminUsersByIdRe
 
 export type PostApiAdminUsersByIdResetCredentialsResponses = {
   /**
-   * ロール一覧を返します
+   * OK
    */
   200: SuccessResponse;
 };
@@ -16380,6 +16392,10 @@ export type PostApiAdminUsersByIdResendCredentialSetupData = {
 };
 
 export type PostApiAdminUsersByIdResendCredentialSetupErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Forbidden
    */
@@ -16410,7 +16426,7 @@ export type GetApiAdminUsersRolesData = {
 
 export type GetApiAdminUsersRolesResponses = {
   /**
-   * OK
+   * ロール一覧を返します
    */
   200: Array<RoleListItemResponse>;
 };

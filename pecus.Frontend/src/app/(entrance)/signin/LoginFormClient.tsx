@@ -67,7 +67,7 @@ export default function LoginFormClient() {
       const optionsResult = await getPasskeyLoginOptions({ loginIdentifier });
       if (!optionsResult.success) {
         if (optionsResult.error === 'unauthorized' || optionsResult.error === 'not_found') {
-          setApiError('パスキーが見つかりません。パスワードでログインするか、管理者にご連絡ください。');
+          setApiError('パスキーでログインできませんでした。別の方法でログインするか、管理者にご連絡ください。');
         } else {
           setApiError(optionsResult.message || 'パスキー認証を開始できませんでした。');
         }
@@ -124,9 +124,7 @@ export default function LoginFormClient() {
       setApiError(result.message || 'パスキー認証に失敗しました。');
     } catch (error) {
       console.error('パスキー認証中にエラーが発生:', error);
-      setApiError(
-        'パスキー認証がキャンセルされたか、この端末では利用できません。パスワードでのログインをお試しください。',
-      );
+      setApiError('パスキー認証がキャンセルされたか、この端末では利用できません。もう一度お試しください。');
     } finally {
       setIsAuthenticating(false);
     }
@@ -214,7 +212,7 @@ export default function LoginFormClient() {
 
           {!passkeySupported && (
             <div className="alert alert-soft alert-warning" role="status">
-              このブラウザはパスキーに対応していません。パスワードでログインしてください。
+              このブラウザはパスキーに対応していません。パスワードでログインするか、パスキー対応の端末をご利用ください。
             </div>
           )}
 

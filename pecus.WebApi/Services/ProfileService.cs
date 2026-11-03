@@ -599,6 +599,7 @@ public class ProfileService
     /// <remarks>
     /// ユーザーが現在のパスワードを検証した上で、新しいパスワードに変更します。
     /// 現在のパスワードが正しくない場合は false を返します。
+    /// パスキー専用の組織では <see cref="InvalidOperationException"/> を投げます。
     /// </remarks>
     /// <param name="userId">ユーザーID</param>
     /// <param name="currentPassword">現在のパスワード</param>
@@ -606,20 +607,20 @@ public class ProfileService
     /// <returns>成功時は true、現在のパスワードが正しくない場合は false</returns>
     public async Task<bool> UpdatePasswordAsync(int userId, string currentPassword, string newPassword)
     {
+        // パスキー専用の組織ではパスワード変更を許可しない（呼び出し側で理由を提示するため例外にする）
+        var mode = await _authPolicy.GetModeByUserIdAsync(userId);
+        if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+        {
+            _logger.LogWarning("パスワード変更失敗: パスキー専用の組織です。UserId: {UserId}", userId);
+            throw new InvalidOperationException("この組織はパスキー専用のため、パスワードを変更できません。");
+        }
+
         try
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
                 _logger.LogWarning("パスワード変更失敗: ユーザーが見つかりません。UserId: {UserId}", userId);
-                return false;
-            }
-
-            // パスキー専用の組織ではパスワード変更を許可しない
-            var mode = await _authPolicy.GetModeByUserIdAsync(userId);
-            if (!OrganizationAuthPolicyService.AllowsPassword(mode))
-            {
-                _logger.LogWarning("パスワード変更失敗: パスキー専用の組織です。UserId: {UserId}", userId);
                 return false;
             }
 

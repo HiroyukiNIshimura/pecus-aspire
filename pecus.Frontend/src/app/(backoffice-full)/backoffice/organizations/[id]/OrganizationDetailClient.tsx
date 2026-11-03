@@ -54,6 +54,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isAuthModeConfirmOpen, setIsAuthModeConfirmOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isResendConfirmOpen, setIsResendConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (clientError && isAuthenticationError(clientError)) {
@@ -163,6 +164,17 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
       console.error('組織登録完了メール再送中にエラーが発生:', err);
       notify.error('組織登録完了メール再送中にエラーが発生しました。');
     }
+  };
+
+  const isWebAuthnOnly = data?.authenticationMode === 'WebAuthn';
+
+  const handleResendCreatedEmailClick = () => {
+    setIsResendConfirmOpen(true);
+  };
+
+  const confirmResendCreatedEmail = async () => {
+    setIsResendConfirmOpen(false);
+    await handleResendCreatedEmail();
   };
 
   const handleResetAdminCredentials = () => {
@@ -445,7 +457,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                       <button
                         type="button"
                         className="btn btn-outline btn-sm"
-                        onClick={handleResendCreatedEmail}
+                        onClick={handleResendCreatedEmailClick}
                         disabled={isPending}
                       >
                         <span className="icon-[tabler--mail-forward] w-4 h-4" />
@@ -472,6 +484,22 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
           </div>
         </main>
       </div>
+
+      <ConfirmModal
+        isOpen={isResendConfirmOpen}
+        onClose={() => setIsResendConfirmOpen(false)}
+        onConfirm={confirmResendCreatedEmail}
+        title="組織登録完了メールの再送"
+        description={
+          isWebAuthnOnly
+            ? '組織管理者にパスキー登録用のリンクを再送します。\n' +
+              'リンクを使ってパスキーを登録すると、既存のパスキーがすべて削除され、他の端末のセッションも失効します。続行しますか？'
+            : '組織管理者にパスワード設定メールを再送します。続行しますか？'
+        }
+        confirmLabel="再送する"
+        variant={isWebAuthnOnly ? 'warning' : 'primary'}
+        iconClass="icon-[tabler--mail-forward]"
+      />
 
       <ConfirmModal
         isOpen={isAuthModeConfirmOpen}

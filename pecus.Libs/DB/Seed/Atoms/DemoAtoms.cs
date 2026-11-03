@@ -194,6 +194,7 @@ public class DemoAtoms
     /// </remarks>
     private sealed record DemoAuthSnapshot(
         string Email,
+        byte[]? WebAuthnUserHandle,
         List<UserCredential> Credentials,
         List<UserRecoveryCode> RecoveryCodes);
 
@@ -226,6 +227,8 @@ public class DemoAtoms
             .Users
             .Select(u => new DemoAuthSnapshot(
                 u.Email,
+                // user handle が変わると登録済みパスキーが検証で一致しなくなるため引き継ぐ
+                u.WebAuthnUserHandle,
                 credentials.Where(c => c.UserId == u.Id).ToList(),
                 recoveryCodes.Where(c => c.UserId == u.Id).ToList()))
             .Where(s => s.Credentials.Count > 0 || s.RecoveryCodes.Count > 0)
@@ -262,6 +265,8 @@ public class DemoAtoms
                     snapshot.Email);
                 continue;
             }
+
+            user.WebAuthnUserHandle = snapshot.WebAuthnUserHandle;
 
             foreach (var credential in snapshot.Credentials)
             {

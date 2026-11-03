@@ -53,7 +53,7 @@ function deepMerge(target, source) {
   return result;
 }
 
-function applyEnvOverrides(config) {
+function applyEnvOverrides(config, env) {
   // Infrastructure (PostgreSQL)
   if (process.env.POSTGRES_USER) {
     config._infrastructure.postgres.user = process.env.POSTGRES_USER;
@@ -111,16 +111,22 @@ function applyEnvOverrides(config) {
 
   // WebAuthn (WebApi only)
   // RpId / Origins はフロントエンドのオリジンと一致している必要がある。
-  // FRONTEND_URL から自動導出し、明示指定があればそちらを優先する。
+  // 解決済みのフロントエンドURL（FRONTEND_URL、未指定なら _infrastructure.urls.frontend）から
+  // 導出し、明示指定があればそちらを優先する。
   const webAuthn = config.webapi?.Pecus?.WebAuthn;
   if (webAuthn) {
-    if (process.env.FRONTEND_URL) {
+    const frontendUrl = process.env.FRONTEND_URL || config._infrastructure?.urls?.frontend;
+    if (frontendUrl) {
       try {
-        const frontendUrl = new URL(process.env.FRONTEND_URL);
-        webAuthn.RpId = frontendUrl.hostname;
-        webAuthn.Origins = [frontendUrl.origin];
+        const parsed = new URL(frontendUrl);
+        webAuthn.RpId = parsed.hostname;
+        // 本番はフロントエンドのオリジンのみ。開発は http/https 双方で試せるよう既存のオリジンも残す
+        webAuthn.Origins =
+          env === 'prod'
+            ? [parsed.origin]
+            : [parsed.origin, ...(Array.isArray(webAuthn.Origins) ? webAuthn.Origins : [])];
       } catch {
-        console.warn('Warning: FRONTEND_URL is not a valid URL, WebAuthn RpId/Origins are not derived.');
+        console.warn('Warning: frontend URL is not a valid URL, WebAuthn RpId/Origins are not derived.');
       }
     }
     if (process.env.WEBAUTHN_RP_ID) {
@@ -133,10 +139,17 @@ function applyEnvOverrides(config) {
       webAuthn.RecoveryCodePepper = process.env.WEBAUTHN_RECOVERY_CODE_PEPPER;
     }
     if (process.env.WEBAUTHN_ORIGINS) {
-      webAuthn.Origins = process.env.WEBAUTHN_ORIGINS.split(',')
-        .map((origin) => origin.trim())
-        .filter((origin) => origin.length > 0);
+      webAuthn.Origins = process.env.WEBAUTHN_ORIGINS.split(',').map((origin) => origin.trim());
     }
+
+    webAuthn.Origins = [
+      ...new Set(
+        (Array.isArray(webAuthn.Origins) ? webAuthn.Origins : [])
+          .filter((origin) => typeof origin === 'string')
+          .map((origin) => origin.trim().replace(/\/+$/, ''))
+          .filter((origin) => origin.length > 0),
+      ),
+    ];
   }
 
   // JWT (WebApi only)
@@ -176,9 +189,57 @@ function loadConfig(env) {
   }
 
   // 環境変数で上書き（最優先）
-  config = applyEnvOverrides(config);
+  config = applyEnvOverrides(config, env);
+
+  if (env === 'prod') {
+    validateProdConfig(config);
+  }
 
   return config;
+}
+
+/**
+ * 本番設定の必須項目を検証する。
+ * 起動できないイメージを配布しないよう、生成時点で停止する。
+ */
+function validateProdConfig(config) {
+  const errors = [];
+  const webAuthn = config.webapi?.Pecus?.WebAuthn;
+
+  if (!webAuthn) {
+    errors.push('WebAuthn 設定が見つかりません（config/settings.base.json の webapi.Pecus.WebAuthn を確認してください）。');
+  } else {
+    const pepper = (webAuthn.RecoveryCodePepper || '').trim();
+    if (!pepper || pepper.startsWith('CHANGE_ME')) {
+      errors.push(
+        'WebAuthn:RecoveryCodePepper が未設定です。環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER に十分な長さのランダム文字列を設定してから再実行してください（未設定のままでは本番の WebApi が起動しません）。',
+      );
+    }
+
+    const rpId = (webAuthn.RpId || '').trim();
+    if (!rpId || rpId === 'localhost') {
+      errors.push(
+        'WebAuthn:RpId が localhost のままです。環境変数 FRONTEND_URL（または WEBAUTHN_RP_ID）に本番のフロントエンドURLを設定してから再実行してください（localhost のままでは本番でパスキーを利用できません）。',
+      );
+    }
+
+    const insecureOrigins = (webAuthn.Origins || []).filter((origin) => !origin.startsWith('https://'));
+    if (insecureOrigins.length > 0) {
+      errors.push(
+        `WebAuthn:Origins に https 以外のオリジンが含まれています（${insecureOrigins.join(', ')}）。本番は https のオリジンのみ指定してください。`,
+      );
+    }
+  }
+
+  if (errors.length === 0) {
+    return;
+  }
+
+  console.error('Error: 本番設定の検証に失敗しました。');
+  for (const error of errors) {
+    console.error(`  - ${error}`);
+  }
+  process.exit(1);
 }
 
 function generate() {
@@ -189,6 +250,12 @@ function generate() {
   }
 
   const config = loadConfig(env);
+
+  const webAuthn = config.webapi?.Pecus?.WebAuthn;
+  if (webAuthn) {
+    // pepper は秘密情報のため出力しない
+    console.log(`WebAuthn: RpId=${webAuthn.RpId}, Origins=${(webAuthn.Origins || []).join(', ')}`);
+  }
 
   const { _comment, _folders, _infrastructure, _shared, ...projects } = config;
 

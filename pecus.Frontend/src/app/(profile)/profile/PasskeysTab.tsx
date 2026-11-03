@@ -336,7 +336,7 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
         onConfirm={confirmDelete}
         itemType="パスキー"
         itemName={deleteTarget?.name ?? ''}
-        additionalWarning="この端末ではログインできなくなります。"
+        additionalWarning="このパスキーではログインできなくなります。"
       />
 
       <ConfirmModal

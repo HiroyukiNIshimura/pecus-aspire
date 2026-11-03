@@ -84,6 +84,19 @@ node scripts/generate-appsettings.js -P
 # → settings.base.json + settings.base.prod.json をマージ
 ```
 
+### 本番生成時に必要な環境変数
+
+`-P` は本番設定の検証を行い、不備があれば**生成を中止**します（起動できないイメージを配布しないため）。
+
+| 環境変数 | 必須 | 用途 |
+| --- | --- | --- |
+| `WEBAUTHN_RECOVERY_CODE_PEPPER` | **必須** | リカバリーコードの HMAC 鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まりは中止 |
+| `JWT_ISSUER_SIGNING_KEY` | 必須（本番） | JWT 署名鍵（64文字以上のランダム文字列） |
+| `FRONTEND_URL` | 推奨 | WebAuthn の `RpId` / `Origins` を自動導出（未指定時は `_infrastructure.urls.frontend`） |
+
+`RpId` が `localhost` のまま、または `Origins` に `https` 以外が含まれる場合も中止します。
+`-P` はビルドPCとデプロイPCの両方で実行されるため、どちらのホストでも同じ環境変数を使えるようにしてください。
+
 ## フロントエンドの環境変数
 
 フロントエンドでは `src/libs/env.ts` が環境変数を統一的に取得します。

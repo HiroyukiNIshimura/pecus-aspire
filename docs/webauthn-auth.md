@@ -33,20 +33,21 @@
 
 | エンドポイント | キー（`auth:ratelimit:` 配下） | 上限 | ウィンドウ |
 | --- | --- | --- | --- |
-| `POST /api/entrance/webauthn/login/options` | `options:{loginId}:{ip}` | 20 回 | 5 分 |
-| `POST /api/entrance/webauthn/login/verify` | `verify:{ip}` | 20 回 | 5 分 |
-| `POST /api/entrance/webauthn/register/options` | `register-options:{ip}` | 20 回 | 5 分 |
-| `POST /api/entrance/webauthn/register/verify` | `register-verify:{ip}` | 20 回 | 5 分 |
-| `POST /api/entrance/recovery/code` | `recovery:{loginId}:{ip}` | **5 回** | **15 分** |
+| `POST /api/entrance/webauthn/login/options` | `options:{loginId}` | 20 回 | 5 分 |
+| `POST /api/entrance/webauthn/login/verify` | `verify:{credentialId のハッシュ}` | 20 回 | 5 分 |
+| `POST /api/entrance/webauthn/register/options` | `register-options:{token のハッシュ}` | 20 回 | 5 分 |
+| `POST /api/entrance/webauthn/register/verify` | `register-verify:{credentialId のハッシュ}` | 20 回 | 5 分 |
+| `POST /api/entrance/recovery/code` | `recovery:{loginId}` | **5 回** | **15 分** |
 
-- ログイン ID 部分は小文字化して正規化される。
-- パスワードログイン（`POST /api/entrance/login`）には現時点でレート制限がない。
+- ログイン ID 部分は小文字化して正規化される。クレデンシャルID・トークンは SHA-256 の先頭 16 バイトをキーに使う（長い値をそのままキーにしない）。
+- キーは**クライアント IP ではなく、アカウント・クレデンシャル・トークン単位**で数える。画面は Server Action から WebApi を呼ぶため、送信元 IP は常にフロントエンドになり、IP 単位にすると全ユーザーが 1 つのバケットを共有してしまう（誰かの試行で全員が 429 になる）。また `X-Forwarded-For` はクライアントが任意に指定できるため、IP をキーにすると制限を回避できる。
+- このため、同一 IP の複数ユーザーは互いに影響しない。逆に、同じアカウント（または同じクレデンシャル）への試行は、送信元が変わっても同じカウントを共有する。
+- パスワードログイン（`POST /api/entrance/auth/login`）には現時点でレート制限がない。
 
 ### 2.2 429 になったときの考え方（重要）
 
 - **固定ウィンドウ**のため、期限は「**最初の試行時刻 + ウィンドウ幅**」。最後の試行からではないので、連打しても待ち時間は延びない。
 - **成功してもカウントは戻らない**（加算のみ）。上限に達したら、ウィンドウが明けるまで待つ必要がある。
-- `login/options` と `recovery/code` は正規化したログイン識別子 + IP 単位、`login/verify` と登録系は IP 単位でカウントする。IP 単位のエンドポイントでは、同じ IP からのリクエストはログイン識別子やブラウザが異なってもカウントを共有する。
 - ウィンドウが明けるとキーが消え、カウントは 0 に戻る。
 
 ### 2.3 残り時間の確認（開発・運用）
@@ -62,19 +63,19 @@ PW=$(docker exec "$RC" printenv REDIS_PASSWORD)
 docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning KEYS 'auth:ratelimit:*'
 
 # 残り回数と残り秒数
-docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning GET 'auth:ratelimit:recovery:<loginId>:<ip>'
-docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning TTL 'auth:ratelimit:recovery:<loginId>:<ip>'
+docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning GET 'auth:ratelimit:recovery:<loginId>'
+docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning TTL 'auth:ratelimit:recovery:<loginId>'
 ```
 
 - Aspire の Redis は **TLS ポート 6379** と **非 TLS ポート 6380**（`--requirepass`）で動く。コンテナ内からは 6380 を使う。
-- `KEYS` の結果に `:::1` のような IP が付く（IPv6 のループバックは `::1`）。
+- クレデンシャルID・トークン由来のキーはハッシュ（32 桁の 16 進数）になる。
 
 ### 2.4 開発環境で即座に解除する
 
 待たずに試したい場合は、該当キーを削除すればリセットされる（**開発環境のみ**）。
 
 ```bash
-docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning DEL 'auth:ratelimit:recovery:<loginId>:<ip>'
+docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning DEL 'auth:ratelimit:recovery:<loginId>'
 ```
 
 ## 3. リカバリーコード
@@ -84,6 +85,8 @@ docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning DEL 'auth:ratelim
 - **1 回限りの使い捨て**。1 回の発行で **10 個**（`CodeCount = 10`、10 文字を `XXXXX-XXXXX` 形式で表示）。
 - DB には平文を保存せず、**HMAC-SHA256 ハッシュのみ**を保存する（鍵は `Pecus:WebAuthn:RecoveryCodePepper`）。
 - `Development` 以外の環境では pepper の設定が**必須**。未設定、または `CHANGE_ME_RECOVERY_CODE_PEPPER_IN_PRODUCTION` のままの状態で起動すると `Program.cs` が起動時に例外を投げる。秘密管理基盤などから環境変数 `WEBAUTHN_RECOVERY_CODE_PEPPER` を生成スクリプトの実行環境に渡し、設定ファイルを生成する場合は、その環境変数を設定した状態で `node scripts/generate-appsettings.js -P` を実行する。生成後は WebApi を再起動して反映する。pepper と生成済み設定ファイルは秘密情報として保護し、リポジトリへ登録しない。`Development` 環境のみ既定値で動作する。
+- 起動できないイメージを配布しないよう、`-P` での生成時にも検証する。pepper が未設定・`CHANGE_ME` 始まり、`RpId` が `localhost` のまま、または `Origins` に `https` 以外が含まれる場合は**生成を中止**する（[generate-appsettings.js](../scripts/generate-appsettings.js)）。
+- `RpId` / `Origins` は、生成時点のフロントエンドURL（`FRONTEND_URL`、未指定なら `config/settings.base.prod.json` の `urls.frontend`）から自動導出する。明示指定は `WEBAUTHN_RP_ID` / `WEBAUTHN_ORIGINS`（カンマ区切り）/ `WEBAUTHN_RP_NAME` を使う。デプロイ手順の詳細は [DEPLOY_OVERVIEW.md](../deploy/DEPLOY_OVERVIEW.md) を参照。
 - 平文を返すのは**発行レスポンスの 1 回だけ**。画面を閉じると再表示できない。
 
 ### 3.1 発行・消費のルール
@@ -98,6 +101,9 @@ docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning DEL 'auth:ratelim
 - 復旧時は、使用したコードの消費に加えて**全セッションを失効**させる（他端末はログアウト）。
 - パスキー・リカバリーコード・デバイス状態などの DB 更新は DB トランザクション内で実行する。一方、登録チャレンジは DB トランザクション開始前に Redis で消費され、リカバリートークンの消費やリフレッシュトークン/JWT の失効も Redis 上で行われるため、いずれも DB トランザクションには参加しない。したがって、登録処理が失敗すると、DB がロールバックされてもチャレンジ／トークンの消費やセッション失効は取り消されない場合がある。DB と Redis をまたぐ処理全体の原子性は保証されない。
 - 残りが 2 個以下になると、プロフィール画面の再発行ボタン横に警告を表示する。
+- パスキー専用の組織でリカバリーコードが残っていない場合、**最後の 1 件のパスキーは削除できない**（先に発行を促すエラーを返す）。削除すると管理者リセット以外にログイン手段が無くなるため。
+- パスキー専用の組織では、パスワード変更とパスワードリセット／パスワード設定メール再送を 400 で拒否する（パスキー登録リセットを案内する）。
+- パスキーを許可していない組織（`Password`）では、パスキー登録リセットメールを 400 で拒否する。発行しても登録画面で利用できないため。
 - 「作り直す」操作はログイン後のプロフィール画面（`/profile` → セキュリティ → パスキー）から行う。登録完了画面は未ログイン状態のため、匿名で再発行できる API は用意していない。
 
 ### 3.2 二重利用の防止
