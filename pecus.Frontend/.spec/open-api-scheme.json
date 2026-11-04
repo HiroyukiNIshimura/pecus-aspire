@@ -28775,6 +28775,14 @@
               "string"
             ],
             "description": "ロケーション"
+          },
+          "ipAddress": {
+            "maxLength": 45,
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "IPアドレス"
           }
         },
         "description": "パスキー認証（アサーション）の検証リクエスト"

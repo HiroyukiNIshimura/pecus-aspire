@@ -79,4 +79,10 @@ public class WebAuthnAssertionRequest
     /// </summary>
     [MaxLength(200, ErrorMessage = "Locationは200文字以内で入力してください。")]
     public string? Location { get; set; }
+
+    /// <summary>
+    /// IPアドレス
+    /// </summary>
+    [MaxLength(45, ErrorMessage = "IPアドレスは45文字以内で入力してください。")]
+    public string? IpAddress { get; set; }
 }

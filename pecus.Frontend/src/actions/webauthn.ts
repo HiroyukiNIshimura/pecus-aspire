@@ -133,6 +133,7 @@ export async function verifyPasskeyLogin(input: PasskeyLoginVerifyInput): Promis
       appVersion: parseResult.data.appVersion,
       timezone: parseResult.data.timezone,
       location: parseResult.data.location,
+      ipAddress: clientIp,
     });
 
     const device: LoginDeviceContext = {

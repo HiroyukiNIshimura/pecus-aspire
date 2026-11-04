@@ -7428,6 +7428,10 @@ export type WebAuthnAssertionRequest = {
    * ロケーション
    */
   location?: null | string;
+  /**
+   * IPアドレス
+   */
+  ipAddress?: null | string;
 };
 
 /**
