@@ -98,17 +98,6 @@ function applyEnvOverrides(config, env) {
     config._shared.Email.FromName = process.env.SMTP_FROM_NAME;
   }
 
-  // Default AI
-  if (process.env.AI_PROVIDER) {
-    config._shared.DefaultAi.Provider = process.env.AI_PROVIDER;
-  }
-  if (process.env.AI_MODEL) {
-    config._shared.DefaultAi.Model = process.env.AI_MODEL;
-  }
-  if (process.env.AI_API_KEY) {
-    config._shared.DefaultAi.ApiKey = process.env.AI_API_KEY;
-  }
-
   // WebAuthn (WebApi only)
   // RpId / Origins はフロントエンドのオリジンと一致している必要がある。
   // 解決済みのフロントエンドURL（FRONTEND_URL、未指定なら _infrastructure.urls.frontend）から

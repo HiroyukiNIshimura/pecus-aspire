@@ -25,24 +25,6 @@ public class DocumentSuggestionService
     }
 
     /// <summary>
-    /// ドキュメント内容を提案（システムデフォルトのAIプロバイダーを使用）
-    /// 未使用
-    /// </summary>
-    /// <param name="workspace">ワークスペース</param>
-    /// <param name="title">ドキュメントタイトル</param>
-    /// <param name="cancellationToken">キャンセルトークン</param>
-    /// <returns>提案されたドキュメント内容（Markdown形式）</returns>
-    public async Task<string> SuggestDocumentContentAsync(
-        Workspace workspace,
-        string title,
-        CancellationToken cancellationToken = default)
-    {
-        var aiClient = _aiClientFactory.GetDefaultClient();
-
-        return await GenerateDocumentContentAsync(aiClient, workspace, title, cancellationToken);
-    }
-
-    /// <summary>
     /// ドキュメント内容を提案（組織設定のAIプロバイダーを使用）
     /// </summary>
     /// <param name="organizationId">組織ID</param>

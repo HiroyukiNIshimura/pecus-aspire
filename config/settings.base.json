@@ -113,11 +113,6 @@
       "DefaultMaxTokens": 4096,
       "DefaultTemperature": 0.7
     },
-    "DefaultAi": {
-      "Provider": "DeepSeek",
-      "Model": "deepseek-flash",
-      "ApiKey": "CHANGE_ME_AI_API_KEY"
-    },
     "Application": {
       "Name": "Coati",
       "Version": "1.0.0",

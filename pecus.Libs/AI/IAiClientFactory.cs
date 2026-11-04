@@ -8,14 +8,6 @@ namespace Pecus.Libs.AI;
 public interface IAiClientFactory
 {
     /// <summary>
-    /// システムデフォルトのAIクライアントを取得
-    /// （appsettings.json の APIキーを使用）
-    /// </summary>
-    /// <returns>AIクライアント</returns>
-    /// <exception cref="InvalidOperationException">デフォルトプロバイダーが設定されていない場合</exception>
-    IAiClient GetDefaultClient();
-
-    /// <summary>
     /// 指定されたベンダー、APIキー、モデルでAIクライアントを生成
     /// （組織設定の APIキーを使用）
     /// </summary>

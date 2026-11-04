@@ -54,7 +54,11 @@ node scripts/generate-appsettings.js -P
   "_shared": {
     "LexicalConverter": { "GrpcApiKey": "..." },
     "Email": { ... },
-    "DefaultAi": { ... }
+    "OpenAI": { ... },
+    "Anthropic": { ... },
+    "Gemini": { ... },
+    "DeepSeek": { ... },
+    "Kimi": { ... }
   },
   "webapi": { ... },
   "backfire": { ... },

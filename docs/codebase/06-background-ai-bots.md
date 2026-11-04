@@ -47,11 +47,13 @@ BackFire はサービス構築後に `IRecurringJobManager` を取得し、各 s
 
 ## AI provider abstraction
 
-`IAiClientFactory` は二つの生成経路を持ちます。`GetDefaultClient()` はシステム既定の provider・API key・model を設定から読み、provider が未指定、key が空、model が空の場合は例外にします。`CreateClient(vendor, apiKey, model)` は呼び出し元が渡した組織別の値を受け取り、vendor に対応するクライアントを生成します。`None` や未対応 vendor では `null` を返します。対応する provider は OpenAI、Anthropic、Google Gemini、DeepSeek、Kimi です。ここでは設定の仕組みだけを示し、設定値・キーの内容は掲載しません。
+`IAiClientFactory` の生成経路は `CreateClient(vendor, apiKey, model)` の1つです。呼び出し元が渡した組織別の provider・API key・model を受け取り、vendor に対応するクライアントを生成します。`None` や未対応 vendor では `null` を返します。システム共通のデフォルト AI という経路は持たず、組織設定が無い場合は AI 機能を実行しません。対応する provider は OpenAI、Anthropic、Google Gemini、DeepSeek、Kimi です。ここでは設定の仕組みだけを示し、設定値・キーの内容は掲載しません。
 
-WebApi と BackFire の起動コードは provider ごとの設定／HTTP client 登録拡張を呼び出し、`AddAiClientFactory` により factory を DI に登録します。既定の AI client 登録は必要な既定 provider・key・model が揃っている場合に有効化されます。一方、AI 返信 job は組織の `OrganizationSettings` から provider・model・key を読み、`BotTaskGuard` で provider が `None` でないことと必須値の存在を確認してから factory に渡します。API 呼び出し先や認証値は設定と provider client の境界に閉じており、タスク本体は `IAiClient` を介して生成を依頼します。
+WebApi と BackFire の起動コードは provider ごとの設定／HTTP client 登録拡張を呼び出し、`AddAiClientFactory` により factory を DI に登録します。AI 返信 job は組織の `OrganizationSettings` から provider・model・key を読み、`BotTaskGuard` で provider が `None` でないことと必須値の存在を確認してから factory に渡します。API 呼び出し先や認証値は設定と provider client の境界に閉じており、タスク本体は `IAiClient` を介して生成を依頼します。
 
-根拠: [IAiClientFactory](../../pecus.Libs/AI/IAiClientFactory.cs)、[AiClientFactory](../../pecus.Libs/AI/AiClientFactory.cs)、[factory DI 登録](../../pecus.Libs/AI/Extensions/AiClientFactoryExtensions.cs)、[provider 拡張の例](../../pecus.Libs/AI/Extensions/OpenAIServiceExtensions.cs)、[既定 client の登録条件](../../pecus.Libs/AI/Extensions/DefaultAiServiceExtensions.cs)、[組織設定の Bot guard](../../pecus.Libs/Hangfire/Tasks/Bot/Guards/BotTaskGuard.cs)。
+根拠: [IAiClientFactory](../../pecus.Libs/AI/IAiClientFactory.cs)、[AiClientFactory](../../pecus.Libs/AI/AiClientFactory.cs)、[factory DI 登録](../../pecus.Libs/AI/Extensions/AiClientFactoryExtensions.cs)、[provider 拡張の例](../../pecus.Libs/AI/Extensions/OpenAIServiceExtensions.cs)、[組織設定の Bot guard](../../pecus.Libs/Hangfire/Tasks/Bot/Guards/BotTaskGuard.cs)。
+
+JSON 形式の生成を依頼する場合、`IAiClient.GenerateJsonAsync<T>` は型から JSON Schema を生成して provider へ送信し、スキーマ非対応の provider では従来の JSON モードへフォールバックします。詳細は [AIクライアントファクトリー 利用ガイド](../ai-client-factory.md) を参照してください。
 
 ## AI Tools と context 構築
 
