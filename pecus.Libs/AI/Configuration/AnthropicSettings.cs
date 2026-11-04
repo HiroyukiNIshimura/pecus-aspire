@@ -16,9 +16,9 @@ public class AnthropicSettings
     public string BaseUrl { get; set; } = "https://api.anthropic.com/v1";
 
     /// <summary>
-    /// APIバージョン（Anthropic-Version ヘッダー用）
+    /// APIバージョン（anthropic-version ヘッダー用）
     /// </summary>
-    public string ApiVersion { get; set; } = "2023-06-01";
+    public string ApiVersion { get; set; } = "2026-10-21";
 
     /// <summary>
     /// リクエストタイムアウト（秒）

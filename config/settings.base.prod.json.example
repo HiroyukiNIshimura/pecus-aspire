@@ -53,7 +53,7 @@
     "DefaultAi": {
       "_comment": "【必須】AI APIキーを設定",
       "Provider": "DeepSeek",
-      "Model": "deepseek-chat",
+      "Model": "deepseek-flash",
       "ApiKey": "CHANGE_ME_AI_API_KEY"
     }
   },

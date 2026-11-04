@@ -121,7 +121,7 @@ public interface IAiClient
   "DeepSeek": {
     "ApiKey": "sk-xxx",           // 必須
     "BaseUrl": "https://api.deepseek.com",
-    "DefaultModel": "deepseek-chat",
+    "DefaultModel": "deepseek-flash",
     "TimeoutSeconds": 60,
     "DefaultMaxTokens": 2048,
     "DefaultTemperature": 0.7

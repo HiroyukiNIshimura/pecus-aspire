@@ -96,7 +96,7 @@
     },
     "Anthropic": {
       "BaseUrl": "https://api.anthropic.com/v1",
-      "ApiVersion": "2023-06-01",
+      "ApiVersion": "2026-10-21",
       "TimeoutSeconds": 60,
       "DefaultMaxTokens": 2048,
       "DefaultTemperature": 0.7
@@ -115,7 +115,7 @@
     },
     "DefaultAi": {
       "Provider": "DeepSeek",
-      "Model": "deepseek-chat",
+      "Model": "deepseek-flash",
       "ApiKey": "CHANGE_ME_AI_API_KEY"
     },
     "Application": {
@@ -320,7 +320,7 @@
         "Email": "admin@demo.coati.none",
         "GenerativeApiVendor": "DeepSeek",
         "GenerativeApiKey": "CHANGE_ME_AI_API_KEY",
-        "GenerativeApiModel": "deepseek-chat"
+        "GenerativeApiModel": "deepseek-flash"
       },
       "Users": [
         {

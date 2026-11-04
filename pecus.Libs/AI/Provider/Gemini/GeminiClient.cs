@@ -66,6 +66,8 @@ public class GeminiClient : IGeminiClient, IAiClient
         // 末尾スラッシュを確保（HttpClientのBaseAddress結合の仕様対応）
         var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
         client.BaseAddress = new Uri(baseUrl);
+        // APIキーはクエリ文字列ではなくヘッダーで送信する（アクセスログやプロキシへ残るのを防ぐ）
+        client.DefaultRequestHeaders.Add("x-goog-api-key", GetApiKey());
         return client;
     }
 
@@ -81,8 +83,7 @@ public class GeminiClient : IGeminiClient, IAiClient
             GetModel(),
             request.Contents.Count);
 
-        // Gemini APIはURLにモデル名とAPIキーを含める
-        var url = $"models/{GetModel()}:generateContent?key={GetApiKey()}";
+        var url = $"models/{GetModel()}:generateContent";
 
         var response = await client.PostAsJsonAsync(
             url,
@@ -294,11 +295,12 @@ public class GeminiClient : IGeminiClient, IAiClient
         using var client = _httpClientFactory.CreateClient(HttpClientName);
         var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
         client.BaseAddress = new Uri(baseUrl);
+        // APIキーはクエリ文字列ではなくヘッダーで送信する
+        client.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
 
         _logger.LogDebug("Gemini API: Fetching available models");
 
-        // Gemini APIはURLにAPIキーを含める
-        var url = $"models?key={apiKey}";
+        var url = "models";
 
         var response = await client.GetAsync(url, cancellationToken);
 
