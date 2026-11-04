@@ -5,7 +5,6 @@ using Pecus.Libs.AI.Models;
 using Pecus.Libs.AI.Schema;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Pecus.Libs.AI.Provider.Anthropic;
 
@@ -231,11 +230,7 @@ public class AnthropicClient : IAnthropicClient, IAiClient
 
         try
         {
-            var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            });
+            var result = JsonSerializer.Deserialize<T>(content, AiJsonSerializer.ResponseOptions);
 
             if (result == null)
             {
@@ -300,35 +295,53 @@ public class AnthropicClient : IAnthropicClient, IAiClient
         string apiKey,
         CancellationToken cancellationToken = default)
     {
-        // Anthropic APIには動的なモデル一覧取得エンドポイントがないため、
-        // 静的なリストを返す
+        // Anthropic API のモデル一覧は静的に保持している。
+        // 新モデルの追加時はこのリストを更新すること（定期的な見直しが必要）
         _logger.LogDebug("Anthropic API: Returning static models list");
 
         IReadOnlyList<AvailableModel> models =
         [
             new AvailableModel
             {
-                Id = "claude-sonnet-4-20250514",
-                Name = "Claude Sonnet 4",
-                Description = "Anthropic Claude Sonnet 4 - バランスの取れた高性能モデル"
+                Id = "claude-opus-5-5",
+                Name = "Claude Opus 5.5",
+                Description = "Anthropic Claude Opus 5.5 - 最高性能モデル"
             },
             new AvailableModel
             {
-                Id = "claude-3-5-sonnet-20241022",
-                Name = "Claude 3.5 Sonnet",
-                Description = "Anthropic Claude 3.5 Sonnet - 高速で高品質なレスポンス"
+                Id = "claude-sonnet-5-5",
+                Name = "Claude Sonnet 5.5",
+                Description = "Anthropic Claude Sonnet 5.5 - 性能と速度のバランス型"
             },
             new AvailableModel
             {
-                Id = "claude-3-5-haiku-20241022",
-                Name = "Claude 3.5 Haiku",
-                Description = "Anthropic Claude 3.5 Haiku - 最も高速で軽量なモデル"
+                Id = "claude-haiku-5-5",
+                Name = "Claude Haiku 5.5",
+                Description = "Anthropic Claude Haiku 5.5 - 高速・低コストモデル"
             },
             new AvailableModel
             {
-                Id = "claude-3-opus-20240229",
-                Name = "Claude 3 Opus",
-                Description = "Anthropic Claude 3 Opus - 最も高性能なモデル"
+                Id = "claude-opus-5",
+                Name = "Claude Opus 5",
+                Description = "Anthropic Claude Opus 5 - 前世代の最高性能モデル"
+            },
+            new AvailableModel
+            {
+                Id = "claude-sonnet-5",
+                Name = "Claude Sonnet 5",
+                Description = "Anthropic Claude Sonnet 5 - 汎用モデル"
+            },
+            new AvailableModel
+            {
+                Id = "claude-sonnet-4-6",
+                Name = "Claude Sonnet 4.6",
+                Description = "Anthropic Claude Sonnet 4.6 - 旧世代の汎用モデル"
+            },
+            new AvailableModel
+            {
+                Id = "claude-haiku-4-5-20251001",
+                Name = "Claude Haiku 4.5",
+                Description = "Anthropic Claude Haiku 4.5 - 旧世代の高速モデル"
             }
         ];
 

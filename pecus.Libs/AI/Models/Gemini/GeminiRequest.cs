@@ -54,9 +54,18 @@ public class GeminiPart
 {
     /// <summary>
     /// テキスト
+    /// functionCall などテキストを持たないパーツでは null になる
     /// </summary>
     [JsonPropertyName("text")]
-    public required string Text { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// 思考パーツかどうか（thinking 有効時に true が設定される）
+    /// </summary>
+    [JsonPropertyName("thought")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Thought { get; set; }
 }
 
 /// <summary>

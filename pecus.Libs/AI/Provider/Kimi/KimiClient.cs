@@ -245,11 +245,7 @@ public class KimiClient : IKimiClient, IAiClient
 
         try
         {
-            var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            });
+            var result = JsonSerializer.Deserialize<T>(content, AiJsonSerializer.ResponseOptions);
 
             if (result == null)
             {

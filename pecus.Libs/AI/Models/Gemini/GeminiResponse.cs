@@ -84,4 +84,16 @@ public class GeminiUsageMetadata
     /// </summary>
     [JsonPropertyName("totalTokenCount")]
     public int TotalTokenCount { get; set; }
+
+    /// <summary>
+    /// 思考に使用されたトークン数
+    /// </summary>
+    [JsonPropertyName("thoughtsTokenCount")]
+    public int ThoughtsTokenCount { get; set; }
+
+    /// <summary>
+    /// キャッシュから再利用されたトークン数
+    /// </summary>
+    [JsonPropertyName("cachedContentTokenCount")]
+    public int CachedContentTokenCount { get; set; }
 }

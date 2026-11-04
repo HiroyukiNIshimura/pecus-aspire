@@ -150,7 +150,7 @@ public class GeminiClient : IGeminiClient, IAiClient
         };
 
         var response = await GenerateContentAsync(request, cancellationToken);
-        return response.Candidates.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text ?? string.Empty;
+        return GetAnswerText(response.Candidates.FirstOrDefault()) ?? string.Empty;
     }
 
     /// <inheritdoc />
@@ -200,7 +200,7 @@ public class GeminiClient : IGeminiClient, IAiClient
         }
 
         var response = await GenerateContentAsync(request, cancellationToken);
-        return response.Candidates.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text ?? string.Empty;
+        return GetAnswerText(response.Candidates.FirstOrDefault()) ?? string.Empty;
     }
 
     /// <inheritdoc />
@@ -265,11 +265,7 @@ public class GeminiClient : IGeminiClient, IAiClient
 
         try
         {
-            var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            });
+            var result = JsonSerializer.Deserialize<T>(content, AiJsonSerializer.ResponseOptions);
 
             if (result == null)
             {
@@ -301,6 +297,16 @@ public class GeminiClient : IGeminiClient, IAiClient
     }
 
     /// <summary>
+    /// 候補から回答本文のテキストを取り出す
+    /// 思考パーツや functionCall などテキストを持たないパーツは除外する
+    /// </summary>
+    private static string? GetAnswerText(GeminiCandidate? candidate) =>
+        candidate?.Content?.Parts
+            .Where(part => part.Thought != true)
+            .Select(part => part.Text)
+            .FirstOrDefault(text => !string.IsNullOrEmpty(text));
+
+    /// <summary>
     /// JSON レスポンス本文を取り出す
     /// ブロック・打ち切りを原因の分かる例外として扱う
     /// </summary>
@@ -330,7 +336,7 @@ public class GeminiClient : IGeminiClient, IAiClient
                 $"Gemini API response was blocked (finishReason={candidate.FinishReason})");
         }
 
-        var content = candidate.Content?.Parts.FirstOrDefault()?.Text;
+        var content = GetAnswerText(candidate);
         if (string.IsNullOrEmpty(content))
         {
             throw new InvalidOperationException("Gemini API returned empty content for JSON request");

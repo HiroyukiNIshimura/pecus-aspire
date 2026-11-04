@@ -60,18 +60,27 @@ public class OpenAIClient : IOpenAIClient, IAiClient
     private string GetModel() => _model;
 
     /// <summary>
-    /// 推論モデル（o1, o3, gpt-5 シリーズなど）かどうかを判定
-    /// 推論モデルは temperature パラメータをサポートしない
+    /// 推論モデル（temperature 非対応）かどうかを判定
+    /// モデルの追加に追従できるよう、判定パターンは設定値から読み込む
     /// </summary>
     private bool IsReasoningModel(string model)
     {
-        var lowerModel = model.ToLowerInvariant();
-        // o1, o3 シリーズ、または gpt-5 シリーズは推論モデル
-        return lowerModel.StartsWith("o1") ||
-               lowerModel.StartsWith("o3") ||
-               lowerModel.StartsWith("gpt-5") ||
-               lowerModel.Contains("-o1") ||
-               lowerModel.Contains("-o3");
+        return MatchesAnyPattern(model, _settings.ReasoningModelPrefixes,
+                   static (value, pattern) => value.StartsWith(pattern, StringComparison.OrdinalIgnoreCase)) ||
+               MatchesAnyPattern(model, _settings.ReasoningModelContains,
+                   static (value, pattern) => value.Contains(pattern, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool MatchesAnyPattern(string model, string? patterns, Func<string, string, bool> match)
+    {
+        if (string.IsNullOrWhiteSpace(patterns))
+        {
+            return false;
+        }
+
+        return patterns
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(pattern => match(model, pattern));
     }
 
     /// <summary>
@@ -263,11 +272,7 @@ public class OpenAIClient : IOpenAIClient, IAiClient
 
         try
         {
-            var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            });
+            var result = JsonSerializer.Deserialize<T>(content, AiJsonSerializer.ResponseOptions);
 
             if (result == null)
             {

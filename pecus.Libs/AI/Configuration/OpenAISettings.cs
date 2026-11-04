@@ -40,4 +40,15 @@ public class OpenAISettings
     /// スキーマ非対応モデルで 400 になる場合は false に設定する
     /// </summary>
     public bool EnableStructuredOutput { get; set; } = true;
+
+    /// <summary>
+    /// temperature を送信しない推論モデルの判定（前方一致・カンマ区切り）
+    /// 推論モデルは temperature をサポートしないため、一致した場合は送信しない
+    /// </summary>
+    public string ReasoningModelPrefixes { get; set; } = "o1,o3,gpt-5";
+
+    /// <summary>
+    /// temperature を送信しない推論モデルの判定（部分一致・カンマ区切り）
+    /// </summary>
+    public string ReasoningModelContains { get; set; } = "-o1,-o3";
 }

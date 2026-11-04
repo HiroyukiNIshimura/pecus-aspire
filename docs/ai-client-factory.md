@@ -197,7 +197,10 @@ APIキーとモデルは組織設定テーブルで管理するため、`appsett
     "DefaultMaxTokens": 2048,
     "DefaultTemperature": 0.7,
     "ModelCreatedAfter": "2024-01-01",
-    "EnableStructuredOutput": true
+    "EnableStructuredOutput": true,
+    // temperature を送信しない推論モデルの判定（前方一致・部分一致、カンマ区切り）
+    "ReasoningModelPrefixes": "o1,o3,gpt-5",
+    "ReasoningModelContains": "-o1,-o3"
   },
   "Anthropic": {
     "BaseUrl": "https://api.anthropic.com/v1",
