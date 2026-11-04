@@ -319,6 +319,52 @@ export class ServerSessionManager {
   }
 
   /**
+   * セッションのデバイスIDを更新
+   * 本機能の導入前に作成されたセッションには device.id が無いため、解決できた時点で保存する
+   *
+   * @param deviceId バックエンドの Device.Id
+   */
+  static async updateDeviceId(deviceId: number): Promise<void> {
+    try {
+      const cookieStore = await cookies();
+      const sessionId = cookieStore.get(SESSION_COOKIE_KEY)?.value;
+
+      if (!sessionId) {
+        console.warn('[ServerSession] No session found to update device id');
+        return;
+      }
+
+      const redis = getRedisClient();
+      const sessionKey = getSessionKey(sessionId);
+      const sessionJson = await redis.get(sessionKey);
+
+      if (!sessionJson) {
+        console.warn('[ServerSession] Session not found in Redis');
+        return;
+      }
+
+      const session: ServerSessionData = JSON.parse(sessionJson);
+
+      if (!session.device) {
+        session.device = {};
+      }
+      session.device.id = deviceId;
+      session.lastAccessedAt = new Date().toISOString();
+
+      const ttl = await redis.ttl(sessionKey);
+      if (ttl > 0) {
+        await redis.setex(sessionKey, ttl, JSON.stringify(session));
+      } else {
+        await redis.setex(sessionKey, SESSION_DEFAULT_TTL_SECONDS, JSON.stringify(session));
+      }
+
+      console.log(`[ServerSession] Device id updated to: ${deviceId}`);
+    } catch (error) {
+      console.error('[ServerSession] Failed to update device id:', error);
+    }
+  }
+
+  /**
    * セッションを削除（ログアウト時）
    *
    * @param sessionId セッション ID（省略時は Cookie から取得）

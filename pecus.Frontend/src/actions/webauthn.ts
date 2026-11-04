@@ -6,6 +6,7 @@ import {
   getCredentialRegistrationOptionsWithHeyApi,
   getCredentialsWithHeyApi,
   getPasskeyLoginOptionsWithHeyApi,
+  getProfileDevicesWithHeyApi,
   getRecoveryCodeStatusWithHeyApi,
   getSetupRegistrationOptionsWithHeyApi,
   issueRecoveryCodesWithHeyApi,
@@ -262,7 +263,35 @@ export async function getCredentials(): Promise<ApiResponse<WebAuthnCredentialRe
  */
 export async function getCurrentDeviceId(): Promise<number | undefined> {
   const session = await ServerSessionManager.getSession();
-  return session?.device?.id;
+  if (!session) {
+    return undefined;
+  }
+
+  if (session.device?.id) {
+    return session.device.id;
+  }
+
+  // 本機能の導入前に作成されたセッションには device.id が無いため、publicId から解決する
+  // （解決できない場合は端末に紐づけずに登録を継続する）
+  const publicId = session.device?.publicId;
+  if (!publicId) {
+    return undefined;
+  }
+
+  try {
+    const devices = await getProfileDevicesWithHeyApi();
+    const deviceId = devices.find((device) => device.publicId === publicId)?.id;
+
+    if (deviceId == null) {
+      return undefined;
+    }
+
+    await ServerSessionManager.updateDeviceId(deviceId);
+    return deviceId;
+  } catch (error) {
+    console.error('[WebAuthn] Failed to resolve current device id:', error);
+    return undefined;
+  }
 }
 
 /**
