@@ -1,5 +1,3 @@
 {
-    "reject": [
-        "@hey-api/openapi-ts"
-    ]
+  "reject": ["@hey-api/openapi-ts"]
 }

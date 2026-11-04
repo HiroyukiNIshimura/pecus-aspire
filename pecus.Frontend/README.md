@@ -7,16 +7,19 @@ This project uses OpenAPI Generator to automatically generate TypeScript API cli
 ### Generating API Clients
 
 1. **Download the latest API specification:**
+
    ```bash
    npm run download:api
    ```
 
 2. **Generate TypeScript API classes:**
+
    ```bash
    npm run generate:api
    ```
 
 3. **Generate the PecusApiClient.ts file:**
+
    ```bash
    npm run generate:client
    ```
