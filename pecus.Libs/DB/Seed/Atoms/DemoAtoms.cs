@@ -74,9 +74,11 @@ public class DemoAtoms
             .Include(o => o.Users)
             .FirstOrDefaultAsync(o => o.Code == _options.Organization.Code && o.IsDemo);
 
+        List<DemoAuthSnapshot> authSnapshots = [];
         if (existingOrg != null)
         {
             _logger.LogInformation("Demo organization already exists, deleting and recreating...");
+            authSnapshots = await CaptureAuthSnapshotsAsync(existingOrg);
             await DeleteDemoOrganizationAsync(existingOrg);
         }
 
@@ -108,6 +110,9 @@ public class DemoAtoms
             var users = CreateDemoUsers(organization, adminRole, memberRole);
             await _context.Users.AddRangeAsync(users);
             await _context.SaveChangesAsync();
+
+            // パスキーとリカバリーコードはデモデータ再生成の影響を受けないよう引き継ぐ
+            await RestoreAuthSnapshotsAsync(authSnapshots, users);
 
             // ユーザーのアバター画像を設定
             await SetupDemoUserAvatarsAsync(organization, users);
@@ -178,6 +183,131 @@ public class DemoAtoms
     private async Task DeleteDemoOrganizationAsync(Organization org)
     {
         await _organizationDeletionService.DeleteOrganizationWithRelatedDataAsync(org.Id);
+    }
+
+    /// <summary>
+    /// デモ組織の再生成で失われる認証情報（パスキー・リカバリーコード）
+    /// </summary>
+    /// <remarks>
+    /// デモ組織は起動のたびに削除・再作成されるため、ユーザーも新しい ID で作り直される。
+    /// 認証情報はユーザーにカスケード削除されるため、再作成後にメールアドレスで引き継ぐ。
+    /// </remarks>
+    private sealed record DemoAuthSnapshot(
+        string Email,
+        byte[]? WebAuthnUserHandle,
+        List<UserCredential> Credentials,
+        List<UserRecoveryCode> RecoveryCodes);
+
+    private async Task<List<DemoAuthSnapshot>> CaptureAuthSnapshotsAsync(Organization org)
+    {
+        var userIds = org.Users.Select(u => u.Id).ToList();
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        var credentials = await _context
+            .UserCredentials
+            .AsNoTracking()
+            .Where(c => userIds.Contains(c.UserId))
+            .ToListAsync();
+
+        var recoveryCodes = await _context
+            .UserRecoveryCodes
+            .AsNoTracking()
+            .Where(c => userIds.Contains(c.UserId))
+            .ToListAsync();
+
+        if (credentials.Count == 0 && recoveryCodes.Count == 0)
+        {
+            return [];
+        }
+
+        var snapshots = org
+            .Users
+            .Select(u => new DemoAuthSnapshot(
+                u.Email,
+                // user handle が変わると登録済みパスキーが検証で一致しなくなるため引き継ぐ
+                u.WebAuthnUserHandle,
+                credentials.Where(c => c.UserId == u.Id).ToList(),
+                recoveryCodes.Where(c => c.UserId == u.Id).ToList()))
+            .Where(s => s.Credentials.Count > 0 || s.RecoveryCodes.Count > 0)
+            .ToList();
+
+        _logger.LogInformation(
+            "Preserving demo authentication data: {CredentialCount} passkeys, {RecoveryCodeCount} recovery codes",
+            credentials.Count,
+            recoveryCodes.Count);
+
+        return snapshots;
+    }
+
+    private async Task RestoreAuthSnapshotsAsync(List<DemoAuthSnapshot> snapshots, List<User> users)
+    {
+        if (snapshots.Count == 0)
+        {
+            return;
+        }
+
+        var userByEmail = users
+            .GroupBy(u => u.Email, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+        var restoredCredentials = 0;
+        var restoredRecoveryCodes = 0;
+
+        foreach (var snapshot in snapshots)
+        {
+            if (!userByEmail.TryGetValue(snapshot.Email, out var user))
+            {
+                _logger.LogWarning(
+                    "Demo user {Email} was not recreated. Skipping authentication data restore.",
+                    snapshot.Email);
+                continue;
+            }
+
+            user.WebAuthnUserHandle = snapshot.WebAuthnUserHandle;
+
+            foreach (var credential in snapshot.Credentials)
+            {
+                _context.UserCredentials.Add(new UserCredential
+                {
+                    UserId = user.Id,
+                    CredentialId = credential.CredentialId,
+                    PublicKey = credential.PublicKey,
+                    SignCount = credential.SignCount,
+                    Transports = credential.Transports,
+                    Aaguid = credential.Aaguid,
+                    IsBackupEligible = credential.IsBackupEligible,
+                    IsBackedUp = credential.IsBackedUp,
+                    Name = credential.Name,
+                    // デモ再生成で端末情報も作り直されるため紐づけない
+                    DeviceId = null,
+                    CreatedAt = credential.CreatedAt,
+                    LastUsedAt = credential.LastUsedAt,
+                });
+                restoredCredentials++;
+            }
+
+            foreach (var recoveryCode in snapshot.RecoveryCodes)
+            {
+                _context.UserRecoveryCodes.Add(new UserRecoveryCode
+                {
+                    UserId = user.Id,
+                    CodeHash = recoveryCode.CodeHash,
+                    UsedAt = recoveryCode.UsedAt,
+                    CreatedAt = recoveryCode.CreatedAt,
+                });
+                restoredRecoveryCodes++;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "Restored demo authentication data: {CredentialCount} passkeys, {RecoveryCodeCount} recovery codes",
+            restoredCredentials,
+            restoredRecoveryCodes);
     }
 
     private Organization CreateDemoOrganization()

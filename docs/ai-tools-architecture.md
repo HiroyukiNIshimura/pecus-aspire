@@ -5,7 +5,7 @@
 - **ツール追加時**: `IAiTool` を実装し、`AiToolsExtensions.cs` に DI 登録を追加
 - **スコア計算**: `CalculateRelevanceScore()` で 0-100 のスコアを返す（50以上で実行対象）
 - **結果マージ**: 複数ツールの結果は `---` 区切りでマージされる
-- **Function Calling対応**: `GetDefinition()` で JSON Schema 形式の定義を返す
+- **ツール定義のエクスポート**: `GetDefinition()` は Function Calling 用の JSON Schema 定義を返す（現状は未送信。下記「Function Calling 用の定義エクスポート」を参照）
 
 ## AI 関連機能の分類
 
@@ -249,7 +249,11 @@ public static IServiceCollection AddAiTools(this IServiceCollection services)
 4. マージされたコンテキストを AI プロンプトに含める
 ```
 
-## Function Calling 対応
+## Function Calling 用の定義エクスポート
+
+> **現状**: ここで示す API はツール定義の**出力のみ**を提供します。プロバイダーのリクエストに `tools` を含める実装は未対応で、
+> ツール選択は `CalculateRelevanceScore()` による C# 側の判定です。`GetAllToolDefinitions()`、`ToOpenAiFormat()`、
+> `ToAnthropicFormat()` には現在呼び出し元がありません。
 
 将来的に AI が直接ツールを選択できるよう、JSON Schema 形式でツール定義をエクスポート可能：
 

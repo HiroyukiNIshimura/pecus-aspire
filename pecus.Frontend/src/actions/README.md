@@ -32,9 +32,7 @@ Server Actions はバックエンドの WebAPI コントローラ構成に対応
 すべての Server Actions は `ApiResponse<T>` 型を返します：
 
 ```typescript
-export type ApiResponse<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+export type ApiResponse<T> = { success: true; data: T } | { success: false; error: string };
 ```
 
 ### 3. 認証管理（Middleware + Axios）
@@ -60,7 +58,7 @@ export async function getOrganization(): Promise<ApiResponse<any>> {
     console.error('Failed to fetch organization:', error);
     return {
       success: false,
-      error: error.message || 'Failed to fetch organization'
+      error: error.message || 'Failed to fetch organization',
     };
   }
 }

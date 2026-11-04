@@ -11,6 +11,11 @@ namespace Pecus.Models.Config
         public JwtSettings Jwt { get; set; } = new();
 
         /// <summary>
+        /// WebAuthn (FIDO2) 設定
+        /// </summary>
+        public WebAuthnSettings WebAuthn { get; set; } = new();
+
+        /// <summary>
         /// アプリケーション設定
         /// </summary>
         public ApplicationSettings Application { get; set; } = new();

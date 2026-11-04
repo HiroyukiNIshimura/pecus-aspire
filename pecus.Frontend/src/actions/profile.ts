@@ -117,7 +117,8 @@ export async function requestEmailChange(
   try {
     const response = await changeProfileEmailWithHeyApi({
       newEmail: parseResult.data.newEmail,
-      currentPassword: parseResult.data.currentPassword,
+      // パスワード未設定のユーザーは空文字で送る（サーバー側で省略扱い）
+      currentPassword: parseResult.data.currentPassword ?? '',
     });
 
     return { success: true, data: response };

@@ -57,13 +57,16 @@ public class ProfileService
     /// <summary>
     /// コンストラクタ
     /// </summary>
+    private readonly OrganizationAuthPolicyService _authPolicy;
+
     public ProfileService(
         ApplicationDbContext context,
         ILogger<ProfileService> logger,
         RefreshTokenService refreshTokenService,
         UserService userService,
         FileUploadService fileUploadService,
-        IWebHostEnvironment environment
+        IWebHostEnvironment environment,
+        OrganizationAuthPolicyService authPolicy
     )
     {
         _context = context;
@@ -72,6 +75,7 @@ public class ProfileService
         _userService = userService;
         _fileUploadService = fileUploadService;
         _environment = environment;
+        _authPolicy = authPolicy;
     }
 
     /// <summary>
@@ -314,6 +318,14 @@ public class ProfileService
             _logger.LogWarning("デバイス削除失敗: デバイスが見つからないか、既に無効化されています。UserId: {UserId}, DeviceId: {DeviceId}", userId, deviceId);
             return false;
         }
+
+        // パスキーは削除せず端末との紐づけのみ解除する。
+        // 同期パスキーは複数端末で共有されるため、端末（セッション）の失効に巻き込むと
+        // 別の端末からも認証できなくなってしまう。
+        await _context
+            .UserCredentials
+            .Where(c => c.DeviceId == deviceId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.DeviceId, (int?)null));
 
         // 関連するリフレッシュトークンを無効化（Redis + DB）
         // トラッキングせずに取得し、RevokeRefreshTokenAsync で個別に無効化
@@ -587,6 +599,7 @@ public class ProfileService
     /// <remarks>
     /// ユーザーが現在のパスワードを検証した上で、新しいパスワードに変更します。
     /// 現在のパスワードが正しくない場合は false を返します。
+    /// パスキー専用の組織では <see cref="InvalidOperationException"/> を投げます。
     /// </remarks>
     /// <param name="userId">ユーザーID</param>
     /// <param name="currentPassword">現在のパスワード</param>
@@ -594,6 +607,14 @@ public class ProfileService
     /// <returns>成功時は true、現在のパスワードが正しくない場合は false</returns>
     public async Task<bool> UpdatePasswordAsync(int userId, string currentPassword, string newPassword)
     {
+        // パスキー専用の組織ではパスワード変更を許可しない（呼び出し側で理由を提示するため例外にする）
+        var mode = await _authPolicy.GetModeByUserIdAsync(userId);
+        if (!OrganizationAuthPolicyService.AllowsPassword(mode))
+        {
+            _logger.LogWarning("パスワード変更失敗: パスキー専用の組織です。UserId: {UserId}", userId);
+            throw new InvalidOperationException("この組織はパスキー専用のため、パスワードを変更できません。");
+        }
+
         try
         {
             var user = await _context.Users.FindAsync(userId);

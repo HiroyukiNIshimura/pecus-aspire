@@ -8,6 +8,7 @@ import {
   getUsersWorkloadWithHeyApi,
   requestAdminUserPasswordResetWithHeyApi,
   resendAdminUserPasswordSetupWithHeyApi,
+  resetUserCredentialsWithHeyApi,
   searchUsersWithHeyApi,
   updateAdminUserWithHeyApi,
 } from '@/connectors/HeyApiClient';
@@ -144,6 +145,25 @@ export async function requestPasswordReset(input: RequestPasswordResetInput): Pr
   } catch (error) {
     console.error('Failed to request password reset:', error);
     return handleApiErrorForAction(error, { defaultMessage: 'パスワードリセットのリクエストに失敗しました' });
+  }
+}
+
+/**
+ * Server Action: パスキー登録リセットメールを送信
+ */
+export async function resetUserCredentials(input: RequestPasswordResetInput): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = requestPasswordResetInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
+  try {
+    const response = await resetUserCredentialsWithHeyApi(parseResult.data.userId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to reset user credentials:', error);
+    return handleApiErrorForAction(error, { defaultMessage: 'パスキー登録リセットの送信に失敗しました' });
   }
 }
 

@@ -2,11 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
-import { requestPasswordReset, resendPasswordSetup, updateUser } from '@/actions/admin/user';
+import { requestPasswordReset, resendPasswordSetup, resetUserCredentials, updateUser } from '@/actions/admin/user';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import MultiSelectDropdown from '@/components/common/filters/MultiSelectDropdown';
+import ConfirmModal from '@/components/common/overlays/ConfirmModal';
 import type { UserDetailResponse } from '@/connectors/hey-api-axios/types.gen';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
@@ -39,6 +40,7 @@ export default function EditUserClient({
   const notify = useNotify();
   const currentUser = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // === 状態管理: ユーザー編集対象の項目 ===
   const [username, setUsername] = useState(userDetail.username || '');
@@ -116,6 +118,24 @@ export default function EditUserClient({
 
   const handleCancel = () => {
     router.push('/admin/users');
+  };
+
+  const handleResetCredentials = () => {
+    setIsResetConfirmOpen(true);
+  };
+
+  const submitResetCredentials = async () => {
+    try {
+      const result = await resetUserCredentials({ userId: userDetail.id! });
+      if (result.success) {
+        notify.success('パスキー登録メールを送信しました。');
+      } else {
+        notify.error(result.message || 'パスキー登録リセットの送信に失敗しました。');
+      }
+    } catch (err) {
+      console.error('パスキー登録リセット送信中にエラーが発生:', err);
+      notify.error('パスキー登録リセット送信中にエラーが発生しました。');
+    }
   };
 
   const handleRequestPasswordReset = async () => {
@@ -369,6 +389,11 @@ export default function EditUserClient({
                 <h2 className="card-title text-lg mb-4">その他の操作</h2>
 
                 <div className="space-y-3">
+                  <button type="button" className="btn btn-accent w-full" onClick={handleResetCredentials}>
+                    <span className="icon-[tabler--fingerprint] w-5 h-5" />
+                    パスキー登録リセットメール送信
+                  </button>
+
                   <button type="button" className="btn btn-outline w-full" onClick={handleRequestPasswordReset}>
                     <span className="icon-[tabler--mail] w-5 h-5" />
                     パスワードリセットメール送信
@@ -384,6 +409,20 @@ export default function EditUserClient({
           </div>
         </main>
       </div>
+
+      <ConfirmModal
+        isOpen={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={submitResetCredentials}
+        title="パスキー登録のリセット"
+        description={
+          'このユーザーのパスキー登録をリセットします。既存のパスキーとセッションは、リンク使用時に失効します。\n' +
+          'パスキーを利用していない組織（パスワードのみ）では実行できません。よろしいですか？'
+        }
+        confirmLabel="リセットする"
+        variant="warning"
+        iconClass="icon-[tabler--fingerprint]"
+      />
     </div>
   );
 }

@@ -353,28 +353,36 @@ public class AdminUserController : BaseAdminController
             throw new NotFoundException("組織が見つかりません。");
         }
 
-        // Aspire の Frontend:Endpoint からフロントエンドURLを取得
-        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
-        var passwordSetupUrl = $"{baseUrl}/password-setup?token={user.PasswordResetToken}";
+        // パスキー専用の組織ではパスキー登録メール、それ以外はパスワード設定メールを送信する
+        if (!string.IsNullOrWhiteSpace(user.CredentialSetupToken))
+        {
+            EnqueueCredentialSetupEmail(user, organization.Name);
+        }
+        else
+        {
+            // Aspire の Frontend:Endpoint からフロントエンドURLを取得
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
+            var passwordSetupUrl = $"{baseUrl}/password-setup?token={user.PasswordResetToken}";
 
-        // パスワード設定メールを送信
-        _backgroundJobClient.Enqueue<EmailTasks>(x =>
-            x.SendTemplatedEmailAsync(
-                organization.Id,
-                user.Email,
-                "パスワード設定のお知らせ",
-                new PasswordSetupEmailModel
-                {
-                    UserName = user.Username,
-                    Email = user.Email,
-                    LoginId = user.LoginId,
-                    OrganizationName = organization.Name,
-                    PasswordSetupUrl = passwordSetupUrl,
-                    TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
-                    CreatedAt = user.CreatedAt,
-                }
-            )
-        );
+            // パスワード設定メールを送信
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    organization.Id,
+                    user.Email,
+                    "パスワード設定のお知らせ",
+                    new PasswordSetupEmailModel
+                    {
+                        UserName = user.Username,
+                        Email = user.Email,
+                        LoginId = user.LoginId,
+                        OrganizationName = organization.Name,
+                        PasswordSetupUrl = passwordSetupUrl,
+                        TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
+                        CreatedAt = user.CreatedAt,
+                    }
+                )
+            );
+        }
 
         var response = new UserDetailResponse
         {
@@ -437,6 +445,7 @@ public class AdminUserController : BaseAdminController
     /// <response code="404">ユーザーが見つかりません</response>
     [HttpPost("{id}/request-password-reset")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Ok<SuccessResponse>> RequestPasswordReset(int id)
@@ -559,6 +568,95 @@ public class AdminUserController : BaseAdminController
 
         return TypedResults.Ok(
             new SuccessResponse { Message = "パスワード設定メールを再送しました。" }
+        );
+    }
+
+    /// <summary>
+    /// パスキー登録リセットメールを送信
+    /// </summary>
+    /// <remarks>
+    /// 認証器を紛失したユーザー向けに、パスキーを再登録するためのリンクを発行します。
+    /// リンクの使用時に既存のパスキーとセッションが失効します。
+    /// </remarks>
+    /// <param name="id">ユーザーID</param>
+    [HttpPost("{id}/reset-credentials")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<Ok<SuccessResponse>> ResetCredentials(int id)
+    {
+        await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
+
+        var (success, user) = await _userService.RequestCredentialSetupAsync(id);
+        if (!success || user == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentOrganizationId);
+        EnqueueCredentialSetupEmail(user, organization?.Name ?? string.Empty);
+
+        _logger.LogInformation(
+            "管理者によるパスキー登録リセット: AdminUserId={AdminUserId}, TargetUserId={TargetUserId}",
+            CurrentUserId,
+            id);
+
+        return TypedResults.Ok(new SuccessResponse { Message = "パスキー登録メールを送信しました。" });
+    }
+
+    /// <summary>
+    /// パスキー登録メールを再送
+    /// </summary>
+    /// <remarks>
+    /// 招待メールを紛失した場合に、新しいリンクを発行して再送します。
+    /// </remarks>
+    /// <param name="id">ユーザーID</param>
+    [HttpPost("{id}/resend-credential-setup")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<Ok<SuccessResponse>> ResendCredentialSetup(int id)
+    {
+        await _accessHelper.CheckIncludeOrganizationAsync(id, CurrentOrganizationId);
+
+        var (success, user) = await _userService.RequestCredentialSetupAsync(id);
+        if (!success || user == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentOrganizationId);
+        EnqueueCredentialSetupEmail(user, organization?.Name ?? string.Empty);
+        return TypedResults.Ok(new SuccessResponse { Message = "パスキー登録メールを再送しました。" });
+    }
+
+    /// <summary>
+    /// パスキー登録メールをキューに投入する
+    /// </summary>
+    private void EnqueueCredentialSetupEmail(User user, string organizationName)
+    {
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
+        var setupUrl = $"{baseUrl}/passkey-setup?token={user.CredentialSetupToken}";
+
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendTemplatedEmailAsync(
+                user.OrganizationId ?? CurrentOrganizationId,
+                user.Email,
+                "パスキー登録のお知らせ",
+                new CredentialSetupEmailModel
+                {
+                    UserName = user.Username,
+                    Email = user.Email,
+                    LoginId = user.LoginId,
+                    OrganizationName = organizationName,
+                    PasskeySetupUrl = setupUrl,
+                    TokenExpiresAt = user.CredentialSetupTokenExpiresAt ?? DateTimeOffset.UtcNow.AddHours(24),
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    RecoveryCodeInstruction = RecoveryCodeService.StorageInstruction,
+                }
+            )
         );
     }
 

@@ -16,9 +16,9 @@ public class AnthropicSettings
     public string BaseUrl { get; set; } = "https://api.anthropic.com/v1";
 
     /// <summary>
-    /// APIバージョン（Anthropic-Version ヘッダー用）
+    /// APIバージョン（anthropic-version ヘッダー用）
     /// </summary>
-    public string ApiVersion { get; set; } = "2023-06-01";
+    public string ApiVersion { get; set; } = "2026-10-21";
 
     /// <summary>
     /// リクエストタイムアウト（秒）
@@ -34,4 +34,10 @@ public class AnthropicSettings
     /// デフォルトのTemperature（0.0-1.0）
     /// </summary>
     public double DefaultTemperature { get; set; } = 0.7;
+
+    /// <summary>
+    /// 構造化出力（JSON Schema 強制）を使用するか
+    /// スキーマ非対応モデルで 400 になる場合は false に設定する
+    /// </summary>
+    public bool EnableStructuredOutput { get; set; } = true;
 }

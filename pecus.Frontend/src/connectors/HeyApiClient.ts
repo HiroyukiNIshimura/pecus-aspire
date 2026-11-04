@@ -14,6 +14,7 @@ import {
   deleteApiBackofficeNotificationsById,
   deleteApiBackofficeOrganizationsById,
   deleteApiDownloadsIcons,
+  deleteApiProfileCredentialsByCredentialId,
   deleteApiProfileDevicesByDeviceId,
   deleteApiWorkspacesById,
   deleteApiWorkspacesByIdMembersByUserId,
@@ -48,6 +49,7 @@ import {
   getApiBackofficeNotificationsById,
   getApiBackofficeOrganizations,
   getApiBackofficeOrganizationsById,
+  getApiBackofficeOrganizationsByIdAuthStatus,
   getApiBackofficeOrganizationsByIdBots,
   getApiChatDmCandidates,
   getApiChatRooms,
@@ -78,6 +80,8 @@ import {
   getApiMyWorkspaceItems,
   getApiProfile,
   getApiProfileAppSettings,
+  getApiProfileCredentials,
+  getApiProfileCredentialsRecoveryCodes,
   getApiProfileDevices,
   getApiProfileEmailPending,
   getApiProfileEmailVerify,
@@ -117,6 +121,7 @@ import {
   patchApiAgendasByIdCancel,
   patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendance,
   patchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceFrom,
+  patchApiProfileCredentialsByCredentialId,
   patchApiProfilePassword,
   patchApiWorkspacesByIdMembersByUserIdRole,
   patchApiWorkspacesByWorkspaceIdItemsByItemId,
@@ -131,6 +136,7 @@ import {
   postApiAdminTags,
   postApiAdminUsersByIdRequestPasswordReset,
   postApiAdminUsersByIdResendPasswordSetup,
+  postApiAdminUsersByIdResetCredentials,
   postApiAdminUsersCreateWithoutPassword,
   postApiAdminWorkspaces,
   postApiAdminWorkspacesByIdUsers,
@@ -142,6 +148,7 @@ import {
   postApiBackofficeNotifications,
   postApiBackofficeOrganizations,
   postApiBackofficeOrganizationsByIdResendCreatedEmail,
+  postApiBackofficeOrganizationsByIdResetAdminCredentials,
   postApiChatRoomsAi,
   postApiChatRoomsByRoomIdMessages,
   postApiChatRoomsByRoomIdTyping,
@@ -151,6 +158,14 @@ import {
   postApiEntrancePasswordRequestReset,
   postApiEntrancePasswordReset,
   postApiEntrancePasswordSet,
+  postApiEntranceRecoveryCode,
+  postApiEntranceWebauthnLoginOptions,
+  postApiEntranceWebauthnLoginVerify,
+  postApiEntranceWebauthnRegisterOptions,
+  postApiEntranceWebauthnRegisterVerify,
+  postApiProfileCredentials,
+  postApiProfileCredentialsOptions,
+  postApiProfileCredentialsRecoveryCodes,
   postApiProfileEmailRequestChange,
   postApiProfileLandingPageRecommendationRespond,
   postApiUsersWorkload,
@@ -197,6 +212,7 @@ import type {
   ActivityPeriod,
   AppPublicSettingsResponse,
   BackOfficeBotResponse,
+  BackOfficeOrganizationAuthStatusResponse,
   BackOfficeOrganizationDetailResponse,
   ChatRoomType,
   DashboardTaskFilter,
@@ -207,6 +223,7 @@ import type {
   DeleteApiAdminWorkspacesByIdUsersByUserIdResponse,
   DeleteApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceResponse,
   DeleteApiDownloadsIconsResponse,
+  DeleteApiProfileCredentialsByCredentialIdResponse,
   DeleteApiProfileDevicesByDeviceIdResponse,
   DeleteApiWorkspacesByWorkspaceIdItemsByItemIdPinResponse,
   DeleteApiWorkspacesByWorkspaceIdItemsByItemIdRelationsByRelationIdResponse,
@@ -266,6 +283,8 @@ import type {
   GetApiMyTaskWorkspacesResponse,
   GetApiMyWorkspaceItemsData,
   GetApiMyWorkspaceItemsResponse,
+  GetApiProfileCredentialsRecoveryCodesResponse,
+  GetApiProfileCredentialsResponse,
   GetApiProfileDevicesResponse,
   GetApiProfileEmailVerifyResponse,
   GetApiProfileResponse,
@@ -308,6 +327,7 @@ import type {
   PatchApiAgendasByIdAttendanceResponse,
   PatchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceFromResponse,
   PatchApiAgendasByIdOccurrencesByOccurrenceIndexAttendanceResponse,
+  PatchApiProfileCredentialsByCredentialIdResponse,
   PatchApiProfilePasswordResponse,
   PatchApiWorkspacesByIdMembersByUserIdRoleResponse,
   PatchApiWorkspacesByWorkspaceIdItemsByItemIdAssigneeResponse,
@@ -320,6 +340,7 @@ import type {
   PostApiAdminTagsResponse,
   PostApiAdminUsersByIdRequestPasswordResetResponse,
   PostApiAdminUsersByIdResendPasswordSetupResponse,
+  PostApiAdminUsersByIdResetCredentialsResponse,
   PostApiAdminUsersCreateWithoutPasswordResponse,
   PostApiAdminWorkspacesByIdUsersResponse,
   PostApiAdminWorkspacesResponse,
@@ -328,6 +349,7 @@ import type {
   PostApiAgendasResponse,
   PostApiAiAssistantGenerateResponse,
   PostApiBackofficeNotificationsResponse,
+  PostApiBackofficeOrganizationsByIdResetAdminCredentialsResponse,
   PostApiChatRoomsAiResponse,
   PostApiChatRoomsByRoomIdMessagesResponse,
   PostApiChatRoomsDmResponse,
@@ -336,6 +358,14 @@ import type {
   PostApiEntrancePasswordRequestResetResponse,
   PostApiEntrancePasswordResetResponse,
   PostApiEntrancePasswordSetResponse,
+  PostApiEntranceRecoveryCodeResponse,
+  PostApiEntranceWebauthnLoginOptionsResponse,
+  PostApiEntranceWebauthnLoginVerifyResponse,
+  PostApiEntranceWebauthnRegisterOptionsResponse,
+  PostApiEntranceWebauthnRegisterVerifyResponse,
+  PostApiProfileCredentialsOptionsResponse,
+  PostApiProfileCredentialsRecoveryCodesResponse,
+  PostApiProfileCredentialsResponse,
   PostApiProfileEmailRequestChangeResponse,
   PostApiProfileLandingPageRecommendationRespondResponse,
   PostApiUsersWorkloadResponse,
@@ -559,6 +589,136 @@ export async function getMyCommitterTasksByWorkspaceWithHeyApi(
     query: { filter },
     throwOnError: true,
   });
+  return response.data;
+}
+
+// ========================================
+// WebAuthn（パスキー）
+// ========================================
+
+export async function getPasskeyLoginOptionsWithHeyApi(
+  body: Parameters<typeof postApiEntranceWebauthnLoginOptions>[0]['body'],
+): Promise<PostApiEntranceWebauthnLoginOptionsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiEntranceWebauthnLoginOptions({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function verifyPasskeyLoginWithHeyApi(
+  body: Parameters<typeof postApiEntranceWebauthnLoginVerify>[0]['body'],
+): Promise<PostApiEntranceWebauthnLoginVerifyResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiEntranceWebauthnLoginVerify({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function getSetupRegistrationOptionsWithHeyApi(
+  body: Parameters<typeof postApiEntranceWebauthnRegisterOptions>[0]['body'],
+): Promise<PostApiEntranceWebauthnRegisterOptionsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiEntranceWebauthnRegisterOptions({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function verifySetupRegistrationWithHeyApi(
+  body: Parameters<typeof postApiEntranceWebauthnRegisterVerify>[0]['body'],
+): Promise<PostApiEntranceWebauthnRegisterVerifyResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiEntranceWebauthnRegisterVerify({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function verifyRecoveryCodeWithHeyApi(
+  body: Parameters<typeof postApiEntranceRecoveryCode>[0]['body'],
+): Promise<PostApiEntranceRecoveryCodeResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiEntranceRecoveryCode({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function getCredentialsWithHeyApi(): Promise<GetApiProfileCredentialsResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiProfileCredentials({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function getCredentialRegistrationOptionsWithHeyApi(): Promise<PostApiProfileCredentialsOptionsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiProfileCredentialsOptions({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function registerCredentialWithHeyApi(
+  body: Parameters<typeof postApiProfileCredentials>[0]['body'],
+): Promise<PostApiProfileCredentialsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiProfileCredentials({ client, body, throwOnError: true });
+  return response.data;
+}
+
+export async function renameCredentialWithHeyApi(
+  credentialId: number,
+  body: Parameters<typeof patchApiProfileCredentialsByCredentialId>[0]['body'],
+): Promise<PatchApiProfileCredentialsByCredentialIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await patchApiProfileCredentialsByCredentialId({
+    client,
+    path: { credentialId },
+    body,
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function deleteCredentialWithHeyApi(
+  credentialId: number,
+): Promise<DeleteApiProfileCredentialsByCredentialIdResponse> {
+  const client = await createHeyApiClient();
+  const response = await deleteApiProfileCredentialsByCredentialId({
+    client,
+    path: { credentialId },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getRecoveryCodeStatusWithHeyApi(): Promise<GetApiProfileCredentialsRecoveryCodesResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiProfileCredentialsRecoveryCodes({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function issueRecoveryCodesWithHeyApi(): Promise<PostApiProfileCredentialsRecoveryCodesResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiProfileCredentialsRecoveryCodes({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function resetUserCredentialsWithHeyApi(
+  id: number,
+): Promise<PostApiAdminUsersByIdResetCredentialsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiAdminUsersByIdResetCredentials({ client, path: { id }, throwOnError: true });
+  return response.data;
+}
+
+export async function resetAdminCredentialsWithHeyApi(
+  id: number,
+): Promise<PostApiBackofficeOrganizationsByIdResetAdminCredentialsResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiBackofficeOrganizationsByIdResetAdminCredentials({
+    client,
+    path: { id },
+    throwOnError: true,
+  });
+  return response.data;
+}
+
+export async function getOrganizationAuthStatusWithHeyApi(
+  id: number,
+): Promise<BackOfficeOrganizationAuthStatusResponse> {
+  const client = await createHeyApiClient();
+  const response = await getApiBackofficeOrganizationsByIdAuthStatus({ client, path: { id }, throwOnError: true });
   return response.data;
 }
 

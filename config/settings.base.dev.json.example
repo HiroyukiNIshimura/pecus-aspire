@@ -20,9 +20,6 @@
       "Username": "dev@example.local",
       "Password": "your-smtp-password",
       "SendMailInDevelopment": false
-    },
-    "DefaultAi": {
-      "ApiKey": "your-ai-api-key"
     }
   },
 

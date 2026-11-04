@@ -23,6 +23,12 @@ public class OrganizationSetting
     public Organization? Organization { get; set; }
 
     /// <summary>
+    /// この組織で許可する認証方式
+    /// null の場合は既定値（Both）として扱う
+    /// </summary>
+    public OrganizationAuthMode? AuthenticationMode { get; set; }
+
+    /// <summary>
     /// タスク超過チェックの閾値（日数）
     /// </summary>
     public int TaskOverdueThreshold { get; set; } = 0;

@@ -1088,7 +1088,7 @@ export default function WorkspaceDetailClient({
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
   // ワークスペースヘッダー部分を共通コンポーネント化
-  const WorkspaceHeader = () => (
+  const renderWorkspaceHeader = () => (
     <div className="flex items-start justify-between gap-2 mb-4">
       <div className="min-w-0 flex-1">
         <h2 className="text-2xl font-bold truncate flex items-center gap-2">
@@ -1220,9 +1220,7 @@ export default function WorkspaceDetailClient({
       <AppHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} userInfo={currentUser} />
 
       {/* スマホ: ヘッダーのみ表示 */}
-      <div className="lg:hidden bg-base-100 p-4 border-b border-base-300">
-        <WorkspaceHeader />
-      </div>
+      <div className="lg:hidden bg-base-100 p-4 border-b border-base-300">{renderWorkspaceHeader()}</div>
 
       <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
         {/* 左サイドバー (PC) */}
@@ -1277,9 +1275,7 @@ export default function WorkspaceDetailClient({
             <div className="card mb-6">
               <div className="card-body">
                 {/* ヘッダー (PC) */}
-                <div className="hidden lg:block">
-                  <WorkspaceHeader />
-                </div>
+                <div className="hidden lg:block">{renderWorkspaceHeader()}</div>
 
                 <WorkspaceEditStatus
                   workspaceId={currentWorkspaceDetail.id}

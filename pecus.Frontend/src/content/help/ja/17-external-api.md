@@ -37,14 +37,14 @@ https://<ご利用のドメイン>/backend/api/external
 
 ## エンドポイント一覧
 
-| メソッド | パス | 説明 |
-|:---|:---|:---|
-| `POST` | `/ping` | APIキーの疎通確認 |
-| `GET` | `/workspaces/{workspaceIdOrCode}/items` | ワークスペースのアイテム一覧（ページング・状態フィルター対応） |
-| `GET` | `/workspaces/{workspaceIdOrCode}/items/{itemNumber}` | アイテム詳細 |
-| `GET` | `/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks` | アイテム内のタスク一覧（状態フィルター対応） |
-| `GET` | `/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks/{sequence}` | タスク詳細 |
-| `GET` | `/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks/{sequence}/comments` | タスクのコメント一覧 |
+| メソッド | パス                                                                           | 説明                                                           |
+| :------- | :----------------------------------------------------------------------------- | :------------------------------------------------------------- |
+| `POST`   | `/ping`                                                                        | APIキーの疎通確認                                              |
+| `GET`    | `/workspaces/{workspaceIdOrCode}/items`                                        | ワークスペースのアイテム一覧（ページング・状態フィルター対応） |
+| `GET`    | `/workspaces/{workspaceIdOrCode}/items/{itemNumber}`                           | アイテム詳細                                                   |
+| `GET`    | `/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks`                     | アイテム内のタスク一覧（状態フィルター対応）                   |
+| `GET`    | `/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks/{sequence}`          | タスク詳細                                                     |
+| `GET`    | `/workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks/{sequence}/comments` | タスクのコメント一覧                                           |
 
 `workspaceIdOrCode` にはワークスペースコードまたは数値のワークスペースIDを指定できます。`itemNumber` はワークスペース内のアイテム番号、`sequence` はアイテム内のタスク番号です。
 
@@ -71,12 +71,12 @@ curl -X POST "https://<ドメイン>/backend/api/external/ping" \
 
 `GET /workspaces/{workspaceIdOrCode}/items` はワークスペースのアイテムを新しい順に返します。1ページは20件固定です。`page` は1始まりで、省略時は1です。1未満を指定した場合も1ページ目として扱われます。
 
-| クエリ | 型 | 説明 |
-|:---|:---|:---|
-| `page` | integer | ページ番号 |
-| `isActive` | boolean | アクティブ状態で絞り込み |
+| クエリ       | 型      | 説明                     |
+| :----------- | :------ | :----------------------- |
+| `page`       | integer | ページ番号               |
+| `isActive`   | boolean | アクティブ状態で絞り込み |
 | `isArchived` | boolean | アーカイブ状態で絞り込み |
-| `isDraft` | boolean | 下書き状態で絞り込み |
+| `isDraft`    | boolean | 下書き状態で絞り込み     |
 
 状態フィルターを省略すると、その条件では絞り込みません。例として、アクティブかつアーカイブされていないアイテムの1ページ目は次のように取得できます。
 
@@ -141,8 +141,8 @@ curl "https://<ドメイン>/backend/api/external/workspaces/gxOZLQQ22ShCHcxL/it
 
 `GET /workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks` は、アイテム内のタスク一覧をシーケンス番号順に返します。完了状態と破棄状態で絞り込めます。フィルターを省略すると、その条件では絞り込みません。
 
-| クエリ | 型 | 説明 |
-|:---|:---|:---|
+| クエリ        | 型      | 説明               |
+| :------------ | :------ | :----------------- |
 | `isCompleted` | boolean | 完了状態で絞り込み |
 | `isDiscarded` | boolean | 破棄状態で絞り込み |
 
@@ -173,13 +173,13 @@ GET /workspaces/{workspaceIdOrCode}/items/{itemNumber}/tasks/{sequence}/comments
 
 ## エラーと注意事項
 
-| ステータス | 意味 | 主な原因 |
-|:---|:---|:---|
-| `200 OK` | 成功 | リクエストを処理しました。 |
-| `400 Bad Request` | 入力エラー | `ping` のメッセージが未指定または500文字を超えているなど、リクエストが不正です。 |
-| `401 Unauthorized` | 認証エラー | `X-API-KEY` がない、無効、失効済み、または期限切れです。 |
-| `404 Not Found` | 未検出 | 指定したワークスペース、アイテム、タスクがない、またはAPIキーの組織から参照できません。 |
-| `500 Internal Server Error` | サーバーエラー | サーバー側で予期しないエラーが発生しました。 |
+| ステータス                  | 意味           | 主な原因                                                                                |
+| :-------------------------- | :------------- | :-------------------------------------------------------------------------------------- |
+| `200 OK`                    | 成功           | リクエストを処理しました。                                                              |
+| `400 Bad Request`           | 入力エラー     | `ping` のメッセージが未指定または500文字を超えているなど、リクエストが不正です。        |
+| `401 Unauthorized`          | 認証エラー     | `X-API-KEY` がない、無効、失効済み、または期限切れです。                                |
+| `404 Not Found`             | 未検出         | 指定したワークスペース、アイテム、タスクがない、またはAPIキーの組織から参照できません。 |
+| `500 Internal Server Error` | サーバーエラー | サーバー側で予期しないエラーが発生しました。                                            |
 
 - APIキーは発行元の組織に限定されます。他組織のデータは参照できず、該当リソースがない場合と同様に `404 Not Found` が返ります。
 - アイテム一覧は状態フィルターを省略すると各状態を問わず返します。必要に応じて `isActive`、`isArchived`、`isDraft` を指定してください。

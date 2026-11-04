@@ -2,7 +2,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Models.Gemini;
+using Pecus.Libs.AI.Schema;
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -66,6 +68,8 @@ public class GeminiClient : IGeminiClient, IAiClient
         // 末尾スラッシュを確保（HttpClientのBaseAddress結合の仕様対応）
         var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
         client.BaseAddress = new Uri(baseUrl);
+        // APIキーはクエリ文字列ではなくヘッダーで送信する（アクセスログやプロキシへ残るのを防ぐ）
+        client.DefaultRequestHeaders.Add("x-goog-api-key", GetApiKey());
         return client;
     }
 
@@ -81,8 +85,7 @@ public class GeminiClient : IGeminiClient, IAiClient
             GetModel(),
             request.Contents.Count);
 
-        // Gemini APIはURLにモデル名とAPIキーを含める
-        var url = $"models/{GetModel()}:generateContent?key={GetApiKey()}";
+        var url = $"models/{GetModel()}:generateContent";
 
         var response = await client.PostAsJsonAsync(
             url,
@@ -147,7 +150,7 @@ public class GeminiClient : IGeminiClient, IAiClient
         };
 
         var response = await GenerateContentAsync(request, cancellationToken);
-        return response.Candidates.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text ?? string.Empty;
+        return GetAnswerText(response.Candidates.FirstOrDefault()) ?? string.Empty;
     }
 
     /// <inheritdoc />
@@ -197,7 +200,7 @@ public class GeminiClient : IGeminiClient, IAiClient
         }
 
         var response = await GenerateContentAsync(request, cancellationToken);
-        return response.Candidates.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text ?? string.Empty;
+        return GetAnswerText(response.Candidates.FirstOrDefault()) ?? string.Empty;
     }
 
     /// <inheritdoc />
@@ -250,27 +253,19 @@ public class GeminiClient : IGeminiClient, IAiClient
             {
                 Temperature = _settings.DefaultTemperature,
                 MaxOutputTokens = _settings.DefaultMaxTokens,
-                ResponseMimeType = "application/json"
+                ResponseMimeType = "application/json",
+                ResponseJsonSchema = CreateResponseJsonSchema<T>()
             }
         };
 
         var response = await GenerateContentAsync(request, cancellationToken);
-        var content = response.Candidates.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text;
-
-        if (string.IsNullOrEmpty(content))
-        {
-            throw new InvalidOperationException("Gemini API returned empty content for JSON request");
-        }
+        var content = GetJsonContent(response);
 
         _logger.LogDebug("Gemini JSON response content: {Content}", content);
 
         try
         {
-            var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            });
+            var result = JsonSerializer.Deserialize<T>(content, AiJsonSerializer.ResponseOptions);
 
             if (result == null)
             {
@@ -286,6 +281,70 @@ public class GeminiClient : IGeminiClient, IAiClient
         }
     }
 
+    /// <summary>
+    /// 構造化出力の JSON Schema を作成
+    /// スキーマを生成できない型や無効化設定の場合は MIME タイプ指定のみで動作する
+    /// </summary>
+    private JsonObject? CreateResponseJsonSchema<TResponse>()
+    {
+        if (!_settings.EnableStructuredOutput ||
+            !AiJsonSchemaBuilder.TryBuild(typeof(TResponse), AiJsonSchemaProfile.Gemini, out var schema))
+        {
+            return null;
+        }
+
+        return schema.Schema;
+    }
+
+    /// <summary>
+    /// 候補から回答本文のテキストを取り出す
+    /// 思考パーツや functionCall などテキストを持たないパーツは除外する
+    /// </summary>
+    private static string? GetAnswerText(GeminiCandidate? candidate) =>
+        candidate?.Content?.Parts
+            .Where(part => part.Thought != true)
+            .Select(part => part.Text)
+            .FirstOrDefault(text => !string.IsNullOrEmpty(text));
+
+    /// <summary>
+    /// JSON レスポンス本文を取り出す
+    /// ブロック・打ち切りを原因の分かる例外として扱う
+    /// </summary>
+    private static string GetJsonContent(GeminiResponse response)
+    {
+        var candidate = response.Candidates.FirstOrDefault();
+        if (candidate is null)
+        {
+            var blockReason = response.PromptFeedback?.BlockReason;
+            throw new InvalidOperationException(
+                string.IsNullOrEmpty(blockReason)
+                    ? "Gemini API returned no candidates for JSON request"
+                    : $"Gemini API blocked the request (blockReason={blockReason})");
+        }
+
+        if (string.Equals(candidate.FinishReason, "MAX_TOKENS", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Gemini API response was truncated by the token limit (finishReason=MAX_TOKENS)");
+        }
+
+        if (string.Equals(candidate.FinishReason, "SAFETY", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(candidate.FinishReason, "PROHIBITED_CONTENT", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(candidate.FinishReason, "RECITATION", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Gemini API response was blocked (finishReason={candidate.FinishReason})");
+        }
+
+        var content = GetAnswerText(candidate);
+        if (string.IsNullOrEmpty(content))
+        {
+            throw new InvalidOperationException("Gemini API returned empty content for JSON request");
+        }
+
+        return content;
+    }
+
     /// <inheritdoc />
     public async Task<IReadOnlyList<AI.Models.AvailableModel>> GetAvailableModelsAsync(
         string apiKey,
@@ -294,11 +353,12 @@ public class GeminiClient : IGeminiClient, IAiClient
         using var client = _httpClientFactory.CreateClient(HttpClientName);
         var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
         client.BaseAddress = new Uri(baseUrl);
+        // APIキーはクエリ文字列ではなくヘッダーで送信する
+        client.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
 
         _logger.LogDebug("Gemini API: Fetching available models");
 
-        // Gemini APIはURLにAPIキーを含める
-        var url = $"models?key={apiKey}";
+        var url = "models";
 
         var response = await client.GetAsync(url, cancellationToken);
 

@@ -24,6 +24,10 @@ public interface IAiToolExecutor
     /// <summary>
     /// 全ツールの定義を取得（Function Calling 用）
     /// </summary>
+    /// <remarks>
+    /// 現時点では呼び出し元がない。プロバイダーのリクエストに <c>tools</c> を含める Function Calling は未実装で、
+    /// ツールは <see cref="ExecuteAsync"/> の関連度スコア判定によってのみ実行される。
+    /// </remarks>
     /// <returns>ツール定義のリスト</returns>
     IReadOnlyList<AiToolDefinition> GetAllToolDefinitions();
 

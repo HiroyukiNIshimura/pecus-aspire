@@ -19,12 +19,18 @@ public class RefreshController : ControllerBase
 {
     private readonly RefreshTokenService _refreshService;
     private readonly UserService _userService;
+    private readonly OrganizationAuthPolicyService _authPolicy;
     private readonly ILogger<RefreshController> _logger;
 
-    public RefreshController(RefreshTokenService refreshService, UserService userService, ILogger<RefreshController> logger)
+    public RefreshController(
+        RefreshTokenService refreshService,
+        UserService userService,
+        OrganizationAuthPolicyService authPolicy,
+        ILogger<RefreshController> logger)
     {
         _refreshService = refreshService;
         _userService = userService;
+        _authPolicy = authPolicy;
         _logger = logger;
     }
 
@@ -72,6 +78,13 @@ public class RefreshController : ControllerBase
             throw new UnauthorizedException("RefreshToken is required");
         }
 
+        // リフレッシュトークンは RefreshTokenService が Guid("N") 形式（32桁の16進数）で発行する。
+        // 形式が一致しない値は有効なトークンになり得ないため、ストア照会や認証方式ポリシー判定の前に拒否する。
+        if (!Guid.TryParseExact(request.RefreshToken, "N", out _))
+        {
+            throw new UnauthorizedException("Invalid refresh token");
+        }
+
         var info = await _refreshService.ValidateRefreshTokenAsync(request.RefreshToken);
         if (info == null)
         {
@@ -82,6 +95,25 @@ public class RefreshController : ControllerBase
         if (user == null)
         {
             throw new UnauthorizedException("Invalid refresh token");
+        }
+
+        // 発行元の認証方式が組織のポリシーで禁止されたら、そのセッションは延命しない。
+        // 切替時のセッション失効が失敗しても、遅くともアクセストークンの有効期限後に遮断するため。
+        var mode = await _authPolicy.GetModeByUserIdAsync(user.Id);
+        var authMethodAllowed = info.AuthMethod switch
+        {
+            RefreshTokenService.AuthMethodPassword => OrganizationAuthPolicyService.AllowsPassword(mode),
+            RefreshTokenService.AuthMethodPasskey => OrganizationAuthPolicyService.AllowsWebAuthn(mode),
+            // 発行元が不明なトークン（旧トークン・Redis 復元時）は、
+            // 両方の方式を許可している組織でのみ許可する（安全側に倒す）
+            _ => OrganizationAuthPolicyService.AllowsPassword(mode)
+                && OrganizationAuthPolicyService.AllowsWebAuthn(mode),
+        };
+
+        if (!authMethodAllowed)
+        {
+            await _refreshService.RevokeRefreshTokenAsync(request.RefreshToken);
+            throw new UnauthorizedException("認証方式が変更されました。再度ログインしてください。");
         }
 
         // ローテーション: 古いリフレッシュトークンを無効化して新しいものを発行
@@ -96,7 +128,11 @@ public class RefreshController : ControllerBase
             LastSeenLocation: request.Location,
             IpAddress: request.IpAddress ?? GetClientIpAddress()
         );
-        var newRefresh = await _refreshService.CreateRefreshTokenAsync(user.Id, deviceInfo);
+        // 認証方式はローテーション後も引き継ぐ
+        var newRefresh = await _refreshService.CreateRefreshTokenAsync(
+            user.Id,
+            deviceInfo,
+            info.AuthMethod);
 
         var accessToken = JwtBearerUtil.GenerateToken(user);
         var expiresAt = JwtBearerUtil.GetTokenExpiration();

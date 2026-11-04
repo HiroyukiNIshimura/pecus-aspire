@@ -48,13 +48,6 @@
       "Password": "CHANGE_ME_SMTP_PASSWORD",
       "FromEmail": "noreply@your-domain.com",
       "FromName": "Your App Name"
-    },
-
-    "DefaultAi": {
-      "_comment": "【必須】AI APIキーを設定",
-      "Provider": "DeepSeek",
-      "Model": "deepseek-chat",
-      "ApiKey": "CHANGE_ME_AI_API_KEY"
     }
   },
 
@@ -65,6 +58,11 @@
         "IssuerSigningKey": "CHANGE_ME_GENERATE_64_CHAR_RANDOM_STRING_HERE_USE_OPENSSL_RAND",
         "ValidIssuer": "https://your-domain.com/",
         "ValidAudience": "https://your-domain.com/"
+      },
+      "WebAuthn": {
+        "_comment": "【必須】RecoveryCodePepper は環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER で渡すか、ここに64文字以上のランダム文字列を設定する。未設定（CHANGE_ME 始まり）のまま `node scripts/generate-appsettings.js -P` を実行すると生成が中止される。RpId / Origins は FRONTEND_URL から自動導出されるため通常は指定不要（明示する場合は WEBAUTHN_RP_ID / WEBAUTHN_ORIGINS）。",
+        "RpName": "Coati",
+        "RecoveryCodePepper": "CHANGE_ME_GENERATE_64_CHAR_RANDOM_STRING_HERE_USE_OPENSSL_RAND"
       }
     },
     "Security": {

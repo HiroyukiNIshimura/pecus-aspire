@@ -21,7 +21,6 @@ public class AiClientFactory : IAiClientFactory
     private readonly IOptions<GeminiSettings> _geminiSettings;
     private readonly IOptions<DeepSeekSettings> _deepSeekSettings;
     private readonly IOptions<KimiSettings> _kimiSettings;
-    private readonly IOptions<DefaultAiSettings> _defaultAiSettings;
     private readonly ILoggerFactory _loggerFactory;
 
     /// <summary>
@@ -34,7 +33,6 @@ public class AiClientFactory : IAiClientFactory
         IOptions<GeminiSettings> geminiSettings,
         IOptions<DeepSeekSettings> deepSeekSettings,
         IOptions<KimiSettings> kimiSettings,
-        IOptions<DefaultAiSettings> defaultAiSettings,
         ILoggerFactory loggerFactory)
     {
         _httpClientFactory = httpClientFactory;
@@ -43,37 +41,7 @@ public class AiClientFactory : IAiClientFactory
         _geminiSettings = geminiSettings;
         _deepSeekSettings = deepSeekSettings;
         _kimiSettings = kimiSettings;
-        _defaultAiSettings = defaultAiSettings;
         _loggerFactory = loggerFactory;
-    }
-
-    /// <inheritdoc />
-    public IAiClient GetDefaultClient()
-    {
-        var settings = _defaultAiSettings.Value;
-
-        if (settings.Provider == GenerativeApiVendor.None)
-        {
-            var validProviders = string.Join(", ", Enum.GetValues<GenerativeApiVendor>()
-                .Where(v => v != GenerativeApiVendor.None)
-                .Select(v => v.ToString()));
-            throw new InvalidOperationException(
-                $"DefaultAi:Provider が設定されていません。appsettings.json で設定してください。選択可能なプロバイダー: {validProviders}");
-        }
-        if (string.IsNullOrEmpty(settings.ApiKey))
-        {
-            throw new InvalidOperationException(
-                "DefaultAi:ApiKey が設定されていません。appsettings.json で設定してください。");
-        }
-        if (string.IsNullOrEmpty(settings.Model))
-        {
-            throw new InvalidOperationException(
-                "DefaultAi:Model が設定されていません。appsettings.json で設定してください。");
-        }
-
-        return CreateClient(settings.Provider, settings.ApiKey, settings.Model)
-            ?? throw new InvalidOperationException(
-                $"サポートされていないプロバイダー: {settings.Provider}");
     }
 
     /// <inheritdoc />

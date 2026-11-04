@@ -58,7 +58,8 @@ export const skillIdsSchema = z.array(z.number().int().positive()).optional().nu
  */
 export const updateEmailFormSchema = z.object({
   newEmail: newEmailSchema,
-  currentPassword: currentPasswordSchema,
+  // パスワード未設定のユーザー（パスキー専用の組織）は空欄でよい
+  currentPassword: z.string().max(100, 'パスワードは100文字以内で入力してください。').optional(),
 });
 export type UpdateEmailFormInput = z.infer<typeof updateEmailFormSchema>;
 

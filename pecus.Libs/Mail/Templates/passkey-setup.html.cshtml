@@ -1,0 +1,42 @@
+@model Pecus.Libs.Mail.Templates.Models.CredentialSetupEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>@Model.UserName さん、パスキーを登録してください</h2>
+
+<p>@Model.OrganizationName の管理者によって、あなたのアカウントが作成されました。</p>
+
+<p>このアプリはパスキー（WebAuthn）でログインします。以下のボタンからパスキーを登録してください。</p>
+
+<div class="center">
+    <a href="@Model.PasskeySetupUrl" class="button">パスキーを登録する</a>
+</div>
+
+<div class="warning">
+    <strong>重要:</strong> このリンクは @Model.TokenExpiresAt.ToString("yyyy年MM月dd日 HH:mm") まで有効です。
+</div>
+
+<p><strong>アカウント情報:</strong></p>
+<ul>
+    <li>ユーザー名: @Model.UserName</li>
+    <li>メールアドレス: @Model.Email</li>
+    <li>ログインID: @Model.LoginId</li>
+    <li>組織: @Model.OrganizationName</li>
+    <li>発行日: @Model.CreatedAt.ToString("yyyy年MM月dd日")</li>
+</ul>
+
+<div class="info">
+    <p class="pre-wrap bold">パスキー登録について:</p>
+    <ul class="inline-list">
+        <li>登録にはこの端末の生体認証（指紋・顔認証）または画面ロックの解除が必要です</li>
+        <li>複数の端末で使う場合は、端末ごとにパスキーを登録してください</li>
+        <li>登録完了後にリカバリーコードが表示されます</li>
+    </ul>
+</div>
+
+<div class="warning">
+    <strong>リカバリーコードの保管:</strong> @Model.RecoveryCodeInstruction
+</div>
+
+<p class="muted">このメールに心当たりがない場合は、このメールを無視してください。</p>

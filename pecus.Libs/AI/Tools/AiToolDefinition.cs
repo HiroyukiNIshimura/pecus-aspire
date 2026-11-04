@@ -23,6 +23,10 @@ public record AiToolDefinition
     /// <summary>
     /// OpenAI Function Calling 形式にシリアライズ
     /// </summary>
+    /// <remarks>
+    /// 現時点では呼び出し元がない。プロバイダーのリクエストに <c>tools</c> を含める Function Calling は未実装で、
+    /// ツール選択は <see cref="IAiTool.CalculateRelevanceScore"/> に基づく C# 側の判定で行われている。
+    /// </remarks>
     /// <returns>OpenAI API 互換のオブジェクト</returns>
     public object ToOpenAiFormat() => new
     {
@@ -38,6 +42,9 @@ public record AiToolDefinition
     /// <summary>
     /// Anthropic Claude Tool 形式にシリアライズ
     /// </summary>
+    /// <remarks>
+    /// 現時点では呼び出し元がない。<see cref="ToOpenAiFormat"/> と同じく Function Calling は未実装。
+    /// </remarks>
     /// <returns>Anthropic API 互換のオブジェクト</returns>
     public object ToAnthropicFormat() => new
     {

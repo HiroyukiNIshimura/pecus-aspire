@@ -92,31 +92,32 @@
       "TimeoutSeconds": 60,
       "DefaultMaxTokens": 2048,
       "DefaultTemperature": 0.7,
-      "ModelCreatedAfter": "2024-01-01"
+      "ModelCreatedAfter": "2024-01-01",
+      "EnableStructuredOutput": true,
+      "ReasoningModelPrefixes": "o1,o3,gpt-5",
+      "ReasoningModelContains": "-o1,-o3"
     },
     "Anthropic": {
       "BaseUrl": "https://api.anthropic.com/v1",
-      "ApiVersion": "2023-06-01",
+      "ApiVersion": "2026-10-21",
       "TimeoutSeconds": 60,
       "DefaultMaxTokens": 2048,
-      "DefaultTemperature": 0.7
+      "DefaultTemperature": 0.7,
+      "EnableStructuredOutput": true
     },
     "Gemini": {
       "BaseUrl": "https://generativelanguage.googleapis.com/v1beta",
       "TimeoutSeconds": 60,
       "DefaultMaxTokens": 2048,
-      "DefaultTemperature": 0.7
+      "DefaultTemperature": 0.7,
+      "EnableStructuredOutput": true
     },
     "Kimi": {
       "BaseUrl": "https://api.moonshot.ai/v1",
       "TimeoutSeconds": 120,
       "DefaultMaxTokens": 4096,
-      "DefaultTemperature": 0.7
-    },
-    "DefaultAi": {
-      "Provider": "DeepSeek",
-      "Model": "deepseek-chat",
-      "ApiKey": "CHANGE_ME_AI_API_KEY"
+      "DefaultTemperature": 0.7,
+      "EnableStructuredOutput": true
     },
     "Application": {
       "Name": "Coati",
@@ -141,6 +142,13 @@
         "ValidIssuer": "http://localhost/",
         "ValidAudience": "https://localhost/",
         "ExpiresMinutes": 15
+      },
+      "WebAuthn": {
+        "_comment": "WebAuthn(FIDO2)設定。RpId はフロントエンドのホスト名（例: coati.0t0.jp）、Origins はフロントエンドのオリジン一覧。本番は必ず https を指定する。FRONTEND_URL から自動導出も可能。",
+        "RpId": "localhost",
+        "RpName": "Coati",
+        "Origins": ["https://localhost:3000", "http://localhost:3000"],
+        "RecoveryCodePepper": "CHANGE_ME_RECOVERY_CODE_PEPPER_IN_PRODUCTION"
       },
       "Pagination": {
         "DefaultPageSize": 20,
@@ -313,7 +321,7 @@
         "Email": "admin@demo.coati.none",
         "GenerativeApiVendor": "DeepSeek",
         "GenerativeApiKey": "CHANGE_ME_AI_API_KEY",
-        "GenerativeApiModel": "deepseek-chat"
+        "GenerativeApiModel": "deepseek-flash"
       },
       "Users": [
         {

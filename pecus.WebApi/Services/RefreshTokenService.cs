@@ -36,8 +36,19 @@ public class RefreshTokenService
         DateTimeOffset ExpiresAt,
         bool ChangeDevice = false,
         string? DevicePublicId = null,
-        int? DeviceId = null
+        int? DeviceId = null,
+        string? AuthMethod = null
     );
+
+    /// <summary>
+    /// パスワード認証で発行されたトークンであることを示す値
+    /// </summary>
+    public const string AuthMethodPassword = "password";
+
+    /// <summary>
+    /// パスキー認証で発行されたトークンであることを示す値
+    /// </summary>
+    public const string AuthMethodPasskey = "passkey";
 
     /// <summary>
     /// デバイス作成情報
@@ -58,13 +69,17 @@ public class RefreshTokenService
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="deviceInfo">デバイス情報（nullの場合はデバイス作成をスキップ）</param>
+    /// <param name="authMethod">発行元の認証方式（<see cref="AuthMethodPassword"/> / <see cref="AuthMethodPasskey"/>）</param>
     /// <returns></returns>
-    public async Task<RefreshTokenInfo> CreateRefreshTokenAsync(int userId, DeviceInfo deviceInfo)
+    public async Task<RefreshTokenInfo> CreateRefreshTokenAsync(
+        int userId,
+        DeviceInfo deviceInfo,
+        string? authMethod = null)
     {
         var token = Guid.NewGuid().ToString("N");
         var expiresAt = DateTime.UtcNow.Add(_refreshTokenTtl);
         // デバイス情報は後で設定するため、初期値は null
-        var info = new RefreshTokenInfo(token, userId, expiresAt);
+        var info = new RefreshTokenInfo(token, userId, expiresAt, AuthMethod: authMethod);
 
         // 1. Redis にキャッシュ（高速アクセス用）
         var key = GetKey(token);
@@ -381,6 +396,37 @@ public class RefreshTokenService
             refreshToken.DeviceId = existingDevice.Id;
 
             return (false, existingDevice.PublicId, existingDevice.Id); // 既存デバイスを更新しただけ
+        }
+
+        // 同じ端末の失効済み Device 行があれば再利用する。
+        // リフレッシュのたびに新しい行を作ると、パスキーの端末紐づけ（UserCredential.DeviceId）が
+        // 失効済み行を指したままになり、パスキー削除時の端末セッション失効が効かなくなる。
+        var revokedDevice = await _context
+            .Devices
+            .AsNoTracking()
+            .Where(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && d.IsRevoked)
+            .OrderByDescending(d => d.LastSeenAt)
+            .Select(d => new { d.Id, d.PublicId })
+            .FirstOrDefaultAsync();
+
+        if (revokedDevice != null)
+        {
+            await _context
+                .Devices
+                .Where(d => d.Id == revokedDevice.Id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(d => d.IsRevoked, false)
+                    .SetProperty(d => d.LastSeenAt, now)
+                    .SetProperty(d => d.LastIpMasked, MaskIpAddress(deviceInfo.IpAddress))
+                    .SetProperty(d => d.Timezone, deviceInfo.Timezone)
+                    .SetProperty(d => d.LastSeenLocation, deviceInfo.LastSeenLocation));
+
+            // リフレッシュトークンを再利用したデバイスに関連付け
+            refreshToken.DeviceId = revokedDevice.Id;
+
+            // 端末行を再利用しても、ログイン時は従来どおり「新しいデバイス」判定を行う
+            // （リフレッシュ経路は ChangeDevice を使用しないため通知は発生しない）
+            return (deviceCount > 0, revokedDevice.PublicId, revokedDevice.Id);
         }
 
         // 新しいデバイスを作成

@@ -18,6 +18,24 @@ public class GeminiResponse
     /// </summary>
     [JsonPropertyName("usageMetadata")]
     public GeminiUsageMetadata? UsageMetadata { get; set; }
+
+    /// <summary>
+    /// プロンプトのフィードバック（ブロック理由など）
+    /// </summary>
+    [JsonPropertyName("promptFeedback")]
+    public GeminiPromptFeedback? PromptFeedback { get; set; }
+}
+
+/// <summary>
+/// Gemini プロンプトフィードバック
+/// </summary>
+public class GeminiPromptFeedback
+{
+    /// <summary>
+    /// プロンプトがブロックされた理由
+    /// </summary>
+    [JsonPropertyName("blockReason")]
+    public string? BlockReason { get; set; }
 }
 
 /// <summary>
@@ -66,4 +84,16 @@ public class GeminiUsageMetadata
     /// </summary>
     [JsonPropertyName("totalTokenCount")]
     public int TotalTokenCount { get; set; }
+
+    /// <summary>
+    /// 思考に使用されたトークン数
+    /// </summary>
+    [JsonPropertyName("thoughtsTokenCount")]
+    public int ThoughtsTokenCount { get; set; }
+
+    /// <summary>
+    /// キャッシュから再利用されたトークン数
+    /// </summary>
+    [JsonPropertyName("cachedContentTokenCount")]
+    public int CachedContentTokenCount { get; set; }
 }

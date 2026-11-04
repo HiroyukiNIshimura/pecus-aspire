@@ -34,7 +34,7 @@ user-invocable: true
 
 - Hey API 生成ファイルを手編集しません。
 - `legacy-api` または `legacy-api/pecus/models` の新規 import を追加しません。
-- `npm run full:api` を実行しません。
+- `npm run hey:gen-client` を実行しません。
 - `npm run dev` を実行しません。
 - バックエンドのプロジェクトを変更しません。
 - `as any`、`as unknown`、広範なキャストで型エラーを隠しません。
@@ -77,7 +77,7 @@ npm run build
 1. `rg "legacy-api/pecus|legacy-api/PecusApiClient|createPecusApiClients" pecus.Frontend/src` returns no application references.
 2. `legacy-api`, its generated Services, and legacy generation scripts are removed.
 3. `openapi-typescript-codegen` is removed from manifests and lockfiles.
-4. `npm run hey:gen-client` による Hey API 生成、`npx biome check`、`npx tsc --noEmit --pretty false`、`npm run build` が成功します。`npm run full:api` は実行しません。
+4. `npm run hey:gen-client` による Hey API 生成、`npx biome check`、`npx tsc --noEmit --pretty false`、`npm run build` が成功します。`npm run hey:gen-client` は実行しません。
 5. Existing authentication, errors, conflict UX, file handling, and response semantics remain intact.
 
 ## 報告

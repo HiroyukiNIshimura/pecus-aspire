@@ -80,7 +80,7 @@ export const parseRouterError = (error: unknown, defaultMessage: string): NextRe
 
   const info = getHttpErrorInfo(error);
   if (info.status !== undefined) {
-    const status = info.status >= 500 ? 500 : info.status;
+    const status = Math.min(info.status, 500);
     const message = getUserSafeErrorMessage(error, defaultMessage);
 
     console.error('Router error passthrough:', { status: info.status });

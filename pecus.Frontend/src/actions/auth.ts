@@ -5,11 +5,12 @@ import { redirect } from 'next/navigation';
 import { loginWithHeyApi } from '@/connectors/HeyApiClient';
 import type { LoginResponse, RoleInfoResponse } from '@/connectors/hey-api-axios/types.gen';
 import { getApiBaseUrl } from '@/libs/env';
-import { type CreateSessionInput, type ServerSessionData, ServerSessionManager } from '@/libs/serverSession';
+import { createLoginSession, type LoginDeviceContext } from '@/libs/loginSession';
+import { type ServerSessionData, ServerSessionManager } from '@/libs/serverSession';
 import { type LoginActionInput, loginActionInputSchema } from '@/schemas/signInSchemas';
 import { handleApiErrorForAction } from './apiErrorPolicy';
 import type { ApiResponse } from './types';
-import { serverError, validationError } from './types';
+import { validationError } from './types';
 
 type LoginActionData = {
   roles: Array<Pick<RoleInfoResponse, 'name'>>;
@@ -54,40 +55,19 @@ export async function login(input: LoginActionInput): Promise<ApiResponse<LoginA
       ipAddress: clientIp,
     });
 
-    // APIレスポンスからトークンを取得
-    const accessToken = response.accessToken;
-    const refreshToken = response.refreshToken || '';
-
-    if (!accessToken) {
-      return serverError('Invalid response from server');
-    }
-
     // Redis にセッションを作成（Cookie には sessionId のみ保存）
-    const sessionInput: CreateSessionInput = {
-      accessToken,
-      refreshToken,
-      accessExpiresAt: response.expiresAt || new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-      refreshExpiresAt: response.refreshExpiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      user: {
-        id: response.userId || 0,
-        name: response.username || '',
-        email: response.email || '',
-        roles: response.roles ? response.roles.map((role: RoleInfoResponse) => role.name || '') : [],
-      },
-      device: {
-        publicId: response.device?.publicId ?? undefined,
-        name: parseResult.data.deviceName,
-        type: parseResult.data.deviceType ?? undefined,
-        os: parseResult.data.os ?? undefined,
-        userAgent: parseResult.data.userAgent,
-        appVersion: parseResult.data.appVersion,
-        timezone: parseResult.data.timezone,
-        location: parseResult.data.location,
-        ipAddress: clientIp,
-      },
+    const device: LoginDeviceContext = {
+      deviceName: parseResult.data.deviceName,
+      deviceType: parseResult.data.deviceType ?? undefined,
+      os: parseResult.data.os ?? undefined,
+      userAgent: parseResult.data.userAgent,
+      appVersion: parseResult.data.appVersion,
+      timezone: parseResult.data.timezone,
+      location: parseResult.data.location,
+      ipAddress: clientIp,
     };
 
-    await ServerSessionManager.createSession(sessionInput);
+    await createLoginSession(response, device);
 
     return {
       success: true,

@@ -7,6 +7,7 @@
   - **APIアクセス**: 読み取りは SSR (Server Component)、書き込みは Server Actions。`pecus.WebApi` への直 fetch は禁止（`createPecusApiClients` を使用）。
   - **認証**: Cookie には `sessionId` のみ。トークンは Redis (`ServerSessionManager`) から取得。
   - **UI**: Tailwind CSS + FlyonUI を使用。`daisyUI` は禁止。アイコンは `@iconify/tailwind4`。
+  - **ダイアログ**: `alert()` / `confirm()` は禁止。モーダルコンポーネント（`ConfirmModal` / `DeleteConfirmModal`）を使用する。
   - **自動生成**: `src/connectors/api/PecusApiClient.generated.ts` は編集禁止。
   - **禁止事項**: クライアントコンポーネントでの API 直叩き、`z-[10]` 等の Tailwind 任意値。
 - **関連ファイル**:
@@ -323,6 +324,10 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
   - キーボード操作に対応（`tabIndex`, `onKeyDown`）
 - **Next.js Image**: 外部画像を使用する場合は `next/image` の `Image` コンポーネントを使用し、`next.config.ts` で `remotePatterns` を設定
 - **className**: Tailwind CSS(4.1.18) + FlyonUI(2.4.1) のクラスを使用し、カスタムCSSは最小限に抑える
+- **ダイアログ（重要）**: ブラウザ標準の `window.alert()` / `window.confirm()` / `window.prompt()` は使用しない
+  - 確認が必要な操作は `src/components/common/overlays/ConfirmModal.tsx` を使用する
+  - 削除確認は `src/components/common/overlays/DeleteConfirmModal.tsx` を使用する
+  - 保存・登録・画面遷移などの通常操作に確認ダイアログを挟まない（削除・失効・再発行など破壊的操作のみ）
 
 ## 7. クライアントサイドバリデーション（Zod）
 

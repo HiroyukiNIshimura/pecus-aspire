@@ -15,6 +15,18 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+/**
+ * ログインフォーム用スキーマ
+ * パスキーモードではパスワード入力欄を表示しないため、パスワードは任意とし
+ * パスワードモードのときだけ送信時に必須チェックを行う
+ */
+export const loginFormSchema = z.object({
+  loginIdentifier: loginSchema.shape.loginIdentifier,
+  password: z.string().max(255, 'パスワードは255文字以内で入力してください。').optional(),
+});
+
+export type LoginFormInput = z.infer<typeof loginFormSchema>;
+
 const deviceTypeSchema = z
   .enum(['Browser', 'MobileApp', 'DesktopApp', 'Other'], { error: 'デバイスタイプが不正です。' })
   .nullable();

@@ -54,7 +54,11 @@ node scripts/generate-appsettings.js -P
   "_shared": {
     "LexicalConverter": { "GrpcApiKey": "..." },
     "Email": { ... },
-    "DefaultAi": { ... }
+    "OpenAI": { ... },
+    "Anthropic": { ... },
+    "Gemini": { ... },
+    "DeepSeek": { ... },
+    "Kimi": { ... }
   },
   "webapi": { ... },
   "backfire": { ... },
@@ -83,6 +87,20 @@ node scripts/generate-appsettings.js -D
 node scripts/generate-appsettings.js -P
 # → settings.base.json + settings.base.prod.json をマージ
 ```
+
+### 本番生成時に必要な環境変数
+
+`-P` は本番設定の検証を行い、不備があれば**生成を中止**します（起動できないイメージを配布しないため）。
+
+| 環境変数 | 必須 | 用途 |
+| --- | --- | --- |
+| `WEBAUTHN_RECOVERY_CODE_PEPPER` | **必須** | リカバリーコードの HMAC 鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まりは中止 |
+| `JWT_ISSUER_SIGNING_KEY` | 必須（本番） | JWT 署名鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まり・32 バイト未満は中止 |
+| `FRONTEND_URL` | 推奨 | WebAuthn の `RpId` / `Origins` を自動導出（未指定時は `_infrastructure.urls.frontend`） |
+
+`RpId` が `localhost` のまま、または `Origins` に `https` 以外が含まれる場合も中止します。
+署名は `appsettings.json` の `Pecus:Jwt:IssuerSigningKey` が使われ（環境変数 `JWT_SECRET` はトークン検証にのみ作用）、両者が食い違うと認証が失敗します。実行時に `JWT_SECRET` で差し替える運用は行わず、生成時にこの値を確定してください。
+`-P` はビルドPCとデプロイPCの両方で実行されるため、どちらのホストでも同じ環境変数を使えるようにしてください。
 
 ## フロントエンドの環境変数
 

@@ -4,15 +4,21 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import {
   deleteBackOfficeOrganization,
+  getOrganizationAuthStatus,
   resendOrganizationCreatedEmail,
+  resetAdminCredentials,
   updateBackOfficeOrganization,
 } from '@/actions/backoffice/organizations';
 import BackOfficeHeader from '@/components/backoffice/BackOfficeHeader';
 import BackOfficeSidebar from '@/components/backoffice/BackOfficeSidebar';
 import BotListSection from '@/components/backoffice/BotListSection';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import ConfirmModal from '@/components/common/overlays/ConfirmModal';
 import DeleteOrganizationModal from '@/components/common/overlays/DeleteOrganizationModal';
-import type { BackOfficeOrganizationDetailResponse } from '@/connectors/hey-api-axios/types.gen';
+import type {
+  BackOfficeOrganizationAuthStatusResponse,
+  BackOfficeOrganizationDetailResponse,
+} from '@/connectors/hey-api-axios/types.gen';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate } from '@/libs/utils/date';
@@ -36,20 +42,36 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
   const notify = useNotify();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [authStatus, setAuthStatus] = useState<BackOfficeOrganizationAuthStatusResponse | null>(null);
   const [editForm, setEditForm] = useState({
     representativeName: data?.representativeName ?? '',
     phoneNumber: data?.phoneNumber ?? '',
     email: data?.email ?? '',
     isActive: data?.isActive ?? true,
+    authenticationMode: data?.authenticationMode ?? null,
   });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isAuthModeConfirmOpen, setIsAuthModeConfirmOpen] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isResendConfirmOpen, setIsResendConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (clientError && isAuthenticationError(clientError)) {
       router.push('/signin');
     }
   }, [clientError, router]);
+
+  useEffect(() => {
+    if (!data?.id) return;
+
+    void (async () => {
+      const result = await getOrganizationAuthStatus({ organizationId: data.id });
+      if (result.success) {
+        setAuthStatus(result.data);
+      }
+    })();
+  }, [data?.id]);
 
   // 編集開始時にフォームをリセット
   const startEditing = () => {
@@ -59,13 +81,31 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
         phoneNumber: data.phoneNumber ?? '',
         email: data.email ?? '',
         isActive: data.isActive ?? true,
+        authenticationMode: data.authenticationMode ?? null,
       });
     }
     setIsEditing(true);
     setClientError(null);
   };
 
+  // 認証方式を制限する方向の変更（Both 以外へ変更）は、セッション失効を伴うため確認する
+  const needsAuthModeConfirm = () =>
+    editForm.authenticationMode != null &&
+    editForm.authenticationMode !== 'Both' &&
+    editForm.authenticationMode !== (data?.authenticationMode ?? 'Both');
+
   const handleSave = () => {
+    if (!data) return;
+
+    if (needsAuthModeConfirm()) {
+      setIsAuthModeConfirmOpen(true);
+      return;
+    }
+
+    submitOrganizationUpdate();
+  };
+
+  const submitOrganizationUpdate = () => {
     if (!data) return;
 
     startTransition(async () => {
@@ -76,6 +116,7 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
           phoneNumber: editForm.phoneNumber || undefined,
           email: editForm.email || undefined,
           isActive: editForm.isActive,
+          authenticationMode: editForm.authenticationMode ?? undefined,
           rowVersion: data.rowVersion,
         },
       });
@@ -116,13 +157,46 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
     try {
       const result = await resendOrganizationCreatedEmail({ organizationId: data.id });
       if (result.success) {
-        notify.success('組織登録完了メールを再送しました。');
+        // パスキー専用組織ではパスキー登録メールが送られるため、サーバーの文言を優先する
+        notify.success(result.data.message || '組織登録完了メールを再送しました。');
       } else {
         notify.error(result.message || '組織登録完了メールの再送に失敗しました。');
       }
     } catch (err: unknown) {
       console.error('組織登録完了メール再送中にエラーが発生:', err);
       notify.error('組織登録完了メール再送中にエラーが発生しました。');
+    }
+  };
+
+  const isWebAuthnOnly = data?.authenticationMode === 'WebAuthn';
+
+  const handleResendCreatedEmailClick = () => {
+    setIsResendConfirmOpen(true);
+  };
+
+  const confirmResendCreatedEmail = async () => {
+    setIsResendConfirmOpen(false);
+    await handleResendCreatedEmail();
+  };
+
+  const handleResetAdminCredentials = () => {
+    if (!data) return;
+    setIsResetConfirmOpen(true);
+  };
+
+  const submitResetAdminCredentials = async () => {
+    if (!data) return;
+
+    try {
+      const result = await resetAdminCredentials({ organizationId: data.id });
+      if (result.success) {
+        notify.success('パスキー登録メールを送信しました。');
+      } else {
+        notify.error(result.message || 'パスキー登録リセットの送信に失敗しました。');
+      }
+    } catch (err: unknown) {
+      console.error('パスキー登録リセット送信中にエラーが発生:', err);
+      notify.error('パスキー登録リセット送信中にエラーが発生しました。');
     }
   };
 
@@ -306,6 +380,58 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                     </div>
 
                     <div>
+                      <div className="text-sm font-semibold text-base-content/70 mb-1">認証方式</div>
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <select
+                            className="select select-bordered w-full max-w-xs"
+                            value={editForm.authenticationMode ?? 'Both'}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                authenticationMode: e.target.value as 'Password' | 'WebAuthn' | 'Both',
+                              })
+                            }
+                            disabled={isPending}
+                          >
+                            <option value="Both">パスワードとパスキー（推奨）</option>
+                            <option value="Password" disabled={data?.authenticationMode === 'WebAuthn'}>
+                              パスワードのみ
+                            </option>
+                            <option value="WebAuthn" disabled={authStatus?.hasBackOfficeUser}>
+                              パスキーのみ
+                            </option>
+                          </select>
+                          {authStatus?.hasBackOfficeUser && (
+                            <p className="text-xs text-warning">
+                              BackOffice 管理者が所属するため、パスキーのみには変更できません。
+                            </p>
+                          )}
+                          {data?.authenticationMode === 'WebAuthn' && (
+                            <p className="text-xs text-warning">
+                              パスキー専用の組織はパスワードのみに変更できません（パスワード未設定のユーザーがログインできなくなるため）。
+                              パスワードとパスキーの併用を経由してください。
+                            </p>
+                          )}
+                          {editForm.authenticationMode === 'WebAuthn' && (
+                            <p className="text-xs text-warning">
+                              パスキー未登録: {authStatus?.usersWithoutCredential ?? 0} 名 / 有効ユーザー{' '}
+                              {authStatus?.userCount ?? 0} 名
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-lg">
+                          {data.authenticationMode === 'Password'
+                            ? 'パスワードのみ'
+                            : data.authenticationMode === 'WebAuthn'
+                              ? 'パスキーのみ'
+                              : 'パスワードとパスキー'}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
                       <div className="text-sm font-semibold text-base-content/70 mb-1">状態</div>
                       {isEditing ? (
                         <label className="label cursor-pointer justify-start gap-2">
@@ -339,15 +465,29 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
                   <div className="divider" />
                   <div>
                     <h3 className="text-sm font-semibold text-base-content/70 mb-3">その他の操作</h3>
-                    <button
-                      type="button"
-                      className="btn btn-outline btn-sm"
-                      onClick={handleResendCreatedEmail}
-                      disabled={isPending}
-                    >
-                      <span className="icon-[tabler--mail-forward] w-4 h-4" />
-                      組織登録完了メール再送
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={handleResendCreatedEmailClick}
+                        disabled={isPending}
+                      >
+                        <span className="icon-[tabler--mail-forward] w-4 h-4" />
+                        組織登録完了メール再送
+                      </button>
+
+                      {authStatus?.authenticationMode !== 'Password' && (
+                        <button
+                          type="button"
+                          className="btn btn-accent btn-sm"
+                          onClick={handleResetAdminCredentials}
+                          disabled={isPending}
+                        >
+                          <span className="icon-[tabler--fingerprint] w-4 h-4" />
+                          管理者パスキー登録リセット
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -358,6 +498,58 @@ export default function OrganizationDetailClient({ initialData, fetchError }: Or
           </div>
         </main>
       </div>
+
+      <ConfirmModal
+        isOpen={isResendConfirmOpen}
+        onClose={() => setIsResendConfirmOpen(false)}
+        onConfirm={confirmResendCreatedEmail}
+        title="組織登録完了メールの再送"
+        description={
+          isWebAuthnOnly
+            ? '組織管理者にパスキー登録用のリンクを再送します。\n' +
+              'リンクを使ってパスキーを登録すると、既存のパスキーがすべて削除され、他の端末のセッションも失効します。続行しますか？'
+            : '組織管理者にパスワード設定メールを再送します。続行しますか？'
+        }
+        confirmLabel="再送する"
+        variant={isWebAuthnOnly ? 'warning' : 'primary'}
+        iconClass="icon-[tabler--mail-forward]"
+      />
+
+      <ConfirmModal
+        isOpen={isAuthModeConfirmOpen}
+        onClose={() => setIsAuthModeConfirmOpen(false)}
+        onConfirm={submitOrganizationUpdate}
+        title={editForm.authenticationMode === 'Password' ? 'パスワードのみへの切り替え' : 'パスキー専用への切り替え'}
+        description={
+          editForm.authenticationMode === 'Password'
+            ? 'パスワードのみに切り替えると、パスキーだけで利用しているユーザー（パスワード未設定）はログインできなくなります。\n' +
+              'パスワード未設定のユーザーが残っていないか、事前に組織の管理者へ確認してください（バックオフィスからはユーザー単位のパスワード設定メールを送信できません）。\n' +
+              '切り替え後は全ユーザーのセッションを失効させるため、パスワード未設定のユーザーは自力で復旧できません。続行しますか？'
+            : authStatus?.usersWithoutCredential == null
+              ? 'パスキー専用に切り替えると、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。\n' +
+                'パスキー未登録のユーザーはログインできなくなります。先にパスキー登録を案内してください。続行しますか？'
+              : authStatus.usersWithoutCredential > 0
+                ? `パスキー未登録のユーザーが ${authStatus.usersWithoutCredential} 名います。\n` +
+                  'パスキー専用に切り替えると、これらのユーザーはログインできなくなります。\n' +
+                  'また、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。\n' +
+                  '先にパスキー登録を案内するか、切り替え後に管理者が登録リセットを行ってください。続行しますか？'
+                : 'パスキー専用に切り替えると、この組織の全ユーザーのセッションを失効させるため、全員がパスキーで再ログインします。続行しますか？'
+        }
+        confirmLabel="切り替える"
+        variant="warning"
+        iconClass={editForm.authenticationMode === 'Password' ? 'icon-[tabler--lock]' : 'icon-[tabler--fingerprint]'}
+      />
+
+      <ConfirmModal
+        isOpen={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={submitResetAdminCredentials}
+        title="パスキー登録のリセット"
+        description="組織管理者のパスキー登録をリセットします。既存のパスキーとセッションは、リンク使用時に失効します。よろしいですか？"
+        confirmLabel="リセットする"
+        variant="warning"
+        iconClass="icon-[tabler--fingerprint]"
+      />
 
       <DeleteOrganizationModal
         isOpen={showDeleteModal}

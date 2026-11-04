@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Models;
+using Pecus.Libs.AI.Provider;
+using Pecus.Libs.AI.Schema;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -58,18 +60,27 @@ public class OpenAIClient : IOpenAIClient, IAiClient
     private string GetModel() => _model;
 
     /// <summary>
-    /// 推論モデル（o1, o3, gpt-5 シリーズなど）かどうかを判定
-    /// 推論モデルは temperature パラメータをサポートしない
+    /// 推論モデル（temperature 非対応）かどうかを判定
+    /// モデルの追加に追従できるよう、判定パターンは設定値から読み込む
     /// </summary>
     private bool IsReasoningModel(string model)
     {
-        var lowerModel = model.ToLowerInvariant();
-        // o1, o3 シリーズ、または gpt-5 シリーズは推論モデル
-        return lowerModel.StartsWith("o1") ||
-               lowerModel.StartsWith("o3") ||
-               lowerModel.StartsWith("gpt-5") ||
-               lowerModel.Contains("-o1") ||
-               lowerModel.Contains("-o3");
+        return MatchesAnyPattern(model, _settings.ReasoningModelPrefixes,
+                   static (value, pattern) => value.StartsWith(pattern, StringComparison.OrdinalIgnoreCase)) ||
+               MatchesAnyPattern(model, _settings.ReasoningModelContains,
+                   static (value, pattern) => value.Contains(pattern, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool MatchesAnyPattern(string model, string? patterns, Func<string, string, bool> match)
+    {
+        if (string.IsNullOrWhiteSpace(patterns))
+        {
+            return false;
+        }
+
+        return patterns
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(pattern => match(model, pattern));
     }
 
     /// <summary>
@@ -251,26 +262,17 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             Messages = requestMessages,
             Temperature = GetTemperatureForModel(model),
             MaxCompletionTokens = _settings.DefaultMaxTokens,
-            ResponseFormat = ResponseFormat.Json
+            ResponseFormat = CreateResponseFormat<T>()
         };
 
         var response = await ChatCompletionAsync(request, cancellationToken);
-        var content = response.Choices.FirstOrDefault()?.Message.Content;
-
-        if (string.IsNullOrEmpty(content))
-        {
-            throw new InvalidOperationException("OpenAI API returned empty content for JSON request");
-        }
+        var content = AiJsonResponseGuard.GetContent(response, "OpenAI");
 
         _logger.LogDebug("OpenAI JSON response content: {Content}", content);
 
         try
         {
-            var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            });
+            var result = JsonSerializer.Deserialize<T>(content, AiJsonSerializer.ResponseOptions);
 
             if (result == null)
             {
@@ -284,6 +286,21 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             _logger.LogError(ex, "Failed to parse JSON response: {Content}", content);
             throw new InvalidOperationException($"Failed to parse JSON response: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// 構造化出力のレスポンス形式を作成
+    /// スキーマを生成できない型や無効化設定の場合は JSON モードへフォールバックする
+    /// </summary>
+    private ResponseFormat CreateResponseFormat<TResponse>()
+    {
+        if (_settings.EnableStructuredOutput &&
+            AiJsonSchemaBuilder.TryBuild(typeof(TResponse), AiJsonSchemaProfile.OpenAiStrict, out var schema))
+        {
+            return ResponseFormat.FromSchema(schema);
+        }
+
+        return ResponseFormat.Json;
     }
 
     /// <inheritdoc />

@@ -30,7 +30,7 @@ user-invocable: true
    - フロントエンド: `pecus.Frontend` で `npx biome check <変更ファイル>` と `npx tsc --noEmit --pretty false`。
    - バックエンド: 該当プロジェクトの `dotnet build`。
    - 診断（problems）も確認する。実行できない検証は理由を報告する。
-6. 変更が API 契約に影響する場合は `.github/copilot-instructions.md` 第5節のワークフロー（バックエンド先行、`npm run full:api`）に従う。
+6. 変更が API 契約に影響する場合は `.github/copilot-instructions.md` 第5節のワークフロー（バックエンド先行、`npm run hey:gen-client`）に従う。
 
 ## 出力形式
 - アラート: 番号、ルールID、重大度、ファイル・行

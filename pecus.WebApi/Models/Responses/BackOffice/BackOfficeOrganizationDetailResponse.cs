@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Models.Responses.BackOffice;
 
@@ -54,6 +55,11 @@ public class BackOfficeOrganizationDetailResponse
     /// デモ組織フラグ
     /// </summary>
     public bool IsDemo { get; set; }
+
+    /// <summary>
+    /// 組織で許可する認証方式（null は既定値 = パスワードとパスキーの両方）
+    /// </summary>
+    public OrganizationAuthMode? AuthenticationMode { get; set; }
 
     /// <summary>
     /// 作成日時

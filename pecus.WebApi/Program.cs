@@ -1,4 +1,5 @@
-﻿using Hangfire;
+﻿using Fido2NetLib;
+using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -76,6 +77,45 @@ builder.Services.AddScoped<IEmailNotificationFilterService, EmailNotificationFil
 
 // セキュリティ関連サービスの登録
 builder.Services.AddSingleton<FrontendUrlResolver>();
+
+// WebAuthn (FIDO2) の登録
+// RpId / Origins はフロントエンドのオリジンと一致させる（設定は config/settings.base.json）
+var webAuthnOrigins = pecusConfig
+    .WebAuthn
+    .Origins
+    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .Select(origin => origin.TrimEnd('/'))
+    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+builder.Services.AddFido2(options =>
+{
+    options.RPID = pecusConfig.WebAuthn.RpId;
+    options.RPName = pecusConfig.WebAuthn.RpName;
+    options.Origins = webAuthnOrigins;
+    options.TimestampDriftTolerance = pecusConfig.WebAuthn.TimestampDriftToleranceMs;
+});
+
+// リカバリーコードの pepper が未設定のまま本番運用すると、既知の定数で HMAC されるため
+// pepper の防御効果が失われる。本番では起動を失敗させ、明示的な設定を要求する。
+if (!builder.Environment.IsDevelopment())
+{
+    var pepper = pecusConfig.WebAuthn.RecoveryCodePepper;
+    if (string.IsNullOrWhiteSpace(pepper)
+        || pepper == WebAuthnSettings.PlaceholderRecoveryCodePepper)
+    {
+        throw new InvalidOperationException(
+            "WebAuthn:RecoveryCodePepper が未設定です。環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER に十分な長さのランダム文字列を設定してください。");
+    }
+}
+
+builder.Services.AddSingleton(pecusConfig.WebAuthn);
+builder.Services.AddSingleton<WebAuthnChallengeStore>();
+builder.Services.AddSingleton<LoginRateLimiter>();
+builder.Services.AddScoped<OrganizationAuthPolicyService>();
+builder.Services.AddScoped<SessionRevocationService>();
+builder.Services.AddScoped<WebAuthnCredentialService>();
+builder.Services.AddScoped<AuthTokenIssuer>();
+builder.Services.AddScoped<RecoveryCodeService>();
 
 // CORS設定（開発環境のみ - SignalR用）
 // 本番環境ではリバースプロキシ経由で同一ドメインになるためCORS不要
@@ -442,7 +482,6 @@ builder.Services.AddAnthropicClient(builder.Configuration);
 builder.Services.AddDeepSeekClient(builder.Configuration);
 builder.Services.AddGeminiClient(builder.Configuration);
 builder.Services.AddKimiClient(builder.Configuration);
-builder.Services.AddDefaultAiClient(builder.Configuration);
 builder.Services.AddAiClientFactory();
 //-------------
 var app = builder.Build();

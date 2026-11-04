@@ -54,9 +54,18 @@ public class GeminiPart
 {
     /// <summary>
     /// テキスト
+    /// functionCall などテキストを持たないパーツでは null になる
     /// </summary>
     [JsonPropertyName("text")]
-    public required string Text { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// 思考パーツかどうか（thinking 有効時に true が設定される）
+    /// </summary>
+    [JsonPropertyName("thought")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Thought { get; set; }
 }
 
 /// <summary>
@@ -98,4 +107,11 @@ public class GeminiGenerationConfig
     [JsonPropertyName("responseMimeType")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ResponseMimeType { get; set; }
+
+    /// <summary>
+    /// 構造化出力の JSON Schema（responseMimeType が application/json の場合に有効）
+    /// </summary>
+    [JsonPropertyName("responseJsonSchema")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public System.Text.Json.Nodes.JsonObject? ResponseJsonSchema { get; set; }
 }

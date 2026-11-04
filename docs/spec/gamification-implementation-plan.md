@@ -306,7 +306,7 @@ if (pendingAchievements.Any())
 
 ### プロジェクトルール遵守
 
-- **API クライアント生成（`npm run full:api`）の実行禁止** — 人間の開発者のみが実行
+- **API クライアント生成（`npm run hey:gen-client`）の実行禁止** — 人間の開発者のみが実行
 - **フロントからの WebApi 直 fetch 禁止** — Server Actions 経由のみ
 - **Hangfire タスクは DI 経由** — 静的メソッド禁止
 - **DTO に検証属性必須** — `[Required]`, `[MaxLength]` 等

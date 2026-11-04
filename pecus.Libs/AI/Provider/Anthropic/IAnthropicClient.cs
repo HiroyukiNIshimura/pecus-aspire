@@ -5,7 +5,7 @@ namespace Pecus.Libs.AI.Provider.Anthropic;
 /// <summary>
 /// Anthropic Claude APIクライアントのインターフェース
 /// </summary>
-public interface IAnthropicClient
+public interface IAnthropicClient : IAiClient
 {
     /// <summary>
     /// メッセージ生成を実行
@@ -15,44 +15,6 @@ public interface IAnthropicClient
     /// <returns>レスポンス</returns>
     Task<AnthropicResponse> CreateMessageAsync(
         AnthropicRequest request,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// シンプルなテキスト生成
-    /// </summary>
-    /// <param name="systemPrompt">システムプロンプト</param>
-    /// <param name="userPrompt">ユーザープロンプト</param>
-    /// <param name="persona">ペルソナ（オプション）。指定時は最初のsystemプロンプトとして送信</param>
-    /// <param name="cancellationToken">キャンセルトークン</param>
-    /// <returns>生成されたテキスト</returns>
-    Task<string> GenerateTextAsync(
-        string systemPrompt,
-        string userPrompt,
-        string? persona = null,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// タイトルからMarkdown本文を生成
-    /// </summary>
-    /// <param name="title">タイトル</param>
-    /// <param name="additionalContext">追加のコンテキスト情報（オプション）</param>
-    /// <param name="persona">ペルソナ（オプション）。指定時は最初のsystemプロンプトとして送信</param>
-    /// <param name="cancellationToken">キャンセルトークン</param>
-    /// <returns>生成されたMarkdownテキスト</returns>
-    Task<string> GenerateMarkdownFromTitleAsync(
-        string title,
-        string? additionalContext = null,
-        string? persona = null,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// 利用可能なモデル一覧を取得
-    /// </summary>
-    /// <param name="apiKey">APIキー</param>
-    /// <param name="cancellationToken">キャンセルトークン</param>
-    /// <returns>利用可能なモデルのリスト</returns>
-    Task<IReadOnlyList<AvailableModel>> GetAvailableModelsAsync(
-        string apiKey,
         CancellationToken cancellationToken = default);
 }
 
@@ -92,6 +54,43 @@ public class AnthropicRequest
     [System.Text.Json.Serialization.JsonPropertyName("temperature")]
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public double? Temperature { get; set; }
+
+    /// <summary>
+    /// 構造化出力の設定（output_config.format）
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("output_config")]
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public AnthropicOutputConfig? OutputConfig { get; set; }
+}
+
+/// <summary>
+/// Anthropic の構造化出力設定
+/// </summary>
+public class AnthropicOutputConfig
+{
+    /// <summary>
+    /// 出力形式
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("format")]
+    public required AnthropicOutputFormat Format { get; set; }
+}
+
+/// <summary>
+/// Anthropic の出力形式（JSON Schema）
+/// </summary>
+public class AnthropicOutputFormat
+{
+    /// <summary>
+    /// 形式タイプ（"json_schema" 固定）
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("type")]
+    public string Type { get; set; } = "json_schema";
+
+    /// <summary>
+    /// JSON Schema 本体
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("schema")]
+    public required System.Text.Json.Nodes.JsonObject Schema { get; set; }
 }
 
 /// <summary>
@@ -204,4 +203,16 @@ public class AnthropicUsage
     /// </summary>
     [System.Text.Json.Serialization.JsonPropertyName("output_tokens")]
     public int OutputTokens { get; set; }
+
+    /// <summary>
+    /// キャッシュ書き込みに使用された入力トークン数
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("cache_creation_input_tokens")]
+    public int CacheCreationInputTokens { get; set; }
+
+    /// <summary>
+    /// キャッシュから再利用された入力トークン数
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("cache_read_input_tokens")]
+    public int CacheReadInputTokens { get; set; }
 }

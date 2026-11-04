@@ -45,10 +45,18 @@ public class EmailChangeService
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
-        // 現在のパスワードを検証
-        if (!UserService.VerifyPasswordPublic(request.CurrentPassword, user.PasswordHash))
+        // 現在のパスワードを検証する。
+        // パスワードが未設定のユーザー（パスキー専用の組織）は省略できる。本人性は
+        // ログイン済みセッションと新しいメールアドレス宛の確認メールで担保する。
+        if (!string.IsNullOrEmpty(user.PasswordHash))
         {
-            throw new InvalidOperationException("現在のパスワードが正しくありません。");
+            if (
+                string.IsNullOrWhiteSpace(request.CurrentPassword)
+                || !UserService.VerifyPasswordPublic(request.CurrentPassword, user.PasswordHash)
+            )
+            {
+                throw new InvalidOperationException("現在のパスワードが正しくありません。");
+            }
         }
 
         // 新しいメールアドレスが現在と同じでないことを確認

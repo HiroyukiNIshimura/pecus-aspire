@@ -17,15 +17,18 @@ public class BackOfficeOrganizationService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<BackOfficeOrganizationService> _logger;
     private readonly BatchOrganizationDeletionService _organizationDeletionService;
+    private readonly SessionRevocationService _sessionRevocation;
 
     public BackOfficeOrganizationService(
         ApplicationDbContext context,
         ILogger<BackOfficeOrganizationService> logger,
-        BatchOrganizationDeletionService organizationDeletionService)
+        BatchOrganizationDeletionService organizationDeletionService,
+        SessionRevocationService sessionRevocation)
     {
         _context = context;
         _logger = logger;
         _organizationDeletionService = organizationDeletionService;
+        _sessionRevocation = sessionRevocation;
     }
 
     /// <summary>
@@ -196,6 +199,7 @@ public class BackOfficeOrganizationService
                 UpdatedAt = o.UpdatedAt,
                 UserCount = o.Users.Count,
                 WorkspaceCount = o.Workspaces.Count,
+                AuthenticationMode = o.Setting == null ? null : o.Setting.AuthenticationMode,
                 RowVersion = o.RowVersion,
             })
             .FirstOrDefaultAsync();
@@ -244,6 +248,23 @@ public class BackOfficeOrganizationService
             organization.IsActive = request.IsActive.Value;
         }
 
+        var revokeSessions = false;
+        if (request.AuthenticationMode.HasValue)
+        {
+            var previousMode = await ApplyAuthenticationModeAsync(
+                id,
+                request.AuthenticationMode.Value,
+                updatedByUserId);
+
+            // 方式を制限する「切替」のときだけ、確立済みのセッションを失効させる
+            // （リフレッシュで延命されるため、失効させないと方式変更が既存セッションに作用しない）。
+            // 方式が変わらない保存（組織名の変更など）や、制限のない Both への変更では失効させない。
+            var previousModeValue = previousMode ?? OrganizationAuthMode.Both;
+            revokeSessions =
+                request.AuthenticationMode.Value != previousModeValue
+                && request.AuthenticationMode.Value != OrganizationAuthMode.Both;
+        }
+
         organization.UpdatedAt = DateTime.UtcNow;
         organization.UpdatedByUserId = updatedByUserId;
 
@@ -252,6 +273,13 @@ public class BackOfficeOrganizationService
 
         try
         {
+            // 失効はコミット前に実行する。失効に失敗した場合はコミットせず、
+            // 認証方式が変わらない状態のまま再試行できるようにする。
+            if (revokeSessions)
+            {
+                await _sessionRevocation.RevokeOrganizationSessionsAsync(id);
+            }
+
             await _context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
@@ -259,9 +287,115 @@ public class BackOfficeOrganizationService
             throw new BadRequestException("組織は他のユーザーによって更新されました。最新のデータを再取得してください。");
         }
 
+        if (revokeSessions)
+        {
+            // 失効処理中（コミット前）は認証方式がまだ旧値のため、その間にパスワードで
+            // ログインしたセッションは上の失効に含まれない。方式変更の確定後にもう一度失効させる。
+            // 方式変更は確定済みのため、失敗しても要求自体は成功として扱い、記録のみ残す。
+            try
+            {
+                await _sessionRevocation.RevokeOrganizationSessionsAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "認証方式の変更後にセッションを失効できませんでした。OrganizationId={OrganizationId}",
+                    id);
+            }
+        }
+
         _logger.LogInformation("組織を更新しました: OrganizationId={OrganizationId}", id);
 
         return await GetOrganizationAsync(id);
+    }
+
+    /// <summary>
+    /// 組織の認証方式とパスキー未登録ユーザー数を取得
+    /// </summary>
+    public async Task<BackOfficeOrganizationAuthStatusResponse> GetAuthStatusAsync(int id)
+    {
+        var organization = await _context
+            .Organizations
+            .AsNoTracking()
+            .Where(o => o.Id == id)
+            .Select(o => new
+            {
+                o.Id,
+                Mode = o.Setting == null ? (OrganizationAuthMode?)null : o.Setting.AuthenticationMode,
+            })
+            .FirstOrDefaultAsync();
+
+        if (organization == null)
+        {
+            throw new NotFoundException("組織が見つかりません。");
+        }
+
+        var users = _context.Users.AsNoTracking().Where(u => u.OrganizationId == id && u.IsActive);
+
+        return new BackOfficeOrganizationAuthStatusResponse
+        {
+            OrganizationId = organization.Id,
+            AuthenticationMode = organization.Mode,
+            UserCount = await users.CountAsync(),
+            UsersWithoutCredential = await users.CountAsync(u => !u.Credentials.Any()),
+            AdminsWithoutCredential = await users.CountAsync(u =>
+                !u.Credentials.Any() && u.Roles.Any(r => r.Name == SystemRole.Admin)),
+            HasBackOfficeUser = await users.AnyAsync(u => u.Roles.Any(r => r.Name == SystemRole.BackOffice)),
+        };
+    }
+
+    /// <summary>
+    /// 組織設定に認証方式を反映する
+    /// </summary>
+    /// <returns>変更前の認証方式（未設定の場合は null）</returns>
+    private async Task<OrganizationAuthMode?> ApplyAuthenticationModeAsync(
+        int organizationId,
+        OrganizationAuthMode mode,
+        int updatedByUserId)
+    {
+        if (mode == OrganizationAuthMode.WebAuthn)
+        {
+            // BackOffice 管理者が所属する組織をパスキー専用にすると、管理者が締め出される
+            var hasBackOfficeUser = await _context.Users.AnyAsync(u =>
+                u.OrganizationId == organizationId
+                && u.IsActive
+                && u.Roles.Any(r => r.Name == SystemRole.BackOffice));
+
+            if (hasBackOfficeUser)
+            {
+                throw new BadRequestException("BackOffice 管理者が所属する組織はパスキー専用に変更できません。");
+            }
+        }
+
+        var setting = await _context
+            .OrganizationSettings
+            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+
+        var previousMode = setting?.AuthenticationMode;
+
+        // パスキー専用からパスワード専用へは変更できない。
+        // パスワード未設定のユーザーがログイン手段（パスキー・リカバリーコード）を失うため。
+        if (
+            mode == OrganizationAuthMode.Password
+            && previousMode == OrganizationAuthMode.WebAuthn
+        )
+        {
+            throw new BadRequestException(
+                "パスキー専用の組織はパスワードのみに変更できません。パスワードとパスキーの併用を経由してください。");
+        }
+
+        if (setting == null)
+        {
+            setting = new OrganizationSetting { OrganizationId = organizationId };
+            _context.OrganizationSettings.Add(setting);
+        }
+
+        setting.AuthenticationMode = mode;
+        setting.UpdatedAt = DateTimeOffset.UtcNow;
+        setting.UpdatedByUserId = updatedByUserId;
+
+        return previousMode;
     }
 
     /// <summary>

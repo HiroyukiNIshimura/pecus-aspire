@@ -21,7 +21,7 @@ const SESSION_COOKIE_KEY = 'sessionId';
  * セッションをクリアしてそのままページを表示するパス
  * パスワード設定・リセットは新規/別ユーザー向けなので、既存セッションは破棄する
  */
-const sessionClearPaths = ['/password-setup', '/password-reset'];
+const sessionClearPaths = ['/password-setup', '/password-reset', '/passkey-setup'];
 
 /**
  * キャッシュ無効化ヘッダーを設定
@@ -73,7 +73,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   // 認証不要なパス（公開ページ）
-  const publicPaths = ['/signin', '/signup', '/forgot-password', '/error-test'];
+  const publicPaths = ['/signin', '/signup', '/forgot-password', '/recovery', '/error-test'];
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
@@ -111,11 +111,12 @@ export const config = {
     /*
      * 以下を除くすべてのパスにマッチ:
      * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
+     * - _next (Next.js の静的ファイル・HMR・RSC ペイロード)
+     *   除外しないと HMR 要求が /signin へリダイレクトされ、開発時にリロードループと
+     *   セッション Cookie の削除が発生する
      * - favicon.ico, *.svg, *.png, *.webp, *.ico (static assets)
      * - scripts, styles (public assets)
      */
-    '/((?!api|_next/static|_next/image|favicon\\.ico|.*\\.svg$|.*\\.png$|.*\\.webp$|.*\\.ico$|scripts|styles|icons).*)',
+    '/((?!api|_next|favicon\\.ico|.*\\.svg$|.*\\.png$|.*\\.webp$|.*\\.ico$|scripts|styles|icons).*)',
   ],
 };

@@ -29,4 +29,10 @@ public class KimiSettings
     /// デフォルトのTemperature（0.0-1.0）
     /// </summary>
     public double DefaultTemperature { get; set; } = 0.7;
+
+    /// <summary>
+    /// 構造化出力（JSON Schema 強制）を使用するか
+    /// スキーマ非対応モデルで 400 になる場合は false に設定する
+    /// </summary>
+    public bool EnableStructuredOutput { get; set; } = true;
 }

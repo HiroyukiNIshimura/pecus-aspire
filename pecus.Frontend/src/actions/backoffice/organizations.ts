@@ -6,12 +6,15 @@ import {
   getBackOfficeOrganizationBotsWithHeyApi,
   getBackOfficeOrganizationByIdWithHeyApi,
   getBackOfficeOrganizationsWithHeyApi,
+  getOrganizationAuthStatusWithHeyApi,
   resendBackOfficeOrganizationCreatedEmailWithHeyApi,
+  resetAdminCredentialsWithHeyApi,
   updateBackOfficeBotPersonaWithHeyApi,
   updateBackOfficeOrganizationWithHeyApi,
 } from '@/connectors/HeyApiClient';
 import type {
   BackOfficeBotResponse,
+  BackOfficeOrganizationAuthStatusResponse,
   BackOfficeOrganizationDetailResponse,
   OrganizationWithAdminResponse,
   PagedResponseOfBackOfficeOrganizationListItemResponse,
@@ -22,9 +25,11 @@ import {
   createBackOfficeOrganizationInputSchema,
   type DeleteBackOfficeOrganizationInput,
   deleteBackOfficeOrganizationInputSchema,
+  type GetBackOfficeOrganizationAuthStatusInput,
   type GetBackOfficeOrganizationBotsInput,
   type GetBackOfficeOrganizationDetailInput,
   type GetBackOfficeOrganizationsInput,
+  getBackOfficeOrganizationAuthStatusInputSchema,
   getBackOfficeOrganizationBotsInputSchema,
   getBackOfficeOrganizationDetailInputSchema,
   getBackOfficeOrganizationsInputSchema,
@@ -78,6 +83,27 @@ export async function getBackOfficeOrganizationDetail(
   } catch (error) {
     console.error('Failed to fetch backoffice organization detail:', error);
     return handleApiErrorForAction(error, { defaultMessage: '組織詳細の取得に失敗しました' });
+  }
+}
+
+/**
+ * Server Action: BackOffice - 組織の認証方式とパスキー未登録ユーザー数を取得
+ */
+export async function getOrganizationAuthStatus(
+  input: GetBackOfficeOrganizationAuthStatusInput,
+): Promise<ApiResponse<BackOfficeOrganizationAuthStatusResponse>> {
+  const parseResult = getBackOfficeOrganizationAuthStatusInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
+  try {
+    const response = await getOrganizationAuthStatusWithHeyApi(parseResult.data.organizationId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch organization auth status:', error);
+    return handleApiErrorForAction(error, { defaultMessage: '認証方式の状況取得に失敗しました' });
   }
 }
 
@@ -166,6 +192,27 @@ export async function resendOrganizationCreatedEmail(
   } catch (error) {
     console.error('Failed to resend organization created email:', error);
     return handleApiErrorForAction(error, { defaultMessage: '組織登録完了メールの再送に失敗しました' });
+  }
+}
+
+/**
+ * Server Action: BackOffice - 組織管理者のパスキー登録をリセット
+ */
+export async function resetAdminCredentials(
+  input: ResendOrganizationCreatedEmailInput,
+): Promise<ApiResponse<SuccessResponse>> {
+  const parseResult = resendOrganizationCreatedEmailInputSchema.safeParse(input);
+  if (!parseResult.success) {
+    const errorMessages = parseResult.error.issues.map((issue) => issue.message).join(', ');
+    return validationError(errorMessages);
+  }
+
+  try {
+    const response = await resetAdminCredentialsWithHeyApi(parseResult.data.organizationId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to reset admin credentials:', error);
+    return handleApiErrorForAction(error, { defaultMessage: '管理者パスキー登録リセットの送信に失敗しました' });
   }
 }
 

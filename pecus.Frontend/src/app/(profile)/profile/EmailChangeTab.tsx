@@ -172,10 +172,7 @@ export default function EmailChangeTab({
       {/* パスワード確認 */}
       <div className="form-control">
         <label htmlFor="currentPassword" className="label">
-          <span className="label-text font-semibold text-base-content">
-            現在のパスワード（確認用）
-            <span className="text-error ml-1">*</span>
-          </span>
+          <span className="label-text font-semibold text-base-content">現在のパスワード（確認用）</span>
         </label>
         <input
           id="currentPassword"
@@ -185,9 +182,11 @@ export default function EmailChangeTab({
           className={`input input-bordered ${shouldShowError('currentPassword') ? 'input-error' : ''}`}
           onChange={(e) => handleFieldChange('currentPassword', e.target.value)}
           disabled={isLoading || isSubmitting}
-          required
           autoComplete="off"
         />
+        <div className="label">
+          <span className="label-text-alt">パスワード未設定（パスキー専用の組織）の場合は空欄で構いません。</span>
+        </div>
         {shouldShowError('currentPassword') && (
           <div className="label">
             <span className="label-text-alt text-error">{getFieldError('currentPassword')}</span>

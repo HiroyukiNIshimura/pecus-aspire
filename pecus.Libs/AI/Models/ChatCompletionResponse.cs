@@ -90,4 +90,40 @@ public class ChatUsage
     /// </summary>
     [JsonPropertyName("total_tokens")]
     public int TotalTokens { get; set; }
+
+    /// <summary>
+    /// プロンプトの内訳（キャッシュ利用トークンなど）
+    /// </summary>
+    [JsonPropertyName("prompt_tokens_details")]
+    public ChatPromptTokensDetails? PromptTokensDetails { get; set; }
+
+    /// <summary>
+    /// 生成トークンの内訳（推論トークンなど）
+    /// </summary>
+    [JsonPropertyName("completion_tokens_details")]
+    public ChatCompletionTokensDetails? CompletionTokensDetails { get; set; }
+}
+
+/// <summary>
+/// プロンプトトークンの内訳
+/// </summary>
+public class ChatPromptTokensDetails
+{
+    /// <summary>
+    /// キャッシュから再利用されたトークン数
+    /// </summary>
+    [JsonPropertyName("cached_tokens")]
+    public int CachedTokens { get; set; }
+}
+
+/// <summary>
+/// 生成トークンの内訳
+/// </summary>
+public class ChatCompletionTokensDetails
+{
+    /// <summary>
+    /// 推論に使用されたトークン数
+    /// </summary>
+    [JsonPropertyName("reasoning_tokens")]
+    public int ReasoningTokens { get; set; }
 }

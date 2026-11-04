@@ -107,6 +107,23 @@
 
 ---
 
+## 本番設定の生成に必要な環境変数
+
+`scripts/generate-appsettings.js -P`（`ops/`・`build-pc/`・`deploy-pc/` の各スクリプトが実行）は、次の環境変数を設定したシェルで実行してください。`WEBAUTHN_RECOVERY_CODE_PEPPER` が未設定・プレースホルダーのままだと**生成自体が中止**されます。生成された `pecus.WebApi/appsettings.json` は Docker イメージに焼き込まれるため、後からコンテナの環境変数だけを足しても反映されません。
+
+| 環境変数 | 必須 | 用途 |
+| --- | --- | --- |
+| `WEBAUTHN_RECOVERY_CODE_PEPPER` | **必須** | リカバリーコードの HMAC 鍵（64文字以上のランダム文字列）。未設定、または `CHANGE_ME` 始まりのまま実行すると**生成が中止**される（未設定のままでは本番の WebApi が起動しない） |
+| `JWT_ISSUER_SIGNING_KEY` | 必須（本番） | JWT 署名鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まり・32 バイト未満は**生成が中止**される |
+| `FRONTEND_URL` | 推奨 | WebAuthn の `RpId` / `Origins` を自動導出する。未指定の場合は `config/settings.base.prod.json` の `_infrastructure.urls.frontend` が使われる |
+
+- 本番の `Origins` は `https` のみ。`RpId` が `localhost` のままの場合も生成が中止される。
+- `-P` は**ビルドPC と デプロイPC の両方**で実行される（`build-pc/build-and-push.sh`、`deploy-pc/pull-and-deploy.sh`、`ops/lib.sh`）。どちらのホストでも上記の環境変数が使えるようにしておくこと（`~/.bashrc` や systemd の環境ファイルなど）。
+- 生成された設定ファイル（`pecus.WebApi/appsettings.json` など）は秘密情報を含むため、リポジトリへ登録しないこと。
+- 環境変数を追加した後に `-P` を再実行し、WebApi を再ビルド・再起動して反映する。
+
+---
+
 ## 参考: 主要スクリプト・ファイル一覧
 - `ops/infra-up.sh` ... インフラ層起動
 - `ops/infra-down.sh` ... インフラ層停止

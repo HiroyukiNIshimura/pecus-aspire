@@ -3262,6 +3262,16 @@
               "application/json": {}
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -3328,6 +3338,16 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
             "content": {
               "application/json": {
                 "schema": {
@@ -6844,6 +6864,16 @@
               "application/json": {}
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -9540,6 +9570,289 @@
         ]
       }
     },
+    "/api/profile/credentials": {
+      "get": {
+        "tags": ["Profile"],
+        "summary": "登録済みパスキーの一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebAuthnCredentialResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Profile"],
+        "summary": "パスキーを登録",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRegistrationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRegistrationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRegistrationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnCredentialResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/profile/credentials/options": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "パスキー登録用のオプションを取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnRegistrationOptionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/profile/credentials/{credentialId}": {
+      "patch": {
+        "tags": ["Profile"],
+        "summary": "パスキーの表示名を変更",
+        "parameters": [
+          {
+            "name": "credentialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnCredentialNameRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnCredentialNameRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnCredentialNameRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Profile"],
+        "summary": "パスキーを削除",
+        "parameters": [
+          {
+            "name": "credentialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/profile/credentials/recovery-codes": {
+      "get": {
+        "tags": ["Profile"],
+        "summary": "未使用のリカバリーコードを保持しているか",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnRecoveryCodeStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Profile"],
+        "summary": "リカバリーコードを再発行",
+        "description": "既存の未使用コードはすべて無効化される。表示はこのレスポンス限り。",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnRecoveryCodesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
     "/api/profile/devices": {
       "get": {
         "tags": ["Profile"],
@@ -10320,7 +10633,7 @@
       "post": {
         "tags": ["Entrance - Auth"],
         "summary": "ログイン",
-        "description": "EmailまたはLoginIdとパスワードでログインします",
+        "description": "EmailまたはLoginIdとパスワードでログインします。\n組織がパスキー専用に設定されている場合は失敗します。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -10519,6 +10832,322 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/entrance/recovery/code": {
+      "post": {
+        "tags": ["Entrance - Recovery"],
+        "summary": "リカバリーコードを検証し、パスキー再登録用トークンを発行",
+        "description": "識別子やコードが一致しない場合も、ユーザー存在の推測を避けるため汎用エラーを返す。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRecoveryCodeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRecoveryCodeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRecoveryCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnRecoveryTokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/entrance/webauthn/login/options": {
+      "post": {
+        "tags": ["Entrance - WebAuthn"],
+        "summary": "パスキーログイン用のオプションを取得",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnLoginOptionsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnLoginOptionsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnLoginOptionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnLoginOptionsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/entrance/webauthn/login/verify": {
+      "post": {
+        "tags": ["Entrance - WebAuthn"],
+        "summary": "パスキー認証を検証し、トークンを発行",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnAssertionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnAssertionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnAssertionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/entrance/webauthn/register/options": {
+      "post": {
+        "tags": ["Entrance - WebAuthn"],
+        "summary": "セットアップトークン／リカバリートークンからパスキー登録用のオプションを取得",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnSetupOptionsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnSetupOptionsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnSetupOptionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnRegistrationOptionsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/entrance/webauthn/register/verify": {
+      "post": {
+        "tags": ["Entrance - WebAuthn"],
+        "summary": "セットアップトークン／リカバリーコードでパスキーを登録",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRegistrationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRegistrationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRegistrationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnSetupRegistrationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -11077,6 +11706,110 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/backoffice/organizations/{id}/auth-status": {
+      "get": {
+        "tags": ["BackOffice - Organizations"],
+        "summary": "組織の認証方式とパスキー未登録ユーザー数を取得",
+        "description": "認証方式をパスキー専用へ切り替える前に、締め出されるユーザー数を確認するために使用します。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "組織ID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackOfficeOrganizationAuthStatusResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/backoffice/organizations/{id}/reset-admin-credentials": {
+      "post": {
+        "tags": ["BackOffice - Organizations"],
+        "summary": "組織管理者のパスキー登録をリセット",
+        "description": "組織管理者が認証器を紛失した場合に、パスキー再登録用のリンクを発行してメール送信します。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "組織ID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -13311,6 +14044,16 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "403": {
             "description": "他組織のユーザーは操作できません",
             "content": {
@@ -13393,6 +14136,138 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{id}/reset-credentials": {
+      "post": {
+        "tags": ["Admin - User"],
+        "summary": "パスキー登録リセットメールを送信",
+        "description": "認証器を紛失したユーザー向けに、パスキーを再登録するためのリンクを発行します。\nリンクの使用時に既存のパスキーとセッションが失効します。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ユーザーID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{id}/resend-credential-setup": {
+      "post": {
+        "tags": ["Admin - User"],
+        "summary": "パスキー登録メールを再送",
+        "description": "招待メールを紛失した場合に、新しいリンクを発行して再送します。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ユーザーID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -16146,6 +17021,47 @@
         },
         "description": "BackOffice用 システム通知リスト項目レスポンス"
       },
+      "BackOfficeOrganizationAuthStatusResponse": {
+        "type": "object",
+        "properties": {
+          "organizationId": {
+            "type": "integer",
+            "description": "組織ID",
+            "format": "int32"
+          },
+          "authenticationMode": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "現在の認証方式（null は既定値 = パスワードとパスキーの両方）",
+                "$ref": "#/components/schemas/OrganizationAuthMode"
+              }
+            ]
+          },
+          "userCount": {
+            "type": "integer",
+            "description": "有効なユーザー数",
+            "format": "int32"
+          },
+          "usersWithoutCredential": {
+            "type": "integer",
+            "description": "パスキー未登録の有効ユーザー数",
+            "format": "int32"
+          },
+          "adminsWithoutCredential": {
+            "type": "integer",
+            "description": "パスキー未登録の管理者ユーザー数",
+            "format": "int32"
+          },
+          "hasBackOfficeUser": {
+            "type": "boolean",
+            "description": "BackOffice 管理者が所属しているか（パスキー専用への変更を禁止する判定用）"
+          }
+        },
+        "description": "組織の認証方式と、パスキー未登録ユーザーの状況"
+      },
       "BackOfficeOrganizationDetailResponse": {
         "required": ["id", "name", "phoneNumber", "rowVersion"],
         "type": "object",
@@ -16186,6 +17102,17 @@
           "isDemo": {
             "type": "boolean",
             "description": "デモ組織フラグ"
+          },
+          "authenticationMode": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "組織で許可する認証方式（null は既定値 = パスワードとパスキーの両方）",
+                "$ref": "#/components/schemas/OrganizationAuthMode"
+              }
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -16356,6 +17283,17 @@
           "isActive": {
             "type": ["null", "boolean"],
             "description": "アクティブフラグ"
+          },
+          "authenticationMode": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "組織で許可する認証方式",
+                "$ref": "#/components/schemas/OrganizationAuthMode"
+              }
+            ]
           },
           "rowVersion": {
             "type": "integer",
@@ -20736,6 +21674,10 @@
         },
         "description": "入力中通知リクエスト"
       },
+      "OrganizationAuthMode": {
+        "enum": ["Password", "WebAuthn", "Both"],
+        "type": ["null", "string"]
+      },
       "OrganizationInfoResponse": {
         "required": ["id", "name"],
         "type": "object",
@@ -20936,6 +21878,7 @@
           "taskOverdueThreshold",
           "weeklyReportDeliveryDay",
           "generativeApiVendor",
+          "hasGenerativeApiKey",
           "plan",
           "requireEstimateOnTaskCreation",
           "enforcePredecessorCompletion",
@@ -20972,9 +21915,9 @@
             "description": "利用する生成APIのベンダー種類",
             "$ref": "#/components/schemas/GenerativeApiVendor"
           },
-          "generativeApiKey": {
-            "type": ["null", "string"],
-            "description": "生成APIキー"
+          "hasGenerativeApiKey": {
+            "type": "boolean",
+            "description": "生成APIキーが設定済みか"
           },
           "generativeApiModel": {
             "type": ["null", "string"],
@@ -22196,7 +23139,7 @@
         "type": ["null", "string"]
       },
       "RequestEmailChangeRequest": {
-        "required": ["newEmail", "currentPassword"],
+        "required": ["newEmail"],
         "type": "object",
         "properties": {
           "newEmail": {
@@ -22206,8 +23149,7 @@
           },
           "currentPassword": {
             "maxLength": 100,
-            "minLength": 8,
-            "type": "string",
+            "type": ["null", "string"],
             "description": "現在のパスワード（本人確認用）"
           }
         },
@@ -25173,6 +26115,543 @@
           }
         }
       },
+      "WebAuthnAssertionRequest": {
+        "required": ["challengeId", "id", "rawId", "response", "deviceType", "os"],
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "description": "オプション取得時に発行されたチャレンジID（ワンタイム）"
+          },
+          "id": {
+            "type": "string",
+            "description": "クレデンシャルID（base64url）"
+          },
+          "rawId": {
+            "type": "string",
+            "description": "クレデンシャルID（base64url、Id と同値）"
+          },
+          "type": {
+            "type": "string",
+            "description": "クレデンシャル種別"
+          },
+          "response": {
+            "description": "認証器の応答",
+            "$ref": "#/components/schemas/WebAuthnAssertionResponseData"
+          },
+          "deviceName": {
+            "maxLength": 100,
+            "type": ["null", "string"],
+            "description": "デバイス名"
+          },
+          "deviceType": {
+            "description": "デバイスタイプ",
+            "$ref": "#/components/schemas/DeviceType"
+          },
+          "os": {
+            "description": "OSプラットフォーム",
+            "$ref": "#/components/schemas/OSPlatform"
+          },
+          "userAgent": {
+            "maxLength": 200,
+            "type": ["null", "string"],
+            "description": "ユーザーエージェント"
+          },
+          "appVersion": {
+            "maxLength": 50,
+            "type": ["null", "string"],
+            "description": "アプリバージョン"
+          },
+          "timezone": {
+            "maxLength": 50,
+            "type": ["null", "string"],
+            "description": "タイムゾーン"
+          },
+          "location": {
+            "maxLength": 200,
+            "type": ["null", "string"],
+            "description": "ロケーション"
+          },
+          "ipAddress": {
+            "maxLength": 45,
+            "type": ["null", "string"],
+            "description": "IPアドレス"
+          }
+        },
+        "description": "パスキー認証（アサーション）の検証リクエスト"
+      },
+      "WebAuthnAssertionResponseData": {
+        "required": ["authenticatorData", "signature", "clientDataJson"],
+        "type": "object",
+        "properties": {
+          "authenticatorData": {
+            "type": "string",
+            "description": "認証器データ（base64url）"
+          },
+          "signature": {
+            "type": "string",
+            "description": "署名（base64url）"
+          },
+          "clientDataJson": {
+            "type": "string",
+            "description": "クライアントデータJSON（base64url）"
+          },
+          "userHandle": {
+            "type": ["null", "string"],
+            "description": "ユーザーハンドル（base64url、discoverable credentials の場合のみ）"
+          }
+        },
+        "description": "認証器のアサーション応答データ"
+      },
+      "WebAuthnAttestationResponseData": {
+        "required": ["attestationObject", "clientDataJson"],
+        "type": "object",
+        "properties": {
+          "attestationObject": {
+            "type": "string",
+            "description": "アテステーションオブジェクト（base64url）"
+          },
+          "clientDataJson": {
+            "type": "string",
+            "description": "クライアントデータJSON（base64url）"
+          },
+          "transports": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "認証器が申告したトランスポート"
+          }
+        },
+        "description": "認証器のアテステーション応答データ"
+      },
+      "WebAuthnAuthenticatorSelection": {
+        "type": "object",
+        "properties": {
+          "authenticatorAttachment": {
+            "type": ["null", "string"],
+            "description": "認証器の接続方式（未指定で幅広く許可）"
+          },
+          "residentKey": {
+            "type": ["null", "string"],
+            "description": "discoverable credentials の要求レベル"
+          },
+          "userVerification": {
+            "type": ["null", "string"],
+            "description": "ユーザー検証の要求レベル"
+          }
+        },
+        "description": "認証器の選択条件"
+      },
+      "WebAuthnCreationOptions": {
+        "required": ["rp", "user", "challenge"],
+        "type": "object",
+        "properties": {
+          "rp": {
+            "description": "Relying Party 情報",
+            "$ref": "#/components/schemas/WebAuthnRpEntity"
+          },
+          "user": {
+            "description": "ユーザー情報",
+            "$ref": "#/components/schemas/WebAuthnUserEntity"
+          },
+          "challenge": {
+            "type": "string",
+            "description": "チャレンジ（base64url）"
+          },
+          "pubKeyCredParams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebAuthnCredentialParameter"
+            },
+            "description": "サポートする公開鍵アルゴリズム"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "タイムアウト（ミリ秒）",
+            "format": "int64"
+          },
+          "attestation": {
+            "type": ["null", "string"],
+            "description": "アテステーションの要求方式"
+          },
+          "authenticatorSelection": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "認証器の選択条件",
+                "$ref": "#/components/schemas/WebAuthnAuthenticatorSelection"
+              }
+            ]
+          },
+          "excludeCredentials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebAuthnCredentialDescriptor"
+            },
+            "description": "登録済みクレデンシャル（重複登録の防止）"
+          }
+        },
+        "description": "PublicKeyCredentialCreationOptions（パスキー登録）"
+      },
+      "WebAuthnCredentialDescriptor": {
+        "required": ["id"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "クレデンシャルID（base64url）"
+          },
+          "type": {
+            "type": "string",
+            "description": "クレデンシャル種別"
+          },
+          "transports": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "認証器のトランスポート"
+          }
+        },
+        "description": "WebAuthn のクレデンシャル記述子"
+      },
+      "WebAuthnCredentialNameRequest": {
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "新しい表示名"
+          }
+        },
+        "description": "パスキーの表示名変更リクエスト"
+      },
+      "WebAuthnCredentialParameter": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "クレデンシャル種別"
+          },
+          "alg": {
+            "type": "integer",
+            "description": "COSE アルゴリズム識別子",
+            "format": "int32"
+          }
+        },
+        "description": "サポートする公開鍵アルゴリズム"
+      },
+      "WebAuthnCredentialResponse": {
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "パスキーID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "表示名"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "登録日時",
+            "format": "date-time"
+          },
+          "lastUsedAt": {
+            "type": ["null", "string"],
+            "description": "最終使用日時",
+            "format": "date-time"
+          },
+          "isBackupEligible": {
+            "type": "boolean",
+            "description": "バックアップ対象になり得る認証器か（同期パスキー）"
+          },
+          "isBackedUp": {
+            "type": "boolean",
+            "description": "バックアップ済みの認証器か"
+          },
+          "deviceId": {
+            "type": ["null", "integer"],
+            "description": "紐づく端末ID",
+            "format": "int32"
+          },
+          "deviceName": {
+            "type": ["null", "string"],
+            "description": "紐づく端末名"
+          },
+          "transports": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "認証器が申告したトランスポート"
+          }
+        },
+        "description": "登録済みパスキー情報"
+      },
+      "WebAuthnLoginOptionsRequest": {
+        "required": ["loginIdentifier"],
+        "type": "object",
+        "properties": {
+          "loginIdentifier": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "ログインIDまたはメールアドレス"
+          }
+        },
+        "description": "パスキーログイン用オプション取得リクエスト"
+      },
+      "WebAuthnLoginOptionsResponse": {
+        "required": ["challengeId", "publicKey"],
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "description": "チャレンジID（検証時に送り返すワンタイム識別子）"
+          },
+          "publicKey": {
+            "description": "PublicKeyCredentialRequestOptions",
+            "$ref": "#/components/schemas/WebAuthnRequestOptions"
+          }
+        },
+        "description": "パスキーログイン用オプション"
+      },
+      "WebAuthnRecoveryCodeRequest": {
+        "required": ["loginIdentifier", "code"],
+        "type": "object",
+        "properties": {
+          "loginIdentifier": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "ログインIDまたはメールアドレス"
+          },
+          "code": {
+            "maxLength": 32,
+            "type": "string",
+            "description": "リカバリーコード"
+          }
+        },
+        "description": "リカバリーコードの検証リクエスト"
+      },
+      "WebAuthnRecoveryCodesResponse": {
+        "required": ["instruction"],
+        "type": "object",
+        "properties": {
+          "codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "発行されたリカバリーコード（このレスポンスでのみ取得できる）"
+          },
+          "instruction": {
+            "type": "string",
+            "description": "保管方法の案内文（必ず別デバイスへ保存する旨）"
+          }
+        },
+        "description": "リカバリーコードの発行結果"
+      },
+      "WebAuthnRecoveryCodeStatusResponse": {
+        "type": "object",
+        "properties": {
+          "hasUnusedCodes": {
+            "type": "boolean",
+            "description": "未使用のリカバリーコードを保持しているか"
+          },
+          "unusedCodeCount": {
+            "type": "integer",
+            "description": "未使用のリカバリーコード数",
+            "format": "int32"
+          }
+        },
+        "description": "リカバリーコードの保持状況"
+      },
+      "WebAuthnRecoveryTokenResponse": {
+        "required": ["recoveryToken"],
+        "type": "object",
+        "properties": {
+          "recoveryToken": {
+            "type": "string",
+            "description": "リカバリートークン（有効期限は15分）"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "トークンの有効期限",
+            "format": "date-time"
+          }
+        },
+        "description": "リカバリーコード検証後のパスキー再登録用トークン"
+      },
+      "WebAuthnRegistrationOptionsResponse": {
+        "required": ["challengeId", "publicKey"],
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "description": "チャレンジID（検証時に送り返すワンタイム識別子）"
+          },
+          "publicKey": {
+            "description": "PublicKeyCredentialCreationOptions",
+            "$ref": "#/components/schemas/WebAuthnCreationOptions"
+          }
+        },
+        "description": "パスキー登録用オプション"
+      },
+      "WebAuthnRegistrationRequest": {
+        "required": ["challengeId", "id", "rawId", "response"],
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "description": "オプション取得時に発行されたチャレンジID（ワンタイム）"
+          },
+          "id": {
+            "type": "string",
+            "description": "クレデンシャルID（base64url）"
+          },
+          "rawId": {
+            "type": "string",
+            "description": "クレデンシャルID（base64url、Id と同値）"
+          },
+          "type": {
+            "type": "string",
+            "description": "クレデンシャル種別"
+          },
+          "response": {
+            "description": "認証器の応答",
+            "$ref": "#/components/schemas/WebAuthnAttestationResponseData"
+          },
+          "name": {
+            "maxLength": 100,
+            "type": ["null", "string"],
+            "description": "パスキーの表示名（省略時は端末名や既定名を使用）"
+          },
+          "deviceId": {
+            "type": ["null", "integer"],
+            "description": "紐づける端末ID（任意）",
+            "format": "int32"
+          }
+        },
+        "description": "パスキー登録の検証リクエスト"
+      },
+      "WebAuthnRequestOptions": {
+        "required": ["challenge", "rpId"],
+        "type": "object",
+        "properties": {
+          "challenge": {
+            "type": "string",
+            "description": "チャレンジ（base64url）"
+          },
+          "rpId": {
+            "type": "string",
+            "description": "Relying Party ID"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "タイムアウト（ミリ秒）",
+            "format": "int64"
+          },
+          "allowCredentials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebAuthnCredentialDescriptor"
+            },
+            "description": "許可するクレデンシャル（空の場合は discoverable credentials）"
+          },
+          "userVerification": {
+            "type": ["null", "string"],
+            "description": "ユーザー検証の要求レベル"
+          }
+        },
+        "description": "PublicKeyCredentialRequestOptions（パスキー認証）"
+      },
+      "WebAuthnRpEntity": {
+        "required": ["id", "name"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Relying Party ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "表示名"
+          }
+        },
+        "description": "Relying Party 情報"
+      },
+      "WebAuthnSetupOptionsRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "maxLength": 128,
+            "type": ["null", "string"],
+            "description": "招待メールに含まれるセットアップトークン"
+          },
+          "recoveryToken": {
+            "maxLength": 64,
+            "type": ["null", "string"],
+            "description": "リカバリーコードの検証で発行されたリカバリートークン"
+          }
+        },
+        "description": "セットアップトークン／リカバリートークンによる登録オプション取得リクエスト"
+      },
+      "WebAuthnSetupRegistrationResponse": {
+        "required": ["credential"],
+        "type": "object",
+        "properties": {
+          "credential": {
+            "description": "登録されたパスキー",
+            "$ref": "#/components/schemas/WebAuthnCredentialResponse"
+          },
+          "recoveryCodes": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "発行されたリカバリーコード（未発行の場合は null）"
+          },
+          "recoveryCodeInstruction": {
+            "type": ["null", "string"],
+            "description": "リカバリーコードの保管方法の案内文"
+          },
+          "sessionsRevoked": {
+            "type": "boolean",
+            "description": "リカバリー経路のため全セッションを失効させたか"
+          },
+          "unusedRecoveryCodeCount": {
+            "type": ["null", "integer"],
+            "description": "現在有効な（未使用の）リカバリーコード数",
+            "format": "int32"
+          }
+        },
+        "description": "セットアップトークン／リカバリーコードによる登録結果"
+      },
+      "WebAuthnUserEntity": {
+        "required": ["id", "name", "displayName"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ユーザーハンドル（base64url、不変）"
+          },
+          "name": {
+            "type": "string",
+            "description": "ユーザー名（メールアドレス）"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "表示名"
+          }
+        },
+        "description": "WebAuthn のユーザー情報"
+      },
       "WeeklyTaskTrend": {
         "required": ["weekStart", "weekNumber", "label", "createdCount", "completedCount"],
         "type": "object",
@@ -26533,6 +28012,12 @@
     },
     {
       "name": "Entrance - Password"
+    },
+    {
+      "name": "Entrance - Recovery"
+    },
+    {
+      "name": "Entrance - WebAuthn"
     },
     {
       "name": "BackOffice - Organizations"
