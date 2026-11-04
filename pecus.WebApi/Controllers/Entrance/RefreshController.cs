@@ -78,6 +78,13 @@ public class RefreshController : ControllerBase
             throw new UnauthorizedException("RefreshToken is required");
         }
 
+        // リフレッシュトークンは RefreshTokenService が Guid("N") 形式（32桁の16進数）で発行する。
+        // 形式が一致しない値は有効なトークンになり得ないため、ストア照会や認証方式ポリシー判定の前に拒否する。
+        if (!Guid.TryParseExact(request.RefreshToken, "N", out _))
+        {
+            throw new UnauthorizedException("Invalid refresh token");
+        }
+
         var info = await _refreshService.ValidateRefreshTokenAsync(request.RefreshToken);
         if (info == null)
         {
