@@ -25,6 +25,9 @@ public interface IAiTool
     /// <summary>
     /// Function Calling用のツール定義を取得
     /// </summary>
+    /// <remarks>
+    /// 現時点ではプロバイダーのリクエストに送信していない（<see cref="AiToolExecutor.GetAllToolDefinitions"/> 参照）。
+    /// </remarks>
     AiToolDefinition GetDefinition();
 
     /// <summary>
