@@ -8,7 +8,7 @@ namespace Pecus.Models.Responses.User;
 public class WebAuthnRecoveryTokenResponse
 {
     /// <summary>
-    /// リカバリートークン（有効期限は5分）
+    /// リカバリートークン（有効期限は15分）
     /// </summary>
     [Required]
     public required string RecoveryToken { get; set; }

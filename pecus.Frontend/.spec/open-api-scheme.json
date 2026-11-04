@@ -29144,7 +29144,7 @@
         "properties": {
           "recoveryToken": {
             "type": "string",
-            "description": "リカバリートークン（有効期限は5分）"
+            "description": "リカバリートークン（有効期限は15分）"
           },
           "expiresAt": {
             "type": "string",

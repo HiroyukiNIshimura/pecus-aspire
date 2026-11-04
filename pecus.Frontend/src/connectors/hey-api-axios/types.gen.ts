@@ -7682,7 +7682,7 @@ export type WebAuthnRecoveryCodeStatusResponse = {
  */
 export type WebAuthnRecoveryTokenResponse = {
   /**
-   * リカバリートークン（有効期限は5分）
+   * リカバリートークン（有効期限は15分）
    */
   recoveryToken: string;
   /**

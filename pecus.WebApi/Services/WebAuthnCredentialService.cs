@@ -1,5 +1,3 @@
-using System.Buffers.Text;
-using System.Text.Json;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +6,8 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Requests.User;
 using Pecus.Models.Responses.User;
+using System.Buffers.Text;
+using System.Text.Json;
 
 namespace Pecus.Services;
 
@@ -45,7 +45,7 @@ public class WebAuthnCredentialService
     public const string RecoveryReferencePrefix = "recovery:";
 
     /// <summary>
-    /// リカバリートークン／セットアップ登録チャレンジの有効期限
+    /// リカバリートークン／セットアップ登録チャレンジの有効期限(15分)
     /// </summary>
     /// <remarks>
     /// 手動操作では画面を読んだり認証器の準備に時間がかかるため、5分では不足する。
