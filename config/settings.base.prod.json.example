@@ -60,7 +60,7 @@
         "ValidAudience": "https://your-domain.com/"
       },
       "WebAuthn": {
-        "_comment": "【必須】RecoveryCodePepper は環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER で渡すか、ここに64文字以上のランダム文字列を設定する。未設定（CHANGE_ME 始まり）のまま `node scripts/generate-appsettings.js -P` を実行すると生成が中止される。RpId / Origins は FRONTEND_URL から自動導出されるため通常は指定不要（明示する場合は WEBAUTHN_RP_ID / WEBAUTHN_ORIGINS）。",
+        "_comment": "【必須】RecoveryCodePepper は環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER で渡すか、ここ（webapi.Pecus.WebAuthn.RecoveryCodePepper）に64文字以上のランダム文字列を設定する。webapi.WebAuthn など Pecus の外に置くと WebApi から参照されないため、未設定として生成が中止される。未設定（CHANGE_ME 始まり）のまま `node scripts/generate-appsettings.js -P` を実行すると生成が中止される。RpId / Origins は FRONTEND_URL から自動導出されるため通常は指定不要（明示する場合は WEBAUTHN_RP_ID / WEBAUTHN_ORIGINS）。",
         "RpName": "Coati",
         "RecoveryCodePepper": "CHANGE_ME_GENERATE_64_CHAR_RANDOM_STRING_HERE_USE_OPENSSL_RAND"
       }

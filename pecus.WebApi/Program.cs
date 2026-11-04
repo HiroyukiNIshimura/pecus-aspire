@@ -104,7 +104,7 @@ if (!builder.Environment.IsDevelopment())
         || pepper == WebAuthnSettings.PlaceholderRecoveryCodePepper)
     {
         throw new InvalidOperationException(
-            "WebAuthn:RecoveryCodePepper が未設定です。環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER に十分な長さのランダム文字列を設定してください。");
+            "Pecus:WebAuthn:RecoveryCodePepper が未設定です。環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER に十分な長さのランダム文字列を設定してください。");
     }
 }
 

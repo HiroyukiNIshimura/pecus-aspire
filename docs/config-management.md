@@ -94,7 +94,7 @@ node scripts/generate-appsettings.js -P
 
 | 環境変数 | 必須 | 用途 |
 | --- | --- | --- |
-| `WEBAUTHN_RECOVERY_CODE_PEPPER` | **必須** | リカバリーコードの HMAC 鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まりは中止 |
+| `WEBAUTHN_RECOVERY_CODE_PEPPER` | **必須** | リカバリーコードの HMAC 鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まりは中止。環境変数の代わりに `config/settings.base.prod.json` の `webapi.Pecus.WebAuthn.RecoveryCodePepper` へ設定してもよい（`webapi.WebAuthn` など `Pecus` の外に置くと無視され、生成が中止される） |
 | `JWT_ISSUER_SIGNING_KEY` | 必須（本番） | JWT 署名鍵（64文字以上のランダム文字列）。未設定・`CHANGE_ME` 始まり・32 バイト未満は中止 |
 | `FRONTEND_URL` | 推奨 | WebAuthn の `RpId` / `Origins` を自動導出（未指定時は `_infrastructure.urls.frontend`） |
 

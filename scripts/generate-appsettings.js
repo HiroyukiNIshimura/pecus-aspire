@@ -195,6 +195,18 @@ function validateProdConfig(config) {
   const errors = [];
   const webAuthn = config.webapi?.Pecus?.WebAuthn;
 
+  // WebApi は Pecus セクション配下の WebAuthn を参照する。
+  // Pecus の外に置かれた設定は無視されるため、設定したのに未設定と判定される事故を防ぐ。
+  const misplacedWebAuthn = [
+    config.webapi?.WebAuthn ? 'webapi.WebAuthn' : null,
+    config.WebAuthn ? 'WebAuthn（ルート直下）' : null,
+  ].filter(Boolean);
+  if (misplacedWebAuthn.length > 0) {
+    errors.push(
+      `${misplacedWebAuthn.join(' / ')} に WebAuthn 設定がありますが、WebApi は webapi.Pecus.WebAuthn を参照するため無視されます。config/settings.base.prod.json の webapi.Pecus.WebAuthn 配下へ移動してください。`,
+    );
+  }
+
   // 起動できないイメージ・既知の鍵で署名するイメージを配布しないよう、JWT 署名鍵も検証する
   const signingKey = (config.webapi?.Pecus?.Jwt?.IssuerSigningKey || '').trim();
   if (
@@ -213,7 +225,7 @@ function validateProdConfig(config) {
     const pepper = (webAuthn.RecoveryCodePepper || '').trim();
     if (!pepper || pepper.startsWith('CHANGE_ME')) {
       errors.push(
-        'WebAuthn:RecoveryCodePepper が未設定です。環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER に十分な長さのランダム文字列を設定してから再実行してください（未設定のままでは本番の WebApi が起動しません）。',
+        'Pecus:WebAuthn:RecoveryCodePepper が未設定、またはプレースホルダーのままです。環境変数 WEBAUTHN_RECOVERY_CODE_PEPPER に十分な長さのランダム文字列を設定するか、config/settings.base.prod.json の webapi.Pecus.WebAuthn.RecoveryCodePepper に値を設定してから再実行してください（未設定のままでは本番の WebApi が起動しません）。',
       );
     }
 
