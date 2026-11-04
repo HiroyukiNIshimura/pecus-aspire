@@ -92,6 +92,43 @@ public class AnthropicRequest
     [System.Text.Json.Serialization.JsonPropertyName("temperature")]
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public double? Temperature { get; set; }
+
+    /// <summary>
+    /// 構造化出力の設定（output_config.format）
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("output_config")]
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public AnthropicOutputConfig? OutputConfig { get; set; }
+}
+
+/// <summary>
+/// Anthropic の構造化出力設定
+/// </summary>
+public class AnthropicOutputConfig
+{
+    /// <summary>
+    /// 出力形式
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("format")]
+    public required AnthropicOutputFormat Format { get; set; }
+}
+
+/// <summary>
+/// Anthropic の出力形式（JSON Schema）
+/// </summary>
+public class AnthropicOutputFormat
+{
+    /// <summary>
+    /// 形式タイプ（"json_schema" 固定）
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("type")]
+    public string Type { get; set; } = "json_schema";
+
+    /// <summary>
+    /// JSON Schema 本体
+    /// </summary>
+    [System.Text.Json.Serialization.JsonPropertyName("schema")]
+    public required System.Text.Json.Nodes.JsonObject Schema { get; set; }
 }
 
 /// <summary>

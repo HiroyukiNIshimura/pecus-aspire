@@ -18,6 +18,24 @@ public class GeminiResponse
     /// </summary>
     [JsonPropertyName("usageMetadata")]
     public GeminiUsageMetadata? UsageMetadata { get; set; }
+
+    /// <summary>
+    /// プロンプトのフィードバック（ブロック理由など）
+    /// </summary>
+    [JsonPropertyName("promptFeedback")]
+    public GeminiPromptFeedback? PromptFeedback { get; set; }
+}
+
+/// <summary>
+/// Gemini プロンプトフィードバック
+/// </summary>
+public class GeminiPromptFeedback
+{
+    /// <summary>
+    /// プロンプトがブロックされた理由
+    /// </summary>
+    [JsonPropertyName("blockReason")]
+    public string? BlockReason { get; set; }
 }
 
 /// <summary>

@@ -98,4 +98,11 @@ public class GeminiGenerationConfig
     [JsonPropertyName("responseMimeType")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ResponseMimeType { get; set; }
+
+    /// <summary>
+    /// 構造化出力の JSON Schema（responseMimeType が application/json の場合に有効）
+    /// </summary>
+    [JsonPropertyName("responseJsonSchema")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public System.Text.Json.Nodes.JsonObject? ResponseJsonSchema { get; set; }
 }

@@ -34,4 +34,10 @@ public class OpenAISettings
     /// モデル一覧取得時のフィルタ：この日付以降に作成されたモデルのみ取得（ISO 8601形式: yyyy-MM-dd）
     /// </summary>
     public string ModelCreatedAfter { get; set; } = "2024-01-01";
+
+    /// <summary>
+    /// 構造化出力（JSON Schema 強制）を使用するか
+    /// スキーマ非対応モデルで 400 になる場合は false に設定する
+    /// </summary>
+    public bool EnableStructuredOutput { get; set; } = true;
 }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pecus.Libs.AI.Configuration;
-using Pecus.Libs.AI.Provider.Default;
 using Pecus.Libs.DB.Models.Enums;
 
 // RemoveAllResilienceHandlers は実験的APIだが、ServiceDefaults のデフォルトタイムアウト(30秒)を
@@ -16,8 +15,8 @@ namespace Pecus.Libs.AI.Extensions;
 public static class DefaultAiServiceExtensions
 {
     /// <summary>
-    /// DefaultAiClientをDIコンテナに登録
-    /// 設定により Anthropic / DeepSeek / Gemini / OpenAI から選択可能
+    /// DefaultAi 設定と各プロバイダー用 HttpClient をDIコンテナに登録
+    /// 実際のクライアント生成は IAiClientFactory が担う
     /// </summary>
     /// <param name="services">サービスコレクション</param>
     /// <param name="configuration">設定</param>
@@ -61,10 +60,6 @@ public static class DefaultAiServiceExtensions
 
         // Named HttpClient を登録（各プロバイダー用）
         RegisterProviderHttpClients(services, timeout);
-
-        // DefaultAiClient を登録
-        services.AddScoped<DefaultAiClient>();
-        services.AddScoped<IDefaultAiClient>(sp => sp.GetRequiredService<DefaultAiClient>());
 
         return services;
     }

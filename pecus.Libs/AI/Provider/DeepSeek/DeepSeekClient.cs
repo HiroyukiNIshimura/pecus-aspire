@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Models;
+using Pecus.Libs.AI.Provider;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -229,12 +230,7 @@ public class DeepSeekClient : IDeepSeekClient, IAiClient
         };
 
         var response = await ChatCompletionAsync(request, cancellationToken);
-        var content = response.Choices.FirstOrDefault()?.Message.Content;
-
-        if (string.IsNullOrEmpty(content))
-        {
-            throw new InvalidOperationException("DeepSeek API returned empty content for JSON request");
-        }
+        var content = AiJsonResponseGuard.GetContent(response, "DeepSeek");
 
         _logger.LogDebug("DeepSeek JSON response content: {Content}", content);
 

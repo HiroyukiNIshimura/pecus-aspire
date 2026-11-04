@@ -2,7 +2,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Models.Gemini;
+using Pecus.Libs.AI.Schema;
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -251,17 +253,13 @@ public class GeminiClient : IGeminiClient, IAiClient
             {
                 Temperature = _settings.DefaultTemperature,
                 MaxOutputTokens = _settings.DefaultMaxTokens,
-                ResponseMimeType = "application/json"
+                ResponseMimeType = "application/json",
+                ResponseJsonSchema = CreateResponseJsonSchema<T>()
             }
         };
 
         var response = await GenerateContentAsync(request, cancellationToken);
-        var content = response.Candidates.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text;
-
-        if (string.IsNullOrEmpty(content))
-        {
-            throw new InvalidOperationException("Gemini API returned empty content for JSON request");
-        }
+        var content = GetJsonContent(response);
 
         _logger.LogDebug("Gemini JSON response content: {Content}", content);
 
@@ -285,6 +283,60 @@ public class GeminiClient : IGeminiClient, IAiClient
             _logger.LogError(ex, "Failed to parse JSON response: {Content}", content);
             throw new InvalidOperationException($"Failed to parse JSON response: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// 構造化出力の JSON Schema を作成
+    /// スキーマを生成できない型や無効化設定の場合は MIME タイプ指定のみで動作する
+    /// </summary>
+    private JsonObject? CreateResponseJsonSchema<TResponse>()
+    {
+        if (!_settings.EnableStructuredOutput ||
+            !AiJsonSchemaBuilder.TryBuild(typeof(TResponse), AiJsonSchemaProfile.Gemini, out var schema))
+        {
+            return null;
+        }
+
+        return schema.Schema;
+    }
+
+    /// <summary>
+    /// JSON レスポンス本文を取り出す
+    /// ブロック・打ち切りを原因の分かる例外として扱う
+    /// </summary>
+    private static string GetJsonContent(GeminiResponse response)
+    {
+        var candidate = response.Candidates.FirstOrDefault();
+        if (candidate is null)
+        {
+            var blockReason = response.PromptFeedback?.BlockReason;
+            throw new InvalidOperationException(
+                string.IsNullOrEmpty(blockReason)
+                    ? "Gemini API returned no candidates for JSON request"
+                    : $"Gemini API blocked the request (blockReason={blockReason})");
+        }
+
+        if (string.Equals(candidate.FinishReason, "MAX_TOKENS", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Gemini API response was truncated by the token limit (finishReason=MAX_TOKENS)");
+        }
+
+        if (string.Equals(candidate.FinishReason, "SAFETY", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(candidate.FinishReason, "PROHIBITED_CONTENT", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(candidate.FinishReason, "RECITATION", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Gemini API response was blocked (finishReason={candidate.FinishReason})");
+        }
+
+        var content = candidate.Content?.Parts.FirstOrDefault()?.Text;
+        if (string.IsNullOrEmpty(content))
+        {
+            throw new InvalidOperationException("Gemini API returned empty content for JSON request");
+        }
+
+        return content;
     }
 
     /// <inheritdoc />

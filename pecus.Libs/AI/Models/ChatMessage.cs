@@ -15,9 +15,18 @@ public class ChatMessage
 
     /// <summary>
     /// メッセージの内容
+    /// 拒否（refusal）時は null になるため省略可能とする
     /// </summary>
     [JsonPropertyName("content")]
-    public required string Content { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Content { get; set; }
+
+    /// <summary>
+    /// 拒否メッセージ（モデルが安全上の理由で回答を拒否した場合に設定される）
+    /// </summary>
+    [JsonPropertyName("refusal")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Refusal { get; set; }
 
     /// <summary>
     /// システムメッセージを作成（レガシー互換用、DeepSeek等で使用）

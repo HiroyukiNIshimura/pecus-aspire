@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Models;
+using Pecus.Libs.AI.Provider;
+using Pecus.Libs.AI.Schema;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -251,16 +253,11 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             Messages = requestMessages,
             Temperature = GetTemperatureForModel(model),
             MaxCompletionTokens = _settings.DefaultMaxTokens,
-            ResponseFormat = ResponseFormat.Json
+            ResponseFormat = CreateResponseFormat<T>()
         };
 
         var response = await ChatCompletionAsync(request, cancellationToken);
-        var content = response.Choices.FirstOrDefault()?.Message.Content;
-
-        if (string.IsNullOrEmpty(content))
-        {
-            throw new InvalidOperationException("OpenAI API returned empty content for JSON request");
-        }
+        var content = AiJsonResponseGuard.GetContent(response, "OpenAI");
 
         _logger.LogDebug("OpenAI JSON response content: {Content}", content);
 
@@ -284,6 +281,21 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             _logger.LogError(ex, "Failed to parse JSON response: {Content}", content);
             throw new InvalidOperationException($"Failed to parse JSON response: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// 構造化出力のレスポンス形式を作成
+    /// スキーマを生成できない型や無効化設定の場合は JSON モードへフォールバックする
+    /// </summary>
+    private ResponseFormat CreateResponseFormat<TResponse>()
+    {
+        if (_settings.EnableStructuredOutput &&
+            AiJsonSchemaBuilder.TryBuild(typeof(TResponse), AiJsonSchemaProfile.OpenAiStrict, out var schema))
+        {
+            return ResponseFormat.FromSchema(schema);
+        }
+
+        return ResponseFormat.Json;
     }
 
     /// <inheritdoc />
