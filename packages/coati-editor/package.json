@@ -68,14 +68,14 @@
     "date-fns": "^4.4.0",
     "katex": "^0.19.1",
     "lexical": "0.53.0",
-    "mermaid": "^12.2.0",
+    "mermaid": "^12.3.0",
     "prismjs": "^1.30.0",
     "react-day-picker": "^10.0.2",
     "react-error-boundary": "^6.1.6",
     "use-debounce": "^10.1.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.4",
+    "@biomejs/biome": "2.6.7",
     "@microsoft/api-extractor": "^7.60.1",
     "@types/katex": "^0.16.8",
     "@types/react": "^19.3.0",
