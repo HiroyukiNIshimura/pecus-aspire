@@ -7612,6 +7612,24 @@ export type WebAuthnCredentialResponse = {
 };
 
 /**
+ * 端末追加チケット
+ */
+export type WebAuthnDeviceTicketResponse = {
+  /**
+   * 端末追加チケット（ワンタイム）
+   */
+  ticket: string;
+  /**
+   * チケットの有効期限
+   */
+  expiresAt?: string;
+  /**
+   * 別端末で開く登録用 URL（QR コードに埋め込む値）
+   */
+  setupUrl: string;
+};
+
+/**
  * パスキーログイン用オプション取得リクエスト
  */
 export type WebAuthnLoginOptionsRequest = {
@@ -7737,6 +7755,28 @@ export type WebAuthnRegistrationRequest = {
    * 紐づける端末ID（任意）
    */
   deviceId?: null | number;
+  /**
+   * デバイス名
+   */
+  deviceName?: null | string;
+  deviceType?: null | DeviceType;
+  os?: null | OsPlatform;
+  /**
+   * ユーザーエージェント
+   */
+  userAgent?: null | string;
+  /**
+   * アプリバージョン
+   */
+  appVersion?: null | string;
+  /**
+   * タイムゾーン
+   */
+  timezone?: null | string;
+  /**
+   * ロケーション
+   */
+  location?: null | string;
 };
 
 /**
@@ -7791,6 +7831,10 @@ export type WebAuthnSetupOptionsRequest = {
    * リカバリーコードの検証で発行されたリカバリートークン
    */
   recoveryToken?: null | string;
+  /**
+   * ログイン済みの端末で発行した端末追加チケット
+   */
+  deviceTicket?: null | string;
 };
 
 /**
@@ -7817,6 +7861,7 @@ export type WebAuthnSetupRegistrationResponse = {
    * 現在有効な（未使用の）リカバリーコード数
    */
   unusedRecoveryCodeCount?: null | number;
+  login?: null | LoginResponse;
 };
 
 /**
@@ -14086,6 +14131,64 @@ export type PostApiProfileCredentialsRecoveryCodesResponses = {
 };
 
 export type PostApiProfileCredentialsRecoveryCodesResponse = PostApiProfileCredentialsRecoveryCodesResponses[keyof PostApiProfileCredentialsRecoveryCodesResponses];
+
+export type PostApiProfileCredentialsDeviceTicketData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/api/profile/credentials/device-ticket';
+};
+
+export type PostApiProfileCredentialsDeviceTicketErrors = {
+  /**
+   * Bad Request
+   */
+  400: ProblemDetails;
+  /**
+   * Too Many Requests
+   */
+  429: ProblemDetails;
+};
+
+export type PostApiProfileCredentialsDeviceTicketError = PostApiProfileCredentialsDeviceTicketErrors[keyof PostApiProfileCredentialsDeviceTicketErrors];
+
+export type PostApiProfileCredentialsDeviceTicketResponses = {
+  /**
+   * OK
+   */
+  200: WebAuthnDeviceTicketResponse;
+};
+
+export type PostApiProfileCredentialsDeviceTicketResponse = PostApiProfileCredentialsDeviceTicketResponses[keyof PostApiProfileCredentialsDeviceTicketResponses];
+
+export type PostApiProfileCredentialsDeviceTicketEmailData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/api/profile/credentials/device-ticket/email';
+};
+
+export type PostApiProfileCredentialsDeviceTicketEmailErrors = {
+  /**
+   * Bad Request
+   */
+  400: ProblemDetails;
+  /**
+   * Too Many Requests
+   */
+  429: ProblemDetails;
+};
+
+export type PostApiProfileCredentialsDeviceTicketEmailError = PostApiProfileCredentialsDeviceTicketEmailErrors[keyof PostApiProfileCredentialsDeviceTicketEmailErrors];
+
+export type PostApiProfileCredentialsDeviceTicketEmailResponses = {
+  /**
+   * OK
+   */
+  200: MessageResponse;
+};
+
+export type PostApiProfileCredentialsDeviceTicketEmailResponse = PostApiProfileCredentialsDeviceTicketEmailResponses[keyof PostApiProfileCredentialsDeviceTicketEmailResponses];
 
 export type GetApiProfileDevicesData = {
   body?: never;

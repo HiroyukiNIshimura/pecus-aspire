@@ -18,6 +18,7 @@ import type { WebAuthnCredentialResponse } from '@/connectors/hey-api-axios/type
 import { copyTextToClipboard } from '@/libs/utils/clipboard';
 import { formatDate } from '@/libs/utils/date';
 import { buildRecoveryCodeClipboardText, RECOVERY_CODE_USAGE_NOTE } from '@/libs/utils/recoveryCode';
+import DeviceLinkModal from './DeviceLinkModal';
 
 interface PasskeysTabProps {
   notify: {
@@ -63,6 +64,7 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
   const [issuedInstruction, setIssuedInstruction] = useState<string>('');
   const [deleteTarget, setDeleteTarget] = useState<WebAuthnCredentialResponse | null>(null);
   const [isReissueConfirmOpen, setIsReissueConfirmOpen] = useState(false);
+  const [isDeviceLinkOpen, setIsDeviceLinkOpen] = useState(false);
 
   // notify は毎レンダーで新しいオブジェクトを返すため、依存配列に入れると
   // 取得処理が無限に再実行される。最新値を ref 経由で参照する。
@@ -235,7 +237,8 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
         <div className="card-body">
           <h3 className="card-title text-lg">登録済みのパスキー</h3>
           <p className="text-sm text-base-content/70">
-            端末ごとにパスキーを登録できます。同期パスキーは複数の端末で共有されます。
+            パスキーは端末ごとに必要です。「パスキーを追加」はこの端末に登録します。別の端末で使う場合は「別の端末で追加」から
+            QR コードまたはメールで登録してください。同期パスキーは複数の端末で共有されます。
           </p>
 
           {credentials.length === 0 ? (
@@ -266,10 +269,19 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
             </ul>
           )}
 
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap gap-2">
             <button type="button" className="btn btn-accent" onClick={handleAddPasskey} disabled={isBusy || isLoading}>
               <span className="icon-[tabler--fingerprint] size-5" />
               パスキーを追加
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => setIsDeviceLinkOpen(true)}
+              disabled={isBusy || isLoading}
+            >
+              <span className="icon-[tabler--devices] size-5" aria-hidden="true" />
+              別の端末で追加
             </button>
           </div>
         </div>
@@ -344,6 +356,8 @@ export default function PasskeysTab({ notify, isLoading, setIsLoading }: Passkey
         itemName={deleteTarget?.name ?? ''}
         additionalWarning="このパスキーではログインできなくなります。"
       />
+
+      <DeviceLinkModal isOpen={isDeviceLinkOpen} onClose={() => setIsDeviceLinkOpen(false)} notify={notify} />
 
       <ConfirmModal
         isOpen={isReissueConfirmOpen}

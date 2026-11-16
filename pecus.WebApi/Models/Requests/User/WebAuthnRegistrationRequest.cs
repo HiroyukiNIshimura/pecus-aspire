@@ -46,4 +46,46 @@ public class WebAuthnRegistrationRequest
     /// 紐づける端末ID（任意）
     /// </summary>
     public int? DeviceId { get; set; }
+
+    /// <summary>
+    /// デバイス名
+    /// </summary>
+    [MaxLength(100, ErrorMessage = "デバイス名は100文字以内で入力してください。")]
+    public string? DeviceName { get; set; }
+
+    /// <summary>
+    /// デバイスタイプ（端末追加では省略可）
+    /// </summary>
+    [EnumDataType(typeof(Libs.DB.Models.Enums.DeviceType), ErrorMessage = "有効なデバイスタイプを指定してください。")]
+    public Libs.DB.Models.Enums.DeviceType? DeviceType { get; set; }
+
+    /// <summary>
+    /// OSプラットフォーム（端末追加では省略可）
+    /// </summary>
+    [EnumDataType(typeof(Libs.DB.Models.Enums.OSPlatform), ErrorMessage = "有効なOSプラットフォームを指定してください。")]
+    public Libs.DB.Models.Enums.OSPlatform? OS { get; set; }
+
+    /// <summary>
+    /// ユーザーエージェント
+    /// </summary>
+    [MaxLength(200, ErrorMessage = "ユーザーエージェント情報は200文字以内で入力してください。")]
+    public string? UserAgent { get; set; }
+
+    /// <summary>
+    /// アプリバージョン
+    /// </summary>
+    [MaxLength(50, ErrorMessage = "アプリバージョンは50文字以内で入力してください。")]
+    public string? AppVersion { get; set; }
+
+    /// <summary>
+    /// タイムゾーン
+    /// </summary>
+    [MaxLength(50, ErrorMessage = "タイムゾーンは50文字以内で入力してください。")]
+    public string? Timezone { get; set; }
+
+    /// <summary>
+    /// ロケーション
+    /// </summary>
+    [MaxLength(200, ErrorMessage = "Locationは200文字以内で入力してください。")]
+    public string? Location { get; set; }
 }

@@ -22,6 +22,11 @@ public enum WebAuthnChallengePurpose
     /// リカバリーコード検証後のパスキー再登録
     /// </summary>
     Recovery,
+
+    /// <summary>
+    /// 別端末へのパスキー追加（端末追加チケット）
+    /// </summary>
+    DeviceLink,
 }
 
 /// <summary>

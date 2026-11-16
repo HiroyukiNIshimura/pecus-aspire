@@ -12,7 +12,7 @@ import { useFormValidation } from '@/hooks/useFormValidation';
 import { deviceInfoAtom } from '@/libs/atoms/deviceInfoAtom';
 import { loginFormSchema } from '@/schemas/signInSchemas';
 import { getDeviceInfo } from '@/utils/deviceInfo';
-import { getLandingPageUrl } from '@/utils/landingPage';
+import { resolvePostLoginUrl } from '@/utils/landingPage';
 
 type LoginMode = 'passkey' | 'password';
 
@@ -49,11 +49,7 @@ export default function LoginFormClient() {
   }, []);
 
   const redirectAfterLogin = (roles: Array<{ name?: string }> | undefined, landingPage: unknown) => {
-    const isBackOfficeUser = roles?.some((role) => role.name === 'BackOffice') ?? false;
-    const redirectUrl = isBackOfficeUser
-      ? '/backoffice'
-      : getLandingPageUrl(landingPage as Parameters<typeof getLandingPageUrl>[0]);
-    window.location.href = redirectUrl;
+    window.location.href = resolvePostLoginUrl(roles, landingPage as Parameters<typeof resolvePostLoginUrl>[1]);
   };
 
   const handlePasskeyLogin = async (loginIdentifier: string) => {
@@ -124,7 +120,9 @@ export default function LoginFormClient() {
       setApiError(result.message || 'パスキー認証に失敗しました。');
     } catch (error) {
       console.error('パスキー認証中にエラーが発生:', error);
-      setApiError('パスキー認証がキャンセルされたか、この端末では利用できません。もう一度お試しください。');
+      setApiError(
+        'この端末ではパスキーを利用できませんでした。パスキーを登録済みの端末でログインし、「プロフィール → セキュリティ → パスキー」の「別の端末で追加」からこの端末を登録するか、「パスキーを紛失した場合」からリカバリーコードで復旧してください。',
+      );
     } finally {
       setIsAuthenticating(false);
     }

@@ -9853,6 +9853,94 @@
         ]
       }
     },
+    "/api/profile/credentials/device-ticket": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "別の端末にパスキーを追加するためのチケットを発行",
+        "description": "新しい端末でパスキーを登録するためのワンタイムチケット。\n既存のパスキーとセッションには影響しない。",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnDeviceTicketResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/profile/credentials/device-ticket/email": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "別の端末にパスキーを追加するためのリンクをメールで送信",
+        "description": "スマートフォンから PC へ追加する場合など、QR コードを読み取れない組み合わせで使う。\nメールには新しいチケットを含むリンクを送る（画面に表示中のチケットとは別物）。",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
     "/api/profile/devices": {
       "get": {
         "tags": ["Profile"],
@@ -26395,6 +26483,26 @@
         },
         "description": "登録済みパスキー情報"
       },
+      "WebAuthnDeviceTicketResponse": {
+        "required": ["ticket", "setupUrl"],
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "string",
+            "description": "端末追加チケット（ワンタイム）"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "チケットの有効期限",
+            "format": "date-time"
+          },
+          "setupUrl": {
+            "type": "string",
+            "description": "別端末で開く登録用 URL（QR コードに埋め込む値）"
+          }
+        },
+        "description": "端末追加チケット"
+      },
       "WebAuthnLoginOptionsRequest": {
         "required": ["loginIdentifier"],
         "type": "object",
@@ -26536,6 +26644,53 @@
             "type": ["null", "integer"],
             "description": "紐づける端末ID（任意）",
             "format": "int32"
+          },
+          "deviceName": {
+            "maxLength": 100,
+            "type": ["null", "string"],
+            "description": "デバイス名"
+          },
+          "deviceType": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "デバイスタイプ（端末追加では省略可）",
+                "$ref": "#/components/schemas/DeviceType"
+              }
+            ]
+          },
+          "os": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "OSプラットフォーム（端末追加では省略可）",
+                "$ref": "#/components/schemas/OSPlatform"
+              }
+            ]
+          },
+          "userAgent": {
+            "maxLength": 200,
+            "type": ["null", "string"],
+            "description": "ユーザーエージェント"
+          },
+          "appVersion": {
+            "maxLength": 50,
+            "type": ["null", "string"],
+            "description": "アプリバージョン"
+          },
+          "timezone": {
+            "maxLength": 50,
+            "type": ["null", "string"],
+            "description": "タイムゾーン"
+          },
+          "location": {
+            "maxLength": 200,
+            "type": ["null", "string"],
+            "description": "ロケーション"
           }
         },
         "description": "パスキー登録の検証リクエスト"
@@ -26598,6 +26753,11 @@
             "maxLength": 64,
             "type": ["null", "string"],
             "description": "リカバリーコードの検証で発行されたリカバリートークン"
+          },
+          "deviceTicket": {
+            "maxLength": 64,
+            "type": ["null", "string"],
+            "description": "ログイン済みの端末で発行した端末追加チケット"
           }
         },
         "description": "セットアップトークン／リカバリートークンによる登録オプション取得リクエスト"
@@ -26629,6 +26789,17 @@
             "type": ["null", "integer"],
             "description": "現在有効な（未使用の）リカバリーコード数",
             "format": "int32"
+          },
+          "login": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "端末追加で登録した場合に発行されるログイン情報",
+                "$ref": "#/components/schemas/LoginResponse"
+              }
+            ]
           }
         },
         "description": "セットアップトークン／リカバリーコードによる登録結果"

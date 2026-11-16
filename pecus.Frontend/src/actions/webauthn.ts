@@ -9,9 +9,11 @@ import {
   getProfileDevicesWithHeyApi,
   getRecoveryCodeStatusWithHeyApi,
   getSetupRegistrationOptionsWithHeyApi,
+  issueDeviceTicketWithHeyApi,
   issueRecoveryCodesWithHeyApi,
   registerCredentialWithHeyApi,
   renameCredentialWithHeyApi,
+  sendDeviceTicketEmailWithHeyApi,
   verifyPasskeyLoginWithHeyApi,
   verifyRecoveryCodeWithHeyApi,
   verifySetupRegistrationWithHeyApi,
@@ -21,6 +23,7 @@ import type {
   MessageResponse,
   RoleInfoResponse,
   WebAuthnCredentialResponse,
+  WebAuthnDeviceTicketResponse,
   WebAuthnLoginOptionsResponse,
   WebAuthnRecoveryCodeStatusResponse,
   WebAuthnRecoveryCodesResponse,
@@ -179,6 +182,7 @@ export async function getSetupRegistrationOptions(
     const result = await getSetupRegistrationOptionsWithHeyApi({
       token: parseResult.data.token,
       recoveryToken: parseResult.data.recoveryToken,
+      deviceTicket: parseResult.data.deviceTicket,
     });
     return { success: true, data: result };
   } catch (error) {
@@ -190,7 +194,7 @@ export async function getSetupRegistrationOptions(
 }
 
 /**
- * Server Action: パスキーを登録する（セットアップ・リカバリー）
+ * Server Action: パスキーを登録する（セットアップ・リカバリー・端末追加）
  */
 export async function registerWithSetup(
   input: RegistrationVerifyInput,
@@ -213,7 +217,30 @@ export async function registerWithSetup(
       },
       name: parseResult.data.name,
       deviceId: parseResult.data.deviceId,
+      deviceName: parseResult.data.deviceName,
+      deviceType: parseResult.data.deviceType,
+      os: parseResult.data.os,
+      userAgent: parseResult.data.userAgent,
+      appVersion: parseResult.data.appVersion,
+      timezone: parseResult.data.timezone,
+      location: parseResult.data.location,
     });
+
+    // 端末追加は登録と同時にセッションが発行されるため、そのままログイン状態にする
+    if (result.login) {
+      const clientIp = await resolveClientIp();
+      await createLoginSession(result.login, {
+        deviceName: parseResult.data.deviceName,
+        deviceType: parseResult.data.deviceType ?? undefined,
+        os: parseResult.data.os ?? undefined,
+        userAgent: parseResult.data.userAgent,
+        appVersion: parseResult.data.appVersion,
+        timezone: parseResult.data.timezone,
+        location: parseResult.data.location,
+        ipAddress: clientIp,
+      });
+    }
+
     return { success: true, data: result };
   } catch (error) {
     return toRegistrationError<WebAuthnSetupRegistrationResponse>(error, 'パスキーの登録に失敗しました。');
@@ -400,6 +427,34 @@ export async function issueRecoveryCodes(): Promise<ApiResponse<WebAuthnRecovery
   } catch (error) {
     return handleApiErrorForAction<WebAuthnRecoveryCodesResponse>(error, {
       defaultMessage: 'リカバリーコードの発行に失敗しました。',
+    });
+  }
+}
+
+/**
+ * Server Action: 別の端末にパスキーを追加するためのチケットを発行
+ */
+export async function issueDeviceTicket(): Promise<ApiResponse<WebAuthnDeviceTicketResponse>> {
+  try {
+    const result = await issueDeviceTicketWithHeyApi();
+    return { success: true, data: result };
+  } catch (error) {
+    return handleApiErrorForAction<WebAuthnDeviceTicketResponse>(error, {
+      defaultMessage: '端末追加の準備に失敗しました。',
+    });
+  }
+}
+
+/**
+ * Server Action: 端末追加リンクをメールで送信
+ */
+export async function sendDeviceTicketEmail(): Promise<ApiResponse<MessageResponse>> {
+  try {
+    const result = await sendDeviceTicketEmailWithHeyApi();
+    return { success: true, data: result };
+  } catch (error) {
+    return handleApiErrorForAction<MessageResponse>(error, {
+      defaultMessage: 'メールの送信に失敗しました。',
     });
   }
 }

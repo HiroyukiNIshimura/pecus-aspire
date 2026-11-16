@@ -25,6 +25,19 @@ export function getLandingPageUrl(landingPage?: LandingPage | 'BackOffice' | nul
 }
 
 /**
+ * ログイン後の遷移先 URL を決める
+ *
+ * バックオフィス利用者はランディングページ設定よりバックオフィスを優先する。
+ */
+export function resolvePostLoginUrl(
+  roles?: Array<{ name?: string }> | null,
+  landingPage?: LandingPage | 'BackOffice' | null,
+): string {
+  const isBackOfficeUser = roles?.some((role) => role.name === 'BackOffice') ?? false;
+  return isBackOfficeUser ? '/backoffice' : getLandingPageUrl(landingPage);
+}
+
+/**
  * ランディングページの選択肢一覧
  */
 export const LANDING_PAGE_OPTIONS: { value: NonNullable<LandingPage>; label: string }[] = [

@@ -43,9 +43,10 @@ export const setupRegistrationOptionsInputSchema = z
   .object({
     token: z.string().max(128).optional(),
     recoveryToken: z.string().max(64).optional(),
+    deviceTicket: z.string().min(1).max(64).optional(),
   })
-  .refine((data) => Boolean(data.token || data.recoveryToken), {
-    error: 'セットアップトークンまたはリカバリートークンが必要です。',
+  .refine((data) => Boolean(data.token || data.recoveryToken || data.deviceTicket), {
+    error: 'セットアップトークン・リカバリートークン・端末追加チケットのいずれかが必要です。',
   });
 
 export const registrationVerifyInputSchema = z.object({
@@ -62,6 +63,13 @@ export const registrationVerifyInputSchema = z.object({
   }),
   name: z.string().max(100).optional(),
   deviceId: z.number().int().positive().optional(),
+  deviceName: z.string().max(100).optional(),
+  deviceType: deviceTypeSchema.optional(),
+  os: osPlatformSchema.optional(),
+  userAgent: z.string().max(1000).optional(),
+  appVersion: z.string().max(100).optional(),
+  timezone: z.string().max(100).optional(),
+  location: z.string().max(255).optional(),
 });
 
 export const recoveryCodeInputSchema = z.object({

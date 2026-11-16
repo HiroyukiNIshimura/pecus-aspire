@@ -45,12 +45,25 @@ public class WebAuthnCredentialService
     public const string RecoveryReferencePrefix = "recovery:";
 
     /// <summary>
+    /// 端末追加チケットによる登録であることを示す参照値の接頭辞
+    /// </summary>
+    public const string DeviceLinkReferencePrefix = "device-link:";
+
+    /// <summary>
     /// リカバリートークン／セットアップ登録チャレンジの有効期限(15分)
     /// </summary>
     /// <remarks>
     /// 手動操作では画面を読んだり認証器の準備に時間がかかるため、5分では不足する。
     /// </remarks>
     public static readonly TimeSpan SetupTokenTtl = TimeSpan.FromMinutes(15);
+
+    /// <summary>
+    /// 端末追加チケットの有効期限(10分)
+    /// </summary>
+    /// <remarks>
+    /// ログイン済みの端末で発行し、その場で別端末へ渡す用途のためセットアップトークンより短くする。
+    /// </remarks>
+    public static readonly TimeSpan DeviceLinkTicketTtl = TimeSpan.FromMinutes(10);
 
     private const int ValidationTimeoutSeconds = 300;
 
@@ -93,6 +106,12 @@ public class WebAuthnCredentialService
     private static bool IsRecoveryOrResetReference(string? reference) =>
         reference == ResetSetupReference
         || (reference?.StartsWith(RecoveryReferencePrefix, StringComparison.Ordinal) ?? false);
+
+    /// <summary>
+    /// 端末追加チケットによる登録かどうか
+    /// </summary>
+    private static bool IsDeviceLinkReference(string? reference) =>
+        reference?.StartsWith(DeviceLinkReferencePrefix, StringComparison.Ordinal) ?? false;
 
     /// <summary>
     /// ログイン識別子から有効なユーザーを取得する
@@ -328,17 +347,46 @@ public class WebAuthnCredentialService
     }
 
     /// <summary>
-    /// セットアップトークンまたはリカバリートークンから登録用オプションを生成する（未認証）
+    /// セットアップトークン・リカバリートークン・端末追加チケットから登録用オプションを生成する（未認証）
     /// </summary>
     public async Task<WebAuthnRegistrationOptionsResponse> CreateSetupRegistrationOptionsAsync(
         string? setupToken,
         string? recoveryToken,
+        string? deviceTicket,
         CancellationToken cancellationToken = default)
     {
         string reference;
         User? user;
 
-        if (!string.IsNullOrWhiteSpace(recoveryToken))
+        if (!string.IsNullOrWhiteSpace(deviceTicket))
+        {
+            // ここでは消費しない（認証器の操作がキャンセルされた場合に再試行できるようにする）
+            var linkEntry = await _challengeStore.PeekAsync(
+                deviceTicket,
+                WebAuthnChallengePurpose.DeviceLink);
+
+            if (linkEntry?.UserId is null)
+            {
+                throw new UnauthorizedException(
+                    "端末追加の有効期限が切れています。ログイン済みの端末からもう一度発行してください。");
+            }
+
+            user = await _context
+                .Users
+                .FirstOrDefaultAsync(
+                    u => u.Id == linkEntry.UserId.Value && u.IsActive,
+                    cancellationToken);
+
+            if (user is null)
+            {
+                throw new UnauthorizedException(
+                    "端末追加の有効期限が切れています。ログイン済みの端末からもう一度発行してください。");
+            }
+
+            // 登録成功時にチケットを失効させるため、ID を参照に含める
+            reference = $"{DeviceLinkReferencePrefix}{deviceTicket}";
+        }
+        else if (!string.IsNullOrWhiteSpace(recoveryToken))
         {
             // ここでは消費しない（認証器の操作がキャンセルされた場合に再試行できるようにする）
             var recoveryEntry = await _challengeStore.PeekAsync(
@@ -439,6 +487,35 @@ public class WebAuthnCredentialService
     }
 
     /// <summary>
+    /// 別端末へパスキーを追加するための端末追加チケットを発行する（認証済み）
+    /// </summary>
+    /// <remarks>
+    /// リカバリーコードと異なり、既存のパスキーとセッションには影響しない。
+    /// 複数の端末で利用することが前提のため、新しい端末の追加で既存端末を締め出さない。
+    /// </remarks>
+    /// <returns>発行したチケットと有効期限</returns>
+    public async Task<(string Ticket, DateTimeOffset ExpiresAt)> CreateDeviceLinkTicketAsync(
+        int userId,
+        CancellationToken cancellationToken = default)
+    {
+        var mode = await _authPolicy.GetModeByUserIdAsync(userId, cancellationToken);
+        if (!OrganizationAuthPolicyService.AllowsWebAuthn(mode))
+        {
+            throw new InvalidOperationException("この組織ではパスキーを利用できません。");
+        }
+
+        var ticket = await _challengeStore.StoreAsync(
+            string.Empty,
+            WebAuthnChallengePurpose.DeviceLink,
+            userId,
+            cancellationToken,
+            reference: null,
+            DeviceLinkTicketTtl);
+
+        return (ticket, DateTimeOffset.UtcNow.Add(DeviceLinkTicketTtl));
+    }
+
+    /// <summary>
     /// リカバリーコードを再発行する（認証済みユーザー）
     /// </summary>
     public Task<List<string>> IssueRecoveryCodesAsync(
@@ -520,7 +597,9 @@ public class WebAuthnCredentialService
         List<string>? RecoveryCodes,
         string? RecoveryCodeInstruction,
         bool SessionsRevoked,
-        int? UnusedRecoveryCodeCount);
+        int? UnusedRecoveryCodeCount,
+        bool DeviceLinked,
+        User User);
 
     private async Task<SetupRegistrationResult> CompleteRegistrationAsync(
         User user,
@@ -646,7 +725,9 @@ public class WebAuthnCredentialService
                 recoveryCodes,
                 recoveryCodes is null ? null : RecoveryCodeService.StorageInstruction,
                 sessionsRevoked,
-                unusedRecoveryCodeCount);
+                unusedRecoveryCodeCount,
+                IsDeviceLinkReference(entry.Reference),
+                user);
         }
         catch
         {
@@ -684,6 +765,21 @@ public class WebAuthnCredentialService
 
             var issued = await _recoveryCodes.IssueAsync(user.Id, cancellationToken);
             return (issued, false, issued.Count);
+        }
+
+        if (IsDeviceLinkReference(reference))
+        {
+            // 端末追加。複数の端末で使うことが前提のため、既存のパスキーも既存端末のセッションも残す。
+            // リカバリーコードも発行しない（復旧ではなく追加のため）。
+            var ticket = reference[DeviceLinkReferencePrefix.Length..];
+            if (await _challengeStore.ConsumeAsync(ticket, WebAuthnChallengePurpose.DeviceLink) is null)
+            {
+                _logger.LogWarning(
+                    "端末追加チケットは既に失効していました。UserId: {UserId}",
+                    user.Id);
+            }
+
+            return (null, false, null);
         }
 
         if (reference == ResetSetupReference)

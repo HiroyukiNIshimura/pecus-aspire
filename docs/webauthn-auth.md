@@ -41,11 +41,14 @@
 | `POST /api/entrance/webauthn/register/options` | `register-options:{token のハッシュ}` | 20 回 | 5 分 |
 | `POST /api/entrance/webauthn/register/verify` | `register-verify:{credentialId のハッシュ}` | 20 回 | 5 分 |
 | `POST /api/entrance/recovery/code` | `recovery:{loginId}` | **5 回** | **15 分** |
+| `POST /api/profile/credentials/device-ticket` | `device-ticket:{userId}` | 10 回 | 15 分 |
+| `POST /api/profile/credentials/device-ticket/email` | `device-ticket:{userId}` | 10 回 | 15 分 |
 
 - ログイン ID 部分は小文字化して正規化される。クレデンシャルID・トークンは SHA-256 の先頭 16 バイトをキーに使う（長い値をそのままキーにしない）。
 - キーは**クライアント IP ではなく、アカウント・クレデンシャル・トークン単位**で数える。画面は Server Action から WebApi を呼ぶため、送信元 IP は常にフロントエンドになり、IP 単位にすると全ユーザーが 1 つのバケットを共有してしまう（誰かの試行で全員が 429 になる）。また `X-Forwarded-For` はクライアントが任意に指定できるため、IP をキーにすると制限を回避できる。
 - このため、同一 IP の複数ユーザーは互いに影響しない。逆に、同じアカウント（または同じクレデンシャル）への試行は、送信元が変わっても同じカウントを共有する。
 - パスワードログイン（`POST /api/entrance/auth/login`）には現時点でレート制限がない。
+- 端末追加チケットの発行・メール送信は**ユーザー単位**で数え、同じキーを共有する（発行とメール送信を合わせて 15 分あたり 10 回）。メール連打の抑止を兼ねる。
 
 ### 2.2 429 になったときの考え方（重要）
 
@@ -130,6 +133,31 @@ docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning DEL 'auth:ratelim
 - `GET /api/profile/credentials/recovery-codes` → `{ hasUnusedCodes, unusedCodeCount }`
 - パスキー登録（セットアップ / リカバリー）のレスポンスにも `unusedRecoveryCodeCount` が入る。
   新規発行した場合は発行数（10）、残りを使い続ける場合はその残数。
+
+### 3.4 端末追加（複数端末での利用）
+
+実装: [WebAuthnCredentialService](../pecus.WebApi/Services/WebAuthnCredentialService.cs) の `CreateDeviceLinkTicketAsync` / `CreateSetupRegistrationOptionsAsync` / `ApplyPostRegistrationAsync`
+
+- パスキーは端末（認証器）に紐づくため、2 台目以降の端末にはその端末用のパスキーが必要になる。未ログインの端末ではプロフィール画面を開けないため、**ログイン済みの端末で発行する端末追加チケット**で登録する。
+- チケットは Redis（`WebAuthnChallengeStore`、Purpose `DeviceLink`）に保存する。有効期限は **10 分**、**1 回限り**、ユーザー単位で発行（15 分あたり 10 回）。
+- 受け渡しは 2 通り。
+  - **QR コード**: プロフィール画面に `/passkey-setup?deviceTicket=...` を含む QR を表示し、追加する端末で読み取る（PC → スマートフォン向け）。
+  - **メール**: 送信時に新しく発行したチケットを含む同じ URL を登録済みメールアドレスへ送る（スマートフォン → PC など、QR を読み取れない組み合わせ向け）。画面に表示中の QR のチケットとは別物で、どちらも 1 回限り有効。
+- 登録完了時に**その場でログイン状態になる**（`WebAuthnSetupRegistrationResponse.Login`）。新しい端末でログインIDを入力し直す必要はない。
+
+| 項目 | 管理者リセット | リカバリー | **端末追加** |
+| --- | --- | --- | --- |
+| 既存パスキーの削除 | する | しない | **しない** |
+| 全セッション失効 | する | する | **しない**（既存端末は使えたまま） |
+| リカバリーコード発行 | する | 残り 0 のときのみ | **しない** |
+| 10 件上限の適用 | 免除 | 免除 | **適用**（超過時はエラー） |
+| `ExcludeCredentials` | 含めない | 含めない | **含める**（同じ認証器の二重登録を防ぐ） |
+| 登録後のログイン | しない | しない | **する** |
+
+- チケットは登録成功時に `GETDEL` で消費する。登録に失敗した場合は消費しないため、認証器の操作をやり直せる。
+- 既存のパスキーを残すため、**他の端末を締め出さない**。複数端末での同時利用が前提の要件に対して、リカバリーコード（1 個消費 + 全セッション失効）を流用しない理由がここにある。
+- リカバリーコード・管理者リセットは従来どおり「認証器をすべて失った」場合の経路として残す。
+- 端末追加で登録したパスキーには `DeviceId` を紐づけない（初回ログイン時に新しい `Device` 行が作られる）。
 
 ## 4. 関連ドキュメント
 

@@ -118,7 +118,7 @@ public class EntranceWebAuthnController : ControllerBase
     {
         if (!await IsAllowedForSecretAsync(
                 "register-options",
-                request.Token ?? request.RecoveryToken ?? string.Empty,
+                request.Token ?? request.RecoveryToken ?? request.DeviceTicket ?? string.Empty,
                 cancellationToken))
         {
             throw new TooManyRequestsException("試行回数が上限に達しました。しばらくしてから再度お試しください。");
@@ -127,6 +127,7 @@ public class EntranceWebAuthnController : ControllerBase
         var response = await _credentialService.CreateSetupRegistrationOptionsAsync(
             request.Token,
             request.RecoveryToken,
+            request.DeviceTicket,
             cancellationToken);
 
         return TypedResults.Ok(response);
@@ -151,9 +152,29 @@ public class EntranceWebAuthnController : ControllerBase
         var result = await _credentialService.RegisterWithSetupAsync(request, cancellationToken);
 
         _logger.LogInformation(
-            "パスキーを登録しました（セットアップ経路）。CredentialId: {CredentialId}, SessionsRevoked: {SessionsRevoked}",
+            "パスキーを登録しました（セットアップ経路）。CredentialId: {CredentialId}, SessionsRevoked: {SessionsRevoked}, DeviceLinked: {DeviceLinked}",
             result.Credential.Id,
-            result.SessionsRevoked);
+            result.SessionsRevoked,
+            result.DeviceLinked);
+
+        // 端末追加はログイン済みの端末で発行したチケットによる登録のため、
+        // 新しい端末をそのままログイン状態にする（入力し直しの手間をなくす）。
+        LoginResponse? login = null;
+        if (result.DeviceLinked)
+        {
+            var deviceContext = new AuthDeviceContext(
+                DeviceName: request.DeviceName,
+                DeviceType: request.DeviceType ?? Libs.DB.Models.Enums.DeviceType.Other,
+                OS: request.OS ?? Libs.DB.Models.Enums.OSPlatform.Unknown,
+                UserAgent: request.UserAgent ?? HttpContext.Request.Headers["User-Agent"].ToString(),
+                AppVersion: request.AppVersion,
+                Timezone: request.Timezone,
+                Location: request.Location,
+                IpAddress: ClientIpResolver.GetClientIpAddress(HttpContext),
+                AuthMethod: RefreshTokenService.AuthMethodPasskey);
+
+            login = await _tokenIssuer.IssueAsync(result.User, deviceContext);
+        }
 
         return TypedResults.Ok(new WebAuthnSetupRegistrationResponse
         {
@@ -162,6 +183,7 @@ public class EntranceWebAuthnController : ControllerBase
             RecoveryCodeInstruction = result.RecoveryCodeInstruction,
             SessionsRevoked = result.SessionsRevoked,
             UnusedRecoveryCodeCount = result.UnusedRecoveryCodeCount,
+            Login = login,
         });
     }
 

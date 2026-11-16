@@ -1,0 +1,24 @@
+@model Pecus.Libs.Mail.Templates.Models.CredentialDeviceLinkEmailModel
+
+新しい端末にパスキーを登録する
+
+@Model.UserName さん
+
+ログイン中の端末から、別の端末でこのアプリを使うためのパスキー登録リンクが送信されました。
+このメールを、パスキーを登録したい端末で開いてください。
+
+パスキー登録URL: @Model.DeviceLinkUrl
+
+重要: このリンクは @Model.TokenExpiresAt.ToString("yyyy年MM月dd日 HH:mm") まで有効です。1 回だけ使えます。
+
+アカウント情報:
+- ユーザー名: @Model.UserName
+- ログインID: @Model.LoginId
+- 発行日: @Model.CreatedAt.ToString("yyyy年MM月dd日 HH:mm")
+
+【登録について】
+- 登録には端末の生体認証または画面ロックの解除が必要です
+- 登録すると、この端末はそのままログイン状態になります
+- 他の端末のパスキーとログイン状態はそのまま残ります
+
+このメールに心当たりがない場合は、このメールを無視し、パスワードの変更とパスキーの確認を行ってください。

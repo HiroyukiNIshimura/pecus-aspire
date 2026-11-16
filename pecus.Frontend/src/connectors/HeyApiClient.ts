@@ -164,6 +164,8 @@ import {
   postApiEntranceWebauthnRegisterOptions,
   postApiEntranceWebauthnRegisterVerify,
   postApiProfileCredentials,
+  postApiProfileCredentialsDeviceTicket,
+  postApiProfileCredentialsDeviceTicketEmail,
   postApiProfileCredentialsOptions,
   postApiProfileCredentialsRecoveryCodes,
   postApiProfileEmailRequestChange,
@@ -363,6 +365,8 @@ import type {
   PostApiEntranceWebauthnLoginVerifyResponse,
   PostApiEntranceWebauthnRegisterOptionsResponse,
   PostApiEntranceWebauthnRegisterVerifyResponse,
+  PostApiProfileCredentialsDeviceTicketEmailResponse,
+  PostApiProfileCredentialsDeviceTicketResponse,
   PostApiProfileCredentialsOptionsResponse,
   PostApiProfileCredentialsRecoveryCodesResponse,
   PostApiProfileCredentialsResponse,
@@ -691,6 +695,18 @@ export async function getRecoveryCodeStatusWithHeyApi(): Promise<GetApiProfileCr
 export async function issueRecoveryCodesWithHeyApi(): Promise<PostApiProfileCredentialsRecoveryCodesResponse> {
   const client = await createHeyApiClient();
   const response = await postApiProfileCredentialsRecoveryCodes({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function issueDeviceTicketWithHeyApi(): Promise<PostApiProfileCredentialsDeviceTicketResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiProfileCredentialsDeviceTicket({ client, throwOnError: true });
+  return response.data;
+}
+
+export async function sendDeviceTicketEmailWithHeyApi(): Promise<PostApiProfileCredentialsDeviceTicketEmailResponse> {
+  const client = await createHeyApiClient();
+  const response = await postApiProfileCredentialsDeviceTicketEmail({ client, throwOnError: true });
   return response.data;
 }
 

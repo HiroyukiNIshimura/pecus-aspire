@@ -8,6 +8,8 @@ import { getSetupRegistrationOptions, registerWithSetup } from '@/actions/webaut
 import type { WebAuthnSetupRegistrationResponse } from '@/connectors/hey-api-axios/types.gen';
 import { copyTextToClipboard } from '@/libs/utils/clipboard';
 import { buildRecoveryCodeClipboardText, RECOVERY_CODE_USAGE_NOTE } from '@/libs/utils/recoveryCode';
+import { getDeviceInfo } from '@/utils/deviceInfo';
+import { resolvePostLoginUrl } from '@/utils/landingPage';
 
 /**
  * パスキー登録時の DOMException をユーザー向けメッセージに変換する
@@ -35,6 +37,7 @@ export default function PasskeySetupFormClient() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') ?? undefined;
   const recoveryToken = searchParams.get('recoveryToken') ?? undefined;
+  const deviceTicket = searchParams.get('deviceTicket') ?? undefined;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState('');
@@ -49,13 +52,29 @@ export default function PasskeySetupFormClient() {
     setPasskeySupported(browserSupportsWebAuthn());
   }, []);
 
+  /**
+   * 端末追加でセッションを発行するために、この端末の情報を集める
+   */
+  const buildDeviceContext = async () => {
+    const info = await getDeviceInfo();
+    return {
+      deviceName: info.deviceName,
+      deviceType: info.deviceType,
+      os: info.os,
+      userAgent: info.userAgent,
+      appVersion: info.appVersion,
+      timezone: info.timezone,
+      location: info.location ?? undefined,
+    };
+  };
+
   const handleRegister = async () => {
     setApiError('');
     setShowLinkGuidance(false);
     setIsSubmitting(true);
 
     try {
-      const optionsResult = await getSetupRegistrationOptions({ token, recoveryToken });
+      const optionsResult = await getSetupRegistrationOptions({ token, recoveryToken, deviceTicket });
       if (!optionsResult.success) {
         setApiError(optionsResult.message || 'パスキー登録を開始できませんでした。');
         // 429（試行回数の上限）や通信エラーは再試行で解決するため、リンクの案内は出さない
@@ -107,6 +126,7 @@ export default function PasskeySetupFormClient() {
             transports: credential.response.transports,
           },
         },
+        ...(deviceTicket ? await buildDeviceContext() : {}),
       });
 
       if (!registerResult.success) {
@@ -118,6 +138,12 @@ export default function PasskeySetupFormClient() {
       }
 
       setResult(registerResult.data);
+
+      // 端末追加は登録と同時にセッションが発行されるため、そのままアプリへ遷移する
+      const login = registerResult.data.login;
+      if (login) {
+        window.location.href = resolvePostLoginUrl(login.roles, login.landingPage);
+      }
     } catch (error) {
       console.error('パスキー登録中にエラーが発生:', error);
       setApiError(toPasskeyRegistrationErrorMessage(error));
@@ -136,7 +162,7 @@ export default function PasskeySetupFormClient() {
     setCopyMessage({ type: 'error', message: 'コピーできませんでした。コードを選択して手動でコピーしてください。' });
   };
 
-  const hasInvalidLink = !token && !recoveryToken;
+  const hasInvalidLink = !token && !recoveryToken && !deviceTicket;
 
   if (hasInvalidLink) {
     return (
@@ -279,9 +305,17 @@ export default function PasskeySetupFormClient() {
         )}
 
         <p className="text-sm text-base-content/70">
-          この端末の生体認証（指紋・顔認証）または画面ロック解除を使ってパスキーを登録します。
-          複数の端末で使う場合は、端末ごとに登録してください。
+          {deviceTicket
+            ? 'この端末の生体認証（指紋・顔認証）または画面ロック解除を使ってパスキーを登録します。登録すると、この端末はそのままログイン状態になります。'
+            : 'この端末の生体認証（指紋・顔認証）または画面ロック解除を使ってパスキーを登録します。複数の端末で使う場合は、端末ごとに登録してください。'}
         </p>
+
+        {deviceTicket && (
+          <p className="text-xs text-base-content/60">
+            端末追加の手続きは 10
+            分以内に完了してください。期限が切れた場合は、ログイン済みの端末からもう一度発行してください。
+          </p>
+        )}
 
         {recoveryToken && (
           <p className="text-xs text-base-content/60">
