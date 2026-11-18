@@ -104,7 +104,7 @@ public class WebAuthnCredentialService
     /// リカバリーは認証器を失ったユーザーが復旧する唯一の手段のため、上限で妨げない。
     /// </remarks>
     private static bool IsRecoveryOrResetReference(string? reference) =>
-        reference == ResetSetupReference
+        (reference?.StartsWith($"{ResetSetupReference}:", StringComparison.Ordinal) ?? false)
         || (reference?.StartsWith(RecoveryReferencePrefix, StringComparison.Ordinal) ?? false);
 
     /// <summary>
@@ -286,7 +286,9 @@ public class WebAuthnCredentialService
     public async Task<WebAuthnRegistrationOptionsResponse> CreateRegistrationOptionsAsync(
         User user,
         CancellationToken cancellationToken = default,
-        string? reference = null)
+        string? reference = null,
+        string? registrationSourceId = null,
+        WebAuthnChallengePurpose? registrationSourcePurpose = null)
     {
         await EnsureUserHandleAsync(user, cancellationToken);
 
@@ -335,13 +337,35 @@ public class WebAuthnCredentialService
             AttestationPreference = AttestationConveyancePreference.None,
         });
 
-        var challengeId = await _challengeStore.StoreAsync(
-            JsonSerializer.Serialize(options),
-            WebAuthnChallengePurpose.Registration,
-            user.Id,
-            cancellationToken,
-            reference,
-            reference is null ? null : SetupTokenTtl);
+        var payload = JsonSerializer.Serialize(options);
+        string? challengeId;
+        if (reference is not null && registrationSourceId is not null)
+        {
+            challengeId = await _challengeStore.StoreExclusiveRegistrationAsync(
+                payload,
+                user.Id,
+                registrationSourceId,
+                reference,
+                registrationSourcePurpose,
+                SetupTokenTtl,
+                cancellationToken);
+        }
+        else
+        {
+            challengeId = await _challengeStore.StoreAsync(
+                payload,
+                WebAuthnChallengePurpose.Registration,
+                user.Id,
+                cancellationToken,
+                reference,
+                reference is null ? null : SetupTokenTtl);
+        }
+
+        if (challengeId is null)
+        {
+            throw new UnauthorizedException(
+                "この登録リンクでは既に登録処理が進行中です。前の画面で完了するか、有効期限後に再試行してください。");
+        }
 
         return ToRegistrationOptionsResponse(options, challengeId);
     }
@@ -427,8 +451,8 @@ public class WebAuthnCredentialService
 
             // 管理者による認証情報リセットの場合は、登録完了時に既存パスキーとセッションを失効させる
             reference = setupToken.StartsWith(AdminResetSetupTokenPrefix, StringComparison.Ordinal)
-                ? ResetSetupReference
-                : SetupReference;
+                ? $"{ResetSetupReference}:{setupToken}"
+                : $"{SetupReference}:{setupToken}";
         }
         else
         {
@@ -447,7 +471,16 @@ public class WebAuthnCredentialService
             throw new UnauthorizedException("パスキーの登録に失敗しました。");
         }
 
-        return await CreateRegistrationOptionsAsync(user, cancellationToken, reference);
+        return await CreateRegistrationOptionsAsync(
+            user,
+            cancellationToken,
+            reference,
+            deviceTicket ?? recoveryToken ?? setupToken,
+            deviceTicket is not null
+                ? WebAuthnChallengePurpose.DeviceLink
+                : recoveryToken is not null
+                    ? WebAuthnChallengePurpose.Recovery
+                    : null);
     }
 
     /// <summary>
@@ -541,15 +574,25 @@ public class WebAuthnCredentialService
     {
         var entry = await _challengeStore.ConsumeAsync(
             request.ChallengeId,
-            WebAuthnChallengePurpose.Registration);
+            WebAuthnChallengePurpose.Registration,
+            releaseReservation: false);
 
         if (entry?.UserId != user.Id)
         {
             throw new UnauthorizedException("パスキーの登録に失敗しました。");
         }
 
-        var result = await CompleteRegistrationAsync(user, entry, request, cancellationToken);
-        return result.Credential;
+        try
+        {
+            var result = await CompleteRegistrationAsync(user, entry, request, cancellationToken);
+            return result.Credential;
+        }
+        finally
+        {
+            await _challengeStore.ReleaseRegistrationReservationAsync(
+                request.ChallengeId,
+                entry.ReservationId);
+        }
     }
 
     /// <summary>
@@ -561,7 +604,8 @@ public class WebAuthnCredentialService
     {
         var entry = await _challengeStore.ConsumeAsync(
             request.ChallengeId,
-            WebAuthnChallengePurpose.Registration);
+            WebAuthnChallengePurpose.Registration,
+            releaseReservation: false);
 
         if (entry?.UserId is null)
         {
@@ -586,7 +630,16 @@ public class WebAuthnCredentialService
             throw new UnauthorizedException("パスキーの登録に失敗しました。");
         }
 
-        return await CompleteRegistrationAsync(user, entry, request, cancellationToken);
+        try
+        {
+            return await CompleteRegistrationAsync(user, entry, request, cancellationToken);
+        }
+        finally
+        {
+            await _challengeStore.ReleaseRegistrationReservationAsync(
+                request.ChallengeId,
+                entry.ReservationId);
+        }
     }
 
     /// <summary>
@@ -756,12 +809,17 @@ public class WebAuthnCredentialService
             return (null, false, null);
         }
 
-        if (reference == SetupReference)
+        if (TryGetSetupToken(reference, isReset: false, out var setupToken))
         {
+            var affected = await ConsumeSetupTokenAsync(user.Id, setupToken, cancellationToken);
+            if (affected != 1)
+            {
+                throw new UnauthorizedException("登録リンクは既に使用されているか、期限切れです。");
+            }
+
             user.CredentialSetupToken = null;
             user.CredentialSetupTokenExpiresAt = null;
             user.UpdatedAt = DateTimeOffset.UtcNow;
-            await _context.SaveChangesAsync(cancellationToken);
 
             var issued = await _recoveryCodes.IssueAsync(user.Id, cancellationToken);
             return (issued, false, issued.Count);
@@ -772,18 +830,25 @@ public class WebAuthnCredentialService
             // 端末追加。複数の端末で使うことが前提のため、既存のパスキーも既存端末のセッションも残す。
             // リカバリーコードも発行しない（復旧ではなく追加のため）。
             var ticket = reference[DeviceLinkReferencePrefix.Length..];
-            if (await _challengeStore.ConsumeAsync(ticket, WebAuthnChallengePurpose.DeviceLink) is null)
+            var ticketEntry = await _challengeStore.ConsumeAsync(
+                ticket,
+                WebAuthnChallengePurpose.DeviceLink);
+            if (ticketEntry?.UserId != user.Id)
             {
-                _logger.LogWarning(
-                    "端末追加チケットは既に失効していました。UserId: {UserId}",
-                    user.Id);
+                throw new UnauthorizedException("端末追加チケットは既に使用されているか、期限切れです。");
             }
 
             return (null, false, null);
         }
 
-        if (reference == ResetSetupReference)
+        if (TryGetSetupToken(reference, isReset: true, out var resetToken))
         {
+            var affected = await ConsumeSetupTokenAsync(user.Id, resetToken, cancellationToken);
+            if (affected != 1)
+            {
+                throw new UnauthorizedException("登録リンクは既に使用されているか、期限切れです。");
+            }
+
             // 管理者による認証情報リセット。既存のパスキーとセッションを失効させる。
             user.CredentialSetupToken = null;
             user.CredentialSetupTokenExpiresAt = null;
@@ -822,13 +887,21 @@ public class WebAuthnCredentialService
             }
 
             // 登録が完了したのでリカバリートークンを失効させる。
-            // 失効済みの場合もリカバリーコードの使用判定で二重利用は防げているため処理は続行する。
-            if (parts.Length >= 3
-                && await _challengeStore.ConsumeAsync(parts[2], WebAuthnChallengePurpose.Recovery) is null)
+            if (parts.Length < 3)
             {
-                _logger.LogWarning(
-                    "リカバリートークンは既に失効していました。UserId: {UserId}",
-                    user.Id);
+                throw new UnauthorizedException("リカバリートークンが無効です。");
+            }
+
+            var recoveryTokenEntry = await _challengeStore.ConsumeAsync(
+                parts[2],
+                WebAuthnChallengePurpose.Recovery);
+            if (recoveryTokenEntry?.UserId != user.Id
+                || !string.Equals(
+                    recoveryTokenEntry.Reference,
+                    $"{RecoveryReferencePrefix}{codeId}",
+                    StringComparison.Ordinal))
+            {
+                throw new UnauthorizedException("リカバリートークンは既に使用されているか、期限切れです。");
             }
 
             // 認証器を失った前提のため、他端末のセッションをすべて失効させる
@@ -852,6 +925,39 @@ public class WebAuthnCredentialService
         }
 
         return (null, false, null);
+    }
+
+    private static bool TryGetSetupToken(string? reference, bool isReset, out string token)
+    {
+        token = string.Empty;
+        var prefix = $"{(isReset ? ResetSetupReference : SetupReference)}:";
+        if (reference?.StartsWith(prefix, StringComparison.Ordinal) != true)
+        {
+            return false;
+        }
+
+        token = reference[prefix.Length..];
+        return token.Length > 0;
+    }
+
+    private Task<int> ConsumeSetupTokenAsync(
+        int userId,
+        string token,
+        CancellationToken cancellationToken)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return _context.Users
+            .Where(u =>
+                u.Id == userId
+                && u.IsActive
+                && u.CredentialSetupToken == token
+                && u.CredentialSetupTokenExpiresAt > now)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(u => u.CredentialSetupToken, (string?)null)
+                    .SetProperty(u => u.CredentialSetupTokenExpiresAt, (DateTimeOffset?)null)
+                    .SetProperty(u => u.UpdatedAt, now),
+                cancellationToken);
     }
 
     /// <summary>

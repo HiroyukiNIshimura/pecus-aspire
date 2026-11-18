@@ -52,18 +52,18 @@ namespace Pecus.Services;
 public class UserService
 {
     private readonly ApplicationDbContext _context;
-    private readonly RefreshTokenService _refreshTokenService;
+    private readonly SessionRevocationService _sessionRevocation;
 
     private readonly OrganizationAuthPolicyService _authPolicy;
 
     public UserService(
         ApplicationDbContext context,
-        RefreshTokenService refreshTokenService,
+        SessionRevocationService sessionRevocation,
         OrganizationAuthPolicyService authPolicy
     )
     {
         _context = context;
-        _refreshTokenService = refreshTokenService;
+        _sessionRevocation = sessionRevocation;
         _authPolicy = authPolicy;
     }
 
@@ -419,6 +419,7 @@ public class UserService
             }
 
             // ロール洗い替え
+            var previousRoleIds = user.Roles.Select(r => r.Id).Order().ToList();
             user.Roles.Clear();
             if (request.RoleIds.Count > 0)
             {
@@ -447,6 +448,12 @@ public class UserService
             await SyncChatActorAsync(userId, user.Username, user.AvatarType, user.UserAvatarPath);
 
             await _context.SaveChangesAsync();
+            var rolesChanged = !previousRoleIds.SequenceEqual(request.RoleIds.Order());
+            if (isActiveChanging || rolesChanged)
+            {
+                await _sessionRevocation.RevokeAllSessionsAsync(userId);
+            }
+
             await transaction.CommitAsync();
 
             // 更新後のユーザー情報を返す
@@ -662,15 +669,19 @@ public class UserService
         user.PasswordResetTokenExpiresAt = null;
         user.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
-
-        // すべてのデバイスのログイン状態をリセットする場合
-        if (request.ResetAllDeviceSessions == true)
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            await _refreshTokenService.RevokeAllUserRefreshTokensAsync(user.Id);
+            await _context.SaveChangesAsync();
+            await _sessionRevocation.RevokeAllSessionsAsync(user.Id);
+            await transaction.CommitAsync();
+            return true;
         }
-
-        return true;
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     /// <summary>
@@ -768,8 +779,19 @@ public class UserService
         user.PasswordResetTokenExpiresAt = null;
         user.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
-        return true;
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+            await _sessionRevocation.RevokeAllSessionsAsync(user.Id);
+            await transaction.CommitAsync();
+            return true;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     /// <summary>

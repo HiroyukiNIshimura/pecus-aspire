@@ -44,6 +44,7 @@ namespace Pecus.Libs
                 new Claim("username", user.Username),
                 new Claim("userId", user.Id.ToString()),
                 new Claim("organizationId", user.OrganizationId?.ToString() ?? ""),
+                new Claim("securityVersion", user.SecurityVersion.ToString()),
             };
 
             // ロール情報をクレームに追加

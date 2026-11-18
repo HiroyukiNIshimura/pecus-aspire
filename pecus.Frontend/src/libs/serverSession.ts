@@ -370,6 +370,7 @@ export class ServerSessionManager {
    * @param sessionId セッション ID（省略時は Cookie から取得）
    */
   static async destroySession(sessionId?: string): Promise<void> {
+    let redisError: unknown;
     try {
       // セッション ID を取得
       let targetSessionId = sessionId;
@@ -385,12 +386,15 @@ export class ServerSessionManager {
         await redis.del(sessionKey);
         console.log(`[ServerSession] Session destroyed: ${targetSessionId.substring(0, 8)}...`);
       }
-
-      // Cookie を削除
-      await ServerSessionManager.clearSessionCookie();
     } catch (error) {
       console.error('[ServerSession] Failed to destroy session:', error);
-      throw error;
+      redisError = error;
+    } finally {
+      await ServerSessionManager.clearSessionCookie();
+    }
+
+    if (redisError) {
+      throw redisError;
     }
   }
 

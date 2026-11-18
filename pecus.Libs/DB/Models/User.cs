@@ -33,6 +33,11 @@ public class User
     public required string PasswordHash { get; set; }
 
     /// <summary>
+    /// 認証資格情報の版。パスワードや権限、認証方式の変更時に増分する
+    /// </summary>
+    public int SecurityVersion { get; set; }
+
+    /// <summary>
     /// WebAuthn のユーザーハンドル（16 byte の乱数）
     /// 初回のパスキー登録時に生成し、以後変更しない（変更すると登録済みパスキーが無効になる）
     /// </summary>

@@ -85,14 +85,16 @@ public class RefreshController : ControllerBase
             throw new UnauthorizedException("Invalid refresh token");
         }
 
-        var info = await _refreshService.ValidateRefreshTokenAsync(request.RefreshToken);
+        var info = await _refreshService.ConsumeRefreshTokenAsync(
+            request.RefreshToken,
+            HttpContext.RequestAborted);
         if (info == null)
         {
             throw new UnauthorizedException("Invalid refresh token");
         }
 
         var user = await _userService.GetUserByIdAsync(info.UserId);
-        if (user == null)
+        if (user == null || user.SecurityVersion != info.SecurityVersion)
         {
             throw new UnauthorizedException("Invalid refresh token");
         }
@@ -112,12 +114,10 @@ public class RefreshController : ControllerBase
 
         if (!authMethodAllowed)
         {
-            await _refreshService.RevokeRefreshTokenAsync(request.RefreshToken);
             throw new UnauthorizedException("認証方式が変更されました。再度ログインしてください。");
         }
 
-        // ローテーション: 古いリフレッシュトークンを無効化して新しいものを発行
-        await _refreshService.RevokeRefreshTokenAsync(request.RefreshToken);
+        // 旧トークンは ConsumeRefreshTokenAsync で一度だけ消費済み
         var deviceInfo = new RefreshTokenService.DeviceInfo(
             DeviceName: request.DeviceName,
             DeviceType: request.DeviceType ?? DeviceType.Browser,

@@ -1,5 +1,6 @@
-using System.Text.Json;
 using StackExchange.Redis;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace Pecus.Services;
 
@@ -37,12 +38,14 @@ public enum WebAuthnChallengePurpose
 /// <param name="Payload">Fido2 のオプションをシリアライズした JSON</param>
 /// <param name="Reference">登録手段の識別情報（セットアップトークンやリカバリーコードID など）</param>
 /// <param name="ExpiresAt">有効期限</param>
+/// <param name="ReservationId">登録元トークンの排他予約ID</param>
 public sealed record WebAuthnChallengeEntry(
     int? UserId,
     string Purpose,
     string Payload,
     string? Reference,
-    DateTimeOffset ExpiresAt);
+    DateTimeOffset ExpiresAt,
+    string? ReservationId = null);
 
 /// <summary>
 /// WebAuthn チャレンジの保管庫
@@ -55,6 +58,25 @@ public class WebAuthnChallengeStore
 {
     private static readonly TimeSpan DefaultChallengeTtl = TimeSpan.FromMinutes(5);
     private const string KeyPrefix = "webauthn:challenge:";
+    private const string ReservationKeyPrefix = "webauthn:registration-source:";
+
+    private const string StoreExclusiveScript = """
+        if ARGV[4] == '1' and redis.call('EXISTS', KEYS[1]) == 0 then
+          return 0
+        end
+        if redis.call('SET', KEYS[2], ARGV[1], 'NX', 'PX', ARGV[3]) == false then
+          return 0
+        end
+        redis.call('SET', KEYS[3], ARGV[2], 'PX', ARGV[3])
+        return 1
+        """;
+
+    private const string ReleaseReservationScript = """
+        if redis.call('GET', KEYS[1]) == ARGV[1] then
+          return redis.call('DEL', KEYS[1])
+        end
+        return 0
+        """;
 
     private readonly IDatabase _db;
     private readonly ILogger<WebAuthnChallengeStore> _logger;
@@ -92,6 +114,51 @@ public class WebAuthnChallengeStore
     }
 
     /// <summary>
+    /// 元トークンごとに1件だけ登録チャレンジを作成する
+    /// </summary>
+    public async Task<string?> StoreExclusiveRegistrationAsync(
+        string payload,
+        int userId,
+        string sourceId,
+        string reference,
+        WebAuthnChallengePurpose? sourcePurpose,
+        TimeSpan ttl,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var challengeId = Guid.NewGuid().ToString("N");
+        var reservationId = Convert.ToHexString(
+            SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(sourceId))).ToLowerInvariant();
+        var entry = new WebAuthnChallengeEntry(
+            userId,
+            WebAuthnChallengePurpose.Registration.ToString(),
+            payload,
+            reference,
+            DateTimeOffset.UtcNow.Add(ttl),
+            reservationId);
+
+        var sourceKey = sourcePurpose.HasValue
+            ? GetKey(sourceId)
+            : "__no_redis_source__";
+        var result = await _db.ScriptEvaluateAsync(
+            StoreExclusiveScript,
+            [
+                (RedisKey)sourceKey,
+                (RedisKey)GetReservationKey(reservationId),
+                (RedisKey)GetKey(challengeId),
+            ],
+            [
+                (RedisValue)challengeId,
+                (RedisValue)JsonSerializer.Serialize(entry),
+                (RedisValue)(long)ttl.TotalMilliseconds,
+                (RedisValue)(sourcePurpose.HasValue ? 1 : 0),
+            ]);
+
+        return (long)result == 1 ? challengeId : null;
+    }
+
+    /// <summary>
     /// チャレンジを消費せずに取得する（有効性の確認用）
     /// </summary>
     /// <remarks>
@@ -121,7 +188,8 @@ public class WebAuthnChallengeStore
     /// <returns>消費できた場合は保存内容、存在しない・期限切れ・用途不一致の場合は null</returns>
     public async Task<WebAuthnChallengeEntry?> ConsumeAsync(
         string? challengeId,
-        WebAuthnChallengePurpose purpose)
+        WebAuthnChallengePurpose purpose,
+        bool releaseReservation = true)
     {
         if (string.IsNullOrWhiteSpace(challengeId) || !Guid.TryParseExact(challengeId, "N", out _))
         {
@@ -135,7 +203,31 @@ public class WebAuthnChallengeStore
             return null;
         }
 
-        return ParseEntry(json.ToString(), purpose);
+        var entry = ParseEntry(json.ToString(), purpose);
+        if (entry is not null && releaseReservation)
+        {
+            await ReleaseRegistrationReservationAsync(challengeId, entry.ReservationId);
+        }
+
+        return entry;
+    }
+
+    /// <summary>
+    /// 登録元トークンの排他予約をchallenge所有者だけが解放する
+    /// </summary>
+    public Task ReleaseRegistrationReservationAsync(
+        string? challengeId,
+        string? reservationId)
+    {
+        if (string.IsNullOrWhiteSpace(challengeId) || string.IsNullOrWhiteSpace(reservationId))
+        {
+            return Task.CompletedTask;
+        }
+
+        return _db.ScriptEvaluateAsync(
+            ReleaseReservationScript,
+            [(RedisKey)GetReservationKey(reservationId)],
+            [(RedisValue)challengeId]);
     }
 
     private WebAuthnChallengeEntry? ParseEntry(string? json, WebAuthnChallengePurpose purpose)
@@ -170,4 +262,6 @@ public class WebAuthnChallengeStore
     }
 
     private static string GetKey(string challengeId) => $"{KeyPrefix}{challengeId}";
+    private static string GetReservationKey(string reservationId) =>
+        $"{ReservationKeyPrefix}{reservationId}";
 }

@@ -25,6 +25,7 @@ using Pecus.Models.Config;
 using Pecus.OpenApi;
 using Pecus.Services;
 using StackExchange.Redis;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -291,7 +292,7 @@ builder
             ValidAudience = pecusConfig.Jwt.ValidAudience,
             RequireExpirationTime = true,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(pecusConfig.Jwt.ExpiresMinutes),
+            ClockSkew = TimeSpan.FromSeconds(30),
         };
 
         // トークン検証時にブラックリストを参照して即時拒否する（ログを追加）
@@ -378,11 +379,39 @@ builder
 
                     // ユーザーが無効な場合はトークンを拒否
                     var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
-                    var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                    var user = await dbContext.Users
+                        .Include(u => u.Roles)
+                        .FirstOrDefaultAsync(u => u.Id == userId);
                     if (user == null || !user.IsActive)
                     {
                         logger?.LogDebug("JwtBearer: User is inactive or not found. UserId={UserId}", userId);
                         context.Fail("User is inactive or not found");
+                        return;
+                    }
+
+                    var tokenSecurityVersion = principal.FindFirst("securityVersion")?.Value;
+                    if (!int.TryParse(tokenSecurityVersion, out var parsedSecurityVersion)
+                        || parsedSecurityVersion != user.SecurityVersion)
+                    {
+                        logger?.LogDebug(
+                            "JwtBearer: Security version is stale. UserId={UserId}",
+                            userId);
+                        context.Fail("Token security version is stale");
+                        return;
+                    }
+
+                    var tokenRoles = principal
+                        .FindAll(ClaimTypes.Role)
+                        .Select(c => c.Value)
+                        .ToHashSet(StringComparer.Ordinal);
+                    var currentRoles = user.Roles
+                        .Select(r => r.Name.ToString())
+                        .ToHashSet(StringComparer.Ordinal);
+
+                    if (!tokenRoles.SetEquals(currentRoles))
+                    {
+                        logger?.LogDebug("JwtBearer: Role claims are stale. UserId={UserId}", userId);
+                        context.Fail("Token claims are stale");
                         return;
                     }
 

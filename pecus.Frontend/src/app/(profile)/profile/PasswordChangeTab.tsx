@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { updateUserPassword } from '@/actions/profile';
 import PasswordRequirementIndicator, {
@@ -20,6 +21,7 @@ interface PasswordChangeTabProps {
 }
 
 export default function PasswordChangeTab({ notify, isLoading, setIsLoading }: PasswordChangeTabProps) {
+  const router = useRouter();
   const [showPasswords, setShowPasswords] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>('');
 
@@ -36,8 +38,7 @@ export default function PasswordChangeTab({ notify, isLoading, setIsLoading }: P
 
         if (result.success) {
           notify.success('パスワードを変更しました。');
-          formRef.current?.reset();
-          setNewPassword('');
+          router.replace('/signin');
         } else {
           notify.error(result.message || 'パスワード変更に失敗しました');
         }

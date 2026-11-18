@@ -50,6 +50,7 @@ public class ProfileService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ProfileService> _logger;
     private readonly RefreshTokenService _refreshTokenService;
+    private readonly SessionRevocationService _sessionRevocation;
     private readonly UserService _userService;
     private readonly FileUploadService _fileUploadService;
     private readonly IWebHostEnvironment _environment;
@@ -63,6 +64,7 @@ public class ProfileService
         ApplicationDbContext context,
         ILogger<ProfileService> logger,
         RefreshTokenService refreshTokenService,
+        SessionRevocationService sessionRevocation,
         UserService userService,
         FileUploadService fileUploadService,
         IWebHostEnvironment environment,
@@ -72,6 +74,7 @@ public class ProfileService
         _context = context;
         _logger = logger;
         _refreshTokenService = refreshTokenService;
+        _sessionRevocation = sessionRevocation;
         _userService = userService;
         _fileUploadService = fileUploadService;
         _environment = environment;
@@ -615,6 +618,7 @@ public class ProfileService
             throw new InvalidOperationException("この組織はパスキー専用のため、パスワードを変更できません。");
         }
 
+        await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
             var user = await _context.Users.FindAsync(userId);
@@ -637,12 +641,15 @@ public class ProfileService
             user.UpdatedByUserId = userId; // 自己変更
 
             await _context.SaveChangesAsync();
+            await _sessionRevocation.RevokeAllSessionsAsync(userId);
+            await transaction.CommitAsync();
 
             _logger.LogInformation("パスワードを変更しました。UserId: {UserId}", userId);
             return true;
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
             _logger.LogError("パスワード変更失敗: 予期しないエラーが発生しました。UserId: {UserId}, Error: {Error}", userId, ex.Message);
             throw;
         }

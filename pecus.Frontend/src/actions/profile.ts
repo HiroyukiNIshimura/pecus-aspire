@@ -29,6 +29,7 @@ import type {
   UserSettingResponse,
 } from '@/connectors/hey-api-axios/types.gen';
 import { detectConcurrencyError } from '@/libs/concurrencyError';
+import { ServerSessionManager } from '@/libs/serverSession';
 import {
   type DeleteAvatarFileInput,
   type DeleteDeviceInput,
@@ -172,6 +173,12 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
       newPassword: parseResult.data.newPassword,
     });
 
+    try {
+      await ServerSessionManager.destroySession();
+    } catch (error) {
+      console.error('Failed to destroy session after password change:', error);
+    }
+
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to update password:', error);
@@ -194,8 +201,6 @@ export async function deleteDevice(input: DeleteDeviceInput): Promise<ApiRespons
   }
 
   try {
-    const { ServerSessionManager } = await import('@/libs/serverSession');
-
     // まずデバイス一覧を取得して対象デバイスの publicId を確認
     const devices = await getProfileDevicesWithHeyApi();
     const targetDevice = devices.find((d) => d.id === parseResult.data.deviceId);

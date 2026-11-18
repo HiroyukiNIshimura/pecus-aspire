@@ -21,6 +21,11 @@ public class RefreshToken
     public int UserId { get; set; }
 
     /// <summary>
+    /// 発行時の認証資格情報版
+    /// </summary>
+    public int SecurityVersion { get; set; }
+
+    /// <summary>
     /// 有効期限
     /// </summary>
     public DateTimeOffset ExpiresAt { get; set; }

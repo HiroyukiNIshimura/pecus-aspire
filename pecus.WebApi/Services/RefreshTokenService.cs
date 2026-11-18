@@ -17,17 +17,22 @@ public class RefreshTokenService
     private readonly IConnectionMultiplexer _redis;
     private readonly IDatabase _db;
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<RefreshTokenService> _logger;
 
     // TTL for refresh tokens (days)
     private readonly TimeSpan _refreshTokenTtl = TimeSpan.FromDays(30);
     // 最大同時発行トークン数（ユーザーあたり）
     private const int _maxTokensPerUser = 5;
 
-    public RefreshTokenService(IConnectionMultiplexer redis, ApplicationDbContext context)
+    public RefreshTokenService(
+        IConnectionMultiplexer redis,
+        ApplicationDbContext context,
+        ILogger<RefreshTokenService> logger)
     {
         _redis = redis;
         _db = _redis.GetDatabase();
         _context = context;
+        _logger = logger;
     }
 
     public record RefreshTokenInfo(
@@ -37,7 +42,8 @@ public class RefreshTokenService
         bool ChangeDevice = false,
         string? DevicePublicId = null,
         int? DeviceId = null,
-        string? AuthMethod = null
+        string? AuthMethod = null,
+        int SecurityVersion = 0
     );
 
     /// <summary>
@@ -78,8 +84,19 @@ public class RefreshTokenService
     {
         var token = Guid.NewGuid().ToString("N");
         var expiresAt = DateTime.UtcNow.Add(_refreshTokenTtl);
+        var securityVersion = await _context.Users
+            .AsNoTracking()
+            .Where(u => u.Id == userId && u.IsActive)
+            .Select(u => (int?)u.SecurityVersion)
+            .FirstOrDefaultAsync()
+            ?? throw new InvalidOperationException("有効なユーザーが見つかりません。");
         // デバイス情報は後で設定するため、初期値は null
-        var info = new RefreshTokenInfo(token, userId, expiresAt, AuthMethod: authMethod);
+        var info = new RefreshTokenInfo(
+            token,
+            userId,
+            expiresAt,
+            AuthMethod: authMethod,
+            SecurityVersion: securityVersion);
 
         // 1. Redis にキャッシュ（高速アクセス用）
         var key = GetKey(token);
@@ -99,6 +116,7 @@ public class RefreshTokenService
             {
                 Token = token,
                 UserId = userId,
+                SecurityVersion = securityVersion,
                 ExpiresAt = expiresAt,
                 CreatedAt = DateTime.UtcNow,
                 IsRevoked = false
@@ -158,49 +176,89 @@ public class RefreshTokenService
     }
 
     /// <summary>
-    /// リフレッシュトークンを検証します。
+    /// リフレッシュトークンを一度だけ検証・消費します。
     /// </summary>
     /// <param name="token"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<RefreshTokenInfo?> ValidateRefreshTokenAsync(string token)
+    public async Task<RefreshTokenInfo?> ConsumeRefreshTokenAsync(
+        string token,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(token)) return null;
 
-        // 1. Redis から検証（高速）
+        // Redis の取得と削除を単一操作にし、同じトークンを並行して消費できないようにする。
         var key = GetKey(token);
-        var payload = await _db.StringGetAsync(key);
+        var payload = await _db.StringGetDeleteAsync(key);
+        RefreshTokenInfo? cachedInfo = null;
 
         if (!payload.IsNullOrEmpty)
         {
             try
             {
-                var info = JsonSerializer.Deserialize<RefreshTokenInfo>(payload.ToString());
-                if (info != null && info.ExpiresAt > DateTime.UtcNow)
-                {
-                    return info;
-                }
+                cachedInfo = JsonSerializer.Deserialize<RefreshTokenInfo>(payload.ToString());
             }
-            catch { }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "リフレッシュトークンのRedis値を解析できません。Token: {Token}", token);
+            }
         }
 
-        // 2. Redis にない場合は DB から復元（再起動後など）
+        // Redis が消失していても DB の条件付き更新で一度だけ消費する。
+        var now = DateTimeOffset.UtcNow;
         var dbToken = await _context.RefreshTokens
-            .Where(t => t.Token == token && !t.IsRevoked && t.ExpiresAt > DateTimeOffset.UtcNow)
-            .FirstOrDefaultAsync();
+            .AsNoTracking()
+            .Where(t => t.Token == token && !t.IsRevoked && t.ExpiresAt > now)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (dbToken == null) return null;
+        if (dbToken == null)
+        {
+            return null;
+        }
 
-        // Redis に再キャッシュ
-        var restored = new RefreshTokenInfo(dbToken.Token, dbToken.UserId, dbToken.ExpiresAt);
-        var restoredPayload = JsonSerializer.Serialize(restored);
-        await _db.StringSetAsync(key, restoredPayload, dbToken.ExpiresAt - DateTimeOffset.UtcNow);
+        var affected = await _context.RefreshTokens
+            .Where(t => t.Token == token && !t.IsRevoked && t.ExpiresAt > now)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(t => t.IsRevoked, true),
+                cancellationToken);
 
-        // ユーザーキーも復元
-        var userKey = GetUserKey(dbToken.UserId);
-        await _db.SetAddAsync(userKey, token);
-        await _db.KeyExpireAsync(userKey, TimeSpan.FromDays(31));
+        if (affected != 1)
+        {
+            return null;
+        }
 
-        return restored;
+        await _db.SetRemoveAsync(GetUserKey(dbToken.UserId), token);
+
+        if (cachedInfo != null
+            && (!string.Equals(cachedInfo.Token, dbToken.Token, StringComparison.Ordinal)
+                || cachedInfo.UserId != dbToken.UserId
+                || Math.Abs((cachedInfo.ExpiresAt - dbToken.ExpiresAt).Ticks) > TimeSpan.FromMilliseconds(1).Ticks
+                || cachedInfo.SecurityVersion != dbToken.SecurityVersion
+                || cachedInfo.ExpiresAt <= now))
+        {
+            _logger.LogWarning(
+                "リフレッシュトークンのRedis値とDB値が一致しません。UserId: {UserId}",
+                dbToken.UserId);
+            return null;
+        }
+
+        if (dbToken.DeviceId is int deviceId)
+        {
+            await _context.Devices
+                .Where(d => d.Id == deviceId && !d.IsRevoked)
+                .ExecuteUpdateAsync(
+                    setters => setters
+                        .SetProperty(d => d.IsRevoked, true)
+                        .SetProperty(d => d.LastSeenAt, now),
+                    cancellationToken);
+        }
+
+        return cachedInfo ?? new RefreshTokenInfo(
+            dbToken.Token,
+            dbToken.UserId,
+            dbToken.ExpiresAt,
+            DeviceId: dbToken.DeviceId,
+            SecurityVersion: dbToken.SecurityVersion);
     }
 
     /// <summary>

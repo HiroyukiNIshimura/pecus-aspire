@@ -31,6 +31,13 @@ public class SessionRevocationService
     public async Task RevokeAllSessionsAsync(int userId, CancellationToken cancellationToken = default)
     {
         await _context
+            .Users
+            .Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(u => u.SecurityVersion, u => u.SecurityVersion + 1),
+                cancellationToken);
+
+        await _context
             .Devices
             .Where(d => d.UserId == userId && !d.IsRevoked)
             .ExecuteUpdateAsync(

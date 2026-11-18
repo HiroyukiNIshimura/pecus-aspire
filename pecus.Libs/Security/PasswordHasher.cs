@@ -1,21 +1,19 @@
-using System.Security.Cryptography;
-using System.Text;
-
 namespace Pecus.Libs.Security;
 
 /// <summary>
-/// パスワードハッシュ化ユーティリティ（SHA256+Base64）
+/// パスワードハッシュ化ユーティリティ
 /// </summary>
 public static class PasswordHasher
 {
+    private const int WorkFactor = 12;
+
     /// <summary>
     /// パスワードをハッシュ化
     /// </summary>
     public static string HashPassword(string password)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
+        ArgumentException.ThrowIfNullOrWhiteSpace(password);
+        return BCrypt.Net.BCrypt.EnhancedHashPassword(password, WorkFactor);
     }
 
     /// <summary>
@@ -23,7 +21,11 @@ public static class PasswordHasher
     /// </summary>
     public static bool VerifyPassword(string password, string passwordHash)
     {
-        var hash = HashPassword(password);
-        return hash == passwordHash;
+        if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(passwordHash))
+        {
+            return false;
+        }
+
+        return BCrypt.Net.BCrypt.EnhancedVerify(password, passwordHash);
     }
 }
