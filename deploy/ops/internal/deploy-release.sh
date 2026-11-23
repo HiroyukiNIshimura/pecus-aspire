@@ -48,7 +48,7 @@ fi
 
 compose_infra up -d --no-build
 for container in pecus-postgres pecus-redis pecus-redis-frontend pecus-lexicalconverter; do
-  wait_health "$container" 300
+  wait_health "$container" 120
 done
 
 compose_app "$target_slot" down 2>/dev/null || true
