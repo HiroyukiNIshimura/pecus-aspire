@@ -200,7 +200,7 @@ public class RefreshTokenService
             }
             catch (JsonException ex)
             {
-                _logger.LogWarning(ex, "リフレッシュトークンのRedis値を解析できません。Token: {Token}", token);
+                _logger.LogWarning(ex, "リフレッシュトークンのRedis値を解析できません。");
             }
         }
 
