@@ -9,7 +9,6 @@ DEPLOY_DIR=$(CDPATH="" cd -- "$SCRIPT_DIR/.." && pwd -P)
 require_cmd docker
 require_cmd git
 require_cmd jq
-require_cmd curl
 load_env "$SCRIPT_DIR/.env"
 
 REGISTRY=${REGISTRY_HOST:-localhost}:${REGISTRY_PORT:-5000}
@@ -69,13 +68,9 @@ for service in $SERVICES; do
 
   docker push "$image"
 
-  manifest_response=$(mktemp)
-  curl -fsSI \
-    -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
-    -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \
-    "http://$REGISTRY/v2/$service/manifests/$VERSION" >"$manifest_response"
-  digest=$(awk 'tolower($1) == "docker-content-digest:" {gsub("\r","",$2); print $2; exit}' "$manifest_response")
-  rm -f "$manifest_response"
+  digest=$(docker image inspect "$image" --format '{{json .RepoDigests}}' |
+    jq -er --arg repository "$REGISTRY/$service" \
+      '.[] | select(startswith($repository + "@")) | split("@")[-1]')
   [ -n "$digest" ] || die "Failed to resolve digest for $image"
 
   jq --arg service "$service" --arg repository "$REGISTRY/$service" \
