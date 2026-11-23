@@ -50,8 +50,6 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 # These are only used during build, not at runtime
 ENV ConnectionStrings__redisFrontend="localhost:6379"
 ENV PECUS_API_URL="http://localhost:5000"
-ENV NEXTAUTH_URL="http://localhost:3000"
-ENV NEXTAUTH_SECRET="build-time-dummy-secret"
 
 # Build Next.js application
 WORKDIR /app/pecus.Frontend
