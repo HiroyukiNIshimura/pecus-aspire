@@ -11,6 +11,7 @@ require_cmd jq
 require_cmd ssh
 require_cmd tar
 load_env "$SCRIPT_DIR/.env"
+export CONTAINER_UID CONTAINER_GID DATA_PATH
 acquire_deploy_lock
 rollback_succeeded=false
 cleanup_rollback() {
@@ -20,8 +21,13 @@ cleanup_rollback() {
     chmod 600 "$DEPLOY_DIR/.env"
     if [ -s "${previous_images_file:-}" ]; then
       while IFS="$(printf '\t')" read -r image previous_id; do
-        [ -n "$image" ] && [ -n "$previous_id" ] || continue
-        docker tag "$previous_id" "$image" >/dev/null 2>&1 || true
+        [ -n "$image" ] || continue
+        if [ -n "$previous_id" ]; then
+          docker tag "$previous_id" "$image" >/dev/null 2>&1 || true
+        else
+          # The tag did not exist before; do not leave it on the failed release.
+          docker rmi "$image" >/dev/null 2>&1 || true
+        fi
       done <"$previous_images_file"
     fi
     docker compose \
@@ -46,6 +52,8 @@ for redis_dir in "$DATA_PATH/redis" "$DATA_PATH/redis-frontend"; do
   if [ -n "$owner_mismatch" ]; then
     die "Redis data is not owned by ${CONTAINER_UID}:${CONTAINER_GID}: $redis_dir. Run sudo ./setup.sh before rollback"
   fi
+  [ -w "$redis_dir" ] ||
+    die "Redis data directory is not writable by the current user: $redis_dir"
 done
 
 version=${1:-}
@@ -71,14 +79,27 @@ if [ ! -f "$manifest" ] || [ ! -f "$release_env" ]; then
   BUILD_PC="$BUILD_PC_USER@$BUILD_PC_IP"
   REMOTE_ROOT=${BUILD_PC_PROJECT_PATH:-/var/docker/coati/pecus-aspire}
   release_tmp=$(mktemp -d)
+  # Legacy releases have no <version>.env, so only request it when present.
   # Validated release path values are intentionally expanded on the client side.
   # shellcheck disable=SC2029
-  ssh "$BUILD_PC" \
-    "tar cf - -C '$REMOTE_ROOT/deploy/build-pc/releases' '$version.json' '$version.env'" |
-    tar xf - -C "$release_tmp"
+  if ! ssh "$BUILD_PC" \
+    "cd '$REMOTE_ROOT/deploy/build-pc/releases' && if [ -f '$version.env' ]; then tar cf - '$version.json' '$version.env'; else tar cf - '$version.json'; fi" 9<&- |
+    tar xf - -C "$release_tmp"; then
+    [ -f "$manifest" ] || die "Failed to fetch release $version from $BUILD_PC"
+    echo "[Warn] Could not fetch release files from $BUILD_PC; using local copies" >&2
+  fi
   mkdir -p "$DEPLOY_DIR/releases"
-  cp "$release_tmp/$version.json" "$manifest"
-  cp "$release_tmp/$version.env" "$release_env"
+  if [ ! -f "$manifest" ]; then
+    [ -f "$release_tmp/$version.json" ] || die "Release manifest not found on $BUILD_PC: $version"
+    cp "$release_tmp/$version.json" "$manifest"
+  fi
+  if [ ! -f "$release_env" ] && [ -f "$release_tmp/$version.env" ]; then
+    cp "$release_tmp/$version.env" "$release_env"
+    chmod 600 "$release_env"
+  fi
+fi
+if [ ! -f "$release_env" ]; then
+  echo "[Warn] No saved settings for release $version; keeping the current deploy/.env" >&2
 fi
 
 schema=$(jq -r '.schemaVersion' "$manifest")
@@ -103,7 +124,7 @@ for image in coati-dbmanager:local coati-lexicalconverter:local \
   "coati-webapi-$target_slot:local" "coati-frontend-$target_slot:local" \
   "coati-backfire-$target_slot:local"; do
   previous_id=$(docker image inspect "$image" --format '{{.Id}}' 2>/dev/null || echo "")
-  [ -n "$previous_id" ] && printf '%s\t%s\n' "$image" "$previous_id" >>"$previous_images_file"
+  printf '%s\t%s\n' "$image" "$previous_id" >>"$previous_images_file"
 done
 
 for service in $SERVICES; do
@@ -129,7 +150,9 @@ for service in $SERVICES; do
   esac
 done
 
-cp "$release_env" "$DEPLOY_DIR/.env"
+if [ -f "$release_env" ]; then
+  cp "$release_env" "$DEPLOY_DIR/.env"
+fi
 chmod 600 "$DEPLOY_DIR/.env"
 for entry in "CONTAINER_UID:$CONTAINER_UID" "CONTAINER_GID:$CONTAINER_GID" "DATA_PATH:$DATA_PATH"; do
   name=${entry%%:*}
@@ -142,7 +165,8 @@ for entry in "CONTAINER_UID:$CONTAINER_UID" "CONTAINER_GID:$CONTAINER_GID" "DATA
 done
 
 confirm_yes "Switch traffic to the inactive slot running release $version"
-"$DEPLOY_DIR/ops/coati" _rollback "$version" "$revision"
+PREVIOUS_ENV_FILE=$previous_env_tmp \
+  "$DEPLOY_DIR/ops/coati" _rollback "$version" "$revision"
 rollback_succeeded=true
 trap - EXIT
 cleanup_rollback

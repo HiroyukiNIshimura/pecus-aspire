@@ -9,8 +9,9 @@ DEPLOY_DIR=$(CDPATH="" cd -- "$SCRIPT_DIR/../.." && pwd -P)
 version=${1:-}
 revision=${2:-}
 initialize_db=${3:-false}
-data_path=${DATA_PATH:-/var/docker/coati/data}
+data_path=${DATA_PATH:?DATA_PATH must be exported by deploy.sh}
 old_backfire_stopped=false
+old_backfire_was_running=false
 switched=false
 [ -n "$version" ] || die "Release version is required"
 [ -n "$revision" ] || die "Git revision is required"
@@ -18,8 +19,11 @@ switched=false
 recover_on_error() {
   exit_code=$?
   trap - 0
+  restore_previous_env || true
   if [ "$old_backfire_stopped" = "true" ]; then
     compose_app "$target_slot" stop "backfire-$target_slot" 2>/dev/null || true
+  fi
+  if [ "$old_backfire_stopped" = "true" ] && [ "$old_backfire_was_running" = "true" ]; then
     compose_app "$current_slot" up -d --no-build "backfire-$current_slot" 2>/dev/null || true
   fi
   if [ "$switched" = "true" ]; then
@@ -67,6 +71,8 @@ wait_running "pecus-frontend-$target_slot" 120
 "$SCRIPT_DIR/smoke-test-slot.sh" "$target_slot"
 
 # Only one Hangfire BackFire instance may be active.
+[ "$(docker inspect -f '{{.State.Running}}' "pecus-backfire-$current_slot" 2>/dev/null || echo false)" != "true" ] ||
+  old_backfire_was_running=true
 compose_app "$current_slot" stop "backfire-$current_slot" 2>/dev/null || true
 old_backfire_running=$(docker inspect -f '{{.State.Running}}' "pecus-backfire-$current_slot" 2>/dev/null || echo false)
 [ "$old_backfire_running" != "true" ] ||

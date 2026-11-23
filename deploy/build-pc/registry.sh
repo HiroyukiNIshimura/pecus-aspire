@@ -11,6 +11,26 @@ require_cmd curl
 require_cmd jq
 load_env "$SCRIPT_DIR/.env"
 REGISTRY=${REGISTRY_HOST:-localhost}:${REGISTRY_PORT:-5000}
+# Accept every manifest type a push can produce. registry:2 answers 404
+# (MANIFEST_UNKNOWN) when the stored type is not accepted, e.g. an OCI index or
+# manifest list from the containerd image store or buildx attestations.
+MANIFEST_ACCEPT='application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json'
+
+# Print the digest of <repository>:<reference> and the digests of its child
+# manifests (for an index / manifest list), one per line.
+manifest_digests() {
+  headers=$(mktemp)
+  if ! body=$(curl -fsS -D "$headers" -H "Accept: $MANIFEST_ACCEPT" \
+    "http://$REGISTRY/v2/$1/manifests/$2"); then
+    rm -f "$headers"
+    return 1
+  fi
+  digest=$(awk 'tolower($1) == "docker-content-digest:" {print $2}' "$headers" | tr -d '\r')
+  rm -f "$headers"
+  [ -n "$digest" ] || return 1
+  printf '%s\n' "$digest"
+  printf '%s\n' "$body" | jq -r '.manifests[]?.digest'
+}
 
 case "${1:-}" in
   setup)
@@ -65,9 +85,8 @@ case "${1:-}" in
 
     for service in $SERVICES; do
       response=$(curl -fsS "http://$REGISTRY/v2/$service/tags/list")
-      printf '%s\n' "$response" | jq -r '.tags[]?' |
-        grep -v '^latest$' |
-        sort >"$work_dir/$service.tags"
+      printf '%s\n' "$response" | jq -r '.tags[]?' | sort >"$work_dir/$service.all-tags"
+      grep -v '^latest$' "$work_dir/$service.all-tags" >"$work_dir/$service.tags" || true
     done
 
     complete_file="$work_dir/complete"
@@ -82,8 +101,7 @@ case "${1:-}" in
       complete=true
       for service in $SERVICES; do
         status=$(curl -sS -o /dev/null -w '%{http_code}' \
-          -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
-          -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \
+          -H "Accept: $MANIFEST_ACCEPT" \
           "http://$REGISTRY/v2/$service/manifests/$tag")
         if [ "$status" != "200" ]; then
           complete=false
@@ -138,40 +156,62 @@ case "${1:-}" in
       exit 0
     fi
 
-    registry_data_dir=$(docker inspect pecus-registry \
-      --format '{{range .Mounts}}{{if eq .Destination "/var/lib/registry"}}{{.Source}}{{end}}{{end}}')
-    [ -n "$registry_data_dir" ] ||
-      die "Failed to resolve the /var/lib/registry host mount"
+    # Delete manifests through the API instead of `garbage-collect -m`:
+    # --delete-untagged also removes the untagged child manifests of a kept
+    # OCI index / manifest list, which breaks pulls of kept releases.
+    # A manifest is deleted only if no kept tag (including latest) references
+    # it, directly or as an index child, because deleting a digest removes
+    # every tag that points to it.
+    for service in $SERVICES; do
+      : >"$work_dir/$service.keep-digests"
+      : >"$work_dir/$service.remove-digests"
+      : >"$work_dir/$service.remove-tags"
+      while IFS= read -r tag; do
+        [ -n "$tag" ] || continue
+        if [ "$tag" = "latest" ] || grep -Fxq "$tag" "$work_dir/keep"; then
+          manifest_digests "$service" "$tag" >>"$work_dir/$service.keep-digests" ||
+            die "Failed to resolve kept manifest $service:$tag; refusing to delete anything"
+        elif digests=$(manifest_digests "$service" "$tag"); then
+          printf '%s\n' "$digests" >>"$work_dir/$service.remove-digests"
+          printf '%s\t%s\n' "$tag" "$(printf '%s\n' "$digests" | head -n 1)" >>"$work_dir/$service.remove-tags"
+        else
+          echo "[Skip] Manifest already absent: $service:$tag"
+        fi
+      done <"$work_dir/$service.all-tags"
+
+      sort -u "$work_dir/$service.keep-digests" -o "$work_dir/$service.keep-digests"
+      while IFS="$(printf '\t')" read -r tag digest; do
+        [ -n "$tag" ] || continue
+        if grep -Fxq "$digest" "$work_dir/$service.keep-digests"; then
+          echo "[Skip] $service:$tag shares its manifest with a kept tag"
+        else
+          echo "[Remove] $service:$tag"
+          removed=$((removed + 1))
+        fi
+      done <"$work_dir/$service.remove-tags"
+      sort -u "$work_dir/$service.remove-digests" -o "$work_dir/$service.remove-digests"
+      comm -23 "$work_dir/$service.remove-digests" "$work_dir/$service.keep-digests" |
+        while IFS= read -r digest; do
+          [ -n "$digest" ] || continue
+          status=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE \
+            "http://$REGISTRY/v2/$service/manifests/$digest")
+          case "$status" in
+            202|404) ;;
+            405) die "Registry rejected manifest deletion; set REGISTRY_STORAGE_DELETE_ENABLED=true" ;;
+            *) die "Failed to delete $service@$digest (HTTP $status)" ;;
+          esac
+        done
+    done
 
     echo "[GC] Stopping registry for garbage collection..."
     docker stop pecus-registry
     registry_stopped=true
-
-    while IFS="$(printf '\t')" read -r service tag; do
-      [ -n "$service" ] && [ -n "$tag" ] || continue
-      case "$service" in *[!A-Za-z0-9._-]*) die "Invalid service path in registry tag: $service" ;; esac
-      case "$tag" in *[!A-Za-z0-9._-]*) die "Invalid tag path in registry tag: $tag" ;; esac
-      tag_dir="$registry_data_dir/docker/registry/v2/repositories/$service/_manifests/tags/$tag"
-      if [ -d "$tag_dir" ]; then
-        docker run --rm \
-          --entrypoint sh \
-          --volume "$registry_data_dir:/var/lib/registry" \
-          registry:2 \
-          -ec 'rm -rf -- "$1"' \
-          sh "/var/lib/registry/docker/registry/v2/repositories/$service/_manifests/tags/$tag"
-        removed=$((removed + 1))
-        echo "[Remove] $service:$tag"
-      else
-        echo "[Skip] Tag index already absent: $service:$tag"
-      fi
-    done <"$work_dir/remove"
-
     docker run --rm \
-      --volume "$registry_data_dir:/var/lib/registry" \
-      registry:2 garbage-collect -m /etc/docker/registry/config.yml
+      --volumes-from pecus-registry \
+      registry:2 garbage-collect /etc/docker/registry/config.yml
     docker start pecus-registry
     registry_stopped=false
-    echo "[OK] Removed $removed tag indexes and completed garbage collection."
+    echo "[OK] Removed $removed tags and completed garbage collection."
     ;;
   *)
     echo "Usage: $0 {setup|list|releases|prune [keep-count]}" >&2

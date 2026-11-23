@@ -19,6 +19,6 @@
 - `stop all` はアプリ、監視、DB・Redis等のインフラを停止します。
 - どちらの停止も永続データを削除しません。
 - `restore` と `stop all` は明示確認を要求します。
-- `smoke` は対象slotへの内部疎通を確認し、切替直後は公開Nginx経路も検証します。
+- `smoke` は対象slotへの内部疎通を確認し、対象がアクティブslotの場合は公開Nginx経路も検証します。
 
 `release` と `rollback` は `deploy-pc/deploy.sh`、`deploy-pc/rollback.sh` から呼ばれる内部用途です。

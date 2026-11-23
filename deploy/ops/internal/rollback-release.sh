@@ -8,17 +8,23 @@ DEPLOY_DIR=$(CDPATH="" cd -- "$SCRIPT_DIR/../.." && pwd -P)
 
 expected_version=${1:-}
 expected_revision=${2:-}
+# Validate before switching traffic; a failure after the switch triggers recovery.
+data_path=${DATA_PATH:?DATA_PATH must be exported by rollback.sh}
 current_slot=$(active_slot)
 target_slot=blue
 [ "$current_slot" = "blue" ] && target_slot=green
 old_backfire_stopped=false
+old_backfire_was_running=false
 switched=false
 
 recover_on_error() {
   exit_code=$?
   trap - 0
+  restore_previous_env || true
   if [ "$old_backfire_stopped" = "true" ]; then
     compose_app "$target_slot" stop "backfire-$target_slot" 2>/dev/null || true
+  fi
+  if [ "$old_backfire_stopped" = "true" ] && [ "$old_backfire_was_running" = "true" ]; then
     compose_app "$current_slot" up -d --no-build "backfire-$current_slot" 2>/dev/null || true
   fi
   if [ "$switched" = "true" ]; then
@@ -46,6 +52,8 @@ compose_app "$target_slot" up -d --no-build "pecusapi-$target_slot" "frontend-$t
 wait_health "pecus-webapi-$target_slot" 300
 wait_running "pecus-frontend-$target_slot" 120
 
+[ "$(docker inspect -f '{{.State.Running}}' "pecus-backfire-$current_slot" 2>/dev/null || echo false)" != "true" ] ||
+  old_backfire_was_running=true
 compose_app "$current_slot" stop "backfire-$current_slot" 2>/dev/null || true
 old_backfire_running=$(docker inspect -f '{{.State.Running}}' "pecus-backfire-$current_slot" 2>/dev/null || echo false)
 [ "$old_backfire_running" != "true" ] ||
@@ -60,7 +68,6 @@ set_active_slot "$target_slot"
 "$SCRIPT_DIR/smoke-test-slot.sh" "$target_slot"
 "$SCRIPT_DIR/smoke-test-public.sh" "$target_slot"
 if [ -n "$expected_revision" ]; then
-  data_path=${DATA_PATH:-/var/docker/coati/data}
   mkdir -p "$data_path/releases"
   active_tmp=$(mktemp "$data_path/releases/.active.XXXXXX")
   printf '{\n  "version": "%s",\n  "revision": "%s",\n  "slot": "%s"\n}\n' \

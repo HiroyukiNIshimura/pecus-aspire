@@ -11,7 +11,7 @@ require_cmd ssh
 require_cmd jq
 require_cmd tar
 load_env "$SCRIPT_DIR/.env"
-export CONTAINER_UID CONTAINER_GID
+export CONTAINER_UID CONTAINER_GID DATA_PATH
 acquire_deploy_lock
 deploy_succeeded=false
 cleanup_deploy() {
@@ -25,8 +25,13 @@ cleanup_deploy() {
     fi
     if [ -s "${previous_images_file:-}" ]; then
       while IFS="$(printf '\t')" read -r image previous_id; do
-        [ -n "$image" ] && [ -n "$previous_id" ] || continue
-        docker tag "$previous_id" "$image" >/dev/null 2>&1 || true
+        [ -n "$image" ] || continue
+        if [ -n "$previous_id" ]; then
+          docker tag "$previous_id" "$image" >/dev/null 2>&1 || true
+        else
+          # The tag did not exist before; do not leave it on the failed release.
+          docker rmi "$image" >/dev/null 2>&1 || true
+        fi
       done <"$previous_images_file"
     fi
     docker compose \
@@ -82,7 +87,7 @@ release_tmp=$(mktemp -d)
 # Version and remote root are validated and intentionally expanded locally.
 # shellcheck disable=SC2029
 ssh "$BUILD_PC" \
-  "tar cf - -C '$REMOTE_ROOT/deploy/build-pc/releases' '$version.json' '$version.env'" |
+  "tar cf - -C '$REMOTE_ROOT/deploy/build-pc/releases' '$version.json' '$version.env'" 9<&- |
   tar xf - -C "$release_tmp"
 cp "$release_tmp/$version.json" "$manifest_tmp"
 env_tmp="$release_tmp/$version.env"
@@ -129,7 +134,7 @@ for image in coati-dbmanager:local coati-lexicalconverter:local \
   "coati-webapi-$target_slot:local" "coati-frontend-$target_slot:local" \
   "coati-backfire-$target_slot:local"; do
   previous_id=$(docker image inspect "$image" --format '{{.Id}}' 2>/dev/null || echo "")
-  [ -n "$previous_id" ] && printf '%s\t%s\n' "$image" "$previous_id" >>"$previous_images_file"
+  printf '%s\t%s\n' "$image" "$previous_id" >>"$previous_images_file"
 done
 
 for service in $SERVICES; do
@@ -151,10 +156,13 @@ for service in $SERVICES; do
     die "OCI revision label mismatch for $service"
 done
 
-mv "$env_tmp" "$DEPLOY_DIR/.env"
-chmod 600 "$DEPLOY_DIR/.env"
 mkdir -p "$DEPLOY_DIR/releases"
 cp "$manifest_tmp" "$DEPLOY_DIR/releases/$version.json"
+# Keep the release settings locally so rollback works without the build PC.
+cp "$env_tmp" "$DEPLOY_DIR/releases/$version.env"
+chmod 600 "$DEPLOY_DIR/releases/$version.env"
+mv "$env_tmp" "$DEPLOY_DIR/.env"
+chmod 600 "$DEPLOY_DIR/.env"
 
 for service in $SERVICES; do
   remote_image="$registry/$service:$version"
@@ -171,7 +179,8 @@ active_slot_after_pulls=$(active_slot)
 [ "$active_slot_after_pulls" = "$current_slot" ] ||
   die "Active slot changed during image pull: $current_slot -> $active_slot_after_pulls"
 
-"$DEPLOY_DIR/ops/coati" _release "$version" "$revision" "$initialize_db"
+PREVIOUS_ENV_FILE=$previous_env_tmp \
+  "$DEPLOY_DIR/ops/coati" _release "$version" "$revision" "$initialize_db"
 deploy_succeeded=true
 trap - EXIT
 cleanup_deploy

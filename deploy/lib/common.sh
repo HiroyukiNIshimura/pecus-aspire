@@ -42,6 +42,8 @@ confirm_yes() {
 # The lock lives in $DEPLOY_DIR because the state it protects (deploy/.env,
 # the active-slot Nginx config) lives there and setup.sh hands it to the
 # deploy user.
+# Children inherit fd 9. Close it (`9<&-`) for any child that may outlive the
+# script, such as ssh with ControlPersist, or the lock outlives the deploy.
 acquire_deploy_lock() {
   require_cmd flock
   lock_file=${1:-"$DEPLOY_DIR/.deploy.lock"}
@@ -60,6 +62,15 @@ acquire_deploy_lock() {
     flock -w "$timeout" 9 ||
       die "Another deployment or rollback still holds $lock_file after ${timeout}s"
   fi
+}
+
+# Restore deploy/.env from PREVIOUS_ENV_FILE (set by deploy.sh/rollback.sh)
+# before failure recovery recreates any container, so restored services do
+# not pick up the failed release's settings.
+restore_previous_env() {
+  [ -s "${PREVIOUS_ENV_FILE:-}" ] || return 0
+  cp "$PREVIOUS_ENV_FILE" "$DEPLOY_DIR/.env"
+  chmod 600 "$DEPLOY_DIR/.env"
 }
 
 ensure_env_file() {

@@ -95,7 +95,14 @@ case "${1:-}" in
     esac
     ;;
   smoke)
-    "$SCRIPT_DIR/internal/smoke-test-slot.sh" "${2:-$(active_slot)}"
+    active=$(active_slot)
+    slot=${2:-active}
+    [ "$slot" != "active" ] || slot=$active
+    "$SCRIPT_DIR/internal/smoke-test-slot.sh" "$slot"
+    # The public route only serves the active slot.
+    if [ "$slot" = "$active" ]; then
+      "$SCRIPT_DIR/internal/smoke-test-public.sh" "$slot"
+    fi
     ;;
   inspect)
     slot=${2:-$(active_slot)}
