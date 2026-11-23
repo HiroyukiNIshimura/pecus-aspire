@@ -27,6 +27,7 @@ git -C "$REPO_ROOT" pull --ff-only
 # Re-read the revision after pull and reject a branch update before release generation.
 GIT_REVISION=$(git -C "$REPO_ROOT" rev-parse HEAD)
 GIT_SHORT=$(git -C "$REPO_ROOT" rev-parse --short=12 HEAD)
+GIT_SUBJECT=$(git -C "$REPO_ROOT" log -1 --format=%s)
 VERSION=${VERSION_ARG:-"$(date -u +%Y%m%d%H%M%S)-$GIT_SHORT"}
 case "$VERSION" in
   latest|*[!A-Za-z0-9._-]*) die "Invalid immutable release version: $VERSION" ;;
@@ -42,8 +43,9 @@ NEXT_PUBLIC_API_URL=$(
 [ -n "$NEXT_PUBLIC_API_URL" ] || die "NEXT_PUBLIC_API_URL is missing from deploy/.env"
 
 echo '{"schemaVersion":1,"images":[]}' |
-  jq --arg version "$VERSION" --arg revision "$GIT_REVISION" --arg created "$CREATED" \
-    '. + {version:$version, revision:$revision, created:$created}' >"$tmp_manifest"
+  jq --arg version "$VERSION" --arg revision "$GIT_REVISION" \
+    --arg subject "$GIT_SUBJECT" --arg created "$CREATED" \
+    '. + {version:$version, revision:$revision, subject:$subject, created:$created}' >"$tmp_manifest"
 
 for service in $SERVICES; do
   dockerfile=$(dockerfile_for_service "$service")

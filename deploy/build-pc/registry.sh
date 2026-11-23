@@ -27,6 +27,24 @@ case "${1:-}" in
         curl -fsS "http://$REGISTRY/v2/$repository/tags/list" | jq -r '.tags[]?' | sort -r
       done
     ;;
+  releases)
+    manifest_dir="$SCRIPT_DIR/releases"
+    [ -d "$manifest_dir" ] || die "No release manifests found: $manifest_dir"
+    printf '%-32s %-14s %-25s %s\n' RELEASE REVISION CREATED SUBJECT
+    for manifest in "$manifest_dir"/*.json; do
+      [ -f "$manifest" ] || continue
+      release=$(jq -r '.version' "$manifest")
+      revision=$(jq -r '.revision[0:12]' "$manifest")
+      subject=$(jq -r '.subject // "(legacy manifest)"' "$manifest")
+      created=$(jq -r '.created // "-"' "$manifest")
+      expected_count=$(printf '%s\n' "$SERVICES" | tr ' ' '\n' | wc -w | tr -d ' ')
+      actual_count=$(jq -r '.images[].service' "$manifest" | sort -u | wc -l | tr -d ' ')
+      state="complete"
+      [ "$actual_count" = "$expected_count" ] || state="incomplete"
+      printf '%-32s %-14s %-25s %s [%s]\n' \
+        "$release" "$revision" "$created" "$subject" "$state"
+    done | sort -k3,3r
+    ;;
   prune)
     keep=${2:-${KEEP_RELEASES:-5}}
     case "$keep" in
@@ -117,7 +135,7 @@ case "${1:-}" in
     echo "[OK] Removed $removed tag indexes and completed garbage collection."
     ;;
   *)
-    echo "Usage: $0 {setup|list|prune [keep-count]}" >&2
+    echo "Usage: $0 {setup|list|releases|prune [keep-count]}" >&2
     exit 2
     ;;
 esac

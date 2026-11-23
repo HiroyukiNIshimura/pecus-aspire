@@ -29,7 +29,11 @@ cp .env.example .env
 
 ```bash
 ./registry.sh list
+./registry.sh releases
 ```
+
+ロールバック対象を選ぶ場合は `list` ではなく `releases` を使用してください。
+release ID、Git commit、コミットメッセージ、作成日時、manifestの完全性を表示します。
 
 古いタグを整理:
 

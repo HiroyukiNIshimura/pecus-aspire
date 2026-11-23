@@ -33,7 +33,9 @@ DBを削除するため、全アプリケーションスロットが停止して
 ## ロールバック
 
 ```bash
+./rollback.sh                       # 候補一覧
 ./rollback.sh <previous-release-id>
 ```
 
-直前に保持している非アクティブスロットへ切り戻します。DB migrationは自動ロールバックされません。
+候補一覧からrelease ID・revision・作成日時・コミットメッセージを確認し、
+指定releaseの全イメージをpull・検証して非アクティブスロットへ切り戻します。DB migrationは自動ロールバックされません。
