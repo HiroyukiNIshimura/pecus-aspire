@@ -107,13 +107,30 @@ wait_health() {
   container=$1
   timeout=${2:-300}
   start=$(date +%s)
+  last_state=""
   while :; do
+    running=$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null || echo "")
+    [ "$running" = "true" ] || {
+      docker inspect "$container" --format '{{json .State}}' 2>/dev/null || true
+      die "Container is not running: $container"
+    }
+
     state=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$container" 2>/dev/null || echo "")
     case "$state" in
       healthy) return 0 ;;
-      unhealthy|"") docker inspect "$container" --format '{{json .State.Health}}' 2>/dev/null || true; die "Container is not healthy: $container" ;;
+      starting|unhealthy|none)
+        if [ "$state" != "$last_state" ]; then
+          echo "[Wait] $container health: $state"
+          last_state=$state
+        fi
+        ;;
+      *) die "Unknown health state for $container: $state" ;;
     esac
-    [ $(( $(date +%s) - start )) -lt "$timeout" ] || die "Health timeout: $container"
+    if [ $(( $(date +%s) - start )) -ge "$timeout" ]; then
+      docker inspect "$container" --format '{{json .State.Health}}' 2>/dev/null || true
+      docker logs --tail=80 "$container" >&2 2>&1 || true
+      die "Health timeout: $container (last state: $state)"
+    fi
     sleep 2
   done
 }
