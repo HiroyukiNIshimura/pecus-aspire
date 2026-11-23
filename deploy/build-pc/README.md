@@ -30,3 +30,13 @@ cp .env.example .env
 ```bash
 ./registry.sh list
 ```
+
+古いタグを整理:
+
+```bash
+./registry.sh prune      # 最新5個の完全なリリースを保持
+./registry.sh prune 3    # 最新3個を保持
+```
+
+全5サービスに同じrelease tagが存在するものだけを完全なリリースとして扱います。
+途中失敗で一部サービスだけpushされたタグも削除対象です。タグ削除後、レジストリを一時停止してガベージコレクションを実行します。
