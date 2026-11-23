@@ -96,7 +96,12 @@ case "${1:-}" in
       case "$tag" in *[!A-Za-z0-9._-]*) die "Invalid tag path in registry tag: $tag" ;; esac
       tag_dir="$registry_data_dir/docker/registry/v2/repositories/$service/_manifests/tags/$tag"
       if [ -d "$tag_dir" ]; then
-        rm -rf -- "$tag_dir"
+        docker run --rm \
+          --entrypoint sh \
+          --volume "$registry_data_dir:/var/lib/registry" \
+          registry:2 \
+          -ec 'rm -rf -- "$1"' \
+          sh "/var/lib/registry/docker/registry/v2/repositories/$service/_manifests/tags/$tag"
         removed=$((removed + 1))
         echo "[Remove] $service:$tag"
       else
