@@ -63,9 +63,8 @@ case "${1:-}" in
     # Keep the newest complete releases as rollback candidates; incomplete tags are never kept.
     sort -r "$complete_file" | head -n "$keep" >"$work_dir/keep"
 
-    deleted=0
-    orphaned=0
-    : >"$work_dir/orphans"
+    removed=0
+    : >"$work_dir/remove"
     for service in $SERVICES; do
       while IFS= read -r tag; do
         [ -n "$tag" ] || continue
@@ -73,71 +72,44 @@ case "${1:-}" in
           echo "[Keep] $service:$tag"
           continue
         fi
-
-        header_file="$work_dir/header"
-        body_file="$work_dir/body"
-        http_code=$(curl -sS -D "$header_file" -o "$body_file" -w '%{http_code}' \
-          -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
-          -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \
-          "http://$REGISTRY/v2/$service/manifests/$tag")
-        if [ "$http_code" = "404" ]; then
-          printf '%s\t%s\n' "$service" "$tag" >>"$work_dir/orphans"
-          orphaned=$((orphaned + 1))
-          echo "[Orphan] $service:$tag"
-          continue
-        fi
-        if [ "$http_code" != "200" ]; then
-          echo "[Warn] Cannot read manifest: $service:$tag (HTTP $http_code)" >&2
-          continue
-        fi
-        digest=$(awk 'tolower($1) == "docker-content-digest:" {gsub("\r","",$2); print $2; exit}' "$header_file")
-        [ -n "$digest" ] || {
-          echo "[Warn] Digest missing: $service:$tag" >&2
-          continue
-        }
-
-        status=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE \
-          "http://$REGISTRY/v2/$service/manifests/$digest")
-        if [ "$status" = "202" ]; then
-          echo "[Delete] $service:$tag"
-          deleted=$((deleted + 1))
-        else
-          echo "[Warn] Delete failed: $service:$tag (HTTP $status)" >&2
-        fi
+        printf '%s\t%s\n' "$service" "$tag" >>"$work_dir/remove"
       done <"$work_dir/$service.tags"
     done
 
-    if [ "$deleted" -eq 0 ] && [ "$orphaned" -eq 0 ]; then
+    if [ ! -s "$work_dir/remove" ]; then
       echo "[OK] No registry tags required deletion."
       exit 0
     fi
 
-    registry_data_dir=${REGISTRY_DATA_DIR:-./data/registry}
-    case "$registry_data_dir" in
-      /*) ;;
-      *) registry_data_dir="$DEPLOY_DIR/$registry_data_dir" ;;
-    esac
+    registry_data_dir=$(docker inspect pecus-registry \
+      --format '{{range .Mounts}}{{if eq .Destination "/var/lib/registry"}}{{.Source}}{{end}}{{end}}')
+    [ -n "$registry_data_dir" ] ||
+      die "Failed to resolve the /var/lib/registry host mount"
+
     echo "[GC] Stopping registry for garbage collection..."
     docker stop pecus-registry
     registry_stopped=true
 
     while IFS="$(printf '\t')" read -r service tag; do
       [ -n "$service" ] && [ -n "$tag" ] || continue
-      case "$service" in *[!A-Za-z0-9._-]*) die "Invalid service path in registry orphan: $service" ;; esac
-      case "$tag" in *[!A-Za-z0-9._-]*) die "Invalid tag path in registry orphan: $tag" ;; esac
+      case "$service" in *[!A-Za-z0-9._-]*) die "Invalid service path in registry tag: $service" ;; esac
+      case "$tag" in *[!A-Za-z0-9._-]*) die "Invalid tag path in registry tag: $tag" ;; esac
       tag_dir="$registry_data_dir/docker/registry/v2/repositories/$service/_manifests/tags/$tag"
       if [ -d "$tag_dir" ]; then
         rm -rf -- "$tag_dir"
-        echo "[Remove index] $service:$tag"
+        removed=$((removed + 1))
+        echo "[Remove] $service:$tag"
+      else
+        echo "[Skip] Tag index already absent: $service:$tag"
       fi
-    done <"$work_dir/orphans"
+    done <"$work_dir/remove"
 
     docker run --rm \
       --volume "$registry_data_dir:/var/lib/registry" \
       registry:2 garbage-collect /etc/docker/registry/config.yml
     docker start pecus-registry
     registry_stopped=false
-    echo "[OK] Deleted $deleted manifests, removed $orphaned orphan tags, and completed garbage collection."
+    echo "[OK] Removed $removed tag indexes and completed garbage collection."
     ;;
   *)
     echo "Usage: $0 {setup|list|prune [keep-count]}" >&2
