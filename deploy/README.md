@@ -80,6 +80,19 @@ cd deploy/ops
 7. 非アクティブスロット起動・内部スモークテスト
 8. BackFireを切替
 9. Nginxを切替
-10. 旧WebApi/Frontendをロールバック用に保持
+10. 公開Nginx経路を検証
+11. release状態を確定
+12. 旧WebApi/Frontendをロールバック用に保持
 
 通常デプロイではイメージ削除やbuilder cache削除を行いません。
+デプロイとrollbackはホスト単位で排他し、失敗時は設定、対象slotタグ、
+LexicalConverter、Prometheus target、Nginx向き先、BackFireを可能な範囲で復元します。
+
+## 非破壊検証
+
+```bash
+sh tests/check-scripts.sh
+```
+
+ShellCheck、POSIX shell構文、スモークテストのステータス解析、health遷移、
+デプロイロック競合を検証します。

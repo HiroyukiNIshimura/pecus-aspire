@@ -12,6 +12,36 @@ require_cmd jq
 require_cmd tar
 load_env "$SCRIPT_DIR/.env"
 export CONTAINER_UID CONTAINER_GID
+acquire_deploy_lock
+deploy_succeeded=false
+cleanup_deploy() {
+  exit_code=$?
+  if [ "$deploy_succeeded" != "true" ] && [ -n "${previous_env_tmp:-}" ]; then
+    if [ -s "$previous_env_tmp" ]; then
+      cp "$previous_env_tmp" "$DEPLOY_DIR/.env"
+      chmod 600 "$DEPLOY_DIR/.env"
+    else
+      rm -f "$DEPLOY_DIR/.env"
+    fi
+    if [ -s "${previous_images_file:-}" ]; then
+      while IFS="$(printf '\t')" read -r image previous_id; do
+        [ -n "$image" ] && [ -n "$previous_id" ] || continue
+        docker tag "$previous_id" "$image" >/dev/null 2>&1 || true
+      done <"$previous_images_file"
+    fi
+    docker compose \
+      --env-file "$DEPLOY_DIR/.env" \
+      --project-directory "$DEPLOY_DIR" \
+      -f "$DEPLOY_DIR/docker-compose.infra.yml" \
+      up -d --no-build lexicalconverter >/dev/null 2>&1 || true
+  fi
+  release_deploy_lock
+  rm -rf "${release_tmp:-}"
+  rm -f "${manifest_tmp:-}"
+  rm -f "${previous_env_tmp:-}" "${previous_images_file:-}"
+  exit "$exit_code"
+}
+trap cleanup_deploy EXIT
 
 for redis_dir in "$DATA_PATH/redis" "$DATA_PATH/redis-frontend"; do
   [ -d "$redis_dir" ] ||
@@ -46,7 +76,6 @@ BUILD_PC="$BUILD_PC_USER@$BUILD_PC_IP"
 REMOTE_ROOT=${BUILD_PC_PROJECT_PATH:-/var/docker/coati/pecus-aspire}
 manifest_tmp=$(mktemp)
 release_tmp=$(mktemp -d)
-trap 'rm -f "$manifest_tmp"; rm -rf "$release_tmp"' EXIT
 
 # Fetch manifest and protected runtime settings with one SSH authentication.
 # Version and remote root are validated and intentionally expanded locally.
@@ -88,6 +117,20 @@ current_slot=$(active_slot)
 target_slot=blue
 [ "$current_slot" = "blue" ] && target_slot=green
 
+previous_env_tmp=$(mktemp)
+previous_images_file=$(mktemp)
+if [ -f "$DEPLOY_DIR/.env" ]; then
+  cp "$DEPLOY_DIR/.env" "$previous_env_tmp"
+else
+  : >"$previous_env_tmp"
+fi
+for image in coati-dbmanager:local coati-lexicalconverter:local \
+  "coati-webapi-$target_slot:local" "coati-frontend-$target_slot:local" \
+  "coati-backfire-$target_slot:local"; do
+  previous_id=$(docker image inspect "$image" --format '{{.Id}}' 2>/dev/null || echo "")
+  [ -n "$previous_id" ] && printf '%s\t%s\n' "$image" "$previous_id" >>"$previous_images_file"
+done
+
 for service in $SERVICES; do
   expected_digest=$(jq -r --arg service "$service" '.images[] | select(.service == $service) | .digest' "$manifest_tmp")
   [ -n "$expected_digest" ] && [ "$expected_digest" != "null" ] ||
@@ -123,4 +166,11 @@ for service in $SERVICES; do
   esac
 done
 
+active_slot_after_pulls=$(active_slot)
+[ "$active_slot_after_pulls" = "$current_slot" ] ||
+  die "Active slot changed during image pull: $current_slot -> $active_slot_after_pulls"
+
 "$DEPLOY_DIR/ops/coati" _release "$version" "$revision" "$initialize_db"
+deploy_succeeded=true
+trap - EXIT
+cleanup_deploy

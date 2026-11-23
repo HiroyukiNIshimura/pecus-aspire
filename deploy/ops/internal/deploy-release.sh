@@ -24,7 +24,9 @@ recover_on_error() {
   fi
   if [ "$switched" = "true" ]; then
     set_active_slot "$current_slot" 2>/dev/null || true
+    "$SCRIPT_DIR/update-prometheus-targets.sh" "$current_slot" 2>/dev/null || true
   fi
+  [ -z "${active_tmp:-}" ] || rm -f "$active_tmp"
   exit "$exit_code"
 }
 trap recover_on_error 0
@@ -66,23 +68,28 @@ wait_running "pecus-frontend-$target_slot" 120
 
 # Only one Hangfire BackFire instance may be active.
 compose_app "$current_slot" stop "backfire-$current_slot" 2>/dev/null || true
+old_backfire_running=$(docker inspect -f '{{.State.Running}}' "pecus-backfire-$current_slot" 2>/dev/null || echo false)
+[ "$old_backfire_running" != "true" ] ||
+  die "Failed to stop old BackFire on $current_slot; refusing to start a second worker"
 old_backfire_stopped=true
 compose_app "$target_slot" up -d --no-build "backfire-$target_slot"
 wait_running "pecus-backfire-$target_slot" 120
 
-set_active_slot "$target_slot"
 switched=true
+set_active_slot "$target_slot"
 "$SCRIPT_DIR/update-prometheus-targets.sh" "$target_slot"
 
+"$SCRIPT_DIR/smoke-test-slot.sh" "$target_slot"
+"$SCRIPT_DIR/smoke-test-public.sh" "$target_slot"
 mkdir -p "$data_path/releases"
-cat >"$data_path/releases/active.json" <<EOF
+active_tmp=$(mktemp "$data_path/releases/.active.XXXXXX")
+cat >"$active_tmp" <<EOF
 {
   "version": "$version",
   "revision": "$revision",
   "slot": "$target_slot"
 }
 EOF
-
-"$SCRIPT_DIR/smoke-test-slot.sh" "$target_slot"
+mv "$active_tmp" "$data_path/releases/active.json"
 trap - 0
 echo "[OK] Switched to $target_slot; old WebApi/Frontend remain available for rollback."

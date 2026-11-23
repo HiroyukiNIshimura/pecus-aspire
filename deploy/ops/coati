@@ -7,6 +7,7 @@ DEPLOY_DIR=$(CDPATH="" cd -- "$SCRIPT_DIR/.." && pwd -P)
 . "$DEPLOY_DIR/lib/common.sh"
 
 require_cmd docker
+STOP_FAILURES=""
 
 show_container() {
   name=$1
@@ -22,16 +23,26 @@ show_container() {
 }
 
 stop_apps() {
+  STOP_FAILURES=""
   for container in pecus-backfire-blue pecus-backfire-green \
     pecus-webapi-blue pecus-webapi-green \
     pecus-frontend-blue pecus-frontend-green; do
-    docker stop "$container" >/dev/null 2>&1 || true
+    if [ "$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null || echo false)" = "true" ]; then
+      docker stop "$container" >/dev/null 2>&1 || STOP_FAILURES="$STOP_FAILURES $container"
+      [ "$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null || echo false)" != "true" ] ||
+        STOP_FAILURES="$STOP_FAILURES $container"
+    fi
   done
+  [ -z "$STOP_FAILURES" ]
 }
 
 stop_containers() {
   for container in "$@"; do
-    docker stop "$container" >/dev/null 2>&1 || true
+    if [ "$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null || echo false)" = "true" ]; then
+      docker stop "$container" >/dev/null 2>&1 || STOP_FAILURES="$STOP_FAILURES $container"
+      [ "$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null || echo false)" != "true" ] ||
+        STOP_FAILURES="$STOP_FAILURES $container"
+    fi
   done
 }
 
@@ -62,9 +73,11 @@ case "${1:-}" in
       app|apps) confirm_yes "Stop WebApi, Frontend and BackFire in both slots"; stop_apps ;;
       all)
         confirm_yes "Stop all application, monitoring and infrastructure containers"
-        stop_apps
+        stop_apps || true
         stop_containers pecus-prometheus pecus-node-exporter pecus-blackbox-exporter
         stop_containers pecus-nginx pecus-lexicalconverter pecus-redis-frontend pecus-redis pecus-postgres
+        [ -z "$STOP_FAILURES" ] ||
+          die "These containers could not be stopped:$STOP_FAILURES"
         ;;
       *) echo "Usage: $0 stop {app|all}" >&2; exit 2 ;;
     esac
@@ -105,7 +118,7 @@ case "${1:-}" in
     "$SCRIPT_DIR/internal/deploy-release.sh" "${2:-}" "${3:-}" "${4:-false}"
     ;;
   _rollback)
-    "$SCRIPT_DIR/internal/rollback-release.sh" "${2:-}"
+    "$SCRIPT_DIR/internal/rollback-release.sh" "${2:-}" "${3:-}"
     ;;
   backup)
     compose \

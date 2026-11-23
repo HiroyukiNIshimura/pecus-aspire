@@ -76,10 +76,49 @@ case "${1:-}" in
       comm -12 "$complete_file" "$work_dir/$service.tags" >"$complete_file.next"
       mv "$complete_file.next" "$complete_file"
     done
+    : >"$work_dir/complete-verified"
+    while IFS= read -r tag; do
+      [ -n "$tag" ] || continue
+      complete=true
+      for service in $SERVICES; do
+        status=$(curl -sS -o /dev/null -w '%{http_code}' \
+          -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
+          -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \
+          "http://$REGISTRY/v2/$service/manifests/$tag")
+        if [ "$status" != "200" ]; then
+          complete=false
+          break
+        fi
+      done
+      if [ "$complete" = "true" ]; then
+        printf '%s\n' "$tag" >>"$work_dir/complete-verified"
+      else
+        echo "[Incomplete] $tag has missing registry manifests"
+      fi
+    done <"$complete_file"
 
-    # New release names contain a commit suffix, while legacy names are 14-digit timestamps.
-    # Keep the newest complete releases as rollback candidates; incomplete tags are never kept.
-    sort -r "$complete_file" | head -n "$keep" >"$work_dir/keep"
+    : >"$work_dir/complete-dated"
+    while IFS= read -r tag; do
+      [ -n "$tag" ] || continue
+      if [ -f "$SCRIPT_DIR/releases/$tag.json" ]; then
+        created=$(jq -r '.created // empty' "$SCRIPT_DIR/releases/$tag.json")
+      else
+        created=""
+      fi
+      if [ -z "$created" ]; then
+        case "$tag" in
+          [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9])
+            created=$(printf '%s' "$tag" |
+              sed 's/^\(....\)\(..\)\(..\)\(..\)\(..\)\(..\)$/\1-\2-\3T\4:\5:\6Z/')
+            ;;
+          *) created="0000-00-00T00:00:00Z" ;;
+        esac
+      fi
+      printf '%s\t%s\n' "$created" "$tag" >>"$work_dir/complete-dated"
+    done <"$work_dir/complete-verified"
+    sort -k1,1r "$work_dir/complete-dated" |
+      head -n "$keep" |
+      cut -f2 >"$work_dir/keep"
 
     removed=0
     : >"$work_dir/remove"
@@ -129,7 +168,7 @@ case "${1:-}" in
 
     docker run --rm \
       --volume "$registry_data_dir:/var/lib/registry" \
-      registry:2 garbage-collect /etc/docker/registry/config.yml
+      registry:2 garbage-collect -m /etc/docker/registry/config.yml
     docker start pecus-registry
     registry_stopped=false
     echo "[OK] Removed $removed tag indexes and completed garbage collection."

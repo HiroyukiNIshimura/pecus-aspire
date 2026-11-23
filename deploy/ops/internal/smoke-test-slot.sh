@@ -10,11 +10,11 @@ slot=${1:-}
 case "$slot" in blue|green) ;; *) die "Usage: $0 {blue|green}" ;; esac
 
 api_code=$(docker exec pecus-nginx wget -q -S -O /dev/null "http://pecusapi-$slot:7265/health" 2>&1 |
-  awk '$1 ~ /^HTTP\\// {code=$2} END {print code}')
+  awk 'index($1, "HTTP/") == 1 {code=$2} END {print code}')
 [ "$api_code" = "200" ] || die "API health failed for $slot: $api_code"
 
 front_code=$(docker exec pecus-nginx wget -q -S -O /dev/null "http://frontend-$slot:3000/" 2>&1 |
-  awk '$1 ~ /^HTTP\\// {code=$2} END {print code}')
+  awk 'index($1, "HTTP/") == 1 {code=$2} END {print code}')
 case "$front_code" in
   200|301|302|307|308) ;;
   *) die "Frontend check failed for $slot: $front_code" ;;

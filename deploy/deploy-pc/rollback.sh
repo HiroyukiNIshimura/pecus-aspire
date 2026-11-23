@@ -9,7 +9,34 @@ DEPLOY_DIR=$(CDPATH="" cd -- "$SCRIPT_DIR/.." && pwd -P)
 require_cmd docker
 require_cmd jq
 require_cmd ssh
+require_cmd tar
 load_env "$SCRIPT_DIR/.env"
+acquire_deploy_lock
+rollback_succeeded=false
+cleanup_rollback() {
+  exit_code=$?
+  if [ "$rollback_succeeded" != "true" ] && [ -s "${previous_env_tmp:-}" ]; then
+    cp "$previous_env_tmp" "$DEPLOY_DIR/.env"
+    chmod 600 "$DEPLOY_DIR/.env"
+    if [ -s "${previous_images_file:-}" ]; then
+      while IFS="$(printf '\t')" read -r image previous_id; do
+        [ -n "$image" ] && [ -n "$previous_id" ] || continue
+        docker tag "$previous_id" "$image" >/dev/null 2>&1 || true
+      done <"$previous_images_file"
+    fi
+    docker compose \
+      --env-file "$DEPLOY_DIR/.env" \
+      --project-directory "$DEPLOY_DIR" \
+      -f "$DEPLOY_DIR/docker-compose.infra.yml" \
+      up -d --no-build lexicalconverter >/dev/null 2>&1 || true
+  fi
+  release_deploy_lock
+  rm -f "${manifest_tmp:-}"
+  rm -rf "${release_tmp:-}"
+  rm -f "${previous_env_tmp:-}" "${previous_images_file:-}"
+  exit "$exit_code"
+}
+trap cleanup_rollback EXIT
 
 for redis_dir in "$DATA_PATH/redis" "$DATA_PATH/redis-frontend"; do
   [ -d "$redis_dir" ] ||
@@ -38,17 +65,19 @@ fi
 case "$version" in *[!A-Za-z0-9._-]*) die "Invalid release version: $version" ;; esac
 
 manifest="$DEPLOY_DIR/releases/$version.json"
-if [ ! -f "$manifest" ]; then
+release_env="$DEPLOY_DIR/releases/$version.env"
+if [ ! -f "$manifest" ] || [ ! -f "$release_env" ]; then
   BUILD_PC="$BUILD_PC_USER@$BUILD_PC_IP"
   REMOTE_ROOT=${BUILD_PC_PROJECT_PATH:-/var/docker/coati/pecus-aspire}
-  manifest_tmp=$(mktemp)
-  trap 'rm -f "$manifest_tmp"' EXIT
+  release_tmp=$(mktemp -d)
   # Validated release path values are intentionally expanded on the client side.
   # shellcheck disable=SC2029
-  ssh "$BUILD_PC" "cat '$REMOTE_ROOT/deploy/build-pc/releases/$version.json'" >"$manifest_tmp"
+  ssh "$BUILD_PC" \
+    "tar cf - -C '$REMOTE_ROOT/deploy/build-pc/releases' '$version.json' '$version.env'" |
+    tar xf - -C "$release_tmp"
   mkdir -p "$DEPLOY_DIR/releases"
-  mv "$manifest_tmp" "$manifest"
-  trap - EXIT
+  cp "$release_tmp/$version.json" "$manifest"
+  cp "$release_tmp/$version.env" "$release_env"
 fi
 
 schema=$(jq -r '.schemaVersion' "$manifest")
@@ -62,10 +91,19 @@ actual_services=$(jq -r '.images[].service' "$manifest" | sort | tr '\n' ' ')
 [ "$actual_services" = "$expected_services" ] || die "Release manifest is incomplete"
 
 registry="${BUILD_PC_IP}:${REGISTRY_PORT:-5000}"
-current_slot=$(awk '/default[[:space:]]+(blue|green);/{print $2}' \
-  "$DEPLOY_DIR/nginx/conf.d/00-active-slot.conf" | tr -d ';' | tail -n 1)
+current_slot=$(active_slot)
 target_slot=blue
 [ "$current_slot" = "blue" ] && target_slot=green
+
+previous_env_tmp=$(mktemp)
+previous_images_file=$(mktemp)
+cp "$DEPLOY_DIR/.env" "$previous_env_tmp"
+for image in coati-dbmanager:local coati-lexicalconverter:local \
+  "coati-webapi-$target_slot:local" "coati-frontend-$target_slot:local" \
+  "coati-backfire-$target_slot:local"; do
+  previous_id=$(docker image inspect "$image" --format '{{.Id}}' 2>/dev/null || echo "")
+  [ -n "$previous_id" ] && printf '%s\t%s\n' "$image" "$previous_id" >>"$previous_images_file"
+done
 
 for service in $SERVICES; do
   expected_digest=$(jq -r --arg service "$service" \
@@ -90,5 +128,20 @@ for service in $SERVICES; do
   esac
 done
 
+cp "$release_env" "$DEPLOY_DIR/.env"
+chmod 600 "$DEPLOY_DIR/.env"
+for entry in "CONTAINER_UID:$CONTAINER_UID" "CONTAINER_GID:$CONTAINER_GID" "DATA_PATH:$DATA_PATH"; do
+  name=${entry%%:*}
+  value=${entry#*:}
+  if grep -q "^$name=" "$DEPLOY_DIR/.env"; then
+    sed -i "s|^$name=.*|$name=$value|" "$DEPLOY_DIR/.env"
+  else
+    printf '%s=%s\n' "$name" "$value" >>"$DEPLOY_DIR/.env"
+  fi
+done
+
 confirm_yes "Switch traffic to the inactive slot running release $version"
-"$DEPLOY_DIR/ops/coati" _rollback "$version"
+"$DEPLOY_DIR/ops/coati" _rollback "$version" "$revision"
+rollback_succeeded=true
+trap - EXIT
+cleanup_rollback
