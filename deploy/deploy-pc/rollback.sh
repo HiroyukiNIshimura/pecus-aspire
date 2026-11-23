@@ -30,7 +30,6 @@ cleanup_rollback() {
       -f "$DEPLOY_DIR/docker-compose.infra.yml" \
       up -d --no-build lexicalconverter >/dev/null 2>&1 || true
   fi
-  release_deploy_lock
   rm -f "${manifest_tmp:-}"
   rm -rf "${release_tmp:-}"
   rm -f "${previous_env_tmp:-}" "${previous_images_file:-}"

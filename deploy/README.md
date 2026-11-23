@@ -87,7 +87,8 @@ cd deploy/ops
 通常デプロイではイメージ削除やbuilder cache削除を行いません。
 デプロイとrollbackはホスト単位で排他し、失敗時は設定、対象slotタグ、
 LexicalConverter、Prometheus target、Nginx向き先、BackFireを可能な範囲で復元します。
-異常終了したPIDロックは、対象PIDの消失または未完成ロックの経過時間を確認して自動回収します。
+排他は `deploy/.deploy.lock` に対する `flock` で行います。プロセスが異常終了してもカーネルがロックを解放するため、手動でのロック削除は不要です（ロックファイル自体は削除しないでください）。
+待機時間は `DEPLOY_LOCK_TIMEOUT`（秒、既定60）で変更できます。
 
 ## 非破壊検証
 

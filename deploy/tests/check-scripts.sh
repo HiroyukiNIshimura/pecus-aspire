@@ -57,40 +57,60 @@ if env FAKE_STATE_DIR="$FAKE_DIR/state" PATH="$FAKE_DIR:$PATH" dash -c '
   die "Unhealthy container was accepted" 2>/dev/null || exit 1
 fi
 
-echo "[Test] Deployment lock contention"
-lock="$FAKE_DIR/deploy.lock"
-mkdir "$lock"
-printf '%s\n' 999999 >"$lock/pid"
-# Shell variables inside the child script are intentionally expanded by dash.
-# shellcheck disable=SC2016
-if env DATA_PATH="$FAKE_DIR" DEPLOY_LOCK_TIMEOUT=2 dash -c '
-  DEPLOY_DIR=$1
-  . "$DEPLOY_DIR/lib/common.sh"
+if command -v flock >/dev/null 2>&1; then
+  lock="$FAKE_DIR/deploy.lock"
+  # Shell variables inside the child scripts are intentionally expanded by dash.
+  # shellcheck disable=SC2016
+  try_lock='
+    DEPLOY_DIR=$1
+    . "$DEPLOY_DIR/lib/common.sh"
+    acquire_deploy_lock "$2"
+  '
+
+  echo "[Test] Deployment lock acquires and is reusable after exit"
+  DEPLOY_LOCK_TIMEOUT=1 dash -c "$try_lock" sh "$DEPLOY_DIR" "$lock" >/dev/null
+  DEPLOY_LOCK_TIMEOUT=1 dash -c "$try_lock" sh "$DEPLOY_DIR" "$lock" >/dev/null
+
+  echo "[Test] Deployment lock contention times out"
+  # Keep the lock in a single process (exec) so killing it really drops it.
+  # shellcheck disable=SC2016
+  dash -c 'exec 9<"$1"; flock 9; exec sleep 30' sh "$lock" &
+  holder=$!
+  sleep 1
   start=$(date +%s)
-  if acquire_deploy_lock "$2"; then
+  if DEPLOY_LOCK_TIMEOUT=2 dash -c "$try_lock" sh "$DEPLOY_DIR" "$lock" >/dev/null 2>&1; then
+    kill "$holder" 2>/dev/null || true
+    echo "[Error] Deployment lock contention unexpectedly succeeded" >&2
     exit 1
   fi
-  [ $(( $(date +%s) - start )) -ge 2 ]
-' sh "$DEPLOY_DIR" "$lock"; then
-  echo "[Error] Deployment lock contention unexpectedly succeeded" >&2
-  exit 1
-fi
+  [ $(( $(date +%s) - start )) -ge 2 ] || {
+    kill "$holder" 2>/dev/null || true
+    echo "[Error] Deployment lock did not wait for its timeout" >&2
+    exit 1
+  }
 
-echo "[Test] Incomplete stale lock recovery"
-stale_lock="$FAKE_DIR/stale.lock"
-mkdir "$stale_lock"
-if touch -d '70 seconds ago' "$stale_lock" 2>/dev/null; then
-  :
+  echo "[Test] Deployment lock is released when the holder is killed"
+  kill -9 "$holder"
+  wait "$holder" 2>/dev/null || true
+  DEPLOY_LOCK_TIMEOUT=1 dash -c "$try_lock" sh "$DEPLOY_DIR" "$lock" >/dev/null
+
+  if [ "$(id -u)" -ne 0 ]; then
+    echo "[Test] Unwritable lock directory fails fast"
+    mkdir "$FAKE_DIR/readonly"
+    chmod 555 "$FAKE_DIR/readonly"
+    start=$(date +%s)
+    if DEPLOY_LOCK_TIMEOUT=30 dash -c "$try_lock" sh "$DEPLOY_DIR" "$FAKE_DIR/readonly/deploy.lock" >/dev/null 2>&1; then
+      echo "[Error] Lock in an unwritable directory unexpectedly succeeded" >&2
+      exit 1
+    fi
+    [ $(( $(date +%s) - start )) -lt 5 ] || {
+      echo "[Error] Unwritable lock directory did not fail fast" >&2
+      exit 1
+    }
+    chmod 755 "$FAKE_DIR/readonly"
+  fi
 else
-  touch -t "$(date -v-70S +%Y%m%d%H%M.%S)" "$stale_lock"
+  echo "[Skip] Deployment lock tests: flock not found (install util-linux)"
 fi
-# Shell variables inside the child script are intentionally expanded by dash.
-# shellcheck disable=SC2016
-env DATA_PATH="$FAKE_DIR" DEPLOY_LOCK_TIMEOUT=5 dash -c '
-  DEPLOY_DIR=$1
-  . "$DEPLOY_DIR/lib/common.sh"
-  acquire_deploy_lock "$2"
-  release_deploy_lock
-' sh "$DEPLOY_DIR" "$stale_lock"
 
 echo "[OK] Deployment script checks passed."

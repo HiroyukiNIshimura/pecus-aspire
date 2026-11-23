@@ -164,6 +164,8 @@ pecus.DbManager/appsettings.json
 
 # Generated deploy/.env (from config/settings.base.prod.json)
 deploy/.env
+# Host-local flock file for deploy/rollback
+deploy/.deploy.lock
 
 # Generated nginx active slot config (by ops/lib.sh or ops/switch-node.sh)
 deploy/nginx/conf.d/00-active-slot.conf

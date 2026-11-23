@@ -35,53 +35,31 @@ confirm_yes() {
   }
 }
 
+# Serialize deploy/rollback on this host with flock(1). The kernel releases the
+# lock when the holding process exits (including crashes and SIGKILL), so there
+# is no stale-lock recovery and no explicit release. The lock file itself is
+# never deleted; deleting it would let two processes lock different inodes.
+# The lock lives in $DEPLOY_DIR because the state it protects (deploy/.env,
+# the active-slot Nginx config) lives there and setup.sh hands it to the
+# deploy user.
 acquire_deploy_lock() {
-  lock_dir=${1:-"$DATA_PATH/deploy.lock"}
+  require_cmd flock
+  lock_file=${1:-"$DEPLOY_DIR/.deploy.lock"}
   timeout=${DEPLOY_LOCK_TIMEOUT:-60}
-  mkdir -p "$(dirname "$lock_dir")"
-  started_at=$(date +%s)
-  while ! mkdir "$lock_dir" 2>/dev/null; do
-    owner=$(cat "$lock_dir/pid" 2>/dev/null || echo "unknown")
-    if [ "$owner" != "unknown" ] && ! kill -0 "$owner" 2>/dev/null; then
-      echo "[Recover] Removing stale deployment lock from pid $owner"
-      rm -rf "$lock_dir"
-      continue
-    fi
-    if [ "$owner" = "unknown" ]; then
-      lock_age=0
-      if command -v stat >/dev/null 2>&1; then
-        changed=$(stat -f %m "$lock_dir" 2>/dev/null || echo "")
-        [ -n "$changed" ] || changed=$(stat -c %Y "$lock_dir" 2>/dev/null || echo 0)
-        now=$(date +%s)
-        lock_age=$((now - changed))
-      elif [ "$(uname -s)" = "Linux" ]; then
-        changed=$(stat -c %Y "$lock_dir" 2>/dev/null || echo 0)
-        now=$(date +%s)
-        lock_age=$((now - changed))
-      fi
-      if [ "$lock_age" -ge "$timeout" ]; then
-        echo "[Recover] Removing incomplete deployment lock"
-        rm -rf "$lock_dir"
-        continue
-      fi
-    fi
-    if [ $(( $(date +%s) - started_at )) -ge "$timeout" ]; then
-      die "Another deployment or rollback holds $lock_dir (owner pid: $owner)"
-    fi
-    echo "[Wait] Deployment lock is held (owner pid: $owner); retrying..."
-    sleep 2
-  done
-  # Publish metadata only after acquiring the directory. A missing pid for a
-  # newly acquired lock must not be mistaken for another operator's stale lock.
-  printf '%s\n' "$$" >"$lock_dir/pid"
-  printf '%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$lock_dir/started_at"
-  DEPLOY_LOCK_DIR=$lock_dir
-  return 0
-}
-
-release_deploy_lock() {
-  lock_dir=${1:-"${DEPLOY_LOCK_DIR:-"$DATA_PATH/deploy.lock"}"}
-  rm -rf "$lock_dir"
+  # Create in a subshell: a failed redirection on `exec` would abort the
+  # caller without a readable message.
+  [ -e "$lock_file" ] || (: >>"$lock_file") 2>/dev/null ||
+    die "Cannot create deployment lock file: $lock_file (check ownership of $(dirname "$lock_file"))"
+  [ -r "$lock_file" ] ||
+    die "Deployment lock file is not readable: $lock_file"
+  # flock(2) works on a read-only descriptor, so a lock file left behind by a
+  # root-run deploy does not block the deploy user.
+  exec 9<"$lock_file"
+  if ! flock -n 9; then
+    echo "[Wait] Another deployment or rollback is running; waiting up to ${timeout}s..."
+    flock -w "$timeout" 9 ||
+      die "Another deployment or rollback still holds $lock_file after ${timeout}s"
+  fi
 }
 
 ensure_env_file() {

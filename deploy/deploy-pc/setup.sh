@@ -32,6 +32,10 @@ command -v ssh >/dev/null 2>&1 || {
   echo "[Error] ssh is required before running setup.sh" >&2
   exit 1
 }
+command -v flock >/dev/null 2>&1 || {
+  echo "[Error] flock (util-linux) is required before running setup.sh" >&2
+  exit 1
+}
 
 if ! id "$COATI_USER" >/dev/null 2>&1; then
   useradd -m -s /bin/bash "$COATI_USER"
