@@ -9,6 +9,7 @@ DEPLOY_DIR=$(CDPATH="" cd -- "$SCRIPT_DIR/.." && pwd -P)
 require_cmd docker
 require_cmd ssh
 require_cmd jq
+require_cmd tar
 load_env "$SCRIPT_DIR/.env"
 export CONTAINER_UID CONTAINER_GID
 
@@ -44,12 +45,17 @@ fi
 BUILD_PC="$BUILD_PC_USER@$BUILD_PC_IP"
 REMOTE_ROOT=${BUILD_PC_PROJECT_PATH:-/var/docker/coati/pecus-aspire}
 manifest_tmp=$(mktemp)
-env_tmp=$(mktemp)
-trap 'rm -f "$manifest_tmp" "$env_tmp"' EXIT
+release_tmp=$(mktemp -d)
+trap 'rm -f "$manifest_tmp"; rm -rf "$release_tmp"' EXIT
 
-# Version and remote root are validated and are intentionally expanded locally.
+# Fetch manifest and protected runtime settings with one SSH authentication.
+# Version and remote root are validated and intentionally expanded locally.
 # shellcheck disable=SC2029
-ssh "$BUILD_PC" "cat '$REMOTE_ROOT/deploy/build-pc/releases/$version.json'" >"$manifest_tmp"
+ssh "$BUILD_PC" \
+  "tar cf - -C '$REMOTE_ROOT/deploy/build-pc/releases' '$version.json' '$version.env'" |
+  tar xf - -C "$release_tmp"
+cp "$release_tmp/$version.json" "$manifest_tmp"
+env_tmp="$release_tmp/$version.env"
 
 schema=$(jq -r '.schemaVersion' "$manifest_tmp")
 release_version=$(jq -r '.version' "$manifest_tmp")
@@ -66,10 +72,6 @@ actual_services=$(
 )
 [ "$actual_services" = "$expected_services" ] || die "Manifest does not contain exactly all release services"
 
-# Release images and runtime Compose settings are consumed from the same immutable release.
-# Version and remote root are validated and are intentionally expanded locally.
-# shellcheck disable=SC2029
-ssh "$BUILD_PC" "cat '$REMOTE_ROOT/deploy/build-pc/releases/$version.env'" >"$env_tmp"
 chmod 600 "$env_tmp"
 for entry in "CONTAINER_UID:$CONTAINER_UID" "CONTAINER_GID:$CONTAINER_GID" "DATA_PATH:$DATA_PATH"; do
   name=${entry%%:*}
