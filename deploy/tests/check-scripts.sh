@@ -27,6 +27,33 @@ EOF
 chmod +x "$FAKE_DIR/docker"
 PATH="$FAKE_DIR:$PATH" "$DEPLOY_DIR/ops/internal/smoke-test-slot.sh" blue
 
+echo "[Test] Public smoke uses IPv4 loopback and reports wget errors"
+cat >"$FAKE_DIR/docker" <<'EOF'
+#!/bin/sh
+case "$*" in
+  # Nginx listens on IPv4 only; localhost resolves to ::1 in the Alpine image.
+  *"http://localhost/"*) echo "wget: can't connect to remote host: Connection refused" >&2; exit 1 ;;
+  *"http://127.0.0.1/"*) printf '  HTTP/1.1 307 Temporary Redirect\r\n' >&2 ;;
+  *"00-active-slot.conf"*) echo blue ;;
+  *) exit 1 ;;
+esac
+EOF
+chmod +x "$FAKE_DIR/docker"
+PATH="$FAKE_DIR:$PATH" "$DEPLOY_DIR/ops/internal/smoke-test-public.sh" blue
+cat >"$FAKE_DIR/docker" <<'EOF'
+#!/bin/sh
+echo "wget: can't connect to remote host: Connection refused" >&2
+exit 1
+EOF
+if public_err=$(PATH="$FAKE_DIR:$PATH" "$DEPLOY_DIR/ops/internal/smoke-test-public.sh" blue 2>&1); then
+  echo "[Error] Public smoke test unexpectedly passed" >&2
+  exit 1
+fi
+case "$public_err" in
+  *"Connection refused"*"no HTTP response"*) ;;
+  *) echo "[Error] Public smoke test hid the wget error: $public_err" >&2; exit 1 ;;
+esac
+
 echo "[Test] Health starts waiting and fails immediately when unhealthy"
 mkdir -p "$FAKE_DIR/state"
 cat >"$FAKE_DIR/docker" <<'EOF'

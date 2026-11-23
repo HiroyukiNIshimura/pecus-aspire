@@ -9,11 +9,17 @@ DEPLOY_DIR=$(CDPATH="" cd -- "$SCRIPT_DIR/../.." && pwd -P)
 expected_slot=${1:-}
 case "$expected_slot" in blue|green) ;; *) die "Usage: $0 {blue|green}" ;; esac
 
-public_code=$(docker exec pecus-nginx wget -q -S -O /dev/null http://localhost/ 2>&1 |
+# Use 127.0.0.1, not localhost: in the Alpine image localhost resolves to ::1
+# first, while Nginx listens on IPv4 only (`listen 80;`).
+public_out=$(docker exec pecus-nginx wget -q -S -O /dev/null http://127.0.0.1/ 2>&1 || true)
+public_code=$(printf '%s\n' "$public_out" |
   awk 'index($1, "HTTP/") == 1 {code=$2} END {print code}')
 case "$public_code" in
   200|301|302|307|308) ;;
-  *) die "Public Nginx route failed for $expected_slot: $public_code" ;;
+  *)
+    printf '%s\n' "$public_out" >&2
+    die "Public Nginx route failed for $expected_slot: ${public_code:-no HTTP response}"
+    ;;
 esac
 
 configured_slot=$(docker exec pecus-nginx awk \
