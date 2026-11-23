@@ -64,6 +64,8 @@ case "${1:-}" in
     sort -r "$complete_file" | head -n "$keep" >"$work_dir/keep"
 
     deleted=0
+    orphaned=0
+    : >"$work_dir/orphans"
     for service in $SERVICES; do
       while IFS= read -r tag; do
         [ -n "$tag" ] || continue
@@ -78,6 +80,12 @@ case "${1:-}" in
           -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
           -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \
           "http://$REGISTRY/v2/$service/manifests/$tag")
+        if [ "$http_code" = "404" ]; then
+          printf '%s\t%s\n' "$service" "$tag" >>"$work_dir/orphans"
+          orphaned=$((orphaned + 1))
+          echo "[Orphan] $service:$tag"
+          continue
+        fi
         if [ "$http_code" != "200" ]; then
           echo "[Warn] Cannot read manifest: $service:$tag (HTTP $http_code)" >&2
           continue
@@ -99,10 +107,10 @@ case "${1:-}" in
       done <"$work_dir/$service.tags"
     done
 
-    [ "$deleted" -gt 0 ] || {
+    if [ "$deleted" -eq 0 ] && [ "$orphaned" -eq 0 ]; then
       echo "[OK] No registry tags required deletion."
       exit 0
-    }
+    fi
 
     registry_data_dir=${REGISTRY_DATA_DIR:-./data/registry}
     case "$registry_data_dir" in
@@ -112,12 +120,24 @@ case "${1:-}" in
     echo "[GC] Stopping registry for garbage collection..."
     docker stop pecus-registry
     registry_stopped=true
+
+    while IFS="$(printf '\t')" read -r service tag; do
+      [ -n "$service" ] && [ -n "$tag" ] || continue
+      case "$service" in *[!A-Za-z0-9._-]*) die "Invalid service path in registry orphan: $service" ;; esac
+      case "$tag" in *[!A-Za-z0-9._-]*) die "Invalid tag path in registry orphan: $tag" ;; esac
+      tag_dir="$registry_data_dir/docker/registry/v2/repositories/$service/_manifests/tags/$tag"
+      if [ -d "$tag_dir" ]; then
+        rm -rf -- "$tag_dir"
+        echo "[Remove index] $service:$tag"
+      fi
+    done <"$work_dir/orphans"
+
     docker run --rm \
       --volume "$registry_data_dir:/var/lib/registry" \
       registry:2 garbage-collect /etc/docker/registry/config.yml
     docker start pecus-registry
     registry_stopped=false
-    echo "[OK] Deleted $deleted tags and completed garbage collection."
+    echo "[OK] Deleted $deleted manifests, removed $orphaned orphan tags, and completed garbage collection."
     ;;
   *)
     echo "Usage: $0 {setup|list|prune [keep-count]}" >&2
