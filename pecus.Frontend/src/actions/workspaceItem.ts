@@ -425,7 +425,7 @@ export async function updateWorkspaceItemAttribute(
 
     return serverError('アイテムの取得に失敗しました。');
   } catch (error) {
-    console.error(`Failed to update workspace item ${parseResult.data.attribute}:`, error);
+    console.error('Failed to update workspace item %s:', parseResult.data.attribute, error);
 
     // 409 Conflict: 並行更新による競合
     const concurrency = detectConcurrencyError(error);
