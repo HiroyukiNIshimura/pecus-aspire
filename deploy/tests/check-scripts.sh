@@ -79,10 +79,10 @@ fi
 echo "[Test] Incomplete stale lock recovery"
 stale_lock="$FAKE_DIR/stale.lock"
 mkdir "$stale_lock"
-if touch -d '20 seconds ago' "$stale_lock" 2>/dev/null; then
+if touch -d '70 seconds ago' "$stale_lock" 2>/dev/null; then
   :
 else
-  touch -t "$(date -v-20S +%Y%m%d%H%M.%S)" "$stale_lock"
+  touch -t "$(date -v-70S +%Y%m%d%H%M.%S)" "$stale_lock"
 fi
 # Shell variables inside the child script are intentionally expanded by dash.
 # shellcheck disable=SC2016

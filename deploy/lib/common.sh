@@ -40,7 +40,7 @@ acquire_deploy_lock() {
   timeout=${DEPLOY_LOCK_TIMEOUT:-60}
   mkdir -p "$(dirname "$lock_dir")"
   started_at=$(date +%s)
-  until mkdir "$lock_dir" 2>/dev/null; do
+  while ! mkdir "$lock_dir" 2>/dev/null; do
     owner=$(cat "$lock_dir/pid" 2>/dev/null || echo "unknown")
     if [ "$owner" != "unknown" ] && ! kill -0 "$owner" 2>/dev/null; then
       echo "[Recover] Removing stale deployment lock from pid $owner"
@@ -59,7 +59,7 @@ acquire_deploy_lock() {
         now=$(date +%s)
         lock_age=$((now - changed))
       fi
-      if [ "$lock_age" -ge 10 ]; then
+      if [ "$lock_age" -ge "$timeout" ]; then
         echo "[Recover] Removing incomplete deployment lock"
         rm -rf "$lock_dir"
         continue
@@ -71,9 +71,12 @@ acquire_deploy_lock() {
     echo "[Wait] Deployment lock is held (owner pid: $owner); retrying..."
     sleep 2
   done
+  # Publish metadata only after acquiring the directory. A missing pid for a
+  # newly acquired lock must not be mistaken for another operator's stale lock.
   printf '%s\n' "$$" >"$lock_dir/pid"
   printf '%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$lock_dir/started_at"
   DEPLOY_LOCK_DIR=$lock_dir
+  return 0
 }
 
 release_deploy_lock() {
