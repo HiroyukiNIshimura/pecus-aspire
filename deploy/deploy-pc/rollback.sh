@@ -37,6 +37,8 @@ cleanup_rollback() {
   exit "$exit_code"
 }
 trap cleanup_rollback EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 for redis_dir in "$DATA_PATH/redis" "$DATA_PATH/redis-frontend"; do
   [ -d "$redis_dir" ] ||

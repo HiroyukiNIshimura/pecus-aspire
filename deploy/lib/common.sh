@@ -42,6 +42,29 @@ acquire_deploy_lock() {
   started_at=$(date +%s)
   until mkdir "$lock_dir" 2>/dev/null; do
     owner=$(cat "$lock_dir/pid" 2>/dev/null || echo "unknown")
+    if [ "$owner" != "unknown" ] && ! kill -0 "$owner" 2>/dev/null; then
+      echo "[Recover] Removing stale deployment lock from pid $owner"
+      rm -rf "$lock_dir"
+      continue
+    fi
+    if [ "$owner" = "unknown" ]; then
+      lock_age=0
+      if command -v stat >/dev/null 2>&1; then
+        changed=$(stat -f %m "$lock_dir" 2>/dev/null || echo "")
+        [ -n "$changed" ] || changed=$(stat -c %Y "$lock_dir" 2>/dev/null || echo 0)
+        now=$(date +%s)
+        lock_age=$((now - changed))
+      elif [ "$(uname -s)" = "Linux" ]; then
+        changed=$(stat -c %Y "$lock_dir" 2>/dev/null || echo 0)
+        now=$(date +%s)
+        lock_age=$((now - changed))
+      fi
+      if [ "$lock_age" -ge 10 ]; then
+        echo "[Recover] Removing incomplete deployment lock"
+        rm -rf "$lock_dir"
+        continue
+      fi
+    fi
     if [ $(( $(date +%s) - started_at )) -ge "$timeout" ]; then
       die "Another deployment or rollback holds $lock_dir (owner pid: $owner)"
     fi
@@ -50,10 +73,11 @@ acquire_deploy_lock() {
   done
   printf '%s\n' "$$" >"$lock_dir/pid"
   printf '%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$lock_dir/started_at"
+  DEPLOY_LOCK_DIR=$lock_dir
 }
 
 release_deploy_lock() {
-  lock_dir=${1:-"$DATA_PATH/deploy.lock"}
+  lock_dir=${1:-"${DEPLOY_LOCK_DIR:-"$DATA_PATH/deploy.lock"}"}
   rm -rf "$lock_dir"
 }
 

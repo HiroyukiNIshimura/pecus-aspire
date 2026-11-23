@@ -76,4 +76,21 @@ if env DATA_PATH="$FAKE_DIR" DEPLOY_LOCK_TIMEOUT=2 dash -c '
   exit 1
 fi
 
+echo "[Test] Incomplete stale lock recovery"
+stale_lock="$FAKE_DIR/stale.lock"
+mkdir "$stale_lock"
+if touch -d '20 seconds ago' "$stale_lock" 2>/dev/null; then
+  :
+else
+  touch -t "$(date -v-20S +%Y%m%d%H%M.%S)" "$stale_lock"
+fi
+# Shell variables inside the child script are intentionally expanded by dash.
+# shellcheck disable=SC2016
+env DATA_PATH="$FAKE_DIR" DEPLOY_LOCK_TIMEOUT=5 dash -c '
+  DEPLOY_DIR=$1
+  . "$DEPLOY_DIR/lib/common.sh"
+  acquire_deploy_lock "$2"
+  release_deploy_lock
+' sh "$DEPLOY_DIR" "$stale_lock"
+
 echo "[OK] Deployment script checks passed."

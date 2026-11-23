@@ -87,6 +87,7 @@ cd deploy/ops
 通常デプロイではイメージ削除やbuilder cache削除を行いません。
 デプロイとrollbackはホスト単位で排他し、失敗時は設定、対象slotタグ、
 LexicalConverter、Prometheus target、Nginx向き先、BackFireを可能な範囲で復元します。
+異常終了したPIDロックは、対象PIDの消失または未完成ロックの経過時間を確認して自動回収します。
 
 ## 非破壊検証
 
