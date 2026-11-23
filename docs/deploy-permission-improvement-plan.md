@@ -15,25 +15,25 @@
 
 | 操作 | 実行ユーザー | 備考 |
 |------|-------------|------|
-| **初期セットアップ** | `root`（または sudo） | `initial-setup.sh` が `coati` ユーザー作成・環境構築を一括実行 |
-| **日常運用（デプロイ・バックアップ・切替等）** | `coati` | `ops/` 配下のスクリプトを使用 |
+| **初期セットアップ** | `root`（または sudo） | `setup.sh` が `coati` ユーザーと永続ディレクトリを準備 |
+| **日常運用（デプロイ・バックアップ・切替等）** | `coati` | `deploy-pc/` と `ops/coati` を使用 |
 | **メンテナンス** | `coati` | 以降のすべての操作は `coati` で実施 |
 
 ```bash
 # 初回セットアップ（root で実行、coati ユーザー作成含む）
-sudo ./initial-setup.sh
+sudo ./setup.sh
 
 # 以降はすべて coati ユーザーで操作
 su - coati
 cd /path/to/deploy/deploy-pc
-./pull-and-deploy.sh
+./deploy.sh <release-id>
 ```
 
 ### コンテナ UID/GID の原則
 
 - コンテナ内プロセスの `user` 設定（`CONTAINER_UID` / `CONTAINER_GID`）は `coati` ユーザーの UID/GID と一致させる
 - これにより、コンテナが作成したファイルをホスト側の `coati` ユーザーが直接読み書き・削除できる
-- `initial-setup.sh` が `coati` ユーザーの UID/GID を自動検出し、`deploy/.env` に `CONTAINER_UID` / `CONTAINER_GID` を自動設定するため、手動設定は不要
+- `setup.sh` が `coati` ユーザーの UID/GID を自動検出し、`deploy-pc/.env` に `CONTAINER_UID` / `CONTAINER_GID` を設定する
 
 ---
 
@@ -82,7 +82,7 @@ cd /path/to/deploy/deploy-pc
 
 #### 対策
 
-- [ ] 初期セットアップスクリプト `deploy/deploy-pc/setup-data-dirs.sh` を作成
+- [x] 初期セットアップスクリプト `deploy/deploy-pc/setup.sh` のデータ領域作成を実装
 - [ ] スクリプトで必要なディレクトリを自動作成し、適切な権限を設定
 
 ---
@@ -96,7 +96,7 @@ cd /path/to/deploy/deploy-pc
 
 #### 対策
 
-- [ ] `deploy/deploy-pc/initial-setup.sh` を作成（ワンコマンドでセットアップ完了）
+- [x] `deploy/deploy-pc/setup.sh` を作成（初回セットアップの公開入口を統一）
 - [ ] README を更新し、`initial-setup.sh` を最初に実行するよう明記
 
 ---
@@ -177,13 +177,13 @@ sudo ./setup-data-dirs.sh
 |----|--------|----------|--------|
 | 3-1 | `infra-up.sh` でディレクトリ事前チェック追加 | `ops/infra-up.sh` | 🟡 低 |
 | 3-2 | README 更新（初期セットアップ手順の明確化） | `deploy-pc/README.md` | 🟡 低 |
-| 3-3 | 環境構築チェックリストの追加 | `deploy/DEPLOY_OVERVIEW.md` | 🟡 低 |
+| 3-3 | 環境構築チェックリストの追加 | `deploy/README.md` | 🟡 低 |
 
 ---
 
 ## 新規スクリプト設計
 
-### `deploy/deploy-pc/setup-data-dirs.sh`
+### `deploy/deploy-pc/setup.sh`（データディレクトリ作成）
 
 > **実行ユーザー**: `root`（`initial-setup.sh` から呼び出し、または単独で `sudo` 実行）
 > **UID/GID**: 環境変数 `COATI_UID` / `COATI_GID` を使用。未設定の場合は `id -u coati` / `id -g coati` で自動検出
@@ -247,7 +247,7 @@ echo "✅ データディレクトリを作成しました: $DATA_PATH"
 echo "⚠️  postgres/ は PostgreSQL 初回起動時に自動設定されます（chown 不要）"
 ```
 
-### `deploy/deploy-pc/initial-setup.sh`
+### `deploy/deploy-pc/setup.sh`（統合初期セットアップ）
 
 > **実行ユーザー**: `root`（`coati` ユーザー作成・Docker 設定・ディレクトリ作成を一括実行）
 > **以降の運用**: セットアップ完了後は `coati` ユーザーですべての操作を行う
@@ -339,7 +339,7 @@ echo ""
 echo "以降はすべて $COATI_USER ユーザーで操作してください:"
 echo "  su - $COATI_USER"
 echo "  cd $(cd "$SCRIPT_DIR" && pwd)"
-echo "  ./pull-and-deploy.sh"
+echo "  ./deploy.sh <release-id>"
 ```
 
 ---
@@ -359,7 +359,7 @@ echo "  ./pull-and-deploy.sh"
 
 ## 関連ドキュメント
 
-- [deploy/DEPLOY_OVERVIEW.md](../deploy/DEPLOY_OVERVIEW.md) - デプロイ全体概要
+- [deploy/README.md](../deploy/README.md) - デプロイ全体概要
 - [deploy/deploy-pc/README.md](../deploy/deploy-pc/README.md) - デプロイPC セットアップ
 - [deploy/ops/README.md](../deploy/ops/README.md) - 運用スクリプト一覧
 - [docs/data-directory-structure.md](./data-directory-structure.md) - データディレクトリ構造

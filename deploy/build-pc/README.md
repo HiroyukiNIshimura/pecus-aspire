@@ -1,179 +1,32 @@
-# ビルドPC セットアップガイド
+# Build PC
 
-## 概要
-
-このディレクトリには、ビルド専用PCで Docker イメージをビルドし、プライベートレジストリにプッシュするためのスクリプトが含まれています。
-
----
-
-## 前提条件
-
-- git, curl, jq などの基本的なコマンドラインツールがインストールされていること
-- Docker および Docker Compose がインストールされていること
-- Node.js がインストールされていること（appsettings.json 生成に必要）
-- ソースコードリポジトリがクローン済みであること
-- 十分なディスク容量（イメージビルド + レジストリストレージ）
-- `config/settings.base.prod.json` が設定されていること（本番用設定）
-
----
-
-## 初回セットアップ
-
-### 1. 環境変数の設定
+## 初回設定
 
 ```bash
-cd deploy/build-pc
 cp .env.example .env
+./registry.sh setup
 ```
 
-`.env` ファイルを編集:
+## リリース作成
 
 ```bash
-# レジストリホスト（ビルドPC自身の場合は localhost）
-REGISTRY_HOST=localhost
-
-# レジストリポート
-REGISTRY_PORT=5000
+./release.sh
 ```
 
-### 2. レジストリコンテナの起動
+任意のimmutable tagを付ける場合:
 
 ```bash
-./setup-registry.sh
+./release.sh 20261123-prod
 ```
 
-このスクリプトは以下を実行します:
-- `docker-compose.registry.yml` を使用してレジストリコンテナを起動
-- データ永続化用のボリュームを作成
-- レジストリの動作確認
+- 必ず全5サービスを同時にビルド・pushする
+- 各イメージへGit revision、release ID、作成日時をOCIラベルとして埋め込む
+- `releases/<release-id>.json` に各registry digestを保存する
+- 全サービス成功後だけ `latest` を更新する
+- tracked working treeがdirty、Git pull失敗、ビルド失敗時は中止する
 
----
-
-## 日常運用
-
-### ビルド & プッシュ
+レジストリ一覧:
 
 ```bash
-./build-and-push.sh
+./registry.sh list
 ```
-
-このスクリプトは以下を実行します:
-1. Git pull で最新ソースコードを取得
-2. `appsettings.json` を本番設定で生成（`config/settings.base.prod.json` を使用）
-3. 全サービス（WebApi, Frontend, BackFire, DbManager, LexicalConverter）をビルド
-4. バージョンタグ（`YYYYMMDDHHMMSS`）と `latest` タグでレジストリにプッシュ
-5. ビルド結果のサマリーを表示
-
-> **Note**: `appsettings.json` は `.gitignore` で除外されているため、スクリプトが自動生成します。
-
-### 特定サービスのみビルド
-
-```bash
-./build-and-push.sh pecus-webapi pecus-frontend
-```
-
-### レジストリ内のタグ一覧確認
-
-```bash
-./list-tags.sh
-```
-
-ビルド済みのイメージとタグを確認できます。デプロイ前のバージョン確認に便利です。
-
-### 古いイメージのクリーンアップ
-
-```bash
-# リポジトリごとに最新3件を保持し、残りを削除
-./cleanup-old-images.sh 3
-
-# デフォルト（.env の KEEP_LATEST、未設定時は5件）
-./cleanup-old-images.sh
-```
-
-### ガベージコレクション
-
-マニフェスト削除後、ストレージを実際に解放するにはガベージコレクションが必要です。
-
-```bash
-# 基本的なガベージコレクション
-./garbage-collect.sh
-
-# 孤立タグ（404になるタグ）も削除する場合
-./garbage-collect.sh --delete-orphan-tags
-```
-
-> **Note**: ガベージコレクション中はレジストリへのプッシュが一時的に失敗する可能性があります。ビルド中の実行は避けてください。
-
----
-
-## トラブルシューティング
-
-### レジストリにアクセスできない
-
-```bash
-# レジストリコンテナの状態確認
-docker ps | grep pecus-registry
-
-# レジストリログ確認
-docker logs pecus-registry
-
-# レジストリ再起動
-docker restart pecus-registry
-```
-
-### ディスク容量不足
-
-```bash
-# 未使用イメージの削除
-docker system prune -a
-
-# レジストリストレージの確認
-du -sh ../data/registry
-```
-
-### プッシュが失敗する
-
-```bash
-# Docker daemon 設定確認
-cat /etc/docker/daemon.json
-
-# insecure-registries が設定されているか確認
-# 設定されていない場合は追加して Docker 再起動
-sudo systemctl restart docker
-```
-
----
-
-## ディレクトリ構造
-
-```
-build-pc/
-├── README.md                   # このファイル
-├── setup-registry.sh           # レジストリ初期構築
-├── build-and-push.sh           # ビルド & プッシュ
-├── list-tags.sh                # タグ一覧表示
-├── cleanup-old-images.sh       # 古いイメージ削除
-├── garbage-collect.sh          # ガベージコレクション
-├── .env.example                # 環境変数テンプレート
-└── .env                        # 環境変数（git ignore）
-```
-
----
-
-## セキュリティ考慮事項
-
-- レジストリポート（デフォルト 5000）へのアクセスは LAN 内に限定すること
-- 本番運用では Basic 認証または TLS 証明書の設定を推奨
-- `.env` ファイルは `.gitignore` に追加されています
-
----
-
-## 関連ドキュメント
-
-- [SEPARATE_BUILD_ARCHITECTURE.md](../SEPARATE_BUILD_ARCHITECTURE.md) - ビルドPC分離アーキテクチャ全体
-- [DEPLOY_OVERVIEW.md](../DEPLOY_OVERVIEW.md) - デプロイ全体概要
-- [deploy-pc/README.md](../deploy-pc/README.md) - デプロイPC側のセットアップ
-
----
-
-*最終更新: 2026-01-11*

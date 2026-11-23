@@ -1,0 +1,9 @@
+[
+  {
+    "targets": ["host.docker.internal:3000"],
+    "labels": {
+      "env": "development",
+      "service": "frontend"
+    }
+  }
+]

@@ -42,10 +42,9 @@ deploy-bluegreen/
     │       ├── backend.json
     │       ├── frontend.json
     │       └── infra.json
-    ├── update-prometheus-targets.sh  # ターゲット更新スクリプト
-    ├── infra-up.sh                   # インフラ + 監視基盤起動
-    ├── switch-node.sh                # Blue/Green切替（ターゲット更新含む）
-    └── status.sh                     # 状態確認
+    ├── internal/update-prometheus-targets.sh  # ターゲット更新
+    ├── internal/smoke-test-slot.sh            # スロット疎通確認
+    └── coati                                  # 運用CLI
 ```
 
 ### 責務分離
@@ -101,19 +100,19 @@ scrape_configs:
 
 ```bash
 # アクティブスロットを指定してターゲット更新
-./ops/update-prometheus-targets.sh blue
+./ops/internal/update-prometheus-targets.sh blue
 
-# または active_slot ファイルから自動取得
-./ops/update-prometheus-targets.sh
+# 監視基盤は統一CLIから起動
+./ops/coati start monitoring
 ```
 
 ## Blue/Green 切り替えフロー
 
-1. `switch-node.sh blue` 実行
-2. 新スロットのアプリをデプロイ
-3. 旧スロットを停止
+1. `deploy-pc/deploy.sh <release-id>` 実行
+2. manifest・digest・revisionを検証して新スロットを起動
+3. BackFireを切り替え
 4. Nginx を新スロットに切り替え
-5. **`update-prometheus-targets.sh` でターゲット更新**（自動実行）
+5. **内部ターゲット更新処理を実行**
 6. Prometheus が 30 秒以内に新ターゲットを検出
 
 ## セキュリティ

@@ -92,7 +92,7 @@ docker exec "$RC" redis-cli -p 6380 -a "$PW" --no-auth-warning DEL 'auth:ratelim
 - DB には平文を保存せず、**HMAC-SHA256 ハッシュのみ**を保存する（鍵は `Pecus:WebAuthn:RecoveryCodePepper`）。
 - `Development` 以外の環境では pepper の設定が**必須**。未設定、または `CHANGE_ME_RECOVERY_CODE_PEPPER_IN_PRODUCTION` のままの状態で起動すると `Program.cs` が起動時に例外を投げる。秘密管理基盤などから環境変数 `WEBAUTHN_RECOVERY_CODE_PEPPER` を生成スクリプトの実行環境に渡し、設定ファイルを生成する場合は、その環境変数を設定した状態で `node scripts/generate-appsettings.js -P` を実行する。生成後は WebApi を再起動して反映する。pepper と生成済み設定ファイルは秘密情報として保護し、リポジトリへ登録しない。`Development` 環境のみ既定値で動作する。
 - 起動できないイメージを配布しないよう、`-P` での生成時にも検証する。pepper が未設定・`CHANGE_ME` 始まり、`RpId` が `localhost` のまま、または `Origins` に `https` 以外が含まれる場合は**生成を中止**する（[generate-appsettings.js](../scripts/generate-appsettings.js)）。
-- `RpId` / `Origins` は、生成時点のフロントエンドURL（`FRONTEND_URL`、未指定なら `config/settings.base.prod.json` の `urls.frontend`）から自動導出する。明示指定は `WEBAUTHN_RP_ID` / `WEBAUTHN_ORIGINS`（カンマ区切り）/ `WEBAUTHN_RP_NAME` を使う。デプロイ手順の詳細は [DEPLOY_OVERVIEW.md](../deploy/DEPLOY_OVERVIEW.md) を参照。
+- `RpId` / `Origins` は、生成時点のフロントエンドURL（`FRONTEND_URL`、未指定なら `config/settings.base.prod.json` の `urls.frontend`）から自動導出する。明示指定は `WEBAUTHN_RP_ID` / `WEBAUTHN_ORIGINS`（カンマ区切り）/ `WEBAUTHN_RP_NAME` を使う。デプロイ手順の詳細は [deploy/README.md](../deploy/README.md) を参照。
 - 平文を返すのは**発行レスポンスの 1 回だけ**。画面を閉じると再表示できない。
 
 ### 3.1 発行・消費のルール

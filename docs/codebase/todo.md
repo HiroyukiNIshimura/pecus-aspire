@@ -15,10 +15,10 @@
 - [ ] **BackFireのメトリクス収集要否**
   - BackFireは `AddServiceDefaults` を呼ぶが、起動コードで `MapDefaultEndpoints` を呼んでいない。Prometheus設定にもBackFireのscrape jobは見当たらず、target生成スクリプトがBackFire用targetを生成するだけでは収集されない。
   - BackFireのメトリクス収集が要件か確認し、必要ならendpoint公開とPrometheus scrape設定の両方を対象にする。
-  - 関連: [BackFire Program.cs](../../pecus.BackFire/Program.cs)、[prometheus.yml](../../deploy/ops/prometheus/prometheus.yml)、[update-prometheus-targets.sh](../../deploy/ops/update-prometheus-targets.sh)
+  - 関連: [BackFire Program.cs](../../pecus.BackFire/Program.cs)、[prometheus.yml](../../deploy/ops/prometheus/prometheus.yml)、[ターゲット更新](../../deploy/ops/internal/update-prometheus-targets.sh)
 
 ## 記述の再確認
 
 - [ ] **DB restore helperの「不整合」記述を訂正する**
   - [deployment-operations.md](./deployment-operations.md) にはrestore helperと呼び出しスクリプトに不整合があり、復元可能と確認できない旨が記載されている。
-  - 現行の [pg-restore.sh](../../deploy/ops/pg-restore.sh) と [docker-compose.restore-helper.yml](../../deploy/docker-compose.restore-helper.yml) を静的に照合した範囲では、呼び出し先や `BACKUP_FILE` の受け渡しに明確な不整合は見つからなかった。記述が古い可能性があるため、履歴・実環境での動作を確認してから該当ページを更新する。実DBへの復元は破壊的操作なので、許可された検証環境でのみ動作確認する。
+  - 現行の [運用CLI](../../deploy/ops/coati) と [docker-compose.restore-helper.yml](../../deploy/docker-compose.restore-helper.yml) を静的に照合した範囲では、復元ファイル名を `BACKUP_FILE` として渡す構造になっている。実DBへの復元は破壊的操作なので、許可された検証環境でのみ動作確認する。

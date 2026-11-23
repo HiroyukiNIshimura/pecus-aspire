@@ -2,7 +2,7 @@ services:
   # ============================================
   # Helper for restore (pg_restore)
   # 使い方:
-  #   ./ops/pg-restore.sh <backup_file_name.dump>
+  #   ./ops/coati restore <backup_file_name.dump>
   # ============================================
   postgres-restore:
     image: postgres:18-alpine

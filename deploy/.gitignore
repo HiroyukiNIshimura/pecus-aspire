@@ -1,4 +1,6 @@
 .env
+releases/
+nginx/conf.d/00-active-slot.conf
 ops/prometheus/targets/backend.json
 ops/prometheus/targets/frontend.json
 ops/prometheus/targets/backfire.json

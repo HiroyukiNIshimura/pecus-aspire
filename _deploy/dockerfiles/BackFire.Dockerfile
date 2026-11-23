@@ -1,0 +1,68 @@
+# ============================================
+# pecus.BackFire Dockerfile (Hangfire)
+# ============================================
+
+# Use Debian-based images for gRPC Tools compatibility (Alpine ARM64 has issues)
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+WORKDIR /app
+EXPOSE 8080
+
+# Install Kerberos library required by Npgsql
+RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
+
+# ============================================
+# Build stage
+# ============================================
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files
+COPY ["pecus.BackFire/pecus.BackFire.csproj", "pecus.BackFire/"]
+COPY ["pecus.Libs/pecus.Libs.csproj", "pecus.Libs/"]
+COPY ["pecus.ServiceDefaults/pecus.ServiceDefaults.csproj", "pecus.ServiceDefaults/"]
+COPY ["pecus.DbManager/pecus.DbManager.csproj", "pecus.DbManager/"]
+
+# Restore dependencies
+RUN dotnet restore "pecus.BackFire/pecus.BackFire.csproj"
+
+# Copy source code
+COPY pecus.BackFire/ pecus.BackFire/
+COPY pecus.Libs/ pecus.Libs/
+COPY pecus.ServiceDefaults/ pecus.ServiceDefaults/
+COPY pecus.DbManager/ pecus.DbManager/
+COPY pecus.Protos/ pecus.Protos/
+
+# ============================================
+# Publish stage - use dotnet publish
+# ============================================
+FROM build AS publish
+WORKDIR /src/pecus.BackFire
+RUN dotnet publish "pecus.BackFire.csproj" -c Release -o /app/publish \
+    --self-contained false \
+    /p:SKIP_GRPC_CODEGEN=true \
+    /p:PublishReadyToRun=false && \
+    ls -la /app/publish/ && \
+    test -f /app/publish/pecus.BackFire.dll
+
+# ============================================
+# Final stage
+# ============================================
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+COPY THIRD_PARTY_NOTICES.md ./THIRD_PARTY_NOTICES.md
+
+# Copy appsettings.json (pre-configured on build PC)
+COPY pecus.BackFire/appsettings.json ./appsettings.json
+
+# Copy mail templates from source
+COPY --from=build /src/pecus.Libs/Mail/Templates ./Mail/Templates
+
+# Set timezone to JST
+ENV TZ=Asia/Tokyo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Create directories for data and logs
+RUN mkdir -p /app/data/uploads /app/data/notifications /app/logs
+
+ENTRYPOINT ["dotnet", "pecus.BackFire.dll"]

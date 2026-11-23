@@ -1,0 +1,133 @@
+#!/bin/sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH="" cd -- "$(dirname "$0")" && pwd -P)
+DEPLOY_DIR=$(CDPATH="" cd -- "$SCRIPT_DIR/.." && pwd -P)
+# shellcheck disable=SC1091
+. "$DEPLOY_DIR/lib/common.sh"
+
+require_cmd docker
+
+show_container() {
+  name=$1
+  running=$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null || echo "")
+  if [ "$running" != "true" ]; then
+    printf '%-30s stopped\n' "$name"
+    return
+  fi
+  health=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}}' "$name" 2>/dev/null || echo "-")
+  image=$(docker inspect -f '{{.Config.Image}}' "$name")
+  release=$(image_label "$image" coati.release 2>/dev/null || echo "unknown")
+  printf '%-30s running(%s) release=%s\n' "$name" "$health" "$release"
+}
+
+stop_apps() {
+  for container in pecus-backfire-blue pecus-backfire-green \
+    pecus-webapi-blue pecus-webapi-green \
+    pecus-frontend-blue pecus-frontend-green; do
+    docker stop "$container" >/dev/null 2>&1 || true
+  done
+}
+
+stop_containers() {
+  for container in "$@"; do
+    docker stop "$container" >/dev/null 2>&1 || true
+  done
+}
+
+case "${1:-}" in
+  status)
+    echo "active=$(active_slot)"
+    for name in pecus-postgres pecus-redis pecus-redis-frontend pecus-lexicalconverter pecus-nginx \
+      pecus-webapi-blue pecus-frontend-blue pecus-backfire-blue \
+      pecus-webapi-green pecus-frontend-green pecus-backfire-green \
+      pecus-prometheus pecus-node-exporter pecus-blackbox-exporter; do
+      show_container "$name"
+    done
+    ;;
+  logs)
+    slot=${2:-active}
+    [ "$slot" != "active" ] || slot=$(active_slot)
+    shift
+    [ $# -eq 0 ] || shift
+    case "$slot" in blue|green) ;; *) die "Usage: $0 logs {active|blue|green} [compose log options]" ;; esac
+    for container in "pecus-webapi-$slot" "pecus-frontend-$slot" "pecus-backfire-$slot"; do
+      echo "===== $container ====="
+      docker logs "$@" "$container" 2>&1 || true
+    done
+    ;;
+  stop)
+    scope=${2:-}
+    case "$scope" in
+      app|apps) confirm_yes "Stop WebApi, Frontend and BackFire in both slots"; stop_apps ;;
+      all)
+        confirm_yes "Stop all application, monitoring and infrastructure containers"
+        stop_apps
+        stop_containers pecus-prometheus pecus-node-exporter pecus-blackbox-exporter
+        stop_containers pecus-nginx pecus-lexicalconverter pecus-redis-frontend pecus-redis pecus-postgres
+        ;;
+      *) echo "Usage: $0 stop {app|all}" >&2; exit 2 ;;
+    esac
+    ;;
+  start)
+    scope=${2:-}
+    case "$scope" in
+      infra) compose_infra up -d --no-build ;;
+      monitoring)
+        active=$(active_slot)
+        "$SCRIPT_DIR/internal/update-prometheus-targets.sh" "$active"
+        compose_monitoring up -d
+        ;;
+      *) echo "Usage: $0 start {infra|monitoring}" >&2; exit 2 ;;
+    esac
+    ;;
+  smoke)
+    "$SCRIPT_DIR/internal/smoke-test-slot.sh" "${2:-$(active_slot)}"
+    ;;
+  inspect)
+    slot=${2:-$(active_slot)}
+    [ "$slot" != "active" ] || slot=$(active_slot)
+    case "$slot" in blue|green) ;; *) die "Usage: $0 inspect {blue|green}" ;; esac
+    for service in pecus-webapi pecus-frontend pecus-backfire; do
+      image=$(local_image_for_service "$service" "$slot")
+      printf '%-18s version=%s revision=%s\n' "$service" \
+        "$(image_label "$image" org.opencontainers.image.version 2>/dev/null || echo unknown)" \
+        "$(image_label "$image" org.opencontainers.image.revision 2>/dev/null || echo unknown)"
+    done
+    for service in pecus-dbmanager lexicalconverter; do
+      image=$(local_image_for_service "$service" "$slot")
+      printf '%-18s version=%s revision=%s\n' "$service" \
+        "$(image_label "$image" org.opencontainers.image.version 2>/dev/null || echo unknown)" \
+        "$(image_label "$image" org.opencontainers.image.revision 2>/dev/null || echo unknown)"
+    done
+    ;;
+  _release)
+    "$SCRIPT_DIR/internal/deploy-release.sh" "${2:-}" "${3:-}" "${4:-false}"
+    ;;
+  _rollback)
+    "$SCRIPT_DIR/internal/rollback-release.sh" "${2:-}"
+    ;;
+  backup)
+    compose \
+      -f "$DEPLOY_DIR/docker-compose.infra.yml" \
+      -f "$DEPLOY_DIR/docker-compose.backup.yml" \
+      run --rm pgbackup
+    ;;
+  restore)
+    file=${2:-}
+    [ -n "$file" ] || die "Backup file name is required"
+    case "$file" in *[!A-Za-z0-9_.-]*|*..*|'') die "Invalid backup file name" ;; esac
+    case "$file" in *.dump) ;; *) die "Backup file must end with .dump" ;; esac
+    confirm_yes "Stop applications, replace the database and restore $file"
+    stop_apps
+    BACKUP_FILE=$file compose \
+      -f "$DEPLOY_DIR/docker-compose.infra.yml" \
+      -f "$DEPLOY_DIR/docker-compose.restore-helper.yml" \
+      run --rm -e BACKUP_FILE="$file" postgres-restore
+    echo "[Info] Applications remain stopped for verification."
+    ;;
+  *)
+    echo "Usage: $0 {status|logs|stop|start|smoke|inspect|backup|restore}" >&2
+    exit 2
+    ;;
+esac
