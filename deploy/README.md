@@ -42,6 +42,10 @@ sudo ./setup.sh
 
 `--initialize-db` は全アプリケーションスロットが停止している場合だけ実行できます。
 
+デプロイ前にRedis永続ディレクトリが `CONTAINER_UID:CONTAINER_GID` を所有し、
+再帰的に既存AOFファイルも書き換え可能か検証します。権限不一致時は
+`sudo ./setup.sh` を実行してから再デプロイしてください。
+
 ### 3. 障害時の停止
 
 ```bash

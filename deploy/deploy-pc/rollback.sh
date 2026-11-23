@@ -11,6 +11,15 @@ require_cmd jq
 require_cmd ssh
 load_env "$SCRIPT_DIR/.env"
 
+for redis_dir in "$DATA_PATH/redis" "$DATA_PATH/redis-frontend"; do
+  [ -d "$redis_dir" ] ||
+    die "Redis data directory is missing: $redis_dir. Run sudo ./setup.sh"
+  owner_mismatch=$(find "$redis_dir" -xdev \( ! -uid "$CONTAINER_UID" -o ! -gid "$CONTAINER_GID" \) -print -quit)
+  if [ -n "$owner_mismatch" ]; then
+    die "Redis data is not owned by ${CONTAINER_UID}:${CONTAINER_GID}: $redis_dir. Run sudo ./setup.sh before rollback"
+  fi
+done
+
 version=${1:-}
 if [ -z "$version" ]; then
   manifest_dir="$DEPLOY_DIR/releases"

@@ -12,6 +12,17 @@ require_cmd jq
 load_env "$SCRIPT_DIR/.env"
 export CONTAINER_UID CONTAINER_GID
 
+for redis_dir in "$DATA_PATH/redis" "$DATA_PATH/redis-frontend"; do
+  [ -d "$redis_dir" ] ||
+    die "Redis data directory is missing: $redis_dir. Run sudo ./setup.sh"
+  owner_mismatch=$(find "$redis_dir" -xdev \( ! -uid "$CONTAINER_UID" -o ! -gid "$CONTAINER_GID" \) -print -quit)
+  if [ -n "$owner_mismatch" ]; then
+    die "Redis data is not owned by ${CONTAINER_UID}:${CONTAINER_GID}: $redis_dir. Run sudo ./setup.sh before deployment"
+  fi
+  [ -w "$redis_dir" ] ||
+    die "Redis data directory is not writable by the current user: $redis_dir"
+done
+
 version=${1:-}
 initialize_db=false
 shift 1 2>/dev/null || true
